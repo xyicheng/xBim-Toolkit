@@ -1,0 +1,87 @@
+﻿#region XbimHeader
+
+// The eXtensible Building Information Modelling (xBIM) Toolkit
+// Solution:    XbimComplete
+// Project:     Xbim.Ifc
+// Filename:    IfcRelAssociatesDocument.cs
+// Published:   01, 2012
+// Last Edited: 9:04 AM on 20 12 2011
+// (See accompanying copyright.rtf)
+
+#endregion
+
+#region Directives
+
+using System;
+using Xbim.Ifc.SelectTypes;
+using Xbim.XbimExtensions;
+using Xbim.XbimExtensions.Parser;
+
+#endregion
+
+namespace Xbim.Ifc.Kernel
+{
+    /// <summary>
+    ///   This objectified relationship (IfcRelAssociatesDocument) handles the assignment of a document information (items of the select IfcDocumentSelect) to objects (subtypes of IfcObject).
+    /// </summary>
+    /// <remarks>
+    ///   Definition from IAI: This objectified relationship (IfcRelAssociatesDocument) handles the assignment of a document information (items of the select IfcDocumentSelect) to objects (subtypes of IfcObject).
+    ///   The relationship is used to assign a document reference or a more detailed document information to objects. A single document reference can be applied to multiple objects.
+    ///   The inherited attribute RelatedObjects define the objects to which the document association is applied. The attribute RelatingDocument is the reference to a document reference, applied to the object(s).
+    ///   HISTORY: New entity in IFC Release 2x.
+    /// </remarks>
+    [IfcPersistedEntity, Serializable]
+    public class IfcRelAssociatesDocument : IfcRelAssociates
+    {
+        #region Fields
+
+        private IfcDocumentSelect _relatingDocument;
+
+        #endregion
+
+        /// <summary>
+        ///   Document information or reference which is applied to the objects.
+        /// </summary>
+        [IfcAttribute(6, IfcAttributeState.Mandatory)]
+        public IfcDocumentSelect RelatingDocument
+        {
+            get
+            {
+#if SupportActivation
+                ((IPersistIfcEntity) this).Activate(false);
+#endif
+                return _relatingDocument;
+            }
+            set
+            {
+                ModelManager.SetModelValue(this, ref _relatingDocument, value, v => RelatingDocument = v,
+                                           "RelatingDocument");
+            }
+        }
+
+        public override void IfcParse(int propIndex, IPropertyValue value)
+        {
+            switch (propIndex)
+            {
+                case 0:
+                case 1:
+                case 2:
+                case 3:
+                case 4:
+                    base.IfcParse(propIndex, value);
+                    break;
+                case 5:
+                    _relatingDocument = (IfcDocumentSelect) value.EntityVal;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(string.Format("P21 index value out of range in {0}",
+                                                                        this.GetType().Name));
+            }
+        }
+
+        public override string WhereRule()
+        {
+            return base.WhereRule();
+        }
+    }
+}

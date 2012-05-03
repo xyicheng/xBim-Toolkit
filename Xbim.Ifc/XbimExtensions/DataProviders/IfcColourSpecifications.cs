@@ -1,0 +1,41 @@
+#region XbimHeader
+
+// The eXtensible Building Information Modelling (xBIM) Toolkit
+// Solution:    XbimComplete
+// Project:     Xbim.Ifc
+// Filename:    IfcColourSpecifications.cs
+// Published:   01, 2012
+// Last Edited: 9:04 AM on 20 12 2011
+// (See accompanying copyright.rtf)
+
+#endregion
+
+#region Directives
+
+using System.Collections.Generic;
+using Xbim.Ifc.PresentationResource;
+
+#endregion
+
+namespace Xbim.XbimExtensions.DataProviders
+{
+    public class IfcColourSpecifications
+    {
+        private readonly IModel _model;
+
+        public IfcColourSpecifications(IModel model)
+        {
+            this._model = model;
+        }
+
+        public IEnumerable<IfcColourSpecification> Items
+        {
+            get { return this._model.InstancesOfType<IfcColourSpecification>(); }
+        }
+
+        public IfcColourRgbs IfcColourRgbs
+        {
+            get { return new IfcColourRgbs(_model); }
+        }
+    }
+}

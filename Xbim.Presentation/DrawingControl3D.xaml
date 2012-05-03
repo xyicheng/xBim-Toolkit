@@ -1,0 +1,34 @@
+﻿<UserControl x:Class="Xbim.Presentation.DrawingControl3D"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="clr-namespace:Xbim.Presentation" 
+    xmlns:ifc="http://schemas.Xbim.com/ifc">
+    <UserControl.Resources>
+       
+    </UserControl.Resources>
+
+    <local:TrackballDecorator x:Name="TrackBall" >
+            <local:DrawingViewport3D x:Name="Canvas"  Grid.Row="0" Grid.Column="0">
+                <!--Camera-->
+                <local:DrawingViewport3D.Camera>
+                    <PerspectiveCamera  FieldOfView="45" x:Name="Camera"/>
+                </local:DrawingViewport3D.Camera>
+                <local:DrawingViewport3D.Children>
+                    <ModelVisual3D x:Name="Light">
+                        <ModelVisual3D.Content>
+                            <Model3DGroup>
+                                <DirectionalLight x:Name="Headlight" Color="White"  Transform="{Binding ElementName=Camera, Path=Transform}" Direction="{Binding ElementName=Camera, Path=LookDirection}" />
+                               
+                        </Model3DGroup>
+                        </ModelVisual3D.Content>
+                    </ModelVisual3D>
+                    <local:DrawingView3D x:Name="BuildingModel">
+                        <local:DrawingView3D.Children>
+                            <ModelVisual3D x:Name="Solids"></ModelVisual3D>
+                            <ModelVisual3D x:Name="Transparents"></ModelVisual3D>
+                        </local:DrawingView3D.Children>
+                    </local:DrawingView3D>
+                </local:DrawingViewport3D.Children>
+            </local:DrawingViewport3D>
+    </local:TrackballDecorator>
+</UserControl>

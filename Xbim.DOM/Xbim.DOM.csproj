@@ -1,0 +1,205 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{B0E3E6A5-119C-4EFE-9796-EE131B2E278A}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Xbim.DOM</RootNamespace>
+    <AssemblyName>Xbim.DOM</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>..\bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>..\bin\x64\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>..\bin\x64\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>..\bin\x86\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <OutputPath>..\bin\x86\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="BimExporter.cs" />
+    <Compile Include="ExportHelpers\ExportElementHelper.cs" />
+    <Compile Include="ExportHelpers\ExportElementTypeHelper.cs" />
+    <Compile Include="ExportHelpers\ExportMaterialHelper.cs" />
+    <Compile Include="ExportHelpers\ExportPropertiesHelper.cs" />
+    <Compile Include="IBimAxis2Placement3D.cs" />
+    <Compile Include="IBimBuildingElement.cs" />
+    <Compile Include="IBimBuildingElementType.cs" />
+    <Compile Include="IBimFacetedBrep.cs" />
+    <Compile Include="IBimGeometry.cs" />
+    <Compile Include="IBimLocalPlacement.cs" />
+    <Compile Include="IBimMaterial.cs" />
+    <Compile Include="IBimSource.cs" />
+    <Compile Include="IBimSpatialStructureElement.cs" />
+    <Compile Include="IBimSweptSolid.cs" />
+    <Compile Include="IcimPreprocessor.cs" />
+    <Compile Include="IXbimGeometry.cs" />
+    <Compile Include="IBimTarget.cs" />
+    <Compile Include="IXbimSingleProperties.cs" />
+    <Compile Include="IBimSingleProperties.cs" />
+    <Compile Include="IBimPropertySingleValue.cs" />
+    <Compile Include="INRMQuantities.cs" />
+    <Compile Include="PropertiesQuantities\NRMQuantities.cs" />
+    <Compile Include="PropertiesQuantities\XbimBuildingCommonProperties.cs" />
+    <Compile Include="PropertiesQuantities\XbimBuildingQuantities.cs" />
+    <Compile Include="PropertiesQuantities\XbimBuildingStoreyCommonProperties.cs" />
+    <Compile Include="PropertiesQuantities\XbimBuildingStoreyQuantities.cs" />
+    <Compile Include="PropertiesQuantities\XbimDoorCommonProperties.cs" />
+    <Compile Include="PropertiesQuantities\XbimMaterialQuantities.cs" />
+    <Compile Include="PropertiesQuantities\XbimPlateCommonProperties.cs" />
+    <Compile Include="PropertiesQuantities\XbimPlateQuantities.cs" />
+    <Compile Include="PropertiesQuantities\XbimRoofCommonProperties.cs" />
+    <Compile Include="PropertiesQuantities\XbimRoofQuantities.cs" />
+    <Compile Include="PropertiesQuantities\XbimSiteCommonProperties.cs" />
+    <Compile Include="PropertiesQuantities\XbimSiteQuantities.cs" />
+    <Compile Include="PropertiesQuantities\XbimSlabCommonProperties.cs" />
+    <Compile Include="PropertiesQuantities\XbimSlabQuantities.cs" />
+    <Compile Include="PropertiesQuantities\XbimSpaceCommonProperties.cs" />
+    <Compile Include="PropertiesQuantities\XbimSpaceQuantities.cs" />
+    <Compile Include="PropertiesQuantities\XbimWallCommonProperties.cs" />
+    <Compile Include="PropertiesQuantities\XbimWallQuantities.cs" />
+    <Compile Include="XbimAxis2Placement3D.cs" />
+    <Compile Include="XbimBeam.cs" />
+    <Compile Include="XbimBeamType.cs" />
+    <Compile Include="XbimBuilding.cs" />
+    <Compile Include="XbimBuildingElement.cs" />
+    <Compile Include="XbimBuildingElementProxy.cs" />
+    <Compile Include="XbimBuildingElementProxyType.cs" />
+    <Compile Include="XbimBuildingStorey.cs" />
+    <Compile Include="EnumConvertor.cs" />
+    <Compile Include="XbimColumn.cs" />
+    <Compile Include="XbimColumnType.cs" />
+    <Compile Include="XbimCovering.cs" />
+    <Compile Include="XbimCoveringType.cs" />
+    <Compile Include="XbimCurtainWall.cs" />
+    <Compile Include="XbimCurtainWallType.cs" />
+    <Compile Include="XbimDocumentSource.cs" />
+    <Compile Include="XbimDocumentTarget.cs" />
+    <Compile Include="XbimDoor.cs" />
+    <Compile Include="XbimDoorStyle.cs" />
+    <Compile Include="XbimExtrudedAreaSolid.cs" />
+    <Compile Include="XbimFacetedBrep.cs" />
+    <Compile Include="XbimFacetedBrepTopo.cs" />
+    <Compile Include="XbimLocalPlacement.cs" />
+    <Compile Include="PropertiesQuantities\XbimProperties.cs" />
+    <Compile Include="PropertiesQuantities\XbimQuantities.cs" />
+    <Compile Include="PropertiesQuantities\XbimSimplePropertySets.cs" />
+    <Compile Include="PropertiesQuantities\XbimSingleMaterialProperties.cs" />
+    <Compile Include="PropertiesQuantities\XbimSingleProperties.cs" />
+    <Compile Include="PropertiesQuantities\XbimSingleTypeProperties.cs" />
+    <Compile Include="XbimPlate.cs" />
+    <Compile Include="XbimPlateType.cs" />
+    <Compile Include="XbimRailing.cs" />
+    <Compile Include="XbimRailingType.cs" />
+    <Compile Include="XbimRampFlight.cs" />
+    <Compile Include="XbimRampFlightType.cs" />
+    <Compile Include="XbimRevolvedAreaSolid.cs" />
+    <Compile Include="XbimRoof.cs" />
+    <Compile Include="XbimSite.cs" />
+    <Compile Include="XbimSlab.cs" />
+    <Compile Include="XbimSlabType.cs" />
+    <Compile Include="XbimSpace.cs" />
+    <Compile Include="XbimSpatialStructureElement.cs" />
+    <Compile Include="XbimStairFlight.cs" />
+    <Compile Include="XbimStairFlightType.cs" />
+    <Compile Include="XbimSurfaceCurveSweptAreaSolid.cs" />
+    <Compile Include="XbimSweptAreaSolid.cs" />
+    <Compile Include="XbimUniqueNameCollection.cs" />
+    <Compile Include="XbimBuildingElementType.cs" />
+    <Compile Include="XbimClassification.cs" />
+    <Compile Include="XbimClassificationItem.cs" />
+    <Compile Include="XbimDocument.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="XbimMaterial.cs" />
+    <Compile Include="XbimMaterialCollection.cs" />
+    <Compile Include="XbimMaterialLookup.cs" />
+    <Compile Include="XbimObjectCreator.cs" />
+    <Compile Include="XbimRoot.cs" />
+    <Compile Include="XbimWall.cs" />
+    <Compile Include="XbimWallType.cs" />
+    <Compile Include="XbimWindow.cs" />
+    <Compile Include="XbimWindowStyle.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Xbim.Ifc.Extensions\Xbim.Ifc.Extensions.csproj">
+      <Project>{09870F18-1796-4A3E-A66D-68DB3DA60B24}</Project>
+      <Name>Xbim.Ifc.Extensions</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Xbim.Ifc\Xbim.Ifc.csproj">
+      <Project>{5D4C907D-1293-4E5F-9642-D0862AE4741C}</Project>
+      <Name>Xbim.Ifc</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Xbim.IO\Xbim.IO.csproj">
+      <Project>{85856DF2-C8AB-4120-8A8D-AE05D2696B51}</Project>
+      <Name>Xbim.IO</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

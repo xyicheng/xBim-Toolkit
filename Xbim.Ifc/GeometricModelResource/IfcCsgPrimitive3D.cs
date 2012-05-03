@@ -1,0 +1,72 @@
+﻿#region XbimHeader
+
+// The eXtensible Building Information Modelling (xBIM) Toolkit
+// Solution:    XbimComplete
+// Project:     Xbim.Ifc
+// Filename:    IfcCsgPrimitive3D.cs
+// Published:   01, 2012
+// Last Edited: 9:04 AM on 20 12 2011
+// (See accompanying copyright.rtf)
+
+#endregion
+
+#region Directives
+
+using System;
+using Xbim.Ifc.GeometryResource;
+using Xbim.Ifc.SelectTypes;
+using Xbim.XbimExtensions;
+using Xbim.XbimExtensions.Parser;
+
+#endregion
+
+namespace Xbim.Ifc.GeometricModelResource
+{
+    public abstract class IfcCsgPrimitive3D : IfcGeometricRepresentationItem, IfcBooleanOperand, IfcCsgSelect
+    {
+        #region Fields
+
+        private IfcAxis2Placement3D _position;
+
+        #endregion
+
+        /// <summary>
+        ///   Surface defining side of half space.
+        /// </summary>
+        [Ifc(1, IfcAttributeState.Mandatory)]
+        public IfcAxis2Placement3D Position
+        {
+            get
+            {
+#if SupportActivation
+                ((IPersistIfcEntity) this).Activate(false);
+#endif
+                return _position;
+            }
+            set { ModelManager.SetModelValue(this, ref _position, value, v => Position = v, "Position"); }
+        }
+
+
+        public override void IfcParse(int propIndex, IPropertyValue value)
+        {
+            switch (propIndex)
+            {
+                case 0:
+                    _position = (IfcAxis2Placement3D) value.EntityVal;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(string.Format("P21 index value out of range in {0}",
+                                                                        this.GetType().Name));
+            }
+        }
+
+        #region BooleanOperand Members
+
+        public IfcDimensionCount Dim
+        {
+            get { return Dim; }
+        }
+
+        #endregion
+    }
+}

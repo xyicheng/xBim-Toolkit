@@ -1,0 +1,30 @@
+﻿<UserControl x:Class="Xbim.Presentation.SpatialStructureControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ifc="http://schemas.Xbim.com/ifc"
+    xmlns:local="clr-namespace:Xbim.Presentation"
+    >
+    <UserControl.Resources>
+        <ObjectDataProvider 
+            x:Key="SpatialStructureProvider"
+        />
+
+        <HierarchicalDataTemplate
+            DataType    = "{x:Type local:SpatialStructureTreeItem}"
+            ItemsSource="{Binding Path= Children}">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="{Binding ElementType}" VerticalAlignment="Center" />
+                <TextBlock Text=" - " VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding Item.Name,  Mode=OneWay}" VerticalAlignment="Center"/>
+            </StackPanel>
+            
+        </HierarchicalDataTemplate>
+    </UserControl.Resources>
+        <Grid Background="#114682d4" >
+        <TreeView  
+            Name="SpatialTreeView"
+            ItemsSource="{Binding Source={StaticResource SpatialStructureProvider}}" >
+
+        </TreeView>
+    </Grid>
+</UserControl>
