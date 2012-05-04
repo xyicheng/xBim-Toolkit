@@ -38,10 +38,13 @@ namespace Xbim.XbimExtensions
 
         TIfcType New<TIfcType>() where TIfcType : IPersistIfcEntity, new();
         TIfcType New<TIfcType>(InitProperties<TIfcType> initPropertiesFunc) where TIfcType : IPersistIfcEntity, new();
+
         bool Delete(IPersistIfcEntity instance);
         bool ContainsInstance(IPersistIfcEntity instance);
         IEnumerable<IPersistIfcEntity> Instances { get; }
         long InstancesCount { get; }
+
+        IPersistIfcEntity AddNew(IfcType ifcType, long label);
 
         int ParsePart21(Stream inputStream, FilterViewDefinition filter, TextWriter errorLog,
                         ReportProgressDelegate progressHandler);
@@ -64,7 +67,7 @@ namespace Xbim.XbimExtensions
 #if SupportActivation
         long Activate(IPersistIfcEntity entity, bool write);
         IPersistIfcEntity GetInstance(long label);
-        
+
 #endif
 
         bool ReOpen();

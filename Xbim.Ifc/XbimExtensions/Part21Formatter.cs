@@ -15,6 +15,7 @@
 using System;
 using Xbim.Ifc.MeasureResource;
 using Xbim.Ifc.UtilityResource;
+using System.Globalization;
 
 #endregion
 
@@ -24,7 +25,7 @@ namespace Xbim.XbimExtensions
     {
         public object GetFormat(Type formatType)
         {
-            if (formatType == typeof (ICustomFormatter))
+            if (formatType == typeof(ICustomFormatter))
                 return this;
             else
                 return null;
@@ -32,10 +33,22 @@ namespace Xbim.XbimExtensions
 
         public string Format(string fmt, object arg, IFormatProvider formatProvider)
         {
-            // Convert argument to a string
-            string result = arg.ToString().ToUpper();
-            if (!String.IsNullOrEmpty(fmt) && fmt.ToUpper() == "R")
+            // Convert argument to a string           
+
+            if (!String.IsNullOrEmpty(fmt) && fmt.ToUpper() == "R" && arg.GetType() == typeof(double))
             {
+                double dArg = (double)arg;
+                string result = dArg.ToString("R", CultureInfo.CreateSpecificCulture("en-US"));
+
+                // if compiler flag, only then do the following 3 lines
+                string rDoubleStr = dArg.ToString("R", CultureInfo.CreateSpecificCulture("en-US"));
+                double fixedDbl = double.Parse(rDoubleStr);
+                result = fixedDbl.ToString("R", CultureInfo.CreateSpecificCulture("en-US"));
+
+                //decimal decArg = new Decimal(dArg);                                
+                // string result = decArg.ToString().ToUpper();
+                // string result = string.Format("{0:e22}", arg);
+                //string result = dArg.ToString("R", CultureInfo.CreateSpecificCulture("en-US"));
                 if (!result.Contains("."))
                 {
                     if (result.Contains("E"))
@@ -48,6 +61,7 @@ namespace Xbim.XbimExtensions
             }
             else if (!String.IsNullOrEmpty(fmt) && fmt.ToUpper() == "T") //TimeStamp
             {
+                string result = arg.ToString().ToUpper();
                 DateTime? dt = arg as DateTime?;
                 if (dt.HasValue == false)
                     throw new ArgumentException("Only valid DateTime objects can be converted to Part21 Timestamp");
@@ -55,10 +69,11 @@ namespace Xbim.XbimExtensions
             }
             else if (!String.IsNullOrEmpty(fmt) && fmt.ToUpper() == "G") //Guid
             {
-                Guid guid = (Guid) arg;
+                string result = arg.ToString().ToUpper();
+                Guid guid = (Guid)arg;
                 return string.Format(@"'{0}'", IfcGloballyUniqueId.AsPart21(guid));
             }
-                // Return string representation of argument for any other formatting code
+            // Return string representation of argument for any other formatting code
             else
                 return string.Format(@"'{0}'", arg.ToString().Replace("\'", "\'\'"));
         }

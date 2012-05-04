@@ -125,14 +125,14 @@ namespace Xbim.XbimExtensions
             {
                 throw new ArgumentException(string.Format("Error creating entity {0}, it is not a supported Xbim type, {1}", ifcEntityName, e.Message));
             }
-            
+
         }
 
         internal IPersistIfc CreateInstance(IfcType ifcType, long? label)
         {
             try
             {
-                IPersistIfc instance = (IPersistIfc) Activator.CreateInstance(ifcType.Type);
+                IPersistIfc instance = (IPersistIfc)Activator.CreateInstance(ifcType.Type);
                 IPersistIfcEntity persist = instance as IPersistIfcEntity;
                 if (persist != null)
                 {
@@ -149,6 +149,12 @@ namespace Xbim.XbimExtensions
                 throw new ArgumentException(string.Format("{0} is not a supported Xbim Type", ifcType.Type.Name),
                                             "ifcEntityName)", e);
             }
+        }
+
+        public IPersistIfcEntity AddNew(IfcType ifcType, long label)
+        {
+            Debug.Assert(typeof(IPersistIfcEntity).IsAssignableFrom(ifcType.Type), "Type mismacth: IPersistIfcEntity");
+            return (IPersistIfcEntity)CreateInstance(ifcType, label);
         }
 
         /// <summary>
@@ -246,7 +252,7 @@ namespace Xbim.XbimExtensions
         /// </summary>
         public void PurgeInstances()
         {
-            PurgeInstances(new[] {typeof (IfcRoot)});
+            PurgeInstances(new[] { typeof(IfcRoot) });
         }
 
         /// <summary>
@@ -299,7 +305,7 @@ namespace Xbim.XbimExtensions
         /// <returns></returns>
         public IEnumerable<IPersistIfcEntity> UnreferencedInstances()
         {
-            return UnreferencedInstances(new[] {typeof (IfcRoot)});
+            return UnreferencedInstances(new[] { typeof(IfcRoot) });
         }
 
         #endregion
@@ -362,21 +368,29 @@ namespace Xbim.XbimExtensions
 
         #region NonSerialized Members
 
-        [NonSerialized] private IfcOwnerHistory _ownerHistoryDeleteObject;
+        [NonSerialized]
+        private IfcOwnerHistory _ownerHistoryDeleteObject;
 
-        [NonSerialized] private IfcOwnerHistory _ownerHistoryAddObject;
+        [NonSerialized]
+        private IfcOwnerHistory _ownerHistoryAddObject;
 
-        [NonSerialized] private IfcOwnerHistory _ownerHistoryModifyObject;
+        [NonSerialized]
+        private IfcOwnerHistory _ownerHistoryModifyObject;
 
-        [NonSerialized] private IfcPersonAndOrganization _defaultOwningUser;
-        [NonSerialized] private IfcApplication _defaultOwningApplication;
+        [NonSerialized]
+        private IfcPersonAndOrganization _defaultOwningUser;
+        [NonSerialized]
+        private IfcApplication _defaultOwningApplication;
 
 
-        [NonSerialized] private readonly UndoRedoSession _undoRedoSession;
+        [NonSerialized]
+        private UndoRedoSession _undoRedoSession;
 
-        [NonSerialized] private P21toModelParser _part21Parser;
+        [NonSerialized]
+        private P21toModelParser _part21Parser;
 
-        [NonSerialized] private IfcCoordinatedUniversalTimeOffset _coordinatedUniversalTimeOffset;
+        [NonSerialized]
+        private IfcCoordinatedUniversalTimeOffset _coordinatedUniversalTimeOffset;
 
         #endregion
 
@@ -387,15 +401,16 @@ namespace Xbim.XbimExtensions
         /// </summary>
         public XbimMemoryModel(bool useUndoRedo)
         {
-            if(useUndoRedo)
+            if (useUndoRedo)
                 _undoRedoSession = new UndoRedoSession();
         }
         /// <summary>
         /// Creates an in memory Model with no UndoRedoSesion
         /// </summary>
-        public XbimMemoryModel(): this(false)
+        public XbimMemoryModel()
+            : this(false)
         {
-            
+
         }
         #endregion
 
@@ -471,13 +486,6 @@ namespace Xbim.XbimExtensions
         {
             get
             {
-                if (_ownerHistoryAddObject == null)
-                {
-                    _ownerHistoryAddObject = this.New<IfcOwnerHistory>();
-                    _ownerHistoryAddObject.OwningUser = _defaultOwningUser;
-                    _ownerHistoryAddObject.OwningApplication = _defaultOwningApplication;
-                    _ownerHistoryAddObject.ChangeAction = IfcChangeActionEnum.ADDED;
-                }
                 return _ownerHistoryAddObject;
             }
         }
@@ -501,13 +509,6 @@ namespace Xbim.XbimExtensions
         {
             get
             {
-                if (_ownerHistoryModifyObject == null)
-                {
-                    _ownerHistoryModifyObject = New<IfcOwnerHistory>();
-                    _ownerHistoryModifyObject.OwningUser = _defaultOwningUser;
-                    _ownerHistoryModifyObject.OwningApplication = _defaultOwningApplication;
-                    _ownerHistoryModifyObject.ChangeAction = IfcChangeActionEnum.MODIFIED;
-                }
                 return _ownerHistoryModifyObject;
             }
         }
@@ -626,7 +627,7 @@ namespace Xbim.XbimExtensions
         public int ParsePart21(Stream inputStream, FilterViewDefinition filter, TextWriter errorLog,
                                ReportProgressDelegate progressHandler)
         {
-          
+
             int errorCount = 0;
 
             _part21Parser = new P21toModelParser(inputStream, errorLog);
@@ -645,7 +646,7 @@ namespace Xbim.XbimExtensions
             IndentedTextWriter tw = new IndentedTextWriter(errorLog, "    ");
             try
             {
-               
+
                 _part21Parser.Parse();
             }
             catch (Exception ex)
@@ -665,7 +666,7 @@ namespace Xbim.XbimExtensions
             {
                 _part21Parser.EntityCreate -= creator;
                 if (progressHandler != null) _part21Parser.ProgressStatus -= progressHandler;
-                
+
             }
             errorCount = _part21Parser.ErrorCount + errorCount;
             if (errorCount == 0 && BuildIndices)
@@ -695,25 +696,44 @@ namespace Xbim.XbimExtensions
             }
             else
             {
+                // create new _undoRedoSession
+                _undoRedoSession = new UndoRedoSession();
                 txn = Transaction.Begin(operationName);
+                InitialiseDefaultOwnership();
             }
 
-            if (_defaultOwningUser == null)
-            {
-                IfcPerson person = New<IfcPerson>();
-                IfcOrganization organization = New<IfcOrganization>();
-                _defaultOwningUser = New<IfcPersonAndOrganization>(po =>
-                                                                       {
-                                                                           po.TheOrganization = organization;
-                                                                           po.ThePerson = person;
-                                                                       });
-            }
-            if (_defaultOwningApplication == null)
-            {
-                _defaultOwningApplication = New<IfcApplication>();
-                _defaultOwningApplication.ApplicationDeveloper = New<IfcOrganization>();
-            }
             return txn;
+        }
+
+        private void InitialiseDefaultOwnership()
+        {
+            IfcPerson person = New<IfcPerson>();
+
+            IfcOrganization organization = New<IfcOrganization>();
+            IfcPersonAndOrganization owninguser = New<IfcPersonAndOrganization>(po =>
+            {
+                po.TheOrganization = organization;
+                po.ThePerson = person;
+            });
+            Transaction.AddPropertyChange<IfcPersonAndOrganization>(m => _defaultOwningUser = m, _defaultOwningUser, owninguser);
+            IfcApplication app = New<IfcApplication>(a => a.ApplicationDeveloper = New<IfcOrganization>());
+            Transaction.AddPropertyChange<IfcApplication>(m => _defaultOwningApplication = m, _defaultOwningApplication, app);
+            IfcOwnerHistory oh = New<IfcOwnerHistory>();
+            oh.OwningUser = _defaultOwningUser;
+            oh.OwningApplication = _defaultOwningApplication;
+            oh.ChangeAction = IfcChangeActionEnum.ADDED;
+            Transaction.AddPropertyChange<IfcOwnerHistory>(m => _ownerHistoryAddObject = m, _ownerHistoryAddObject, oh);
+            _defaultOwningUser = owninguser;
+            _defaultOwningApplication = app;
+            _ownerHistoryAddObject = oh;
+            IfcOwnerHistory ohc = New<IfcOwnerHistory>();
+            ohc.OwningUser = _defaultOwningUser;
+            ohc.OwningApplication = _defaultOwningApplication;
+            ohc.ChangeAction = IfcChangeActionEnum.MODIFIED;
+            Transaction.AddPropertyChange<IfcOwnerHistory>(m => _ownerHistoryModifyObject = m, _ownerHistoryModifyObject, ohc);
+            _defaultOwningUser = owninguser;
+            _defaultOwningApplication = app;
+            _ownerHistoryModifyObject = ohc;
         }
 
         #endregion
@@ -745,7 +765,7 @@ namespace Xbim.XbimExtensions
         #region INotifyPropertyChanged Members
 
         [field: NonSerialized] //don't serialize events
-            private event PropertyChangedEventHandler PropertyChanged;
+        private event PropertyChangedEventHandler PropertyChanged;
 
         event PropertyChangedEventHandler INotifyPropertyChanged.PropertyChanged
         {
@@ -763,7 +783,7 @@ namespace Xbim.XbimExtensions
         }
 
         [field: NonSerialized] //don't serialize events
-            private event PropertyChangingEventHandler PropertyChanging;
+        private event PropertyChangingEventHandler PropertyChanging;
 
         event PropertyChangingEventHandler INotifyPropertyChanging.PropertyChanging
         {
@@ -798,7 +818,7 @@ namespace Xbim.XbimExtensions
 
                 if (progressDelegate != null)
                 {
-                    int newPercentage = (int) (idx/total*100.0);
+                    int newPercentage = (int)(idx / total * 100.0);
                     if (newPercentage != percentage) progressDelegate(percentage, "");
                     percentage = newPercentage;
                 }
@@ -897,10 +917,10 @@ namespace Xbim.XbimExtensions
             if (propVal is ExpressType)
             {
                 string err = "";
-                string val = ((ExpressType) propVal).ToPart21;
+                string val = ((ExpressType)propVal).ToPart21;
                 if (ifcAttr.State == IfcAttributeState.Mandatory && val == "$")
                     err += string.Format("{0}.{1} is not optional", instance.GetType().Name, propName);
-                err += ((IPersistIfc) propVal).WhereRule();
+                err += ((IPersistIfc)propVal).WhereRule();
                 if (!string.IsNullOrEmpty(err)) return err;
             }
 
@@ -920,7 +940,7 @@ namespace Xbim.XbimExtensions
                     count = coll.Count;
                 else
                 {
-                    IEnumerable en = (IEnumerable) propVal;
+                    IEnumerable en = (IEnumerable)propVal;
 
                     foreach (object item in en)
                     {
@@ -984,7 +1004,7 @@ namespace Xbim.XbimExtensions
 
         #endregion
 
-        
+
         public bool ReOpen()
         {
             //nothing to do
@@ -996,13 +1016,13 @@ namespace Xbim.XbimExtensions
             //nothing to do
         }
 
-       
 
-       
+
+
         public IEnumerable<Tuple<string, long>> ModelStatistics()
         {
             List<Tuple<string, long>> results = new List<Tuple<string, long>>();
-            IfcType ifcType = IfcInstances.IfcEntities[typeof (IfcBuildingElement)];
+            IfcType ifcType = IfcInstances.IfcEntities[typeof(IfcBuildingElement)];
             foreach (Type elemType in ifcType.NonAbstractSubTypes)
             {
                 if (this._ifcInstances.ContainsKey(elemType))
@@ -1014,7 +1034,7 @@ namespace Xbim.XbimExtensions
             return results;
         }
 
-      
+
 
         public string Validate(ValidationFlags validateFlags)
         {
@@ -1045,7 +1065,7 @@ namespace Xbim.XbimExtensions
             get { return InstancesOfType<IfcRoof>(); }
         }
 
-       
+
         public UndoRedoSession UndoRedo
         {
             get { return _undoRedoSession; }

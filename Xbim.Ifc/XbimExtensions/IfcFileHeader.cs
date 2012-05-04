@@ -112,7 +112,8 @@ namespace Xbim.XbimExtensions
         }
 
         public List<string> AuthorName = new List<string>(2);
-        public List<string> AuthorMailingAddress = new List<string>(6);
+        public List<string> Organization = new List<string>(6);
+
         public string PreprocessorVersion;
         public string OriginatingSystem;
         public string AuthorizationName = "";
@@ -134,7 +135,7 @@ namespace Xbim.XbimExtensions
                     AuthorName.Add(value.StringVal);
                     break;
                 case 3:
-                    AuthorMailingAddress.Add(value.StringVal);
+                    Organization.Add(value.StringVal);
                     break;
                 case 4:
                     PreprocessorVersion = value.StringVal;
@@ -172,8 +173,8 @@ namespace Xbim.XbimExtensions
             binaryWriter.Write(AuthorName.Count);
             foreach (string item in AuthorName)
                 binaryWriter.Write(item);
-            binaryWriter.Write(AuthorMailingAddress.Count);
-            foreach (string item in AuthorMailingAddress)
+            binaryWriter.Write(Organization.Count);
+            foreach (string item in Organization)
                 binaryWriter.Write(item);
             binaryWriter.Write(PreprocessorVersion);
             binaryWriter.Write(OriginatingSystem);
@@ -195,7 +196,7 @@ namespace Xbim.XbimExtensions
             count = binaryReader.ReadInt32();
             for (int i = 0; i < count; i++)
             {
-                AuthorMailingAddress.Add(binaryReader.ReadString());
+                Organization.Add(binaryReader.ReadString());
             }
             PreprocessorVersion = binaryReader.ReadString();
             OriginatingSystem = binaryReader.ReadString();
@@ -270,14 +271,14 @@ namespace Xbim.XbimExtensions
     {
         public FileDescription FileDescription = new FileDescription("2;1");
         public FileName FileName = new FileName(DateTime.Now)
-                                        {
-                                            PreprocessorVersion =
-                                                string.Format("Xbim.Ifc File Processor version {0}",
-                                                              Assembly.GetAssembly(typeof (P21Parser)).GetName().Version),
-                                            OriginatingSystem =
-                                                string.Format("Xbim version {0}",
-                                                              Assembly.GetExecutingAssembly().GetName().Version),
-                                        };
+        {
+            PreprocessorVersion =
+                string.Format("Xbim.Ifc File Processor version {0}",
+                              Assembly.GetAssembly(typeof(P21Parser)).GetName().Version),
+            OriginatingSystem =
+                string.Format("Xbim version {0}",
+                              Assembly.GetExecutingAssembly().GetName().Version),
+        };
         public FileSchema FileSchema = new FileSchema("IFC2X3");
 
 
