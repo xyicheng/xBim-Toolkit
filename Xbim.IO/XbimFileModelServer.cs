@@ -1059,16 +1059,7 @@ namespace Xbim.IO
                     dataStream.Read(bContent, 0, len);
                     MemoryStream ms = new MemoryStream(bContent);
                     BinaryReader br = new BinaryReader(ms);
-                    try
-                    {
-                        PopulateProperties(item.Entity, br);
-                    }
-                    catch (Exception e)
-                    {
-
-                        throw;
-                    }
-
+                    PopulateProperties(item.Entity, br);
                 }
             }
             //leave us at the end of the index
@@ -1146,19 +1137,15 @@ namespace Xbim.IO
                 }
                 else
                 {
-                    //throw new Exception("Ifc file reading or initialisation errors\n" + input.ErrorLog.ToString());
+                    throw new Exception("xBIM file reading or initialisation errors\n");
                 }
             }
             catch (Exception e)
             {
                 Dispose();
-                //throw new Exception("Failed to import " + filename, e);
+                throw new Exception("Failed to import " + xbimFilename, e);
             }
-            finally
-            {
-                //if (inputFile != null) inputFile.Close();
-            }
-            return "";
+           
         }
 
 

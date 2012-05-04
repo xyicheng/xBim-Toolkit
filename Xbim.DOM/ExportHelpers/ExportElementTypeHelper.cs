@@ -42,30 +42,22 @@ namespace Xbim.DOM.ExportHelpers
 
         private IBimBuildingElementType BaseConversion(IBimBuildingElementType tType, XbimBuildingElementType sType)
         {
-            try
-            {
-                Debug.WriteLine(sType.Name);
-                //set guid
-                tType.GlobalId = sType.Guid;
 
-                //set material layers if it exists in the object and object has appropriate type
-                CreateMaterialLayers(tType, sType);
+            //set guid
+            tType.GlobalId = sType.Guid;
 
-                //parameters
-                PropertiesHelper.Convert(tType.Properties, sType.Properties);
+            //set material layers if it exists in the object and object has appropriate type
+            CreateMaterialLayers(tType, sType);
 
-                //add converted element to the stack of converted elements
-                Source.AddConvertedObject(sType);
+            //parameters
+            PropertiesHelper.Convert(tType.Properties, sType.Properties);
 
-                return tType;
-            }
-            catch (Exception e)
-            {
-                
-                //throw new Exception("Error while processing element type '" + sType.Name + "': " + e.Message);
-            }
-            return null;
-            
+            //add converted element to the stack of converted elements
+            Source.AddConvertedObject(sType);
+
+            return tType;
+
+
         }
 
         public IBimBuildingElementType ConvertBeamType(XbimBeamType sType)

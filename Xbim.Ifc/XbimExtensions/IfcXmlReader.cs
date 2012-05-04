@@ -234,65 +234,59 @@ namespace Xbim.XbimExtensions
                         break;
                 }
             }
-            try
+
+            XmlNodeType prevInputType = XmlNodeType.None;
+            string prevInputName = "";
+
+            // set counter for start of every element that is not empty, and reduce it on every end of that element
+            int counter = 0;
+            // this will create id of each element
+            Dictionary<string, int> ids = new Dictionary<string, int>();
+
+            while (input.Read())
             {
-                XmlNodeType prevInputType = XmlNodeType.None;
-                string prevInputName = "";
+                Application.DoEvents();
 
-                // set counter for start of every element that is not empty, and reduce it on every end of that element
-                int counter = 0;
-                // this will create id of each element
-                Dictionary<string, int> ids = new Dictionary<string, int>();
-
-                while (input.Read())
+                switch (input.NodeType)
                 {
-                    Application.DoEvents();
-
-                    switch (input.NodeType)
-                    {
-                        case XmlNodeType.Element:
-                            StartElement(model, input);
-                            if (!input.IsEmptyElement)
+                    case XmlNodeType.Element:
+                        StartElement(model, input);
+                        if (!input.IsEmptyElement)
+                        {
+                            // save the id
+                            if (!String.IsNullOrEmpty(input.GetAttribute("id")))
                             {
-                                // save the id
-                                if (!String.IsNullOrEmpty(input.GetAttribute("id")))
-                                {
-                                    ids.Add(GetId(input).ToString(), counter);
-                                }
-                                counter++;
+                                ids.Add(GetId(input).ToString(), counter);
                             }
-                            break;
-                        case XmlNodeType.EndElement:
-                            EndElement(model, input, prevInputType, prevInputName);
-                            counter--;
-                            foreach (KeyValuePair<string, int> item in ids)
+                            counter++;
+                        }
+                        break;
+                    case XmlNodeType.EndElement:
+                        EndElement(model, input, prevInputType, prevInputName);
+                        counter--;
+                        foreach (KeyValuePair<string, int> item in ids)
+                        {
+                            if (item.Value == counter)
                             {
-                                if (item.Value == counter)
-                                {
-                                    AppendToStream(null, Convert.ToInt64(item.Key));
-                                    ids.Remove(item.Key);
-                                    break;
-                                }
+                                AppendToStream(null, Convert.ToInt64(item.Key));
+                                ids.Remove(item.Key);
+                                break;
                             }
-                            break;
-                        case XmlNodeType.Text:
-                            SetValue(model, input);
-                            break;
-                        default:
-                            break;
-                    }
-                    prevInputType = input.NodeType;
-                    prevInputName = input.Name;
+                        }
+                        break;
+                    case XmlNodeType.Text:
+                        SetValue(model, input);
+                        break;
+                    default:
+                        break;
+                }
+                prevInputType = input.NodeType;
+                prevInputName = input.Name;
 
 
 
                 }
-            }
-            catch (Exception e)
-            {
 
-                throw;
-            }
             //long highestId = 0;
 
 
@@ -309,7 +303,7 @@ namespace Xbim.XbimExtensions
             long id = GetId(input);
 
             IfcType ifcType;
-            Type basicType;
+            
             IfcParserType parserType;
             IfcMetaProperty prop;
             int propIndex;
