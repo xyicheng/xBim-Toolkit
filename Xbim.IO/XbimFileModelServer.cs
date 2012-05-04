@@ -32,6 +32,7 @@ using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Parser;
 using Xbim.XbimExtensions.Transactions;
 using Xbim.XbimExtensions.Transactions.Extensions;
+using System.Xml;
 
 #endregion
 
@@ -76,8 +77,8 @@ namespace Xbim.IO
 
         public override IfcFileHeader Header
         {
-            
-            get {  return _header; }
+
+            get { return _header; }
         }
 
         public string Filename
@@ -85,7 +86,7 @@ namespace Xbim.IO
             get { return _filename; }
         }
 
-       
+
 
         public XbimFileModelServer(Stream stream)
         {
@@ -133,6 +134,11 @@ namespace Xbim.IO
                 _stream = new FileStream(filename, FileMode.Open, fa);
                 Initialise();
                 _filename = filename;
+
+                // we have _header of the opened file, set that header to the Header property of XbimModelServer
+                Header.FileName = _header.FileName;
+                Header.FileDescription = _header.FileDescription;
+                Header.FileSchema = _header.FileSchema;
             }
             catch (Exception e)
             {
@@ -151,7 +157,7 @@ namespace Xbim.IO
             return ImportIfc(filename, xbimFilename, null);
         }
 
-         /// <summary>
+        /// <summary>
         ///   Imports an Ifc file into the model server, throws exception if errors are encountered, gives the xbim file the same name as the ifc file
         /// </summary>
         /// <param name = "filename"></param>
@@ -222,12 +228,12 @@ namespace Xbim.IO
         public void ExtractSemantic(string semanticFilename, XbimStorageType? exportFormat,
                                     HashSet<string> ignorableProperties)
         {
-            
+
             FileStream semanticFile = null;
             BinaryWriter semanticBinaryWriter = null;
             try
             {
-               
+
                 semanticFile = new FileStream(semanticFilename, FileMode.Create, FileAccess.Write);
                 semanticBinaryWriter = new BinaryWriter(semanticFile);
 
@@ -305,7 +311,7 @@ namespace Xbim.IO
                     semModel.Close();
                 }
                 toDrop.Clear();
-               
+
             }
             catch (Exception e)
             {
@@ -349,12 +355,12 @@ namespace Xbim.IO
                                                      || (inst is IfcCurveStyleFont))
                 ))
             {
-                ulong id = (ulong) Math.Abs(entity.EntityLabel);
+                ulong id = (ulong)Math.Abs(entity.EntityLabel);
                 if (!toDrop.Contains(id))
                     WriteRecursively(semanticBinaryWriter, entity, index, entityTypes, toDrop);
             }
             long start = semanticBinaryWriter.BaseStream.Position;
-            semanticBinaryWriter.Write((long) index.Count);
+            semanticBinaryWriter.Write((long)index.Count);
             semanticBinaryWriter.Write(index.HighestLabel);
 
             Dictionary<Type, short> classNames = new Dictionary<Type, short>(entityTypes.Count);
@@ -388,12 +394,12 @@ namespace Xbim.IO
             semanticBinaryWriter.Write(new byte[reservedSize]);
             _header.Write(semanticBinaryWriter);
             Dictionary<Type, List<long>> entityTypes = new Dictionary<Type, List<long>>();
-            foreach (var entity in Instances.Where(inst => !toDrop.Contains((ulong) Math.Abs(inst.EntityLabel))))
+            foreach (var entity in Instances.Where(inst => !toDrop.Contains((ulong)Math.Abs(inst.EntityLabel))))
             {
                 WriteRecursively(semanticBinaryWriter, entity, index, entityTypes, toDrop);
             }
             long start = semanticBinaryWriter.BaseStream.Position;
-            semanticBinaryWriter.Write((long) index.Count);
+            semanticBinaryWriter.Write((long)index.Count);
             semanticBinaryWriter.Write(index.HighestLabel);
 
             Dictionary<Type, short> classNames = new Dictionary<Type, short>(entityTypes.Count);
@@ -448,25 +454,25 @@ namespace Xbim.IO
             IfcType ifcType = IfcInstances.IfcEntities[entity];
 
             foreach (var ifcProperty in ifcType.IfcProperties.Values.Where(p =>
-                                                                           typeof (IPersistIfcEntity).IsAssignableFrom(
+                                                                           typeof(IPersistIfcEntity).IsAssignableFrom(
                                                                                p.PropertyInfo.PropertyType)
                                                                            ||
-                                                                           typeof (ExpressSelectType).IsAssignableFrom(
+                                                                           typeof(ExpressSelectType).IsAssignableFrom(
                                                                                p.PropertyInfo.PropertyType)
                                                                            ||
                                                                            (
-                                                                               typeof (ExpressEnumerable).
+                                                                               typeof(ExpressEnumerable).
                                                                                    IsAssignableFrom(
                                                                                        p.PropertyInfo.PropertyType)
                                                                                &&
                                                                                (
-                                                                                   typeof (IPersistIfcEntity).
+                                                                                   typeof(IPersistIfcEntity).
                                                                                        IsAssignableFrom(
                                                                                            GetItemTypeFromGenericType(
                                                                                                p.PropertyInfo.
                                                                                                    PropertyType))
                                                                                    ||
-                                                                                   typeof (ExpressEnumerable).
+                                                                                   typeof(ExpressEnumerable).
                                                                                        IsAssignableFrom(
                                                                                            p.PropertyInfo.PropertyType)
                                                                                )
@@ -479,10 +485,10 @@ namespace Xbim.IO
 
                     if (ifcPersistsVal != null)
                         WriteRecursively(binaryWriter, ifcPersistsVal, index, entityTypes, toDrop);
-                    else if (!typeof (ExpressSelectType).IsAssignableFrom(pVal.GetType()))
-                        //it must be a list of IPersistIfcEntity
+                    else if (!typeof(ExpressSelectType).IsAssignableFrom(pVal.GetType()))
+                    //it must be a list of IPersistIfcEntity
                     {
-                        if (typeof (IPersistIfcEntity).IsAssignableFrom(GetItemTypeFromGenericType(pVal.GetType())))
+                        if (typeof(IPersistIfcEntity).IsAssignableFrom(GetItemTypeFromGenericType(pVal.GetType())))
                         {
                             IEnumerable<IPersistIfcEntity> ifcListVal = pVal as IEnumerable<IPersistIfcEntity>;
                             if (ifcListVal != null)
@@ -499,30 +505,30 @@ namespace Xbim.IO
         private static void DropAll(IPersistIfcEntity entity, HashSet<ulong> toDrop)
         {
             if (entity == null || entity is IfcGeometricRepresentationContext) return; //don't drop geom rep contexts
-            ulong label = (ulong) Math.Abs(entity.EntityLabel);
+            ulong label = (ulong)Math.Abs(entity.EntityLabel);
             if (!toDrop.Contains(label)) toDrop.Add(label);
             else return; //already processed it
             IfcType ifcType = IfcInstances.IfcEntities[entity];
             foreach (var ifcProperty in ifcType.IfcProperties.Values.Where(p =>
-                                                                           typeof (IPersistIfcEntity).IsAssignableFrom(
+                                                                           typeof(IPersistIfcEntity).IsAssignableFrom(
                                                                                p.PropertyInfo.PropertyType)
                                                                            ||
-                                                                           typeof (ExpressSelectType).IsAssignableFrom(
+                                                                           typeof(ExpressSelectType).IsAssignableFrom(
                                                                                p.PropertyInfo.PropertyType)
                                                                            ||
                                                                            (
-                                                                               typeof (ExpressEnumerable).
+                                                                               typeof(ExpressEnumerable).
                                                                                    IsAssignableFrom(
                                                                                        p.PropertyInfo.PropertyType)
                                                                                &&
                                                                                (
-                                                                                   typeof (IPersistIfcEntity).
+                                                                                   typeof(IPersistIfcEntity).
                                                                                        IsAssignableFrom(
                                                                                            GetItemTypeFromGenericType(
                                                                                                p.PropertyInfo.
                                                                                                    PropertyType))
                                                                                    ||
-                                                                                   typeof (ExpressEnumerable).
+                                                                                   typeof(ExpressEnumerable).
                                                                                        IsAssignableFrom(
                                                                                            p.PropertyInfo.PropertyType)
                                                                                )
@@ -535,10 +541,10 @@ namespace Xbim.IO
 
                     if (ifcPersistsVal != null)
                         DropAll(ifcPersistsVal, toDrop);
-                    else if (!typeof (ExpressSelectType).IsAssignableFrom(pVal.GetType()))
-                        //it must be a list of IPersistIfcEntity
+                    else if (!typeof(ExpressSelectType).IsAssignableFrom(pVal.GetType()))
+                    //it must be a list of IPersistIfcEntity
                     {
-                        if (typeof (IPersistIfcEntity).IsAssignableFrom(GetItemTypeFromGenericType(pVal.GetType())))
+                        if (typeof(IPersistIfcEntity).IsAssignableFrom(GetItemTypeFromGenericType(pVal.GetType())))
                         {
                             IEnumerable<IPersistIfcEntity> ifcListVal = pVal as IEnumerable<IPersistIfcEntity>;
                             if (ifcListVal != null)
@@ -550,6 +556,18 @@ namespace Xbim.IO
                     }
                 }
             }
+        }
+
+        private void WriteHeader()
+        {
+            if (!_stream.CanSeek)
+                throw new Exception("Input Stream must be able to support Seek operations");
+            _stream.Seek(0, SeekOrigin.Begin);
+            BinaryWriter binaryWriter = new BinaryWriter(_stream);
+            binaryWriter.Write(0L); //data
+            int reservedSize = 32;
+            binaryWriter.Write(reservedSize);
+            binaryWriter.Write(new byte[reservedSize]);
         }
 
         private void Initialise()
@@ -598,7 +616,7 @@ namespace Xbim.IO
                 }
                 labels.Add(item.EntityLabel);
             }
-            long nextIndexStart =_binaryReader.ReadInt64();
+            long nextIndexStart = _binaryReader.ReadInt64();
 
             while (nextIndexStart > 0)
             {
@@ -624,7 +642,7 @@ namespace Xbim.IO
         {
             //try
             //{
-           
+
             XbimIndexEntry paramEntry = _entityOffsets[label];
             IPersistIfcEntity paramEntity = paramEntry.Entity;
             if (paramEntity == null)
@@ -660,9 +678,10 @@ namespace Xbim.IO
                     MemoryStream ms = new MemoryStream(bContent);
                     BinaryReader br = new BinaryReader(ms);
                     PopulateProperties(entity, br);
+
                 }
             }
-           
+
         }
 
 
@@ -670,19 +689,20 @@ namespace Xbim.IO
         {
             if (_binaryReader != null) _binaryReader.Close();
             _binaryReader = null;
-            
+
             if (_stream != null) _stream.Close();
             _stream = null;
             _filename = null;
             ToWrite.Clear();
             undoRedoSession = null;
+            _entityOffsets = null;
         }
 
         public override IEnumerable<TIfcType> InstancesOfType<TIfcType>()
         {
             if (InstancesCount > 0)
             {
-                Type type = typeof (TIfcType);
+                Type type = typeof(TIfcType);
                 IfcType ifcType = IfcInstances.IfcEntities[type];
                 IList<Type> types = ifcType.NonAbstractSubTypes;
 
@@ -693,18 +713,42 @@ namespace Xbim.IO
                         foreach (var entityLabel in entType.Value)
                         {
                             IPersistIfcEntity entity = GetOrCreateEntity(entityLabel);
-                            yield return (TIfcType) entity;
+                            yield return (TIfcType)entity;
                         }
                     }
                 }
             }
         }
 
+        public override IPersistIfcEntity AddNew(IfcType ifcType, long label)
+        {
+
+            Debug.Assert(typeof(IPersistIfcEntity).IsAssignableFrom(ifcType.Type), "Type mismacth: IPersistIfcEntity");
+            //return (IPersistIfcEntity)CreateInstance(ifcType, label);
+
+            Type t = ifcType.Type;
+            IPersistIfcEntity newEntity;
+            XbimIndexEntry entry = _entityOffsets.AddNew(t, out newEntity, label);
+            List<long> labels;
+            if (!_entityTypes.TryGetValue(t, out labels))
+            {
+                labels = new List<long>();
+                _entityTypes.Add_Reversible(t, labels);
+            }
+            labels.Add_Reversible(label);
+
+            newEntity.Bind(this, label);
+
+
+            return newEntity;
+
+        }
+
         public override TIfcType New<TIfcType>()
         {
             Transaction txn = Transaction.Current;
             Debug.Assert(txn != null); //model must be in the active transaction to create new entities
-            Type t = typeof (TIfcType);
+            Type t = typeof(TIfcType);
             IPersistIfcEntity newEntity;
             XbimIndexEntry entry = _entityOffsets.AddNew<TIfcType>(out newEntity);
             List<long> labels;
@@ -716,10 +760,10 @@ namespace Xbim.IO
             labels.Add_Reversible(entry.EntityLabel);
 
             newEntity.Bind(this, entry.EntityLabel);
-            if(typeof(IfcRoot).IsAssignableFrom(t))
+            if (typeof(IfcRoot).IsAssignableFrom(t))
                 ((IfcRoot)newEntity).OwnerHistory = OwnerHistoryAddObject;
             ToWrite.Add_Reversible(newEntity);
-            return (TIfcType) newEntity;
+            return (TIfcType)newEntity;
         }
 
         public override bool ContainsInstance(IPersistIfcEntity instance)
@@ -742,7 +786,7 @@ namespace Xbim.IO
 
         protected override void TransactionFinalised()
         {
-           
+
         }
 
         /// <summary>
@@ -754,7 +798,7 @@ namespace Xbim.IO
         private int WriteEntityToSteam(MemoryStream entityStream, BinaryWriter entityWriter, IPersistIfcEntity item)
         {
             entityWriter.Seek(0, SeekOrigin.Begin);
-            entityWriter.Write((int) 0);
+            entityWriter.Write((int)0);
             XbimIndexEntry entry = _entityOffsets[item.EntityLabel];
             WriteEntity(entityWriter, item);
             int len = Convert.ToInt32(entityStream.Position);
@@ -787,11 +831,15 @@ namespace Xbim.IO
             long posLabel = Math.Abs(entityLabel);
             XbimIndexEntry entry = _entityOffsets[posLabel];
             IPersistIfcEntity entity = entry.Entity;
-            if (entity != null && entity.Activated) 
+            if (entity != null && entity.Activated)
                 return entity; //already loaded and activated
             else if (entity == null) //Create one
+            {
                 entity = CreateEntity(entry.EntityLabel, entry.Type);
+                entry.Entity = entity;
+            }
             ActivateEntity(entry, entity);
+            entity.Bind(this, posLabel);
             return entity;
         }
 
@@ -801,9 +849,9 @@ namespace Xbim.IO
             {
                 MemoryStream entityStream = new MemoryStream(4096);
                 BinaryWriter entityWriter = new BinaryWriter(entityStream);
-                int len = WriteEntityToSteam(entityStream, entityWriter, entity) - sizeof (Int32);
+                int len = WriteEntityToSteam(entityStream, entityWriter, entity) - sizeof(Int32);
                 byte[] buffer = new byte[len];
-                entityStream.Seek(sizeof (Int32), SeekOrigin.Begin);
+                entityStream.Seek(sizeof(Int32), SeekOrigin.Begin);
                 entityStream.Read(buffer, 0, len);
                 return buffer;
             }
@@ -839,7 +887,7 @@ namespace Xbim.IO
             }
             else //it is activated for reading and we now want to write so remember until the transaction is committed
             {
-                
+
                 if (!Transaction.IsRollingBack)
                 {
                     // Debug.Assert(Transaction.Current != null); //don't write things if not in a transaction
@@ -855,7 +903,7 @@ namespace Xbim.IO
 
         public long Count<TIfcType>()
         {
-            Type type = typeof (TIfcType);
+            Type type = typeof(TIfcType);
             IfcType ifcType = IfcInstances.IfcEntities[type];
             IList<Type> types = ifcType.NonAbstractSubTypes;
             long count = 0;
@@ -876,7 +924,7 @@ namespace Xbim.IO
 
                 _stream = new FileStream(_filename, FileMode.Open, FileAccess.Read);
                 _binaryReader = new BinaryReader(_stream);
-                
+
                 return true;
             }
             catch (Exception)
@@ -887,9 +935,9 @@ namespace Xbim.IO
 
         public override void Close()
         {
-            
+
             if (_stream != null) _stream.Close();
-            
+
         }
 
         /// <summary>
@@ -929,7 +977,7 @@ namespace Xbim.IO
 
                 if (progressDelegate != null)
                 {
-                    int newPercentage = (int) ((double) idx/total*100.0);
+                    int newPercentage = (int)((double)idx / total * 100.0);
                     if (newPercentage != percentage) progressDelegate(percentage, "");
                     percentage = newPercentage;
                 }
@@ -945,10 +993,10 @@ namespace Xbim.IO
             BinaryWriter entityWriter = new BinaryWriter(entityStream);
             XbimIndex changesIndex = new XbimIndex(_entityOffsets.HighestLabel);
             long start = dataStream.Position;
-            dataStream.Write(new Byte[sizeof(long)],0,sizeof(long));
+            dataStream.Write(new Byte[sizeof(long)], 0, sizeof(long));
             foreach (var item in ToWrite)
             {
-                
+
                 entityWriter.Seek(0, SeekOrigin.Begin);
                 entityWriter.Write((int)0);
                 XbimIndexEntry entry = new XbimIndexEntry(_entityOffsets[item.EntityLabel]);
@@ -967,7 +1015,7 @@ namespace Xbim.IO
             dataStream.Seek(start, SeekOrigin.Begin);
             dataStream.Write(BitConverter.GetBytes(indexStart), 0, sizeof(long));
             dataStream.Seek(0, SeekOrigin.End);
-           
+
         }
         public override void MergeChanges(Stream dataStream)
         {
@@ -975,7 +1023,7 @@ namespace Xbim.IO
             byte[] indexLen = new byte[sizeof(long)];
             dataStream.Read(indexLen, 0, sizeof(long));
             long indexStart = BitConverter.ToInt64(indexLen, 0);
-            dataStream.Seek(indexStart,SeekOrigin.Begin);
+            dataStream.Seek(indexStart, SeekOrigin.Begin);
             XbimIndex changes = XbimIndex.Read(dataStream);
             long endIndex = dataStream.Position;
             foreach (var item in changes)
@@ -997,7 +1045,7 @@ namespace Xbim.IO
                     _entityOffsets.Add(item);
                 item.Entity.Bind(this, item.EntityLabel);
                 ToWrite.Add(item.Entity);
-                
+
             }
             foreach (var item in changes) //load the data
             {
@@ -1017,10 +1065,10 @@ namespace Xbim.IO
                     }
                     catch (Exception e)
                     {
-                        
+
                         throw;
                     }
-                    
+
                 }
             }
             //leave us at the end of the index
@@ -1036,9 +1084,102 @@ namespace Xbim.IO
                 _stream.Write(BitConverter.GetBytes(0L), 0, sizeof(long)); //no following changes
                 ToWrite.Clear();
             }
-            
-            
+
+
         }
+
+        /// <summary>
+        ///   Imports an Xml file memory model into the model server, throws exception if errors are encountered
+        /// </summary>
+        /// <param name = "filename"></param>
+        public string ImportXml(string xmlFilename, string xbimFilename)
+        {
+            try
+            {
+                Dispose(); //clear up any issues from previous runs
+
+                XmlReaderSettings settings = new XmlReaderSettings() { IgnoreComments = true, IgnoreWhitespace = true };
+                Stream xmlInStream = new FileStream(xmlFilename, FileMode.Open, FileAccess.Read);
+
+                _stream = new FileStream(xbimFilename, FileMode.Create, FileAccess.ReadWrite);
+
+                WriteHeader();
+                BinaryWriter entityWriter = new BinaryWriter(_stream);
+                _header = new IfcFileHeader();
+                _header.FileName.Name = xmlFilename;
+                _header.Write(entityWriter);
+
+
+                _entityOffsets = new XbimIndex();
+                _entityTypes = new Dictionary<Type, List<long>>();
+
+                int errors = 0;
+                using (XmlReader xmlReader = XmlReader.Create(xmlInStream, settings))
+                {
+                    IfcXmlReader reader = new IfcXmlReader();
+
+                    reader.AppendToStream += (br, el) => { AppendToStream(entityWriter, el); };
+
+                    errors = reader.Read(this, xmlReader);
+                }
+
+
+
+                if (errors == 0)
+                {
+                    long posIndex = -1;
+
+                    posIndex = _stream.Position;
+
+                    _entityOffsets.Write(_stream);
+
+                    _stream.Write(BitConverter.GetBytes(0L), 0, sizeof(long));
+
+                    _stream.Seek(0, SeekOrigin.Begin);
+                    _stream.Write(BitConverter.GetBytes(posIndex), 0, sizeof(long));
+                    _stream.Flush();
+                    _stream.Close();
+                    _stream = new FileStream(xbimFilename, FileMode.Open, FileAccess.ReadWrite);
+                    Initialise();
+                    _filename = xbimFilename;
+                    return _filename;
+                }
+                else
+                {
+                    //throw new Exception("Ifc file reading or initialisation errors\n" + input.ErrorLog.ToString());
+                }
+            }
+            catch (Exception e)
+            {
+                Dispose();
+                //throw new Exception("Failed to import " + filename, e);
+            }
+            finally
+            {
+                //if (inputFile != null) inputFile.Close();
+            }
+            return "";
+        }
+
+
+
+        public void AppendToStream(BinaryWriter bw, long el)
+        {
+            long posIndex = _stream.Position;
+            IPersistIfcEntity entity = GetOrCreateEntity(el);
+            //var offset = _entityOffsets[el];
+            _entityOffsets[el].Offset = posIndex;
+            bw.Write((int)0); // reserve 4 bytes of length of stream
+            int len = WriteEntity(bw, entity); // write data and get length
+            long prevPos = _stream.Position; // record current pos for later
+            _stream.Seek(posIndex, SeekOrigin.Begin); // seak the position for the length of stream
+            bw.Write(len); // write the len and move back to prev position
+            _stream.Seek(prevPos, SeekOrigin.Begin);
+
+
+        }
+
+
     }
-    
+
 }
