@@ -61,9 +61,10 @@ namespace Xbim.Ifc.PresentationAppearanceResource
 
         public override string ToString()
         {
-            string str = _theValue.ToString();
-            if (str.IndexOfAny(new[] {'.', 'E', 'e'}) == -1) str += ".";
-            return str;
+            return IfcReal.AsPart21(_theValue);
+            //string str = _theValue.ToString();
+            //if (str.IndexOfAny(new[] {'.', 'E', 'e'}) == -1) str += ".";
+            //return str;
         }
 
         public IfcSpecularExponent(double val)
@@ -80,7 +81,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
         public static implicit operator IfcSpecularExponent(double? value)
         {
             if (value.HasValue)
-                return new IfcSpecularExponent((double) value);
+                return new IfcSpecularExponent((double)value);
             else
                 return new IfcSpecularExponent();
         }
@@ -98,7 +99,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
         public static explicit operator double(IfcSpecularExponent? obj)
         {
             if (obj.HasValue)
-                return ((IfcSpecularExponent) obj)._theValue;
+                return ((IfcSpecularExponent)obj)._theValue;
             else
                 return 0.0;
         }
@@ -110,7 +111,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
 
             if (GetType() != obj.GetType())
                 return false;
-            return ((IfcSpecularExponent) obj)._theValue == _theValue;
+            return ((IfcSpecularExponent)obj)._theValue == _theValue;
         }
 
         public static bool operator ==(IfcSpecularExponent obj1, IfcSpecularExponent obj2)
@@ -131,7 +132,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
         public static explicit operator StepP21Token(IfcSpecularExponent? value)
         {
             if (value.HasValue)
-                return new StepP21Token(((IfcSpecularExponent) value).ToString());
+                return new StepP21Token(((IfcSpecularExponent)value).ToString());
             else
                 return new StepP21Token("$");
         }
