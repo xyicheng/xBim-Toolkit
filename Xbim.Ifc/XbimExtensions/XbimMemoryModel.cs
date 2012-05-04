@@ -1071,5 +1071,11 @@ namespace Xbim.XbimExtensions
             get { return _undoRedoSession; }
         }
 
+
+
+        public string Export(XbimStorageType fileType)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

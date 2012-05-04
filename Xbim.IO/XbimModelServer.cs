@@ -1564,6 +1564,16 @@ namespace Xbim.IO
         }
 
 
+
+
+        public string Export(XbimStorageType fileType)
+        {
+            if(fileType.HasFlag(XbimStorageType.IFCXML))
+            {
+
+            }
+            return "";
+        }
     }
 }
 

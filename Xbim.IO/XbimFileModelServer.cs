@@ -38,33 +38,7 @@ using System.Xml;
 
 namespace Xbim.IO
 {
-    [Flags]
-    public enum XbimStorageType
-    {
-        /// <summary>
-        ///   IFC in XML format
-        /// </summary>
-        IFCXML = 1,
 
-        /// <summary>
-        ///   Native IFC format
-        /// </summary>
-        IFC = 2,
-
-        /// <summary>
-        ///   compressed IFC format
-        /// </summary>
-        IFCX = 4,
-
-        // IFCXMLX = 8,
-        /// <summary>
-        ///   Compressed IfcXml
-        /// </summary>
-        /// <summary>
-        ///   Xbim binary format
-        /// </summary>
-        XBIM = 16
-    }
 
     public class XbimFileModelServer : XbimModelServer
     {
@@ -215,7 +189,6 @@ namespace Xbim.IO
         ///   Strips only semantic objects from the file, ignores representation and creates only an Xbim model server file
         /// </summary>
         /// <param name = "semanticFilename"></param>
-        /// <param name = "?"></param>
         public void ExtractSemantic(string semanticFilename)
         {
             ExtractSemantic(semanticFilename, null, null);
@@ -1082,7 +1055,7 @@ namespace Xbim.IO
         /// <summary>
         ///   Imports an Xml file memory model into the model server, throws exception if errors are encountered
         /// </summary>
-        /// <param name = "filename"></param>
+        /// <param name = "xbimFilename"></param>
         public string ImportXml(string xmlFilename, string xbimFilename)
         {
             try

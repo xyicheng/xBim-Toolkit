@@ -29,6 +29,34 @@ using Xbim.Ifc.SharedBldgElements;
 
 namespace Xbim.XbimExtensions
 {
+
+    [Flags]
+    public enum XbimStorageType
+    {
+        /// <summary>
+        ///   IFC in XML format
+        /// </summary>
+        IFCXML = 1,
+
+        /// <summary>
+        ///   Native IFC format
+        /// </summary>
+        IFC = 2,
+
+        /// <summary>
+        ///   compressed IFC format
+        /// </summary>
+        IFCX = 4,
+
+        // IFCXMLX = 8,
+        /// <summary>
+        ///   Compressed IfcXml
+        /// </summary>
+        /// <summary>
+        ///   Xbim binary format
+        /// </summary>
+        XBIM = 16
+    }
     public interface IModel
     {
         IEnumerable<TIfcType> InstancesOfType<TIfcType>() where TIfcType : IPersistIfcEntity;
@@ -64,6 +92,7 @@ namespace Xbim.XbimExtensions
         int Validate(TextWriter errStream, ReportProgressDelegate progressDelegate);
         int Validate(TextWriter errStream);
         string Validate(ValidationFlags validateFlags);
+        string Export(XbimStorageType fileType);
 #if SupportActivation
         long Activate(IPersistIfcEntity entity, bool write);
         IPersistIfcEntity GetInstance(long label);
