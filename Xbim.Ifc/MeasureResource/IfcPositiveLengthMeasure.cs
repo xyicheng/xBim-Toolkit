@@ -16,6 +16,7 @@ using System;
 using Xbim.Ifc.SelectTypes;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Parser;
+using System.Globalization;
 
 #endregion
 
@@ -46,9 +47,11 @@ namespace Xbim.Ifc.MeasureResource
 
         public override string ToString()
         {
-            string str = _theValue.ToString();
-            if (str.IndexOfAny(new[] {'.', 'E', 'e'}) == -1) str += ".";
-            return str;
+            return IfcReal.AsPart21(_theValue);
+            //string str = String.Format("{0:F16}", _theValue);
+            //string str = _theValue.ToString();
+            //if (str.IndexOfAny(new[] {'.', 'E', 'e'}) == -1) str += ".";
+            //return str;
         }
 
         public object Value

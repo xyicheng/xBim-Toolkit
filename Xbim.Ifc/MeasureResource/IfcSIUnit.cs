@@ -92,10 +92,10 @@ namespace Xbim.Ifc.MeasureResource
                     base.IfcParse(propIndex, value);
                     break;
                 case 2:
-                    _prefix = (IfcSIPrefix) Enum.Parse(typeof (IfcSIPrefix), value.EnumVal);
+                    _prefix = (IfcSIPrefix) Enum.Parse(typeof (IfcSIPrefix), value.EnumVal, true);
                     break;
                 case 3:
-                    _name = (IfcSIUnitName) Enum.Parse(typeof (IfcSIUnitName), value.EnumVal);
+                    _name = (IfcSIUnitName) Enum.Parse(typeof (IfcSIUnitName), value.EnumVal, true);
                     break;
                 default:
                     throw new Exception(string.Format("Attribute index {0} is out of range for {1}", propIndex + 1,

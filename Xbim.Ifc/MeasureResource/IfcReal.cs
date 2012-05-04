@@ -16,6 +16,7 @@ using System;
 using Xbim.Ifc.SelectTypes;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Parser;
+using System.Globalization;
 
 #endregion
 
@@ -63,15 +64,17 @@ namespace Xbim.Ifc.MeasureResource
 
         public static string AsPart21(double real)
         {
-            string str = real.ToString();
-            if (!str.Contains("."))
-            {
-                if (str.Contains("E"))
-                    str = str.Replace("E", ".E");
-                else
-                    str += ".";
-            }
-            return str;
+            return string.Format(new Part21Formatter(), "{0:R}", real);
+            ////string str = String.Format("{0:F16}", real);
+            //string str = real.ToString();
+            //if (!str.Contains("."))
+            //{
+            //    if (str.Contains("E"))
+            //        str = str.Replace("E", ".E");
+            //    else
+            //        str += ".";
+            //}
+            //return str;
         }
 
 
