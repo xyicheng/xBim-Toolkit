@@ -151,6 +151,40 @@ namespace Xbim.Ifc.Extensions
         }
 
         #endregion
+        /// <summary>
+        /// Returns all buildings at the highest level of spatial structural decomposition (i.e. root buildings)
+        /// </summary>
+        public static IEnumerable<IfcBuilding> GetBuildings(this IfcProject project)
+        {
+
+            IEnumerable<IfcRelAggregates> aggregate = project.IsDecomposedBy.OfType<IfcRelAggregates>();
+            foreach (IfcRelAggregates rel in aggregate)
+            {
+                foreach (IfcObjectDefinition definition in rel.RelatedObjects)
+                {
+                    if (definition is IfcSite)
+                        foreach (IfcBuilding building in ((IfcSite)definition).GetBuildings())
+                            yield return building;
+                    if (definition is IfcBuilding)
+                        yield return (definition as IfcBuilding);
+                }
+            }
+        }
+
+        public static string BuildName(this IfcProject ifcProject)
+        {
+            List<string> tokens = new List<string>();
+            if(!string.IsNullOrWhiteSpace(ifcProject.Name)) tokens.Add(ifcProject.Name); 
+            else if(!string.IsNullOrWhiteSpace(ifcProject.LongName)) tokens.Add(ifcProject.LongName);
+            else if(!string.IsNullOrWhiteSpace(ifcProject.Description)) tokens.Add(ifcProject.Description);
+            if(!string.IsNullOrWhiteSpace(ifcProject.Phase)) tokens.Add(ifcProject.Phase);
+            return string.Join(", ", tokens);
+        }
+
+        public static IfcNamedUnit GetAreaUnit(this IfcProject ifcProject)
+        {
+            return ifcProject.UnitsInContext.GetAreaUnit();
+        }
 
         public static void SetOrChangeSIUnit(this IfcProject ifcProject, IfcUnitEnum unitType, IfcSIUnitName siUnitName,
                                              IfcSIPrefix siUnitPrefix)
@@ -217,15 +251,15 @@ namespace Xbim.Ifc.Extensions
         public static IEnumerable<IfcSite> GetSites(this IfcProject ifcProject)
         {
             IEnumerable<IfcRelAggregates> aggregate = ifcProject.IsDecomposedBy.OfType<IfcRelAggregates>();
-            List<IfcSite> sites = new List<IfcSite>();
+            
             foreach (IfcRelAggregates rel in aggregate)
             {
                 foreach (IfcObjectDefinition definition in rel.RelatedObjects)
                 {
-                    if (definition is IfcSite) sites.Add(definition as IfcSite);
+                    if (definition is IfcSite) yield return (definition as IfcSite);
                 }
             }
-            return sites;
+            
         }
 
         /// <summary>

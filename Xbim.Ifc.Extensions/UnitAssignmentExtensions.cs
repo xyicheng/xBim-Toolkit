@@ -116,6 +116,14 @@ namespace Xbim.Ifc.Extensions
             }
         }
 
+        public static IfcNamedUnit GetAreaUnit(this IfcUnitAssignment ua)
+        {
+            IfcNamedUnit nu = ua.Units.OfType<IfcSIUnit>().FirstOrDefault(u => u.UnitType == IfcUnitEnum.AREAUNIT);
+            if (nu == null)
+                nu = ua.Units.OfType<IfcConversionBasedUnit>().FirstOrDefault(u => u.UnitType == IfcUnitEnum.AREAUNIT);
+            return nu;
+        }
+
         public static IfcNamedUnit GetVolumeUnit(this IfcUnitAssignment ua)
         {
             IfcNamedUnit nu = ua.Units.OfType<IfcSIUnit>().FirstOrDefault(u => u.UnitType == IfcUnitEnum.VOLUMEUNIT);
@@ -274,6 +282,7 @@ namespace Xbim.Ifc.Extensions
             return dimension;
         }
 
+      
         private static IfcDimensionalExponents GetAreaDimension(IModel model)
         {
             IfcDimensionalExponents dimension = model.New<IfcDimensionalExponents>();
