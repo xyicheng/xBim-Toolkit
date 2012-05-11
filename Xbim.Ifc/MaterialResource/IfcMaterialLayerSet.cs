@@ -205,7 +205,7 @@ namespace Xbim.Ifc.MaterialResource
 
         public string Name
         {
-            get { return _layerSetName.HasValue ? ((string) _layerSetName) : ""; }
+            get { return LayerSetName.HasValue ? ((string) LayerSetName) : ""; }
         }
 
         #endregion
