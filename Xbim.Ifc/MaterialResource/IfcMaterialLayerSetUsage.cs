@@ -250,7 +250,7 @@ namespace Xbim.Ifc.MaterialResource
 
         public string Name
         {
-            get { return _forLayerSet != null ? _forLayerSet.Name : ""; }
+            get { return ForLayerSet != null ? ForLayerSet.Name : ""; }
         }
 
         #endregion

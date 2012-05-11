@@ -565,7 +565,7 @@ namespace Xbim.Presentation
                 PerspectiveCamera pCam = Canvas.Camera as PerspectiveCamera;
                 if (pCam != null)
                 {
-                    ///TODO: put this back in
+                    //TODO: put this back in
                     //pCam.LookDirection = tg.PerspectiveCameraLookDirection;
                     //pCam.Position = tg.PerspectiveCameraPosition;
                     //pCam.UpDirection = tg.PerspectiveCameraUpDirection;

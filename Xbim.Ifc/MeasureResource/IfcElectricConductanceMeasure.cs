@@ -60,9 +60,10 @@ namespace Xbim.Ifc.MeasureResource
 
         public override string ToString()
         {
-            string str = _theValue.ToString();
-            if (str.IndexOfAny(new[] {'.', 'E', 'e'}) == -1) str += ".";
-            return str;
+            return IfcReal.AsPart21(_theValue);
+            //string str = _theValue.ToString();
+            //if (str.IndexOfAny(new[] {'.', 'E', 'e'}) == -1) str += ".";
+            //return str;
         }
 
         public IfcElectricConductanceMeasure(double val)

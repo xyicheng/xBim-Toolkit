@@ -26,7 +26,7 @@ namespace Xbim.DOM.PropertiesQuantities
 
         protected IfcValue GetProperty(string propertyName)
         {
-            return _object.GetPropertySingleValueValue(_psetName, propertyName);
+            return _object.GetPropertySingleNominalValue(_psetName, propertyName);
         }
 
         protected void SetProperty(string propertyName, IfcValue value)

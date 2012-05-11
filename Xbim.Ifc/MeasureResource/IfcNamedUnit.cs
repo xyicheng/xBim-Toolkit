@@ -114,6 +114,7 @@ namespace Xbim.Ifc.MeasureResource
             set { ModelManager.SetModelValue(this, ref _unitType, value, v => UnitType = v, "UnitType"); }
         }
 
+       
 
         public virtual void IfcParse(int propIndex, IPropertyValue value)
         {

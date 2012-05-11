@@ -1226,7 +1226,6 @@
     <Compile Include="StructuralElementsDomain\IfcBuildingElementComponent.cs" />
     <Compile Include="StructuralElementsDomain\IfcBuildingElementPart.cs" />
     <Compile Include="XbimExtensions\IPlacement3D.cs" />
-    <Compile Include="XbimExtensions\XbimMemoryModel.cs" />
     <Compile Include="XbimExtensions\GeometryPrimitive3D.cs" />
     <Compile Include="XbimExtensions\NonVisualMaterial.cs" />
     <Compile Include="XbimExtensions\PrimitiveModel3D.cs" />

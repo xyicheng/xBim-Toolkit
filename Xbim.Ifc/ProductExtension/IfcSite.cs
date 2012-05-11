@@ -94,7 +94,7 @@ namespace Xbim.Ifc.ProductExtension
         private IfcCompoundPlaneAngleMeasure? _refLatitude;
         private IfcCompoundPlaneAngleMeasure? _refLongitude;
         private IfcLengthMeasure? _refElevation;
-        private IfcLabel _landTitleNumber;
+        private IfcLabel? _landTitleNumber;
         private IfcPostalAddress _siteAddress;
 
         #endregion
@@ -118,7 +118,7 @@ namespace Xbim.Ifc.ProductExtension
             get
             {
 #if SupportActivation
-                ((IPersistIfcEntity) this).Activate(false);
+                ((IPersistIfcEntity)this).Activate(false);
 #endif
                 return _refLatitude;
             }
@@ -138,7 +138,7 @@ namespace Xbim.Ifc.ProductExtension
             get
             {
 #if SupportActivation
-                ((IPersistIfcEntity) this).Activate(false);
+                ((IPersistIfcEntity)this).Activate(false);
 #endif
                 return _refLongitude;
             }
@@ -155,7 +155,7 @@ namespace Xbim.Ifc.ProductExtension
             get
             {
 #if SupportActivation
-                ((IPersistIfcEntity) this).Activate(false);
+                ((IPersistIfcEntity)this).Activate(false);
 #endif
                 return _refElevation;
             }
@@ -167,12 +167,12 @@ namespace Xbim.Ifc.ProductExtension
         /// </summary>
         [DataMember(Order = 12, IsRequired = false, EmitDefaultValue = false)]
         [IfcAttribute(13, IfcAttributeState.Optional)]
-        public IfcLabel LandTitleNumber
+        public IfcLabel? LandTitleNumber
         {
             get
             {
 #if SupportActivation
-                ((IPersistIfcEntity) this).Activate(false);
+                ((IPersistIfcEntity)this).Activate(false);
 #endif
                 return _landTitleNumber;
             }
@@ -193,7 +193,7 @@ namespace Xbim.Ifc.ProductExtension
             get
             {
 #if SupportActivation
-                ((IPersistIfcEntity) this).Activate(false);
+                ((IPersistIfcEntity)this).Activate(false);
 #endif
                 return _siteAddress;
             }
@@ -218,11 +218,11 @@ namespace Xbim.Ifc.ProductExtension
                     break;
                 case 9:
                     if (!_refLatitude.HasValue) _refLatitude = new IfcCompoundPlaneAngleMeasure();
-                    _refLatitude = _refLatitude.Value.Add((int) value.IntegerVal);
+                    _refLatitude = _refLatitude.Value.Add((int)value.IntegerVal);
                     break;
                 case 10:
                     if (!_refLongitude.HasValue) _refLongitude = new IfcCompoundPlaneAngleMeasure();
-                    _refLongitude = _refLongitude.Value.Add((int) value.IntegerVal);
+                    _refLongitude = _refLongitude.Value.Add((int)value.IntegerVal);
                     break;
                 case 11:
                     _refElevation = value.RealVal;
@@ -231,7 +231,7 @@ namespace Xbim.Ifc.ProductExtension
                     _landTitleNumber = value.StringVal;
                     break;
                 case 13:
-                    _siteAddress = (IfcPostalAddress) value.EntityVal;
+                    _siteAddress = (IfcPostalAddress)value.EntityVal;
                     break;
 
                 default:
@@ -241,5 +241,10 @@ namespace Xbim.Ifc.ProductExtension
         }
 
         #endregion
+
+        public override string ToString()
+        {
+            return "Site - " + base.ToString();
+        }
     }
 }

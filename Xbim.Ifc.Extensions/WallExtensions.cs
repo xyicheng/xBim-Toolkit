@@ -14,6 +14,9 @@
 
 using Xbim.Ifc.MaterialResource;
 using Xbim.Ifc.SharedBldgElements;
+using Xbim.Ifc.MeasureResource;
+using Xbim.Ifc.QuantityResource;
+using Xbim.Ifc.SelectTypes;
 
 #endregion
 
@@ -31,6 +34,36 @@ namespace Xbim.Ifc.Extensions
         public static void SetTypicalMaterialLayerSetUsage(this IfcWall wall, IfcMaterialLayerSet forLayerSet)
         {
             wall.SetMaterialLayerSetUsage(forLayerSet, IfcLayerSetDirectionEnum.AXIS1, IfcDirectionSenseEnum.POSITIVE, 0);
+        }
+
+       
+
+        /// <summary>
+        /// Gets the area of the wall in elevation
+        /// </summary>
+        /// <param name="wall"></param>
+        /// <returns></returns>
+        public static IfcAreaMeasure? GetWallSideArea(this IfcWall wall)
+        {
+            IfcQuantityArea qArea = wall.GetQuantity<IfcQuantityArea>("BaseQuantities", "GrossSideArea");
+            if (qArea == null) qArea = wall.GetQuantity<IfcQuantityArea>("GrossSideArea"); //just look for any area
+            if (qArea != null) return qArea.AreaValue;
+            return null;
+        }
+
+        /// <summary>
+        /// True if the wall is external
+        /// </summary>
+        /// <param name="wall"></param>
+        /// <returns></returns>
+        public static IfcBoolean? GetIsExternal(this IfcWall wall)
+        {
+            IfcValue val = wall.GetPropertySingleNominalValue("Pset_WallCommon", "IsExternal");
+            if (val != null && val is IfcBoolean)
+                return (IfcBoolean)val;
+            else
+                return null;
+
         }
     }
 }

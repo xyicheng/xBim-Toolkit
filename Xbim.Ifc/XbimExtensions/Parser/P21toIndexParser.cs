@@ -27,9 +27,9 @@ namespace Xbim.XbimExtensions.Parser
     {
         public XbimIndexEntry(long entityLabel, long offset, Type type)
         {
-            EntityLabel = entityLabel;
-            Offset = offset;
-            Type = type;
+            _entityLabel = entityLabel;
+            _offset = offset;
+            _type = type;
             _entityRef = null;
         }
 
@@ -38,26 +38,46 @@ namespace Xbim.XbimExtensions.Parser
         /// </summary>
         public XbimIndexEntry(long entityLabel, IPersistIfcEntity entity)
         {
-            EntityLabel = entityLabel;
-            Offset = 0;
-            Type = entity.GetType();
+            _entityLabel = entityLabel;
+            _offset = 0;
+            _type = entity.GetType();
+            _entityRef = null;
             Entity = entity;
         }
 
         public XbimIndexEntry(XbimIndexEntry xbimIndexEntry)
         {
-            EntityLabel = xbimIndexEntry.EntityLabel;
-            Offset = xbimIndexEntry.Offset;
-            Type = xbimIndexEntry.Type;
-            _entityRef = xbimIndexEntry.Entity;
+            _entityLabel = xbimIndexEntry._entityLabel;
+            _offset = xbimIndexEntry._offset;
+            _type = xbimIndexEntry._type;
+            _entityRef = null;
+            Entity = xbimIndexEntry.Entity;
         }
 
-        public long EntityLabel;
-        public long Offset;
-        public Type Type;
-      
-        private IPersistIfcEntity _entityRef;
-        
+        private long _entityLabel;
+
+        public long EntityLabel
+        {
+            get { return _entityLabel; }
+            set { _entityLabel = value; }
+        }
+        private long _offset;
+
+        public long Offset
+        {
+            get { return _offset; }
+            set { _offset = value; }
+        }
+        private Type _type;
+
+        public Type Type
+        {
+            get { return _type; }
+            set { _type = value; }
+        }
+
+        private WeakReference _entityRef;
+
         /// <summary>
         ///   Drops an object from memory cache
         /// </summary>
@@ -70,26 +90,27 @@ namespace Xbim.XbimExtensions.Parser
         {
             get
             {
-                return _entityRef;
-                //if (_entityRef != null)
-                //    return (IPersistIfcEntity) _entityRef.Target;
-                //else if (Offset == 0 && Type != null)
-                //    //we have a newly created entity but it has been released by garbage collector
-                //{
-                //    IPersistIfcEntity newEntity = (IPersistIfcEntity) Activator.CreateInstance(Type);
-                //    _entityRef = new WeakReference(newEntity);
-                //    return newEntity;
-                //}
-                //else
-                //    return null;
+                //return _entityRef;
+
+                if (_entityRef != null)
+                    return (IPersistIfcEntity)_entityRef.Target;
+                else if (_offset == 0 && _type != null)
+                //we have a newly created entity but it has been released by garbage collector
+                {
+                    IPersistIfcEntity newEntity = (IPersistIfcEntity)Activator.CreateInstance(_type);
+                    _entityRef = new WeakReference(newEntity);
+                    return newEntity;
+                }
+                else
+                    return null;
             }
             set
             {
-                _entityRef=value;
-                //if (_entityRef != null)
-                //    _entityRef.Target = value;
-                //else
-                //    _entityRef = new WeakReference(value);
+                //_entityRef=value;
+                if (_entityRef != null)
+                    _entityRef.Target = value;
+                else
+                    _entityRef = new WeakReference(value);
             }
         }
     }
@@ -121,7 +142,7 @@ namespace Xbim.XbimExtensions.Parser
 
         public XbimIndexEntry AddNew<T>(out IPersistIfcEntity newEntity)
         {
-            newEntity = (IPersistIfcEntity) Activator.CreateInstance<T>();
+            newEntity = (IPersistIfcEntity)Activator.CreateInstance<T>();
             XbimIndexEntry entry = new XbimIndexEntry(NextLabel, newEntity);
             IList<XbimIndexEntry> entryList = this as IList<XbimIndexEntry>;
             entryList.Add_Reversible(entry);
@@ -145,7 +166,7 @@ namespace Xbim.XbimExtensions.Parser
         protected override void SetItem(int index, XbimIndexEntry item)
         {
             base.SetItem(index, item);
-            Transaction txn = Transaction.Current; 
+            Transaction txn = Transaction.Current;
             if (txn != null)
                 Transaction.AddPropertyChange<long>(h => _highestLabel = h, _highestLabel, Math.Max(_highestLabel, item.EntityLabel));
             _highestLabel = Math.Max(_highestLabel, item.EntityLabel);
@@ -155,7 +176,7 @@ namespace Xbim.XbimExtensions.Parser
         protected override void ClearItems()
         {
             base.ClearItems();
-            Transaction txn = Transaction.Current; 
+            Transaction txn = Transaction.Current;
             if (txn != null)
                 Transaction.AddPropertyChange<long>(h => _highestLabel = h, _highestLabel, 0);
             _highestLabel = 0;
@@ -174,12 +195,12 @@ namespace Xbim.XbimExtensions.Parser
 
         public void Write(Stream dataStream)
         {
-            
+
             BinaryWriter writer = new BinaryWriter(dataStream);
             writer.Write((long)Count);
             writer.Write(HighestLabel);
 
-            HashSet<Type> types = new HashSet<Type>(); 
+            HashSet<Type> types = new HashSet<Type>();
             foreach (var item in this)
             {
                 types.Add(item.Type);
@@ -194,7 +215,7 @@ namespace Xbim.XbimExtensions.Parser
                 writer.Write(i);
                 i++;
             }
-            writer.Write(this.Count);
+            // writer.Write(this.Count);
             foreach (var item in this)
             {
                 writer.Write(item.EntityLabel);
@@ -205,24 +226,24 @@ namespace Xbim.XbimExtensions.Parser
 
         public static XbimIndex Read(Stream dataStream)
         {
-            
+
             BinaryReader reader = new BinaryReader(dataStream);
             long count = reader.ReadInt64();
             XbimIndex index = new XbimIndex(reader.ReadInt64());
-        
+
 
             HashSet<Type> types = new HashSet<Type>();
-            
+
             int typeCount = reader.ReadInt32();
             Dictionary<short, string> classNames = new Dictionary<short, string>(typeCount);
             for (int i = 0; i < typeCount; i++)
             {
                 string typeName = reader.ReadString();
                 short typeId = reader.ReadInt16();
-                classNames.Add(typeId, typeName );
+                classNames.Add(typeId, typeName);
             }
-            int instanceCount = reader.ReadInt32();
-            for (int i = 0; i < instanceCount; i++)
+            //  int instanceCount = reader.ReadInt32();
+            for (int i = 0; i < count; i++)
             {
                 long label = reader.ReadInt64();
                 long offset = reader.ReadInt64();
@@ -231,7 +252,25 @@ namespace Xbim.XbimExtensions.Parser
             }
             return index;
         }
-        
+
+        public XbimIndexEntry AddNew(Type type, out IPersistIfcEntity newEntity, long label)
+        {
+            newEntity = (IPersistIfcEntity)Activator.CreateInstance(type);
+            XbimIndexEntry entry = new XbimIndexEntry(label, newEntity);
+            IList<XbimIndexEntry> entryList = this as IList<XbimIndexEntry>;
+            entryList.Add_Reversible(entry);
+            _highestLabel = Math.Max(label, _highestLabel);
+            return entry;
+        }
+
+        public XbimIndexEntry AddNew(Type type, out IPersistIfcEntity newEntity)
+        {
+            newEntity = (IPersistIfcEntity)Activator.CreateInstance(type);
+            XbimIndexEntry entry = new XbimIndexEntry(NextLabel, newEntity);
+            IList<XbimIndexEntry> entryList = this as IList<XbimIndexEntry>;
+            entryList.Add_Reversible(entry);
+            return entry;
+        }
     }
 
 
@@ -274,7 +313,7 @@ namespace Xbim.XbimExtensions.Parser
         internal void Write(BinaryWriter binaryWriter)
         {
             long start = binaryWriter.BaseStream.Position;
-            binaryWriter.Write((long) _entityOffsets.Count);
+            binaryWriter.Write((long)_entityOffsets.Count);
             binaryWriter.Write(_entityOffsets.HighestLabel);
             Dictionary<Type, short> classNames = new Dictionary<Type, short>(_entityTypes.Count);
             binaryWriter.Write(_entityTypes.Count);
@@ -293,7 +332,7 @@ namespace Xbim.XbimExtensions.Parser
                 binaryWriter.Write(item.Offset);
                 binaryWriter.Write(classNames[item.Type]);
             }
-            
+
             binaryWriter.Write(0L); //no changes following
 
 
@@ -314,13 +353,12 @@ namespace Xbim.XbimExtensions.Parser
         SetStringValue, //7
         SetEnumValue, //8
         SetBooleanValue, //9
-        SetNonDefinedValue, //0xA
-        SetOverrideValue, //0xB
-        //  SetObjectValue,//0xC
-        BeginNestedType, //0xD
-        EndNestedType, //0xE
-        EndEntity, //0xF
-        NewEntity, //0x10
+        SetNonDefinedValue, //0x0A
+        SetOverrideValue, //x0B
+        BeginNestedType, //0x0C
+        EndNestedType, //0x0D
+        EndEntity, //0x0E
+        NewEntity, //0x0F
         SetObjectValueUInt16,
         SetObjectValueUInt32,
         SetObjectValueInt64
@@ -414,7 +452,7 @@ namespace Xbim.XbimExtensions.Parser
                 _listNestLevel++;
             }
             else
-                _binaryWriter.Write((byte) P21ParseAction.BeginList);
+                _binaryWriter.Write((byte)P21ParseAction.BeginList);
         }
 
         internal override void EndList()
@@ -426,30 +464,30 @@ namespace Xbim.XbimExtensions.Parser
                 p21.CurrentParamIndex++;
             }
             else
-                _binaryWriter.Write((byte) P21ParseAction.EndList);
+                _binaryWriter.Write((byte)P21ParseAction.EndList);
         }
 
         internal override void BeginComplex()
         {
-            _binaryWriter.Write((byte) P21ParseAction.BeginComplex);
+            _binaryWriter.Write((byte)P21ParseAction.BeginComplex);
         }
 
         internal override void EndComplex()
         {
-            _binaryWriter.Write((byte) P21ParseAction.EndComplex);
+            _binaryWriter.Write((byte)P21ParseAction.EndComplex);
         }
 
         internal override void NewEntity(string entityLabel)
         {
             _currentLabel = Convert.ToInt64(entityLabel.TrimStart('#'));
             _startOffset = _indexStrm.Position;
-            _binaryWriter.Write(0);
-            _binaryWriter.Write((byte) P21ParseAction.NewEntity);
+            _binaryWriter.Write((int)0);
+            _binaryWriter.Write((byte)P21ParseAction.NewEntity);
             if (_streamSize != -1 && ProgressStatus != null)
             {
-                Scanner sc = (Scanner) this.Scanner;
+                Scanner sc = (Scanner)this.Scanner;
                 double pos = sc.Buffer.Pos;
-                int newPercentage = Convert.ToInt32(pos/_streamSize*100.0);
+                int newPercentage = Convert.ToInt32(pos / _streamSize * 100.0);
                 if (newPercentage > _percentageParsed)
                 {
                     _percentageParsed = newPercentage;
@@ -489,10 +527,10 @@ namespace Xbim.XbimExtensions.Parser
             _index.Add(_currentLabel, _currentType, _startOffset);
             _currentLabel = -1;
             _currentType = null;
-            _binaryWriter.Write((byte) P21ParseAction.EndEntity);
+            _binaryWriter.Write((byte)P21ParseAction.EndEntity);
             long endpos = _indexStrm.Position;
             _indexStrm.Seek(_startOffset, SeekOrigin.Begin);
-            _binaryWriter.Write((int) (endpos - _startOffset));
+            _binaryWriter.Write((int)(endpos - _startOffset - sizeof(int)));
             _indexStrm.Seek(endpos, SeekOrigin.Begin);
         }
 
@@ -513,7 +551,7 @@ namespace Xbim.XbimExtensions.Parser
             }
             else
             {
-                _binaryWriter.Write((byte) P21ParseAction.SetIntegerValue);
+                _binaryWriter.Write((byte)P21ParseAction.SetIntegerValue);
                 _binaryWriter.Write(Convert.ToInt64(value));
             }
         }
@@ -529,7 +567,7 @@ namespace Xbim.XbimExtensions.Parser
             }
             else
             {
-                _binaryWriter.Write((byte) P21ParseAction.SetHexValue);
+                _binaryWriter.Write((byte)P21ParseAction.SetHexValue);
                 _binaryWriter.Write(Convert.ToInt64(value, 16));
             }
         }
@@ -545,7 +583,7 @@ namespace Xbim.XbimExtensions.Parser
             }
             else
             {
-                _binaryWriter.Write((byte) P21ParseAction.SetFloatValue);
+                _binaryWriter.Write((byte)P21ParseAction.SetFloatValue);
                 _binaryWriter.Write(Convert.ToDouble(value));
             }
         }
@@ -562,7 +600,7 @@ namespace Xbim.XbimExtensions.Parser
             }
             else
             {
-                _binaryWriter.Write((byte) P21ParseAction.SetStringValue);
+                _binaryWriter.Write((byte)P21ParseAction.SetStringValue);
                 _binaryWriter.Write(value.Trim('\''));
             }
         }
@@ -578,7 +616,7 @@ namespace Xbim.XbimExtensions.Parser
             }
             else
             {
-                _binaryWriter.Write((byte) P21ParseAction.SetEnumValue);
+                _binaryWriter.Write((byte)P21ParseAction.SetEnumValue);
                 _binaryWriter.Write(value.Trim('.'));
             }
         }
@@ -594,7 +632,7 @@ namespace Xbim.XbimExtensions.Parser
             }
             else
             {
-                _binaryWriter.Write((byte) P21ParseAction.SetBooleanValue);
+                _binaryWriter.Write((byte)P21ParseAction.SetBooleanValue);
                 _binaryWriter.Write(value == ".T.");
             }
         }
@@ -604,7 +642,7 @@ namespace Xbim.XbimExtensions.Parser
             if (InHeader && _listNestLevel == 0)
                 _currentInstance.CurrentParamIndex++;
             else
-                _binaryWriter.Write((byte) P21ParseAction.SetNonDefinedValue);
+                _binaryWriter.Write((byte)P21ParseAction.SetNonDefinedValue);
         }
 
         internal override void SetOverrideValue()
@@ -612,7 +650,7 @@ namespace Xbim.XbimExtensions.Parser
             if (InHeader && _listNestLevel == 0)
                 _currentInstance.CurrentParamIndex++;
             else
-                _binaryWriter.Write((byte) P21ParseAction.SetOverrideValue);
+                _binaryWriter.Write((byte)P21ParseAction.SetOverrideValue);
         }
 
         internal override void SetObjectValue(string value)
@@ -624,17 +662,17 @@ namespace Xbim.XbimExtensions.Parser
                 long val = Convert.ToInt64(value.TrimStart('#'));
                 if (val <= UInt16.MaxValue)
                 {
-                    _binaryWriter.Write((byte) P21ParseAction.SetObjectValueUInt16);
+                    _binaryWriter.Write((byte)P21ParseAction.SetObjectValueUInt16);
                     _binaryWriter.Write(Convert.ToUInt16(val));
                 }
                 else if (val <= UInt32.MaxValue)
                 {
-                    _binaryWriter.Write((byte) P21ParseAction.SetObjectValueUInt32);
+                    _binaryWriter.Write((byte)P21ParseAction.SetObjectValueUInt32);
                     _binaryWriter.Write(Convert.ToUInt32(val));
                 }
                 else if (val <= Int64.MaxValue)
                 {
-                    _binaryWriter.Write((byte) P21ParseAction.SetObjectValueInt64);
+                    _binaryWriter.Write((byte)P21ParseAction.SetObjectValueInt64);
                     _binaryWriter.Write(val);
                 }
                 else
@@ -644,12 +682,12 @@ namespace Xbim.XbimExtensions.Parser
 
         internal override void EndNestedType(string value)
         {
-            _binaryWriter.Write((byte) P21ParseAction.EndNestedType);
+            _binaryWriter.Write((byte)P21ParseAction.EndNestedType);
         }
 
         internal override void BeginNestedType(string value)
         {
-            _binaryWriter.Write((byte) P21ParseAction.BeginNestedType);
+            _binaryWriter.Write((byte)P21ParseAction.BeginNestedType);
             _binaryWriter.Write(value);
         }
 

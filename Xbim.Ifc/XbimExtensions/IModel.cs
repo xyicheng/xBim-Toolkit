@@ -29,6 +29,35 @@ using Xbim.Ifc.SharedBldgElements;
 
 namespace Xbim.XbimExtensions
 {
+    public delegate void InitProperties<TInit>(TInit initFunction);
+
+    [Flags]
+    public enum XbimStorageType
+    {
+        /// <summary>
+        ///   IFC in XML format
+        /// </summary>
+        IFCXML = 1,
+
+        /// <summary>
+        ///   Native IFC format
+        /// </summary>
+        IFC = 2,
+
+        /// <summary>
+        ///   compressed IFC format
+        /// </summary>
+        IFCX = 4,
+
+        // IFCXMLX = 8,
+        /// <summary>
+        ///   Compressed IfcXml
+        /// </summary>
+        /// <summary>
+        ///   Xbim binary format
+        /// </summary>
+        XBIM = 16
+    }
     public interface IModel
     {
         IEnumerable<TIfcType> InstancesOfType<TIfcType>() where TIfcType : IPersistIfcEntity;
@@ -38,10 +67,13 @@ namespace Xbim.XbimExtensions
 
         TIfcType New<TIfcType>() where TIfcType : IPersistIfcEntity, new();
         TIfcType New<TIfcType>(InitProperties<TIfcType> initPropertiesFunc) where TIfcType : IPersistIfcEntity, new();
+
         bool Delete(IPersistIfcEntity instance);
         bool ContainsInstance(IPersistIfcEntity instance);
         IEnumerable<IPersistIfcEntity> Instances { get; }
         long InstancesCount { get; }
+
+        IPersistIfcEntity AddNew(IfcType ifcType, long label);
 
         int ParsePart21(Stream inputStream, FilterViewDefinition filter, TextWriter errorLog,
                         ReportProgressDelegate progressHandler);
@@ -61,10 +93,15 @@ namespace Xbim.XbimExtensions
         int Validate(TextWriter errStream, ReportProgressDelegate progressDelegate);
         int Validate(TextWriter errStream);
         string Validate(ValidationFlags validateFlags);
+        void Export(XbimStorageType fileType, string outputFileName);
+        string Open(string inputFileName);
+        bool Save();
+        bool SaveAs(string outputFileName);
+        void Import(string inputFileName);
 #if SupportActivation
         long Activate(IPersistIfcEntity entity, bool write);
         IPersistIfcEntity GetInstance(long label);
-        
+
 #endif
 
         bool ReOpen();

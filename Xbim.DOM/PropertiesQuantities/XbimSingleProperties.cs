@@ -47,7 +47,7 @@ namespace Xbim.DOM.PropertiesQuantities
 
         public double? GetProperty_double(string propertySetName, string propertyName)
         {
-            IfcValue value = _object.GetPropertySingleValueValue(propertySetName, propertyName);
+            IfcValue value = _object.GetPropertySingleNominalValue(propertySetName, propertyName);
             IfcSimpleValue simpleValue = value as IfcSimpleValue;
             if (simpleValue != null)
             {
@@ -64,21 +64,21 @@ namespace Xbim.DOM.PropertiesQuantities
         }
         public long? GetProperty_long(string propertySetName, string propertyName)
         {
-            IfcSimpleValue value = _object.GetPropertySingleValueValue(propertySetName, propertyName) as IfcSimpleValue;
+            IfcSimpleValue value = _object.GetPropertySingleNominalValue(propertySetName, propertyName) as IfcSimpleValue;
             if (value == null) return null;
             IfcInteger val = (IfcInteger)value;
             return (long)val.Value;
         }
         public string GetProperty_string(string propertySetName, string propertyName)
         {
-            IfcSimpleValue value = _object.GetPropertySingleValueValue(propertySetName, propertyName) as IfcSimpleValue;
+            IfcSimpleValue value = _object.GetPropertySingleNominalValue(propertySetName, propertyName) as IfcSimpleValue;
             if (value == null) return null;
             IfcLabel val = (IfcLabel)value;
             return val;
         }
         public bool? GetProperty_bool(string propertySetName, string propertyName)
         {
-            IfcSimpleValue value = _object.GetPropertySingleValueValue(propertySetName, propertyName) as IfcSimpleValue;
+            IfcSimpleValue value = _object.GetPropertySingleNominalValue(propertySetName, propertyName) as IfcSimpleValue;
             if (value == null) return null;
             IfcBoolean val = (IfcBoolean)value;
             return val;

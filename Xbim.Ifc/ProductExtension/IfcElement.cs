@@ -276,7 +276,7 @@ namespace Xbim.Ifc.ProductExtension
         public override string ToString()
         {
             //return string.Format("{0} - {1}{2}", this.Tag.HasValue?this.Tag.Value.ToString():"", this.GetType().Name, Name == null ? "" : " - " + Name);
-            return this.GetType().Name;
+            return (Name.HasValue) ? Name.ToString() :this.GetType().Name;
         }
     }
 }
