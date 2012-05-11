@@ -78,12 +78,7 @@ namespace Xbim.IO
         {
             Open(fileName, fileAccess);
         }
-
-        public XbimFileModelServer(string fileName, bool asWritable)
-        {
-            Open(fileName, asWritable);
-        }
-
+                
         public XbimIndex EntityOffsets
         {
             get { return _entityOffsets; }
@@ -96,16 +91,10 @@ namespace Xbim.IO
         /// <returns></returns>
         public void Open(string filename, FileAccess fileAccess = FileAccess.Read)
         {
-            Open(filename, false);
-        }
-
-        public void Open(string filename, bool asWritable)
-        {
-            FileAccess fa = asWritable ? FileAccess.ReadWrite : FileAccess.Read;
             try
             {
                 Dispose();
-                _stream = new FileStream(filename, FileMode.Open, fa);
+                _stream = new FileStream(filename, FileMode.Open, fileAccess);
                 Initialise();
                 _filename = filename;
 
@@ -120,7 +109,7 @@ namespace Xbim.IO
                 throw new Exception("Failed to open " + filename, e);
             }
         }
-
+                
         /// <summary>
         ///   Imports an Ifc file into the model server, throws exception if errors are encountered
         /// </summary>
@@ -1139,6 +1128,48 @@ namespace Xbim.IO
 
         }
 
+        public override string Open(string inputFileName)
+        {
+            string outputFileName = Path.ChangeExtension(inputFileName, "xbim");
+
+            XbimStorageType fileType = XbimStorageType.XBIM;
+            string ext = Path.GetExtension(inputFileName).ToLower();
+            if (ext == "xbim") fileType = XbimStorageType.XBIM;
+            else if (ext == "ifc") fileType = XbimStorageType.IFC;
+            else if (ext == "xml") fileType = XbimStorageType.IFCXML;
+            else if (ext == "zip") fileType = XbimStorageType.IFCX;
+            else
+                throw new Exception("Invalid file type: " + ext);
+
+            if (fileType.HasFlag(XbimStorageType.XBIM))
+            {
+                Open(inputFileName, FileAccess.ReadWrite);
+            }
+            else if (fileType.HasFlag(XbimStorageType.IFCXML))
+            {
+                // input to be xml file, output will be xbim file
+                ImportXml(inputFileName, outputFileName);
+            }
+            else if (fileType.HasFlag(XbimStorageType.IFC))
+            {
+                // input to be ifc file, output will be xbim file
+                ImportIfc(inputFileName, outputFileName);
+            }
+            else if (fileType.HasFlag(XbimStorageType.IFCX))
+            {
+                // get the ifc file from zip
+                string ifcFileName = ExportZippedIfc(inputFileName);
+                // convert ifc to xbim
+                ImportIfc(ifcFileName, outputFileName);
+            }
+
+            return outputFileName;
+        }
+
+        public override void Import(string inputFileName)
+        {
+            throw new NotImplementedException("Import functionality: not implemented yet");
+        }
 
     }
 

@@ -131,6 +131,7 @@
     <Compile Include="IfcOutputStream.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="XbimFileModelServer.cs" />
+    <Compile Include="XbimMemoryModel.cs" />
     <Compile Include="XbimModelServer.cs" />
     <Compile Include="XbimInputStream.cs" />
     <Compile Include="XbimOutputStream.cs" />

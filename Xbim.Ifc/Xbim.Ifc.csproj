@@ -1175,6 +1175,7 @@
     <Compile Include="XbimExtensions\IVertex3D.cs" />
     <Compile Include="XbimExtensions\Helpers\ExceptionExtensions.cs" />
     <Compile Include="XbimExtensions\IfcFileHeader.cs" />
+    <Compile Include="XbimExtensions\ModelManager.cs" />
     <Compile Include="XbimExtensions\Parser\IPropertyValue.cs" />
     <Compile Include="XbimExtensions\Parser\IStepP21Parser.cs" />
     <Compile Include="XbimExtensions\Parser\P21ToDatabaseParser.cs" />
@@ -1226,7 +1227,6 @@
     <Compile Include="StructuralElementsDomain\IfcBuildingElementComponent.cs" />
     <Compile Include="StructuralElementsDomain\IfcBuildingElementPart.cs" />
     <Compile Include="XbimExtensions\IPlacement3D.cs" />
-    <Compile Include="XbimExtensions\XbimMemoryModel.cs" />
     <Compile Include="XbimExtensions\GeometryPrimitive3D.cs" />
     <Compile Include="XbimExtensions\NonVisualMaterial.cs" />
     <Compile Include="XbimExtensions\PrimitiveModel3D.cs" />
@@ -1298,7 +1298,6 @@
     <Compile Include="MeasureResource\IfcRatioMeasure.cs" />
     <Compile Include="MeasureResource\IfcTimeStamp.cs" />
     <Compile Include="MeasureResource\IfcVolumeMeasure.cs" />
-    <Compile Include="XbimExtensions\ModelManager.cs" />
     <Compile Include="PresentationAppearanceResource\IfcNullStyle.cs" />
     <Compile Include="PresentationAppearanceResource\IfcStyledItem.cs" />
     <Compile Include="ProductExtension\IfcAnnotation.cs" />

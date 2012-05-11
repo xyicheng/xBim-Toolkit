@@ -29,6 +29,7 @@ using Xbim.Ifc.SharedBldgElements;
 
 namespace Xbim.XbimExtensions
 {
+    public delegate void InitProperties<TInit>(TInit initFunction);
 
     [Flags]
     public enum XbimStorageType
@@ -92,7 +93,11 @@ namespace Xbim.XbimExtensions
         int Validate(TextWriter errStream, ReportProgressDelegate progressDelegate);
         int Validate(TextWriter errStream);
         string Validate(ValidationFlags validateFlags);
-        string Export(XbimStorageType fileType);
+        void Export(XbimStorageType fileType, string outputFileName);
+        string Open(string inputFileName);
+        bool Save();
+        bool SaveAs(string outputFileName);
+        void Import(string inputFileName);
 #if SupportActivation
         long Activate(IPersistIfcEntity entity, bool write);
         IPersistIfcEntity GetInstance(long label);

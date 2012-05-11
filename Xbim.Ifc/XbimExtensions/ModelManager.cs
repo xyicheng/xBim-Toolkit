@@ -33,11 +33,7 @@ namespace Xbim.XbimExtensions
     }
 
     public delegate void XbimValidationEventHandler(string errorMsg);
-
-    public class ModelCollection : HashSet<XbimMemoryModel>
-    {
-    }
-
+        
     public static class ModelManager
     {
         private static readonly HashSet<IModel> _models;

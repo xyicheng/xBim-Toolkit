@@ -241,5 +241,10 @@ namespace Xbim.Ifc.ProductExtension
         }
 
         #endregion
+
+        public override string ToString()
+        {
+            return "Site - " + base.ToString();
+        }
     }
 }

@@ -419,7 +419,7 @@ namespace Xbim.XbimExtensions
             return _entityHandleLookup[label];
         }
 
-        internal void AddRaw(IPersistIfcEntity instance)
+        public void AddRaw(IPersistIfcEntity instance)
         {
             Type type = instance.GetType();
             ICollection<IPersistIfcEntity> entities;

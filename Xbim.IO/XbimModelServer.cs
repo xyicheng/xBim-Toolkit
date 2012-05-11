@@ -1565,15 +1565,49 @@ namespace Xbim.IO
 
 
 
-
-        public string Export(XbimStorageType fileType)
+        /// <summary>
+        ///   Convert xBim file to IFC, IFCXml Or Zip format
+        /// </summary>
+        /// <param name = "fileType">file type to convert to</param>
+        /// <param name = "outputFileName">output filename for the new file after Export</param>
+        /// <returns>outputFileName</returns>
+        public void Export(XbimStorageType fileType, string outputFileName)
         {
-            if(fileType.HasFlag(XbimStorageType.IFCXML))
+            if (fileType.HasFlag(XbimStorageType.IFCXML))
             {
-
+                // modelServer would have been created with xbim file
+                ExportIfcXml(outputFileName);
             }
-            return "";
+            else if (fileType.HasFlag(XbimStorageType.IFC))
+            {
+                // modelServer would have been created with xbim file and readwrite fileaccess
+                ExportIfc(outputFileName);
+            }
+            else if (fileType.HasFlag(XbimStorageType.IFCX))
+            {
+                // modelServer would have been created with xbim file and readwrite fileaccess
+                ExportIfc(outputFileName, true, false);
+            }
+            else
+                throw new Exception("Invalid file type. Expected filetypes to Export: IFC, IFCXml, IFCZip");
+            
         }
+
+        public bool Save()
+        {
+            return true;
+        }
+        
+        public bool SaveAs(string outputFileName)
+        {
+            // always save file as xbim, with user given filename
+            Export(XbimStorageType.XBIM, outputFileName);
+
+            return true;
+        }
+
+        public abstract string Open(string inputFileName);
+        public abstract void Import(string inputFileName);
     }
 }
 

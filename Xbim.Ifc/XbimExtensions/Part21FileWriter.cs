@@ -37,7 +37,16 @@ namespace Xbim.XbimExtensions
         private TextWriter _output;
         [NonSerialized]
         private HashSet<long> _written;
-
+        
+        public Part21FileWriter()
+        {
+        }
+        public Part21FileWriter (TextWriter Output)
+        {
+            _written = new HashSet<long>();
+            _output = Output;
+        }
+               
 
         private void WriteEntity(Type type, List<string> tokens, string id)
         {
@@ -319,49 +328,49 @@ namespace Xbim.XbimExtensions
             _output.WriteLine("END-ISO-10303-21;");
         }
 
-        public bool Save(XbimMemoryModel model, string fileName, XbimFileType fileType)
-        {
-            switch (fileType)
-            {
-                case XbimFileType.Xbim:
-                    try
-                    {
-                        BinaryFormatter formatter = new BinaryFormatter();
-                        formatter.AssemblyFormat = FormatterAssemblyStyle.Simple;
-                        model.Header.FileDescription.EntityCount = model.Instances.Count();
-                        Stream stream = new FileStream(fileName, FileMode.Create, FileAccess.Write, FileShare.None);
-                        formatter.Serialize(stream, this);
-                        formatter.Serialize(stream, model);
-                        stream.Close();
-                        return true;
-                    }
-                    catch (Exception)
-                    {
-                        return false;
-                    }
-                case XbimFileType.Ifc:
-                    try
-                    {
-                        _written = new HashSet<long>();
-                        _output = new StreamWriter(fileName);
-                        WriteHeader(model);
-                        foreach (IPersistIfcEntity item in model.Instances)
-                        {
-                            Write(item);
-                        }
-                        WriteFooter();
-                        Close();
-                        return true;
-                    }
-                    catch (Exception)
-                    {
-                        return false;
-                    }
+        //public bool Save(XbimMemoryModel model, string fileName, XbimFileType fileType)
+        //{
+        //    switch (fileType)
+        //    {
+        //        case XbimFileType.Xbim:
+        //            try
+        //            {
+        //                BinaryFormatter formatter = new BinaryFormatter();
+        //                formatter.AssemblyFormat = FormatterAssemblyStyle.Simple;
+        //                model.Header.FileDescription.EntityCount = model.Instances.Count();
+        //                Stream stream = new FileStream(fileName, FileMode.Create, FileAccess.Write, FileShare.None);
+        //                formatter.Serialize(stream, this);
+        //                formatter.Serialize(stream, model);
+        //                stream.Close();
+        //                return true;
+        //            }
+        //            catch (Exception)
+        //            {
+        //                return false;
+        //            }
+        //        case XbimFileType.Ifc:
+        //            try
+        //            {
+        //                _written = new HashSet<long>();
+        //                _output = new StreamWriter(fileName);
+        //                WriteHeader(model);
+        //                foreach (IPersistIfcEntity item in model.Instances)
+        //                {
+        //                    Write(item);
+        //                }
+        //                WriteFooter();
+        //                Close();
+        //                return true;
+        //            }
+        //            catch (Exception)
+        //            {
+        //                return false;
+        //            }
 
-                default:
-                    return false;
-            }
-        }
+        //        default:
+        //            return false;
+        //    }
+        //}
 
         #region IDisposable Members
 

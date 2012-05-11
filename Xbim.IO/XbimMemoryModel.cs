@@ -35,12 +35,17 @@ using Xbim.XbimExtensions.DataProviders;
 using Xbim.XbimExtensions.Parser;
 using Xbim.XbimExtensions.Transactions;
 using Xbim.XbimExtensions.Transactions.Extensions;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Runtime.Serialization.Formatters;
+using System.Xml;
+using System.IO.Compression;
+using ICSharpCode.SharpZipLib.Zip;
 
 #endregion
 
 namespace Xbim.XbimExtensions
 {
-    public delegate void InitProperties<TInit>(TInit initFunction);
+    //public delegate void InitProperties<TInit>(TInit initFunction);
 
 
     [Serializable]
@@ -1071,11 +1076,190 @@ namespace Xbim.XbimExtensions
             get { return _undoRedoSession; }
         }
 
-
-
-        public string Export(XbimStorageType fileType)
+        private void ExportIfc(string fileName, bool compress, bool isGZip = true)
         {
-            throw new NotImplementedException();
+            StreamWriter ifcFile = null;
+            FileStream fs = null;
+            try
+            {
+                if (compress)
+                {
+                    if (isGZip)
+                    {
+                        fs = new FileStream(fileName, FileMode.Create, FileAccess.Write);
+                        GZipStream zip = new GZipStream(fs, CompressionMode.Compress);
+                        ifcFile = new StreamWriter(zip);
+                    }
+                    else // if isGZip == false then use sharpziplib
+                    {
+                        string ext = "";
+                        if (fileName.ToLower().EndsWith(".zip") == false) ext = ".zip";
+                        fs = new FileStream(fileName + ext, FileMode.Create, FileAccess.Write);
+                        ZipOutputStream zipStream = new ZipOutputStream(fs);
+                        zipStream.SetLevel(3); //0-9, 9 being the highest level of compression
+                        ZipEntry newEntry = new ZipEntry(fileName);
+                        newEntry.DateTime = DateTime.Now;
+                        zipStream.PutNextEntry(newEntry);
+
+                        ifcFile = new StreamWriter(zipStream);
+                    }
+                }
+                else
+                {
+                    ifcFile = new StreamWriter(fileName);
+                }
+                
+
+                Part21FileWriter p21 = new Part21FileWriter(ifcFile);
+                p21.WriteHeader(this);
+                foreach (IPersistIfcEntity item in this.Instances)
+                {
+                    p21.Write(item);
+                }
+                p21.WriteFooter();
+                p21.Close();
+                
+                
+                ifcFile.Flush();
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Error creating Ifc File = " + fileName, e);
+            }
+            finally
+            {
+                if (ifcFile != null) ifcFile.Close();
+                if (fs != null) fs.Close();
+            }
+        }
+
+        public void Export(XbimStorageType fileType, string outputFileName)
+        {
+            if (fileType.HasFlag(XbimStorageType.XBIM))
+            {
+                try
+                {
+                    BinaryFormatter formatter = new BinaryFormatter();
+                    formatter.AssemblyFormat = FormatterAssemblyStyle.Simple;
+                    this.Header.FileDescription.EntityCount = this.Instances.Count();
+                    Stream stream = new FileStream(outputFileName, FileMode.Create, FileAccess.Write, FileShare.None);
+                    formatter.Serialize(stream, this);
+                    formatter.Serialize(stream, this);
+                    stream.Close();
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception("Error exporting file: " + ex.Message);
+                }
+            }
+            else if (fileType.HasFlag(XbimStorageType.IFC))
+            {
+                try
+                {
+                    ExportIfc(outputFileName, false);
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception("Error exporting file: " + ex.Message);
+                }
+            }
+            else if (fileType.HasFlag(XbimStorageType.IFCXML))
+            {
+                FileStream xmlOutStream = null;
+                try
+                {
+                    xmlOutStream = new FileStream(outputFileName, FileMode.Create, FileAccess.ReadWrite);
+                    XmlWriterSettings settings = new XmlWriterSettings { Indent = true };
+                    using (XmlWriter xmlWriter = XmlWriter.Create(xmlOutStream, settings))
+                    {
+                        IfcXmlWriter writer = new IfcXmlWriter();
+                        writer.Write(this, xmlWriter, null);
+                    }
+                }
+                catch (Exception e)
+                {
+                    throw new Exception("Failed to write IfcXml file " + outputFileName, e);
+                }
+                finally
+                {
+                    if (xmlOutStream != null) xmlOutStream.Close();
+                }
+            }
+            else if (fileType.HasFlag(XbimStorageType.IFCX))
+            {
+                try
+                {
+                    ExportIfc(outputFileName, true, true);
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception("Error exporting file: " + ex.Message);
+                }
+            }
+        }
+
+        public string Open(string inputFileName)
+        {
+            string outputFileName = Path.ChangeExtension(inputFileName, "xbim");
+
+            XbimStorageType fileType = XbimStorageType.XBIM;
+            string ext = Path.GetExtension(inputFileName).ToLower();
+            if (ext == "xbim") fileType = XbimStorageType.XBIM;
+            else if (ext == "ifc") fileType = XbimStorageType.IFC;
+            else if (ext == "xml") fileType = XbimStorageType.IFCXML;
+            else if (ext == "zip") fileType = XbimStorageType.IFCX;
+            else
+                throw new Exception("Invalid file type: " + ext);
+
+            if (fileType.HasFlag(XbimStorageType.IFCXML))
+            {
+                // input to be xml file, output will be xbim file
+                //ImportXml(inputFileName, outputFileName);
+            }
+            else if (fileType.HasFlag(XbimStorageType.IFC))
+            {
+                // input to be ifc file, output will be xbim file
+                //IfcInputStream input = null;
+                //try
+                //{
+                //    //attach it to the Ifc Stream Parser
+                //    input = new IfcInputStream(new FileStream(inputFileName, FileMode.Open, FileAccess.Read));
+                //    if (input.Load(this) != 0)
+                //        throw new Exception("Ifc file parsing errors\n" + input.ErrorLog.ToString());
+                //}
+                //catch (Exception ex)
+                //{
+                //    throw new Exception("Ifc file parsing errors\n" + input.ErrorLog.ToString());
+                //}
+                //finally
+                //{
+                //    if (input != null) input.Close();
+                //}
+            }
+            else if (fileType.HasFlag(XbimStorageType.IFCX))
+            {
+                // get the ifc file from zip
+                //string ifcFileName = ExportZippedIfc(inputFileName);
+                // convert ifc to xbim
+                //ImportIfc(ifcFileName, outputFileName);
+            }
+
+            return outputFileName;
+        }
+
+        public bool Save()
+        {
+            return true;
+        }
+
+        public bool SaveAs(string outputFileName)
+        {
+            return true;
+        }
+
+        public void Import(string inputFileName)
+        {
+            throw new NotImplementedException("Import functionality: not implemented yet");
         }
     }
 }
