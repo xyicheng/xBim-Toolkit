@@ -272,7 +272,10 @@ namespace Xbim
 			{
 				if(repContext == nullptr || shape->ContextOfItems ==  repContext) 
 				{
-					if( !shape->RepresentationIdentifier.HasValue || String::Compare(shape->RepresentationIdentifier.Value, "body" , true)==0) //we have a 3D geometry
+					if( !shape->RepresentationIdentifier.HasValue ||
+																(String::Compare(shape->RepresentationIdentifier.Value, "body" , true)==0)||
+																String::Compare(shape->RepresentationIdentifier.Value, "facetation" , true)==0)
+																//we have a 3D geometry
 					{
 						if(dynamic_cast<IfcGeometricRepresentationContext^>(shape->ContextOfItems))
 							BRepLib::Precision((Standard_Real)((IfcGeometricRepresentationContext^)(shape->ContextOfItems))->DefaultPrecision);
