@@ -1249,11 +1249,13 @@ namespace Xbim.XbimExtensions
 
         public bool Save()
         {
+            
             return true;
         }
 
         public bool SaveAs(string outputFileName)
         {
+            Export(XbimStorageType.XBIM, outputFileName);
             return true;
         }
 

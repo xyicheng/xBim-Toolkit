@@ -13,7 +13,6 @@ namespace Xbim.Ifc.Extensions
         /// <summary>
         /// Returns the Gross Footprint Area, if the element base quantity GrossFloorArea is defined
         /// </summary>
-        /// <param name="buildingStorey"></param>
         /// <returns></returns>
         public static IfcAreaMeasure GrossFootprintArea(this IfcSlab slab)
         {

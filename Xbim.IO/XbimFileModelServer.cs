@@ -1028,7 +1028,7 @@ namespace Xbim.IO
             dataStream.Seek(endIndex, SeekOrigin.Begin);
         }
 
-        public void Save()
+        override public bool Save()
         {
             lock (this)
             {
@@ -1036,6 +1036,7 @@ namespace Xbim.IO
                 WriteChanges(_stream);
                 _stream.Write(BitConverter.GetBytes(0L), 0, sizeof(long)); //no following changes
                 ToWrite.Clear();
+                return true;
             }
 
 

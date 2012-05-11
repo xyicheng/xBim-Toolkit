@@ -72,7 +72,6 @@ namespace Xbim.Ifc.Extensions
         /// <summary>
         /// Returns the Gross Floor Area, if the element base quantity GrossFloorArea is defined
         /// </summary>
-        /// <param name="buildingStorey"></param>
         /// <returns></returns>
         public static IfcAreaMeasure GetGrossFloorArea(this IfcSpace space)
         {
@@ -89,7 +88,6 @@ namespace Xbim.Ifc.Extensions
         /// Returns the Net Floor Area, if the element base quantity GrossFloorArea is defined
         /// Will use GSA Space Areas if the Ifc common property NetFloorArea is not defined
         /// </summary>
-        /// <param name="buildingStorey"></param>
         /// <returns></returns>
         public static IfcAreaMeasure GetNetFloorArea(this IfcSpace space)
         {
@@ -104,7 +102,6 @@ namespace Xbim.Ifc.Extensions
         /// <summary>
         /// Returns the Height, if the element base quantity Height is defined
         /// </summary>
-        /// <param name="buildingStorey"></param>
         /// <returns></returns>
         public static IfcLengthMeasure GetHeight(this IfcSpace space)
         {
@@ -120,7 +117,6 @@ namespace Xbim.Ifc.Extensions
         /// Returns the Perimeter, if the element base quantity GrossPerimeter is defined
         /// 
         /// </summary>
-        /// <param name="buildingStorey"></param>
         /// <returns></returns>
         public static IfcLengthMeasure GetGrossPerimeter(this IfcSpace space)
         {

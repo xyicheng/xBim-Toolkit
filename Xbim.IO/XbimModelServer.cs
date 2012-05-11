@@ -1593,11 +1593,8 @@ namespace Xbim.IO
             
         }
 
-        public bool Save()
-        {
-            return true;
-        }
-        
+        abstract public bool Save();
+       
         public bool SaveAs(string outputFileName)
         {
             // always save file as xbim, with user given filename

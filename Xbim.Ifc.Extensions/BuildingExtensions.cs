@@ -36,7 +36,6 @@ namespace Xbim.Ifc.Extensions
         /// <summary>
         /// Returns all spaces that are sub-spaces of this building
         /// </summary>
-        /// <param name="space"></param>
         /// <returns></returns>
         public static IEnumerable<IfcSpace> GetSpaces(this IfcBuilding building)
         {
