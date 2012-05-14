@@ -1,3 +1,44 @@
+// TesselateStream helps creating the memory stream holding the triangulated mesh information;
+// it receives calls from teh OpenGL and Opencascade implementations of the meshing algorithms.
+//
+// its functions can be called as follows: 
+// foreach face
+//		BeginFace(normal)
+//		foreach point
+//			WritePoint(x,y,z);
+//		foreach polygon using the points
+//			BeginPolygon(mode);
+//			foreach node (of the polygon)
+//				WritePointInt(int) or
+//				WritePointShort(int) or
+//				WritePointByte(int) (depending on the max size of int)
+//
+//			EndPolygon (this fills some data left blank by BeginPolygon
+//		EndFace (this fills some data left blank by BeginFace)
+	
+
+/* 
+
+proposed structure:
+
+CountUniquePositions // int
+[PosX, PosY, PosZ] // floats
+...
+CountUniqueNormals // int
+[NrmX, NrmY, NrmZ] // floats
+...
+CountUniquePositionNormals // int
+[iPos, INrm] // int, short or byte f(CountUniquePositions, CountUniqueNormals)
+...
+CountFaces // int
+	CountPoly // int
+		PolyType // byte
+		PolygonLen // int
+		iUniquePositionNormals // int, short or byte f(CountUniquePositions, CountUniqueNormals)
+		...
+
+*/
+
 #include "StdAfx.h"
 #include "XbimGeometryModel.h"
 #include "XbimLocation.h"
@@ -34,7 +75,8 @@ using namespace Xbim::Ifc::ProductExtension;
 using namespace System::Linq;
 using namespace Xbim::IO;
 
-
+// This class helps creating the memory stream holding the mesh information
+//
 TesselateStream::TesselateStream( unsigned char* pDataStream, const TopTools_IndexedMapOfShape& points, unsigned short faceCount, int streamSize)
 {
 	_streamSize=streamSize;
@@ -82,7 +124,8 @@ TesselateStream::TesselateStream( unsigned char* pDataStream, const TopTools_Ind
 }
 
 
-
+// This class helps creating the memory stream holding the mesh information
+//
 TesselateStream::TesselateStream( unsigned char* pDataStream, unsigned short faceCount, unsigned int nodeCount, int streamSize)
 {
 	_streamSize=streamSize;
@@ -356,7 +399,6 @@ namespace Xbim
 
 		IXbimGeometryModel^ XbimGeometryModel::Build(IfcBooleanResult^ repItem)
 		{
-
 			IfcBooleanOperand^ fOp= repItem->FirstOperand;
 			IfcBooleanOperand^ sOp= repItem->SecondOperand;
 			IXbimGeometryModel^ shape1;
@@ -689,11 +731,16 @@ namespace Xbim
 		long OpenCascadeMesh(const TopoDS_Shape & shape, unsigned char* pStream, unsigned short faceCount, int nodeCount, int streamSize)
 		{
 
+			// vertexData receives the calls from the following code that put the information in the binary stream.
+			//
 			TesselateStream vertexData(pStream, faceCount, nodeCount, streamSize);
 
 			int tally = -1;	
-			void  (TesselateStream::*writePoint) (unsigned int);
 
+			// writePoint is the pointer to the function used later to add an index entry for a polygon.
+			// it's chosen depending on the size of the maximum value to be written (to save space in the stream)
+			//
+			void  (TesselateStream::*writePoint) (unsigned int);
 			if(nodeCount<=0xFF) //we will use byte for indices
 				writePoint = &TesselateStream::WritePointByte;
 			else if(nodeCount<=0xFFFF) //use  unsigned short int for indices
@@ -738,7 +785,7 @@ namespace Xbim
 				for(Standard_Integer nd = 1 ; nd <= nbNodes ; nd++)
 				{
 					gp_XYZ p = points(nd).Coord();
-					loc.Transformation().Transforms(p);
+					loc.Transformation().Transforms(p); // bonghi: question: to fix how mapped representation works, will we still have to apply the transform? 
 					vertexData.WritePoint(p.X(), p.Y(), p.Z());
 					nTally+=3;
 				}
@@ -829,6 +876,18 @@ namespace Xbim
 
 #pragma managed
 
+		int GetIndexSize(int NumPoints)
+		{
+			int indexSize;
+			if(NumPoints<=0xFF) //we will use byte for indices
+				indexSize =sizeof(unsigned char) ;
+			else if(NumPoints<=0xFFFF) 
+				indexSize = sizeof(unsigned short); //use  unsigned short int for indices
+			else
+				indexSize = sizeof(unsigned int); //use unsigned int for indices
+			return indexSize;
+		}
+
 
 		XbimTriangulatedModelStream^ XbimGeometryModel::Mesh(IXbimGeometryModel^ shape, bool withNormals, double deflection, Matrix3D transform )
 		{
@@ -837,14 +896,8 @@ namespace Xbim
 			try
 			{
 				bool hasCurvedEdges = shape->HasCurvedEdges;
-				if(hasCurvedEdges) BRepMesh_IncrementalMesh incrementalMesh(*(shape->Handle), deflection);
-				//size the job up
-				//get all of the vertices in a map
-				TopTools_IndexedMapOfShape points;
-				unsigned short faceCount = 0;
-				int maxVertexCount = 0;
-				int triangleIndexCount = 0;
-				
+
+				// transformed shape is the shape placed according to the transform matrix
 				TopoDS_Shape transformedShape;
 				if(transform!=Matrix3D::Identity)
 				{
@@ -853,11 +906,23 @@ namespace Xbim
 				}
 				else
 					transformedShape = *(shape->Handle);
-				for (TopExp_Explorer faceEx(transformedShape,TopAbs_FACE) ; faceEx.More(); faceEx.Next()) 
+				
+				//decide which meshing algorithm to use, Opencascade is slow but necessary to resolve curved edges
+				if (hasCurvedEdges) 
 				{
-					faceCount++;
-					if(hasCurvedEdges)
+					// BRepMesh_IncrementalMesh calls BRepMesh_FastDiscret to create the mesh geometry.
+					//
+					BRepMesh_IncrementalMesh incrementalMesh(*(shape->Handle), deflection); // todo: Bonghi: is this ok to use the shape instead of transformedShape?
+					//size the job up
+					//get all of the vertices in a map
+					unsigned short faceCount = 0;
+					int maxVertexCount = 0;
+					int triangleIndexCount = 0;
+				
+					
+					for (TopExp_Explorer faceEx(transformedShape,TopAbs_FACE) ; faceEx.More(); faceEx.Next()) 
 					{
+						faceCount++;
 						TopLoc_Location loc;
 						Handle (Poly_Triangulation) facing = BRep_Tool::Triangulation(TopoDS::Face(faceEx.Current()),loc);
 						
@@ -866,58 +931,85 @@ namespace Xbim
 						maxVertexCount+=facing->NbNodes();
 						triangleIndexCount += facing->NbTriangles()*3;
 					}
-					else
+					int vertexCount = maxVertexCount;
+					
+					if(vertexCount==0) 
+						return XbimTriangulatedModelStream::Empty;
+					int memSize =  sizeof(int) + (vertexCount * 3 *sizeof(double)); //number of points plus x,y,z of each point
+
+					memSize += sizeof(unsigned int); //allow int for total number of faces
+					int indexSize = GetIndexSize(vertexCount);
+					
+					memSize += faceCount * (sizeof(unsigned char)+(2*sizeof(unsigned short)) +sizeof(unsigned short)+ 3 * sizeof(double)); //allow space for the type of triangulation (1 byte plus number of indices - 2 bytes plus polygon count-2 bytes) + normal count + the normal
+					memSize += triangleIndexCount * indexSize; //write out each indices
+					
+					IntPtr vertexPtr = Marshal::AllocHGlobal(memSize);
+					unsigned char* pointBuffer = (unsigned char*)vertexPtr.ToPointer();
+					
+					try
 					{
-						for (TopExp_Explorer vEx(faceEx.Current(),TopAbs_VERTEX) ; vEx.More(); vEx.Next()) 
-						{
-
-							maxVertexCount++;
-							points.Add(vEx.Current());
-
-						}
+						long streamLen = OpenCascadeMesh(transformedShape, pointBuffer, faceCount, maxVertexCount,memSize);
+						
+						array<unsigned char>^ managedArray = gcnew array<unsigned char>(streamLen);
+						Marshal::Copy(vertexPtr, managedArray, 0, streamLen);
+						return gcnew XbimTriangulatedModelStream(managedArray);
+					}
+					catch(...)
+					{
+						System::Diagnostics::Debug::WriteLine("Error processing geometry in XbimGeometryModel::Mesh");
+					}
+					finally
+					{
+						Marshal::FreeHGlobal(vertexPtr);
 					}
 				}
-				int vertexCount;
-				if(hasCurvedEdges) vertexCount=maxVertexCount; else vertexCount= points.Extent();
-				if(vertexCount==0) return XbimTriangulatedModelStream::Empty;
-				int memSize =  sizeof(int) + (vertexCount * 3 *sizeof(double)); //number of points plus x,y,z of each point
-
-				memSize += sizeof(unsigned int); //allow int for total number of faces
-				int indexSize;
-				if(vertexCount<=0xFF) //we will use byte for indices
-					indexSize =sizeof(unsigned char) ;
-				else if(vertexCount<=0xFFFF) 
-					indexSize = sizeof(unsigned short); //use  unsigned short int for indices
-				else
-					indexSize = sizeof(unsigned int); //use unsigned int for indices
-				memSize += faceCount * (sizeof(unsigned char)+(2*sizeof(unsigned short)) +sizeof(unsigned short)+ 3 * sizeof(double)); //allow space for the type of triangulation (1 byte plus number of indices - 2 bytes plus polygon count-2 bytes) + normal count + the normal
-				if(hasCurvedEdges)
-					memSize += triangleIndexCount * indexSize; //write out each indices
-				else
+				else // use opengl (faster than opencascade)
+				{
+					//size the job up
+					//get all of the vertices in a map
+					TopTools_IndexedMapOfShape points;
+					unsigned short faceCount = 0;
+					int maxVertexCount = 0;
+					int triangleIndexCount = 0;
+					
+					for (TopExp_Explorer faceEx(transformedShape,TopAbs_FACE) ; faceEx.More(); faceEx.Next()) 
+					{
+						faceCount++;
+						for (TopExp_Explorer vEx(faceEx.Current(),TopAbs_VERTEX) ; vEx.More(); vEx.Next()) 
+						{
+							maxVertexCount++;
+							points.Add(vEx.Current());
+						}
+					}
+					int vertexCount = points.Extent();
+					if(vertexCount==0) 
+						return XbimTriangulatedModelStream::Empty;
+					int memSize =  sizeof(int) + (vertexCount * 3 *sizeof(double)); //number of points plus x,y,z of each point
+					memSize += sizeof(unsigned int); //allow int for total number of faces
+					
+					int indexSize = GetIndexSize(vertexCount);
+					
+					memSize += faceCount * (sizeof(unsigned char)+(2*sizeof(unsigned short)) +sizeof(unsigned short)+ 3 * sizeof(double)); //allow space for the type of triangulation (1 byte plus number of indices - 2 bytes plus polygon count-2 bytes) + normal count + the normal
 					memSize += (maxVertexCount*indexSize) + (maxVertexCount); //assume worst case each face is made only of triangles, Max number of indices + Triangle Mode=1byte per triangle
-				IntPtr vertexPtr = Marshal::AllocHGlobal(memSize);
-				unsigned char* pointBuffer = (unsigned char*)vertexPtr.ToPointer();
-				//decide which meshing algorithm to use, Opencascade is slow but necessary to resolve curved edges
-				try
-				{
-					long streamLen;
-					if(hasCurvedEdges)
-						streamLen=OpenCascadeMesh(transformedShape, pointBuffer, faceCount, maxVertexCount,memSize);
-					else
-						streamLen=OpenGLMesh(transformedShape, points, pointBuffer, faceCount,memSize );
+					IntPtr vertexPtr = Marshal::AllocHGlobal(memSize);
+					unsigned char* pointBuffer = (unsigned char*)vertexPtr.ToPointer();
 
-					array<unsigned char>^ managedArray = gcnew array<unsigned char>(streamLen);
-					Marshal::Copy(vertexPtr, managedArray, 0, streamLen);
-					return gcnew XbimTriangulatedModelStream(managedArray);
-				}
-				catch(...)
-				{
-					System::Diagnostics::Debug::WriteLine("Error processing geometry in XbimGeometryModel::Mesh");
-				}
-				finally
-				{
-					Marshal::FreeHGlobal(vertexPtr);
+					try
+					{
+						long streamLen = OpenGLMesh(transformedShape, points, pointBuffer, faceCount,memSize );
 
+						array<unsigned char>^ managedArray = gcnew array<unsigned char>(streamLen);
+						Marshal::Copy(vertexPtr, managedArray, 0, streamLen);
+						return gcnew XbimTriangulatedModelStream(managedArray);
+					}
+					catch(...)
+					{
+						System::Diagnostics::Debug::WriteLine("Error processing geometry in XbimGeometryModel::Mesh");
+					}
+					finally
+					{
+						Marshal::FreeHGlobal(vertexPtr);
+					}
 				}
 			}
 			catch(...)
@@ -925,10 +1017,6 @@ namespace Xbim
 				System::Diagnostics::Debug::WriteLine("Failed to Triangulate shape");
 				return XbimTriangulatedModelStream::Empty;
 			}
-
-
-
-
 		}	
 
 		XbimBoundingBox^ XbimGeometryModel::GetBoundingBox(IXbimGeometryModel^ shape, bool precise)
