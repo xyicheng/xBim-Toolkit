@@ -36,7 +36,6 @@ CountFaces // int
 		PolygonLen // int
 		iUniquePositionNormals // int, short or byte f(CountUniquePositions, CountUniqueNormals)
 		...
-
 */
 
 #include "StdAfx.h"
@@ -116,7 +115,6 @@ TesselateStream::TesselateStream( unsigned char* pDataStream, const TopTools_Ind
 			pCord = (float*)(_pDataStream + _position);
 			*pCord = (float)p.Z(); _position += sizeof(float);
 		}
-
 	}
 	unsigned short * pFaceCount = (unsigned short *)(_pDataStream + _position);
 	*pFaceCount=faceCount;
@@ -220,7 +218,6 @@ void TesselateStream::WritePointInt(unsigned int index)
 
 void TesselateStream::WritePointShort(unsigned int index)
 {
-
 	unsigned short * pIndex = (unsigned short*)(_pDataStream + _position);
 	*pIndex = (unsigned short)index;
 	_position+=sizeof(unsigned short);
@@ -230,7 +227,6 @@ void TesselateStream::WritePointShort(unsigned int index)
 
 void TesselateStream::WritePointByte(unsigned int index)
 {
-
 	unsigned char * pIndex = (unsigned char*)(_pDataStream + _position);
 	*pIndex = (unsigned char)index;
 	_position+=sizeof(unsigned char);
@@ -241,6 +237,62 @@ void TesselateStream::EndPolygon()
 	unsigned short * pCount = (unsigned short *)(_pDataStream + _polygonStart + sizeof(unsigned char));
 	*pCount = _indicesCount;
 }
+
+// begin class TriangularMeshStreamer
+//
+TriangularMeshStreamer::TriangularMeshStreamer() 
+{
+	
+}
+void TriangularMeshStreamer::BeginFace() 
+{
+	
+}
+void TriangularMeshStreamer::EndFace(){}
+void TriangularMeshStreamer::BeginPolygon(GLenum type){}
+
+void TriangularMeshStreamer::SetNormal(float x, float y, float z)
+{
+	// finds the index of the current normal
+	// otherwise adds it to the collection
+	//
+	unsigned int iIndex = 0;
+	std::list<Float3D>::iterator i;
+	for (i =  _normals.begin(); i != _normals.end(); i++)
+	{
+		Float3D f2 = *i;
+		if (
+			x == f2.Dim1 &&
+			y == f2.Dim2 &&
+			z == f2.Dim3 
+			)
+		{
+			_currentNormalIndex = iIndex;
+			return;
+		}
+		iIndex++;
+	}
+	Float3D f;
+	f.Dim1 = x;
+	f.Dim2 = y;
+	f.Dim3 = z;
+	_normals.insert(_normals.end(), f);
+	_currentNormalIndex = iIndex;
+}
+void TriangularMeshStreamer::WritePoint(float x, float y, float z)
+{
+	Float3D f;
+	f.Dim1 = x;
+	f.Dim2 = y;
+	f.Dim3 = z;
+	_points.insert(_points.end(), f);
+}
+void TriangularMeshStreamer::WriteTriangleIndex(unsigned int index)
+{
+	
+}
+void TriangularMeshStreamer::EndPolygon(){}
+	
 
 void CALLBACK BeginTessellate(GLenum type, void *pPolygonData)
 {
@@ -727,13 +779,13 @@ namespace Xbim
 		}
 
 #pragma unmanaged
-#pragma unmanaged
 		long OpenCascadeMesh(const TopoDS_Shape & shape, unsigned char* pStream, unsigned short faceCount, int nodeCount, int streamSize)
 		{
 
 			// vertexData receives the calls from the following code that put the information in the binary stream.
 			//
 			TesselateStream vertexData(pStream, faceCount, nodeCount, streamSize);
+			TriangularMeshStreamer tms;
 
 			int tally = -1;	
 
@@ -766,6 +818,11 @@ namespace Xbim
 
 				gp_Dir normal = GetNormal(face);
 				vertexData.BeginFace(normal); //need to send array of normals
+				tms.BeginFace();
+				float nx = (float)normal.X();
+				float ny = (float)normal.Y();
+				float nz = (float)normal.Z();
+				tms.SetNormal(nx,ny,nz);
 
 				/*for(Standard_Integer nd = 1 ; nd <= nbNodes ; nd++)
 				{

@@ -1,5 +1,5 @@
 #pragma once
-
+#include <list>
 #include "XbimLocation.h"
 #include "XbimBoundingBox.h"
 #include "IXbimMeshGeometry.h"
@@ -17,45 +17,71 @@ using namespace Xbim::Ifc::Kernel;
 using namespace System;
 using namespace System::Collections::Generic;
 using namespace Xbim::ModelGeometry::Scene;
+// typedef list<int> LISTINT;
 
 #pragma unmanaged
 
-		public class TesselateStream
-		{
-		public:
-			const static bool UseDouble = false;
-			TesselateStream( unsigned char* pDataStream, const TopTools_IndexedMapOfShape& points, unsigned short faceCount, int streamSize);
-			TesselateStream( unsigned char* pDataStream, unsigned short faceCount, unsigned int nodeCount, int streamSize);
-			TesselateStream( unsigned char* pDataStream,  int streamSize, int position);
-			void BeginFace(const gp_Dir& normal);
-			void EndFace();
-			void BeginPolygon(GLenum type);
-			void WritePoint(double x, double y, double z);
-			void WritePointInt(unsigned int index);
-			void WritePointShort(unsigned int index);
-			void WritePointByte(unsigned int index);
-			void EndPolygon();
-			long Length() {return _position;};
-		private:
-			unsigned char* _pDataStream;
-			int _position;
-			int _polygonStart;
-			int _pointPosition;
-			int _faceStart;
-			int _polygonCount;
-			int _streamSize;
-			unsigned short _indicesCount;
-		};
+struct Float3D{
+	float Dim1;
+	float Dim2;
+	float Dim3;
+};
 
-		void CALLBACK BeginTessellate(GLenum type, void *pPolygonData);
-		void CALLBACK EndTessellate(void *pVertexData);
-		void CALLBACK TessellateError(GLenum err);
-		void CALLBACK AddVertexByte(void *pVertexData, void *pPolygonData);
-		void CALLBACK AddVertexShort(void *pVertexData, void *pPolygonData);
-		void CALLBACK AddVertexInt(void *pVertexData, void *pPolygonData);
+public class TesselateStream
+{
+public:
+	const static bool UseDouble = false;
+	TesselateStream( unsigned char* pDataStream, const TopTools_IndexedMapOfShape& points, unsigned short faceCount, int streamSize);
+	TesselateStream( unsigned char* pDataStream, unsigned short faceCount, unsigned int nodeCount, int streamSize);
+	TesselateStream( unsigned char* pDataStream,  int streamSize, int position);
+	void BeginFace(const gp_Dir& normal);
+	void EndFace();
+	void BeginPolygon(GLenum type);
+	void WritePoint(double x, double y, double z);
+	void WritePointInt(unsigned int index);
+	void WritePointShort(unsigned int index);
+	void WritePointByte(unsigned int index);
+	void EndPolygon();
+	long Length() {return _position;};
+private:
+	unsigned char* _pDataStream;
+	int _position;
+	int _polygonStart;
+	int _pointPosition;
+	int _faceStart;
+	int _polygonCount;
+	int _streamSize;
+	unsigned short _indicesCount;
+};
+
+// Class to receive the calls that create the memory stream of the geometry cache files. (CB)
+//
+public class TriangularMeshStreamer
+{
+public: 
+	TriangularMeshStreamer();
+	void BeginFace();
+	void EndFace();
+	void BeginPolygon(GLenum type);
+	void SetNormal(float x, float y, float z);
+	void WritePoint(float x, float y, float z);
+	void WriteTriangleIndex(unsigned int index);
+	void EndPolygon();
+private:
+	unsigned int _currentNormalIndex;
+	std::list<Float3D> _points;
+	std::list<Float3D> _normals;
+};
+
+void CALLBACK BeginTessellate(GLenum type, void *pPolygonData);
+void CALLBACK EndTessellate(void *pVertexData);
+void CALLBACK TessellateError(GLenum err);
+void CALLBACK AddVertexByte(void *pVertexData, void *pPolygonData);
+void CALLBACK AddVertexShort(void *pVertexData, void *pPolygonData);
+void CALLBACK AddVertexInt(void *pVertexData, void *pPolygonData);
 
 		
-		#pragma managed
+#pragma managed
 
 namespace Xbim
 {
