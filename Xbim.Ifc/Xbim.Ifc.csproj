@@ -549,6 +549,7 @@
     <Compile Include="SharedComponentElements\IfcElementComponent.cs" />
     <Compile Include="SharedComponentElements\IfcElementComponentType.cs" />
     <Compile Include="SharedComponentElements\IfcFastener.cs" />
+    <Compile Include="SharedComponentElements\IfcMechanicalFastener.cs" />
     <Compile Include="SharedFacilitiesElements\IfcFurnitureType.cs" />
     <Compile Include="SharedFacilitiesElements\IfcSystemFurnitureElementType.cs" />
     <Compile Include="StructuralAnalysisDomain\IfcActionSourceTypeEnum.cs" />
