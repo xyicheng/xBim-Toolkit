@@ -1,41 +1,45 @@
-// TesselateStream helps creating the memory stream holding the triangulated mesh information;
-// it receives calls from teh OpenGL and Opencascade implementations of the meshing algorithms.
-//
-// its functions can be called as follows: 
-// foreach face
-//		BeginFace(normal)
-//		foreach point
-//			WritePoint(x,y,z);
-//		foreach polygon using the points
-//			BeginPolygon(mode);
-//			foreach node (of the polygon)
-//				WritePointInt(int) or
-//				WritePointShort(int) or
-//				WritePointByte(int) (depending on the max size of int)
-//
-//			EndPolygon (this fills some data left blank by BeginPolygon
-//		EndFace (this fills some data left blank by BeginFace)
-	
+/* ==================================================================
+TesselateStream:
 
-/* 
+TesselateStream helps creating the memory stream holding the triangulated mesh information;
+it receives calls from teh OpenGL and Opencascade implementations of the meshing algorithms.
 
-proposed structure:
+its functions can be called as follows: 
+foreach face
+	BeginFace(normal)
+	foreach point
+		WritePoint(x,y,z);
+	foreach polygon using the points
+		BeginPolygon(mode);
+		foreach node (of the polygon)
+			WritePointInt(int) or
+			WritePointShort(int) or
+			WritePointByte(int) (depending on the max size of int)
 
+		EndPolygon (this fills some data left blank by BeginPolygon
+	EndFace (this fills some data left blank by BeginFace)
+*/
+
+/* ==================================================================
+proposed structure of stream for triangular meshes:
+Lenght // int (allows to skip to next stream if needed)
 CountUniquePositions // int
+CountUniqueNormals // int
+CountUniquePositionNormals // int
+CountAllTriangles // int // used to prepare index array if needed
+CountPoly // int
 [PosX, PosY, PosZ] // floats
 ...
-CountUniqueNormals // int
 [NrmX, NrmY, NrmZ] // floats
 ...
-CountUniquePositionNormals // int
 [iPos, INrm] // int, short or byte f(CountUniquePositions, CountUniqueNormals)
 ...
-CountFaces // int
-	CountPoly // int
-		PolyType // byte
-		PolygonLen // int
-		iUniquePositionNormals // int, short or byte f(CountUniquePositions, CountUniqueNormals)
-		...
+[Polygons:  
+	PolyType // byte
+	PolygonLen // int
+	iUniquePositionNormals // int, short or byte f(CountUniquePositions, CountUniqueNormals)
+	...
+]...
 */
 
 #include "StdAfx.h"
@@ -48,7 +52,6 @@ CountFaces // int
 #include "XbimGeometryModelCollection.h"
 #include "XbimFacetedShell.h"
 #include "XbimMap.h"
-
 
 #include <TopoDS_Shell.hxx>
 #include <TopoDS_Solid.hxx>
@@ -121,7 +124,7 @@ TesselateStream::TesselateStream( unsigned char* pDataStream, const TopTools_Ind
 	_position+=sizeof(faceCount);
 }
 
-
+// ==================================================================
 // This class helps creating the memory stream holding the mesh information
 //
 TesselateStream::TesselateStream( unsigned char* pDataStream, unsigned short faceCount, unsigned int nodeCount, int streamSize)
@@ -238,24 +241,41 @@ void TesselateStream::EndPolygon()
 	*pCount = _indicesCount;
 }
 
+
+// ==================================================================
 // begin class TriangularMeshStreamer
 //
 TriangularMeshStreamer::TriangularMeshStreamer() 
 {
-	
+	System::Diagnostics::Debug::Write("TriangularMeshStreamer Init\r\n");
 }
-void TriangularMeshStreamer::BeginFace() 
+void TriangularMeshStreamer::BeginPolygon(GLenum type)
 {
-	
+	System::Diagnostics::Debug::Write("Begin polygon\r\n");
+	PolygonInfo p;
+	p.GLType = type;
+	p.IndexCount = 0;
+
+	_poligons.insert(_poligons.end(), p);
+	_currentPolygonCount = 0;
 }
-void TriangularMeshStreamer::EndFace(){}
-void TriangularMeshStreamer::BeginPolygon(GLenum type){}
+void TriangularMeshStreamer::EndPolygon()
+{
+	System::Diagnostics::Debug::Write("End polygon\r\n");
+	_poligons.back().IndexCount = _currentPolygonCount;
+}
+
+void TriangularMeshStreamer::info(char string)
+{
+	System::Diagnostics::Debug::WriteLine(string);
+}
 
 void TriangularMeshStreamer::SetNormal(float x, float y, float z)
 {
 	// finds the index of the current normal
 	// otherwise adds it to the collection
 	//
+	System::Diagnostics::Debug::Write("Set normal\r\n");
 	unsigned int iIndex = 0;
 	std::list<Float3D>::iterator i;
 	for (i =  _normals.begin(); i != _normals.end(); i++)
@@ -281,6 +301,7 @@ void TriangularMeshStreamer::SetNormal(float x, float y, float z)
 }
 void TriangularMeshStreamer::WritePoint(float x, float y, float z)
 {
+	System::Diagnostics::Debug::Write("WritePoint\r\n");
 	Float3D f;
 	f.Dim1 = x;
 	f.Dim2 = y;
@@ -289,10 +310,36 @@ void TriangularMeshStreamer::WritePoint(float x, float y, float z)
 }
 void TriangularMeshStreamer::WriteTriangleIndex(unsigned int index)
 {
-	
+	System::Diagnostics::Debug::Write("WriteTriangleIndex\r\n");
+	_currentPolygonCount++; // used in the closing function of each polygon
+	unsigned int resolvedPoint = this->getUniquePoint(index, _currentNormalIndex);
+	_indices.insert(_indices.end(), resolvedPoint);
 }
-void TriangularMeshStreamer::EndPolygon(){}
-	
+
+unsigned int TriangularMeshStreamer::getUniquePoint(unsigned int pointIndex, unsigned int normalIndex)
+{
+	System::Diagnostics::Debug::Write("getUniquePoint\r\n");
+	unsigned int iIndex = 0;
+	std::list<UIntegerPair>::iterator i;
+	for (i = _uniquePN.begin(); i != _uniquePN.end(); i++)
+	{
+		UIntegerPair iter = *i;
+		if (
+			pointIndex == iter.Int1 &&
+			normalIndex == iter.Int2 
+			)
+		{
+			return iIndex;
+		}
+		iIndex++;
+	}
+	UIntegerPair f;
+	f.Int1 = pointIndex;
+	f.Int2 = normalIndex; 
+	_uniquePN.insert(_uniquePN.end(), f);
+	return iIndex;
+}
+
 
 void CALLBACK BeginTessellate(GLenum type, void *pPolygonData)
 {
@@ -320,10 +367,6 @@ void CALLBACK AddVertexInt(void *pVertexData, void *pPolygonData)
 	((TesselateStream*)pPolygonData)->WritePointInt((unsigned int)pVertexData);
 };
 
-
-
-
-
 gp_Dir GetNormal(const TopoDS_Face& face)
 {
 	// get bounds of face
@@ -345,11 +388,6 @@ namespace Xbim
 		XbimGeometryModel::XbimGeometryModel(void)
 		{
 		}
-
-
-
-
-
 
 		/* Creates a 3D Model geometry for the product based upon the first "Body" ShapeRepresentation that can be found in  Products.ProductRepresentation that is within the specified 
 		GeometricRepresentationContext, if the Representation context is null the first  "Body" ShapeRepresentation
@@ -488,15 +526,11 @@ namespace Xbim
 			//check if we have boxed half spaces then see if there is any intersect
 			if(_shape1IsSolid.HasValue)
 			{
-
 				if(!shape1->GetBoundingBox(false)->Intersects(shape2->GetBoundingBox(false)))
 				{
 					if(_shape1IsSolid.Value == true) return shape1; else return shape2;
 				}
-
 			}
-
-		
 
 			switch(repItem->Operator)
 			{
@@ -666,7 +700,6 @@ namespace Xbim
 							XbimShell^ shell = gcnew XbimShell(repItem->FbsmFaces->First);
 							return  Fix(shell);
 						}
-						
 					}
 				}
 				else
@@ -781,7 +814,6 @@ namespace Xbim
 #pragma unmanaged
 		long OpenCascadeMesh(const TopoDS_Shape & shape, unsigned char* pStream, unsigned short faceCount, int nodeCount, int streamSize)
 		{
-
 			// vertexData receives the calls from the following code that put the information in the binary stream.
 			//
 			TesselateStream vertexData(pStream, faceCount, nodeCount, streamSize);
@@ -812,17 +844,22 @@ namespace Xbim
 					continue;
 				}	
 
-				/*Poly::ComputeNormals(facing);
-				nTally = 0;
-				const TShort_Array1OfShortReal& normals =  facing->Normals();*/
+				// computation of normals
+				// the returing array is 3 times longer than point array and it's to be read in groups of 3.
+				//
+				Poly::ComputeNormals(facing);
+				const TShort_Array1OfShortReal& normals =  facing->Normals();
+				// tms.info('n', (int)normals.Length());
 
 				gp_Dir normal = GetNormal(face);
 				vertexData.BeginFace(normal); //need to send array of normals
+
+				/*
 				tms.BeginFace();
 				float nx = (float)normal.X();
 				float ny = (float)normal.Y();
 				float nz = (float)normal.Z();
-				tms.SetNormal(nx,ny,nz);
+				tms.SetNormal(nx,ny,nz);*/
 
 				/*for(Standard_Integer nd = 1 ; nd <= nbNodes ; nd++)
 				{
@@ -834,6 +871,7 @@ namespace Xbim
 				}*/
 
 				Standard_Integer nbNodes = facing->NbNodes();
+				// tms.info('p', (int)nbNodes);
 				Standard_Integer nbTriangles = facing->NbTriangles();
 
 				const TColgp_Array1OfPnt& points = facing->Nodes();
@@ -844,6 +882,7 @@ namespace Xbim
 					gp_XYZ p = points(nd).Coord();
 					loc.Transformation().Transforms(p); // bonghi: question: to fix how mapped representation works, will we still have to apply the transform? 
 					vertexData.WritePoint(p.X(), p.Y(), p.Z());
+					tms.WritePoint((float)p.X(), (float)p.Y(), (float)p.Z());
 					nTally+=3;
 				}
 
@@ -851,26 +890,59 @@ namespace Xbim
 
 				Standard_Integer n1, n2, n3;
 				vertexData.BeginPolygon(GL_TRIANGLES);
+				tms.BeginPolygon(GL_TRIANGLES);
 				for(Standard_Integer tr = 1 ; tr <= nbTriangles ; tr++)
 				{
 					triangles(tr).Get(n1, n2, n3);
-
+					int iPointIndex;
 					if(orient == TopAbs_REVERSED)
 					{
+						tms.info('R');
+						// setnormal and point
+						iPointIndex = (n3+tally) * 3;
+						tms.SetNormal((float)normals(iPointIndex++), (float)normals(iPointIndex++), (float)normals(iPointIndex));
+						tms.WriteTriangleIndex(n3+tally);
 						(vertexData.*writePoint)(n3+tally);
+
+						// setnormal and point
+						iPointIndex = (n2+tally) * 3;
+						tms.SetNormal(normals(iPointIndex++),normals(iPointIndex++),normals(iPointIndex));
+						tms.WriteTriangleIndex(n2+tally);
 						(vertexData.*writePoint)(n2+tally);
+
+						// setnormal and point
+						iPointIndex = (n1+tally) * 3;
+						tms.SetNormal(normals(iPointIndex++),normals(iPointIndex++),normals(iPointIndex));
+						tms.WriteTriangleIndex(n1+tally);
 						(vertexData.*writePoint)(n1+tally);
 					}
 					else
 					{
+						tms.info('N');
+						// setnormal
+						iPointIndex = (n1+tally) * 3;
+						tms.SetNormal(normals(iPointIndex++),normals(iPointIndex++),normals(iPointIndex));
+						tms.WriteTriangleIndex(n1+tally);
 						(vertexData.*writePoint)(n1+tally);
+
+						// setnormal
+						iPointIndex = (n2+tally) * 3;
+						tms.SetNormal(normals(iPointIndex++),normals(iPointIndex++),normals(iPointIndex));
+						tms.WriteTriangleIndex(n2+tally);
 						(vertexData.*writePoint)(n2+tally);
+
+						// setnormal
+						iPointIndex = (n3+tally) * 3;
+						tms.SetNormal(normals(iPointIndex++),normals(iPointIndex++),normals(iPointIndex));
+						tms.WriteTriangleIndex(n3+tally);
 						(vertexData.*writePoint)(n3+tally);
 					}
 				}
-				tally+=nbNodes;
+				tally+=nbNodes; // bonghi: question: point coordinates might be duplicated with this method for different faces. Size optimisation could be possible at the cost of performance speed.
 				vertexData.EndPolygon();
 				vertexData.EndFace();
+
+				tms.EndPolygon();
 			}
 			return vertexData.Length();
 		}
