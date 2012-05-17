@@ -1,5 +1,6 @@
 #pragma once
 #include <list>
+#include "XbimTriangularMeshStreamer.h"
 #include "XbimLocation.h"
 #include "XbimBoundingBox.h"
 #include "IXbimMeshGeometry.h"
@@ -67,14 +68,11 @@ namespace Xbim
 {
 	namespace ModelGeometry
 	{	
-
-		
 		public ref class XbimGeometryModel abstract 
 		{
 			static private int _callStaticConstructor; //we need this to ensure the static constructor is called
 		private:
-			
-			
+			static void Test(XbimTriangularMeshStreamer* v1);
 		public:
 			
 			static int DefaultDeflection = 4;

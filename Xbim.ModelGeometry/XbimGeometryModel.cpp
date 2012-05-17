@@ -693,7 +693,126 @@ namespace Xbim
 			return nullptr;
 		}
 
+		void XbimGeometryModel::Test(XbimTriangularMeshStreamer* v1)
+		{
+			v1->info(3);
+		}
+
 #pragma unmanaged
+
+		long OpenCascadeStreamerFeed(const TopoDS_Shape & shape, XbimTriangularMeshStreamer* tms)
+		{
+			// vertexData receives the calls from the following code that put the information in the binary stream.
+			//
+			// XbimTriangularMeshStreamer tms;
+
+			// triangle indices are 1 based; this converts them to 0 based them and deals with multiple triangles to be added for multiple calls to faces.
+			//
+			int tally = -1;	
+
+			for (TopExp_Explorer faceEx(shape,TopAbs_FACE) ; faceEx.More(); faceEx.Next()) 
+			{
+				const TopoDS_Face& face = TopoDS::Face(faceEx.Current());
+				TopAbs_Orientation orient = face.Orientation();
+				TopLoc_Location loc;
+				Handle (Poly_Triangulation) facing = BRep_Tool::Triangulation(face,loc);
+				if(facing.IsNull())
+				{
+					continue;
+				}	
+
+				// computation of normals
+				// the returing array is 3 times longer than point array and it's to be read in groups of 3.
+				//
+				Poly::ComputeNormals(facing);
+				const TShort_Array1OfShortReal& normals =  facing->Normals();
+				
+				Standard_Integer nbNodes = facing->NbNodes();
+				// tms.info('p', (int)nbNodes);
+				Standard_Integer nbTriangles = facing->NbTriangles();
+
+				const TColgp_Array1OfPnt& points = facing->Nodes();
+				int nTally = 0;
+
+				tms->BeginFace(nbNodes);
+
+				for(Standard_Integer nd = 1 ; nd <= nbNodes ; nd++)
+				{
+					gp_XYZ p = points(nd).Coord();
+					loc.Transformation().Transforms(p); // bonghi: question: to fix how mapped representation works, will we still have to apply the transform? 
+					
+					tms->WritePoint((float)p.X(), (float)p.Y(), (float)p.Z());
+					nTally+=3;
+				}
+
+				const Poly_Array1OfTriangle& triangles = facing->Triangles();
+
+				Standard_Integer n1, n2, n3;
+				
+				tms->BeginPolygon(GL_TRIANGLES);
+				for(Standard_Integer tr = 1 ; tr <= nbTriangles ; tr++)
+				{
+					triangles(tr).Get(n1, n2, n3); // triangle indices are 1 based
+					int iPointIndex;
+					if(orient == TopAbs_REVERSED)
+					{
+						// tms.info('R');
+						// setnormal and point
+						iPointIndex = 3 * n3 - 2;
+						// tms.info(iPointIndex);
+						tms->SetNormal((float)normals(iPointIndex++), (float)normals(iPointIndex++), (float)normals(iPointIndex));
+						tms->WriteTriangleIndex(n3+tally);
+						
+
+						// setnormal and point
+						iPointIndex = 3 * n2 - 2;
+						// tms.info(iPointIndex);
+						tms->SetNormal(normals(iPointIndex++),normals(iPointIndex++),normals(iPointIndex));
+						tms->WriteTriangleIndex(n2+tally);
+						
+
+						// setnormal and point
+						iPointIndex = 3 * n1 - 2;
+						//tms.info(iPointIndex);
+						tms->SetNormal(normals(iPointIndex++),normals(iPointIndex++),normals(iPointIndex));
+						tms->WriteTriangleIndex(n1+tally);
+						
+					}
+					else
+					{
+						// tms.info('N');
+						// setnormal
+						iPointIndex = 3 * n1 - 2;
+						// tms.info(iPointIndex);
+						tms->SetNormal(normals(iPointIndex++),normals(iPointIndex++),normals(iPointIndex));
+						tms->WriteTriangleIndex(n1+tally);
+						
+
+						// setnormal
+						iPointIndex = 3 * n2 - 2;
+						// tms.info(iPointIndex);
+						tms->SetNormal(normals(iPointIndex++),normals(iPointIndex++),normals(iPointIndex));
+						tms->WriteTriangleIndex(n2+tally);
+						
+
+						// setnormal
+						iPointIndex = 3 * n3 - 2;
+						// tms.info(iPointIndex);
+						tms->SetNormal(normals(iPointIndex++),normals(iPointIndex++),normals(iPointIndex));
+						tms->WriteTriangleIndex(n3+tally);
+					}
+				}
+				tally+=nbNodes; // bonghi: question: point coordinates might be duplicated with this method for different faces. Size optimisation could be possible at the cost of performance speed.
+
+				tms->EndPolygon();
+				tms->EndFace();
+			}
+			int iSize = tms->StreamSize();
+			return 0;
+		}
+
+		
+
 		long OpenCascadeMesh(const TopoDS_Shape & shape, unsigned char* pStream, unsigned short faceCount, int nodeCount, int streamSize)
 		{
 			// vertexData receives the calls from the following code that put the information in the binary stream.
@@ -737,9 +856,8 @@ namespace Xbim
 
 				gp_Dir normal = GetNormal(face);
 				vertexData.BeginFace(normal); //need to send array of normals
-
+				
 				/*
-				tms.BeginFace();
 				float nx = (float)normal.X();
 				float ny = (float)normal.Y();
 				float nz = (float)normal.Z();
@@ -760,6 +878,8 @@ namespace Xbim
 
 				const TColgp_Array1OfPnt& points = facing->Nodes();
 				int nTally = 0;
+
+				tms.BeginFace(nbNodes);
 
 				for(Standard_Integer nd = 1 ; nd <= nbNodes ; nd++)
 				{
@@ -833,6 +953,7 @@ namespace Xbim
 				vertexData.EndFace();
 
 				tms.EndPolygon();
+				tms.EndFace();
 			}
 			int iSize = tms.StreamSize();
 			return vertexData.Length();
@@ -968,7 +1089,22 @@ namespace Xbim
 					
 					try
 					{
+						// bonghi
 						long streamLen = OpenCascadeMesh(transformedShape, pointBuffer, faceCount, maxVertexCount,memSize);
+						XbimTriangularMeshStreamer value;
+						XbimTriangularMeshStreamer* m = &value;
+						long streamLen2 = OpenCascadeStreamerFeed(transformedShape, m);
+						int isssss = m->StreamSize();
+
+						IntPtr BonghiUnManMem = Marshal::AllocHGlobal(isssss);
+						unsigned char* BonghiUnManMemBuf = (unsigned char*)BonghiUnManMem.ToPointer();
+						m->StreamTo(BonghiUnManMemBuf);
+
+						array<unsigned char>^ BmanagedArray = gcnew array<unsigned char>(isssss);
+						Marshal::Copy(BonghiUnManMem, BmanagedArray, 0, isssss);
+						Marshal::FreeHGlobal(BonghiUnManMem);
+
+						// end bonghi
 						
 						array<unsigned char>^ managedArray = gcnew array<unsigned char>(streamLen);
 						Marshal::Copy(vertexPtr, managedArray, 0, streamLen);

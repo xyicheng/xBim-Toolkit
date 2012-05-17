@@ -28,29 +28,36 @@ struct PolygonInfo {
 
 // Class to receive the calls that create the memory stream of the geometry cache files. (CB)
 //
-
-
 public class XbimTriangularMeshStreamer
 {
 public: 
 	XbimTriangularMeshStreamer();
+	void BeginFace(int NodesInFace);
+	void EndFace();
 	void BeginPolygon(GLenum type);
+	void EndPolygon();
 	void SetNormal(float x, float y, float z);
 	void WritePoint(float x, float y, float z);
 	void WriteTriangleIndex(unsigned int index);
-	void EndPolygon();
 	void info(char string);
 	void info(int Number);
 	int StreamSize();
+	void StreamTo(unsigned char* pStream);
 private:
 	unsigned int getUniquePoint(unsigned int pointIndex, unsigned int normalIndex);
 	int sizeOptimised(unsigned int maxIndex);
 	unsigned int _currentNormalIndex;
+	unsigned int _facePointIndex;
 	std::list<Float3D> _points;
 	std::list<Float3D> _normals;
 	std::list<UIntegerPair> _uniquePN;	// unique point and normal combination
 	std::list<PolygonInfo> _poligons;	// polygon informations
 	std::list<unsigned int> _indices;	
 	unsigned int _currentPolygonCount;
+	unsigned int * _faceIndexMap;       // we're removing duplicates for the points; this array contains the mapping of non-optimised to optimised indices for a face
+	int WriteByte(unsigned char* pStream, unsigned int value);
+	int WriteShort(unsigned char* pStream, unsigned int value);
+	int WriteInt(unsigned char* pStream, unsigned int value);
+
 };
 #pragma managed
