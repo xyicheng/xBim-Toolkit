@@ -151,7 +151,13 @@ namespace Xbim.Ifc.TopologyResource
                             cp.Negate();
                         return new IfcDirection(cp);
                     }
+                    else if (i == polyLoop.Polygon.Count - 1)
+                    {
+                        // if its the last round of for look then just return the last cp
+                        return new IfcDirection(cp);
+                    }
                 }
+                // should never come here
                 throw new Exception("IfcFaceBound:Normal has an Invalid face");
             }
             else
