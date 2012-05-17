@@ -8,16 +8,8 @@ using Xbim.ModelGeometry.Scene;
 
 namespace Xbim.Web.Viewer3D.ServerSide
 {
-    public class MeshGeometry : IXbimTriangulatedModelBuilder
+    public class MeshGeometry : IXbimTriangulatesFromBinaryStream
     {
-        //private List<MeshGeometry> _children = new List<MeshGeometry>();
-
-        //public List<MeshGeometry> Children
-        //{
-        //    get { return _children; }
-        //    set { _children = value; }
-        //}
-
 
         private Int32Collection _indices = new Int32Collection();
 
@@ -56,13 +48,6 @@ namespace Xbim.Web.Viewer3D.ServerSide
             set { _positions = value; }
         }
 
-        //internal void AddChild(MeshGeometry meshGeometry)
-        //{
-        //    if (_children == null)
-        //        _children = new List<MeshGeometry>();
-        //    _children.Add(meshGeometry);
-        //}
-
         public void BeginBuild()
         {
             Init();
@@ -79,13 +64,11 @@ namespace Xbim.Web.Viewer3D.ServerSide
         public void BeginVertices(uint numPoints)
         {
             _positions = new Point3DCollection((int)numPoints);
-            // _points = new Point3DCollection((int)numPoints);
         }
 
         public void AddVertex(Point3D point3D)
         {
             _positions.Add(point3D);
-           //  _points.Add(point3D);
         }
 
         public void EndVertices()
@@ -99,12 +82,10 @@ namespace Xbim.Web.Viewer3D.ServerSide
 
         public void BeginFace()
         {
-            //_facePointIndexes = new HashSet<uint>();
         }
 
         public void BeginNormals(ushort numNormals)
         {
-
         }
 
         int currentNormal = 0;
@@ -186,8 +167,7 @@ namespace Xbim.Web.Viewer3D.ServerSide
                         if (_pointTally % 2 == 0)
                         {
                             _indices.Add(_previousToLastIndex);
-                            _indices.Add(_lastIndex);
-                            
+                            _indices.Add(_lastIndex);   
                         }
                         else
                         {

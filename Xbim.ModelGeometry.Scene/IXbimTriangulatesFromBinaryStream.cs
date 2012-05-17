@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Xbim.ModelGeometry.Scene
 {
-    public interface IXbimTriangulatedModelBuilder
+    public interface IXbimTriangulatesFromBinaryStream
     {
         /// <summary>
         /// Called to initialise the build

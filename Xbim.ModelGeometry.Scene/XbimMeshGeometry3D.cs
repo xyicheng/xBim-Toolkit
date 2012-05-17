@@ -9,7 +9,7 @@ namespace Xbim.ModelGeometry.Scene
     /// <summary>
     /// This class extends the WPF MeshGeometry3D class to support the XbimTriangulationModel
     /// </summary>
-    public class XbimMeshGeometry3D : IXbimTriangulatedModelBuilder
+    public class XbimMeshGeometry3D : IXbimTriangulatesFromBinaryStream
     {
         Model3DGroup _modelGroup;
         MeshGeometry3D _meshGeometry;

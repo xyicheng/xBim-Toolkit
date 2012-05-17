@@ -15,7 +15,6 @@ namespace Xbim.Web.Viewer3D.ServerSide
 {
     public class MeshWriter
     {
-
         public MeshWriter() : this(false)
         { }
 

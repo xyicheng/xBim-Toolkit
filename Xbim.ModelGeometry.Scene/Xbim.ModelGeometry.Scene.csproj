@@ -89,7 +89,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CoPlanarComparer.cs" />
-    <Compile Include="IXbimTriangulatedModelBuilder.cs" />
+    <Compile Include="IXbimTriangulatesFromBinaryStream.cs" />
     <Compile Include="IXbimScene.cs" />
     <Compile Include="Matrix3DExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

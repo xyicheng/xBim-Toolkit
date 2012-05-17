@@ -24,7 +24,6 @@ namespace Xbim
 				BRep_Builder b;
 				b.MakeCompound(*pCompound);*/
 				shapes = gcnew List<IXbimGeometryModel^>();
-			
 			};
 
 			XbimGeometryModelCollection(const TopoDS_Compound & pComp, bool hasCurves)
@@ -66,9 +65,7 @@ namespace Xbim
 				}
 			}
 
-			// IEnumerable<IXbimGeometryModel^> Members
-			
-virtual property XbimLocation ^ Location 
+			virtual property XbimLocation ^ Location 
 			{
 				XbimLocation ^ get()
 				{
@@ -80,7 +77,7 @@ virtual property XbimLocation ^ Location
 					//pCompound->Location(*(location->Handle));;
 					throw gcnew NotImplementedException("Location needs to be implemented");
 				}
-			};
+			}
 
 			virtual property double Volume
 			{
@@ -106,16 +103,15 @@ virtual property XbimLocation ^ Location
 						bb = geom->GetBoundingBox(precise);
 					else
 						bb->Add(geom->GetBoundingBox(precise));
-
 				}
 				return bb;
-			};
+			}
 
 			virtual IEnumerator<IXbimGeometryModel^>^ GetEnumerator()
 			{
-
 				return shapes->GetEnumerator();
 			}
+
 			virtual System::Collections::IEnumerator^ GetEnumerator2() sealed = System::Collections::IEnumerable::GetEnumerator
 			{
 				return shapes->GetEnumerator();
@@ -146,12 +142,9 @@ virtual property XbimLocation ^ Location
 
 			IXbimGeometryModel^ Solidify();
 			
-
 			/*Interfaces*/
 			virtual property TopoDS_Shape* Handle
-			{
-				//
-				
+			{	
 				TopoDS_Shape* get()
 				{
 					if(!pCompound)
@@ -173,8 +166,6 @@ virtual property XbimLocation ^ Location
 			virtual XbimTriangulatedModelStream^ Mesh(bool withNormals);
 			virtual XbimTriangulatedModelStream^ Mesh();
 			virtual IXbimGeometryModel^ CopyTo(IfcObjectPlacement^ placement);
-			
 		};
-
 	}
 }

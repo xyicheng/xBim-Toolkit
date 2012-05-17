@@ -18,7 +18,7 @@ namespace Xbim
 
 		IXbimGeometryModel^ XbimGeometryModelCollection::Cut(IXbimGeometryModel^ shape)
 		{
-			throw gcnew Exception("A cut operation has been applied to a collection of model object this is illegal according to schema");
+			throw gcnew Exception("A cut operation has been applied to a collection of model object this; is illegal according to schema.");
 			/*try
 			{
 				*/
@@ -64,7 +64,7 @@ namespace Xbim
 		}
 		IXbimGeometryModel^ XbimGeometryModelCollection::Union(IXbimGeometryModel^ shape)
 		{
-			throw gcnew Exception("A cut operation has been applied to a collection of model object this is illegal according to schema");
+			throw gcnew Exception("A cut operation has been applied to a collection of model object; this is illegal according to schema");
 			//BRepAlgoAPI_Fuse boolOp(*pCompound,*(shape->Handle));
 
 			//if(boolOp.ErrorStatus() == 0) //find the solid
@@ -98,7 +98,7 @@ namespace Xbim
 		}
 		IXbimGeometryModel^ XbimGeometryModelCollection::Intersection(IXbimGeometryModel^ shape)
 		{
-			throw gcnew Exception("A cut operation has been applied to a collection of model object this is illegal according to schema");
+			throw gcnew Exception("A cut operation has been applied to a collection of model object; this is illegal according to schema.");
 			//BRepAlgoAPI_Common boolOp(*pCompound,*(shape->Handle));
 
 			//if(boolOp.ErrorStatus() == 0) //find the solid
@@ -140,6 +140,7 @@ namespace Xbim
 		{
 			return Mesh(withNormals, XbimGeometryModel::DefaultDeflection, Matrix3D::Identity);
 		}
+
 		XbimTriangulatedModelStream^ XbimGeometryModelCollection::Mesh(bool withNormals, double deflection )
 		{ 
 			return Mesh(withNormals, deflection, Matrix3D::Identity);
@@ -147,7 +148,6 @@ namespace Xbim
 
 		XbimTriangulatedModelStream^ XbimGeometryModelCollection::Mesh(bool withNormals, double deflection, Matrix3D transform )
 		{ 
-			
 			if(shapes->Count > 0) //we have children that need special materials etc
 			{
 				XbimTriangulatedModelStream^ tm = gcnew XbimTriangulatedModelStream();
@@ -157,12 +157,11 @@ namespace Xbim
 			}
 			else
 				return XbimTriangulatedModelStream::Empty;
-			
 		}
 
 		IXbimGeometryModel^ XbimGeometryModelCollection::CopyTo(IfcObjectPlacement^ placement)
 		{
-			throw gcnew Exception("A copyto operation has been applied to a collection of model object this is illegal according to schema");
+			throw gcnew Exception("A copyto operation has been applied to a collection of model object; this is illegal according to schema.");
 			/*if(dynamic_cast<IfcLocalPlacement^>(placement))
 			{
 				TopoDS_Compound movedShape = *pCompound;
@@ -172,14 +171,11 @@ namespace Xbim
 			}
 			else
 				throw(gcnew Exception("XbimSolid::CopyTo only supports IfcLocalPlacement type"));*/
-
 		}
 
 		IXbimGeometryModel^ XbimGeometryModelCollection::Solidify()
 		{
-
 			return XbimGeometryModel::Fix(this);
-
 		}
 	}
 }

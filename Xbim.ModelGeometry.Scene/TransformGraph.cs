@@ -95,7 +95,7 @@ namespace Xbim.ModelGeometry.Scene
 
 
         /// <summary>
-        ///   Converts all solid geoemetry to a tesselated model and stores on the stream
+        /// Converts all solid geoemetry to a tesselated model and stores on the stream
         /// </summary>
         /// <param name = "strm"></param>
         /// <returns></returns>
@@ -104,6 +104,8 @@ namespace Xbim.ModelGeometry.Scene
             strm.Write((long) -1);
             foreach (var node in _productNodes.Values)
             {
+                // if node.TriangulatedModel is null it gets generated on get; meshing happens there.
+                //
                 node.FilePosition = strm.BaseStream.Position;
                 node.TriangulatedModel.Write(strm);
                 node.TriangulatedModel = null; //delete data to save memory, can always get back fro the stream later
