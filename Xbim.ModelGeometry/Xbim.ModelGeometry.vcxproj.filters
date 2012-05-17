@@ -87,6 +87,9 @@
     <ClCompile Include="XbimMap.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="XbimTriangularMeshStreamer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CartesianTransform.h">
@@ -183,6 +186,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="XbimMap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="XbimTriangularMeshStreamer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

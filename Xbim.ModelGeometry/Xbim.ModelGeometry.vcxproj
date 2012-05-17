@@ -235,6 +235,8 @@
       <CopyLocalSatelliteAssemblies>true</CopyLocalSatelliteAssemblies>
       <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
     </Reference>
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml">
       <CopyLocalSatelliteAssemblies>true</CopyLocalSatelliteAssemblies>
       <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
@@ -343,6 +345,7 @@
     <ClCompile Include="XbimSolid.cpp">
       <ShowIncludes Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ShowIncludes>
     </ClCompile>
+    <ClCompile Include="XbimTriangularMeshStreamer.cpp" />
     <ClCompile Include="XbimVertexPoint.cpp">
       <ShowIncludes Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ShowIncludes>
     </ClCompile>
@@ -379,6 +382,7 @@
     <ClInclude Include="XbimShell.h" />
     <ClInclude Include="XbimShellEnumerator.h" />
     <ClInclude Include="XbimSolid.h" />
+    <ClInclude Include="XbimTriangularMeshStreamer.h" />
     <ClInclude Include="XbimVertexPoint.h" />
   </ItemGroup>
   <ItemGroup>

@@ -20,29 +20,8 @@ foreach face
 	EndFace (this fills some data left blank by BeginFace)
 */
 
-/* ==================================================================
-proposed structure of stream for triangular meshes:
-Lenght // int (allows to skip to next stream if needed)
-CountUniquePositions // int
-CountUniqueNormals // int
-CountUniquePositionNormals // int
-CountAllTriangles // int // used to prepare index array if needed
-CountPoly // int
-[PosX, PosY, PosZ] // floats
-...
-[NrmX, NrmY, NrmZ] // floats
-...
-[iPos, INrm] // int, short or byte f(CountUniquePositions, CountUniqueNormals)
-...
-[Polygons:  
-	PolyType // byte
-	PolygonLen // int
-	iUniquePositionNormals // int, short or byte f(CountUniquePositions, CountUniqueNormals)
-	...
-]...
-*/
-
 #include "StdAfx.h"
+#include "XbimTriangularMeshStreamer.h"
 #include "XbimGeometryModel.h"
 #include "XbimLocation.h"
 #include "XbimSolid.h"
@@ -242,103 +221,6 @@ void TesselateStream::EndPolygon()
 }
 
 
-// ==================================================================
-// begin class TriangularMeshStreamer
-//
-TriangularMeshStreamer::TriangularMeshStreamer() 
-{
-	System::Diagnostics::Debug::Write("TriangularMeshStreamer Init\r\n");
-}
-void TriangularMeshStreamer::BeginPolygon(GLenum type)
-{
-	System::Diagnostics::Debug::Write("Begin polygon\r\n");
-	PolygonInfo p;
-	p.GLType = type;
-	p.IndexCount = 0;
-
-	_poligons.insert(_poligons.end(), p);
-	_currentPolygonCount = 0;
-}
-void TriangularMeshStreamer::EndPolygon()
-{
-	System::Diagnostics::Debug::Write("End polygon\r\n");
-	_poligons.back().IndexCount = _currentPolygonCount;
-}
-
-void TriangularMeshStreamer::info(char string)
-{
-	System::Diagnostics::Debug::WriteLine(string);
-}
-
-void TriangularMeshStreamer::SetNormal(float x, float y, float z)
-{
-	// finds the index of the current normal
-	// otherwise adds it to the collection
-	//
-	System::Diagnostics::Debug::Write("Set normal\r\n");
-	unsigned int iIndex = 0;
-	std::list<Float3D>::iterator i;
-	for (i =  _normals.begin(); i != _normals.end(); i++)
-	{
-		Float3D f2 = *i;
-		if (
-			x == f2.Dim1 &&
-			y == f2.Dim2 &&
-			z == f2.Dim3 
-			)
-		{
-			_currentNormalIndex = iIndex;
-			return;
-		}
-		iIndex++;
-	}
-	Float3D f;
-	f.Dim1 = x;
-	f.Dim2 = y;
-	f.Dim3 = z;
-	_normals.insert(_normals.end(), f);
-	_currentNormalIndex = iIndex;
-}
-void TriangularMeshStreamer::WritePoint(float x, float y, float z)
-{
-	System::Diagnostics::Debug::Write("WritePoint\r\n");
-	Float3D f;
-	f.Dim1 = x;
-	f.Dim2 = y;
-	f.Dim3 = z;
-	_points.insert(_points.end(), f);
-}
-void TriangularMeshStreamer::WriteTriangleIndex(unsigned int index)
-{
-	System::Diagnostics::Debug::Write("WriteTriangleIndex\r\n");
-	_currentPolygonCount++; // used in the closing function of each polygon
-	unsigned int resolvedPoint = this->getUniquePoint(index, _currentNormalIndex);
-	_indices.insert(_indices.end(), resolvedPoint);
-}
-
-unsigned int TriangularMeshStreamer::getUniquePoint(unsigned int pointIndex, unsigned int normalIndex)
-{
-	System::Diagnostics::Debug::Write("getUniquePoint\r\n");
-	unsigned int iIndex = 0;
-	std::list<UIntegerPair>::iterator i;
-	for (i = _uniquePN.begin(); i != _uniquePN.end(); i++)
-	{
-		UIntegerPair iter = *i;
-		if (
-			pointIndex == iter.Int1 &&
-			normalIndex == iter.Int2 
-			)
-		{
-			return iIndex;
-		}
-		iIndex++;
-	}
-	UIntegerPair f;
-	f.Int1 = pointIndex;
-	f.Int2 = normalIndex; 
-	_uniquePN.insert(_uniquePN.end(), f);
-	return iIndex;
-}
 
 
 void CALLBACK BeginTessellate(GLenum type, void *pPolygonData)
@@ -817,8 +699,10 @@ namespace Xbim
 			// vertexData receives the calls from the following code that put the information in the binary stream.
 			//
 			TesselateStream vertexData(pStream, faceCount, nodeCount, streamSize);
-			TriangularMeshStreamer tms;
+			XbimTriangularMeshStreamer tms;
 
+			// triangle indices are 1 based; this converts them to 0 based them and deals with multiple triangles to be added for multiple calls to faces.
+			//
 			int tally = -1;	
 
 			// writePoint is the pointer to the function used later to add an index entry for a polygon.
@@ -893,46 +777,52 @@ namespace Xbim
 				tms.BeginPolygon(GL_TRIANGLES);
 				for(Standard_Integer tr = 1 ; tr <= nbTriangles ; tr++)
 				{
-					triangles(tr).Get(n1, n2, n3);
+					triangles(tr).Get(n1, n2, n3); // triangle indices are 1 based
 					int iPointIndex;
 					if(orient == TopAbs_REVERSED)
 					{
-						tms.info('R');
+						// tms.info('R');
 						// setnormal and point
-						iPointIndex = (n3+tally) * 3;
+						iPointIndex = 3 * n3 - 2;
+						// tms.info(iPointIndex);
 						tms.SetNormal((float)normals(iPointIndex++), (float)normals(iPointIndex++), (float)normals(iPointIndex));
 						tms.WriteTriangleIndex(n3+tally);
 						(vertexData.*writePoint)(n3+tally);
 
 						// setnormal and point
-						iPointIndex = (n2+tally) * 3;
+						iPointIndex = 3 * n2 - 2;
+						// tms.info(iPointIndex);
 						tms.SetNormal(normals(iPointIndex++),normals(iPointIndex++),normals(iPointIndex));
 						tms.WriteTriangleIndex(n2+tally);
 						(vertexData.*writePoint)(n2+tally);
 
 						// setnormal and point
-						iPointIndex = (n1+tally) * 3;
+						iPointIndex = 3 * n1 - 2;
+						//tms.info(iPointIndex);
 						tms.SetNormal(normals(iPointIndex++),normals(iPointIndex++),normals(iPointIndex));
 						tms.WriteTriangleIndex(n1+tally);
 						(vertexData.*writePoint)(n1+tally);
 					}
 					else
 					{
-						tms.info('N');
+						// tms.info('N');
 						// setnormal
-						iPointIndex = (n1+tally) * 3;
+						iPointIndex = 3 * n1 - 2;
+						// tms.info(iPointIndex);
 						tms.SetNormal(normals(iPointIndex++),normals(iPointIndex++),normals(iPointIndex));
 						tms.WriteTriangleIndex(n1+tally);
 						(vertexData.*writePoint)(n1+tally);
 
 						// setnormal
-						iPointIndex = (n2+tally) * 3;
+						iPointIndex = 3 * n2 - 2;
+						// tms.info(iPointIndex);
 						tms.SetNormal(normals(iPointIndex++),normals(iPointIndex++),normals(iPointIndex));
 						tms.WriteTriangleIndex(n2+tally);
 						(vertexData.*writePoint)(n2+tally);
 
 						// setnormal
-						iPointIndex = (n3+tally) * 3;
+						iPointIndex = 3 * n3 - 2;
+						// tms.info(iPointIndex);
 						tms.SetNormal(normals(iPointIndex++),normals(iPointIndex++),normals(iPointIndex));
 						tms.WriteTriangleIndex(n3+tally);
 						(vertexData.*writePoint)(n3+tally);
@@ -944,6 +834,7 @@ namespace Xbim
 
 				tms.EndPolygon();
 			}
+			int iSize = tms.StreamSize();
 			return vertexData.Length();
 		}
 
