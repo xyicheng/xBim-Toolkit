@@ -157,6 +157,7 @@
     <Compile Include="ConstructionMgmtDomain\IfcLaborResource.cs" />
     <Compile Include="ConstructionMgmtDomain\IfcResourceConsumptionEnum.cs" />
     <Compile Include="ConstructionMgmtDomain\IfcSubContractResource.cs" />
+    <Compile Include="ControlExtension\IfcRelAssociatesApproval.cs" />
     <Compile Include="CostResource\IfcAppliedValue.cs" />
     <Compile Include="CostResource\IfcAppliedValueRelationship.cs" />
     <Compile Include="CostResource\IfcArithmeticOperatorEnum.cs" />
@@ -181,6 +182,7 @@
     <Compile Include="ElectricalDomain\IfcCableCarrierFittingTypeEnum.cs" />
     <Compile Include="ElectricalDomain\IfcCableCarrierSegmentType.cs" />
     <Compile Include="ElectricalDomain\IfcCableCarrierSegmentTypeEnum.cs" />
+    <Compile Include="ElectricalDomain\IfcCableSegmentType.cs" />
     <Compile Include="ElectricalDomain\IfcCableSegmentTypeEnum.cs" />
     <Compile Include="ElectricalDomain\IfcElectricalCircuit.cs" />
     <Compile Include="ElectricalDomain\IfcElectricApplianceType.cs" />
@@ -348,6 +350,7 @@
     <Compile Include="PresentationAppearanceResource\IfcTextTransformation.cs" />
     <Compile Include="PresentationDefinitionResource\IfcAnnotationCurveOccurrence.cs" />
     <Compile Include="PresentationDefinitionResource\IfcAnnotationFillAreaOccurrence.cs" />
+    <Compile Include="PresentationDefinitionResource\IfcAnnotationSurfaceOccurrence.cs" />
     <Compile Include="PresentationDefinitionResource\IfcAnnotationSymbolOccurrence.cs" />
     <Compile Include="PresentationDefinitionResource\IfcBoxAlignment.cs" />
     <Compile Include="PresentationResource\IfcExternallyDefinedTextFont.cs" />
@@ -549,6 +552,9 @@
     <Compile Include="SharedComponentElements\IfcElementComponent.cs" />
     <Compile Include="SharedComponentElements\IfcElementComponentType.cs" />
     <Compile Include="SharedComponentElements\IfcFastener.cs" />
+    <Compile Include="SharedComponentElements\IfcFastenerType.cs" />
+    <Compile Include="SharedComponentElements\IfcMechanicalFastener.cs" />
+    <Compile Include="SharedComponentElements\IfcMechanicalFastenerType.cs" />
     <Compile Include="SharedFacilitiesElements\IfcFurnitureType.cs" />
     <Compile Include="SharedFacilitiesElements\IfcSystemFurnitureElementType.cs" />
     <Compile Include="StructuralAnalysisDomain\IfcActionSourceTypeEnum.cs" />
@@ -1226,7 +1232,6 @@
     <Compile Include="StructuralElementsDomain\IfcBuildingElementComponent.cs" />
     <Compile Include="StructuralElementsDomain\IfcBuildingElementPart.cs" />
     <Compile Include="XbimExtensions\IPlacement3D.cs" />
-    <Compile Include="XbimExtensions\XbimMemoryModel.cs" />
     <Compile Include="XbimExtensions\GeometryPrimitive3D.cs" />
     <Compile Include="XbimExtensions\NonVisualMaterial.cs" />
     <Compile Include="XbimExtensions\PrimitiveModel3D.cs" />

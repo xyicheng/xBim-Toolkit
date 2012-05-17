@@ -249,7 +249,10 @@ namespace Xbim.Ifc.MaterialResource
 
         public string Name
         {
-            get { return _material != null ? string.Format("{0} {1}", _layerThickness, _material.Name) : ""; }
+            get
+            {
+                return Material != null ? string.Format("{0} {1}", LayerThickness, Material.Name) : "";
+            }
         }
 
         #endregion

@@ -178,7 +178,7 @@ namespace Xbim.Ifc.MaterialResource
             get
             {
                 StringBuilder str = new StringBuilder();
-                foreach (IfcMaterial mat in _materials)
+                foreach (IfcMaterial mat in Materials)
                 {
                     str.AppendFormat("{0} ", mat.Name);
                 }
