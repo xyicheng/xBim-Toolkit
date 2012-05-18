@@ -30,7 +30,6 @@ namespace Xbim
 			XbimBoundingBox^ GetBoundingBox(bool precise);
 			property double Volume {double get();};
 			property bool HasCurvedEdges {bool get();};
-			
 		};
 	}
 }

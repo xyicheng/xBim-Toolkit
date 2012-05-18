@@ -748,7 +748,8 @@ namespace Xbim
 				const Poly_Array1OfTriangle& triangles = facing->Triangles();
 
 				Standard_Integer n1, n2, n3;
-				
+				float nrmx, nrmy, nrmz;
+
 				tms->BeginPolygon(GL_TRIANGLES);
 				for(Standard_Integer tr = 1 ; tr <= nbTriangles ; tr++)
 				{
@@ -756,50 +757,62 @@ namespace Xbim
 					int iPointIndex;
 					if(orient == TopAbs_REVERSED)
 					{
-						// tms.info('R');
+						tms->info('R');
 						// setnormal and point
-						iPointIndex = 3 * n3 - 2;
-						// tms.info(iPointIndex);
-						tms->SetNormal((float)normals(iPointIndex++), (float)normals(iPointIndex++), (float)normals(iPointIndex));
-						tms->WriteTriangleIndex(n3+tally);
+						iPointIndex = 3 * n1 - 2; // n3
+						nrmx = -(float)normals(iPointIndex++);
+						nrmy = -(float)normals(iPointIndex++);
+						nrmz = -(float)normals(iPointIndex++);
+						tms->SetNormal(nrmx, nrmy, nrmz);
+						tms->WriteTriangleIndex(n3);
 						
 
 						// setnormal and point
 						iPointIndex = 3 * n2 - 2;
-						// tms.info(iPointIndex);
-						tms->SetNormal(normals(iPointIndex++),normals(iPointIndex++),normals(iPointIndex));
-						tms->WriteTriangleIndex(n2+tally);
+						nrmx = -(float)normals(iPointIndex++);
+						nrmy = -(float)normals(iPointIndex++);
+						nrmz = -(float)normals(iPointIndex++);
+						tms->SetNormal(nrmx, nrmy, nrmz);
+						tms->WriteTriangleIndex(n2);
 						
 
 						// setnormal and point
-						iPointIndex = 3 * n1 - 2;
-						//tms.info(iPointIndex);
-						tms->SetNormal(normals(iPointIndex++),normals(iPointIndex++),normals(iPointIndex));
-						tms->WriteTriangleIndex(n1+tally);
+						iPointIndex = 3 * n3 - 2; // n1
+						nrmx = -(float)normals(iPointIndex++);
+						nrmy = -(float)normals(iPointIndex++);
+						nrmz = -(float)normals(iPointIndex++);
+						tms->SetNormal(nrmx, nrmy, nrmz);
+						tms->WriteTriangleIndex(n1);
 						
 					}
 					else
 					{
-						// tms.info('N');
-						// setnormal
+						tms->info('N');
+						// setnormal and point
 						iPointIndex = 3 * n1 - 2;
-						// tms.info(iPointIndex);
-						tms->SetNormal(normals(iPointIndex++),normals(iPointIndex++),normals(iPointIndex));
-						tms->WriteTriangleIndex(n1+tally);
+						nrmx = (float)normals(iPointIndex++);
+						nrmy = (float)normals(iPointIndex++);
+						nrmz = (float)normals(iPointIndex++);
+						tms->SetNormal(nrmx, nrmy, nrmz);
+						tms->WriteTriangleIndex(n1);
 						
 
-						// setnormal
+						// setnormal and point
 						iPointIndex = 3 * n2 - 2;
-						// tms.info(iPointIndex);
-						tms->SetNormal(normals(iPointIndex++),normals(iPointIndex++),normals(iPointIndex));
-						tms->WriteTriangleIndex(n2+tally);
+						nrmx = (float)normals(iPointIndex++);
+						nrmy = (float)normals(iPointIndex++);
+						nrmz = (float)normals(iPointIndex++);
+						tms->SetNormal(nrmx, nrmy, nrmz);
+						tms->WriteTriangleIndex(n2);
 						
 
-						// setnormal
+						// setnormal and point
 						iPointIndex = 3 * n3 - 2;
-						// tms.info(iPointIndex);
-						tms->SetNormal(normals(iPointIndex++),normals(iPointIndex++),normals(iPointIndex));
-						tms->WriteTriangleIndex(n3+tally);
+						nrmx = (float)normals(iPointIndex++);
+						nrmy = (float)normals(iPointIndex++);
+						nrmz = (float)normals(iPointIndex++);
+						tms->SetNormal(nrmx, nrmy, nrmz);
+						tms->WriteTriangleIndex(n3);
 					}
 				}
 				tally+=nbNodes; // bonghi: question: point coordinates might be duplicated with this method for different faces. Size optimisation could be possible at the cost of performance speed.
@@ -810,8 +823,6 @@ namespace Xbim
 			int iSize = tms->StreamSize();
 			return 0;
 		}
-
-		
 
 		long OpenCascadeMesh(const TopoDS_Shape & shape, unsigned char* pStream, unsigned short faceCount, int nodeCount, int streamSize)
 		{
@@ -1029,10 +1040,8 @@ namespace Xbim
 			return indexSize;
 		}
 
-
 		XbimTriangulatedModelStream^ XbimGeometryModel::Mesh(IXbimGeometryModel^ shape, bool withNormals, double deflection, Matrix3D transform )
 		{
-
 			//Build the Mesh
 			try
 			{
@@ -1049,48 +1058,14 @@ namespace Xbim
 					transformedShape = *(shape->Handle);
 				
 				//decide which meshing algorithm to use, Opencascade is slow but necessary to resolve curved edges
-				if (hasCurvedEdges) 
+				if (true) // hasCurvedEdges) 
 				{
 					// BRepMesh_IncrementalMesh calls BRepMesh_FastDiscret to create the mesh geometry.
 					//
-					BRepMesh_IncrementalMesh incrementalMesh(*(shape->Handle), deflection); // todo: Bonghi: is this ok to use the shape instead of transformedShape?
-					//size the job up
-					//get all of the vertices in a map
-					unsigned short faceCount = 0;
-					int maxVertexCount = 0;
-					int triangleIndexCount = 0;
-				
-					
-					for (TopExp_Explorer faceEx(transformedShape,TopAbs_FACE) ; faceEx.More(); faceEx.Next()) 
-					{
-						faceCount++;
-						TopLoc_Location loc;
-						Handle (Poly_Triangulation) facing = BRep_Tool::Triangulation(TopoDS::Face(faceEx.Current()),loc);
-						
-						if(facing.IsNull())
-							continue;
-						maxVertexCount+=facing->NbNodes();
-						triangleIndexCount += facing->NbTriangles()*3;
-					}
-					int vertexCount = maxVertexCount;
-					
-					if(vertexCount==0) 
-						return XbimTriangulatedModelStream::Empty;
-					int memSize =  sizeof(int) + (vertexCount * 3 *sizeof(double)); //number of points plus x,y,z of each point
-
-					memSize += sizeof(unsigned int); //allow int for total number of faces
-					int indexSize = GetIndexSize(vertexCount);
-					
-					memSize += faceCount * (sizeof(unsigned char)+(2*sizeof(unsigned short)) +sizeof(unsigned short)+ 3 * sizeof(double)); //allow space for the type of triangulation (1 byte plus number of indices - 2 bytes plus polygon count-2 bytes) + normal count + the normal
-					memSize += triangleIndexCount * indexSize; //write out each indices
-					
-					IntPtr vertexPtr = Marshal::AllocHGlobal(memSize);
-					unsigned char* pointBuffer = (unsigned char*)vertexPtr.ToPointer();
-					
+					// todo: Bonghi: Question: is this ok to use the shape instead of transformedShape? I assume the transformed shape points to the shape.
+					BRepMesh_IncrementalMesh incrementalMesh(*(shape->Handle), deflection); 
 					try
 					{
-						// bonghi
-						long streamLen = OpenCascadeMesh(transformedShape, pointBuffer, faceCount, maxVertexCount,memSize);
 						XbimTriangularMeshStreamer value;
 						XbimTriangularMeshStreamer* m = &value;
 						long streamLen2 = OpenCascadeStreamerFeed(transformedShape, m);
@@ -1103,12 +1078,7 @@ namespace Xbim
 						array<unsigned char>^ BmanagedArray = gcnew array<unsigned char>(isssss);
 						Marshal::Copy(BonghiUnManMem, BmanagedArray, 0, isssss);
 						Marshal::FreeHGlobal(BonghiUnManMem);
-
-						// end bonghi
-						
-						array<unsigned char>^ managedArray = gcnew array<unsigned char>(streamLen);
-						Marshal::Copy(vertexPtr, managedArray, 0, streamLen);
-						return gcnew XbimTriangulatedModelStream(managedArray);
+						return gcnew XbimTriangulatedModelStream(BmanagedArray);
 					}
 					catch(...)
 					{
@@ -1116,7 +1086,7 @@ namespace Xbim
 					}
 					finally
 					{
-						Marshal::FreeHGlobal(vertexPtr);
+						// Marshal::FreeHGlobal(vertexPtr);
 					}
 				}
 				else // use opengl (faster than opencascade)

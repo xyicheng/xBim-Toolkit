@@ -148,11 +148,14 @@ namespace Xbim
 
 		XbimTriangulatedModelStream^ XbimGeometryModelCollection::Mesh(bool withNormals, double deflection, Matrix3D transform )
 		{ 
-			if(shapes->Count > 0) //we have children that need special materials etc
+			// it might be that we have children that need special materials etc;
+			// however at the moment no information on them is available, so they will be flattend in one stream for the time being withoud preserving mesh identity
+			//
+			if(shapes->Count > 0) 
 			{
 				XbimTriangulatedModelStream^ tm = gcnew XbimTriangulatedModelStream();
 				for each(IXbimGeometryModel^ gm in shapes)
-					tm->AddChild(gm->Mesh(withNormals, deflection, transform));
+					tm->MergeStream(gm->Mesh(withNormals, deflection, transform));
 				return tm;
 			}
 			else

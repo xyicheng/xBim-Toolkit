@@ -8,7 +8,7 @@ using Xbim.ModelGeometry.Scene;
 
 namespace Xbim.Web.Viewer3D.ServerSide
 {
-    public class MeshGeometry : IXbimTriangulatesFromBinaryStream
+    public class MeshGeometry : IXbimTriangulatesToPositionsIndices
     {
 
         private Int32Collection _indices = new Int32Collection();
@@ -123,7 +123,7 @@ namespace Xbim.Web.Viewer3D.ServerSide
         int _pointTally;
         int _fanStartIndex;
 
-        public void BeginTriangulation(TriangleType meshType, uint indicesCount)
+        public void BeginPolygon(TriangleType meshType, uint indicesCount)
         {
             _meshType = meshType;
             _pointTally = 0;
@@ -190,7 +190,7 @@ namespace Xbim.Web.Viewer3D.ServerSide
             _pointTally++;
         }
 
-        public void EndTriangulation()
+        public void EndPolygon()
         {
 
         }

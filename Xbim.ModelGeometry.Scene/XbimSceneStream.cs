@@ -31,13 +31,12 @@ namespace Xbim.ModelGeometry.Scene
             _sceneStream.Seek(node.FilePosition, SeekOrigin.Begin);
             BinaryReader br = new BinaryReader(_sceneStream);
             int len = br.ReadInt32();
-
             if (len > 0)
             {
-                UInt16 numChildren = br.ReadUInt16();
-                Byte hasData = br.ReadByte();
+                // UInt16 numChildren = br.ReadUInt16();
+                // Byte hasData = br.ReadByte();
                 byte [] data = br.ReadBytes(len);
-                return new XbimTriangulatedModelStream(data, numChildren, hasData);
+                return new XbimTriangulatedModelStream(data);
             }
             else
                 return XbimTriangulatedModelStream.Empty;

@@ -1,5 +1,6 @@
 /* ==================================================================
-proposed structure of stream for triangular meshes:
+
+Structure of stream for triangular meshes:
 CountUniquePositions		// int
 CountUniqueNormals			// int
 CountUniquePositionNormals	// int
@@ -17,6 +18,7 @@ CountPolygons				// int
 	iUniquePositionNormals // int, short or byte f(CountUniquePositions, CountUniqueNormals)
 	...
 ]...
+
 */
 
 #include "StdAfx.h"
@@ -30,6 +32,7 @@ XbimTriangularMeshStreamer::XbimTriangularMeshStreamer()
 {
 	// System::Diagnostics::Debug::Write("TriangularMeshStreamer Init\r\n");
 }
+
 void XbimTriangularMeshStreamer::StreamTo(unsigned char* pStream)
 {
 	int* iCoord = (int *)(pStream);
@@ -89,6 +92,9 @@ void XbimTriangularMeshStreamer::StreamTo(unsigned char* pStream)
 	std::list<UIntegerPair>::iterator itUIPair;
 	for (itUIPair = _uniquePN.begin(); itUIPair != _uniquePN.end(); itUIPair++)
 	{
+		if (itUIPair->Int1 >= iCPoints)
+		{
+		}
 		UICoord += (this->*writePoint)(UICoord,itUIPair->Int1);
 		UICoord += (this->*writeNormal)(UICoord,itUIPair->Int2);
 	}
@@ -139,12 +145,14 @@ int XbimTriangularMeshStreamer::WriteByte(unsigned char* pStream, unsigned int v
 	*pStream = (char)value;
 	return sizeof(char);
 }
+
 int XbimTriangularMeshStreamer::WriteShort(unsigned char* pStream, unsigned int value)
 {
 	unsigned short* bCoord = (unsigned short *)(pStream);
 	*bCoord = (unsigned short)value;
 	return sizeof(unsigned short);
 }
+
 int XbimTriangularMeshStreamer::WriteInt(unsigned char* pStream, unsigned int value)
 {
 	unsigned int* bCoord = (unsigned int *)(pStream);
@@ -157,10 +165,12 @@ void XbimTriangularMeshStreamer::BeginFace(int NodesInFace)
 	_faceIndexMap = new unsigned int[ NodesInFace ];
 	_facePointIndex = 0;
 }
+
 void XbimTriangularMeshStreamer::EndFace()
 {
 	delete [] _faceIndexMap;
 }
+
 int XbimTriangularMeshStreamer::StreamSize()
 {
 	int iPos = _points.size();
@@ -186,6 +196,7 @@ int XbimTriangularMeshStreamer::StreamSize()
 
 	return iSize;
 }
+
 int XbimTriangularMeshStreamer::sizeOptimised(unsigned int maxIndex)
 {
 	int indexSize;
@@ -197,6 +208,7 @@ int XbimTriangularMeshStreamer::sizeOptimised(unsigned int maxIndex)
 		indexSize = sizeof(unsigned int); //use unsigned int for indices
 	return indexSize;
 }
+
 void XbimTriangularMeshStreamer::BeginPolygon(GLenum type)
 {
 	// System::Diagnostics::Debug::Write("Begin polygon\r\n");
@@ -207,6 +219,7 @@ void XbimTriangularMeshStreamer::BeginPolygon(GLenum type)
 	_poligons.insert(_poligons.end(), p);
 	_currentPolygonCount = 0;
 }
+
 void XbimTriangularMeshStreamer::EndPolygon()
 {
 	// System::Diagnostics::Debug::Write("End polygon\r\n");
@@ -215,12 +228,12 @@ void XbimTriangularMeshStreamer::EndPolygon()
 
 void XbimTriangularMeshStreamer::info(char string)
 {
-	// System::Diagnostics::Debug::WriteLine(string.ToString());
+	System::Diagnostics::Debug::WriteLine(string.ToString());
 }
 
 void XbimTriangularMeshStreamer::info(int Number)
 {
-	// System::Diagnostics::Debug::WriteLine(Number);
+	System::Diagnostics::Debug::WriteLine(Number);
 }
 
 void XbimTriangularMeshStreamer::SetNormal(float x, float y, float z)
@@ -253,19 +266,17 @@ void XbimTriangularMeshStreamer::SetNormal(float x, float y, float z)
 	_currentNormalIndex = iIndex;
 }
 
-
-
 void XbimTriangularMeshStreamer::WritePoint(float x, float y, float z)
 {
 	unsigned int iIndex = 0;
 	std::list<Float3D>::iterator i;
 	for (i =  _points.begin(); i != _points.end(); i++)
 	{
-		Float3D f2 = *i;
+		// Float3D f2 = *i;
 		if (
-			x == f2.Dim1 &&
-			y == f2.Dim2 &&
-			z == f2.Dim3 
+			x == i->Dim1 &&
+			y == i->Dim2 &&
+			z == i->Dim3 
 			)
 		{
 			// found in existing list
@@ -280,19 +291,15 @@ void XbimTriangularMeshStreamer::WritePoint(float x, float y, float z)
 	f.Dim3 = z;
 	_points.insert(_points.end(), f);
 	_faceIndexMap[_facePointIndex++] = iIndex;
-
-	// System::Diagnostics::Debug::Write("WritePoint\r\n");
-	//Float3D f;
-	//f.Dim1 = x;
-	//f.Dim2 = y;
-	//f.Dim3 = z;
-	//_points.insert(_points.end(), f);
 }
+
+// converts the 1-based index to of one face to the 
+// global 0-based index
 void XbimTriangularMeshStreamer::WriteTriangleIndex(unsigned int index)
 {
 	// System::Diagnostics::Debug::Write("WriteTriangleIndex\r\n");
-	_currentPolygonCount++; // used in the closing function of each polygon
-	unsigned int resolvedPoint = this->getUniquePoint(_faceIndexMap[index], _currentNormalIndex);
+	_currentPolygonCount++; // used in the closing function of each polygon to write the number of points to the stream
+	unsigned int resolvedPoint = this->getUniquePoint(_faceIndexMap[index-1], _currentNormalIndex);
 	_indices.insert(_indices.end(), resolvedPoint);
 }
 
