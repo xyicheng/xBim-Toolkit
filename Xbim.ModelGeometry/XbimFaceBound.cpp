@@ -51,7 +51,23 @@ namespace Xbim
 		}
 
 
+		// AK: Builds a wire from a composite IfcLShapeProfileDef
+		TopoDS_Wire XbimFaceBound::Build(IfcLShapeProfileDef ^ profile, bool% hasCurves)
+		{
+			throw(gcnew Exception(String::Format("XbimFaceBound. Could not BuildShape of type {0}. It is not implemented", "IfcLShapeProfileDef")));
+		}
 
+		// AK: Builds a wire from a composite IfcUShapeProfileDef
+		TopoDS_Wire XbimFaceBound::Build(IfcUShapeProfileDef ^ profile, bool% hasCurves)
+		{
+			throw(gcnew Exception(String::Format("XbimFaceBound. Could not BuildShape of type {0}. It is not implemented", "IfcUShapeProfileDef")));
+		}
+
+		// AK: Builds a wire from a composite IfcIShapeProfileDef
+		TopoDS_Wire XbimFaceBound::Build(IfcIShapeProfileDef ^ profile, bool% hasCurves)
+		{
+			throw(gcnew Exception(String::Format("XbimFaceBound. Could not BuildShape of type {0}. It is not implemented", "IfcIShapeProfileDef")));
+		}
 
 		//Builds a wire from a composite ArbitraryClosedProfileDef
 		TopoDS_Wire XbimFaceBound::Build(IfcArbitraryClosedProfileDef ^ profile, bool% hasCurves)

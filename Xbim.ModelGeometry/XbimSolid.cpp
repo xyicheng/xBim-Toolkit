@@ -356,6 +356,14 @@ namespace Xbim
 				face = XbimFace::Build((IfcRectangleProfileDef^)repItem->SweptArea,hasCurves);	
 			else if(dynamic_cast<IfcCircleProfileDef^>(repItem->SweptArea))
 				face = XbimFace::Build((IfcCircleProfileDef^)repItem->SweptArea,hasCurves);	
+
+			// AK: these are the ones that were giving errors
+			else if(dynamic_cast<IfcLShapeProfileDef^>(repItem->SweptArea))
+				face = XbimFace::Build((IfcLShapeProfileDef^)repItem->SweptArea,hasCurves);	
+			else if(dynamic_cast<IfcUShapeProfileDef^>(repItem->SweptArea))
+				face = XbimFace::Build((IfcUShapeProfileDef^)repItem->SweptArea,hasCurves);	
+			else if(dynamic_cast<IfcIShapeProfileDef^>(repItem->SweptArea))
+				face = XbimFace::Build((IfcIShapeProfileDef^)repItem->SweptArea,hasCurves);
 			else
 			{
 				Type ^ type = repItem->SweptArea->GetType();
