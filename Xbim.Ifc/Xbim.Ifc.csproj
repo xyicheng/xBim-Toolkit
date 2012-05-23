@@ -182,7 +182,6 @@
     <Compile Include="ElectricalDomain\IfcCableCarrierFittingTypeEnum.cs" />
     <Compile Include="ElectricalDomain\IfcCableCarrierSegmentType.cs" />
     <Compile Include="ElectricalDomain\IfcCableCarrierSegmentTypeEnum.cs" />
-    <Compile Include="ElectricalDomain\IfcCableSegmentType.cs" />
     <Compile Include="ElectricalDomain\IfcCableSegmentTypeEnum.cs" />
     <Compile Include="ElectricalDomain\IfcElectricalCircuit.cs" />
     <Compile Include="ElectricalDomain\IfcElectricApplianceType.cs" />
