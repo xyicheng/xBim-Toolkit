@@ -70,6 +70,15 @@ namespace Xbim
 
 			}
 
+			// AK: Builds a face from a IfcLShapeProfileDef
+			static TopoDS_Face Build(IfcLShapeProfileDef ^ profile, bool% hasCurves);
+
+			// AK: Builds a face from a IfcUShapeProfileDef
+			static TopoDS_Face Build(IfcUShapeProfileDef ^ profile, bool% hasCurves);
+
+			// AK: Builds a face from a IfcIShapeProfileDef
+			static TopoDS_Face Build(IfcIShapeProfileDef ^ profile, bool% hasCurves);
+
 			//static builders
 			//Builds a face from any supported ProfileDef
 			static TopoDS_Face Build(IfcProfileDef ^ profile, bool% hasCurves);

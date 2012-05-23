@@ -205,7 +205,7 @@ namespace XbimXplorer
         {
             OpenFileDialog dlg = new OpenFileDialog();
 
-            dlg.Filter = "Xbim Files|*.xbim;*.ifc;*.ifcxml"; // Filter files by extension 
+            dlg.Filter = "Xbim Files|*.xbim;*.ifc;*.ifcxml;*.zip"; // Filter files by extension 
             dlg.FileOk += new CancelEventHandler(dlg_OpenXbimFile);
             dlg.ShowDialog(this);
         }
@@ -231,13 +231,10 @@ namespace XbimXplorer
             string ifcFilename = args.Argument as string;
 
             IModel model = new XbimMemoryModel();
-            IfcInputStream input = null;
             try
             {
                 //attach it to the Ifc Stream Parser
-                input = new IfcInputStream(new FileStream(ifcFilename, FileMode.Open, FileAccess.Read));
-                if (input.Load(model) != 0)
-                    throw new Exception("Ifc file parsing errors\n" + input.ErrorLog.ToString());
+                model.Open(ifcFilename);
                 XbimScene geomEngine = new XbimScene(model);
                 ModelProvider.Scene = geomEngine;
             }
@@ -256,12 +253,6 @@ namespace XbimXplorer
                 args.Result = new Exception(sb.ToString());
 
             }
-            finally
-            {
-                if (input != null) input.Close();
-            }
-           
-
         }
 
         private void OpenIfcXmlFile(object s, DoWorkEventArgs args)
@@ -269,18 +260,11 @@ namespace XbimXplorer
             BackgroundWorker worker = s as BackgroundWorker;
             ModelDataProvider modelProvider = ModelProvider;
             string fileName = args.Argument as string;
-            Stream xmlInStream = null;
-            XbimMemoryModel m = null;
+
+            IModel m = new XbimMemoryModel();
             try
             {
-                XmlReaderSettings settings = new XmlReaderSettings() {IgnoreComments = true, IgnoreWhitespace = true};
-                xmlInStream = new FileStream(fileName, FileMode.Open, FileAccess.Read);
-                m = new XbimMemoryModel();
-                using (XmlReader xmlReader = XmlReader.Create(xmlInStream, settings))
-                {
-                    IfcXmlReader reader = new IfcXmlReader();
-                    reader.Read(m, xmlReader);
-                }
+                m.Open(fileName);
                 XbimScene geomEngine = new XbimScene(m);
                 modelProvider.Scene = geomEngine;
             }
@@ -297,10 +281,6 @@ namespace XbimXplorer
                 }
                 args.Result = new Exception(sb.ToString());
             }
-            finally
-            {
-                if (xmlInStream != null) xmlInStream.Close();
-            }
         }
 
         /// <summary>
@@ -316,8 +296,7 @@ namespace XbimXplorer
 
             XbimFileModelServer m = new XbimFileModelServer();
             ModelDataProvider modelProvider = ModelProvider;
-
-
+            
             try
             {
                 if (fileName.ToLower() == _currentModelFileName) //same file do nothing
@@ -333,6 +312,24 @@ namespace XbimXplorer
             catch (Exception el)
             {
                 args.Result = el;
+            }
+        }
+
+        private void OpenZipFile(object s, DoWorkEventArgs args)
+        {
+            BackgroundWorker worker = s as BackgroundWorker;
+            string zipFilename = args.Argument as string;
+
+            IModel model = new XbimMemoryModel();
+            try
+            {
+                model.Open(zipFilename);
+                XbimScene geomEngine = new XbimScene(model);
+                ModelProvider.Scene = geomEngine;
+            }
+            catch (Exception ex)
+            {
+                args.Result = ex;
             }
         }
 
@@ -357,6 +354,10 @@ namespace XbimXplorer
                         break;
                     case ".xbim": //it is an xbim File
                         _worker.DoWork += OpenXbimFile;
+                        _worker.RunWorkerAsync(dlg.FileName);
+                        break;
+                    case ".zip": //it is a xip file containing xbim or ifc File
+                        _worker.DoWork += OpenZipFile;
                         _worker.RunWorkerAsync(dlg.FileName);
                         break;
 

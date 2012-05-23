@@ -103,20 +103,7 @@ namespace Xbim.XbimExtensions
                 return id;
             else
             {
-
-
-                if (id == "#2917207")
-                {
-                    int jj = 0;
-                    jj++;
-                }
-
                 _written.Add(entity.EntityLabel);
-                if (_written.Count == 2893248)
-                {
-                    int ii = 0;
-                    ii++;
-                }
             }
             IfcType ifcType = IfcInstances.IfcEntities[entity.GetType()];
 

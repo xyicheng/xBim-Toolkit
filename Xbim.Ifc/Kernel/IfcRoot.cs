@@ -108,7 +108,7 @@ namespace Xbim.Ifc.Kernel
         /// <summary>
         ///   Assignment of a globally unique identifier within the entire software world
         /// </summary>
-        [IfcAttribute(1, IfcAttributeState.Mandatory) /*, IfcPrimaryIndex*/]
+        [IfcAttribute(1, IfcAttributeState.Mandatory)]
         public IfcGloballyUniqueId GlobalId
         {
             get
