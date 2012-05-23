@@ -62,6 +62,16 @@ namespace Xbim
 
 			void Print();
 			//static methods
+
+			// AK: Builds a wire from a IfcLShapeProfileDef
+			static TopoDS_Wire Build(IfcLShapeProfileDef ^ profile, bool% hasCurves);
+
+			// AK: Builds a wire from a IfcUShapeProfileDef
+			static TopoDS_Wire Build(IfcUShapeProfileDef ^ profile, bool% hasCurves);
+
+			// AK: Builds a wire from a IfcIShapeProfileDef
+			static TopoDS_Wire Build(IfcIShapeProfileDef ^ profile, bool% hasCurves);
+
 			//Builds a wire from a ArbitraryClosedProfileDef
 			static TopoDS_Wire Build(IfcArbitraryClosedProfileDef ^ profile, bool% hasCurves);
 

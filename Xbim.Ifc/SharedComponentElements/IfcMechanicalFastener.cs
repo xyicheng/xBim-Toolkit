@@ -1,10 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Xbim.XbimExtensions;
+﻿#region XbimHeader
+
+// The eXtensible Building Information Modelling (xBIM) Toolkit
+// Solution:    XbimComplete
+// Project:     Xbim.Ifc
+// Filename:    IfcMechanicalFastener.cs
+// Published:   05, 2012
+// Last Edited: 13:00 PM on 23 05 2012
+// (See accompanying copyright.rtf)
+
+#endregion
+
+#region Directives
+
+using System;
 using Xbim.Ifc.MeasureResource;
+using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Parser;
+
+#endregion
 
 namespace Xbim.Ifc.SharedComponentElements
 {
@@ -20,7 +33,7 @@ namespace Xbim.Ifc.SharedComponentElements
          /// <summary>
          /// The nominal diameter describing the cross-section size of the fastener.
          /// </summary>
-         [IfcAttribute(9, IfcAttributeState.Optional) /*, IfcPrimaryIndex*/]
+         [IfcAttribute(9, IfcAttributeState.Optional)]
          public IfcPositiveLengthMeasure? NominalDiameter
          {
              get
@@ -36,7 +49,7 @@ namespace Xbim.Ifc.SharedComponentElements
          /// <summary>
          /// The nominal length describing the longitudinal dimensions of the fastener.
          /// </summary>
-         [IfcAttribute(10, IfcAttributeState.Optional) /*, IfcPrimaryIndex*/]
+         [IfcAttribute(10, IfcAttributeState.Optional)]
          public IfcPositiveLengthMeasure? NominalLength
          {
              get

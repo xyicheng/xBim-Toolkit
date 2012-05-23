@@ -1122,7 +1122,7 @@ namespace Xbim.IO
                     // 1. you can specify perticular lines in fic file as below below 
                     // 2. OR pass null to convert full ifc format to xml
                     //List<IPersistIfcEntity> instances = new List<IPersistIfcEntity>();
-                    //instances.Add(this.GetInstance(2717173));
+                    //instances.Add(this.GetInstance(79480));
                     //instances.Add(this.GetInstance(2717770));
                     //writer.Write(this, xmlWriter, instances);
 
