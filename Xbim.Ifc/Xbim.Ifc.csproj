@@ -177,7 +177,7 @@
     <Compile Include="DateTimeResource\IfcMinuteInHour.cs" />
     <Compile Include="DateTimeResource\IfcMonthInYearNumber.cs" />
     <Compile Include="DateTimeResource\IfcSecondInMinute.cs" />
-    <Compile Include="ElectricalDomain\CableSegmentType.cs" />
+    <Compile Include="ElectricalDomain\IfcCableSegmentType.cs" />
     <Compile Include="ElectricalDomain\IfcCableCarrierFittingType.cs" />
     <Compile Include="ElectricalDomain\IfcCableCarrierFittingTypeEnum.cs" />
     <Compile Include="ElectricalDomain\IfcCableCarrierSegmentType.cs" />
