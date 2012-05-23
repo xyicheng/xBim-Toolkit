@@ -5,6 +5,8 @@ using namespace System::Collections::Generic;
 using namespace Xbim::XbimExtensions;
 using namespace System::Windows::Media::Media3D;
 using namespace System::Linq;
+class GLUtesselator {};
+
 namespace Xbim
 {
 	namespace ModelGeometry

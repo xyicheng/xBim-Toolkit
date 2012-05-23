@@ -13,6 +13,7 @@
 #region Directives
 
 using Xbim.Ifc.MeasureResource;
+using System;
 
 #endregion
 
@@ -27,44 +28,51 @@ namespace Xbim.Ifc.Extensions
         /// <returns></returns>
         public static double Power(this IfcSIUnit si)
         {
+            int exponential = 1;
+            if (si.UnitType == IfcUnitEnum.AREAUNIT) exponential = 2;
+            if (si.UnitType == IfcUnitEnum.VOLUMEUNIT) exponential = 3;
+            double factor;
             if (si.Prefix.HasValue)
+            {
                 switch (si.Prefix.Value)
                 {
                     case IfcSIPrefix.EXA:
-                        return 1.0e+18;
+                        factor = 1.0e+18; break;
                     case IfcSIPrefix.PETA:
-                        return 1.0e+15;
+                        factor = 1.0e+15; break;
                     case IfcSIPrefix.TERA:
-                        return 1.0e+12;
+                        factor = 1.0e+12; break;
                     case IfcSIPrefix.GIGA:
-                        return 1.0e+9;
+                        factor = 1.0e+9; break;
                     case IfcSIPrefix.MEGA:
-                        return 1.0e+6;
+                        factor = 1.0e+6; break;
                     case IfcSIPrefix.KILO:
-                        return 1.0e+3;
+                        factor = 1.0e+3; break;
                     case IfcSIPrefix.HECTO:
-                        return 1.0e+2;
+                        factor = 1.0e+2; break;
                     case IfcSIPrefix.DECA:
-                        return 10;
+                        factor = 10; break;
                     case IfcSIPrefix.DECI:
-                        return 1.0e-1;
+                        factor = 1.0e-1; break;
                     case IfcSIPrefix.CENTI:
-                        return 1.0e-2;
+                        factor = 1.0e-2; break;
                     case IfcSIPrefix.MILLI:
-                        return 1.0e-3;
+                        factor = 1.0e-3; break;
                     case IfcSIPrefix.MICRO:
-                        return 1.0e-6;
+                        factor = 1.0e-6; break;
                     case IfcSIPrefix.NANO:
-                        return 1.0e-9;
+                        factor = 1.0e-9; break;
                     case IfcSIPrefix.PICO:
-                        return 1.0e-12;
+                        factor = 1.0e-12; break;
                     case IfcSIPrefix.FEMTO:
-                        return 1.0e-15;
+                        factor = 1.0e-15; break;
                     case IfcSIPrefix.ATTO:
-                        return 1.0e-18;
+                        factor = 1.0e-18; break;
                     default:
-                        return 1.0;
+                        factor = 1.0; break;
                 }
+                return Math.Pow(factor, exponential);
+            }
             else
                 return 1.0;
         }

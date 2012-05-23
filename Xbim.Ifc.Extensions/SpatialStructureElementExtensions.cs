@@ -25,12 +25,12 @@ namespace Xbim.Ifc.Extensions
     public static class SpatialStructureElementExtensions
     {
         /// <summary>
-        ///   Returns all the spatial structural elements that decomposes this
+        ///   Returns all the  elements that decomposes this
         /// </summary>
         /// <param name = "se"></param>
         /// <param name = "model"></param>
         /// <returns></returns>
-        public static IEnumerable<IfcProduct> GetSubStructuralElements(this IfcSpatialStructureElement se, IModel model)
+        public static IEnumerable<IfcProduct> GetContainedElements(this IfcSpatialStructureElement se, IModel model)
         {
             return
                 model.InstancesWhere<IfcRelContainedInSpatialStructure>(r => r.RelatingStructure == se).SelectMany(
@@ -38,11 +38,11 @@ namespace Xbim.Ifc.Extensions
         }
 
         /// <summary>
-        ///   Returns all the spatial structural elements that decomposes this
+        ///   Returns all the elements that decomposes this
         /// </summary>
         /// <param name = "se"></param>
         /// <returns></returns>
-        public static IEnumerable<IfcProduct> GetSubStructuralElements(this IfcSpatialStructureElement se)
+        public static IEnumerable<IfcProduct> GetContainedElements(this IfcSpatialStructureElement se)
         {
             return
                 ModelManager.ModelOf(se).InstancesWhere<IfcRelContainedInSpatialStructure>(
