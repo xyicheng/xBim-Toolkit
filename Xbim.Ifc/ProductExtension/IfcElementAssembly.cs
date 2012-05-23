@@ -41,24 +41,7 @@ namespace Xbim.Ifc.ProductExtension
     [IfcPersistedEntity, Serializable]
     public class IfcElementAssembly : IfcElement
     {
-        ///// <summary>
-        /////   Optional. A designation of where the assembly is intended to take place defined by an Enum.
-        ///// </summary>
-        //public IfcAssemblyPlaceEnum AssemblyPlace
-        //{
-        //    get { throw new NotImplementedException(); }
-        //    set { }
-        //}
-
-        ///// <summary>
-        /////   Predefined generic types for a element assembly that are specified in an enumeration.
-        ///// </summary>
-        //public IfcElementAssemblyTypeEnum PredefinedType
-        //{
-        //    get { throw new NotImplementedException(); }
-        //    set { }
-        //}
-
+       
         #region Fields
         private IfcAssemblyPlaceEnum? _assemblyPlace;
         private IfcElementAssemblyTypeEnum _predefinedType;
@@ -68,7 +51,7 @@ namespace Xbim.Ifc.ProductExtension
         /// <summary>
         /// The nominal diameter describing the cross-section size of the fastener.
         /// </summary>
-        [IfcAttribute(9, IfcAttributeState.Optional) /*, IfcPrimaryIndex*/]
+        [IfcAttribute(9, IfcAttributeState.Optional)]
         public IfcAssemblyPlaceEnum? AssemblyPlace
         {
             get
@@ -84,7 +67,7 @@ namespace Xbim.Ifc.ProductExtension
         /// <summary>
         /// The nominal length describing the longitudinal dimensions of the fastener.
         /// </summary>
-        [IfcAttribute(10, IfcAttributeState.Mandatory) /*, IfcPrimaryIndex*/]
+        [IfcAttribute(10, IfcAttributeState.Mandatory)]
         public IfcElementAssemblyTypeEnum PredefinedType
         {
             get

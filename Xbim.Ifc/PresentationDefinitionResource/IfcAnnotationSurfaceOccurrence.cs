@@ -1,11 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Xbim.Ifc.SelectTypes;
-using Xbim.Ifc.GeometryResource;
+﻿#region XbimHeader
+
+// The eXtensible Building Information Modelling (xBIM) Toolkit
+// Solution:    XbimComplete
+// Project:     Xbim.Ifc
+// Filename:    IfcAnnotationSurfaceOccurrence.cs
+// Published:   05, 2012
+// Last Edited: 13:00 PM on 23 05 2012
+// (See accompanying copyright.rtf)
+
+#endregion
+
+#region Directives
+
+using System;
 using Xbim.Ifc.GeometricModelResource;
-using Xbim.XbimExtensions;
+using Xbim.Ifc.GeometryResource;
+using Xbim.Ifc.SelectTypes;
+using Xbim.XbimExtensions; 
+
+#endregion
 
 namespace Xbim.Ifc.PresentationDefinitionResource
 {
@@ -16,7 +29,7 @@ namespace Xbim.Ifc.PresentationDefinitionResource
         
         #endregion
 
-        #region Ifcroperties
+        #region IfcProperties
         
         #endregion
 
