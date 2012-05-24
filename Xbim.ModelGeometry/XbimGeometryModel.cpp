@@ -249,6 +249,26 @@ void CALLBACK AddVertexInt(void *pVertexData, void *pPolygonData)
 	((TesselateStream*)pPolygonData)->WritePointInt((unsigned int)pVertexData);
 };
 
+
+void CALLBACK XMS_BeginTessellate(GLenum type, void *pPolygonData)
+{
+	((XbimTriangularMeshStreamer*)pPolygonData)->BeginPolygon(type);
+};
+void CALLBACK XMS_EndTessellate(void *pVertexData)
+{
+	((XbimTriangularMeshStreamer*)pVertexData)->EndPolygon();
+};
+void CALLBACK XMS_TessellateError(GLenum err)
+{
+	// swallow the error.
+};
+void CALLBACK XMS_AddVertexIndex(void *pVertexData, void *pPolygonData)
+{
+	((XbimTriangularMeshStreamer*)pPolygonData)->WriteTriangleIndex((unsigned int)pVertexData);
+};
+
+
+
 gp_Dir GetNormal(const TopoDS_Face& face)
 {
 	// get bounds of face
@@ -1025,6 +1045,60 @@ namespace Xbim
 			gluDeleteTess(tess);
 			return vertexData.Length();
 		}
+		
+		void OpenGLStreamerFeed(const TopoDS_Shape & shape, XbimTriangularMeshStreamer* tms)
+		{
+			GLUtesselator *ActiveTss = gluNewTess();
+
+			gluTessCallback(ActiveTss, GLU_TESS_BEGIN_DATA,  (void (CALLBACK *)()) XMS_BeginTessellate);
+			gluTessCallback(ActiveTss, GLU_TESS_END_DATA,  (void (CALLBACK *)()) XMS_EndTessellate);
+			gluTessCallback(ActiveTss, GLU_TESS_ERROR,    (void (CALLBACK *)()) XMS_TessellateError);
+			gluTessCallback(ActiveTss, GLU_TESS_VERTEX_DATA,  (void (CALLBACK *)()) XMS_AddVertexIndex);
+
+			GLdouble glPt3D[3];
+			// TesselateStream vertexData(pStream, points, faceCount, streamSize);
+			for (TopExp_Explorer faceEx(shape,TopAbs_FACE) ; faceEx.More(); faceEx.Next()) 
+			{
+				tms->BeginFace(-1);
+				const TopoDS_Face& face = TopoDS::Face(faceEx.Current());
+				gp_Dir normal = GetNormal(face);
+				tms->SetNormal(
+					(float)normal.X(), 
+					(float)normal.Y(), 
+					(float)normal.Z()
+					);
+				// vertexData.BeginFace(normal);
+				// gluTessBeginPolygon(tess, &vertexData);
+				gluTessBeginPolygon(ActiveTss, tms);
+
+				// go over each wire
+				for (TopExp_Explorer wireEx(face,TopAbs_WIRE) ; wireEx.More(); wireEx.Next()) 
+				{
+					gluTessBeginContour(ActiveTss);
+					const TopoDS_Wire& wire = TopoDS::Wire(wireEx.Current());
+
+					BRepTools_WireExplorer wEx(wire);
+
+					for(;wEx.More();wEx.Next())
+					{
+						const TopoDS_Edge& edge = wEx.Current();
+						const TopoDS_Vertex& vertex=  wEx.CurrentVertex();
+						gp_Pnt p = BRep_Tool::Pnt(vertex);
+						glPt3D[0] = p.X();
+						glPt3D[1] = p.Y();
+						glPt3D[2] = p.Z();
+						void * pIndex = (void *)tms->WritePoint((float)p.X(), (float)p.Y(), (float)p.Z());
+						gluTessVertex(ActiveTss, glPt3D, pIndex); 
+					}
+					gluTessEndContour(ActiveTss);
+				}
+				gluTessEndPolygon(ActiveTss);
+				tms->EndFace();
+			}
+			gluDeleteTess(ActiveTss);
+			// return vertexData.Length();
+		}
+
 
 
 
@@ -1065,12 +1139,20 @@ namespace Xbim
 					// BRepMesh_IncrementalMesh calls BRepMesh_FastDiscret to create the mesh geometry.
 					//
 					// todo: Bonghi: Question: is this ok to use the shape instead of transformedShape? I assume the transformed shape points to the shape.
-					BRepMesh_IncrementalMesh incrementalMesh(*(shape->Handle), deflection); 
+
+					
 					try
 					{
 						XbimTriangularMeshStreamer value;
 						XbimTriangularMeshStreamer* m = &value;
-						long streamLen2 = OpenCascadeStreamerFeed(transformedShape, m);
+						// long streamLen2;
+						if (hasCurvedEdges) 
+						{
+							BRepMesh_IncrementalMesh incrementalMesh(*(shape->Handle), deflection); 
+							OpenCascadeStreamerFeed(transformedShape, m);
+						}
+						else
+							OpenGLStreamerFeed(transformedShape, m);
 						int isssss = m->StreamSize();
 
 						IntPtr BonghiUnManMem = Marshal::AllocHGlobal(isssss);

@@ -164,9 +164,13 @@ namespace Xbim.ModelGeometry.Scene
             _meshGeometry.Normals = new Vector3DCollection((int)numPoints);
         }
 
-        void IXbimTriangulatesToPositionsNormalsIndices.AddPoint(Point3D point3D, Vector3D normal)
+        void IXbimTriangulatesToPositionsNormalsIndices.AddPosition(Point3D point3D)
         {
             _meshGeometry.Positions.Add(point3D);
+        }
+
+        void IXbimTriangulatesToPositionsNormalsIndices.AddNormal(Vector3D normal)
+        {
             _meshGeometry.Normals.Add(normal);
         }
 

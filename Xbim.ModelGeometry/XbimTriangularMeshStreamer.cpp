@@ -1,5 +1,9 @@
 /* ==================================================================
 
+The stream has an unusual doble indirection to points and normals to be able to retain unique position idenity for those
+frameworks that do not consider or require normal specifications (therefore saving streaming size and reducing video 
+memory usage
+
 Structure of stream for triangular meshes:
 CountUniquePositions		// int
 CountUniqueNormals			// int
@@ -10,16 +14,74 @@ CountPolygons				// int
 ...
 [NrmX, NrmY, NrmZ]			// 3 * floats * CountUniqueNormals
 ...
-[iPos, INrm]				// int, short or byte f(CountUniquePositions, CountUniqueNormals)
+[iPos]						// int, short or byte f(CountUniquePositions)
+...					
+[iNrm]						// int, short or byte f(CountUniqueNormals)
 ...
 [Polygons:  
 	PolyType // byte
 	PolygonLen // int
-	iUniquePositionNormals // int, short or byte f(CountUniquePositions, CountUniqueNormals)
+	[UniquePositionNormal]  // int, short or byte f(CountUniquePositions)
 	...
 ]...
 
+
+Example for a 1x1x1 box:
+
+		8 // number of points
+		6 // number of normals (one for each face)
+		24 // each of the 8 points in a box belongs to 3 faces; it has therefore 3 normals
+		12 // 2 triangles per face
+		1  // all shape in one call
+	+->	0, 0, 0 (index: 0)  // these are the 8 points
+	|	0, 1, 0
+	|	1, 0, 0
+	|	1, 1, 0
+	|	0, 0, 1
+	|	0, 1, 1
+	|	1, 0, 1
+	|	1, 1, 1
+	|	0, 0, 1 // top face normal
+	|	1, 0, 0 // other normals...
+	|	0, 1, 0
+	|	0, 0, -1 
+	|	-1, 0, 0 
++-> |	0, -1, 0 (index: 5)
+|	|	// points indices (1 byte because of size)
+|	|	4 (0) // first two triangles (unique point 0 to 3) point to unique positions 0,1,2,3
+|	|	5 (1)
+|	|	7 (2)
+|	|	6 (3)
+|	+-=	0 (4) <-------------------------------------------------------------------------+
+|		[... omissis...]                                                                |
+|		// normal indices                                                               |
+|		0 (index:0) // first two triangles (unique point 0 to 3) share normal index 0   |
+|		0 (index:1)                                                                     |
+|		0 (index:2)                                                                     |
+|		0 (index:3)                                                                     |
++---=	5 (index:4) <-------------------------------------------------------------------+
+		5                                                                               |
+		5                                                                               |
+		[... omissis...]                                                                |
+		// unique indices per polygon                                                   |
+		//                                                                              |
+		4 // polygons type (series of triangles)                                        |
+		36 // lenght of the stream of indices for the first polygon                     |
+		0 // first triangle of top face                                                 |
+		1                                                                               |
+		2                                                                               |
+		0 // second of top face                                                         |
+		2                                                                               |
+		3                                                                               |
+		4 // first triangle of front face is unique point 4 =---------------------------+ (pointing to position 0 and normal 5)
+		5
+		6
+		[...more triangles follow...]
 */
+
+
+
+
 
 #include "StdAfx.h"
 #include "XbimTriangularMeshStreamer.h"
@@ -88,14 +150,18 @@ void XbimTriangularMeshStreamer::StreamTo(unsigned char* pStream)
 		*fCoord++ = i->Dim3; 
 	}
 
+	// picks up from fCoord's address
+	// 
+	// the decision to stream the indices in two blocks should allow a simple reduction of the stream to be sent
+	// if normals are not required.
 	unsigned char* UICoord = (unsigned char*)fCoord;
 	std::list<UIntegerPair>::iterator itUIPair;
-	for (itUIPair = _uniquePN.begin(); itUIPair != _uniquePN.end(); itUIPair++)
+	for (itUIPair = _uniquePN.begin(); itUIPair != _uniquePN.end(); itUIPair++)  // write point indices
 	{
-		if (itUIPair->Int1 >= iCPoints)
-		{
-		}
 		UICoord += (this->*writePoint)(UICoord,itUIPair->Int1);
+	}
+	for (itUIPair = _uniquePN.begin(); itUIPair != _uniquePN.end(); itUIPair++)  // write normal indices
+	{
 		UICoord += (this->*writeNormal)(UICoord,itUIPair->Int2);
 	}
 
@@ -104,7 +170,6 @@ void XbimTriangularMeshStreamer::StreamTo(unsigned char* pStream)
 	// setup the iterator for the indices; then use it within the loop of polygons
 	std::list<unsigned int>::iterator iInd;
 	iInd = _indices.begin();
-
 	std::list<PolygonInfo>::iterator iPol;
 
 	// countTriangles is increased for the count triangles in each polygon in the coming loop
@@ -122,8 +187,6 @@ void XbimTriangularMeshStreamer::StreamTo(unsigned char* pStream)
 
 		UICoord += WriteByte(UICoord,(unsigned int)iPol->GLType);
 		UICoord += WriteInt(UICoord,(unsigned int)iPol->IndexCount);
-
-		
 		unsigned int iThisPolyIndex = 0;
 		while (iThisPolyIndex++ < iThisPolyIndexCount)
 		{
@@ -162,13 +225,24 @@ int XbimTriangularMeshStreamer::WriteInt(unsigned char* pStream, unsigned int va
 
 void XbimTriangularMeshStreamer::BeginFace(int NodesInFace)
 {
-	_faceIndexMap = new unsigned int[ NodesInFace ];
-	_facePointIndex = 0;
+	if (NodesInFace > 0)
+	{
+		_useFaceIndexMap = true;
+		_faceIndexMap = new unsigned int[ NodesInFace ];
+		_facePointIndex = 0;
+	}
+	else
+	{
+		_useFaceIndexMap = false;
+	}
 }
 
 void XbimTriangularMeshStreamer::EndFace()
 {
-	delete [] _faceIndexMap;
+	if (_useFaceIndexMap)
+	{
+		delete [] _faceIndexMap;
+	}
 }
 
 int XbimTriangularMeshStreamer::StreamSize()
@@ -194,6 +268,17 @@ int XbimTriangularMeshStreamer::StreamSize()
 	iSize += iUPN * (sizeOptimised(iPos) + sizeOptimised(iNrm)); // unique points
 	iSize += iPolSize;
 
+	if (iSize == 6228)
+	{
+		int iT = 102 + 5;
+		iT += 12;
+	}
+
+	if (iSize == 5610)
+	{
+		int iT = 102 + 5;
+		iT += 12;
+	}
 	return iSize;
 }
 
@@ -266,7 +351,7 @@ void XbimTriangularMeshStreamer::SetNormal(float x, float y, float z)
 	_currentNormalIndex = iIndex;
 }
 
-void XbimTriangularMeshStreamer::WritePoint(float x, float y, float z)
+unsigned int XbimTriangularMeshStreamer::WritePoint(float x, float y, float z)
 {
 	unsigned int iIndex = 0;
 	std::list<Float3D>::iterator i;
@@ -280,8 +365,9 @@ void XbimTriangularMeshStreamer::WritePoint(float x, float y, float z)
 			)
 		{
 			// found in existing list
-			_faceIndexMap[_facePointIndex++] = iIndex;
-			return;
+			if (_useFaceIndexMap)
+				_faceIndexMap[_facePointIndex++] = iIndex;
+			return iIndex;
 		}
 		iIndex++;
 	}
@@ -290,16 +376,27 @@ void XbimTriangularMeshStreamer::WritePoint(float x, float y, float z)
 	f.Dim2 = y;
 	f.Dim3 = z;
 	_points.insert(_points.end(), f);
-	_faceIndexMap[_facePointIndex++] = iIndex;
+	if (_useFaceIndexMap)
+		_faceIndexMap[_facePointIndex++] = iIndex;
+	return iIndex;
 }
 
-// converts the 1-based index to of one face to the 
-// global 0-based index
+// when called from OpenCascade converts the 1-based index to of one face to the global 0-based index (_useFaceIndexMap)
+// otherwise just add the uniquepoint without the face mapping indirection (0-based to 0-based)
 void XbimTriangularMeshStreamer::WriteTriangleIndex(unsigned int index)
 {
 	// System::Diagnostics::Debug::Write("WriteTriangleIndex\r\n");
 	_currentPolygonCount++; // used in the closing function of each polygon to write the number of points to the stream
-	unsigned int resolvedPoint = this->getUniquePoint(_faceIndexMap[index-1], _currentNormalIndex);
+
+	unsigned int resolvedPoint;
+	if (_useFaceIndexMap)
+	{
+		resolvedPoint = this->getUniquePoint(_faceIndexMap[index-1], _currentNormalIndex); // index-1 becasue OCC starts from 1
+	}
+	else
+	{
+		resolvedPoint = this->getUniquePoint(index, _currentNormalIndex); // this call comes from OpenGL; no index - 1
+	}
 	_indices.insert(_indices.end(), resolvedPoint);
 }
 

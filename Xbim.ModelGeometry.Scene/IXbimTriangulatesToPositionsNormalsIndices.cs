@@ -20,7 +20,8 @@ namespace Xbim.ModelGeometry.Scene
         /// Called after BeginVertices, once for each unique vertex
         /// </summary>
         /// <param name="point3D"></param>
-        void AddPoint(System.Windows.Media.Media3D.Point3D point3D, System.Windows.Media.Media3D.Vector3D normal);
+        void AddPosition(System.Windows.Media.Media3D.Point3D point3D);
+        void AddNormal(System.Windows.Media.Media3D.Vector3D normal);
         /// <summary>
         /// Called when all unique vertices have been added 
         /// </summary>

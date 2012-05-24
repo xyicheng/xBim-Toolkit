@@ -113,7 +113,16 @@ namespace Xbim.ModelGeometry.Scene
 
         private class IndexReader
         {
-            private byte _IndexByteSize;
+            private byte _IndexByteSize = 0;
+
+            public int Size
+            {
+                get
+                {
+                    return (int)_IndexByteSize;
+                }
+            }
+
             public IndexReader(uint MaxSize)
             {
                 if (MaxSize <= 0xFF) //we will use byte for indices
@@ -190,7 +199,7 @@ namespace Xbim.ModelGeometry.Scene
             }
             builder.EndPositions();
 
-            // skips normals
+            // skips normal coordinates
             br.BaseStream.Seek(numNormals * sizeof(float) * 3, SeekOrigin.Current);
 
             // prepares local array of point coordinates.
@@ -198,13 +207,12 @@ namespace Xbim.ModelGeometry.Scene
             for (uint i = 0; i < numUniques; i++)
             {
                 uint readposition = PositionReader.ReadIndex(br);
-                if (readposition > numPositions)
-                {
-                    System.Diagnostics.Debug.WriteLine("Error");
-                }
                 UniqueToPosition[i] = readposition;
-                NormalsReader.ReadIndex(br); // just to skip the normal
             }
+
+            // skips normal indices
+            br.BaseStream.Seek(numUniques * NormalsReader.Size, SeekOrigin.Current);
+
 
             builder.BeginPolygons(numTriangles, numPolygons);
             for (uint p = 0; p < numPolygons; p++)
@@ -280,18 +288,25 @@ namespace Xbim.ModelGeometry.Scene
                 nrm[i, 2] = br.ReadSingle();
             }
 
+            // loop twice for how many indices to create the point/normal combinations.
             builder.BeginPoints(numUniques);
             for (uint i = 0; i < numUniques; i++)
             {
                 uint readpositionI = PositionReader.ReadIndex(br);
-                uint readnormalI  = NormalsReader.ReadIndex(br);
-                System.Diagnostics.Debug.WriteLine("PosNrm: " + readpositionI + " " + readnormalI);
-                builder.AddPoint(
-                    new Point3D(pos[readpositionI,0],pos[readpositionI,1],pos[readpositionI,2]),
+                
+                // System.Diagnostics.Debug.WriteLine("PosNrm: " + readpositionI + " " + readnormalI);
+                builder.AddPosition(
+                    new Point3D(pos[readpositionI,0],pos[readpositionI,1],pos[readpositionI,2])
+                    );
+            }
+            for (uint i = 0; i < numUniques; i++)
+            {
+                uint readnormalI = NormalsReader.ReadIndex(br);
+                builder.AddNormal(
                     new Vector3D(nrm[readnormalI, 0], nrm[readnormalI, 1], nrm[readnormalI, 2])
                     );
             }
-            builder.EndPoints();
+            builder.EndPoints(); //point/normal combinations completed
 
             builder.BeginPolygons(numTriangles, numPolygons);
             for (uint p = 0; p < numPolygons; p++)

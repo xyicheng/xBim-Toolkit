@@ -37,7 +37,7 @@ public:
 	void BeginPolygon(GLenum type);
 	void EndPolygon();
 	void SetNormal(float x, float y, float z);
-	void WritePoint(float x, float y, float z);
+	unsigned int WritePoint(float x, float y, float z);
 	void WriteTriangleIndex(unsigned int index);
 	void info(char string);
 	void info(int Number);
@@ -55,6 +55,7 @@ private:
 	std::list<unsigned int> _indices;	
 	unsigned int _currentPolygonCount;
 	unsigned int * _faceIndexMap;       // we're removing duplicates for the points; this array contains the mapping of non-optimised to optimised indices for a face
+	bool _useFaceIndexMap;
 	int WriteByte(unsigned char* pStream, unsigned int value);
 	int WriteShort(unsigned char* pStream, unsigned int value);
 	int WriteInt(unsigned char* pStream, unsigned int value);
