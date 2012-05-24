@@ -231,7 +231,7 @@ namespace Xbim.Web.Viewer3D.ServerSide
                     bw.Write((int)item);
                     int size = (int)(tm.DataStream.Length + sizeof(UInt16) + sizeof(byte));
                     bw.Write(size);
-                    bw.Write(tm.NumChildren);
+                    // bw.Write(tm.NumChildren);
                     bw.Write(tm.HasData);
                     bw.Close();
 

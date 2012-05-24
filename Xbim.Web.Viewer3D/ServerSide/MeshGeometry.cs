@@ -61,32 +61,20 @@ namespace Xbim.Web.Viewer3D.ServerSide
             UniquePoints = new List<PositionNormalPair>();
         }
 
-        public void BeginVertices(uint numPoints)
+        void IXbimTriangulatesToPositionsIndices.BeginPositions(uint numPoints)
         {
             _positions = new Point3DCollection((int)numPoints);
         }
 
-        public void AddVertex(Point3D point3D)
+        void IXbimTriangulatesToPositionsIndices.AddPosition(Point3D point3D)
         {
             _positions.Add(point3D);
         }
 
-        public void EndVertices()
+        void IXbimTriangulatesToPositionsIndices.EndPositions()
         {
         }
 
-        public void BeginFaces(ushort numFaces)
-        {
-
-        }
-
-        public void BeginFace()
-        {
-        }
-
-        public void BeginNormals(ushort numNormals)
-        {
-        }
 
         int currentNormal = 0;
         public void AddNormal(Vector3D normal)
@@ -107,15 +95,6 @@ namespace Xbim.Web.Viewer3D.ServerSide
 
         }
 
-        public void BeginPolygons(ushort numPolygons)
-        {
-
-        }
-
-        public void BeginPolygon()
-        {
-
-        }
 
         TriangleType _meshType;
         int _previousToLastIndex;
@@ -123,7 +102,7 @@ namespace Xbim.Web.Viewer3D.ServerSide
         int _pointTally;
         int _fanStartIndex;
 
-        public void BeginPolygon(TriangleType meshType, uint indicesCount)
+        void IXbimTriangulatesToPositionsIndices.BeginPolygon(TriangleType meshType, uint indicesCount)
         {
             _meshType = meshType;
             _pointTally = 0;
@@ -190,48 +169,24 @@ namespace Xbim.Web.Viewer3D.ServerSide
             _pointTally++;
         }
 
-        public void EndPolygon()
+        void IXbimTriangulatesToPositionsIndices.EndPolygon()
         {
 
         }
 
-        public void EndPolygon()
+        void IXbimTriangulatesToPositionsIndices.EndPolygons()
         {
 
         }
 
-        public void EndPolygons()
-        {
-
-        }
-
-        public void EndFace()
-        {
-
-        }
-
-        public void EndFaces()
-        {
-
-        }
-
-        public void EndBuild()
+        void IXbimTriangulatesToPositionsIndices.EndBuild()
         {
             
         }
 
-        public void EndChild()
+        void IXbimTriangulatesToPositionsIndices.BeginPolygons(uint totalNumberTriangles, uint numPolygons)
         {
-
-        }
-
-        public void BeginChild()
-        {
-            //_meshGeometry = new MeshGeometry3D();
-            //_geometryModel = new GeometryModel3D();
-            //_geometryModel.Geometry = _meshGeometry;
-            //_modelGroup.Children.Add(_geometryModel);
+         
         }
     }
-
 }

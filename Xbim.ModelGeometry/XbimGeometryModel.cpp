@@ -757,7 +757,9 @@ namespace Xbim
 					int iPointIndex;
 					if(orient == TopAbs_REVERSED)
 					{
-						tms->info('R');
+						// note the negative values of the normals for reversed faces.
+						// tms->info('R');
+
 						// setnormal and point
 						iPointIndex = 3 * n1 - 2; // n3
 						nrmx = -(float)normals(iPointIndex++);
@@ -787,7 +789,7 @@ namespace Xbim
 					}
 					else
 					{
-						tms->info('N');
+						// tms->info('N');
 						// setnormal and point
 						iPointIndex = 3 * n1 - 2;
 						nrmx = (float)normals(iPointIndex++);
