@@ -107,7 +107,6 @@ namespace Xbim
 
 			virtual IEnumerator<XbimFace^>^ GetEnumerator()
 			{
-
 				return gcnew XbimFaceEnumerator(*(pShell));
 			}
 			virtual System::Collections::IEnumerator^ GetEnumerator2() sealed = System::Collections::IEnumerable::GetEnumerator

@@ -21,46 +21,10 @@ using namespace Xbim::ModelGeometry::Scene;
 
 #pragma unmanaged
 
-
-public class TesselateStream
-{
-public:
-	const static bool UseDouble = false;
-	TesselateStream( unsigned char* pDataStream, const TopTools_IndexedMapOfShape& points, unsigned short faceCount, int streamSize);
-	TesselateStream( unsigned char* pDataStream, unsigned short faceCount, unsigned int nodeCount, int streamSize);
-	TesselateStream( unsigned char* pDataStream,  int streamSize, int position);
-	void BeginFace(const gp_Dir& normal);
-	void EndFace();
-	void BeginPolygon(GLenum type);
-	void WritePoint(double x, double y, double z);
-	void WritePointInt(unsigned int index);
-	void WritePointShort(unsigned int index);
-	void WritePointByte(unsigned int index);
-	void EndPolygon();
-	long Length() {return _position;};
-private:
-	unsigned char* _pDataStream;
-	int _position;
-	int _polygonStart;
-	int _pointPosition;
-	int _faceStart;
-	int _polygonCount;
-	int _streamSize;
-	unsigned short _indicesCount;
-};
-
-
-
-
-
-
-void CALLBACK BeginTessellate(GLenum type, void *pPolygonData);
-void CALLBACK EndTessellate(void *pVertexData);
-void CALLBACK TessellateError(GLenum err);
-void CALLBACK AddVertexByte(void *pVertexData, void *pPolygonData);
-void CALLBACK AddVertexShort(void *pVertexData, void *pPolygonData);
-void CALLBACK AddVertexInt(void *pVertexData, void *pPolygonData);
-
+void CALLBACK XMS_BeginTessellate(GLenum type, void *pPolygonData);
+void CALLBACK XMS_EndTessellate(void *pVertexData);
+void CALLBACK XMS_TessellateError(GLenum err);
+void CALLBACK XMS_AddVertexIndex(void *pVertexData, void *pPolygonData);
 		
 #pragma managed
 

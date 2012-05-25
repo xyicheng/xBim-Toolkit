@@ -229,13 +229,12 @@ namespace Xbim.Web.Viewer3D.ServerSide
                     
                     BinaryWriter bw = new BinaryWriter(Response.OutputStream);
                     bw.Write((int)item);
-                    int size = (int)(tm.DataStream.Length + sizeof(UInt16) + sizeof(byte));
+                    int size = (int)(tm.DataStream.Length);
                     bw.Write(size);
-                    // bw.Write(tm.NumChildren);
-                    bw.Write(tm.HasData);
-                    bw.Close();
-
+                    bw.Flush();
+                    tm.DataStream.Seek(0, SeekOrigin.Begin);
                     tm.DataStream.CopyTo(Response.OutputStream);
+                    bw.Close();
                 }
             }
             Scene.Close();

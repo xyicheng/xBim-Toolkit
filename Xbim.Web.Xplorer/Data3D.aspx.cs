@@ -14,8 +14,10 @@ namespace Xbim.Web.Xplorer
         protected void Page_Load(object sender, EventArgs e)
         {
             //XbimRepo x = new XbimRepo("onewall.xbim");
-            string filePath = Path.Combine(Server.MapPath("~/SampleData"), "SimpleHouse.xbim");
+            //string filePath = Path.Combine(Server.MapPath("~/SampleData"), "SimpleHouse.xbim");
+            string filePath = Path.Combine(Server.MapPath("~/SampleData"), "OneWall.xbim");
             //string filePath = Path.Combine(Server.MapPath("~/SampleData"), "TwoBlocks.xbim");
+            
             XbimRepo x = new XbimRepo(filePath);
 
             switch (Request["Data"])

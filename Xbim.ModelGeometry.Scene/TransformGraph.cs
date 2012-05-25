@@ -95,7 +95,7 @@ namespace Xbim.ModelGeometry.Scene
 
 
         /// <summary>
-        /// Converts all solid geoemetry to a tesselated model and stores on the stream
+        /// Converts all solid geoemetry to a tesselated model and stores on the stream.
         /// </summary>
         /// <param name = "strm"></param>
         /// <returns></returns>
@@ -117,8 +117,16 @@ namespace Xbim.ModelGeometry.Scene
         }
 
 
+
+        /// <summary>
+        /// Reads the root node of the transformgraph from the stream.
+        /// All the children of the root node are also loaded recursively.
+        /// </summary>
+        /// <param name="strm"></param>
         public void Read(BinaryReader strm)
         {
+            // goes at the beginning of the file to move to the right offset; then reads all the properties.
+            // 
             strm.BaseStream.Seek(0, SeekOrigin.Begin);
             long offset = strm.ReadInt64();
             strm.BaseStream.Seek(offset, SeekOrigin.Begin);

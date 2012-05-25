@@ -31,6 +31,7 @@ using Xbim.Ifc.SharedBldgElements;
 using Xbim.ModelGeometry;
 using Xbim.ModelGeometry.Scene;
 using Xbim.XbimExtensions;
+using System.Diagnostics;
 
 #endregion
 
@@ -510,21 +511,28 @@ namespace Xbim.Presentation
 
             if ( !tMod.IsEmpty)
             {
-                Model3D m3d = tMod.AsModel3D();
-                Model3DGroup grp = m3d as Model3DGroup;
-                if (grp != null)
+                try
                 {
-                    foreach (var item in grp.Children)
+                    Model3D m3d = tMod.AsModel3D();
+                    Model3DGroup grp = m3d as Model3DGroup;
+                    if (grp != null)
                     {
-                          BindingOperations.SetBinding(item, GeometryModel3D.MaterialProperty, bf); // mat;
-                          BindingOperations.SetBinding(item, GeometryModel3D.BackMaterialProperty, bb); // mat;
+                        foreach (var item in grp.Children)
+                        {
+                            BindingOperations.SetBinding(item, GeometryModel3D.MaterialProperty, bf); // mat;
+                            BindingOperations.SetBinding(item, GeometryModel3D.BackMaterialProperty, bb); // mat;
+                        }
                     }
+                    mv.Content = m3d;
+                    if (transparent)
+                        Transparents.Children.Add(mv);
+                    else
+                        Solids.Children.Add(mv);
                 }
-                mv.Content = m3d;
-                if (transparent)
-                    Transparents.Children.Add(mv);
-                else
-                    Solids.Children.Add(mv);
+                catch (Exception)
+                {
+                    Debug.WriteLine("Error in mesh?");
+                }
             }
             //else //we have children as well
             //{
@@ -572,7 +580,6 @@ namespace Xbim.Presentation
                 }
             }
         }
-
 
         private void GenerateGeometry(object s, DoWorkEventArgs args)
         {

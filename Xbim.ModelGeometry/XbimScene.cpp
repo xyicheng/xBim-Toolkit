@@ -134,6 +134,8 @@ namespace Xbim
 			return gcnew XbimSceneStream(_graph->Model, _sceneStreamFileName);
 		}
 
+		// Triangulate is the main method for the generation of the mesh for a node from the semantic data.
+		//
 		XbimTriangulatedModelStream^ XbimScene::Triangulate(TransformNode^ node)
 		{
 

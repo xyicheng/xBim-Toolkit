@@ -28,7 +28,6 @@ namespace Xbim
 		XbimFeaturedShape::XbimFeaturedShape(IXbimGeometryModel^ baseShape, IEnumerable<IXbimGeometryModel^>^ openings, IEnumerable<IXbimGeometryModel^>^ projections)
 		{
 
-		
 
 			if(baseShape==nullptr)
 			{

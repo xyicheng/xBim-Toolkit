@@ -1,87 +1,6 @@
-/* ==================================================================
-
-The stream has an unusual doble indirection to points and normals to be able to retain unique position idenity for those
-frameworks that do not consider or require normal specifications (therefore saving streaming size and reducing video 
-memory usage
-
-Structure of stream for triangular meshes:
-CountUniquePositions		// int
-CountUniqueNormals			// int
-CountUniquePositionNormals	// int
-CountAllTriangles			// int // used to prepare index array if needed
-CountPolygons				// int
-[PosX, PosY, PosZ]			// 3 * floats * CountUniquePositions
-...
-[NrmX, NrmY, NrmZ]			// 3 * floats * CountUniqueNormals
-...
-[iPos]						// int, short or byte f(CountUniquePositions)
-...					
-[iNrm]						// int, short or byte f(CountUniqueNormals)
-...
-[Polygons:  
-	PolyType // byte
-	PolygonLen // int
-	[UniquePositionNormal]  // int, short or byte f(CountUniquePositions)
-	...
-]...
-
-
-Example for a 1x1x1 box:
-
-		8 // number of points
-		6 // number of normals (one for each face)
-		24 // each of the 8 points in a box belongs to 3 faces; it has therefore 3 normals
-		12 // 2 triangles per face
-		1  // all shape in one call
-	+->	0, 0, 0 (index: 0)  // these are the 8 points
-	|	0, 1, 0
-	|	1, 0, 0
-	|	1, 1, 0
-	|	0, 0, 1
-	|	0, 1, 1
-	|	1, 0, 1
-	|	1, 1, 1
-	|	0, 0, 1 // top face normal
-	|	1, 0, 0 // other normals...
-	|	0, 1, 0
-	|	0, 0, -1 
-	|	-1, 0, 0 
-+-> |	0, -1, 0 (index: 5)
-|	|	// points indices (1 byte because of size)
-|	|	4 (0) // first two triangles (unique point 0 to 3) point to unique positions 0,1,2,3
-|	|	5 (1)
-|	|	7 (2)
-|	|	6 (3)
-|	+-=	0 (4) <-------------------------------------------------------------------------+
-|		[... omissis...]                                                                |
-|		// normal indices                                                               |
-|		0 (index:0) // first two triangles (unique point 0 to 3) share normal index 0   |
-|		0 (index:1)                                                                     |
-|		0 (index:2)                                                                     |
-|		0 (index:3)                                                                     |
-+---=	5 (index:4) <-------------------------------------------------------------------+
-		5                                                                               |
-		5                                                                               |
-		[... omissis...]                                                                |
-		// unique indices per polygon                                                   |
-		//                                                                              |
-		4 // polygons type (series of triangles)                                        |
-		36 // lenght of the stream of indices for the first polygon                     |
-		0 // first triangle of top face                                                 |
-		1                                                                               |
-		2                                                                               |
-		0 // second of top face                                                         |
-		2                                                                               |
-		3                                                                               |
-		4 // first triangle of front face is unique point 4 =---------------------------+ (pointing to position 0 and normal 5)
-		5
-		6
-		[...more triangles follow...]
-*/
-
-
-
-
+// All cases when the geometry of a mesh is calculated shold be passed through this class to ensure consisstency in the stream. 
+//
+// for documentation on the binary format of the stream have a look at Xbim.ModelGeometry.Scene.XbimTriangulatedModelStream
 
 #include "StdAfx.h"
 #include "XbimTriangularMeshStreamer.h"
@@ -95,7 +14,7 @@ XbimTriangularMeshStreamer::XbimTriangularMeshStreamer()
 	// System::Diagnostics::Debug::Write("TriangularMeshStreamer Init\r\n");
 }
 
-void XbimTriangularMeshStreamer::StreamTo(unsigned char* pStream)
+unsigned int XbimTriangularMeshStreamer::StreamTo(unsigned char* pStream)
 {
 	int* iCoord = (int *)(pStream);
 
@@ -199,7 +118,8 @@ void XbimTriangularMeshStreamer::StreamTo(unsigned char* pStream)
 	iCoord += 3;
 	*iCoord = countTriangles;
 
-	int calcSize = UICoord - pStream;
+	unsigned int calcSize = UICoord - pStream;
+	return calcSize;
 }
 
 int XbimTriangularMeshStreamer::WriteByte(unsigned char* pStream, unsigned int value)
@@ -245,13 +165,14 @@ void XbimTriangularMeshStreamer::EndFace()
 	}
 }
 
-int XbimTriangularMeshStreamer::StreamSize()
+unsigned int XbimTriangularMeshStreamer::StreamSize()
 {
 	int iPos = _points.size();
 	int iNrm = _normals.size();
 	int iUPN = _uniquePN.size();
 	int iUniqueSize = sizeOptimised(iUPN);
 	
+	// calc polygon size
 	int iPolSize = 0;
 	unsigned int iIndex = 0;
 	std::list<PolygonInfo>::iterator i;
@@ -262,23 +183,18 @@ int XbimTriangularMeshStreamer::StreamSize()
 		iPolSize += pol.IndexCount * iUniqueSize;
 	}
 
-	int iSize = 5 * sizeof(int);       // initial headers
+	unsigned int iSize = 5 * sizeof(int);       // initial headers
 	iSize += iPos * 3 * sizeof(float); // positions
 	iSize += iNrm * 3 * sizeof(float); // normals
 	iSize += iUPN * (sizeOptimised(iPos) + sizeOptimised(iNrm)); // unique points
 	iSize += iPolSize;
 
-	if (iSize == 6228)
+	if (iSize == 2846)
 	{
-		int iT = 102 + 5;
-		iT += 12;
+		int b = 0;
+		b++;
 	}
 
-	if (iSize == 5610)
-	{
-		int iT = 102 + 5;
-		iT += 12;
-	}
 	return iSize;
 }
 
@@ -326,55 +242,41 @@ void XbimTriangularMeshStreamer::SetNormal(float x, float y, float z)
 	// finds the index of the current normal
 	// otherwise adds it to the collection
 	//
-	// System::Diagnostics::Debug::Write("Set normal\r\n");
-	unsigned int iIndex = 0;
-	std::list<Float3D>::iterator i;
-	for (i =  _normals.begin(); i != _normals.end(); i++)
-	{
-		Float3D f2 = *i;
-		if (
-			x == f2.Dim1 &&
-			y == f2.Dim2 &&
-			z == f2.Dim3 
-			)
-		{
-			_currentNormalIndex = iIndex;
-			return;
-		}
-		iIndex++;
-	}
 	Float3D f;
 	f.Dim1 = x;
 	f.Dim2 = y;
 	f.Dim3 = z;
+
+	std::map<Float3D,unsigned int>::iterator it = _normalsMap.find(f);
+	if(it != _normalsMap.end()) //element found;
+	{
+		_currentNormalIndex = it->second;
+		return;
+	}
+	
+	// if not found add it to the map and the list
+	unsigned int iIndex = _normals.size();
+	_normalsMap[f] = iIndex;
 	_normals.insert(_normals.end(), f);
 	_currentNormalIndex = iIndex;
 }
 
 unsigned int XbimTriangularMeshStreamer::WritePoint(float x, float y, float z)
 {
-	unsigned int iIndex = 0;
-	std::list<Float3D>::iterator i;
-	for (i =  _points.begin(); i != _points.end(); i++)
-	{
-		// Float3D f2 = *i;
-		if (
-			x == i->Dim1 &&
-			y == i->Dim2 &&
-			z == i->Dim3 
-			)
-		{
-			// found in existing list
-			if (_useFaceIndexMap)
-				_faceIndexMap[_facePointIndex++] = iIndex;
-			return iIndex;
-		}
-		iIndex++;
-	}
 	Float3D f;
 	f.Dim1 = x;
 	f.Dim2 = y;
 	f.Dim3 = z;
+
+	std::map<Float3D,unsigned int>::iterator it = _pointsMap.find(f);
+	if(it != _pointsMap.end()) //element found;
+		return it->second;
+	
+
+	// if not found add it to the map and the list
+	unsigned int iIndex = _points.size();
+	_pointsMap[f] = iIndex;
+
 	_points.insert(_points.end(), f);
 	if (_useFaceIndexMap)
 		_faceIndexMap[_facePointIndex++] = iIndex;
@@ -402,24 +304,17 @@ void XbimTriangularMeshStreamer::WriteTriangleIndex(unsigned int index)
 
 unsigned int XbimTriangularMeshStreamer::getUniquePoint(unsigned int pointIndex, unsigned int normalIndex)
 {
-	// System::Diagnostics::Debug::Write("getUniquePoint\r\n");
-	unsigned int iIndex = 0;
-	std::list<UIntegerPair>::iterator i;
-	for (i = _uniquePN.begin(); i != _uniquePN.end(); i++)
-	{
-		UIntegerPair iter = *i;
-		if (
-			pointIndex == iter.Int1 &&
-			normalIndex == iter.Int2 
-			)
-		{
-			return iIndex;
-		}
-		iIndex++;
-	}
 	UIntegerPair f;
 	f.Int1 = pointIndex;
 	f.Int2 = normalIndex; 
+
+	std::map<UIntegerPair,unsigned int>::iterator it = _uniquePNMap.find(f);
+	if(it != _uniquePNMap.end()) //element found;
+		return it->second;
+
+	// if not found add it to the map and the list
+	unsigned int iIndex = _uniquePN.size();
+	_uniquePNMap[f] = iIndex;
 	_uniquePN.insert(_uniquePN.end(), f);
 	return iIndex;
 }

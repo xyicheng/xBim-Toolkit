@@ -295,23 +295,13 @@ XbimClientViewer3DControl.prototype = {
             var id = view.getInt32();
             var dlen = view.getInt32();
             var nextStream = view.tell() + dlen;
-            var numChildren = view.getInt16();
-            var hasData = view.getInt8();
-
+            
             var thisMesh = new ViewerMesh();
-
-            if (hasData) {
+            if (dlen > 0) {
                 thisMesh.AddOneMesh(view);
             }
-            for (var i = 0; i < numChildren; i++) {
-                thisMesh.AddOneMesh(view);
-            }
-
-            view.seek(nextStream);  // there are extra bytes at the end of the stream that I do not understand
-
-            // 
+            view.seek(nextStream);   
             var xbimtn = this.transformGraph.findNode(id);
-
             // now we must add the mesh to the tree
             var vinfo = this.vertexInfoViewerMesh(thisMesh);
             if (vinfo != null && xbimtn != null) {
