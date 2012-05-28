@@ -45,8 +45,7 @@ namespace Xbim.Ifc.MeasureResource
                     _millionthsOfaSecond = (int) value.IntegerVal;
                     break;
                 default:
-                    throw new Exception(string.Format("Attribute index {0} is out of range for {1}", propIndex + 1,
-                                                      this.GetType().Name.ToUpper()));
+                    this.HandleUnexpectedAttribute(propIndex, value); break;
             }
             if (_count >= 3)
                 _count = 0; //restart if reloading
