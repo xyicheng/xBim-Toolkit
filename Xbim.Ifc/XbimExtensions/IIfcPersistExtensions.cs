@@ -31,7 +31,7 @@ namespace Xbim.XbimExtensions
         public static void HandleUnexpectedAttribute(this IPersistIfc persistIfc, int propIndex, IPropertyValue value)
         {
             // TODO: Review this workaround for older IFC files with extraneous properties
-            if (String.Compare(value.EnumVal, "NOTDEFINED") == 0)
+            if (value.Type == IfcParserType.Enum && String.Compare(value.EnumVal, "NOTDEFINED") == 0)
                 return;
 
             throw new XbimParserException(string.Format("Attribute index {0} is out of range for {1}", propIndex + 1,

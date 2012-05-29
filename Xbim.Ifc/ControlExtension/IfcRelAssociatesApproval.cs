@@ -69,10 +69,9 @@ namespace Xbim.Ifc.ControlExtension
                 case 2:
                 case 3:
                 case 4:
-                case 5:
                     base.IfcParse(propIndex, value);
                     break;
-                case 6:
+                case 5:
                     _relatingApproval = (IfcApproval)value.EntityVal; 
                     break;
                 default:
