@@ -114,6 +114,9 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\SharedAssemblyInfo.cs">
+      <Link>Properties\SharedAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="ServerSide\Materials.cs" />
     <Compile Include="ServerSide\MeshGeometry.cs" />
     <Compile Include="ServerSide\MeshWriter.cs" />

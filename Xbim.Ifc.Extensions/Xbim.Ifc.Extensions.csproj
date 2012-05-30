@@ -183,6 +183,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\SharedAssemblyInfo.cs">
+      <Link>Properties\SharedAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="Axis2Placement2DExtensions.cs" />
     <Compile Include="Axis2Placement3DExtensions.cs" />
     <Compile Include="BuildingElementExtension.cs" />

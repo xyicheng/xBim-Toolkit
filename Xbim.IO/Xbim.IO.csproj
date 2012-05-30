@@ -124,6 +124,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\SharedAssemblyInfo.cs">
+      <Link>Properties\SharedAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="GeometryCache\GeometryCacheFile.cs" />
     <Compile Include="GeometryCache\MeshGeometry.cs" />
     <Compile Include="GeometryCache\SpaceTriangulatedModel.cs" />

@@ -88,6 +88,9 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\SharedAssemblyInfo.cs">
+      <Link>Properties\SharedAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="CoPlanarComparer.cs" />
     <Compile Include="IXbimTriangulatedModelBuilder.cs" />
     <Compile Include="IXbimScene.cs" />
