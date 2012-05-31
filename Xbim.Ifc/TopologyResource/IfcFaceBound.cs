@@ -152,10 +152,10 @@ namespace Xbim.Ifc.TopologyResource
                         return new IfcDirection(cp);
                     }
                 }
-                throw new Exception("IfcFaceBound:Normal has an Invalid face");
+                return null; //there is no valid normal for this face
             }
             else
-                throw new Exception("IfcFaceBound:Normal has an undefined bound");
+                return null; //there is no valid normal for this face
         }
     }
 }

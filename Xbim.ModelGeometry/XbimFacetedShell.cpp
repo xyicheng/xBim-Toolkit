@@ -99,8 +99,10 @@ namespace Xbim
 			// TesselateStream vertexData(pStream, points, faceCount, streamSize);
 			for each (IfcFace^ fc in  _faceSet->CfsFaces)
 			{
-				tms.BeginFace((int)-1);
 				IfcDirection^ normal = ((IFace^)fc)->Normal;
+				if(normal==nullptr) break; //abandon face if the normal is invalid
+				tms.BeginFace((int)-1);
+				
 				tms.SetNormal(
 					(float)normal->X, 
 					(float)normal->Y, 
