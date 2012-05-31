@@ -33,8 +33,7 @@ namespace Xbim.Ifc.PresentationResource
             if (propIndex == 0)
                 _theValue = value.StringVal;
             else
-                throw new ArgumentOutOfRangeException(string.Format("P21 index value out of range in {0}",
-                                                                    this.GetType().Name));
+                this.HandleUnexpectedAttribute(propIndex, value);
         }
 
         #endregion

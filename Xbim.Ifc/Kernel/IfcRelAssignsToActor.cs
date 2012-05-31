@@ -99,9 +99,7 @@ namespace Xbim.Ifc.Kernel
                     _actingRole = value.EntityVal as IfcActorRole;
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException("propIndex",
-                                                          string.Format("P21 index value out of range in {0}",
-                                                                        this.GetType().Name));
+                    this.HandleUnexpectedAttribute(propIndex, value); break;
             }
         }
 
