@@ -21,6 +21,7 @@ using Xbim.Ifc.GeometryResource;
 using Xbim.Ifc.Kernel;
 using Xbim.Ifc.SelectTypes;
 using Xbim.XbimExtensions.Parser;
+using System.Windows.Forms;
 
 #endregion
 
@@ -36,7 +37,7 @@ namespace Xbim.XbimExtensions
         private const string _ifcXSD = "http://www.iai-tech.org/ifcXML/IFC2x3/FINAL/IFC2X3.xsd";
         private const string _iso10303urn = "urn:iso.org:standard:10303:part(28):version(2):xmlschema:common";
         private const string _exXSD = "http://www.iai-tech.org/ifcXML/IFC2x3/FINAL/ex.xsd";
-        private Dictionary<object, long> _written;
+        private HashSet<long> _written;
 
         public bool WriteInverses;
 
@@ -53,6 +54,8 @@ namespace Xbim.XbimExtensions
         public string Authorization;
         public string Documentation;
 
+        private IfcFileHeader _fileHeader = new IfcFileHeader();
+
         #endregion
 
         public IfcXmlWriter()
@@ -66,17 +69,18 @@ namespace Xbim.XbimExtensions
         }
 
 
-        public void Write(IModel model, XmlWriter output)
+        public void Write(IModel model, XmlWriter output, IEnumerable<IPersistIfcEntity> instances = null)
         {
             try
             {
-                _written = new Dictionary<object, long>(model.Instances.Count());
+                _written = new HashSet<long>();
 
                 output.WriteStartDocument();
-                output.WriteStartElement("iso_10303_28", _iso10303urn);
+                output.WriteStartElement("ex", "iso_10303_28", _iso10303urn);
                 output.WriteAttributeString("version", "2.0");
                 output.WriteAttributeString("xmlns", "xsi", null, _xsi);
                 output.WriteAttributeString("xmlns", "xlink", null, _xlink);
+                output.WriteAttributeString("xmlns", "ex", null, _iso10303urn);
                 output.WriteAttributeString("xsi", "schemaLocation", null,
                                             string.Format("{0} {1}", _iso10303urn, _exXSD));
 
@@ -91,19 +95,22 @@ namespace Xbim.XbimExtensions
                 output.WriteAttributeString("xmlns", "ifc", null, _namespace);
                 output.WriteAttributeString("xsi", "schemaLocation", null, string.Format("{0} {1}", _namespace, _ifcXSD));
 
-                if (model.IfcProject != null)
+                Application.DoEvents();
+
+                if (model.IfcProject != null && instances == null)
                 {
-                    Write(model.IfcProject, output);
+                    Write(model, model.IfcProject, output);
                     foreach (IPersistIfcEntity item in model.Instances.Where(i => i.GetType() != typeof(IfcProject)))
                     {
-                        Write(item, output);
+                        Write(model, item, output);
                     }
                 }
                 else
                 {
-                    foreach (IPersistIfcEntity item in model.Instances)
+                    if (instances == null) instances = model.Instances; // so we can make custom xmlof only specified instances for debuging
+                    foreach (IPersistIfcEntity item in instances)
                     {
-                        Write(item, output);
+                        Write(model, item, output);
                     }
                 }
 
@@ -124,29 +131,47 @@ namespace Xbim.XbimExtensions
 
         private void WriteISOHeader(XmlWriter output)
         {
-            output.WriteStartElement("iso_10303_28_header");
-            output.WriteElementString("name", Name);
-            output.WriteElementString("time_stamp", TimeStamp);
-            output.WriteElementString("author", Author);
-            output.WriteElementString("organization", Organization);
-            output.WriteElementString("preprocessor_version", PreprocessorVersion);
-            output.WriteElementString("originating_system", OriginatingSystem);
-            output.WriteElementString("authorization", Authorization);
-            output.WriteElementString("documentation", Documentation);
+            output.WriteStartElement("ex", "iso_10303_28_header", null);
+            output.WriteElementString("ex", "name", null, _fileHeader.FileName.Name);
+            output.WriteElementString("ex", "time_stamp", null, _fileHeader.FileName.TimeStamp);
+
+            if (_fileHeader.FileName.AuthorName.Count > 0)
+                foreach (string name in _fileHeader.FileName.AuthorName)
+                    output.WriteElementString("ex", "author", null, name);
+            else
+                output.WriteElementString("ex", "author", null, "");
+
+            if (_fileHeader.FileName.Organization.Count > 0)
+                foreach (string name in _fileHeader.FileName.Organization)
+                    output.WriteElementString("ex", "organization", null, name);
+            else
+                output.WriteElementString("ex", "organization", null, "");
+
+            output.WriteElementString("ex", "preprocessor_version", null, _fileHeader.FileName.PreprocessorVersion);
+            output.WriteElementString("ex", "originating_system", null, _fileHeader.FileName.OriginatingSystem);
+            output.WriteElementString("ex", "authorization", null, _fileHeader.FileName.AuthorizationName);
+
+            if (_fileHeader.FileDescription.Description.Count > 0)
+                foreach (string name in _fileHeader.FileDescription.Description)
+                    output.WriteElementString("ex", "documentation", null, name);
+            else
+                output.WriteElementString("ex", "documentation", null, "");
+
             output.WriteEndElement(); //end iso_10303_28_header
         }
 
-        private void Write(IPersistIfcEntity entity, XmlWriter output)
+        private void Write(IModel model, IPersistIfcEntity entity, XmlWriter output)
         {
-            if (_written.ContainsKey(entity)) //we have already done it
+            long lbl = Math.Abs(entity.EntityLabel);
+            if (_written.Contains(lbl)) //we have already done it
                 return;
             //int nextId = _written.Count + 1;
-            _written.Add(entity, Math.Abs(entity.EntityLabel));
+            _written.Add(lbl);
 
             IfcType ifcType = IfcInstances.IfcEntities[entity.GetType()];
             output.WriteStartElement(entity.GetType().Name);
             //output.WriteAttributeString("id", string.Format("i{0}", nextId));
-            output.WriteAttributeString("id", string.Format("i{0}", Math.Abs(entity.EntityLabel)));
+            output.WriteAttributeString("id", string.Format("i{0}", lbl));
             IEnumerable<IfcMetaProperty> toWrite;
             if (WriteInverses)
             {
@@ -165,14 +190,14 @@ namespace Xbim.XbimExtensions
                     Type propType = ifcProperty.PropertyInfo.PropertyType;
                     object propVal = ifcProperty.PropertyInfo.GetValue(entity, null);
 
-                    WriteProperty(ifcProperty.PropertyInfo.Name, propType, propVal, entity, output, -1,
+                    WriteProperty(model, ifcProperty.PropertyInfo.Name, propType, propVal, entity, output, -1,
                                   ifcProperty.IfcAttribute);
                 }
             }
             output.WriteEndElement();
         }
 
-        private void WriteProperty(string propName, Type propType, object propVal, object entity, XmlWriter output,
+        private void WriteProperty(IModel model, string propName, Type propType, object propVal, object entity, XmlWriter output,
                                    int pos, IfcAttribute attr)
         {
             if (propVal == null)
@@ -192,32 +217,31 @@ namespace Xbim.XbimExtensions
             else if (propType.IsGenericType && propType.GetGenericTypeDefinition() == typeof(Nullable<>) &&
                      (typeof(ExpressType).IsAssignableFrom(propVal.GetType()))) //deal with undefined types (nullables)
             {
-                output.WriteStartElement(propName);
-                if (pos > -1)
-                    output.WriteAttributeString("pos", pos.ToString());
-                if (typeof(ExpressComplexType).IsAssignableFrom(propVal.GetType()))
+                if (string.IsNullOrEmpty((propVal).ToString()))
                 {
-                    IEnumerable<object> complexProps = ((ExpressComplexType)propVal).Properties;
-                    foreach (object complexProp in complexProps)
-                    {
-                        //if (typeof(ExpressEnumerable).IsAssignableFrom(complexProp.GetType()))
-                        //{
-                        int wrapPos = 0;
-                        //foreach (var wrappedItem in (ExpressEnumerable)complexProp)
-                        //{
-                        WriteProperty(propName, complexProp.GetType(), complexProp, entity, output, wrapPos, attr);
-                        wrapPos++;
-                        //        }
-                        //    }
-                        //    else
-                        //        WriteProperty(propName, complexProp.GetType(), complexProp, entity, output, -1, attr);
-                        //
-                    }
+                    output.WriteElementString(propName, (propVal).ToString());
                 }
                 else
-                    output.WriteValue((propVal).ToString());
+                {
+                    output.WriteStartElement(propName);
+                    if (pos > -1)
+                        output.WriteAttributeString("pos", pos.ToString());
+                    if (typeof(ExpressComplexType).IsAssignableFrom(propVal.GetType()))
+                    {
+                        IEnumerable<object> complexProps = ((ExpressComplexType)propVal).Properties;
+                        foreach (object complexProp in complexProps)
+                        {
+                            int wrapPos = 0;
+                            WriteProperty(model, propName, complexProp.GetType(), complexProp, entity, output, wrapPos, attr);
+                            wrapPos++;
+                        }
+                    }
+                    else
+                        output.WriteValue((propVal).ToString());
 
-                output.WriteEndElement();
+                    output.WriteEndElement();
+                }
+
             }
             else if (typeof(ExpressType).IsAssignableFrom(propType))
             {
@@ -227,7 +251,8 @@ namespace Xbim.XbimExtensions
                 //we have a type but it is a select type use the actual value but write out explicitly
                 {
                     output.WriteStartElement(propName);
-                    WriteProperty(realType.Name + "-wrapper", realType, propVal, entity, output, pos, attr);
+                    //WriteProperty(model, realType.Name + "-wrapper", realType, propVal, entity, output, pos, attr);
+                    WriteProperty(model, realType.Name, realType, propVal, entity, output, pos, attr);
                     output.WriteEndElement();
                 }
                 else
@@ -250,14 +275,12 @@ namespace Xbim.XbimExtensions
             {
                 //try
                 //{
-
-
                 output.WriteStartElement(propName);
                 output.WriteAttributeString("ex", "cType", null, ((ExpressEnumerable)propVal).ListType);
                 int i = 0;
                 foreach (object item in ((ExpressEnumerable)propVal))
                 {
-                    WriteProperty(item.GetType().Name, item.GetType(), item, entity, output, i, attr);
+                    WriteProperty(model, item.GetType().Name, item.GetType(), item, entity, output, i, attr);
                     i++;
                 }
                 output.WriteEndElement();
@@ -272,11 +295,12 @@ namespace Xbim.XbimExtensions
             else if (typeof(IPersistIfcEntity).IsAssignableFrom(propType))
             //all writable entities must support this interface and ExpressType have been handled so only entities left
             {
+                IPersistIfcEntity persistVal = (IPersistIfcEntity)propVal;
                 if (pos == -1) output.WriteStartElement(propName);
-                if (_written.ContainsKey(propVal)) //we have already wruitten it so use an xlink
+                if (_written.Contains(Math.Abs(persistVal.EntityLabel))) //we have already wruitten it so use an xlink
                 {
                     output.WriteStartElement(propVal.GetType().Name);
-                    output.WriteAttributeString("ref", string.Format("i{0}", _written[propVal]));
+                    output.WriteAttributeString("ref", string.Format("i{0}", Math.Abs(persistVal.EntityLabel)));
                     output.WriteAttributeString("xsi", "nil", null, "true");
                     if (pos > -1) //we are writing out a list element
                         output.WriteAttributeString("pos", pos.ToString());
@@ -284,7 +308,7 @@ namespace Xbim.XbimExtensions
                 }
                 else
                 {
-                    Write((IPersistIfcEntity)propVal, output);
+                    Write(model, (IPersistIfcEntity)propVal, output);
                 }
                 if (pos == -1) output.WriteEndElement();
             }
@@ -363,18 +387,6 @@ namespace Xbim.XbimExtensions
                         output.WriteStartElement(propName);
                     output.WriteValue(string.Format(new Part21Formatter(), "{0}", propVal));
                 }
-                //else if (pInfoType.UnderlyingSystemType == typeof(System.DateTime)) //convert  TimeStamp
-                //{
-                //    output.WriteStartElement(propName);
-                //    if (pos > -1) output.WriteAttributeString("pos", pos.ToString());
-                //    output.WriteValue(string.Format(new Part21Formatter(), "{0:T}", propVal));
-                //}
-                //else if (pInfoType.UnderlyingSystemType == typeof(System.Guid)) //convert  Guid string
-                //{
-                //    output.WriteStartElement(propName);
-                //    if (pos > -1) output.WriteAttributeString("pos", pos.ToString());
-                //    output.WriteValue(string.Format(new Part21Formatter(), "{0:G}", propVal));
-                //}
 
                 else
                     throw new ArgumentException(string.Format("Invalid Value Type {0}", pInfoType.Name),
@@ -389,11 +401,12 @@ namespace Xbim.XbimExtensions
                 output.WriteStartElement(propName);
                 if (typeof(ExpressType).IsAssignableFrom(realType))
                 {
-                    WriteProperty(realType.Name + "-wrapper", realType, propVal, entity, output, pos, attr);
+                    //WriteProperty(model, realType.Name + "-wrapper", realType, propVal, entity, output, pos, attr);
+                    WriteProperty(model, realType.Name, realType, propVal, entity, output, pos, attr);
                 }
                 else
                 {
-                    WriteProperty(realType.Name, realType, propVal, entity, output, -2, attr);
+                    WriteProperty(model, realType.Name, realType, propVal, entity, output, -2, attr);
                 }
                 output.WriteEndElement();
             }
