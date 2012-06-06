@@ -28,14 +28,14 @@ struct Float3D{
 	}
 };
 struct UIntegerPair {
-	unsigned int Int1;
-	unsigned int Int2;
+	unsigned int PositionIndex;
+	unsigned int NormalIndex;
 
 	bool operator<(const UIntegerPair& A) const
 	{
-		if (Int1 != A.Int1)
-			return Int1 < A.Int1;
-		return Int2 < A.Int2;
+		if (PositionIndex != A.PositionIndex)
+			return PositionIndex < A.PositionIndex;
+		return NormalIndex < A.NormalIndex;
 	}
 };
 struct PolygonInfo {

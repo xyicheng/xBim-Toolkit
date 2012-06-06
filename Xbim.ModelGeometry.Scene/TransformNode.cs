@@ -119,7 +119,6 @@ namespace Xbim.ModelGeometry.Scene
         /// <param name="graph"></param>
         internal void Read(BinaryReader strm, TransformGraph graph)
         {
-            
             _transformGraph = graph;
             _productId = strm.ReadInt64();
             if (_productId == 0) 
@@ -129,7 +128,7 @@ namespace Xbim.ModelGeometry.Scene
             _localMatrix = _localMatrix.Read(strm);
             _boundingBox = _boundingBox.Read(strm);
             _filePosition = strm.ReadInt64();
-            Debug.WriteLine(string.Format("Stream beginning at: {0}.", _filePosition));
+            // Debug.WriteLine(string.Format("Stream beginning at: {0}.", _filePosition));
             int childCount = strm.ReadInt32();
             if (childCount > 0)
             {

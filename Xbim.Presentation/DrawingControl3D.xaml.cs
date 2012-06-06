@@ -511,8 +511,8 @@ namespace Xbim.Presentation
 
             if ( !tMod.IsEmpty)
             {
-                try
-                {
+                //try
+                //{
                     Model3D m3d = tMod.AsModel3D();
                     Model3DGroup grp = m3d as Model3DGroup;
                     if (grp != null)
@@ -528,11 +528,11 @@ namespace Xbim.Presentation
                         Transparents.Children.Add(mv);
                     else
                         Solids.Children.Add(mv);
-                }
-                catch (Exception)
-                {
-                    Debug.WriteLine("Error in mesh?");
-                }
+                //}
+                //catch (Exception)
+                //{
+                //    Debug.WriteLine("Error in mesh?");
+                //}
             }
             //else //we have children as well
             //{

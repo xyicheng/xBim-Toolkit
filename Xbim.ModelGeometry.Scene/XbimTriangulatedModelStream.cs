@@ -149,14 +149,12 @@ namespace Xbim.ModelGeometry.Scene
 		{
 			if (_dataStream != null)
 			{
-				Debug.WriteLine(string.Format("Writing stream at: {0} len {1}.", bw.BaseStream.Position, _dataStream.Length));
+				// Debug.WriteLine(string.Format("Writing stream at: {0} len {1}.", bw.BaseStream.Position, _dataStream.Length));
 				bw.Write((int)(_dataStream.Length));
-				// bw.Write(_numChildren);
-				// bw.Write(_hasData);
 				bw.Write(_dataStream.GetBuffer(), 0, (int)_dataStream.Length);
 			}
 			else
-				Debug.WriteLine(string.Format("Writing stream at: {0} empty.", bw.BaseStream.Position));
+				// Debug.WriteLine(string.Format("Writing stream at: {0} empty.", bw.BaseStream.Position));
 				bw.Write((int)0);
 		}
 
@@ -164,7 +162,6 @@ namespace Xbim.ModelGeometry.Scene
 		// 
         public void MergeStream(XbimTriangulatedModelStream other)
         {
-            // throw new NotImplementedException("Merge to be added.");
             if (other.IsEmpty)
                 return;
             if (this.IsEmpty)
@@ -223,7 +220,6 @@ namespace Xbim.ModelGeometry.Scene
                 offset += (uint)CountUniquePositions[i];
             }
 
-
             // indices to normals need to be copied in consideration of remapping 
             offset = 0;
             sumout = (uint)CountUniqueNormals.Sum();
@@ -264,8 +260,6 @@ namespace Xbim.ModelGeometry.Scene
             // w.Close();
             _dataStream.Dispose();           
             _dataStream = result;
-
-            // _dataStream.Write(other.DataStream.GetBuffer(), 0, (int)other.DataStream.Length);
         }
 
 		public Model3D AsModel3D()
