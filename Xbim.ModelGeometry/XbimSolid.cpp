@@ -160,7 +160,6 @@ namespace Xbim
 		};
 		/*Interfaces*/
 
-		
 
 		System::Collections::Generic::IEnumerable<XbimFace^>^ XbimSolid::Faces::get()
 		{
@@ -393,6 +392,24 @@ namespace Xbim
 
 		TopoDS_Solid XbimSolid::Build(IfcSurfaceCurveSweptAreaSolid^ repItem, bool% hasCurves)
 		{
+			// IfcArbitraryProfileDefWithVoids^ v = (IfcArbitraryProfileDefWithVoids^)(repItem->SweptArea);
+
+			// the code fails here in the example we have because I cannot get the face from an IfcArbitraryProfileDefWithVoids in repItem->SweptArea (#4473)
+
+			TopoDS_Face face;
+			if(dynamic_cast<IfcArbitraryClosedProfileDef^>(repItem->SweptArea)) 
+				face =  XbimFace::Build((IfcArbitraryClosedProfileDef^)repItem->SweptArea, hasCurves);
+			else if(dynamic_cast<IfcRectangleProfileDef^>(repItem->SweptArea))
+				face = XbimFace::Build((IfcRectangleProfileDef^)repItem->SweptArea, hasCurves);	
+			else if(dynamic_cast<IfcCircleProfileDef^>(repItem->SweptArea))
+				face = XbimFace::Build((IfcCircleProfileDef^)repItem->SweptArea, hasCurves);	
+			else if(dynamic_cast<IfcArbitraryProfileDefWithVoids^>(repItem->SweptArea))
+				face = XbimFace::Build((IfcArbitraryProfileDefWithVoids^)repItem->SweptArea, hasCurves);	
+			else
+			{
+				Type ^ type = repItem->SweptArea->GetType();
+				throw(gcnew Exception(String::Format("XbimSolid. Could not BuildShape of type {0}. It is not implemented",type->Name)));
+			}
 			throw(gcnew Exception("XbimSolid. Support for SurfaceCurveSweptAreaSolid is not implemented"));
 		}
 

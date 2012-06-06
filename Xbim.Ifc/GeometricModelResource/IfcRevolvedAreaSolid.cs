@@ -17,6 +17,8 @@ using Xbim.Ifc.GeometryResource;
 using Xbim.Ifc.MeasureResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Parser;
+using System.Runtime.Serialization;
+using System.Xml.Serialization;
 
 #endregion
 
@@ -30,8 +32,10 @@ namespace Xbim.Ifc.GeometricModelResource
         /// </summary>
         private IfcAxis1Placement _Axis;
 
+        [DataMember(Order = 2)]
+        [XmlElement(typeof(IfcAxis1Placement))]
         [IfcAttribute(3, IfcAttributeState.Mandatory)] //, IsIntroduced = IfcSchemaVersion.IFC2x3)]
-            public IfcAxis1Placement Axis
+        public IfcAxis1Placement Axis
         {
             get
             {
@@ -48,8 +52,11 @@ namespace Xbim.Ifc.GeometricModelResource
         /// </summary>
         private IfcPlaneAngleMeasure _Angle;
 
+
+        [DataMember(Order = 3)]
+        [XmlElement(typeof(IfcPlaneAngleMeasure))]
         [IfcAttribute(4, IfcAttributeState.Mandatory)] // , IsIntroduced = IfcSchemaVersion.IFC2x3)]
-            public IfcPlaneAngleMeasure Angle
+        public IfcPlaneAngleMeasure Angle
         {
             get
             {

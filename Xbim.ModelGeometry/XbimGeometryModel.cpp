@@ -681,64 +681,7 @@ namespace Xbim
 				tms->EndFace();
 			}
 			gluDeleteTess(ActiveTss);
-			// return vertexData.Length();
 		}
-
-		//void OpenGLFaceSetStreamerFeed(const TopoDS_Shape & shape, XbimTriangularMeshStreamer* tms)
-		//{
-		//	GLUtesselator *ActiveTss = gluNewTess();
-
-		//	gluTessCallback(ActiveTss, GLU_TESS_BEGIN_DATA,  (void (CALLBACK *)()) XMS_BeginTessellate);
-		//	gluTessCallback(ActiveTss, GLU_TESS_END_DATA,  (void (CALLBACK *)()) XMS_EndTessellate);
-		//	gluTessCallback(ActiveTss, GLU_TESS_ERROR,    (void (CALLBACK *)()) XMS_TessellateError);
-		//	gluTessCallback(ActiveTss, GLU_TESS_VERTEX_DATA,  (void (CALLBACK *)()) XMS_AddVertexIndex);
-
-		//	GLdouble glPt3D[3];
-		//	// TesselateStream vertexData(pStream, points, faceCount, streamSize);
-		//	for (TopExp_Explorer faceEx(shape,TopAbs_FACE) ; faceEx.More(); faceEx.Next()) 
-		//	{
-		//		tms->BeginFace(-1);
-		//		const TopoDS_Face& face = TopoDS::Face(faceEx.Current());
-		//		gp_Dir normal = GetNormal(face);
-		//		tms->SetNormal(
-		//			(float)normal.X(), 
-		//			(float)normal.Y(), 
-		//			(float)normal.Z()
-		//			);
-		//		// vertexData.BeginFace(normal);
-		//		// gluTessBeginPolygon(tess, &vertexData);
-		//		gluTessBeginPolygon(ActiveTss, tms);
-
-		//		// go over each wire
-		//		for (TopExp_Explorer wireEx(face,TopAbs_WIRE) ; wireEx.More(); wireEx.Next()) 
-		//		{
-		//			gluTessBeginContour(ActiveTss);
-		//			const TopoDS_Wire& wire = TopoDS::Wire(wireEx.Current());
-
-		//			BRepTools_WireExplorer wEx(wire);
-
-		//			for(;wEx.More();wEx.Next())
-		//			{
-		//				const TopoDS_Edge& edge = wEx.Current();
-		//				const TopoDS_Vertex& vertex=  wEx.CurrentVertex();
-		//				gp_Pnt p = BRep_Tool::Pnt(vertex);
-		//				glPt3D[0] = p.X();
-		//				glPt3D[1] = p.Y();
-		//				glPt3D[2] = p.Z();
-		//				void * pIndex = (void *)tms->WritePoint((float)p.X(), (float)p.Y(), (float)p.Z());
-		//				gluTessVertex(ActiveTss, glPt3D, pIndex); 
-		//			}
-		//			gluTessEndContour(ActiveTss);
-		//		}
-		//		gluTessEndPolygon(ActiveTss);
-		//		tms->EndFace();
-		//	}
-		//	gluDeleteTess(ActiveTss);
-		//	// return vertexData.Length();
-		//}
-
-
-
 
 #pragma managed
 
