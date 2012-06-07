@@ -5,6 +5,7 @@ using namespace System::Collections::Generic;
 using namespace Xbim::XbimExtensions;
 using namespace System::Windows::Media::Media3D;
 using namespace System::Linq;
+using namespace Xbim::Common::Exceptions;
 class GLUtesselator {};
 
 namespace Xbim
@@ -37,7 +38,7 @@ namespace Xbim
 			else
 			{
 				Type^ type = shell->GetType();
-				throw gcnew Exception("Error buiding shell from type " + type->Name);
+				throw gcnew XbimGeometryException("Error buiding shell from type " + type->Name);
 			}
 
 		}
@@ -118,7 +119,9 @@ namespace Xbim
 						}
 					}
 					else
-						System::Diagnostics::Debug::WriteLine(String::Format("XbimFacetedShell loops of type {0} are not implemented, Loop id = #{1}", faceBound->Bound->GetType()->ToString(), faceBound->Bound->EntityLabel));
+					{
+						Logger->WarnFormat(String::Format("XbimFacetedShell loops of type {0} are not implemented, Loop id = #{1}", faceBound->Bound->GetType()->ToString(), faceBound->Bound->EntityLabel));
+					}
 				}
 			}
 			unsigned int vertexCount=uniquePoints->Count;
@@ -198,7 +201,7 @@ namespace Xbim
 						IfcPolyLoop^ polyLoop=(IfcPolyLoop^)bound->Bound;
 						if(polyLoop->Polygon->Count < 3) 
 						{
-							System::Diagnostics::Debug::WriteLine(String::Format("XbimFacetedShell, illegal number of points in Bound {0}",bound->EntityLabel));
+							Logger->WarnFormat(String::Format("XbimFacetedShell, illegal number of points in Bound {0}",bound->EntityLabel));
 							continue;
 						}
 						//write a face
@@ -232,8 +235,9 @@ namespace Xbim
 			}
 			catch(Exception^ e)
 			{
-				System::Diagnostics::Debug::WriteLine(String::Format("XbimFacetedShell, General failure in Shell #{0}",_faceSet->EntityLabel));
-				System::Diagnostics::Debug::WriteLine(e->Message);
+				String^ message = String::Format("XbimFacetedShell, General failure in Shell #{0}",_faceSet->EntityLabel);
+				Logger->Error(message, e);
+
 				return XbimTriangulatedModelStream::Empty;		
 			}
 			finally

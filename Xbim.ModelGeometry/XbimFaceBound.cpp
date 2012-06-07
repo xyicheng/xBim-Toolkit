@@ -54,19 +54,19 @@ namespace Xbim
 		// AK: Builds a wire from a composite IfcLShapeProfileDef
 		TopoDS_Wire XbimFaceBound::Build(IfcLShapeProfileDef ^ profile, bool% hasCurves)
 		{
-			throw(gcnew Exception(String::Format("XbimFaceBound. Could not BuildShape of type {0}. It is not implemented", "IfcLShapeProfileDef")));
+			throw(gcnew NotImplementedException(String::Format("XbimFaceBound. Could not BuildShape of type {0}. It is not implemented", "IfcLShapeProfileDef")));
 		}
 
 		// AK: Builds a wire from a composite IfcUShapeProfileDef
 		TopoDS_Wire XbimFaceBound::Build(IfcUShapeProfileDef ^ profile, bool% hasCurves)
 		{
-			throw(gcnew Exception(String::Format("XbimFaceBound. Could not BuildShape of type {0}. It is not implemented", "IfcUShapeProfileDef")));
+			throw(gcnew NotImplementedException(String::Format("XbimFaceBound. Could not BuildShape of type {0}. It is not implemented", "IfcUShapeProfileDef")));
 		}
 
 		// AK: Builds a wire from a composite IfcIShapeProfileDef
 		TopoDS_Wire XbimFaceBound::Build(IfcIShapeProfileDef ^ profile, bool% hasCurves)
 		{
-			throw(gcnew Exception(String::Format("XbimFaceBound. Could not BuildShape of type {0}. It is not implemented", "IfcIShapeProfileDef")));
+			throw(gcnew NotImplementedException(String::Format("XbimFaceBound. Could not BuildShape of type {0}. It is not implemented", "IfcIShapeProfileDef")));
 		}
 
 		//Builds a wire from a composite ArbitraryClosedProfileDef
@@ -79,7 +79,7 @@ namespace Xbim
 			else
 			{
 				Type ^ type = profile->OuterCurve->GetType();
-				throw(gcnew Exception(String::Format("XbimFaceBound. Could not BuildShape of type {0}. It is not implemented",type->Name)));
+				throw(gcnew NotImplementedException(String::Format("XbimFaceBound. Could not BuildShape of type {0}. It is not implemented",type->Name)));
 			}
 		}
 
@@ -181,7 +181,7 @@ namespace Xbim
 			else
 			{
 				Type ^ type = bCurve->GetType();
-				throw(gcnew Exception(String::Format("XbimFaceBound::Build. BoundedCurve of type {0} is not implemented",type->Name)));	
+				throw(gcnew NotImplementedException(String::Format("XbimFaceBound::Build. BoundedCurve of type {0} is not implemented",type->Name)));	
 			}
 			return wire.Wire();
 
@@ -194,7 +194,7 @@ namespace Xbim
 			else
 			{
 				Type ^ type = curve->GetType();
-				throw(gcnew Exception(String::Format("XbimFaceBound::Build. Curve of type {0} is not implemented",type->Name)));	
+				throw(gcnew NotImplementedException(String::Format("XbimFaceBound::Build. Curve of type {0} is not implemented",type->Name)));	
 			}
 
 		}
@@ -260,12 +260,12 @@ namespace Xbim
 				else if(dynamic_cast<IfcAxis2Placement3D^>(c->Position))
 				{
 					Type ^ type = c->Position->GetType();
-					throw(gcnew Exception(String::Format("XbimFaceBound. Circle with Placement of type {0} is not implemented",type->Name)));	
+					throw(gcnew NotImplementedException(String::Format("XbimFaceBound. Circle with Placement of type {0} is not implemented",type->Name)));	
 				}
 				else
 				{
 					Type ^ type = c->Position->GetType();
-					throw(gcnew Exception(String::Format("XbimFaceBound. Circle with Placement of type {0} is not implemented",type->Name)));	
+					throw(gcnew NotImplementedException(String::Format("XbimFaceBound. Circle with Placement of type {0} is not implemented",type->Name)));	
 				}
 			}
 			else if (dynamic_cast<IfcEllipse^>(tCurve->BasisCurve))
@@ -286,12 +286,12 @@ namespace Xbim
 				else if(dynamic_cast<IfcAxis2Placement3D^>(c->Position))
 				{
 					Type ^ type = c->Position->GetType();
-					throw(gcnew Exception(String::Format("XbimFaceBound. Ellipse with Placement of type {0} is not implemented",type->Name)));	
+					throw(gcnew NotImplementedException(String::Format("XbimFaceBound. Ellipse with Placement of type {0} is not implemented",type->Name)));	
 				}
 				else
 				{
 					Type ^ type = c->Position->GetType();
-					throw(gcnew Exception(String::Format("XbimFaceBound. Ellipse with Placement of type {0} is not implemented",type->Name)));	
+					throw(gcnew NotImplementedException(String::Format("XbimFaceBound. Ellipse with Placement of type {0} is not implemented",type->Name)));	
 				}
 			}
 			else if (dynamic_cast<IfcLine^>(tCurve->BasisCurve))
@@ -307,7 +307,7 @@ namespace Xbim
 			else
 			{
 				Type ^ type = tCurve->BasisCurve->GetType();
-				throw(gcnew Exception(String::Format("XbimFaceBound. CompositeCurveSegments with BasisCurve of type {0} is not implemented",type->Name)));	
+				throw(gcnew NotImplementedException(String::Format("XbimFaceBound. CompositeCurveSegments with BasisCurve of type {0} is not implemented",type->Name)));	
 			}
 			return wire.Wire();
 		}

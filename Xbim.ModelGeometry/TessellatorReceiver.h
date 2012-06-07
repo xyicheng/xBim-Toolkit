@@ -7,6 +7,7 @@ using namespace System::Windows::Media;
 using namespace System::Windows::Media::Media3D;
 using namespace Xbim::XbimExtensions;
 using namespace System::Collections::Generic;
+using namespace Xbim::Common::Logging;
 
 namespace Xbim
 {
@@ -22,6 +23,7 @@ namespace Xbim
 			int _previousToLastIndex;
 			int _fanStartIndex;
 			Stream^ _dataStream;
+			static ILogger^ Logger = LoggerFactory::GetLogger();
 		protected:
 			List<Point3D>^ _points;
 			List<Int32>^ _indices;
