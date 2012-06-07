@@ -403,8 +403,6 @@ namespace Xbim
 				face = XbimFace::Build((IfcRectangleProfileDef^)repItem->SweptArea, hasCurves);	
 			else if(dynamic_cast<IfcCircleProfileDef^>(repItem->SweptArea))
 				face = XbimFace::Build((IfcCircleProfileDef^)repItem->SweptArea, hasCurves);	
-			else if(dynamic_cast<IfcArbitraryProfileDefWithVoids^>(repItem->SweptArea))
-				face = XbimFace::Build((IfcArbitraryProfileDefWithVoids^)repItem->SweptArea, hasCurves);	
 			else
 			{
 				Type ^ type = repItem->SweptArea->GetType();

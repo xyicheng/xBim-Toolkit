@@ -37,8 +37,6 @@ namespace Xbim
 		{
 			if(dynamic_cast<IfcArbitraryClosedProfileDef^>(profile))
 				return Build((IfcArbitraryClosedProfileDef^)profile, hasCurves);
-			else if(dynamic_cast<IfcArbitraryProfileDefWithVoids^>(profile))
-				return Build((IfcArbitraryProfileDefWithVoids^)profile, hasCurves);
 			else if(dynamic_cast<IfcRectangleProfileDef^>(profile))
 				return Build((IfcRectangleProfileDef^)profile, hasCurves);
 			else if(dynamic_cast<IfcCircleProfileDef^>(profile))
@@ -53,9 +51,14 @@ namespace Xbim
 		//Builds a face from a ArbitraryClosedProfileDef
 		TopoDS_Face XbimFace::Build(IfcArbitraryClosedProfileDef ^ profile, bool% hasCurves)
 		{
-			BRepBuilderAPI_MakeFace faceBlder(XbimFaceBound::Build(profile, hasCurves));
-			BRepBuilderAPI_FaceError err = faceBlder.Error();
-			return faceBlder.Face();
+			if(dynamic_cast<IfcArbitraryProfileDefWithVoids^>(profile))
+				return Build((IfcArbitraryProfileDefWithVoids^)profile, hasCurves);
+			else
+			{
+				BRepBuilderAPI_MakeFace faceBlder(XbimFaceBound::Build(profile, hasCurves));
+				BRepBuilderAPI_FaceError err = faceBlder.Error();
+				return faceBlder.Face();
+			}
 
 		}
 
