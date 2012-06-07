@@ -149,7 +149,6 @@ namespace Xbim.ModelGeometry.Scene
 
         }
         #endregion
-
         
         #region IXbimTriangulatesToPositionsNormalsIndices
         
@@ -204,33 +203,24 @@ namespace Xbim.ModelGeometry.Scene
                 {
                     case TriangleType.GL_TRIANGLES://      0x0004
                         _meshGeometry.TriangleIndices.Add((int)index);
-                        // _meshGeometry.Positions.Add(_points[(int)index]);
                         break;
                     case TriangleType.GL_TRIANGLE_STRIP:// 0x0005
                         if (_pointTally % 2 == 0)
                         {
                             _meshGeometry.TriangleIndices.Add((int)_previousToLastIndex);
-                            // _meshGeometry.Positions.Add(_points[(int)_previousToLastIndex]);
                             _meshGeometry.TriangleIndices.Add((int)_lastIndex);
-                            // _meshGeometry.Positions.Add(_points[(int)_lastIndex]);
                         }
                         else
                         {
                             _meshGeometry.TriangleIndices.Add((int)_lastIndex);
-                            // _meshGeometry.Positions.Add(_points[(int)_lastIndex]);
                             _meshGeometry.TriangleIndices.Add((int)_previousToLastIndex);
-                            // _meshGeometry.Positions.Add(_points[(int)_previousToLastIndex]);
                         }
                         _meshGeometry.TriangleIndices.Add((int)index);
-                        // _meshGeometry.Positions.Add(_points[(int)index]);
                         break;
                     case TriangleType.GL_TRIANGLE_FAN://   0x0006
                         _meshGeometry.TriangleIndices.Add((int)_fanStartIndex);
-                        // _meshGeometry.Positions.Add(_points[(int)_fanStartIndex]);
                         _meshGeometry.TriangleIndices.Add((int)_lastIndex);
-                        // _meshGeometry.Positions.Add(_points[(int)_lastIndex]);
                         _meshGeometry.TriangleIndices.Add((int)index);
-                        // _meshGeometry.Positions.Add(_points[(int)index]);
                         break;
                     default:
                         break;
@@ -256,6 +246,6 @@ namespace Xbim.ModelGeometry.Scene
             // purposely empty
         }
         #endregion
-        
+       
     }
 }

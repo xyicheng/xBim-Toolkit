@@ -79,19 +79,14 @@ namespace Xbim.Web.Viewer3D.ServerSide
             set;
         }
 
-
         public bool RenderAll()
         {
             return true;
-            // return TypesToMesh == "All";
         }
-
-      
 
         public void WriteTg(HttpResponse Response)
         {
             XmlInit(Response);
-
 
             // prepares stream
             // MemoryStream resultStream = new MemoryStream();
@@ -189,13 +184,25 @@ namespace Xbim.Web.Viewer3D.ServerSide
 
         private void XmlInit(HttpResponse Response)
         {
-
             Response.ContentType = "text/xml";
-            // Response.Charset = "x-user-defined";
         }
 
+        /// <summary>
+        /// Determines how the binary stream is sent.
+        /// </summary>
+        public enum BinaryMeshMode
+        {
+            /// <summary>
+            /// Sends the stream in the native xbim format defined in Xbim.ModelGeometry.Scene/XbimTriangulatedModelStream
+            /// </summary>
+            XbimNative,
+            /// <summary>
+            /// Sends the stream as NumPointsAndNormals(int), NumIndices(int), Posisions(3 x short) * NumPointsAndNormals, Normals (3 x short) * NumPointsAndNormals, indices (int) * NumIndices
+            /// </summary>
+            PositionsNormalsIndices
+        }
 
-        public void WriteBinaryMesh(HttpResponse Response, string CommaSepIds)
+        public void WriteBinaryMesh(HttpResponse Response, string CommaSepIds, BinaryMeshMode Mode)
         {
             if (CommaSepIds == null)
                 return;
@@ -224,16 +231,27 @@ namespace Xbim.Web.Viewer3D.ServerSide
                 XbimTriangulatedModelStream tm = Scene.Triangulate(tn);
                 if (!tm.IsEmpty)
                 {
-                    // byte[] header = new byte[8];
-                    // MemoryStream m = new MemoryStream(header, true);
-                    
                     BinaryWriter bw = new BinaryWriter(Response.OutputStream);
                     bw.Write((int)item);
-                    int size = (int)(tm.DataStream.Length);
-                    bw.Write(size);
-                    bw.Flush();
-                    tm.DataStream.Seek(0, SeekOrigin.Begin);
-                    tm.DataStream.CopyTo(Response.OutputStream);
+
+                    if (Mode == BinaryMeshMode.PositionsNormalsIndices)
+                    {
+                        XbimTriangulatedModelStream ms = new XbimTriangulatedModelStream(tm.DataStream.ToArray());
+                        PositionsNormalsIndicesBinaryStreamWriter w = new PositionsNormalsIndicesBinaryStreamWriter();
+                        w.FromXbimTriangulatedModelStream(ms);
+                        int size = (int)(w.Stream.Length);
+                        bw.Write(size);
+                        w.Stream.Seek(0, SeekOrigin.Begin);
+                        w.Stream.CopyTo(Response.OutputStream);
+                    }
+                    else
+                    {
+                        int size = (int)(tm.DataStream.Length);
+                        bw.Write(size);
+                        
+                        tm.DataStream.Seek(0, SeekOrigin.Begin);
+                        tm.DataStream.CopyTo(Response.OutputStream);
+                    }
                     bw.Close();
                 }
             }

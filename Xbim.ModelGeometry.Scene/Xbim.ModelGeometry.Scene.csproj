@@ -89,12 +89,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CoPlanarComparer.cs" />
+    <Compile Include="IXbimTriangulatesToSimplePositionsNormalsIndices.cs" />
     <Compile Include="IXbimTriangulatesToPositionsIndices.cs" />
     <Compile Include="IXbimScene.cs" />
     <Compile Include="IXbimTriangulatesToPositionsNormalsIndices.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Matrix3DExtensions.cs" />
+    <Compile Include="PositionsNormalsIndicesBinaryStreamWriter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Rect3DExtensions.cs" />
     <Compile Include="TransformGraph.cs" />

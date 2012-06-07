@@ -244,18 +244,17 @@
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="SampleData\Curvedwall.ifc" />
+    <None Include="SampleData\Curvedwall.xbim" />
+    <None Include="SampleData\Curvedwall.xbimGC" />
     <None Include="SampleData\OneWall.ifc" />
     <None Include="SampleData\OneWall.xbim" />
     <None Include="SampleData\OneWall.xbimGC" />
     <None Include="SampleData\SimpleHouse.ifc" />
     <None Include="SampleData\SimpleHouse.xbim" />
     <None Include="SampleData\SimpleHouse.xbimGC" />
-    <None Include="SampleData\twoblocks.xbim">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="SampleData\twoblocks.xbimGC">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <None Include="SampleData\twoblocks.xbim" />
+    <None Include="SampleData\twoblocks.xbimGC" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" />

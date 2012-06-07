@@ -72,7 +72,8 @@
     </ol>
     <h2>Loading control</h2>
     <p>
-    To see how to control the loading process of the component set the property 'InitialisationMode' of the 3D viewer to 'InitO3dEngine', then try launching the following commands in sequence.
+    To see how to control the loading process of the component set the property 'InitialisationMode' of the 3D viewer to 'InitO3dEngine', then try launching the following commands 
+        <b>in sequence</b>.
     </p>
     <ol>
     <li><a href="#" onclick="_Viewer.downloadTG();">Load TransformGraph in memory</a><br /></li>
@@ -80,6 +81,11 @@
     <li><a href="#" onclick="_Viewer.downloadWholeModel();">Load Whole Mesh</a></li> 
     <li><a href="#" onclick="_Viewer.tgStruct('SemanticTreePanel','<a href=# onclick={dq}_Viewer.loadLabelMesh({label});{dq}>{label}</a> {type}<br>{children}');">Load mesh by node</a><br /></li>
     </ol>
+
+    <p>
+    A much simpler binary format is available to parse is available form the web repository calling the function
+    WriteBinaryMesh with the <b>XbimRepo.BinaryMeshMode.PositionsNormalsIndices</b> 
+        parameter (see Data3D.aspx for the calling code).</p>
     <h2>Events</h2>
     <ol>
     <li><a href="#" onclick="RegisterSelectionHandlers();">Register Selection Handlers</a><br /></li>

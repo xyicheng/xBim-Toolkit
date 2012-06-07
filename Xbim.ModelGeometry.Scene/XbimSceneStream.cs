@@ -13,7 +13,6 @@ namespace Xbim.ModelGeometry.Scene
         private Stream _sceneStream;
         private string _sceneStreamFileName;
         private TransformGraph _graph;
-              
 
         public XbimSceneStream(IModel model, string cacheFile)
         {
@@ -24,8 +23,6 @@ namespace Xbim.ModelGeometry.Scene
             _graph.Read(new BinaryReader(_sceneStream));
         }
 
-        
-
         public XbimTriangulatedModelStream Triangulate(TransformNode node)
         {
             _sceneStream.Seek(node.FilePosition, SeekOrigin.Begin);
@@ -33,8 +30,6 @@ namespace Xbim.ModelGeometry.Scene
             int len = br.ReadInt32();
             if (len > 0)
             {
-                // UInt16 numChildren = br.ReadUInt16();
-                // Byte hasData = br.ReadByte();
                 byte [] data = br.ReadBytes(len);
                 return new XbimTriangulatedModelStream(data);
             }
@@ -69,7 +64,6 @@ namespace Xbim.ModelGeometry.Scene
 
                 return false;
             }
-            
         }
     }
 }

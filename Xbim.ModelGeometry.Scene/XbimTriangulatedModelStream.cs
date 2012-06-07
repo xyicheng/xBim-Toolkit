@@ -269,6 +269,13 @@ namespace Xbim.ModelGeometry.Scene
 			return m3D;
 		}
 
+        public PositionsNormalsIndicesBinaryStreamWriter AsPNIBinaryStram()
+        {
+            PositionsNormalsIndicesBinaryStreamWriter w = new PositionsNormalsIndicesBinaryStreamWriter();
+            w.FromXbimTriangulatedModelStream(this);
+            return w;
+        }
+
 
 		/// <summary>
 		/// Used to read data from binary streams.
@@ -440,16 +447,10 @@ namespace Xbim.ModelGeometry.Scene
 			if (!IsEmpty) //has data 
 				BuildWithNormals(builder, br);
 
-			// children have been removed
-			//
-			//for (int i = 0; i < _numChildren; i++)
-			//{
-			//    builder.BeginChild();
-			//    Build(builder, br);
-			//    builder.EndChild();
-			//}
 			builder.EndBuild();
 		}
+
+
 
 		private void BuildWithNormals<TGeomType>(TGeomType builder, BinaryReader br) where TGeomType : IXbimTriangulatesToPositionsNormalsIndices, new()
 		{
@@ -527,5 +528,133 @@ namespace Xbim.ModelGeometry.Scene
 			}
 			builder.EndPolygons();
 		}
+
+        public void BuildPNI<TGeomType>(TGeomType builder) where TGeomType : IXbimTriangulatesToSimplePositionsNormalsIndices, new()
+        {
+            _dataStream.Seek(0, SeekOrigin.Begin);
+            BinaryReader br = new BinaryReader(_dataStream);
+
+            uint numPositions = br.ReadUInt32();
+            uint numNormals = br.ReadUInt32();
+            uint numUniques = br.ReadUInt32();
+            uint numTriangles = br.ReadUInt32();
+            uint numPolygons = br.ReadUInt32();
+
+            builder.BeginBuild(numUniques, numTriangles);
+            
+
+            IndexReader PositionReader = new IndexReader(numPositions, br);
+            IndexReader NormalsReader = new IndexReader(numNormals, br);
+            IndexReader UniquesReader = new IndexReader(numUniques, br);
+
+            float[,] pos = new float[numPositions, 3];
+            float[,] nrm = new float[numNormals, 3];
+            uint[,] uniques = new uint[numUniques, 2];
+            
+            // coordinates of positions
+            //
+            for (uint i = 0; i < numPositions; i++)
+            {
+                pos[i, 0] = br.ReadSingle();
+                pos[i, 1] = br.ReadSingle();
+                pos[i, 2] = br.ReadSingle();
+            }
+            // dimensions of normals
+            //
+            for (uint i = 0; i < numNormals; i++)
+            {
+                nrm[i, 0] = br.ReadSingle();
+                nrm[i, 1] = br.ReadSingle();
+                nrm[i, 2] = br.ReadSingle();
+            }
+
+            // loop twice for how many indices to create the point/normal combinations.
+            for (uint i = 0; i < numUniques; i++)
+            {
+                uint readpositionI = PositionReader.ReadIndex();
+                uniques[i, 0] = readpositionI;
+                    
+            }
+            for (uint i = 0; i < numUniques; i++)
+            {
+                uint readnormalI = NormalsReader.ReadIndex();
+                uniques[i, 1] = readnormalI;
+            }
+
+            builder.BeginPoints(numUniques);
+            for (uint i = 0; i < numUniques; i++)
+            {
+                builder.AddPoint(
+                    pos[uniques[i, 0], 0], // uniques[i, 0] is the point index
+                    pos[uniques[i, 0], 1],
+                    pos[uniques[i, 0], 2],
+                    nrm[uniques[i, 1], 0], // uniques[i, 1] is the normal index
+                    nrm[uniques[i, 1], 1],
+                    nrm[uniques[i, 1], 2]
+                    );
+            }
+
+            builder.BeginTriangles(numTriangles); //point/normal combinations completed
+
+            
+            for (uint p = 0; p < numPolygons; p++)
+            {
+                // set the state
+                TriangleType meshType = (TriangleType)br.ReadByte();
+                uint indicesCount = br.ReadUInt32();
+
+                uint _pointTally = 0;
+                uint _fanStartIndex = 0;
+                uint _previousToLastIndex = 0;
+                uint _lastIndex = 0;
+                
+                //get the triangles
+                for (uint i = 0; i < indicesCount; i++)
+                {
+                    uint index = UniquesReader.ReadIndex();
+
+                    if (_pointTally == 0)
+                        _fanStartIndex = index;
+                    if (_pointTally < 3) //first time
+                    {
+                        builder.AddTriangleIndex(index);
+                    }
+                    else
+                    {
+                        switch (meshType)
+                        {
+                            case TriangleType.GL_TRIANGLES://      0x0004
+                                builder.AddTriangleIndex(index);
+                                // _meshGeometry.Positions.Add(_points[(int)index]);
+                                break;
+                            case TriangleType.GL_TRIANGLE_STRIP:// 0x0005
+                                if (_pointTally % 2 == 0)
+                                {
+                                    builder.AddTriangleIndex(_previousToLastIndex);
+                                    builder.AddTriangleIndex(_lastIndex);
+                                }
+                                else
+                                {
+                                    builder.AddTriangleIndex(_lastIndex);
+                                    builder.AddTriangleIndex(_previousToLastIndex);
+                                }
+                                builder.AddTriangleIndex(index);
+                                break;
+                            case TriangleType.GL_TRIANGLE_FAN://   0x0006
+                                builder.AddTriangleIndex(_fanStartIndex);
+                                builder.AddTriangleIndex(_lastIndex);                                
+                                builder.AddTriangleIndex(index);
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                    _previousToLastIndex = _lastIndex;
+                    _lastIndex = index;
+                    _pointTally++;
+                }
+            }
+            builder.EndBuild();
+        }
 	}
 }

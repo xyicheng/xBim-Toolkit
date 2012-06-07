@@ -72,18 +72,20 @@ ViewerMesh.prototype.AddOneMesh = function (view) {
         this.points[i] = pnt;
     }
     for (var i = 0; i < numNormals; i++) {
-        var x = view.getFloat32();
-        var y = view.getFloat32();
-        var z = view.getFloat32();
-        var nrm = [px, py, pz];
-        this.numNormals[i] = nrm;
+        var nx = view.getFloat32();
+        var ny = view.getFloat32();
+        var nz = view.getFloat32();
+        var nrm = [nx, ny, nz];
+        this.normals[i] = nrm;
     }
-    for (var i = 0; i < numNormals; i++) {
+    for (var i = 0; i < numUniquePN; i++) {
         var pindex = readPIndex(view);
+        var tpl = [pindex, 0];
+        this.uniquePoints[i] = tpl;
+    }
+    for (var i = 0; i < numUniquePN; i++) {
         var nindex = readNIndex(view);
-
-        var tpl = [pindex, nindex];
-        this.numNormals[i] = tpl;
+        this.uniquePoints[i][1] = nindex;
     }
 
     for (p = 0; p < numPolygons; p++) {
