@@ -1068,7 +1068,7 @@ namespace Xbim.IO
                     else // if isGZip == false then use sharpziplib
                     {
                         string ext = "";
-                        if (fileName.ToLower().EndsWith(".zip") == false) ext = ".zip";
+                        if (fileName.ToLower().EndsWith(".zip") == false || fileName.ToLower().EndsWith(".ifczip") == false) ext = ".ifczip";
                         fs = new FileStream(fileName + ext, FileMode.Create, FileAccess.Write);
                         ZipOutputStream zipStream = new ZipOutputStream(fs);
                         zipStream.SetLevel(3); //0-9, 9 being the highest level of compression
@@ -1583,7 +1583,7 @@ namespace Xbim.IO
                 // modelServer would have been created with xbim file and readwrite fileaccess
                 ExportIfc(outputFileName);
             }
-            else if (fileType.HasFlag(XbimStorageType.IFCX))
+            else if (fileType.HasFlag(XbimStorageType.IFCZIP))
             {
                 // modelServer would have been created with xbim file and readwrite fileaccess
                 ExportIfc(outputFileName, true, false);

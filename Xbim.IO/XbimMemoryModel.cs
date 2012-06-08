@@ -1097,7 +1097,7 @@ namespace Xbim.IO
                     else // if isGZip == false then use sharpziplib
                     {
                         string ext = "";
-                        if (fileName.ToLower().EndsWith(".zip") == false) ext = ".zip";
+                        if (fileName.ToLower().EndsWith(".zip") == false || fileName.ToLower().EndsWith(".ifczip") == false) ext = ".ifczip";
                         fs = new FileStream(fileName + ext, FileMode.Create, FileAccess.Write);
                         ZipOutputStream zipStream = new ZipOutputStream(fs);
                         zipStream.SetLevel(3); //0-9, 9 being the highest level of compression
@@ -1189,7 +1189,7 @@ namespace Xbim.IO
                     if (xmlOutStream != null) xmlOutStream.Close();
                 }
             }
-            else if (fileType.HasFlag(XbimStorageType.IFCX))
+            else if (fileType.HasFlag(XbimStorageType.IFCZIP))
             {
                 try
                 {
@@ -1211,12 +1211,12 @@ namespace Xbim.IO
             if (ext == ".xbim") fileType = XbimStorageType.XBIM;
             else if (ext == ".ifc") fileType = XbimStorageType.IFC;
             else if (ext == ".ifcxml") fileType = XbimStorageType.IFCXML;
-            else if (ext == ".zip") fileType = XbimStorageType.IFCX;
+            else if (ext == ".zip" || ext == ".ifczip") fileType = XbimStorageType.IFCZIP;
             else
                 throw new Exception("Invalid file type: " + ext);
             try
             {
-                if (fileType.HasFlag(XbimStorageType.IFCX))
+                if (fileType.HasFlag(XbimStorageType.IFCZIP))
                 {
                     // get the ifc file from zip
                     //using (Stream zipStream = new FileStream(inputFileName, FileMode.Open, FileAccess.Read))

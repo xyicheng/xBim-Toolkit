@@ -243,7 +243,7 @@ namespace Xbim.IO
                         }
                     }
 
-                    if (exportFormat.Value.HasFlag(XbimStorageType.IFCX))
+                    if (exportFormat.Value.HasFlag(XbimStorageType.IFCZIP))
                     {
                         string ifcFileName = "";
                         try
@@ -800,7 +800,7 @@ namespace Xbim.IO
                 entity = CreateEntity(entry.EntityLabel, entry.Type);
                 entry.Entity = entity;
             }
-            ActivateEntity(entry, entity);
+            //ActivateEntity(entry, entity);
             entity.Bind(this, posLabel);
             return entity;
         }
@@ -1138,7 +1138,7 @@ namespace Xbim.IO
             if (ext == ".xbim") fileType = XbimStorageType.XBIM;
             else if (ext == ".ifc") fileType = XbimStorageType.IFC;
             else if (ext == ".ifcxml") fileType = XbimStorageType.IFCXML;
-            else if (ext == ".zip") fileType = XbimStorageType.IFCX;
+            else if (ext == ".zip" || ext == ".ifczip") fileType = XbimStorageType.IFCZIP;
             else
                 throw new Exception("Invalid file type: " + ext);
 
@@ -1156,7 +1156,7 @@ namespace Xbim.IO
                 // input to be ifc file, output will be xbim file
                 ImportIfc(inputFileName, outputFileName);
             }
-            else if (fileType.HasFlag(XbimStorageType.IFCX))
+            else if (fileType.HasFlag(XbimStorageType.IFCZIP))
             {
                 // get the ifc file from zip
                 string ifcFileName = ExportZippedIfc(inputFileName);
