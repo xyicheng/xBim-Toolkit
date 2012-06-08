@@ -71,6 +71,7 @@ namespace Xbim
 				faceBlder.Add(XbimFaceBound::Build(curve, hasCurves));
 			
 			}
+			
 			return faceBlder.Face();
 		}
 

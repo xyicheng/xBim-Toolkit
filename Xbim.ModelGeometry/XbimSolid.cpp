@@ -94,6 +94,7 @@ namespace Xbim
 		{
 			TopoDS_Solid temp = *(((TopoDS_Solid*)solid->Handle));
 			nativeHandle = new TopoDS_Solid();
+			_hasCurvedEdges = solid->HasCurvedEdges;
 			if(origin!=nullptr)
 				temp.Move(XbimGeomPrim::ToLocation(origin));
 			if(transform!=nullptr)
@@ -102,6 +103,7 @@ namespace Xbim
 				{
 					BRepBuilderAPI_GTransform gTran(temp,XbimGeomPrim::ToTransform((IfcCartesianTransformationOperator3DnonUniform^)transform));
 					*nativeHandle =TopoDS::Solid( gTran.Shape());
+					
 				}
 				else
 				{

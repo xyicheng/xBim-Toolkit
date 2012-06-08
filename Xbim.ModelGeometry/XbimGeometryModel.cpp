@@ -296,6 +296,7 @@ namespace Xbim
 				if(!maps->TryGetValue(repMap->MappedRepresentation, mg)) //look it up
 				{
 					mg =  CreateFrom(repMap->MappedRepresentation,maps, forceSolid); //make the first one
+					
 					maps->Add(repMap->MappedRepresentation, mg);
 					return CreateMap(mg, repMap->MappingOrigin, map->MappingTarget,maps, forceSolid);	
 				}

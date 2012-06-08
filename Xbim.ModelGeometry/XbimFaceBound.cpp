@@ -20,7 +20,7 @@
 #include <BRepBuilderAPI_MakeEdge.hxx>
 #include <GC_MakeSegment.hxx>
 //#include <ShapeFix_ShapeTolerance.hxx> 
-//#include <BRep_TEdge.hxx> 
+#include <BRepTools.hxx> 
 #include <TopExp_Explorer.hxx> 
 #include <BRepLib_MakePolygon.hxx> 
 using namespace System;
@@ -239,11 +239,13 @@ namespace Xbim
 				if(dynamic_cast<IfcAxis2Placement2D^>(c->Position))
 				{
 					IfcAxis2Placement2D^ ax2 = (IfcAxis2Placement2D^)c->Position;
-					gp_Ax2 gpax2(gp_Pnt(ax2->Location->X, ax2->Location->Y,0), gp_Dir(0,0,1),gp_Dir(ax2->P[0]->X, ax2->P[0]->Y,0.));			
+					gp_Ax2 gpax2(gp_Pnt(ax2->Location->X, ax2->Location->Y,0), gp_Dir(0,0,1),gp_Dir(ax2->P[0]->X, ax2->P[0]->Y,0.));		
 					gp_Circ gc(gpax2,c->Radius);
 
 					Handle(Geom_TrimmedCurve) aArcOfCircle = GC_MakeArcOfCircle(gc,gp_Pnt(start->X, start->Y,0), gp_Pnt(end->X, end->Y,0),tCurve->SenseAgreement);
+					
 					TopoDS_Edge edge = BRepBuilderAPI_MakeEdge(aArcOfCircle);
+					
 					wire.Add(edge);
 				}
 				else if(dynamic_cast<IfcAxis2Placement3D^>(c->Position))
