@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using System.Windows.Media.Media3D;
+using Xbim.Common.Logging;
 
 namespace Xbim.ModelGeometry.Scene
 {
@@ -16,6 +17,7 @@ namespace Xbim.ModelGeometry.Scene
 
     public class XbimTriangulatedModelStream
     {
+		private readonly ILogger Logger = LoggerFactory.GetLogger();
         public static readonly XbimTriangulatedModelStream Empty;
         UInt16 _numChildren=0;
         public UInt16 NumChildren
@@ -118,19 +120,27 @@ namespace Xbim.ModelGeometry.Scene
 
         public void Build<TGeomType>(TGeomType builder) where TGeomType : IXbimTriangulatedModelBuilder, new() 
         {
-            _dataStream.Seek(0, SeekOrigin.Begin);
-            BinaryReader br = new BinaryReader(_dataStream);
-            
-            builder.BeginBuild();
-            if (_hasData > 0) //has data 
-                 Build(builder, br);
-            for (int i = 0; i < _numChildren; i++)
-            {
-                builder.BeginChild();
-                Build(builder, br);
-                builder.EndChild();
-            }
-            builder.EndBuild();
+			try
+			{
+				_dataStream.Seek(0, SeekOrigin.Begin);
+				BinaryReader br = new BinaryReader(_dataStream);
+
+				builder.BeginBuild();
+				if (_hasData > 0) //has data 
+					Build(builder, br);
+				for (int i = 0; i < _numChildren; i++)
+				{
+					builder.BeginChild();
+					Build(builder, br);
+					builder.EndChild();
+				}
+				builder.EndBuild();
+			}
+			catch (Exception ex)
+			{
+				Logger.Error("Failed to build mesh. Geometry may be corrupt.", ex);
+			}
+
         }
 
         private void Build<TGeomType>(TGeomType builder, BinaryReader br)  where TGeomType : IXbimTriangulatedModelBuilder, new() 

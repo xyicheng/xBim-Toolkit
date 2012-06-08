@@ -105,7 +105,7 @@ namespace Xbim
 					model->ExtractSemantic(xBimFileName);
 
 				}
-				Logger->DebugFormat("Succesfully imported Ifc File {0}", ifcFileName);
+				Logger->InfoFormat("Completed import of Ifc File {0}", ifcFileName);
 			}
 			catch(XbimGeometryException^ e)
 			{

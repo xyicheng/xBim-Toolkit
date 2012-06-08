@@ -353,9 +353,21 @@ namespace Xbim
 		{
 			return CreateFrom(product, nullptr, maps, forceSolid);
 		}
+
 		IXbimGeometryModel^ XbimGeometryModel::CreateFrom(IfcProduct^ product, bool forceSolid)
 		{
-			return CreateFrom(product, nullptr, gcnew Dictionary<IfcRepresentation^, IXbimGeometryModel^>(), forceSolid);
+			// HACK: Ideally we shouldn't need this try-catch handler. This just allows us to log the fault, and raise a managed exception, before the application terminates.
+			// Upstream callers should ideally terminate the application ASAP.
+			__try
+			{
+				return CreateFrom(product, nullptr, gcnew Dictionary<IfcRepresentation^, IXbimGeometryModel^>(), forceSolid);
+			}
+			__except(GetExceptionCode() == EXCEPTION_ACCESS_VIOLATION)
+			{
+				Logger->Fatal("Access Violation in geometry engine. This may leave the application in an inconsistent state!");
+				throw gcnew AccessViolationException(
+					"A memory access violation occurred in the geometry engine. The application and geometry may be in an inconsistent state and the process should be terminated.");
+			}
 		}
 
 		IXbimGeometryModel^ XbimGeometryModel::Build(IfcBooleanResult^ repItem)
