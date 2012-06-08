@@ -297,11 +297,14 @@ namespace Xbim
 				{
 					mg =  CreateFrom(repMap->MappedRepresentation,maps, forceSolid); //make the first one
 					maps->Add(repMap->MappedRepresentation, mg);
+					return CreateMap(mg, repMap->MappingOrigin, map->MappingTarget,maps, forceSolid);	
+				}
+				else
+				{
+					return CreateMap(mg, repMap->MappingOrigin, map->MappingTarget,maps, forceSolid);	
 				}
 
-				//need to transform all the geometries as below
-				return CreateMap(mg, repMap->MappingOrigin, map->MappingTarget,maps, forceSolid);	
-
+				
 			}
 			else
 			{

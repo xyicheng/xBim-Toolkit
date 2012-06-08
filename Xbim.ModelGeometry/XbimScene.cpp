@@ -11,6 +11,7 @@ namespace Xbim
 	{	
 		XbimScene::!XbimScene()
 		{
+			_maps = gcnew Dictionary<IfcRepresentation^, IXbimGeometryModel^>();
 		}
 
 		XbimScene::~XbimScene()
@@ -22,6 +23,7 @@ namespace Xbim
 		{
 			Initialise();
 			 _graph = gcnew TransformGraph(model, this);
+			 _maps = gcnew Dictionary<IfcRepresentation^, IXbimGeometryModel^>();
 			 _graph->AddProducts(model->IfcProducts->Items);
 			
 		}
@@ -50,6 +52,7 @@ namespace Xbim
 			Initialise();
 			
 			XbimFileModelServer^ model = gcnew XbimFileModelServer();
+			_maps = gcnew Dictionary<IfcRepresentation^, IXbimGeometryModel^>();
 			try
 			{
 				String^ tmpFileName = Path::GetTempFileName();
@@ -95,6 +98,7 @@ namespace Xbim
 			Initialise();
 			
 			XbimFileModelServer^ model = gcnew XbimFileModelServer();
+			_maps = gcnew Dictionary<IfcRepresentation^, IXbimGeometryModel^>();
 			try
 			{
 				String^ tmpFileName = Path::GetTempFileName();
@@ -144,7 +148,7 @@ namespace Xbim
 			{
 				try
 				{
-					IXbimGeometryModel^ geomModel = XbimGeometryModel::CreateFrom(product, false);
+					IXbimGeometryModel^ geomModel = XbimGeometryModel::CreateFrom(product, _maps, true);
 					if (geomModel != nullptr)  //it has no geometry
 					{
 						XbimTriangulatedModelStream^ tm = geomModel->Mesh(true);

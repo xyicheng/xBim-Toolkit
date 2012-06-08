@@ -56,7 +56,7 @@ namespace Xbim
 			else
 			{
 				BRepBuilderAPI_MakeFace faceBlder(XbimFaceBound::Build(profile, hasCurves));
-				BRepBuilderAPI_FaceError err = faceBlder.Error();
+				//BRepBuilderAPI_FaceError err = faceBlder.Error();
 				return faceBlder.Face();
 			}
 
@@ -69,6 +69,7 @@ namespace Xbim
 			for each( IfcCurve^ curve in profile->InnerCurves)
 			{
 				faceBlder.Add(XbimFaceBound::Build(curve, hasCurves));
+			
 			}
 			return faceBlder.Face();
 		}

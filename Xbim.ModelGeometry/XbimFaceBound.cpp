@@ -167,6 +167,10 @@ namespace Xbim
 				Type ^ type = bCurve->GetType();
 				throw(gcnew Exception(String::Format("XbimFaceBound::Build. BoundedCurve of type {0} is not implemented",type->Name)));	
 			}
+			if(!wire.IsDone())
+			{
+				System::Diagnostics::Debug::WriteLine(String::Format("Error processing entity #{0}",bCurve->EntityLabel));
+			}
 			return wire.Wire();
 
 		}
@@ -228,6 +232,7 @@ namespace Xbim
 			//it could be based on a circle, ellipse or line
 			if(dynamic_cast<IfcCircle^>(tCurve->BasisCurve))
 			{
+				
 				hasCurves=true;
 				IfcCircle^ c = (IfcCircle^) tCurve->BasisCurve;
 
@@ -292,6 +297,10 @@ namespace Xbim
 			{
 				Type ^ type = tCurve->BasisCurve->GetType();
 				throw(gcnew Exception(String::Format("XbimFaceBound. CompositeCurveSegments with BasisCurve of type {0} is not implemented",type->Name)));	
+			}
+			if(!wire.IsDone())
+			{
+				System::Diagnostics::Debug::WriteLine(String::Format("Error processing entity #{0}",tCurve->EntityLabel));
 			}
 			return wire.Wire();
 		}

@@ -8,7 +8,7 @@
 #include <BRep_Builder.hxx>
 #include <BRepBuilderAPI_MakeFace.hxx>
 #include <BRepBuilderAPI_Transform.hxx>
-
+#include <BRepBuilderAPI_GTransform.hxx>
 #include <ShapeFix_Solid.hxx> 
 #include <ShapeFix_Shell.hxx> 
 #include <BRepTools.hxx> 
@@ -97,10 +97,17 @@ namespace Xbim
 			if(origin!=nullptr)
 				temp.Move(XbimGeomPrim::ToLocation(origin));
 			if(transform!=nullptr)
-			{				
-				BRepBuilderAPI_Transform gTran(temp,XbimGeomPrim::ToTransform(transform));
-				*pShell = TopoDS::Shell(gTran.Shape());
-
+			{	
+				if(dynamic_cast<IfcCartesianTransformationOperator3DnonUniform^>( transform))
+				{
+					BRepBuilderAPI_GTransform gTran(temp,XbimGeomPrim::ToTransform((IfcCartesianTransformationOperator3DnonUniform^)transform));
+					*pShell = TopoDS::Shell(gTran.Shape());
+				}
+				else
+				{
+					BRepBuilderAPI_Transform gTran(temp,XbimGeomPrim::ToTransform(transform));
+					*pShell = TopoDS::Shell(gTran.Shape());
+				}
 			}
 			else
 				*pShell = temp;

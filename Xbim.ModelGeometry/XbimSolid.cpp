@@ -19,6 +19,7 @@
 #include <BRepAlgoAPI_Fuse.hxx>
 #include <Standard_PrimitiveTypes.hxx>
 #include <BRepBuilderAPI_Transform.hxx>
+#include <BRepBuilderAPI_GTransform.hxx>
 #include <BRepBuilderAPI_FindPlane.hxx>
 #include <BRepAlgo_Section.hxx>
 #include <Geom_Plane.hxx>
@@ -97,8 +98,16 @@ namespace Xbim
 				temp.Move(XbimGeomPrim::ToLocation(origin));
 			if(transform!=nullptr)
 			{
-				BRepBuilderAPI_Transform gTran(temp,XbimGeomPrim::ToTransform(transform));
-				*nativeHandle =TopoDS::Solid( gTran.Shape());
+				if(dynamic_cast<IfcCartesianTransformationOperator3DnonUniform^>( transform))
+				{
+					BRepBuilderAPI_GTransform gTran(temp,XbimGeomPrim::ToTransform((IfcCartesianTransformationOperator3DnonUniform^)transform));
+					*nativeHandle =TopoDS::Solid( gTran.Shape());
+				}
+				else
+				{
+					BRepBuilderAPI_Transform gTran(temp,XbimGeomPrim::ToTransform(transform));
+					*nativeHandle =TopoDS::Solid( gTran.Shape());
+				}
 			}
 			else
 				*nativeHandle = temp;

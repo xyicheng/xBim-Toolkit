@@ -47,6 +47,7 @@ namespace Xbim.Ifc.GeometryResource
                 else
                     str.AppendFormat("P{0}", item);
             }
+           
             return str.ToString();
         }
     }
