@@ -10,7 +10,7 @@
   <Class Name="Xbim.IO.XbimMemoryModel" BaseTypeListCollapsed="true">
     <Position X="5.25" Y="2.5" Width="2.75" />
     <TypeIdentifier>
-      <HashCode>hCJAJNgTKFWIpHDCZAQYhASFhSHAiwEAQ1CBECKAkAA=</HashCode>
+      <HashCode>hCJAJNgTKFeIpHDCZAQYhASFhSHAiwEAQ1CBECKAkAA=</HashCode>
       <FileName>XbimMemoryModel.cs</FileName>
     </TypeIdentifier>
     <Lollipop Position="0.2" />
@@ -30,5 +30,9 @@
     </TypeIdentifier>
     <Lollipop Position="0.2" />
   </Class>
+  <Interface Name="Xbim.XbimExtensions.IModel">
+    <Position X="9" Y="1.75" Width="1.5" />
+    <TypeIdentifier />
+  </Interface>
   <Font Name="Segoe UI" Size="9" />
 </ClassDiagram>
