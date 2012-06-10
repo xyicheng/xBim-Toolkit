@@ -56,7 +56,7 @@ namespace Xbim.Ifc.ProductExtension
     {
         #region Fields and Events
 
-        private IfcLabel _longName;
+        private IfcLabel? _longName;
         private IfcElementCompositionEnum? _compositionType;
 
         #endregion
@@ -70,31 +70,29 @@ namespace Xbim.Ifc.ProductExtension
         /// <summary>
         ///   Optional. Long name for a spatial structure element, used for informal purposes. Maybe used in conjunction with the inherited Name attribute.
         /// </summary>
-        [DataMember(Order = 7, IsRequired = false, EmitDefaultValue = false)]
         [IfcAttribute(8, IfcAttributeState.Optional)]
-        public IfcLabel LongName
+        public IfcLabel? LongName
         {
             get
             {
 #if SupportActivation
-                ((IPersistIfcEntity) this).Activate(false);
+                ((IPersistIfcEntity)this).Activate(false);
 #endif
                 return _longName;
             }
-            set { ModelManager.SetModelValue(this, ref _longName, value, v => LongName = v, "LongName"); }
+            set { ModelManager.SetModelValue(this, ref _longName, value, v => _longName = v, "LongName"); }
         }
 
         /// <summary>
         ///   Denotes, whether the predefined spatial structure element represents itself, or an aggregate (complex) or a part (part). The interpretation is given separately for each subtype of spatial structure element.
         /// </summary>
-        [DataMember(Order = 8)]
         [IfcAttribute(9, IfcAttributeState.Mandatory, IfcAttributeType.Enum)]
         public IfcElementCompositionEnum? CompositionType
         {
             get
             {
 #if SupportActivation
-                ((IPersistIfcEntity) this).Activate(false);
+                ((IPersistIfcEntity)this).Activate(false);
 #endif
                 return _compositionType;
                 ////otherwise calculate it
@@ -166,7 +164,7 @@ namespace Xbim.Ifc.ProductExtension
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _compositionType, value, v => CompositionType = v,
+                ModelManager.SetModelValue(this, ref _compositionType, value, v => _compositionType = v,
                                            "CompositionType");
             }
         }
@@ -190,7 +188,7 @@ namespace Xbim.Ifc.ProductExtension
                     break;
                 case 8:
                     _compositionType =
-                        (IfcElementCompositionEnum?) Enum.Parse(typeof (IfcElementCompositionEnum), value.EnumVal, true);
+                        (IfcElementCompositionEnum?)Enum.Parse(typeof(IfcElementCompositionEnum), value.EnumVal, true);
                     break;
                 default:
                     throw new Exception(string.Format("Attribute index {0} is out of range for {1}", propIndex + 1,
@@ -202,7 +200,7 @@ namespace Xbim.Ifc.ProductExtension
 
         public override string ToString()
         {
-            return string.Format("{0}{1}", Name == null ? "" : (string) Name, LongName == null ? "" : " - " + LongName);
+            return string.Format("{0}{1}", Name == null ? "" : (string)Name, LongName == null ? "" : " - " + LongName);
         }
 
         #region Inverse Relationships

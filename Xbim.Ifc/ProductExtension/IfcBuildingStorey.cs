@@ -99,7 +99,7 @@ namespace Xbim.Ifc.ProductExtension
 #endif
                 return _elevation;
             }
-            set { ModelManager.SetModelValue(this, ref _elevation, value, v => Elevation = v, "Elevation"); }
+            set { ModelManager.SetModelValue(this, ref _elevation, value, v => _elevation = v, "Elevation"); }
         }
 
 
