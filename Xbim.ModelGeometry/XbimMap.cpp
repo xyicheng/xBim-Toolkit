@@ -6,6 +6,7 @@ using namespace Xbim::XbimExtensions;
 using namespace Xbim::Ifc::Extensions;
 using namespace System::Windows::Media::Media3D;
 using namespace System::Linq;
+using namespace Xbim::Common::Exceptions;
 
 namespace Xbim
 {
@@ -24,7 +25,7 @@ namespace Xbim
 				else if(dynamic_cast<IfcAxis2Placement2D^>(origin))
 					_transform = Axis2Placement2DExtensions::ToMatrix3D((IfcAxis2Placement2D^)origin);
 				else
-					throw gcnew Exception("Illegal IfcAxis2Placement arguement");
+					throw gcnew XbimGeometryException("Invalid IfcAxis2Placement argument");
 					
 			}
 			if(transform!=nullptr)

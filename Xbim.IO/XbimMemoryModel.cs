@@ -42,6 +42,7 @@ using System.IO.Compression;
 using ICSharpCode.SharpZipLib.Zip;
 using Xbim.XbimExtensions;
 using ICSharpCode.SharpZipLib.Core;
+using Xbim.Common.Logging;
 
 
 #endregion
@@ -49,14 +50,12 @@ using ICSharpCode.SharpZipLib.Core;
 namespace Xbim.IO
 
 {
-    //public delegate void InitProperties<TInit>(TInit initFunction);
-
 
     [Serializable]
     public class XbimMemoryModel : IModel, ISupportChangeNotification, INotifyPropertyChanged, INotifyPropertyChanging
     {
         #region Fields
-
+		private readonly ILogger Logger = LoggerFactory.GetLogger();
         private readonly IfcFileHeader _header = new IfcFileHeader();
         private IfcInstances _ifcInstances = new IfcInstances();
 
@@ -1053,7 +1052,7 @@ namespace Xbim.IO
             return sb.ToString();
         }
 
-
+        // TODO: Review why these properties are here on the model.
         public IEnumerable<IfcWall> Walls
         {
             get { return InstancesOfType<IfcWall>(); }
@@ -1275,10 +1274,14 @@ namespace Xbim.IO
                 else if (fileType.HasFlag(XbimStorageType.IFC))
                 {
                     //attach it to the Ifc Stream Parser
-                    using (IfcInputStream input = new IfcInputStream(new FileStream(inputFileName, FileMode.Open, FileAccess.Read)))
+                    using (IfcInputStream input = new IfcInputStream(
+						new FileStream(inputFileName, FileMode.Open, FileAccess.Read)))
                     {
-                        if (input.Load(this) != 0)
-                            throw new Exception("Ifc file parsing errors\n" + input.ErrorLog.ToString());
+						if (input.Load(this) != 0)
+						{
+							Logger.WarnFormat("IFC file {0} failed to load.", inputFileName);
+							throw new Exception("Ifc file parsing errors\n" + input.ErrorLog.ToString());
+						}
                     }
 
                 }

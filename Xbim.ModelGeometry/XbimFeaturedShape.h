@@ -7,12 +7,16 @@
 using namespace Xbim::Ifc::ProductExtension;
 using namespace System::Collections::Generic;
 using namespace Xbim::ModelGeometry::Scene;
+using namespace Xbim::Common::Logging;
 namespace Xbim
 {
 	namespace ModelGeometry
 	{
 		public ref class XbimFeaturedShape :IXbimGeometryModel
 		{
+		private:
+			static ILogger^ Logger = LoggerFactory::GetLogger();
+
 		protected:
 			IXbimGeometryModel^ mResultShape;
 			IXbimGeometryModel^ mBaseShape;

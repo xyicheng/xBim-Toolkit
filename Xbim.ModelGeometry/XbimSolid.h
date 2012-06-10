@@ -17,6 +17,8 @@ using namespace System::Collections::Generic;
 using namespace Xbim::Ifc::SelectTypes;
 using namespace Xbim::Ifc::GeometricModelResource;
 using namespace Xbim::Ifc::GeometricConstraintResource;
+using namespace Xbim::Common::Logging;
+
 namespace Xbim
 {
 	namespace ModelGeometry
@@ -25,6 +27,7 @@ namespace Xbim
 		{
 		private:
 			TopoDS_Shape* pSolid;
+			
 		public:
 			XbimMeshedFaceEnumerable(const TopoDS_Solid&  solid)
 			{
@@ -80,6 +83,7 @@ namespace Xbim
 		{
 		protected:
 			TopoDS_Shape* nativeHandle;
+			static ILogger^ Logger = LoggerFactory::GetLogger();
 		private:
 			
 			bool _hasCurvedEdges;
