@@ -28,7 +28,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.Common", "Xbim.Common\
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{B5EDEE8A-69B9-47E5-8455-E1A9A7ED8969}"
 	ProjectSection(SolutionItems) = preProject
+		SharedAssemblyInfo.cpp = SharedAssemblyInfo.cpp
 		SharedAssemblyInfo.cs = SharedAssemblyInfo.cs
+		Xbim.ModelGeometry\Version.rc = Xbim.ModelGeometry\Version.rc
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.SceneJSWebViewer", "Xbim.Web.SceneJSWebViewer\Xbim.SceneJSWebViewer.csproj", "{219A127E-82B8-43A1-8959-7102E4724F8F}"

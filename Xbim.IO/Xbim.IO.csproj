@@ -172,7 +172,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="ClassDiagram1.cd" />
+    <None Include="Models.cd" />
     <None Include="packages.config" />
     <None Include="XbimIfcKey.pfx" />
   </ItemGroup>
