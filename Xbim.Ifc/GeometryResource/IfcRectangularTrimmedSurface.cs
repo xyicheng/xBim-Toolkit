@@ -188,14 +188,14 @@ namespace Xbim.Ifc.GeometryResource
         [XmlIgnore]
         public override IfcDimensionCount Dim
         {
-            get { return _basisSurface == null ? (IfcDimensionCount) 0 : _basisSurface.Dim; }
+            get { return BasisSurface == null ? (IfcDimensionCount) 0 : BasisSurface.Dim; }
         }
 
         #region IPlacement3D Members
 
         IfcAxis2Placement3D IPlacement3D.Position
         {
-            get { return ((IPlacement3D) _basisSurface).Position; }
+            get { return ((IPlacement3D) BasisSurface).Position; }
         }
 
         #endregion

@@ -78,7 +78,7 @@ namespace Xbim.Ifc.GeometryResource
 
         IfcAxis2Placement3D IPlacement3D.Position
         {
-            get { return _position; }
+            get { return this.Position; }
         }
 
         #endregion

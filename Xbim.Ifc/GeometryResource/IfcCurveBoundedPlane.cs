@@ -115,7 +115,7 @@ namespace Xbim.Ifc.GeometryResource
         [XmlIgnore]
         public override IfcDimensionCount Dim
         {
-            get { return _basisSurface == null ? (IfcDimensionCount) 0 : _basisSurface.Dim; }
+			get { return BasisSurface == null ? (IfcDimensionCount)0 : BasisSurface.Dim; }
         }
 
         #endregion
@@ -124,7 +124,7 @@ namespace Xbim.Ifc.GeometryResource
 
         IfcAxis2Placement3D IPlacement3D.Position
         {
-            get { return _basisSurface.Position; }
+            get { return BasisSurface.Position; }
         }
 
         #endregion
