@@ -24,12 +24,6 @@ using System.Windows.Markup;
 
 [assembly: AssemblyTitle("Xbim.IO")]
 [assembly: AssemblyDescription("")]
-[assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Lockley Consulting")]
-[assembly: AssemblyProduct("Xbim.IO")]
-[assembly: AssemblyCopyright("Copyright ©  Lockley Consulting 2008")]
-[assembly: AssemblyTrademark("")]
-[assembly: AssemblyCulture("")]
 
 // Setting ComVisible to false makes the types in this assembly not visible 
 // to COM components.  If you need to access a type in this assembly from 
@@ -41,17 +35,4 @@ using System.Windows.Markup;
 
 [assembly: Guid("a797786b-8f96-460b-86db-1749350cc720")]
 
-// Version information for an assembly consists of the following four values:
-//
-//      Major Version
-//      Minor Version 
-//      Build Number
-//      Revision
-//
-// You can specify all the values or you can default the Build and Revision Numbers 
-// by using the '*' as shown below:
-// [assembly: AssemblyVersion("1.0.*")]
-
-[assembly: AssemblyVersion("2.3.*")]
-[assembly: AssemblyFileVersion("2.3.1.0")]
 [assembly: XmlnsDefinition("http://schemas.Xbim.com/Xbim", "Xbim.IO")]

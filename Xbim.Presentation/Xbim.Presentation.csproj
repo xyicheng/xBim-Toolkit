@@ -118,6 +118,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\SharedAssemblyInfo.cs">
+      <Link>Properties\SharedAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="CoPlanarComparer.cs" />
     <Compile Include="DrawingControl3D.xaml.cs" />
     <Compile Include="DrawingItem3D.cs" />

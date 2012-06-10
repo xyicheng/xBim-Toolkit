@@ -69,8 +69,7 @@ namespace Xbim.Ifc.GeometricModelResource
             if (propIndex == 0)
                 _outer = (IfcClosedShell) value.EntityVal;
             else
-                throw new Exception(string.Format("Attribute index {0} is out of range for {1}", propIndex + 1,
-                                                  this.GetType().Name.ToUpper()));
+                this.HandleUnexpectedAttribute(propIndex, value);
         }
 
         #endregion
