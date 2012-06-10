@@ -281,6 +281,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\SharedAssemblyInfo.cpp" />
     <ClCompile Include="AssemblyInfo.cpp" />
     <ClCompile Include="CartesianTransform.cpp">
       <ShowIncludes Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ShowIncludes>
@@ -356,6 +357,7 @@
     <ClInclude Include="IXbimGeometryModel.h" />
     <ClInclude Include="IXbimMeshGeometry.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="Version.h" />
     <ClInclude Include="Stdafx.h" />
     <ClInclude Include="TessellatorReceiver.h" />
     <ClInclude Include="XbimBoundingBox.h" />
@@ -392,6 +394,7 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="app.rc" />
+    <ResourceCompile Include="Version.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
