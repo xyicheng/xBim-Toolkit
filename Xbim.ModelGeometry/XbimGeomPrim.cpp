@@ -41,7 +41,7 @@ namespace Xbim
 			}
 			else
 			{
-				throw(gcnew Exception("XbimGeomPrim. Unsupported Placement type, need to immplement Grid Placement"));
+				throw(gcnew NotImplementedException("XbimGeomPrim. Unsupported Placement type, need to implement Grid Placement"));
 			}
 		}
 
@@ -63,7 +63,7 @@ namespace Xbim
 				return TopLoc_Location();
 			else
 			{
-				throw(gcnew Exception("XbimGeomPrim. Unsupported Placement type, need to immplement Grid Placement"));
+				throw(gcnew NotImplementedException("XbimGeomPrim. Unsupported Placement type, need to implement Grid Placement"));
 			}
 
 		}
@@ -138,7 +138,7 @@ namespace Xbim
 			else if(tForm==nullptr)
 				return gp_Trsf();
 			else
-				throw(gcnew Exception("XbimGeomPrim. Unsupported CartesianTransformationOperator type"));
+				throw(gcnew ArgumentOutOfRangeException("XbimGeomPrim. Unsupported CartesianTransformationOperator type"));
 		}
 
 		gp_Trsf XbimGeomPrim::ToTransform(IfcCartesianTransformationOperator3D^ ct3D)

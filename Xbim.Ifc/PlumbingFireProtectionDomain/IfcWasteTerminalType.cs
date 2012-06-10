@@ -64,7 +64,8 @@ namespace Xbim.Ifc.PlumbingFireProtectionDomain
                         (IfcWasteTerminalTypeEnum) Enum.Parse(typeof (IfcWasteTerminalTypeEnum), value.EnumVal, true);
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException("P21 index value out of range");
+                    this.HandleUnexpectedAttribute(propIndex, value);
+                    break;
             }
         }
 

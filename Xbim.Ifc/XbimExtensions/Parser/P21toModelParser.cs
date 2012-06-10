@@ -399,9 +399,11 @@ namespace Xbim.XbimExtensions.Parser
                     throw new Exception("Too many errors in file, parser execution terminated");
                 _errorCount++;
                 IfcType ifcType = IfcInstances.IfcEntities[host];
+                string propertyName = paramIndex+1 > ifcType.IfcProperties.Count ? "[UnknownProperty]" :
+                        ifcType.IfcProperties[paramIndex+1].PropertyInfo.Name;
                 string err = string.Format("Entity #{0,-5} {1}, error at parameter {2}-{3}",
                                            refID, ifcType.Type.Name.ToUpper(), paramIndex + 1,
-                                           ifcType.IfcProperties[paramIndex + 1].PropertyInfo.Name);
+                                           propertyName);
                 if (_errorLog != null)
                 {
                     _errorLog.WriteLine(err);

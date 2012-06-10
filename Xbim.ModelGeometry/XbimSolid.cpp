@@ -32,6 +32,7 @@ using namespace Xbim::XbimExtensions;
 using namespace Xbim::Ifc::Extensions;
 using namespace System::Windows::Media::Media3D;
 using namespace System::Diagnostics;
+using namespace Xbim::Common::Exceptions;
 
 namespace Xbim
 {
@@ -150,13 +151,13 @@ namespace Xbim
 			else
 			{
 				Type^ type = repItem->GetType();
-				throw gcnew Exception("Error buiding solid from type " + type->Name);
+				throw gcnew XbimGeometryException("Error buiding solid from type " + type->Name);
 			}
 
 		};
 		XbimSolid::XbimSolid(IfcCsgPrimitive3D^ repItem)
 		{	
-			throw gcnew Exception("Error. Solid of type IfcCsgPrimitive3D is not impemented yet");
+			throw gcnew NotImplementedException("Solid of type IfcCsgPrimitive3D is not imlpemented yet");
 		};
 		/*Interfaces*/
 
@@ -219,7 +220,7 @@ namespace Xbim
 					for (TopExp_Explorer solidEx(res,TopAbs_SOLID) ; solidEx.More(); solidEx.Next())  
 						return gcnew XbimSolid(TopoDS::Solid(solidEx.Current()), hasCurves);
 			}
-			System::Diagnostics::Debug::WriteLine("Failed to form difference between two shapes");
+			Logger->Warn("Failed to form difference between two shapes");
 			return nullptr;
 		}
 		IXbimGeometryModel^ XbimSolid::Union(IXbimGeometryModel^ shape)
@@ -238,7 +239,7 @@ namespace Xbim
 					for (TopExp_Explorer solidEx(res,TopAbs_SOLID) ; solidEx.More(); solidEx.Next())  
 						return gcnew XbimSolid(TopoDS::Solid(solidEx.Current()), hasCurves);
 			}
-			System::Diagnostics::Debug::WriteLine("Failed to form Union between two shapes");
+			Logger->Warn("Failed to form Union between two shapes");
 			return nullptr;
 		}
 		IXbimGeometryModel^ XbimSolid::Intersection(IXbimGeometryModel^ shape)
@@ -257,7 +258,7 @@ namespace Xbim
 					for (TopExp_Explorer solidEx(res,TopAbs_SOLID) ; solidEx.More(); solidEx.Next())  
 						return gcnew XbimSolid(TopoDS::Solid(solidEx.Current()), hasCurves);
 			}
-			System::Diagnostics::Debug::WriteLine("Failed to form intersection between two shapes");
+			Logger->Warn("Failed to form intersection between two shapes");
 			return nullptr;
 		}
 		IXbimGeometryModel^ XbimSolid::CopyTo(IfcObjectPlacement^ placement)
@@ -270,7 +271,7 @@ namespace Xbim
 				return gcnew XbimSolid(movedShape, _hasCurvedEdges);
 			}
 			else
-				throw(gcnew Exception("XbimSolid::CopyTo only supports IfcLocalPlacement type"));
+				throw(gcnew NotSupportedException("XbimSolid::CopyTo only supports IfcLocalPlacement type"));
 
 		}
 		//Static Builders
@@ -317,17 +318,17 @@ namespace Xbim
 		{
 			if(dynamic_cast<IfcFacetedBrep^>(manifold))
 				return Build((IfcFacetedBrep^)manifold, hasCurves);
-			throw gcnew Exception("Build::IfcManifoldSolidBrep subtype  is not implemented");
+			throw gcnew NotImplementedException("Build::IfcManifoldSolidBrep subtype is not implemented");
 		}
 
 		TopoDS_Solid XbimSolid::Build(IfcCsgSolid^ csgSolid, bool% hasCurves)
 		{
-			throw gcnew Exception("Build::IfcCsgSolid is not implemented");
+			throw gcnew NotImplementedException("Build::IfcCsgSolid is not implemented");
 		}
 
 		TopoDS_Solid XbimSolid::Build(IfcSweptDiskSolid^ swdSolid, bool% hasCurves)
 		{
-			throw gcnew Exception("Build::IfcSweptDiskSolid is not implemented");
+			throw gcnew NotImplementedException("Build::IfcSweptDiskSolid is not implemented");
 		}
 		
 		TopoDS_Solid XbimSolid::Build(IfcSweptAreaSolid^ sweptAreaSolid, bool% hasCurves)
@@ -341,7 +342,7 @@ namespace Xbim
 			else
 			{
 				Type ^ type = sweptAreaSolid->GetType();
-				throw(gcnew Exception(String::Format("XbimSolid. SweptAreaSolid of type {0} is not implemented",type->Name)));
+				throw(gcnew NotImplementedException(String::Format("XbimSolid. SweptAreaSolid of type {0} is not implemented",type->Name)));
 			}
 		}
 
@@ -367,7 +368,7 @@ namespace Xbim
 			else
 			{
 				Type ^ type = repItem->SweptArea->GetType();
-				throw(gcnew Exception(String::Format("XbimSolid. Could not BuildShape of type {0}. It is not implemented",type->Name)));
+				throw(gcnew NotImplementedException(String::Format("XbimSolid. Could not BuildShape of type {0}. It is not implemented",type->Name)));
 			}
 			TopoDS_Solid solid = Build(face,repItem->ExtrudedDirection , repItem->Depth, hasCurves);
 			solid.Move(XbimGeomPrim::ToLocation(repItem->Position));
@@ -389,7 +390,7 @@ namespace Xbim
 			else
 			{
 				Type ^ type = repItem->SweptArea->GetType();
-				throw(gcnew Exception(String::Format("XbimSolid. Could not BuildShape of type {0}. It is not implemented",type->Name)));
+				throw(gcnew NotImplementedException(String::Format("XbimSolid. Could not BuildShape of type {0}. It is not implemented",type->Name)));
 			}
 
 			// Here we need to prepare the revolution.
@@ -401,7 +402,7 @@ namespace Xbim
 
 		TopoDS_Solid XbimSolid::Build(IfcSurfaceCurveSweptAreaSolid^ repItem, bool% hasCurves)
 		{
-			throw(gcnew Exception("XbimSolid. Support for SurfaceCurveSweptAreaSolid is not implemented"));
+			throw(gcnew NotImplementedException("XbimSolid. Support for SurfaceCurveSweptAreaSolid is not implemented"));
 		}
 
 
@@ -476,7 +477,7 @@ namespace Xbim
 							return TopoDS::Solid(solidEx.Current());
 					}
 				
-				System::Diagnostics::Debug::WriteLine("Failed create polygonally bounded half space, returning just half space");
+				Logger->Warn("Failed create polygonally bounded half space, returning just half space");
 				return prism; //just return the half space as the bound has failed		
 		}
 
@@ -498,7 +499,7 @@ namespace Xbim
 				BRepPrimAPI_MakeHalfSpace halfSpaceBulder(faceBase, pnt);
 				return halfSpaceBulder.Solid();
 			}
-			throw gcnew Exception("Only planar boxed half spaces are valid for building IfcBoxedHalfSpace");
+			throw gcnew XbimGeometryException("Only planar boxed half spaces are valid for building IfcBoxedHalfSpace");
 		}
 
 

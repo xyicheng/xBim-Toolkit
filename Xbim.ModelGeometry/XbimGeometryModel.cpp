@@ -33,7 +33,7 @@
 using namespace Xbim::Ifc::ProductExtension;
 using namespace System::Linq;
 using namespace Xbim::IO;
-
+using namespace Xbim::Common::Exceptions;
 
 TesselateStream::TesselateStream( unsigned char* pDataStream, const TopTools_IndexedMapOfShape& points, unsigned short faceCount, int streamSize)
 {
@@ -256,9 +256,9 @@ namespace Xbim
 
 
 
-		/* Creates a 3D Model geometry for the product based upon the first "Body" ShapeRepresentation that can be found in  Products.ProductRepresentation that is within the specified 
-		GeometricRepresentationContext, if the Representation context is null the first  "Body" ShapeRepresentation
-		is used. Returns null if their is no valid geometric definition
+		/* Creates a 3D Model geometry for the product based upon the first "Body" ShapeRepresentation that can be found in  
+		Products.ProductRepresentation that is within the specified GeometricRepresentationContext, if the Representation 
+		context is null the first "Body" ShapeRepresentation is used. Returns null if their is no valid geometric definition
 		*/
 		IXbimGeometryModel^ XbimGeometryModel::CreateFrom(IfcProduct^ product, IfcGeometricRepresentationContext^ repContext, Dictionary<IfcRepresentation^, IXbimGeometryModel^>^ maps, bool forceSolid)
 		{
@@ -270,6 +270,7 @@ namespace Xbim
 
 			for each(IfcRepresentation^ shape in product->Representation->Representations)
 			{
+	
 				if(repContext == nullptr || shape->ContextOfItems ==  repContext) 
 				{
 					if( !shape->RepresentationIdentifier.HasValue ||
@@ -297,7 +298,7 @@ namespace Xbim
 									{
 										IXbimGeometryModel^ im = CreateFrom(fe,repContext, maps, true);
 										if(!dynamic_cast<XbimSolid^>(im))
-											throw gcnew Exception("FeatureElementAdditions must be of type solid");
+											throw gcnew XbimGeometryException("FeatureElementAdditions must be of type solid");
 
 										im = im->CopyTo(fe->ObjectPlacement);
 										projectionSolids->Add(im);
@@ -343,15 +344,30 @@ namespace Xbim
 					}
 				}
 			}
+			
+			
 			return nullptr;
 		}
+
 		IXbimGeometryModel^ XbimGeometryModel::CreateFrom(IfcProduct^ product, Dictionary<IfcRepresentation^, IXbimGeometryModel^>^ maps, bool forceSolid)
 		{
 			return CreateFrom(product, nullptr, maps, forceSolid);
 		}
+
 		IXbimGeometryModel^ XbimGeometryModel::CreateFrom(IfcProduct^ product, bool forceSolid)
 		{
-			return CreateFrom(product, nullptr, gcnew Dictionary<IfcRepresentation^, IXbimGeometryModel^>(), forceSolid);
+			// HACK: Ideally we shouldn't need this try-catch handler. This just allows us to log the fault, and raise a managed exception, before the application terminates.
+			// Upstream callers should ideally terminate the application ASAP.
+			__try
+			{
+				return CreateFrom(product, nullptr, gcnew Dictionary<IfcRepresentation^, IXbimGeometryModel^>(), forceSolid);
+			}
+			__except(GetExceptionCode() == EXCEPTION_ACCESS_VIOLATION)
+			{
+				Logger->Fatal("Access Violation in geometry engine. This may leave the application in an inconsistent state!");
+				throw gcnew AccessViolationException(
+					"A memory access violation occurred in the geometry engine. The application and geometry may be in an inconsistent state and the process should be terminated.");
+			}
 		}
 
 		IXbimGeometryModel^ XbimGeometryModel::Build(IfcBooleanResult^ repItem)
@@ -375,7 +391,7 @@ namespace Xbim
 			else if(dynamic_cast<IfcCsgPrimitive3D^>(fOp))
 				shape1 = gcnew XbimSolid((IfcCsgPrimitive3D^)fOp);
 			else
-				throw(gcnew Exception("XbimGeometryModel. Build(BooleanResult) FirstOperand must be a valid IfcBooleanOperand"));
+				throw(gcnew XbimException("XbimGeometryModel. Build(BooleanResult) FirstOperand must be a valid IfcBooleanOperand"));
 			if(dynamic_cast<IfcBooleanResult^>(sOp))
 				shape2 = Build((IfcBooleanResult^)sOp);
 			else if(dynamic_cast<IfcSolidModel^>(sOp))
@@ -389,7 +405,7 @@ namespace Xbim
 			else if(dynamic_cast<IfcCsgPrimitive3D^>(sOp))
 				shape2 = gcnew XbimSolid((IfcCsgPrimitive3D^)sOp);
 			else
-				throw(gcnew Exception("XbimGeometryModel. Build(BooleanResult) FirstOperand must be a valid IfcBooleanOperand"));
+				throw(gcnew XbimException("XbimGeometryModel. Build(BooleanResult) FirstOperand must be a valid IfcBooleanOperand"));
 
 			//check if we have boxed half spaces then see if there is any intersect
 			if(_shape1IsSolid.HasValue)
@@ -414,7 +430,7 @@ namespace Xbim
 				return shape1->Cut(shape2);
 
 			default:
-				throw(gcnew Exception("XbimGeometryModel. Build(BooleanClippingResult) Unsupported Operation"));
+				throw(gcnew InvalidOperationException("XbimGeometryModel. Build(BooleanClippingResult) Unsupported Operation"));
 			}	
 		}
 
@@ -491,7 +507,7 @@ namespace Xbim
 			else
 			{
 				Type ^ type = repItem->GetType();
-				throw(gcnew Exception(String::Format("XbimGeometryModel. Could not Build Geometry, type {0} is not implemented",type->Name)));
+				throw(gcnew NotImplementedException(String::Format("XbimGeometryModel. Could not Build Geometry, type {0} is not implemented",type->Name)));
 			}
 		}
 
@@ -521,7 +537,7 @@ namespace Xbim
 					return mapColl;
 			}
 			else
-				throw(gcnew Exception("XbimGeometryModel.CreateMap Unsupported IXbimGeometryModel type"));
+				throw(gcnew ArgumentOutOfRangeException("XbimGeometryModel.CreateMap Unsupported IXbimGeometryModel type"));
 		}
 
 		IXbimGeometryModel^ XbimGeometryModel::CreateMap(IXbimGeometryModel^ item, IfcAxis2Placement^ origin, Dictionary<IfcRepresentation^, IXbimGeometryModel^>^ maps, bool forceSolid)
@@ -630,7 +646,7 @@ namespace Xbim
 					else
 					{
 						Type ^ type = sbms->GetType();
-						throw(gcnew Exception(String::Format("XbimGeometryModel:Build(IfcShellBasedSurfaceModel). Could not BuildShape of type {0}. It is not implemented",type->Name)));
+						throw(gcnew NotImplementedException(String::Format("XbimGeometryModel:Build(IfcShellBasedSurfaceModel). Could not BuildShape of type {0}. It is not implemented",type->Name)));
 					}
 				}
 				if( Enumerable::FirstOrDefault(gms) == nullptr)
@@ -653,7 +669,7 @@ namespace Xbim
 			TopoDS_Shape res = ss.ApplySewing(*(shape->Handle));
 			if(res.IsNull())
 			{
-				System::Diagnostics::Debug::WriteLine("Failed to fix shape, an empty solid has been found");
+				Logger->Warn("Failed to fix shape, an empty solid has been found");
 				return nullptr;
 			}
 			if(res.ShapeType() == TopAbs_COMPOUND)
@@ -680,7 +696,7 @@ namespace Xbim
 			else if(res.ShapeType() == TopAbs_SOLID)
 				return gcnew XbimSolid(TopoDS::Solid(res));
 			else if(res.ShapeType() == TopAbs_COMPSOLID)
-				System::Diagnostics::Debug::WriteLine("Failed to fix shape, Compound Solids not supported");
+				Logger->Warn("Failed to fix shape, Compound Solids not supported");
 			return nullptr;
 		}
 
@@ -912,17 +928,17 @@ namespace Xbim
 				}
 				catch(...)
 				{
-					System::Diagnostics::Debug::WriteLine("Error processing geometry in XbimGeometryModel::Mesh");
+					Logger->Error("Error processing geometry in XbimGeometryModel::Mesh");
+					return XbimTriangulatedModelStream::Empty;
 				}
 				finally
 				{
 					Marshal::FreeHGlobal(vertexPtr);
-
 				}
 			}
 			catch(...)
 			{
-				System::Diagnostics::Debug::WriteLine("Failed to Triangulate shape");
+				Logger->Error("Failed to Triangulate shape");
 				return XbimTriangulatedModelStream::Empty;
 			}
 

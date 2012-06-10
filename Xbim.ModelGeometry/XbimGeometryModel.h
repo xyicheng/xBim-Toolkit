@@ -17,6 +17,7 @@ using namespace Xbim::Ifc::Kernel;
 using namespace System;
 using namespace System::Collections::Generic;
 using namespace Xbim::ModelGeometry::Scene;
+using namespace Xbim::Common::Logging;
 
 #pragma unmanaged
 
@@ -65,9 +66,10 @@ namespace Xbim
 		
 		public ref class XbimGeometryModel abstract 
 		{
-			static private int _callStaticConstructor; //we need this to ensure the static constructor is called
-		private:
 			
+		private:
+			static int _callStaticConstructor; //we need this to ensure the static constructor is called
+			static ILogger^ Logger = LoggerFactory::GetLogger();
 			
 		public:
 			

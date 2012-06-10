@@ -124,6 +124,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\SharedAssemblyInfo.cs">
+      <Link>Properties\SharedAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="GeometryCache\GeometryCacheFile.cs" />
     <Compile Include="GeometryCache\MeshGeometry.cs" />
     <Compile Include="GeometryCache\SpaceTriangulatedModel.cs" />
@@ -155,6 +158,10 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Xbim.Common\Xbim.Common.csproj">
+      <Project>{6745F5AC-AF3C-4372-81AA-A75E7B1FA03B}</Project>
+      <Name>Xbim.Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Xbim.Ifc.Extensions\Xbim.Ifc.Extensions.csproj">
       <Project>{09870F18-1796-4A3E-A66D-68DB3DA60B24}</Project>
       <Name>Xbim.Ifc.Extensions</Name>
@@ -165,6 +172,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="ClassDiagram1.cd" />
     <None Include="packages.config" />
     <None Include="XbimIfcKey.pfx" />
   </ItemGroup>

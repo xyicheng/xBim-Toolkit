@@ -9,6 +9,7 @@
 #include <BRepAlgoAPI_Fuse.hxx>
 
 using namespace System::Linq;
+using namespace Xbim::Common::Exceptions;
 
 namespace Xbim
 {
@@ -18,7 +19,7 @@ namespace Xbim
 
 		IXbimGeometryModel^ XbimGeometryModelCollection::Cut(IXbimGeometryModel^ shape)
 		{
-			throw gcnew Exception("A cut operation has been applied to a collection of model object this is illegal according to schema");
+			throw gcnew XbimGeometryException("A cut operation has been applied to a collection of model object this is illegal according to schema");
 			/*try
 			{
 				*/
@@ -64,7 +65,7 @@ namespace Xbim
 		}
 		IXbimGeometryModel^ XbimGeometryModelCollection::Union(IXbimGeometryModel^ shape)
 		{
-			throw gcnew Exception("A cut operation has been applied to a collection of model object this is illegal according to schema");
+			throw gcnew XbimGeometryException("A cut operation has been applied to a collection of model object this is illegal according to schema");
 			//BRepAlgoAPI_Fuse boolOp(*pCompound,*(shape->Handle));
 
 			//if(boolOp.ErrorStatus() == 0) //find the solid
@@ -98,7 +99,7 @@ namespace Xbim
 		}
 		IXbimGeometryModel^ XbimGeometryModelCollection::Intersection(IXbimGeometryModel^ shape)
 		{
-			throw gcnew Exception("A cut operation has been applied to a collection of model object this is illegal according to schema");
+			throw gcnew XbimGeometryException("A cut operation has been applied to a collection of model object this is illegal according to schema");
 			//BRepAlgoAPI_Common boolOp(*pCompound,*(shape->Handle));
 
 			//if(boolOp.ErrorStatus() == 0) //find the solid
@@ -162,7 +163,7 @@ namespace Xbim
 
 		IXbimGeometryModel^ XbimGeometryModelCollection::CopyTo(IfcObjectPlacement^ placement)
 		{
-			throw gcnew Exception("A copyto operation has been applied to a collection of model object this is illegal according to schema");
+			throw gcnew XbimGeometryException("A copyto operation has been applied to a collection of model object this is illegal according to schema");
 			/*if(dynamic_cast<IfcLocalPlacement^>(placement))
 			{
 				TopoDS_Compound movedShape = *pCompound;
@@ -171,7 +172,7 @@ namespace Xbim
 				return gcnew XbimGeometryModelCollection(movedShape, shapes, HasCurvedEdges);
 			}
 			else
-				throw(gcnew Exception("XbimSolid::CopyTo only supports IfcLocalPlacement type"));*/
+				throw(gcnew InvalidOperationException("XbimSolid::CopyTo only supports IfcLocalPlacement type"));*/
 
 		}
 

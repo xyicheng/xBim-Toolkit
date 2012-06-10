@@ -41,6 +41,7 @@
 using namespace System::Linq;
 using namespace System::Diagnostics;
 using namespace System::Windows::Media::Media3D;
+using namespace Xbim::Common::Exceptions;
 //#define XBIMTRACE 1
 namespace Xbim
 {
@@ -128,7 +129,7 @@ namespace Xbim
 			else
 			{
 				Type^ type = shell->GetType();
-				throw gcnew Exception("Error buiding shell from type " + type->Name);
+				throw gcnew XbimGeometryException("Error buiding shell from type " + type->Name);
 			}
 
 		}*/
@@ -144,7 +145,7 @@ namespace Xbim
 
 		IXbimGeometryModel^ XbimShell::Cut(IXbimGeometryModel^ shape)
 		{
-			throw gcnew Exception("A cut operation has been applied to a shell (non-solid) object this is illegal according to schema");
+			throw gcnew XbimGeometryException("A cut operation has been applied to a shell (non-solid) object this is illegal according to schema");
 			//bool hasCurves =  _hasCurvedEdges || shape->HasCurvedEdges; //one has a curve the result will have one
 			//BRepAlgoAPI_Cut boolOp(*pShell,*(shape->Handle));
 
@@ -179,7 +180,7 @@ namespace Xbim
 		}
 		IXbimGeometryModel^ XbimShell::Union(IXbimGeometryModel^ shape)
 		{
-			throw gcnew Exception("A Union operation has been applied to a shell (non-solid) object this is illegal according to schema");
+			throw gcnew XbimGeometryException("A Union operation has been applied to a shell (non-solid) object this is illegal according to schema");
 	  //  	bool hasCurves =  _hasCurvedEdges || shape->HasCurvedEdges; //one has a curve the result will have one
 			//BRepAlgoAPI_Fuse boolOp(*pShell,*(shape->Handle));
 
@@ -214,7 +215,7 @@ namespace Xbim
 		}
 		IXbimGeometryModel^ XbimShell::Intersection(IXbimGeometryModel^ shape)
 		{
-			throw gcnew Exception("A Intersection operation has been applied to a shell (non-solid) object this is illegal according to schema");
+			throw gcnew XbimGeometryException("A Intersection operation has been applied to a shell (non-solid) object this is illegal according to schema");
 			//bool hasCurves =  _hasCurvedEdges || shape->HasCurvedEdges; //one has a curve the result will have one
 			//BRepAlgoAPI_Common boolOp(*pShell,*(shape->Handle));
 
@@ -257,7 +258,7 @@ namespace Xbim
 				return gcnew XbimShell(movedShape, _hasCurvedEdges);
 			}
 			else
-				throw(gcnew Exception("XbimShell::CopyTo only supports IfcLocalPlacement type"));
+				throw(gcnew NotSupportedException("XbimShell::CopyTo only supports IfcLocalPlacement type"));
 
 		}
 		TopoDS_Shell XbimShell::Build(IfcOpenShell^ shell, bool% hasCurves)
@@ -369,7 +370,10 @@ namespace Xbim
 						pointCount+=polyLoop->Polygon->Count;
 					}
 					else
-						Debug::WriteLine(String::Format("XbimShell::Build(ConnectedFaceSet) loops of type {0} are not implemented, Loop id = #{1}", faceBound->Bound->GetType()->ToString(), faceBound->Bound->EntityLabel));
+					{
+						Logger->WarnFormat("XbimShell::Build(ConnectedFaceSet) loops of type {0} are not implemented, Loop id = #{1}", 
+							faceBound->Bound->GetType()->ToString(), faceBound->Bound->EntityLabel);
+					}
 				}
 			}
 			int pSize = (pointCount*3*sizeof(double)) + sizeof(int);
@@ -404,7 +408,9 @@ namespace Xbim
 								if(dynamic_cast<IfcFaceOuterBound^>(bound) ) //find the first and only outerbound
 								{
 									if(outerFound)
-										Debug::WriteLine(String::Format("XbimShell::Build(ConnectedFaceSet) more than one outer bound has been found for a face = #{0}",fc->EntityLabel));
+									{
+										Logger->WarnFormat("XbimShell::Build(ConnectedFaceSet) more than one outer bound has been found for a face = #{0}",fc->EntityLabel);
+									}
 									else
 									{
 										outerBound = bound;
@@ -437,14 +443,15 @@ namespace Xbim
 									}
 									catch (...)
 									{
-										Debug::WriteLine(String::Format("XbimShell::Build(ConnectedFaceSet) an inner bound could not be added to a face id = #{0}",fc->EntityLabel));
+										Logger->WarnFormat("XbimShell::Build(ConnectedFaceSet) an inner bound could not be added to a face id = #{0}",fc->EntityLabel);
 									}
 								}
 
 							}
 							else
-								Debug::WriteLine(String::Format("XbimShell::Build(ConnectedFaceSet) a legal face could not be built from the geometry Bound = #{0}",outerBound->EntityLabel));
-
+							{
+								Logger->WarnFormat("XbimShell::Build(ConnectedFaceSet) a legal face could not be built from the geometry Bound = #{0}",outerBound->EntityLabel);
+							}
 						}
 
 						int pCount = points->Count;
@@ -466,8 +473,8 @@ namespace Xbim
 
 			catch(Exception ^ e)
 			{
-				Debug::WriteLine(String::Format("XbimShell::Build(ConnectedFaceSet) general failure in ConnectedFace set = #{0}",faceSet->EntityLabel));
-				System::Diagnostics::Debug::WriteLine(e->Message);
+				String^ message = String::Format("XbimShell::Build(ConnectedFaceSet) general failure in ConnectedFace set = #{0}",faceSet->EntityLabel);
+				Logger->Error(message, e);
 			}
 			finally
 			{
@@ -490,7 +497,7 @@ namespace Xbim
 				IfcPolyLoop^ polyLoop=(IfcPolyLoop^)bound;
 				if(polyLoop->Polygon->Count < 3) 
 				{
-					Debug::WriteLine(String::Format("XbimShell::Build(ConnectedFaceSet) loops with less than 3 points are illegal Loop id = #{0}",polyLoop->EntityLabel));
+					Logger->WarnFormat("XbimShell::Build(ConnectedFaceSet) loops with less than 3 points are illegal Loop id = #{0}",polyLoop->EntityLabel);
 					
 					return false;
 				}
@@ -520,12 +527,12 @@ namespace Xbim
 			}
 			else //it is an invalid face so throw an error
 			{
-				Debug::WriteLine(String::Format("XbimShell::Build(ConnectedFaceSet) loops of type {0} are not implemented, Loop id = #{1}", bound->GetType()->ToString(), bound->EntityLabel));
+				Logger->WarnFormat("XbimShell::Build(ConnectedFaceSet) loops of type {0} are not implemented, Loop id = #{1}", bound->GetType()->ToString(), bound->EntityLabel);
 				return false;
 			}
 			//if(edgeLoop->Count < 3) 
 			//{
-			//	Debug::WriteLine(String::Format("XbimShell::Build(ConnectedFaceSet) loops with less than 3 edges are illegal, Loop id = #{0}",  bound->EntityLabel));
+			//	Logger->WarnFormat("XbimShell::Build(ConnectedFaceSet) loops with less than 3 edges are illegal, Loop id = #{0}",  bound->EntityLabel);
 			//	return false;
 			//}
 			//else
