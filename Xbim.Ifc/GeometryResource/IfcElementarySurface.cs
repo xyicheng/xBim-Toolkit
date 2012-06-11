@@ -61,8 +61,7 @@ namespace Xbim.Ifc.GeometryResource
             if (propIndex == 0)
                 _position = (IfcAxis2Placement3D) value.EntityVal;
             else
-                throw new Exception(string.Format("Attribute index {0} is out of range for {1}", propIndex + 1,
-                                                  this.GetType().Name.ToUpper()));
+                this.HandleUnexpectedAttribute(propIndex, value);
         }
 
         #endregion
@@ -79,7 +78,7 @@ namespace Xbim.Ifc.GeometryResource
 
         IfcAxis2Placement3D IPlacement3D.Position
         {
-            get { return _position; }
+            get { return this.Position; }
         }
 
         #endregion

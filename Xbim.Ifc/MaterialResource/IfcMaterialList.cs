@@ -109,11 +109,10 @@ namespace Xbim.Ifc.MaterialResource
         {
             if (propIndex == 0)
             {
-                _materials.Add((IfcMaterial) value.EntityVal);
+                _materials.Add((IfcMaterial)value.EntityVal);
             }
             else
-                throw new ArgumentOutOfRangeException(string.Format("P21 index value out of range in {0}",
-                                                                    this.GetType().Name));
+                this.HandleUnexpectedAttribute(propIndex, value);
         }
 
         #endregion
@@ -178,7 +177,7 @@ namespace Xbim.Ifc.MaterialResource
             get
             {
                 StringBuilder str = new StringBuilder();
-                foreach (IfcMaterial mat in _materials)
+                foreach (IfcMaterial mat in Materials)
                 {
                     str.AppendFormat("{0} ", mat.Name);
                 }

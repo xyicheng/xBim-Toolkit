@@ -40,19 +40,22 @@ using System.Runtime.Serialization.Formatters;
 using System.Xml;
 using System.IO.Compression;
 using ICSharpCode.SharpZipLib.Zip;
+using Xbim.XbimExtensions;
+using ICSharpCode.SharpZipLib.Core;
+using Xbim.Common.Logging;
+
 
 #endregion
 
-namespace Xbim.XbimExtensions
-{
-    //public delegate void InitProperties<TInit>(TInit initFunction);
+namespace Xbim.IO
 
+{
 
     [Serializable]
     public class XbimMemoryModel : IModel, ISupportChangeNotification, INotifyPropertyChanged, INotifyPropertyChanging
     {
         #region Fields
-
+		private readonly ILogger Logger = LoggerFactory.GetLogger();
         private readonly IfcFileHeader _header = new IfcFileHeader();
         private IfcInstances _ifcInstances = new IfcInstances();
 
@@ -1049,7 +1052,7 @@ namespace Xbim.XbimExtensions
             return sb.ToString();
         }
 
-
+        // TODO: Review why these properties are here on the model.
         public IEnumerable<IfcWall> Walls
         {
             get { return InstancesOfType<IfcWall>(); }
@@ -1204,58 +1207,102 @@ namespace Xbim.XbimExtensions
 
             XbimStorageType fileType = XbimStorageType.XBIM;
             string ext = Path.GetExtension(inputFileName).ToLower();
-            if (ext == "xbim") fileType = XbimStorageType.XBIM;
-            else if (ext == "ifc") fileType = XbimStorageType.IFC;
-            else if (ext == "xml") fileType = XbimStorageType.IFCXML;
-            else if (ext == "zip") fileType = XbimStorageType.IFCX;
+            if (ext == ".xbim") fileType = XbimStorageType.XBIM;
+            else if (ext == ".ifc") fileType = XbimStorageType.IFC;
+            else if (ext == ".ifcxml") fileType = XbimStorageType.IFCXML;
+            else if (ext == ".zip") fileType = XbimStorageType.IFCX;
             else
                 throw new Exception("Invalid file type: " + ext);
+            try
+            {
+                if (fileType.HasFlag(XbimStorageType.IFCX))
+                {
+                    // get the ifc file from zip
+                    //using (Stream zipStream = new FileStream(inputFileName, FileMode.Open, FileAccess.Read))
+                    //{
+                    //    ZipInputStream zis = new ZipInputStream(zipStream);
+                    //}
+                    using (ZipInputStream zis = new ZipInputStream(File.OpenRead(inputFileName)))
+                    {
+                        ZipEntry zs = zis.GetNextEntry();
+                        while (zs != null)
+                        {
+                            String fileName = Path.GetFileName(zs.Name);
+                            if (fileName.ToLower().EndsWith(".ifc") || fileName.ToLower().EndsWith(".ifcxml"))
+                            {
+                                if (fileName.ToLower().EndsWith(".ifc"))
+                                {
+                                    ZipFile zf = new ZipFile(inputFileName);
+                                    Stream entryStream = zf.GetInputStream(zs);
+                                    using (IfcInputStream input = new IfcInputStream(entryStream))
+                                    {
+                                        if (input.Load(this) != 0)
+                                            throw new Exception("Ifc file parsing errors\n" + input.ErrorLog.ToString());
+                                    }                                    
+                                    break;
+                                }
+                                else if (fileName.ToLower().EndsWith(".ifcxml"))
+                                {
+                                    ZipFile zf = new ZipFile(inputFileName);
+                                    XmlReaderSettings settings = new XmlReaderSettings() { IgnoreComments = true, IgnoreWhitespace = true };
+                                    Stream entryStream = zf.GetInputStream(zs);
+                                    using (XmlReader xmlReader = XmlReader.Create(entryStream, settings))
+                                    {
+                                        IfcXmlReader reader = new IfcXmlReader();
+                                        reader.Read(this, xmlReader);
+                                    }
+                                    break;
+                                }                                                                
+                            }
+                        }
 
-            if (fileType.HasFlag(XbimStorageType.IFCXML))
-            {
-                // input to be xml file, output will be xbim file
-                //ImportXml(inputFileName, outputFileName);
+                    }
+                }
+
+                else if (fileType.HasFlag(XbimStorageType.IFCXML))
+                {
+                    // input to be xml file, output will be xbim file
+                    XmlReaderSettings settings = new XmlReaderSettings() { IgnoreComments = true, IgnoreWhitespace = true };
+                    Stream xmlInStream = new FileStream(inputFileName, FileMode.Open, FileAccess.Read);
+
+                    using (XmlReader xmlReader = XmlReader.Create(xmlInStream, settings))
+                    {
+                        IfcXmlReader reader = new IfcXmlReader();
+                        reader.Read(this, xmlReader);
+                    }
+                }
+                else if (fileType.HasFlag(XbimStorageType.IFC))
+                {
+                    //attach it to the Ifc Stream Parser
+                    using (IfcInputStream input = new IfcInputStream(
+						new FileStream(inputFileName, FileMode.Open, FileAccess.Read)))
+                    {
+						if (input.Load(this) != 0)
+						{
+							Logger.WarnFormat("IFC file {0} failed to load.", inputFileName);
+							throw new Exception("Ifc file parsing errors\n" + input.ErrorLog.ToString());
+						}
+                    }
+
+                }
+
             }
-            else if (fileType.HasFlag(XbimStorageType.IFC))
+            catch (Exception ex)
             {
-                // input to be ifc file, output will be xbim file
-                //IfcInputStream input = null;
-                //try
-                //{
-                //    //attach it to the Ifc Stream Parser
-                //    input = new IfcInputStream(new FileStream(inputFileName, FileMode.Open, FileAccess.Read));
-                //    if (input.Load(this) != 0)
-                //        throw new Exception("Ifc file parsing errors\n" + input.ErrorLog.ToString());
-                //}
-                //catch (Exception ex)
-                //{
-                //    throw new Exception("Ifc file parsing errors\n" + input.ErrorLog.ToString());
-                //}
-                //finally
-                //{
-                //    if (input != null) input.Close();
-                //}
-            }
-            else if (fileType.HasFlag(XbimStorageType.IFCX))
-            {
-                // get the ifc file from zip
-                //string ifcFileName = ExportZippedIfc(inputFileName);
-                // convert ifc to xbim
-                //ImportIfc(ifcFileName, outputFileName);
+                throw new Exception("Ifc file parsing errors\n" + inputFileName, ex);
             }
 
             return outputFileName;
         }
 
+
         public bool Save()
         {
-            
             return true;
         }
 
         public bool SaveAs(string outputFileName)
         {
-            Export(XbimStorageType.XBIM, outputFileName);
             return true;
         }
 

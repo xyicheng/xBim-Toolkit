@@ -20,6 +20,8 @@
 #include <ShapeFix_ShapeTolerance.hxx> 
 #include <BRepBuilderAPI_Sewing.hxx> 
 using namespace System::Linq;
+using namespace Xbim::Common::Exceptions;
+
 namespace Xbim
 {
 	namespace ModelGeometry
@@ -32,7 +34,7 @@ namespace Xbim
 
 			if(baseShape==nullptr)
 			{
-				System::Diagnostics::Debug::WriteLine("Undefined base shape passed to XbimFeaturedShape");
+				Logger->Warn("Undefined base shape passed to XbimFeaturedShape");
 				return;
 			}
 
@@ -126,9 +128,9 @@ namespace Xbim
 							
 						}
 						else if(shape.ShapeType() == TopAbs_COMPSOLID)
-							System::Diagnostics::Debug::WriteLine("Failed to form difference between two shapes, Compound Solids not supported");
+							Logger->Warn("Failed to form difference between two shapes, Compound Solids not supported");
 						else
-							System::Diagnostics::Debug::WriteLine("Failed to form difference between two shapes");
+							Logger->Warn("Failed to form difference between two shapes");
 					}
 					else //still failed stuff them all in and do one at a time
 					{
@@ -150,7 +152,7 @@ namespace Xbim
 						if(boolOp.ErrorStatus() == 0) //it worked so use the result 
 							shape2 = boolOp.Shape();
 						else
-							System::Diagnostics::Debug::WriteLine("Failed to cut opening, most likely overlapping openings detected");
+							Logger->Warn("Failed to cut opening, most likely overlapping openings detected");
 						
 					}
 					if(shape2.ShapeType() == TopAbs_SOLID)
@@ -167,7 +169,7 @@ namespace Xbim
 						}
 					}
 					else
-						System::Diagnostics::Debug::WriteLine("Failed to form difference between two shapes");
+						Logger->Warn("Failed to form difference between two shapes");
 				}
 
 			}
@@ -188,7 +190,7 @@ namespace Xbim
 					for (TopExp_Explorer solidEx(res,TopAbs_SOLID) ; solidEx.More(); solidEx.Next())  
 						return gcnew XbimSolid(TopoDS::Solid(solidEx.Current()), HasCurvedEdges);
 			}
-			System::Diagnostics::Debug::WriteLine("Failed to form difference between two shapes");
+			Logger->Warn("Failed to form difference between two shapes");
 			return nullptr;
 		}
 		IXbimGeometryModel^ XbimFeaturedShape::Union(IXbimGeometryModel^ shape)
@@ -206,7 +208,7 @@ namespace Xbim
 					for (TopExp_Explorer solidEx(res,TopAbs_SOLID) ; solidEx.More(); solidEx.Next())  
 						return gcnew XbimSolid(TopoDS::Solid(solidEx.Current()), HasCurvedEdges);
 			}
-			System::Diagnostics::Debug::WriteLine("Failed to form union between two shapes");
+			Logger->Warn("Failed to form union between two shapes");
 			return nullptr;
 		}
 
@@ -225,7 +227,7 @@ namespace Xbim
 					for (TopExp_Explorer solidEx(res,TopAbs_SOLID) ; solidEx.More(); solidEx.Next())  
 						return gcnew XbimSolid(TopoDS::Solid(solidEx.Current()), HasCurvedEdges);
 			}
-			System::Diagnostics::Debug::WriteLine("Failed to form Intersection between two shapes");
+			Logger->Warn("Failed to form Intersection between two shapes");
 			return nullptr;
 		}
 
@@ -251,10 +253,10 @@ namespace Xbim
 				mOpenings = copy->mOpenings;
 				mProjections = copy->mProjections;
 				if(mResultShape == nullptr)
-					throw(gcnew Exception("XbimFeaturedShape::CopyTo has failed to move shape"));
+					throw(gcnew XbimGeometryException("XbimFeaturedShape::CopyTo has failed to move shape"));
 			}
 			else
-				throw(gcnew Exception("XbimFeaturedShape::CopyTo only supports IfcLocalPlacement type"));
+				throw(gcnew NotImplementedException("XbimFeaturedShape::CopyTo only supports IfcLocalPlacement type"));
 		}
 
 		IXbimGeometryModel^ XbimFeaturedShape::CopyTo(IfcObjectPlacement^ placement)

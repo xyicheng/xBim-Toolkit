@@ -39,6 +39,7 @@ namespace Xbim.Ifc.GeometryResource
 
         #region IPlacement3D Members
 
+		// TODO: Should be abstract rather than not implemented?
         IfcAxis2Placement3D IPlacement3D.Position
         {
             get { throw new NotImplementedException(); }

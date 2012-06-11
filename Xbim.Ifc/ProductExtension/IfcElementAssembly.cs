@@ -14,6 +14,7 @@
 
 using System;
 using Xbim.XbimExtensions;
+using Xbim.XbimExtensions.Parser;
 
 #endregion
 
@@ -40,22 +41,74 @@ namespace Xbim.Ifc.ProductExtension
     [IfcPersistedEntity, Serializable]
     public class IfcElementAssembly : IfcElement
     {
+       
+        #region Fields
+        private IfcAssemblyPlaceEnum? _assemblyPlace;
+        private IfcElementAssemblyTypeEnum _predefinedType;
+        #endregion
+
+        #region Ifc Properties
         /// <summary>
-        ///   Optional. A designation of where the assembly is intended to take place defined by an Enum.
+        /// The nominal diameter describing the cross-section size of the fastener.
         /// </summary>
-        public IfcAssemblyPlaceEnum AssemblyPlace
+        [IfcAttribute(9, IfcAttributeState.Optional)]
+        public IfcAssemblyPlaceEnum? AssemblyPlace
         {
-            get { throw new NotImplementedException(); }
-            set { }
+            get
+            {
+#if SupportActivation
+                ((IPersistIfcEntity)this).Activate(false);
+#endif
+                return _assemblyPlace;
+            }
+            set { ModelManager.SetModelValue(this, ref _assemblyPlace, value, v => AssemblyPlace = v, "AssemblyPlace"); }
         }
 
         /// <summary>
-        ///   Predefined generic types for a element assembly that are specified in an enumeration.
+        /// The nominal length describing the longitudinal dimensions of the fastener.
         /// </summary>
+        [IfcAttribute(10, IfcAttributeState.Mandatory)]
         public IfcElementAssemblyTypeEnum PredefinedType
         {
-            get { throw new NotImplementedException(); }
-            set { }
+            get
+            {
+#if SupportActivation
+                ((IPersistIfcEntity)this).Activate(false);
+#endif
+                return _predefinedType;
+            }
+            set { ModelManager.SetModelValue(this, ref _predefinedType, value, v => PredefinedType = v, "PredefinedType"); }
         }
+        #endregion
+
+        #region IfcParse
+
+        public override void IfcParse(int propIndex, IPropertyValue value)
+        {
+            switch (propIndex)
+            {
+                case 0:
+                case 1:
+                case 2:
+                case 3:
+                case 4:
+                case 5:
+                case 6:
+                case 7:
+                    base.IfcParse(propIndex, value);
+                    break;
+                case 8:
+                    _assemblyPlace = (IfcAssemblyPlaceEnum)
+                        Enum.Parse(typeof(IfcAssemblyPlaceEnum), value.EnumVal, true);
+                    break;
+                case 9:
+                    _predefinedType = (IfcElementAssemblyTypeEnum)
+                        Enum.Parse(typeof(IfcElementAssemblyTypeEnum), value.EnumVal, true);
+                    break;
+                default:
+                    this.HandleUnexpectedAttribute(propIndex, value); break;
+            }
+        }
+        #endregion
     }
 }

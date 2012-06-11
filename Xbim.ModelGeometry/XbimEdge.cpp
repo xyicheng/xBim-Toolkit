@@ -11,7 +11,7 @@ namespace Xbim
 	namespace ModelGeometry
 	{
 		XbimEdge::XbimEdge(const TopoDS_Edge & edge, const TopoDS_Vertex & vertex, TopAbs_Orientation orientation)
-		{throw gcnew Exception("This constructor is not implemented");
+		{throw gcnew NotImplementedException("This constructor is not implemented");
 			
 
 		}

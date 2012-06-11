@@ -88,8 +88,7 @@ namespace Xbim.Ifc.TopologyResource
                     _orientation = value.BooleanVal;
                     break;
                 default:
-                    throw new Exception(string.Format("Attribute index {0} is out of range for {1}", propIndex + 1,
-                                                      this.GetType().Name.ToUpper()));
+                    this.HandleUnexpectedAttribute(propIndex, value); break;
             }
         }
 
@@ -151,7 +150,13 @@ namespace Xbim.Ifc.TopologyResource
                             cp.Negate();
                         return new IfcDirection(cp);
                     }
+                    else if (i == polyLoop.Polygon.Count - 1)
+                    {
+                        // if its the last round of for look then just return the last cp
+                        return new IfcDirection(cp);
+                    }
                 }
+                // should never come here
                 throw new Exception("IfcFaceBound:Normal has an Invalid face");
             }
             else

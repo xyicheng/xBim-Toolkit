@@ -188,8 +188,7 @@ namespace Xbim.Ifc.ProfileResource
                     break;
 
                 default:
-                    throw new ArgumentOutOfRangeException(string.Format("P21 index value out of range in {0}",
-                                                                        this.GetType().Name));
+                    this.HandleUnexpectedAttribute(propIndex, value); break;
             }
         }
 

@@ -13,6 +13,7 @@ using namespace Xbim::Ifc::SelectTypes;
 using namespace Xbim::XbimExtensions::Interfaces;
 using namespace System::Collections::Generic;
 using namespace System::IO;
+using namespace Xbim::Common::Logging;
 
 namespace Xbim
 {
@@ -23,6 +24,7 @@ namespace Xbim
 		private:
 			TopoDS_Shell * pShell;
 			bool _hasCurvedEdges;
+			static ILogger^ Logger = LoggerFactory::GetLogger();
 		public:
 			XbimShell(IfcConnectedFaceSet^ faceSet);
 			XbimShell(IfcClosedShell^ shell);

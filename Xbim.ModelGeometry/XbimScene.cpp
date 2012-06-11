@@ -5,6 +5,8 @@
 using namespace System::IO;
 using namespace Xbim::IO;
 using namespace Xbim::ModelGeometry::Scene;
+using namespace Xbim::Common::Exceptions;
+
 namespace Xbim
 {
 	namespace ModelGeometry
@@ -21,6 +23,7 @@ namespace Xbim
 		XbimScene::XbimScene(IModel^ model)
 		{
 			Initialise();
+			Logger->Debug("Creating Geometry from IModel..."); 
 			 _graph = gcnew TransformGraph(model, this);
 			 _graph->AddProducts(model->IfcProducts->Items);
 			
@@ -41,26 +44,46 @@ namespace Xbim
 			}
 			catch(...)
 			{
+				Logger->Error("Failed to Reopen Scene");
 				return false;
 			}
 		}
 
 		XbimScene::XbimScene(String ^ ifcFileName,String ^ xBimFileName,String ^ xBimGeometryFileName, bool removeIfcGeometry, ProcessModel ^ processingDelegate)
 		{
+			ImportIfc(ifcFileName, xBimFileName, xBimGeometryFileName, removeIfcGeometry, processingDelegate);
+		}
+
+
+		/*Imports an Ifc file and creates an Xbim file, geometry is optionally removed*/
+		XbimScene::XbimScene(String ^ ifcFileName,String ^ xBimFileName,String ^ xBimGeometryFileName, bool removeIfcGeometry)
+		{
+			ImportIfc(ifcFileName, xBimFileName, xBimGeometryFileName, removeIfcGeometry, nullptr);
+		}
+
+		void XbimScene::ImportIfc(String ^ ifcFileName,String ^ xBimFileName,String ^ xBimGeometryFileName, bool removeIfcGeometry, 
+			ProcessModel ^ processingDelegate)
+		{
 			Initialise();
+
+			Logger->InfoFormat("Importing IFC model {0}.", ifcFileName);
 			
 			XbimFileModelServer^ model = gcnew XbimFileModelServer();
 			try
 			{
 				String^ tmpFileName = Path::GetTempFileName();
-				//create a binary file
+				//create a binary xbim file
+
 				if(removeIfcGeometry)
-					model->ImportIfc(ifcFileName, tmpFileName);
+					tmpFileName = model->ImportIfc(ifcFileName, tmpFileName);
 				else
-					model->ImportIfc(ifcFileName);
+					tmpFileName = model->ImportIfc(ifcFileName);
+
+				Logger->DebugFormat("Ifc parsed and generated XBIM file, {0}", tmpFileName);
 				_graph = gcnew TransformGraph(model, this);
 				//add everything with a representation
 				_graph->AddProducts(model->IfcProducts->Items);
+				Logger->Debug("Geometry Created. Saving GC file..."); 
 				_sceneStreamFileName = xBimGeometryFileName;
 				_sceneStream = gcnew FileStream(_sceneStreamFileName, FileMode::Create, FileAccess::ReadWrite);
 				BinaryWriter^ bw = gcnew BinaryWriter(_sceneStream);
@@ -69,10 +92,12 @@ namespace Xbim
 					bw->Flush();
 					Close();
 					ReOpen();
-					
 				}
+				Logger->DebugFormat("Geometry persisted to {0}", _sceneStreamFileName);
+
 				if(removeIfcGeometry)
 				{
+					Logger->Debug("Removing Geometry");
 					if(processingDelegate != nullptr)
 					{
 						processingDelegate->Invoke(model);
@@ -80,52 +105,19 @@ namespace Xbim
 					model->ExtractSemantic(xBimFileName);
 
 				}
-				
+				Logger->InfoFormat("Completed import of Ifc File {0}", ifcFileName);
+			}
+			catch(XbimGeometryException^ e)
+			{
+				String^ message = String::Format("A geometry error ocurred while importing Ifc File, {0}",e->Message);
+				Logger->Error(message, e);
+				throw;
 			}
 			catch(Exception^ e)
 			{
-				throw gcnew Exception(String::Format("Error importing Ifc File, {0}",e->Message), e);
-			}
-		}
-
-		/*Imports an Ifc file and creates an Xbim file, geometry is optionally removed*/
-		XbimScene::XbimScene(String ^ ifcFileName,String ^ xBimFileName,String ^ xBimGeometryFileName, bool removeIfcGeometry)
-		{
-
-			Initialise();
-			
-			XbimFileModelServer^ model = gcnew XbimFileModelServer();
-			try
-			{
-				String^ tmpFileName = Path::GetTempFileName();
-				//create a binary file
-				if(removeIfcGeometry)
-					model->ImportIfc(ifcFileName, tmpFileName, nullptr);
-				else
-					model->ImportIfc(ifcFileName);
-				_graph = gcnew TransformGraph(model, this);
-				//add everything with a representation
-				_graph->AddProducts(model->IfcProducts->Items);
-				_sceneStreamFileName = xBimGeometryFileName;
-				_sceneStream = gcnew FileStream(_sceneStreamFileName, FileMode::Create, FileAccess::ReadWrite);
-				BinaryWriter^ bw = gcnew BinaryWriter(_sceneStream);
-				{
-					_graph->Write(bw);
-					bw->Flush();
-					Close();
-					ReOpen();
-					
-				}
-				if(removeIfcGeometry)
-				{
-					model->ExtractSemantic(xBimFileName);
-
-				}
-				
-			}
-			catch(Exception^ e)
-			{
-				throw gcnew Exception(String::Format("Error importing Ifc File, {0}",e->Message));
+				String^ message = String::Format("An error ocurred while importing Ifc File, {0}",e->Message);
+				Logger->Error(message, e);
+				throw gcnew XbimGeometryException(message, e);
 			}
 		}
 
@@ -153,8 +145,10 @@ namespace Xbim
 				}
 				catch(Exception^ e)
 				{
-					System::Diagnostics::Debug::WriteLine(String::Format("Error Triangulating product geometry of entity {0}", product->EntityLabel));
-					System::Diagnostics::Debug::WriteLine(e->Message);
+					String^ message = String::Format("Error Triangulating product geometry of entity {0} - {1}", 
+						product->EntityLabel,
+						product->ToString());
+					Logger->Warn(message, e);
 				}
 			}
 

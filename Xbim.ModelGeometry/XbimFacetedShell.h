@@ -4,6 +4,7 @@
 
 using namespace Xbim::Ifc::GeometryResource;
 using namespace Xbim::Ifc::TopologyResource;
+using namespace Xbim::Common::Logging;
 namespace Xbim
 {
 	namespace ModelGeometry
@@ -13,7 +14,7 @@ namespace Xbim
 		private:
 			IfcConnectedFaceSet^ _faceSet;
 			XbimBoundingBox^ _boundingBox;
-
+			static ILogger^ Logger = LoggerFactory::GetLogger();
 			
 		public:
 

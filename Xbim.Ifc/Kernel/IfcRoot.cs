@@ -108,7 +108,7 @@ namespace Xbim.Ifc.Kernel
         /// <summary>
         ///   Assignment of a globally unique identifier within the entire software world
         /// </summary>
-        [IfcAttribute(1, IfcAttributeState.Mandatory) /*, IfcPrimaryIndex*/]
+        [IfcAttribute(1, IfcAttributeState.Mandatory)]
         public IfcGloballyUniqueId GlobalId
         {
             get
@@ -195,8 +195,7 @@ namespace Xbim.Ifc.Kernel
                     _description = value.StringVal;
                     break;
                 default:
-                    throw new Exception(string.Format("Attribute index {0} is out of range for {1}", propIndex + 1,
-                                                      this.GetType().Name.ToUpper()));
+                    this.HandleUnexpectedAttribute(propIndex, value); break;
             }
         }
 

@@ -114,6 +114,7 @@ namespace Xbim.Ifc.MeasureResource
             set { ModelManager.SetModelValue(this, ref _unitType, value, v => UnitType = v, "UnitType"); }
         }
 
+       
 
         public virtual void IfcParse(int propIndex, IPropertyValue value)
         {
@@ -126,8 +127,7 @@ namespace Xbim.Ifc.MeasureResource
                     _unitType = (IfcUnitEnum) Enum.Parse(typeof (IfcUnitEnum), value.EnumVal, true);
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException(string.Format("P21 index value out of range in {0}",
-                                                                        this.GetType().Name));
+                    this.HandleUnexpectedAttribute(propIndex, value); break;
             }
         }
 

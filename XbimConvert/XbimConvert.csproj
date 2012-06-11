@@ -11,7 +11,8 @@
     <RootNamespace>XbimConvert</RootNamespace>
     <AssemblyName>XbimConvert</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
     <SccProjectName>SAK</SccProjectName>
     <SccLocalPath>SAK</SccLocalPath>
@@ -72,6 +73,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="Munkerud.IFC">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

@@ -186,8 +186,7 @@ namespace Xbim.Ifc.MaterialResource
                     _offsetFromReferenceLine = value.RealVal;
                     break;
                 default:
-                    throw new Exception(string.Format("Attribute index {0} is out of range for {1}", propIndex + 1,
-                                                      this.GetType().Name.ToUpper()));
+                    this.HandleUnexpectedAttribute(propIndex, value); break;
             }
         }
 
@@ -250,7 +249,7 @@ namespace Xbim.Ifc.MaterialResource
 
         public string Name
         {
-            get { return _forLayerSet != null ? _forLayerSet.Name : ""; }
+            get { return ForLayerSet != null ? ForLayerSet.Name : ""; }
         }
 
         #endregion

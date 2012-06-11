@@ -98,8 +98,7 @@ namespace Xbim.Ifc.ProductExtension
                     _tag = value.StringVal;
                     break;
                 default:
-                    throw new Exception(string.Format("Attribute index {0} is out of range for {1}", propIndex + 1,
-                                                      this.GetType().Name.ToUpper()));
+                    this.HandleUnexpectedAttribute(propIndex, value); break;
             }
         }
 
@@ -276,7 +275,7 @@ namespace Xbim.Ifc.ProductExtension
         public override string ToString()
         {
             //return string.Format("{0} - {1}{2}", this.Tag.HasValue?this.Tag.Value.ToString():"", this.GetType().Name, Name == null ? "" : " - " + Name);
-            return this.GetType().Name;
+            return (Name.HasValue) ? Name.ToString() :this.GetType().Name;
         }
     }
 }

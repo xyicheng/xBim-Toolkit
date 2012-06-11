@@ -5,6 +5,7 @@ using namespace System::IO;
 using namespace Xbim::ModelGeometry::Scene;
 using namespace Xbim::Ifc::Kernel;
 using namespace Xbim::XbimExtensions;
+using namespace Xbim::Common::Logging;
 namespace Xbim
 {
 	namespace ModelGeometry
@@ -17,6 +18,9 @@ namespace Xbim
 			TransformGraph^ _graph;
 			Stream^ _sceneStream;
 			String^ _sceneStreamFileName;
+			static ILogger^ Logger = LoggerFactory::GetLogger();
+			void ImportIfc(String ^ ifcFileName,String ^ xBimFileName,String ^ xBimGeometryFileName, bool removeIfcGeometry, ProcessModel ^ processingDelegate);
+
 			void Initialise(void)
 			{
 				Standard::SetReentrant(Standard_True);
