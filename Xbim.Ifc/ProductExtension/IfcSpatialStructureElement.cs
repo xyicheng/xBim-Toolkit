@@ -80,7 +80,7 @@ namespace Xbim.Ifc.ProductExtension
 #endif
                 return _longName;
             }
-            set { ModelManager.SetModelValue(this, ref _longName, value, v => LongName = v, "LongName"); }
+            set { ModelManager.SetModelValue(this, ref _longName, value, v => _longName = v, "LongName"); }
         }
 
         /// <summary>
@@ -164,7 +164,7 @@ namespace Xbim.Ifc.ProductExtension
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _compositionType, value, v => CompositionType = v,
+                ModelManager.SetModelValue(this, ref _compositionType, value, v => _compositionType = v,
                                            "CompositionType");
             }
         }

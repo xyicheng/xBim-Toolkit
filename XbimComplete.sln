@@ -35,9 +35,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{B5EDEE
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.SceneJSWebViewer", "Xbim.Web.SceneJSWebViewer\Xbim.SceneJSWebViewer.csproj", "{219A127E-82B8-43A1-8959-7102E4724F8F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XbimConvert", "XbimConvert\XbimConvert.csproj", "{5B6AC153-AC56-4B01-8734-88EAB805A6DB}"
+EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 13
+		SccNumberOfProjects = 14
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://tfs.codeplex.com/tfs/tfs13
 		SccLocalPath0 = .
@@ -77,6 +79,9 @@ Global
 		SccProjectUniqueName12 = Xbim.Web.SceneJSWebViewer\\Xbim.SceneJSWebViewer.csproj
 		SccProjectName12 = Xbim.Web.SceneJSWebViewer
 		SccLocalPath12 = Xbim.Web.SceneJSWebViewer
+		SccProjectUniqueName13 = XbimConvert\\XbimConvert.csproj
+		SccProjectName13 = XbimConvert
+		SccLocalPath13 = XbimConvert
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -220,6 +225,16 @@ Global
 		{219A127E-82B8-43A1-8959-7102E4724F8F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{219A127E-82B8-43A1-8959-7102E4724F8F}.Release|x64.ActiveCfg = Release|Any CPU
 		{219A127E-82B8-43A1-8959-7102E4724F8F}.Release|x86.ActiveCfg = Release|Any CPU
+		{5B6AC153-AC56-4B01-8734-88EAB805A6DB}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{5B6AC153-AC56-4B01-8734-88EAB805A6DB}.Debug|x64.ActiveCfg = Debug|x64
+		{5B6AC153-AC56-4B01-8734-88EAB805A6DB}.Debug|x64.Build.0 = Debug|x64
+		{5B6AC153-AC56-4B01-8734-88EAB805A6DB}.Debug|x86.ActiveCfg = Debug|x86
+		{5B6AC153-AC56-4B01-8734-88EAB805A6DB}.Debug|x86.Build.0 = Debug|x86
+		{5B6AC153-AC56-4B01-8734-88EAB805A6DB}.Release|Any CPU.ActiveCfg = Release|x64
+		{5B6AC153-AC56-4B01-8734-88EAB805A6DB}.Release|x64.ActiveCfg = Release|x64
+		{5B6AC153-AC56-4B01-8734-88EAB805A6DB}.Release|x64.Build.0 = Release|x64
+		{5B6AC153-AC56-4B01-8734-88EAB805A6DB}.Release|x86.ActiveCfg = Release|x86
+		{5B6AC153-AC56-4B01-8734-88EAB805A6DB}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

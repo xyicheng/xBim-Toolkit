@@ -67,15 +67,15 @@ namespace Xbim.Ifc.ProductExtension
     {
         public IfcGrid()
         {
-            _uAxes = new XbimListUnique<GridAxis>(this);
-            _vAxes = new XbimListUnique<GridAxis>(this);
+            _uAxes = new XbimListUnique<IfcGridAxis>(this);
+            _vAxes = new XbimListUnique<IfcGridAxis>(this);
         }
 
         #region Fields
 
-        private XbimListUnique<GridAxis> _uAxes;
-        private XbimListUnique<GridAxis> _vAxes;
-        private XbimListUnique<GridAxis> _wAxes;
+        private XbimListUnique<IfcGridAxis> _uAxes;
+        private XbimListUnique<IfcGridAxis> _vAxes;
+        private XbimListUnique<IfcGridAxis> _wAxes;
 
         #endregion
 
@@ -83,7 +83,7 @@ namespace Xbim.Ifc.ProductExtension
         ///   List of grid axes defining the first row of grid lines.
         /// </summary>
         [IfcAttribute(8, IfcAttributeState.Mandatory, IfcAttributeType.ListUnique, IfcAttributeType.Class, 1)]
-        public XbimListUnique<GridAxis> UAxes
+        public XbimListUnique<IfcGridAxis> UAxes
         {
             get
             {
@@ -99,7 +99,7 @@ namespace Xbim.Ifc.ProductExtension
         ///   List of grid axes defining the second row of grid lines.
         /// </summary>
         [IfcAttribute(9, IfcAttributeState.Mandatory, IfcAttributeType.ListUnique, IfcAttributeType.Class, 1)]
-        public XbimListUnique<GridAxis> VAxes
+        public XbimListUnique<IfcGridAxis> VAxes
         {
             get
             {
@@ -115,7 +115,7 @@ namespace Xbim.Ifc.ProductExtension
         ///   Optional. List of grid axes defining the third row of grid lines. It may be given in the case of a triangular grid.
         /// </summary>
         [IfcAttribute(10, IfcAttributeState.Optional, IfcAttributeType.ListUnique, IfcAttributeType.Class, 1)]
-        public XbimListUnique<GridAxis> WAxes
+        public XbimListUnique<IfcGridAxis> WAxes
         {
             get
             {
@@ -141,14 +141,14 @@ namespace Xbim.Ifc.ProductExtension
                     base.IfcParse(propIndex, value);
                     break;
                 case 7:
-                    _uAxes.Add((GridAxis)value.EntityVal);
+                    _uAxes.Add((IfcGridAxis)value.EntityVal);
                     break;
                 case 8:
-                    _vAxes.Add((GridAxis)value.EntityVal);
+                    _vAxes.Add((IfcGridAxis)value.EntityVal);
                     break;
                 case 9:
-                    if (_wAxes == null) _wAxes = new XbimListUnique<GridAxis>(this);
-                    _wAxes.Add((GridAxis)value.EntityVal);
+                    if (_wAxes == null) _wAxes = new XbimListUnique<IfcGridAxis>(this);
+                    _wAxes.Add((IfcGridAxis)value.EntityVal);
                     break;
                 default:
                     this.HandleUnexpectedAttribute(propIndex, value); break;
