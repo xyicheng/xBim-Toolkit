@@ -52,7 +52,7 @@ namespace Xbim.Ifc.ProductExtension
 #endif
                 return _predefinedType;
             }
-            set { ModelManager.SetModelValue(this, ref _predefinedType, value, v => PredefinedType = v, "PredefinedType"); }
+            set { ModelManager.SetModelValue(this, ref _predefinedType, value, v => _predefinedType = v, "PredefinedType"); }
         }
 
         public override void IfcParse(int propIndex, IPropertyValue value)

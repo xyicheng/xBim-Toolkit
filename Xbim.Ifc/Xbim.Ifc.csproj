@@ -221,11 +221,11 @@
     <Compile Include="GeometricConstraintResource\IfcConnectionGeometry.cs" />
     <Compile Include="GeometricConstraintResource\IfcConnectionPointGeometry.cs" />
     <Compile Include="GeometricConstraintResource\IfcConnectionSurfaceGeometry.cs" />
-    <Compile Include="GeometricConstraintResource\GridAxis.cs" />
+    <Compile Include="GeometricConstraintResource\IfcGridAxis.cs" />
     <Compile Include="GeometricConstraintResource\IfcGridPlacement.cs" />
     <Compile Include="GeometricConstraintResource\IfcLocalPlacement.cs" />
     <Compile Include="GeometricConstraintResource\IfcObjectPlacement.cs" />
-    <Compile Include="GeometricConstraintResource\VirtualGridIntersection.cs" />
+    <Compile Include="GeometricConstraintResource\IfcVirtualGridIntersection.cs" />
     <Compile Include="GeometricModelResource\IfcBooleanClippingResult.cs" />
     <Compile Include="GeometricModelResource\IfcBooleanOperator.cs" />
     <Compile Include="GeometricModelResource\IfcBooleanResult.cs" />
