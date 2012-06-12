@@ -31,8 +31,7 @@ namespace Xbim.Ifc.MeasureResource
             if (propIndex == 0)
                 _theValue = value.BooleanVal;
             else
-                throw new Exception(string.Format("Attribute index {0} is out of range for {1}", propIndex + 1,
-                                                  this.GetType().Name.ToUpper()));
+                this.HandleUnexpectedAttribute(propIndex, value);
         }
 
         #endregion
@@ -56,7 +55,7 @@ namespace Xbim.Ifc.MeasureResource
 
         Type ExpressType.UnderlyingSystemType
         {
-            get { return _theValue.GetType(); }
+            get { return typeof(bool); }
         }
 
         public bool IsUnknown

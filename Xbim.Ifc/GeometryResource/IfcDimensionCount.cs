@@ -117,10 +117,9 @@ namespace Xbim.Ifc.GeometryResource
         public void IfcParse(int propIndex, IPropertyValue value)
         {
             if (propIndex == 0)
-                _theValue = (int) value.IntegerVal;
+                _theValue = (int)value.IntegerVal;
             else
-                throw new ArgumentOutOfRangeException(string.Format("P21 index value out of range in {0}",
-                                                                    this.GetType().Name));
+                this.HandleUnexpectedAttribute(propIndex, value);
         }
 
         #endregion

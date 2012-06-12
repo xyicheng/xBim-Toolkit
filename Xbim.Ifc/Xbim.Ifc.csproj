@@ -120,6 +120,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\SharedAssemblyInfo.cs">
+      <Link>Properties\SharedAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="ActorResource\IfcAddress.cs" />
     <Compile Include="ActorResource\IfcOrganizationRelationship.cs" />
     <Compile Include="ActorResource\IfcAddressType.cs" />
@@ -218,11 +221,11 @@
     <Compile Include="GeometricConstraintResource\IfcConnectionGeometry.cs" />
     <Compile Include="GeometricConstraintResource\IfcConnectionPointGeometry.cs" />
     <Compile Include="GeometricConstraintResource\IfcConnectionSurfaceGeometry.cs" />
-    <Compile Include="GeometricConstraintResource\GridAxis.cs" />
+    <Compile Include="GeometricConstraintResource\IfcGridAxis.cs" />
     <Compile Include="GeometricConstraintResource\IfcGridPlacement.cs" />
     <Compile Include="GeometricConstraintResource\IfcLocalPlacement.cs" />
     <Compile Include="GeometricConstraintResource\IfcObjectPlacement.cs" />
-    <Compile Include="GeometricConstraintResource\VirtualGridIntersection.cs" />
+    <Compile Include="GeometricConstraintResource\IfcVirtualGridIntersection.cs" />
     <Compile Include="GeometricModelResource\IfcBooleanClippingResult.cs" />
     <Compile Include="GeometricModelResource\IfcBooleanOperator.cs" />
     <Compile Include="GeometricModelResource\IfcBooleanResult.cs" />
@@ -1161,6 +1164,7 @@
     <Compile Include="XbimExtensions\IfcXmlReader.cs" />
     <Compile Include="XbimExtensions\IfcXmlWriter.cs" />
     <Compile Include="XbimExtensions\IFace.cs" />
+    <Compile Include="XbimExtensions\IIfcPersistExtensions.cs" />
     <Compile Include="XbimExtensions\IModel.cs" />
     <Compile Include="XbimExtensions\Interfaces\IIfcCartesianPoint.cs" />
     <Compile Include="XbimExtensions\Interfaces\IIfcClosedShell.cs" />
@@ -1684,7 +1688,12 @@
       <Install>true</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\Xbim.Common\Xbim.Common.csproj">
+      <Project>{6745F5AC-AF3C-4372-81AA-A75E7B1FA03B}</Project>
+      <Name>Xbim.Common</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

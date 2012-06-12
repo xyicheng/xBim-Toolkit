@@ -16,6 +16,7 @@ using System;
 using Xbim.Ifc.SelectTypes;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Parser;
+using System.Globalization;
 
 #endregion
 
@@ -63,15 +64,17 @@ namespace Xbim.Ifc.MeasureResource
 
         public static string AsPart21(double real)
         {
-            string str = real.ToString();
-            if (!str.Contains("."))
-            {
-                if (str.Contains("E"))
-                    str = str.Replace("E", ".E");
-                else
-                    str += ".";
-            }
-            return str;
+            return string.Format(new Part21Formatter(), "{0:R}", real);
+            ////string str = String.Format("{0:F16}", real);
+            //string str = real.ToString();
+            //if (!str.Contains("."))
+            //{
+            //    if (str.Contains("E"))
+            //        str = str.Replace("E", ".E");
+            //    else
+            //        str += ".";
+            //}
+            //return str;
         }
 
 
@@ -126,8 +129,7 @@ namespace Xbim.Ifc.MeasureResource
             if (propIndex == 0)
                 _theValue = value.RealVal;
             else
-                throw new Exception(string.Format("Attribute index {0} is out of range for {1}", propIndex + 1,
-                                                  this.GetType().Name.ToUpper()));
+                this.HandleUnexpectedAttribute(propIndex, value);
         }
 
         #endregion

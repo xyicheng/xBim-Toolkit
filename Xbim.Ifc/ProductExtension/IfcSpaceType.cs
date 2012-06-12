@@ -52,7 +52,7 @@ namespace Xbim.Ifc.ProductExtension
 #endif
                 return _predefinedType;
             }
-            set { ModelManager.SetModelValue(this, ref _predefinedType, value, v => PredefinedType = v, "PredefinedType"); }
+            set { ModelManager.SetModelValue(this, ref _predefinedType, value, v => _predefinedType = v, "PredefinedType"); }
         }
 
         public override void IfcParse(int propIndex, IPropertyValue value)
@@ -74,8 +74,7 @@ namespace Xbim.Ifc.ProductExtension
                     _predefinedType = (IfcSpaceTypeEnum) Enum.Parse(typeof (IfcSpaceTypeEnum), value.EnumVal, true);
                     break;
                 default:
-                    throw new Exception(string.Format("Attribute index {0} is out of range for {1}", propIndex + 1,
-                                                      this.GetType().Name.ToUpper()));
+                    this.HandleUnexpectedAttribute(propIndex, value); break;
             }
         }
 

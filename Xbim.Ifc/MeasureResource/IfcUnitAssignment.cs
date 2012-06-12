@@ -101,8 +101,7 @@ namespace Xbim.Ifc.MeasureResource
                 _units.Add((IfcUnit) value.EntityVal);
             }
             else
-                throw new ArgumentOutOfRangeException(string.Format("P21 index value out of range in {0}",
-                                                                    this.GetType().Name));
+                this.HandleUnexpectedAttribute(propIndex, value);
         }
 
         #endregion

@@ -25,8 +25,8 @@ namespace Xbim.Ifc.GeometricConstraintResource
     {
         #region Fields
 
-        private VirtualGridIntersection _placementLocation;
-        private VirtualGridIntersection _placementRefDirection;
+        private IfcVirtualGridIntersection _placementLocation;
+        private IfcVirtualGridIntersection _placementRefDirection;
 
         #endregion
 
@@ -36,7 +36,7 @@ namespace Xbim.Ifc.GeometricConstraintResource
         ///   A constraint on one or both ends of the path for an ExtrudedSolid
         /// </summary>
         [IfcAttribute(1, IfcAttributeState.Mandatory)]
-        public VirtualGridIntersection PlacementLocation
+        public IfcVirtualGridIntersection PlacementLocation
         {
             get
             {
@@ -57,7 +57,7 @@ namespace Xbim.Ifc.GeometricConstraintResource
         ///   Reference to a second grid axis intersection, which defines the orientation of the grid placement
         /// </summary>
         [IfcAttribute(2, IfcAttributeState.Optional)]
-        public VirtualGridIntersection PlacementRefDirection
+        public IfcVirtualGridIntersection PlacementRefDirection
         {
             get
             {
@@ -78,14 +78,13 @@ namespace Xbim.Ifc.GeometricConstraintResource
             switch (propIndex)
             {
                 case 0:
-                    _placementLocation = (VirtualGridIntersection) value.EntityVal;
+                    _placementLocation = (IfcVirtualGridIntersection) value.EntityVal;
                     break;
                 case 1:
-                    _placementRefDirection = (VirtualGridIntersection) value.EntityVal;
+                    _placementRefDirection = (IfcVirtualGridIntersection) value.EntityVal;
                     break;
                 default:
-                    throw new Exception(string.Format("Attribute index {0} is out of range for {1}", propIndex + 1,
-                                                      this.GetType().Name.ToUpper()));
+                    this.HandleUnexpectedAttribute(propIndex, value); break;
             }
         }
 

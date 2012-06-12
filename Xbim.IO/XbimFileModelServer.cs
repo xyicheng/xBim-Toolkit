@@ -140,12 +140,13 @@ namespace Xbim.IO
         public string ImportIfc(string filename, string xbimFilename, ReportProgressDelegate progress)
         {
             FileStream inputFile = null;
+            IfcInputStream input = null;
             try
             {
                 Dispose(); //clear up any issues from previous runs
                 inputFile = new FileStream(filename, FileMode.Open, FileAccess.Read);
                 //attach it to the Ifc Stream Parser
-                IfcInputStream input = new IfcInputStream(inputFile);
+                 input = new IfcInputStream(inputFile);
                 _stream = new FileStream(xbimFilename, FileMode.Create, FileAccess.ReadWrite);
 
                 int errors = input.Index(_stream, progress);
@@ -165,7 +166,7 @@ namespace Xbim.IO
             catch (Exception e)
             {
                 Dispose();
-                throw new Exception("Failed to import " + filename, e);
+                throw new Exception("Failed to import " + filename + "\n"+ input.ErrorLog.ToString(), e);
             }
             finally
             {
@@ -800,7 +801,7 @@ namespace Xbim.IO
                 entity = CreateEntity(entry.EntityLabel, entry.Type);
                 entry.Entity = entity;
             }
-            //ActivateEntity(entry, entity);
+            ActivateEntity(entry, entity);
             entity.Bind(this, posLabel);
             return entity;
         }

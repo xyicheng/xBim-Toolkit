@@ -65,7 +65,7 @@ namespace Xbim.Ifc.RepresentationResource
             get
             {
 #if SupportActivation
-                ((IPersistIfcEntity) this).Activate(false);
+                ((IPersistIfcEntity)this).Activate(false);
 #endif
                 return _parentContext.CoordinateSpaceDimension;
             }
@@ -85,7 +85,7 @@ namespace Xbim.Ifc.RepresentationResource
             get
             {
 #if SupportActivation
-                ((IPersistIfcEntity) this).Activate(false);
+                ((IPersistIfcEntity)this).Activate(false);
 #endif
                 if (_parentContext.Precision.HasValue)
                     return _parentContext.Precision;
@@ -104,7 +104,7 @@ namespace Xbim.Ifc.RepresentationResource
             get
             {
 #if SupportActivation
-                ((IPersistIfcEntity) this).Activate(false);
+                ((IPersistIfcEntity)this).Activate(false);
 #endif
                 return _parentContext.WorldCoordinateSystem;
             }
@@ -150,7 +150,7 @@ namespace Xbim.Ifc.RepresentationResource
             get
             {
 #if SupportActivation
-                ((IPersistIfcEntity) this).Activate(false);
+                ((IPersistIfcEntity)this).Activate(false);
 #endif
                 return _parentContext;
             }
@@ -172,7 +172,7 @@ namespace Xbim.Ifc.RepresentationResource
             get
             {
 #if SupportActivation
-                ((IPersistIfcEntity) this).Activate(false);
+                ((IPersistIfcEntity)this).Activate(false);
 #endif
                 return _targetScale;
             }
@@ -189,7 +189,7 @@ namespace Xbim.Ifc.RepresentationResource
             get
             {
 #if SupportActivation
-                ((IPersistIfcEntity) this).Activate(false);
+                ((IPersistIfcEntity)this).Activate(false);
 #endif
                 return _targetView;
             }
@@ -210,7 +210,7 @@ namespace Xbim.Ifc.RepresentationResource
             get
             {
 #if SupportActivation
-                ((IPersistIfcEntity) this).Activate(false);
+                ((IPersistIfcEntity)this).Activate(false);
 #endif
                 return _userDefinedTargetView;
             }
@@ -236,22 +236,21 @@ namespace Xbim.Ifc.RepresentationResource
                     base.IfcParse(propIndex, value);
                     break;
                 case 6:
-                    _parentContext = (IfcGeometricRepresentationContext) value.EntityVal;
+                    _parentContext = (IfcGeometricRepresentationContext)value.EntityVal;
                     break;
                 case 7:
                     _targetScale = value.RealVal;
                     break;
                 case 8:
                     _targetView =
-                        (IfcGeometricProjectionEnum) Enum.Parse(typeof (IfcGeometricProjectionEnum), value.EnumVal);
+                        (IfcGeometricProjectionEnum)Enum.Parse(typeof(IfcGeometricProjectionEnum), value.EnumVal, true);
                     break;
                 case 9:
                     _userDefinedTargetView = value.StringVal;
                     break;
 
                 default:
-                    throw new Exception(string.Format("Attribute index {0} is out of range for {1}", propIndex + 1,
-                                                      this.GetType().Name.ToUpper()));
+                    this.HandleUnexpectedAttribute(propIndex, value); break;
             }
         }
 

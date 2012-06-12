@@ -149,8 +149,7 @@ namespace Xbim.Ifc.ProcessExtensions
                     _priority = (int)value.IntegerVal;
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException(string.Format("P21 index value out of range in {0}",
-                                                                        this.GetType().Name));
+                    this.HandleUnexpectedAttribute(propIndex, value); break;
             }
         }
 

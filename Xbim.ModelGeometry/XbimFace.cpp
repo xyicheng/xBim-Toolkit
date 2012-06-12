@@ -52,7 +52,7 @@ namespace Xbim
 			else
 			{
 				Type ^ type = profile->GetType();
-				throw(gcnew Exception(String::Format("XbimFace. BuildFace of type {0} is not implemented",type->Name)));
+				throw(gcnew NotImplementedException(String::Format("XbimFace. BuildFace of type {0} is not implemented",type->Name)));
 			}
 		}
 
@@ -158,19 +158,19 @@ namespace Xbim
 			if(dynamic_cast<IfcPlane^>(surface))
 				return Build((IfcPlane^)surface, hasCurves);
 			else if(dynamic_cast<IfcSurfaceOfRevolution^>(surface))
-				throw(gcnew Exception("XbimFace. Support for SurfaceOfRevolution is not implemented"));
+				throw(gcnew NotImplementedException("XbimFace. Support for SurfaceOfRevolution is not implemented"));
 			else if(dynamic_cast<IfcSurfaceOfLinearExtrusion^>(surface))
-				throw(gcnew Exception("XbimFace. Support for SurfaceOfLinearExtrusion is not implemented"));
+				throw(gcnew NotImplementedException("XbimFace. Support for SurfaceOfLinearExtrusion is not implemented"));
 			else if(dynamic_cast<IfcCurveBoundedPlane^>(surface))
-				throw(gcnew Exception("XbimFace. Support for CurveBoundedPlane is not implemented"));
+				throw(gcnew NotImplementedException("XbimFace. Support for CurveBoundedPlane is not implemented"));
 			else if(dynamic_cast<IfcRectangularTrimmedSurface^>(surface))
-				throw(gcnew Exception("XbimFace. Support for RectangularTrimmedSurface is not implemented"));
+				throw(gcnew NotImplementedException("XbimFace. Support for RectangularTrimmedSurface is not implemented"));
 			else if(dynamic_cast<IfcBoundedSurface^>(surface))
-				throw(gcnew Exception("XbimFace. Support for BoundedSurface is not implemented"));
+				throw(gcnew NotImplementedException("XbimFace. Support for BoundedSurface is not implemented"));
 			else
 			{
 				Type ^ type = surface->GetType();
-				throw(gcnew Exception(String::Format("XbimFace. BuildFace of type {0} is not implemented",type->Name)));
+				throw(gcnew NotImplementedException(String::Format("XbimFace. BuildFace of type {0} is not implemented",type->Name)));
 			}
 
 		}
