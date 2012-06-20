@@ -206,6 +206,7 @@
     <Compile Include="FeatureElementSubtractionExtensions.cs" />
     <Compile Include="DistributionFlowElementExtensions.cs" />
     <Compile Include="GeometricRepresentationContextExtension.cs" />
+    <Compile Include="GeometryResourceExtensions.cs" />
     <Compile Include="GroupExtension.cs" />
     <Compile Include="ClassificationExtensions.cs" />
     <Compile Include="LocalTimeExtensions.cs" />

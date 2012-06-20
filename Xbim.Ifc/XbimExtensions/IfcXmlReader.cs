@@ -21,6 +21,9 @@ using System.Text.RegularExpressions;
 using Xbim.XbimExtensions.Parser;
 using Xbim.Ifc.MeasureResource;
 using System.Globalization;
+using System.Diagnostics;
+using System.IO;
+using System.Windows.Forms;
 
 #endregion
 
@@ -28,34 +31,41 @@ namespace Xbim.XbimExtensions
 {
     public class IfcXmlReader
     {
-        private static readonly Dictionary<string, Type> primitives;
-        private readonly Dictionary<long, IPersistIfcEntity> _instances = new Dictionary<long, IPersistIfcEntity>();
+        private static readonly Dictionary<string, IfcParserType> primitives;
+        private readonly HashSet<long> _instances = new HashSet<long>();
 
         static IfcXmlReader()
         {
-            primitives = new Dictionary<string, Type>();
-            primitives.Add("ex:double-wrapper", typeof (double));
-            primitives.Add("ex:long-wrapper", typeof (long));
-            primitives.Add("ex:string-wrapper", typeof (string));
-            primitives.Add("ex:integer-wrapper", typeof (int));
-            primitives.Add("ex:boolean-wrapper", typeof (bool));
-            primitives.Add("ex:logical-wrapper", typeof (bool?));
-            primitives.Add("ex:decimal-wrapper", typeof (double));
-            primitives.Add("ex:hexBinary-wrapper", typeof (int));
-            primitives.Add("ex:base64Binary-wrapper", typeof (int));
+            primitives = new Dictionary<string, IfcParserType>();
+            primitives.Add("ex:double-wrapper", IfcParserType.Real);
+            primitives.Add("ex:long-wrapper", IfcParserType.Integer);
+            primitives.Add("ex:string-wrapper", IfcParserType.String);
+            primitives.Add("ex:integer-wrapper", IfcParserType.Integer);
+            primitives.Add("ex:boolean-wrapper", IfcParserType.Boolean);
+            primitives.Add("ex:logical-wrapper", IfcParserType.Boolean);
+            primitives.Add("ex:decimal-wrapper", IfcParserType.Real);
+            primitives.Add("ex:hexBinary-wrapper", IfcParserType.HexaDecimal);
+            primitives.Add("ex:base64Binary-wrapper", IfcParserType.Entity);
+            primitives.Add(typeof(double).Name, IfcParserType.Real);
+            primitives.Add(typeof(long).Name, IfcParserType.Integer);
+            primitives.Add(typeof(string).Name, IfcParserType.String);
+            primitives.Add(typeof(int).Name, IfcParserType.Integer);
+            primitives.Add(typeof(bool).Name, IfcParserType.Boolean);
+            primitives.Add("Enum", IfcParserType.Enum);
         }
 
         private abstract class XmlNode
         {
             public readonly XmlNode Parent;
             public int? Position;
+            internal XmlNode()
+            {
 
+            }
             public XmlNode(XmlNode parent)
             {
                 Parent = parent;
             }
-
-            public abstract object Value { get; set; }
         }
 
         private class XmlEntity : XmlNode
@@ -68,47 +78,69 @@ namespace Xbim.XbimExtensions
                 Entity = ent;
             }
 
-            public override object Value
-            {
-                get { return Entity; }
-                set { Entity = (IPersistIfcEntity)value; }
-            }
         }
 
-        private class XmlValueType : XmlNode
+        private class XmlExpressType : XmlNode
         {
-            private object _value;
-
-            public override object Value
+            private string _value;
+            public string Value
             {
                 get { return _value; }
                 set { _value = value; }
             }
-
             public readonly Type Type;
 
-            public XmlValueType(XmlNode parent, Type type)
+            public XmlExpressType(XmlNode parent, Type type)
                 : base(parent)
             {
                 Type = type;
             }
         }
 
-        private class XmlPropertyValue : XmlNode
+        private class XmlBasicType : XmlNode
+        {
+            private string _value;
+
+
+            public string Value
+            {
+                get { return _value; }
+                set { _value = value; }
+            }
+
+            public readonly IfcParserType Type;
+
+            public XmlBasicType(XmlNode parent, IfcParserType type)
+                : base(parent)
+            {
+                Type = type;
+            }
+        }
+
+        private class XmlProperty : XmlNode
         {
             public readonly PropertyInfo Property;
+            public readonly int PropertyIndex;
 
-            public XmlPropertyValue(XmlNode parent, PropertyInfo prop)
+            public XmlProperty(XmlNode parent, PropertyInfo prop, int propIndex)
                 : base(parent)
             {
                 Property = prop;
+                PropertyIndex = propIndex;
             }
 
-
-            public override object Value
+            public void SetValue(string val, IfcParserType parserType)
             {
-                get { return Property.GetValue(((XmlEntity) Parent).Entity, null); }
-                set { Property.SetValue(((XmlEntity) Parent).Entity, value, null); }
+                PropertyValue propVal = new PropertyValue();
+                propVal.Init(val, parserType);
+                ((XmlEntity)Parent).Entity.IfcParse(PropertyIndex - 1, propVal);
+            }
+
+            public void SetValue(object o)
+            {
+                PropertyValue propVal = new PropertyValue();
+                propVal.Init(o);
+                ((XmlEntity)Parent).Entity.IfcParse(PropertyIndex - 1, propVal);
             }
         }
 
@@ -119,25 +151,40 @@ namespace Xbim.XbimExtensions
             Set
         }
 
-        private class XmlPropertyValueCollection : XmlNode
+        private class XmlUosCollection : XmlCollectionProperty
         {
-            public override object Value
+            public XmlUosCollection()
             {
-                get { throw new NotImplementedException(); }
-                set { throw new NotImplementedException(); }
             }
 
-            public XmlPropertyValueCollection(XmlNode parent, PropertyInfo prop)
+
+            internal override void SetCollection(IModel model, XmlReader reader)
+            {
+
+            }
+        }
+
+
+
+        private class XmlCollectionProperty : XmlNode
+        {
+            internal XmlCollectionProperty()
+            {
+
+            }
+
+            public XmlCollectionProperty(XmlNode parent, PropertyInfo prop, int propIndex)
                 : base(parent)
             {
                 Property = prop;
+                PropertyIndex = propIndex;
             }
 
             public readonly List<XmlNode> Entities = new List<XmlNode>();
             public readonly PropertyInfo Property;
             public CollectionType CType = CollectionType.Set;
-
-            private static int CompareNodes(XmlNode a, XmlNode b)
+            public readonly int PropertyIndex;
+            public static int CompareNodes(XmlNode a, XmlNode b)
             {
                 if (a.Position > b.Position)
                     return 1;
@@ -147,80 +194,30 @@ namespace Xbim.XbimExtensions
                     return 0;
             }
 
-            internal void SetCollection()
+            internal virtual void SetCollection(IModel model, XmlReader reader)
             {
-                try
+                switch (CType)
                 {
-                    if (Parent == null) //we are at UOS and there is no more to do
-                        return;
-                    object val = Property.GetValue(((XmlEntity) Parent).Entity, null);
-                    Type pt = Property.PropertyType;
-                    if (pt.IsGenericType && pt.GetGenericTypeDefinition().Equals(typeof (Nullable<>)) &&
-                        typeof (ExpressComplexType).IsAssignableFrom(Nullable.GetUnderlyingType(pt)))
-                        // We are dealing with a generic type that is nullable get underlying type    
-                    {
-                        val = Activator.CreateInstance(Nullable.GetUnderlyingType(pt), null);
-                        Property.SetValue(((XmlEntity) Parent).Entity, val, null);
+                    case CollectionType.List:
+                    case CollectionType.ListUnique:
                         Entities.Sort(CompareNodes);
-                        foreach (XmlNode item in Entities)
-                            if (item.Value != null) ((ExpressComplexType) val).Add(item.Value);
-                    }
-                    else
-                    {
-                        if (val == null) //we need to add to a list but one does not exist, create it
-                        {
-                            object[] param = new object[1];
-                            param[0] = ((XmlEntity)Parent).Entity;
-
-                            BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Instance;
-                            CultureInfo culture = null; // use InvariantCulture or other if you prefer
-                            val = Activator.CreateInstance(pt, flags, null, param, culture);
-
-                            
-                            //val = Activator.CreateInstance(pt, param);
-                            Property.SetValue(((XmlEntity) Parent).Entity, val, null);
-
-                            
-                        }
-                        if (val is ExpressEnumerable)
-                        {
-                            switch (CType)
-                            {
-                                case CollectionType.List:
-                                case CollectionType.ListUnique:
-                                    Entities.Sort(CompareNodes);
-                                    foreach (XmlNode item in Entities)
-                                        if (item.Value != null) ((ExpressEnumerable) val).Add(item.Value);
-                                    break;
-                                case CollectionType.Set:
-                                    foreach (XmlNode item in Entities)
-                                        if (item.Value != null) ((ExpressEnumerable) val).Add(item.Value);
-                                    break;
-                                default:
-                                    throw new Exception("Unknown list type, " + CType);
-                            }
-                        }
-                        else if (val is ExpressComplexType)
-                        {
-                            Entities.Sort(CompareNodes);
-                            foreach (XmlNode item in Entities)
-                                if (item.Value != null) ((ExpressComplexType) val).Add(item.Value);
-                        }
-                        else
-                            throw new Exception("Property is being treated as an enumerable but is not, " +
-                                                Property.Name);
-                    }
+                        break;
+                    case CollectionType.Set:
+                        break;
+                    default:
+                        throw new Exception("Unknown list type, " + CType);
                 }
-                catch (Exception e)
+                foreach (XmlNode item in Entities)
                 {
-                    throw new Exception("Error population collection " + Property.Name, e);
+
+                    //if (item.Value != null) SetValue(model, reader, item);
                 }
             }
         }
 
         private XmlNode _currentNode;
 
-        public int Read(XbimMemoryModel model, XmlReader input)
+        public int Read(IModel model, XmlReader input)
         {
             int errors = 0;
             // Read until end of file
@@ -231,401 +228,575 @@ namespace Xbim.XbimExtensions
                 {
                     case XmlNodeType.Element:
                         if (string.Compare(input.Name, "uos", true) == 0)
-                            _currentNode = new XmlPropertyValueCollection(null, null);
+                            _currentNode = new XmlUosCollection();
                         break;
                     default:
                         break;
                 }
             }
+
+            XmlNodeType prevInputType = XmlNodeType.None;
+            string prevInputName = "";
+
+            // set counter for start of every element that is not empty, and reduce it on every end of that element
+            int counter = 0;
+            // this will create id of each element
+            Dictionary<string, int> ids = new Dictionary<string, int>();
+
             while (input.Read())
             {
+                Application.DoEvents();
+
                 switch (input.NodeType)
                 {
                     case XmlNodeType.Element:
-                        StartElement(input, model);
+                        StartElement(model, input);
+                        if (!input.IsEmptyElement)
+                        {
+                            // save the id
+                            if (!String.IsNullOrEmpty(input.GetAttribute("id")))
+                            {
+                                ids.Add(GetId(input).ToString(), counter);
+                            }
+                            counter++;
+                        }
                         break;
                     case XmlNodeType.EndElement:
-                        EndElement(input);
+                        EndElement(model, input, prevInputType, prevInputName);
+                        counter--;
+                        foreach (KeyValuePair<string, int> item in ids)
+                        {
+                            if (item.Value == counter)
+                            {
+                                AppendToStream(null, Convert.ToInt64(item.Key));
+                                ids.Remove(item.Key);
+                                break;
+                            }
+                        }
                         break;
                     case XmlNodeType.Text:
-                        SetValue(input);
+                        SetValue(model, input);
                         break;
                     default:
                         break;
                 }
-            }
-            if (errors == 0)
-            {
-                foreach (var instance in _instances.Values)
-                {
-                    model.Instances.Add(instance);
+                prevInputType = input.NodeType;
+                prevInputName = input.Name;
+
+
+
                 }
-            }
+
+            //long highestId = 0;
+
+
             return errors;
         }
 
-        private void SetValue(XmlReader input)
+        public delegate void EventHandler(BinaryWriter br, long el);
+        public event EventHandler AppendToStream = delegate { };
+
+        private void StartElement(IModel model, XmlReader input)
         {
-            try
+            string elementName = input.Name;
+            //bool isRefType = false;
+            long id = GetId(input);
+
+            IfcType ifcType;
+            
+            IfcParserType parserType;
+            IfcMetaProperty prop;
+            int propIndex;
+
+
+            if (id > -1 && IsIfcEntity(elementName, out ifcType)) //we have an element which is an Ifc Entity
             {
-                //Debug.WriteLine("Value is " + input.Value);
-                XmlValueType vt = _currentNode as XmlValueType;
-                XmlPropertyValue pv = _currentNode as XmlPropertyValue;
-                if (vt == null && pv == null)
+                IPersistIfcEntity ent;
+                if (!_instances.Contains(id))
                 {
-                    throw new Exception("Trying to assign value to non-value type, value =  " + input.Value);
+                    // not been declared in a ref yet
+                    // model.New creates an instance uisng type and id
+                    ent = model.AddNew(ifcType, id);
+                    _instances.Add(id);
                 }
                 else
                 {
-                    Type t;
-                    if (pv == null)
-                        t = vt.Type;
-                    else
-                        t = pv.Property.PropertyType;
-                    object[] param = new object[1];
-                    param[0] = input.Value;
-                    object o;
-                    if (t.IsGenericType && t.GetGenericTypeDefinition().Equals(typeof (Nullable<>)))
-                        // We are dealing with a generic type that is nullable get underlying type
-                        t = Nullable.GetUnderlyingType(t);
-                    if (t.IsEnum)
-                        o = Enum.Parse(t, input.Value, true);
-                    
-                    else if (typeof(ExpressType).IsAssignableFrom(t))
-                    {
-                        ExpressType et = (ExpressType)(Activator.CreateInstance(t));
-                        //param[0] = (et.UnderlyingSystemType)input.Value;
-                        //dynamic d = Activator.CreateInstance(et.UnderlyingSystemType);
-                        param[0] = Convert.ChangeType(param[0], et.UnderlyingSystemType);
-
-                        o = Activator.CreateInstance(t, param);
-
-                        
-                    }
-                   
-                    else if (t == typeof(double))
-                        o = Convert.ToDouble(input.Value);
-                    else if (t == typeof(int))
-                        o = Convert.ToInt32(input.Value);
-                    else if (t == typeof(long))
-                        o = Convert.ToInt64(input.Value);
-                    else if (t == typeof(bool))
-                        o = Convert.ToBoolean(input.Value);
-                    else if (t == typeof(string))
-                        o = input.Value;
-                    else
-                        throw new Exception("Error converting Text to type, " + t.Name);
-                    if (vt == null)
-                        pv.Value = o;
-                    else
-                        vt.Value = o;
+                    ent = model.GetInstance(id);
                 }
-            }
-            catch (Exception e)
-            {
-                throw e;
-            }
-        }
+
+                XmlEntity xmlEnt = new XmlEntity(_currentNode, ent);
+                string pos = input.GetAttribute("pos");
+                if (!string.IsNullOrEmpty(pos))
+                    xmlEnt.Position = Convert.ToInt32(pos);
 
 
-        private void StartElement(XmlReader input, IModel model)
-        {
-            //Debug.Write(input.Name);
-            try
-            {
-                string strId = input.GetAttribute("id");
-                long id;
-
-                string inputName = input.Name;
-                if (inputName.Contains("-wrapper") && inputName.StartsWith("ex:") == false)
-                    inputName = input.Name.Substring(0, input.Name.LastIndexOf("-"));
-
-                if (!string.IsNullOrEmpty(strId)) //could be a property or a value type   
+                if (!input.IsEmptyElement)
+                    _currentNode = xmlEnt;
+                else if (_currentNode is XmlProperty)
                 {
-                    Match match =  Regex.Match(strId, @"\d+");
-                    if (!match.Success)
-                        throw new Exception(String.Format("Illegal entity id: {0}", strId));
-                    
-                    id = Convert.ToInt64(match.Value); 
+                    // if it is a ref then it will be empty element and wont have an end tag
+                    // so nither SetValue nor EndElement will be called, so set the value of ref here e.g. #3
+                    ((XmlProperty)(_currentNode)).SetValue(ent);
+                }
+                else if (_currentNode is XmlCollectionProperty && !(_currentNode.Parent is XmlUosCollection))
+                    ((XmlCollectionProperty)_currentNode).Entities.Add(xmlEnt);
+            }
+            else if (input.IsEmptyElement)
+            {
+                if (IsIfcProperty(elementName, out propIndex, out prop))
+                {
+                    XmlProperty node = new XmlProperty(_currentNode, prop.PropertyInfo, propIndex); ;
+                    PropertyValue propVal = new PropertyValue();
+                    Type t = node.Property.PropertyType;
 
-                    //Debug.Write(" is Instance, id = " + id);
-                    IfcType ifcType;
-                    if (IfcInstances.IfcTypeLookup.TryGetValue(input.Name.ToUpper(), out ifcType))
-                        //we have an IPersistIfc
+                    if (!typeof(ExpressEnumerable).IsAssignableFrom(t)) // if its a empty collection then dont do anything
                     {
-                        IPersistIfcEntity ent;
-                        if (!_instances.TryGetValue(id, out ent))
-                        {
-                            //not been declared in a ref yet
-                            ent = (IPersistIfcEntity) Activator.CreateInstance(ifcType.Type);
-                            ent.Bind(model, id);
-                            _instances.Add(id, ent);
-                        }
-                        XmlEntity xmlEnt = new XmlEntity(_currentNode, ent);
-                        string pos = input.GetAttribute("pos");
-                        if (!string.IsNullOrEmpty(pos))
-                            xmlEnt.Position = Convert.ToInt32(pos);
+                        if (t != null && t.IsGenericType && t.GetGenericTypeDefinition().Equals(typeof(Nullable<>)))
+                            t = Nullable.GetUnderlyingType(t);
+                        ExpressType et = null;
+                        if (t != null && typeof(ExpressType).IsAssignableFrom(t))
+                            et = (ExpressType)(Activator.CreateInstance(t));
 
-                        if (!input.IsEmptyElement) //trap in case endelement isn't called
-                            _currentNode = xmlEnt;
+                        IfcParserType pt;
+                        if (et != null)
+                            pt = primitives[et.UnderlyingSystemType.Name];
                         else
                         {
-                            if (_currentNode is XmlPropertyValue)
-                                (_currentNode).Value = ent;
-                            else if (_currentNode is XmlPropertyValueCollection)
-                                ((XmlPropertyValueCollection) _currentNode).Entities.Add(xmlEnt);
-                        }
-                    }
-                    else
-                        throw new Exception("Unexpected Element found " + input.Name);
-                }
-                else
-                {
-                    string strRefid = input.GetAttribute("ref");
-                    if (!string.IsNullOrEmpty(strRefid)) //it is a reference to an instance
-                    {
-                        Match match = Regex.Match(strRefid, @"\d+");
-                        if (!match.Success)
-                            throw new Exception(String.Format("Illegal entity refid: {0}", strRefid));
-
-                        long refid = Convert.ToInt64(match.Value); 
-
-                        //Debug.Write(" is a reference = " + refid);
-                        IPersistIfcEntity refEnt;
-                        if (!_instances.TryGetValue(refid, out refEnt))
-                        {
-                            //not declared yet
-                            IfcType ifcType;
-                            if (IfcInstances.IfcTypeLookup.TryGetValue(input.Name.ToUpper(), out ifcType))
-                                //we have an IPersistIfc
+                            if (t.IsEnum)
                             {
-                                refEnt = (IPersistIfcEntity) Activator.CreateInstance(ifcType.Type);
-                                refEnt.Bind(model, Convert.ToInt64(refid));
-                                _instances.Add(refid, refEnt);
+                                pt = IfcParserType.Enum;
                             }
                             else
-                                throw new Exception("Unexpected Element found " + input.Name);
+                                pt = primitives[t.Name];
                         }
-                        XmlEntity xmlEnt = new XmlEntity(_currentNode, refEnt);
-                        string pos = input.GetAttribute("pos");
-                        if (!string.IsNullOrEmpty(pos))
-                            xmlEnt.Position = Convert.ToInt32(pos);
 
-                        if (!input.IsEmptyElement) //trap in case endelement isn't called
-                            _currentNode = xmlEnt;
+                        if (pt.ToString().ToLower() == "string")
+                            propVal.Init("'" + input.Value + "'", pt);
                         else
                         {
-                            if (_currentNode is XmlPropertyValue)
-                                (_currentNode).Value = refEnt;
-                            else if (_currentNode is XmlPropertyValueCollection)
-                                ((XmlPropertyValueCollection) _currentNode).Entities.Add(xmlEnt);
+                            if (pt.ToString().ToLower() == "boolean")
+                                propVal.Init(Convert.ToBoolean(input.Value) ? ".T." : ".F", pt);
+                            else
+                                propVal.Init(input.Value, pt);
                         }
+                        ((XmlEntity)node.Parent).Entity.IfcParse(node.PropertyIndex - 1, propVal);
                     }
-                    else
+
+                }
+                else if (IsIfcType(elementName, out ifcType))
+                {
+                    IPersistIfc ent;
+                    object[] param = new object[1];
+                    param[0] = ""; // empty element
+                    ent = (IPersistIfc)Activator.CreateInstance(ifcType.Type, param);
+
+                    ((XmlProperty)_currentNode).SetValue(ent);
+                }
+
+                return;
+            }
+            else if (id == -1 && IsIfcProperty(elementName, out propIndex, out prop)) //we have an element which is a property
+            {
+
+                string cType = input.GetAttribute("ex:cType");
+
+                if (!string.IsNullOrEmpty(cType) && IsCollection(prop)) //the property is a collection
+                {
+                    XmlCollectionProperty xmlColl = new XmlCollectionProperty(_currentNode, prop.PropertyInfo, propIndex);
+                    switch (cType)
                     {
-                        IfcType ifcType;
-                        if (IfcInstances.IfcTypeLookup.TryGetValue(inputName.ToUpper(), out ifcType))
-                            //we have a value or an entity
-                        {
-                            if (typeof (ExpressType).IsAssignableFrom(ifcType.Type))
-                            {
-                                ////Debug.WriteLine(" is Value Type");
-                                XmlValueType xmlValt = new XmlValueType(_currentNode, ifcType.Type);
-                                string pos = input.GetAttribute("pos");
-                                if (!string.IsNullOrEmpty(pos))
-                                    xmlValt.Position = Convert.ToInt32(pos);
-                                if (!input.IsEmptyElement) _currentNode = xmlValt;
-                            }
-                            else //it is an entity with no ID or REFID
-                            {
-                                //not been declared in a ref yet
-                                IPersistIfcEntity ent = (IPersistIfcEntity) Activator.CreateInstance(ifcType.Type);
-                                XmlEntity xmlEnt = new XmlEntity(_currentNode, ent);
-                                string pos = input.GetAttribute("pos");
-                                if (!string.IsNullOrEmpty(pos))
-                                    xmlEnt.Position = Convert.ToInt32(pos);
-                                if (!input.IsEmptyElement) //trap in case endelement isn't called
-                                    _currentNode = xmlEnt;
-                                else
-                                {
-                                    if (_currentNode is XmlPropertyValue)
-                                        (_currentNode).Value = ent;
-                                    else if (_currentNode is XmlPropertyValueCollection)
-                                        ((XmlPropertyValueCollection) _currentNode).Entities.Add(xmlEnt);
-                                }
-                            }
-                        }
-                        else //we have a property, could be a value or a collection or an express basic type
-                        {
-                            Type basicType;
-                            if (primitives.TryGetValue(input.Name, out basicType)) //we have a basic type
-                            {
-                                //Debug.WriteLine(" is Basic Type " + basicType.Name);
-                                XmlValueType xmlValt = new XmlValueType(_currentNode, basicType);
-                                string pos = input.GetAttribute("pos");
-                                if (!string.IsNullOrEmpty(pos))
-                                    xmlValt.Position = Convert.ToInt32(pos);
-                                if (!input.IsEmptyElement) _currentNode = xmlValt;
-                            }
-                            else //we have a property
-                            {
-                                string cType = input.GetAttribute("ex:cType");
-                                if (string.IsNullOrEmpty(cType)) //we have a simple property
-                                {
-                                    //parent must contain the instance
-                                    if (_currentNode is XmlEntity)
-                                    {
-                                        if (!input.IsEmptyElement)
-                                        {
-                                            IfcType t = IfcInstances.IfcEntities[((XmlEntity) _currentNode).Entity];
+                        case "list":
+                            xmlColl.CType = CollectionType.List;
+                            break;
+                        case "list-unique":
+                            xmlColl.CType = CollectionType.ListUnique;
+                            break;
+                        case "set":
+                            xmlColl.CType = CollectionType.Set;
+                            break;
+                        default:
+                            break;
+                    }
 
-                                            foreach (KeyValuePair<int, IfcMetaProperty> p in t.IfcProperties)
-                                            {
-                                                if (p.Value.PropertyInfo.Name == input.Name)
-                                                    //this is the property to set
-                                                {
-                                                    Type ct = p.Value.PropertyInfo.PropertyType;
-                                                    if (ct.IsGenericType &&
-                                                        ct.GetGenericTypeDefinition().Equals(typeof (Nullable<>)) &&
-                                                        typeof (ExpressComplexType).IsAssignableFrom(
-                                                            Nullable.GetUnderlyingType(ct)))
-                                                        // We are dealing with a generic type that is nullable get underlying type    
-                                                    {
-                                                        XmlPropertyValueCollection xmlColl =
-                                                            new XmlPropertyValueCollection(_currentNode,
-                                                                                           p.Value.PropertyInfo);
-                                                        _currentNode = xmlColl;
-                                                        xmlColl.CType = CollectionType.List;
-                                                    }
-                                                    else
-                                                    {
-                                                        XmlPropertyValue xmlPropVal = new XmlPropertyValue(
-                                                            _currentNode, p.Value.PropertyInfo);
-                                                        _currentNode = xmlPropVal;
-                                                    }
-                                                    break;
-                                                }
-                                            }
-                                            if (!input.IsEmptyElement && !(_currentNode is XmlPropertyValue) &&
-                                                !(_currentNode is XmlPropertyValueCollection))
-                                                throw new Exception("Could not locate and bind property " + input.Name);
-                                        }
-                                    }
+                    _currentNode = xmlColl;
+                }
+                else //it is a simple value property;
+                {
 
-                                    else
-                                        throw new Exception("Failed to locate an instance to bind the property " +
-                                                            input.Name);
-                                }
-                                else //we have a collection
-                                {
-                                    //parent must contain the instance
-                                    if (_currentNode is XmlEntity)
-                                    {
-                                        IfcType t = IfcInstances.IfcEntities[((XmlEntity) _currentNode).Entity];
 
-                                        foreach (KeyValuePair<int, IfcMetaProperty> p in t.IfcProperties)
-                                        {
-                                            if (p.Value.PropertyInfo.Name == input.Name) //this is the property to set
-                                            {
-                                                Type pt = p.Value.PropertyInfo.PropertyType;
-                                                bool isNullable = pt.IsGenericType &&
-                                                                  pt.GetGenericTypeDefinition().Equals(
-                                                                      typeof (Nullable<>))
-                                                                  &&
-                                                                  typeof (ExpressComplexType).IsAssignableFrom(
-                                                                      Nullable.GetUnderlyingType(pt));
-                                                if (
-                                                    !(typeof (ExpressEnumerable).IsAssignableFrom(pt) ||
-                                                      typeof (ExpressComplexType).IsAssignableFrom(pt)
-                                                      || isNullable))
-                                                    throw new Exception("Property is not an Express Collection " +
-                                                                        input.Name);
-                                                if (!input.IsEmptyElement)
-                                                {
-                                                    XmlPropertyValueCollection xmlColl =
-                                                        new XmlPropertyValueCollection(_currentNode,
-                                                                                       p.Value.PropertyInfo);
-                                                    _currentNode = xmlColl;
-                                                    switch (cType)
-                                                    {
-                                                        case "list":
-                                                            xmlColl.CType = CollectionType.List;
-                                                            break;
-                                                        case "list-unique":
-                                                            xmlColl.CType = CollectionType.ListUnique;
-                                                            break;
-                                                        case "set":
-                                                            xmlColl.CType = CollectionType.Set;
-                                                            break;
-                                                        default:
-                                                            break;
-                                                    }
-                                                }
-                                                break;
-                                            }
-                                        }
-                                        if (!input.IsEmptyElement && !(_currentNode is XmlPropertyValueCollection))
-                                            throw new Exception("Could not locate and bind property " + input.Name);
-                                    }
-                                    else
-                                        throw new Exception("Failed to locate an instance to bind the property " +
-                                                            input.Name);
-                                }
-                            }
-                        }
+                    // its parent can be a collection, if yes then this property needs to be added to parent
+                    XmlNode n = new XmlProperty(_currentNode, prop.PropertyInfo, propIndex);
+                    if (_currentNode is XmlCollectionProperty && !(_currentNode.Parent is XmlUosCollection))
+                        ((XmlCollectionProperty)_currentNode).Entities.Add(n);
+
+                    if (!input.IsEmptyElement) _currentNode = n;
+                }
+            }
+            else if (id == -1 && IsIfcType(elementName, out ifcType)) // we have an Ifc ExpressType
+            {
+
+
+                // its parent can be a collection, if yes then this property needs to be added to parent
+                XmlNode n = new XmlExpressType(_currentNode, ifcType.Type);
+                if (_currentNode is XmlCollectionProperty && !(_currentNode.Parent is XmlUosCollection))
+                    ((XmlCollectionProperty)_currentNode).Entities.Add(n);
+
+                if (!input.IsEmptyElement) _currentNode = n;
+            }
+            else if (id == -1 && IsPrimitiveType(elementName, out parserType)) // we have an basic type i.e. double, bool etc
+            {
+                // its parent can be a collection, if yes then this property needs to be added to parent
+                XmlNode n = new XmlBasicType(_currentNode, parserType);
+                if (_currentNode is XmlCollectionProperty && !(_currentNode.Parent is XmlUosCollection))
+                    ((XmlCollectionProperty)_currentNode).Entities.Add(n);
+
+                if (!input.IsEmptyElement) _currentNode = n;
+            }
+            else
+                throw new Exception("Illegal XML element tag");
+        }
+
+        private bool IsIfcProperty(string elementName, out int index, out IfcMetaProperty prop)
+        {
+            IfcType ifcType;
+            XmlEntity xmlEntity = _currentNode as XmlEntity;
+            if (xmlEntity != null && !IfcInstances.IfcTypeLookup.TryGetValue(elementName.ToUpper(), out ifcType))
+            {
+                IfcType t = IfcInstances.IfcEntities[xmlEntity.Entity];
+
+                foreach (KeyValuePair<int, IfcMetaProperty> p in t.IfcProperties)
+                {
+                    int propIndex = p.Key;
+                    if (p.Value.PropertyInfo.Name == elementName)
+                    //this is the property to set
+                    {
+                        prop = p.Value;
+                        index = p.Key;
+                        return true;
                     }
                 }
             }
-            catch (Exception e)
-            {
-                throw new Exception("Error reading IfcXml file at " + input.Name, e);
-            }
+            prop = null;
+            index = -1;
+            return false;
         }
 
-        private void EndElement(XmlReader input)
+        private bool IsCollection(IfcMetaProperty prop)
+        {
+            return typeof(ExpressEnumerable).IsAssignableFrom(prop.PropertyInfo.PropertyType);
+        }
+
+        private bool IsPrimitiveType(string elementName, out IfcParserType basicType)
+        {
+            return primitives.TryGetValue(elementName, out basicType); //we have a primitive type
+
+        }
+
+        private bool IsIfcType(string elementName, out IfcType ifcType)
+        {
+            bool ok = IfcInstances.IfcTypeLookup.TryGetValue(elementName.ToUpper(), out ifcType);
+            if (!ok)
+            {
+
+                if (elementName.Contains("-wrapper") && elementName.StartsWith("ex:") == false) // we have an inline type definition
+                {
+                    string inputName = elementName.Substring(0, elementName.LastIndexOf("-"));
+                    ok = IfcInstances.IfcTypeLookup.TryGetValue(inputName.ToUpper(), out ifcType);
+                }
+            }
+            return ok && typeof(ExpressType).IsAssignableFrom(ifcType.Type);
+        }
+
+        private long GetId(XmlReader input)
+        {
+            string strId = input.GetAttribute("id");
+            if (string.IsNullOrEmpty(strId))
+                strId = input.GetAttribute("ref");
+
+            if (!string.IsNullOrEmpty(strId)) //must be a new instance or a reference to an existing one  
+            {
+                // if we have id or refid then remove letters and get the number part
+                Match match = Regex.Match(strId, @"\d+");
+                if (!match.Success)
+                    throw new Exception(String.Format("Illegal entity id: {0}", strId));
+                return Convert.ToInt64(match.Value);
+            }
+            else
+                return -1;
+
+        }
+
+        private bool IsIfcEntity(string elementName, out IfcType ifcType)
+        {
+
+            return IfcInstances.IfcTypeLookup.TryGetValue(elementName.ToUpper(), out ifcType);
+        }
+
+        private void EndElement(IModel model, XmlReader input, XmlNodeType prevInputType, string prevInputName)
         {
             try
             {
-                //Debug.WriteLine("End " + input.Name);
-                if (_currentNode is XmlValueType) //assign value to parent property
+                // before end element, we need to deal with SetCollection
+                if (_currentNode is XmlCollectionProperty)
                 {
-                    if (_currentNode.Parent is XmlPropertyValue)
+                    // SetCollection will handle SetValue for Collection
+                    CollectionType CType = ((XmlCollectionProperty)_currentNode).CType;
+                    switch (CType)
                     {
-                        (_currentNode.Parent).Value = (_currentNode).Value;
+                        case CollectionType.List:
+                        case CollectionType.ListUnique:
+                            ((XmlCollectionProperty)_currentNode).Entities.Sort(XmlCollectionProperty.CompareNodes);
+                            break;
+                        case CollectionType.Set:
+                            break;
+                        default:
+                            throw new Exception("Unknown list type, " + CType);
                     }
-                    else if (_currentNode.Parent is XmlPropertyValueCollection)
+                    foreach (XmlNode item in ((XmlCollectionProperty)_currentNode).Entities)
                     {
-                        ((XmlPropertyValueCollection) _currentNode.Parent).Entities.Add(_currentNode);
+
+                        if (item is XmlEntity)
+                        {
+                            XmlEntity node = (XmlEntity)item;
+                            XmlEntity collectionOwner = item.Parent.Parent as XmlEntity;
+                            XmlCollectionProperty collection = item.Parent as XmlCollectionProperty; //the collection to add to;
+                            IPersistIfc ifcCollectionOwner = collectionOwner.Entity;
+                            PropertyValue pv = new PropertyValue();
+                            pv.Init(node.Entity);
+                            ifcCollectionOwner.IfcParse(collection.PropertyIndex - 1, pv);
+                        }
+
                     }
-                    else
-                        throw new Exception("Could not assign a value to a property, " + input.Name);
+
                 }
-                else if (_currentNode is XmlEntity) //assign entity to parent property
+                else if (_currentNode.Parent is XmlProperty)
                 {
-                    if (_currentNode.Parent is XmlPropertyValue)
+                    XmlProperty propNode = (XmlProperty)_currentNode.Parent;
+                    if (_currentNode is XmlEntity)
                     {
-                        (_currentNode.Parent).Value = ((XmlEntity) _currentNode).Entity;
+                        XmlEntity entityNode = (XmlEntity)_currentNode;
+                        propNode.SetValue(entityNode.Entity);
                     }
-                    else if (_currentNode.Parent is XmlPropertyValueCollection)
+                    else if (_currentNode is XmlExpressType)
                     {
-                        ((XmlPropertyValueCollection) _currentNode.Parent).Entities.Add(_currentNode);
+                        //create ExpressType, call ifcparse with propindex and object
+                        //((XmlProperty)_currentNode.Parent).SetValue((XmlExpressType)_currentNode);
+
+                        XmlExpressType expressNode = (XmlExpressType)_currentNode;
+                        if (expressNode.Type != propNode.Property.PropertyType)
+                        {
+                            //propNode.SetValue(expressNode);
+                            IfcType ifcType;
+                            if (IsIfcType(input.Name, out ifcType))
+                            //we have an IPersistIfc
+                            {
+                                IPersistIfc ent;
+                                object[] param = new object[1];
+                                param[0] = expressNode.Value;
+                                ent = (IPersistIfc)Activator.CreateInstance(ifcType.Type, param);
+
+                                propNode.SetValue(ent);
+                            }
+                        }
+                        else
+                        {
+                            propNode.SetValue(expressNode.Value, primitives[expressNode.Type.Name]);
+                        }
                     }
-                    else
-                        throw new Exception("Could not assing a entity to a property, " + input.Name);
-                }
-                else if (_currentNode is XmlPropertyValueCollection)
-                    //roll up all elements into the collection observing the order flag
-                {
-                    ((XmlPropertyValueCollection) _currentNode).SetCollection();
+                    else if (_currentNode is XmlBasicType)
+                    {
+                        //set PropertyValue to write type boolean, integer, call ifcparse with string
+
+                        XmlBasicType basicNode = (XmlBasicType)_currentNode;
+                        propNode.SetValue(basicNode.Value, basicNode.Type);
+                    }
                 }
 
-                if (_currentNode.Parent != null)
-                    _currentNode = _currentNode.Parent; //drop this node we have reached UOS
+
+                else if (prevInputType == XmlNodeType.Element && prevInputName == input.Name &&
+                    _currentNode is XmlProperty && _currentNode.Parent != null && _currentNode.Parent is XmlEntity)
+                {
+                    // WE SHOULDNT EXECUTE THE FOLLOWING CODE IF THIS PROPERTY ALREADY CALLED SETVALUE
+                    XmlProperty node = (XmlProperty)_currentNode;
+                    PropertyValue propVal = new PropertyValue();
+                    Type t = node.Property.PropertyType;
+                    if (t != null && t.IsGenericType && t.GetGenericTypeDefinition().Equals(typeof(Nullable<>)))
+                        t = Nullable.GetUnderlyingType(t);
+                    ExpressType et = null;
+                    if (t != null && typeof(ExpressType).IsAssignableFrom(t))
+                        et = (ExpressType)(Activator.CreateInstance(t));
+
+                    IfcParserType pt = IfcParserType.Undefined;
+                    if (et != null)
+                        pt = primitives[et.UnderlyingSystemType.Name];
+                    else
+                    {
+                        if (t.IsEnum)
+                        {
+                            pt = IfcParserType.Enum;
+                        }
+                        else if (primitives.ContainsKey(t.Name))
+                            pt = primitives[t.Name];
+                    }
+
+                    if (pt != IfcParserType.Undefined)
+                    {
+                        if (pt.ToString().ToLower() == "string")
+                            propVal.Init("'" + input.Value + "'", pt);
+                        else
+                        {
+                            if (pt.ToString().ToLower() == "boolean")
+                                propVal.Init(Convert.ToBoolean(input.Value) ? ".T." : ".F", pt);
+                            else
+                                propVal.Init(input.Value, pt);
+                        }
+
+                        ((XmlEntity)node.Parent).Entity.IfcParse(node.PropertyIndex - 1, propVal);
+                    }
+
+
+                }
+
+                else if (_currentNode.Parent is XmlCollectionProperty && !(_currentNode.Parent is XmlUosCollection))
+                {
+                    if (_currentNode is XmlEntity)
+                    {
+                        XmlEntity node = (XmlEntity)_currentNode;
+                        XmlEntity collectionOwner = _currentNode.Parent.Parent as XmlEntity;
+                        XmlCollectionProperty collection = _currentNode.Parent as XmlCollectionProperty; //the collection to add to;
+                        IPersistIfc ifcCollectionOwner = collectionOwner.Entity;
+                        PropertyValue pv = new PropertyValue();
+                        pv.Init(node.Entity);
+                        ifcCollectionOwner.IfcParse(collection.PropertyIndex - 1, pv);
+                    }
+                    else if (_currentNode is XmlExpressType)
+                    {
+                        XmlExpressType expressNode = (XmlExpressType)_currentNode;
+                        //actualEntityType is the actual type of the value to create
+                        Type actualEntityType = expressNode.Type;
+                        //Determine if the Express Type is a Nullable, if so get the type of the Nullable
+                        if (actualEntityType.IsGenericType && actualEntityType.GetGenericTypeDefinition().Equals(typeof(Nullable<>)))
+                            actualEntityType = Nullable.GetUnderlyingType(actualEntityType);
+                       
+                        //need to resolve what the Parser type is
+                        //if the generic type of the collection is different from the actualEntityType then we need to create an entity and call Ifc Parse
+                        //otherwise we need to call Ifcparse with a string value and the type of the underlying type
+                        XmlCollectionProperty collection = _currentNode.Parent as XmlCollectionProperty; //the collection to add to;
+                        Type collectionValueType = collection.Property.PropertyType;
+                        Type collectionGenericType = GetItemTypeFromGenericType(collectionValueType);;
+                        bool genericTypeIsSameAsValueType = (collectionGenericType == collectionValueType);
+                        PropertyValue pv = new PropertyValue();
+                        
+                        if (genericTypeIsSameAsValueType) //call IfcParse with string value and parser type
+                        {
+                            ExpressType actualEntityValue = (ExpressType)(Activator.CreateInstance(actualEntityType));
+                            //resolve the underlying type
+                            IfcParserType parserType = primitives[actualEntityValue.UnderlyingSystemType.Name];
+                            if (parserType == IfcParserType.String)
+                                pv.Init("'" + expressNode.Value + "'", parserType);
+                            else
+                                pv.Init(expressNode.Value, parserType);
+                        }
+                        else //call IfcParse with an entity
+                        {
+                            object[] param = new object[1];
+                            param[0] = expressNode.Value;
+                            ExpressType actualEntityValue = (ExpressType)(Activator.CreateInstance(expressNode.Type, param));
+                            pv.Init(actualEntityValue);
+                        }
+                        
+                        XmlEntity collectionOwner = _currentNode.Parent.Parent as XmlEntity; //go to owner of collection
+                        IPersistIfc ifcCollectionOwner = collectionOwner.Entity;
+                        ifcCollectionOwner.IfcParse(collection.PropertyIndex - 1, pv);
+                    }
+                    }
+                    else if (_currentNode is XmlBasicType)
+                    {
+                        XmlBasicType basicNode = (XmlBasicType)_currentNode;
+                        XmlEntity collectionOwner = _currentNode.Parent.Parent as XmlEntity;
+                        XmlCollectionProperty collection = _currentNode.Parent as XmlCollectionProperty; //the collection to add to;
+                        IPersistIfc ifcCollectionOwner = collectionOwner.Entity;
+                        PropertyValue pv = new PropertyValue();
+                        pv.Init(basicNode.Value, basicNode.Type);
+                        ifcCollectionOwner.IfcParse(collection.PropertyIndex - 1, pv);
+                    }
+
+
+                }
+
+                if (_currentNode.Parent != null) // we are not at UOS yet
+                    _currentNode = _currentNode.Parent;
+
+
             }
             catch (Exception e)
             {
                 throw new Exception("Error reading IfcXML data at node " + input.Name, e);
             }
         }
+
+
+
+        private void SetValue(IModel model, XmlReader input)
+        {
+            try
+            {
+                if (_currentNode is XmlExpressType)
+                {
+                    XmlExpressType node = (XmlExpressType)_currentNode;
+                    node.Value = input.Value;
+                }
+                else if (_currentNode is XmlBasicType)
+                {
+                    XmlBasicType node = (XmlBasicType)_currentNode;
+                    node.Value = input.Value;
+
+                }
+                else if (_currentNode is XmlProperty)
+                {
+                    XmlProperty node = (XmlProperty)_currentNode;
+                    PropertyValue propVal = new PropertyValue();
+                    Type t = node.Property.PropertyType;
+                    if (t != null && t.IsGenericType && t.GetGenericTypeDefinition().Equals(typeof(Nullable<>)))
+                        t = Nullable.GetUnderlyingType(t);
+                    ExpressType et = null;
+                    if (t != null && typeof(ExpressType).IsAssignableFrom(t))
+                        et = (ExpressType)(Activator.CreateInstance(t));
+
+                    IfcParserType pt;
+                    if (et != null)
+                        pt = primitives[et.UnderlyingSystemType.Name];
+                    else
+                    {
+                        if (t.IsEnum)
+                        {
+                            pt = IfcParserType.Enum;
+                        }
+                        else
+                            pt = primitives[t.Name];
+                    }
+
+                    if (pt.ToString().ToLower() == "string")
+                        propVal.Init("'" + input.Value + "'", pt);
+                    else
+                    {
+                        if (pt.ToString().ToLower() == "boolean")
+                            propVal.Init(Convert.ToBoolean(input.Value) ? ".T." : ".F", pt);
+                        else
+                            propVal.Init(input.Value, pt);
+                    }
+
+                    ((XmlEntity)node.Parent).Entity.IfcParse(node.PropertyIndex - 1, propVal);
+
+                }
+
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Error reading IfcXML data at node " + input.Name, e);
+            }
+        }
+
+
     }
 }
