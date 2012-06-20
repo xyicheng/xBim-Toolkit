@@ -84,6 +84,7 @@ namespace Xbim.XbimExtensions
                 output.WriteAttributeString("xsi", "schemaLocation", null,
                                             string.Format("{0} {1}", _iso10303urn, _exXSD));
 
+                _fileHeader = model.Header;
                 WriteISOHeader(output);
                 //Write out the uos
                 output.WriteStartElement("uos", _namespace);
@@ -160,7 +161,7 @@ namespace Xbim.XbimExtensions
             output.WriteEndElement(); //end iso_10303_28_header
         }
 
-        private void Write(IModel model, IPersistIfcEntity entity, XmlWriter output)
+        private void Write(IModel model, IPersistIfcEntity entity, XmlWriter output, int pos = -1)
         {
             long lbl = Math.Abs(entity.EntityLabel);
             if (_written.Contains(lbl)) //we have already done it
@@ -170,8 +171,12 @@ namespace Xbim.XbimExtensions
 
             IfcType ifcType = IfcInstances.IfcEntities[entity.GetType()];
             output.WriteStartElement(entity.GetType().Name);
+            
             //output.WriteAttributeString("id", string.Format("i{0}", nextId));
             output.WriteAttributeString("id", string.Format("i{0}", lbl));
+            if (pos > -1) //we are writing out a list element
+                output.WriteAttributeString("pos", pos.ToString());
+            
             IEnumerable<IfcMetaProperty> toWrite;
             if (WriteInverses)
             {
@@ -264,7 +269,9 @@ namespace Xbim.XbimExtensions
                         output.WriteValue((propVal).ToString());
                         output.WriteEndElement();
                     }
-                    else
+                    // if its nullable 
+                    //if (((ExpressType)propVal).ToPart21 != "$")
+                    else if (propVal.ToString() != null)
                         output.WriteElementString(propName, (propVal).ToString());
                 }
             }
@@ -308,7 +315,7 @@ namespace Xbim.XbimExtensions
                 }
                 else
                 {
-                    Write(model, (IPersistIfcEntity)propVal, output);
+                    Write(model, (IPersistIfcEntity)propVal, output, pos);
                 }
                 if (pos == -1) output.WriteEndElement();
             }

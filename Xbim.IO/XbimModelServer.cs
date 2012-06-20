@@ -261,6 +261,7 @@ namespace Xbim.IO
 
             internal void SetStringValue(string value)
             {
+         
                 _propertyValue.Init(value, IfcParserType.String);
                 SetEntityParameter();
             }
@@ -1365,7 +1366,7 @@ namespace Xbim.IO
                 else
                 {
                     entityWriter.Write('\'');
-                    entityWriter.Write((string)pVal);
+                    entityWriter.Write(IfcText.Escape((string)pVal));
                     entityWriter.Write('\'');
                 }
             }
@@ -1554,7 +1555,7 @@ namespace Xbim.IO
         /// <summary>
         /// Saves incremental changes to the model
         /// </summary>
-        public abstract void WriteChanges(Stream dataStream);
+        public abstract void WriteChanges(BinaryWriter dataStream);
         public abstract void MergeChanges(Stream dataStream);
 
 
@@ -1605,6 +1606,9 @@ namespace Xbim.IO
 
         public abstract string Open(string inputFileName);
         public abstract void Import(string inputFileName);
+
+
+        public abstract bool ContainsInstance(long entityLabel);
     }
 }
 

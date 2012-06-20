@@ -70,6 +70,7 @@ namespace Xbim.XbimExtensions
 
         bool Delete(IPersistIfcEntity instance);
         bool ContainsInstance(IPersistIfcEntity instance);
+        bool ContainsInstance(long entityLabel);
         IEnumerable<IPersistIfcEntity> Instances { get; }
         long InstancesCount { get; }
 

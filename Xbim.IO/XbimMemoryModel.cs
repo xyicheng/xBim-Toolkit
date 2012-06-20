@@ -117,6 +117,11 @@ namespace Xbim.IO
             return _ifcInstances.Contains(instance);
         }
 
+        public bool ContainsInstance(long entityLabel)
+        {
+            return _ifcInstances.ContainsInstance(entityLabel);
+        }
+
         /// <summary>
         ///   Creates an Ifc Persistent Instance from an entity name string, this is NOT an undoable operation
         /// </summary>
@@ -1244,7 +1249,7 @@ namespace Xbim.IO
                                 else if (fileName.ToLower().EndsWith(".ifcxml"))
                                 {
                                     ZipFile zf = new ZipFile(inputFileName);
-                                    XmlReaderSettings settings = new XmlReaderSettings() { IgnoreComments = true, IgnoreWhitespace = true };
+                                    XmlReaderSettings settings = new XmlReaderSettings() { IgnoreComments = true, IgnoreWhitespace = false };
                                     Stream entryStream = zf.GetInputStream(zs);
                                     using (XmlReader xmlReader = XmlReader.Create(entryStream, settings))
                                     {
@@ -1262,7 +1267,7 @@ namespace Xbim.IO
                 else if (fileType.HasFlag(XbimStorageType.IFCXML))
                 {
                     // input to be xml file, output will be xbim file
-                    XmlReaderSettings settings = new XmlReaderSettings() { IgnoreComments = true, IgnoreWhitespace = true };
+                    XmlReaderSettings settings = new XmlReaderSettings() { IgnoreComments = true, IgnoreWhitespace = false };
                     Stream xmlInStream = new FileStream(inputFileName, FileMode.Open, FileAccess.Read);
 
                     using (XmlReader xmlReader = XmlReader.Create(xmlInStream, settings))
@@ -1310,5 +1315,7 @@ namespace Xbim.IO
         {
             throw new NotImplementedException("Import functionality: not implemented yet");
         }
+
+
     }
 }

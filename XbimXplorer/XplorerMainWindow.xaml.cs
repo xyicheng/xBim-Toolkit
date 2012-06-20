@@ -230,7 +230,7 @@ namespace XbimXplorer
             BackgroundWorker worker = s as BackgroundWorker;
             string ifcFilename = args.Argument as string;
 
-            IModel model = new XbimMemoryModel();
+            IModel model = new XbimFileModelServer();
             try
             {
                 //attach it to the Ifc Stream Parser
@@ -261,7 +261,7 @@ namespace XbimXplorer
             ModelDataProvider modelProvider = ModelProvider;
             string fileName = args.Argument as string;
 
-            IModel m = new XbimMemoryModel();
+            IModel m = new XbimFileModelServer();
             try
             {
                 m.Open(fileName);
