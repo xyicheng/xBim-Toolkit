@@ -337,6 +337,16 @@ namespace Xbim.Ifc.GeometryResource
             ModelManager.SetModelValue(this, ref _z, z, v => _z = v, "Z");
         }
 
+        public bool IsInvalid()
+        {
+            if (Dim == 3)
+                return (_x == 0 && _y == 0 && _z == 0);
+            else if (Dim == 2)
+                return (_x == 0 && _y == 0);
+            else
+                return true;
+        }
+
         /// <summary>
         ///   Sets X and Y changes dimension to 2D
         /// </summary>

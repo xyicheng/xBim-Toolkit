@@ -13,7 +13,7 @@
 #include <BRepPrimAPI_MakePrism.hxx>
 #include <BRepBuilderAPI_MakeWire.hxx>
 #include <BRepPrimAPI_MakeRevol.hxx>
-
+#include <BRepOffsetAPI_MakePipeShell.hxx>
 #include <BRepAlgoAPI_Common.hxx>
 #include <BRepAlgoAPI_Cut.hxx>
 #include <BRepAlgoAPI_Fuse.hxx>
@@ -402,7 +402,26 @@ namespace Xbim
 
 		TopoDS_Solid XbimSolid::Build(IfcSurfaceCurveSweptAreaSolid^ repItem, bool% hasCurves)
 		{
-			throw(gcnew NotImplementedException("XbimSolid. Support for SurfaceCurveSweptAreaSolid is not implemented"));
+
+			TopoDS_Wire wire;
+			if(dynamic_cast<IfcArbitraryProfileDefWithVoids^>(repItem->SweptArea)) 
+				wire =  XbimFaceBound::Build((IfcArbitraryProfileDefWithVoids^)repItem->SweptArea, hasCurves);
+			else if(dynamic_cast<IfcArbitraryClosedProfileDef^>(repItem->SweptArea)) 
+				wire =  XbimFaceBound::Build((IfcArbitraryClosedProfileDef^)repItem->SweptArea, hasCurves);
+			else if(dynamic_cast<IfcRectangleProfileDef^>(repItem->SweptArea))
+				wire = XbimFaceBound::Build((IfcRectangleProfileDef^)repItem->SweptArea, hasCurves);	
+			else if(dynamic_cast<IfcCircleProfileDef^>(repItem->SweptArea))
+				wire = XbimFaceBound::Build((IfcCircleProfileDef^)repItem->SweptArea, hasCurves);	
+			else
+			{
+				Type ^ type = repItem->SweptArea->GetType();
+				throw(gcnew XbimGeometryException(String::Format("XbimSolid. Could not BuildShape of type {0}. It is not implemented",type->Name)));
+			}
+			TopoDS_Wire sweep = XbimFaceBound::Build(repItem->Directrix, hasCurves);
+			TopoDS_Face ref= XbimFace::Build((XbimrepItem->ReferenceSurface, hasCurves));
+			BRepBuilderAPI_MakeFace faceMaker(wire, ref);
+			BRepOffsetAPI_MakePipeShell pipeMaker(sweep);
+			pipeMaker.Add();
 		}
 
 

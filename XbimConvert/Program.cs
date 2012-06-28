@@ -7,13 +7,20 @@ using Xbim.ModelGeometry.Scene;
 using Xbim.ModelGeometry;
 
 using System.IO;
+using Xbim.Common.Logging;
+using Xbim.XbimExtensions;
+using Xbim.Ifc.Kernel;
 
 namespace XbimConvert
 {
+    
     class Program
     {
+        
         static void Main(string[] args)
         {
+            ILogger Logger = LoggerFactory.GetLogger();
+            Logger.Info("XbimConvert Started");
             if (args.Length < 1)
             {
                 Console.WriteLine("Invalid number of Parameters, filename required");
@@ -37,20 +44,22 @@ namespace XbimConvert
 
                 XbimFileModelServer model = new XbimFileModelServer();
                 //create a callback for progress
-
-                model.ImportIfc(ifcFileName,
-                    delegate(int percentProgress, object userState)
-                    {
-                        Console.Write(string.Format("{0:D2}% Converted",percentProgress));
-                        Console.SetCursorPosition(0, Console.CursorTop);
-                    }
-                    );
-                
+               
+                //model.ImportIfc(ifcFileName,
+                //    delegate(int percentProgress, object userState)
+                //    {
+                //        Console.Write(string.Format("{0:D2}% Converted",percentProgress));
+                //        Console.SetCursorPosition(0, Console.CursorTop);
+                //    }
+                //    );
+                model.Open(xbimFileName);
                 //now convert the geometry
                 XbimScene scene = new XbimScene(model);
                 TransformGraph graph = new TransformGraph(model, scene);
                 //add everything with a representation
-                graph.AddProducts(model.IfcProducts.Items);
+                List<IfcProduct> prods = new List<IfcProduct>();
+                prods.Add((IfcProduct) model.GetInstance(4984));
+                graph.AddProducts(prods);
 
                 using (FileStream sceneStream = new FileStream(xbimGeometryFileName, FileMode.Create, FileAccess.ReadWrite))
                 {

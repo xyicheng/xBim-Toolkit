@@ -127,6 +127,23 @@ void TesselateStream::BeginFace(const gp_Dir& normal)
 	*pCord = normal.Z(); _position += sizeof(double);
 
 }
+void TesselateStream::BeginFace(const double x, const double y, const double z)
+{
+	//reset polygon count
+	_polygonCount=0;
+	//write out space for number of polygons
+	_faceStart = _position;
+	_position += sizeof(unsigned short);
+	unsigned short * pCount = (unsigned short *)(_pDataStream + _position); _position += sizeof(unsigned short);
+	*pCount=1;
+	double* pCord = (double *)(_pDataStream + _position);
+	*pCord = x; _position += sizeof(double);
+	pCord = (double *)(_pDataStream + _position);
+	*pCord = y; _position += sizeof(double);
+	pCord = (double *)(_pDataStream + _position);
+	*pCord = z; _position += sizeof(double);
+
+}
 
 void TesselateStream::EndFace()
 {

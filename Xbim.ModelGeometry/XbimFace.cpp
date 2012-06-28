@@ -87,7 +87,7 @@ namespace Xbim
 		TopoDS_Face XbimFace::Build(IfcArbitraryClosedProfileDef ^ profile, bool% hasCurves)
 		{
 			BRepBuilderAPI_MakeFace faceBlder(XbimFaceBound::Build(profile, hasCurves));
-			BRepBuilderAPI_FaceError err = faceBlder.Error();
+			
 			return faceBlder.Face();
 
 		}

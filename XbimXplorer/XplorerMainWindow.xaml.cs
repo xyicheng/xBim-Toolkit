@@ -57,7 +57,7 @@ namespace XbimXplorer
             DrawingControl.SelectionChanged += new SelectionChangedEventHandler(DrawingControl_SelectionChanged);
             SpatialControl.SelectedItemChanged +=new RoutedPropertyChangedEventHandler<SpatialStructureTreeItem>(SpatialControl_SelectedItemChanged);
             DrawingControl.OnSetMaterial += new SetMaterialEventHandler(DrawingControl_OnSetMaterial);
-            //DrawingControl.OnSetFilter += new SetFilterEventHandler(DrawingControl_OnSetFilter);
+            DrawingControl.OnSetFilter += new SetFilterEventHandler(DrawingControl_OnSetFilter);
            
         }
 
@@ -76,17 +76,17 @@ namespace XbimXplorer
             switch (pass)
             {
                 case 1:
-                    return (p =>  p is IfcSlab);
-                case 2:
-                    return (p => p is IfcWall);
-                case 3:
-                    return (p => p is IfcRoof);
-                case 4:
-                    return (p => p is IfcWindow);
-                case 5:
-                    return (p => p is IfcDoor);
-                case 6:
-                    return (p => !(p is IfcDoor) && !(p is IfcWindow) && !(p is IfcRoof) && !(p is IfcWall) && !(p is IfcSlab) && !(p is IfcSpace) && !(p is IfcFeatureElement));
+                    return (p =>  p is IfcStair);
+                //case 2:
+                //    return (p => p is IfcWall);
+                //case 3:
+                //    return (p => p is IfcRoof);
+                //case 4:
+                //    return (p => p is IfcWindow);
+                //case 5:
+                //    return (p => p is IfcDoor);
+                //case 6:
+                //    return (p => !(p is IfcDoor) && !(p is IfcWindow) && !(p is IfcRoof) && !(p is IfcWall) && !(p is IfcSlab) && !(p is IfcSpace) && !(p is IfcFeatureElement));
                 default:
                     return null;
             }
