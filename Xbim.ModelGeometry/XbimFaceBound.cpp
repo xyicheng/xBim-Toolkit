@@ -8,6 +8,7 @@
 #include <BRepBuilderAPI_MakeWire.hxx>
 #include <GC_MakeArcOfCircle.hxx>
 #include <gp_Ax2.hxx>
+#include <gp_Ax3.hxx>
 #include <gp_Circ.hxx>
 #include <Geom_Circle.hxx>
 #include <GC_MakeCircle.hxx>
@@ -183,6 +184,10 @@ namespace Xbim
 				Type ^ type = bCurve->GetType();
 				throw(gcnew NotImplementedException(String::Format("XbimFaceBound::Build. BoundedCurve of type {0} is not implemented",type->Name)));	
 			}
+			if(!wire.IsDone())
+			{
+				System::Diagnostics::Debug::WriteLine(String::Format("Error processing entity #{0}",bCurve->EntityLabel));
+			}
 			return wire.Wire();
 
 		}
@@ -259,9 +264,13 @@ namespace Xbim
 				}
 				else if(dynamic_cast<IfcAxis2Placement3D^>(c->Position))
 				{
-					Type ^ type = c->Position->GetType();
-					throw(gcnew NotImplementedException(String::Format("XbimFaceBound. Circle with Placement of type {0} is not implemented",type->Name)));	
-				}
+					IfcAxis2Placement3D^ ax2 = (IfcAxis2Placement3D^)c->Position;
+					gp_Ax3 	gpax3 = XbimGeomPrim::ToAx3(ax2);		
+					gp_Circ gc(gpax3.Ax2(),c->Radius);
+
+					Handle(Geom_TrimmedCurve) aArcOfCircle = GC_MakeArcOfCircle(gc,gp_Pnt(start->X, start->Y,0), gp_Pnt(end->X, end->Y,0),tCurve->SenseAgreement);
+					TopoDS_Edge edge = BRepBuilderAPI_MakeEdge(aArcOfCircle);
+					wire.Add(edge);}
 				else
 				{
 					Type ^ type = c->Position->GetType();
@@ -308,6 +317,10 @@ namespace Xbim
 			{
 				Type ^ type = tCurve->BasisCurve->GetType();
 				throw(gcnew NotImplementedException(String::Format("XbimFaceBound. CompositeCurveSegments with BasisCurve of type {0} is not implemented",type->Name)));	
+			}
+			if(!wire.IsDone())
+			{
+				System::Diagnostics::Debug::WriteLine(String::Format("Error processing entity #{0}",tCurve->EntityLabel));
 			}
 			return wire.Wire();
 		}

@@ -19,6 +19,7 @@
 #include <BRepAlgoAPI_Fuse.hxx>
 #include <Standard_PrimitiveTypes.hxx>
 #include <BRepBuilderAPI_Transform.hxx>
+#include <BRepBuilderAPI_GTransform.hxx>
 #include <BRepBuilderAPI_FindPlane.hxx>
 #include <BRepAlgo_Section.hxx>
 #include <Geom_Plane.hxx>
@@ -90,16 +91,27 @@ namespace Xbim
 			*nativeHandle = TopoDS::Solid(sfs.SolidFromShell(shell));
 			_hasCurvedEdges = hasCurves;
 		};
+
 		XbimSolid::XbimSolid(XbimSolid^ solid, IfcAxis2Placement^ origin, IfcCartesianTransformationOperator^ transform, bool hasCurves)
 		{
 			TopoDS_Solid temp = *(((TopoDS_Solid*)solid->Handle));
 			nativeHandle = new TopoDS_Solid();
+			_hasCurvedEdges = solid->HasCurvedEdges;
 			if(origin!=nullptr)
 				temp.Move(XbimGeomPrim::ToLocation(origin));
 			if(transform!=nullptr)
 			{
-				BRepBuilderAPI_Transform gTran(temp,XbimGeomPrim::ToTransform(transform));
-				*nativeHandle =TopoDS::Solid( gTran.Shape());
+				if(dynamic_cast<IfcCartesianTransformationOperator3DnonUniform^>( transform))
+				{
+					BRepBuilderAPI_GTransform gTran(temp,XbimGeomPrim::ToTransform((IfcCartesianTransformationOperator3DnonUniform^)transform));
+					*nativeHandle =TopoDS::Solid( gTran.Shape());
+					
+				}
+				else
+				{
+					BRepBuilderAPI_Transform gTran(temp,XbimGeomPrim::ToTransform(transform));
+					*nativeHandle =TopoDS::Solid( gTran.Shape());
+				}
 			}
 			else
 				*nativeHandle = temp;
@@ -402,26 +414,42 @@ namespace Xbim
 
 		TopoDS_Solid XbimSolid::Build(IfcSurfaceCurveSweptAreaSolid^ repItem, bool% hasCurves)
 		{
-
-			TopoDS_Wire wire;
+			TopoDS_Wire profile;
 			if(dynamic_cast<IfcArbitraryProfileDefWithVoids^>(repItem->SweptArea)) 
-				wire =  XbimFaceBound::Build((IfcArbitraryProfileDefWithVoids^)repItem->SweptArea, hasCurves);
+				profile =  XbimFaceBound::Build((IfcArbitraryProfileDefWithVoids^)repItem->SweptArea, hasCurves);
 			else if(dynamic_cast<IfcArbitraryClosedProfileDef^>(repItem->SweptArea)) 
-				wire =  XbimFaceBound::Build((IfcArbitraryClosedProfileDef^)repItem->SweptArea, hasCurves);
+				profile =  XbimFaceBound::Build((IfcArbitraryClosedProfileDef^)repItem->SweptArea, hasCurves);
 			else if(dynamic_cast<IfcRectangleProfileDef^>(repItem->SweptArea))
-				wire = XbimFaceBound::Build((IfcRectangleProfileDef^)repItem->SweptArea, hasCurves);	
+				profile = XbimFaceBound::Build((IfcRectangleProfileDef^)repItem->SweptArea, hasCurves);	
 			else if(dynamic_cast<IfcCircleProfileDef^>(repItem->SweptArea))
-				wire = XbimFaceBound::Build((IfcCircleProfileDef^)repItem->SweptArea, hasCurves);	
+				profile = XbimFaceBound::Build((IfcCircleProfileDef^)repItem->SweptArea, hasCurves);	
 			else
 			{
 				Type ^ type = repItem->SweptArea->GetType();
-				throw(gcnew XbimGeometryException(String::Format("XbimSolid. Could not BuildShape of type {0}. It is not implemented",type->Name)));
+				Logger->WarnFormat(String::Format("XbimSolid. Could not BuildShape of type {0}. It is not implemented",type->Name));
+				return TopoDS_Solid();
 			}
+			profile.Move(XbimGeomPrim::ToLocation(repItem->Position));
 			TopoDS_Wire sweep = XbimFaceBound::Build(repItem->Directrix, hasCurves);
-			TopoDS_Face ref= XbimFace::Build((XbimrepItem->ReferenceSurface, hasCurves));
-			BRepBuilderAPI_MakeFace faceMaker(wire, ref);
+
 			BRepOffsetAPI_MakePipeShell pipeMaker(sweep);
-			pipeMaker.Add();
+			pipeMaker.Add(profile);
+			if(dynamic_cast<IfcPlane^>(repItem->ReferenceSurface))
+			{
+				IfcPlane^ ifcPlane = (IfcPlane^)repItem->ReferenceSurface;
+				gp_Ax3 ax3 = XbimGeomPrim::ToAx3(ifcPlane->Position);
+				pipeMaker.SetMode(ax3.Direction());
+			}
+			else
+				Logger->WarnFormat( "Entity #" + repItem->EntityLabel.ToString() + ", IfcSurfaceCurveSweptAreaSolid has a Non-Planar surface");
+			pipeMaker.Build();
+			if(pipeMaker.IsDone() && pipeMaker.MakeSolid())
+				return TopoDS::Solid(pipeMaker.Shape());
+			else
+			{
+				Logger->WarnFormat( "Entity #" + repItem->EntityLabel.ToString() + ", IfcSurfaceCurveSweptAreaSolid could not be constructed ");
+				return TopoDS_Solid();
+			}
 		}
 
 

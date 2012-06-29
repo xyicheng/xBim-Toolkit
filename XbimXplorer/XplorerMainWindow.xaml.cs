@@ -57,7 +57,7 @@ namespace XbimXplorer
             DrawingControl.SelectionChanged += new SelectionChangedEventHandler(DrawingControl_SelectionChanged);
             SpatialControl.SelectedItemChanged +=new RoutedPropertyChangedEventHandler<SpatialStructureTreeItem>(SpatialControl_SelectedItemChanged);
             DrawingControl.OnSetMaterial += new SetMaterialEventHandler(DrawingControl_OnSetMaterial);
-            DrawingControl.OnSetFilter += new SetFilterEventHandler(DrawingControl_OnSetFilter);
+            //DrawingControl.OnSetFilter += new SetFilterEventHandler(DrawingControl_OnSetFilter);
            
         }
 

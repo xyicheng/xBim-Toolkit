@@ -17,6 +17,7 @@ namespace Xbim
 
 		XbimScene::~XbimScene()
 		{
+			_maps = gcnew Dictionary<IfcRepresentation^, IXbimGeometryModel^>();
 		}
 
 
@@ -25,6 +26,7 @@ namespace Xbim
 			Initialise();
 			Logger->Debug("Creating Geometry from IModel..."); 
 			 _graph = gcnew TransformGraph(model, this);
+			 _maps = gcnew Dictionary<IfcRepresentation^, IXbimGeometryModel^>();
 			 _graph->AddProducts(model->IfcProducts->Items);
 			
 		}
@@ -69,6 +71,7 @@ namespace Xbim
 			Logger->InfoFormat("Importing IFC model {0}.", ifcFileName);
 			
 			XbimFileModelServer^ model = gcnew XbimFileModelServer();
+			_maps = gcnew Dictionary<IfcRepresentation^, IXbimGeometryModel^>();
 			try
 			{
 				String^ tmpFileName = Path::GetTempFileName();
@@ -134,7 +137,7 @@ namespace Xbim
 			{
 				try
 				{
-					IXbimGeometryModel^ geomModel = XbimGeometryModel::CreateFrom(product, false);
+					IXbimGeometryModel^ geomModel = XbimGeometryModel::CreateFrom(product, _maps, true);
 					if (geomModel != nullptr)  //it has no geometry
 					{
 						XbimTriangulatedModelStream^ tm = geomModel->Mesh(true);

@@ -6,6 +6,13 @@ set src=C:\OpenCASCADE6.5.3\ros\inc
 set target=G:\Documents\XbimCP\XbimFramework\Dev\OpenCascadeUpgrade\Xbim.ModelGeometry\OpenCascade\inc
 echo Copying from %src% to %target%
 pause
+
+copy %src%\Handle_Law_Function.hxx %target%
+copy %src%\Handle_BRepFill_PipeShell.hxx %target%
+copy %src%\BRepOffsetAPI_MakePipeShell.hxx %target%
+copy %src%\BRepBuilderAPI_TransitionMode.hxx %target%
+copy %src%\BRepBuilderAPI_PipeError.hxx %target%
+
 copy %src%\Adaptor3d_Curve.hxx %target%
 copy %src%\Adaptor3d_Surface.hxx %target%
 copy %src%\Adaptor3d_SurfacePtr.hxx %target% 

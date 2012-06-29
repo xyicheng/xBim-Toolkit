@@ -30,6 +30,8 @@ xcopy %src %\win32\vc10\lib\TKG2D.lib %target%\Xbim.ModelGeometry\OpenCascade\Wi
 xcopy %src %\win32\vc10\lib\TKGeomBase.lib %target%\Xbim.ModelGeometry\OpenCascade\Win32\lib /D
 xcopy %src %\win32\vc10\lib\TKShHealing.lib %target%\Xbim.ModelGeometry\OpenCascade\Win32\lib /D
 
+xcopy %src %\win32\vc10\lib\TKFillet.lib %target%\Xbim.ModelGeometry\OpenCascade\Win32\lib /D
+xcopy %src %\win32\vc10\lib\TKOffset.lib %target%\Xbim.ModelGeometry\OpenCascade\Win32\lib /D
 Echo Win64 Library Release files
 xcopy %src %\Win64\vc10\lib\TKBool.lib %target%\Xbim.ModelGeometry\OpenCascade\Win64\lib /D
 xcopy %src %\Win64\vc10\lib\TKernel.lib %target%\Xbim.ModelGeometry\OpenCascade\Win64\lib /D
@@ -46,6 +48,9 @@ xcopy %src %\Win64\vc10\lib\TKG2D.lib %target%\Xbim.ModelGeometry\OpenCascade\Wi
 xcopy %src %\Win64\vc10\lib\TKGeomBase.lib %target%\Xbim.ModelGeometry\OpenCascade\Win64\lib /D
 xcopy %src %\Win64\vc10\lib\TKShHealing.lib %target%\Xbim.ModelGeometry\OpenCascade\Win64\lib /D
 
+xcopy %src %\Win64\vc10\lib\TKFillet.lib %target%\Xbim.ModelGeometry\OpenCascade\Win64\lib /D
+xcopy %src %\Win64\vc10\lib\TKOffset.lib %target%\Xbim.ModelGeometry\OpenCascade\Win64\lib /D
+
 Echo Win32 Binary Release files
 xcopy %src %\win32\vc10\bin\TKBool.dll %target%\Xbim.ModelGeometry\OpenCascade\Win64\bin /D
 xcopy %src %\win32\vc10\bin\TKernel.dll %target%\Xbim.ModelGeometry\OpenCascade\Win64\bin /D
@@ -61,6 +66,9 @@ xcopy %src %\win32\vc10\bin\TKG2D.dll %target%\Xbim.ModelGeometry\OpenCascade\Wi
 xcopy %src %\win32\vc10\bin\TKGeomBase.dll %target%\Xbim.ModelGeometry\OpenCascade\Win64\bin /D
 xcopy %src %\win32\vc10\bin\TKShHealing.dll %target%\Xbim.ModelGeometry\OpenCascade\Win64\bin /D
 
+xcopy %src %\win32\vc10\bin\TKFillet.dll %target%\Xbim.ModelGeometry\OpenCascade\Win64\bin /D
+xcopy %src %\win32\vc10\bin\TKOffset.dll %target%\Xbim.ModelGeometry\OpenCascade\Win64\bin /D
+
 Echo Win64 Binary Release files
 xcopy %src %\Win64\vc10\bin\TKBool.dll %target%\Xbim.ModelGeometry\OpenCascade\Win64\bin /D
 xcopy %src %\Win64\vc10\bin\TKernel.dll %target%\Xbim.ModelGeometry\OpenCascade\Win64\bin /D
@@ -75,3 +83,6 @@ xcopy %src %\Win64\vc10\bin\TKG3D.dll %target%\Xbim.ModelGeometry\OpenCascade\Wi
 xcopy %src %\Win64\vc10\bin\TKG2D.dll %target%\Xbim.ModelGeometry\OpenCascade\Win64\bin /D
 xcopy %src %\Win64\vc10\bin\TKGeomBase.dll %target%\Xbim.ModelGeometry\OpenCascade\Win64\bin /D
 xcopy %src %\Win64\vc10\bin\TKShHealing.dll %target%\Xbim.ModelGeometry\OpenCascade\Win64\bin /D
+
+xcopy %src %\Win64\vc10\bin\TKFillet.dll %target%\Xbim.ModelGeometry\OpenCascade\Win64\bin /D
+xcopy %src %\Win64\vc10\bin\TKOffset.dll %target%\Xbim.ModelGeometry\OpenCascade\Win64\bin /D
