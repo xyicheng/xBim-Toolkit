@@ -42,7 +42,7 @@ namespace XbimConvert
                     delegate(int percentProgress, object userState)
                     {
                         Console.Write(string.Format("{0:D2}% Converted",percentProgress));
-                        Console.SetCursorPosition(0, Console.CursorTop);
+                        ResetCursor(Console.CursorTop);
                     }
                     );
                 
@@ -61,16 +61,31 @@ namespace XbimConvert
                 model.Close();
                 
                 watch.Stop();
-                Console.SetCursorPosition(0, Console.CursorTop + 1);
-                Console.WriteLine("Success. Processed in  " + watch.ElapsedMilliseconds + " ms");
+                ResetCursor(Console.CursorTop + 1);
+                Console.WriteLine("Success. Processed in " + watch.ElapsedMilliseconds + " ms");
                 Console.ReadKey();
             }
             catch (Exception e)
             {
-                Console.SetCursorPosition(0, Console.CursorTop+1);
+                ResetCursor(Console.CursorTop + 1);
                 Console.WriteLine(string.Format("Error converting {0}, {1}", ifcFileName, e.Message));
                 Console.ReadLine();
                 return;
+            }
+        }
+
+        private static void ResetCursor(int top)
+        {
+            try
+            {
+                // Can't reset outside of buffer
+                if (top >= Console.BufferHeight)
+                    return;
+                Console.SetCursorPosition(0, top);
+            }
+            catch(Exception e)
+            {
+                Console.WriteLine(e);
             }
         }
 
