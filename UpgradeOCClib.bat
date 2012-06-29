@@ -32,6 +32,7 @@ xcopy %src %\win32\vc10\lib\TKShHealing.lib %target%\Xbim.ModelGeometry\OpenCasc
 
 xcopy %src %\win32\vc10\lib\TKFillet.lib %target%\Xbim.ModelGeometry\OpenCascade\Win32\lib /D
 xcopy %src %\win32\vc10\lib\TKOffset.lib %target%\Xbim.ModelGeometry\OpenCascade\Win32\lib /D
+
 Echo Win64 Library Release files
 xcopy %src %\Win64\vc10\lib\TKBool.lib %target%\Xbim.ModelGeometry\OpenCascade\Win64\lib /D
 xcopy %src %\Win64\vc10\lib\TKernel.lib %target%\Xbim.ModelGeometry\OpenCascade\Win64\lib /D
