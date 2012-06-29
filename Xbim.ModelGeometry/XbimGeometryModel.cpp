@@ -34,6 +34,7 @@ using namespace Xbim::Ifc::ProductExtension;
 using namespace System::Linq;
 using namespace Xbim::IO;
 using namespace Xbim::Common::Exceptions;
+class Message_ProgressIndicator {};
 
 TesselateStream::TesselateStream( unsigned char* pDataStream, const TopTools_IndexedMapOfShape& points, unsigned short faceCount, int streamSize)
 {
