@@ -127,5 +127,15 @@ namespace Xbim.Common.Logging
 
         #endregion GetLogger
 
+        /// <summary>
+        /// Creates an EventTrace object that captures events from the underlying LoggingProvider using an in memory provider.
+        /// </summary>
+        /// <remarks>Currently only supported by the Log4Net provider.
+        /// The EventTrace class should be Disposed of as soon as possible to avoid excessive memory usage</remarks>
+        /// <returns>An EventTrace object</returns>
+        public static EventTrace CreateEventTrace()
+        {
+            return new EventTrace(LoggingProvider);
+        }
 	}
 }
