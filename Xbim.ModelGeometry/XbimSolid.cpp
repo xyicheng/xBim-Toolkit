@@ -380,11 +380,21 @@ namespace Xbim
 			else
 			{
 				Type ^ type = repItem->SweptArea->GetType();
-				throw(gcnew NotImplementedException(String::Format("XbimSolid. Could not BuildShape of type {0}. It is not implemented",type->Name)));
+				Logger->WarnFormat(String::Format("XbimSolid. Could not BuildShape of type {0}. It is not implemented",type->Name));
 			}
-			TopoDS_Solid solid = Build(face,repItem->ExtrudedDirection , repItem->Depth, hasCurves);
-			solid.Move(XbimGeomPrim::ToLocation(repItem->Position));
-			return  solid;
+			if(!face.IsNull())
+			{
+				TopoDS_Solid solid = Build(face,repItem->ExtrudedDirection , repItem->Depth, hasCurves);
+				solid.Move(XbimGeomPrim::ToLocation(repItem->Position));
+				return  solid;
+			}
+			else
+			{
+				Type ^ type = repItem->SweptArea->GetType();
+				Logger->WarnFormat(String::Format("XbimSolid. Could not build geometry for {0} = #{1}. The face definition is illegal",type->Name,
+					repItem->SweptArea->EntityLabel));
+				return TopoDS_Solid();
+			}
 		}
 
 
