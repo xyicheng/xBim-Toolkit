@@ -78,9 +78,18 @@ namespace XbimConvert
                 //now convert the geometry
                 XbimScene scene = new XbimScene(model);
                 TransformGraph graph = new TransformGraph(model, scene);
-                //add everything with a representation
-                graph.AddProducts(model.IfcProducts.Items);
-                //graph.AddProduct((IfcProduct)model.GetInstance(10942));
+                long processMe = 0;
+                if (args.Length > 1)processMe = Convert.ToInt64(args[1]);
+                if (processMe > 0)
+                {
+                    graph.AddProduct((IfcProduct)model.GetInstance(processMe));
+                }
+                else
+                {
+                    //add everything with a representation
+                    graph.AddProducts(model.IfcProducts.Items);
+                }
+                
                 using (FileStream sceneStream = new FileStream(xbimGeometryFileName, FileMode.Create, FileAccess.ReadWrite))
                 {
                     BinaryWriter bw = new BinaryWriter(sceneStream);
