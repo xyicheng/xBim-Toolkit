@@ -8,6 +8,7 @@
 using namespace Xbim::Ifc::GeometryResource;
 using namespace Xbim::Ifc::SelectTypes;
 using namespace System::Windows::Media::Media3D;
+using namespace Xbim::Common::Exceptions;
 namespace Xbim
 {
 	namespace ModelGeometry
@@ -33,7 +34,7 @@ namespace Xbim
 			// Converts an CartesianTransformationOperator3D into a gp_GTrsf
 			static gp_Trsf ToTransform(IfcCartesianTransformationOperator3D^ ct3D);
 			// Converts an CartesianTransformationOperator3DnonUniform into a gp_GTrsf
-			static gp_Trsf ToTransform(IfcCartesianTransformationOperator3DnonUniform^ ct3D);
+			static gp_GTrsf ToTransform(IfcCartesianTransformationOperator3DnonUniform^ ct3D);
 			// Converts an CartesianTransformationOperator2D into a gp_GTrsf
 			static gp_Trsf ToTransform(IfcCartesianTransformationOperator2D^ ct2D);
 			// Converts an Matrix3D into a gp_GTrsf

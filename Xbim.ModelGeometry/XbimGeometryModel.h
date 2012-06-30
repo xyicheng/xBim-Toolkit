@@ -29,6 +29,7 @@ using namespace Xbim::Common::Logging;
 			TesselateStream( unsigned char* pDataStream, unsigned short faceCount, unsigned int nodeCount, int streamSize);
 			TesselateStream( unsigned char* pDataStream,  int streamSize, int position);
 			void BeginFace(const gp_Dir& normal);
+			void BeginFace(const double x, const double y, const double z);
 			void EndFace();
 			void BeginPolygon(GLenum type);
 			void WritePoint(double x, double y, double z);

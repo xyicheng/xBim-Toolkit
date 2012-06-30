@@ -192,7 +192,13 @@ namespace Xbim
 				{
 
 					IfcDirection^ normal = ((IFace^)fc)->Normal;
-					vertexData.BeginFace(gp_Dir(normal->X, normal->Y, normal->Z));
+					//srl if an invalid normal is returned the face is not valid (sometimes a line or a point is defined) skip the face
+					/*if(normal->IsInvalid()) 
+					{
+						(*pFaceCount)--;
+						break;
+					}*/
+					vertexData.BeginFace(normal->X, normal->Y, normal->Z);
 					gluTessBeginPolygon(tess, &vertexData);
 					// go over each bound
 					for each (IfcFaceBound^ bound in fc->Bounds)

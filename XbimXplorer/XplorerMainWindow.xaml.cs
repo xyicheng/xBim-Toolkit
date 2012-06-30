@@ -76,7 +76,7 @@ namespace XbimXplorer
             switch (pass)
             {
                 case 1:
-                    return (p =>  p is IfcSlab);
+                    return (p => p is IfcSlab);
                 case 2:
                     return (p => p is IfcWall);
                 case 3:

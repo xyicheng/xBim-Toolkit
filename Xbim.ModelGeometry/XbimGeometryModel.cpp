@@ -9,10 +9,10 @@
 #include "XbimFacetedShell.h"
 #include "XbimMap.h"
 
-
+#include <BRepTools.hxx>
 #include <TopoDS_Shell.hxx>
 #include <TopoDS_Solid.hxx>
-#include <BRep_Builder.hxx>
+
 #include <BRepAlgoAPI_Cut.hxx>
 #include <BRepAlgoAPI_Fuse.hxx>
 #include <BRepAlgoAPI_Common.hxx>
@@ -34,6 +34,7 @@ using namespace Xbim::Ifc::ProductExtension;
 using namespace System::Linq;
 using namespace Xbim::IO;
 using namespace Xbim::Common::Exceptions;
+class Message_ProgressIndicator {};
 
 TesselateStream::TesselateStream( unsigned char* pDataStream, const TopTools_IndexedMapOfShape& points, unsigned short faceCount, int streamSize)
 {
@@ -125,6 +126,23 @@ void TesselateStream::BeginFace(const gp_Dir& normal)
 	*pCord = normal.Y(); _position += sizeof(double);
 	pCord = (double *)(_pDataStream + _position);
 	*pCord = normal.Z(); _position += sizeof(double);
+
+}
+void TesselateStream::BeginFace(const double x, const double y, const double z)
+{
+	//reset polygon count
+	_polygonCount=0;
+	//write out space for number of polygons
+	_faceStart = _position;
+	_position += sizeof(unsigned short);
+	unsigned short * pCount = (unsigned short *)(_pDataStream + _position); _position += sizeof(unsigned short);
+	*pCount=1;
+	double* pCord = (double *)(_pDataStream + _position);
+	*pCord = x; _position += sizeof(double);
+	pCord = (double *)(_pDataStream + _position);
+	*pCord = y; _position += sizeof(double);
+	pCord = (double *)(_pDataStream + _position);
+	*pCord = z; _position += sizeof(double);
 
 }
 
@@ -681,6 +699,7 @@ namespace Xbim
 				{
 					b.Add(shell, TopoDS::Face(fExp.Current()));
 				}
+				
 				ShapeFix_Shell shellFix(shell);
 				shellFix.Perform();
 				ShapeFix_Solid sfs;
