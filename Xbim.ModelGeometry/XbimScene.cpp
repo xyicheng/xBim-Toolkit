@@ -137,7 +137,7 @@ namespace Xbim
 			{
 				try
 				{
-					IXbimGeometryModel^ geomModel = XbimGeometryModel::CreateFrom(product, _maps, true);
+					IXbimGeometryModel^ geomModel = XbimGeometryModel::CreateFrom(product, _maps, false);
 					if (geomModel != nullptr)  //it has no geometry
 					{
 						XbimTriangulatedModelStream^ tm = geomModel->Mesh(true);

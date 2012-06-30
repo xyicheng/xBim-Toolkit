@@ -80,6 +80,7 @@ namespace XbimConvert
                 TransformGraph graph = new TransformGraph(model, scene);
                 //add everything with a representation
                 graph.AddProducts(model.IfcProducts.Items);
+                //graph.AddProduct((IfcProduct)model.GetInstance(10942));
                 using (FileStream sceneStream = new FileStream(xbimGeometryFileName, FileMode.Create, FileAccess.ReadWrite))
                 {
                     BinaryWriter bw = new BinaryWriter(sceneStream);
@@ -101,6 +102,21 @@ namespace XbimConvert
                 Console.WriteLine("Press any key to continue..."); 
                 Console.ReadLine();
                 return;
+            }
+        }
+
+        private static void ResetCursor(int top)
+        {
+            try
+            {
+                // Can't reset outside of buffer
+                if (top >= Console.BufferHeight)
+                    return;
+                Console.SetCursorPosition(0, top);
+            }
+            catch(Exception e)
+            {
+                Console.WriteLine(e);
             }
         }
 

@@ -5,7 +5,7 @@
 // Project:     Xbim.Ifc
 // Filename:    IfcSurfaceCurveSweptAreaSolid.cs
 // Published:   01, 2012
-// Last Edited: 18:12 PM on 06 06 2012
+// Last Edited: 18:12 PM on 28 06 2012
 // (See accompanying copyright.rtf)
 
 #endregion
