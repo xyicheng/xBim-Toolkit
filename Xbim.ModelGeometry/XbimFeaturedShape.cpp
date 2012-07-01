@@ -70,6 +70,7 @@ namespace Xbim
 					XbimBoundingBox^ bb = kvp->Key;
 					XbimBoundingBox^ basebb = mBaseShape->GetBoundingBox(false);
 					IXbimGeometryModel^ opening = kvp->Value;
+					
 					while(bb !=nullptr)
 					{
 						bbs->Remove(bb);
@@ -155,11 +156,11 @@ namespace Xbim
 							Logger->Warn("Failed to cut opening, most likely overlapping openings detected");
 						
 					}
-					if(shape2.ShapeType() == TopAbs_SOLID)
+					if(!shape2.IsNull() && shape2.ShapeType() == TopAbs_SOLID)
 						mResultShape = gcnew XbimSolid(TopoDS::Solid(shape2), HasCurvedEdges);
-					else if(shape2.ShapeType() == TopAbs_SHELL)	
+					else if(!shape2.IsNull() && shape2.ShapeType() == TopAbs_SHELL)	
 						mResultShape = gcnew XbimShell(TopoDS::Shell(shape2), HasCurvedEdges);
-					else if(shape2.ShapeType() == TopAbs_COMPOUND || shape2.ShapeType() == TopAbs_COMPSOLID)
+					else if(!shape2.IsNull() && (shape2.ShapeType() == TopAbs_COMPOUND || shape2.ShapeType() == TopAbs_COMPSOLID))
 					{
 						
 						for (TopExp_Explorer solidEx(shape2,TopAbs_SOLID) ; solidEx.More(); solidEx.Next())  

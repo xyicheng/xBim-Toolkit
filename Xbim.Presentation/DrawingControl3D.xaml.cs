@@ -565,7 +565,7 @@ namespace Xbim.Presentation
                 PerspectiveCamera pCam = Canvas.Camera as PerspectiveCamera;
                 if (pCam != null)
                 {
-                    ///TODO: put this back in
+                    //TODO: put this back in
                     //pCam.LookDirection = tg.PerspectiveCameraLookDirection;
                     //pCam.Position = tg.PerspectiveCameraPosition;
                     //pCam.UpDirection = tg.PerspectiveCameraUpDirection;
@@ -647,8 +647,8 @@ namespace Xbim.Presentation
                 IfcBuilding building = null;
                 IfcSite site = null;
                 double scaleFactor = 1;
-
-                double len = Math.Max(b.SizeX, b.SizeY)*1.2;
+                //srl use the X and Z component as these relate to the screen mapping after the rotation
+                double len = Math.Max(b.SizeX, b.SizeZ)*1.2;
                 //make this view 20% bigger than the widest part of the model
                 //calculate how far to move the canvas to be centred on 0,0
                 double xOffset = b.X + (b.SizeX/2);
@@ -691,6 +691,7 @@ namespace Xbim.Presentation
                     //    Ground.Transform = tg3d;
                     //}
                 }
+                
                 _viewSize = b;
                 Transform3DGroup t3d = new Transform3DGroup();
                 t3d.Children.Add(new TranslateTransform3D(-xOffset, -yOffset, -zOffset));
@@ -705,20 +706,13 @@ namespace Xbim.Presentation
 
                 if (pCam != null)
                 {
-                    //   pCam.Transform = t3d;
-
+                   
                     double dist = len*(aspect/(2*Math.Tan(pCam.FieldOfView*Math.PI/360)));
-                    // const double rotation = Math.PI * 30.0 / 180.0;
-                    //  pCam.Position = new Point3D(-dist * Math.Sin(rotation) , -dist * Math.Cos(rotation) , refHeight + 2);
-                    // pCam.Position = new Point3D(-dist  * scaleFactor, -dist  * scaleFactor, 0/* refHeight + 2*/);
-                    pCam.Position = new Point3D(-dist * scaleFactor/2, refHeight + 2, dist * scaleFactor /* refHeight + 2*/);
+                    pCam.Position = new Point3D(-dist * scaleFactor/2, refHeight + (2*scaleFactor), dist * scaleFactor /* refHeight + 2*/);
                     pCam.LookDirection =  new Vector3D(-pCam.Position.X, 0, -pCam.Position.Z);
                     pCam.LookDirection.Normalize();
                     pCam.UpDirection = new Vector3D(0, 1, 0);
-                    //tg.PerspectiveCameraPosition = pCam.Position;
-                    //tg.PerspectiveCameraLookDirection = pCam.LookDirection;
-                    //tg.PerspectiveCameraUpDirection = pCam.UpDirection;
-                    //tg.PerspectiveCameraFOV = pCam.FieldOfView;
+                   
                 }
                 OrthographicCamera orthoCam = Canvas.Camera as OrthographicCamera;
                 if (orthoCam != null)

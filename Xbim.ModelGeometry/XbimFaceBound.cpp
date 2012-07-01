@@ -67,7 +67,40 @@ namespace Xbim
 		// AK: Builds a wire from a composite IfcIShapeProfileDef
 		TopoDS_Wire XbimFaceBound::Build(IfcIShapeProfileDef ^ profile, bool% hasCurves)
 		{
-			throw(gcnew NotImplementedException(String::Format("XbimFaceBound. Could not BuildShape of type {0}. It is not implemented", "IfcIShapeProfileDef")));
+			double dX = profile->OverallWidth/2;
+			double dY = profile->OverallDepth/2;
+			double tF = profile->FlangeThickness;
+			double tW = profile->WebThickness;
+
+			gp_Pnt p0(0,0,0);
+			gp_Pnt p1(-dX,dY,0);
+			gp_Pnt p2(dX,dY,0);
+			gp_Pnt p3(dX,dY-tF,0);
+			gp_Pnt p4(tW/2,dY-tF,0);
+			gp_Pnt p5(tW/2,-dY+tF,0);
+			gp_Pnt p6(dX,-dY+tF,0);
+			gp_Pnt p7(dX,-dY,0);
+			gp_Pnt p8(-dX,-dY,0);
+			gp_Pnt p9(-dX,-dY+tF,0);
+			gp_Pnt p10(-tW/2,-dY+tF,0);
+			gp_Pnt p11(-tW/2,dY-tF,0);
+			gp_Pnt p12(-dX,dY-tF,0);
+			
+			BRepBuilderAPI_MakeWire wireMaker;
+
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p1,p2));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p2,p3));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p3,p4));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p4,p5));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p5,p6));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p6,p7));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p7,p8));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p8,p9));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p9,p10));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p10,p11));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p11,p12));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p12,p1));
+			return wireMaker.Wire();
 		}
 
 		//Builds a wire from a composite ArbitraryClosedProfileDef

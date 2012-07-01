@@ -15,6 +15,7 @@
 using System.Linq;
 using Xbim.Ifc.MeasureResource;
 using Xbim.XbimExtensions;
+using Xbim.Ifc.SelectTypes;
 
 #endregion
 
@@ -40,11 +41,19 @@ namespace Xbim.Ifc.Extensions
                 {
                     IfcMeasureWithUnit mu = cu.ConversionFactor;
                     IfcSIUnit uc = mu.UnitComponent as IfcSIUnit;
-
-                    if (mu.ValueComponent is IfcRatioMeasure && uc != null)
+                    //some BIM tools such as StruCAD write the conversion value out as a Length Measure
+                    if (uc != null)
                     {
-                        IfcRatioMeasure rm = (IfcRatioMeasure) mu.ValueComponent;
-                        return uc.Power()*(rm);
+                        ExpressType et = ((ExpressType)mu.ValueComponent);
+                        double cFactor = 1.0;
+                        if(et.UnderlyingSystemType==typeof(double))
+                            cFactor = (double) et.Value;
+                        else if(et.UnderlyingSystemType==typeof(int))
+                            cFactor = (double) ((int)et.Value);
+                        else if (et.UnderlyingSystemType == typeof(long))
+                            cFactor = (double)((long)et.Value);
+
+                        return uc.Power() * cFactor ;
                     }
                 }
             }
@@ -53,6 +62,7 @@ namespace Xbim.Ifc.Extensions
 
         public static double GetPower(this IfcUnitAssignment ua, IfcUnitEnum unitType)
         {
+           
             IfcSIUnit si = ua.Units.OfType<IfcSIUnit>().FirstOrDefault(u => u.UnitType == unitType);
             if (si != null && si.Prefix.HasValue)
                 return si.Power();
@@ -64,11 +74,19 @@ namespace Xbim.Ifc.Extensions
                 {
                     IfcMeasureWithUnit mu = cu.ConversionFactor;
                     IfcSIUnit uc = mu.UnitComponent as IfcSIUnit;
-
-                    if (mu.ValueComponent is IfcRatioMeasure && uc != null)
+                    //some BIM tools such as StruCAD write the conversion value out as a Length Measure
+                    if (uc != null)
                     {
-                        IfcRatioMeasure rm = (IfcRatioMeasure)mu.ValueComponent;
-                        return uc.Power() * (rm);
+                        ExpressType et = ((ExpressType)mu.ValueComponent);
+                        double cFactor = 1.0;
+                        if (et.UnderlyingSystemType == typeof(double))
+                            cFactor = (double)et.Value;
+                        else if (et.UnderlyingSystemType == typeof(int))
+                            cFactor = (double)((int)et.Value);
+                        else if (et.UnderlyingSystemType == typeof(long))
+                            cFactor = (double)((long)et.Value);
+
+                        return uc.Power() * cFactor;
                     }
                 }
             }
@@ -114,6 +132,14 @@ namespace Xbim.Ifc.Extensions
                                                                      s.Prefix = siUnitPrefix;
                                                                  }));
             }
+        }
+
+        public static IfcNamedUnit GetAreaUnit(this IfcUnitAssignment ua)
+        {
+            IfcNamedUnit nu = ua.Units.OfType<IfcSIUnit>().FirstOrDefault(u => u.UnitType == IfcUnitEnum.AREAUNIT);
+            if (nu == null)
+                nu = ua.Units.OfType<IfcConversionBasedUnit>().FirstOrDefault(u => u.UnitType == IfcUnitEnum.AREAUNIT);
+            return nu;
         }
 
         public static IfcNamedUnit GetVolumeUnit(this IfcUnitAssignment ua)
@@ -274,6 +300,7 @@ namespace Xbim.Ifc.Extensions
             return dimension;
         }
 
+      
         private static IfcDimensionalExponents GetAreaDimension(IModel model)
         {
             IfcDimensionalExponents dimension = model.New<IfcDimensionalExponents>();

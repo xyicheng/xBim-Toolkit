@@ -56,11 +56,11 @@ namespace XbimConvert
                         }
                         );
                 }
-                else if (string.Compare(fileName, ".xbim", true) == 0)
+                else if (string.Compare(fileType, ".xbim", true) == 0)
                 { 
                     model.Open(fileName);
                 }
-                else if (string.Compare(fileName, ".ifcxml", true) == 0)
+                else if (string.Compare(fileType, ".ifcxml", true) == 0)
                 {
                     model.ImportXml(fileName, xbimFileName);
                 }

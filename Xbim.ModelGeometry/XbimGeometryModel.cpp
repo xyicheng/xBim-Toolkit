@@ -269,11 +269,6 @@ namespace Xbim
 		{
 		}
 
-
-
-
-
-
 		/* Creates a 3D Model geometry for the product based upon the first "Body" ShapeRepresentation that can be found in  
 		Products.ProductRepresentation that is within the specified GeometricRepresentationContext, if the Representation 
 		context is null the first "Body" ShapeRepresentation is used. Returns null if their is no valid geometric definition
@@ -304,8 +299,9 @@ namespace Xbim
 							//check if we have openings or projections
 							IEnumerable<IfcRelProjectsElement^>^ projections = element->HasProjections;
 							IEnumerable<IfcRelVoidsElement^>^ openings = element->HasOpenings;
-							IfcRelVoidsElement^ voids = Enumerable::FirstOrDefault(openings);
-							if( voids !=nullptr || Enumerable::FirstOrDefault(projections) !=nullptr )
+							//srl optimisation openings and projects cannot have openings or projection so don't check for them
+							if( !dynamic_cast<IfcFeatureElement^>(product ) && 
+								( Enumerable::FirstOrDefault(openings) !=nullptr || Enumerable::FirstOrDefault(projections) !=nullptr ))
 							{
 								List<IXbimGeometryModel^>^ projectionSolids = gcnew List<IXbimGeometryModel^>();
 								List<IXbimGeometryModel^>^ openingSolids = gcnew List<IXbimGeometryModel^>();
@@ -347,6 +343,7 @@ namespace Xbim
 											openingSolids->Add(im);
 										}
 									}
+									
 								}
 								IXbimGeometryModel^ baseShape = CreateFrom(shape, maps, true);	
 								
@@ -519,14 +516,23 @@ namespace Xbim
 				}
 
 				//need to transform all the geometries as below
-				return CreateMap(mg, repMap->MappingOrigin, map->MappingTarget,maps, forceSolid);	
+				if(mg!=nullptr)
+					return CreateMap(mg, repMap->MappingOrigin, map->MappingTarget,maps, forceSolid);
+				else
+					return nullptr;
 
+			}
+			else if(dynamic_cast<IfcGeometricSet^>(repItem))
+			{
+				IfcGeometricSet^ gset = (IfcGeometricSet^) repItem;
+				Logger->Warn(String::Format("Support for IfcGeometricSet #{0} has not been implemented", Math::Abs(gset->EntityLabel)));
 			}
 			else
 			{
 				Type ^ type = repItem->GetType();
-				throw(gcnew NotImplementedException(String::Format("XbimGeometryModel. Could not Build Geometry, type {0} is not implemented",type->Name)));
+				Logger->Warn(String::Format("XbimGeometryModel. Could not Build Geometry #{0}, type {1} is not implemented",Math::Abs(repItem->EntityLabel), type->Name));
 			}
+			return nullptr;
 		}
 
 		IXbimGeometryModel^ XbimGeometryModel::CreateMap(IXbimGeometryModel^ item, IfcAxis2Placement^ origin, IfcCartesianTransformationOperator^ transform, Dictionary<IfcRepresentation^, IXbimGeometryModel^>^ maps, bool forceSolid)
