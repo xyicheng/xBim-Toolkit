@@ -238,7 +238,7 @@ namespace Xbim.Common.Logging.Providers
                           select new Event
                           {
                               EventTime = e.TimeStamp,
-                              EventLevel = e.Level.ToString(),
+                              EventLevel = (EventLevel)Enum.Parse(typeof(EventLevel), e.Level.ToString()),
                               Message = e.RenderedMessage,
                               User = e.Identity,
                               Logger = e.LoggerName,
