@@ -76,7 +76,7 @@ namespace Xbim.XbimExtensions.Parser
             set { _type = value; }
         }
 
-        private WeakReference _entityRef;
+        private IPersistIfcEntity _entityRef;
 
         /// <summary>
         ///   Drops an object from memory cache
@@ -90,27 +90,27 @@ namespace Xbim.XbimExtensions.Parser
         {
             get
             {
-                //return _entityRef;
+                return _entityRef;
 
-                if (_entityRef != null)
-                    return (IPersistIfcEntity)_entityRef.Target;
-                else if (_offset == 0 && _type != null)
-                //we have a newly created entity but it has been released by garbage collector
-                {
-                    IPersistIfcEntity newEntity = (IPersistIfcEntity)Activator.CreateInstance(_type);
-                    _entityRef = new WeakReference(newEntity);
-                    return newEntity;
-                }
-                else
-                    return null;
+                //if (_entityRef != null)
+                //    return (IPersistIfcEntity)_entityRef.Target;
+                //else if (_offset == 0 && _type != null)
+                ////we have a newly created entity but it has been released by garbage collector
+                //{
+                //    IPersistIfcEntity newEntity = (IPersistIfcEntity)Activator.CreateInstance(_type);
+                //    _entityRef = new WeakReference(newEntity);
+                //    return newEntity;
+                //}
+                //else
+                //    return null;
             }
             set
             {
-                //_entityRef=value;
-                if (_entityRef != null)
-                    _entityRef.Target = value;
-                else
-                    _entityRef = new WeakReference(value);
+                _entityRef=value;
+                //if (_entityRef != null)
+                //    _entityRef.Target = value;
+                //else
+                //    _entityRef = new WeakReference(value);
             }
         }
     }

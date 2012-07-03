@@ -76,24 +76,40 @@ namespace XbimConvert
                 watch.Start();
                 Console.WriteLine("Converting Geometry...");
                 //now convert the geometry
-                XbimScene scene = new XbimScene(model);
-                TransformGraph graph = new TransformGraph(model, scene);
+                
+                
                 long processMe = 0;
-                if (args.Length > 1)processMe = Convert.ToInt64(args[1]);
+                IfcType t=null;
+                bool hasType = false;
+                IEnumerable<IfcProduct> toDraw;
+                if (args.Length > 1) 
+                {
+
+                    hasType = IfcInstances.IfcTypeLookup.TryGetValue(args[1].ToUpper(), out t);
+                    if (!hasType) //try getting an instance
+                        processMe = Convert.ToInt64(args[1]);
+                }
                 if (processMe > 0)
                 {
-                    graph.AddProduct((IfcProduct)model.GetInstance(processMe));
+                    List<IfcProduct> l =  new List<IfcProduct>();
+                    l.Add((IfcProduct)model.GetInstance(processMe));
+                    toDraw = l;
+                }
+                else if(hasType)
+                {
+                    Type theType = t.Type;
+                    toDraw=model.InstancesWhere<IfcProduct>(i=>i.GetType()== theType);
                 }
                 else
                 {
                     //add everything with a representation
-                    graph.AddProducts(model.IfcProducts.Items);
+                    toDraw=model.IfcProducts.Items;
                 }
-                
+                XbimScene scene = new XbimScene(model, toDraw);
                 using (FileStream sceneStream = new FileStream(xbimGeometryFileName, FileMode.Create, FileAccess.ReadWrite))
                 {
                     BinaryWriter bw = new BinaryWriter(sceneStream);
-                    graph.Write(bw);
+                    scene.Graph.Write(bw);
                     bw.Flush();
                 }
                 model.Close();

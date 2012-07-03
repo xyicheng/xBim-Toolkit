@@ -327,10 +327,16 @@ namespace Xbim
 										IXbimGeometryModel^ im = CreateFrom(fe, repContext, maps, true);
 										if(im!=nullptr)
 										{	
+											im = im->CopyTo(fe->ObjectPlacement);
+											//the rules say that 
+											//The PlacementRelTo relationship of IfcLocalPlacement shall point (if given) 
+											//to the local placement of the master IfcElement (its relevant subtypes), 
+											//which is associated to the IfcFeatureElement by the appropriate relationship object
 											if(product->ObjectPlacement != ((IfcLocalPlacement^)(fe->ObjectPlacement))->PlacementRelTo)
 											{
 												if(dynamic_cast<IfcLocalPlacement^>(product->ObjectPlacement))
 												{	
+													//we need to move the opening into the coordinate space of the product
 													IfcLocalPlacement^ lp = (IfcLocalPlacement^)product->ObjectPlacement;							
 													TopLoc_Location prodLoc = XbimGeomPrim::ToLocation(lp->RelativePlacement);
 													prodLoc= prodLoc.Inverted();
@@ -338,8 +344,6 @@ namespace Xbim
 													(*(im->Handle)).Move(prodLoc);	
 												}
 											}
-
-											im = im->CopyTo(fe->ObjectPlacement);
 											openingSolids->Add(im);
 										}
 									}
