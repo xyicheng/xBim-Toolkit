@@ -107,6 +107,7 @@ namespace Xbim.ModelGeometry.Scene
                 node.FilePosition = strm.BaseStream.Position;
                 node.TriangulatedModel.Write(strm);
                 node.TriangulatedModel = null; //delete data to save memory, can always get back fro the stream later
+            
             }
             long pos = strm.BaseStream.Position;
             _root.Write(strm);

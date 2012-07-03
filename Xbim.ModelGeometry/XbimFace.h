@@ -69,6 +69,12 @@ namespace Xbim
 				return  gcnew XbimFaceBoundEnumerator(*nativeHandle);
 
 			}
+			
+			// SRL: Builds a face from a IfcParameterizedProfileDef
+			static TopoDS_Face Build(IfcParameterizedProfileDef ^ profile, bool% hasCurves);
+
+			// AK: Builds a face from a IfcZShapeProfileDef
+			static TopoDS_Face Build(IfcZShapeProfileDef ^ profile, bool% hasCurves);
 
 			// AK: Builds a face from a IfcLShapeProfileDef
 			static TopoDS_Face Build(IfcLShapeProfileDef ^ profile, bool% hasCurves);
@@ -78,13 +84,30 @@ namespace Xbim
 
 			// AK: Builds a face from a IfcIShapeProfileDef
 			static TopoDS_Face Build(IfcIShapeProfileDef ^ profile, bool% hasCurves);
+			
+			// SRL: Builds a face from a IfcTShapeProfileDef
+			static TopoDS_Face Build(IfcTShapeProfileDef ^ profile, bool% hasCurves);
+			
+			// SRL: Builds a face from a IfcCShapeProfileDef
+			static TopoDS_Face Build(IfcCShapeProfileDef ^ profile, bool% hasCurves);
 
+			// SRL: Builds a face from a IfcCraneRailFShapeProfileDef
+			static TopoDS_Face Build(IfcCraneRailFShapeProfileDef ^ profile, bool% hasCurves);
+			
+			// SRL: Builds a face from a IfcCraneRailAShapeProfileDef
+			static TopoDS_Face Build(IfcCraneRailAShapeProfileDef ^ profile, bool% hasCurves);
+			
+			// SRL: Builds a face from a IfcEllipseProfileDef
+			static TopoDS_Face Build(IfcEllipseProfileDef ^ profile, bool% hasCurves);
 			//static builders
 			//Builds a face from any supported ProfileDef
 			static TopoDS_Face Build(IfcProfileDef ^ profile, bool% hasCurves);
 
 			//Builds a face from a ArbitraryClosedProfileDef
 			static TopoDS_Face Build(IfcArbitraryClosedProfileDef ^ profile, bool% hasCurves);
+
+			//Builds a face from a IfcDerivedProfileDef
+			static TopoDS_Face Build(IfcDerivedProfileDef ^ profile, bool% hasCurves);
 
 			//Builds a face from a ArbitraryProfileDefWithVoids
 			static TopoDS_Face Build(IfcArbitraryProfileDefWithVoids ^ profile, bool% hasCurves);

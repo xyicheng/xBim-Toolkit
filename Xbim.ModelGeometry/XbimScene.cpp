@@ -20,7 +20,6 @@ namespace Xbim
 			_maps = gcnew Dictionary<IfcRepresentation^, IXbimGeometryModel^>();
 		}
 
-
 		XbimScene::XbimScene(IModel^ model)
 		{
 			Initialise();
@@ -28,6 +27,15 @@ namespace Xbim
 			 _graph = gcnew TransformGraph(model, this);
 			 _maps = gcnew Dictionary<IfcRepresentation^, IXbimGeometryModel^>();
 			 _graph->AddProducts(model->IfcProducts->Items);
+		}
+
+		XbimScene::XbimScene(IModel^ model, IEnumerable<IfcProduct^>^ toDraw )
+		{
+			Initialise();
+			Logger->Debug("Creating Geometry from IModel..."); 
+			 _graph = gcnew TransformGraph(model, this);
+			 _maps = gcnew Dictionary<IfcRepresentation^, IXbimGeometryModel^>();
+			 _graph->AddProducts(toDraw);
 			
 		}
 

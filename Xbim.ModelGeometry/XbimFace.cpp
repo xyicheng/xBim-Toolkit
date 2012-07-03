@@ -37,28 +37,76 @@ namespace Xbim
 		{
 			if(dynamic_cast<IfcArbitraryClosedProfileDef^>(profile))
 				return Build((IfcArbitraryClosedProfileDef^)profile, hasCurves);	 
-			else if(dynamic_cast<IfcRectangleProfileDef^>(profile))
-				return Build((IfcRectangleProfileDef^)profile, hasCurves);
+			else if(dynamic_cast<IfcParameterizedProfileDef^>(profile))
+				return  XbimFace::Build((IfcParameterizedProfileDef^)profile,hasCurves);
+			else if(dynamic_cast<IfcDerivedProfileDef^>(profile))
+				return XbimFace::Build((IfcDerivedProfileDef^)profile,hasCurves);
+			return TopoDS_Face();
+		}
+		// SRL: Builds a face from a IfcParameterizedProfileDef
+		TopoDS_Face XbimFace::Build(IfcParameterizedProfileDef ^ profile, bool% hasCurves)
+		{
+			TopoDS_Face face;
+			if(dynamic_cast<IfcRectangleProfileDef^>(profile))
+				face = XbimFace::Build((IfcRectangleProfileDef^)profile,hasCurves);	
 			else if(dynamic_cast<IfcCircleProfileDef^>(profile))
-				return Build((IfcCircleProfileDef^)profile, hasCurves);
-
-			// AK: these are the ones that were giving errors
+				face = XbimFace::Build((IfcCircleProfileDef^)profile,hasCurves);	
 			else if(dynamic_cast<IfcLShapeProfileDef^>(profile))
-				return Build((IfcLShapeProfileDef^)profile, hasCurves);
+				face = XbimFace::Build((IfcLShapeProfileDef^)profile,hasCurves);	
 			else if(dynamic_cast<IfcUShapeProfileDef^>(profile))
-				return Build((IfcUShapeProfileDef^)profile, hasCurves);
-			else
-			{
-				Type ^ type = profile->GetType();
-				throw(gcnew NotImplementedException(String::Format("XbimFace. BuildFace of type {0} is not implemented",type->Name)));
-			}
+				face = XbimFace::Build((IfcUShapeProfileDef^)profile,hasCurves);	
+			else if(dynamic_cast<IfcIShapeProfileDef^>(profile))
+				face = XbimFace::Build((IfcIShapeProfileDef^)profile,hasCurves);
+			else if(dynamic_cast<IfcCShapeProfileDef^>(profile))
+				face = XbimFace::Build((IfcCShapeProfileDef^)profile,hasCurves);
+			else if(dynamic_cast<IfcTShapeProfileDef^>(profile))
+				face = XbimFace::Build((IfcTShapeProfileDef^)profile,hasCurves);
+			else if(dynamic_cast<IfcCraneRailFShapeProfileDef^>(profile))
+				face = XbimFace::Build((IfcCraneRailFShapeProfileDef^)profile,hasCurves);
+			else if(dynamic_cast<IfcCraneRailAShapeProfileDef^>(profile))
+				face = XbimFace::Build((IfcCraneRailAShapeProfileDef^)profile,hasCurves);
+			else if(dynamic_cast<IfcEllipseProfileDef^>(profile))
+				face = XbimFace::Build((IfcEllipseProfileDef^)profile,hasCurves);
+			return face;
+		}
+		// SRL: Builds a face from a IfcCraneRailFShapeProfileDef
+		TopoDS_Face XbimFace::Build(IfcCraneRailFShapeProfileDef ^ profile, bool% hasCurves)
+		{
+			BRepBuilderAPI_MakeFace faceBlder(XbimFaceBound::Build(profile, hasCurves));
+			return faceBlder.Face();
+		}
+
+		// SRL: Builds a face from a IfcCraneRailAShapeProfileDef
+		TopoDS_Face XbimFace::Build(IfcCraneRailAShapeProfileDef ^ profile, bool% hasCurves)
+		{
+			BRepBuilderAPI_MakeFace faceBlder(XbimFaceBound::Build(profile, hasCurves));
+			return faceBlder.Face();
+		}
+		// SRL: Builds a face from a IfcEllipseProfileDef
+		TopoDS_Face XbimFace::Build(IfcEllipseProfileDef ^ profile, bool% hasCurves)
+		{
+			BRepBuilderAPI_MakeFace faceBlder(XbimFaceBound::Build(profile, hasCurves));
+			return faceBlder.Face();
+		}
+		// SRL: Builds a face from a IfcIShapeProfileDef
+		TopoDS_Face XbimFace::Build(IfcIShapeProfileDef ^ profile, bool% hasCurves)
+		{
+			BRepBuilderAPI_MakeFace faceBlder(XbimFaceBound::Build(profile, hasCurves));
+			return faceBlder.Face();
+		}
+
+			// SRL: Builds a face from a IfcZShapeProfileDef
+		TopoDS_Face XbimFace::Build(IfcZShapeProfileDef ^ profile, bool% hasCurves)
+		{
+			BRepBuilderAPI_MakeFace faceBlder(XbimFaceBound::Build(profile, hasCurves));
+			return faceBlder.Face();
 		}
 
 		// AK: Builds a face from a IfcLShapeProfileDef
 		TopoDS_Face XbimFace::Build(IfcLShapeProfileDef ^ profile, bool% hasCurves)
 		{
 			BRepBuilderAPI_MakeFace faceBlder(XbimFaceBound::Build(profile, hasCurves));
-			BRepBuilderAPI_FaceError err = faceBlder.Error();
+			
 			return faceBlder.Face();
 
 		}
@@ -67,16 +115,22 @@ namespace Xbim
 		TopoDS_Face XbimFace::Build(IfcUShapeProfileDef ^ profile, bool% hasCurves)
 		{
 			BRepBuilderAPI_MakeFace faceBlder(XbimFaceBound::Build(profile, hasCurves));
-			BRepBuilderAPI_FaceError err = faceBlder.Error();
+			
 			return faceBlder.Face();
 
 		}
-
-		// AK: Builds a face from a IfcIShapeProfileDef
-		TopoDS_Face XbimFace::Build(IfcIShapeProfileDef ^ profile, bool% hasCurves)
+		
+		// SRL: Builds a face from a IfcTShapeProfileDef
+		TopoDS_Face XbimFace::Build(IfcTShapeProfileDef ^ profile, bool% hasCurves)
 		{
 			BRepBuilderAPI_MakeFace faceBlder(XbimFaceBound::Build(profile, hasCurves));
-			BRepBuilderAPI_FaceError err = faceBlder.Error();
+			return faceBlder.Face();
+		}
+
+		// SRL: Builds a face from a IfcCShapeProfileDef
+		TopoDS_Face XbimFace::Build(IfcCShapeProfileDef ^ profile, bool% hasCurves)
+		{
+			BRepBuilderAPI_MakeFace faceBlder(XbimFaceBound::Build(profile, hasCurves));
 			return faceBlder.Face();
 
 		}
@@ -89,10 +143,18 @@ namespace Xbim
 			else
 			{
 				BRepBuilderAPI_MakeFace faceBlder(XbimFaceBound::Build(profile, hasCurves));
-				//BRepBuilderAPI_FaceError err = faceBlder.Error();
+				
 				return faceBlder.Face();
 			}
 
+		}
+		//Builds a face from a IfcDerivedProfileDef
+		TopoDS_Face XbimFace::Build(IfcDerivedProfileDef ^ profile, bool% hasCurves)
+		{
+			TopoDS_Face face = XbimFace::Build(profile->ParentProfile,hasCurves);
+			gp_Trsf trsf = XbimGeomPrim::ToTransform(profile->Operator);
+			face.Move(TopLoc_Location(trsf));
+			return face;
 		}
 
 		//Builds a face from a ArbitraryProfileDefWithVoids

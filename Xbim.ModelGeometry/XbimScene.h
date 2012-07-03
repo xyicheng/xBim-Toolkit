@@ -29,8 +29,8 @@ namespace Xbim
 				Standard::SetReentrant(Standard_True);
 			}
 		public:
-
 			XbimScene(IModel^ model);
+			XbimScene(IModel^ model, IEnumerable<IfcProduct^>^ toDraw);
 			XbimScene(String ^ ifcFileName, String ^ xbimFileName,String ^ xBimGeometryFileName, bool removeIfcGeoemtry);
 			XbimScene(String ^ ifcFileName,String ^ xBimFileName,String ^ xBimGeometryFileName, bool removeIfcGeometry, ProcessModel ^ processingDelegate);
 			!XbimScene();
