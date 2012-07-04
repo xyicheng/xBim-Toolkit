@@ -193,10 +193,8 @@ namespace Xbim.XbimExtensions.Parser
             _highestLabel = 0;
         }
 
-        public void Write(Stream dataStream)
+        public void Write(BinaryWriter writer)
         {
-
-            BinaryWriter writer = new BinaryWriter(dataStream);
             writer.Write((long)Count);
             writer.Write(HighestLabel);
 
@@ -601,7 +599,11 @@ namespace Xbim.XbimExtensions.Parser
             else
             {
                 _binaryWriter.Write((byte)P21ParseAction.SetStringValue);
-                _binaryWriter.Write(value.Trim('\''));
+                string res = value.Trim('\'');
+                res = PropertyValue.SpecialCharRegEx.Replace(res, PropertyValue.SpecialCharEvaluator);
+                res = res.Replace("\'\'", "\'");
+                _binaryWriter.Write(res);
+                
             }
         }
 

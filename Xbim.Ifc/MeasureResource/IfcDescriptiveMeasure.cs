@@ -39,7 +39,7 @@ namespace Xbim.Ifc.MeasureResource
 
         #endregion
 
-        [DataMember(Order = 0, Name = "Value", EmitDefaultValue = false, IsRequired = true)] private string _theValue;
+        private string _theValue;
 
         Type ExpressType.UnderlyingSystemType
         {
@@ -69,7 +69,7 @@ namespace Xbim.Ifc.MeasureResource
 
         public string ToPart21
         {
-            get { return string.Format(@"'{0}'", _theValue); }
+            get { return _theValue != null ? string.Format(@"'{0}'", IfcText.Escape(_theValue)) : "$"; }
         }
 
         #endregion

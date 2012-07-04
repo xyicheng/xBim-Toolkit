@@ -123,7 +123,7 @@ namespace Xbim.Ifc.MeasureResource
 
         public string ToPart21
         {
-            get { return _theValue != null ? string.Format(@"'{0}'", _theValue.Replace("\'", "\'\'")) : "$"; }
+            get { return _theValue != null ? string.Format(@"'{0}'", IfcText.Escape(_theValue)) : "$"; }
         }
 
         #endregion

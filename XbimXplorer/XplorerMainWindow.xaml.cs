@@ -205,7 +205,7 @@ namespace XbimXplorer
         {
             OpenFileDialog dlg = new OpenFileDialog();
 
-            dlg.Filter = "Xbim Files|*.xbim;*.ifc;*.ifcxml;*.zip"; // Filter files by extension 
+            dlg.Filter = "Xbim Files|*.xbim;*.ifc;*.ifcxml;*.ifczip;*.zip"; // Filter files by extension 
             dlg.FileOk += new CancelEventHandler(dlg_OpenXbimFile);
             dlg.ShowDialog(this);
         }
@@ -230,7 +230,7 @@ namespace XbimXplorer
             BackgroundWorker worker = s as BackgroundWorker;
             string ifcFilename = args.Argument as string;
 
-            IModel model = new XbimMemoryModel();
+            IModel model = new XbimFileModelServer();
             try
             {
                 //attach it to the Ifc Stream Parser
@@ -261,7 +261,7 @@ namespace XbimXplorer
             ModelDataProvider modelProvider = ModelProvider;
             string fileName = args.Argument as string;
 
-            IModel m = new XbimMemoryModel();
+            IModel m = new XbimFileModelServer();
             try
             {
                 m.Open(fileName);
@@ -354,6 +354,10 @@ namespace XbimXplorer
                         break;
                     case ".xbim": //it is an xbim File
                         _worker.DoWork += OpenXbimFile;
+                        _worker.RunWorkerAsync(dlg.FileName);
+                        break;
+                    case ".ifczip": //it is a xip file containing xbim or ifc File
+                        _worker.DoWork += OpenZipFile;
                         _worker.RunWorkerAsync(dlg.FileName);
                         break;
                     case ".zip": //it is a xip file containing xbim or ifc File
