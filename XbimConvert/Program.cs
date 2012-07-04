@@ -86,10 +86,42 @@ namespace XbimConvert
                              where (e.EventLevel > EventLevel.INFO)
                              select e).Count();
 
+                if (errors > 0)
+                {
+                    CreateLogFile(arguments.IfcFileName, eventTrace.Events);
+                }
+
                 Logger.Debug("XbimConvert finished...");
                 return errors;
             }
             
+        }
+
+        private static void CreateLogFile(string ifcFile, IList<Event> events)
+        {
+            try
+            {
+                string logfile = String.Concat(ifcFile, ".log");
+                using (StreamWriter writer = new StreamWriter(logfile))
+                {
+                    foreach (Event logEvent in events)
+                    {
+                        writer.WriteLine("{0:yyyy-MM-dd hh:mm:ss} : {1:-5} {2}.{3} - {4}",
+                            logEvent.EventTime,
+                            logEvent.EventLevel.ToString(),
+                            logEvent.Logger,
+                            logEvent.Method,
+                            logEvent.Message
+                            );
+                    }
+                    writer.Flush();
+                    writer.Close();
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.Error(String.Format("Failed to create Log File for {0}", ifcFile), e);
+            }
         }
 
         private static string BuildFileName(string file, string extension)
