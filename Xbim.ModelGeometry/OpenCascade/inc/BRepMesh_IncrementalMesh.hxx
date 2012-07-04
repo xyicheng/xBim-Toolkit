@@ -9,11 +9,8 @@
 #ifndef _Standard_HeaderFile
 #include <Standard.hxx>
 #endif
-#ifndef _Standard_DefineHandle_HeaderFile
-#include <Standard_DefineHandle.hxx>
-#endif
-#ifndef _Handle_BRepMesh_IncrementalMesh_HeaderFile
-#include <Handle_BRepMesh_IncrementalMesh.hxx>
+#ifndef _Standard_Macro_HeaderFile
+#include <Standard_Macro.hxx>
 #endif
 
 #ifndef _Standard_Boolean_HeaderFile
@@ -43,9 +40,6 @@
 #ifndef _BRepMesh_DiscretRoot_HeaderFile
 #include <BRepMesh_DiscretRoot.hxx>
 #endif
-#ifndef _BRepMesh_PDiscretRoot_HeaderFile
-#include <BRepMesh_PDiscretRoot.hxx>
-#endif
 class BRepMesh_FastDiscret;
 class TopoDS_Shape;
 class TopoDS_Edge;
@@ -54,19 +48,32 @@ class TopoDS_Face;
 
 //! Builds the mesh of a shape with respect of their <br>
 //!          correctly triangulated parts <br>
-class BRepMesh_IncrementalMesh : public BRepMesh_DiscretRoot {
-
+//! <br>
+class BRepMesh_IncrementalMesh  : public BRepMesh_DiscretRoot {
 public:
+
+  void* operator new(size_t,void* anAddress) 
+  {
+    return anAddress;
+  }
+  void* operator new(size_t size) 
+  {
+    return Standard::Allocate(size); 
+  }
+  void  operator delete(void *anAddress) 
+  {
+    if (anAddress) Standard::Free((Standard_Address&)anAddress); 
+  }
 
   
   Standard_EXPORT   BRepMesh_IncrementalMesh();
 Standard_EXPORT virtual ~BRepMesh_IncrementalMesh();
-  //! If the  boolean    <Relatif>   is  True,    the <br>
+  //! if the  boolean    <Relatif>   is  True,    the <br>
 //!          deflection used   for the polygonalisation   of <br>
 //!          each edge will be <D> * Size of Edge. <br>
 //!          the deflection used for the faces will be the maximum <br>
 //!          deflection of their edges. <br>
-  Standard_EXPORT   BRepMesh_IncrementalMesh(const TopoDS_Shape& S,const Standard_Real D,const Standard_Boolean Relatif = Standard_False,const Standard_Real Ang = 0.5,const Standard_Boolean InParallel = Standard_False);
+  Standard_EXPORT   BRepMesh_IncrementalMesh(const TopoDS_Shape& S,const Standard_Real D,const Standard_Boolean Relatif = Standard_False,const Standard_Real Ang = 0.5);
   
   Standard_EXPORT     void SetRelative(const Standard_Boolean theFlag) ;
   
@@ -79,36 +86,18 @@ Standard_EXPORT virtual ~BRepMesh_IncrementalMesh();
   Standard_EXPORT     Standard_Boolean IsModified() const;
   
   Standard_EXPORT     Standard_Integer GetStatusFlags() const;
-  
-//! Request algorithm to launch in multiple threads to improve performance. <br>
-  Standard_EXPORT     void SetParallel(const Standard_Boolean theInParallel) ;
-  
-//! Returns the multi-threading usage flag. <br>
-  Standard_EXPORT     Standard_Boolean IsParallel() const;
-  
-//! Plugin interface for the Mesh Factories. <br>
-  Standard_EXPORT   static  Standard_Integer Discret(const TopoDS_Shape& theShape,const Standard_Real theDeflection,const Standard_Real theAngle,BRepMesh_PDiscretRoot& theAlgo) ;
-  
-//! Returns multi-threading usage flag set by default in <br>
-//! Discret() static method (thus applied only to Mesh Factories). <br>
-  Standard_EXPORT   static  Standard_Boolean IsParallelDefault() ;
-  
-//! Setup multi-threading usage flag set by default in <br>
-//! Discret() static method (thus applied only to Mesh Factories). <br>
-  Standard_EXPORT   static  void SetParallelDefault(const Standard_Boolean theInParallel) ;
 
 
 
 
-  DEFINE_STANDARD_RTTI(BRepMesh_IncrementalMesh)
 
 protected:
 
   
   Standard_EXPORT   virtual  void Init() ;
 
+
 Standard_Boolean myRelative;
-Standard_Boolean myInParallel;
 TopTools_MapOfShape myMap;
 Handle_BRepMesh_FastDiscret myMesh;
 Standard_Boolean myModified;
@@ -119,16 +108,17 @@ Bnd_Box myBox;
 Standard_Integer myStatus;
 
 
-private: 
+private:
 
   //! Locate a correct discretisation if it exists <br>
 //!          Set no one otherwise <br>
   Standard_EXPORT     void Update(const TopoDS_Edge& E) ;
-  //! If the face is  not correctly triangulated, or <br>
+  //! if the face is  not correctly triangulated, or <br>
 //!          if  one  of its edges  is  to be discretisated <br>
 //!          correctly, the triangulation  of this face  is <br>
 //!          built. <br>
   Standard_EXPORT     void Update(const TopoDS_Face& F) ;
+
 
 
 

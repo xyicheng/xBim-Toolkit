@@ -19,7 +19,6 @@ using System.Runtime.Serialization;
 using Xbim.Ifc.SelectTypes;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Parser;
-using Xbim.Ifc.MeasureResource;
 
 #endregion
 
@@ -40,7 +39,7 @@ namespace Xbim.Ifc.PresentationDefinitionResource
 
         #endregion
 
-        private string _theValue;
+        [DataMember(Order = 0, Name = "Value", EmitDefaultValue = false, IsRequired = true)] private string _theValue;
 
         Type ExpressType.UnderlyingSystemType
         {
@@ -70,7 +69,7 @@ namespace Xbim.Ifc.PresentationDefinitionResource
 
         public string ToPart21
         {
-            get { return _theValue != null ? string.Format(@"'{0}'", IfcText.Escape(_theValue)) : "$"; }
+            get { return _theValue != null ? string.Format(@"'{0}'", _theValue) : "$"; }
         }
 
         #endregion

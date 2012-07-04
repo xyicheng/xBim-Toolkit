@@ -77,8 +77,8 @@ namespace Xbim.XbimExtensions.Parser
 
         private object _entityVal;
 
-        public static readonly Regex SpecialCharRegEx;
-        public static readonly MatchEvaluator SpecialCharEvaluator;
+        private static readonly Regex SpecialCharRegEx;
+        private static readonly MatchEvaluator SpecialCharEvaluator;
 
         static PropertyValue()
         {

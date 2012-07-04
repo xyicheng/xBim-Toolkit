@@ -18,7 +18,6 @@ using System.Linq;
 using Xbim.Ifc.SelectTypes;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Parser;
-using Xbim.Ifc.MeasureResource;
 
 #endregion
 
@@ -54,7 +53,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
 
         public string ToPart21
         {
-            get { return _theValue != null ? string.Format(@"'{0}'", IfcText.Escape(_theValue)) : "$"; }
+            get { return _theValue != null ? string.Format(@"'{0}'", _theValue) : "$"; }
         }
 
         public static implicit operator IfcTextDecoration(string str)

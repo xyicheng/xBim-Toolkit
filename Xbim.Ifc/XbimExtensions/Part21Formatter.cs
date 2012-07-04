@@ -75,7 +75,7 @@ namespace Xbim.XbimExtensions
             }
             // Return string representation of argument for any other formatting code
             else
-                return string.Format(@"'{0}'", IfcText.Escape(arg.ToString()));
+                return string.Format(@"'{0}'", arg.ToString().Replace("\'", "\'\'"));
         }
     }
 }

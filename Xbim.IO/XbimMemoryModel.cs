@@ -117,11 +117,6 @@ namespace Xbim.IO
             return _ifcInstances.Contains(instance);
         }
 
-        public bool ContainsInstance(long entityLabel)
-        {
-            return _ifcInstances.ContainsInstance(entityLabel);
-        }
-
         /// <summary>
         ///   Creates an Ifc Persistent Instance from an entity name string, this is NOT an undoable operation
         /// </summary>
@@ -1101,7 +1096,7 @@ namespace Xbim.IO
                     else // if isGZip == false then use sharpziplib
                     {
                         string ext = "";
-                        if (fileName.ToLower().EndsWith(".zip") == false || fileName.ToLower().EndsWith(".ifczip") == false) ext = ".ifczip";
+                        if (fileName.ToLower().EndsWith(".zip") == false) ext = ".zip";
                         fs = new FileStream(fileName + ext, FileMode.Create, FileAccess.Write);
                         ZipOutputStream zipStream = new ZipOutputStream(fs);
                         zipStream.SetLevel(3); //0-9, 9 being the highest level of compression
@@ -1193,7 +1188,7 @@ namespace Xbim.IO
                     if (xmlOutStream != null) xmlOutStream.Close();
                 }
             }
-            else if (fileType.HasFlag(XbimStorageType.IFCZIP))
+            else if (fileType.HasFlag(XbimStorageType.IFCX))
             {
                 try
                 {
@@ -1215,12 +1210,12 @@ namespace Xbim.IO
             if (ext == ".xbim") fileType = XbimStorageType.XBIM;
             else if (ext == ".ifc") fileType = XbimStorageType.IFC;
             else if (ext == ".ifcxml") fileType = XbimStorageType.IFCXML;
-            else if (ext == ".zip" || ext == ".ifczip") fileType = XbimStorageType.IFCZIP;
+            else if (ext == ".zip") fileType = XbimStorageType.IFCX;
             else
                 throw new Exception("Invalid file type: " + ext);
             try
             {
-                if (fileType.HasFlag(XbimStorageType.IFCZIP))
+                if (fileType.HasFlag(XbimStorageType.IFCX))
                 {
                     // get the ifc file from zip
                     //using (Stream zipStream = new FileStream(inputFileName, FileMode.Open, FileAccess.Read))
@@ -1249,7 +1244,7 @@ namespace Xbim.IO
                                 else if (fileName.ToLower().EndsWith(".ifcxml"))
                                 {
                                     ZipFile zf = new ZipFile(inputFileName);
-                                    XmlReaderSettings settings = new XmlReaderSettings() { IgnoreComments = true, IgnoreWhitespace = false };
+                                    XmlReaderSettings settings = new XmlReaderSettings() { IgnoreComments = true, IgnoreWhitespace = true };
                                     Stream entryStream = zf.GetInputStream(zs);
                                     using (XmlReader xmlReader = XmlReader.Create(entryStream, settings))
                                     {
@@ -1267,7 +1262,7 @@ namespace Xbim.IO
                 else if (fileType.HasFlag(XbimStorageType.IFCXML))
                 {
                     // input to be xml file, output will be xbim file
-                    XmlReaderSettings settings = new XmlReaderSettings() { IgnoreComments = true, IgnoreWhitespace = false };
+                    XmlReaderSettings settings = new XmlReaderSettings() { IgnoreComments = true, IgnoreWhitespace = true };
                     Stream xmlInStream = new FileStream(inputFileName, FileMode.Open, FileAccess.Read);
 
                     using (XmlReader xmlReader = XmlReader.Create(xmlInStream, settings))
@@ -1315,7 +1310,5 @@ namespace Xbim.IO
         {
             throw new NotImplementedException("Import functionality: not implemented yet");
         }
-
-
     }
 }

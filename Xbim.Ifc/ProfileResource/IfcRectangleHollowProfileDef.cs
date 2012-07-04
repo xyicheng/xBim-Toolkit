@@ -27,15 +27,15 @@ namespace Xbim.Ifc.ProfileResource
         #region Fields
 
         private IfcPositiveLengthMeasure _wallThickness;
-        private IfcPositiveLengthMeasure? _innerFilletRadius;
-        private IfcPositiveLengthMeasure? _outerFilletRadius;
+        private IfcPositiveLengthMeasure? _innerFilletThickness;
+        private IfcPositiveLengthMeasure? _outerFilletThickness;
 
         #endregion
 
         #region Properties
 
         /// <summary>
-        ///   Radius of the material.
+        ///   Thickness of the material.
         /// </summary>
         [IfcAttribute(6, IfcAttributeState.Mandatory)]
         public IfcPositiveLengthMeasure WallThickness
@@ -43,7 +43,7 @@ namespace Xbim.Ifc.ProfileResource
             get
             {
 #if SupportActivation
-                ((IPersistIfcEntity)this).Activate(false);
+                ((IPersistIfcEntity) this).Activate(false);
 #endif
                 return _wallThickness;
             }
@@ -55,19 +55,19 @@ namespace Xbim.Ifc.ProfileResource
         ///   If not given, zero (= no rounding arcs) applies.
         /// </summary>
         [IfcAttribute(7, IfcAttributeState.Mandatory)]
-        public IfcPositiveLengthMeasure? InnerFilletRadius
+        public IfcPositiveLengthMeasure? InnerFilletThickness
         {
             get
             {
 #if SupportActivation
-                ((IPersistIfcEntity)this).Activate(false);
+                ((IPersistIfcEntity) this).Activate(false);
 #endif
-                return _innerFilletRadius;
+                return _innerFilletThickness;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _innerFilletRadius, value, v => InnerFilletRadius = v,
-                                           "InnerFilletRadius");
+                ModelManager.SetModelValue(this, ref _innerFilletThickness, value, v => InnerFilletThickness = v,
+                                           "InnerFilletThickness");
             }
         }
 
@@ -76,19 +76,19 @@ namespace Xbim.Ifc.ProfileResource
         ///   If not given, zero (= no rounding arcs) applies.
         /// </summary>
         [IfcAttribute(8, IfcAttributeState.Mandatory)]
-        public IfcPositiveLengthMeasure? OuterFilletRadius
+        public IfcPositiveLengthMeasure? OuterFilletThickness
         {
             get
             {
 #if SupportActivation
-                ((IPersistIfcEntity)this).Activate(false);
+                ((IPersistIfcEntity) this).Activate(false);
 #endif
-                return _outerFilletRadius;
+                return _outerFilletThickness;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _outerFilletRadius, value, v => OuterFilletRadius = v,
-                                           "OuterFilletRadius");
+                ModelManager.SetModelValue(this, ref _outerFilletThickness, value, v => OuterFilletThickness = v,
+                                           "OuterFilletThickness");
             }
         }
 
@@ -109,10 +109,10 @@ namespace Xbim.Ifc.ProfileResource
                     _wallThickness = value.RealVal;
                     break;
                 case 6:
-                    _innerFilletRadius = value.RealVal;
+                    _innerFilletThickness = value.RealVal;
                     break;
                 case 7:
-                    _outerFilletRadius = value.RealVal;
+                    _outerFilletThickness = value.RealVal;
                     break;
 
                 default:
@@ -123,15 +123,15 @@ namespace Xbim.Ifc.ProfileResource
         public override string WhereRule()
         {
             string baseErr = base.WhereRule();
-            if (_wallThickness >= XDim / 2 || _wallThickness >= YDim / 2)
+            if (_wallThickness >= XDim/2 || _wallThickness >= YDim/2)
                 baseErr +=
                     "WR31 RectangleHollowProfileDef : The wall thickness shall be smaller than half the value of the X or Y dimension of the rectangle.\n";
-            if (_outerFilletRadius.HasValue &&
-                (_outerFilletRadius.Value >= XDim / 2 || _outerFilletRadius.Value >= YDim / 2))
+            if (_outerFilletThickness.HasValue &&
+                (_outerFilletThickness.Value >= XDim/2 || _outerFilletThickness.Value >= YDim/2))
                 baseErr +=
                     "WR32 RectangleHollowProfileDef : The outer fillet radius (if given) shall be smaller than or equal to half the value of the Xdim and the YDim attribute\n";
-            if (_innerFilletRadius.HasValue &&
-                (_innerFilletRadius.Value >= XDim / 2 || _innerFilletRadius.Value >= YDim / 2))
+            if (_innerFilletThickness.HasValue &&
+                (_innerFilletThickness.Value >= XDim/2 || _innerFilletThickness.Value >= YDim/2))
                 baseErr +=
                     "WR33 RectangleHollowProfileDef : The inner fillet radius (if given) shall be smaller than or equal to half the value of the Xdim and the YDim attribute.\n";
             return baseErr;

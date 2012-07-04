@@ -419,11 +419,6 @@ namespace Xbim.XbimExtensions
             return _entityHandleLookup[label];
         }
 
-        public bool ContainsInstance(long label)
-        {
-            return _entityHandleLookup.Contains(label);
-        }
-
         public void AddRaw(IPersistIfcEntity instance)
         {
             Type type = instance.GetType();

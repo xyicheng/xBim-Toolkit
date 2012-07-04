@@ -33,7 +33,6 @@ using Xbim.XbimExtensions.Parser;
 using Xbim.XbimExtensions.Transactions;
 using Xbim.XbimExtensions.Transactions.Extensions;
 using System.Xml;
-using System.Windows.Markup;
 
 #endregion
 
@@ -43,13 +42,12 @@ namespace Xbim.IO
 
     public class XbimFileModelServer : XbimModelServer
     {
+        private Stream _stream;
         private BinaryReader _binaryReader;
         private Dictionary<Type, List<long>> _entityTypes;
         private XbimIndex _entityOffsets;
         private string _filename;
         private IfcFileHeader _header;
-        private BinaryWriter _binaryWriter;
-        private Stream _stream;
 
         public override IfcFileHeader Header
         {
@@ -96,9 +94,7 @@ namespace Xbim.IO
             try
             {
                 Dispose();
-                // now we have streamReader and streamWriter, choose the right one to use
                 _stream = new FileStream(filename, FileMode.Open, fileAccess);
-                
                 Initialise();
                 _filename = filename;
 
@@ -150,33 +146,31 @@ namespace Xbim.IO
                 Dispose(); //clear up any issues from previous runs
                 inputFile = new FileStream(filename, FileMode.Open, FileAccess.Read);
                 //attach it to the Ifc Stream Parser
-                input = new IfcInputStream(inputFile);
-                using ( FileStream outputFile = new FileStream(xbimFilename, FileMode.Create, FileAccess.ReadWrite)                )
+                 input = new IfcInputStream(inputFile);
+                _stream = new FileStream(xbimFilename, FileMode.Create, FileAccess.ReadWrite);
+
+                int errors = input.Index(_stream, progress);
+                if (errors == 0)
                 {
-                    int errors = input.Index(outputFile, progress);
-                    if (errors == 0)
-                    {
-                        _stream = new FileStream(xbimFilename, FileMode.Open, FileAccess.ReadWrite);
-                        Initialise();
-                        _filename = xbimFilename;
-                        return _filename;
-                    }
-                    else
-                    {
-                        throw new Xbim.Common.Exceptions.XbimException("Ifc file reading or initialisation errors\n" + input.ErrorLog.ToString());
-                    }
+                    _stream.Close();
+                    _stream = new FileStream(xbimFilename, FileMode.Open, FileAccess.ReadWrite);
+                    Initialise();
+                    _filename = xbimFilename;
+                    return _filename;
                 }
-                
+                else
+                {
+                    throw new Exception("Ifc file reading or initialisation errors\n" + input.ErrorLog.ToString());
+                }
             }
             catch (Exception e)
             {
                 Dispose();
-                throw new Xbim.Common.Exceptions.XbimException("Failed to import " + filename + "\n" + input.ErrorLog.ToString(), e);
+                throw new Exception("Failed to import " + filename + "\n"+ input.ErrorLog.ToString(), e);
             }
             finally
             {
                 if (inputFile != null) inputFile.Close();
-                
             }
         }
 
@@ -250,7 +244,7 @@ namespace Xbim.IO
                         }
                     }
 
-                    if (exportFormat.Value.HasFlag(XbimStorageType.IFCZIP))
+                    if (exportFormat.Value.HasFlag(XbimStorageType.IFCX))
                     {
                         string ifcFileName = "";
                         try
@@ -642,20 +636,6 @@ namespace Xbim.IO
                     _stream.Seek(offset, SeekOrigin.Begin);
                     _stream.Read(bLen, 0, sizeof(int));
                     int len = BitConverter.ToInt32(bLen, 0);
-
-#if DEBUG
-                    long maxByte = 0xffff; //should be about as big as an object should ever get
-                    if (_stream is FileStream)
-                        maxByte = ((FileStream)_stream).Length;
-
-                    if (len < 0 || len > maxByte)
-                    {
-                        
-                        throw new Xbim.Common.Exceptions.XbimException("Error in xbim file: invalid entity binary length. Length: " + len.ToString());
-                    }
-#endif
-
-
                     byte[] bContent = new byte[len];
                     _stream.Read(bContent, 0, len);
                     MemoryStream ms = new MemoryStream(bContent);
@@ -675,7 +655,6 @@ namespace Xbim.IO
 
             if (_stream != null) _stream.Close();
             _stream = null;
-             
             _filename = null;
             ToWrite.Clear();
             undoRedoSession = null;
@@ -767,10 +746,6 @@ namespace Xbim.IO
             return false;
         }
 
-        public override bool ContainsInstance(long entityLabel)
-        {
-            return _entityOffsets.Contains(entityLabel);
-        }
 
         protected override void TransactionFinalised()
         {
@@ -925,6 +900,7 @@ namespace Xbim.IO
         {
 
             if (_stream != null) _stream.Close();
+
         }
 
         /// <summary>
@@ -972,14 +948,14 @@ namespace Xbim.IO
             return errors;
         }
 
-        public override void WriteChanges(BinaryWriter dataStream)
+        public override void WriteChanges(Stream dataStream)
         {
 
             UndoRedo.Exit();
             MemoryStream entityStream = new MemoryStream(Int16.MaxValue);
             BinaryWriter entityWriter = new BinaryWriter(entityStream);
             XbimIndex changesIndex = new XbimIndex(_entityOffsets.HighestLabel);
-            long start = dataStream.BaseStream.Position;
+            long start = dataStream.Position;
             dataStream.Write(new Byte[sizeof(long)], 0, sizeof(long));
             foreach (var item in ToWrite)
             {
@@ -994,12 +970,12 @@ namespace Xbim.IO
                 entityWriter.Write(len);
                 entityWriter.Seek(0, SeekOrigin.Begin);
                 dataStream.Seek(0, SeekOrigin.End);
-                entry.Offset = dataStream.BaseStream.Position;
+                entry.Offset = dataStream.Position;
                 dataStream.Write(entityStream.GetBuffer(), 0, len);
             }
-            long indexStart = dataStream.BaseStream.Position;
+            long indexStart = dataStream.Position;
             changesIndex.Write(dataStream);
-            dataStream.BaseStream.Seek(start, SeekOrigin.Begin);
+            dataStream.Seek(start, SeekOrigin.Begin);
             dataStream.Write(BitConverter.GetBytes(indexStart), 0, sizeof(long));
             dataStream.Seek(0, SeekOrigin.End);
 
@@ -1058,7 +1034,7 @@ namespace Xbim.IO
             lock (this)
             {
                 _stream.Seek(-sizeof(long), SeekOrigin.End); //move to tail long that states size of next change block
-                WriteChanges(_binaryWriter);
+                WriteChanges(_stream);
                 _stream.Write(BitConverter.GetBytes(0L), 0, sizeof(long)); //no following changes
                 ToWrite.Clear();
                 return true;
@@ -1067,25 +1043,6 @@ namespace Xbim.IO
 
         }
 
-        private void WriteToStream(IPersistIfcEntity entity)
-        {
-            lock (this)
-            {
-                //BinaryWriter entityWriter = new BinaryWriter(_streamReader);
-                _stream.Seek(0, SeekOrigin.End);
-                long posIndex = _stream.Position;
-                //IPersistIfcEntity entity = GetOrCreateEntity(el);
-                //var offset = _entityOffsets[el];
-                _entityOffsets[entity.EntityLabel].Offset = posIndex;
-                _binaryWriter.Write((int)0); // reserve 4 bytes of length of stream
-                int len = WriteEntity(_binaryWriter, entity); // write data and get length
-                long prevPos = _stream.Position; // record current pos for later
-                _stream.Seek(posIndex, SeekOrigin.Begin); // seak the position for the length of stream
-                _binaryWriter.Write(len); // write the len and move back to prev position
-                _stream.Seek(prevPos, SeekOrigin.Begin);
-            }
-            
-        }
         /// <summary>
         ///   Imports an Xml file memory model into the model server, throws exception if errors are encountered
         /// </summary>
@@ -1096,32 +1053,27 @@ namespace Xbim.IO
             {
                 Dispose(); //clear up any issues from previous runs
 
-                XmlReaderSettings settings = new XmlReaderSettings() { IgnoreComments = true, IgnoreWhitespace = false };
+                XmlReaderSettings settings = new XmlReaderSettings() { IgnoreComments = true, IgnoreWhitespace = true };
                 Stream xmlInStream = new FileStream(xmlFilename, FileMode.Open, FileAccess.Read);
 
                 _stream = new FileStream(xbimFilename, FileMode.Create, FileAccess.ReadWrite);
 
                 WriteHeader();
-
+                BinaryWriter entityWriter = new BinaryWriter(_stream);
                 _header = new IfcFileHeader();
-                _binaryWriter = new BinaryWriter(_stream);
                 _header.FileName.Name = xmlFilename;
-                _header.Write(_binaryWriter);
+                _header.Write(entityWriter);
 
 
                 _entityOffsets = new XbimIndex();
                 _entityTypes = new Dictionary<Type, List<long>>();
 
-                                
                 int errors = 0;
-
-                //ParserContext pc = new ParserContext();
-                //pc.XmlSpace = "preserve";
                 using (XmlReader xmlReader = XmlReader.Create(xmlInStream, settings))
                 {
                     IfcXmlReader reader = new IfcXmlReader();
-            
-                    reader.AppendToStream += WriteToStream;
+
+                    reader.AppendToStream += (br, el) => { AppendToStream(entityWriter, el); };
 
                     errors = reader.Read(this, xmlReader);
                 }
@@ -1134,7 +1086,7 @@ namespace Xbim.IO
 
                     posIndex = _stream.Position;
 
-                    _entityOffsets.Write(_binaryWriter);
+                    _entityOffsets.Write(_stream);
 
                     _stream.Write(BitConverter.GetBytes(0L), 0, sizeof(long));
 
@@ -1144,7 +1096,6 @@ namespace Xbim.IO
                     _stream.Close();
                     _stream = new FileStream(xbimFilename, FileMode.Open, FileAccess.ReadWrite);
                     Initialise();
-                    
                     _filename = xbimFilename;
                     return _filename;
                 }
@@ -1156,15 +1107,28 @@ namespace Xbim.IO
             catch (Exception e)
             {
                 Dispose();
-                throw new Xbim.Common.Exceptions.XbimException("Failed to import " + xbimFilename, e);
+                throw new Exception("Failed to import " + xbimFilename, e);
             }
-            finally
-            {
-                
-            }
+           
         }
 
-     
+
+
+        public void AppendToStream(BinaryWriter bw, long el)
+        {
+            long posIndex = _stream.Position;
+            IPersistIfcEntity entity = GetOrCreateEntity(el);
+            //var offset = _entityOffsets[el];
+            _entityOffsets[el].Offset = posIndex;
+            bw.Write((int)0); // reserve 4 bytes of length of stream
+            int len = WriteEntity(bw, entity); // write data and get length
+            long prevPos = _stream.Position; // record current pos for later
+            _stream.Seek(posIndex, SeekOrigin.Begin); // seak the position for the length of stream
+            bw.Write(len); // write the len and move back to prev position
+            _stream.Seek(prevPos, SeekOrigin.Begin);
+
+
+        }
 
         public override string Open(string inputFileName)
         {
@@ -1175,7 +1139,7 @@ namespace Xbim.IO
             if (ext == ".xbim") fileType = XbimStorageType.XBIM;
             else if (ext == ".ifc") fileType = XbimStorageType.IFC;
             else if (ext == ".ifcxml") fileType = XbimStorageType.IFCXML;
-            else if (ext == ".zip" || ext == ".ifczip") fileType = XbimStorageType.IFCZIP;
+            else if (ext == ".zip") fileType = XbimStorageType.IFCX;
             else
                 throw new Exception("Invalid file type: " + ext);
 
@@ -1193,7 +1157,7 @@ namespace Xbim.IO
                 // input to be ifc file, output will be xbim file
                 ImportIfc(inputFileName, outputFileName);
             }
-            else if (fileType.HasFlag(XbimStorageType.IFCZIP))
+            else if (fileType.HasFlag(XbimStorageType.IFCX))
             {
                 // get the ifc file from zip
                 string ifcFileName = ExportZippedIfc(inputFileName);

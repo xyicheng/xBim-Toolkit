@@ -34,9 +34,6 @@
 #ifndef _Standard_Boolean_HeaderFile
 #include <Standard_Boolean.hxx>
 #endif
-#ifndef _Handle_Message_ProgressIndicator_HeaderFile
-#include <Handle_Message_ProgressIndicator.hxx>
-#endif
 #ifndef _ShapeExtend_Status_HeaderFile
 #include <ShapeExtend_Status.hxx>
 #endif
@@ -48,7 +45,6 @@
 #endif
 class ShapeFix_Face;
 class TopoDS_Shell;
-class Message_ProgressIndicator;
 class TopoDS_Shape;
 class TopoDS_Compound;
 class ShapeExtend_BasicMsgRegistrator;
@@ -67,10 +63,8 @@ public:
   Standard_EXPORT     void Init(const TopoDS_Shell& shell) ;
   //! Iterates on subshapes and performs fixes <br>
 //!          (for each face calls ShapeFix_Face::Perform and <br>
-//!          then calls FixFaceOrientation). The passed progress <br>
-//!          indicator allows user to consult the current progress <br>
-//!          stage and abort algorithm if needed. <br>
-  Standard_EXPORT     Standard_Boolean Perform(const Handle(Message_ProgressIndicator)& theProgress = 0) ;
+//!          then calls FixFaceOrientation) <br>
+  Standard_EXPORT     Standard_Boolean Perform() ;
   //! Fixes orientation of faces in shell. <br>
 //!          Changes orientation of face in the shell, if it is oriented opposite <br>
 //!          to neigbouring faces. If it is not possible to orient all faces in the <br>

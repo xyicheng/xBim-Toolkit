@@ -17,7 +17,6 @@ using System.Globalization;
 using Xbim.Ifc.SelectTypes;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Parser;
-using System.Text;
 
 #endregion
 
@@ -26,22 +25,6 @@ namespace Xbim.Ifc.MeasureResource
     [Serializable]
     public struct IfcText : IFormattable, IPersistIfc, IfcSimpleValue, IfcMetricValueSelect
     {
-        public static string Escape(string source)
-        {
-            StringBuilder sb = new StringBuilder(source.Length*2);
-            foreach (char c in source)
-            {
-                if (c > 127)
-                    sb.AppendFormat(@"\X\{0:X2}",(int)c);
-                else if(c=='\'')
-                    sb.Append("\'\'");
-                else
-                    sb.Append(c);
-            }
-           
-            return sb.ToString();
-        }
-
         #region ISupportIfcParser Members
 
         public void IfcParse(int propIndex, IPropertyValue value)
@@ -69,11 +52,7 @@ namespace Xbim.Ifc.MeasureResource
 
         public string ToPart21
         {
-            get 
-            {
-              
-                return _theValue != null ? string.Format(@"'{0}'", Escape(_theValue)) : "$"; 
-            }
+            get { return _theValue != null ? string.Format(@"'{0}'", _theValue.Replace("\'", "\'\'")) : "$"; }
         }
 
         public static implicit operator IfcText(string str)

@@ -52,9 +52,6 @@
 #ifndef _MMgt_TShared_HeaderFile
 #include <MMgt_TShared.hxx>
 #endif
-#ifndef _Handle_Message_ProgressIndicator_HeaderFile
-#include <Handle_Message_ProgressIndicator.hxx>
-#endif
 #ifndef _Handle_Geom_Surface_HeaderFile
 #include <Handle_Geom_Surface.hxx>
 #endif
@@ -68,7 +65,6 @@ class BRepTools_ReShape;
 class Standard_OutOfRange;
 class Standard_NoSuchObject;
 class TopoDS_Shape;
-class Message_ProgressIndicator;
 class TopoDS_Edge;
 class TopTools_ListOfShape;
 class TopoDS_Face;
@@ -127,8 +123,7 @@ public:
   //! Defines the shapes to be sewed or controlled <br>
   Standard_EXPORT     void Add(const TopoDS_Shape& shape) ;
   //! Computing <br>
-//!          thePI - progress indicator of algorithm <br>
-  Standard_EXPORT     void Perform(const Handle(Message_ProgressIndicator)& thePI = 0) ;
+  Standard_EXPORT     void Perform() ;
   //! Gives the sewed shape <br>
 //!          a null shape if nothing constructed <br>
 //!          may be a face, a shell, a solid or a compound <br>
@@ -222,10 +217,9 @@ public:
 protected:
 
   //! Performs cutting of sections <br>
-//!          thePI - progress indicator of processing <br>
-  Standard_EXPORT     void Cutting(const Handle(Message_ProgressIndicator)& thePI = 0) ;
+  Standard_EXPORT     void Cutting() ;
   
-  Standard_EXPORT     void Merging(const Standard_Boolean passage,const Handle(Message_ProgressIndicator)& thePI = 0) ;
+  Standard_EXPORT     void Merging(const Standard_Boolean passage) ;
   
   Standard_EXPORT     Standard_Boolean IsMergedClosed(const TopoDS_Edge& Edge1,const TopoDS_Edge& Edge2,const TopoDS_Face& fase) const;
   
@@ -235,7 +229,7 @@ protected:
   //! Merged nearest edges. <br>
   Standard_EXPORT     Standard_Boolean MergedNearestEdges(const TopoDS_Shape& edge,TopTools_SequenceOfShape& SeqMergedEdge,TColStd_SequenceOfInteger& SeqMergedOri) ;
   
-  Standard_EXPORT     void EdgeProcessing(const Handle(Message_ProgressIndicator)& thePI = 0) ;
+  Standard_EXPORT     void EdgeProcessing() ;
   
   Standard_EXPORT     void CreateOutputInformations() ;
   //! Defines if surface is U closed. <br>
@@ -244,15 +238,13 @@ protected:
   Standard_EXPORT   virtual  Standard_Boolean IsVClosedSurface(const Handle(Geom_Surface)& surf,const TopoDS_Shape& theEdge,const TopLoc_Location& theloc) const;
   
 //!          This method is called from Perform only <br>
-//!          thePI - progress indicator of processing <br>
-  Standard_EXPORT   virtual  void FaceAnalysis(const Handle(Message_ProgressIndicator)& thePI = 0) ;
+  Standard_EXPORT   virtual  void FaceAnalysis() ;
   
 //!          This method is called from Perform only <br>
   Standard_EXPORT   virtual  void FindFreeBoundaries() ;
   
 //!          This method is called from Perform only <br>
-//!          thePI - progress indicator of processing <br>
-  Standard_EXPORT   virtual  void VerticesAssembling(const Handle(Message_ProgressIndicator)& thePI = 0) ;
+  Standard_EXPORT   virtual  void VerticesAssembling() ;
   
 //!          This method is called from Perform only <br>
   Standard_EXPORT   virtual  void CreateSewedShape() ;
@@ -279,7 +271,7 @@ protected:
   Standard_EXPORT   virtual  TopoDS_Edge SameParameterEdge(const TopoDS_Edge& edge1,const TopoDS_Edge& edge2,const TopTools_ListOfShape& listFaces1,const TopTools_ListOfShape& listFaces2,const Standard_Boolean secForward,Standard_Integer& whichSec,const Standard_Boolean firstCall = Standard_True) ;
   //! Projects points on curve <br>
 //!          This method is called from Cutting only <br>
-  Standard_EXPORT     void ProjectPointsOnCurve(const TColgp_Array1OfPnt& arrPnt,const Handle(Geom_Curve)& Crv,const Standard_Real first,const Standard_Real last,TColStd_Array1OfReal& arrDist,TColStd_Array1OfReal& arrPara,TColgp_Array1OfPnt& arrProj,const Standard_Boolean isConsiderEnds) const;
+  Standard_EXPORT   virtual  void ProjectPointsOnCurve(const TColgp_Array1OfPnt& arrPnt,const Handle(Geom_Curve)& Crv,const Standard_Real first,const Standard_Real last,TColStd_Array1OfReal& arrDist,TColStd_Array1OfReal& arrPara,TColgp_Array1OfPnt& arrProj) const;
   //! Creates cutting vertices on projections <br>
 //!          This method is called from Cutting only <br>
   Standard_EXPORT   virtual  void CreateCuttingNodes(const TopTools_IndexedMapOfShape& MapVert,const TopoDS_Shape& bound,const TopoDS_Shape& vfirst,const TopoDS_Shape& vlast,const TColStd_Array1OfReal& arrDist,const TColStd_Array1OfReal& arrPara,const TColgp_Array1OfPnt& arrPnt,TopTools_SequenceOfShape& seqNode,TColStd_SequenceOfReal& seqPara) ;

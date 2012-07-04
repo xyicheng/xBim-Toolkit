@@ -261,7 +261,6 @@ namespace Xbim.IO
 
             internal void SetStringValue(string value)
             {
-         
                 _propertyValue.Init(value, IfcParserType.String);
                 SetEntityParameter();
             }
@@ -1069,7 +1068,7 @@ namespace Xbim.IO
                     else // if isGZip == false then use sharpziplib
                     {
                         string ext = "";
-                        if (fileName.ToLower().EndsWith(".zip") == false || fileName.ToLower().EndsWith(".ifczip") == false) ext = ".ifczip";
+                        if (fileName.ToLower().EndsWith(".zip") == false) ext = ".zip";
                         fs = new FileStream(fileName + ext, FileMode.Create, FileAccess.Write);
                         ZipOutputStream zipStream = new ZipOutputStream(fs);
                         zipStream.SetLevel(3); //0-9, 9 being the highest level of compression
@@ -1366,7 +1365,7 @@ namespace Xbim.IO
                 else
                 {
                     entityWriter.Write('\'');
-                    entityWriter.Write(IfcText.Escape((string)pVal));
+                    entityWriter.Write((string)pVal);
                     entityWriter.Write('\'');
                 }
             }
@@ -1555,7 +1554,7 @@ namespace Xbim.IO
         /// <summary>
         /// Saves incremental changes to the model
         /// </summary>
-        public abstract void WriteChanges(BinaryWriter dataStream);
+        public abstract void WriteChanges(Stream dataStream);
         public abstract void MergeChanges(Stream dataStream);
 
 
@@ -1584,7 +1583,7 @@ namespace Xbim.IO
                 // modelServer would have been created with xbim file and readwrite fileaccess
                 ExportIfc(outputFileName);
             }
-            else if (fileType.HasFlag(XbimStorageType.IFCZIP))
+            else if (fileType.HasFlag(XbimStorageType.IFCX))
             {
                 // modelServer would have been created with xbim file and readwrite fileaccess
                 ExportIfc(outputFileName, true, false);
@@ -1606,9 +1605,6 @@ namespace Xbim.IO
 
         public abstract string Open(string inputFileName);
         public abstract void Import(string inputFileName);
-
-
-        public abstract bool ContainsInstance(long entityLabel);
     }
 }
 

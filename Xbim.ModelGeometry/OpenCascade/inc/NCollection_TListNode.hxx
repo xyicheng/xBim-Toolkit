@@ -1,29 +1,19 @@
-// Created on: 2002-04-23
-// Created by: Alexander KARTOMIN (akm)
-// Copyright (c) 2002-2012 OPEN CASCADE SAS
-//
-// The content of this file is subject to the Open CASCADE Technology Public
-// License Version 6.5 (the "License"). You may not use the content of this file
-// except in compliance with the License. Please obtain a copy of the License
-// at http://www.opencascade.org and read it completely before using this file.
-//
-// The Initial Developer of the Original Code is Open CASCADE S.A.S., having its
-// main offices at: 1, place des Freres Montgolfier, 78280 Guyancourt, France.
-//
-// The Original Code and all software distributed under the License is
-// distributed on an "AS IS" basis, without warranty of any kind, and the
-// Initial Developer hereby disclaims all such warranties, including without
-// limitation, any warranties of merchantability, fitness for a particular
-// purpose or non-infringement. Please see the License for the specific terms
-// and conditions governing the rights and limitations under the License.
-
+// File:        NCollection_TListNode.hxx
+// Created:     Tue Apr 23 17:30:38 2002
+// Author:      Alexander KARTOMIN (akm)
+//              <akm@opencascade.com>
 
 #ifndef NCollection_TListNode_HeaderFile
 #define NCollection_TListNode_HeaderFile
 
 #include <NCollection_ListNode.hxx>
 #include <NCollection_BaseAllocator.hxx>
-#include <NCollection_DefineAlloc.hxx>
+
+#ifdef WNT
+// Disable the warning "operator new unmatched by delete"
+#pragma warning (push)
+#pragma warning (disable:4291)
+#endif
 
 /**
  * Purpose:     Abstract list node class. Used by BaseList
@@ -42,8 +32,9 @@ template <class TheItemType> class NCollection_TListNode
   //! Variable value access
   TheItemType& ChangeValue () { return myValue; }
   //! Memory allocation
-  DEFINE_STANDARD_ALLOC
-  DEFINE_NCOLLECTION_ALLOC
+  void* operator new(size_t theSize,
+                     const Handle(NCollection_BaseAllocator)& theAllocator) 
+  { return theAllocator->Allocate(theSize); }
   //! Static deleter to be passed to BaseList
   static void delNode (NCollection_ListNode * theNode, 
                        Handle(NCollection_BaseAllocator)& theAl)
@@ -57,5 +48,9 @@ template <class TheItemType> class NCollection_TListNode
   TheItemType    myValue; //!< The item stored in the node
   
 };
+
+#ifdef WNT
+#pragma warning (pop)
+#endif
 
 #endif

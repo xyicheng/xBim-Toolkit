@@ -1,21 +1,4 @@
-// Copyright (c) 1995-1999 Matra Datavision
-// Copyright (c) 1999-2012 OPEN CASCADE SAS
-//
-// The content of this file is subject to the Open CASCADE Technology Public
-// License Version 6.5 (the "License"). You may not use the content of this file
-// except in compliance with the License. Please obtain a copy of the License
-// at http://www.opencascade.org and read it completely before using this file.
-//
-// The Initial Developer of the Original Code is Open CASCADE S.A.S., having its
-// main offices at: 1, place des Freres Montgolfier, 78280 Guyancourt, France.
-//
-// The Original Code and all software distributed under the License is
-// distributed on an "AS IS" basis, without warranty of any kind, and the
-// Initial Developer hereby disclaims all such warranties, including without
-// limitation, any warranties of merchantability, fitness for a particular
-// purpose or non-infringement. Please see the License for the specific terms
-// and conditions governing the rights and limitations under the License.
-
+// File gp_XYZ.lxx, JCV 05/12/90
 // LPA et JCV 07/92 
 
 #include <gp.hxx>
@@ -183,9 +166,10 @@ inline void gp_XYZ::Multiply (const gp_XYZ& Other)
 
 inline void gp_XYZ::Multiply (const gp_Mat& Matrix)
 {
-  Standard_Real Xresult = Matrix.matrix[0][0] * x + Matrix.matrix[0][1] * y + Matrix.matrix[0][2] * z;
-  Standard_Real Yresult = Matrix.matrix[1][0] * x + Matrix.matrix[1][1] * y + Matrix.matrix[1][2] * z;
-  z                     = Matrix.matrix[2][0] * x + Matrix.matrix[2][1] * y + Matrix.matrix[2][2] * z;
+  const Standard_Address M = (Standard_Address)&(Matrix.matrix[0][0]);
+  Standard_Real Xresult = Mat00 * x + Mat01 * y + Mat02 * z;
+  Standard_Real Yresult = Mat10 * x + Mat11 * y + Mat12 * z;
+  z                     = Mat20 * x + Mat21 * y + Mat22 * z;
   x                     = Xresult;
   y                     = Yresult;
 }
@@ -200,9 +184,10 @@ inline gp_XYZ gp_XYZ::Multiplied (const gp_XYZ& Other) const {
 
 inline gp_XYZ gp_XYZ::Multiplied (const gp_Mat& Matrix) const
 {
-  return gp_XYZ (Matrix.matrix[0][0] * x + Matrix.matrix[0][1] * y + Matrix.matrix[0][2] * z,
-		 Matrix.matrix[1][0] * x + Matrix.matrix[1][1] * y + Matrix.matrix[1][2] * z,
-		 Matrix.matrix[2][0] * x + Matrix.matrix[2][1] * y + Matrix.matrix[2][2] * z);
+  const Standard_Address M = (Standard_Address)&(Matrix.matrix[0][0]);
+  return gp_XYZ (Mat00 * x + Mat01 * y + Mat02 * z,
+		 Mat10 * x + Mat11 * y + Mat12 * z,
+		 Mat20 * x + Mat21 * y + Mat22 * z);
 }
 
 inline void gp_XYZ::Normalize ()
