@@ -14,7 +14,7 @@ namespace XbimConvert
     class Program
     {
         private static readonly ILogger Logger = LoggerFactory.GetLogger();
-        private static Params inputs;
+        private static Params arguments;
 
         static int Main(string[] args)
         {
@@ -22,9 +22,9 @@ namespace XbimConvert
             Logger.Debug("XbimConvert starting...");
             using (EventTrace eventTrace = LoggerFactory.CreateEventTrace())
             {
-                inputs = Params.ParseParams(args);
+                arguments = Params.ParseParams(args);
 
-                if (!inputs.IsValid)
+                if (!arguments.IsValid)
                 {
                     return -1;
                 }
@@ -33,18 +33,19 @@ namespace XbimConvert
                 {
                     Logger.InfoFormat("Starting conversion of {0}", args[0]);
 
-                    string xbimFileName = Path.ChangeExtension(inputs.IfcFileName, ".xbim");
-                    string xbimGeometryFileName = Path.ChangeExtension(inputs.IfcFileName, ".xbimGC");
+                    string xbimFileName = BuildFileName(arguments.IfcFileName, ".xbim");
+                    string xbimGeometryFileName = BuildFileName(arguments.IfcFileName, ".xbimGC");
                     System.Diagnostics.Stopwatch watch = new System.Diagnostics.Stopwatch();
 
                     watch.Start();
                     XbimFileModelServer model = new XbimFileModelServer();
                     //create a callback for progress
 
-                    model.ImportIfc(inputs.IfcFileName,
+                    model.ImportIfc(arguments.IfcFileName,
+                        xbimFileName,
                         delegate(int percentProgress, object userState)
                         {
-                            if (!inputs.IsQuiet)
+                            if (!arguments.IsQuiet)
                             {
                                 Console.Write(string.Format("{0:D2}% Converted", percentProgress));
                                 ResetCursor(Console.CursorTop);
@@ -75,8 +76,8 @@ namespace XbimConvert
                 catch (Exception e)
                 {
                     ResetCursor(Console.CursorTop + 1);
-                    Console.WriteLine(string.Format("Error converting {0}, {1}", inputs.IfcFileName, e.Message));
-                    Logger.Error(String.Format("Error converting {0}", inputs.IfcFileName), e);
+                    Console.WriteLine(string.Format("Error converting {0}, {1}", arguments.IfcFileName, e.Message));
+                    Logger.Error(String.Format("Error converting {0}", arguments.IfcFileName), e);
                     GetInput();
                     
                     return -1;
@@ -91,10 +92,22 @@ namespace XbimConvert
             
         }
 
+        private static string BuildFileName(string file, string extension)
+        {
+            if (arguments.KeepFileExtension)
+            {
+                return String.Concat(file, extension);
+            }
+            else
+            {
+                return Path.ChangeExtension(file, extension);
+            }
+        }
+
 
         private static void GetInput()
         {
-            if(!inputs.IsQuiet)
+            if(!arguments.IsQuiet)
                 Console.ReadLine();
         }
 
@@ -103,7 +116,7 @@ namespace XbimConvert
             try
             {
                 // Can't reset outside of buffer, and should ignore when in quiet mode
-                if (top >= Console.BufferHeight || inputs.IsQuiet == true)
+                if (top >= Console.BufferHeight || arguments.IsQuiet == true)
                     return;
                 Console.SetCursorPosition(0, top);
             }

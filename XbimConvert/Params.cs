@@ -14,7 +14,7 @@ namespace XbimConvert
             if (args.Length < 1)
             {
                 Console.WriteLine("Invalid number of Parameters, filename required");
-                Console.WriteLine("Syntax: ConvertToXbim source [-quiet]");
+                Console.WriteLine("Syntax: XbimConvert source [-quiet|-q] [-keepextension|-ke]");
                 return result;
             }
 
@@ -31,7 +31,13 @@ namespace XbimConvert
                 switch(arg.ToLowerInvariant())
                 {
                     case "-quiet":
+                    case "-q":
                         result.IsQuiet = true;
+                        break;
+
+                    case "-keepextension":
+                    case "-ke":
+                        result.KeepFileExtension = true;
                         break;
 
                     default:
@@ -47,6 +53,7 @@ namespace XbimConvert
 
         public String IfcFileName { get; set; }
         public bool IsQuiet { get; set; }
+        public bool KeepFileExtension { get; set; }
         public bool IsValid { get; set; }
     }
 }

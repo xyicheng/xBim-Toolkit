@@ -21,8 +21,8 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 
-[assembly: AssemblyTitle("XbimConvert")]
-[assembly: AssemblyDescription("Conversion tool for converting IFC files to XBIM format")]
+[assembly: AssemblyTitle("XbimRegression")]
+[assembly: AssemblyDescription("XBIM Model conversion regression tool")]
 
 // Setting ComVisible to false makes the types in this assembly not visible 
 // to COM components.  If you need to access a type in this assembly from 
@@ -31,5 +31,4 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("c87f77ac-2ddf-408c-8db8-df41ae3453b9")]
-
+[assembly: Guid("17550062-eb82-43dc-b1da-cc6b5fc3628f")]
