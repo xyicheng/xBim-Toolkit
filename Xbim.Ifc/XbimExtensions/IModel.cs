@@ -47,7 +47,7 @@ namespace Xbim.XbimExtensions
         /// <summary>
         ///   compressed IFC format
         /// </summary>
-        IFCX = 4,
+        IFCZIP = 4,
 
         // IFCXMLX = 8,
         /// <summary>
@@ -70,6 +70,7 @@ namespace Xbim.XbimExtensions
 
         bool Delete(IPersistIfcEntity instance);
         bool ContainsInstance(IPersistIfcEntity instance);
+        bool ContainsInstance(long entityLabel);
         IEnumerable<IPersistIfcEntity> Instances { get; }
         long InstancesCount { get; }
 
