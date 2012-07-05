@@ -17,6 +17,7 @@ namespace Xbim
 		public ref class XbimScene :  IXbimScene
 		{
 		private:
+			XbimLOD _lod;
 			TransformGraph^ _graph;
 			Stream^ _sceneStream;
 			String^ _sceneStreamFileName;
@@ -44,6 +45,17 @@ namespace Xbim
 				TransformGraph^ get()
 				{
 					return _graph;
+				}
+			}
+			virtual property XbimLOD LOD
+			{
+				XbimLOD get()
+				{
+					return _lod;
+				}
+				void set(XbimLOD lod)
+				{
+					_lod = lod;
 				}
 			}
 		};

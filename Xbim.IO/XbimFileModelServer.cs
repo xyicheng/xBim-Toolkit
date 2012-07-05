@@ -1164,9 +1164,12 @@ namespace Xbim.IO
             }
         }
 
-     
-
         public override string Open(string inputFileName)
+        {
+            return Open(inputFileName, null);
+        }
+
+        public override string Open(string inputFileName, ReportProgressDelegate progReport)
         {
             string outputFileName = Path.ChangeExtension(inputFileName, "xbim");
 
@@ -1191,7 +1194,7 @@ namespace Xbim.IO
             else if (fileType.HasFlag(XbimStorageType.IFC))
             {
                 // input to be ifc file, output will be xbim file
-                ImportIfc(inputFileName, outputFileName);
+                ImportIfc(inputFileName, outputFileName, progReport);
             }
             else if (fileType.HasFlag(XbimStorageType.IFCZIP))
             {
