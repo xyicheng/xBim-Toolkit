@@ -55,6 +55,7 @@ namespace XbimConvert
                     ResetCursor(Console.CursorTop + 1);
                     Console.WriteLine(string.Format("Error converting {0}, {1}", arguments.IfcFileName, e.Message));
                     Logger.Error(String.Format("Error converting {0}", arguments.IfcFileName), e);
+                    CreateLogFile(arguments.IfcFileName, eventTrace.Events);
                     GetInput();
                     
                     return -1;
@@ -87,9 +88,11 @@ namespace XbimConvert
 
             using (FileStream sceneStream = new FileStream(xbimGeometryFileName, FileMode.Create, FileAccess.ReadWrite))
             {
-                BinaryWriter bw = new BinaryWriter(sceneStream);
-                scene.Graph.Write(bw);
-                bw.Flush();
+                using (BinaryWriter bw = new BinaryWriter(sceneStream))
+                {
+                    scene.Graph.Write(bw);
+                    bw.Flush();
+                }
             }
         }
 
