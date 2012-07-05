@@ -29,18 +29,13 @@ namespace Xbim
 
 		XbimFeaturedShape::XbimFeaturedShape(IXbimGeometryModel^ baseShape, IEnumerable<IXbimGeometryModel^>^ openings, IEnumerable<IXbimGeometryModel^>^ projections)
 		{
-
-		
-
 			if(baseShape==nullptr)
 			{
 				Logger->Warn("Undefined base shape passed to XbimFeaturedShape");
 				return;
 			}
-
 			mBaseShape = baseShape;
 			mResultShape =  mBaseShape;
-
 			if(projections!=nullptr && Enumerable::Count<IXbimGeometryModel^>(projections) > 0)
 			{
 				mProjections = gcnew List<IXbimGeometryModel^>(projections);
@@ -49,129 +44,35 @@ namespace Xbim
 			}
 			if(openings!=nullptr && Enumerable::Count<IXbimGeometryModel^>(openings) > 0)
 			{
-
 				mOpenings = gcnew List<IXbimGeometryModel^>(openings);
 				TopoDS_Compound c;
 				BRep_Builder b;
 				b.MakeCompound(c);
-				List<IXbimGeometryModel^>^ nonSolidOpenings = gcnew List<IXbimGeometryModel^>();
-				
-				
-				bool hasCompound = false;
-				
-				if(mOpenings->Count > 1)
+				for each(IXbimGeometryModel^ opening in mOpenings) //temp disable quick cutting in favour of accuracy
+					b.Add(c,*(opening->Handle));
+				BRepAlgoAPI_Cut boolOp(*(mResultShape->Handle),c);
+				/*BRepTools::Write(c,"comp.txt");
+				BRepTools::Write(*(mResultShape->Handle),"body.txt");*/
+				if(boolOp.ErrorStatus() == 0) //it worked so use the result or we didn't have any solids to cut
 				{
-					Dictionary< XbimBoundingBox^, IXbimGeometryModel^>^ bbs = gcnew Dictionary<XbimBoundingBox^, IXbimGeometryModel^>();
-					for each(IXbimGeometryModel^ opening in mOpenings) //temp disable quick cutting in favour of accuracy
-					{
-						bbs->Add( opening->GetBoundingBox(false), opening);
-					}
-					KeyValuePair<XbimBoundingBox^, IXbimGeometryModel^>^ kvp = Enumerable::FirstOrDefault(bbs);	
-					XbimBoundingBox^ bb = kvp->Key;
-					XbimBoundingBox^ basebb = mBaseShape->GetBoundingBox(false);
-					IXbimGeometryModel^ opening = kvp->Value;
-					while(bb !=nullptr)
-					{
-						bbs->Remove(bb);
-						for each(XbimBoundingBox^ nb in bbs->Keys)
-						{
-							if(bb->Is2D() || !basebb->Intersects(bb) )// throw it away if it is 2D or does not intersect with the base shape
-							{
-								bb=nullptr;
-								break;
-							}
-
-							if(bb->Intersects(nb))
-							{	
-								nonSolidOpenings->Add(opening); //intersects with next opening so do it separately
-								bb=nullptr;
-								break;
-
-							}
-						}
-						if(bb!=nullptr)
-						{
-							b.Add(c,*(opening->Handle)); //no intersection so add to compound cutter
-							hasCompound = true;
-						}
-						kvp = Enumerable::FirstOrDefault(bbs);	
-						bb = kvp->Key;
-						opening = kvp->Value;
-
-					}				
-				}
-				else
-				{
-					b.Add(c,*(mOpenings[0]->Handle));
-					hasCompound = true;
-				}
-				
-				if(hasCompound ) //if we have a compund then cut it
-				{
-					
-					BRepAlgoAPI_Cut boolOp(*(mResultShape->Handle),c);
-					if(boolOp.ErrorStatus() == 0) //it worked so use the result or we didn't have any solids to cut
-					{
-						//see if we have a solid if so go with it
-
-
-						//check if we have any shells and composites, these need to be done individually or they mess up the shape
-						const TopoDS_Shape & shape = boolOp.Shape();
-
-						if(shape.ShapeType() == TopAbs_SOLID)
-							mResultShape = gcnew XbimSolid(TopoDS::Solid(shape), HasCurvedEdges);
-						else if(shape.ShapeType() == TopAbs_SHELL)	
-							mResultShape = gcnew XbimShell(TopoDS::Shell(shape), HasCurvedEdges);
-						else if(shape.ShapeType() == TopAbs_COMPOUND)
-						{	
-							mResultShape = gcnew XbimSolid(shape, HasCurvedEdges);
-							
-						}
-						else if(shape.ShapeType() == TopAbs_COMPSOLID)
-							Logger->Warn("Failed to form difference between two shapes, Compound Solids not supported");
-						else
-							Logger->Warn("Failed to form difference between two shapes");
-					}
-					else //still failed stuff them all in and do one at a time
-					{
-						nonSolidOpenings->Clear();
-						for each(IXbimGeometryModel^ opening in mOpenings) 
-						{
-							nonSolidOpenings->Add( opening);
-						}
-					}
-				}
-				if(nonSolidOpenings->Count > 0)
-				{
-					TopoDS_Shape shape2 = *(mResultShape->Handle);
-					for each(IXbimGeometryModel^ opening in nonSolidOpenings)
-					{
-						
-						//make sure we are cutting a solid as a hole
-						BRepAlgoAPI_Cut boolOp(shape2,*(opening->Handle));
-						if(boolOp.ErrorStatus() == 0) //it worked so use the result 
-							shape2 = boolOp.Shape();
-						else
-							Logger->Warn("Failed to cut opening, most likely overlapping openings detected");
-						
-					}
-					if(shape2.ShapeType() == TopAbs_SOLID)
-						mResultShape = gcnew XbimSolid(TopoDS::Solid(shape2), HasCurvedEdges);
-					else if(shape2.ShapeType() == TopAbs_SHELL)	
-						mResultShape = gcnew XbimShell(TopoDS::Shell(shape2), HasCurvedEdges);
-					else if(shape2.ShapeType() == TopAbs_COMPOUND || shape2.ShapeType() == TopAbs_COMPSOLID)
-					{
-						
-						for (TopExp_Explorer solidEx(shape2,TopAbs_SOLID) ; solidEx.More(); solidEx.Next())  
-						{
-							mResultShape = gcnew XbimSolid(TopoDS::Solid(solidEx.Current()), HasCurvedEdges);
-							break;
-						}
-					}
+					//check if we have any shells and composites, these need to be done individually or they mess up the shape
+					const TopoDS_Shape & shape = boolOp.Shape();
+					//BRepTools::Write(shape,"res.txt");
+					if(shape.ShapeType() == TopAbs_SOLID)
+						mResultShape = gcnew XbimSolid(TopoDS::Solid(shape), HasCurvedEdges);
+					else if(shape.ShapeType() == TopAbs_SHELL)	
+						mResultShape = gcnew XbimShell(TopoDS::Shell(shape), HasCurvedEdges);
+					else if(shape.ShapeType() == TopAbs_COMPOUND)
+						mResultShape = gcnew XbimSolid(shape, HasCurvedEdges);
+					else if(shape.ShapeType() == TopAbs_COMPSOLID)
+						Logger->Warn("Failed to form difference between two shapes, Compound Solids not supported");
 					else
-						Logger->Warn("Failed to form difference between two shapes");
+						Logger->Warn("Failed to cut an opening in an element");
 				}
-
+				else //still failed stuff them all in and do one at a time
+				{
+					Logger->Warn("Failed to cut an opening in an element");
+				}
 			}
 		}
 

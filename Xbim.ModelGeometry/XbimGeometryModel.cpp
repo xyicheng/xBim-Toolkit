@@ -9,10 +9,10 @@
 #include "XbimFacetedShell.h"
 #include "XbimMap.h"
 
-
+#include <BRepTools.hxx>
 #include <TopoDS_Shell.hxx>
 #include <TopoDS_Solid.hxx>
-#include <BRep_Builder.hxx>
+
 #include <BRepAlgoAPI_Cut.hxx>
 #include <BRepAlgoAPI_Fuse.hxx>
 #include <BRepAlgoAPI_Common.hxx>
@@ -34,6 +34,7 @@ using namespace Xbim::Ifc::ProductExtension;
 using namespace System::Linq;
 using namespace Xbim::IO;
 using namespace Xbim::Common::Exceptions;
+class Message_ProgressIndicator {};
 
 TesselateStream::TesselateStream( unsigned char* pDataStream, const TopTools_IndexedMapOfShape& points, unsigned short faceCount, int streamSize)
 {
@@ -125,6 +126,23 @@ void TesselateStream::BeginFace(const gp_Dir& normal)
 	*pCord = normal.Y(); _position += sizeof(double);
 	pCord = (double *)(_pDataStream + _position);
 	*pCord = normal.Z(); _position += sizeof(double);
+
+}
+void TesselateStream::BeginFace(const double x, const double y, const double z)
+{
+	//reset polygon count
+	_polygonCount=0;
+	//write out space for number of polygons
+	_faceStart = _position;
+	_position += sizeof(unsigned short);
+	unsigned short * pCount = (unsigned short *)(_pDataStream + _position); _position += sizeof(unsigned short);
+	*pCount=1;
+	double* pCord = (double *)(_pDataStream + _position);
+	*pCord = x; _position += sizeof(double);
+	pCord = (double *)(_pDataStream + _position);
+	*pCord = y; _position += sizeof(double);
+	pCord = (double *)(_pDataStream + _position);
+	*pCord = z; _position += sizeof(double);
 
 }
 
@@ -251,11 +269,6 @@ namespace Xbim
 		{
 		}
 
-
-
-
-
-
 		/* Creates a 3D Model geometry for the product based upon the first "Body" ShapeRepresentation that can be found in  
 		Products.ProductRepresentation that is within the specified GeometricRepresentationContext, if the Representation 
 		context is null the first "Body" ShapeRepresentation is used. Returns null if their is no valid geometric definition
@@ -286,8 +299,9 @@ namespace Xbim
 							//check if we have openings or projections
 							IEnumerable<IfcRelProjectsElement^>^ projections = element->HasProjections;
 							IEnumerable<IfcRelVoidsElement^>^ openings = element->HasOpenings;
-							IfcRelVoidsElement^ voids = Enumerable::FirstOrDefault(openings);
-							if( voids !=nullptr || Enumerable::FirstOrDefault(projections) !=nullptr )
+							//srl optimisation openings and projects cannot have openings or projection so don't check for them
+							if( !dynamic_cast<IfcFeatureElement^>(product ) && 
+								( Enumerable::FirstOrDefault(openings) !=nullptr || Enumerable::FirstOrDefault(projections) !=nullptr ))
 							{
 								List<IXbimGeometryModel^>^ projectionSolids = gcnew List<IXbimGeometryModel^>();
 								List<IXbimGeometryModel^>^ openingSolids = gcnew List<IXbimGeometryModel^>();
@@ -313,10 +327,16 @@ namespace Xbim
 										IXbimGeometryModel^ im = CreateFrom(fe, repContext, maps, true);
 										if(im!=nullptr)
 										{	
+											im = im->CopyTo(fe->ObjectPlacement);
+											//the rules say that 
+											//The PlacementRelTo relationship of IfcLocalPlacement shall point (if given) 
+											//to the local placement of the master IfcElement (its relevant subtypes), 
+											//which is associated to the IfcFeatureElement by the appropriate relationship object
 											if(product->ObjectPlacement != ((IfcLocalPlacement^)(fe->ObjectPlacement))->PlacementRelTo)
 											{
 												if(dynamic_cast<IfcLocalPlacement^>(product->ObjectPlacement))
 												{	
+													//we need to move the opening into the coordinate space of the product
 													IfcLocalPlacement^ lp = (IfcLocalPlacement^)product->ObjectPlacement;							
 													TopLoc_Location prodLoc = XbimGeomPrim::ToLocation(lp->RelativePlacement);
 													prodLoc= prodLoc.Inverted();
@@ -324,11 +344,10 @@ namespace Xbim
 													(*(im->Handle)).Move(prodLoc);	
 												}
 											}
-
-											im = im->CopyTo(fe->ObjectPlacement);
 											openingSolids->Add(im);
 										}
 									}
+									
 								}
 								IXbimGeometryModel^ baseShape = CreateFrom(shape, maps, true);	
 								
@@ -501,14 +520,23 @@ namespace Xbim
 				}
 
 				//need to transform all the geometries as below
-				return CreateMap(mg, repMap->MappingOrigin, map->MappingTarget,maps, forceSolid);	
+				if(mg!=nullptr)
+					return CreateMap(mg, repMap->MappingOrigin, map->MappingTarget,maps, forceSolid);
+				else
+					return nullptr;
 
+			}
+			else if(dynamic_cast<IfcGeometricSet^>(repItem))
+			{
+				IfcGeometricSet^ gset = (IfcGeometricSet^) repItem;
+				Logger->Warn(String::Format("Support for IfcGeometricSet #{0} has not been implemented", Math::Abs(gset->EntityLabel)));
 			}
 			else
 			{
 				Type ^ type = repItem->GetType();
-				throw(gcnew NotImplementedException(String::Format("XbimGeometryModel. Could not Build Geometry, type {0} is not implemented",type->Name)));
+				Logger->Warn(String::Format("XbimGeometryModel. Could not Build Geometry #{0}, type {1} is not implemented",Math::Abs(repItem->EntityLabel), type->Name));
 			}
+			return nullptr;
 		}
 
 		IXbimGeometryModel^ XbimGeometryModel::CreateMap(IXbimGeometryModel^ item, IfcAxis2Placement^ origin, IfcCartesianTransformationOperator^ transform, Dictionary<IfcRepresentation^, IXbimGeometryModel^>^ maps, bool forceSolid)
@@ -681,6 +709,7 @@ namespace Xbim
 				{
 					b.Add(shell, TopoDS::Face(fExp.Current()));
 				}
+				
 				ShapeFix_Shell shellFix(shell);
 				shellFix.Perform();
 				ShapeFix_Solid sfs;

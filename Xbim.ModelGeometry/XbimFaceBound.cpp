@@ -8,9 +8,11 @@
 #include <BRepBuilderAPI_MakeWire.hxx>
 #include <GC_MakeArcOfCircle.hxx>
 #include <gp_Ax2.hxx>
+#include <gp_Ax3.hxx>
 #include <gp_Circ.hxx>
 #include <Geom_Circle.hxx>
 #include <GC_MakeCircle.hxx>
+#include <GC_MakeEllipse.hxx>
 #include <BRepBuilderAPI_MakeEdge.hxx>
 #include <BRepBuilderAPI_MakePolygon.hxx>
 #include <gp_Elips.hxx> 
@@ -52,21 +54,337 @@ namespace Xbim
 
 
 		// AK: Builds a wire from a composite IfcLShapeProfileDef
+		//TODO: SRL: Support for fillet radii needs to be added, nb set the hascurves=true when added
+		// and note too that this will decrease performance due to use of OCC for triangulation
 		TopoDS_Wire XbimFaceBound::Build(IfcLShapeProfileDef ^ profile, bool% hasCurves)
 		{
-			throw(gcnew NotImplementedException(String::Format("XbimFaceBound. Could not BuildShape of type {0}. It is not implemented", "IfcLShapeProfileDef")));
+			
+			double dY = profile->Depth/2;
+			double dX;
+			if (profile->Width.HasValue)
+				dX = profile->Width.Value/2;
+			else
+				dX=dY;
+			double tF = profile->Thickness;
+			gp_Pnt p1(-dX,dY,0);
+			gp_Pnt p2(-dX + tF,dY,0);
+			gp_Pnt p3(-dX + tF,-dY+tF,0);
+			gp_Pnt p4(dX,-dY+tF,0);
+			gp_Pnt p5(dX,-dY,0);
+			gp_Pnt p6(-dX,-dY,0);
+			
+			BRepBuilderAPI_MakeWire wireMaker;
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p1,p2));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p2,p3));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p3,p4));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p4,p5));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p5,p6));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p6,p1));
+			TopoDS_Wire wire = wireMaker.Wire();
+			wire.Move(XbimGeomPrim::ToLocation(profile->Position));
+			return wire;
 		}
 
 		// AK: Builds a wire from a composite IfcUShapeProfileDef
+		//TODO: SRL: Support for fillet radii needs to be added, nb set the hascurves=true when added
+		// and note too that this will decrease performance due to use of OCC for triangulation
 		TopoDS_Wire XbimFaceBound::Build(IfcUShapeProfileDef ^ profile, bool% hasCurves)
 		{
-			throw(gcnew NotImplementedException(String::Format("XbimFaceBound. Could not BuildShape of type {0}. It is not implemented", "IfcUShapeProfileDef")));
+			double dX = profile->FlangeWidth/2;
+			double dY = profile->Depth/2;
+			double tF = profile->FlangeThickness;
+			double tW = profile->WebThickness;
+
+			gp_Pnt p1(-dX,dY,0);
+			gp_Pnt p2(dX,dY,0);
+			gp_Pnt p3(dX,dY-tF,0);
+			gp_Pnt p4(-dX + tW,dY-tF,0);
+			gp_Pnt p5(-dX + tW,-dY+tF,0);
+			gp_Pnt p6(dX,-dY+tF,0);
+			gp_Pnt p7(dX,-dY,0);
+			gp_Pnt p8(-dX,-dY,0);
+			
+			BRepBuilderAPI_MakeWire wireMaker;
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p1,p2));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p2,p3));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p3,p4));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p4,p5));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p5,p6));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p6,p7));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p7,p8));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p8,p1));
+			TopoDS_Wire wire = wireMaker.Wire();
+			wire.Move(XbimGeomPrim::ToLocation(profile->Position));
+			return wire;
+		}
+
+		// SRL: Builds a wire from a composite IfcCraneRailFShapeProfileDef
+		//TODO: SRL: Support for fillet radii needs to be added, nb set the hascurves=true when added
+		// and note too that this will decrease performance due to use of OCC for triangulation
+		//NB. This is untested as we haven't enountered one yet
+		TopoDS_Wire XbimFaceBound::Build(IfcCraneRailFShapeProfileDef ^ profile, bool% hasCurves)
+		{
+			double dX  = profile->HeadWidth/2;
+			double dY  = profile->OverallHeight/2;
+			double hd2 = profile->HeadDepth2;	
+			double hd3 = profile->HeadDepth3;
+			double tW  = profile->WebThickness;
+			double bd1 = profile->BaseDepth1;
+			double bd2 = profile->BaseDepth2;
+
+			gp_Pnt p1(-dX,dY,0);
+			gp_Pnt p2(dX,dY,0);
+			gp_Pnt p3(dX,dY-hd3,0);
+			gp_Pnt p4(tW/2,dY-hd2,0);
+			gp_Pnt p5(tW/2,-dY+bd2,0);
+			gp_Pnt p6(dX,-dY+bd1,0);
+			gp_Pnt p7(dX,-dY,0);
+			gp_Pnt p8(-dX,-dY,0);
+			gp_Pnt p9(-dX,-dY+bd1,0);
+			gp_Pnt p10(-tW/2,-dY+bd2,0);
+			gp_Pnt p11(tW/2, dY-hd2,0);
+			gp_Pnt p12(-dX, dY-hd3,0);
+			
+			BRepBuilderAPI_MakeWire wireMaker;
+
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p1,p2));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p2,p3));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p3,p4));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p4,p5));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p5,p6));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p6,p7));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p7,p8));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p8,p9));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p9,p10));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p10,p11));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p11,p12));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p12,p1));
+			TopoDS_Wire wire = wireMaker.Wire();
+			wire.Move(XbimGeomPrim::ToLocation(profile->Position));
+			return wire;
+		}
+		// SRL: Builds a wire from a composite IfcCraneRailAShapeProfileDef
+		//TODO: SRL: Support for fillet radii needs to be added, nb set the hascurves=true when added
+		// and note too that this will decrease performance due to use of OCC for triangulation
+		//NB. This is untested as we haven't enountered one yet
+		TopoDS_Wire XbimFaceBound::Build(IfcCraneRailAShapeProfileDef ^ profile, bool% hasCurves)
+		{
+			double bW  = profile->HeadWidth/2;
+			double dY  = profile->OverallHeight/2;
+			double hd2 = profile->HeadDepth2;	
+			double hd3 = profile->HeadDepth3;
+			double tW  = profile->WebThickness;
+			double bd1 = profile->BaseDepth1;
+			double bd2 = profile->BaseDepth2;
+			double bd3 = profile->BaseDepth3;
+			double bw2 = profile->BaseWidth2/2;
+			double bw4 = profile->BaseWidth4/2;
+
+			gp_Pnt p1(-bw4,dY,0);
+			gp_Pnt p2(bw4,dY,0);
+			gp_Pnt p3(bw4,dY-hd3,0);
+			gp_Pnt p4(tW/2,dY-hd2,0);
+			gp_Pnt p5(tW/2,-dY+bd2,0);
+			gp_Pnt p6(bw4,-dY+bd3,0);
+			gp_Pnt p7(bw2,-dY+bd1,0);
+			gp_Pnt p8(bw2,-dY,0);
+			gp_Pnt p9(-bw2,-dY,0);
+			gp_Pnt p10(-bw2,-dY+bd1,0);
+			gp_Pnt p11(-bw4,-dY+bd3,0);
+			gp_Pnt p12(tW/2, -dY+bd2,0);
+			gp_Pnt p13(tW/2, dY-hd2,0);
+			gp_Pnt p14(-bw4, dY-hd3,0);
+			
+			BRepBuilderAPI_MakeWire wireMaker;
+
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p1,p2));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p2,p3));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p3,p4));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p4,p5));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p5,p6));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p6,p7));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p7,p8));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p8,p9));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p9,p10));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p10,p11));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p11,p12));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p12,p13));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p13,p14));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p14,p1));
+			TopoDS_Wire wire = wireMaker.Wire();
+			wire.Move(XbimGeomPrim::ToLocation(profile->Position));
+			return wire;
+		}
+		// SRL: Builds a wire from a composite IfcEllipseProfileDef
+		//TODO: SRL: Support for fillet radii needs to be added, nb set the hascurves=true when added
+		// and note too that this will decrease performance due to use of OCC for triangulation
+		//NB. This is untested as we haven't enountered one yet
+		TopoDS_Wire XbimFaceBound::Build(IfcEllipseProfileDef ^ profile, bool% hasCurves)
+		{
+
+			IfcAxis2Placement2D^ ax2 = (IfcAxis2Placement2D^)profile->Position;
+			gp_Ax2 gpax2(gp_Pnt(ax2->Location->X, ax2->Location->Y,0), gp_Dir(0,0,1),gp_Dir(ax2->P[0]->X, ax2->P[0]->Y,0.));			
+			gp_Elips gc(gpax2,profile->SemiAxis1, profile->SemiAxis2);
+			Handle(Geom_Ellipse) hellipse = GC_MakeEllipse(gc);
+			TopoDS_Edge edge = BRepBuilderAPI_MakeEdge(hellipse);
+			BRepBuilderAPI_MakeWire wire;
+			wire.Add(edge);
+			return  wire.Wire();
 		}
 
 		// AK: Builds a wire from a composite IfcIShapeProfileDef
+		//TODO: SRL: Support for fillet radii needs to be added, nb set the hascurves=true when added
+		// and note too that this will decrease performance due to use of OCC for triangulation
 		TopoDS_Wire XbimFaceBound::Build(IfcIShapeProfileDef ^ profile, bool% hasCurves)
 		{
-			throw(gcnew NotImplementedException(String::Format("XbimFaceBound. Could not BuildShape of type {0}. It is not implemented", "IfcIShapeProfileDef")));
+			double dX = profile->OverallWidth/2;
+			double dY = profile->OverallDepth/2;
+			double tF = profile->FlangeThickness;
+			double tW = profile->WebThickness;
+
+		
+			gp_Pnt p1(-dX,dY,0);
+			gp_Pnt p2(dX,dY,0);
+			gp_Pnt p3(dX,dY-tF,0);
+			gp_Pnt p4(tW/2,dY-tF,0);
+			gp_Pnt p5(tW/2,-dY+tF,0);
+			gp_Pnt p6(dX,-dY+tF,0);
+			gp_Pnt p7(dX,-dY,0);
+			gp_Pnt p8(-dX,-dY,0);
+			gp_Pnt p9(-dX,-dY+tF,0);
+			gp_Pnt p10(-tW/2,-dY+tF,0);
+			gp_Pnt p11(-tW/2,dY-tF,0);
+			gp_Pnt p12(-dX,dY-tF,0);
+			
+			BRepBuilderAPI_MakeWire wireMaker;
+
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p1,p2));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p2,p3));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p3,p4));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p4,p5));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p5,p6));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p6,p7));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p7,p8));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p8,p9));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p9,p10));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p10,p11));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p11,p12));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p12,p1));
+			TopoDS_Wire wire = wireMaker.Wire();
+			wire.Move(XbimGeomPrim::ToLocation(profile->Position));
+			return wire;
+		}
+
+		//SRL: Builds a wire from a composite IfcZShapeProfileDef
+		//TODO: SRL: Support for fillet radii needs to be added, nb set the hascurves=true when added
+		// and note too that this will decrease performance due to use of OCC for triangulation
+		TopoDS_Wire XbimFaceBound::Build(IfcZShapeProfileDef ^ profile, bool% hasCurves)
+		{
+			double dX = profile->FlangeWidth;
+			double dY = profile->Depth/2;
+			double tF = profile->FlangeThickness;
+			double tW = profile->WebThickness;
+
+		
+			gp_Pnt p1(-dX+(tW/2),dY,0);
+			gp_Pnt p2(tW/2,dY,0);
+			gp_Pnt p3(tW/2,-dY + tF,0);
+			gp_Pnt p4(dX -tW/2,-dY + tF,0);
+			gp_Pnt p5(dX -tW/2,-dY,0);
+			gp_Pnt p6(-tW/2,-dY,0);
+			gp_Pnt p7(-tW/2,dY-tF,0);
+			gp_Pnt p8(-dX+(tW/2),dY-tF,0);
+
+			
+			BRepBuilderAPI_MakeWire wireMaker;
+
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p1,p2));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p2,p3));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p3,p4));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p4,p5));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p5,p6));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p6,p7));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p7,p8));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p8,p1));
+
+			TopoDS_Wire wire = wireMaker.Wire();
+			wire.Move(XbimGeomPrim::ToLocation(profile->Position));
+			return wire;
+		}
+
+		// SRL: Builds a wire from a composite IfcCShapeProfileDef
+		//TODO: SRL: Support for fillet radii needs to be added, nb set the hascurves=true when added
+		// and note too that this will decrease performance due to use of OCC for triangulation
+		TopoDS_Wire XbimFaceBound::Build(IfcCShapeProfileDef ^ profile, bool% hasCurves)
+		{
+			double dX = profile->Width/2;
+			double dY = profile->Depth/2;
+			double dG = profile->Girth;
+			double tW = profile->WallThickness;
+
+			gp_Pnt p1(-dX,dY,0);
+			gp_Pnt p2(dX,dY,0);
+			gp_Pnt p3(dX,dY-dG,0);
+			gp_Pnt p4(dX-tW,dY-dG,0);
+			gp_Pnt p5(dX-tW,dY-dG,0);
+			gp_Pnt p6(-dX+tW,dY-tW,0);
+			gp_Pnt p7(-dX+tW,-dY+tW,0);
+			gp_Pnt p8(dX-tW,-dY+tW,0);
+			gp_Pnt p9(dX-tW,-dY+dG,0);
+			gp_Pnt p10(dX,-dY+dG,0);
+			gp_Pnt p11(dX,-dY,0);
+			gp_Pnt p12(-dX,-dY,0);
+			
+			BRepBuilderAPI_MakeWire wireMaker;
+
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p1,p2));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p2,p3));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p3,p4));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p4,p5));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p5,p6));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p6,p7));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p7,p8));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p8,p9));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p9,p10));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p10,p11));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p11,p12));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p12,p1));
+			TopoDS_Wire wire = wireMaker.Wire();
+			wire.Move(XbimGeomPrim::ToLocation(profile->Position));
+			return wire;
+		}
+		// SRL: Builds a wire from a composite IfcTShapeProfileDef
+		//TODO: SRL: Support for fillet radii needs to be added, nb set the hascurves=true when added
+		// and note too that this will decrease performance due to use of OCC for triangulation
+		TopoDS_Wire XbimFaceBound::Build(IfcTShapeProfileDef ^ profile, bool% hasCurves)
+		{
+			double dX = profile->FlangeWidth/2;
+			double dY = profile->Depth/2;
+			double tF = profile->FlangeThickness;
+			double tW = profile->WebThickness;
+
+			gp_Pnt p1(-dX,dY,0);
+			gp_Pnt p2(dX,dY,0);
+			gp_Pnt p3(dX,dY-tF,0);
+			gp_Pnt p4(tW/2,dY-tF,0);
+			gp_Pnt p5(tW/2,-dY,0);
+			gp_Pnt p6(-tW/2,-dY,0);
+			gp_Pnt p7(-tW/2,dY-tF,0);
+			gp_Pnt p8(-dX,dY-tF,0);
+			
+			BRepBuilderAPI_MakeWire wireMaker;
+
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p1,p2));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p2,p3));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p3,p4));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p4,p5));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p5,p6));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p6,p7));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p7,p8));
+			wireMaker.Add(BRepBuilderAPI_MakeEdge(p8,p1));
+			TopoDS_Wire wire = wireMaker.Wire();
+			wire.Move(XbimGeomPrim::ToLocation(profile->Position));
+			return wire;
 		}
 
 		//Builds a wire from a composite ArbitraryClosedProfileDef
@@ -183,6 +501,10 @@ namespace Xbim
 				Type ^ type = bCurve->GetType();
 				throw(gcnew NotImplementedException(String::Format("XbimFaceBound::Build. BoundedCurve of type {0} is not implemented",type->Name)));	
 			}
+			if(!wire.IsDone())
+			{
+				System::Diagnostics::Debug::WriteLine(String::Format("Error processing entity #{0}",bCurve->EntityLabel));
+			}
 			return wire.Wire();
 
 		}
@@ -259,9 +581,13 @@ namespace Xbim
 				}
 				else if(dynamic_cast<IfcAxis2Placement3D^>(c->Position))
 				{
-					Type ^ type = c->Position->GetType();
-					throw(gcnew NotImplementedException(String::Format("XbimFaceBound. Circle with Placement of type {0} is not implemented",type->Name)));	
-				}
+					IfcAxis2Placement3D^ ax2 = (IfcAxis2Placement3D^)c->Position;
+					gp_Ax3 	gpax3 = XbimGeomPrim::ToAx3(ax2);		
+					gp_Circ gc(gpax3.Ax2(),c->Radius);
+
+					Handle(Geom_TrimmedCurve) aArcOfCircle = GC_MakeArcOfCircle(gc,gp_Pnt(start->X, start->Y,0), gp_Pnt(end->X, end->Y,0),tCurve->SenseAgreement);
+					TopoDS_Edge edge = BRepBuilderAPI_MakeEdge(aArcOfCircle);
+					wire.Add(edge);}
 				else
 				{
 					Type ^ type = c->Position->GetType();
@@ -308,6 +634,10 @@ namespace Xbim
 			{
 				Type ^ type = tCurve->BasisCurve->GetType();
 				throw(gcnew NotImplementedException(String::Format("XbimFaceBound. CompositeCurveSegments with BasisCurve of type {0} is not implemented",type->Name)));	
+			}
+			if(!wire.IsDone())
+			{
+				System::Diagnostics::Debug::WriteLine(String::Format("Error processing entity #{0}",tCurve->EntityLabel));
 			}
 			return wire.Wire();
 		}

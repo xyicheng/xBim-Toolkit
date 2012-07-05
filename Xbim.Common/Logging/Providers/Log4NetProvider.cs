@@ -199,7 +199,7 @@ namespace Xbim.Common.Logging.Providers
                 LoggingHierarchy.Root.RemoveAppender(appender);
                 appender.Clear();
             }
-            catch(Exception ex)
+            catch(Exception)
             {
                 // Ignore
             }

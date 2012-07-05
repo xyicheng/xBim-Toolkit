@@ -8,6 +8,7 @@ using Xbim.ModelGeometry;
 
 using System.IO;
 using Xbim.Common.Logging;
+using Xbim.Ifc.Kernel;
 
 namespace XbimConvert
 {
@@ -38,33 +39,9 @@ namespace XbimConvert
                     System.Diagnostics.Stopwatch watch = new System.Diagnostics.Stopwatch();
 
                     watch.Start();
-                    XbimFileModelServer model = new XbimFileModelServer();
-                    //create a callback for progress
+                    XbimFileModelServer model = ParseModelFile(xbimFileName);
 
-                    model.ImportIfc(arguments.IfcFileName,
-                        xbimFileName,
-                        delegate(int percentProgress, object userState)
-                        {
-                            if (!arguments.IsQuiet)
-                            {
-                                Console.Write(string.Format("{0:D2}% Converted", percentProgress));
-                                ResetCursor(Console.CursorTop);
-                            }
-                        }
-                        );
-
-                    //now convert the geometry
-                    XbimScene scene = new XbimScene(model);
-                    TransformGraph graph = new TransformGraph(model, scene);
-                    //add everything with a representation
-                    graph.AddProducts(model.IfcProducts.Items);
-
-                    using (FileStream sceneStream = new FileStream(xbimGeometryFileName, FileMode.Create, FileAccess.ReadWrite))
-                    {
-                        BinaryWriter bw = new BinaryWriter(sceneStream);
-                        graph.Write(bw);
-                        bw.Flush();
-                    }
+                    GenerateGeometry(xbimGeometryFileName, model);
                     model.Close();
 
                     watch.Stop();
@@ -97,16 +74,99 @@ namespace XbimConvert
             
         }
 
+        private static void GenerateGeometry(string xbimGeometryFileName, XbimFileModelServer model)
+        {
+            //now convert the geometry
+
+            IEnumerable<IfcProduct> toDraw = GetProducts(model);
+
+            XbimScene scene = new XbimScene(model, toDraw);
+            //TransformGraph graph = new TransformGraph(model, scene);
+            //add everything with a representation
+            //graph.AddProducts(model.IfcProducts.Items);
+
+            using (FileStream sceneStream = new FileStream(xbimGeometryFileName, FileMode.Create, FileAccess.ReadWrite))
+            {
+                BinaryWriter bw = new BinaryWriter(sceneStream);
+                scene.Graph.Write(bw);
+                bw.Flush();
+            }
+        }
+
+        private static IEnumerable<IfcProduct> GetProducts(XbimFileModelServer model)
+        {
+            IEnumerable<IfcProduct> result = null;
+
+            switch (arguments.FilterType)
+            {
+                case FilterType.None:
+                    result = model.IfcProducts.Items;
+                    Logger.Debug("All geometry items will be generated");
+                    break;
+
+                case FilterType.ElementID:
+                    List<IfcProduct> list = new List<IfcProduct>();
+                    list.Add(model.GetInstance(arguments.ElementIdFilter) as IfcProduct);
+                    result = list;
+                    Logger.DebugFormat("Only generating product element ID {0}", arguments.ElementIdFilter);
+                    break;
+
+                case FilterType.ElementType:
+                    Type theType = arguments.ElementTypeFilter.Type;
+                    result = model.InstancesWhere<IfcProduct>(i=> i.GetType() == theType);
+                    Logger.DebugFormat("Only generating product elements of type '{0}'", arguments.ElementTypeFilter);
+                    break;
+
+                default:
+                    throw new NotImplementedException();
+            }
+            return result;
+        }
+
+        private static XbimFileModelServer ParseModelFile(string xbimFileName)
+        {
+            XbimFileModelServer model = new XbimFileModelServer();
+            //create a callback for progress
+            switch (Path.GetExtension(arguments.IfcFileName).ToLowerInvariant())
+            {
+                case ".ifc":
+                    model.ImportIfc(arguments.IfcFileName,
+                        xbimFileName,
+                        delegate(int percentProgress, object userState)
+                        {
+                            if (!arguments.IsQuiet)
+                            {
+                                Console.Write(string.Format("{0:D2}% Converted", percentProgress));
+                                ResetCursor(Console.CursorTop);
+                            }
+                        }
+                        );
+                    break;
+                case ".xbim":
+                    // TODO: check this
+                    model.Open(xbimFileName);
+                    break;
+
+                case ".ifcxml":
+                    model.ImportXml(arguments.IfcFileName, xbimFileName);
+                    break;
+                default:
+                    throw new NotImplementedException(String.Format("XbimConvert does not support {0} file formats currently", Path.GetExtension(arguments.IfcFileName)));
+            }
+            
+            return model;
+        }
+
         private static void CreateLogFile(string ifcFile, IList<Event> events)
         {
             try
             {
                 string logfile = String.Concat(ifcFile, ".log");
-                using (StreamWriter writer = new StreamWriter(logfile))
+                using (StreamWriter writer = new StreamWriter(logfile, false))
                 {
                     foreach (Event logEvent in events)
                     {
-                        writer.WriteLine("{0:yyyy-MM-dd hh:mm:ss} : {1:-5} {2}.{3} - {4}",
+                        writer.WriteLine("{0:yyyy-MM-dd HH:mm:ss} : {1:-5} {2}.{3} - {4}",
                             logEvent.EventTime,
                             logEvent.EventLevel.ToString(),
                             logEvent.Logger,
@@ -139,8 +199,11 @@ namespace XbimConvert
 
         private static void GetInput()
         {
-            if(!arguments.IsQuiet)
+            if (!arguments.IsQuiet)
+            {
+                Console.WriteLine("Press Enter to continue...");
                 Console.ReadLine();
+            }
         }
 
         private static void ResetCursor(int top)
