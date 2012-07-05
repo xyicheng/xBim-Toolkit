@@ -105,6 +105,7 @@ namespace XbimConvert
                     //add everything with a representation
                     toDraw=model.IfcProducts.Items;
                 }
+               
                 XbimScene scene = new XbimScene(model, toDraw);
                 using (FileStream sceneStream = new FileStream(xbimGeometryFileName, FileMode.Create, FileAccess.ReadWrite))
                 {

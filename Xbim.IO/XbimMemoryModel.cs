@@ -1317,5 +1317,15 @@ namespace Xbim.IO
         }
 
 
+
+        #region IModel Members
+
+
+        public string Open(string inputFileName, ReportProgressDelegate progDelegate)
+        {
+            return Open(inputFileName, progDelegate);
+        }
+
+        #endregion
     }
 }

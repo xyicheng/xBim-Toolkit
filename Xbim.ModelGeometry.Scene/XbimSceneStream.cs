@@ -13,7 +13,13 @@ namespace Xbim.ModelGeometry.Scene
         private Stream _sceneStream;
         private string _sceneStreamFileName;
         private TransformGraph _graph;
-              
+        private XbimLOD _lod;
+
+        public XbimLOD LOD
+        {
+            get { return _lod; }
+            set { _lod = value; }
+        }      
 
         public XbimSceneStream(IModel model, string cacheFile)
         {

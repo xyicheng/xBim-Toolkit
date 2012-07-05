@@ -96,6 +96,7 @@ namespace Xbim.XbimExtensions
         string Validate(ValidationFlags validateFlags);
         void Export(XbimStorageType fileType, string outputFileName);
         string Open(string inputFileName);
+        string Open(string inputFileName, ReportProgressDelegate progDelegate);
         bool Save();
         bool SaveAs(string outputFileName);
         void Import(string inputFileName);

@@ -31,6 +31,7 @@ using Xbim.Ifc.SharedBldgElements;
 using Xbim.ModelGeometry;
 using Xbim.ModelGeometry.Scene;
 using Xbim.XbimExtensions;
+using Xbim.Ifc.SharedComponentElements;
 
 #endregion
 
@@ -583,7 +584,8 @@ namespace Xbim.Presentation
             if (worker != null && scene != null)
             {
                 worker.ReportProgress(0, "Converting to Xbim");
-                TransformGraph transformGraph = scene.Graph;
+       
+               TransformGraph transformGraph = scene.Graph;
                 if (_onSetFilter != null)
                 {
                     List<List<TransformNode>> totalList = new List<List<TransformNode>>();
@@ -604,17 +606,21 @@ namespace Xbim.Presentation
                             XbimTriangulatedModelStream tm = node.TriangulatedModel; //load the triangulation in this thread
                             processed++;
                             int newPercentage = Convert.ToInt32(processed / total * 100.0);
-                            //if (newPercentage > _percentageParsed)
-                            //{
+                            if (newPercentage > _percentageParsed)
+                            {
                                 _percentageParsed = newPercentage;
                                 worker.ReportProgress(_percentageParsed, node);
-                            //}
+                            }
                         }
                     }
                 }
                 else
                 {
-                    IEnumerable<TransformNode> nodes = transformGraph.ProductNodes.Values.Where(n => !(n.Product is IfcSpace) && !(n.Product is IfcFeatureElement));
+                    IEnumerable<TransformNode> nodes;
+                    if(scene.LOD==XbimLOD.LOD400)
+                        nodes = transformGraph.ProductNodes.Values.Where(n => !(n.Product is IfcSpace) && !(n.Product is IfcFeatureElement));
+                    else
+                        nodes = transformGraph.ProductNodes.Values.Where(n => !(n.Product is IfcSpace) && !(n.Product is IfcFeatureElement) && !(n.Product is IfcFastener) );
                     int total = nodes.Count();
                     foreach (var node in nodes)
                     {
@@ -622,11 +628,11 @@ namespace Xbim.Presentation
                         processed++;
                         int newPercentage = Convert.ToInt32(processed / total * 100.0);
                         worker.ReportProgress(_percentageParsed, node);
-                        //if (newPercentage > _percentageParsed)
-                        //{
-                        //    _percentageParsed = newPercentage;
-                            
-                        //}
+                        if (newPercentage > _percentageParsed)
+                        {
+                            _percentageParsed = newPercentage;
+
+                        }
                     }
                 }
             }

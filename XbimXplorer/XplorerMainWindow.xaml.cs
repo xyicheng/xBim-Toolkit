@@ -234,7 +234,7 @@ namespace XbimXplorer
             try
             {
                 //attach it to the Ifc Stream Parser
-                model.Open(ifcFilename);
+                model.Open(ifcFilename, worker.ReportProgress);
                 XbimScene geomEngine = new XbimScene(model);
                 ModelProvider.Scene = geomEngine;
             }

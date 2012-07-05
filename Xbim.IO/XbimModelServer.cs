@@ -1605,6 +1605,7 @@ namespace Xbim.IO
         }
 
         public abstract string Open(string inputFileName);
+        public abstract string Open(string inputFileName, ReportProgressDelegate progDelegate);
         public abstract void Import(string inputFileName);
 
 
