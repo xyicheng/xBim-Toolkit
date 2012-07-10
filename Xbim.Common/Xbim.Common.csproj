@@ -114,8 +114,11 @@
     <Compile Include="Exceptions\XbimGeometryException.cs" />
     <Compile Include="Exceptions\XbimParserException.cs" />
     <Compile Include="Helpers\AttributeHelper.cs" />
+    <Compile Include="Logging\Event.cs" />
+    <Compile Include="Logging\EventLevel.cs" />
     <Compile Include="Logging\ILogger.cs" />
     <Compile Include="Logging\LoggerFactory.cs" />
+    <Compile Include="Logging\EventTrace.cs" />
     <Compile Include="Logging\Providers\DefaultLogger.cs" />
     <Compile Include="Logging\Providers\DefaultProvider.cs" />
     <Compile Include="Logging\Providers\ILoggingProvider.cs" />

@@ -9,9 +9,16 @@
 #endregion
 
 using System;
-using log4net.Config;
-using System.Reflection;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Reflection;
+using log4net;
+using log4net.Appender;
+using log4net.Config;
+using log4net.Core;
+using log4net.Layout;
+using log4net.Repository.Hierarchy;
 using Xbim.Common.Helpers;
 
 namespace Xbim.Common.Logging.Providers
@@ -163,6 +170,82 @@ namespace Xbim.Common.Logging.Providers
 			return productName;
 		}
 
-		
-	}
+
+
+
+        public string AttachMemoryLogger()
+        {
+            // Set up a memory logger against the root, to intercept at All Levels
+
+            String name = String.Format("MA{0}", DateTime.UtcNow);
+            MemoryAppender memoryAppender = new MemoryAppender();
+            memoryAppender.Name = name;
+            memoryAppender.Layout = new PatternLayout("%date{dd-MM-yyyy HH:mm:ss,fff} %5level [%2thread] %message (%logger{1}:%line)%n");
+            memoryAppender.Threshold = Level.All;
+            memoryAppender.ActivateOptions();
+
+            Logger root = LoggingHierarchy.Root;
+            root.AddAppender(memoryAppender);
+            root.Repository.Configured = true;
+
+            return name;
+        }
+
+        public void DetatchMemoryLogger(string name)
+        {
+            try
+            {
+                MemoryAppender appender = GetMemoryAppender(name);
+                LoggingHierarchy.Root.RemoveAppender(appender);
+                appender.Clear();
+            }
+            catch(Exception)
+            {
+                // Ignore
+            }
+        }
+
+        private MemoryAppender GetMemoryAppender(String name)
+        {
+            MemoryAppender appender = LoggingHierarchy.Root.GetAppender(name) as MemoryAppender;
+            if (appender == null)
+            {
+                throw new InvalidOperationException(String.Format("Could not locate memory appender named '{0}'", name));
+            }
+            return appender;
+        }
+
+        private Hierarchy LoggingHierarchy
+        {
+            get
+            {
+                if (_hierarchy == null)
+                {
+                    _hierarchy = LogManager.GetRepository() as Hierarchy;
+                }
+                return _hierarchy;
+            }
+
+        }
+
+        private Hierarchy _hierarchy;
+
+
+        public List<Event> GetEvents(string name)
+        {
+
+            var results = from e in GetMemoryAppender(name).GetEvents()
+                          select new Event
+                          {
+                              EventTime = e.TimeStamp,
+                              EventLevel = (EventLevel)Enum.Parse(typeof(EventLevel), e.Level.ToString()),
+                              Message = e.RenderedMessage,
+                              User = e.Identity,
+                              Logger = e.LoggerName,
+                              Method = e.LocationInformation.MethodName
+                          };
+
+            return results.ToList();
+        }
+    }
 }

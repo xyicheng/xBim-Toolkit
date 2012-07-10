@@ -8,126 +8,201 @@ using Xbim.ModelGeometry;
 
 using System.IO;
 using Xbim.Common.Logging;
-using Xbim.XbimExtensions;
 using Xbim.Ifc.Kernel;
 
 namespace XbimConvert
 {
-    
     class Program
     {
-        
-        static void Main(string[] args)
+        private static readonly ILogger Logger = LoggerFactory.GetLogger();
+        private static Params arguments;
+
+        static int Main(string[] args)
         {
-            ILogger Logger = LoggerFactory.GetLogger();
-            Logger.Info("XbimConvert Started");
-            if (args.Length < 1)
+            // We need to use the logger early to initialise before we use EventTrace
+            Logger.Debug("XbimConvert starting...");
+            using (EventTrace eventTrace = LoggerFactory.CreateEventTrace())
             {
-                Console.WriteLine("Invalid number of Parameters, filename required");
-                Console.WriteLine("Syntax: ConvertToXbim source");
-                Console.WriteLine("Press any key to continue..."); 
-                Console.ReadLine();
-                return;
-            }
-            string fileName = args[0];
-            if (!File.Exists(fileName))
-            {
-                Console.WriteLine(string.Format("Invalid filename {0}", fileName));
-                Console.WriteLine("Press any key to continue..."); 
-                Console.ReadLine();
-                return;
-            }
-            try
-            {
-                string fileType = Path.GetExtension(fileName);
-                string xbimFileName = Path.ChangeExtension(fileName, ".xbim");
-                
-                XbimFileModelServer model = new XbimFileModelServer();
+                arguments = Params.ParseParams(args);
 
-                if (string.Compare(fileType, ".ifc", true) == 0)
+                if (!arguments.IsValid)
                 {
-                    //create a callback for progress
+                    return -1;
+                }
+                
+                try
+                {
+                    Logger.InfoFormat("Starting conversion of {0}", args[0]);
 
-                    model.ImportIfc(fileName,
+                    string xbimFileName = BuildFileName(arguments.IfcFileName, ".xbim");
+                    string xbimGeometryFileName = BuildFileName(arguments.IfcFileName, ".xbimGC");
+                    System.Diagnostics.Stopwatch watch = new System.Diagnostics.Stopwatch();
+
+                    watch.Start();
+                    XbimFileModelServer model = ParseModelFile(xbimFileName);
+
+                    GenerateGeometry(xbimGeometryFileName, model);
+                    model.Close();
+
+                    watch.Stop();
+
+                    ResetCursor(Console.CursorTop + 1);
+                    Console.WriteLine("Success. Processed in " + watch.ElapsedMilliseconds + " ms");
+                    GetInput();
+                }
+                catch (Exception e)
+                {
+                    ResetCursor(Console.CursorTop + 1);
+                    Console.WriteLine(string.Format("Error converting {0}, {1}", arguments.IfcFileName, e.Message));
+                    Logger.Error(String.Format("Error converting {0}", arguments.IfcFileName), e);
+                    GetInput();
+                    
+                    return -1;
+                }
+                int errors = (from e in eventTrace.Events
+                             where (e.EventLevel > EventLevel.INFO)
+                             select e).Count();
+
+                if (errors > 0)
+                {
+                    CreateLogFile(arguments.IfcFileName, eventTrace.Events);
+                }
+
+                Logger.Debug("XbimConvert finished...");
+                return errors;
+            }
+            
+        }
+
+        private static void GenerateGeometry(string xbimGeometryFileName, XbimFileModelServer model)
+        {
+            //now convert the geometry
+
+            IEnumerable<IfcProduct> toDraw = GetProducts(model);
+
+            XbimScene scene = new XbimScene(model, toDraw);
+            //TransformGraph graph = new TransformGraph(model, scene);
+            //add everything with a representation
+            //graph.AddProducts(model.IfcProducts.Items);
+
+            using (FileStream sceneStream = new FileStream(xbimGeometryFileName, FileMode.Create, FileAccess.ReadWrite))
+            {
+                BinaryWriter bw = new BinaryWriter(sceneStream);
+                scene.Graph.Write(bw);
+                bw.Flush();
+            }
+        }
+
+        private static IEnumerable<IfcProduct> GetProducts(XbimFileModelServer model)
+        {
+            IEnumerable<IfcProduct> result = null;
+
+            switch (arguments.FilterType)
+            {
+                case FilterType.None:
+                    result = model.IfcProducts.Items;
+                    Logger.Debug("All geometry items will be generated");
+                    break;
+
+                case FilterType.ElementID:
+                    List<IfcProduct> list = new List<IfcProduct>();
+                    list.Add(model.GetInstance(arguments.ElementIdFilter) as IfcProduct);
+                    result = list;
+                    Logger.DebugFormat("Only generating product element ID {0}", arguments.ElementIdFilter);
+                    break;
+
+                case FilterType.ElementType:
+                    Type theType = arguments.ElementTypeFilter.Type;
+                    result = model.InstancesWhere<IfcProduct>(i=> i.GetType() == theType);
+                    Logger.DebugFormat("Only generating product elements of type '{0}'", arguments.ElementTypeFilter);
+                    break;
+
+                default:
+                    throw new NotImplementedException();
+            }
+            return result;
+        }
+
+        private static XbimFileModelServer ParseModelFile(string xbimFileName)
+        {
+            XbimFileModelServer model = new XbimFileModelServer();
+            //create a callback for progress
+            switch (Path.GetExtension(arguments.IfcFileName).ToLowerInvariant())
+            {
+                case ".ifc":
+                    model.ImportIfc(arguments.IfcFileName,
+                        xbimFileName,
                         delegate(int percentProgress, object userState)
                         {
-                            Console.Write(string.Format("{0:D2}% Converted", percentProgress));
-                            Console.SetCursorPosition(0, Console.CursorTop);
+                            if (!arguments.IsQuiet)
+                            {
+                                Console.Write(string.Format("{0:D2}% Converted", percentProgress));
+                                ResetCursor(Console.CursorTop);
+                            }
                         }
                         );
-                }
-                else if (string.Compare(fileType, ".xbim", true) == 0)
-                { 
-                    model.Open(fileName);
-                }
-                else if (string.Compare(fileType, ".ifcxml", true) == 0)
-                {
-                    model.ImportXml(fileName, xbimFileName);
-                }
-                else
-                {
-                    Console.WriteLine("Invalid file type, ifc, xbim or ifcxml required");
-                    Console.WriteLine("Press any key to continue...");
-                    Console.ReadLine();
-                    return;
-                }
-                string xbimGeometryFileName = Path.ChangeExtension(fileName, ".xbimGC");
-                System.Diagnostics.Stopwatch watch = new System.Diagnostics.Stopwatch();
-                watch.Start();
-                Console.WriteLine("Converting Geometry...");
-                //now convert the geometry
-                
-                
-                long processMe = 0;
-                IfcType t=null;
-                bool hasType = false;
-                IEnumerable<IfcProduct> toDraw;
-                if (args.Length > 1) 
-                {
+                    break;
+                case ".xbim":
+                    // TODO: check this
+                    model.Open(xbimFileName);
+                    break;
 
-                    hasType = IfcInstances.IfcTypeLookup.TryGetValue(args[1].ToUpper(), out t);
-                    if (!hasType) //try getting an instance
-                        processMe = Convert.ToInt64(args[1]);
-                }
-                if (processMe > 0)
+                case ".ifcxml":
+                    model.ImportXml(arguments.IfcFileName, xbimFileName);
+                    break;
+                default:
+                    throw new NotImplementedException(String.Format("XbimConvert does not support {0} file formats currently", Path.GetExtension(arguments.IfcFileName)));
+            }
+            
+            return model;
+        }
+
+        private static void CreateLogFile(string ifcFile, IList<Event> events)
+        {
+            try
+            {
+                string logfile = String.Concat(ifcFile, ".log");
+                using (StreamWriter writer = new StreamWriter(logfile, false))
                 {
-                    List<IfcProduct> l =  new List<IfcProduct>();
-                    l.Add((IfcProduct)model.GetInstance(processMe));
-                    toDraw = l;
+                    foreach (Event logEvent in events)
+                    {
+                        writer.WriteLine("{0:yyyy-MM-dd HH:mm:ss} : {1:-5} {2}.{3} - {4}",
+                            logEvent.EventTime,
+                            logEvent.EventLevel.ToString(),
+                            logEvent.Logger,
+                            logEvent.Method,
+                            logEvent.Message
+                            );
+                    }
+                    writer.Flush();
+                    writer.Close();
                 }
-                else if(hasType)
-                {
-                    Type theType = t.Type;
-                    toDraw=model.InstancesWhere<IfcProduct>(i=>i.GetType()== theType);
-                }
-                else
-                {
-                    //add everything with a representation
-                    toDraw=model.IfcProducts.Items;
-                }
-               
-                XbimScene scene = new XbimScene(model, toDraw);
-                using (FileStream sceneStream = new FileStream(xbimGeometryFileName, FileMode.Create, FileAccess.ReadWrite))
-                {
-                    BinaryWriter bw = new BinaryWriter(sceneStream);
-                    scene.Graph.Write(bw);
-                    bw.Flush();
-                }
-                model.Close();
-                
-                watch.Stop();
-                Console.SetCursorPosition(0, Console.CursorTop + 1);
-                Console.WriteLine("Success. Processed in  " + watch.ElapsedMilliseconds + " ms");
-                Console.WriteLine("Press any key to continue..."); 
-                Console.ReadKey();
             }
             catch (Exception e)
             {
-                Console.SetCursorPosition(0, Console.CursorTop+1);
-                Console.WriteLine(string.Format("Error converting {0}, {1}", fileName, e.Message));
-                Console.WriteLine("Press any key to continue..."); 
+                Logger.Error(String.Format("Failed to create Log File for {0}", ifcFile), e);
+            }
+        }
+
+        private static string BuildFileName(string file, string extension)
+        {
+            if (arguments.KeepFileExtension)
+            {
+                return String.Concat(file, extension);
+            }
+            else
+            {
+                return Path.ChangeExtension(file, extension);
+            }
+        }
+
+
+        private static void GetInput()
+        {
+            if (!arguments.IsQuiet)
+            {
+                Console.WriteLine("Press Enter to continue...");
                 Console.ReadLine();
-                return;
             }
         }
 
@@ -135,8 +210,8 @@ namespace XbimConvert
         {
             try
             {
-                // Can't reset outside of buffer
-                if (top >= Console.BufferHeight)
+                // Can't reset outside of buffer, and should ignore when in quiet mode
+                if (top >= Console.BufferHeight || arguments.IsQuiet == true)
                     return;
                 Console.SetCursorPosition(0, top);
             }
