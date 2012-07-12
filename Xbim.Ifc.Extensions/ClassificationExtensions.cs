@@ -15,6 +15,7 @@
 using System.Collections.Generic;
 using Xbim.Ifc.ExternalReferenceResource;
 using Xbim.XbimExtensions;
+using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 

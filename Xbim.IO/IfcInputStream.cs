@@ -17,7 +17,8 @@ using System.CodeDom.Compiler;
 using System.IO;
 using System.Text;
 using Xbim.XbimExtensions;
-using Xbim.XbimExtensions.Parser;
+using Xbim.XbimExtensions.Interfaces;
+using Xbim.IO.Parser;
 
 #endregion
 

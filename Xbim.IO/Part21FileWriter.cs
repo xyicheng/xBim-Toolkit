@@ -21,21 +21,33 @@ using System.Runtime.Serialization.Formatters;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using Xbim.Ifc.SelectTypes;
-using Xbim.XbimExtensions.Parser;
+using Xbim.XbimExtensions.Interfaces;
 using Xbim.Ifc.GeometryResource;
 using Xbim.Ifc.MeasureResource;
+using Xbim.XbimExtensions;
 
 #endregion
 
-namespace Xbim.XbimExtensions
+namespace Xbim.IO
 {
     public class Part21FileWriter : IDisposable
     {
+
+
+        [NonSerialized]
+        private TextWriter _output;
+        [NonSerialized]
+        private HashSet<long> _written;
         
-
-        [NonSerialized] private TextWriter _output;
-        [NonSerialized] private Dictionary<object, int> _written;
-
+        public Part21FileWriter()
+        {
+        }
+        public Part21FileWriter (TextWriter Output)
+        {
+            _written = new HashSet<long>();
+            _output = Output;
+        }
+               
 
         private void WriteEntity(Type type, List<string> tokens, string id)
         {
@@ -57,8 +69,8 @@ namespace Xbim.XbimExtensions
         {
             try
             {
-                
-                _written = new Dictionary<object, int>((int) model.InstancesCount);
+
+                _written = new HashSet<long>();
                 _output = output;
                 WriteHeader(model);
 
@@ -85,22 +97,20 @@ namespace Xbim.XbimExtensions
             }
         }
 
-        public string Write(IPersistIfc entity)
+        public string Write(IPersistIfcEntity entity)
         {
-            string id;
-            if (_written.ContainsKey(entity))
-                return string.Format("#{0}", _written[entity]);
+            string id = string.Format("#{0}", entity.EntityLabel);
+            if (_written.Contains(entity.EntityLabel))
+                return id;
             else
             {
-                int nextId = _written.Count + 1;
-                id = string.Format("#{0}", nextId);
-                _written.Add(entity, nextId);
+                _written.Add(entity.EntityLabel);
             }
             IfcType ifcType = IfcInstances.IfcEntities[entity.GetType()];
 
             List<string> tokens = new List<string>();
             foreach (IfcMetaProperty ifcProperty in ifcType.IfcProperties.Values)
-                //only write out persistent attributes, ignore inverses
+            //only write out persistent attributes, ignore inverses
             {
                 if (ifcProperty.IfcAttribute.State == IfcAttributeState.DerivedOverride)
                     tokens.Add("*");
@@ -124,10 +134,10 @@ namespace Xbim.XbimExtensions
             Type itemType;
             if (propVal == null) //null or a value type that maybe null
                 return "$";
-            else if (propType.IsGenericType && propType.GetGenericTypeDefinition() == typeof (Nullable<>) &&
-                     (typeof (ExpressType).IsAssignableFrom(propVal.GetType()))) //deal with undefined types (nullables)
-                return ((ExpressType) propVal).ToPart21;
-            else if (typeof (ExpressType).IsAssignableFrom(propType))
+            else if (propType.IsGenericType && propType.GetGenericTypeDefinition() == typeof(Nullable<>) &&
+                     (typeof(ExpressType).IsAssignableFrom(propVal.GetType()))) //deal with undefined types (nullables)
+                return ((ExpressType)propVal).ToPart21;
+            else if (typeof(ExpressType).IsAssignableFrom(propType))
             {
                 Type realType = propVal.GetType();
 
@@ -136,16 +146,16 @@ namespace Xbim.XbimExtensions
                     return string.Format("{0}({1})", realType.Name.ToUpper(),
                                          ConvertPropertyToPart21String(realType, propVal, entity));
                 else
-                    return ((ExpressType) propVal).ToPart21;
+                    return ((ExpressType)propVal).ToPart21;
             }
-            else if (typeof (ExpressEnumerable).IsAssignableFrom(propType) &&
+            else if (typeof(ExpressEnumerable).IsAssignableFrom(propType) &&
                      (itemType = GetItemTypeFromGenericType(propType)) != null)
-                //only process lists that are real lists, see cartesianpoint
+            //only process lists that are real lists, see cartesianpoint
             {
                 StringBuilder listStr = new StringBuilder("(");
                 bool first = true;
 
-                foreach (object item in ((ExpressEnumerable) propVal))
+                foreach (object item in ((ExpressEnumerable)propVal))
                 {
                     if (first)
                     {
@@ -162,13 +172,13 @@ namespace Xbim.XbimExtensions
                 return listStr.ToString();
             }
 
-            else if (typeof (IPersistIfc).IsAssignableFrom(propType))
+            else if (typeof(IPersistIfcEntity).IsAssignableFrom(propType))
                 //all writable entities must support this interface and ExpressType have been handled so only entities left
-                return Write((IPersistIfc) propVal);
+                return Write((IPersistIfcEntity)propVal);
             else if (propType.IsValueType) //it might be an in-built value type double, string etc
                 return ConvertValueTypeToPart21String(propVal.GetType(), propVal);
-            else if (typeof (ExpressSelectType).IsAssignableFrom(propType))
-                // a select type get the type of the actual value
+            else if (typeof(ExpressSelectType).IsAssignableFrom(propType))
+            // a select type get the type of the actual value
             {
                 if (propVal.GetType().IsValueType) //we have a value type, so write out explicitly
                     return string.Format("{0}({1})", propVal.GetType().Name.ToUpper(),
@@ -216,18 +226,18 @@ namespace Xbim.XbimExtensions
         {
             if (pInfoType.IsEnum) //convert enum
                 return string.Format(".{0}.", pVal.ToString().ToUpper());
-            else if (pInfoType.UnderlyingSystemType == typeof (Boolean))
-                return string.Format(".{0}.", (bool) pVal ? "T" : "F");
-            if (pInfoType.UnderlyingSystemType == typeof (Double))
+            else if (pInfoType.UnderlyingSystemType == typeof(Boolean))
+                return string.Format(".{0}.", (bool)pVal ? "T" : "F");
+            if (pInfoType.UnderlyingSystemType == typeof(Double))
                 return string.Format(new Part21Formatter(), "{0:R}", pVal);
-            if (pInfoType.UnderlyingSystemType == typeof (Int16) || pInfoType.UnderlyingSystemType == typeof (Int32) ||
-                pInfoType.UnderlyingSystemType == typeof (Int64))
+            if (pInfoType.UnderlyingSystemType == typeof(Int16) || pInfoType.UnderlyingSystemType == typeof(Int32) ||
+                pInfoType.UnderlyingSystemType == typeof(Int64))
                 return pVal.ToString();
-            else if (pInfoType.UnderlyingSystemType == typeof (DateTime)) //convert  TimeStamp
+            else if (pInfoType.UnderlyingSystemType == typeof(DateTime)) //convert  TimeStamp
                 return string.Format(new Part21Formatter(), "{0:T}", pVal);
-            else if (pInfoType.UnderlyingSystemType == typeof (Guid)) //convert  Guid string
+            else if (pInfoType.UnderlyingSystemType == typeof(Guid)) //convert  Guid string
                 return string.Format(new Part21Formatter(), "{0:G}", pVal);
-            else if (pInfoType.UnderlyingSystemType == typeof (String)) //convert  string
+            else if (pInfoType.UnderlyingSystemType == typeof(String)) //convert  string
                 return string.Format(new Part21Formatter(), "{0}", pVal);
             else
                 throw new ArgumentException(string.Format("Invalid Value Type {0}", pInfoType.Name), "pInfoType");
@@ -279,11 +289,11 @@ namespace Xbim.XbimExtensions
             }
             header.Append("), (");
             i = 0;
-            if (model.Header.FileName.AuthorMailingAddress.Count == 0)
+            if (model.Header.FileName.Organization.Count == 0)
                 header.Append(@"''");
             else
             {
-                foreach (string item in model.Header.FileName.AuthorMailingAddress)
+                foreach (string item in model.Header.FileName.Organization)
                 {
                     header.AppendFormat(@"{0}'{1}'", i == 0 ? "" : ",", item);
                     i++;
@@ -306,49 +316,49 @@ namespace Xbim.XbimExtensions
             _output.WriteLine("END-ISO-10303-21;");
         }
 
-        public bool Save(XbimMemoryModel model, string fileName, XbimFileType fileType)
-        {
-            switch (fileType)
-            {
-                case XbimFileType.Xbim:
-                    try
-                    {
-                        BinaryFormatter formatter = new BinaryFormatter();
-                        formatter.AssemblyFormat = FormatterAssemblyStyle.Simple;
-                        model.Header.FileDescription.EntityCount = model.Instances.Count();
-                        Stream stream = new FileStream(fileName, FileMode.Create, FileAccess.Write, FileShare.None);
-                        formatter.Serialize(stream, this);
-                        formatter.Serialize(stream, model);
-                        stream.Close();
-                        return true;
-                    }
-                    catch (Exception)
-                    {
-                        return false;
-                    }
-                case XbimFileType.Ifc:
-                    try
-                    {
-                        _written = new Dictionary<object, int>(model.Instances.Count());
-                        _output = new StreamWriter(fileName);
-                        WriteHeader(model);
-                        foreach (IPersistIfc item in model.Instances)
-                        {
-                            Write(item);
-                        }
-                        WriteFooter();
-                        Close();
-                        return true;
-                    }
-                    catch (Exception)
-                    {
-                        return false;
-                    }
+        //public bool Save(XbimMemoryModel model, string fileName, XbimFileType fileType)
+        //{
+        //    switch (fileType)
+        //    {
+        //        case XbimFileType.Xbim:
+        //            try
+        //            {
+        //                BinaryFormatter formatter = new BinaryFormatter();
+        //                formatter.AssemblyFormat = FormatterAssemblyStyle.Simple;
+        //                model.Header.FileDescription.EntityCount = model.Instances.Count();
+        //                Stream stream = new FileStream(fileName, FileMode.Create, FileAccess.Write, FileShare.None);
+        //                formatter.Serialize(stream, this);
+        //                formatter.Serialize(stream, model);
+        //                stream.Close();
+        //                return true;
+        //            }
+        //            catch (Exception)
+        //            {
+        //                return false;
+        //            }
+        //        case XbimFileType.Ifc:
+        //            try
+        //            {
+        //                _written = new HashSet<long>();
+        //                _output = new StreamWriter(fileName);
+        //                WriteHeader(model);
+        //                foreach (IPersistIfcEntity item in model.Instances)
+        //                {
+        //                    Write(item);
+        //                }
+        //                WriteFooter();
+        //                Close();
+        //                return true;
+        //            }
+        //            catch (Exception)
+        //            {
+        //                return false;
+        //            }
 
-                default:
-                    return false;
-            }
-        }
+        //        default:
+        //            return false;
+        //    }
+        //}
 
         #region IDisposable Members
 

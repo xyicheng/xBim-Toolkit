@@ -4,7 +4,7 @@
    of alphabetic ASCII characters.
  */
      
-%namespace Xbim.XbimExtensions.Parser
+%namespace Xbim.IO.Parser
 
 %option verbose, summary
 

@@ -14,7 +14,7 @@
 
 using System;
 using Xbim.Ifc.PresentationResource;
-using Xbim.XbimExtensions.Parser;
+using Xbim.XbimExtensions.Interfaces;
 using Xbim.XbimExtensions;
 
 #endregion

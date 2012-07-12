@@ -32,7 +32,6 @@ using Xbim.Ifc.SharedBldgElements;
 using Xbim.Ifc.SharedBldgServiceElements;
 using Xbim.Ifc.UtilityResource;
 using Xbim.XbimExtensions.DataProviders;
-using Xbim.XbimExtensions.Parser;
 using Xbim.XbimExtensions.Transactions;
 using Xbim.XbimExtensions.Transactions.Extensions;
 using System.Runtime.Serialization.Formatters.Binary;
@@ -43,6 +42,8 @@ using ICSharpCode.SharpZipLib.Zip;
 using Xbim.XbimExtensions;
 using ICSharpCode.SharpZipLib.Core;
 using Xbim.Common.Logging;
+using Xbim.XbimExtensions.Interfaces;
+using Xbim.IO.Parser;
 
 
 #endregion

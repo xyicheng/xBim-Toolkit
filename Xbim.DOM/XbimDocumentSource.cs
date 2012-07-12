@@ -7,6 +7,7 @@ using Xbim.DOM.ExportHelpers;
 using System.Collections.ObjectModel;
 using Xbim.Ifc.UtilityResource;
 using System.Diagnostics;
+using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.DOM
 {

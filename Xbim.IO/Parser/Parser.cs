@@ -19,10 +19,12 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using QUT.Gppg;
+using Xbim.XbimExtensions.Interfaces;
+using Xbim.XbimExtensions;
 
 #endregion
 
-namespace Xbim.XbimExtensions.Parser
+namespace Xbim.IO.Parser
 {
     public sealed partial class Scanner : ScanBase
     {
@@ -46,8 +48,7 @@ namespace Xbim.XbimExtensions.Parser
     }
 
 
-    // Declare a delegate type for processing a P21 value:
-    public delegate void ReportProgressDelegate(int percentProgress, object userState);
+   
 
     public delegate IPersistIfc CreateEntityEventHandler(string className, long? label, bool headerEntity, out int[] i);
 
@@ -56,18 +57,6 @@ namespace Xbim.XbimExtensions.Parser
     //public delegate void EntitySelectChangedHandler(StepP21Entity entity);
 
     public delegate void ParameterSetter(int propIndex, IPropertyValue value);
-
-    public enum IfcParserType
-    {
-        Boolean,
-        Enum,
-        Entity,
-        HexaDecimal,
-        Integer,
-        Real,
-        String,
-        Undefined
-    }
 
     public struct PropertyValue : IPropertyValue
     {

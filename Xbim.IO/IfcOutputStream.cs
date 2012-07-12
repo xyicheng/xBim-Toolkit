@@ -16,7 +16,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using Xbim.XbimExtensions;
-using Xbim.XbimExtensions.Parser;
+using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 

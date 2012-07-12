@@ -23,7 +23,7 @@ using Xbim.Ifc.MeasureResource;
 using Xbim.Ifc.SelectTypes;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
-using Xbim.XbimExtensions.Parser;
+
 
 #endregion
 

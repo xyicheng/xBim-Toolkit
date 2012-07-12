@@ -16,7 +16,7 @@ using System;
 using System.Collections.Generic;
 using Xbim.Ifc.StructuralLoadResource;
 using Xbim.XbimExtensions;
-using Xbim.XbimExtensions.Parser;
+using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 

@@ -7,6 +7,7 @@ using Xbim.XbimExtensions;
 using Xbim.Ifc.QuantityResource;
 using Xbim.Ifc.Extensions;
 using Xbim.Ifc.Kernel;
+using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.DOM.PropertiesQuantities
 {

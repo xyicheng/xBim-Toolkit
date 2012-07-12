@@ -20,7 +20,7 @@ using System.Windows.Media;
 using System.Windows.Media.Media3D;
 using Xbim.Ifc.MeasureResource;
 using Xbim.XbimExtensions;
-using Xbim.XbimExtensions.Parser;
+using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 

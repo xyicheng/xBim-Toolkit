@@ -22,7 +22,7 @@ using System.Windows.Media;
 using System.Xml.Serialization;
 using Xbim.Ifc.SelectTypes;
 using Xbim.XbimExtensions;
-using Xbim.XbimExtensions.Parser;
+using Xbim.XbimExtensions.Interfaces;
 using WinVector = System.Windows.Vector;
 using WinVector3D = System.Windows.Media.Media3D.Vector3D;
 

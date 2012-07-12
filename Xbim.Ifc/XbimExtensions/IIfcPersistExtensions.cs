@@ -11,7 +11,8 @@
 #region Directives
 using System;
 using Xbim.Common.Exceptions;
-using Xbim.XbimExtensions.Parser;
+
+using Xbim.XbimExtensions.Interfaces;
 #endregion
 
 namespace Xbim.XbimExtensions

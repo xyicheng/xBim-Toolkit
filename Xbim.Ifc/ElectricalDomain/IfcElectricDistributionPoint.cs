@@ -16,7 +16,7 @@ using System;
 using Xbim.Ifc.MeasureResource;
 using Xbim.Ifc.SharedBldgServiceElements;
 using Xbim.XbimExtensions;
-using Xbim.XbimExtensions.Parser;
+using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 

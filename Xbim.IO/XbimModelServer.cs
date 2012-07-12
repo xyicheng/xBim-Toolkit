@@ -36,10 +36,11 @@ using Xbim.Ifc.SharedBldgElements;
 using Xbim.Ifc.UtilityResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.DataProviders;
-using Xbim.XbimExtensions.Parser;
 using Xbim.XbimExtensions.Transactions;
 using ICSharpCode.SharpZipLib.Zip;
 using ICSharpCode.SharpZipLib.Core;
+using Xbim.XbimExtensions.Interfaces;
+using Xbim.IO.Parser;
 
 #endregion
 

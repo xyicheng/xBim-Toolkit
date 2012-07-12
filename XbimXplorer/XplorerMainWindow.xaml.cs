@@ -34,6 +34,7 @@ using Xbim.Presentation;
 using Xbim.XbimExtensions;
 using Xbim.ModelGeometry;
 using Xbim.ModelGeometry.Scene;
+using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 

@@ -19,9 +19,11 @@ using System.Diagnostics;
 using System.IO;
 using Xbim.XbimExtensions.Transactions.Extensions;
 using Xbim.XbimExtensions.Transactions;
+using Xbim.XbimExtensions;
+using Xbim.XbimExtensions.Interfaces;
 #endregion
 
-namespace Xbim.XbimExtensions.Parser
+namespace Xbim.IO.Parser
 {
     public class XbimIndexEntry
     {

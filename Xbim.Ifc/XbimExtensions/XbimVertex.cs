@@ -13,6 +13,7 @@
 #region Directives
 
 using System.Runtime.InteropServices;
+using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 

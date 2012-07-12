@@ -20,7 +20,7 @@ using System.Xml.Serialization;
 using Xbim.Ifc.Kernel;
 using Xbim.Ifc.MeasureResource;
 using Xbim.XbimExtensions;
-using Xbim.XbimExtensions.Parser;
+using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 

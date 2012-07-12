@@ -21,6 +21,7 @@ using System.Diagnostics;
 using Xbim.DOM.PropertiesQuantities;
 using Xbim.Ifc.PropertyResource;
 using Xbim.Ifc.GeometryResource;
+using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.DOM
 {
@@ -783,7 +784,7 @@ namespace Xbim.DOM
                 }
 
                 //get volume from the table (must be preprocessed before)
-                IfcValue volVal = element.GetPropertySingleValueValue("BuildingElementVolume", "Volume");
+                IfcValue volVal = element.GetPropertySingleNominalValue("BuildingElementVolume", "Volume");
                 if (volVal == null) continue;
                 if (!(volVal is IfcVolumeMeasure)) continue; //volume information is not present in the model
                 

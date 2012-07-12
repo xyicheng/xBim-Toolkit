@@ -17,6 +17,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Xbim.XbimExtensions.Transactions;
 using Xbim.XbimExtensions.Transactions.Extensions;
+using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
@@ -33,11 +34,7 @@ namespace Xbim.XbimExtensions
     }
 
     public delegate void XbimValidationEventHandler(string errorMsg);
-
-    public class ModelCollection : HashSet<XbimMemoryModel>
-    {
-    }
-
+        
     public static class ModelManager
     {
         private static readonly HashSet<IModel> _models;

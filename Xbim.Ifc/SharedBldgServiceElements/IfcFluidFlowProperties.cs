@@ -18,7 +18,7 @@ using Xbim.Ifc.MaterialResource;
 using Xbim.Ifc.MeasureResource;
 using Xbim.Ifc.TimeSeriesResource;
 using Xbim.XbimExtensions;
-using Xbim.XbimExtensions.Parser;
+using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 

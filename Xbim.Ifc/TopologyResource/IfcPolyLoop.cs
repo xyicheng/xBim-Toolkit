@@ -18,7 +18,7 @@ using System.Linq;
 using System.Text;
 using Xbim.Ifc.GeometryResource;
 using Xbim.XbimExtensions;
-using Xbim.XbimExtensions.Parser;
+using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 

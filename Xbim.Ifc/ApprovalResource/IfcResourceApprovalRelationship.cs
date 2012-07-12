@@ -16,7 +16,7 @@ using System;
 using System.ComponentModel;
 using Xbim.Ifc.Kernel;
 using Xbim.XbimExtensions;
-using Xbim.XbimExtensions.Parser;
+using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 

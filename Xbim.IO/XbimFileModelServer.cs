@@ -29,11 +29,12 @@ using Xbim.Ifc.ProfileResource;
 using Xbim.Ifc.RepresentationResource;
 using Xbim.Ifc.SelectTypes;
 using Xbim.XbimExtensions;
-using Xbim.XbimExtensions.Parser;
 using Xbim.XbimExtensions.Transactions;
 using Xbim.XbimExtensions.Transactions.Extensions;
 using System.Xml;
 using System.Windows.Markup;
+using Xbim.IO.Parser;
+using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 

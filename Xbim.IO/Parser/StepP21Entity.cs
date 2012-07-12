@@ -16,7 +16,7 @@ using System.Collections.Generic;
 
 #endregion
 
-namespace Xbim.XbimExtensions.Parser
+namespace Xbim.IO.Parser
 {
     public class StepP21Entity
     {

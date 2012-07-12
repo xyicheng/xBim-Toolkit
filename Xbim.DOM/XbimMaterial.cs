@@ -11,6 +11,7 @@ using Xbim.Ifc.SelectTypes;
 using Xbim.Ifc.MaterialPropertyResource;
 using Xbim.Ifc.PropertyResource;
 using Xbim.DOM.PropertiesQuantities;
+using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.DOM
 {

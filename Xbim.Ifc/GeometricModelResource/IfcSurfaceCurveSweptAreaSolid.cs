@@ -16,9 +16,9 @@ using System;
 using Xbim.XbimExtensions;
 using Xbim.Ifc.GeometryResource;
 using Xbim.Ifc.MeasureResource;
-using Xbim.XbimExtensions.Parser;
 using System.Runtime.Serialization;
 using System.Xml.Serialization;
+using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 

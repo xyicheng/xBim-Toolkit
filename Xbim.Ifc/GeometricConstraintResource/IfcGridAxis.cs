@@ -7,7 +7,7 @@ using Xbim.Ifc.MeasureResource;
 using Xbim.Ifc.GeometryResource;
 using Xbim.Ifc.ProductExtension;
 using System.ComponentModel;
-using Xbim.XbimExtensions.Parser;
+using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc.GeometricConstraintResource
 {

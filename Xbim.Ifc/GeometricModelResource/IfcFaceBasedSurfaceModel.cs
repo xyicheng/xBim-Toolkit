@@ -19,7 +19,7 @@ using Xbim.Ifc.GeometryResource;
 using Xbim.Ifc.SelectTypes;
 using Xbim.Ifc.TopologyResource;
 using Xbim.XbimExtensions;
-using Xbim.XbimExtensions.Parser;
+using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 

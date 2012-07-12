@@ -6,6 +6,7 @@ using Xbim.Ifc.SharedBldgElements;
 using Xbim.DOM.PropertiesQuantities;
 using Xbim.Ifc.Kernel;
 using Xbim.XbimExtensions;
+using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.DOM
 {

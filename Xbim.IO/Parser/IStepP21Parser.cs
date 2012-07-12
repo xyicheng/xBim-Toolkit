@@ -10,7 +10,7 @@
 
 #endregion
 
-namespace Xbim.XbimExtensions.Parser
+namespace Xbim.IO.Parser
 {
     internal interface IStepP21Parser
     {

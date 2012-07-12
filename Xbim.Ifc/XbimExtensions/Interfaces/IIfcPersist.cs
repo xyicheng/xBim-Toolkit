@@ -12,11 +12,11 @@
 
 #region Directives
 
-using Xbim.XbimExtensions.Parser;
+using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.XbimExtensions
+namespace Xbim.XbimExtensions.Interfaces
 {
     public interface IPersistIfc
     {

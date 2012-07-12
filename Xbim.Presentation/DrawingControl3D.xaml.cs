@@ -32,6 +32,7 @@ using Xbim.ModelGeometry;
 using Xbim.ModelGeometry.Scene;
 using Xbim.XbimExtensions;
 using Xbim.Ifc.SharedComponentElements;
+using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 

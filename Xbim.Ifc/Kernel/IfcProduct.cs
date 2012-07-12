@@ -18,7 +18,7 @@ using System.Xml.Serialization;
 using Xbim.Ifc.GeometricConstraintResource;
 using Xbim.Ifc.RepresentationResource;
 using Xbim.XbimExtensions;
-using Xbim.XbimExtensions.Parser;
+using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 

@@ -16,7 +16,7 @@ using System;
 using System.Linq;
 using Xbim.Ifc.SelectTypes;
 using Xbim.XbimExtensions;
-using Xbim.XbimExtensions.Parser;
+using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 

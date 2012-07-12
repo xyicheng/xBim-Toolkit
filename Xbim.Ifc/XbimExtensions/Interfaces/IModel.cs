@@ -21,15 +21,16 @@ using Xbim.Ifc.DateTimeResource;
 using Xbim.Ifc.Kernel;
 using Xbim.Ifc.UtilityResource;
 using Xbim.XbimExtensions.DataProviders;
-using Xbim.XbimExtensions.Parser;
 using Xbim.XbimExtensions.Transactions;
 using Xbim.Ifc.SharedBldgElements;
 
 #endregion
 
-namespace Xbim.XbimExtensions
+namespace Xbim.XbimExtensions.Interfaces
 {
     public delegate void InitProperties<TInit>(TInit initFunction);
+    // Declare a delegate type for processing a P21 value:
+    public delegate void ReportProgressDelegate(int percentProgress, object userState);
 
     [Flags]
     public enum XbimStorageType

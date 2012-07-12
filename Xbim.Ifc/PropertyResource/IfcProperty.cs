@@ -18,7 +18,7 @@ using System.ComponentModel;
 using System.Runtime.Serialization;
 using Xbim.Ifc.MeasureResource;
 using Xbim.XbimExtensions;
-using Xbim.XbimExtensions.Parser;
+using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 

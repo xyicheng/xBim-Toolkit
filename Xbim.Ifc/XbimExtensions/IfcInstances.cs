@@ -24,6 +24,8 @@ using System.Reflection;
 using Xbim.Ifc.Kernel;
 using Xbim.Ifc.SelectTypes;
 using Xbim.XbimExtensions.Transactions.Extensions;
+using Xbim.XbimExtensions.Interfaces;
+using Xbim.XbimExtensions;
 
 #endregion
 

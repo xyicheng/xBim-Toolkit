@@ -1,7 +1,7 @@
 %{
  public bool InHeader = false;
 %}
-%namespace Xbim.XbimExtensions.Parser
+%namespace Xbim.IO.Parser
 %partial   
 %parsertype P21Parser
 

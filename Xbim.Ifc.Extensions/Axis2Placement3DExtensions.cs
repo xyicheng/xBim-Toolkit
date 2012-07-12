@@ -16,6 +16,7 @@ using System.Windows.Media;
 using System.Windows.Media.Media3D;
 using Xbim.Ifc.GeometryResource;
 using Xbim.XbimExtensions;
+using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 

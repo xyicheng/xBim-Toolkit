@@ -15,6 +15,7 @@
 using System;
 using System.Collections.Generic;
 using Xbim.XbimExtensions;
+using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 

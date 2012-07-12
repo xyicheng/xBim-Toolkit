@@ -18,7 +18,7 @@ using Xbim.Ifc.DateTimeResource;
 using Xbim.Ifc.ExternalReferenceResource;
 using Xbim.Ifc.MeasureResource;
 using Xbim.XbimExtensions;
-using Xbim.XbimExtensions.Parser;
+using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 

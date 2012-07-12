@@ -22,6 +22,7 @@ using System;
 using Xbim.Ifc.MaterialResource;
 using Xbim.Ifc.ProductExtension;
 using Xbim.Ifc.MeasureResource;
+using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 

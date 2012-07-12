@@ -17,10 +17,12 @@ using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Xbim.XbimExtensions.Interfaces;
+using Xbim.XbimExtensions;
 
 #endregion
 
-namespace Xbim.XbimExtensions.Parser
+namespace Xbim.IO.Parser
 {
     public class P21toModelParser : P21Parser
     {

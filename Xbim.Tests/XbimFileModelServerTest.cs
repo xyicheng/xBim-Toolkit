@@ -5,11 +5,12 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Xbim.IO;
 using Xbim.Ifc.Extensions;
-using Xbim.XbimExtensions.Parser;
 using System.IO;
 using System.Reflection;
 using Xbim.XbimExtensions;
 using System.Collections;
+using Xbim.XbimExtensions.Interfaces;
+using Xbim.IO.Parser;
 
 namespace Xbim.Tests
 {

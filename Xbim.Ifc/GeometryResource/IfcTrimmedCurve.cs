@@ -18,7 +18,7 @@ using System.Text;
 using Xbim.Ifc.MeasureResource;
 using Xbim.Ifc.SelectTypes;
 using Xbim.XbimExtensions;
-using Xbim.XbimExtensions.Parser;
+using Xbim.XbimExtensions.Interfaces;
 using WVector = System.Windows.Vector;
 using WPoint = System.Windows.Point;
 

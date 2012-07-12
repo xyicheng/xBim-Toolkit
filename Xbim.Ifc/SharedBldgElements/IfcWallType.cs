@@ -15,7 +15,7 @@
 using System;
 using Xbim.Ifc.ProductExtension;
 using Xbim.XbimExtensions;
-using Xbim.XbimExtensions.Parser;
+using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 

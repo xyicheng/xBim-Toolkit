@@ -10,7 +10,7 @@
 
 #endregion
 
-namespace Xbim.XbimExtensions.Parser
+namespace Xbim.XbimExtensions.Interfaces
 {
     public interface IPropertyValue
     {

@@ -25,6 +25,7 @@ using Xbim.Ifc.PropertyResource;
 using Xbim.Ifc.QuantityResource;
 using Xbim.Ifc.SelectTypes;
 using Xbim.XbimExtensions;
+using Xbim.XbimExtensions.Interfaces;
 
 
 

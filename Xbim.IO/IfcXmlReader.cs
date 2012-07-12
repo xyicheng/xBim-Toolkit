@@ -18,18 +18,19 @@ using System.Reflection;
 using System.Xml;
 using Xbim.Ifc.SelectTypes;
 using System.Text.RegularExpressions;
-using Xbim.XbimExtensions.Parser;
+using Xbim.XbimExtensions.Interfaces;
 using Xbim.Ifc.MeasureResource;
 using System.Globalization;
 using System.Diagnostics;
 using System.IO;
-using System.Windows.Forms;
 using Xbim.Ifc.GeometryResource;
 using System.Windows.Markup;
+using Xbim.XbimExtensions;
+using Xbim.IO.Parser;
 
 #endregion
 
-namespace Xbim.XbimExtensions
+namespace Xbim.IO
 {
      public delegate void WriteXMLEntityEventHandler( IPersistIfcEntity entity);
     public class IfcXmlReader
@@ -258,7 +259,6 @@ namespace Xbim.XbimExtensions
             Dictionary<string, int> ids = new Dictionary<string, int>();                        
             while (input.Read())
             {
-                Application.DoEvents();
                 
 
                 switch (input.NodeType)

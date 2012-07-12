@@ -17,7 +17,7 @@ using System.Collections.Generic;
 using Xbim.Ifc.GeometricConstraintResource;
 using Xbim.Ifc.Kernel;
 using Xbim.XbimExtensions;
-using Xbim.XbimExtensions.Parser;
+using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 

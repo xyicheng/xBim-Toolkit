@@ -15,6 +15,7 @@
 using System.Linq;
 using Xbim.Ifc.ProductExtension;
 using Xbim.XbimExtensions;
+using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 

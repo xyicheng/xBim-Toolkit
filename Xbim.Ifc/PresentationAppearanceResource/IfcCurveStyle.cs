@@ -18,7 +18,7 @@ using Xbim.Ifc.MeasureResource;
 using Xbim.Ifc.PresentationResource;
 using Xbim.Ifc.SelectTypes;
 using Xbim.XbimExtensions;
-using Xbim.XbimExtensions.Parser;
+using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 

@@ -18,7 +18,7 @@ using Xbim.Ifc.ProfilePropertyResource;
 using Xbim.Ifc.RepresentationResource;
 using Xbim.Ifc.SelectTypes;
 using Xbim.XbimExtensions;
-using Xbim.XbimExtensions.Parser;
+using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 

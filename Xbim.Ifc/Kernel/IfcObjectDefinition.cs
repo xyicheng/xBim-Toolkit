@@ -16,6 +16,7 @@ using System;
 using System.Collections.Generic;
 using System.Xml.Serialization;
 using Xbim.XbimExtensions;
+using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 

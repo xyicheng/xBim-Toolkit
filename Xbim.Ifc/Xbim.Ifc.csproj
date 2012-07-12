@@ -1156,16 +1156,17 @@
     <Compile Include="XbimExtensions\DataProviders\IfcZones.cs" />
     <Compile Include="XbimExtensions\DataProviders\IfcZShapeProfileDefs.cs" />
     <Compile Include="XbimExtensions\FilterViewDefinition.cs" />
-    <Compile Include="XbimExtensions\IBoundary.cs" />
-    <Compile Include="XbimExtensions\IFaceBasedModel.cs" />
-    <Compile Include="XbimExtensions\IFaceBasedModelCollection.cs" />
+    <Compile Include="XbimExtensions\IfcFileHeader.cs" />
+    <Compile Include="XbimExtensions\IfcInstances.cs" />
+    <Compile Include="XbimExtensions\IfcParserType.cs" />
+    <Compile Include="XbimExtensions\Interfaces\IBoundary.cs" />
+    <Compile Include="XbimExtensions\Interfaces\IFaceBasedModel.cs" />
+    <Compile Include="XbimExtensions\Interfaces\IFaceBasedModelCollection.cs" />
     <Compile Include="XbimExtensions\IfcFilter.cs" />
     <Compile Include="XbimExtensions\IfcFilterDictionary.cs" />
-    <Compile Include="XbimExtensions\IfcXmlReader.cs" />
-    <Compile Include="XbimExtensions\IfcXmlWriter.cs" />
-    <Compile Include="XbimExtensions\IFace.cs" />
+    <Compile Include="XbimExtensions\Interfaces\IFace.cs" />
     <Compile Include="XbimExtensions\IIfcPersistExtensions.cs" />
-    <Compile Include="XbimExtensions\IModel.cs" />
+    <Compile Include="XbimExtensions\Interfaces\IModel.cs" />
     <Compile Include="XbimExtensions\Interfaces\IIfcCartesianPoint.cs" />
     <Compile Include="XbimExtensions\Interfaces\IIfcClosedShell.cs" />
     <Compile Include="XbimExtensions\Interfaces\IIfcConnectedFaceSet.cs" />
@@ -1180,21 +1181,14 @@
     <Compile Include="XbimExtensions\Interfaces\IIfcVertex.cs" />
     <Compile Include="XbimExtensions\Interfaces\IIfcVertexPoint.cs" />
     <Compile Include="XbimExtensions\Interfaces\IIfcShellBasedSurfaceModel.cs" />
-    <Compile Include="XbimExtensions\IVector3D.cs" />
-    <Compile Include="XbimExtensions\IVertex3D.cs" />
+    <Compile Include="XbimExtensions\Interfaces\IPropertyValue.cs" />
+    <Compile Include="XbimExtensions\Interfaces\IVector3D.cs" />
+    <Compile Include="XbimExtensions\Interfaces\IVertex3D.cs" />
     <Compile Include="XbimExtensions\Helpers\ExceptionExtensions.cs" />
-    <Compile Include="XbimExtensions\IfcFileHeader.cs" />
-    <Compile Include="XbimExtensions\Parser\IPropertyValue.cs" />
-    <Compile Include="XbimExtensions\Parser\IStepP21Parser.cs" />
-    <Compile Include="XbimExtensions\Parser\P21ToDatabaseParser.cs" />
-    <Compile Include="XbimExtensions\Parser\P21toIndexParser.cs" />
-    <Compile Include="XbimExtensions\Parser\P21toModelParser.cs">
-      <SubType>Code</SubType>
-    </Compile>
+    <Compile Include="XbimExtensions\Part21Formatter.cs" />
     <Compile Include="XbimExtensions\ValidationFlags.cs" />
     <Compile Include="XbimExtensions\FramedGeometryModel3D.cs" />
-    <Compile Include="XbimExtensions\IfcInstances.cs" />
-    <Compile Include="XbimExtensions\ISupportChangeNotification.cs" />
+    <Compile Include="XbimExtensions\Interfaces\ISupportChangeNotification.cs" />
     <Compile Include="PresentationAppearanceResource\CurveFontConverter.cs" />
     <Compile Include="PresentationAppearanceResource\IfcCurveStyle.cs" />
     <Compile Include="PresentationAppearanceResource\IfcCurveStyleFont.cs" />
@@ -1239,14 +1233,7 @@
     <Compile Include="XbimExtensions\NonVisualMaterial.cs" />
     <Compile Include="XbimExtensions\PrimitiveModel3D.cs" />
     <Compile Include="XbimExtensions\GeometryPrimitive3DGroup.cs" />
-    <Compile Include="XbimExtensions\IIfcPersist.cs" />
-    <Compile Include="XbimExtensions\Parser\Parser.cs" />
-    <Compile Include="XbimExtensions\Parser\ShiftReduceParserCode.cs" />
-    <Compile Include="XbimExtensions\Parser\StepP21Entity.cs" />
-    <Compile Include="XbimExtensions\Parser\StepP21Lex.cs" />
-    <Compile Include="XbimExtensions\Parser\StepP21Parser.cs" />
-    <Compile Include="XbimExtensions\Part21FileWriter.cs" />
-    <Compile Include="XbimExtensions\Part21Formatter.cs" />
+    <Compile Include="XbimExtensions\Interfaces\IIfcPersist.cs" />
     <Compile Include="XbimExtensions\Transactions\Edit.cs" />
     <Compile Include="XbimExtensions\Transactions\ICollectionReversibleExtension.cs" />
     <Compile Include="XbimExtensions\Transactions\IDictionaryReversibleExtension.cs" />
@@ -1638,23 +1625,11 @@
     <None Include="TopologyResource\ClassDiagramTopologyResource.cd" />
     <None Include="UtilityResource\ClassDiagramUtilityResource.cd" />
     <None Include="XbimExtensions\ClassDiagramXbimExtensions.cd" />
-    <None Include="XbimExtensions\Parser\StepP21IndexerLex.lex" />
     <None Include="XbimIfcKey.pfx" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="XbimExtensions\Parser\gplex.exe" />
-    <None Include="XbimExtensions\Parser\XbimViewerKey.pfx" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="XbimExtensions\Parser\gppg.exe" />
-    <None Include="XbimExtensions\Parser\MAKEPARSER.BAT" />
   </ItemGroup>
   <ItemGroup>
     <None Include="GeometricModelResource\ClassDiagramGeometricModelResource.cd" />
     <None Include="XbimExtensions\ClassDiagram1.cd" />
-    <None Include="XbimExtensions\Parser\Readme.txt" />
-    <None Include="XbimExtensions\Parser\StepP21Lex.lex" />
-    <None Include="XbimExtensions\Parser\StepP21Parser.y" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">

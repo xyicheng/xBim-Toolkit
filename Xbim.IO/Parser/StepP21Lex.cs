@@ -26,7 +26,7 @@ using System.Text;
 
 #endregion
 
-namespace Xbim.XbimExtensions.Parser
+namespace Xbim.IO.Parser
 {
 #if STANDALONE
     //

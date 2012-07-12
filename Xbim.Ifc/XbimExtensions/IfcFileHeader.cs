@@ -16,7 +16,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Xbim.Ifc.SelectTypes;
-using Xbim.XbimExtensions.Parser;
+using Xbim.XbimExtensions;
+using Xbim.XbimExtensions.Interfaces;
 using System.Reflection;
 
 #endregion
@@ -271,7 +272,7 @@ namespace Xbim.XbimExtensions
         {
             PreprocessorVersion =
                 string.Format("Xbim.Ifc File Processor version {0}",
-                              Assembly.GetAssembly(typeof(P21Parser)).GetName().Version),
+                              Assembly.GetExecutingAssembly().GetName().Version),
             OriginatingSystem =
                 string.Format("Xbim version {0}",
                               Assembly.GetExecutingAssembly().GetName().Version),

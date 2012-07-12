@@ -10,7 +10,7 @@
 
 #endregion
 
-namespace Xbim.XbimExtensions
+namespace Xbim.XbimExtensions.Interfaces
 {
     public interface ISupportChangeNotification
     {

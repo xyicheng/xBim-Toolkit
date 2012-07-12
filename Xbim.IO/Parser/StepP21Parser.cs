@@ -18,7 +18,7 @@ using QUT.Gppg;
 
 #endregion
 
-namespace Xbim.XbimExtensions.Parser
+namespace Xbim.IO.Parser
 {
     public enum Tokens
     {

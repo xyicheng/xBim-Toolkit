@@ -12,8 +12,9 @@
 
 #region Directives
 
-using System.Collections.Generic;
+using System.Collections.Generic; 
 using Xbim.Ifc.CostResource;
+using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 

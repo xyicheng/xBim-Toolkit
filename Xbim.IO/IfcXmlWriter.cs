@@ -20,12 +20,14 @@ using System.Xml;
 using Xbim.Ifc.GeometryResource;
 using Xbim.Ifc.Kernel;
 using Xbim.Ifc.SelectTypes;
-using Xbim.XbimExtensions.Parser;
-using System.Windows.Forms;
+using Xbim.XbimExtensions.Interfaces;
+using Xbim.IO.Parser;
+using Xbim.XbimExtensions;
+
 
 #endregion
 
-namespace Xbim.XbimExtensions
+namespace Xbim.IO
 {
     public class IfcXmlWriter
     {
@@ -95,8 +97,6 @@ namespace Xbim.XbimExtensions
                 output.WriteAttributeString("xmlns", "ex", null, _iso10303urn);
                 output.WriteAttributeString("xmlns", "ifc", null, _namespace);
                 output.WriteAttributeString("xsi", "schemaLocation", null, string.Format("{0} {1}", _namespace, _ifcXSD));
-
-                Application.DoEvents();
 
                 if (model.IfcProject != null && instances == null)
                 {

@@ -3,23 +3,19 @@
 // The eXtensible Building Information Modelling (xBIM) Toolkit
 // Solution:    XbimComplete
 // Project:     Xbim.Ifc
-// Filename:    IFaceBasedModelCollection.cs
+// Filename:    IVector3D.cs
 // Published:   01, 2012
 // Last Edited: 9:04 AM on 20 12 2011
 // (See accompanying copyright.rtf)
 
 #endregion
 
-#region Directives
-
-using System.Collections.Generic;
-
-#endregion
-
-namespace Xbim.XbimExtensions
+namespace Xbim.XbimExtensions.Interfaces
 {
-    public interface IFaceBasedModelCollection
+    public interface IVector3D
     {
-        IEnumerable<IFaceBasedModel> FaceModels { get; }
+        double X { get; }
+        double Y { get; }
+        double Z { get; }
     }
 }

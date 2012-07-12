@@ -22,6 +22,7 @@ using System.Windows.Media.Media3D;
 using Xbim.Ifc.Kernel;
 using Xbim.Ifc.SharedBldgElements;
 using Xbim.XbimExtensions;
+using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 

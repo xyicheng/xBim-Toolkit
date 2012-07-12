@@ -5,6 +5,7 @@ using System.Text;
 using Xbim.Ifc.Kernel;
 using System.IO;
 using Xbim.XbimExtensions;
+using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.ModelGeometry.Scene
 {

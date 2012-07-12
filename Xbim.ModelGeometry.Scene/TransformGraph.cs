@@ -25,7 +25,7 @@ using Xbim.Ifc.GeometryResource;
 using Xbim.Ifc.Kernel;
 using Xbim.Ifc.RepresentationResource;
 using Xbim.XbimExtensions;
-using Xbim.XbimExtensions.Parser;
+using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 

@@ -22,6 +22,7 @@ using Xbim.Ifc.PropertyResource;
 using Xbim.Ifc.QuantityResource;
 using Xbim.Ifc.SelectTypes;
 using Xbim.XbimExtensions;
+using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
@@ -97,8 +98,25 @@ namespace Xbim.Ifc.Extensions
                 return pset.HasProperties.Where<IfcPropertySingleValue>(p => p.Name == propertyName).FirstOrDefault();
             return null;
         }
+        public static VType GetPropertySingleValue<VType>(this Xbim.Ifc.Kernel.IfcObject obj, string pSetName, string propertyName) where VType : IfcValue
+        {
+            IfcPropertySet pset = GetPropertySet(obj, pSetName);
+            if (pset != null)
+            {
+                IfcPropertySingleValue pVal = pset.HasProperties.Where<IfcPropertySingleValue>(p => p.Name == propertyName).FirstOrDefault();
+                if (pVal != null && typeof(VType).IsAssignableFrom(pVal.NominalValue.GetType())) return (VType)pVal.NominalValue;
+            }
+            return default(VType);
+        }
 
-        public static IfcValue GetPropertySingleValueValue (this Xbim.Ifc.Kernel.IfcObject obj, string pSetName, string propertyName)
+        /// <summary>
+        /// If the property value exists, returns the Nominal Value of the contents
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="pSetName"></param>
+        /// <param name="propertyName"></param>
+        /// <returns></returns>
+        public static IfcValue GetPropertySingleNominalValue (this Xbim.Ifc.Kernel.IfcObject obj, string pSetName, string propertyName)
         {
             IfcPropertySingleValue psv = GetPropertySingleValue(obj, pSetName, propertyName);
             return psv == null ? null : psv.NominalValue;
@@ -290,8 +308,50 @@ namespace Xbim.Ifc.Extensions
             if (rel != null) return rel.RelatingPropertyDefinition as IfcElementQuantity;
             else return null;
         }
+        /// <summary>
+        /// Returns the first quantity in the property set pSetName of name qName
+        /// </summary>
+        /// <typeparam name="QType"></typeparam>
+        /// <param name="elem"></param>
+        /// <param name="pSetName"></param>
+        /// <param name="qName"></param>
+        /// <returns></returns>
+        public static QType GetQuantity<QType>(this IfcObject elem, string pSetName, string qName) where QType : IfcPhysicalQuantity
+        {
+            IfcRelDefinesByProperties rel = elem.IsDefinedByProperties.Where(r => r.RelatingPropertyDefinition.Name == pSetName && r.RelatingPropertyDefinition is IfcElementQuantity).FirstOrDefault();
+            if (rel != null)
+            {
+                IfcElementQuantity eQ =  rel.RelatingPropertyDefinition as IfcElementQuantity;
+                if (eQ != null)
+                {
+                    QType result = eQ.Quantities.Where<QType>(q => q.Name == qName).FirstOrDefault();
+                    return result;
+                }
+            }
+            return default(QType);
+        }
 
-       
+        /// <summary>
+        /// Returns the first quantity that matches the quantity name
+        /// </summary>
+        /// <typeparam name="QType"></typeparam>
+        /// <param name="elem"></param>
+        /// <param name="qName"></param>
+        /// <returns></returns>
+        public static QType GetQuantity<QType>(this IfcObject elem, string qName) where QType : IfcPhysicalQuantity
+        {
+            IfcRelDefinesByProperties rel = elem.IsDefinedByProperties.Where(r => r.RelatingPropertyDefinition is IfcElementQuantity).FirstOrDefault();
+            if (rel != null)
+            {
+                IfcElementQuantity eQ = rel.RelatingPropertyDefinition as IfcElementQuantity;
+                if (eQ != null)
+                {
+                    QType result = eQ.Quantities.Where<QType>(q => q.Name == qName).FirstOrDefault();
+                    return result;
+                }
+            }
+            return default(QType);
+        }
 
         /// <summary>
         /// Adds a new IfcPhysicalQuantity to the IfcElementQuantity called propertySetName

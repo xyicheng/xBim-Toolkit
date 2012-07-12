@@ -19,6 +19,7 @@ using System.Runtime.Serialization;
 using Xbim.Ifc.ActorResource;
 using Xbim.Ifc.SelectTypes;
 using Xbim.XbimExtensions;
+using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
