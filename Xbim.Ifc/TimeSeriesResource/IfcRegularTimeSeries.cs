@@ -13,13 +13,13 @@
 #region Directives
 
 using System;
-using Xbim.Ifc.MeasureResource;
+using Xbim.Ifc2x3.MeasureResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.TimeSeriesResource
+namespace Xbim.Ifc2x3.TimeSeriesResource
 {
     [IfcPersistedEntityAttribute, Serializable]
     public class IfcRegularTimeSeries : IfcTimeSeries

@@ -12,12 +12,12 @@
 
 #region Directives
 
-using Xbim.Ifc.GeometryResource;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.GeometryResource;
+using Xbim.Ifc2x3.SelectTypes;
 
 #endregion
 
-namespace Xbim.Ifc.PresentationDefinitionResource
+namespace Xbim.Ifc2x3.PresentationDefinitionResource
 {
     public class IfcAnnotationCurveOccurrence : IfcAnnotationOccurrence, IfcDraughtingCalloutElement
     {

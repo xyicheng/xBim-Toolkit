@@ -12,11 +12,11 @@
 
 #region Directives
 
-using Xbim.Ifc.PresentationAppearanceResource;
+using Xbim.Ifc2x3.PresentationAppearanceResource;
 
 #endregion
 
-namespace Xbim.Ifc.PresentationDefinitionResource
+namespace Xbim.Ifc2x3.PresentationDefinitionResource
 {
     public abstract class IfcAnnotationOccurrence : IfcStyledItem
     {

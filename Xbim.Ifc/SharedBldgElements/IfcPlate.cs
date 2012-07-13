@@ -13,12 +13,12 @@
 #region Directives
 
 using System;
-using Xbim.Ifc.ProductExtension;
+using Xbim.Ifc2x3.ProductExtension;
 using Xbim.XbimExtensions;
 
 #endregion
 
-namespace Xbim.Ifc.SharedBldgElements
+namespace Xbim.Ifc2x3.SharedBldgElements
 {
     /// <summary>
     ///   An IfcPlate is a planar and often flat part with constant thickness.

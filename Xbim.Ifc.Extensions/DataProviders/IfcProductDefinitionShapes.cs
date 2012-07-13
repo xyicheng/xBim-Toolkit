@@ -13,7 +13,7 @@
 #region Directives
 
 using System.Collections.Generic; using Xbim.XbimExtensions.Interfaces;
-using Xbim.Ifc.RepresentationResource;
+using Xbim.Ifc2x3.RepresentationResource;
 
 #endregion
 

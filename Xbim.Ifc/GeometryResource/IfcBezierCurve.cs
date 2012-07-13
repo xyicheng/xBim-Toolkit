@@ -18,7 +18,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.GeometryResource
+namespace Xbim.Ifc2x3.GeometryResource
 {
     /// <summary>
     ///   This is a special type of curve which can be represented as a type of B-spline curve in which the knots are evenly spaced and have high multiplicities.

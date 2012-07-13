@@ -15,13 +15,13 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.SelectTypes;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.GeometryResource
+namespace Xbim.Ifc2x3.GeometryResource
 {
     /// <summary>
     ///   The location and orientation in two dimensional space of two mutually perpendicular axes.

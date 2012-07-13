@@ -19,11 +19,11 @@ using System.IO;
 using System.Linq;
 using System.Windows.Media.Media3D;
 using Xbim.IO;
-using Xbim.Ifc.Extensions;
-using Xbim.Ifc.GeometricConstraintResource;
-using Xbim.Ifc.GeometryResource;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.RepresentationResource;
+using Xbim.Ifc2x3.Extensions;
+using Xbim.Ifc2x3.GeometricConstraintResource;
+using Xbim.Ifc2x3.GeometryResource;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.RepresentationResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 

@@ -16,14 +16,14 @@ using System;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Xml.Serialization;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.RepresentationResource;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.Ifc2x3.RepresentationResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.Kernel
+namespace Xbim.Ifc2x3.Kernel
 {
     /// <summary>
     ///   The undertaking of some design, engineering, construction, or maintenance activities leading towards a product.

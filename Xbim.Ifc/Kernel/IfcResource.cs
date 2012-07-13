@@ -18,7 +18,7 @@ using Xbim.XbimExtensions;
 
 #endregion
 
-namespace Xbim.Ifc.Kernel
+namespace Xbim.Ifc2x3.Kernel
 {
     /// <summary>
     ///   The IfcResource contains the information needed to represent the costs, schedule, and other impacts from the use of a thing in a process.

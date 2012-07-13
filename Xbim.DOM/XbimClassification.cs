@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Xbim.Ifc.ExternalReferenceResource;
+using Xbim.Ifc2x3.ExternalReferenceResource;
 using Xbim.XbimExtensions;
 
 namespace Xbim.DOM

@@ -18,7 +18,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.GeometryResource
+namespace Xbim.Ifc2x3.GeometryResource
 {
     /// <summary>
     ///   An elementary surface (IfcElementarySurface) is a simple analytic surface with defined parametric representation.

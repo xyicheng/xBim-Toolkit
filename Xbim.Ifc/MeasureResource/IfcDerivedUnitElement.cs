@@ -19,7 +19,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.MeasureResource
+namespace Xbim.Ifc2x3.MeasureResource
 {
     public class DerivedUnitElementSet : XbimSet<IfcDerivedUnitElement>
     {

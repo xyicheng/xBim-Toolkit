@@ -13,13 +13,13 @@
 #region Directives
 
 using System;
-using Xbim.Ifc.TopologyResource;
+using Xbim.Ifc2x3.TopologyResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.GeometricModelResource
+namespace Xbim.Ifc2x3.GeometricModelResource
 {
     /// <summary>
     ///   The IfcFacetedBrepWithVoids is a specialization of a faceted B-rep which contains one or more voids in its interior.

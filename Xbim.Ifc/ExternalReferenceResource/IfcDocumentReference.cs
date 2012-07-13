@@ -14,12 +14,12 @@
 
 using System;
 using System.Collections.Generic;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.SelectTypes;
 using Xbim.XbimExtensions;
 
 #endregion
 
-namespace Xbim.Ifc.ExternalReferenceResource
+namespace Xbim.Ifc2x3.ExternalReferenceResource
 {
     /// <summary>
     ///   An IfcDocumentReference is a reference to the location of a document.

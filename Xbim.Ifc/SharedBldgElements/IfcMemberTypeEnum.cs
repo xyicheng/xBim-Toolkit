@@ -10,7 +10,7 @@
 
 #endregion
 
-namespace Xbim.Ifc.SharedBldgElements
+namespace Xbim.Ifc2x3.SharedBldgElements
 {
     /// <summary>
     ///   This enumeration defines the different types of linear elements an IfcMemberType object can fulfill:

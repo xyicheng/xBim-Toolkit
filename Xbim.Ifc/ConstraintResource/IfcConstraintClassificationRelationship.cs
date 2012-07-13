@@ -14,13 +14,13 @@
 
 using System;
 using System.ComponentModel;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.SelectTypes;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.ConstraintResource
+namespace Xbim.Ifc2x3.ConstraintResource
 {
     /// <summary>
     ///   An IfcClassificationConstraintRelationship is an objectified relationship that enables assigning 

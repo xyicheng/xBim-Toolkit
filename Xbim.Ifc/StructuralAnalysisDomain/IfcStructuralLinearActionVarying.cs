@@ -15,14 +15,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Xbim.Ifc.RepresentationResource;
-using Xbim.Ifc.StructuralLoadResource;
+using Xbim.Ifc2x3.RepresentationResource;
+using Xbim.Ifc2x3.StructuralLoadResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.StructuralAnalysisDomain
+namespace Xbim.Ifc2x3.StructuralAnalysisDomain
 {
     [IfcPersistedEntityAttribute, Serializable]
     public class IfcStructuralLinearActionVarying : IfcStructuralLinearAction

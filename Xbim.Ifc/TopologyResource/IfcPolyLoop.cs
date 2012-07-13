@@ -16,13 +16,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Xbim.Ifc.GeometryResource;
+using Xbim.Ifc2x3.GeometryResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.TopologyResource
+namespace Xbim.Ifc2x3.TopologyResource
 {
     /// <summary>
     ///   A poly loop is a loop with straight edges bounding a planar region in space.

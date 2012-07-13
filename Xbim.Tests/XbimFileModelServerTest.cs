@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Xbim.IO;
-using Xbim.Ifc.Extensions;
+using Xbim.Ifc2x3.Extensions;
 using System.IO;
 using System.Reflection;
 using Xbim.XbimExtensions;

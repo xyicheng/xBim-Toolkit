@@ -13,12 +13,12 @@
 #region Directives
 
 using System;
-using Xbim.Ifc.GeometryResource;
+using Xbim.Ifc2x3.GeometryResource;
 using Xbim.XbimExtensions;
 
 #endregion
 
-namespace Xbim.Ifc.TopologyResource
+namespace Xbim.Ifc2x3.TopologyResource
 {
     /// <summary>
     ///   The topological representation item is the supertype for all the topological representation items in the geometry resource.

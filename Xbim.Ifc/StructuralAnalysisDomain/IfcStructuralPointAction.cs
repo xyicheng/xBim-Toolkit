@@ -13,12 +13,12 @@
 #region Directives
 
 using System;
-using Xbim.Ifc.StructuralLoadResource;
+using Xbim.Ifc2x3.StructuralLoadResource;
 using Xbim.XbimExtensions;
 
 #endregion
 
-namespace Xbim.Ifc.StructuralAnalysisDomain
+namespace Xbim.Ifc2x3.StructuralAnalysisDomain
 {
     [IfcPersistedEntityAttribute, Serializable]
     public class IfcStructuralPointAction : IfcStructuralAction

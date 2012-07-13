@@ -18,7 +18,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.SharedBldgServiceElements
+namespace Xbim.Ifc2x3.SharedBldgServiceElements
 {
     [IfcPersistedEntityAttribute, Serializable]
     public class IfcDistributionChamberElementType : IfcDistributionFlowElementType

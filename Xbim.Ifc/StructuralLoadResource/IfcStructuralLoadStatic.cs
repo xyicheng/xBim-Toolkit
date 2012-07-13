@@ -17,7 +17,7 @@ using Xbim.XbimExtensions;
 
 #endregion
 
-namespace Xbim.Ifc.StructuralLoadResource
+namespace Xbim.Ifc2x3.StructuralLoadResource
 {
     [IfcPersistedEntityAttribute, Serializable]
     public abstract class IfcStructuralLoadStatic : IfcStructuralLoad

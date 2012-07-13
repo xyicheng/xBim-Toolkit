@@ -17,7 +17,7 @@ using Xbim.XbimExtensions;
 
 #endregion
 
-namespace Xbim.Ifc.Kernel
+namespace Xbim.Ifc2x3.Kernel
 {
     [IfcPersistedEntityAttribute, Serializable]
     public abstract class IfcProcess : IfcObject

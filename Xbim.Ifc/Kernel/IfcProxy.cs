@@ -13,12 +13,12 @@
 #region Directives
 
 using System;
-using Xbim.Ifc.MeasureResource;
+using Xbim.Ifc2x3.MeasureResource;
 using Xbim.XbimExtensions;
 
 #endregion
 
-namespace Xbim.Ifc.Kernel
+namespace Xbim.Ifc2x3.Kernel
 {
     /// <summary>
     ///   The IfcProxy is intended to be a kind of a container for wrapping objects which are defined by associated properties, which may or may not have a geometric representation and placement in space.

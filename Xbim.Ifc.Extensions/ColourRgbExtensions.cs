@@ -14,11 +14,11 @@
 
 using System;
 using System.Windows.Media;
-using Xbim.Ifc.PresentationResource;
+using Xbim.Ifc2x3.PresentationResource;
 
 #endregion
 
-namespace Xbim.Ifc.Extensions
+namespace Xbim.Ifc2x3.Extensions
 {
     public static class ColourRgbExtensions
     {

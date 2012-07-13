@@ -14,15 +14,15 @@
 
 using System;
 using System.Linq;
-using Xbim.Ifc.GeometricModelResource;
-using Xbim.Ifc.GeometryResource;
-using Xbim.Ifc.PresentationDefinitionResource;
-using Xbim.Ifc.TopologyResource;
+using Xbim.Ifc2x3.GeometricModelResource;
+using Xbim.Ifc2x3.GeometryResource;
+using Xbim.Ifc2x3.PresentationDefinitionResource;
+using Xbim.Ifc2x3.TopologyResource;
 using Xbim.XbimExtensions;
 
 #endregion
 
-namespace Xbim.Ifc.RepresentationResource
+namespace Xbim.Ifc2x3.RepresentationResource
 {
     /// <summary>
     ///   The shape representation is a specific kind of representation that represents a shape.

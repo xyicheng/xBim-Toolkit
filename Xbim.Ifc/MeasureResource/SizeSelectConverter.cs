@@ -19,7 +19,7 @@ using System.Linq;
 
 #endregion
 
-namespace Xbim.Ifc.MeasureResource
+namespace Xbim.Ifc2x3.MeasureResource
 {
     public class SizeSelectConverter : TypeConverter
     {

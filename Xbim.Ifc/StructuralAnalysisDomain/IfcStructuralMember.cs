@@ -18,7 +18,7 @@ using Xbim.XbimExtensions;
 
 #endregion
 
-namespace Xbim.Ifc.StructuralAnalysisDomain
+namespace Xbim.Ifc2x3.StructuralAnalysisDomain
 {
     /// <summary>
     ///   The abstract entity IfcStructuralMember is the superclass of all structural elements representing the structural behaviour of building elements.

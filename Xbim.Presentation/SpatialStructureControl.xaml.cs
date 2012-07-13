@@ -19,8 +19,8 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.ProductExtension;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.ProductExtension;
 using Xbim.XbimExtensions;
 
 #endregion

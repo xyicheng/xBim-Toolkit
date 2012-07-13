@@ -17,7 +17,7 @@ using Xbim.XbimExtensions;
 
 #endregion
 
-namespace Xbim.Ifc.ConstructionMgmtDomain
+namespace Xbim.Ifc2x3.ConstructionMgmtDomain
 {
     [IfcPersistedEntityAttribute, Serializable]
     public class IfcConstructionEquipmentResource : IfcConstructionResource

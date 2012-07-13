@@ -13,13 +13,13 @@
 #region Directives
 
 using System;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.SelectTypes;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.DateTimeResource
+namespace Xbim.Ifc2x3.DateTimeResource
 {
     [Serializable]
     public struct IfcMonthInYearNumber : IPersistIfc, ExpressType

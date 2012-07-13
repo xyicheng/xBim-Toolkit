@@ -10,7 +10,7 @@
 
 #endregion
 
-namespace Xbim.Ifc.PropertySetDefinitions
+namespace Xbim.Ifc2x3.PropertySetDefinitions
 {
     public static class PsetSpaceCommon
     {

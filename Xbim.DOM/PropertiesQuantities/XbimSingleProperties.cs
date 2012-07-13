@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Xbim.Ifc.Kernel;
+using Xbim.Ifc2x3.Kernel;
 using Xbim.XbimExtensions;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.Extensions;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.Ifc2x3.Extensions;
+using Xbim.Ifc2x3.SelectTypes;
 
 namespace Xbim.DOM.PropertiesQuantities
 {
@@ -47,7 +47,7 @@ namespace Xbim.DOM.PropertiesQuantities
 
         public double? GetProperty_double(string propertySetName, string propertyName)
         {
-            IfcValue value = _object.GetPropertySingleValueValue(propertySetName, propertyName);
+            IfcValue value = _object.GetPropertySingleNominalValue(propertySetName, propertyName);
             IfcSimpleValue simpleValue = value as IfcSimpleValue;
             if (simpleValue != null)
             {
@@ -64,21 +64,21 @@ namespace Xbim.DOM.PropertiesQuantities
         }
         public long? GetProperty_long(string propertySetName, string propertyName)
         {
-            IfcSimpleValue value = _object.GetPropertySingleValueValue(propertySetName, propertyName) as IfcSimpleValue;
+            IfcSimpleValue value = _object.GetPropertySingleNominalValue(propertySetName, propertyName) as IfcSimpleValue;
             if (value == null) return null;
             IfcInteger val = (IfcInteger)value;
             return (long)val.Value;
         }
         public string GetProperty_string(string propertySetName, string propertyName)
         {
-            IfcSimpleValue value = _object.GetPropertySingleValueValue(propertySetName, propertyName) as IfcSimpleValue;
+            IfcSimpleValue value = _object.GetPropertySingleNominalValue(propertySetName, propertyName) as IfcSimpleValue;
             if (value == null) return null;
             IfcLabel val = (IfcLabel)value;
             return val;
         }
         public bool? GetProperty_bool(string propertySetName, string propertyName)
         {
-            IfcSimpleValue value = _object.GetPropertySingleValueValue(propertySetName, propertyName) as IfcSimpleValue;
+            IfcSimpleValue value = _object.GetPropertySingleNominalValue(propertySetName, propertyName) as IfcSimpleValue;
             if (value == null) return null;
             IfcBoolean val = (IfcBoolean)value;
             return val;

@@ -18,7 +18,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.Kernel
+namespace Xbim.Ifc2x3.Kernel
 {
     /// <summary>
     ///   This objectified relationship (IfcRelDefinesByType) defines the relationships between an object type and objects.

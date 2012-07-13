@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Xbim.Ifc.MeasureResource;
+using Xbim.Ifc2x3.MeasureResource;
 using Xbim.XbimExtensions;
-using Xbim.Ifc.QuantityResource;
-using Xbim.Ifc.Extensions;
-using Xbim.Ifc.Kernel;
+using Xbim.Ifc2x3.QuantityResource;
+using Xbim.Ifc2x3.Extensions;
+using Xbim.Ifc2x3.Kernel;
 using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.DOM.PropertiesQuantities

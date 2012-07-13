@@ -10,7 +10,7 @@
 
 #endregion
 
-namespace Xbim.Ifc.StructuralAnalysisDomain
+namespace Xbim.Ifc2x3.StructuralAnalysisDomain
 {
     public enum IfcActionTypeEnum
     {

@@ -17,7 +17,7 @@ using Xbim.XbimExtensions;
 
 #endregion
 
-namespace Xbim.Ifc.GeometricModelResource
+namespace Xbim.Ifc2x3.GeometricModelResource
 {
     [IfcPersistedEntityAttribute, Serializable]
     public class IfcBooleanClippingResult : IfcBooleanResult

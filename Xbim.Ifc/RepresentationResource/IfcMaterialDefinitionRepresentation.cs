@@ -14,13 +14,13 @@
 
 using System;
 using System.Linq;
-using Xbim.Ifc.MaterialResource;
+using Xbim.Ifc2x3.MaterialResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.RepresentationResource
+namespace Xbim.Ifc2x3.RepresentationResource
 {
     /// <summary>
     ///   The IfcMaterialDefinitionRepresentation defines presentation information relating to IfcMaterial.

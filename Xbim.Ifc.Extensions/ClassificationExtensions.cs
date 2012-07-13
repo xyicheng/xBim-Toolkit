@@ -13,13 +13,13 @@
 #region Directives
 
 using System.Collections.Generic;
-using Xbim.Ifc.ExternalReferenceResource;
+using Xbim.Ifc2x3.ExternalReferenceResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.Extensions
+namespace Xbim.Ifc2x3.Extensions
 {
     public static class ClassificationExtensions
     {

@@ -10,7 +10,7 @@
 
 #endregion
 
-namespace Xbim.Ifc.ElectricalDomain
+namespace Xbim.Ifc2x3.ElectricalDomain
 {
     /// <summary>
     ///   Defines the range of different types of protective device available.

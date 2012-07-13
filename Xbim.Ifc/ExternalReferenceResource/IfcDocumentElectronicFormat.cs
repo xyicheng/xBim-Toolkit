@@ -14,13 +14,13 @@
 
 using System;
 using System.ComponentModel;
-using Xbim.Ifc.MeasureResource;
+using Xbim.Ifc2x3.MeasureResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.ExternalReferenceResource
+namespace Xbim.Ifc2x3.ExternalReferenceResource
 {
     /// <summary>
     ///   An IfcDocumentElectronicFormat captures the type of document being referenced as an external source,and for which metadata is specified by IfcDocumentInformation.

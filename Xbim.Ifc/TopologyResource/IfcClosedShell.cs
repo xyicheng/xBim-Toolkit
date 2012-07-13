@@ -13,12 +13,12 @@
 #region Directives
 
 using System;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.SelectTypes;
 using Xbim.XbimExtensions;
 
 #endregion
 
-namespace Xbim.Ifc.TopologyResource
+namespace Xbim.Ifc2x3.TopologyResource
 {
     /// <summary>
     ///   A closed shell is a shell of the dimensionality 2 which typically serves as a bound for a region in R3.

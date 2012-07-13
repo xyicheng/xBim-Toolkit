@@ -19,7 +19,7 @@ using System.Windows.Media;
 
 #endregion
 
-namespace Xbim.Ifc.PresentationAppearanceResource
+namespace Xbim.Ifc2x3.PresentationAppearanceResource
 {
     public class CurveFontConverter : TypeConverter
     {

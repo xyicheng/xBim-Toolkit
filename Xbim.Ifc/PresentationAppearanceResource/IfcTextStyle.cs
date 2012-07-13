@@ -13,13 +13,13 @@
 #region Directives
 
 using System;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.SelectTypes;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.PresentationAppearanceResource
+namespace Xbim.Ifc2x3.PresentationAppearanceResource
 {
     [IfcPersistedEntityAttribute, Serializable]
     public class IfcTextStyle : IfcPresentationStyle, IfcPresentationStyleSelect

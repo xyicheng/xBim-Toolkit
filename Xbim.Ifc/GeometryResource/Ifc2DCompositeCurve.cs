@@ -17,7 +17,7 @@ using Xbim.XbimExtensions;
 
 #endregion
 
-namespace Xbim.Ifc.GeometryResource
+namespace Xbim.Ifc2x3.GeometryResource
 {
     /// <summary>
     ///   An Ifc2DCompositeCurve is an IfcCompositeCurve that is defined within the coordinate space of an IfcPlane.

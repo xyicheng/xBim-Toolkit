@@ -14,14 +14,14 @@
 
 using System;
 using System.Linq;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.SelectTypes;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.ProductExtension
+namespace Xbim.Ifc2x3.ProductExtension
 {
     /// <summary>
     ///   Objectified relationship between a material definition and elements or element types to which this material definition applies.

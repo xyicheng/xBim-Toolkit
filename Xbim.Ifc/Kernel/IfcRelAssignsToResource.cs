@@ -18,7 +18,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.Kernel
+namespace Xbim.Ifc2x3.Kernel
 {
     /// <summary>
     ///   This objectified relationship (IfcRelAssignsToResource) handles the assignment of objects (subtypes of IfcObject) to a resource (subtypes of IfcResource).

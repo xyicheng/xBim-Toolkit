@@ -17,7 +17,7 @@ using Xbim.XbimExtensions;
 
 #endregion
 
-namespace Xbim.Ifc.ProductExtension
+namespace Xbim.Ifc2x3.ProductExtension
 {
     /// <summary>
     ///   Generalization of all furniture related objects. Furnishing objects are characterized as being 

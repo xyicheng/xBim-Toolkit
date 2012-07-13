@@ -13,13 +13,13 @@
 #region Directives
 
 using System;
-using Xbim.Ifc.ProductExtension;
+using Xbim.Ifc2x3.ProductExtension;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.SharedBldgElements
+namespace Xbim.Ifc2x3.SharedBldgElements
 {
     /// <summary>
     ///   The railing is a frame assembly adjacent to human circulation spaces and at some space boundaries where it is used in lieu of walls or to compliment walls.

@@ -13,13 +13,13 @@
 #region Directives
 
 using System;
-using Xbim.Ifc.MeasureResource;
+using Xbim.Ifc2x3.MeasureResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.QuantityResource
+namespace Xbim.Ifc2x3.QuantityResource
 {
     /// <summary>
     ///   physical quantity, IfcQuantityArea, that defines a derived area measure to provide an element's physical property.

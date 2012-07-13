@@ -13,13 +13,13 @@
 #region Directives
 
 using System;
-using Xbim.Ifc.ProductExtension;
+using Xbim.Ifc2x3.ProductExtension;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.StructuralElementsDomain
+namespace Xbim.Ifc2x3.StructuralElementsDomain
 {
     /// <summary>
     ///   The geometric representation of IfcFooting is given by the IfcProductDefinitionShape, allowing multiple geometric representations. Included are: 

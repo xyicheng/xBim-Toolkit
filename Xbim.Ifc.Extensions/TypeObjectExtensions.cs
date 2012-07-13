@@ -18,12 +18,12 @@ using System.Diagnostics;
 using System.Linq;
 
 
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.ProductExtension;
-using Xbim.Ifc.PropertyResource;
-using Xbim.Ifc.QuantityResource;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.Ifc2x3.PropertyResource;
+using Xbim.Ifc2x3.QuantityResource;
+using Xbim.Ifc2x3.SelectTypes;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
@@ -32,7 +32,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.Extensions
+namespace Xbim.Ifc2x3.Extensions
 {
     public static class TypeObjectExtensions
     {
@@ -42,13 +42,13 @@ namespace Xbim.Ifc.Extensions
         /// <param name="obj"></param>
         /// <param name="pSetName"></param>
         /// <returns></returns>
-        public static IfcPropertySet GetPropertySet(this Xbim.Ifc.Kernel.IfcTypeObject obj, string pSetName)
+        public static IfcPropertySet GetPropertySet(this Xbim.Ifc2x3.Kernel.IfcTypeObject obj, string pSetName)
         {
             if (obj.HasPropertySets == null) return null;
             else return obj.HasPropertySets.Where<IfcPropertySet>(r => r.Name == pSetName).FirstOrDefault();
         }
 
-        public static IfcPropertySingleValue GetPropertySingleValue(this Xbim.Ifc.Kernel.IfcTypeObject obj, string pSetName, string propertyName)
+        public static IfcPropertySingleValue GetPropertySingleValue(this Xbim.Ifc2x3.Kernel.IfcTypeObject obj, string pSetName, string propertyName)
         {
             IfcPropertySet pset = GetPropertySet(obj, pSetName);
             if (pset != null)
@@ -56,13 +56,13 @@ namespace Xbim.Ifc.Extensions
             return null;
         }
 
-        public static IfcValue GetPropertySingleValueValue(this Xbim.Ifc.Kernel.IfcTypeObject obj, string pSetName, string propertyName)
+        public static IfcValue GetPropertySingleValueValue(this Xbim.Ifc2x3.Kernel.IfcTypeObject obj, string pSetName, string propertyName)
         {
             IfcPropertySingleValue psv = GetPropertySingleValue(obj, pSetName, propertyName);
             return psv.NominalValue;
         }
 
-        public static List<IfcPropertySet> GetAllPropertySets(this Xbim.Ifc.Kernel.IfcTypeObject obj)
+        public static List<IfcPropertySet> GetAllPropertySets(this Xbim.Ifc2x3.Kernel.IfcTypeObject obj)
         {
             List<IfcPropertySet> result = new List<IfcPropertySet>();
             if (obj.HasPropertySets != null)
@@ -75,7 +75,7 @@ namespace Xbim.Ifc.Extensions
             return result;
         }
 
-        public static Dictionary<IfcLabel, Dictionary<IfcIdentifier, IfcValue>> GetAllPropertySingleValues(this Xbim.Ifc.Kernel.IfcTypeObject obj)
+        public static Dictionary<IfcLabel, Dictionary<IfcIdentifier, IfcValue>> GetAllPropertySingleValues(this Xbim.Ifc2x3.Kernel.IfcTypeObject obj)
         {
             Dictionary<IfcLabel, Dictionary<IfcIdentifier, IfcValue>> result = new Dictionary<IfcLabel, Dictionary<IfcIdentifier, IfcValue>>();
             PropertySetDefinitionSet pSets = obj.HasPropertySets;
@@ -96,13 +96,13 @@ namespace Xbim.Ifc.Extensions
             return result;
         }
 
-        public static void DeletePropertySingleValueValue(this Xbim.Ifc.Kernel.IfcTypeObject obj, string pSetName, string propertyName)
+        public static void DeletePropertySingleValueValue(this Xbim.Ifc2x3.Kernel.IfcTypeObject obj, string pSetName, string propertyName)
         {
             IfcPropertySingleValue psv = GetPropertySingleValue(obj, pSetName, propertyName);
             if (psv != null) psv.NominalValue = null;
         }
 
-        public static IfcPropertyTableValue GetPropertyTableValue(this Xbim.Ifc.Kernel.IfcTypeObject obj, string pSetName, string propertyTableName)
+        public static IfcPropertyTableValue GetPropertyTableValue(this Xbim.Ifc2x3.Kernel.IfcTypeObject obj, string pSetName, string propertyTableName)
         {
             IfcPropertySet pset = GetPropertySet(obj, pSetName);
             if (pset != null)
@@ -110,7 +110,7 @@ namespace Xbim.Ifc.Extensions
             return null;
         }
 
-        public static IfcValue GetPropertyTableItemValue(this Xbim.Ifc.Kernel.IfcTypeObject obj, string pSetName, string propertyTableName, IfcValue definingValue)
+        public static IfcValue GetPropertyTableItemValue(this Xbim.Ifc2x3.Kernel.IfcTypeObject obj, string pSetName, string propertyTableName, IfcValue definingValue)
         {
             IfcPropertyTableValue table = GetPropertyTableValue(obj, pSetName, propertyTableName);
             if (table == null) return null;
@@ -123,12 +123,12 @@ namespace Xbim.Ifc.Extensions
             return table.DefinedValues[index];
         }
 
-        public static void SetPropertyTableItemValue(this Xbim.Ifc.Kernel.IfcTypeObject obj, string pSetName, string propertyTableName, IfcValue definingValue, IfcValue definedValue)
+        public static void SetPropertyTableItemValue(this Xbim.Ifc2x3.Kernel.IfcTypeObject obj, string pSetName, string propertyTableName, IfcValue definingValue, IfcValue definedValue)
         {
             SetPropertyTableItemValue(obj, pSetName, propertyTableName, definingValue, definedValue, null, null);
         }
 
-        public static void SetPropertyTableItemValue(this Xbim.Ifc.Kernel.IfcTypeObject obj, string pSetName, string propertyTableName, IfcValue definingValue, IfcValue definedValue, IfcUnit definingUnit, IfcUnit definedUnit)
+        public static void SetPropertyTableItemValue(this Xbim.Ifc2x3.Kernel.IfcTypeObject obj, string pSetName, string propertyTableName, IfcValue definingValue, IfcValue definedValue, IfcUnit definingUnit, IfcUnit definedUnit)
         {
             IfcPropertySet pset = GetPropertySet(obj, pSetName);
             IModel model = null;
@@ -169,7 +169,7 @@ namespace Xbim.Ifc.Extensions
             }
         }
 
-        public static IfcPropertySingleValue SetPropertySingleValue(this Xbim.Ifc.Kernel.IfcTypeObject obj, string pSetName, string propertyName, IfcValue value)
+        public static IfcPropertySingleValue SetPropertySingleValue(this Xbim.Ifc2x3.Kernel.IfcTypeObject obj, string pSetName, string propertyName, IfcValue value)
         {
             IfcPropertySet pset = GetPropertySet(obj, pSetName);
             IfcPropertySingleValue property = null;

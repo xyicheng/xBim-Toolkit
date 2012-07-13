@@ -17,7 +17,7 @@ using Xbim.XbimExtensions;
 
 #endregion
 
-namespace Xbim.Ifc.StructuralElementsDomain
+namespace Xbim.Ifc2x3.StructuralElementsDomain
 {
     [IfcPersistedEntityAttribute, Serializable]
     public class IfcTendonAnchor : IfcReinforcingElement

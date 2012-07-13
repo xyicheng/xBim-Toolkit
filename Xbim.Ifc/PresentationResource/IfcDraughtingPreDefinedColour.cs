@@ -17,12 +17,12 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Windows.Media;
-using Xbim.Ifc.MeasureResource;
+using Xbim.Ifc2x3.MeasureResource;
 using Xbim.XbimExtensions;
 
 #endregion
 
-namespace Xbim.Ifc.PresentationResource
+namespace Xbim.Ifc2x3.PresentationResource
 {
     [IfcPersistedEntityAttribute, Serializable]
     public class IfcDraughtingPreDefinedColour : IfcPreDefinedColour

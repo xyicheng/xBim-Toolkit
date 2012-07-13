@@ -14,15 +14,15 @@
 
 using System;
 using System.Runtime.Serialization;
-using Xbim.Ifc.GeometryResource;
-using Xbim.Ifc.MeasureResource;
+using Xbim.Ifc2x3.GeometryResource;
+using Xbim.Ifc2x3.MeasureResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 using WVector3D = System.Windows.Media.Media3D.Vector3D;
 
 #endregion
 
-namespace Xbim.Ifc.GeometricModelResource
+namespace Xbim.Ifc2x3.GeometricModelResource
 {
     [IfcPersistedEntityAttribute, Serializable]
     public class IfcExtrudedAreaSolid : IfcSweptAreaSolid

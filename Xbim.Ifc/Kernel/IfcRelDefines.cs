@@ -18,7 +18,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.Kernel
+namespace Xbim.Ifc2x3.Kernel
 {
     /// <summary>
     ///   A definition relationship (IfcRelDefines) that uses a type definition or property set definition (seens as partial type information) to define the properties of the object instance.

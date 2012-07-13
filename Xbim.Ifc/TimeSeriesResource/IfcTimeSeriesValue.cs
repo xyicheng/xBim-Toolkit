@@ -19,7 +19,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.TimeSeriesResource
+namespace Xbim.Ifc2x3.TimeSeriesResource
 {
     /// <summary>
     ///   A time series value is a list of values that comprise the time series. At least one value must be supplied. 

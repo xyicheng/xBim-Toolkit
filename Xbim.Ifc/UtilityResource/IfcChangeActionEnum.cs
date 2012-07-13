@@ -10,7 +10,7 @@
 
 #endregion
 
-namespace Xbim.Ifc.UtilityResource
+namespace Xbim.Ifc2x3.UtilityResource
 {
     /// <summary>
     ///   Enumeration identifying the type of change that might have occurred to the object during the last session 

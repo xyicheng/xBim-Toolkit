@@ -17,7 +17,7 @@ using Xbim.XbimExtensions;
 
 #endregion
 
-namespace Xbim.Ifc.GeometryResource
+namespace Xbim.Ifc2x3.GeometryResource
 {
     /// <summary>
     ///   A bounded surface is a surface of finite area with identifiable boundaries.

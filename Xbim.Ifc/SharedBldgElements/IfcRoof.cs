@@ -14,13 +14,13 @@
 
 using System;
 using System.Linq;
-using Xbim.Ifc.ProductExtension;
+using Xbim.Ifc2x3.ProductExtension;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.SharedBldgElements
+namespace Xbim.Ifc2x3.SharedBldgElements
 {
     [IfcPersistedEntityAttribute, Serializable]
     public class IfcRoof : IfcBuildingElement

@@ -18,7 +18,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.ProductExtension
+namespace Xbim.Ifc2x3.ProductExtension
 {
     /// <summary>
     ///   The element type (IfcSpaceType) defines a list of commonly shared property set definitions of a space and an optional set of product representations.

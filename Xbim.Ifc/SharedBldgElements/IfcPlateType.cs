@@ -13,13 +13,13 @@
 #region Directives
 
 using System;
-using Xbim.Ifc.ProductExtension;
+using Xbim.Ifc2x3.ProductExtension;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.SharedBldgElements
+namespace Xbim.Ifc2x3.SharedBldgElements
 {
     /// <summary>
     ///   The element type IfcPlateType defines a list of commonly shared property set definitions of a thin planar element and an optional set of product representations (i.e. the specific product information, that is common to all occurrences of that product type).

@@ -10,7 +10,7 @@
 
 #endregion
 
-namespace Xbim.Ifc.SharedBldgElements
+namespace Xbim.Ifc2x3.SharedBldgElements
 {
     /// <summary>
     ///   This enumeration defines the basic configuration of the stair type in terms of the number of stair flights and the number of landings.

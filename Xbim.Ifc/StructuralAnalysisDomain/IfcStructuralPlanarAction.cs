@@ -13,13 +13,13 @@
 #region Directives
 
 using System;
-using Xbim.Ifc.StructuralLoadResource;
+using Xbim.Ifc2x3.StructuralLoadResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.StructuralAnalysisDomain
+namespace Xbim.Ifc2x3.StructuralAnalysisDomain
 {
     public class IfcStructuralPlanarAction : IfcStructuralAction
     {

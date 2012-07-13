@@ -15,15 +15,15 @@
 using System;
 using System.Collections.Generic;
 using System.Xml.Serialization;
-using Xbim.Ifc.GeometryResource;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.GeometryResource;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.Ifc2x3.SelectTypes;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.RepresentationResource
+namespace Xbim.Ifc2x3.RepresentationResource
 {
     /// <summary>
     ///   A geometric representation context is a representation context in which the geometric representation items are geometrically founded.

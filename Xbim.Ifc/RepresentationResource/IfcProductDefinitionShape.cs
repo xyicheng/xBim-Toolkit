@@ -16,12 +16,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Serialization;
-using Xbim.Ifc.Kernel;
+using Xbim.Ifc2x3.Kernel;
 using Xbim.XbimExtensions;
 
 #endregion
 
-namespace Xbim.Ifc.RepresentationResource
+namespace Xbim.Ifc2x3.RepresentationResource
 {
     /// <summary>
     ///   A product definition shape identifies a product’s shape as the conceptual idea of the form of a product.

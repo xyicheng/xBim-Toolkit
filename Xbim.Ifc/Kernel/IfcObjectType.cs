@@ -10,7 +10,7 @@
 
 #endregion
 
-namespace Xbim.Ifc.Kernel
+namespace Xbim.Ifc2x3.Kernel
 {
     /// <summary>
     ///   This enumeration defines the applicable object categories (i.e. the subtypes at the 2nd level of the IFC inheritance tree) . 

@@ -10,7 +10,7 @@
 
 #endregion
 
-namespace Xbim.Ifc.MeasureResource
+namespace Xbim.Ifc2x3.MeasureResource
 {
     /// <summary>
     ///   An SI prefix is the name of a prefix that may be associated with an SI unit. 

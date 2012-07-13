@@ -13,13 +13,13 @@
 #region Directives
 
 using System;
-using Xbim.Ifc.Kernel;
+using Xbim.Ifc2x3.Kernel;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.SharedBldgElements
+namespace Xbim.Ifc2x3.SharedBldgElements
 {
     /// <summary>
     ///   The door style, IfcDoorStyle, defines a particular style of doors, which may be included into the spatial context of the building model through an (or multiple) instances of IfcDoor.

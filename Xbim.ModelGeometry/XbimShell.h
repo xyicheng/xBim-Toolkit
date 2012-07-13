@@ -7,9 +7,9 @@
 #include <BRepGProp.hxx>
 #include <GProp_GProps.hxx> 
 
-using namespace Xbim::Ifc::TopologyResource;
-using namespace Xbim::Ifc::GeometryResource;
-using namespace Xbim::Ifc::SelectTypes;
+using namespace Xbim::Ifc2x3::TopologyResource;
+using namespace Xbim::Ifc2x3::GeometryResource;
+using namespace Xbim::Ifc2x3::SelectTypes;
 using namespace Xbim::XbimExtensions::Interfaces;
 using namespace System::Collections::Generic;
 using namespace System::IO;

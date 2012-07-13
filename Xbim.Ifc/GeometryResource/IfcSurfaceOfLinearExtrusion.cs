@@ -13,13 +13,13 @@
 #region Directives
 
 using System;
-using Xbim.Ifc.MeasureResource;
+using Xbim.Ifc2x3.MeasureResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.GeometryResource
+namespace Xbim.Ifc2x3.GeometryResource
 {
     /// <summary>
     ///   This surface is a simple swept surface or a generalised cylinder obtained by sweeping a curve in a given direction.

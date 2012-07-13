@@ -8,7 +8,7 @@ using Xbim.ModelGeometry;
 
 using System.IO;
 using Xbim.Common.Logging;
-using Xbim.Ifc.Kernel;
+using Xbim.Ifc2x3.Kernel;
 
 namespace XbimConvert
 {

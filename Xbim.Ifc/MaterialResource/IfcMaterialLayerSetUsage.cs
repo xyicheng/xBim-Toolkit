@@ -14,14 +14,14 @@
 
 using System;
 using System.ComponentModel;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.Ifc2x3.SelectTypes;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.MaterialResource
+namespace Xbim.Ifc2x3.MaterialResource
 {
     /// <summary>
     ///   Determines the usage of IfcMaterialLayerSet in terms of its location and orientation relative to the associated element geometry.

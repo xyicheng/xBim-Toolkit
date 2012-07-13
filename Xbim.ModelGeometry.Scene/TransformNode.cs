@@ -19,8 +19,8 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Windows.Media.Media3D;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.SharedBldgElements;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.SharedBldgElements;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 

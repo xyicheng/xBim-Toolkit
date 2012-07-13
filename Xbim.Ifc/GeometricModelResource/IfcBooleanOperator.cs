@@ -10,7 +10,7 @@
 
 #endregion
 
-namespace Xbim.Ifc.GeometricModelResource
+namespace Xbim.Ifc2x3.GeometricModelResource
 {
     public enum IfcBooleanOperator
     {

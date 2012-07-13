@@ -13,13 +13,13 @@
 #region Directives
 
 using System;
-using Xbim.Ifc.ExternalReferenceResource;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.ExternalReferenceResource;
+using Xbim.Ifc2x3.SelectTypes;
 using Xbim.XbimExtensions;
 
 #endregion
 
-namespace Xbim.Ifc.PresentationAppearanceResource
+namespace Xbim.Ifc2x3.PresentationAppearanceResource
 {
     [IfcPersistedEntityAttribute, Serializable]
     public class IfcExternallyDefinedSurfaceStyle : IfcExternalReference, IfcSurfaceStyleElementSelect

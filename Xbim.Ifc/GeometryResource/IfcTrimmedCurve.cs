@@ -15,8 +15,8 @@
 using System;
 using System.Linq;
 using System.Text;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.Ifc2x3.SelectTypes;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 using WVector = System.Windows.Vector;
@@ -24,7 +24,7 @@ using WPoint = System.Windows.Point;
 
 #endregion
 
-namespace Xbim.Ifc.GeometryResource
+namespace Xbim.Ifc2x3.GeometryResource
 {
     [IfcPersistedEntityAttribute, Serializable]
     public class TrimmingSelectList : XbimListSet<IfcTrimmingSelect>

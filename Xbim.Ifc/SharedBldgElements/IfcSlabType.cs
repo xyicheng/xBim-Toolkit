@@ -13,13 +13,13 @@
 #region Directives
 
 using System;
-using Xbim.Ifc.ProductExtension;
+using Xbim.Ifc2x3.ProductExtension;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.SharedBldgElements
+namespace Xbim.Ifc2x3.SharedBldgElements
 {
     /// <summary>
     ///   The element type (IfcSlabType) defines a list of commonly shared property set definitions of a slab and an optional set of product representations.

@@ -10,7 +10,7 @@
 
 #endregion
 
-namespace Xbim.Ifc.SharedBldgElements
+namespace Xbim.Ifc2x3.SharedBldgElements
 {
     /// <summary>
     ///   This enumeration defines the basic ways to describe how doors operate.

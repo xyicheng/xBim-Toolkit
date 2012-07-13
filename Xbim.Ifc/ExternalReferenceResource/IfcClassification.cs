@@ -15,14 +15,14 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using Xbim.Ifc.DateTimeResource;
-using Xbim.Ifc.MeasureResource;
+using Xbim.Ifc2x3.DateTimeResource;
+using Xbim.Ifc2x3.MeasureResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.ExternalReferenceResource
+namespace Xbim.Ifc2x3.ExternalReferenceResource
 {
     /// <summary>
     ///   An IfcClassification is used for the arrangement of objects into a class or category according to a common purpose or their possession of common characteristics.

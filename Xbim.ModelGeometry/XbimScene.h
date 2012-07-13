@@ -5,7 +5,7 @@ using namespace System;
 using namespace System::IO;
 using namespace System::Collections::Generic;
 using namespace Xbim::ModelGeometry::Scene;
-using namespace Xbim::Ifc::Kernel;
+using namespace Xbim::Ifc2x3::Kernel;
 using namespace Xbim::XbimExtensions;
 using namespace Xbim::Common::Logging;
 namespace Xbim

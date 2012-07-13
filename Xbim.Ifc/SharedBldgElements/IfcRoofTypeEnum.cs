@@ -10,7 +10,7 @@
 
 #endregion
 
-namespace Xbim.Ifc.SharedBldgElements
+namespace Xbim.Ifc2x3.SharedBldgElements
 {
     /// <summary>
     ///   This enumeration defines the basic configuration of the roof in terms of the different roof shapes.

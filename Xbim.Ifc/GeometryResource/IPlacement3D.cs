@@ -14,7 +14,7 @@
 
 #endregion
 
-namespace Xbim.Ifc.GeometryResource
+namespace Xbim.Ifc2x3.GeometryResource
 {
     /// <summary>
     ///   If the object supports placement by Axis2Placement3D, this returns the placement

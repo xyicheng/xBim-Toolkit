@@ -14,20 +14,20 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using Xbim.Ifc.GeometricModelResource;
-using Xbim.Ifc.GeometryResource;
-using Xbim.Ifc.ProductExtension;
-using Xbim.Ifc.RepresentationResource;
-using Xbim.Ifc.SharedBldgElements;
+using Xbim.Ifc2x3.GeometricModelResource;
+using Xbim.Ifc2x3.GeometryResource;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.Ifc2x3.RepresentationResource;
+using Xbim.Ifc2x3.SharedBldgElements;
 using Xbim.XbimExtensions;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.QuantityResource;
-using Xbim.Ifc.Kernel;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.Ifc2x3.QuantityResource;
+using Xbim.Ifc2x3.Kernel;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.Extensions
+namespace Xbim.Ifc2x3.Extensions
 {
     public static class SpaceExtensions
     {

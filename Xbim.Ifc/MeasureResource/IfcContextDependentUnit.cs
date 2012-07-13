@@ -18,7 +18,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.MeasureResource
+namespace Xbim.Ifc2x3.MeasureResource
 {
     /// <summary>
     ///   A context dependent unit is a unit which is not related to the SI system. 

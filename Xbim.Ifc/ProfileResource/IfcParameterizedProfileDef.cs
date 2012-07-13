@@ -14,13 +14,13 @@
 
 using System;
 using System.Runtime.Serialization;
-using Xbim.Ifc.GeometryResource;
+using Xbim.Ifc2x3.GeometryResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.ProfileResource
+namespace Xbim.Ifc2x3.ProfileResource
 {
     /// <summary>
     ///   The parameterized profile definition defines a 2D position coordinate system to which the parameters of the different profiles relate to.

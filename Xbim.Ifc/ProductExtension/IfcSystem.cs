@@ -14,12 +14,12 @@
 
 using System;
 using System.Collections.Generic;
-using Xbim.Ifc.Kernel;
+using Xbim.Ifc2x3.Kernel;
 using Xbim.XbimExtensions;
 
 #endregion
 
-namespace Xbim.Ifc.ProductExtension
+namespace Xbim.Ifc2x3.ProductExtension
 {
     [IfcPersistedEntityAttribute, Serializable]
     public class IfcSystem : IfcGroup

@@ -13,14 +13,14 @@
 #region Directives
 
 using System;
-using Xbim.Ifc.GeometricConstraintResource;
-using Xbim.Ifc.Kernel;
+using Xbim.Ifc2x3.GeometricConstraintResource;
+using Xbim.Ifc2x3.Kernel;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.ProductExtension
+namespace Xbim.Ifc2x3.ProductExtension
 {
     /// <summary>
     ///   The space boundary (IfcRelSpaceBoundary) defines the physical or virtual delimiter of a space as its relationship to the surrounding elements.

@@ -14,12 +14,12 @@
 
 using System;
 using System.Linq;
-using Xbim.Ifc.Kernel;
+using Xbim.Ifc2x3.Kernel;
 using Xbim.XbimExtensions;
 
 #endregion
 
-namespace Xbim.Ifc.ConstructionMgmtDomain
+namespace Xbim.Ifc2x3.ConstructionMgmtDomain
 {
     [IfcPersistedEntityAttribute, Serializable]
     public class IfcConstructionProductResource : IfcConstructionResource

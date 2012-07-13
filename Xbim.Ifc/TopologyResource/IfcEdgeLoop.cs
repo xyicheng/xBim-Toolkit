@@ -18,7 +18,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.TopologyResource
+namespace Xbim.Ifc2x3.TopologyResource
 {
     /// <summary>
     ///   An edge_loop is a loop with nonzero extent.

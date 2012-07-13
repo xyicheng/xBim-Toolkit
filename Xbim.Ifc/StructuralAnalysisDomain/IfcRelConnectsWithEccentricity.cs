@@ -13,13 +13,13 @@
 #region Directives
 
 using System;
-using Xbim.Ifc.GeometricConstraintResource;
+using Xbim.Ifc2x3.GeometricConstraintResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.StructuralAnalysisDomain
+namespace Xbim.Ifc2x3.StructuralAnalysisDomain
 {
     [IfcPersistedEntityAttribute, Serializable]
     public class IfcRelConnectsWithEccentricity : IfcRelConnectsStructuralMember

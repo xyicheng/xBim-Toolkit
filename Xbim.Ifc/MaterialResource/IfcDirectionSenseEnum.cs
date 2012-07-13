@@ -10,7 +10,7 @@
 
 #endregion
 
-namespace Xbim.Ifc.MaterialResource
+namespace Xbim.Ifc2x3.MaterialResource
 {
     /// <summary>
     ///   Enumeration denoting whether sense of direction is positive or negative along the given axis.

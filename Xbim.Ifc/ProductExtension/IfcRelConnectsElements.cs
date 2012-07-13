@@ -13,14 +13,14 @@
 #region Directives
 
 using System;
-using Xbim.Ifc.GeometricConstraintResource;
-using Xbim.Ifc.Kernel;
+using Xbim.Ifc2x3.GeometricConstraintResource;
+using Xbim.Ifc2x3.Kernel;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.ProductExtension
+namespace Xbim.Ifc2x3.ProductExtension
 {
     /// <summary>
     ///   This objectified relationship (IfcRelConnectsElements) provides the generalization of the connectivity between elements.

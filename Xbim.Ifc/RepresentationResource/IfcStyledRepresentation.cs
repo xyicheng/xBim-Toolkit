@@ -14,12 +14,12 @@
 
 using System;
 using System.Linq;
-using Xbim.Ifc.PresentationAppearanceResource;
+using Xbim.Ifc2x3.PresentationAppearanceResource;
 using Xbim.XbimExtensions;
 
 #endregion
 
-namespace Xbim.Ifc.RepresentationResource
+namespace Xbim.Ifc2x3.RepresentationResource
 {
     /// <summary>
     ///   The IfcStyledRepresentation represents the concept of a styled presentation being a representation of a product or a product component, like material. within a representation context.

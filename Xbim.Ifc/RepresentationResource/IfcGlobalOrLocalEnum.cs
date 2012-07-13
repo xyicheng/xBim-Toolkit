@@ -10,7 +10,7 @@
 
 #endregion
 
-namespace Xbim.Ifc.RepresentationResource
+namespace Xbim.Ifc2x3.RepresentationResource
 {
     public enum IfcGlobalOrLocalEnum
     {

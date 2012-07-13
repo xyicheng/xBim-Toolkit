@@ -3,7 +3,7 @@
 #include "XbimGeomPrim.h"
 using namespace System::Collections::Generic;
 using namespace Xbim::XbimExtensions;
-using namespace Xbim::Ifc::Extensions;
+using namespace Xbim::Ifc2x3::Extensions;
 using namespace System::Windows::Media::Media3D;
 using namespace System::Linq;
 using namespace Xbim::Common::Exceptions;

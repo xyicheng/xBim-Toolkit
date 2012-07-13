@@ -10,7 +10,7 @@
 
 #endregion
 
-namespace Xbim.Ifc.GeometryResource
+namespace Xbim.Ifc2x3.GeometryResource
 {
     /// <summary>
     ///   This type is used to indicate that the B-spline curve represents a part of a curve of some sppeci c form.

@@ -15,14 +15,14 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using Xbim.Ifc.RepresentationResource;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.RepresentationResource;
+using Xbim.Ifc2x3.SelectTypes;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.GeometryResource
+namespace Xbim.Ifc2x3.GeometryResource
 {
     [IfcPersistedEntityAttribute, Serializable]
     public class RepresentationMapList : XbimListUnique<IfcRepresentationMap>

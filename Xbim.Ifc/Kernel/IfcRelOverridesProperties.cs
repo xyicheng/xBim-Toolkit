@@ -13,13 +13,13 @@
 #region Directives
 
 using System;
-using Xbim.Ifc.PropertyResource;
+using Xbim.Ifc2x3.PropertyResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.Kernel
+namespace Xbim.Ifc2x3.Kernel
 {
     /// <summary>
     ///   The objectified relationship (IfcRelOverridesProperties) defines the relationships between objects and a standard property set.

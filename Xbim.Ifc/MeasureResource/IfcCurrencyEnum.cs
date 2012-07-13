@@ -10,7 +10,7 @@
 
 #endregion
 
-namespace Xbim.Ifc.MeasureResource
+namespace Xbim.Ifc2x3.MeasureResource
 {
     /// <summary>
     ///   An enumeration of the international abbreviations of currencies used of various countries.

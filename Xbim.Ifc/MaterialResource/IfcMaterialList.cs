@@ -15,13 +15,13 @@
 using System;
 using System.ComponentModel;
 using System.Text;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.SelectTypes;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.MaterialResource
+namespace Xbim.Ifc2x3.MaterialResource
 {
     /// <summary>
     ///   A list of the different materials that are used in an element.

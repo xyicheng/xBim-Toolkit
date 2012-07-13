@@ -14,14 +14,14 @@
 
 using System;
 using System.Linq;
-using Xbim.Ifc.GeometryResource;
-using Xbim.Ifc.ProfileResource;
+using Xbim.Ifc2x3.GeometryResource;
+using Xbim.Ifc2x3.ProfileResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.GeometricModelResource
+namespace Xbim.Ifc2x3.GeometricModelResource
 {
     /// <summary>
     ///   A sectioned spine is a representation of the shape of a three dimensional object composed of a spine curve and a number of planar cross sections. The shape is defined between the first element of cross sections and the last element of this set. 

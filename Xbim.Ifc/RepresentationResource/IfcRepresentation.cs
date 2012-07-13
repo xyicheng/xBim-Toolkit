@@ -16,16 +16,16 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Xml.Serialization;
-using Xbim.Ifc.GeometryResource;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.PresentationOrganizationResource;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.GeometryResource;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.Ifc2x3.PresentationOrganizationResource;
+using Xbim.Ifc2x3.SelectTypes;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.RepresentationResource
+namespace Xbim.Ifc2x3.RepresentationResource
 {
     /// <summary>
     ///   A representation is one or more representation items that are related in a specified representation context as the representation of some concept.

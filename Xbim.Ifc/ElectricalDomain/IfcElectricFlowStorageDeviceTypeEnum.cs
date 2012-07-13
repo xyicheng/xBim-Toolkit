@@ -10,7 +10,7 @@
 
 #endregion
 
-namespace Xbim.Ifc.ElectricalDomain
+namespace Xbim.Ifc2x3.ElectricalDomain
 {
     public enum IfcElectricFlowStorageDeviceTypeEnum
     {

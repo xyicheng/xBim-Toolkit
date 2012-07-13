@@ -23,7 +23,7 @@ using System.Windows.Markup;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 
-[assembly: AssemblyTitle("Xbim.Ifc")]
+[assembly: AssemblyTitle("Xbim.Ifc2x3")]
 [assembly: AssemblyDescription("Ifc Entities")]
 
 // Setting ComVisible to false makes the types in this assembly not visible 
@@ -38,15 +38,14 @@ using System.Windows.Markup;
 
 
 [assembly: CLSCompliant(true)]
-[assembly: XmlnsDefinition("http://schemas.Xbim.com/ifc", "Xbim.Ifc.ActorResource")]
-[assembly: XmlnsDefinition("http://schemas.Xbim.com/ifc", "Xbim.Ifc.GeometricConstraintResource")]
-[assembly: XmlnsDefinition("http://schemas.Xbim.com/ifc", "Xbim.Ifc.GeometricModelResource")]
-[assembly: XmlnsDefinition("http://schemas.Xbim.com/ifc", "Xbim.Ifc.GeometryResource")]
-[assembly: XmlnsDefinition("http://schemas.Xbim.com/ifc", "Xbim.Ifc.Kernel")]
-[assembly: XmlnsDefinition("http://schemas.Xbim.com/ifc", "Xbim.Ifc.MaterialResource")]
-[assembly: XmlnsDefinition("http://schemas.Xbim.com/ifc", "Xbim.Ifc.PresentationAppearanceResource")]
-[assembly: XmlnsDefinition("http://schemas.Xbim.com/ifc", "Xbim.Ifc.ProductExtension")]
-[assembly: XmlnsDefinition("http://schemas.Xbim.com/ifc", "Xbim.Ifc.RepresentationResource")]
-[assembly: XmlnsDefinition("http://schemas.Xbim.com/ifc", "Xbim.Ifc.SharedBldgElements")]
-[assembly: XmlnsDefinition("http://schemas.Xbim.com/ifc", "Xbim.Ifc.ExternalReferenceResource")]
-[assembly: XmlnsDefinition("http://schemas.Xbim.com/ifc", "Xbim.XbimExtensions")]
+[assembly: XmlnsDefinition("http://schemas.Xbim.com/ifc", "Xbim.Ifc2x3.ActorResource")]
+[assembly: XmlnsDefinition("http://schemas.Xbim.com/ifc", "Xbim.Ifc2x3.GeometricConstraintResource")]
+[assembly: XmlnsDefinition("http://schemas.Xbim.com/ifc", "Xbim.Ifc2x3.GeometricModelResource")]
+[assembly: XmlnsDefinition("http://schemas.Xbim.com/ifc", "Xbim.Ifc2x3.GeometryResource")]
+[assembly: XmlnsDefinition("http://schemas.Xbim.com/ifc", "Xbim.Ifc2x3.Kernel")]
+[assembly: XmlnsDefinition("http://schemas.Xbim.com/ifc", "Xbim.Ifc2x3.MaterialResource")]
+[assembly: XmlnsDefinition("http://schemas.Xbim.com/ifc", "Xbim.Ifc2x3.PresentationAppearanceResource")]
+[assembly: XmlnsDefinition("http://schemas.Xbim.com/ifc", "Xbim.Ifc2x3.ProductExtension")]
+[assembly: XmlnsDefinition("http://schemas.Xbim.com/ifc", "Xbim.Ifc2x3.RepresentationResource")]
+[assembly: XmlnsDefinition("http://schemas.Xbim.com/ifc", "Xbim.Ifc2x3.SharedBldgElements")]
+[assembly: XmlnsDefinition("http://schemas.Xbim.com/ifc", "Xbim.Ifc2x3.ExternalReferenceResource")]

@@ -10,7 +10,7 @@
 
 #endregion
 
-namespace Xbim.Ifc.SelectTypes
+namespace Xbim.Ifc2x3.SelectTypes
 {
     public interface IfcPresentationStyleSelect : ExpressSelectType
     {

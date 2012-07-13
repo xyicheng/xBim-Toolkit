@@ -14,13 +14,13 @@
 
 using System;
 using System.Runtime.Serialization;
-using Xbim.Ifc.MeasureResource;
+using Xbim.Ifc2x3.MeasureResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.ProductExtension
+namespace Xbim.Ifc2x3.ProductExtension
 {
     /// <summary>
     ///   The building storey has an elevation and typically represents a (nearly) horizontal aggregation of spaces that are vertically bound.

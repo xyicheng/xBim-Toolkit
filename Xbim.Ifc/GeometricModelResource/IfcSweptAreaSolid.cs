@@ -15,14 +15,14 @@
 using System;
 using System.Runtime.Serialization;
 using System.Xml.Serialization;
-using Xbim.Ifc.GeometryResource;
-using Xbim.Ifc.ProfileResource;
+using Xbim.Ifc2x3.GeometryResource;
+using Xbim.Ifc2x3.ProfileResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.GeometricModelResource
+namespace Xbim.Ifc2x3.GeometricModelResource
 {
     [IfcPersistedEntityAttribute, Serializable]
     public abstract class IfcSweptAreaSolid : IfcSolidModel

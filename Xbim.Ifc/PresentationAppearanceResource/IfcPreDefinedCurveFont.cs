@@ -13,13 +13,13 @@
 #region Directives
 
 using System;
-using Xbim.Ifc.PresentationResource;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.PresentationResource;
+using Xbim.Ifc2x3.SelectTypes;
 using Xbim.XbimExtensions;
 
 #endregion
 
-namespace Xbim.Ifc.PresentationAppearanceResource
+namespace Xbim.Ifc2x3.PresentationAppearanceResource
 {
     [IfcPersistedEntityAttribute, Serializable]
     public abstract class IfcPreDefinedCurveFont : IfcPreDefinedItem, IfcCurveStyleFontSelect,

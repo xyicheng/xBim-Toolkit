@@ -13,12 +13,12 @@
 #region Directives
 
 using System;
-using Xbim.Ifc.MeasureResource;
+using Xbim.Ifc2x3.MeasureResource;
 using Xbim.XbimExtensions;
 
 #endregion
 
-namespace Xbim.Ifc.PropertyResource
+namespace Xbim.Ifc2x3.PropertyResource
 {
     /// <summary>
     ///   A generalization of a single property object. The various subtypes of IfcSimpleProperty establish different ways in which a property value can be set.

@@ -14,13 +14,13 @@
 
 using System;
 using System.ComponentModel;
-using Xbim.Ifc.MeasureResource;
+using Xbim.Ifc2x3.MeasureResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.CostResource
+namespace Xbim.Ifc2x3.CostResource
 {
     /// <summary>
     ///   An IfcAppliedValueRelationship is a relationship class that enables applied values of cost or environmental impact to be aggregated together as components of another applied value.

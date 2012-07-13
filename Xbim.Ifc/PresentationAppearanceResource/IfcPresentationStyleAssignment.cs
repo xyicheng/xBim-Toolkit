@@ -14,13 +14,13 @@
 
 using System;
 using System.ComponentModel;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.SelectTypes;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.PresentationAppearanceResource
+namespace Xbim.Ifc2x3.PresentationAppearanceResource
 {
     /// <summary>
     ///   The presentation style assignment is a set of styles which are assigned to styled items for the purpose of presenting these styled items.

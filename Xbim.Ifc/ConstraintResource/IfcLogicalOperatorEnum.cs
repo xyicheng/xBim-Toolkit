@@ -10,7 +10,7 @@
 
 #endregion
 
-namespace Xbim.Ifc.ConstraintResource
+namespace Xbim.Ifc2x3.ConstraintResource
 {
     /// <summary>
     ///   IfcLogicalOperatorEnum is an enumeration that defines the logical operators that may be applied 

@@ -13,13 +13,13 @@
 #region Directives
 
 using System;
-using Xbim.Ifc.Kernel;
+using Xbim.Ifc2x3.Kernel;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.ProductExtension
+namespace Xbim.Ifc2x3.ProductExtension
 {
     /// <summary>
     ///   An IfcRelConnectsPortToElement defines the relationship that is made between one port to the IfcElement in which it is contained.

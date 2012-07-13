@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.SharedBldgElements;
-using Xbim.Ifc.ProductExtension;
-using Xbim.Ifc.SharedBldgServiceElements;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.SharedBldgElements;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.Ifc2x3.SharedBldgServiceElements;
 
 namespace Xbim.Web.Viewer3D.ServerSide
 {

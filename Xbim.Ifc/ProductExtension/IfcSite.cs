@@ -14,14 +14,14 @@
 
 using System;
 using System.Runtime.Serialization;
-using Xbim.Ifc.ActorResource;
-using Xbim.Ifc.MeasureResource;
+using Xbim.Ifc2x3.ActorResource;
+using Xbim.Ifc2x3.MeasureResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.ProductExtension
+namespace Xbim.Ifc2x3.ProductExtension
 {
     /// <summary>
     ///   Area where construction works are undertaken.

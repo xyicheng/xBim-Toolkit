@@ -13,13 +13,13 @@
 #region Directives
 
 using System;
-using Xbim.Ifc.GeometryResource;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.GeometryResource;
+using Xbim.Ifc2x3.SelectTypes;
 using Xbim.XbimExtensions;
 
 #endregion
 
-namespace Xbim.Ifc.GeometricModelResource
+namespace Xbim.Ifc2x3.GeometricModelResource
 {
     /// <summary>
     ///   A solid model is a complete representation of the nominal shape of a product such that all points in the interior are connected.

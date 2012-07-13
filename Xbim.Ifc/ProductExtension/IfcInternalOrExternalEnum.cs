@@ -10,7 +10,7 @@
 
 #endregion
 
-namespace Xbim.Ifc.ProductExtension
+namespace Xbim.Ifc2x3.ProductExtension
 {
     /// <summary>
     ///   Definition from IAI: This enumeration defines the different types of spaces or space boundaries in terms of either being inside the building or outside the building.

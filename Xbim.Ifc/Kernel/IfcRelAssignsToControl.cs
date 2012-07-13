@@ -18,7 +18,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.Kernel
+namespace Xbim.Ifc2x3.Kernel
 {
     /// <summary>
     ///   This objectified relationship (IfcRelAssignsToControl) handles the assignment of a control (subtype of IfcControl) to other objects (subtypes of IfcObject, with the exception of controls). 

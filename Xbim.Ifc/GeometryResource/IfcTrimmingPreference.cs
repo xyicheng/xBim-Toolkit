@@ -10,7 +10,7 @@
 
 #endregion
 
-namespace Xbim.Ifc.GeometryResource
+namespace Xbim.Ifc2x3.GeometryResource
 {
     /// <summary>
     ///   This type is used to describe the preferred way of trimming a parametric curve where the trimming is multiply defined.

@@ -13,13 +13,13 @@
 #region Directives
 
 using System;
-using Xbim.Ifc.Kernel;
+using Xbim.Ifc2x3.Kernel;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.ProductExtension
+namespace Xbim.Ifc2x3.ProductExtension
 {
     /// <summary>
     ///   The objectified relationship, IfcRelCoversSpace, relates a space object to one to many coverings, which faces (or are assigned) to the space.

@@ -18,7 +18,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.StructuralAnalysisDomain
+namespace Xbim.Ifc2x3.StructuralAnalysisDomain
 {
     /// <summary>
     ///   Instances of the entity IfcStructuralCurveMember shall be used to describe linear structural elements. Profile and material properties are defined by using objectified relationships:

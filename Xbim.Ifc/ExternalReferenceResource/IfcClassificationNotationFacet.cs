@@ -14,13 +14,13 @@
 
 using System;
 using System.ComponentModel;
-using Xbim.Ifc.MeasureResource;
+using Xbim.Ifc2x3.MeasureResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.ExternalReferenceResource
+namespace Xbim.Ifc2x3.ExternalReferenceResource
 {
     /// <summary>
     ///   An IfcClassificationNotationFacet is a group of alphanumeric characters used within a classification notation.

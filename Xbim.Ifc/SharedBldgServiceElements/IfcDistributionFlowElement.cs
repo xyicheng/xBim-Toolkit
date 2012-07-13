@@ -14,12 +14,12 @@
 
 using System;
 using System.Collections.Generic;
-using Xbim.Ifc.ProductExtension;
+using Xbim.Ifc2x3.ProductExtension;
 using Xbim.XbimExtensions;
 
 #endregion
 
-namespace Xbim.Ifc.SharedBldgServiceElements
+namespace Xbim.Ifc2x3.SharedBldgServiceElements
 {
     [IfcPersistedEntityAttribute, Serializable]
     public class IfcDistributionFlowElement : IfcDistributionElement

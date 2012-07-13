@@ -13,7 +13,7 @@
 #region Directives
 
 using System.Collections.Generic; using Xbim.XbimExtensions.Interfaces;
-using Xbim.Ifc.StructuralElementsDomain;
+using Xbim.Ifc2x3.StructuralElementsDomain;
 
 #endregion
 

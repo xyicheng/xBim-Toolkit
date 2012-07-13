@@ -12,12 +12,12 @@
 
 #region Directives
 
-using Xbim.Ifc.ExternalReferenceResource;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.ExternalReferenceResource;
+using Xbim.Ifc2x3.SelectTypes;
 
 #endregion
 
-namespace Xbim.Ifc.PresentationResource
+namespace Xbim.Ifc2x3.PresentationResource
 {
     public class IfcExternallyDefinedTextFont : IfcExternalReference, IfcTextFontSelect
     {

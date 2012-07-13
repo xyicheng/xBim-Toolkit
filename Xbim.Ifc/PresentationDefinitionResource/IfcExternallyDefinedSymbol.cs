@@ -13,13 +13,13 @@
 #region Directives
 
 using System;
-using Xbim.Ifc.ExternalReferenceResource;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.ExternalReferenceResource;
+using Xbim.Ifc2x3.SelectTypes;
 using Xbim.XbimExtensions;
 
 #endregion
 
-namespace Xbim.Ifc.PresentationDefinitionResource
+namespace Xbim.Ifc2x3.PresentationDefinitionResource
 {
     [IfcPersistedEntityAttribute, Serializable]
     public class IfcExternallyDefinedSymbol : IfcExternalReference, IfcDefinedSymbolSelect

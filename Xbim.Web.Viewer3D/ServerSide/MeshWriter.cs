@@ -6,8 +6,8 @@ using System.IO;
 using System.Xml;
 using Xbim.IO;
 using System.Text;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.ProductExtension;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.ProductExtension;
 using Xbim.ModelGeometry.Scene;
 using System.Windows.Media.Media3D;
 
@@ -28,16 +28,16 @@ namespace Xbim.Web.Viewer3D.ServerSide
         /// Default types to render
         /// </summary>
         Type[] DefaultTypes = new Type[] {
-                    typeof(Xbim.Ifc.SharedBldgElements.IfcWallStandardCase),
-                    typeof(Xbim.Ifc.SharedBldgElements.IfcWall),
-                    typeof(Xbim.Ifc.SharedBldgElements.IfcRoof),
-                    typeof(Xbim.Ifc.SharedBldgElements.IfcColumn),
-                    typeof(Xbim.Ifc.SharedBldgElements.IfcBeam),
-                    typeof(Xbim.Ifc.SharedBldgElements.IfcWindow), 
-                    typeof(Xbim.Ifc.SharedBldgElements.IfcDoor),
-                    typeof(Xbim.Ifc.SharedBldgElements.IfcStair),
-                    typeof(Xbim.Ifc.ProductExtension.IfcSpace),
-                    typeof(Xbim.Ifc.SharedBldgElements.IfcSlab),
+                    typeof(Xbim.Ifc2x3.SharedBldgElements.IfcWallStandardCase),
+                    typeof(Xbim.Ifc2x3.SharedBldgElements.IfcWall),
+                    typeof(Xbim.Ifc2x3.SharedBldgElements.IfcRoof),
+                    typeof(Xbim.Ifc2x3.SharedBldgElements.IfcColumn),
+                    typeof(Xbim.Ifc2x3.SharedBldgElements.IfcBeam),
+                    typeof(Xbim.Ifc2x3.SharedBldgElements.IfcWindow), 
+                    typeof(Xbim.Ifc2x3.SharedBldgElements.IfcDoor),
+                    typeof(Xbim.Ifc2x3.SharedBldgElements.IfcStair),
+                    typeof(Xbim.Ifc2x3.ProductExtension.IfcSpace),
+                    typeof(Xbim.Ifc2x3.SharedBldgElements.IfcSlab),
                     typeof(IfcElectricalElement),
                     typeof(IfcDistributionElement)
                 };

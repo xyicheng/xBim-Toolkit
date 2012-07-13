@@ -15,7 +15,7 @@
 using System;
 using System.Windows;
 using System.Windows.Media.Media3D;
-using Xbim.Ifc.Kernel;
+using Xbim.Ifc2x3.Kernel;
 
 #endregion
 

@@ -10,7 +10,7 @@
 
 #endregion
 
-namespace Xbim.Ifc.MaterialResource
+namespace Xbim.Ifc2x3.MaterialResource
 {
     public enum IfcLayerSetDirectionEnum
     {

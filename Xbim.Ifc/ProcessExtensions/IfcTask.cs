@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.Kernel;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.Ifc2x3.Kernel;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
-namespace Xbim.Ifc.ProcessExtensions
+namespace Xbim.Ifc2x3.ProcessExtensions
 {
     public class IfcTask : IfcProcess
     {

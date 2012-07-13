@@ -17,7 +17,7 @@ using Xbim.XbimExtensions;
 
 #endregion
 
-namespace Xbim.Ifc.ProductExtension
+namespace Xbim.Ifc2x3.ProductExtension
 {
     /// <summary>
     ///   The element type (IfcFurnishingElementType) defines a list of commonly shared property set definitions of an element and an optional set of product representations.

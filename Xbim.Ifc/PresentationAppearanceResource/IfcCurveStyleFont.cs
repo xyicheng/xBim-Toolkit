@@ -15,14 +15,14 @@
 using System;
 using System.ComponentModel;
 using System.Text;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.Ifc2x3.SelectTypes;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.PresentationAppearanceResource
+namespace Xbim.Ifc2x3.PresentationAppearanceResource
 {
     [IfcPersistedEntityAttribute, Serializable]
     public class IfcCurveStyleFont : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,

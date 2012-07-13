@@ -13,13 +13,13 @@
 #region Directives
 
 using System;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.SelectTypes;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.GeometryResource
+namespace Xbim.Ifc2x3.GeometryResource
 {
     [IfcPersistedEntityAttribute, Serializable]
     public class CurveSet : XbimSet<IfcCurve>

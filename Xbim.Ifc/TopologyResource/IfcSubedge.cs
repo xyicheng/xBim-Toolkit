@@ -17,7 +17,7 @@ using Xbim.XbimExtensions;
 
 #endregion
 
-namespace Xbim.Ifc.TopologyResource
+namespace Xbim.Ifc2x3.TopologyResource
 {
     [IfcPersistedEntityAttribute, Serializable]
     public class IfcSubedge : IfcEdge

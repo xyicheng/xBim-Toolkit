@@ -13,14 +13,14 @@
 #region Directives
 
 using System;
-using Xbim.Ifc.GeometryResource;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.GeometryResource;
+using Xbim.Ifc2x3.SelectTypes;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.PresentationDefinitionResource
+namespace Xbim.Ifc2x3.PresentationDefinitionResource
 {
     [IfcPersistedEntityAttribute, Serializable]
     public class IfcDraughtingCallOut : IfcGeometricRepresentationItem

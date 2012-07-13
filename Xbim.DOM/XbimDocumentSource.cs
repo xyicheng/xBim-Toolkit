@@ -5,7 +5,7 @@ using System.Text;
 using Xbim.XbimExtensions;
 using Xbim.DOM.ExportHelpers;
 using System.Collections.ObjectModel;
-using Xbim.Ifc.UtilityResource;
+using Xbim.Ifc2x3.UtilityResource;
 using System.Diagnostics;
 using Xbim.XbimExtensions.Interfaces;
 

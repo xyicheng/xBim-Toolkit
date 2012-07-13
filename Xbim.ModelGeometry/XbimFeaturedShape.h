@@ -4,7 +4,7 @@
 
 #include <BRepGProp.hxx>
 #include <GProp_GProps.hxx> 
-using namespace Xbim::Ifc::ProductExtension;
+using namespace Xbim::Ifc2x3::ProductExtension;
 using namespace System::Collections::Generic;
 using namespace Xbim::ModelGeometry::Scene;
 using namespace Xbim::Common::Logging;

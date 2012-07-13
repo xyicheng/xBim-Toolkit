@@ -20,7 +20,7 @@ using System.Globalization;
 using System.Runtime.Serialization;
 using System.Windows.Media;
 using System.Xml.Serialization;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.SelectTypes;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 using WinVector = System.Windows.Vector;
@@ -28,7 +28,7 @@ using WinVector3D = System.Windows.Media.Media3D.Vector3D;
 
 #endregion
 
-namespace Xbim.Ifc.GeometryResource
+namespace Xbim.Ifc2x3.GeometryResource
 {
     public interface IDirectionRatioList<T> : IList<double>, ExpressEnumerable
     {

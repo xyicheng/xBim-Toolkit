@@ -13,14 +13,14 @@
 #region Directives
 
 using System;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.SelectTypes;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.StructuralAnalysisDomain
+namespace Xbim.Ifc2x3.StructuralAnalysisDomain
 {
     [IfcPersistedEntityAttribute, Serializable]
     public class IfcRelConnectsStructuralActivity : IfcRelConnects

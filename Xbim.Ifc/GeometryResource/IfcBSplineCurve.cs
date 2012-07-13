@@ -14,13 +14,13 @@
 
 using System;
 using System.Linq;
-using Xbim.Ifc.MeasureResource;
+using Xbim.Ifc2x3.MeasureResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.GeometryResource
+namespace Xbim.Ifc2x3.GeometryResource
 {
     /// <summary>
     ///   A B-spline curve is a piecewise parametric polynominal or rational curve described in terms of control points and basis functions.

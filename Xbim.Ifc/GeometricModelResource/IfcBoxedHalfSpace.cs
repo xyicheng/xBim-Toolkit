@@ -18,7 +18,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.GeometricModelResource
+namespace Xbim.Ifc2x3.GeometricModelResource
 {
     /// <summary>
     ///   This entity is a subtype of the half space solid which is trimmed by a surrounding rectangular box.

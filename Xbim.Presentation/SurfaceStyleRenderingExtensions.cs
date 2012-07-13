@@ -14,11 +14,11 @@
 
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.PresentationAppearanceResource;
-using Xbim.Ifc.PresentationResource;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.Ifc2x3.PresentationAppearanceResource;
+using Xbim.Ifc2x3.PresentationResource;
 using Xbim.XbimExtensions;
-using Xbim.Ifc.Extensions;
+using Xbim.Ifc2x3.Extensions;
 #endregion
 
 namespace Xbim.Presentation

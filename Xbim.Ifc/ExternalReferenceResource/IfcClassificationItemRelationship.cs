@@ -19,7 +19,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.ExternalReferenceResource
+namespace Xbim.Ifc2x3.ExternalReferenceResource
 {
     /// <summary>
     ///   An IfcClassificationItemRelationship is a relationship class that enables the hierarchical structure of a classification system to be exposed through its ability to contain related classification items and to be contained by a relating classification item.

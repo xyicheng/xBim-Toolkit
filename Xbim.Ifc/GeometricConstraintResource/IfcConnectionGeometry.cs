@@ -19,7 +19,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.GeometricConstraintResource
+namespace Xbim.Ifc2x3.GeometricConstraintResource
 {
     /// <summary>
     ///   The IfcConnectionGeometry is used to describe the geometric and topological constraints that facilitate the physical connection of two objects.

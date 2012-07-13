@@ -13,14 +13,14 @@
 #region Directives
 
 using System;
-using Xbim.Ifc.GeometryResource;
-using Xbim.Ifc.MeasureResource;
+using Xbim.Ifc2x3.GeometryResource;
+using Xbim.Ifc2x3.MeasureResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.GeometricModelResource
+namespace Xbim.Ifc2x3.GeometricModelResource
 {
     /// <summary>
     ///   A box domain is an orthogonal box parallel to the axes of the geometric coordinate system which may be used to limit the domain of a half space solid.

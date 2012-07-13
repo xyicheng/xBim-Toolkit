@@ -13,12 +13,12 @@
 #region Directives
 
 using System;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.SelectTypes;
 using Xbim.XbimExtensions;
 
 #endregion
 
-namespace Xbim.Ifc.GeometryResource
+namespace Xbim.Ifc2x3.GeometryResource
 {
     [IfcPersistedEntityAttribute, Serializable]
     public abstract class IfcBoundedCurve : IfcCurve, IfcCurveOrEdgeCurve

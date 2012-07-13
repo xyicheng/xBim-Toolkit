@@ -14,13 +14,13 @@
 
 using System;
 using System.Xml.Serialization;
-using Xbim.Ifc.MeasureResource;
+using Xbim.Ifc2x3.MeasureResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.GeometryResource
+namespace Xbim.Ifc2x3.GeometryResource
 {
     [IfcPersistedEntityAttribute, Serializable]
     public class IfcPointOnCurve : IfcPoint

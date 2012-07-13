@@ -16,13 +16,13 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Xml.Serialization;
-using Xbim.Ifc.Kernel;
+using Xbim.Ifc2x3.Kernel;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.GeometricConstraintResource
+namespace Xbim.Ifc2x3.GeometricConstraintResource
 {
     [IfcPersistedEntityAttribute, Serializable]
     public abstract class IfcObjectPlacement : ISupportChangeNotification, INotifyPropertyChanged, IPersistIfcEntity,

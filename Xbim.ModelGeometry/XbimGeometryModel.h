@@ -8,17 +8,17 @@
 #include <TopoDS_Compound.hxx>
 #include <TopTools_DataMapOfShapeInteger.hxx>
 #include <TopTools_IndexedMapOfShape.hxx>
-using namespace Xbim::Ifc::GeometryResource;
-using namespace Xbim::Ifc::SelectTypes;
-using namespace Xbim::Ifc::GeometricModelResource;
-using namespace Xbim::Ifc::GeometricConstraintResource;
-using namespace Xbim::Ifc::RepresentationResource;
-using namespace Xbim::Ifc::Kernel;
+using namespace Xbim::Ifc2x3::GeometryResource;
+using namespace Xbim::Ifc2x3::SelectTypes;
+using namespace Xbim::Ifc2x3::GeometricModelResource;
+using namespace Xbim::Ifc2x3::GeometricConstraintResource;
+using namespace Xbim::Ifc2x3::RepresentationResource;
+using namespace Xbim::Ifc2x3::Kernel;
 using namespace System;
 using namespace System::Collections::Generic;
 using namespace Xbim::ModelGeometry::Scene;
 using namespace Xbim::Common::Logging;
-using namespace Xbim::Ifc::SharedBldgElements;
+using namespace Xbim::Ifc2x3::SharedBldgElements;
 #pragma unmanaged
 
 		public class TesselateStream

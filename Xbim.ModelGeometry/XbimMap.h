@@ -2,8 +2,8 @@
 #include "IXbimGeometryModel.h"
 #include "XbimGeometryModel.h"
 
-using namespace Xbim::Ifc::GeometryResource;
-using namespace Xbim::Ifc::TopologyResource;
+using namespace Xbim::Ifc2x3::GeometryResource;
+using namespace Xbim::Ifc2x3::TopologyResource;
 namespace Xbim
 {
 	namespace ModelGeometry

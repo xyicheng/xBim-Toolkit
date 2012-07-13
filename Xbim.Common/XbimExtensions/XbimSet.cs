@@ -18,13 +18,14 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.SelectTypes;
 using Xbim.XbimExtensions.Transactions.Extensions;
 using Xbim.XbimExtensions.Interfaces;
 using System.Runtime.CompilerServices;
 
 #endregion
-[assembly: InternalsVisibleTo("Xbim.IFC")]
+[assembly: InternalsVisibleTo("Xbim.Ifc2x3")]
+[assembly: InternalsVisibleTo("Xbim.Ifc2x4")]
 namespace Xbim.XbimExtensions
 {
     [IfcPersistedEntityAttribute, Serializable]

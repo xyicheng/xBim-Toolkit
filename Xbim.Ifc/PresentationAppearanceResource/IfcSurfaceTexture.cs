@@ -14,14 +14,14 @@
 
 using System;
 using System.ComponentModel;
-using Xbim.Ifc.GeometryResource;
-using Xbim.Ifc.MeasureResource;
+using Xbim.Ifc2x3.GeometryResource;
+using Xbim.Ifc2x3.MeasureResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.PresentationAppearanceResource
+namespace Xbim.Ifc2x3.PresentationAppearanceResource
 {
     /// <summary>
     ///   Definition from IAI: An IfcSurfaceTexture provides a 2-dimensional image-based texture map. 

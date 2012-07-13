@@ -13,14 +13,14 @@
 #region Directives
 
 using System;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.Ifc2x3.SelectTypes;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.PropertyResource
+namespace Xbim.Ifc2x3.PropertyResource
 {
     /// <summary>
     ///   The IfcPropertyReferenceValue allows a property value to be given by referencing other entities within the resource definitions of IFC.

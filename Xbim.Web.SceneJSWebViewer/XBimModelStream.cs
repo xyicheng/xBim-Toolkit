@@ -13,9 +13,9 @@ namespace Xbim.SceneJSWebViewer
     using System.Text;
     using System.Threading;
     using System.Windows.Media.Media3D;
-    using Xbim.Ifc.PresentationAppearanceResource;
-    using Xbim.Ifc.ProductExtension;
-    using Xbim.Ifc.SharedBldgElements;
+    using Xbim.Ifc2x3.PresentationAppearanceResource;
+    using Xbim.Ifc2x3.ProductExtension;
+    using Xbim.Ifc2x3.SharedBldgElements;
     using Xbim.IO;
     using Xbim.ModelGeometry.Scene;
     using Xbim.Common.Logging;

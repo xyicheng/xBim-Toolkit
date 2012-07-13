@@ -3,15 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Xbim.XbimExtensions;
-using Xbim.Ifc.ExternalReferenceResource;
-using Xbim.Ifc.ProductExtension;
-using Xbim.Ifc.MaterialResource;
-using Xbim.Ifc.SharedBldgElements;
-using Xbim.Ifc.Extensions;
-using Xbim.Ifc.SelectTypes;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.PropertyResource;
-using Xbim.Ifc.MeasureResource;
+using Xbim.Ifc2x3.ExternalReferenceResource;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.Ifc2x3.MaterialResource;
+using Xbim.Ifc2x3.SharedBldgElements;
+using Xbim.Ifc2x3.Extensions;
+using Xbim.Ifc2x3.SelectTypes;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.PropertyResource;
+using Xbim.Ifc2x3.MeasureResource;
 using Xbim.DOM.PropertiesQuantities;
 
 namespace Xbim.DOM
@@ -26,8 +26,8 @@ namespace Xbim.DOM
         public string Name { get { return _ifcTypeProduct.Name; } set { _ifcTypeProduct.Name = value; } }
         public string Description { get { return _ifcTypeProduct.Description; } set { _ifcTypeProduct.Description = value; } }
         public XbimSingleTypeProperties Properties { get { return new XbimSingleTypeProperties(_ifcTypeProduct); } }
-        public string GlobalId { get { return _ifcTypeProduct.GlobalId; } set { _ifcTypeProduct.GlobalId = new Ifc.UtilityResource.IfcGloballyUniqueId(value); } }
-        public Guid Guid { get { return _ifcTypeProduct.GlobalId; } set { _ifcTypeProduct.GlobalId = new Ifc.UtilityResource.IfcGloballyUniqueId(value); } }
+        public string GlobalId { get { return _ifcTypeProduct.GlobalId; } set { _ifcTypeProduct.GlobalId = new Ifc2x3.UtilityResource.IfcGloballyUniqueId(value); } }
+        public Guid Guid { get { return _ifcTypeProduct.GlobalId; } set { _ifcTypeProduct.GlobalId = new Ifc2x3.UtilityResource.IfcGloballyUniqueId(value); } }
         public bool HasMaterials { get { return IfcMaterialLayerSet != null; } }
         public XbimMaterialLayers MaterialLayers { get { return  IfcElementType == null ? null : new XbimMaterialLayers(IfcMaterialLayerSet, this); } }
         public XbimMaterialQuantities MaterialQuantities { get { return new XbimMaterialQuantities(_ifcTypeProduct, _document); } }
@@ -120,7 +120,7 @@ namespace Xbim.DOM
         }
         
 
-        public Ifc.Kernel.IfcRoot AsRoot
+        public Ifc2x3.Kernel.IfcRoot AsRoot
         {
             get { return _ifcTypeProduct; }
         }
@@ -128,7 +128,7 @@ namespace Xbim.DOM
 
         public void SetGlobalId(Guid guid)
         {
-            _ifcTypeProduct.GlobalId = new Ifc.UtilityResource.IfcGloballyUniqueId(guid);
+            _ifcTypeProduct.GlobalId = new Ifc2x3.UtilityResource.IfcGloballyUniqueId(guid);
         }
 
         public static implicit operator IfcBuildingElementType(XbimBuildingElementType elem)

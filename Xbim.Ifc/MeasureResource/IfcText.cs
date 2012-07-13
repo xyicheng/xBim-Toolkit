@@ -14,14 +14,14 @@
 
 using System;
 using System.Globalization;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.SelectTypes;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 using System.Text;
 
 #endregion
 
-namespace Xbim.Ifc.MeasureResource
+namespace Xbim.Ifc2x3.MeasureResource
 {
     [Serializable]
     public struct IfcText : IFormattable, IPersistIfc, IfcSimpleValue, IfcMetricValueSelect

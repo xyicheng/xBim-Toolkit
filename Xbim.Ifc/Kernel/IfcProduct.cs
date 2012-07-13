@@ -15,14 +15,14 @@
 using System;
 using System.Collections.Generic;
 using System.Xml.Serialization;
-using Xbim.Ifc.GeometricConstraintResource;
-using Xbim.Ifc.RepresentationResource;
+using Xbim.Ifc2x3.GeometricConstraintResource;
+using Xbim.Ifc2x3.RepresentationResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.Kernel
+namespace Xbim.Ifc2x3.Kernel
 {
     /// <summary>
     ///   Any object, or any aid to define, organize and annotate an object, that relates to a geometric or spatial context.

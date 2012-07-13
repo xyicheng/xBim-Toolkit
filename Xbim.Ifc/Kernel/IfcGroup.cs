@@ -18,7 +18,7 @@ using Xbim.XbimExtensions;
 using System.Linq;
 #endregion
 
-namespace Xbim.Ifc.Kernel
+namespace Xbim.Ifc2x3.Kernel
 {
     /// <summary>
     ///   Definition from IAI: The IfcGroup is an generalization of any arbitrary group. A group is a logical collection of objects. 

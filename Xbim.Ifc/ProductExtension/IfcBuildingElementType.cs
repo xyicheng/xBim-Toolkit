@@ -17,7 +17,7 @@ using Xbim.XbimExtensions;
 
 #endregion
 
-namespace Xbim.Ifc.ProductExtension
+namespace Xbim.Ifc2x3.ProductExtension
 {
     [IfcPersistedEntityAttribute, Serializable]
     public abstract class IfcBuildingElementType : IfcElementType

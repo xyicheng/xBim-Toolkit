@@ -2,16 +2,16 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Xbim.Ifc.Kernel;
+using Xbim.Ifc2x3.Kernel;
 using System.Diagnostics;
-using Xbim.Ifc.SelectTypes;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.Extensions;
-using Xbim.Ifc.MaterialResource;
+using Xbim.Ifc2x3.SelectTypes;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.Ifc2x3.Extensions;
+using Xbim.Ifc2x3.MaterialResource;
 using System.ComponentModel;
-using Xbim.Ifc.PropertyResource;
+using Xbim.Ifc2x3.PropertyResource;
 using Xbim.XbimExtensions;
-using Xbim.Ifc.MaterialPropertyResource;
+using Xbim.Ifc2x3.MaterialPropertyResource;
 using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.DOM.PropertiesQuantities

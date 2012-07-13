@@ -10,7 +10,7 @@
 
 #endregion
 
-namespace Xbim.Ifc.SharedBldgElements
+namespace Xbim.Ifc2x3.SharedBldgElements
 {
     /// <summary>
     ///   Definition from IAI: This enumeration defines the basic ways to describe the location of a door panel within a door lining.

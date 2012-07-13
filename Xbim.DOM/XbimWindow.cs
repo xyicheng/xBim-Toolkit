@@ -2,14 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Xbim.Ifc.SharedBldgElements;
-using Xbim.Ifc.MaterialResource;
-using Xbim.Ifc.Extensions;
-using Xbim.Ifc.GeometricConstraintResource;
-using Xbim.Ifc.GeometryResource;
-using Xbim.Ifc.ProductExtension;
-using Xbim.Ifc.RepresentationResource;
-using Xbim.Ifc.Kernel;
+using Xbim.Ifc2x3.SharedBldgElements;
+using Xbim.Ifc2x3.MaterialResource;
+using Xbim.Ifc2x3.Extensions;
+using Xbim.Ifc2x3.GeometricConstraintResource;
+using Xbim.Ifc2x3.GeometryResource;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.Ifc2x3.RepresentationResource;
+using Xbim.Ifc2x3.Kernel;
 
 namespace Xbim.DOM
 {

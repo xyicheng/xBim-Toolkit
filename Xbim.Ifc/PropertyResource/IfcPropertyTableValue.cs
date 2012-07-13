@@ -13,14 +13,14 @@
 #region Directives
 
 using System;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.Ifc2x3.SelectTypes;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.PropertyResource
+namespace Xbim.Ifc2x3.PropertyResource
 {
     /// <summary>
     ///   A property with a range value (IfcPropertyTableValue) defines a property object which has two lists of (numeric or descriptive) values assigned, the values specifying a table with two columns.

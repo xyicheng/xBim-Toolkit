@@ -15,14 +15,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Xbim.Ifc.GeometryResource;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.GeometryResource;
+using Xbim.Ifc2x3.SelectTypes;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.TopologyResource
+namespace Xbim.Ifc2x3.TopologyResource
 {
     /// <summary>
     ///   A face surface (IfcFaceSurface) is a subtype of face in which the geometry is defined by an associated surface.

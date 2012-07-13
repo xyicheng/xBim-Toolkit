@@ -21,7 +21,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.RepresentationResource
+namespace Xbim.Ifc2x3.RepresentationResource
 {
     [IfcPersistedEntityAttribute, Serializable]
     public class ShapeModelList : XbimList<IfcShapeModel>

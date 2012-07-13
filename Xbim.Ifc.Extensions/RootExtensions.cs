@@ -14,19 +14,19 @@
 
 using System.Diagnostics;
 using System.Linq;
-using Xbim.Ifc.ExternalReferenceResource;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.ExternalReferenceResource;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.SelectTypes;
 using Xbim.XbimExtensions;
 using System;
-using Xbim.Ifc.MaterialResource;
-using Xbim.Ifc.ProductExtension;
-using Xbim.Ifc.MeasureResource;
+using Xbim.Ifc2x3.MaterialResource;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.Ifc2x3.MeasureResource;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.Extensions
+namespace Xbim.Ifc2x3.Extensions
 {
     public static class RootExtensions
     {

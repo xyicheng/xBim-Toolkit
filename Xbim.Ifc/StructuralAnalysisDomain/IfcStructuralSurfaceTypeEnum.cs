@@ -10,7 +10,7 @@
 
 #endregion
 
-namespace Xbim.Ifc.StructuralAnalysisDomain
+namespace Xbim.Ifc2x3.StructuralAnalysisDomain
 {
     /// <summary>
     ///   This type definition shall be used to distinguish between different types of structural surface members, 

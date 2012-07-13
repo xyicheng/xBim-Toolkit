@@ -2,14 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Xbim.Ifc.Extensions;
-using Xbim.Ifc.GeometricModelResource;
-using Xbim.Ifc.TopologyResource;
-using Xbim.Ifc.GeometryResource;
-using Xbim.Ifc.SelectTypes;
-using Xbim.Ifc.MeasureResource;
+using Xbim.Ifc2x3.Extensions;
+using Xbim.Ifc2x3.GeometricModelResource;
+using Xbim.Ifc2x3.TopologyResource;
+using Xbim.Ifc2x3.GeometryResource;
+using Xbim.Ifc2x3.SelectTypes;
+using Xbim.Ifc2x3.MeasureResource;
 using System.Diagnostics;
-using Xbim.Ifc.ProfileResource;
+using Xbim.Ifc2x3.ProfileResource;
 
 namespace Xbim.DOM
 {
@@ -39,7 +39,7 @@ namespace Xbim.DOM
             tempInt = 0;
         }
 
-        public Ifc.GeometryResource.IfcGeometricRepresentationItem GetIfcGeometricRepresentation()
+        public Ifc2x3.GeometryResource.IfcGeometricRepresentationItem GetIfcGeometricRepresentation()
         {
             return _ifcFacetedBrep;
         }

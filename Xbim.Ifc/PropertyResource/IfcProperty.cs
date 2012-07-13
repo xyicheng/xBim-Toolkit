@@ -16,13 +16,13 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.Serialization;
-using Xbim.Ifc.MeasureResource;
+using Xbim.Ifc2x3.MeasureResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.PropertyResource
+namespace Xbim.Ifc2x3.PropertyResource
 {
     public class UniquePropertyNameComparer : IEqualityComparer<IfcProperty>
     {

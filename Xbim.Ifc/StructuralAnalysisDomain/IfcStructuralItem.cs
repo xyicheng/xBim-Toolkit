@@ -14,13 +14,13 @@
 
 using System;
 using System.Collections.Generic;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.SelectTypes;
 using Xbim.XbimExtensions;
 
 #endregion
 
-namespace Xbim.Ifc.StructuralAnalysisDomain
+namespace Xbim.Ifc2x3.StructuralAnalysisDomain
 {
     /// <summary>
     ///   The abstract entity IfcStructuralItem covers structural members and structural connections. It defines the relation needed to associate structural actions to structural members and connections.

@@ -10,7 +10,7 @@
 
 #endregion
 
-namespace Xbim.Ifc.ExternalReferenceResource
+namespace Xbim.Ifc2x3.ExternalReferenceResource
 {
     public enum IfcDocumentConfidentialityEnum
     {

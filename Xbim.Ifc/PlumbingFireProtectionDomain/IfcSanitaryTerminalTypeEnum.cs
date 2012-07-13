@@ -10,7 +10,7 @@
 
 #endregion
 
-namespace Xbim.Ifc.PlumbingFireProtectionDomain
+namespace Xbim.Ifc2x3.PlumbingFireProtectionDomain
 {
     public enum IfcSanitaryTerminalTypeEnum
     {

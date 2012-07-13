@@ -2,14 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Xbim.Ifc.ProductExtension;
-using Xbim.Ifc.PropertyResource;
-using Xbim.Ifc.Extensions;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.Ifc2x3.PropertyResource;
+using Xbim.Ifc2x3.Extensions;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.Ifc2x3.SelectTypes;
 using Xbim.XbimExtensions;
-using Xbim.Ifc.QuantityResource;
-using Xbim.Ifc.UtilityResource;
+using Xbim.Ifc2x3.QuantityResource;
+using Xbim.Ifc2x3.UtilityResource;
 using Xbim.DOM.PropertiesQuantities;
 
 namespace Xbim.DOM

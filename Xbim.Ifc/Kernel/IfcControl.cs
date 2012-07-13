@@ -18,7 +18,7 @@ using Xbim.XbimExtensions;
 
 #endregion
 
-namespace Xbim.Ifc.Kernel
+namespace Xbim.Ifc2x3.Kernel
 {
     /// <summary>
     ///   The IfcControl is the abstract generalization of all concepts that control or constrain products or processes in general. It can be seen as a specification, regulation, cost schedule or other requirement applied to a product or process whose requirements and provisions must be fulfilled. 

@@ -13,13 +13,13 @@
 #region Directives
 
 using System;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.SelectTypes;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.PropertyResource
+namespace Xbim.Ifc2x3.PropertyResource
 {
     /// <summary>
     ///   A property with an enumerated value (IfcPropertyEnumeratedValue) defines a property object which has a value assigned which is chosen from an enumeration.

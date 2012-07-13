@@ -14,13 +14,13 @@
 
 using System;
 using System.Collections.Generic;
-using Xbim.Ifc.MeasureResource;
+using Xbim.Ifc2x3.MeasureResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.Kernel
+namespace Xbim.Ifc2x3.Kernel
 {
     [IfcPersistedEntityAttribute, Serializable]
     public class IfcTypeObject : IfcObjectDefinition

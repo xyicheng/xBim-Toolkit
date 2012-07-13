@@ -10,7 +10,7 @@
 
 #endregion
 
-namespace Xbim.Ifc.ProfilePropertyResource
+namespace Xbim.Ifc2x3.ProfilePropertyResource
 {
     public enum IfcSectionTypeEnum
     {

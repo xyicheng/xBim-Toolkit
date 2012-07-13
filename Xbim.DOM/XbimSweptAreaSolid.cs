@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Xbim.Ifc.GeometricModelResource;
-using Xbim.Ifc.GeometryResource;
-using Xbim.Ifc.ProfileResource;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.GeometricModelResource;
+using Xbim.Ifc2x3.GeometryResource;
+using Xbim.Ifc2x3.ProfileResource;
+using Xbim.Ifc2x3.SelectTypes;
 using Xbim.XbimExtensions;
 
 namespace Xbim.DOM

@@ -17,7 +17,7 @@ using Xbim.XbimExtensions;
 
 #endregion
 
-namespace Xbim.Ifc.SharedBldgElements
+namespace Xbim.Ifc2x3.SharedBldgElements
 {
     /// <summary>
     ///   The standard wall (IfcWallStandardCase) defines a wall with certain constraints for the provision of parameter and with certain constraints for the geometric representation.

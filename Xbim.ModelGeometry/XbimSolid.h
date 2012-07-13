@@ -14,9 +14,9 @@
 using namespace Xbim::XbimExtensions::Interfaces;
 using namespace System::Collections::Generic;
 
-using namespace Xbim::Ifc::SelectTypes;
-using namespace Xbim::Ifc::GeometricModelResource;
-using namespace Xbim::Ifc::GeometricConstraintResource;
+using namespace Xbim::Ifc2x3::SelectTypes;
+using namespace Xbim::Ifc2x3::GeometricModelResource;
+using namespace Xbim::Ifc2x3::GeometricConstraintResource;
 using namespace Xbim::Common::Logging;
 
 namespace Xbim

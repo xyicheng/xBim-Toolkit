@@ -13,14 +13,14 @@
 #region Directives
 
 using System;
-using Xbim.Ifc.ApprovalResource;
-using Xbim.Ifc.Kernel;
+using Xbim.Ifc2x3.ApprovalResource;
+using Xbim.Ifc2x3.Kernel;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.ControlExtension
+namespace Xbim.Ifc2x3.ControlExtension
 {
     /// <summary>
     /// The entity IfcRelAssociatesApproval is used to apply approval information defined by IfcApproval, 

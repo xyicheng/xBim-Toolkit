@@ -13,13 +13,13 @@
 #region Directives
 
 using System;
-using Xbim.Ifc.ProductExtension;
+using Xbim.Ifc2x3.ProductExtension;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.SharedBldgServiceElements
+namespace Xbim.Ifc2x3.SharedBldgServiceElements
 {
     [IfcPersistedEntityAttribute, Serializable]
     public class IfcDistributionPort : IfcPort

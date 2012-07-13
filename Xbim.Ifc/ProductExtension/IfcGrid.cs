@@ -14,14 +14,14 @@
 
 using System;
 using System.Collections.Generic;
-using Xbim.Ifc.GeometricConstraintResource;
-using Xbim.Ifc.Kernel;
+using Xbim.Ifc2x3.GeometricConstraintResource;
+using Xbim.Ifc2x3.Kernel;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.ProductExtension
+namespace Xbim.Ifc2x3.ProductExtension
 {
     /// <summary>
     ///   A planar design grid (IfcGrid) defined in 3D space used as an aid in locating structural and design elements.

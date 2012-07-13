@@ -10,7 +10,7 @@
 
 #endregion
 
-namespace Xbim.Ifc.MeasureResource
+namespace Xbim.Ifc2x3.MeasureResource
 {
     /// <summary>
     ///   An enumeration type for allowed unit types of NamedUnit.

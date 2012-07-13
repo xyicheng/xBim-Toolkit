@@ -10,7 +10,7 @@
 
 #endregion
 
-namespace Xbim.Ifc.DateTimeResource
+namespace Xbim.Ifc2x3.DateTimeResource
 {
     /// <summary>
     ///   An enumeration type that is used to specify whether a local time is ahead or behind of the coordinated universal time.

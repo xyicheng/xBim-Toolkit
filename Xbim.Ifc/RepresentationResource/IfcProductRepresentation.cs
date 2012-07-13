@@ -15,13 +15,13 @@
 using System;
 using System.ComponentModel;
 using System.Linq;
-using Xbim.Ifc.MeasureResource;
+using Xbim.Ifc2x3.MeasureResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.RepresentationResource
+namespace Xbim.Ifc2x3.RepresentationResource
 {
     /// <summary>
     ///   The IfcProductRepresentation defines a representation of a product, including its (geometric or topological) representation.

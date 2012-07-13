@@ -14,14 +14,14 @@
 
 using System;
 using System.ComponentModel;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.Ifc2x3.SelectTypes;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.PropertyResource
+namespace Xbim.Ifc2x3.PropertyResource
 {
     /// <summary>
     ///   A collection of simple or measure values that define a prescribed set of alternatives from which 'enumeration values' are selected.

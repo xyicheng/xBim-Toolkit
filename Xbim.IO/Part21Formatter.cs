@@ -13,8 +13,8 @@
 #region Directives
 
 using System;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.UtilityResource;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.Ifc2x3.UtilityResource;
 using System.Globalization;
 
 #endregion

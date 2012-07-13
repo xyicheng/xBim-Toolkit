@@ -10,7 +10,7 @@
 
 #endregion
 
-namespace Xbim.Ifc.HVACDomain
+namespace Xbim.Ifc2x3.HVACDomain
 {
     public enum IfcFilterTypeEnum
     {

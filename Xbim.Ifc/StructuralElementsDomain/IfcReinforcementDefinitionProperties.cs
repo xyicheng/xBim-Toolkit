@@ -13,15 +13,15 @@
 #region Directives
 
 using System;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.ProfilePropertyResource;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.Ifc2x3.ProfilePropertyResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.StructuralElementsDomain
+namespace Xbim.Ifc2x3.StructuralElementsDomain
 {
     [IfcPersistedEntityAttribute, Serializable]
     public class IfcReinforcementDefinitionProperties : IfcPropertySetDefinition

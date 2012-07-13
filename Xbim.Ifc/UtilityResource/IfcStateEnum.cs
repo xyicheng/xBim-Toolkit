@@ -10,7 +10,7 @@
 
 #endregion
 
-namespace Xbim.Ifc.UtilityResource
+namespace Xbim.Ifc2x3.UtilityResource
 {
     /// <summary>
     ///   Enumeration identifying the state or accessibility of the object (e.g., read/write, locked, etc.). 

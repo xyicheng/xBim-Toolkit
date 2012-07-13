@@ -15,14 +15,14 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.Ifc2x3.SelectTypes;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.ConstraintResource
+namespace Xbim.Ifc2x3.ConstraintResource
 {
     /// <summary>
     ///   Abstract class. An IfcConstraint is used to define a constraint or limiting value or boundary condition 

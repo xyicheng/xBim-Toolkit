@@ -15,15 +15,15 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using Xbim.Ifc.PresentationAppearanceResource;
-using Xbim.Ifc.PresentationOrganizationResource;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.PresentationAppearanceResource;
+using Xbim.Ifc2x3.PresentationOrganizationResource;
+using Xbim.Ifc2x3.SelectTypes;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.GeometryResource
+namespace Xbim.Ifc2x3.GeometryResource
 {
     /// <summary>
     ///   A representation item is an element of product data that participates in one or more representations or contributes to the definition of another representation item.

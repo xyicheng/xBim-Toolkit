@@ -14,13 +14,13 @@
 
 using System;
 using System.ComponentModel;
-using Xbim.Ifc.PropertyResource;
+using Xbim.Ifc2x3.PropertyResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.ApprovalResource
+namespace Xbim.Ifc2x3.ApprovalResource
 {
     [IfcPersistedEntityAttribute, Serializable]
     public class IfcApprovalPropertyRelationship : IPersistIfcEntity, ISupportChangeNotification, INotifyPropertyChanged,

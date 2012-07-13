@@ -13,13 +13,13 @@
 #region Directives
 
 using System;
-using Xbim.Ifc.MeasureResource;
+using Xbim.Ifc2x3.MeasureResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.StructuralLoadResource
+namespace Xbim.Ifc2x3.StructuralLoadResource
 {
     [IfcPersistedEntityAttribute, Serializable]
     public class IfcStructuralLoadSingleForce : IfcStructuralLoadStatic

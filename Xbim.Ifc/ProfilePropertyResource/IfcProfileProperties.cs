@@ -14,14 +14,14 @@
 
 using System;
 using System.ComponentModel;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.ProfileResource;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.Ifc2x3.ProfileResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.ProfilePropertyResource
+namespace Xbim.Ifc2x3.ProfilePropertyResource
 {
     [IfcPersistedEntityAttribute, Serializable]
     public abstract class IfcProfileProperties : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,

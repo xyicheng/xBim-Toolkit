@@ -14,14 +14,14 @@
 
 using System;
 using System.ComponentModel;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.Ifc2x3.SelectTypes;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.CostResource
+namespace Xbim.Ifc2x3.CostResource
 {
     /// <summary>
     ///   An IfcReferencesValueDocument is a means of referencing many instances of IfcAppliedValue to a single document where the document is a price list, quotation, list of environmental impact values or other source of information.

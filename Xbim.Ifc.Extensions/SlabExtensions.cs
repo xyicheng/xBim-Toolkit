@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Xbim.Ifc.QuantityResource;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.SharedBldgElements;
+using Xbim.Ifc2x3.QuantityResource;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.Ifc2x3.SharedBldgElements;
 
-namespace Xbim.Ifc.Extensions
+namespace Xbim.Ifc2x3.Extensions
 {
     public static class SlabExtensions
     {

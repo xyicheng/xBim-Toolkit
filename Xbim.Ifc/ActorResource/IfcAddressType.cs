@@ -10,7 +10,7 @@
 
 #endregion
 
-namespace Xbim.Ifc.ActorResource
+namespace Xbim.Ifc2x3.ActorResource
 {
     /// <summary>
     ///   Type of the Address

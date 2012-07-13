@@ -15,14 +15,14 @@
 using System;
 using System.ComponentModel;
 using System.Linq;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.Ifc2x3.SelectTypes;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.MaterialResource
+namespace Xbim.Ifc2x3.MaterialResource
 {
     [IfcPersistedEntityAttribute, Serializable]
     public class MaterLayerList : XbimList<IfcMaterialLayer>

@@ -10,7 +10,7 @@
 
 #endregion
 
-namespace Xbim.Ifc.ConstraintResource
+namespace Xbim.Ifc2x3.ConstraintResource
 {
     /// <summary>
     ///   An IfcConstraintEnum is an enumeration used to qualify a constraint.

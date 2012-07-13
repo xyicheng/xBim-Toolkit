@@ -13,13 +13,13 @@
 #region Directives
 
 using System;
-using Xbim.Ifc.ActorResource;
+using Xbim.Ifc2x3.ActorResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.Kernel
+namespace Xbim.Ifc2x3.Kernel
 {
     /// <summary>
     ///   This objectified relationship (IfcRelAssignsToActor) handles the assignment of objects (subtypes of IfcObject) to an actor (subtypes of IfcActor).

@@ -4,9 +4,9 @@
 #include <TopoDS_Shape.hxx>
 #include "XbimLocation.h"
 #include "XbimBoundingBox.h"
-using namespace Xbim::Ifc::GeometryResource;
-using namespace Xbim::Ifc::GeometricConstraintResource;
-using namespace Xbim::Ifc::SelectTypes;
+using namespace Xbim::Ifc2x3::GeometryResource;
+using namespace Xbim::Ifc2x3::GeometricConstraintResource;
+using namespace Xbim::Ifc2x3::SelectTypes;
 using namespace Xbim::ModelGeometry::Scene;
 using namespace System::Windows::Media::Media3D;
 namespace Xbim

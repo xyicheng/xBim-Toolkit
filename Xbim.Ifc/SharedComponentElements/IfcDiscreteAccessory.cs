@@ -17,7 +17,7 @@ using Xbim.XbimExtensions;
 
 #endregion
 
-namespace Xbim.Ifc.SharedComponentElements
+namespace Xbim.Ifc2x3.SharedComponentElements
 {
     [IfcPersistedEntityAttribute, Serializable]
     public class IfcDiscreteAccessory : IfcElementComponent

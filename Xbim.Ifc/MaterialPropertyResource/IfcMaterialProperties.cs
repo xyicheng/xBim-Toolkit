@@ -14,13 +14,13 @@
 
 using System;
 using System.ComponentModel;
-using Xbim.Ifc.MaterialResource;
+using Xbim.Ifc2x3.MaterialResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.MaterialPropertyResource
+namespace Xbim.Ifc2x3.MaterialPropertyResource
 {
     [IfcPersistedEntityAttribute, Serializable]
     public abstract class IfcMaterialProperties : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,

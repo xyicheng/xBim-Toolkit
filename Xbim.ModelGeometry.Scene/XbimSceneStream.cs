@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Xbim.Ifc.Kernel;
+using Xbim.Ifc2x3.Kernel;
 using System.IO;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;

@@ -20,7 +20,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.Kernel
+namespace Xbim.Ifc2x3.Kernel
 {
     /// <summary>
     ///   The decomposition relationship, IfcRelDecomposes, defines the general concept of elements being composed or decomposed.

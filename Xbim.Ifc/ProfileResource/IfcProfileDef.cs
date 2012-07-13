@@ -15,13 +15,13 @@
 using System;
 using System.ComponentModel;
 using System.Runtime.Serialization;
-using Xbim.Ifc.MeasureResource;
+using Xbim.Ifc2x3.MeasureResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.ProfileResource
+namespace Xbim.Ifc2x3.ProfileResource
 {
     /// <summary>
     ///   The IfcProfileDef is the supertype of all definitions of standard and arbitrary profiles within IFC.

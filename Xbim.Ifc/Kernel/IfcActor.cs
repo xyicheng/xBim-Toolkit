@@ -16,14 +16,14 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Runtime.Serialization;
-using Xbim.Ifc.ActorResource;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.ActorResource;
+using Xbim.Ifc2x3.SelectTypes;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.Kernel
+namespace Xbim.Ifc2x3.Kernel
 {
     public class ActorCollection : ObservableCollection<IfcActor>
     {

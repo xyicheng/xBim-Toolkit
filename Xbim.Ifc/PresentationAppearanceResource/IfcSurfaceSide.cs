@@ -10,7 +10,7 @@
 
 #endregion
 
-namespace Xbim.Ifc.PresentationAppearanceResource
+namespace Xbim.Ifc2x3.PresentationAppearanceResource
 {
     /// <summary>
     ///   Denotion of whether negative, positive or both sides of a surface are being referenced.

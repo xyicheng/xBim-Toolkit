@@ -30,8 +30,8 @@
 #include <BRepBuilderAPI_Transform.hxx>
 #include <GeomLProp_SLProps.hxx>
 #include <BRepLib.hxx>
-using namespace Xbim::Ifc::ProductExtension;
-using namespace Xbim::Ifc::SharedComponentElements;
+using namespace Xbim::Ifc2x3::ProductExtension;
+using namespace Xbim::Ifc2x3::SharedComponentElements;
 using namespace System::Linq;
 using namespace Xbim::IO;
 using namespace Xbim::Common::Exceptions;

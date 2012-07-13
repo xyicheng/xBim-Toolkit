@@ -14,13 +14,13 @@
 
 using System;
 using System.ComponentModel;
-using Xbim.Ifc.MeasureResource;
+using Xbim.Ifc2x3.MeasureResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.PresentationResource
+namespace Xbim.Ifc2x3.PresentationResource
 {
     [IfcPersistedEntityAttribute, Serializable]
     public abstract class IfcPreDefinedItem : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,

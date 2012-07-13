@@ -13,14 +13,14 @@
 #region Directives
 
 using System;
-using Xbim.Ifc.GeometryResource;
-using Xbim.Ifc.RepresentationResource;
+using Xbim.Ifc2x3.GeometryResource;
+using Xbim.Ifc2x3.RepresentationResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.PresentationDefinitionResource
+namespace Xbim.Ifc2x3.PresentationDefinitionResource
 {
     public class IfcAnnotationFillAreaOccurrence : IfcAnnotationOccurrence
     {

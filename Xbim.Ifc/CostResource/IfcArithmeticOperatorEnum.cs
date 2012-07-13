@@ -10,7 +10,7 @@
 
 #endregion
 
-namespace Xbim.Ifc.CostResource
+namespace Xbim.Ifc2x3.CostResource
 {
     /// <summary>
     ///   The IfcArithmeticOperatorEnum specifies the form of arithmetical operation implied by the relationship.

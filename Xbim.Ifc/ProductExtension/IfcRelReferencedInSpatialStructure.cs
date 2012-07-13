@@ -14,13 +14,13 @@
 
 using System;
 using System.Linq;
-using Xbim.Ifc.Kernel;
+using Xbim.Ifc2x3.Kernel;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.ProductExtension
+namespace Xbim.Ifc2x3.ProductExtension
 {
     /// <summary>
     ///   This objectified relationship, IfcRelReferencedInSpatialStructure, is used to assign elements in addition to those levels of the project spatial structure, in which they are referenced, but not primarily contained.

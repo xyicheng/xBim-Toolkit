@@ -10,7 +10,7 @@
 
 #endregion
 
-namespace Xbim.Ifc.HVACDomain
+namespace Xbim.Ifc2x3.HVACDomain
 {
     /// <summary>
     ///   This enumeration is used to identify the primary purpose of a duct fitting. 

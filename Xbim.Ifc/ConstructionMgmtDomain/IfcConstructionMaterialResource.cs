@@ -14,15 +14,15 @@
 
 using System;
 using System.Linq;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.Ifc2x3.SelectTypes;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.ConstructionMgmtDomain
+namespace Xbim.Ifc2x3.ConstructionMgmtDomain
 {
     [IfcPersistedEntityAttribute, Serializable]
     public class IfcConstructionMaterialResource : IfcConstructionResource

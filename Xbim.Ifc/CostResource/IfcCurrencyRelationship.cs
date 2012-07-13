@@ -14,15 +14,15 @@
 
 using System;
 using System.ComponentModel;
-using Xbim.Ifc.DateTimeResource;
-using Xbim.Ifc.ExternalReferenceResource;
-using Xbim.Ifc.MeasureResource;
+using Xbim.Ifc2x3.DateTimeResource;
+using Xbim.Ifc2x3.ExternalReferenceResource;
+using Xbim.Ifc2x3.MeasureResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.CostResource
+namespace Xbim.Ifc2x3.CostResource
 {
     /// <summary>
     ///   An IfcCurrencyRelationship defines the rate of exchange that applies between two designated currencies at a particular time and as published by a particular source.

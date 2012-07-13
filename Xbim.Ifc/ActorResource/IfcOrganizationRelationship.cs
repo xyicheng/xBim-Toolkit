@@ -14,13 +14,13 @@
 
 using System;
 using System.ComponentModel;
-using Xbim.Ifc.MeasureResource;
+using Xbim.Ifc2x3.MeasureResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.ActorResource
+namespace Xbim.Ifc2x3.ActorResource
 {
     [IfcPersistedEntityAttribute, Serializable]
     public class OrganizationRelationshipCollection : XbimList<IfcOrganizationRelationship>

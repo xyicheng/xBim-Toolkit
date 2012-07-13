@@ -13,14 +13,14 @@
 #region Directives
 
 using System;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.ProductExtension;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.ProductExtension;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.StructuralAnalysisDomain
+namespace Xbim.Ifc2x3.StructuralAnalysisDomain
 {
     /// <summary>
     ///   The one-to-one relationship assigns a structural member (as instance of IfcStructuralMember or its subclasses) to a physical element  (as instance of IfcElement or its subclasses) to keep the association between the design or detailing element and the structural analysis element.

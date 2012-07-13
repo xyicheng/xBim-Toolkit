@@ -10,7 +10,7 @@
 
 #endregion
 
-namespace Xbim.Ifc.CostResource
+namespace Xbim.Ifc2x3.CostResource
 {
     /// <summary>
     ///   The IfcEnvironmentalImpactCategoryEnum defines the range of categories into which an environmental impact can be broken down and from which the category required may be selected.

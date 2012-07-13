@@ -19,7 +19,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.Kernel
+namespace Xbim.Ifc2x3.Kernel
 {
     [IfcPersistedEntityAttribute, Serializable]
     public class PropertySetDefinitionSet : XbimSet<IfcPropertySetDefinition>

@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Xbim.Ifc.ProductExtension;
-using Xbim.Ifc.SelectTypes;
-using Xbim.Ifc.MeasureResource;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.Ifc2x3.SelectTypes;
+using Xbim.Ifc2x3.MeasureResource;
 
 namespace Xbim.DOM.PropertiesQuantities
 {

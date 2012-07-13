@@ -13,16 +13,16 @@
 #region Directives
 
 using System;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.SelectTypes;
-using Xbim.Ifc.TimeSeriesResource;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.Ifc2x3.SelectTypes;
+using Xbim.Ifc2x3.TimeSeriesResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.SharedBldgServiceElements
+namespace Xbim.Ifc2x3.SharedBldgServiceElements
 {
     [IfcPersistedEntityAttribute, Serializable]
     public class IfcSoundValue : IfcPropertySetDefinition

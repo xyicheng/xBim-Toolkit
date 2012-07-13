@@ -10,7 +10,7 @@
 
 #endregion
 
-namespace Xbim.Ifc.SharedBldgElements
+namespace Xbim.Ifc2x3.SharedBldgElements
 {
     /// <summary>
     ///   This enumeration defines the available predefined types of a slab. The IfcSlabTypeEnum can be used for slab occurrences, IfcSlab, and slab types, IfcSlabType. A special property set definition may be provided for each predefined type.

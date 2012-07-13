@@ -14,14 +14,14 @@
 
 using System;
 using System.Globalization;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.SelectTypes;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
-using Xbim.Ifc.MeasureResource;
+using Xbim.Ifc2x3.MeasureResource;
 
 #endregion
 
-namespace Xbim.Ifc.PresentationResource
+namespace Xbim.Ifc2x3.PresentationResource
 {
     [Serializable]
     public struct IfcPresentableText : IFormattable, IPersistIfc, ExpressType

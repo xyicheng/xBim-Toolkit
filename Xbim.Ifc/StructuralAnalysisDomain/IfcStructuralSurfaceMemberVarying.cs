@@ -15,15 +15,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Xbim.Ifc.GeometryResource;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.RepresentationResource;
+using Xbim.Ifc2x3.GeometryResource;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.Ifc2x3.RepresentationResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.StructuralAnalysisDomain
+namespace Xbim.Ifc2x3.StructuralAnalysisDomain
 {
     [IfcPersistedEntityAttribute, Serializable]
     public class IfcStructuralSurfaceMemberVarying : IfcStructuralSurfaceMember

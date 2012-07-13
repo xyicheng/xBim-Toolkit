@@ -16,14 +16,14 @@ using System;
 using System.ComponentModel;
 using System.Globalization;
 using System.Runtime.Serialization;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.Ifc2x3.SelectTypes;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.ActorResource
+namespace Xbim.Ifc2x3.ActorResource
 {
     [IfcPersistedEntityAttribute, Serializable]
     public class PersonCollection : XbimList<IfcPerson>

@@ -15,7 +15,7 @@
 using System;
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
-using Xbim.Ifc.PresentationAppearanceResource;
+using Xbim.Ifc2x3.PresentationAppearanceResource;
 using Xbim.XbimExtensions;
 
 #endregion

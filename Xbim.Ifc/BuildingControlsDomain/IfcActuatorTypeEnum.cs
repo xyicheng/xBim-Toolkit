@@ -10,7 +10,7 @@
 
 #endregion
 
-namespace Xbim.Ifc.BuildingControlsDomain
+namespace Xbim.Ifc2x3.BuildingControlsDomain
 {
     public enum IfcActuatorTypeEnum
     {

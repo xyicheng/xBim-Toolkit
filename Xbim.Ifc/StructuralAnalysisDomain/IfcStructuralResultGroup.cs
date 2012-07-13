@@ -14,14 +14,14 @@
 
 using System;
 using System.Collections.Generic;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.MeasureResource;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.MeasureResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.StructuralAnalysisDomain
+namespace Xbim.Ifc2x3.StructuralAnalysisDomain
 {
     /// <summary>
     ///   Instances of the entity IfcStructuralResultGroup are used to group results of structural analysis calculations 

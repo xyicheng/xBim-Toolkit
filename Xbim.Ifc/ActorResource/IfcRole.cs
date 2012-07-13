@@ -16,7 +16,7 @@ using System.Diagnostics.CodeAnalysis;
 
 #endregion
 
-namespace Xbim.Ifc.ActorResource
+namespace Xbim.Ifc2x3.ActorResource
 {
     /// <summary>
     ///   Roles which may be played by an actor.

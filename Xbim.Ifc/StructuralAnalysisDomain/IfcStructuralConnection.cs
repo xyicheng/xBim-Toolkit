@@ -14,13 +14,13 @@
 
 using System;
 using System.Collections.Generic;
-using Xbim.Ifc.StructuralLoadResource;
+using Xbim.Ifc2x3.StructuralLoadResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.StructuralAnalysisDomain
+namespace Xbim.Ifc2x3.StructuralAnalysisDomain
 {
     [IfcPersistedEntityAttribute, Serializable]
     public abstract class IfcStructuralConnection : IfcStructuralItem

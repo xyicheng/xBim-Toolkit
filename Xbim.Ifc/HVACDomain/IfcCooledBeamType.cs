@@ -13,13 +13,13 @@
 #region Directives
 
 using System;
-using Xbim.Ifc.SharedBldgServiceElements;
+using Xbim.Ifc2x3.SharedBldgServiceElements;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.HVACDomain
+namespace Xbim.Ifc2x3.HVACDomain
 {
     [IfcPersistedEntityAttribute, Serializable]
     public class IfcCooledBeamType : IfcEnergyConversionDeviceType

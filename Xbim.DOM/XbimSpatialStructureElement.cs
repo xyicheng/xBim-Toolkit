@@ -2,16 +2,16 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Xbim.Ifc.ProductExtension;
-using Xbim.Ifc.Extensions;
-using Xbim.Ifc.GeometryResource;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.Ifc2x3.Extensions;
+using Xbim.Ifc2x3.GeometryResource;
 using Xbim.XbimExtensions;
 using System.Diagnostics;
-using Xbim.Ifc.RepresentationResource;
-using Xbim.Ifc.UtilityResource;
-using Xbim.Ifc.Kernel;
+using Xbim.Ifc2x3.RepresentationResource;
+using Xbim.Ifc2x3.UtilityResource;
+using Xbim.Ifc2x3.Kernel;
 using Xbim.DOM.PropertiesQuantities;
-using Xbim.Ifc.GeometricConstraintResource;
+using Xbim.Ifc2x3.GeometricConstraintResource;
 
 namespace Xbim.DOM
 {
@@ -122,7 +122,7 @@ namespace Xbim.DOM
             }
         }
 
-        public Ifc.Kernel.IfcRoot AsRoot
+        public Ifc2x3.Kernel.IfcRoot AsRoot
         {
             get { return _spatialElement; }
         }
@@ -135,7 +135,7 @@ namespace Xbim.DOM
 
         public void SetGlobalId(Guid guid)
         {
-            _spatialElement.GlobalId = new Ifc.UtilityResource.IfcGloballyUniqueId(guid);
+            _spatialElement.GlobalId = new Ifc2x3.UtilityResource.IfcGloballyUniqueId(guid);
         }
 
         protected IfcElementCompositionEnum GeIfcElementCompositionEnum(XbimElementCompositionEnum enu)
@@ -204,7 +204,7 @@ namespace Xbim.DOM
         #region IBimSpatialStructureElement
         bool IBimSpatialStructureElement.AddContainedBuildingElement(Guid guid)
         {
-            IfcGloballyUniqueId id = new Ifc.UtilityResource.IfcGloballyUniqueId(guid);
+            IfcGloballyUniqueId id = new Ifc2x3.UtilityResource.IfcGloballyUniqueId(guid);
             XbimBuildingElement element = Document.AllBuildingElements.Where(el => el.GlobalId == id).FirstOrDefault();
             if (element != null)
             {

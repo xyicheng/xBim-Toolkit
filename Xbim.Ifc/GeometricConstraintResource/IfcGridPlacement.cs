@@ -18,7 +18,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.GeometricConstraintResource
+namespace Xbim.Ifc2x3.GeometricConstraintResource
 {
     [IfcPersistedEntityAttribute, Serializable]
     public class IfcGridPlacement : IfcObjectPlacement

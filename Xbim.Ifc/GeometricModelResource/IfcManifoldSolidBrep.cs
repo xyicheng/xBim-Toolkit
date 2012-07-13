@@ -14,14 +14,14 @@
 
 using System;
 using System.Collections.Generic;
-using Xbim.Ifc.TopologyResource;
+using Xbim.Ifc2x3.TopologyResource;
 using Xbim.XbimExtensions;
 
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.GeometricModelResource
+namespace Xbim.Ifc2x3.GeometricModelResource
 {
     /// <summary>
     ///   A manifold solid B-rep is a finite, arcwise connected volume bounded by one or more surfaces, each of which is a connected, oriented, finite, closed 2-manifold.

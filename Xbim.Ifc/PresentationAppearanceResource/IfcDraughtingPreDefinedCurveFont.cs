@@ -18,7 +18,7 @@ using Xbim.XbimExtensions;
 
 #endregion
 
-namespace Xbim.Ifc.PresentationAppearanceResource
+namespace Xbim.Ifc2x3.PresentationAppearanceResource
 {
     [IfcPersistedEntityAttribute, Serializable]
     public class IfcDraughtingPreDefinedCurveFont : IfcPreDefinedCurveFont

@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Xbim.Ifc.GeometryResource;
-using Xbim.Ifc.Extensions;
+using Xbim.Ifc2x3.GeometryResource;
+using Xbim.Ifc2x3.Extensions;
 
 namespace Xbim.DOM
 {

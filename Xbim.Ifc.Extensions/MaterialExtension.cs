@@ -14,17 +14,17 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using Xbim.Ifc.MaterialPropertyResource;
-using Xbim.Ifc.MaterialResource;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.PropertyResource;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.MaterialPropertyResource;
+using Xbim.Ifc2x3.MaterialResource;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.Ifc2x3.PropertyResource;
+using Xbim.Ifc2x3.SelectTypes;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.Extensions
+namespace Xbim.Ifc2x3.Extensions
 {
     public static class MaterialExtension
     {

@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Xbim.XbimExtensions;
-using Xbim.Ifc.ExternalReferenceResource;
+using Xbim.Ifc2x3.ExternalReferenceResource;
 using System.Collections.ObjectModel;
-using Xbim.Ifc.Kernel;
+using Xbim.Ifc2x3.Kernel;
 using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.DOM

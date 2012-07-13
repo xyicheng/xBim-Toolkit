@@ -10,7 +10,7 @@
 
 #endregion
 
-namespace Xbim.Ifc.Kernel
+namespace Xbim.Ifc2x3.Kernel
 {
     /// <summary>
     ///   This enumeration defines the different ways, in which a time lag is applied to a sequence between two processes.

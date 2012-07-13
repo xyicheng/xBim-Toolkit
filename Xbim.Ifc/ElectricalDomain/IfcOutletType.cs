@@ -13,13 +13,13 @@
 #region Directives
 
 using System;
-using Xbim.Ifc.SharedBldgServiceElements;
+using Xbim.Ifc2x3.SharedBldgServiceElements;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.ElectricalDomain
+namespace Xbim.Ifc2x3.ElectricalDomain
 {
     [IfcPersistedEntityAttribute, Serializable]
     public class IfcOutletType : IfcFlowTerminalType

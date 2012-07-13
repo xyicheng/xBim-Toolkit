@@ -10,7 +10,7 @@
 
 #endregion
 
-namespace Xbim.Ifc.SharedBldgServiceElements
+namespace Xbim.Ifc2x3.SharedBldgServiceElements
 {
     /// <summary>
     ///   This enumeration defines the type of thermal load for spaces or zones, as derived from various use cases:

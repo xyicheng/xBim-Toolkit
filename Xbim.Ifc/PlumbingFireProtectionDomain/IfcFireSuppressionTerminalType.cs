@@ -13,13 +13,13 @@
 #region Directives
 
 using System;
-using Xbim.Ifc.SharedBldgServiceElements;
+using Xbim.Ifc2x3.SharedBldgServiceElements;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.PlumbingFireProtectionDomain
+namespace Xbim.Ifc2x3.PlumbingFireProtectionDomain
 {
     public class IfcFireSuppressionTerminalType : IfcFlowTerminalType
     {

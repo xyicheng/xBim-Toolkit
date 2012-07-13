@@ -5,8 +5,8 @@
 #include <gp_Pln.hxx> 
 
 
-using namespace Xbim::Ifc::GeometryResource;
-using namespace Xbim::Ifc::SelectTypes;
+using namespace Xbim::Ifc2x3::GeometryResource;
+using namespace Xbim::Ifc2x3::SelectTypes;
 using namespace System::Windows::Media::Media3D;
 using namespace Xbim::Common::Exceptions;
 namespace Xbim

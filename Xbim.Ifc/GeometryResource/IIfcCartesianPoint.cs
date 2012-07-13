@@ -16,7 +16,7 @@
 #endregion
 
 using Xbim.XbimExtensions.Interfaces;
-namespace Xbim.Ifc.GeometryResource
+namespace Xbim.Ifc2x3.GeometryResource
 {
     public interface IIfcCartesianPoint : IIfcPoint
     {

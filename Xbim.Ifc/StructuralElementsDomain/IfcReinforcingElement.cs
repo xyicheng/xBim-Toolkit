@@ -13,13 +13,13 @@
 #region Directives
 
 using System;
-using Xbim.Ifc.MeasureResource;
+using Xbim.Ifc2x3.MeasureResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.StructuralElementsDomain
+namespace Xbim.Ifc2x3.StructuralElementsDomain
 {
     /// <summary>
     ///   Bars, wires, strands, and other slender members embedded in concrete in such a manner that the reinforcement and the concrete act together in resisting forces.

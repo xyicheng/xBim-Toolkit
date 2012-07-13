@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.Extensions;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.Extensions;
+using Xbim.Ifc2x3.SelectTypes;
 
 namespace Xbim.DOM.PropertiesQuantities
 {
@@ -26,7 +26,7 @@ namespace Xbim.DOM.PropertiesQuantities
 
         protected IfcValue GetProperty(string propertyName)
         {
-            return _object.GetPropertySingleValueValue(_psetName, propertyName);
+            return _object.GetPropertySingleNominalValue(_psetName, propertyName);
         }
 
         protected void SetProperty(string propertyName, IfcValue value)

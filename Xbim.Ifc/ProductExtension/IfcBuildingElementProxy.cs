@@ -18,7 +18,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.ProductExtension
+namespace Xbim.Ifc2x3.ProductExtension
 {
     /// <summary>
     ///   The IfcBuildingElementProxy is a proxy definition that provides the same functionality, as an IfcBuildingElement, but without having a defined meaning of the special type of building element, it represents.

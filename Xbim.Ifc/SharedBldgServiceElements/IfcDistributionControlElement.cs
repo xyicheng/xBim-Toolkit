@@ -15,14 +15,14 @@
 using System;
 using System.Collections.Generic;
 using System.Xml.Serialization;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.ProductExtension;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.Ifc2x3.ProductExtension;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.SharedBldgServiceElements
+namespace Xbim.Ifc2x3.SharedBldgServiceElements
 {
     [IfcPersistedEntityAttribute, Serializable]
     public class IfcDistributionControlElement : IfcDistributionElement

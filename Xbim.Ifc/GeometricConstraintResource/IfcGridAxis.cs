@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Xbim.XbimExtensions;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.GeometryResource;
-using Xbim.Ifc.ProductExtension;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.Ifc2x3.GeometryResource;
+using Xbim.Ifc2x3.ProductExtension;
 using System.ComponentModel;
 using Xbim.XbimExtensions.Interfaces;
 
-namespace Xbim.Ifc.GeometricConstraintResource
+namespace Xbim.Ifc2x3.GeometricConstraintResource
 {
 
 

@@ -6,12 +6,12 @@
 #include <TopoDS_Face.hxx>
 #include <gp_Dir.hxx>
 
-using namespace Xbim::Ifc::ProfileResource;
-using namespace Xbim::Ifc::GeometryResource;
-using namespace Xbim::Ifc::TopologyResource;
+using namespace Xbim::Ifc2x3::ProfileResource;
+using namespace Xbim::Ifc2x3::GeometryResource;
+using namespace Xbim::Ifc2x3::TopologyResource;
 using namespace Xbim::XbimExtensions::Interfaces;
 using namespace System::Collections::Generic;
-using namespace Xbim::Ifc::MeasureResource;
+using namespace Xbim::Ifc2x3::MeasureResource;
 
 namespace Xbim
 {

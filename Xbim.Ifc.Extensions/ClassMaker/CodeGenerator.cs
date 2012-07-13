@@ -21,7 +21,7 @@ using Microsoft.CSharp;
 
 #endregion
 
-namespace Xbim.Ifc.XbimExtensions.ClassMaker
+namespace Xbim.Ifc2x3.XbimExtensions.ClassMaker
 {
     public class CodeGenerator
     {

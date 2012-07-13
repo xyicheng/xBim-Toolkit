@@ -19,7 +19,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.DateTimeResource
+namespace Xbim.Ifc2x3.DateTimeResource
 {
     [IfcPersistedEntityAttribute, Serializable]
     public class IfcCoordinatedUniversalTimeOffset : IPersistIfcEntity, INotifyPropertyChanged,

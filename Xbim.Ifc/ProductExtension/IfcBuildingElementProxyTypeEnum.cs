@@ -10,7 +10,7 @@
 
 #endregion
 
-namespace Xbim.Ifc.ProductExtension
+namespace Xbim.Ifc2x3.ProductExtension
 {
     /// <summary>
     ///   This enumeration defines the available generic types for IfcBuildingElementProxyType.

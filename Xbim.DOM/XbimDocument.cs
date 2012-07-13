@@ -5,24 +5,24 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Xbim.XbimExtensions;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.Extensions;
-using Xbim.Ifc.ProductExtension;
-using Xbim.Ifc.SharedBldgElements;
-using Xbim.Ifc.ExternalReferenceResource;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.Extensions;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.Ifc2x3.SharedBldgElements;
+using Xbim.Ifc2x3.ExternalReferenceResource;
 using System.IO;
 using Xbim.IO;
 using Xbim.XbimExtensions.Transactions;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.MaterialResource;
-using Xbim.Ifc.SelectTypes;
-using Xbim.Ifc.UtilityResource;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.Ifc2x3.MaterialResource;
+using Xbim.Ifc2x3.SelectTypes;
+using Xbim.Ifc2x3.UtilityResource;
 using System.Diagnostics;
 using Xbim.DOM.PropertiesQuantities;
-using Xbim.Ifc.PropertyResource;
-using Xbim.Ifc.GeometryResource;
+using Xbim.Ifc2x3.PropertyResource;
+using Xbim.Ifc2x3.GeometryResource;
 using Xbim.XbimExtensions.Interfaces;
-using Xbim.Ifc.ActorResource;
+using Xbim.Ifc2x3.ActorResource;
 
 namespace Xbim.DOM
 {
@@ -513,13 +513,13 @@ namespace Xbim.DOM
         #region Getting objects functions
         public XbimBuildingElement GetBuildingElement(Guid guid)
         {
-            Ifc.UtilityResource.IfcGloballyUniqueId id = new Ifc.UtilityResource.IfcGloballyUniqueId(guid);
+            Ifc2x3.UtilityResource.IfcGloballyUniqueId id = new Ifc2x3.UtilityResource.IfcGloballyUniqueId(guid);
             return AllBuildingElements.Where(e => e.GlobalId == id).FirstOrDefault();
         }
 
         public XbimBuildingElementType GetBuildingElementType(Guid guid)
         {
-            Ifc.UtilityResource.IfcGloballyUniqueId id = new Ifc.UtilityResource.IfcGloballyUniqueId(guid);
+            Ifc2x3.UtilityResource.IfcGloballyUniqueId id = new Ifc2x3.UtilityResource.IfcGloballyUniqueId(guid);
             return AllBuildingElementTypes.Where(e => e.GlobalId == id).FirstOrDefault();
         }
 
@@ -542,7 +542,7 @@ namespace Xbim.DOM
 
         public XbimSpatialStructureElement GetSpatialStructureElement(Guid guid)
         {
-            Ifc.UtilityResource.IfcGloballyUniqueId id = new Ifc.UtilityResource.IfcGloballyUniqueId(guid);
+            Ifc2x3.UtilityResource.IfcGloballyUniqueId id = new Ifc2x3.UtilityResource.IfcGloballyUniqueId(guid);
             return AllSpatialStructureElements.Where(e => e.GlobalId == id).FirstOrDefault();
         }
 
@@ -579,7 +579,7 @@ namespace Xbim.DOM
 
                 //change state in owner history to modified so that we can get the modified data quickly "GetModifiedBuildingElements()"
                 IfcBuildingElement ifcElement = element.IfcBuildingElement;
-                ifcElement.OwnerHistory.ChangeAction = Ifc.UtilityResource.IfcChangeActionEnum.MODIFIED;
+                ifcElement.OwnerHistory.ChangeAction = Ifc2x3.UtilityResource.IfcChangeActionEnum.MODIFIED;
             }
         }
 
@@ -609,12 +609,12 @@ namespace Xbim.DOM
 
         public IEnumerable<XbimBuildingElement> GetModifiedBuildingElements()
         {
-            return AllBuildingElements.Where(el => el.IfcBuildingElement.OwnerHistory.ChangeAction == Ifc.UtilityResource.IfcChangeActionEnum.MODIFIED);
+            return AllBuildingElements.Where(el => el.IfcBuildingElement.OwnerHistory.ChangeAction == Ifc2x3.UtilityResource.IfcChangeActionEnum.MODIFIED);
         }
 
         public IEnumerable<XbimBuildingElementType> GetNewAddedBuildingElementTypes()
         {
-            return AllBuildingElementTypes.Where(ty => ty.IfcTypeProduct.OwnerHistory.ChangeAction == Ifc.UtilityResource.IfcChangeActionEnum.ADDED);
+            return AllBuildingElementTypes.Where(ty => ty.IfcTypeProduct.OwnerHistory.ChangeAction == Ifc2x3.UtilityResource.IfcChangeActionEnum.ADDED);
         }
 
         /// <summary>

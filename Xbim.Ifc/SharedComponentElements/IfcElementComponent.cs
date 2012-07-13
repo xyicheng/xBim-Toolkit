@@ -13,12 +13,12 @@
 #region Directives
 
 using System;
-using Xbim.Ifc.ProductExtension;
+using Xbim.Ifc2x3.ProductExtension;
 using Xbim.XbimExtensions;
 
 #endregion
 
-namespace Xbim.Ifc.SharedComponentElements
+namespace Xbim.Ifc2x3.SharedComponentElements
 {
     [IfcPersistedEntityAttribute, Serializable]
     public abstract class IfcElementComponent : IfcElement

@@ -14,12 +14,12 @@
 
 using System;
 using System.Globalization;
-using Xbim.Ifc.DateTimeResource;
+using Xbim.Ifc2x3.DateTimeResource;
 using Xbim.XbimExtensions;
 
 #endregion
 
-namespace Xbim.Ifc.Extensions
+namespace Xbim.Ifc2x3.Extensions
 {
     public static class LocalTimeExtensions
     {

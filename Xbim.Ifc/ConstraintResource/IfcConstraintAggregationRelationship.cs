@@ -15,13 +15,13 @@
 using System;
 using System.ComponentModel;
 using System.Linq;
-using Xbim.Ifc.MeasureResource;
+using Xbim.Ifc2x3.MeasureResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.ConstraintResource
+namespace Xbim.Ifc2x3.ConstraintResource
 {
     /// <summary>
     ///   An IfcConstraintAggregationRelationship is an objectified relationship that enables instances

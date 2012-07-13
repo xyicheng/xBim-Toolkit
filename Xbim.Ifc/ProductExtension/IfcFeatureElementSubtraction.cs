@@ -19,7 +19,7 @@ using Xbim.XbimExtensions;
 
 #endregion
 
-namespace Xbim.Ifc.ProductExtension
+namespace Xbim.Ifc2x3.ProductExtension
 {
     /// <summary>
     ///   A specialization of the general feature element, that represents an existence dependent elements which modify the shape and appearance of the associated master element.

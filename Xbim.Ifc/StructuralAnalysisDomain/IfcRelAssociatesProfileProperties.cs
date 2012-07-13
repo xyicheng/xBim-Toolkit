@@ -13,16 +13,16 @@
 #region Directives
 
 using System;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.ProfilePropertyResource;
-using Xbim.Ifc.RepresentationResource;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.ProfilePropertyResource;
+using Xbim.Ifc2x3.RepresentationResource;
+using Xbim.Ifc2x3.SelectTypes;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.StructuralAnalysisDomain
+namespace Xbim.Ifc2x3.StructuralAnalysisDomain
 {
     /// <summary>
     ///   The IfcRelAssociatesProfileProperties is an objectified relationship between non geometric profile properties (subtypes of IfcProfileProperties) and elements to which these properties apply, e.g. building elements and building element types as used within the structural 

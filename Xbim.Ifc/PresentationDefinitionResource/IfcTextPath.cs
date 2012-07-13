@@ -10,7 +10,7 @@
 
 #endregion
 
-namespace Xbim.Ifc.PresentationDefinitionResource
+namespace Xbim.Ifc2x3.PresentationDefinitionResource
 {
     /// <summary>
     ///   The text path determines the direction of the text characters in respect to each other.

@@ -13,12 +13,12 @@
 #region Directives
 
 using System;
-using Xbim.Ifc.ProductExtension;
+using Xbim.Ifc2x3.ProductExtension;
 using Xbim.XbimExtensions;
 
 #endregion
 
-namespace Xbim.Ifc.ElectricalDomain
+namespace Xbim.Ifc2x3.ElectricalDomain
 {
     [IfcPersistedEntityAttribute, Serializable]
     public class IfcElectricalCircuit : IfcSystem

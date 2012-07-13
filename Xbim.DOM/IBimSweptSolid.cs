@@ -10,6 +10,6 @@ namespace Xbim.DOM
         void AddProfileCurveEllipseSegment(IBimAxis2Placement3D position, double semiAxis1, double semiAxis2, XbimXYZ startPoint, XbimXYZ endPoint);
         void AddProfileCurveLine(XbimXYZ start, XbimXYZ end);
         XbimDocument Document { get; }
-        Xbim.Ifc.GeometryResource.IfcGeometricRepresentationItem GetIfcGeometricRepresentation();
+        Xbim.Ifc2x3.GeometryResource.IfcGeometricRepresentationItem GetIfcGeometricRepresentation();
     }
 }

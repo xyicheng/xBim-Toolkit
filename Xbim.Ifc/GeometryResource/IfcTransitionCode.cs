@@ -10,7 +10,7 @@
 
 #endregion
 
-namespace Xbim.Ifc.GeometryResource
+namespace Xbim.Ifc2x3.GeometryResource
 {
     /// <summary>
     ///   This type conveys the continuity properties of a composite curve or surface.

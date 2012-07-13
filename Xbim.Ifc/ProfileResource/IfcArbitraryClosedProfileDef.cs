@@ -13,13 +13,13 @@
 #region Directives
 
 using System;
-using Xbim.Ifc.GeometryResource;
+using Xbim.Ifc2x3.GeometryResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.ProfileResource
+namespace Xbim.Ifc2x3.ProfileResource
 {
     [IfcPersistedEntityAttribute, Serializable]
     public class IfcArbitraryClosedProfileDef : IfcProfileDef

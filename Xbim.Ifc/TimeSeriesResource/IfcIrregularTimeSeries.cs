@@ -18,7 +18,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.TimeSeriesResource
+namespace Xbim.Ifc2x3.TimeSeriesResource
 {
     [IfcPersistedEntityAttribute, Serializable]
     public class IfcIrregularTimeSeries : IfcTimeSeries

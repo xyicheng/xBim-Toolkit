@@ -13,13 +13,13 @@
 #region Directives
 
 using System;
-using Xbim.Ifc.PresentationResource;
+using Xbim.Ifc2x3.PresentationResource;
 using Xbim.XbimExtensions.Interfaces;
 using Xbim.XbimExtensions;
 
 #endregion
 
-namespace Xbim.Ifc.PresentationDefinitionResource
+namespace Xbim.Ifc2x3.PresentationDefinitionResource
 {
     public class IfcTextLiteralWithExtent : IfcTextLiteral
     {

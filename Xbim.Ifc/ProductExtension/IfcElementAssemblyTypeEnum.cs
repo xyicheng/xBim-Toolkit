@@ -10,7 +10,7 @@
 
 #endregion
 
-namespace Xbim.Ifc.ProductExtension
+namespace Xbim.Ifc2x3.ProductExtension
 {
     /// <summary>
     ///   An enumeration defining the basic configuration types for element assemblies.

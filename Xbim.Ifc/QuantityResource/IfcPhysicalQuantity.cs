@@ -15,13 +15,13 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using Xbim.Ifc.MeasureResource;
+using Xbim.Ifc2x3.MeasureResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.QuantityResource
+namespace Xbim.Ifc2x3.QuantityResource
 {
     [IfcPersistedEntityAttribute, Serializable]
     public class PhysicalQuantitySet : XbimSet<IfcPhysicalQuantity>
