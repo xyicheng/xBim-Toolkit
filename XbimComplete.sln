@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Xbim.ModelGeometry", "Xbim.ModelGeometry\Xbim.ModelGeometry.vcxproj", "{CBCA1EFC-7459-4A0E-A42D-55D4F58051BF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.Ifc2x3", "Xbim.Ifc\Xbim.Ifc2x3.csproj", "{5D4C907D-1293-4E5F-9642-D0862AE4741C}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.Ifc.Extensions", "Xbim.Ifc.Extensions\Xbim.Ifc.Extensions.csproj", "{09870F18-1796-4A3E-A66D-68DB3DA60B24}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.IO", "Xbim.IO\Xbim.IO.csproj", "{85856DF2-C8AB-4120-8A8D-AE05D2696B51}"
@@ -47,6 +45,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XbimRegression", "XbimRegression\XbimRegression.csproj", "{6EF22FB8-7048-4E6A-9B2F-AC2570A998A9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.Ifc2x3", "Xbim.Ifc2x3\Xbim.Ifc2x3.csproj", "{5D4C907D-1293-4E5F-9642-D0862AE4741C}"
 EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
@@ -96,9 +96,9 @@ Global
 		SccProjectUniqueName14 = XbimRegression\\XbimRegression.csproj
 		SccProjectName14 = XbimRegression
 		SccLocalPath14 = XbimRegression
-		SccProjectUniqueName15 = Xbim.Ifc\\Xbim.Ifc2x3.csproj
-		SccProjectName15 = Xbim.Ifc
-		SccLocalPath15 = Xbim.Ifc
+		SccProjectUniqueName15 = Xbim.Ifc2x3\\Xbim.Ifc2x3.csproj
+		SccProjectName15 = Xbim.Ifc2x3
+		SccLocalPath15 = Xbim.Ifc2x3
 	EndGlobalSection
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = XbimComplete.vsmdi
@@ -122,18 +122,6 @@ Global
 		{CBCA1EFC-7459-4A0E-A42D-55D4F58051BF}.Release|x64.Build.0 = Release|x64
 		{CBCA1EFC-7459-4A0E-A42D-55D4F58051BF}.Release|x86.ActiveCfg = Release|Win32
 		{CBCA1EFC-7459-4A0E-A42D-55D4F58051BF}.Release|x86.Build.0 = Release|Win32
-		{5D4C907D-1293-4E5F-9642-D0862AE4741C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5D4C907D-1293-4E5F-9642-D0862AE4741C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5D4C907D-1293-4E5F-9642-D0862AE4741C}.Debug|x64.ActiveCfg = Debug|x64
-		{5D4C907D-1293-4E5F-9642-D0862AE4741C}.Debug|x64.Build.0 = Debug|x64
-		{5D4C907D-1293-4E5F-9642-D0862AE4741C}.Debug|x86.ActiveCfg = Debug|x86
-		{5D4C907D-1293-4E5F-9642-D0862AE4741C}.Debug|x86.Build.0 = Debug|x86
-		{5D4C907D-1293-4E5F-9642-D0862AE4741C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5D4C907D-1293-4E5F-9642-D0862AE4741C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5D4C907D-1293-4E5F-9642-D0862AE4741C}.Release|x64.ActiveCfg = Release|x64
-		{5D4C907D-1293-4E5F-9642-D0862AE4741C}.Release|x64.Build.0 = Release|x64
-		{5D4C907D-1293-4E5F-9642-D0862AE4741C}.Release|x86.ActiveCfg = Release|x86
-		{5D4C907D-1293-4E5F-9642-D0862AE4741C}.Release|x86.Build.0 = Release|x86
 		{09870F18-1796-4A3E-A66D-68DB3DA60B24}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{09870F18-1796-4A3E-A66D-68DB3DA60B24}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{09870F18-1796-4A3E-A66D-68DB3DA60B24}.Debug|x64.ActiveCfg = Debug|x64
@@ -284,6 +272,18 @@ Global
 		{6EF22FB8-7048-4E6A-9B2F-AC2570A998A9}.Release|x64.Build.0 = Release|x64
 		{6EF22FB8-7048-4E6A-9B2F-AC2570A998A9}.Release|x86.ActiveCfg = Release|x86
 		{6EF22FB8-7048-4E6A-9B2F-AC2570A998A9}.Release|x86.Build.0 = Release|x86
+		{5D4C907D-1293-4E5F-9642-D0862AE4741C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5D4C907D-1293-4E5F-9642-D0862AE4741C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5D4C907D-1293-4E5F-9642-D0862AE4741C}.Debug|x64.ActiveCfg = Debug|x64
+		{5D4C907D-1293-4E5F-9642-D0862AE4741C}.Debug|x64.Build.0 = Debug|x64
+		{5D4C907D-1293-4E5F-9642-D0862AE4741C}.Debug|x86.ActiveCfg = Debug|x86
+		{5D4C907D-1293-4E5F-9642-D0862AE4741C}.Debug|x86.Build.0 = Debug|x86
+		{5D4C907D-1293-4E5F-9642-D0862AE4741C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5D4C907D-1293-4E5F-9642-D0862AE4741C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5D4C907D-1293-4E5F-9642-D0862AE4741C}.Release|x64.ActiveCfg = Release|x64
+		{5D4C907D-1293-4E5F-9642-D0862AE4741C}.Release|x64.Build.0 = Release|x64
+		{5D4C907D-1293-4E5F-9642-D0862AE4741C}.Release|x86.ActiveCfg = Release|x86
+		{5D4C907D-1293-4E5F-9642-D0862AE4741C}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

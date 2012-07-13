@@ -279,7 +279,7 @@
       <CopyLocalSatelliteAssemblies>true</CopyLocalSatelliteAssemblies>
       <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
     </ProjectReference>
-    <ProjectReference Include="..\Xbim.Ifc\Xbim.Ifc2x3.csproj">
+    <ProjectReference Include="..\Xbim.Ifc2x3\Xbim.Ifc2x3.csproj">
       <Project>{5d4c907d-1293-4e5f-9642-d0862ae4741c}</Project>
     </ProjectReference>
     <ProjectReference Include="..\Xbim.IO\Xbim.IO.csproj">

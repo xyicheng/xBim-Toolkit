@@ -184,7 +184,7 @@
       <Name>Xbim.Ifc.Extensions</Name>
       <Private>False</Private>
     </ProjectReference>
-    <ProjectReference Include="..\Xbim.Ifc\Xbim.Ifc2x3.csproj">
+    <ProjectReference Include="..\Xbim.Ifc2x3\Xbim.Ifc2x3.csproj">
       <Project>{5D4C907D-1293-4E5F-9642-D0862AE4741C}</Project>
       <Name>Xbim.Ifc2x3</Name>
       <Private>False</Private>
