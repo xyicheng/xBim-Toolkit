@@ -36,14 +36,13 @@ namespace Xbim.Ifc.Kernel
     public abstract class IfcRoot : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                     INotifyPropertyChanging
     {
-#if SupportActivation
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -83,7 +82,6 @@ namespace Xbim.Ifc.Kernel
 
         #endregion
 
-#endif
 
         #region Fields
 
@@ -113,12 +111,10 @@ namespace Xbim.Ifc.Kernel
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _globalId;
             }
-            set { ModelManager.SetModelValue(this, ref _globalId, value, v => GlobalId = v, "GlobalId"); }
+            set { ModelHelper.SetModelValue(this, ref _globalId, value, v => GlobalId = v, "GlobalId"); }
         }
 
 
@@ -131,13 +127,11 @@ namespace Xbim.Ifc.Kernel
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 
                 return _ownerHistory;
             }
-            set { ModelManager.SetModelValue(this, ref _ownerHistory, value, v => OwnerHistory = v, "OwnerHistory"); }
+            set { ModelHelper.SetModelValue(this, ref _ownerHistory, value, v => OwnerHistory = v, "OwnerHistory"); }
         }
 
         /// <summary>
@@ -148,12 +142,10 @@ namespace Xbim.Ifc.Kernel
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _name;
             }
-            set { ModelManager.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
+            set { ModelHelper.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
         }
 
         /// <summary>
@@ -166,12 +158,10 @@ namespace Xbim.Ifc.Kernel
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _description;
             }
-            set { ModelManager.SetModelValue(this, ref _description, value, v => Description = v, "Description"); }
+            set { ModelHelper.SetModelValue(this, ref _description, value, v => Description = v, "Description"); }
         }
 
         #endregion

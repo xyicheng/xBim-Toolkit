@@ -40,12 +40,10 @@ namespace Xbim.Ifc.PresentationResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _red;
             }
-            set { ModelManager.SetModelValue(this, ref _red, value, v => Red = v, "Red"); }
+            set { ModelHelper.SetModelValue(this, ref _red, value, v => Red = v, "Red"); }
         }
 
 
@@ -54,12 +52,10 @@ namespace Xbim.Ifc.PresentationResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _green;
             }
-            set { ModelManager.SetModelValue(this, ref _green, value, v => Green = v, "Green"); }
+            set { ModelHelper.SetModelValue(this, ref _green, value, v => Green = v, "Green"); }
         }
 
 
@@ -68,12 +64,10 @@ namespace Xbim.Ifc.PresentationResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _blue;
             }
-            set { ModelManager.SetModelValue(this, ref _blue, value, v => Blue = v, "Blue"); }
+            set { ModelHelper.SetModelValue(this, ref _blue, value, v => Blue = v, "Blue"); }
         }
 
 

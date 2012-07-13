@@ -156,9 +156,7 @@ namespace Xbim.XbimExtensions
             if (index < m_List.Count)
                 removed = m_List[index];
             m_List[index] = item;
-#if SupportActivation
             if (_owningEntity.Activated) _owningEntity.ModelOf.Activate(_owningEntity, true);
-#endif
             NotifyCollectionChangedEventHandler collChanged = _collectionChanged;
             if (collChanged != null)
             {
@@ -186,9 +184,7 @@ namespace Xbim.XbimExtensions
             int oldCount = m_List.Count;
             T removed = m_List[index];
             m_List.RemoveAt_Reversible(index);
-#if SupportActivation
             if (_owningEntity.Activated) _owningEntity.ModelOf.Activate(_owningEntity, true);
-#endif
             NotifyCollectionChangedEventHandler collChanged = _collectionChanged;
             if (collChanged != null)
                 collChanged(this,
@@ -208,9 +204,7 @@ namespace Xbim.XbimExtensions
         {
             int oldCount = m_List.Count;
             m_List.Add_Reversible(item);
-#if SupportActivation
             if (_owningEntity.Activated) _owningEntity.ModelOf.Activate(_owningEntity, true);
-#endif
             NotifyCollectionChangedEventHandler collChanged = _collectionChanged;
             if (collChanged != null)
                 collChanged(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item));
@@ -226,9 +220,7 @@ namespace Xbim.XbimExtensions
             //    if (iModeRef != null) iModeRef.DecrementModelRefCount();
             //}
             m_List.Clear_Reversible();
-#if SupportActivation
             if (_owningEntity.Activated) _owningEntity.ModelOf.Activate(_owningEntity, true);
-#endif
             NotifyCollectionChangedEventHandler collChanged = _collectionChanged;
             if (collChanged != null)
                 collChanged(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
@@ -257,9 +249,7 @@ namespace Xbim.XbimExtensions
             bool removed = m_List.Remove_Reversible(item);
             if (removed)
             {
-#if SupportActivation
                 if (_owningEntity.Activated) _owningEntity.ModelOf.Activate(_owningEntity, true);
-#endif
                 NotifyCollectionChangedEventHandler collChanged = _collectionChanged;
                 if (collChanged != null)
                     collChanged(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, item));

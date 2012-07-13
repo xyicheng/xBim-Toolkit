@@ -99,12 +99,10 @@ namespace Xbim.Ifc.SharedBldgElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _liningDepth;
             }
-            set { ModelManager.SetModelValue(this, ref _liningDepth, value, v => LiningDepth = v, "LiningDepth"); }
+            set { ModelHelper.SetModelValue(this, ref _liningDepth, value, v => LiningDepth = v, "LiningDepth"); }
         }
 
         /// <summary>
@@ -115,14 +113,12 @@ namespace Xbim.Ifc.SharedBldgElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _liningThickness;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _liningThickness, value, v => LiningThickness = v,
+                ModelHelper.SetModelValue(this, ref _liningThickness, value, v => LiningThickness = v,
                                            "LiningThickness");
             }
         }
@@ -135,12 +131,10 @@ namespace Xbim.Ifc.SharedBldgElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _thresholdDepth;
             }
-            set { ModelManager.SetModelValue(this, ref _thresholdDepth, value, v => ThresholdDepth = v, "ThresholdDepth"); }
+            set { ModelHelper.SetModelValue(this, ref _thresholdDepth, value, v => ThresholdDepth = v, "ThresholdDepth"); }
         }
 
         /// <summary>
@@ -151,14 +145,12 @@ namespace Xbim.Ifc.SharedBldgElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _thresholdThickness;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _thresholdThickness, value, v => ThresholdThickness = v,
+                ModelHelper.SetModelValue(this, ref _thresholdThickness, value, v => ThresholdThickness = v,
                                            "ThresholdThickness");
             }
         }
@@ -171,14 +163,12 @@ namespace Xbim.Ifc.SharedBldgElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _transomThickness;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _transomThickness, value, v => TransomThickness = v,
+                ModelHelper.SetModelValue(this, ref _transomThickness, value, v => TransomThickness = v,
                                            "TransomThickness");
             }
         }
@@ -191,12 +181,10 @@ namespace Xbim.Ifc.SharedBldgElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _transomOffset;
             }
-            set { ModelManager.SetModelValue(this, ref _transomOffset, value, v => TransomOffset = v, "TransomOffset"); }
+            set { ModelHelper.SetModelValue(this, ref _transomOffset, value, v => TransomOffset = v, "TransomOffset"); }
         }
 
         /// <summary>
@@ -207,12 +195,10 @@ namespace Xbim.Ifc.SharedBldgElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _liningOffset;
             }
-            set { ModelManager.SetModelValue(this, ref _liningOffset, value, v => LiningOffset = v, "LiningOffset"); }
+            set { ModelHelper.SetModelValue(this, ref _liningOffset, value, v => LiningOffset = v, "LiningOffset"); }
         }
 
         /// <summary>
@@ -223,14 +209,12 @@ namespace Xbim.Ifc.SharedBldgElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _thresholdOffset;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _thresholdOffset, value, v => ThresholdOffset = v,
+                ModelHelper.SetModelValue(this, ref _thresholdOffset, value, v => ThresholdOffset = v,
                                            "ThresholdOffset");
             }
         }
@@ -243,14 +227,12 @@ namespace Xbim.Ifc.SharedBldgElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _casingThickness;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _casingThickness, value, v => CasingThickness = v,
+                ModelHelper.SetModelValue(this, ref _casingThickness, value, v => CasingThickness = v,
                                            "CasingThickness");
             }
         }
@@ -263,12 +245,10 @@ namespace Xbim.Ifc.SharedBldgElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _casingDepth;
             }
-            set { ModelManager.SetModelValue(this, ref _casingDepth, value, v => CasingDepth = v, "CasingDepth"); }
+            set { ModelHelper.SetModelValue(this, ref _casingDepth, value, v => CasingDepth = v, "CasingDepth"); }
         }
 
         /// <summary>
@@ -279,14 +259,12 @@ namespace Xbim.Ifc.SharedBldgElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _shapeAspectStyle;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _shapeAspectStyle, value, v => ShapeAspectStyle = v,
+                ModelHelper.SetModelValue(this, ref _shapeAspectStyle, value, v => ShapeAspectStyle = v,
                                            "ShapeAspectStyle");
             }
         }

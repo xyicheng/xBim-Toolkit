@@ -37,14 +37,14 @@ namespace Xbim.Ifc.ActorResource
     public class IfcPersonAndOrganization : IfcActorSelect, ISupportChangeNotification, INotifyPropertyChanged,
                                             IPersistIfcEntity, IfcObjectReferenceSelect, INotifyPropertyChanging
     {
-#if SupportActivation
+
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -73,7 +73,6 @@ namespace Xbim.Ifc.ActorResource
 
         #endregion
 
-#endif
 
         #region Fields and Events
 
@@ -98,12 +97,10 @@ namespace Xbim.Ifc.ActorResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _thePerson;
             }
-            set { ModelManager.SetModelValue(this, ref _thePerson, value, v => ThePerson = v, "ThePerson"); }
+            set { ModelHelper.SetModelValue(this, ref _thePerson, value, v => ThePerson = v, "ThePerson"); }
         }
 
         /// <summary>
@@ -115,14 +112,12 @@ namespace Xbim.Ifc.ActorResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _theOrganization;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _theOrganization, value, v => TheOrganization = v,
+                ModelHelper.SetModelValue(this, ref _theOrganization, value, v => TheOrganization = v,
                                            "TheOrganization");
             }
         }
@@ -136,12 +131,10 @@ namespace Xbim.Ifc.ActorResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _roles;
             }
-            private set { ModelManager.SetModelValue(this, ref _roles, value, v => Roles = v, "Roles"); }
+            private set { ModelHelper.SetModelValue(this, ref _roles, value, v => Roles = v, "Roles"); }
         }
 
         #endregion
@@ -235,7 +228,7 @@ namespace Xbim.Ifc.ActorResource
                 _roles.Clear_Reversible();
             foreach (IfcRole item in roles)
             {
-                IfcActorRole actorRole = ModelManager.ModelOf(this).New<IfcActorRole>();
+                IfcActorRole actorRole = ModelOf.New<IfcActorRole>();
                 actorRole.Role = item;
                 _roles.Add_Reversible(actorRole);
             }

@@ -37,14 +37,12 @@ namespace Xbim.Ifc.PresentationDefinitionResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _fillStyleTarget;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _fillStyleTarget, value, v => FillStyleTarget = v,
+                ModelHelper.SetModelValue(this, ref _fillStyleTarget, value, v => FillStyleTarget = v,
                                            "FillStyleTarget");
             }
         }
@@ -61,12 +59,10 @@ namespace Xbim.Ifc.PresentationDefinitionResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _globalOrLocal;
             }
-            set { ModelManager.SetModelValue(this, ref _globalOrLocal, value, v => GlobalOrLocal = v, "GlobalOrLocal"); }
+            set { ModelHelper.SetModelValue(this, ref _globalOrLocal, value, v => GlobalOrLocal = v, "GlobalOrLocal"); }
         }
 
         public override void IfcParse(int propIndex, IPropertyValue value)

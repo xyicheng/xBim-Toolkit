@@ -44,12 +44,10 @@ namespace Xbim.Ifc.PresentationAppearanceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _fillStyles;
             }
-            set { ModelManager.SetModelValue(this, ref _fillStyles, value, v => FillStyles = v, "FillStyles "); }
+            set { ModelHelper.SetModelValue(this, ref _fillStyles, value, v => FillStyles = v, "FillStyles "); }
         }
 
 

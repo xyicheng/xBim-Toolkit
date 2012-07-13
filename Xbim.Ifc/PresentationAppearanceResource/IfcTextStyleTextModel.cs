@@ -26,14 +26,13 @@ namespace Xbim.Ifc.PresentationAppearanceResource
     public class IfcTextStyleTextModel : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                          INotifyPropertyChanging
     {
-#if SupportActivation
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -62,8 +61,6 @@ namespace Xbim.Ifc.PresentationAppearanceResource
 
         #endregion
 
-#endif
-
         #region Fields
 
         private IfcSizeSelect _textIndent;
@@ -83,12 +80,10 @@ namespace Xbim.Ifc.PresentationAppearanceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _textIndent;
             }
-            set { ModelManager.SetModelValue(this, ref _textIndent, value, v => TextIndent = v, "TextIndent"); }
+            set { ModelHelper.SetModelValue(this, ref _textIndent, value, v => TextIndent = v, "TextIndent"); }
         }
 
         [IfcAttribute(2, IfcAttributeState.Optional)]
@@ -96,12 +91,10 @@ namespace Xbim.Ifc.PresentationAppearanceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _textAlign;
             }
-            set { ModelManager.SetModelValue(this, ref _textAlign, value, v => TextAlign = v, "TextAlign"); }
+            set { ModelHelper.SetModelValue(this, ref _textAlign, value, v => TextAlign = v, "TextAlign"); }
         }
 
         [IfcAttribute(3, IfcAttributeState.Optional)]
@@ -109,12 +102,10 @@ namespace Xbim.Ifc.PresentationAppearanceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _textDecoration;
             }
-            set { ModelManager.SetModelValue(this, ref _textDecoration, value, v => TextDecoration = v, "TextDecoration"); }
+            set { ModelHelper.SetModelValue(this, ref _textDecoration, value, v => TextDecoration = v, "TextDecoration"); }
         }
 
         [IfcAttribute(4, IfcAttributeState.Optional)]
@@ -122,12 +113,10 @@ namespace Xbim.Ifc.PresentationAppearanceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _letterSpacing;
             }
-            set { ModelManager.SetModelValue(this, ref _letterSpacing, value, v => LetterSpacing = v, "LetterSpacing"); }
+            set { ModelHelper.SetModelValue(this, ref _letterSpacing, value, v => LetterSpacing = v, "LetterSpacing"); }
         }
 
         [IfcAttribute(5, IfcAttributeState.Optional)]
@@ -135,12 +124,10 @@ namespace Xbim.Ifc.PresentationAppearanceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _wordSpacing;
             }
-            set { ModelManager.SetModelValue(this, ref _wordSpacing, value, v => WordSpacing = v, "WordSpacing"); }
+            set { ModelHelper.SetModelValue(this, ref _wordSpacing, value, v => WordSpacing = v, "WordSpacing"); }
         }
 
         [IfcAttribute(6, IfcAttributeState.Optional)]
@@ -148,12 +135,10 @@ namespace Xbim.Ifc.PresentationAppearanceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _textTransform;
             }
-            set { ModelManager.SetModelValue(this, ref _textTransform, value, v => TextTransform = v, "TextTransform"); }
+            set { ModelHelper.SetModelValue(this, ref _textTransform, value, v => TextTransform = v, "TextTransform"); }
         }
 
         [IfcAttribute(7, IfcAttributeState.Optional)]
@@ -161,12 +146,10 @@ namespace Xbim.Ifc.PresentationAppearanceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _lineHeight;
             }
-            set { ModelManager.SetModelValue(this, ref _lineHeight, value, v => LineHeight = v, "LineHeight"); }
+            set { ModelHelper.SetModelValue(this, ref _lineHeight, value, v => LineHeight = v, "LineHeight"); }
         }
 
         #endregion

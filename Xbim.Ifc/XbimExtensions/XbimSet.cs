@@ -123,9 +123,7 @@ namespace Xbim.XbimExtensions
         {
             int oldCount = m_set.Count;
             m_set.Add_Reversible(item);
-#if SupportActivation
             if (_owningEntity.Activated) _owningEntity.ModelOf.Activate(_owningEntity, true);
-#endif
             NotifyCollectionChangedEventHandler collChanged = _collectionChanged;
             if (collChanged != null)
                 collChanged(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item));
@@ -138,9 +136,7 @@ namespace Xbim.XbimExtensions
         {
             int oldCount = Count;
             m_set.Clear_Reversible();
-#if SupportActivation
             if (_owningEntity.Activated) _owningEntity.ModelOf.Activate(_owningEntity, true);
-#endif
             NotifyCollectionChangedEventHandler collChanged = _collectionChanged;
             if (collChanged != null)
                 collChanged(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
@@ -170,9 +166,7 @@ namespace Xbim.XbimExtensions
             bool removed = m_set.Remove_Reversible(item);
             if (removed)
             {
-#if SupportActivation
                 if (_owningEntity.Activated) _owningEntity.ModelOf.Activate(_owningEntity, true);
-#endif
                 NotifyCollectionChangedEventHandler collChanged = _collectionChanged;
                 if (collChanged != null)
                     collChanged(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, item));

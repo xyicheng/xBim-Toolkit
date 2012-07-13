@@ -38,14 +38,12 @@ namespace Xbim.Ifc.GeometricConstraintResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _surfaceOnRelatingElement;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _surfaceOnRelatingElement, value, v => SurfaceOnRelatingElement = v,
+                ModelHelper.SetModelValue(this, ref _surfaceOnRelatingElement, value, v => SurfaceOnRelatingElement = v,
                                            "SurfaceOnRelatingElement");
             }
         }
@@ -55,14 +53,12 @@ namespace Xbim.Ifc.GeometricConstraintResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _surfaceOnRelatedElement;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _surfaceOnRelatedElement, value, v => SurfaceOnRelatedElement = v,
+                ModelHelper.SetModelValue(this, ref _surfaceOnRelatedElement, value, v => SurfaceOnRelatedElement = v,
                                            "SurfaceOnRelatedElement");
             }
         }

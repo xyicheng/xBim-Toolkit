@@ -42,7 +42,7 @@ namespace Xbim.Ifc.Kernel
         {
             get
             {
-                IEnumerable<IfcRelAssignsToGroup> grps = ModelManager.ModelOf(this).InstancesWhere<IfcRelAssignsToGroup>(r => r.RelatingGroup == this);
+                IEnumerable<IfcRelAssignsToGroup> grps = ModelOf.InstancesWhere<IfcRelAssignsToGroup>(r => r.RelatingGroup == this);
                 return grps.FirstOrDefault(); //should onl ever be one
             }
         }

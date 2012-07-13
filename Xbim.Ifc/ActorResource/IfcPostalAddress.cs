@@ -79,14 +79,12 @@ namespace Xbim.Ifc.ActorResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _internalLocation;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _internalLocation, value, v => InternalLocation = v,
+                ModelHelper.SetModelValue(this, ref _internalLocation, value, v => InternalLocation = v,
                                            "InternalLocation");
             }
         }
@@ -104,12 +102,10 @@ namespace Xbim.Ifc.ActorResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _addressLines;
             }
-            set { ModelManager.SetModelValue(this, ref _addressLines, value, v => _addressLines = v, "AddressLines"); }
+            set { ModelHelper.SetModelValue(this, ref _addressLines, value, v => _addressLines = v, "AddressLines"); }
         }
 
 
@@ -122,16 +118,14 @@ namespace Xbim.Ifc.ActorResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _postalBox;
             }
             set
             {
                 if (_postalBox != value)
                 {
-                    ModelManager.SetModelValue(this, ref _postalBox, value, v => PostalBox = v, "PostalBox");
+                    ModelHelper.SetModelValue(this, ref _postalBox, value, v => PostalBox = v, "PostalBox");
                 }
             }
         }
@@ -146,12 +140,10 @@ namespace Xbim.Ifc.ActorResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _town;
             }
-            set { ModelManager.SetModelValue(this, ref _town, value, v => Town = v, "Town"); }
+            set { ModelHelper.SetModelValue(this, ref _town, value, v => Town = v, "Town"); }
         }
 
 
@@ -167,12 +159,10 @@ namespace Xbim.Ifc.ActorResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _region;
             }
-            set { ModelManager.SetModelValue(this, ref _region, value, v => Region = v, "Region"); }
+            set { ModelHelper.SetModelValue(this, ref _region, value, v => Region = v, "Region"); }
         }
 
 
@@ -185,12 +175,10 @@ namespace Xbim.Ifc.ActorResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _postalCode;
             }
-            set { ModelManager.SetModelValue(this, ref _postalCode, value, v => PostalCode = v, "PostalCode"); }
+            set { ModelHelper.SetModelValue(this, ref _postalCode, value, v => PostalCode = v, "PostalCode"); }
         }
 
         /// <summary>
@@ -202,12 +190,10 @@ namespace Xbim.Ifc.ActorResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _country;
             }
-            set { ModelManager.SetModelValue(this, ref _country, value, v => Country = v, "Country"); }
+            set { ModelHelper.SetModelValue(this, ref _country, value, v => Country = v, "Country"); }
         }
 
         #endregion

@@ -38,14 +38,13 @@ namespace Xbim.Ifc.CostResource
     public class IfcCurrencyRelationship : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                            INotifyPropertyChanging
     {
-#if SupportActivation
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -74,8 +73,6 @@ namespace Xbim.Ifc.CostResource
 
         #endregion
 
-#endif
-
         #region Fields
 
         private IfcMonetaryUnit _relatingMonetaryUnit;
@@ -94,14 +91,12 @@ namespace Xbim.Ifc.CostResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _relatingMonetaryUnit;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _relatingMonetaryUnit, value, v => RelatingMonetaryUnit = v,
+                ModelHelper.SetModelValue(this, ref _relatingMonetaryUnit, value, v => RelatingMonetaryUnit = v,
                                            "RelatingMonetaryUnit");
             }
         }
@@ -114,14 +109,12 @@ namespace Xbim.Ifc.CostResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _relatedMonetaryUnit;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _relatedMonetaryUnit, value, v => RelatedMonetaryUnit = v,
+                ModelHelper.SetModelValue(this, ref _relatedMonetaryUnit, value, v => RelatedMonetaryUnit = v,
                                            "RelatedMonetaryUnit");
             }
         }
@@ -134,12 +127,10 @@ namespace Xbim.Ifc.CostResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _exchangeRate;
             }
-            set { ModelManager.SetModelValue(this, ref _exchangeRate, value, v => ExchangeRate = v, "ExchangeRate"); }
+            set { ModelHelper.SetModelValue(this, ref _exchangeRate, value, v => ExchangeRate = v, "ExchangeRate"); }
         }
 
         /// <summary>
@@ -150,12 +141,10 @@ namespace Xbim.Ifc.CostResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _rateDateTime;
             }
-            set { ModelManager.SetModelValue(this, ref _rateDateTime, value, v => RateDateTime = v, "RateDateTime"); }
+            set { ModelHelper.SetModelValue(this, ref _rateDateTime, value, v => RateDateTime = v, "RateDateTime"); }
         }
 
         /// <summary>
@@ -166,12 +155,10 @@ namespace Xbim.Ifc.CostResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _rateSource;
             }
-            set { ModelManager.SetModelValue(this, ref _rateSource, value, v => RateSource = v, "RateSource"); }
+            set { ModelHelper.SetModelValue(this, ref _rateSource, value, v => RateSource = v, "RateSource"); }
         }
 
         #region INotifyPropertyChanged Members

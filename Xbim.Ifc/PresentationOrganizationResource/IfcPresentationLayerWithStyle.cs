@@ -64,12 +64,10 @@ namespace Xbim.Ifc.PresentationOrganizationResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _layerOn;
             }
-            set { ModelManager.SetModelValue(this, ref _layerOn, value, v => LayerOn = v, "LayerOn"); }
+            set { ModelHelper.SetModelValue(this, ref _layerOn, value, v => LayerOn = v, "LayerOn"); }
         }
 
         /// <summary>
@@ -80,12 +78,10 @@ namespace Xbim.Ifc.PresentationOrganizationResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _layerFrozen;
             }
-            set { ModelManager.SetModelValue(this, ref _layerFrozen, value, v => LayerFrozen = v, "LayerFrozen"); }
+            set { ModelHelper.SetModelValue(this, ref _layerFrozen, value, v => LayerFrozen = v, "LayerFrozen"); }
         }
 
         /// <summary>
@@ -96,12 +92,10 @@ namespace Xbim.Ifc.PresentationOrganizationResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _layerBlocked;
             }
-            set { ModelManager.SetModelValue(this, ref _layerBlocked, value, v => LayerBlocked = v, "LayerBlocked"); }
+            set { ModelHelper.SetModelValue(this, ref _layerBlocked, value, v => LayerBlocked = v, "LayerBlocked"); }
         }
 
         /// <summary>
@@ -112,12 +106,10 @@ namespace Xbim.Ifc.PresentationOrganizationResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _layerStyles;
             }
-            set { ModelManager.SetModelValue(this, ref _layerStyles, value, v => LayerStyles = v, "LayerStyles"); }
+            set { ModelHelper.SetModelValue(this, ref _layerStyles, value, v => LayerStyles = v, "LayerStyles"); }
         }
 
         public override void IfcParse(int propIndex, IPropertyValue value)

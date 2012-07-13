@@ -137,14 +137,12 @@ namespace Xbim.Ifc.ProductExtension
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _interiorOrExteriorSpace;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _interiorOrExteriorSpace, value, v => InteriorOrExteriorSpace = v,
+                ModelHelper.SetModelValue(this, ref _interiorOrExteriorSpace, value, v => InteriorOrExteriorSpace = v,
                                            "InteriorOrExteriorSpace");
             }
         }
@@ -159,14 +157,12 @@ namespace Xbim.Ifc.ProductExtension
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _elevationWithFlooring;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _elevationWithFlooring, value, v => ElevationWithFlooring = v,
+                ModelHelper.SetModelValue(this, ref _elevationWithFlooring, value, v => ElevationWithFlooring = v,
                                            "ElevationWithFlooring");
             }
         }
@@ -215,7 +211,7 @@ namespace Xbim.Ifc.ProductExtension
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class)]
         public IEnumerable<IfcRelCoversSpaces> HasCoverings
         {
-            get { return ModelManager.ModelOf(this).InstancesWhere<IfcRelCoversSpaces>(r => r.RelatedSpace == this); }
+            get { return ModelOf.InstancesWhere<IfcRelCoversSpaces>(r => r.RelatedSpace == this); }
         }
 
         /// <summary>
@@ -225,7 +221,7 @@ namespace Xbim.Ifc.ProductExtension
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class)]
         protected IEnumerable<IfcRelSpaceBoundary> BoundedBy
         {
-            get { return ModelManager.ModelOf(this).InstancesWhere<IfcRelSpaceBoundary>(r => r.RelatingSpace == this); }
+            get { return ModelOf.InstancesWhere<IfcRelSpaceBoundary>(r => r.RelatingSpace == this); }
         }
 
         #endregion

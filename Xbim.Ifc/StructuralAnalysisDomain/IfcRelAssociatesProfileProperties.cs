@@ -48,14 +48,12 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _relatingProfileProperties;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _relatingProfileProperties, value,
+                ModelHelper.SetModelValue(this, ref _relatingProfileProperties, value,
                                            v => RelatingProfileProperties = v, "RelatingProfileProperties");
             }
         }
@@ -68,14 +66,12 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _profileSectionLocation;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _profileSectionLocation, value, v => ProfileSectionLocation = v,
+                ModelHelper.SetModelValue(this, ref _profileSectionLocation, value, v => ProfileSectionLocation = v,
                                            "ProfileSectionLocation");
             }
         }
@@ -91,14 +87,12 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _profileOrientation;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _profileOrientation, value, v => ProfileOrientation = v,
+                ModelHelper.SetModelValue(this, ref _profileOrientation, value, v => ProfileOrientation = v,
                                            "ProfileOrientation");
             }
         }

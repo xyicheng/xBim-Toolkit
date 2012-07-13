@@ -44,14 +44,12 @@ namespace Xbim.Ifc.Kernel
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _relatingControl;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _relatingControl, value, v => RelatingControl = v,
+                ModelHelper.SetModelValue(this, ref _relatingControl, value, v => RelatingControl = v,
                                            "RelatingControl");
             }
         }

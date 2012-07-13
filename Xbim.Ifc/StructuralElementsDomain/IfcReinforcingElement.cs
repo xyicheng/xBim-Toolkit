@@ -43,12 +43,10 @@ namespace Xbim.Ifc.StructuralElementsDomain
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _steelGrade;
             }
-            set { ModelManager.SetModelValue(this, ref _steelGrade, value, v => SteelGrade = v, "SteelGrade"); }
+            set { ModelHelper.SetModelValue(this, ref _steelGrade, value, v => SteelGrade = v, "SteelGrade"); }
         }
 
         #endregion

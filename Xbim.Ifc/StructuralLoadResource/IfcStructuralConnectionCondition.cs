@@ -26,14 +26,13 @@ namespace Xbim.Ifc.StructuralLoadResource
     public abstract class IfcStructuralConnectionCondition : INotifyPropertyChanged, ISupportChangeNotification,
                                                              IPersistIfcEntity, INotifyPropertyChanging
     {
-#if SupportActivation
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -62,8 +61,6 @@ namespace Xbim.Ifc.StructuralLoadResource
 
         #endregion
 
-#endif
-
         #region Fields
 
         private IfcLabel? _name;
@@ -80,12 +77,10 @@ namespace Xbim.Ifc.StructuralLoadResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _name;
             }
-            set { ModelManager.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
+            set { ModelHelper.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
         }
 
         #endregion

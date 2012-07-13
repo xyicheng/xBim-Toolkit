@@ -47,9 +47,7 @@ namespace Xbim.Ifc.Kernel
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _relatedObjects;
             }
         }
@@ -62,14 +60,12 @@ namespace Xbim.Ifc.Kernel
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _relatedObjectsType;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _relatedObjectsType, value, v => RelatedObjectsType = v,
+                ModelHelper.SetModelValue(this, ref _relatedObjectsType, value, v => RelatedObjectsType = v,
                                            "RelatedObjectsType");
             }
         }

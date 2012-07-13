@@ -78,12 +78,10 @@ namespace Xbim.Ifc.ProductExtension
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _relatingSpace;
             }
-            set { ModelManager.SetModelValue(this, ref _relatingSpace, value, v => RelatingSpace = v, "RelatingSpace"); }
+            set { ModelHelper.SetModelValue(this, ref _relatingSpace, value, v => RelatingSpace = v, "RelatingSpace"); }
         }
 
         /// <summary>
@@ -94,14 +92,12 @@ namespace Xbim.Ifc.ProductExtension
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _relatedBuildingElement;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _relatedBuildingElement, value, v => RelatedBuildingElement = v,
+                ModelHelper.SetModelValue(this, ref _relatedBuildingElement, value, v => RelatedBuildingElement = v,
                                            "RelatedBuildingElement");
             }
         }
@@ -114,14 +110,12 @@ namespace Xbim.Ifc.ProductExtension
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _connectionGeometry;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _connectionGeometry, value, v => ConnectionGeometry = v,
+                ModelHelper.SetModelValue(this, ref _connectionGeometry, value, v => ConnectionGeometry = v,
                                            "ConnectionGeometry");
             }
         }
@@ -134,14 +128,12 @@ namespace Xbim.Ifc.ProductExtension
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _physicalOrVirtualBoundary;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _physicalOrVirtualBoundary, value,
+                ModelHelper.SetModelValue(this, ref _physicalOrVirtualBoundary, value,
                                            v => PhysicalOrVirtualBoundary = v, "PhysicalOrVirtualBoundary");
             }
         }
@@ -154,14 +146,12 @@ namespace Xbim.Ifc.ProductExtension
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _internalOrExternalBoundary;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _internalOrExternalBoundary, value,
+                ModelHelper.SetModelValue(this, ref _internalOrExternalBoundary, value,
                                            v => InternalOrExternalBoundary = v, "InternalOrExternalBoundary");
             }
         }

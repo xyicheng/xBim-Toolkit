@@ -40,12 +40,10 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _appliedLoad;
             }
-            set { ModelManager.SetModelValue(this, ref _appliedLoad, value, v => AppliedLoad = v, "AppliedLoad"); }
+            set { ModelHelper.SetModelValue(this, ref _appliedLoad, value, v => AppliedLoad = v, "AppliedLoad"); }
         }
 
         [IfcAttribute(9, IfcAttributeState.Mandatory)]
@@ -53,12 +51,10 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _globalOrLocal;
             }
-            set { ModelManager.SetModelValue(this, ref _globalOrLocal, value, v => GlobalOrLocal = v, "GlobalOrLocal"); }
+            set { ModelHelper.SetModelValue(this, ref _globalOrLocal, value, v => GlobalOrLocal = v, "GlobalOrLocal"); }
         }
 
         public override void IfcParse(int propIndex, IPropertyValue value)

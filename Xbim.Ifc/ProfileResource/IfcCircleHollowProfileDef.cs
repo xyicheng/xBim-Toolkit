@@ -37,12 +37,10 @@ namespace Xbim.Ifc.ProfileResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _wallThickness;
             }
-            set { ModelManager.SetModelValue(this, ref _wallThickness, value, v => WallThickness = v, "WallThickness"); }
+            set { ModelHelper.SetModelValue(this, ref _wallThickness, value, v => WallThickness = v, "WallThickness"); }
         }
 
         #endregion

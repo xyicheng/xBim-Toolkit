@@ -45,14 +45,12 @@ namespace Xbim.Ifc.SharedBldgElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _relatingPriorities;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _relatingPriorities, value, v => RelatingPriorities = v,
+                ModelHelper.SetModelValue(this, ref _relatingPriorities, value, v => RelatingPriorities = v,
                                            "RelatingPriorities");
             }
         }
@@ -65,14 +63,12 @@ namespace Xbim.Ifc.SharedBldgElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _relatedPriorities;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _relatedPriorities, value, v => RelatedPriorities = v,
+                ModelHelper.SetModelValue(this, ref _relatedPriorities, value, v => RelatedPriorities = v,
                                            "RelatedPriorities");
             }
         }
@@ -85,14 +81,12 @@ namespace Xbim.Ifc.SharedBldgElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _relatedConnectionType;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _relatedConnectionType, value, v => RelatedConnectionType = v,
+                ModelHelper.SetModelValue(this, ref _relatedConnectionType, value, v => RelatedConnectionType = v,
                                            "RelatedConnectionType");
             }
         }
@@ -105,14 +99,12 @@ namespace Xbim.Ifc.SharedBldgElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _relatingConnectionType;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _relatingConnectionType, value, v => RelatingConnectionType = v,
+                ModelHelper.SetModelValue(this, ref _relatingConnectionType, value, v => RelatingConnectionType = v,
                                            "RelatingConnectionType");
             }
         }

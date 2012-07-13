@@ -41,12 +41,10 @@ namespace Xbim.Ifc.ProfileResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _overallWidth;
             }
-            set { ModelManager.SetModelValue(this, ref _overallWidth, value, v => OverallWidth = v, "OverallWidth"); }
+            set { ModelHelper.SetModelValue(this, ref _overallWidth, value, v => OverallWidth = v, "OverallWidth"); }
         }
 
         [IfcAttribute(5, IfcAttributeState.Mandatory)]
@@ -54,12 +52,10 @@ namespace Xbim.Ifc.ProfileResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _overallDepth;
             }
-            set { ModelManager.SetModelValue(this, ref _overallDepth, value, v => OverallDepth = v, "OverallDepth"); }
+            set { ModelHelper.SetModelValue(this, ref _overallDepth, value, v => OverallDepth = v, "OverallDepth"); }
         }
 
         [IfcAttribute(6, IfcAttributeState.Mandatory)]
@@ -67,12 +63,10 @@ namespace Xbim.Ifc.ProfileResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _webThickness;
             }
-            set { ModelManager.SetModelValue(this, ref _webThickness, value, v => WebThickness = v, "WebThickness"); }
+            set { ModelHelper.SetModelValue(this, ref _webThickness, value, v => WebThickness = v, "WebThickness"); }
         }
 
         [IfcAttribute(7, IfcAttributeState.Mandatory)]
@@ -80,14 +74,12 @@ namespace Xbim.Ifc.ProfileResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _flangeThickness;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _flangeThickness, value, v => FlangeThickness = v,
+                ModelHelper.SetModelValue(this, ref _flangeThickness, value, v => FlangeThickness = v,
                                            "FlangeThickness");
             }
         }
@@ -97,12 +89,10 @@ namespace Xbim.Ifc.ProfileResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _filletRadius;
             }
-            set { ModelManager.SetModelValue(this, ref _filletRadius, value, v => FilletRadius = v, "FilletRadius"); }
+            set { ModelHelper.SetModelValue(this, ref _filletRadius, value, v => FilletRadius = v, "FilletRadius"); }
         }
 
         #endregion

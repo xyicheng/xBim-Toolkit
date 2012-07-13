@@ -40,12 +40,10 @@ namespace Xbim.Ifc.ConstructionMgmtDomain
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _resourceGroup;
             }
-            set { ModelManager.SetModelValue(this, ref _resourceGroup, value, v => ResourceGroup = v, "ResourceGroup"); }
+            set { ModelHelper.SetModelValue(this, ref _resourceGroup, value, v => ResourceGroup = v, "ResourceGroup"); }
         }
 
 
@@ -57,14 +55,12 @@ namespace Xbim.Ifc.ConstructionMgmtDomain
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _resourceIdentifier;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _resourceIdentifier, value, v => ResourceIdentifier = v,
+                ModelHelper.SetModelValue(this, ref _resourceIdentifier, value, v => ResourceIdentifier = v,
                                            "ResourceIdentifier");
             }
         }
@@ -77,14 +73,12 @@ namespace Xbim.Ifc.ConstructionMgmtDomain
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _resourceConsumption;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _resourceConsumption, value, v => ResourceConsumption = v,
+                ModelHelper.SetModelValue(this, ref _resourceConsumption, value, v => ResourceConsumption = v,
                                            "ResourceConsumption");
             }
         }
@@ -97,12 +91,10 @@ namespace Xbim.Ifc.ConstructionMgmtDomain
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _baseQuantity;
             }
-            set { ModelManager.SetModelValue(this, ref _baseQuantity, value, v => BaseQuantity = v, "BaseQuantity"); }
+            set { ModelHelper.SetModelValue(this, ref _baseQuantity, value, v => BaseQuantity = v, "BaseQuantity"); }
         }
 
         #endregion

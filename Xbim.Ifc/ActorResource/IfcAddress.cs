@@ -129,14 +129,14 @@ namespace Xbim.Ifc.ActorResource
     public abstract class IfcAddress : IPersistIfcEntity, IFormattable, ISupportChangeNotification,
                                        INotifyPropertyChanged, IfcObjectReferenceSelect, INotifyPropertyChanging
     {
-#if SupportActivation
+
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -165,7 +165,7 @@ namespace Xbim.Ifc.ActorResource
 
         #endregion
 
-#endif
+
 
         #region Fields and Events
 
@@ -189,9 +189,7 @@ namespace Xbim.Ifc.ActorResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _purpose;
             }
             set
@@ -202,7 +200,7 @@ namespace Xbim.Ifc.ActorResource
                         throw new ArgumentException(
                             "An Address Type may not be explicitly set as UserDefined. Set the value of the UserDefinedPurpose Property instead");
 
-                    ModelManager.SetModelValue(this, ref _purpose, value, v => Purpose = v, "Purpose");
+                    ModelHelper.SetModelValue(this, ref _purpose, value, v => Purpose = v, "Purpose");
                 }
             }
         }
@@ -215,12 +213,10 @@ namespace Xbim.Ifc.ActorResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _description;
             }
-            set { ModelManager.SetModelValue(this, ref _description, value, v => Description = v, "Description"); }
+            set { ModelHelper.SetModelValue(this, ref _description, value, v => Description = v, "Description"); }
         }
 
         /// <summary>
@@ -231,14 +227,12 @@ namespace Xbim.Ifc.ActorResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _userDefinedPurpose;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _userDefinedPurpose, value, v => UserDefinedPurpose = v,
+                ModelHelper.SetModelValue(this, ref _userDefinedPurpose, value, v => UserDefinedPurpose = v,
                                            "UserDefinedPurpose");
             }
         }

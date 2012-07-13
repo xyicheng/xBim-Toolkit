@@ -52,7 +52,7 @@ namespace Xbim.Ifc.Extensions
         public static void SetExtendedSingleValue(this IfcMaterial material, string pSetName, string propertyName,
                                                   IfcValue value)
         {
-            IModel model = ModelManager.ModelOf(material);
+            IModel model = material.ModelOf;
             SetExtendedSingleValue(material, model, pSetName, propertyName, value);
         }
 
@@ -70,7 +70,7 @@ namespace Xbim.Ifc.Extensions
         public static IfcPropertySingleValue GetExtendedSingleValue(this IfcMaterial material, string pSetName,
                                                                     string propertyName)
         {
-            IModel model = ModelManager.ModelOf(material);
+            IModel model = material.ModelOf;
             return GetExtendedSingleValue(material, model, pSetName, propertyName);
         }
 
@@ -90,7 +90,7 @@ namespace Xbim.Ifc.Extensions
         public static IfcValue GetExtendedSingleValueValue(this IfcMaterial material, string pSetName,
                                                            string propertyName)
         {
-            IModel model = ModelManager.ModelOf(material);
+            IModel model = material.ModelOf;
             return GetExtendedSingleValueValue(material, model, pSetName, propertyName);
         }
 
@@ -108,7 +108,7 @@ namespace Xbim.Ifc.Extensions
 
         public static void DeleteExtendedSingleValue(this IfcMaterial material, string pSetName, string propertyName)
         {
-            IModel model = ModelManager.ModelOf(material);
+            IModel model = material.ModelOf;
             DeleteExtendedSingleValue(material, model, pSetName, propertyName);
         }
 
@@ -125,7 +125,7 @@ namespace Xbim.Ifc.Extensions
 
         public static IfcExtendedMaterialProperties GetExtendedProperties(this IfcMaterial material, string pSetName)
         {
-            IModel model = ModelManager.ModelOf(material);
+            IModel model = material.ModelOf;
             return GetExtendedProperties(material, model, pSetName);
         }
 
@@ -144,7 +144,7 @@ namespace Xbim.Ifc.Extensions
         public static Dictionary<IfcLabel, Dictionary<IfcIdentifier, IfcValue>> GetAllPropertySingleValues(
             this IfcMaterial material)
         {
-            IModel model = ModelManager.ModelOf(material);
+            IModel model = material.ModelOf;
             return GetAllPropertySingleValues(material, model);
         }
 

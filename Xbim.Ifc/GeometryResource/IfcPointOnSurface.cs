@@ -42,12 +42,10 @@ namespace Xbim.Ifc.GeometryResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _basisSurface;
             }
-            set { ModelManager.SetModelValue(this, ref _basisSurface, value, v => BasisSurface = v, "BasisSurface"); }
+            set { ModelHelper.SetModelValue(this, ref _basisSurface, value, v => BasisSurface = v, "BasisSurface"); }
         }
 
 
@@ -59,14 +57,12 @@ namespace Xbim.Ifc.GeometryResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _pointParameterU;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _pointParameterU, value, v => PointParameterU = v,
+                ModelHelper.SetModelValue(this, ref _pointParameterU, value, v => PointParameterU = v,
                                            "PointParameterU");
             }
         }
@@ -79,14 +75,12 @@ namespace Xbim.Ifc.GeometryResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _pointParameterV;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _pointParameterV, value, v => PointParameterV = v,
+                ModelHelper.SetModelValue(this, ref _pointParameterV, value, v => PointParameterV = v,
                                            "PointParameterV");
             }
         }

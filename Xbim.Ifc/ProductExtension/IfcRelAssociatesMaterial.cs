@@ -59,14 +59,12 @@ namespace Xbim.Ifc.ProductExtension
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _relatingMaterial;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _relatingMaterial, value, v => RelatingMaterial = v,
+                ModelHelper.SetModelValue(this, ref _relatingMaterial, value, v => RelatingMaterial = v,
                                            "RelatingMaterial");
             }
         }

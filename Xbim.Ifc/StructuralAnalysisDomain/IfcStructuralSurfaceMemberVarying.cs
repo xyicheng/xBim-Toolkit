@@ -47,14 +47,12 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _subsequentThickness;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _subsequentThickness, value, v => SubsequentThickness = v,
+                ModelHelper.SetModelValue(this, ref _subsequentThickness, value, v => SubsequentThickness = v,
                                            "SubsequentThickness");
             }
         }
@@ -64,14 +62,12 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _varyingThicknessLocation;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _varyingThicknessLocation, value, v => VaryingThicknessLocation = v,
+                ModelHelper.SetModelValue(this, ref _varyingThicknessLocation, value, v => VaryingThicknessLocation = v,
                                            "VaryingThicknessLocation");
             }
         }

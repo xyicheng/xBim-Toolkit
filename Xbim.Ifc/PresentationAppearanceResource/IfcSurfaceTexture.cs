@@ -44,14 +44,13 @@ namespace Xbim.Ifc.PresentationAppearanceResource
     public abstract class IfcSurfaceTexture : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                               INotifyPropertyChanging
     {
-#if SupportActivation
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -80,8 +79,6 @@ namespace Xbim.Ifc.PresentationAppearanceResource
 
         #endregion
 
-#endif
-
         #region Fields
 
         private IfcBoolean _repeatS;
@@ -103,12 +100,10 @@ namespace Xbim.Ifc.PresentationAppearanceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _repeatS;
             }
-            set { ModelManager.SetModelValue(this, ref _repeatS, value, v => RepeatS = v, "RepeatS"); }
+            set { ModelHelper.SetModelValue(this, ref _repeatS, value, v => RepeatS = v, "RepeatS"); }
         }
 
         /// <summary>
@@ -121,12 +116,10 @@ namespace Xbim.Ifc.PresentationAppearanceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _repeatT;
             }
-            set { ModelManager.SetModelValue(this, ref _repeatT, value, v => RepeatT = v, "RepeatT"); }
+            set { ModelHelper.SetModelValue(this, ref _repeatT, value, v => RepeatT = v, "RepeatT"); }
         }
 
         /// <summary>
@@ -137,12 +130,10 @@ namespace Xbim.Ifc.PresentationAppearanceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _textureType;
             }
-            set { ModelManager.SetModelValue(this, ref _textureType, value, v => TextureType = v, "TextureType"); }
+            set { ModelHelper.SetModelValue(this, ref _textureType, value, v => TextureType = v, "TextureType"); }
         }
 
         /// <summary>
@@ -158,14 +149,12 @@ namespace Xbim.Ifc.PresentationAppearanceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _textureTransform;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _textureTransform, value, v => TextureTransform = v,
+                ModelHelper.SetModelValue(this, ref _textureTransform, value, v => TextureTransform = v,
                                            "TextureTransform");
             }
         }

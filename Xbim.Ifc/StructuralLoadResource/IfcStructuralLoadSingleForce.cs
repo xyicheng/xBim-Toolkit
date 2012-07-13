@@ -45,12 +45,10 @@ namespace Xbim.Ifc.StructuralLoadResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _forceX;
             }
-            set { ModelManager.SetModelValue(this, ref _forceX, value, v => ForceX = v, "ForceX"); }
+            set { ModelHelper.SetModelValue(this, ref _forceX, value, v => ForceX = v, "ForceX"); }
         }
 
         /// <summary>
@@ -61,12 +59,10 @@ namespace Xbim.Ifc.StructuralLoadResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _forceY;
             }
-            set { ModelManager.SetModelValue(this, ref _forceY, value, v => ForceY = v, "ForceY"); }
+            set { ModelHelper.SetModelValue(this, ref _forceY, value, v => ForceY = v, "ForceY"); }
         }
 
         /// <summary>
@@ -77,12 +73,10 @@ namespace Xbim.Ifc.StructuralLoadResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _forceZ;
             }
-            set { ModelManager.SetModelValue(this, ref _forceZ, value, v => ForceZ = v, "ForceZ"); }
+            set { ModelHelper.SetModelValue(this, ref _forceZ, value, v => ForceZ = v, "ForceZ"); }
         }
 
         /// <summary>
@@ -93,12 +87,10 @@ namespace Xbim.Ifc.StructuralLoadResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _momentX;
             }
-            set { ModelManager.SetModelValue(this, ref _momentX, value, v => MomentX = v, "MomentX"); }
+            set { ModelHelper.SetModelValue(this, ref _momentX, value, v => MomentX = v, "MomentX"); }
         }
 
         /// <summary>
@@ -109,12 +101,10 @@ namespace Xbim.Ifc.StructuralLoadResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _momentY;
             }
-            set { ModelManager.SetModelValue(this, ref _momentY, value, v => MomentY = v, "MomentY"); }
+            set { ModelHelper.SetModelValue(this, ref _momentY, value, v => MomentY = v, "MomentY"); }
         }
 
         /// <summary>
@@ -125,12 +115,10 @@ namespace Xbim.Ifc.StructuralLoadResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _momentZ;
             }
-            set { ModelManager.SetModelValue(this, ref _momentZ, value, v => MomentZ = v, "MomentZ"); }
+            set { ModelHelper.SetModelValue(this, ref _momentZ, value, v => MomentZ = v, "MomentZ"); }
         }
 
         #endregion

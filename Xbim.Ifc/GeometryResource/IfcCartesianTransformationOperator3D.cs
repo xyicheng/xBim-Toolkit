@@ -53,12 +53,10 @@ namespace Xbim.Ifc.GeometryResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _axis3;
             }
-            set { ModelManager.SetModelValue(this, ref _axis3, value, v => Axis3 = v, "Axis3"); }
+            set { ModelHelper.SetModelValue(this, ref _axis3, value, v => Axis3 = v, "Axis3"); }
         }
 
         public override void IfcParse(int propIndex, IPropertyValue value)

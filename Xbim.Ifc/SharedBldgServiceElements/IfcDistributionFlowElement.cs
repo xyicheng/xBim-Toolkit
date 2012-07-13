@@ -30,7 +30,7 @@ namespace Xbim.Ifc.SharedBldgServiceElements
             get
             {
                 return
-                    ModelManager.ModelOf(this).InstancesWhere<IfcRelFlowControlElements>(
+                    ModelOf.InstancesWhere<IfcRelFlowControlElements>(
                         r => (r.RelatingFlowElement == this));
             }
         }

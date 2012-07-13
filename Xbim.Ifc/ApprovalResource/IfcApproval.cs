@@ -28,14 +28,14 @@ namespace Xbim.Ifc.ApprovalResource
     public class IfcApproval : IPersistIfcEntity, ISupportChangeNotification, INotifyPropertyChanged,
                                INotifyPropertyChanging
     {
-#if SupportActivation
+
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -64,7 +64,6 @@ namespace Xbim.Ifc.ApprovalResource
 
         #endregion
 
-#endif
 
         #region Fields
 
@@ -88,12 +87,10 @@ namespace Xbim.Ifc.ApprovalResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _identifier;
             }
-            set { ModelManager.SetModelValue(this, ref _identifier, value, v => Identifier = v, "Identifier"); }
+            set { ModelHelper.SetModelValue(this, ref _identifier, value, v => Identifier = v, "Identifier"); }
         }
 
         /// <summary>
@@ -104,12 +101,10 @@ namespace Xbim.Ifc.ApprovalResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _name;
             }
-            set { ModelManager.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
+            set { ModelHelper.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
         }
 
         /// <summary>
@@ -120,12 +115,10 @@ namespace Xbim.Ifc.ApprovalResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _description;
             }
-            set { ModelManager.SetModelValue(this, ref _description, value, v => Description = v, "Description"); }
+            set { ModelHelper.SetModelValue(this, ref _description, value, v => Description = v, "Description"); }
         }
 
         /// <summary>
@@ -136,14 +129,12 @@ namespace Xbim.Ifc.ApprovalResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _approvalDateTime;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _approvalDateTime, value, v => ApprovalDateTime = v,
+                ModelHelper.SetModelValue(this, ref _approvalDateTime, value, v => ApprovalDateTime = v,
                                            "ApprovalDateTime");
             }
         }
@@ -156,12 +147,10 @@ namespace Xbim.Ifc.ApprovalResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _approvalStatus;
             }
-            set { ModelManager.SetModelValue(this, ref _approvalStatus, value, v => ApprovalStatus = v, "ApprovalStatus"); }
+            set { ModelHelper.SetModelValue(this, ref _approvalStatus, value, v => ApprovalStatus = v, "ApprovalStatus"); }
         }
 
         /// <summary>
@@ -172,12 +161,10 @@ namespace Xbim.Ifc.ApprovalResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _approvalLevel;
             }
-            set { ModelManager.SetModelValue(this, ref _approvalLevel, value, v => ApprovalLevel = v, "ApprovalLevel"); }
+            set { ModelHelper.SetModelValue(this, ref _approvalLevel, value, v => ApprovalLevel = v, "ApprovalLevel"); }
         }
 
         /// <summary>
@@ -188,14 +175,12 @@ namespace Xbim.Ifc.ApprovalResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _approvalQualifier;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _approvalQualifier, value, v => ApprovalQualifier = v,
+                ModelHelper.SetModelValue(this, ref _approvalQualifier, value, v => ApprovalQualifier = v,
                                            "ApprovalQualifier");
             }
         }
@@ -213,7 +198,7 @@ namespace Xbim.Ifc.ApprovalResource
             get
             {
                 return
-                    ModelManager.ModelOf(this).InstancesWhere<IfcResourceApprovalRelationship>(r => r.Approval == this);
+                    ModelOf.InstancesWhere<IfcResourceApprovalRelationship>(r => r.Approval == this);
             }
         }
 
@@ -223,7 +208,7 @@ namespace Xbim.Ifc.ApprovalResource
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class)]
         public IEnumerable<IfcApprovalActorRelationship> Actors
         {
-            get { return ModelManager.ModelOf(this).InstancesWhere<IfcApprovalActorRelationship>(r => r.Approval == this); }
+            get { return ModelOf.InstancesWhere<IfcApprovalActorRelationship>(r => r.Approval == this); }
         }
 
         /// <summary>
@@ -232,7 +217,7 @@ namespace Xbim.Ifc.ApprovalResource
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class)]
         public IEnumerable<IfcApprovalRelationship> IsRelatedWith
         {
-            get { return ModelManager.ModelOf(this).InstancesWhere<IfcApprovalRelationship>(r => r.RelatedApproval == this); }
+            get { return ModelOf.InstancesWhere<IfcApprovalRelationship>(r => r.RelatedApproval == this); }
         }
 
         /// <summary>
@@ -244,7 +229,7 @@ namespace Xbim.Ifc.ApprovalResource
             get
             {
                 return
-                    ModelManager.ModelOf(this).InstancesWhere<IfcApprovalRelationship>(r => r.RelatingApproval == this);
+                    ModelOf.InstancesWhere<IfcApprovalRelationship>(r => r.RelatingApproval == this);
             }
         }
 

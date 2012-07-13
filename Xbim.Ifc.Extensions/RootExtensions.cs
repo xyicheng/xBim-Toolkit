@@ -151,7 +151,7 @@ namespace Xbim.Ifc.Extensions
                                                     IfcDirectionSenseEnum directionSense,
                                                     IfcLengthMeasure offsetFromReferenceLine)
         {
-            IModel model = ModelManager.ModelOf(element);
+            IModel model = element.ModelOf;
             element.SetMaterialLayerSetUsage(model, forLayerSet, layerSetDirection, directionSense,
                                              offsetFromReferenceLine);
         }

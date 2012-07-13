@@ -37,14 +37,13 @@ namespace Xbim.Ifc.ExternalReferenceResource
     public class IfcClassification : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                      INotifyPropertyChanging
     {
-#if SupportActivation
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -73,8 +72,6 @@ namespace Xbim.Ifc.ExternalReferenceResource
 
         #endregion
 
-#endif
-
         private IfcLabel _source;
         private IfcLabel _edition;
         private IfcCalendarDate _editionDate;
@@ -88,12 +85,10 @@ namespace Xbim.Ifc.ExternalReferenceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _source;
             }
-            set { ModelManager.SetModelValue(this, ref _source, value, v => Source = v, "Source"); }
+            set { ModelHelper.SetModelValue(this, ref _source, value, v => Source = v, "Source"); }
         }
 
         /// <summary>
@@ -104,12 +99,10 @@ namespace Xbim.Ifc.ExternalReferenceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _edition;
             }
-            set { ModelManager.SetModelValue(this, ref _edition, value, v => Edition = v, "Edition"); }
+            set { ModelHelper.SetModelValue(this, ref _edition, value, v => Edition = v, "Edition"); }
         }
 
         /// <summary>
@@ -120,12 +113,10 @@ namespace Xbim.Ifc.ExternalReferenceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _editionDate;
             }
-            set { ModelManager.SetModelValue(this, ref _editionDate, value, v => EditionDate = v, "EditionDate"); }
+            set { ModelHelper.SetModelValue(this, ref _editionDate, value, v => EditionDate = v, "EditionDate"); }
         }
 
         /// <summary>
@@ -136,12 +127,10 @@ namespace Xbim.Ifc.ExternalReferenceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _name;
             }
-            set { ModelManager.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
+            set { ModelHelper.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
         }
 
         /// <summary>
@@ -150,7 +139,7 @@ namespace Xbim.Ifc.ExternalReferenceResource
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class)]
         public IEnumerable<IfcClassificationItem> Contains
         {
-            get { return ModelManager.ModelOf(this).InstancesWhere<IfcClassificationItem>(ci => ci.ItemOf == this); }
+            get { return ModelOf.InstancesWhere<IfcClassificationItem>(ci => ci.ItemOf == this); }
         }
 
         #region INotifyPropertyChanged Members

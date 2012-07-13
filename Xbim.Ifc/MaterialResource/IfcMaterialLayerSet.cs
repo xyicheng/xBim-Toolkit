@@ -37,14 +37,13 @@ namespace Xbim.Ifc.MaterialResource
     public class IfcMaterialLayerSet : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                        IfcMaterialSelect, INotifyPropertyChanging
     {
-#if SupportActivation
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -73,8 +72,6 @@ namespace Xbim.Ifc.MaterialResource
 
         #endregion
 
-#endif
-
         public IfcMaterialLayerSet()
         {
             _materialLayers = new MaterLayerList(this);
@@ -97,12 +94,10 @@ namespace Xbim.Ifc.MaterialResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _materialLayers;
             }
-            set { ModelManager.SetModelValue(this, ref _materialLayers, value, v => MaterialLayers = v, "MaterialLayers"); }
+            set { ModelHelper.SetModelValue(this, ref _materialLayers, value, v => MaterialLayers = v, "MaterialLayers"); }
         }
 
         /// <summary>
@@ -113,12 +108,10 @@ namespace Xbim.Ifc.MaterialResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _layerSetName;
             }
-            set { ModelManager.SetModelValue(this, ref _layerSetName, value, v => LayerSetName = v, "LayerSetName"); }
+            set { ModelHelper.SetModelValue(this, ref _layerSetName, value, v => LayerSetName = v, "LayerSetName"); }
         }
 
 

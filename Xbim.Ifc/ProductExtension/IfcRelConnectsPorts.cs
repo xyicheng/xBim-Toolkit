@@ -48,12 +48,10 @@ namespace Xbim.Ifc.ProductExtension
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _relatingPort;
             }
-            set { ModelManager.SetModelValue(this, ref _relatingPort, value, v => RelatingPort = v, "RelatingPort"); }
+            set { ModelHelper.SetModelValue(this, ref _relatingPort, value, v => RelatingPort = v, "RelatingPort"); }
         }
 
         /// <summary>
@@ -64,12 +62,10 @@ namespace Xbim.Ifc.ProductExtension
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _relatedPort;
             }
-            set { ModelManager.SetModelValue(this, ref _relatedPort, value, v => RelatedPort = v, "RelatedPort"); }
+            set { ModelHelper.SetModelValue(this, ref _relatedPort, value, v => RelatedPort = v, "RelatedPort"); }
         }
 
         /// <summary>
@@ -80,14 +76,12 @@ namespace Xbim.Ifc.ProductExtension
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _realizingElement;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _realizingElement, value, v => RealizingElement = v,
+                ModelHelper.SetModelValue(this, ref _realizingElement, value, v => RealizingElement = v,
                                            "RealizingElement");
             }
         }

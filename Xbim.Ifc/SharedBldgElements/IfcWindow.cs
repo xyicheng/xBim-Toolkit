@@ -82,9 +82,7 @@ namespace Xbim.Ifc.SharedBldgElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _overallHeight;
             }
             set { _overallHeight = value; }
@@ -101,9 +99,7 @@ namespace Xbim.Ifc.SharedBldgElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _overallWidth;
             }
             set { _overallWidth = value; }

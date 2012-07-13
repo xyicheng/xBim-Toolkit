@@ -58,7 +58,7 @@ namespace Xbim.Ifc.Extensions
         public static void SetNewObjectLocalPlacement(this IfcProduct prod, double placementX, double placementY,
                                                       double placementZ)
         {
-            IModel model = ModelManager.ModelOf(prod);
+            IModel model = prod.ModelOf;
 
             prod.ObjectPlacement = model.New<IfcLocalPlacement>();
             IfcLocalPlacement localPlacement = prod.ObjectPlacement as IfcLocalPlacement;
@@ -136,7 +136,7 @@ namespace Xbim.Ifc.Extensions
                                                                                         IfcRepresentationContext context)
         {
             IModel model = (prod as IPersistIfcEntity).ModelOf;
-            if (model == null) model = ModelManager.ModelOf(prod);
+            if (model == null) model = prod.ModelOf;
             IfcProductDefinitionShape definitionShape = prod.Representation as IfcProductDefinitionShape;
             if (definitionShape == null)
             {
@@ -162,7 +162,7 @@ namespace Xbim.Ifc.Extensions
                                                                                                   context)
         {
             IModel model = (prod as IPersistIfcEntity).ModelOf;
-            if (model == null) model = ModelManager.ModelOf(prod);
+            if (model == null) model = prod.ModelOf;
             IfcProductDefinitionShape definitionShape = prod.Representation as IfcProductDefinitionShape;
             if (definitionShape == null)
             {

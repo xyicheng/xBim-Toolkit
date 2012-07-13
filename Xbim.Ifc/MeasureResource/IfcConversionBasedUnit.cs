@@ -59,12 +59,10 @@ namespace Xbim.Ifc.MeasureResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _name;
             }
-            set { ModelManager.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
+            set { ModelHelper.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
         }
 
 
@@ -76,14 +74,12 @@ namespace Xbim.Ifc.MeasureResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _conversionFactor;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _conversionFactor, value, v => ConversionFactor = v,
+                ModelHelper.SetModelValue(this, ref _conversionFactor, value, v => ConversionFactor = v,
                                            "ConversionFactor");
             }
         }

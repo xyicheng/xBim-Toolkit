@@ -61,6 +61,7 @@ namespace Xbim.XbimExtensions.Interfaces
     }
     public interface IModel
     {
+       
         IEnumerable<TIfcType> InstancesOfType<TIfcType>() where TIfcType : IPersistIfcEntity;
 
         IEnumerable<TIfcType> InstancesWhere<TIfcType>(Expression<Func<TIfcType, bool>> expression)
@@ -100,12 +101,8 @@ namespace Xbim.XbimExtensions.Interfaces
         bool Save();
         bool SaveAs(string outputFileName);
         void Import(string inputFileName);
-#if SupportActivation
         long Activate(IPersistIfcEntity entity, bool write);
         IPersistIfcEntity GetInstance(long label);
-
-#endif
-
         bool ReOpen();
         void Close();
 

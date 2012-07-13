@@ -101,7 +101,7 @@ namespace Xbim.Ifc.ProductExtension
             get
             {
                 return
-                    ModelManager.ModelOf(this).InstancesWhere<IfcRelFillsElement>(r => r.RelatingOpeningElement == this);
+                    ModelOf.InstancesWhere<IfcRelFillsElement>(r => r.RelatingOpeningElement == this);
             }
         }
     }

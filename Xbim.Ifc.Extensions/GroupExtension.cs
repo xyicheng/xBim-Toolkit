@@ -15,7 +15,7 @@ namespace Xbim.Ifc.Extensions
             IModel model = null;
             IPersistIfcEntity persist = root as IPersistIfcEntity;
             if (persist != null) model = persist.ModelOf;
-            if (model == null) model = ModelManager.ModelOf(root);
+            if (model == null) model = root.ModelOf;
 
             return model;
         }

@@ -27,14 +27,13 @@ namespace Xbim.Ifc.MeasureResource
     public class IfcDimensionalExponents : IPersistIfcEntity, ISupportChangeNotification, INotifyPropertyChanged,
                                            INotifyPropertyChanging
     {
-#if SupportActivation
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -63,8 +62,6 @@ namespace Xbim.Ifc.MeasureResource
 
         #endregion
 
-#endif
-
         private readonly int[] _exponents;
 
         #region Part 21 Step file Parse routines
@@ -77,12 +74,10 @@ namespace Xbim.Ifc.MeasureResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return this[0];
             }
-            set { ModelManager.SetModelValue(this, ref _exponents[0], value, v => LengthExponent = v, "LengthExponent"); }
+            set { ModelHelper.SetModelValue(this, ref _exponents[0], value, v => LengthExponent = v, "LengthExponent"); }
         }
 
         /// <summary>
@@ -93,12 +88,10 @@ namespace Xbim.Ifc.MeasureResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return this[1];
             }
-            set { ModelManager.SetModelValue(this, ref _exponents[1], value, v => MassExponent = v, "MassExponent"); }
+            set { ModelHelper.SetModelValue(this, ref _exponents[1], value, v => MassExponent = v, "MassExponent"); }
         }
 
         /// <summary>
@@ -109,12 +102,10 @@ namespace Xbim.Ifc.MeasureResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return this[2];
             }
-            set { ModelManager.SetModelValue(this, ref _exponents[2], value, v => TimeExponent = v, "TimeExponent"); }
+            set { ModelHelper.SetModelValue(this, ref _exponents[2], value, v => TimeExponent = v, "TimeExponent"); }
         }
 
         /// <summary>
@@ -125,14 +116,12 @@ namespace Xbim.Ifc.MeasureResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return this[3];
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _exponents[3], value, v => ElectricCurrentExponent = v,
+                ModelHelper.SetModelValue(this, ref _exponents[3], value, v => ElectricCurrentExponent = v,
                                            "ElectricCurrentExponent");
             }
         }
@@ -145,14 +134,12 @@ namespace Xbim.Ifc.MeasureResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return this[4];
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _exponents[4], value, v => ThermodynamicTemperatureExponent = v,
+                ModelHelper.SetModelValue(this, ref _exponents[4], value, v => ThermodynamicTemperatureExponent = v,
                                            "ThermodynamicTemperatureExponent");
             }
         }
@@ -165,14 +152,12 @@ namespace Xbim.Ifc.MeasureResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return this[5];
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _exponents[5], value, v => AmountOfSubstanceExponent = v,
+                ModelHelper.SetModelValue(this, ref _exponents[5], value, v => AmountOfSubstanceExponent = v,
                                            "AmountOfSubstanceExponent");
             }
         }
@@ -185,14 +170,12 @@ namespace Xbim.Ifc.MeasureResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return this[6];
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _exponents[6], value, v => LuminousIntensityExponent = v,
+                ModelHelper.SetModelValue(this, ref _exponents[6], value, v => LuminousIntensityExponent = v,
                                            "LuminousIntensityExponent");
             }
         }

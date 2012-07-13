@@ -43,12 +43,10 @@ namespace Xbim.Ifc.ProfileResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _bottomXDim;
             }
-            set { ModelManager.SetModelValue(this, ref _bottomXDim, value, v => BottomXDim = v, "BottomXDim"); }
+            set { ModelHelper.SetModelValue(this, ref _bottomXDim, value, v => BottomXDim = v, "BottomXDim"); }
         }
 
         /// <summary>
@@ -59,12 +57,10 @@ namespace Xbim.Ifc.ProfileResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _topXDim;
             }
-            set { ModelManager.SetModelValue(this, ref _topXDim, value, v => TopXDim = v, "TopXDim"); }
+            set { ModelHelper.SetModelValue(this, ref _topXDim, value, v => TopXDim = v, "TopXDim"); }
         }
 
         /// <summary>
@@ -75,12 +71,10 @@ namespace Xbim.Ifc.ProfileResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _yDim;
             }
-            set { ModelManager.SetModelValue(this, ref _yDim, value, v => YDim = v, "YDim"); }
+            set { ModelHelper.SetModelValue(this, ref _yDim, value, v => YDim = v, "YDim"); }
         }
 
         /// <summary>
@@ -91,12 +85,10 @@ namespace Xbim.Ifc.ProfileResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _topXOffset;
             }
-            set { ModelManager.SetModelValue(this, ref _topXOffset, value, v => TopXOffset = v, "TopXOffset"); }
+            set { ModelHelper.SetModelValue(this, ref _topXOffset, value, v => TopXOffset = v, "TopXOffset"); }
         }
 
         #endregion

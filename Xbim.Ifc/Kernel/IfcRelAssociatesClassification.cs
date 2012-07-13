@@ -50,9 +50,7 @@ namespace Xbim.Ifc.Kernel
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _relatingClassification;
             }
             set
@@ -62,7 +60,7 @@ namespace Xbim.Ifc.Kernel
                     throw new ArgumentException(
                         "RelatingClassification must be of type ClassificationNotation or ClassificationReference");
 #endif
-                ModelManager.SetModelValue(this, ref _relatingClassification, value, v => RelatingClassification = v,
+                ModelHelper.SetModelValue(this, ref _relatingClassification, value, v => RelatingClassification = v,
                                            "RelatingClassification");
             }
         }

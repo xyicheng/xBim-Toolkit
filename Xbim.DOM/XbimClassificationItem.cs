@@ -56,7 +56,7 @@ namespace Xbim.DOM
 
         public void Classify(IXbimRoot obj)
         {
-            IModel model = ModelManager.ModelOf(_ifcClassificationItem);
+            IModel model = _ifcClassificationItem.ModelOf;
             IfcRelAssociatesClassification rel = model.InstancesWhere<IfcRelAssociatesClassification>(r => r.RelatingClassification == this).FirstOrDefault();
             if (rel == null)
             {

@@ -35,12 +35,10 @@ namespace Xbim.Ifc.GeometricModelResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _Axis;
             }
-            set { ModelManager.SetModelValue(this, ref _Axis, value, v => Axis = v, "Axis"); }
+            set { ModelHelper.SetModelValue(this, ref _Axis, value, v => Axis = v, "Axis"); }
         }
 
         /// <summary>
@@ -53,12 +51,10 @@ namespace Xbim.Ifc.GeometricModelResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _Angle;
             }
-            set { ModelManager.SetModelValue(this, ref _Angle, value, v => Angle = v, "Angle"); }
+            set { ModelHelper.SetModelValue(this, ref _Angle, value, v => Angle = v, "Angle"); }
         }
 
         /// <summary>

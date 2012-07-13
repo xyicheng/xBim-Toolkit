@@ -29,14 +29,12 @@ namespace Xbim.Ifc.ProcessExtensions
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity)this).Activate(false);
-#endif
                 return _taskId;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _taskId, value, v => TaskId = v,
+                ModelHelper.SetModelValue(this, ref _taskId, value, v => TaskId = v,
                                            "TaskId");
             }
         }
@@ -52,12 +50,10 @@ namespace Xbim.Ifc.ProcessExtensions
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity)this).Activate(false);
-#endif
                 return _status;
             }
-            set { ModelManager.SetModelValue(this, ref _status, value, v => Status = v, "Status"); }
+            set { ModelHelper.SetModelValue(this, ref _status, value, v => Status = v, "Status"); }
         }
 
         /// <summary>
@@ -68,14 +64,12 @@ namespace Xbim.Ifc.ProcessExtensions
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity)this).Activate(false);
-#endif
                 return _workMethod;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _workMethod, value, v => WorkMethod = v,
+                ModelHelper.SetModelValue(this, ref _workMethod, value, v => WorkMethod = v,
                                            "WorkMethod");
             }
         }
@@ -91,14 +85,12 @@ namespace Xbim.Ifc.ProcessExtensions
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity)this).Activate(false);
-#endif
                 return _isMilestone;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _isMilestone, value, v => IsMilestone = v,
+                ModelHelper.SetModelValue(this, ref _isMilestone, value, v => IsMilestone = v,
                                            "IsMilestone");
             }
         }
@@ -108,14 +100,12 @@ namespace Xbim.Ifc.ProcessExtensions
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity)this).Activate(false);
-#endif
                 return _priority;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _priority, value, v => Priority = v,
+                ModelHelper.SetModelValue(this, ref _priority, value, v => Priority = v,
                                            "Priority");
             }
         }

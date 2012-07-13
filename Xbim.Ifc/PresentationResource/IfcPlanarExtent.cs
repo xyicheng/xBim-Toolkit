@@ -42,12 +42,10 @@ namespace Xbim.Ifc.PresentationResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _sizeInX;
             }
-            set { ModelManager.SetModelValue(this, ref _sizeInX, value, v => SizeInX = v, "SizeInX"); }
+            set { ModelHelper.SetModelValue(this, ref _sizeInX, value, v => SizeInX = v, "SizeInX"); }
         }
 
         /// <summary>
@@ -58,12 +56,10 @@ namespace Xbim.Ifc.PresentationResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _sizeInY;
             }
-            set { ModelManager.SetModelValue(this, ref _sizeInY, value, v => SizeInY = v, "SizeInY"); }
+            set { ModelHelper.SetModelValue(this, ref _sizeInY, value, v => SizeInY = v, "SizeInY"); }
         }
 
         #endregion

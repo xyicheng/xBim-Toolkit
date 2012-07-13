@@ -35,14 +35,13 @@ namespace Xbim.Ifc.ExternalReferenceResource
     public class IfcDocumentInformationRelationship : INotifyPropertyChanged, ISupportChangeNotification,
                                                       IPersistIfcEntity, INotifyPropertyChanging
     {
-#if SupportActivation
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -71,7 +70,6 @@ namespace Xbim.Ifc.ExternalReferenceResource
 
         #endregion
 
-#endif
 
         public IfcDocumentInformationRelationship()
         {
@@ -94,14 +92,12 @@ namespace Xbim.Ifc.ExternalReferenceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _relatingDocument;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _relatingDocument, value, v => RelatingDocument = v,
+                ModelHelper.SetModelValue(this, ref _relatingDocument, value, v => RelatingDocument = v,
                                            "RelatingDocument");
             }
         }
@@ -114,14 +110,12 @@ namespace Xbim.Ifc.ExternalReferenceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _relatedDocuments;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _relatedDocuments, value, v => RelatedDocuments = v,
+                ModelHelper.SetModelValue(this, ref _relatedDocuments, value, v => RelatedDocuments = v,
                                            "RelatedDocuments");
             }
         }
@@ -134,14 +128,12 @@ namespace Xbim.Ifc.ExternalReferenceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _relationshipType;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _relationshipType, value, v => RelationshipType = v,
+                ModelHelper.SetModelValue(this, ref _relationshipType, value, v => RelationshipType = v,
                                            "RelationshipType");
             }
         }

@@ -41,14 +41,12 @@ namespace Xbim.Ifc.GeometricModelResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _treeRootExpression;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _treeRootExpression, value, v => TreeRootExpression = v,
+                ModelHelper.SetModelValue(this, ref _treeRootExpression, value, v => TreeRootExpression = v,
                                            "TreeRootExpression");
             }
         }

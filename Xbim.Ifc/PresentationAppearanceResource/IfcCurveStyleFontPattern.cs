@@ -26,14 +26,13 @@ namespace Xbim.Ifc.PresentationAppearanceResource
     public class IfcCurveStyleFontPattern : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                             INotifyPropertyChanging
     {
-#if SupportActivation
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -62,8 +61,6 @@ namespace Xbim.Ifc.PresentationAppearanceResource
 
         #endregion
 
-#endif
-
         #region Fields     
 
         private IfcLengthMeasure _visibleSegmentLength;
@@ -78,14 +75,12 @@ namespace Xbim.Ifc.PresentationAppearanceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _visibleSegmentLength;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _visibleSegmentLength, value, v => VisibleSegmentLength = v,
+                ModelHelper.SetModelValue(this, ref _visibleSegmentLength, value, v => VisibleSegmentLength = v,
                                            "VisibleSegmentLength");
             }
         }
@@ -96,9 +91,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _invisibleSegmentLength;
             }
             set
@@ -106,7 +99,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
                 if (value <= 0)
                     throw new ArgumentException("CurveStyleFontPattern.InvisibleSegmentLength must be greater than 0");
                 else
-                    ModelManager.SetModelValue(this, ref _invisibleSegmentLength, value, v => InvisibleSegmentLength = v,
+                    ModelHelper.SetModelValue(this, ref _invisibleSegmentLength, value, v => InvisibleSegmentLength = v,
                                                "InvisibleSegmentLength");
             }
         }

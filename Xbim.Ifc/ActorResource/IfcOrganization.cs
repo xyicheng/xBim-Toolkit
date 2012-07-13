@@ -59,14 +59,14 @@ namespace Xbim.Ifc.ActorResource
     public class IfcOrganization : IfcActorSelect, IPersistIfcEntity, IFormattable, ISupportChangeNotification,
                                    INotifyPropertyChanged, IfcObjectReferenceSelect, INotifyPropertyChanging
     {
-#if SupportActivation
+
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -95,7 +95,6 @@ namespace Xbim.Ifc.ActorResource
 
         #endregion
 
-#endif
 
         #region Fields and Events
 
@@ -122,12 +121,10 @@ namespace Xbim.Ifc.ActorResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _id;
             }
-            set { ModelManager.SetModelValue(this, ref _id, value, v => Id = v, "Id"); }
+            set { ModelHelper.SetModelValue(this, ref _id, value, v => Id = v, "Id"); }
         }
 
         /// <summary>
@@ -138,12 +135,10 @@ namespace Xbim.Ifc.ActorResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _name;
             }
-            set { ModelManager.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
+            set { ModelHelper.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
         }
 
         /// <summary>
@@ -154,12 +149,10 @@ namespace Xbim.Ifc.ActorResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _description;
             }
-            set { ModelManager.SetModelValue(this, ref _description, value, v => Description = v, "Description"); }
+            set { ModelHelper.SetModelValue(this, ref _description, value, v => Description = v, "Description"); }
         }
 
 
@@ -171,12 +164,10 @@ namespace Xbim.Ifc.ActorResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _roles;
             }
-            set { ModelManager.SetModelValue(this, ref _roles, value, v => Roles = v, "Roles"); }
+            set { ModelHelper.SetModelValue(this, ref _roles, value, v => Roles = v, "Roles"); }
         }
 
         /// <summary>
@@ -187,12 +178,10 @@ namespace Xbim.Ifc.ActorResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _addresses;
             }
-            set { ModelManager.SetModelValue(this, ref _addresses, value, v => Addresses = v, "Addresses"); }
+            set { ModelHelper.SetModelValue(this, ref _addresses, value, v => Addresses = v, "Addresses"); }
         }
 
         #endregion
@@ -238,7 +227,7 @@ namespace Xbim.Ifc.ActorResource
             get
             {
                 return
-                    ModelManager.ModelOf(this).InstancesWhere<IfcOrganizationRelationship>(
+                    ModelOf.InstancesWhere<IfcOrganizationRelationship>(
                         r => r.RelatedOrganizations.Contains(this));
             }
         }
@@ -252,7 +241,7 @@ namespace Xbim.Ifc.ActorResource
             get
             {
                 return
-                    ModelManager.ModelOf(this).InstancesWhere<IfcOrganizationRelationship>(
+                    ModelOf.InstancesWhere<IfcOrganizationRelationship>(
                         r => r.RelatingOrganization == this);
             }
         }
@@ -266,7 +255,7 @@ namespace Xbim.Ifc.ActorResource
             get
             {
                 return
-                    ModelManager.ModelOf(this).InstancesWhere<IfcPersonAndOrganization>(r => r.TheOrganization == this);
+                    ModelOf.InstancesWhere<IfcPersonAndOrganization>(r => r.TheOrganization == this);
             }
         }
 

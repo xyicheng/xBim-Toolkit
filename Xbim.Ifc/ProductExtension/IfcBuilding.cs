@@ -105,14 +105,12 @@ namespace Xbim.Ifc.ProductExtension
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _elevationOfRefHeight;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _elevationOfRefHeight, value, v => ElevationOfRefHeight = v,
+                ModelHelper.SetModelValue(this, ref _elevationOfRefHeight, value, v => ElevationOfRefHeight = v,
                                            "ElevationOfRefHeight");
             }
         }
@@ -127,14 +125,12 @@ namespace Xbim.Ifc.ProductExtension
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _elevationOfTerrain;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _elevationOfTerrain, value, v => ElevationOfTerrain = v,
+                ModelHelper.SetModelValue(this, ref _elevationOfTerrain, value, v => ElevationOfTerrain = v,
                                            "ElevationOfTerrain");
             }
         }
@@ -148,14 +144,12 @@ namespace Xbim.Ifc.ProductExtension
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _buildingAddress;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _buildingAddress, value, v => BuildingAddress = v,
+                ModelHelper.SetModelValue(this, ref _buildingAddress, value, v => BuildingAddress = v,
                                            "BuildingAddress");
             }
         }

@@ -54,12 +54,10 @@ namespace Xbim.Ifc.GeometryResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _pnt;
             }
-            set { ModelManager.SetModelValue(this, ref _pnt, value, v => Pnt = v, "Pnt"); }
+            set { ModelHelper.SetModelValue(this, ref _pnt, value, v => Pnt = v, "Pnt"); }
         }
 
 
@@ -71,12 +69,10 @@ namespace Xbim.Ifc.GeometryResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _dir;
             }
-            set { ModelManager.SetModelValue(this, ref _dir, value, v => Dir = v, "Dir"); }
+            set { ModelHelper.SetModelValue(this, ref _dir, value, v => Dir = v, "Dir"); }
         }
 
         public override IfcDimensionCount Dim

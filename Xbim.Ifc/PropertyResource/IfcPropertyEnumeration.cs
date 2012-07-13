@@ -44,14 +44,13 @@ namespace Xbim.Ifc.PropertyResource
     public class IfcPropertyEnumeration : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                           INotifyPropertyChanging
     {
-#if SupportActivation
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -80,8 +79,6 @@ namespace Xbim.Ifc.PropertyResource
 
         #endregion
 
-#endif
-
         public IfcPropertyEnumeration()
         {
             _enumerationValues = new XbimList<IfcValue>(this);
@@ -103,12 +100,10 @@ namespace Xbim.Ifc.PropertyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _name;
             }
-            set { ModelManager.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
+            set { ModelHelper.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
         }
 
         /// <summary>
@@ -119,14 +114,12 @@ namespace Xbim.Ifc.PropertyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _enumerationValues;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _enumerationValues, value, v => EnumerationValues = v,
+                ModelHelper.SetModelValue(this, ref _enumerationValues, value, v => EnumerationValues = v,
                                            "EnumerationValues");
             }
         }
@@ -139,12 +132,10 @@ namespace Xbim.Ifc.PropertyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _unit;
             }
-            set { ModelManager.SetModelValue(this, ref _unit, value, v => Unit = v, "Unit"); }
+            set { ModelHelper.SetModelValue(this, ref _unit, value, v => Unit = v, "Unit"); }
         }
 
         #region ISupportIfcParser Members

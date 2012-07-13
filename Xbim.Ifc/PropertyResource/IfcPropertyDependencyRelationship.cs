@@ -37,14 +37,13 @@ namespace Xbim.Ifc.PropertyResource
     public class IfcPropertyDependencyRelationship : ISupportChangeNotification, INotifyPropertyChanged,
                                                      IPersistIfcEntity, INotifyPropertyChanging
     {
-#if SupportActivation
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -73,8 +72,6 @@ namespace Xbim.Ifc.PropertyResource
 
         #endregion
 
-#endif
-
         #region Fields
 
         private IfcProperty _dependingProperty;
@@ -93,14 +90,12 @@ namespace Xbim.Ifc.PropertyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _dependingProperty;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _dependingProperty, value, v => DependingProperty = v,
+                ModelHelper.SetModelValue(this, ref _dependingProperty, value, v => DependingProperty = v,
                                            "DependingProperty");
             }
         }
@@ -113,14 +108,12 @@ namespace Xbim.Ifc.PropertyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _dependantProperty;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _dependantProperty, value, v => DependantProperty = v,
+                ModelHelper.SetModelValue(this, ref _dependantProperty, value, v => DependantProperty = v,
                                            "DependantProperty");
             }
         }
@@ -134,12 +127,10 @@ namespace Xbim.Ifc.PropertyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _name;
             }
-            set { ModelManager.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
+            set { ModelHelper.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
         }
 
         /// <summary>
@@ -150,12 +141,10 @@ namespace Xbim.Ifc.PropertyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _description;
             }
-            set { ModelManager.SetModelValue(this, ref _description, value, v => Description = v, "Description"); }
+            set { ModelHelper.SetModelValue(this, ref _description, value, v => Description = v, "Description"); }
         }
 
         /// <summary>
@@ -166,12 +155,10 @@ namespace Xbim.Ifc.PropertyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _expression;
             }
-            set { ModelManager.SetModelValue(this, ref _expression, value, v => Expression = v, "Expression"); }
+            set { ModelHelper.SetModelValue(this, ref _expression, value, v => Expression = v, "Expression"); }
         }
 
         #region INotifyPropertyChanged Members

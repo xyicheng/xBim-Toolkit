@@ -47,7 +47,7 @@ namespace Xbim.Ifc.Extensions
 
         public static IfcTypeObject GetDefiningType(this IfcObject tObj)
         {
-            IfcRelDefinesByType def = ModelManager.ModelOf(tObj).InstancesWhere<IfcRelDefinesByType>(rd => rd.RelatedObjects.Contains(tObj)).FirstOrDefault();
+            IfcRelDefinesByType def = tObj.ModelOf.InstancesWhere<IfcRelDefinesByType>(rd => rd.RelatedObjects.Contains(tObj)).FirstOrDefault();
             if (def != null)
                 return def.RelatingType;
             else
@@ -196,7 +196,7 @@ namespace Xbim.Ifc.Extensions
             IModel model = null;
             if (pset == null)
             {
-                model = ModelManager.ModelOf(obj);
+                model = obj.ModelOf;
                 pset = model.New<IfcPropertySet>();
                 pset.Name = pSetName;
                 IfcRelDefinesByProperties relDef = model.New<IfcRelDefinesByProperties>();
@@ -206,7 +206,7 @@ namespace Xbim.Ifc.Extensions
             IfcPropertyTableValue table = GetPropertyTableValue(obj, pSetName, propertyTableName);
             if (table == null)
             {
-                model = ModelManager.ModelOf(obj);
+                model = obj.ModelOf;
                 table = model.New<IfcPropertyTableValue>(tb => { tb.Name = propertyTableName; });
                 pset.HasProperties.Add_Reversible(table);
                 table.DefinedUnit = definedUnit;
@@ -265,7 +265,7 @@ namespace Xbim.Ifc.Extensions
             IModel model = null;
             if (pset == null)    
             {
-                model = ModelManager.ModelOf(obj);
+                model = obj.ModelOf;
                 pset = model.New<IfcPropertySet>();
                 pset.Name = pSetName;
                 IfcRelDefinesByProperties relDef = model.New<IfcRelDefinesByProperties>();
@@ -281,7 +281,7 @@ namespace Xbim.Ifc.Extensions
             }
             else
             {
-                model = ModelManager.ModelOf(obj);
+                model = obj.ModelOf;
                 singleVal = model.New<IfcPropertySingleValue>(psv => { psv.Name = propertyName; psv.NominalValue = value; });
                 pset.HasProperties.Add_Reversible(singleVal);
             }
@@ -366,7 +366,7 @@ namespace Xbim.Ifc.Extensions
 
             if (pset == null)
             {
-                IModel model = ModelManager.ModelOf(elem);
+                IModel model = elem.ModelOf;
                 pset = model.New<IfcElementQuantity>();
                 pset.Name = propertySetName;
                 IfcRelDefinesByProperties relDef = model.New<IfcRelDefinesByProperties>();
@@ -408,7 +408,7 @@ namespace Xbim.Ifc.Extensions
 
         public static void SetElementPhysicalSimpleQuantity(this IfcObject elem, string qSetName, string qualityName, double value, XbimQuantityTypeEnum quantityType,IfcNamedUnit unit)
         {
-            IModel model = ModelManager.ModelOf(elem);
+            IModel model = elem.ModelOf;
 
             IfcElementQuantity qset = GetElementQuantity(elem, qSetName);
             if (qset == null)

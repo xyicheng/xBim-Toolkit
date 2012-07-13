@@ -57,12 +57,10 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _predefinedType;
             }
-            set { ModelManager.SetModelValue(this, ref _predefinedType, value, v => PredefinedType = v, "PredefinedType"); }
+            set { ModelHelper.SetModelValue(this, ref _predefinedType, value, v => PredefinedType = v, "PredefinedType"); }
         }
 
         /// <summary>
@@ -73,12 +71,10 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _actionType;
             }
-            set { ModelManager.SetModelValue(this, ref _actionType, value, v => ActionType = v, "ActionType"); }
+            set { ModelHelper.SetModelValue(this, ref _actionType, value, v => ActionType = v, "ActionType"); }
         }
 
         /// <summary>
@@ -89,12 +85,10 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _actionSource;
             }
-            set { ModelManager.SetModelValue(this, ref _actionSource, value, v => ActionSource = v, "ActionSource"); }
+            set { ModelHelper.SetModelValue(this, ref _actionSource, value, v => ActionSource = v, "ActionSource"); }
         }
 
         /// <summary>
@@ -105,12 +99,10 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _coefficient;
             }
-            set { ModelManager.SetModelValue(this, ref _coefficient, value, v => Coefficient = v, "Coefficient"); }
+            set { ModelHelper.SetModelValue(this, ref _coefficient, value, v => Coefficient = v, "Coefficient"); }
         }
 
         /// <summary>
@@ -122,12 +114,10 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _purpose;
             }
-            set { ModelManager.SetModelValue(this, ref _purpose, value, v => Purpose = v, "Purpose"); }
+            set { ModelHelper.SetModelValue(this, ref _purpose, value, v => Purpose = v, "Purpose"); }
         }
 
         /// <summary>
@@ -139,7 +129,7 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
             get
             {
                 return
-                    ModelManager.ModelOf(this).InstancesWhere<IfcStructuralResultGroup>(
+                    ModelOf.InstancesWhere<IfcStructuralResultGroup>(
                         s => s.ResultForLoadGroup == this);
             }
         }
@@ -153,7 +143,7 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
             get
             {
                 return
-                    ModelManager.ModelOf(this).InstancesWhere<IfcStructuralAnalysisModel>(s => s.LoadedBy.Contains(this));
+                    ModelOf.InstancesWhere<IfcStructuralAnalysisModel>(s => s.LoadedBy.Contains(this));
             }
         }
 

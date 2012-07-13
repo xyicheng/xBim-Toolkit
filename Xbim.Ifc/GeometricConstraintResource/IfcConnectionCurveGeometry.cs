@@ -49,14 +49,12 @@ namespace Xbim.Ifc.GeometricConstraintResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _curveOnRelatingElement;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _curveOnRelatingElement, value, v => CurveOnRelatingElement = v,
+                ModelHelper.SetModelValue(this, ref _curveOnRelatingElement, value, v => CurveOnRelatingElement = v,
                                            "CurveOnRelatingElement");
             }
         }
@@ -69,14 +67,12 @@ namespace Xbim.Ifc.GeometricConstraintResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _curveOnRelatedElement;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _curveOnRelatedElement, value, v => CurveOnRelatedElement = v,
+                ModelHelper.SetModelValue(this, ref _curveOnRelatedElement, value, v => CurveOnRelatedElement = v,
                                            "CurveOnRelatedElement");
             }
         }

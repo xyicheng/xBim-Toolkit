@@ -26,14 +26,13 @@ namespace Xbim.Ifc.ProfilePropertyResource
     public class IfcSectionReinforcementProperties : INotifyPropertyChanged, ISupportChangeNotification,
                                                      IPersistIfcEntity, INotifyPropertyChanging
     {
-#if SupportActivation
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -62,8 +61,6 @@ namespace Xbim.Ifc.ProfilePropertyResource
 
         #endregion
 
-#endif
-
         public IfcSectionReinforcementProperties()
         {
             _crossSectionReinforcementDefinitions = new XbimSet<IfcReinforcementBarProperties>(this);
@@ -90,14 +87,12 @@ namespace Xbim.Ifc.ProfilePropertyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _longitudinalStartPosition;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _longitudinalStartPosition, value,
+                ModelHelper.SetModelValue(this, ref _longitudinalStartPosition, value,
                                            v => LongitudinalStartPosition = v, "LongitudinalStartPosition");
             }
         }
@@ -110,14 +105,12 @@ namespace Xbim.Ifc.ProfilePropertyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _longitudinalEndPosition;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _longitudinalEndPosition, value, v => LongitudinalEndPosition = v,
+                ModelHelper.SetModelValue(this, ref _longitudinalEndPosition, value, v => LongitudinalEndPosition = v,
                                            "LongitudinalEndPosition");
             }
         }
@@ -130,14 +123,12 @@ namespace Xbim.Ifc.ProfilePropertyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _transversePosition;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _transversePosition, value, v => TransversePosition = v,
+                ModelHelper.SetModelValue(this, ref _transversePosition, value, v => TransversePosition = v,
                                            "TransversePosition");
             }
         }
@@ -150,14 +141,12 @@ namespace Xbim.Ifc.ProfilePropertyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _reinforcementRole;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _reinforcementRole, value, v => ReinforcementRole = v,
+                ModelHelper.SetModelValue(this, ref _reinforcementRole, value, v => ReinforcementRole = v,
                                            "ReinforcementRole");
             }
         }
@@ -170,14 +159,12 @@ namespace Xbim.Ifc.ProfilePropertyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _crossSectionArea;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _crossSectionArea, value, v => CrossSectionArea = v,
+                ModelHelper.SetModelValue(this, ref _crossSectionArea, value, v => CrossSectionArea = v,
                                            "CrossSectionArea");
             }
         }
@@ -187,14 +174,12 @@ namespace Xbim.Ifc.ProfilePropertyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _crossSectionReinforcementDefinitions;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _crossSectionReinforcementDefinitions, value,
+                ModelHelper.SetModelValue(this, ref _crossSectionReinforcementDefinitions, value,
                                            v => CrossSectionReinforcementDefinitions = v,
                                            "CrossSectionReinforcementDefinitions");
             }

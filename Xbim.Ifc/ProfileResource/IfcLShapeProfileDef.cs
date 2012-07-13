@@ -47,12 +47,10 @@ namespace Xbim.Ifc.ProfileResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _depth;
             }
-            set { ModelManager.SetModelValue(this, ref _depth, value, v => Depth = v, "Depth"); }
+            set { ModelHelper.SetModelValue(this, ref _depth, value, v => Depth = v, "Depth"); }
         }
 
         /// <summary>
@@ -63,12 +61,10 @@ namespace Xbim.Ifc.ProfileResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _width;
             }
-            set { ModelManager.SetModelValue(this, ref _width, value, v => Width = v, "Width"); }
+            set { ModelHelper.SetModelValue(this, ref _width, value, v => Width = v, "Width"); }
         }
 
         /// <summary>
@@ -79,12 +75,10 @@ namespace Xbim.Ifc.ProfileResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _thickness;
             }
-            set { ModelManager.SetModelValue(this, ref _thickness, value, v => Thickness = v, "Thickness"); }
+            set { ModelHelper.SetModelValue(this, ref _thickness, value, v => Thickness = v, "Thickness"); }
         }
 
 
@@ -96,12 +90,10 @@ namespace Xbim.Ifc.ProfileResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _filletRadius;
             }
-            set { ModelManager.SetModelValue(this, ref _filletRadius, value, v => FilletRadius = v, "FilletRadius"); }
+            set { ModelHelper.SetModelValue(this, ref _filletRadius, value, v => FilletRadius = v, "FilletRadius"); }
         }
 
         /// <summary>
@@ -112,12 +104,10 @@ namespace Xbim.Ifc.ProfileResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _edgeRadius;
             }
-            set { ModelManager.SetModelValue(this, ref _edgeRadius, value, v => EdgeRadius = v, "EdgeRadius"); }
+            set { ModelHelper.SetModelValue(this, ref _edgeRadius, value, v => EdgeRadius = v, "EdgeRadius"); }
         }
 
         /// <summary>
@@ -128,12 +118,10 @@ namespace Xbim.Ifc.ProfileResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _legSlope;
             }
-            set { ModelManager.SetModelValue(this, ref _legSlope, value, v => LegSlope = v, "LegSlope"); }
+            set { ModelHelper.SetModelValue(this, ref _legSlope, value, v => LegSlope = v, "LegSlope"); }
         }
 
         /// <summary>
@@ -144,14 +132,12 @@ namespace Xbim.Ifc.ProfileResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _centreOfGravityInX;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _centreOfGravityInX, value, v => CentreOfGravityInX = v,
+                ModelHelper.SetModelValue(this, ref _centreOfGravityInX, value, v => CentreOfGravityInX = v,
                                            "CentreOfGravityInX");
             }
         }
@@ -164,14 +150,12 @@ namespace Xbim.Ifc.ProfileResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _centreOfGravityInY;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _centreOfGravityInY, value, v => CentreOfGravityInY = v,
+                ModelHelper.SetModelValue(this, ref _centreOfGravityInY, value, v => CentreOfGravityInY = v,
                                            "CentreOfGravityInY");
             }
         }

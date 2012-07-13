@@ -40,14 +40,12 @@ namespace Xbim.Ifc.ConstraintResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _benchmarkValues;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _benchmarkValues, value, v => BenchmarkValues = v,
+                ModelHelper.SetModelValue(this, ref _benchmarkValues, value, v => BenchmarkValues = v,
                                            "BenchmarkValues");
             }
         }
@@ -60,12 +58,10 @@ namespace Xbim.Ifc.ConstraintResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _resultValues;
             }
-            set { ModelManager.SetModelValue(this, ref _resultValues, value, v => ResultValues = v, "ResultValues"); }
+            set { ModelHelper.SetModelValue(this, ref _resultValues, value, v => ResultValues = v, "ResultValues"); }
         }
 
         /// <summary>
@@ -76,14 +72,12 @@ namespace Xbim.Ifc.ConstraintResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _objectiveQualifier;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _objectiveQualifier, value, v => ObjectiveQualifier = v,
+                ModelHelper.SetModelValue(this, ref _objectiveQualifier, value, v => ObjectiveQualifier = v,
                                            "ObjectiveQualifier");
             }
         }
@@ -96,14 +90,12 @@ namespace Xbim.Ifc.ConstraintResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _userDefinedQualifier;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _userDefinedQualifier, value, v => UserDefinedQualifier = v,
+                ModelHelper.SetModelValue(this, ref _userDefinedQualifier, value, v => UserDefinedQualifier = v,
                                            "UserDefinedQualifier");
             }
         }

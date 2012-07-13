@@ -35,14 +35,13 @@ namespace Xbim.Ifc.MeasureResource
     public class IfcDerivedUnit : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity, IfcUnit,
                                   INotifyPropertyChanging
     {
-#if SupportActivation
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -70,8 +69,6 @@ namespace Xbim.Ifc.MeasureResource
         }
 
         #endregion
-
-#endif
 
         public IfcDerivedUnit()
         {
@@ -105,9 +102,7 @@ namespace Xbim.Ifc.MeasureResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _elements;
             }
         }
@@ -120,14 +115,12 @@ namespace Xbim.Ifc.MeasureResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _unitType;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _unitType, value, v => UnitType = v, "UnitType");
+                ModelHelper.SetModelValue(this, ref _unitType, value, v => UnitType = v, "UnitType");
                 if (value != IfcDerivedUnitEnum.USERDEFINED)
                     UserDefinedType = null;
             }
@@ -139,14 +132,12 @@ namespace Xbim.Ifc.MeasureResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _userDefinedType;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _userDefinedType, value, v => UserDefinedType = v,
+                ModelHelper.SetModelValue(this, ref _userDefinedType, value, v => UserDefinedType = v,
                                            "UserDefinedType");
                 UnitType = IfcDerivedUnitEnum.USERDEFINED;
             }

@@ -43,12 +43,10 @@ namespace Xbim.Ifc.SharedBldgElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _panelDepth;
             }
-            set { ModelManager.SetModelValue(this, ref _panelDepth, value, v => PanelDepth = v, "PanelDepth"); }
+            set { ModelHelper.SetModelValue(this, ref _panelDepth, value, v => PanelDepth = v, "PanelDepth"); }
         }
 
         /// <summary>
@@ -59,12 +57,10 @@ namespace Xbim.Ifc.SharedBldgElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _panelOperation;
             }
-            set { ModelManager.SetModelValue(this, ref _panelOperation, value, v => PanelOperation = v, "PanelOperation"); }
+            set { ModelHelper.SetModelValue(this, ref _panelOperation, value, v => PanelOperation = v, "PanelOperation"); }
         }
 
         /// <summary>
@@ -75,12 +71,10 @@ namespace Xbim.Ifc.SharedBldgElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _panelWidth;
             }
-            set { ModelManager.SetModelValue(this, ref _panelWidth, value, v => PanelWidth = v, "PanelWidth"); }
+            set { ModelHelper.SetModelValue(this, ref _panelWidth, value, v => PanelWidth = v, "PanelWidth"); }
         }
 
         /// <summary>
@@ -91,12 +85,10 @@ namespace Xbim.Ifc.SharedBldgElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _panelPosition;
             }
-            set { ModelManager.SetModelValue(this, ref _panelPosition, value, v => PanelPosition = v, "PanelPosition"); }
+            set { ModelHelper.SetModelValue(this, ref _panelPosition, value, v => PanelPosition = v, "PanelPosition"); }
         }
 
         /// <summary>
@@ -107,14 +99,12 @@ namespace Xbim.Ifc.SharedBldgElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _shapeAspectStyle;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _shapeAspectStyle, value, v => ShapeAspectStyle = v,
+                ModelHelper.SetModelValue(this, ref _shapeAspectStyle, value, v => ShapeAspectStyle = v,
                                            "ShapeAspectStyle");
             }
         }

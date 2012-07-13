@@ -54,7 +54,7 @@ namespace Xbim.Ifc.Kernel
             get
             {
                 return
-                    ModelManager.ModelOf(this).InstancesWhere<IfcRelDefinesByProperties>(
+                    ModelOf.InstancesWhere<IfcRelDefinesByProperties>(
                         rel => rel.RelatingPropertyDefinition == this);
             }
         }
@@ -68,7 +68,7 @@ namespace Xbim.Ifc.Kernel
             get
             {
                 return
-                    ModelManager.ModelOf(this).InstancesWhere<IfcTypeObject>(
+                    ModelOf.InstancesWhere<IfcTypeObject>(
                         t => (t.HasPropertySets != null) && t.HasPropertySets.Contains(this));
             }
         }

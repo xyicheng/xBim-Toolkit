@@ -64,12 +64,10 @@ namespace Xbim.Ifc.TopologyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _polygon;
             }
-            set { ModelManager.SetModelValue(this, ref _polygon, value, v => Polygon = v, "Polygon"); }
+            set { ModelHelper.SetModelValue(this, ref _polygon, value, v => Polygon = v, "Polygon"); }
         }
 
 

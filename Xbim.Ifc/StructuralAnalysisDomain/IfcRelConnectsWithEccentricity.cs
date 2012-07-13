@@ -37,14 +37,12 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _connectionConstraint;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _connectionConstraint, value, v => ConnectionConstraint = v,
+                ModelHelper.SetModelValue(this, ref _connectionConstraint, value, v => ConnectionConstraint = v,
                                            "ConnectionConstraint");
             }
         }

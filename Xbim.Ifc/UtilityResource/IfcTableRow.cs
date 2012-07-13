@@ -28,14 +28,13 @@ namespace Xbim.Ifc.UtilityResource
     public class IfcTableRow : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                INotifyPropertyChanging
     {
-#if SupportActivation
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -64,8 +63,6 @@ namespace Xbim.Ifc.UtilityResource
 
         #endregion
 
-#endif
-
         public IfcTableRow()
         {
             _rowCells = new XbimList<IfcValue>(this);
@@ -86,12 +83,10 @@ namespace Xbim.Ifc.UtilityResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _rowCells;
             }
-            set { ModelManager.SetModelValue(this, ref _rowCells, value, v => RowCells = v, "RowCells"); }
+            set { ModelHelper.SetModelValue(this, ref _rowCells, value, v => RowCells = v, "RowCells"); }
         }
 
         /// <summary>
@@ -102,12 +97,10 @@ namespace Xbim.Ifc.UtilityResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _isHeading;
             }
-            set { ModelManager.SetModelValue(this, ref _isHeading, value, v => IsHeading = v, "IsHeading"); }
+            set { ModelHelper.SetModelValue(this, ref _isHeading, value, v => IsHeading = v, "IsHeading"); }
         }
 
         /// <summary>
@@ -116,7 +109,7 @@ namespace Xbim.Ifc.UtilityResource
         [IfcAttribute(-1, IfcAttributeState.Mandatory)]
         public IfcTable OfTable
         {
-            get { return ModelManager.ModelOf(this).InstancesWhere<IfcTable>(t => t.Rows.Contains(this)).FirstOrDefault(); }
+            get { return ModelOf.InstancesWhere<IfcTable>(t => t.Rows.Contains(this)).FirstOrDefault(); }
         }
 
         #region ISupportIfcParser Members

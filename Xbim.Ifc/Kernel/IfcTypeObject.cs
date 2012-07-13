@@ -42,14 +42,12 @@ namespace Xbim.Ifc.Kernel
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _applicableOccurrence;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _applicableOccurrence, value, v => ApplicableOccurrence = v,
+                ModelHelper.SetModelValue(this, ref _applicableOccurrence, value, v => ApplicableOccurrence = v,
                                            "ApplicableOccurrence");
             }
         }
@@ -62,14 +60,12 @@ namespace Xbim.Ifc.Kernel
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _hasPropertySets;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _hasPropertySets, value, v => HasPropertySets = v,
+                ModelHelper.SetModelValue(this, ref _hasPropertySets, value, v => HasPropertySets = v,
                                            "HasPropertySets");
             }
         }
@@ -113,7 +109,7 @@ namespace Xbim.Ifc.Kernel
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class, 0, 1)]
         public IEnumerable<IfcRelDefinesByType> ObjectTypeOf
         {
-            get { return ModelManager.ModelOf(this).InstancesWhere<IfcRelDefinesByType>(rt => rt.RelatingType == this); }
+            get { return ModelOf.InstancesWhere<IfcRelDefinesByType>(rt => rt.RelatingType == this); }
         }
 
         #endregion

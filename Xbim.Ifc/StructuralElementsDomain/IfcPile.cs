@@ -41,12 +41,10 @@ namespace Xbim.Ifc.StructuralElementsDomain
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _predefinedType;
             }
-            set { ModelManager.SetModelValue(this, ref _predefinedType, value, v => PredefinedType = v, "PredefinedType"); }
+            set { ModelHelper.SetModelValue(this, ref _predefinedType, value, v => PredefinedType = v, "PredefinedType"); }
         }
 
         /// <summary>
@@ -57,14 +55,12 @@ namespace Xbim.Ifc.StructuralElementsDomain
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _constructionType;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _constructionType, value, v => ConstructionType = v,
+                ModelHelper.SetModelValue(this, ref _constructionType, value, v => ConstructionType = v,
                                            "ConstructionType");
             }
         }

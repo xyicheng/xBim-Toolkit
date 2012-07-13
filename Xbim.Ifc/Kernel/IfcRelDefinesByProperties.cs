@@ -45,14 +45,12 @@ namespace Xbim.Ifc.Kernel
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _relatingPropertyDefinition;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _relatingPropertyDefinition, value,
+                ModelHelper.SetModelValue(this, ref _relatingPropertyDefinition, value,
                                            v => RelatingPropertyDefinition = v, "RelatingPropertyDefinition");
             }
         }

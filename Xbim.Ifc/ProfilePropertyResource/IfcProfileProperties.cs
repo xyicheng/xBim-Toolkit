@@ -27,14 +27,13 @@ namespace Xbim.Ifc.ProfilePropertyResource
     public abstract class IfcProfileProperties : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                                  INotifyPropertyChanging
     {
-#if SupportActivation
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -63,8 +62,6 @@ namespace Xbim.Ifc.ProfilePropertyResource
 
         #endregion
 
-#endif
-
         #region Fields
 
         private IfcLabel? _profileName;
@@ -82,12 +79,10 @@ namespace Xbim.Ifc.ProfilePropertyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _profileName;
             }
-            set { ModelManager.SetModelValue(this, ref _profileName, value, v => ProfileName = v, "ProfileName"); }
+            set { ModelHelper.SetModelValue(this, ref _profileName, value, v => ProfileName = v, "ProfileName"); }
         }
 
         /// <summary>
@@ -98,14 +93,12 @@ namespace Xbim.Ifc.ProfilePropertyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _profileDefinition;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _profileDefinition, value, v => ProfileDefinition = v,
+                ModelHelper.SetModelValue(this, ref _profileDefinition, value, v => ProfileDefinition = v,
                                            "ProfileDefinition");
             }
         }

@@ -71,7 +71,7 @@ namespace Xbim.IO
             IndentedTextWriter tw = new IndentedTextWriter(_errorLog);
             try
             {
-                ModelManager.TransactingModel = intoModel;
+                
                 int errors = intoModel.ParsePart21(_input, progressDelegate);
                 if (errors == 0 && validate > 0)
                     errors = intoModel.Validate(_errorLog, progressDelegate);

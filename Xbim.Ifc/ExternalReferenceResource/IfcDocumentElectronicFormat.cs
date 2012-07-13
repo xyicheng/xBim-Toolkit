@@ -35,14 +35,13 @@ namespace Xbim.Ifc.ExternalReferenceResource
     public class IfcDocumentElectronicFormat : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                                INotifyPropertyChanging
     {
-#if SupportActivation
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -71,7 +70,6 @@ namespace Xbim.Ifc.ExternalReferenceResource
 
         #endregion
 
-#endif
 
         #region Fields
 
@@ -87,7 +85,7 @@ namespace Xbim.Ifc.ExternalReferenceResource
         public IfcLabel? FileExtension
         {
             get { return _fileExtension; }
-            set { ModelManager.SetModelValue(this, ref _fileExtension, value, v => FileExtension = v, "FileExtension"); }
+            set { ModelHelper.SetModelValue(this, ref _fileExtension, value, v => FileExtension = v, "FileExtension"); }
         }
 
         /// <summary>
@@ -98,7 +96,7 @@ namespace Xbim.Ifc.ExternalReferenceResource
             get { return _mimeContentType; }
             set
             {
-                ModelManager.SetModelValue(this, ref _mimeContentType, value, v => MimeContentType = v,
+                ModelHelper.SetModelValue(this, ref _mimeContentType, value, v => MimeContentType = v,
                                            "MimeContentType");
             }
         }
@@ -109,7 +107,7 @@ namespace Xbim.Ifc.ExternalReferenceResource
         public IfcLabel? MimeSubtype
         {
             get { return _mimeSubtype; }
-            set { ModelManager.SetModelValue(this, ref _mimeSubtype, value, v => MimeSubtype = v, "MimeSubtype"); }
+            set { ModelHelper.SetModelValue(this, ref _mimeSubtype, value, v => MimeSubtype = v, "MimeSubtype"); }
         }
 
         #region INotifyPropertyChanged Members

@@ -27,14 +27,14 @@ namespace Xbim.Ifc.ApprovalResource
     public class IfcApprovalActorRelationship : IPersistIfcEntity, ISupportChangeNotification, INotifyPropertyChanged,
                                                 INotifyPropertyChanging
     {
-#if SupportActivation
+
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -63,7 +63,6 @@ namespace Xbim.Ifc.ApprovalResource
 
         #endregion
 
-#endif
 
         #region Fields
 
@@ -83,12 +82,10 @@ namespace Xbim.Ifc.ApprovalResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _actor;
             }
-            set { ModelManager.SetModelValue(this, ref _actor, value, v => Actor = v, "Actor"); }
+            set { ModelHelper.SetModelValue(this, ref _actor, value, v => Actor = v, "Actor"); }
         }
 
         /// <summary>
@@ -99,12 +96,10 @@ namespace Xbim.Ifc.ApprovalResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _approval;
             }
-            set { ModelManager.SetModelValue(this, ref _approval, value, v => Approval = v, "Approval"); }
+            set { ModelHelper.SetModelValue(this, ref _approval, value, v => Approval = v, "Approval"); }
         }
 
         /// <summary>
@@ -115,12 +110,10 @@ namespace Xbim.Ifc.ApprovalResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _role;
             }
-            set { ModelManager.SetModelValue(this, ref _role, value, v => Role = v, "Role"); }
+            set { ModelHelper.SetModelValue(this, ref _role, value, v => Role = v, "Role"); }
         }
 
         #endregion

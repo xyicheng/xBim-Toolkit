@@ -41,14 +41,12 @@ namespace Xbim.Ifc.PresentationAppearanceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _secondRepeatFactor;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _secondRepeatFactor, value, v => SecondRepeatFactor = v,
+                ModelHelper.SetModelValue(this, ref _secondRepeatFactor, value, v => SecondRepeatFactor = v,
                                            "RepeatFactor");
             }
         }

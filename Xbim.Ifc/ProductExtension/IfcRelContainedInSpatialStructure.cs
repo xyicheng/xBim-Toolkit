@@ -64,14 +64,12 @@ namespace Xbim.Ifc.ProductExtension
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _relatedElements;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _relatedElements, value, v => RelatedElements = v,
+                ModelHelper.SetModelValue(this, ref _relatedElements, value, v => RelatedElements = v,
                                            "RelatedElements");
             }
         }
@@ -84,14 +82,12 @@ namespace Xbim.Ifc.ProductExtension
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _relatingStructure;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _relatingStructure, value, v => RelatingStructure = v,
+                ModelHelper.SetModelValue(this, ref _relatingStructure, value, v => RelatingStructure = v,
                                            "RelatingStructure");
             }
         }

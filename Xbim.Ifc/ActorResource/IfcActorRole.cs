@@ -107,14 +107,14 @@ namespace Xbim.Ifc.ActorResource
     public class IfcActorRole : IFormattable, IPersistIfcEntity, ISupportChangeNotification, INotifyPropertyChanged,
                                 INotifyPropertyChanging
     {
-#if SupportActivation
+
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -143,7 +143,7 @@ namespace Xbim.Ifc.ActorResource
 
         #endregion
 
-#endif
+
 
         #region Fields and Events
 
@@ -194,12 +194,10 @@ namespace Xbim.Ifc.ActorResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _role;
             }
-            set { ModelManager.SetModelValue(this, ref _role, value, v => Role = v, "Role"); }
+            set { ModelHelper.SetModelValue(this, ref _role, value, v => Role = v, "Role"); }
         }
 
         /// <summary>
@@ -211,14 +209,12 @@ namespace Xbim.Ifc.ActorResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _userDefinedRole;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _userDefinedRole, value, v => UserDefinedRole = v,
+                ModelHelper.SetModelValue(this, ref _userDefinedRole, value, v => UserDefinedRole = v,
                                            "UserDefinedRole");
             }
         }
@@ -231,12 +227,10 @@ namespace Xbim.Ifc.ActorResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _description;
             }
-            set { ModelManager.SetModelValue(this, ref _description, null, v => Description = v, "Description"); }
+            set { ModelHelper.SetModelValue(this, ref _description, null, v => Description = v, "Description"); }
         }
 
         #endregion

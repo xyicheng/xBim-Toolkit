@@ -40,14 +40,13 @@ namespace Xbim.Ifc.GeometryResource
     public abstract class IfcRepresentationItem : ISupportChangeNotification, INotifyPropertyChanged, IfcLayeredItem,
                                                   IPersistIfcEntity, INotifyPropertyChanging
     {
-#if SupportActivation
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -76,8 +75,6 @@ namespace Xbim.Ifc.GeometryResource
 
         #endregion
 
-#endif
-
         #region Constructors
 
         #endregion
@@ -97,7 +94,7 @@ namespace Xbim.Ifc.GeometryResource
             get
             {
                 return
-                    ModelManager.ModelOf(this).InstancesWhere<IfcPresentationLayerAssignment>(
+                    ModelOf.InstancesWhere<IfcPresentationLayerAssignment>(
                         las => las.AssignedItems.Contains(this));
             }
         }
@@ -111,7 +108,7 @@ namespace Xbim.Ifc.GeometryResource
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class, 0, 1)]
         public IEnumerable<IfcStyledItem> StyledByItem
         {
-            get { return ModelManager.ModelOf(this).InstancesWhere<IfcStyledItem>(i => i.Item == this); }
+            get { return ModelOf.InstancesWhere<IfcStyledItem>(i => i.Item == this); }
         }
 
         #region ISupportIfcParser Members

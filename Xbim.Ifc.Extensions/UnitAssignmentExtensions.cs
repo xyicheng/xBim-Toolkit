@@ -117,7 +117,7 @@ namespace Xbim.Ifc.Extensions
         public static void SetOrChangeSIUnit(this IfcUnitAssignment ua, IfcUnitEnum unitType, IfcSIUnitName siUnitName,
                                              IfcSIPrefix siUnitPrefix)
         {
-            IModel model = ModelManager.ModelOf(ua);
+            IModel model = ua.ModelOf;
             IfcSIUnit si = ua.Units.OfType<IfcSIUnit>().FirstOrDefault(u => u.UnitType == unitType);
             if (si != null)
             {
@@ -186,7 +186,7 @@ namespace Xbim.Ifc.Extensions
         public static void SetOrChangeConversionUnit(this IfcUnitAssignment ua, IfcUnitEnum unitType,
                                                      ConversionBasedUnit unit)
         {
-            IModel model = ModelManager.ModelOf(ua);
+            IModel model = ua.ModelOf;
             IfcSIUnit si = ua.Units.OfType<IfcSIUnit>().FirstOrDefault(u => u.UnitType == unitType);
             if (si != null)
             {

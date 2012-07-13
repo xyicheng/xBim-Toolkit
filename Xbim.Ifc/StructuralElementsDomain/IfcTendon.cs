@@ -44,12 +44,10 @@ namespace Xbim.Ifc.StructuralElementsDomain
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _predefinedType;
             }
-            set { ModelManager.SetModelValue(this, ref _predefinedType, value, v => PredefinedType = v, "PredefinedType"); }
+            set { ModelHelper.SetModelValue(this, ref _predefinedType, value, v => PredefinedType = v, "PredefinedType"); }
         }
 
         [IfcAttribute(11, IfcAttributeState.Mandatory)]
@@ -57,14 +55,12 @@ namespace Xbim.Ifc.StructuralElementsDomain
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _nominalDiameter;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _nominalDiameter, value, v => NominalDiameter = v,
+                ModelHelper.SetModelValue(this, ref _nominalDiameter, value, v => NominalDiameter = v,
                                            "NominalDiameter");
             }
         }
@@ -74,14 +70,12 @@ namespace Xbim.Ifc.StructuralElementsDomain
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _crossSectionArea;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _crossSectionArea, value, v => CrossSectionArea = v,
+                ModelHelper.SetModelValue(this, ref _crossSectionArea, value, v => CrossSectionArea = v,
                                            "CrossSectionArea");
             }
         }
@@ -91,12 +85,10 @@ namespace Xbim.Ifc.StructuralElementsDomain
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _tensionForce;
             }
-            set { ModelManager.SetModelValue(this, ref _tensionForce, value, v => TensionForce = v, "TensionForce"); }
+            set { ModelHelper.SetModelValue(this, ref _tensionForce, value, v => TensionForce = v, "TensionForce"); }
         }
 
         [IfcAttribute(14, IfcAttributeState.Optional)]
@@ -104,12 +96,10 @@ namespace Xbim.Ifc.StructuralElementsDomain
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _preStress;
             }
-            set { ModelManager.SetModelValue(this, ref _preStress, value, v => PreStress = v, "PreStress"); }
+            set { ModelHelper.SetModelValue(this, ref _preStress, value, v => PreStress = v, "PreStress"); }
         }
 
         [IfcAttribute(15, IfcAttributeState.Optional)]
@@ -117,14 +107,12 @@ namespace Xbim.Ifc.StructuralElementsDomain
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _frictionCoefficient;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _frictionCoefficient, value, v => FrictionCoefficient = v,
+                ModelHelper.SetModelValue(this, ref _frictionCoefficient, value, v => FrictionCoefficient = v,
                                            "FrictionCoefficient");
             }
         }
@@ -134,12 +122,10 @@ namespace Xbim.Ifc.StructuralElementsDomain
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _anchorageSlip;
             }
-            set { ModelManager.SetModelValue(this, ref _anchorageSlip, value, v => AnchorageSlip = v, "AnchorageSlip"); }
+            set { ModelHelper.SetModelValue(this, ref _anchorageSlip, value, v => AnchorageSlip = v, "AnchorageSlip"); }
         }
 
         [IfcAttribute(17, IfcAttributeState.Optional)]
@@ -147,14 +133,12 @@ namespace Xbim.Ifc.StructuralElementsDomain
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _minCurvatureRadius;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _minCurvatureRadius, value, v => MinCurvatureRadius = v,
+                ModelHelper.SetModelValue(this, ref _minCurvatureRadius, value, v => MinCurvatureRadius = v,
                                            "MinCurvatureRadius");
             }
         }

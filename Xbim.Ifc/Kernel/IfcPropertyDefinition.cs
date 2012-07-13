@@ -40,7 +40,7 @@ namespace Xbim.Ifc.Kernel
             get
             {
                 return
-                    ModelManager.ModelOf(this).InstancesWhere<IfcRelAssociates>(
+                    ModelOf.InstancesWhere<IfcRelAssociates>(
                         r => (r.RelatedObjects != null && r.RelatedObjects.Contains(this)));
             }
         }

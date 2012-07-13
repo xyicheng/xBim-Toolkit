@@ -56,12 +56,10 @@ namespace Xbim.Ifc.ProductExtension
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _elementType;
             }
-            set { ModelManager.SetModelValue(this, ref _elementType, value, v => ElementType = v, "ElementType"); }
+            set { ModelHelper.SetModelValue(this, ref _elementType, value, v => ElementType = v, "ElementType"); }
         }
 
         public override void IfcParse(int propIndex, IPropertyValue value)

@@ -48,14 +48,12 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _relatingStructuralMember;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _relatingStructuralMember, value, v => RelatingStructuralMember = v,
+                ModelHelper.SetModelValue(this, ref _relatingStructuralMember, value, v => RelatingStructuralMember = v,
                                            "RelatingStructuralMember");
             }
         }
@@ -68,14 +66,12 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _relatedStructuralConnection;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _relatedStructuralConnection, value,
+                ModelHelper.SetModelValue(this, ref _relatedStructuralConnection, value,
                                            v => RelatedStructuralConnection = v, "RelatedStructuralConnection");
             }
         }
@@ -88,14 +84,12 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _appliedCondition;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _appliedCondition, value, v => AppliedCondition = v,
+                ModelHelper.SetModelValue(this, ref _appliedCondition, value, v => AppliedCondition = v,
                                            "AppliedCondition");
             }
         }
@@ -108,14 +102,12 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _additionalConditions;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _additionalConditions, value, v => AdditionalConditions = v,
+                ModelHelper.SetModelValue(this, ref _additionalConditions, value, v => AdditionalConditions = v,
                                            "AdditionalConditions");
             }
         }
@@ -128,14 +120,12 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _supportedLength;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _supportedLength, value, v => SupportedLength = v,
+                ModelHelper.SetModelValue(this, ref _supportedLength, value, v => SupportedLength = v,
                                            "SupportedLength");
             }
         }
@@ -149,14 +139,12 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _conditionCoordinateSystem;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _conditionCoordinateSystem, value,
+                ModelHelper.SetModelValue(this, ref _conditionCoordinateSystem, value,
                                            v => ConditionCoordinateSystem = v, "ConditionCoordinateSystem");
             }
         }

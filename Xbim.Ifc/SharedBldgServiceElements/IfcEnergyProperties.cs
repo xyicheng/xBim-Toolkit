@@ -37,12 +37,10 @@ namespace Xbim.Ifc.SharedBldgServiceElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _energySequence;
             }
-            set { ModelManager.SetModelValue(this, ref _energySequence, value, v => EnergySequence = v, "EnergySequence"); }
+            set { ModelHelper.SetModelValue(this, ref _energySequence, value, v => EnergySequence = v, "EnergySequence"); }
         }
 
         [IfcAttribute(6, IfcAttributeState.Optional)]
@@ -50,14 +48,12 @@ namespace Xbim.Ifc.SharedBldgServiceElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _userDefinedEnergySequence;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _userDefinedEnergySequence, value,
+                ModelHelper.SetModelValue(this, ref _userDefinedEnergySequence, value,
                                            v => UserDefinedEnergySequence = v, "UserDefinedEnergySequence");
             }
         }

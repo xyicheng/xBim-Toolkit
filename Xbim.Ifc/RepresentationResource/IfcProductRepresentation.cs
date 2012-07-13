@@ -37,14 +37,13 @@ namespace Xbim.Ifc.RepresentationResource
     public class IfcProductRepresentation : ISupportChangeNotification, INotifyPropertyChanged, IPersistIfcEntity,
                                             INotifyPropertyChanging
     {
-#if SupportActivation
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -72,8 +71,6 @@ namespace Xbim.Ifc.RepresentationResource
         }
 
         #endregion
-
-#endif
 
         public IfcProductRepresentation()
         {
@@ -105,12 +102,10 @@ namespace Xbim.Ifc.RepresentationResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _name;
             }
-            set { ModelManager.SetModelValue(this, ref _name, value, v => Name = value, "Name"); }
+            set { ModelHelper.SetModelValue(this, ref _name, value, v => Name = value, "Name"); }
         }
 
         /// <summary>
@@ -121,12 +116,10 @@ namespace Xbim.Ifc.RepresentationResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _description;
             }
-            set { ModelManager.SetModelValue(this, ref _description, value, v => Description = value, "Description"); }
+            set { ModelHelper.SetModelValue(this, ref _description, value, v => Description = value, "Description"); }
         }
 
         /// <summary>
@@ -137,14 +130,12 @@ namespace Xbim.Ifc.RepresentationResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _representations;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _representations, value, v => Representations = v,
+                ModelHelper.SetModelValue(this, ref _representations, value, v => Representations = v,
                                            "Representations");
             }
         }

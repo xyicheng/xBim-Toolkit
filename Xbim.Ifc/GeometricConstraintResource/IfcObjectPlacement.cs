@@ -28,14 +28,13 @@ namespace Xbim.Ifc.GeometricConstraintResource
     public abstract class IfcObjectPlacement : ISupportChangeNotification, INotifyPropertyChanged, IPersistIfcEntity,
                                                INotifyPropertyChanging
     {
-#if SupportActivation
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -64,8 +63,6 @@ namespace Xbim.Ifc.GeometricConstraintResource
 
         #endregion
 
-#endif
-
         #region Inverse Relationships
 
         /// <summary>
@@ -75,7 +72,7 @@ namespace Xbim.Ifc.GeometricConstraintResource
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class, 1, 1)]
         public IEnumerable<IfcProduct> PlacesObject
         {
-            get { return ModelManager.ModelOf(this).InstancesWhere<IfcProduct>(p => p.ObjectPlacement == this); }
+            get { return ModelOf.InstancesWhere<IfcProduct>(p => p.ObjectPlacement == this); }
         }
 
         /// <summary>
@@ -85,7 +82,7 @@ namespace Xbim.Ifc.GeometricConstraintResource
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class)]
         public IEnumerable<IfcLocalPlacement> ReferencedByPlacements
         {
-            get { return ModelManager.ModelOf(this).InstancesWhere<IfcLocalPlacement>(l => l.PlacementRelTo == this); }
+            get { return ModelOf.InstancesWhere<IfcLocalPlacement>(l => l.PlacementRelTo == this); }
         }
 
         #endregion

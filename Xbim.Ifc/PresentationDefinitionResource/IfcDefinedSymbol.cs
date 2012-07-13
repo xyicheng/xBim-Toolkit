@@ -48,12 +48,10 @@ namespace Xbim.Ifc.PresentationDefinitionResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _definition;
             }
-            set { ModelManager.SetModelValue(this, ref _definition, value, v => Definition = v, "Definition"); }
+            set { ModelHelper.SetModelValue(this, ref _definition, value, v => Definition = v, "Definition"); }
         }
 
         /// <summary>
@@ -64,12 +62,10 @@ namespace Xbim.Ifc.PresentationDefinitionResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _target;
             }
-            set { ModelManager.SetModelValue(this, ref _target, value, v => Target = v, "Target"); }
+            set { ModelHelper.SetModelValue(this, ref _target, value, v => Target = v, "Target"); }
         }
 
 

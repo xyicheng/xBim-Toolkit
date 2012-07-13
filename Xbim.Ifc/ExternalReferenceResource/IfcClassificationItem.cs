@@ -36,14 +36,13 @@ namespace Xbim.Ifc.ExternalReferenceResource
     public class IfcClassificationItem : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                          INotifyPropertyChanging
     {
-#if SupportActivation
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -72,7 +71,6 @@ namespace Xbim.Ifc.ExternalReferenceResource
 
         #endregion
 
-#endif
 
         #region Fields
 
@@ -90,12 +88,10 @@ namespace Xbim.Ifc.ExternalReferenceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _notation;
             }
-            set { ModelManager.SetModelValue(this, ref _notation, value, v => Notation = v, "Notation"); }
+            set { ModelHelper.SetModelValue(this, ref _notation, value, v => Notation = v, "Notation"); }
         }
 
         /// <summary>
@@ -106,12 +102,10 @@ namespace Xbim.Ifc.ExternalReferenceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _itemOf;
             }
-            set { ModelManager.SetModelValue(this, ref _itemOf, value, v => ItemOf = v, "ItemOf"); }
+            set { ModelHelper.SetModelValue(this, ref _itemOf, value, v => ItemOf = v, "ItemOf"); }
         }
 
         /// <summary>
@@ -127,12 +121,10 @@ namespace Xbim.Ifc.ExternalReferenceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _title;
             }
-            set { ModelManager.SetModelValue(this, ref _title, value, v => Title = v, "Title"); }
+            set { ModelHelper.SetModelValue(this, ref _title, value, v => Title = v, "Title"); }
         }
 
         /// <summary>
@@ -144,7 +136,7 @@ namespace Xbim.Ifc.ExternalReferenceResource
             get
             {
                 return
-                    ModelManager.ModelOf(this).InstancesWhere<IfcClassificationItemRelationship>(
+                    ModelOf.InstancesWhere<IfcClassificationItemRelationship>(
                         c => c.RelatedItems.Contains(this));
             }
         }
@@ -158,7 +150,7 @@ namespace Xbim.Ifc.ExternalReferenceResource
             get
             {
                 return
-                    ModelManager.ModelOf(this).InstancesWhere<IfcClassificationItemRelationship>(
+                    ModelOf.InstancesWhere<IfcClassificationItemRelationship>(
                         c => c.RelatingItem == this);
             }
         }

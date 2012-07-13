@@ -44,14 +44,12 @@ namespace Xbim.Ifc.Kernel
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _relatingResource;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _relatingResource, value, v => RelatingResource = v,
+                ModelHelper.SetModelValue(this, ref _relatingResource, value, v => RelatingResource = v,
                                            "RelatingResource");
             }
         }

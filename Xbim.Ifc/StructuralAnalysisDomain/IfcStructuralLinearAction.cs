@@ -36,14 +36,12 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _projectedOrTrue;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _projectedOrTrue, value, v => ProjectedOrTrue = v,
+                ModelHelper.SetModelValue(this, ref _projectedOrTrue, value, v => ProjectedOrTrue = v,
                                            "ProjectedOrTrue");
             }
         }

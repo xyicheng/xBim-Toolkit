@@ -181,9 +181,7 @@ namespace Xbim.Ifc.GeometryResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return this;
             }
             set
@@ -193,13 +191,13 @@ namespace Xbim.Ifc.GeometryResource
                     switch (i)
                     {
                         case 0:
-                            ModelManager.SetModelValue(this, ref _x, value[0], v => _x = v, "X");
+                            ModelHelper.SetModelValue(this, ref _x, value[0], v => _x = v, "X");
                             break;
                         case 1:
-                            ModelManager.SetModelValue(this, ref _y, value[1], v => _y = v, "Y");
+                            ModelHelper.SetModelValue(this, ref _y, value[1], v => _y = v, "Y");
                             break;
                         case 2:
-                            ModelManager.SetModelValue(this, ref _z, value[2], v => _z = v, "Z");
+                            ModelHelper.SetModelValue(this, ref _z, value[2], v => _z = v, "Z");
                             break;
                     }
                 }
@@ -227,9 +225,7 @@ namespace Xbim.Ifc.GeometryResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 if (double.IsNaN(_x)) return 0;
                 if (double.IsNaN(_y)) return 1;
                 if (double.IsNaN(_z)) return 2;
@@ -242,9 +238,7 @@ namespace Xbim.Ifc.GeometryResource
         /// </summary>
         public Point WPoint2D()
         {
-#if SupportActivation
             ((IPersistIfcEntity) this).Activate(false);
-#endif
             return new Point(_x, _y);
         }
 
@@ -253,9 +247,7 @@ namespace Xbim.Ifc.GeometryResource
         /// </summary>
         public Point3D WPoint3D()
         {
-#if SupportActivation
             ((IPersistIfcEntity) this).Activate(false);
-#endif
             return new Point3D(_x, _y, _z);
         }
 
@@ -264,50 +256,44 @@ namespace Xbim.Ifc.GeometryResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _x;
             }
-            set { ModelManager.SetModelValue(this, ref _x, value, v => _x = v, "X"); }
+            set { ModelHelper.SetModelValue(this, ref _x, value, v => _x = v, "X"); }
         }
 
         public double Y
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _y;
             }
-            set { ModelManager.SetModelValue(this, ref _y, value, v => _y = v, "Y"); }
+            set { ModelHelper.SetModelValue(this, ref _y, value, v => _y = v, "Y"); }
         }
 
         public double Z
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _z;
             }
-            set { ModelManager.SetModelValue(this, ref _z, value, v => _z = v, "Z"); }
+            set { ModelHelper.SetModelValue(this, ref _z, value, v => _z = v, "Z"); }
         }
 
         public void SetXYZ(double x, double y, double z)
         {
-            ModelManager.SetModelValue(this, ref _x, x, v => _x = v, "X");
-            ModelManager.SetModelValue(this, ref _y, y, v => _y = v, "Y");
-            ModelManager.SetModelValue(this, ref _z, z, v => _z = v, "Z");
+            ModelHelper.SetModelValue(this, ref _x, x, v => _x = v, "X");
+            ModelHelper.SetModelValue(this, ref _y, y, v => _y = v, "Y");
+            ModelHelper.SetModelValue(this, ref _z, z, v => _z = v, "Z");
         }
 
         public void SetXY(double x, double y)
         {
-            ModelManager.SetModelValue(this, ref _x, x, v => _x = v, "X");
-            ModelManager.SetModelValue(this, ref _y, y, v => _y = v, "Y");
-            ModelManager.SetModelValue(this, ref _z, double.NaN, v => _z = v, "Z");
+            ModelHelper.SetModelValue(this, ref _x, x, v => _x = v, "X");
+            ModelHelper.SetModelValue(this, ref _y, y, v => _y = v, "Y");
+            ModelHelper.SetModelValue(this, ref _z, double.NaN, v => _z = v, "Z");
         }
 
         public override string ToString()
@@ -330,9 +316,7 @@ namespace Xbim.Ifc.GeometryResource
 
         public IEnumerator<IfcLengthMeasure> GetEnumerator()
         {
-#if SupportActivation
             ((IPersistIfcEntity) this).Activate(false);
-#endif
             return new CoordinateListEnumerator(this);
         }
 
@@ -342,9 +326,7 @@ namespace Xbim.Ifc.GeometryResource
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-#if SupportActivation
             ((IPersistIfcEntity) this).Activate(false);
-#endif
             return new CoordinateListEnumerator(this);
         }
 
@@ -363,9 +345,7 @@ namespace Xbim.Ifc.GeometryResource
 
         public int IndexOf(IfcLengthMeasure item)
         {
-#if SupportActivation
             ((IPersistIfcEntity) this).Activate(false);
-#endif
             if (double.IsNaN(item)) throw new Exception("Cannot treat a NAN as a coordinate value");
             if (_x == item) return 0;
             if (_y == item) return 1;
@@ -387,9 +367,7 @@ namespace Xbim.Ifc.GeometryResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 switch (index)
                 {
                     case 0:
@@ -407,16 +385,16 @@ namespace Xbim.Ifc.GeometryResource
                 switch (index)
                 {
                     case 0:
-                        ModelManager.SetModelValue(this, ref _x, value, v => _x = v, "X");
+                        ModelHelper.SetModelValue(this, ref _x, value, v => _x = v, "X");
                         break;
                     case 1:
-                        if (double.IsNaN(_x)) ModelManager.SetModelValue(this, ref _x, 0, v => _x = v, "X");
-                        ModelManager.SetModelValue(this, ref _y, value, v => _y = v, "Y");
+                        if (double.IsNaN(_x)) ModelHelper.SetModelValue(this, ref _x, 0, v => _x = v, "X");
+                        ModelHelper.SetModelValue(this, ref _y, value, v => _y = v, "Y");
                         break;
                     case 2:
-                        if (double.IsNaN(_x)) ModelManager.SetModelValue(this, ref _x, 0, v => _x = v, "X");
-                        if (double.IsNaN(_y)) ModelManager.SetModelValue(this, ref _y, 0, v => _y = v, "Y");
-                        ModelManager.SetModelValue(this, ref _z, value, v => _z = v, "Z");
+                        if (double.IsNaN(_x)) ModelHelper.SetModelValue(this, ref _x, 0, v => _x = v, "X");
+                        if (double.IsNaN(_y)) ModelHelper.SetModelValue(this, ref _y, 0, v => _y = v, "Y");
+                        ModelHelper.SetModelValue(this, ref _z, value, v => _z = v, "Z");
                         break;
                     default:
                         throw new Exception("Index out of bounds for CartesianPoint");
@@ -457,9 +435,7 @@ namespace Xbim.Ifc.GeometryResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 if (double.IsNaN(_x)) return 0;
                 if (double.IsNaN(_y)) return 1;
                 if (double.IsNaN(_z)) return 2;

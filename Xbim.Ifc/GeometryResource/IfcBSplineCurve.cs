@@ -73,12 +73,10 @@ namespace Xbim.Ifc.GeometryResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _degree;
             }
-            set { ModelManager.SetModelValue(this, ref _degree, value, v => Degree = v, "Degree"); }
+            set { ModelHelper.SetModelValue(this, ref _degree, value, v => Degree = v, "Degree"); }
         }
 
 
@@ -90,14 +88,12 @@ namespace Xbim.Ifc.GeometryResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _controlPointsList;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _controlPointsList, value, v => ControlPointsList = v,
+                ModelHelper.SetModelValue(this, ref _controlPointsList, value, v => ControlPointsList = v,
                                            "ControlPointsList");
             }
         }
@@ -111,12 +107,10 @@ namespace Xbim.Ifc.GeometryResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _curveForm;
             }
-            set { ModelManager.SetModelValue(this, ref _curveForm, value, v => CurveForm = v, "CurveForm"); }
+            set { ModelHelper.SetModelValue(this, ref _curveForm, value, v => CurveForm = v, "CurveForm"); }
         }
 
 
@@ -128,12 +122,10 @@ namespace Xbim.Ifc.GeometryResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _closedCurve;
             }
-            set { ModelManager.SetModelValue(this, ref _closedCurve, value, v => ClosedCurve = v, "ClosedCurve"); }
+            set { ModelHelper.SetModelValue(this, ref _closedCurve, value, v => ClosedCurve = v, "ClosedCurve"); }
         }
 
 
@@ -145,12 +137,10 @@ namespace Xbim.Ifc.GeometryResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _selfIntersect;
             }
-            set { ModelManager.SetModelValue(this, ref _selfIntersect, value, v => SelfIntersect = v, "SelfIntersect"); }
+            set { ModelHelper.SetModelValue(this, ref _selfIntersect, value, v => SelfIntersect = v, "SelfIntersect"); }
         }
 
 

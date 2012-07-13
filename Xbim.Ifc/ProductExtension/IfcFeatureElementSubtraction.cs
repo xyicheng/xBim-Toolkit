@@ -56,7 +56,7 @@ namespace Xbim.Ifc.ProductExtension
             get
             {
                 return
-                    ModelManager.ModelOf(this).InstancesWhere<IfcRelVoidsElement>(r => r.RelatedOpeningElement == this).
+                    ModelOf.InstancesWhere<IfcRelVoidsElement>(r => r.RelatedOpeningElement == this).
                         FirstOrDefault();
             }
         }

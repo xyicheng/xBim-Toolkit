@@ -61,12 +61,10 @@ namespace Xbim.Ifc.GeometryResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _axis;
             }
-            set { ModelManager.SetModelValue(this, ref _axis, value, v => Axis = v, "Axis"); }
+            set { ModelHelper.SetModelValue(this, ref _axis, value, v => Axis = v, "Axis"); }
         }
 
         /// <summary>
@@ -77,12 +75,10 @@ namespace Xbim.Ifc.GeometryResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _refDirection;
             }
-            set { ModelManager.SetModelValue(this, ref _refDirection, value, v => RefDirection = v, "RefDirection"); }
+            set { ModelHelper.SetModelValue(this, ref _refDirection, value, v => RefDirection = v, "RefDirection"); }
         }
 
         public override void IfcParse(int propIndex, IPropertyValue value)

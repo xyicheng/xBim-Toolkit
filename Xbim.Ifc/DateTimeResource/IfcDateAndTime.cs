@@ -26,14 +26,13 @@ namespace Xbim.Ifc.DateTimeResource
     public class IfcDateAndTime : IfcDateTimeSelect, INotifyPropertyChanged, ISupportChangeNotification,
                                   IPersistIfcEntity, IfcObjectReferenceSelect, INotifyPropertyChanging
     {
-#if SupportActivation
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -62,8 +61,6 @@ namespace Xbim.Ifc.DateTimeResource
 
         #endregion
 
-#endif
-
         #region Fields
 
         private IfcCalendarDate _dateComponent;
@@ -76,12 +73,10 @@ namespace Xbim.Ifc.DateTimeResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _dateComponent;
             }
-            set { ModelManager.SetModelValue(this, ref _dateComponent, value, v => DateComponent = v, "DateComponent"); }
+            set { ModelHelper.SetModelValue(this, ref _dateComponent, value, v => DateComponent = v, "DateComponent"); }
         }
 
         [IfcAttribute(2, IfcAttributeState.Mandatory)]
@@ -89,12 +84,10 @@ namespace Xbim.Ifc.DateTimeResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _localTime;
             }
-            set { ModelManager.SetModelValue(this, ref _localTime, value, v => TimeComponent = v, "TimeComponent"); }
+            set { ModelHelper.SetModelValue(this, ref _localTime, value, v => TimeComponent = v, "TimeComponent"); }
         }
 
         #region INotifyPropertyChanged Members

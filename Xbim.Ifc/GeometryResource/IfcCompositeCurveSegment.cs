@@ -54,12 +54,10 @@ namespace Xbim.Ifc.GeometryResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _transition;
             }
-            set { ModelManager.SetModelValue(this, ref _transition, value, v => Transition = v, "Transition"); }
+            set { ModelHelper.SetModelValue(this, ref _transition, value, v => Transition = v, "Transition"); }
         }
 
         /// <summary>
@@ -70,12 +68,10 @@ namespace Xbim.Ifc.GeometryResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _sameSense;
             }
-            set { ModelManager.SetModelValue(this, ref _sameSense, value, v => SameSense = v, "SameSense"); }
+            set { ModelHelper.SetModelValue(this, ref _sameSense, value, v => SameSense = v, "SameSense"); }
         }
 
         /// <summary>
@@ -86,12 +82,10 @@ namespace Xbim.Ifc.GeometryResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _parentCurve;
             }
-            set { ModelManager.SetModelValue(this, ref _parentCurve, value, v => ParentCurve = v, "ParentCurve"); }
+            set { ModelHelper.SetModelValue(this, ref _parentCurve, value, v => ParentCurve = v, "ParentCurve"); }
         }
 
 
@@ -133,7 +127,7 @@ namespace Xbim.Ifc.GeometryResource
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class, 1)]
         public IEnumerable<IfcCompositeCurve> UsingCurves
         {
-            get { return ModelManager.ModelOf(this).InstancesWhere<IfcCompositeCurve>(c => c.Segments.Contains(this)); }
+            get { return ModelOf.InstancesWhere<IfcCompositeCurve>(c => c.Segments.Contains(this)); }
         }
 
         #endregion

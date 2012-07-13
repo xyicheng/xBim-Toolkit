@@ -27,14 +27,13 @@ namespace Xbim.Ifc.PresentationAppearanceResource
     public class IfcSurfaceStyleRefraction : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                              IfcSurfaceStyleElementSelect, INotifyPropertyChanging
     {
-#if SupportActivation
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -63,8 +62,6 @@ namespace Xbim.Ifc.PresentationAppearanceResource
 
         #endregion
 
-#endif
-
         #region Fields
 
         private IfcReal? _refractionIndex;
@@ -84,14 +81,12 @@ namespace Xbim.Ifc.PresentationAppearanceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _refractionIndex;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _refractionIndex, value, v => RefractionIndex = v,
+                ModelHelper.SetModelValue(this, ref _refractionIndex, value, v => RefractionIndex = v,
                                            "RefractionIndex");
             }
         }
@@ -106,14 +101,12 @@ namespace Xbim.Ifc.PresentationAppearanceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _dispersionFactor;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _dispersionFactor, value, v => DispersionFactor = v,
+                ModelHelper.SetModelValue(this, ref _dispersionFactor, value, v => DispersionFactor = v,
                                            "DispersionFactor");
             }
         }

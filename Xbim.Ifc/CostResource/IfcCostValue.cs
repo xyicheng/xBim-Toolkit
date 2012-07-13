@@ -65,12 +65,10 @@ namespace Xbim.Ifc.CostResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _costType;
             }
-            set { ModelManager.SetModelValue(this, ref _costType, value, v => CostType = v, "CostType"); }
+            set { ModelHelper.SetModelValue(this, ref _costType, value, v => CostType = v, "CostType"); }
         }
 
         /// <summary>
@@ -81,12 +79,10 @@ namespace Xbim.Ifc.CostResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _condition;
             }
-            set { ModelManager.SetModelValue(this, ref _condition, value, v => Condition = v, "Condition"); }
+            set { ModelHelper.SetModelValue(this, ref _condition, value, v => Condition = v, "Condition"); }
         }
 
         public override void IfcParse(int propIndex, IPropertyValue value)

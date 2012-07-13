@@ -46,12 +46,10 @@ namespace Xbim.Ifc.QuantityResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _lengthValue;
             }
-            set { ModelManager.SetModelValue(this, ref _lengthValue, value, v => LengthValue = v, "LengthValue"); }
+            set { ModelHelper.SetModelValue(this, ref _lengthValue, value, v => LengthValue = v, "LengthValue"); }
         }
 
         public override void IfcParse(int propIndex, IPropertyValue value)

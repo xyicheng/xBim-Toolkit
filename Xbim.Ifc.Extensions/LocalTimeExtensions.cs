@@ -29,7 +29,7 @@ namespace Xbim.Ifc.Extensions
             lt.HourComponent = localTime.Hour;
             lt.SecondComponent = localTime.Second;
             lt.MinuteComponent = localTime.Minute;
-            lt.Zone = ModelManager.ModelOf(lt).CoordinatedUniversalTimeOffset;
+            lt.Zone = lt.ModelOf.CoordinatedUniversalTimeOffset;
             TimeZone tz = TimeZone.CurrentTimeZone;
             DaylightTime dt = tz.GetDaylightChanges(localTime.Year);
             lt.DaylightSavingOffset = dt.Delta.Hours;

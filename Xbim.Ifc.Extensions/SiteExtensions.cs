@@ -18,6 +18,9 @@ using Xbim.Ifc.Kernel;
 using Xbim.Ifc.ProductExtension;
 using Xbim.Ifc.RepresentationResource;
 using Xbim.XbimExtensions;
+using Xbim.Ifc.PropertyResource;
+using Xbim.Ifc.MeasureResource;
+using Xbim.Ifc.QuantityResource;
 
 #endregion
 
@@ -25,6 +28,38 @@ namespace Xbim.Ifc.Extensions
 {
     public static class SiteExtensions
     {
+        #region Property Values
+        /// <summary>
+        /// Returns the projected footprint are of the site, this value is derived and makes use of property sets not in the ifc schema
+        /// </summary>
+        /// <param name="site"></param>
+        /// <returns></returns>
+        public static IfcAreaMeasure? GetFootprintArea(this IfcSite site)
+        {
+            IfcQuantityArea qArea = site.GetQuantity<IfcQuantityArea>("BaseQuantities", "GrossArea");
+            if(qArea == null) qArea = site.GetQuantity<IfcQuantityArea>("GrossArea"); //just look for any area
+            if (qArea != null) return qArea.AreaValue;
+            //if revit try their value
+            IfcAreaMeasure val = site.GetPropertySingleValue<IfcAreaMeasure>("PSet_Revit_Dimensions", "Projected Area");
+            if (val != null) return val;
+
+            return null;
+        }
+
+        /// <summary>
+        /// Returns all buildings at the highest level of spatial structural decomposition (i.e. root buildings for this site)
+        /// </summary>
+        public static IEnumerable<IfcBuilding> GetBuildings(this IfcSite site)
+        {
+            IEnumerable<IfcRelAggregates> aggregate = site.IsDecomposedBy.OfType<IfcRelAggregates>();
+            foreach (IfcRelAggregates rel in aggregate)
+                foreach (IfcBuilding building in rel.RelatedObjects.OfType<IfcBuilding>())
+                    yield return building;
+        }
+
+        #endregion
+
+
         #region Representation methods
 
         public static IfcShapeRepresentation GetFootPrintRepresentation(this IfcSite site)
@@ -41,7 +76,7 @@ namespace Xbim.Ifc.Extensions
             IEnumerable<IfcRelDecomposes> decomposition = site.IsDecomposedBy;
             if (decomposition.Count() == 0) //none defined create the relationship
             {
-                IfcRelAggregates relSub = ModelManager.ModelOf(site).New<IfcRelAggregates>();
+                IfcRelAggregates relSub = site.ModelOf.New<IfcRelAggregates>();
                 relSub.RelatingObject = site;
                 relSub.RelatedObjects.Add_Reversible(building);
             }
@@ -56,7 +91,7 @@ namespace Xbim.Ifc.Extensions
             IEnumerable<IfcRelDecomposes> decomposition = site.IsDecomposedBy;
             if (decomposition.Count() == 0) //none defined create the relationship
             {
-                IfcRelAggregates relSub = ModelManager.ModelOf(site).New<IfcRelAggregates>();
+                IfcRelAggregates relSub = site.ModelOf.New<IfcRelAggregates>();
                 relSub.RelatingObject = site;
                 relSub.RelatedObjects.Add_Reversible(subSite);
             }
@@ -72,7 +107,7 @@ namespace Xbim.Ifc.Extensions
             if (relatedElements.Count() == 0) //none defined create the relationship
             {
                 IfcRelContainedInSpatialStructure relSe =
-                    ModelManager.ModelOf(site).New<IfcRelContainedInSpatialStructure>();
+                    site.ModelOf.New<IfcRelContainedInSpatialStructure>();
                 relSe.RelatingStructure = site;
                 relSe.RelatedElements.Add_Reversible(element);
             }

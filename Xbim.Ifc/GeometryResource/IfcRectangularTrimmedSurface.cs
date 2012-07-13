@@ -47,12 +47,10 @@ namespace Xbim.Ifc.GeometryResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _basisSurface;
             }
-            set { ModelManager.SetModelValue(this, ref _basisSurface, value, v => BasisSurface = v, "BasisSurface"); }
+            set { ModelHelper.SetModelValue(this, ref _basisSurface, value, v => BasisSurface = v, "BasisSurface"); }
         }
 
 
@@ -64,12 +62,10 @@ namespace Xbim.Ifc.GeometryResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _u1;
             }
-            set { ModelManager.SetModelValue(this, ref _u1, value, v => U1 = v, "U1"); }
+            set { ModelHelper.SetModelValue(this, ref _u1, value, v => U1 = v, "U1"); }
         }
 
         /// <summary>
@@ -80,12 +76,10 @@ namespace Xbim.Ifc.GeometryResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _v1;
             }
-            set { ModelManager.SetModelValue(this, ref _v1, value, v => V1 = v, "V1"); }
+            set { ModelHelper.SetModelValue(this, ref _v1, value, v => V1 = v, "V1"); }
         }
 
         /// <summary>
@@ -96,12 +90,10 @@ namespace Xbim.Ifc.GeometryResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _u2;
             }
-            set { ModelManager.SetModelValue(this, ref _u2, value, v => U2 = v, "U2"); }
+            set { ModelHelper.SetModelValue(this, ref _u2, value, v => U2 = v, "U2"); }
         }
 
         /// <summary>
@@ -112,12 +104,10 @@ namespace Xbim.Ifc.GeometryResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _v2;
             }
-            set { ModelManager.SetModelValue(this, ref _v2, value, v => V2 = v, "V2"); }
+            set { ModelHelper.SetModelValue(this, ref _v2, value, v => V2 = v, "V2"); }
         }
 
 
@@ -129,12 +119,10 @@ namespace Xbim.Ifc.GeometryResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _uSense;
             }
-            set { ModelManager.SetModelValue(this, ref _uSense, value, v => USense = v, "USense"); }
+            set { ModelHelper.SetModelValue(this, ref _uSense, value, v => USense = v, "USense"); }
         }
 
         /// <summary>
@@ -145,12 +133,10 @@ namespace Xbim.Ifc.GeometryResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _vSense;
             }
-            set { ModelManager.SetModelValue(this, ref _vSense, value, v => VSense = v, "VSense"); }
+            set { ModelHelper.SetModelValue(this, ref _vSense, value, v => VSense = v, "VSense"); }
         }
 
         public override void IfcParse(int propIndex, IPropertyValue value)

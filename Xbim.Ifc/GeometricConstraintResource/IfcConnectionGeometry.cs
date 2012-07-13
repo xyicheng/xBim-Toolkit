@@ -39,14 +39,13 @@ namespace Xbim.Ifc.GeometricConstraintResource
     public abstract class IfcConnectionGeometry : ISupportChangeNotification, INotifyPropertyChanged, IPersistIfcEntity,
                                                   INotifyPropertyChanging
     {
-#if SupportActivation
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -75,7 +74,6 @@ namespace Xbim.Ifc.GeometricConstraintResource
 
         #endregion
 
-#endif
 
         public abstract void IfcParse(int propIndex, IPropertyValue value);
 

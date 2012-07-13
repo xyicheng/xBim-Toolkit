@@ -52,12 +52,10 @@ namespace Xbim.Ifc.GeometricModelResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity)this).Activate(false);
-#endif
                 return _directrix;
             }
-            set { ModelManager.SetModelValue(this, ref _directrix, value, v => Directrix = v, "Directrix"); }
+            set { ModelHelper.SetModelValue(this, ref _directrix, value, v => Directrix = v, "Directrix"); }
         }
 
         /// <summary>
@@ -69,12 +67,10 @@ namespace Xbim.Ifc.GeometricModelResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity)this).Activate(false);
-#endif
                 return _startParam;
             }
-            set { ModelManager.SetModelValue(this, ref _startParam, value, v => StartParam = v, "StartParam"); }
+            set { ModelHelper.SetModelValue(this, ref _startParam, value, v => StartParam = v, "StartParam"); }
         }
 
         /// <summary>
@@ -86,12 +82,10 @@ namespace Xbim.Ifc.GeometricModelResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity)this).Activate(false);
-#endif
                 return _endParam;
             }
-            set { ModelManager.SetModelValue(this, ref _endParam, value, v => EndParam = v, "EndParam"); }
+            set { ModelHelper.SetModelValue(this, ref _endParam, value, v => EndParam = v, "EndParam"); }
         }
 
         /// <summary>
@@ -103,12 +97,10 @@ namespace Xbim.Ifc.GeometricModelResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity)this).Activate(false);
-#endif
                 return _referenceSurface;
             }
-            set { ModelManager.SetModelValue(this, ref _referenceSurface, value, v => ReferenceSurface = v, "ReferenceSurface"); }
+            set { ModelHelper.SetModelValue(this, ref _referenceSurface, value, v => ReferenceSurface = v, "ReferenceSurface"); }
         }
 
 

@@ -42,14 +42,13 @@ namespace Xbim.Ifc.RepresentationResource
     public class IfcRepresentation : ISupportChangeNotification, INotifyPropertyChanged, IPersistIfcEntity,
                                      IfcLayeredItem, INotifyPropertyChanging
     {
-#if SupportActivation
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -77,9 +76,6 @@ namespace Xbim.Ifc.RepresentationResource
         }
 
         #endregion
-
-#endif
-
 
         public IfcRepresentation()
         {
@@ -112,12 +108,10 @@ namespace Xbim.Ifc.RepresentationResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _contextOfItems;
             }
-            set { ModelManager.SetModelValue(this, ref _contextOfItems, value, v => ContextOfItems = v, "ContextOfItems"); }
+            set { ModelHelper.SetModelValue(this, ref _contextOfItems, value, v => ContextOfItems = v, "ContextOfItems"); }
         }
 
         /// <summary>
@@ -128,14 +122,12 @@ namespace Xbim.Ifc.RepresentationResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _representationIdentifier;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _representationIdentifier, value, v => RepresentationIdentifier = v,
+                ModelHelper.SetModelValue(this, ref _representationIdentifier, value, v => RepresentationIdentifier = v,
                                            "RepresentationIdentifier");
             }
         }
@@ -151,14 +143,12 @@ namespace Xbim.Ifc.RepresentationResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _representationType;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _representationType, value, v => RepresentationType = v,
+                ModelHelper.SetModelValue(this, ref _representationType, value, v => RepresentationType = v,
                                            "RepresentationType");
             }
         }
@@ -172,12 +162,10 @@ namespace Xbim.Ifc.RepresentationResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _items;
             }
-            set { ModelManager.SetModelValue(this, ref _items, value, v => Items = v, "Items"); }
+            set { ModelHelper.SetModelValue(this, ref _items, value, v => Items = v, "Items"); }
         }
 
 
@@ -216,7 +204,7 @@ namespace Xbim.Ifc.RepresentationResource
             get
             {
                 return
-                    ModelManager.ModelOf(this).InstancesWhere<IfcRepresentationMap>(m => m.MappedRepresentation == this);
+                    ModelOf.InstancesWhere<IfcRepresentationMap>(m => m.MappedRepresentation == this);
             }
         }
 
@@ -230,7 +218,7 @@ namespace Xbim.Ifc.RepresentationResource
             get
             {
                 return
-                    ModelManager.ModelOf(this).InstancesWhere<IfcPresentationLayerAssignment>(
+                    ModelOf.InstancesWhere<IfcPresentationLayerAssignment>(
                         a => (a.AssignedItems != null && a.AssignedItems.Contains(this)));
             }
         }
@@ -245,7 +233,7 @@ namespace Xbim.Ifc.RepresentationResource
             get
             {
                 return
-                    ModelManager.ModelOf(this).InstancesWhere<IfcProductRepresentation>(
+                    ModelOf.InstancesWhere<IfcProductRepresentation>(
                         p => (p.Representations != null && p.Representations.Contains(this)));
             }
         }

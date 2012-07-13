@@ -35,12 +35,10 @@ namespace Xbim.Ifc.TopologyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _vertexGeometry;
             }
-            set { ModelManager.SetModelValue(this, ref _vertexGeometry, value, v => VertexGeometry = v, "VertexGeometry"); }
+            set { ModelHelper.SetModelValue(this, ref _vertexGeometry, value, v => VertexGeometry = v, "VertexGeometry"); }
         }
 
 

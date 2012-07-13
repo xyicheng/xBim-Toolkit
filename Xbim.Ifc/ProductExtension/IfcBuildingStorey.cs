@@ -94,12 +94,10 @@ namespace Xbim.Ifc.ProductExtension
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _elevation;
             }
-            set { ModelManager.SetModelValue(this, ref _elevation, value, v => _elevation = v, "Elevation"); }
+            set { ModelHelper.SetModelValue(this, ref _elevation, value, v => _elevation = v, "Elevation"); }
         }
 
 

@@ -57,15 +57,13 @@ namespace Xbim.Ifc.Kernel
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _theActor;
             }
             set
             {
                 if (value == null || value is IfcPerson || value is IfcOrganization || value is IfcPersonAndOrganization)
-                    ModelManager.SetModelValue(this, ref _theActor, value, v => TheActor = v, "TheActor");
+                    ModelHelper.SetModelValue(this, ref _theActor, value, v => TheActor = v, "TheActor");
                 else
                     throw new ArgumentException(
                         "Illegal Actor type, must be Organization, Person,  PersonOrganization or null", "TheActor");
@@ -82,7 +80,7 @@ namespace Xbim.Ifc.Kernel
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class)]
         public IEnumerable<IfcRelAssignsToActor> IsActingUpon
         {
-            get { return ModelManager.ModelOf(this).InstancesWhere<IfcRelAssignsToActor>(a => a.RelatingActor == this); }
+            get { return ModelOf.InstancesWhere<IfcRelAssignsToActor>(a => a.RelatingActor == this); }
         }
 
         #endregion

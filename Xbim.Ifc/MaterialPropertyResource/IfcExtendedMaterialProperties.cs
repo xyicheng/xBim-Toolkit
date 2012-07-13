@@ -46,14 +46,12 @@ namespace Xbim.Ifc.MaterialPropertyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _extendedProperties;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _extendedProperties, value, v => ExtendedProperties = v,
+                ModelHelper.SetModelValue(this, ref _extendedProperties, value, v => ExtendedProperties = v,
                                            "ExtendedProperties");
             }
         }
@@ -68,12 +66,10 @@ namespace Xbim.Ifc.MaterialPropertyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _description;
             }
-            set { ModelManager.SetModelValue(this, ref _description, value, v => Description = v, "Description"); }
+            set { ModelHelper.SetModelValue(this, ref _description, value, v => Description = v, "Description"); }
         }
 
         /// <summary>
@@ -84,12 +80,10 @@ namespace Xbim.Ifc.MaterialPropertyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _name;
             }
-            set { ModelManager.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
+            set { ModelHelper.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
         }
 
         #region Ifc Properties

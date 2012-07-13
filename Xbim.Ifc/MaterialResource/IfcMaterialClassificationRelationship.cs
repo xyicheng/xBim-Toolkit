@@ -32,14 +32,13 @@ namespace Xbim.Ifc.MaterialResource
     public class IfcMaterialClassificationRelationship : INotifyPropertyChanged, ISupportChangeNotification,
                                                          IPersistIfcEntity, INotifyPropertyChanging
     {
-#if SupportActivation
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -68,8 +67,6 @@ namespace Xbim.Ifc.MaterialResource
 
         #endregion
 
-#endif
-
         public IfcMaterialClassificationRelationship()
         {
             _materialClassifications = new XbimSet<IfcClassificationNotationSelect>(this);
@@ -92,14 +89,12 @@ namespace Xbim.Ifc.MaterialResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _materialClassifications;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _materialClassifications, value, v => MaterialClassifications = v,
+                ModelHelper.SetModelValue(this, ref _materialClassifications, value, v => MaterialClassifications = v,
                                            "MaterialClassifications");
             }
         }
@@ -112,14 +107,12 @@ namespace Xbim.Ifc.MaterialResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _classifiedMaterial;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _classifiedMaterial, value, v => ClassifiedMaterial = v,
+                ModelHelper.SetModelValue(this, ref _classifiedMaterial, value, v => ClassifiedMaterial = v,
                                            "ClassifiedMaterial");
             }
         }

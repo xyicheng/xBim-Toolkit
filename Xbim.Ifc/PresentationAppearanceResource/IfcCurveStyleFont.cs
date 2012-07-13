@@ -29,14 +29,13 @@ namespace Xbim.Ifc.PresentationAppearanceResource
                                      IfcCurveStyleFontSelect, IfcCurveFontOrScaledCurveFontSelect,
                                      INotifyPropertyChanging
     {
-#if SupportActivation
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -65,8 +64,6 @@ namespace Xbim.Ifc.PresentationAppearanceResource
 
         #endregion
 
-#endif
-
         public IfcCurveStyleFont()
         {
             _patternList = new XbimList<IfcCurveStyleFontPattern>(this);
@@ -86,12 +83,10 @@ namespace Xbim.Ifc.PresentationAppearanceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _name;
             }
-            set { ModelManager.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
+            set { ModelHelper.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
         }
 
 
@@ -100,12 +95,10 @@ namespace Xbim.Ifc.PresentationAppearanceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _patternList;
             }
-            set { ModelManager.SetModelValue(this, ref _patternList, value, v => PatternList = v, "PatternList"); }
+            set { ModelHelper.SetModelValue(this, ref _patternList, value, v => PatternList = v, "PatternList"); }
         }
 
 

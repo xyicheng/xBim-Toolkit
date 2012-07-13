@@ -38,12 +38,10 @@ namespace Xbim.Ifc.SharedBldgElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _shapeType;
             }
-            set { ModelManager.SetModelValue(this, ref _shapeType, value, v => _shapeType = v, "ShapeType"); }
+            set { ModelHelper.SetModelValue(this, ref _shapeType, value, v => _shapeType = v, "ShapeType"); }
         }
 
         public override void IfcParse(int propIndex, IPropertyValue value)

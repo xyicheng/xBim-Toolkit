@@ -42,12 +42,10 @@ namespace Xbim.Ifc.GeometryResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _basisCurve;
             }
-            set { ModelManager.SetModelValue(this, ref _basisCurve, value, v => BasisCurve = v, "BasisCurve"); }
+            set { ModelHelper.SetModelValue(this, ref _basisCurve, value, v => BasisCurve = v, "BasisCurve"); }
         }
 
         /// <summary>
@@ -58,12 +56,10 @@ namespace Xbim.Ifc.GeometryResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _distance;
             }
-            set { ModelManager.SetModelValue(this, ref _distance, value, v => Distance = v, "Distance"); }
+            set { ModelHelper.SetModelValue(this, ref _distance, value, v => Distance = v, "Distance"); }
         }
 
         /// <summary>
@@ -74,12 +70,10 @@ namespace Xbim.Ifc.GeometryResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _selfIntersect;
             }
-            set { ModelManager.SetModelValue(this, ref _selfIntersect, value, v => SelfIntersect = v, "SelfIntersect"); }
+            set { ModelHelper.SetModelValue(this, ref _selfIntersect, value, v => SelfIntersect = v, "SelfIntersect"); }
         }
 
         /// <summary>
@@ -90,12 +84,10 @@ namespace Xbim.Ifc.GeometryResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _refDirection;
             }
-            set { ModelManager.SetModelValue(this, ref _refDirection, value, v => RefDirection = v, "RefDirection"); }
+            set { ModelHelper.SetModelValue(this, ref _refDirection, value, v => RefDirection = v, "RefDirection"); }
         }
 
         public override IfcDimensionCount Dim

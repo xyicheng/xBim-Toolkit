@@ -71,7 +71,7 @@ namespace Xbim.Ifc.RepresentationResource
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _coordinateSpaceDimension, value, v => CoordinateSpaceDimension = v,
+                ModelHelper.SetModelValue(this, ref _coordinateSpaceDimension, value, v => CoordinateSpaceDimension = v,
                                            "CoordinateSpaceDimension");
             }
         }
@@ -84,12 +84,10 @@ namespace Xbim.Ifc.RepresentationResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _precision;
             }
-            set { ModelManager.SetModelValue(this, ref _precision, value, v => Precision = v, "Precision"); }
+            set { ModelHelper.SetModelValue(this, ref _precision, value, v => Precision = v, "Precision"); }
         }
 
         
@@ -102,15 +100,13 @@ namespace Xbim.Ifc.RepresentationResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _worldCoordinateSystem;
             }
             set
             {
                 if (value is IfcAxis2Placement2D || value is IfcAxis2Placement3D || value == null)
-                    ModelManager.SetModelValue(this, ref _worldCoordinateSystem, value, v => WorldCoordinateSystem = v,
+                    ModelHelper.SetModelValue(this, ref _worldCoordinateSystem, value, v => WorldCoordinateSystem = v,
                                                "WorldCoordinateSystem");
                 else
                     throw new ArgumentException(
@@ -127,12 +123,10 @@ namespace Xbim.Ifc.RepresentationResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _trueNorth;
             }
-            set { ModelManager.SetModelValue(this, ref _trueNorth, value, v => TrueNorth = v, "TrueNorth"); }
+            set { ModelHelper.SetModelValue(this, ref _trueNorth, value, v => TrueNorth = v, "TrueNorth"); }
         }
 
 
@@ -183,7 +177,7 @@ namespace Xbim.Ifc.RepresentationResource
             get
             {
                 return
-                    ModelManager.ModelOf(this).InstancesWhere<IfcGeometricRepresentationSubContext>(
+                    ModelOf.InstancesWhere<IfcGeometricRepresentationSubContext>(
                         gsc => gsc.ParentContext == this);
             }
         }

@@ -54,14 +54,12 @@ namespace Xbim.Ifc.RepresentationResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _representedMaterial;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _representedMaterial, value, v => RepresentedMaterial = v,
+                ModelHelper.SetModelValue(this, ref _representedMaterial, value, v => RepresentedMaterial = v,
                                            "RepresentedMaterial");
             }
         }

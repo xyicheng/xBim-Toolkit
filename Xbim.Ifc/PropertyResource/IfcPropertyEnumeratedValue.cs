@@ -68,14 +68,12 @@ namespace Xbim.Ifc.PropertyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _enumerationValues;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _enumerationValues, value, v => EnumerationValues = v,
+                ModelHelper.SetModelValue(this, ref _enumerationValues, value, v => EnumerationValues = v,
                                            "EnumerationValues");
             }
         }
@@ -88,14 +86,12 @@ namespace Xbim.Ifc.PropertyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _enumerationReference;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _enumerationReference, value, v => EnumerationReference = v,
+                ModelHelper.SetModelValue(this, ref _enumerationReference, value, v => EnumerationReference = v,
                                            "EnumerationReference");
             }
         }

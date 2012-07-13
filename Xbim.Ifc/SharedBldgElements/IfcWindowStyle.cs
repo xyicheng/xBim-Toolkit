@@ -52,9 +52,7 @@ namespace Xbim.Ifc.SharedBldgElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _constructionType;
             }
             set { _constructionType = value; }
@@ -68,9 +66,7 @@ namespace Xbim.Ifc.SharedBldgElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _operationType;
             }
             set { _operationType = value; }
@@ -84,9 +80,7 @@ namespace Xbim.Ifc.SharedBldgElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _parameterTakesPrecedence;
             }
             set { _parameterTakesPrecedence = value; }
@@ -100,9 +94,7 @@ namespace Xbim.Ifc.SharedBldgElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _sizeable;
             }
             set { _sizeable = value; }

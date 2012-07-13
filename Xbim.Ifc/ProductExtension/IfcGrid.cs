@@ -87,12 +87,10 @@ namespace Xbim.Ifc.ProductExtension
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _uAxes;
             }
-            set { ModelManager.SetModelValue(this, ref _uAxes, value, v => UAxes = v, "UAxes"); }
+            set { ModelHelper.SetModelValue(this, ref _uAxes, value, v => UAxes = v, "UAxes"); }
         }
 
         /// <summary>
@@ -103,12 +101,10 @@ namespace Xbim.Ifc.ProductExtension
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _vAxes;
             }
-            set { ModelManager.SetModelValue(this, ref _vAxes, value, v => VAxes = v, "VAxes"); }
+            set { ModelHelper.SetModelValue(this, ref _vAxes, value, v => VAxes = v, "VAxes"); }
         }
 
         /// <summary>
@@ -119,12 +115,10 @@ namespace Xbim.Ifc.ProductExtension
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _uAxes;
             }
-            set { ModelManager.SetModelValue(this, ref _wAxes, value, v => WAxes = v, "WAxes"); }
+            set { ModelHelper.SetModelValue(this, ref _wAxes, value, v => WAxes = v, "WAxes"); }
         }
 
         public override void IfcParse(int propIndex, IPropertyValue value)
@@ -164,7 +158,7 @@ namespace Xbim.Ifc.ProductExtension
             get
             {
                 return
-                    ModelManager.ModelOf(this).InstancesWhere<IfcRelContainedInSpatialStructure>(
+                    ModelOf.InstancesWhere<IfcRelContainedInSpatialStructure>(
                         r => r.RelatedElements.Contains(this));
             }
         }

@@ -42,12 +42,10 @@ namespace Xbim.Ifc.GeometryResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _basisCurve;
             }
-            set { ModelManager.SetModelValue(this, ref _basisCurve, value, v => BasisCurve = v, "BasisCurve"); }
+            set { ModelHelper.SetModelValue(this, ref _basisCurve, value, v => BasisCurve = v, "BasisCurve"); }
         }
 
 
@@ -59,12 +57,10 @@ namespace Xbim.Ifc.GeometryResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _pointParameter;
             }
-            set { ModelManager.SetModelValue(this, ref _pointParameter, value, v => PointParameter = v, "PointParameter"); }
+            set { ModelHelper.SetModelValue(this, ref _pointParameter, value, v => PointParameter = v, "PointParameter"); }
         }
 
         public override void IfcParse(int propIndex, IPropertyValue value)

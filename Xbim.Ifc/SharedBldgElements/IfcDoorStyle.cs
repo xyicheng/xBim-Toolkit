@@ -62,12 +62,10 @@ namespace Xbim.Ifc.SharedBldgElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _operationType;
             }
-            set { ModelManager.SetModelValue(this, ref _operationType, value, v => OperationType = v, "OperationType"); }
+            set { ModelHelper.SetModelValue(this, ref _operationType, value, v => OperationType = v, "OperationType"); }
         }
 
         /// <summary>
@@ -78,14 +76,12 @@ namespace Xbim.Ifc.SharedBldgElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _constructionType;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _constructionType, value, v => ConstructionType = v,
+                ModelHelper.SetModelValue(this, ref _constructionType, value, v => ConstructionType = v,
                                            "ConstructionType");
             }
         }
@@ -98,14 +94,12 @@ namespace Xbim.Ifc.SharedBldgElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _parameterTakesPrecedence;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _parameterTakesPrecedence, value, v => ParameterTakesPrecedence = v,
+                ModelHelper.SetModelValue(this, ref _parameterTakesPrecedence, value, v => ParameterTakesPrecedence = v,
                                            "ParameterTakesPrecedence");
             }
         }
@@ -118,12 +112,10 @@ namespace Xbim.Ifc.SharedBldgElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _sizeable;
             }
-            set { ModelManager.SetModelValue(this, ref _sizeable, value, v => Sizeable = v, "Sizeable"); }
+            set { ModelHelper.SetModelValue(this, ref _sizeable, value, v => Sizeable = v, "Sizeable"); }
         }
 
 

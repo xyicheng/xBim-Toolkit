@@ -50,12 +50,10 @@ namespace Xbim.Ifc.GeometricModelResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _sweptArea;
             }
-            set { ModelManager.SetModelValue(this, ref _sweptArea, value, v => SweptArea = v, "SweptArea"); }
+            set { ModelHelper.SetModelValue(this, ref _sweptArea, value, v => SweptArea = v, "SweptArea"); }
         }
 
         /// <summary>
@@ -67,12 +65,10 @@ namespace Xbim.Ifc.GeometricModelResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _position;
             }
-            set { ModelManager.SetModelValue(this, ref _position, value, v => Position = v, "Position"); }
+            set { ModelHelper.SetModelValue(this, ref _position, value, v => Position = v, "Position"); }
         }
 
         public override void IfcParse(int propIndex, IPropertyValue value)

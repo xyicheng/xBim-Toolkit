@@ -30,14 +30,13 @@ namespace Xbim.Ifc.ConstraintResource
     public class IfcConstraintClassificationRelationship : INotifyPropertyChanged, ISupportChangeNotification,
                                                            IPersistIfcEntity, INotifyPropertyChanging
     {
-#if SupportActivation
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -66,7 +65,6 @@ namespace Xbim.Ifc.ConstraintResource
 
         #endregion
 
-#endif
 
         public IfcConstraintClassificationRelationship()
         {
@@ -89,14 +87,12 @@ namespace Xbim.Ifc.ConstraintResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _classifiedConstraint;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _classifiedConstraint, value, v => ClassifiedConstraint = v,
+                ModelHelper.SetModelValue(this, ref _classifiedConstraint, value, v => ClassifiedConstraint = v,
                                            "ClassifiedConstraint");
             }
         }
@@ -109,14 +105,12 @@ namespace Xbim.Ifc.ConstraintResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _relatedClassifications;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _relatedClassifications, value, v => RelatedClassifications = v,
+                ModelHelper.SetModelValue(this, ref _relatedClassifications, value, v => RelatedClassifications = v,
                                            "RelatedClassifications");
             }
         }

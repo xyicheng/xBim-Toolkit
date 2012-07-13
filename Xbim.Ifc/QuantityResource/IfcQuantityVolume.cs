@@ -50,12 +50,10 @@ namespace Xbim.Ifc.QuantityResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _volumeValue;
             }
-            set { ModelManager.SetModelValue(this, ref _volumeValue, value, v => VolumeValue = v, "VolumeValue"); }
+            set { ModelHelper.SetModelValue(this, ref _volumeValue, value, v => VolumeValue = v, "VolumeValue"); }
         }
 
         public override void IfcParse(int propIndex, IPropertyValue value)

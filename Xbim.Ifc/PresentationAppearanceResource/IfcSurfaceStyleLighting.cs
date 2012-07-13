@@ -27,14 +27,13 @@ namespace Xbim.Ifc.PresentationAppearanceResource
     public class IfcSurfaceStyleLighting : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                            IfcSurfaceStyleElementSelect, INotifyPropertyChanging
     {
-#if SupportActivation
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -63,8 +62,6 @@ namespace Xbim.Ifc.PresentationAppearanceResource
 
         #endregion
 
-#endif
-
         #region Fields
 
         private IfcColourRgb _diffuseTransmissionColour;
@@ -86,14 +83,12 @@ namespace Xbim.Ifc.PresentationAppearanceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _diffuseTransmissionColour;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _diffuseTransmissionColour, value,
+                ModelHelper.SetModelValue(this, ref _diffuseTransmissionColour, value,
                                            v => DiffuseTransmissionColour = v, "DiffuseTransmissionColour");
             }
         }
@@ -109,14 +104,12 @@ namespace Xbim.Ifc.PresentationAppearanceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _diffuseReflectionColour;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _diffuseReflectionColour, value, v => DiffuseReflectionColour = v,
+                ModelHelper.SetModelValue(this, ref _diffuseReflectionColour, value, v => DiffuseReflectionColour = v,
                                            "DiffuseReflectionColour");
             }
         }
@@ -129,14 +122,12 @@ namespace Xbim.Ifc.PresentationAppearanceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _transmissionColour;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _transmissionColour, value, v => TransmissionColour = v,
+                ModelHelper.SetModelValue(this, ref _transmissionColour, value, v => TransmissionColour = v,
                                            "TransmissionColour");
             }
         }
@@ -149,14 +140,12 @@ namespace Xbim.Ifc.PresentationAppearanceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _reflectanceColour;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _reflectanceColour, value, v => ReflectanceColour = v,
+                ModelHelper.SetModelValue(this, ref _reflectanceColour, value, v => ReflectanceColour = v,
                                            "ReflectanceColour");
             }
         }

@@ -93,7 +93,7 @@ namespace Xbim.Ifc.Extensions
 
         public static void SetNewLocation(this IfcAxis2Placement3D axis3, double x, double y, double z)
         {
-            IModel model = ModelManager.ModelOf(axis3);
+            IModel model = axis3.ModelOf;
             IfcCartesianPoint location = model.New<IfcCartesianPoint>();
             location.X = x;
             location.Y = y;
@@ -116,7 +116,7 @@ namespace Xbim.Ifc.Extensions
                                                 double xAxisDirectionY, double xAxisDirectionZ, double zAxisDirectionX,
                                                 double zAxisDirectionY, double zAxisDirectionZ)
         {
-            IModel model = ModelManager.ModelOf(axis3);
+            IModel model = axis3.ModelOf;
             IfcDirection zDirection = model.New<IfcDirection>();
             zDirection.DirectionRatios[0] = zAxisDirectionX;
             zDirection.DirectionRatios[1] = zAxisDirectionY;

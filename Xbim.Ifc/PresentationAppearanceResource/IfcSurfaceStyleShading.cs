@@ -27,14 +27,12 @@ namespace Xbim.Ifc.PresentationAppearanceResource
     public class IfcSurfaceStyleShading : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                           IfcSurfaceStyleElementSelect, INotifyPropertyChanging
     {
-#if SupportActivation
-
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -63,8 +61,6 @@ namespace Xbim.Ifc.PresentationAppearanceResource
 
         #endregion
 
-#endif
-
         #region Fields
 
         private IfcColourRgb _surfaceColour;
@@ -81,12 +77,10 @@ namespace Xbim.Ifc.PresentationAppearanceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _surfaceColour;
             }
-            set { ModelManager.SetModelValue(this, ref _surfaceColour, value, v => SurfaceColour = v, "SurfaceColour"); }
+            set { ModelHelper.SetModelValue(this, ref _surfaceColour, value, v => SurfaceColour = v, "SurfaceColour"); }
         }
 
 

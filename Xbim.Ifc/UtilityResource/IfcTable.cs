@@ -27,14 +27,13 @@ namespace Xbim.Ifc.UtilityResource
     public class IfcTable : IPersistIfcEntity, IfcMetricValueSelect, ISupportChangeNotification, INotifyPropertyChanged,
                             INotifyPropertyChanging
     {
-#if SupportActivation
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -63,8 +62,6 @@ namespace Xbim.Ifc.UtilityResource
 
         #endregion
 
-#endif
-
         public IfcTable()
         {
             _rows = new XbimList<IfcTableRow>(this);
@@ -85,12 +82,10 @@ namespace Xbim.Ifc.UtilityResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _name;
             }
-            set { ModelManager.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
+            set { ModelHelper.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
         }
 
 
@@ -102,12 +97,10 @@ namespace Xbim.Ifc.UtilityResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _rows;
             }
-            set { ModelManager.SetModelValue(this, ref _rows, value, v => Rows = v, "Rows"); }
+            set { ModelHelper.SetModelValue(this, ref _rows, value, v => Rows = v, "Rows"); }
         }
 
         /// <summary>

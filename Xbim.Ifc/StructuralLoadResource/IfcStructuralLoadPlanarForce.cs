@@ -42,12 +42,10 @@ namespace Xbim.Ifc.StructuralLoadResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _planarForceX;
             }
-            set { ModelManager.SetModelValue(this, ref _planarForceX, value, v => PlanarForceX = v, "PlanarForceX"); }
+            set { ModelHelper.SetModelValue(this, ref _planarForceX, value, v => PlanarForceX = v, "PlanarForceX"); }
         }
 
         /// <summary>
@@ -58,12 +56,10 @@ namespace Xbim.Ifc.StructuralLoadResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _planarForceY;
             }
-            set { ModelManager.SetModelValue(this, ref _planarForceY, value, v => PlanarForceY = v, "PlanarForceY"); }
+            set { ModelHelper.SetModelValue(this, ref _planarForceY, value, v => PlanarForceY = v, "PlanarForceY"); }
         }
 
         /// <summary>
@@ -74,12 +70,10 @@ namespace Xbim.Ifc.StructuralLoadResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _planarForceZ;
             }
-            set { ModelManager.SetModelValue(this, ref _planarForceZ, value, v => PlanarForceZ = v, "PlanarForceZ"); }
+            set { ModelHelper.SetModelValue(this, ref _planarForceZ, value, v => PlanarForceZ = v, "PlanarForceZ"); }
         }
 
         #endregion

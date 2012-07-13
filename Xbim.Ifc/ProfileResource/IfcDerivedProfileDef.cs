@@ -43,12 +43,10 @@ namespace Xbim.Ifc.ProfileResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _parentProfile;
             }
-            set { ModelManager.SetModelValue(this, ref _parentProfile, value, v => ParentProfile = v, "ParentProfile"); }
+            set { ModelHelper.SetModelValue(this, ref _parentProfile, value, v => ParentProfile = v, "ParentProfile"); }
         }
 
         /// <summary>
@@ -59,12 +57,10 @@ namespace Xbim.Ifc.ProfileResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _operator;
             }
-            set { ModelManager.SetModelValue(this, ref _operator, value, v => Operator = v, "Operator"); }
+            set { ModelHelper.SetModelValue(this, ref _operator, value, v => Operator = v, "Operator"); }
         }
 
         [IfcAttribute(5, IfcAttributeState.Optional)]
@@ -72,12 +68,10 @@ namespace Xbim.Ifc.ProfileResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _label;
             }
-            set { ModelManager.SetModelValue(this, ref _label, value, v => Label = v, "Label"); }
+            set { ModelHelper.SetModelValue(this, ref _label, value, v => Label = v, "Label"); }
         }
 
         #endregion

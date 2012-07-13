@@ -57,12 +57,10 @@ namespace Xbim.Ifc.GeometryResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _mappingSource;
             }
-            set { ModelManager.SetModelValue(this, ref _mappingSource, value, v => MappingSource = v, "MappingSource"); }
+            set { ModelHelper.SetModelValue(this, ref _mappingSource, value, v => MappingSource = v, "MappingSource"); }
         }
 
         /// <summary>
@@ -74,12 +72,10 @@ namespace Xbim.Ifc.GeometryResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _mappingTarget;
             }
-            set { ModelManager.SetModelValue(this, ref _mappingTarget, value, v => MappingTarget = v, "MappingTarget"); }
+            set { ModelHelper.SetModelValue(this, ref _mappingTarget, value, v => MappingTarget = v, "MappingTarget"); }
         }
 
 

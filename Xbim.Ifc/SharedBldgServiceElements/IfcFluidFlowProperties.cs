@@ -52,12 +52,10 @@ namespace Xbim.Ifc.SharedBldgServiceElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _propertySource;
             }
-            set { ModelManager.SetModelValue(this, ref _propertySource, value, v => PropertySource = v, "PropertySource"); }
+            set { ModelHelper.SetModelValue(this, ref _propertySource, value, v => PropertySource = v, "PropertySource"); }
         }
 
         [IfcAttribute(6, IfcAttributeState.Optional)]
@@ -65,14 +63,12 @@ namespace Xbim.Ifc.SharedBldgServiceElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _flowConditionTimeSeries;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _flowConditionTimeSeries, value, v => FlowConditionTimeSeries = v,
+                ModelHelper.SetModelValue(this, ref _flowConditionTimeSeries, value, v => FlowConditionTimeSeries = v,
                                            "FlowConditionTimeSeries");
             }
         }
@@ -82,14 +78,12 @@ namespace Xbim.Ifc.SharedBldgServiceElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _velocityTimeSeries;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _velocityTimeSeries, value, v => VelocityTimeSeries = v,
+                ModelHelper.SetModelValue(this, ref _velocityTimeSeries, value, v => VelocityTimeSeries = v,
                                            "VelocityTimeSeries");
             }
         }
@@ -99,14 +93,12 @@ namespace Xbim.Ifc.SharedBldgServiceElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _flowrateTimeSeries;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _flowrateTimeSeries, value, v => FlowrateTimeSeries = v,
+                ModelHelper.SetModelValue(this, ref _flowrateTimeSeries, value, v => FlowrateTimeSeries = v,
                                            "FlowrateTimeSeries");
             }
         }
@@ -116,12 +108,10 @@ namespace Xbim.Ifc.SharedBldgServiceElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _fluid;
             }
-            set { ModelManager.SetModelValue(this, ref _fluid, value, v => Fluid = v, "Fluid"); }
+            set { ModelHelper.SetModelValue(this, ref _fluid, value, v => Fluid = v, "Fluid"); }
         }
 
         [IfcAttribute(10, IfcAttributeState.Optional)]
@@ -129,14 +119,12 @@ namespace Xbim.Ifc.SharedBldgServiceElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _pressureTimeSeries;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _pressureTimeSeries, value, v => PressureTimeSeries = v,
+                ModelHelper.SetModelValue(this, ref _pressureTimeSeries, value, v => PressureTimeSeries = v,
                                            "PressureTimeSeries");
             }
         }
@@ -146,14 +134,12 @@ namespace Xbim.Ifc.SharedBldgServiceElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _userDefinedPropertySource;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _userDefinedPropertySource, value,
+                ModelHelper.SetModelValue(this, ref _userDefinedPropertySource, value,
                                            v => UserDefinedPropertySource = v, "UserDefinedPropertySource");
             }
         }
@@ -163,14 +149,12 @@ namespace Xbim.Ifc.SharedBldgServiceElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _temperatureSingleValue;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _temperatureSingleValue, value, v => TemperatureSingleValue = v,
+                ModelHelper.SetModelValue(this, ref _temperatureSingleValue, value, v => TemperatureSingleValue = v,
                                            "TemperatureSingleValue");
             }
         }
@@ -180,14 +164,12 @@ namespace Xbim.Ifc.SharedBldgServiceElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _wetBulbTemperatureSingleValue;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _wetBulbTemperatureSingleValue, value,
+                ModelHelper.SetModelValue(this, ref _wetBulbTemperatureSingleValue, value,
                                            v => WetBulbTemperatureSingleValue = v, "WetBulbTemperatureSingleValue");
             }
         }
@@ -197,14 +179,12 @@ namespace Xbim.Ifc.SharedBldgServiceElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _wetBulbTemperatureTimeSeries;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _wetBulbTemperatureTimeSeries, value,
+                ModelHelper.SetModelValue(this, ref _wetBulbTemperatureTimeSeries, value,
                                            v => WetBulbTemperatureTimeSeries = v, "WetBulbTemperatureTimeSeries");
             }
         }
@@ -214,14 +194,12 @@ namespace Xbim.Ifc.SharedBldgServiceElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _temperatureTimeSeries;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _temperatureTimeSeries, value, v => TemperatureTimeSeries = v,
+                ModelHelper.SetModelValue(this, ref _temperatureTimeSeries, value, v => TemperatureTimeSeries = v,
                                            "TemperatureTimeSeries");
             }
         }
@@ -231,14 +209,12 @@ namespace Xbim.Ifc.SharedBldgServiceElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _flowrateSingleValue;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _flowrateSingleValue, value, v => FlowrateSingleValue = v,
+                ModelHelper.SetModelValue(this, ref _flowrateSingleValue, value, v => FlowrateSingleValue = v,
                                            "FlowrateSingleValue");
             }
         }
@@ -248,14 +224,12 @@ namespace Xbim.Ifc.SharedBldgServiceElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _flowConditionSingleValue;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _flowConditionSingleValue, value, v => FlowConditionSingleValue = v,
+                ModelHelper.SetModelValue(this, ref _flowConditionSingleValue, value, v => FlowConditionSingleValue = v,
                                            "FlowConditionSingleValue");
             }
         }
@@ -265,14 +239,12 @@ namespace Xbim.Ifc.SharedBldgServiceElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _velocitySingleValue;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _velocitySingleValue, value, v => VelocitySingleValue = v,
+                ModelHelper.SetModelValue(this, ref _velocitySingleValue, value, v => VelocitySingleValue = v,
                                            "VelocitySingleValue");
             }
         }
@@ -282,14 +254,12 @@ namespace Xbim.Ifc.SharedBldgServiceElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _pressureSingleValue;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _pressureSingleValue, value, v => PressureSingleValue = v,
+                ModelHelper.SetModelValue(this, ref _pressureSingleValue, value, v => PressureSingleValue = v,
                                            "PressureSingleValue");
             }
         }

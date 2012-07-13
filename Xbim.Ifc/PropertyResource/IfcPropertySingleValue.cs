@@ -79,12 +79,10 @@ namespace Xbim.Ifc.PropertyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _nominalValue;
             }
-            set { ModelManager.SetModelValue(this, ref _nominalValue, value, v => NominalValue = v, "NominalValue"); }
+            set { ModelHelper.SetModelValue(this, ref _nominalValue, value, v => NominalValue = v, "NominalValue"); }
         }
 
         /// <summary>
@@ -96,12 +94,10 @@ namespace Xbim.Ifc.PropertyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _unit;
             }
-            set { ModelManager.SetModelValue(this, ref _unit, value, v => Unit = v, "Unit"); }
+            set { ModelHelper.SetModelValue(this, ref _unit, value, v => Unit = v, "Unit"); }
         }
 
 

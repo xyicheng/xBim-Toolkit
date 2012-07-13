@@ -41,12 +41,10 @@ namespace Xbim.Ifc.ConstraintResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _benchmark;
             }
-            set { ModelManager.SetModelValue(this, ref _benchmark, value, v => Benchmark = v, " Benchmark"); }
+            set { ModelHelper.SetModelValue(this, ref _benchmark, value, v => Benchmark = v, " Benchmark"); }
         }
 
         /// <summary>
@@ -57,12 +55,10 @@ namespace Xbim.Ifc.ConstraintResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _valueSource;
             }
-            set { ModelManager.SetModelValue(this, ref _valueSource, value, v => ValueSource = v, "ValueSource"); }
+            set { ModelHelper.SetModelValue(this, ref _valueSource, value, v => ValueSource = v, "ValueSource"); }
         }
 
         /// <summary>
@@ -73,12 +69,10 @@ namespace Xbim.Ifc.ConstraintResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _dataValue;
             }
-            set { ModelManager.SetModelValue(this, ref _dataValue, value, v => DataValue = v, "DataValue"); }
+            set { ModelHelper.SetModelValue(this, ref _dataValue, value, v => DataValue = v, "DataValue"); }
         }
 
         #region ISupportIfcParser Members

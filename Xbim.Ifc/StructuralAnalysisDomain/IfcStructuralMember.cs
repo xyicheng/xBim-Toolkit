@@ -48,7 +48,7 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
             get
             {
                 return
-                    ModelManager.ModelOf(this).InstancesWhere<IfcRelConnectsStructuralElement>(
+                    ModelOf.InstancesWhere<IfcRelConnectsStructuralElement>(
                         r => r.RelatedStructuralMember == this);
             }
         }
@@ -62,7 +62,7 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
             get
             {
                 return
-                    ModelManager.ModelOf(this).InstancesWhere<IfcRelConnectsStructuralMember>(
+                    ModelOf.InstancesWhere<IfcRelConnectsStructuralMember>(
                         r => r.RelatingStructuralMember == this);
             }
         }

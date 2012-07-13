@@ -47,12 +47,10 @@ namespace Xbim.Ifc.ProfileResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _profiles;
             }
-            set { ModelManager.SetModelValue(this, ref _profiles, value, v => Profiles = v, "Profiles"); }
+            set { ModelHelper.SetModelValue(this, ref _profiles, value, v => Profiles = v, "Profiles"); }
         }
 
         [IfcAttribute(5, IfcAttributeState.Optional)]
@@ -60,12 +58,10 @@ namespace Xbim.Ifc.ProfileResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _label;
             }
-            set { ModelManager.SetModelValue(this, ref _label, value, v => Label = v, "Label"); }
+            set { ModelHelper.SetModelValue(this, ref _label, value, v => Label = v, "Label"); }
         }
 
         #endregion

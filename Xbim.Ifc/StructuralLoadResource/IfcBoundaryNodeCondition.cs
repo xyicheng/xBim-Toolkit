@@ -56,14 +56,12 @@ namespace Xbim.Ifc.StructuralLoadResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _linearStiffnessX;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _linearStiffnessX, value, v => LinearStiffnessX = v,
+                ModelHelper.SetModelValue(this, ref _linearStiffnessX, value, v => LinearStiffnessX = v,
                                            "LinearStiffnessX");
             }
         }
@@ -76,14 +74,12 @@ namespace Xbim.Ifc.StructuralLoadResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _linearStiffnessY;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _linearStiffnessY, value, v => LinearStiffnessY = v,
+                ModelHelper.SetModelValue(this, ref _linearStiffnessY, value, v => LinearStiffnessY = v,
                                            "LinearStiffnessY");
             }
         }
@@ -96,14 +92,12 @@ namespace Xbim.Ifc.StructuralLoadResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _linearStiffnessZ;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _linearStiffnessZ, value, v => LinearStiffnessZ = v,
+                ModelHelper.SetModelValue(this, ref _linearStiffnessZ, value, v => LinearStiffnessZ = v,
                                            "LinearStiffnessZ");
             }
         }
@@ -116,14 +110,12 @@ namespace Xbim.Ifc.StructuralLoadResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _rotationalStiffnessX;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _rotationalStiffnessX, value, v => RotationalStiffnessX = v,
+                ModelHelper.SetModelValue(this, ref _rotationalStiffnessX, value, v => RotationalStiffnessX = v,
                                            "RotationalStiffnessX");
             }
         }
@@ -136,14 +128,12 @@ namespace Xbim.Ifc.StructuralLoadResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _rotationalStiffnessY;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _rotationalStiffnessY, value, v => RotationalStiffnessY = v,
+                ModelHelper.SetModelValue(this, ref _rotationalStiffnessY, value, v => RotationalStiffnessY = v,
                                            "RotationalStiffnessY");
             }
         }
@@ -156,14 +146,12 @@ namespace Xbim.Ifc.StructuralLoadResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _rotationalStiffnessZ;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _rotationalStiffnessZ, value, v => RotationalStiffnessZ = v,
+                ModelHelper.SetModelValue(this, ref _rotationalStiffnessZ, value, v => RotationalStiffnessZ = v,
                                            "RotationalStiffnessZ");
             }
         }

@@ -53,12 +53,10 @@ namespace Xbim.Ifc.StructuralElementsDomain
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _predefinedType;
             }
-            set { ModelManager.SetModelValue(this, ref _predefinedType, value, v => PredefinedType = v, "PredefinedType"); }
+            set { ModelHelper.SetModelValue(this, ref _predefinedType, value, v => PredefinedType = v, "PredefinedType"); }
         }
 
 

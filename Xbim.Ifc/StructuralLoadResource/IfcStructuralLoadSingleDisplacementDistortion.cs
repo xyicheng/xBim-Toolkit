@@ -49,12 +49,10 @@ namespace Xbim.Ifc.StructuralLoadResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _distortion;
             }
-            set { ModelManager.SetModelValue(this, ref _distortion, value, v => Distortion = v, "Distortion"); }
+            set { ModelHelper.SetModelValue(this, ref _distortion, value, v => Distortion = v, "Distortion"); }
         }
 
         #endregion

@@ -44,12 +44,10 @@ namespace Xbim.Ifc.SharedBldgElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _numberOfRiser;
             }
-            set { ModelManager.SetModelValue(this, ref _numberOfRiser, value, v => NumberOfRiser = v, "NumberOfRiser"); }
+            set { ModelHelper.SetModelValue(this, ref _numberOfRiser, value, v => NumberOfRiser = v, "NumberOfRiser"); }
         }
 
         /// <summary>
@@ -60,12 +58,10 @@ namespace Xbim.Ifc.SharedBldgElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _numberOfTreads;
             }
-            set { ModelManager.SetModelValue(this, ref _numberOfTreads, value, v => NumberOfTreads = v, "NumberOfTreads"); }
+            set { ModelHelper.SetModelValue(this, ref _numberOfTreads, value, v => NumberOfTreads = v, "NumberOfTreads"); }
         }
 
         /// <summary>
@@ -76,12 +72,10 @@ namespace Xbim.Ifc.SharedBldgElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _riserHeight;
             }
-            set { ModelManager.SetModelValue(this, ref _riserHeight, value, v => RiserHeight = v, "RiserHeight"); }
+            set { ModelHelper.SetModelValue(this, ref _riserHeight, value, v => RiserHeight = v, "RiserHeight"); }
         }
 
         /// <summary>
@@ -92,12 +86,10 @@ namespace Xbim.Ifc.SharedBldgElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _treadLength;
             }
-            set { ModelManager.SetModelValue(this, ref _treadLength, value, v => TreadLength = v, "TreadLength"); }
+            set { ModelHelper.SetModelValue(this, ref _treadLength, value, v => TreadLength = v, "TreadLength"); }
         }
 
 

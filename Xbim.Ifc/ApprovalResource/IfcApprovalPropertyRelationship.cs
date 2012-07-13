@@ -26,14 +26,13 @@ namespace Xbim.Ifc.ApprovalResource
     public class IfcApprovalPropertyRelationship : IPersistIfcEntity, ISupportChangeNotification, INotifyPropertyChanged,
                                                    INotifyPropertyChanging
     {
-#if SupportActivation
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -62,8 +61,6 @@ namespace Xbim.Ifc.ApprovalResource
 
         #endregion
 
-#endif
-
         public IfcApprovalPropertyRelationship()
         {
             _approvedProperties = new XbimSet<IfcProperty>(this);
@@ -86,14 +83,12 @@ namespace Xbim.Ifc.ApprovalResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _approvedProperties;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _approvedProperties, value, v => ApprovedProperties = v,
+                ModelHelper.SetModelValue(this, ref _approvedProperties, value, v => ApprovedProperties = v,
                                            "ApprovedProperties");
             }
         }
@@ -106,12 +101,10 @@ namespace Xbim.Ifc.ApprovalResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _approval;
             }
-            set { ModelManager.SetModelValue(this, ref _approval, value, v => Approval = v, "Approval"); }
+            set { ModelHelper.SetModelValue(this, ref _approval, value, v => Approval = v, "Approval"); }
         }
 
         #endregion

@@ -25,14 +25,13 @@ namespace Xbim.Ifc.DateTimeResource
     public class IfcCoordinatedUniversalTimeOffset : IPersistIfcEntity, INotifyPropertyChanged,
                                                      ISupportChangeNotification, INotifyPropertyChanging
     {
-#if SupportActivation
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -61,7 +60,6 @@ namespace Xbim.Ifc.DateTimeResource
 
         #endregion
 
-#endif
 
         #region Fields
 
@@ -79,12 +77,10 @@ namespace Xbim.Ifc.DateTimeResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _hourOffset;
             }
-            set { ModelManager.SetModelValue(this, ref _hourOffset, value, v => HourOffset = v, "HourOffset"); }
+            set { ModelHelper.SetModelValue(this, ref _hourOffset, value, v => HourOffset = v, "HourOffset"); }
         }
 
         /// <summary>
@@ -95,12 +91,10 @@ namespace Xbim.Ifc.DateTimeResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _minuteOffset;
             }
-            set { ModelManager.SetModelValue(this, ref _minuteOffset, value, v => MinuteOffset = v, "MinuteOffset"); }
+            set { ModelHelper.SetModelValue(this, ref _minuteOffset, value, v => MinuteOffset = v, "MinuteOffset"); }
         }
 
         /// <summary>
@@ -111,12 +105,10 @@ namespace Xbim.Ifc.DateTimeResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _sense;
             }
-            set { ModelManager.SetModelValue(this, ref _sense, value, v => Sense = v, "Sense"); }
+            set { ModelHelper.SetModelValue(this, ref _sense, value, v => Sense = v, "Sense"); }
         }
 
         #region ISupportIfcParser Members

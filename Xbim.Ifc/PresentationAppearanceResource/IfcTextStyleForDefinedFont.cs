@@ -26,14 +26,13 @@ namespace Xbim.Ifc.PresentationAppearanceResource
     public class IfcTextStyleForDefinedFont : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                               IfcCharacterStyleSelect, INotifyPropertyChanging
     {
-#if SupportActivation
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -62,8 +61,6 @@ namespace Xbim.Ifc.PresentationAppearanceResource
 
         #endregion
 
-#endif
-
         #region Fields
 
         private IfcColour _colour;
@@ -76,12 +73,10 @@ namespace Xbim.Ifc.PresentationAppearanceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _colour;
             }
-            set { ModelManager.SetModelValue(this, ref _colour, value, v => Colour = v, "Colour"); }
+            set { ModelHelper.SetModelValue(this, ref _colour, value, v => Colour = v, "Colour"); }
         }
 
         [IfcAttribute(2, IfcAttributeState.Optional)]
@@ -89,14 +84,12 @@ namespace Xbim.Ifc.PresentationAppearanceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _backgroundColour;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _backgroundColour, value, v => BackgroundColour = v,
+                ModelHelper.SetModelValue(this, ref _backgroundColour, value, v => BackgroundColour = v,
                                            "BackgroundColour");
             }
         }

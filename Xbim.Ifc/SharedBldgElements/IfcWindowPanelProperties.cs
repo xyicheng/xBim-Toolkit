@@ -57,12 +57,10 @@ namespace Xbim.Ifc.SharedBldgElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _operationType;
             }
-            set { ModelManager.SetModelValue(this, ref _operationType, value, v => OperationType = v, "OperationType"); }
+            set { ModelHelper.SetModelValue(this, ref _operationType, value, v => OperationType = v, "OperationType"); }
         }
 
         /// <summary>
@@ -73,12 +71,10 @@ namespace Xbim.Ifc.SharedBldgElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _panelPosition;
             }
-            set { ModelManager.SetModelValue(this, ref _panelPosition, value, v => PanelPosition = v, "PanelPosition"); }
+            set { ModelHelper.SetModelValue(this, ref _panelPosition, value, v => PanelPosition = v, "PanelPosition"); }
         }
 
         /// <summary>
@@ -89,12 +85,10 @@ namespace Xbim.Ifc.SharedBldgElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _frameDepth;
             }
-            set { ModelManager.SetModelValue(this, ref _frameDepth, value, v => FrameDepth = v, "FrameDepth"); }
+            set { ModelHelper.SetModelValue(this, ref _frameDepth, value, v => FrameDepth = v, "FrameDepth"); }
         }
 
         /// <summary>
@@ -105,12 +99,10 @@ namespace Xbim.Ifc.SharedBldgElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _frameThickness;
             }
-            set { ModelManager.SetModelValue(this, ref _frameThickness, value, v => FrameThickness = v, "FrameThickness"); }
+            set { ModelHelper.SetModelValue(this, ref _frameThickness, value, v => FrameThickness = v, "FrameThickness"); }
         }
 
         /// <summary>
@@ -121,14 +113,12 @@ namespace Xbim.Ifc.SharedBldgElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _shapeAspectStyle;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _shapeAspectStyle, value, v => ShapeAspectStyle = v,
+                ModelHelper.SetModelValue(this, ref _shapeAspectStyle, value, v => ShapeAspectStyle = v,
                                            "ShapeAspectStyle");
             }
         }

@@ -27,14 +27,12 @@ namespace Xbim.Ifc.ConstraintResource
     public class IfcPropertyConstraintRelationship : INotifyPropertyChanged, ISupportChangeNotification,
                                                      IPersistIfcEntity, INotifyPropertyChanging
     {
-#if SupportActivation
-
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -63,8 +61,6 @@ namespace Xbim.Ifc.ConstraintResource
 
         #endregion
 
-#endif
-
         public IfcPropertyConstraintRelationship()
         {
             _relatedProperties = new XbimSet<IfcProperty>(this);
@@ -88,14 +84,12 @@ namespace Xbim.Ifc.ConstraintResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _relatingConstraint;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _relatingConstraint, value, v => RelatingConstraint = v,
+                ModelHelper.SetModelValue(this, ref _relatingConstraint, value, v => RelatingConstraint = v,
                                            "RelatingConstraint");
             }
         }
@@ -108,14 +102,12 @@ namespace Xbim.Ifc.ConstraintResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _relatedProperties;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _relatedProperties, value, v => RelatedProperties = v,
+                ModelHelper.SetModelValue(this, ref _relatedProperties, value, v => RelatedProperties = v,
                                            "RelatedProperties");
             }
         }
@@ -128,12 +120,10 @@ namespace Xbim.Ifc.ConstraintResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _name;
             }
-            set { ModelManager.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
+            set { ModelHelper.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
         }
 
         /// <summary>
@@ -144,12 +134,10 @@ namespace Xbim.Ifc.ConstraintResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _description;
             }
-            set { ModelManager.SetModelValue(this, ref _description, value, v => Description = v, "Description"); }
+            set { ModelHelper.SetModelValue(this, ref _description, value, v => Description = v, "Description"); }
         }
 
         #region INotifyPropertyChanged Members

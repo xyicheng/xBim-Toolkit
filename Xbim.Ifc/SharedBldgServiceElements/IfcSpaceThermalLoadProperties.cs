@@ -47,14 +47,12 @@ namespace Xbim.Ifc.SharedBldgServiceElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _applicableValueRatio;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _applicableValueRatio, value, v => ApplicableValueRatio = v,
+                ModelHelper.SetModelValue(this, ref _applicableValueRatio, value, v => ApplicableValueRatio = v,
                                            "ApplicableValueRatio");
             }
         }
@@ -64,14 +62,12 @@ namespace Xbim.Ifc.SharedBldgServiceElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _thermalLoadSource;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _thermalLoadSource, value, v => ThermalLoadSource = v,
+                ModelHelper.SetModelValue(this, ref _thermalLoadSource, value, v => ThermalLoadSource = v,
                                            "ThermalLoadSource");
             }
         }
@@ -81,12 +77,10 @@ namespace Xbim.Ifc.SharedBldgServiceElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _propertySource;
             }
-            set { ModelManager.SetModelValue(this, ref _propertySource, value, v => PropertySource = v, "PropertySource"); }
+            set { ModelHelper.SetModelValue(this, ref _propertySource, value, v => PropertySource = v, "PropertySource"); }
         }
 
         [IfcAttribute(8, IfcAttributeState.Optional)]
@@ -94,14 +88,12 @@ namespace Xbim.Ifc.SharedBldgServiceElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _sourceDescription;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _sourceDescription, value, v => SourceDescription = v,
+                ModelHelper.SetModelValue(this, ref _sourceDescription, value, v => SourceDescription = v,
                                            "SourceDescription");
             }
         }
@@ -111,12 +103,10 @@ namespace Xbim.Ifc.SharedBldgServiceElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _maximumValue;
             }
-            set { ModelManager.SetModelValue(this, ref _maximumValue, value, v => MaximumValue = v, "MaximumValue"); }
+            set { ModelHelper.SetModelValue(this, ref _maximumValue, value, v => MaximumValue = v, "MaximumValue"); }
         }
 
         [IfcAttribute(10, IfcAttributeState.Optional)]
@@ -124,12 +114,10 @@ namespace Xbim.Ifc.SharedBldgServiceElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _minimumValue;
             }
-            set { ModelManager.SetModelValue(this, ref _minimumValue, value, v => MinimumValue = v, "MinimumValue"); }
+            set { ModelHelper.SetModelValue(this, ref _minimumValue, value, v => MinimumValue = v, "MinimumValue"); }
         }
 
         [IfcAttribute(11, IfcAttributeState.Optional)]
@@ -137,14 +125,12 @@ namespace Xbim.Ifc.SharedBldgServiceElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _thermalLoadTimeSeriesValues;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _thermalLoadTimeSeriesValues, value,
+                ModelHelper.SetModelValue(this, ref _thermalLoadTimeSeriesValues, value,
                                            v => ThermalLoadTimeSeriesValues = v, "ThermalLoadTimeSeriesValues");
             }
         }
@@ -154,14 +140,12 @@ namespace Xbim.Ifc.SharedBldgServiceElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _userDefinedThermalLoadSource;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _userDefinedThermalLoadSource, value,
+                ModelHelper.SetModelValue(this, ref _userDefinedThermalLoadSource, value,
                                            v => UserDefinedThermalLoadSource = v, "UserDefinedThermalLoadSource");
             }
         }
@@ -171,14 +155,12 @@ namespace Xbim.Ifc.SharedBldgServiceElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _userDefinedPropertySource;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _userDefinedPropertySource, value,
+                ModelHelper.SetModelValue(this, ref _userDefinedPropertySource, value,
                                            v => UserDefinedPropertySource = v, "UserDefinedPropertySource");
             }
         }
@@ -188,14 +170,12 @@ namespace Xbim.Ifc.SharedBldgServiceElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _thermalLoadType;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _thermalLoadType, value, v => ThermalLoadType = v,
+                ModelHelper.SetModelValue(this, ref _thermalLoadType, value, v => ThermalLoadType = v,
                                            "ThermalLoadType");
             }
         }

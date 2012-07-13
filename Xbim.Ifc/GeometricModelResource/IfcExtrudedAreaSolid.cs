@@ -46,14 +46,12 @@ namespace Xbim.Ifc.GeometricModelResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _extrudedDirection;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _extrudedDirection, value, v => ExtrudedDirection = v,
+                ModelHelper.SetModelValue(this, ref _extrudedDirection, value, v => ExtrudedDirection = v,
                                            "ExtrudedDirection");
             }
         }
@@ -64,12 +62,10 @@ namespace Xbim.Ifc.GeometricModelResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _depth;
             }
-            set { ModelManager.SetModelValue(this, ref _depth, value, v => Depth = v, "Depth"); }
+            set { ModelHelper.SetModelValue(this, ref _depth, value, v => Depth = v, "Depth"); }
         }
 
 

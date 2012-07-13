@@ -50,12 +50,10 @@ namespace Xbim.Ifc.SharedBldgElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _predefinedType;
             }
-            set { ModelManager.SetModelValue(this, ref _predefinedType, value, v => PredefinedType = v, "PredefinedType"); }
+            set { ModelHelper.SetModelValue(this, ref _predefinedType, value, v => PredefinedType = v, "PredefinedType"); }
         }
 
         public override void IfcParse(int propIndex, IPropertyValue value)

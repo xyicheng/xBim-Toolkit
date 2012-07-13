@@ -44,14 +44,13 @@ namespace Xbim.Ifc.CostResource
     public class IfcAppliedValueRelationship : ISupportChangeNotification, INotifyPropertyChanged, IPersistIfcEntity,
                                                INotifyPropertyChanging
     {
-#if SupportActivation
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -80,8 +79,6 @@ namespace Xbim.Ifc.CostResource
 
         #endregion
 
-#endif
-
         public IfcAppliedValueRelationship()
         {
             _components = new XbimSet<IfcAppliedValue>(this);
@@ -105,14 +102,12 @@ namespace Xbim.Ifc.CostResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _componentOfTotal;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _componentOfTotal, value, v => ComponentOfTotal = v,
+                ModelHelper.SetModelValue(this, ref _componentOfTotal, value, v => ComponentOfTotal = v,
                                            "ComponentOfTotal");
             }
         }
@@ -125,12 +120,10 @@ namespace Xbim.Ifc.CostResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _components;
             }
-            set { ModelManager.SetModelValue(this, ref _components, value, v => Components = v, "Components"); }
+            set { ModelHelper.SetModelValue(this, ref _components, value, v => Components = v, "Components"); }
         }
 
         /// <summary>
@@ -141,14 +134,12 @@ namespace Xbim.Ifc.CostResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _arithmeticOperator;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _arithmeticOperator, value, v => ArithmeticOperator = v,
+                ModelHelper.SetModelValue(this, ref _arithmeticOperator, value, v => ArithmeticOperator = v,
                                            "ArithmeticOperator");
             }
         }
@@ -161,12 +152,10 @@ namespace Xbim.Ifc.CostResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _name;
             }
-            set { ModelManager.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
+            set { ModelHelper.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
         }
 
         /// <summary>
@@ -177,12 +166,10 @@ namespace Xbim.Ifc.CostResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _description;
             }
-            set { ModelManager.SetModelValue(this, ref _description, value, v => Description = v, "Description"); }
+            set { ModelHelper.SetModelValue(this, ref _description, value, v => Description = v, "Description"); }
         }
 
         #region INotifyPropertyChanged Members

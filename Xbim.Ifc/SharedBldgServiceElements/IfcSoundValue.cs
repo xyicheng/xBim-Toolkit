@@ -40,14 +40,12 @@ namespace Xbim.Ifc.SharedBldgServiceElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _soundLevelTimeSeries;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _soundLevelTimeSeries, value, v => SoundLevelTimeSeries = v,
+                ModelHelper.SetModelValue(this, ref _soundLevelTimeSeries, value, v => SoundLevelTimeSeries = v,
                                            "SoundLevelTimeSeries");
             }
         }
@@ -57,12 +55,10 @@ namespace Xbim.Ifc.SharedBldgServiceElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _frequency;
             }
-            set { ModelManager.SetModelValue(this, ref _frequency, value, v => Frequency = v, "Frequency"); }
+            set { ModelHelper.SetModelValue(this, ref _frequency, value, v => Frequency = v, "Frequency"); }
         }
 
         [IfcAttribute(7, IfcAttributeState.Optional)]
@@ -70,14 +66,12 @@ namespace Xbim.Ifc.SharedBldgServiceElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _soundLevelSingleValue;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _soundLevelSingleValue, value, v => SoundLevelSingleValue = v,
+                ModelHelper.SetModelValue(this, ref _soundLevelSingleValue, value, v => SoundLevelSingleValue = v,
                                            "SoundLevelSingleValue");
             }
         }

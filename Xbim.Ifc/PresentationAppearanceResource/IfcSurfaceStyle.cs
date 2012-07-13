@@ -44,12 +44,10 @@ namespace Xbim.Ifc.PresentationAppearanceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _side;
             }
-            set { ModelManager.SetModelValue(this, ref _side, value, v => Side = v, "Side"); }
+            set { ModelHelper.SetModelValue(this, ref _side, value, v => Side = v, "Side"); }
         }
 
         [IfcAttribute(3, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class, 1, 5)]
@@ -57,12 +55,10 @@ namespace Xbim.Ifc.PresentationAppearanceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _styles;
             }
-            set { ModelManager.SetModelValue(this, ref _styles, value, v => Styles = v, "Styles"); }
+            set { ModelHelper.SetModelValue(this, ref _styles, value, v => Styles = v, "Styles"); }
         }
 
 

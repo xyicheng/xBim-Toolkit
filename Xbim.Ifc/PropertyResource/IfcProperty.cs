@@ -60,14 +60,13 @@ namespace Xbim.Ifc.PropertyResource
     public abstract class IfcProperty : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                         INotifyPropertyChanging
     {
-#if SupportActivation
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -95,8 +94,6 @@ namespace Xbim.Ifc.PropertyResource
         }
 
         #endregion
-
-#endif
 
         #region Fields
 
@@ -129,12 +126,10 @@ namespace Xbim.Ifc.PropertyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _name;
             }
-            set { ModelManager.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
+            set { ModelHelper.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
         }
 
         /// <summary>
@@ -146,12 +141,10 @@ namespace Xbim.Ifc.PropertyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _description;
             }
-            set { ModelManager.SetModelValue(this, ref _description, value, v => Description = v, "Description"); }
+            set { ModelHelper.SetModelValue(this, ref _description, value, v => Description = v, "Description"); }
         }
 
         #endregion
@@ -165,7 +158,7 @@ namespace Xbim.Ifc.PropertyResource
             get
             {
                 return
-                    ModelManager.ModelOf(this).InstancesWhere<IfcPropertyDependencyRelationship>(
+                    ModelOf.InstancesWhere<IfcPropertyDependencyRelationship>(
                         p => p.DependingProperty == this);
             }
         }
@@ -179,7 +172,7 @@ namespace Xbim.Ifc.PropertyResource
             get
             {
                 return
-                    ModelManager.ModelOf(this).InstancesWhere<IfcPropertyDependencyRelationship>(
+                    ModelOf.InstancesWhere<IfcPropertyDependencyRelationship>(
                         p => p.DependantProperty == this);
             }
         }
@@ -190,7 +183,7 @@ namespace Xbim.Ifc.PropertyResource
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class, 0, 1)]
         public IEnumerable<IfcComplexProperty> PartOfComplex
         {
-            get { return ModelManager.ModelOf(this).InstancesWhere<IfcComplexProperty>(c => c.HasProperties.Contains(this)); }
+            get { return ModelOf.InstancesWhere<IfcComplexProperty>(c => c.HasProperties.Contains(this)); }
         }
 
         #region INotifyPropertyChanged Members

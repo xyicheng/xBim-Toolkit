@@ -37,14 +37,13 @@ namespace Xbim.Ifc.ExternalReferenceResource
     public class IfcLibraryInformation : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                          IfcLibrarySelect, INotifyPropertyChanging
     {
-#if SupportActivation
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -73,8 +72,6 @@ namespace Xbim.Ifc.ExternalReferenceResource
 
         #endregion
 
-#endif
-
         #region Fields
 
         private IfcLabel _name;
@@ -93,12 +90,10 @@ namespace Xbim.Ifc.ExternalReferenceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _name;
             }
-            set { ModelManager.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
+            set { ModelHelper.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
         }
 
         /// <summary>
@@ -109,12 +104,10 @@ namespace Xbim.Ifc.ExternalReferenceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _version;
             }
-            set { ModelManager.SetModelValue(this, ref _version, value, v => Version = v, "Version"); }
+            set { ModelHelper.SetModelValue(this, ref _version, value, v => Version = v, "Version"); }
         }
 
         /// <summary>
@@ -125,12 +118,10 @@ namespace Xbim.Ifc.ExternalReferenceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _publisher;
             }
-            set { ModelManager.SetModelValue(this, ref _publisher, value, v => Publisher = v, "Publisher"); }
+            set { ModelHelper.SetModelValue(this, ref _publisher, value, v => Publisher = v, "Publisher"); }
         }
 
         /// <summary>
@@ -141,12 +132,10 @@ namespace Xbim.Ifc.ExternalReferenceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _versionDate;
             }
-            set { ModelManager.SetModelValue(this, ref _versionDate, value, v => VersionDate = v, "VersionDate"); }
+            set { ModelHelper.SetModelValue(this, ref _versionDate, value, v => VersionDate = v, "VersionDate"); }
         }
 
         /// <summary>
@@ -157,14 +146,12 @@ namespace Xbim.Ifc.ExternalReferenceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _libraryReference;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _libraryReference, value, v => LibraryReference = v,
+                ModelHelper.SetModelValue(this, ref _libraryReference, value, v => LibraryReference = v,
                                            "LibraryReference");
             }
         }

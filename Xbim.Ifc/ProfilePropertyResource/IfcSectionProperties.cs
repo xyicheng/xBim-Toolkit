@@ -26,14 +26,13 @@ namespace Xbim.Ifc.ProfilePropertyResource
     public class IfcSectionProperties : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                         INotifyPropertyChanging
     {
-#if SupportActivation
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -62,8 +61,6 @@ namespace Xbim.Ifc.ProfilePropertyResource
 
         #endregion
 
-#endif
-
         #region Fields
 
         private IfcSectionTypeEnum _sectionType;
@@ -79,12 +76,10 @@ namespace Xbim.Ifc.ProfilePropertyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _sectionType;
             }
-            set { ModelManager.SetModelValue(this, ref _sectionType, value, v => SectionType = v, "SectionType"); }
+            set { ModelHelper.SetModelValue(this, ref _sectionType, value, v => SectionType = v, "SectionType"); }
         }
 
         [IfcAttribute(2, IfcAttributeState.Mandatory)]
@@ -92,12 +87,10 @@ namespace Xbim.Ifc.ProfilePropertyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _startProfile;
             }
-            set { ModelManager.SetModelValue(this, ref _startProfile, value, v => StartProfile = v, "StartProfile"); }
+            set { ModelHelper.SetModelValue(this, ref _startProfile, value, v => StartProfile = v, "StartProfile"); }
         }
 
         [IfcAttribute(3, IfcAttributeState.Optional)]
@@ -105,12 +98,10 @@ namespace Xbim.Ifc.ProfilePropertyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _endProfile;
             }
-            set { ModelManager.SetModelValue(this, ref _endProfile, value, v => EndProfile = v, "EndProfile"); }
+            set { ModelHelper.SetModelValue(this, ref _endProfile, value, v => EndProfile = v, "EndProfile"); }
         }
 
         #endregion

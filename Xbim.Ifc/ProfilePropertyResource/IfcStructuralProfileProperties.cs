@@ -50,14 +50,12 @@ namespace Xbim.Ifc.ProfilePropertyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return this._torsionalConstantX;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref this._torsionalConstantX, value, v => TorsionalConstantX = v,
+                ModelHelper.SetModelValue(this, ref this._torsionalConstantX, value, v => TorsionalConstantX = v,
                                            "TorsionalConstantX");
             }
         }
@@ -67,14 +65,12 @@ namespace Xbim.Ifc.ProfilePropertyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return this._momentOfInertiaYZ;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref this._momentOfInertiaYZ, value, v => MomentOfInertiaYZ = v,
+                ModelHelper.SetModelValue(this, ref this._momentOfInertiaYZ, value, v => MomentOfInertiaYZ = v,
                                            "MomentOfInertiaYZ");
             }
         }
@@ -84,14 +80,12 @@ namespace Xbim.Ifc.ProfilePropertyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return this._momentOfInertiaY;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref this._momentOfInertiaY, value, v => MomentOfInertiaY = v,
+                ModelHelper.SetModelValue(this, ref this._momentOfInertiaY, value, v => MomentOfInertiaY = v,
                                            "MomentOfInertiaY");
             }
         }
@@ -101,14 +95,12 @@ namespace Xbim.Ifc.ProfilePropertyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return this._momentOfInertiaZ;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref this._momentOfInertiaZ, value, v => MomentOfInertiaZ = v,
+                ModelHelper.SetModelValue(this, ref this._momentOfInertiaZ, value, v => MomentOfInertiaZ = v,
                                            "MomentOfInertiaZ");
             }
         }
@@ -118,14 +110,12 @@ namespace Xbim.Ifc.ProfilePropertyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return this._warpingConstant;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref this._warpingConstant, value, v => WarpingConstant = v,
+                ModelHelper.SetModelValue(this, ref this._warpingConstant, value, v => WarpingConstant = v,
                                            "WarpingConstant");
             }
         }
@@ -135,12 +125,10 @@ namespace Xbim.Ifc.ProfilePropertyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return this._shearCentreZ;
             }
-            set { ModelManager.SetModelValue(this, ref this._shearCentreZ, value, v => ShearCentreZ = v, "ShearCentreZ"); }
+            set { ModelHelper.SetModelValue(this, ref this._shearCentreZ, value, v => ShearCentreZ = v, "ShearCentreZ"); }
         }
 
         [IfcAttribute(14, IfcAttributeState.Optional)]
@@ -148,12 +136,10 @@ namespace Xbim.Ifc.ProfilePropertyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return this._shearCentreY;
             }
-            set { ModelManager.SetModelValue(this, ref this._shearCentreY, value, v => ShearCentreY = v, "ShearCentreY"); }
+            set { ModelHelper.SetModelValue(this, ref this._shearCentreY, value, v => ShearCentreY = v, "ShearCentreY"); }
         }
 
         [IfcAttribute(15, IfcAttributeState.Optional)]
@@ -161,14 +147,12 @@ namespace Xbim.Ifc.ProfilePropertyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return this._shearDeformationAreaZ;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref this._shearDeformationAreaZ, value, v => ShearDeformationAreaZ = v,
+                ModelHelper.SetModelValue(this, ref this._shearDeformationAreaZ, value, v => ShearDeformationAreaZ = v,
                                            "ShearDeformationAreaZ");
             }
         }
@@ -178,14 +162,12 @@ namespace Xbim.Ifc.ProfilePropertyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return this._shearDeformationAreaY;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref this._shearDeformationAreaY, value, v => ShearDeformationAreaY = v,
+                ModelHelper.SetModelValue(this, ref this._shearDeformationAreaY, value, v => ShearDeformationAreaY = v,
                                            "ShearDeformationAreaY");
             }
         }
@@ -195,14 +177,12 @@ namespace Xbim.Ifc.ProfilePropertyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return this._maximumSectionModulusY;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref this._maximumSectionModulusY, value,
+                ModelHelper.SetModelValue(this, ref this._maximumSectionModulusY, value,
                                            v => MaximumSectionModulusY = v, "MaximumSectionModulusY");
             }
         }
@@ -212,14 +192,12 @@ namespace Xbim.Ifc.ProfilePropertyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return this._minimumSectionModulusY;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref this._minimumSectionModulusY, value,
+                ModelHelper.SetModelValue(this, ref this._minimumSectionModulusY, value,
                                            v => MinimumSectionModulusY = v, "MinimumSectionModulusY");
             }
         }
@@ -229,14 +207,12 @@ namespace Xbim.Ifc.ProfilePropertyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return this._maximumSectionModulusZ;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref this._maximumSectionModulusZ, value,
+                ModelHelper.SetModelValue(this, ref this._maximumSectionModulusZ, value,
                                            v => MaximumSectionModulusZ = v, "MaximumSectionModulusZ");
             }
         }
@@ -246,14 +222,12 @@ namespace Xbim.Ifc.ProfilePropertyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return this._minimumSectionModulusZ;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref this._minimumSectionModulusZ, value,
+                ModelHelper.SetModelValue(this, ref this._minimumSectionModulusZ, value,
                                            v => MinimumSectionModulusZ = v, "MinimumSectionModulusZ");
             }
         }
@@ -263,14 +237,12 @@ namespace Xbim.Ifc.ProfilePropertyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return this._centreOfGravityInX;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref this._centreOfGravityInX, value, v => CentreOfGravityInX = v,
+                ModelHelper.SetModelValue(this, ref this._centreOfGravityInX, value, v => CentreOfGravityInX = v,
                                            "CentreOfGravityInX");
             }
         }
@@ -280,14 +252,12 @@ namespace Xbim.Ifc.ProfilePropertyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return this._centreOfGravityInY;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref this._centreOfGravityInY, value, v => CentreOfGravityInY = v,
+                ModelHelper.SetModelValue(this, ref this._centreOfGravityInY, value, v => CentreOfGravityInY = v,
                                            "CentreOfGravityInY");
             }
         }

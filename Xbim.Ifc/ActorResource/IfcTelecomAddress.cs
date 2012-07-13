@@ -76,14 +76,12 @@ namespace Xbim.Ifc.ActorResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _telephoneNumbers;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _telephoneNumbers, value, v => _telephoneNumbers = v,
+                ModelHelper.SetModelValue(this, ref _telephoneNumbers, value, v => _telephoneNumbers = v,
                                            "TelephoneNumbers");
             }
         }
@@ -97,14 +95,12 @@ namespace Xbim.Ifc.ActorResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _facsimileNumbers;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _facsimileNumbers, value, v => _facsimileNumbers = v,
+                ModelHelper.SetModelValue(this, ref _facsimileNumbers, value, v => _facsimileNumbers = v,
                                            "FacsimileNumbers");
             }
         }
@@ -117,12 +113,10 @@ namespace Xbim.Ifc.ActorResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _pagerNumber;
             }
-            set { ModelManager.SetModelValue(this, ref _pagerNumber, value, v => PagerNumber = v, "PagerNumber"); }
+            set { ModelHelper.SetModelValue(this, ref _pagerNumber, value, v => PagerNumber = v, "PagerNumber"); }
         }
 
 
@@ -134,14 +128,12 @@ namespace Xbim.Ifc.ActorResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _electronicMailAddresses;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _electronicMailAddresses, value, v => ElectronicMailAddresses = v,
+                ModelHelper.SetModelValue(this, ref _electronicMailAddresses, value, v => ElectronicMailAddresses = v,
                                            "ElectronicMailAddresses");
             }
         }
@@ -157,12 +149,10 @@ namespace Xbim.Ifc.ActorResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _wwwHomePageUrl;
             }
-            set { ModelManager.SetModelValue(this, ref _wwwHomePageUrl, value, v => WWWHomePageUrl = v, "WwwHomePageUrl"); }
+            set { ModelHelper.SetModelValue(this, ref _wwwHomePageUrl, value, v => WWWHomePageUrl = v, "WwwHomePageUrl"); }
         }
 
         #endregion

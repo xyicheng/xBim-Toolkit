@@ -50,14 +50,12 @@ namespace Xbim.Ifc.GeometricConstraintResource
                                     INotifyPropertyChanging
     {
 
-#if SupportActivation
-
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -86,7 +84,6 @@ namespace Xbim.Ifc.GeometricConstraintResource
 
         #endregion
 
-#endif
         XbimListUnique<IfcGridAxis> _intersectingAxes;
 
         XbimList<IfcLengthMeasure> _offsetDistances;
@@ -103,14 +100,12 @@ namespace Xbim.Ifc.GeometricConstraintResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity)this).Activate(false);
-#endif
                 return _intersectingAxes;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _intersectingAxes, value, v => IntersectingAxes = v, "IntersectingAxes");
+                ModelHelper.SetModelValue(this, ref _intersectingAxes, value, v => IntersectingAxes = v, "IntersectingAxes");
             }
             
         }
@@ -122,14 +117,12 @@ namespace Xbim.Ifc.GeometricConstraintResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity)this).Activate(false);
-#endif
                 return _offsetDistances;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _offsetDistances, value, v => OffsetDistances = v, "OffsetDistances");
+                ModelHelper.SetModelValue(this, ref _offsetDistances, value, v => OffsetDistances = v, "OffsetDistances");
             }
            
         }

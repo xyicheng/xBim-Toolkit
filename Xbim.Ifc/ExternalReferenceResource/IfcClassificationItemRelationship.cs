@@ -37,14 +37,13 @@ namespace Xbim.Ifc.ExternalReferenceResource
     public class IfcClassificationItemRelationship : INotifyPropertyChanged, ISupportChangeNotification,
                                                      IPersistIfcEntity, INotifyPropertyChanging
     {
-#if SupportActivation
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -73,8 +72,6 @@ namespace Xbim.Ifc.ExternalReferenceResource
 
         #endregion
 
-#endif
-
         public IfcClassificationItemRelationship()
         {
             _relatedItems = new XbimSet<IfcClassificationItem>(this);
@@ -95,12 +92,10 @@ namespace Xbim.Ifc.ExternalReferenceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _relatingItem;
             }
-            set { ModelManager.SetModelValue(this, ref _relatingItem, value, v => RelatingItem = v, "RelatingItem"); }
+            set { ModelHelper.SetModelValue(this, ref _relatingItem, value, v => RelatingItem = v, "RelatingItem"); }
         }
 
         /// <summary>
@@ -111,12 +106,10 @@ namespace Xbim.Ifc.ExternalReferenceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _relatedItems;
             }
-            set { ModelManager.SetModelValue(this, ref _relatedItems, value, v => RelatedItems = v, "RelatedItems"); }
+            set { ModelHelper.SetModelValue(this, ref _relatedItems, value, v => RelatedItems = v, "RelatedItems"); }
         }
 
         #region INotifyPropertyChanged Members

@@ -38,12 +38,10 @@ namespace Xbim.Ifc.ProfileResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _semiAxis1;
             }
-            set { ModelManager.SetModelValue(this, ref _semiAxis1, value, v => SemiAxis1 = v, "SemiAxis1"); }
+            set { ModelHelper.SetModelValue(this, ref _semiAxis1, value, v => SemiAxis1 = v, "SemiAxis1"); }
         }
 
         [IfcAttribute(5, IfcAttributeState.Mandatory)]
@@ -51,12 +49,10 @@ namespace Xbim.Ifc.ProfileResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _semiAxis2;
             }
-            set { ModelManager.SetModelValue(this, ref _semiAxis2, value, v => SemiAxis2 = v, "SemiAxis2"); }
+            set { ModelHelper.SetModelValue(this, ref _semiAxis2, value, v => SemiAxis2 = v, "SemiAxis2"); }
         }
 
         #endregion

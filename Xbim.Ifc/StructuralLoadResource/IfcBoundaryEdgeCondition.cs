@@ -45,14 +45,12 @@ namespace Xbim.Ifc.StructuralLoadResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _linearStiffnessByLengthX;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _linearStiffnessByLengthX, value,
+                ModelHelper.SetModelValue(this, ref _linearStiffnessByLengthX, value,
                                            v => RotationalStiffnessByLengthByLengthX = v,
                                            "RotationalStiffnessByLengthByLengthX");
             }
@@ -66,14 +64,12 @@ namespace Xbim.Ifc.StructuralLoadResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _linearStiffnessByLengthY;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _linearStiffnessByLengthY, value,
+                ModelHelper.SetModelValue(this, ref _linearStiffnessByLengthY, value,
                                            v => RotationalStiffnessByLengthByLengthY = v,
                                            "RotationalStiffnessByLengthByLengthY");
             }
@@ -87,14 +83,12 @@ namespace Xbim.Ifc.StructuralLoadResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _linearStiffnessByLengthZ;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _linearStiffnessByLengthZ, value,
+                ModelHelper.SetModelValue(this, ref _linearStiffnessByLengthZ, value,
                                            v => RotationalStiffnessByLengthByLengthZ = v,
                                            "RotationalStiffnessByLengthByLengthZ");
             }
@@ -108,14 +102,12 @@ namespace Xbim.Ifc.StructuralLoadResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _rotationalStiffnessByLengthX;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _rotationalStiffnessByLengthX, value,
+                ModelHelper.SetModelValue(this, ref _rotationalStiffnessByLengthX, value,
                                            v => RotationalStiffnessByLengthX = v, "RotationalStiffnessByLengthX");
             }
         }
@@ -128,14 +120,12 @@ namespace Xbim.Ifc.StructuralLoadResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _rotationalStiffnessByLengthY;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _rotationalStiffnessByLengthY, value,
+                ModelHelper.SetModelValue(this, ref _rotationalStiffnessByLengthY, value,
                                            v => RotationalStiffnessByLengthY = v, "RotationalStiffnessByLengthY");
             }
         }
@@ -148,14 +138,12 @@ namespace Xbim.Ifc.StructuralLoadResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _rotationalStiffnessByLengthZ;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _rotationalStiffnessByLengthZ, value,
+                ModelHelper.SetModelValue(this, ref _rotationalStiffnessByLengthZ, value,
                                            v => RotationalStiffnessByLengthZ = v, "RotationalStiffnessByLengthZ");
             }
         }

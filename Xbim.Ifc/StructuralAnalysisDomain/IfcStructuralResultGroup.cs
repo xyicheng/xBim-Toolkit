@@ -50,12 +50,10 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _theoryType;
             }
-            set { ModelManager.SetModelValue(this, ref _theoryType, value, v => TheoryType = v, "TheoryType"); }
+            set { ModelHelper.SetModelValue(this, ref _theoryType, value, v => TheoryType = v, "TheoryType"); }
         }
 
         /// <summary>
@@ -66,14 +64,12 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _resultForLoadGroup;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _resultForLoadGroup, value, v => ResultForLoadGroup = v,
+                ModelHelper.SetModelValue(this, ref _resultForLoadGroup, value, v => ResultForLoadGroup = v,
                                            "ResultForLoadGroup");
             }
         }
@@ -86,12 +82,10 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _isLinear;
             }
-            set { ModelManager.SetModelValue(this, ref _isLinear, value, v => IsLinear = v, "IsLinear"); }
+            set { ModelHelper.SetModelValue(this, ref _isLinear, value, v => IsLinear = v, "IsLinear"); }
         }
 
         /// <summary>
@@ -100,7 +94,7 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, 0, 1)]
         public IEnumerable<IfcStructuralAnalysisModel> ResultGroupFor
         {
-            get { return ModelManager.ModelOf(this).InstancesWhere<IfcStructuralAnalysisModel>(s => s.HasResults == this); }
+            get { return ModelOf.InstancesWhere<IfcStructuralAnalysisModel>(s => s.HasResults == this); }
         }
 
         #endregion

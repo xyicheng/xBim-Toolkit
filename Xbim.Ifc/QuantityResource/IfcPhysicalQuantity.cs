@@ -44,14 +44,13 @@ namespace Xbim.Ifc.QuantityResource
     public abstract class IfcPhysicalQuantity : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                                 INotifyPropertyChanging
     {
-#if SupportActivation
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -80,8 +79,6 @@ namespace Xbim.Ifc.QuantityResource
 
         #endregion
 
-#endif
-
         #region Fields
 
         private IfcLabel _name;
@@ -97,12 +94,10 @@ namespace Xbim.Ifc.QuantityResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _name;
             }
-            set { ModelManager.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
+            set { ModelHelper.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
         }
 
         /// <summary>
@@ -113,12 +108,10 @@ namespace Xbim.Ifc.QuantityResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _description;
             }
-            set { ModelManager.SetModelValue(this, ref _description, value, v => Description = v, "Description"); }
+            set { ModelHelper.SetModelValue(this, ref _description, value, v => Description = v, "Description"); }
         }
 
         public virtual void IfcParse(int propIndex, IPropertyValue value)
@@ -144,7 +137,7 @@ namespace Xbim.Ifc.QuantityResource
             get
             {
                 return
-                    ModelManager.ModelOf(this).InstancesWhere<IfcPhysicalComplexQuantity>(
+                    ModelOf.InstancesWhere<IfcPhysicalComplexQuantity>(
                         pq => pq.HasQuantities.Contains(this));
             }
         }

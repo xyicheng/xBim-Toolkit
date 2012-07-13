@@ -65,12 +65,10 @@ namespace Xbim.Ifc.ProductExtension
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _operationType;
             }
-            set { ModelManager.SetModelValue(this, ref _operationType, value, v => OperationType = v, "OperationType"); }
+            set { ModelHelper.SetModelValue(this, ref _operationType, value, v => OperationType = v, "OperationType"); }
         }
 
         /// <summary>
@@ -81,14 +79,12 @@ namespace Xbim.Ifc.ProductExtension
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _capacityByWeight;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _capacityByWeight, value, v => CapacityByWeight = v,
+                ModelHelper.SetModelValue(this, ref _capacityByWeight, value, v => CapacityByWeight = v,
                                            "CapacityByWeight");
             }
         }
@@ -101,14 +97,12 @@ namespace Xbim.Ifc.ProductExtension
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _capacityByNumber;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _capacityByNumber, value, v => CapacityByNumber = v,
+                ModelHelper.SetModelValue(this, ref _capacityByNumber, value, v => CapacityByNumber = v,
                                            "CapacityByNumber");
             }
         }

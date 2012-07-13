@@ -17,14 +17,13 @@ namespace Xbim.Ifc.GeometricConstraintResource
     public class IfcGridAxis : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                     INotifyPropertyChanging
     {
-#if SupportActivation
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -53,7 +52,6 @@ namespace Xbim.Ifc.GeometricConstraintResource
 
         #endregion
 
-#endif
         IfcLabel? _axisTag;
         IfcCurve _axisCurve;
         bool _sameSense;
@@ -65,14 +63,12 @@ namespace Xbim.Ifc.GeometricConstraintResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity)this).Activate(false);
-#endif
                 return _axisTag;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _axisTag, value, v => AxisTag = v, "AxisTag");
+                ModelHelper.SetModelValue(this, ref _axisTag, value, v => AxisTag = v, "AxisTag");
             }
         }
 
@@ -84,14 +80,12 @@ namespace Xbim.Ifc.GeometricConstraintResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity)this).Activate(false);
-#endif
                 return _axisCurve;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _axisCurve, value, v => AxisCurve = v, "AxisCurve");
+                ModelHelper.SetModelValue(this, ref _axisCurve, value, v => AxisCurve = v, "AxisCurve");
             }
         }
 
@@ -103,14 +97,12 @@ namespace Xbim.Ifc.GeometricConstraintResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity)this).Activate(false);
-#endif
                 return _sameSense;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _sameSense, value, v => SameSense = v, "SameSense");
+                ModelHelper.SetModelValue(this, ref _sameSense, value, v => SameSense = v, "SameSense");
             }
         }
 
@@ -124,7 +116,7 @@ namespace Xbim.Ifc.GeometricConstraintResource
         {
             get
             {
-                return ModelManager.ModelOf(this).InstancesWhere<IfcGrid>(g => g.WAxes.Contains(this));
+                return ModelOf.InstancesWhere<IfcGrid>(g => g.WAxes.Contains(this));
             }
         }
 
@@ -136,7 +128,7 @@ namespace Xbim.Ifc.GeometricConstraintResource
         {
             get
             {
-                return ModelManager.ModelOf(this).InstancesWhere<IfcGrid>(g => g.VAxes.Contains(this));
+                return ModelOf.InstancesWhere<IfcGrid>(g => g.VAxes.Contains(this));
             }
         }
 
@@ -148,7 +140,7 @@ namespace Xbim.Ifc.GeometricConstraintResource
         {
             get
             {
-                return ModelManager.ModelOf(this).InstancesWhere<IfcGrid>(g => g.UAxes.Contains(this));
+                return ModelOf.InstancesWhere<IfcGrid>(g => g.UAxes.Contains(this));
             }
         }
         /// <summary>
@@ -159,7 +151,7 @@ namespace Xbim.Ifc.GeometricConstraintResource
         {
             get
             {
-                return ModelManager.ModelOf(this).InstancesWhere<IfcVirtualGridIntersection>(vg => vg.IntersectingAxes.Contains(this));
+                return ModelOf.InstancesWhere<IfcVirtualGridIntersection>(vg => vg.IntersectingAxes.Contains(this));
             }
         }
 

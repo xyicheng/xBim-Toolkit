@@ -60,12 +60,10 @@ namespace Xbim.Ifc.PresentationAppearanceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _curveFont;
             }
-            set { ModelManager.SetModelValue(this, ref _curveFont, value, v => CurveFont = v, "CurveFont "); }
+            set { ModelHelper.SetModelValue(this, ref _curveFont, value, v => CurveFont = v, "CurveFont "); }
         }
 
 
@@ -79,9 +77,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _curveWidth;
             }
             set
@@ -89,7 +85,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
                 if (value is IfcRatioMeasure || value is IfcLengthMeasure || value is IfcDescriptiveMeasure ||
                     value is IfcPositiveLengthMeasure || value is IfcNormalisedRatioMeasure ||
                     value is IfcPositiveRatioMeasure)
-                    ModelManager.SetModelValue(this, ref _curveWidth, value, v => CurveWidth = v, "CurveWidth");
+                    ModelHelper.SetModelValue(this, ref _curveWidth, value, v => CurveWidth = v, "CurveWidth");
                 else
                     throw new ArgumentException("Invalid width, must be SizeSelect", "CurveWidth");
             }
@@ -108,7 +104,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
             set
             {
                 if (value is IfcDraughtingPreDefinedColour || value is IfcColourRgb)
-                    ModelManager.SetModelValue(this, ref _curveColour, value, v => CurveColour = v, "CurveColour");
+                    ModelHelper.SetModelValue(this, ref _curveColour, value, v => CurveColour = v, "CurveColour");
                 else
                     throw new ArgumentException("Invalid colour, must be DraughtingPreDefinedColour or ColourRgb",
                                                 "CurveColour");

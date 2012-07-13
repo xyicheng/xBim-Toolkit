@@ -58,12 +58,10 @@ namespace Xbim.Ifc.GeometricModelResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _position;
             }
-            set { ModelManager.SetModelValue(this, ref _position, value, v => _position = v, "Position"); }
+            set { ModelHelper.SetModelValue(this, ref _position, value, v => _position = v, "Position"); }
         }
 
         /// <summary>
@@ -78,14 +76,12 @@ namespace Xbim.Ifc.GeometricModelResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _polygonalBoundary;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _polygonalBoundary, value, v => _polygonalBoundary = v,
+                ModelHelper.SetModelValue(this, ref _polygonalBoundary, value, v => _polygonalBoundary = v,
                                            "PolygonalBoundary");
             }
         }

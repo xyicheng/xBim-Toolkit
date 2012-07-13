@@ -58,12 +58,10 @@ namespace Xbim.Ifc.QuantityResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _hasQuantities;
             }
-            set { ModelManager.SetModelValue(this, ref _hasQuantities, value, v => HasQuantities = v, "HasQuantities"); }
+            set { ModelHelper.SetModelValue(this, ref _hasQuantities, value, v => HasQuantities = v, "HasQuantities"); }
         }
 
         /// <summary>
@@ -74,12 +72,10 @@ namespace Xbim.Ifc.QuantityResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _discrimination;
             }
-            set { ModelManager.SetModelValue(this, ref _discrimination, value, v => Discrimination = v, "Discrimination"); }
+            set { ModelHelper.SetModelValue(this, ref _discrimination, value, v => Discrimination = v, "Discrimination"); }
         }
 
         /// <summary>
@@ -90,12 +86,10 @@ namespace Xbim.Ifc.QuantityResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _quality;
             }
-            set { ModelManager.SetModelValue(this, ref _quality, value, v => Quality = v, "Quality"); }
+            set { ModelHelper.SetModelValue(this, ref _quality, value, v => Quality = v, "Quality"); }
         }
 
         /// <summary>
@@ -106,12 +100,10 @@ namespace Xbim.Ifc.QuantityResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _usage;
             }
-            set { ModelManager.SetModelValue(this, ref _usage, value, v => Usage = v, "Usage"); }
+            set { ModelHelper.SetModelValue(this, ref _usage, value, v => Usage = v, "Usage"); }
         }
 
         public override void IfcParse(int propIndex, IPropertyValue value)

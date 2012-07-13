@@ -48,12 +48,10 @@ namespace Xbim.Ifc.PresentationAppearanceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _fontFamily;
             }
-            set { ModelManager.SetModelValue(this, ref _fontFamily, value, v => FontFamily = v, "FontFamily"); }
+            set { ModelHelper.SetModelValue(this, ref _fontFamily, value, v => FontFamily = v, "FontFamily"); }
         }
 
         /// <summary>
@@ -64,12 +62,10 @@ namespace Xbim.Ifc.PresentationAppearanceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _fontStyle;
             }
-            set { ModelManager.SetModelValue(this, ref _fontStyle, value, v => FontStyle = v, "FontStyle"); }
+            set { ModelHelper.SetModelValue(this, ref _fontStyle, value, v => FontStyle = v, "FontStyle"); }
         }
 
         /// <summary>
@@ -80,12 +76,10 @@ namespace Xbim.Ifc.PresentationAppearanceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _fontVariant;
             }
-            set { ModelManager.SetModelValue(this, ref _fontVariant, value, v => FontVariant = v, "FontVariant"); }
+            set { ModelHelper.SetModelValue(this, ref _fontVariant, value, v => FontVariant = v, "FontVariant"); }
         }
 
         /// <summary>
@@ -96,12 +90,10 @@ namespace Xbim.Ifc.PresentationAppearanceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _fontWeight;
             }
-            set { ModelManager.SetModelValue(this, ref _fontWeight, value, v => FontWeight = v, "FontWeight"); }
+            set { ModelHelper.SetModelValue(this, ref _fontWeight, value, v => FontWeight = v, "FontWeight"); }
         }
 
         /// <summary>
@@ -113,12 +105,10 @@ namespace Xbim.Ifc.PresentationAppearanceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _fontSize;
             }
-            set { ModelManager.SetModelValue(this, ref _fontSize, value, v => FontSize = v, "FontSize"); }
+            set { ModelHelper.SetModelValue(this, ref _fontSize, value, v => FontSize = v, "FontSize"); }
         }
 
         #endregion

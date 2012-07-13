@@ -40,14 +40,12 @@ namespace Xbim.Ifc.GeometricConstraintResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _placementLocation;
             }
             protected set
             {
-                ModelManager.SetModelValue(this, ref _placementLocation, value, v => PlacementLocation = v,
+                ModelHelper.SetModelValue(this, ref _placementLocation, value, v => PlacementLocation = v,
                                            "PlacementLocation ");
             }
         }
@@ -61,14 +59,12 @@ namespace Xbim.Ifc.GeometricConstraintResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _placementRefDirection;
             }
             protected set
             {
-                ModelManager.SetModelValue(this, ref _placementRefDirection, value, v => PlacementRefDirection = v,
+                ModelHelper.SetModelValue(this, ref _placementRefDirection, value, v => PlacementRefDirection = v,
                                            "PlacementRefDirection ");
             }
         }

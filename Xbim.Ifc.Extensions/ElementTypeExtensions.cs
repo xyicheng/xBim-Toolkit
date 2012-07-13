@@ -50,7 +50,7 @@ namespace Xbim.Ifc.Extensions
                 elemType.HasAssociations.OfType<IfcRelAssociatesMaterial>().FirstOrDefault();
             if (relMat == null)
             {
-                IModel model = ModelManager.ModelOf(elemType);
+                IModel model = elemType.ModelOf;
                 if (model == null)
                     throw new Exception("IfcElementType is not contained in a valid model");
                 else

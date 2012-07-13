@@ -42,7 +42,7 @@ namespace Xbim.Ifc.Extensions
         /// <param name = "ifcProject"></param>
         public static void Initialize(this IfcProject ifcProject, ProjectUnits units)
         {
-            IModel model = ModelManager.ModelOf(ifcProject);
+            IModel model = ifcProject.ModelOf;
             if (units == ProjectUnits.SIUnitsUK)
             {
                 IfcUnitAssignment ua = model.New<IfcUnitAssignment>();
@@ -190,7 +190,7 @@ namespace Xbim.Ifc.Extensions
         public static void SetOrChangeSIUnit(this IfcProject ifcProject, IfcUnitEnum unitType, IfcSIUnitName siUnitName,
                                              IfcSIPrefix siUnitPrefix)
         {
-            IModel model = ModelManager.ModelOf(ifcProject);
+            IModel model = ifcProject.ModelOf;
             if (ifcProject.UnitsInContext == null)
             {
                 ifcProject.UnitsInContext = model.New<IfcUnitAssignment>();
@@ -203,7 +203,7 @@ namespace Xbim.Ifc.Extensions
         public static void SetOrChangeConversionUnit(this IfcProject ifcProject, IfcUnitEnum unitType,
                                                      ConversionBasedUnit conversionUnit)
         {
-            IModel model = ModelManager.ModelOf(ifcProject);
+            IModel model = ifcProject.ModelOf;
             if (ifcProject.UnitsInContext == null)
             {
                 ifcProject.UnitsInContext = model.New<IfcUnitAssignment>();
@@ -239,7 +239,7 @@ namespace Xbim.Ifc.Extensions
             IEnumerable<IfcRelDecomposes> decomposition = ifcProject.IsDecomposedBy;
             if (decomposition.Count() == 0) //none defined create the relationship
             {
-                IfcRelAggregates relSub = ModelManager.ModelOf(ifcProject).New<IfcRelAggregates>();
+                IfcRelAggregates relSub = ifcProject.ModelOf.New<IfcRelAggregates>();
                 relSub.RelatingObject = ifcProject;
                 relSub.RelatedObjects.Add_Reversible(site);
             }
@@ -271,7 +271,7 @@ namespace Xbim.Ifc.Extensions
             IEnumerable<IfcRelDecomposes> decomposition = ifcProject.IsDecomposedBy;
             if (decomposition.Count() == 0) //none defined create the relationship
             {
-                IfcRelAggregates relSub = ModelManager.ModelOf(ifcProject).New<IfcRelAggregates>();
+                IfcRelAggregates relSub = ifcProject.ModelOf.New<IfcRelAggregates>();
                 relSub.RelatingObject = ifcProject;
                 relSub.RelatedObjects.Add_Reversible(building);
             }

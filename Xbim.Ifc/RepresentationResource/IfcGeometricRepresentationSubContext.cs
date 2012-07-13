@@ -64,9 +64,7 @@ namespace Xbim.Ifc.RepresentationResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity)this).Activate(false);
-#endif
                 return _parentContext.CoordinateSpaceDimension;
             }
             set
@@ -84,9 +82,7 @@ namespace Xbim.Ifc.RepresentationResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity)this).Activate(false);
-#endif
                 if (_parentContext.Precision.HasValue)
                     return _parentContext.Precision;
                 else
@@ -103,9 +99,7 @@ namespace Xbim.Ifc.RepresentationResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity)this).Activate(false);
-#endif
                 return _parentContext.WorldCoordinateSystem;
             }
             set
@@ -149,12 +143,10 @@ namespace Xbim.Ifc.RepresentationResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity)this).Activate(false);
-#endif
                 return _parentContext;
             }
-            set { ModelManager.SetModelValue(this, ref _parentContext, value, v => ParentContext = v, "ParentContext"); }
+            set { ModelHelper.SetModelValue(this, ref _parentContext, value, v => ParentContext = v, "ParentContext"); }
         }
 
 
@@ -171,12 +163,10 @@ namespace Xbim.Ifc.RepresentationResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity)this).Activate(false);
-#endif
                 return _targetScale;
             }
-            set { ModelManager.SetModelValue(this, ref _targetScale, value, v => TargetScale = v, "TargetScale"); }
+            set { ModelHelper.SetModelValue(this, ref _targetScale, value, v => TargetScale = v, "TargetScale"); }
         }
 
 
@@ -188,14 +178,12 @@ namespace Xbim.Ifc.RepresentationResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity)this).Activate(false);
-#endif
                 return _targetView;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _targetView, value, v => TargetView = v, "TargetView");
+                ModelHelper.SetModelValue(this, ref _targetView, value, v => TargetView = v, "TargetView");
                 if (value != IfcGeometricProjectionEnum.USERDEFINED) UserDefinedTargetView = null;
             }
         }
@@ -209,14 +197,12 @@ namespace Xbim.Ifc.RepresentationResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity)this).Activate(false);
-#endif
                 return _userDefinedTargetView;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _userDefinedTargetView, value, v => UserDefinedTargetView = v,
+                ModelHelper.SetModelValue(this, ref _userDefinedTargetView, value, v => UserDefinedTargetView = v,
                                            "UserDefinedTargetView");
                 if (value != null) TargetView = IfcGeometricProjectionEnum.USERDEFINED;
             }

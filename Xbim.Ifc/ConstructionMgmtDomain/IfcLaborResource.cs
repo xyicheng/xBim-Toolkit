@@ -34,12 +34,10 @@ namespace Xbim.Ifc.ConstructionMgmtDomain
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _skillSet;
             }
-            set { ModelManager.SetModelValue(this, ref _skillSet, value, v => SkillSet = v, "SkillSet"); }
+            set { ModelHelper.SetModelValue(this, ref _skillSet, value, v => SkillSet = v, "SkillSet"); }
         }
 
         #region Part 21 Step file Parse routines

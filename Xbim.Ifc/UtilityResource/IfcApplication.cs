@@ -29,14 +29,13 @@ namespace Xbim.Ifc.UtilityResource
     public class IfcApplication : IPersistIfcEntity, ISupportChangeNotification, INotifyPropertyChanged,
                                   INotifyPropertyChanging
     {
-#if SupportActivation
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -65,7 +64,6 @@ namespace Xbim.Ifc.UtilityResource
 
         #endregion
 
-#endif
 
         #region Fields and Events
 
@@ -91,12 +89,10 @@ namespace Xbim.Ifc.UtilityResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _applicationDeveloper;
             }
-            set { _applicationDeveloper = value; }
+            set { ModelHelper.SetModelValue(this, ref _applicationDeveloper, value, v => ApplicationDeveloper = v, "ApplicationDeveloper"); }
         }
 
         /// <summary>
@@ -109,12 +105,10 @@ namespace Xbim.Ifc.UtilityResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _version;
             }
-            set { _version = value; }
+            set { ModelHelper.SetModelValue(this, ref _version, value, v => Version = v, "Version"); }
         }
 
 
@@ -128,12 +122,10 @@ namespace Xbim.Ifc.UtilityResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _applicationFullName;
             }
-            set { _applicationFullName = value; }
+            set { ModelHelper.SetModelValue(this, ref _applicationFullName, value, v => ApplicationFullName = v, "ApplicationFullName"); }
         }
 
 
@@ -147,12 +139,10 @@ namespace Xbim.Ifc.UtilityResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _applicationIdentifier;
             }
-            set { _applicationIdentifier = value; }
+            set { ModelHelper.SetModelValue(this, ref _applicationIdentifier, value, v => ApplicationIdentifier = v, "ApplicationIdentifier"); }
         }
 
         #endregion

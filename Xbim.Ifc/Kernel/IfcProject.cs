@@ -79,12 +79,10 @@ namespace Xbim.Ifc.Kernel
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _longName;
             }
-            set { ModelManager.SetModelValue(this, ref _longName, value, v => LongName = v, "LongName"); }
+            set { ModelHelper.SetModelValue(this, ref _longName, value, v => LongName = v, "LongName"); }
         }
 
         /// <summary>
@@ -96,12 +94,10 @@ namespace Xbim.Ifc.Kernel
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _phase;
             }
-            set { ModelManager.SetModelValue(this, ref _phase, value, v => Phase = v, "Phase"); }
+            set { ModelHelper.SetModelValue(this, ref _phase, value, v => Phase = v, "Phase"); }
         }
 
         /// <summary>
@@ -115,14 +111,12 @@ namespace Xbim.Ifc.Kernel
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _representationContexts;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _representationContexts, value, v => RepresentationContexts = v,
+                ModelHelper.SetModelValue(this, ref _representationContexts, value, v => RepresentationContexts = v,
                                            "RepresentationContexts");
             }
         }
@@ -135,12 +129,10 @@ namespace Xbim.Ifc.Kernel
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _unitsInContext;
             }
-            set { ModelManager.SetModelValue(this, ref _unitsInContext, value, v => UnitsInContext = v, "UnitsInContext"); }
+            set { ModelHelper.SetModelValue(this, ref _unitsInContext, value, v => UnitsInContext = v, "UnitsInContext"); }
         }
 
 

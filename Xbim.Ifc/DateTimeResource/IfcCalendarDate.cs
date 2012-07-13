@@ -34,14 +34,13 @@ namespace Xbim.Ifc.DateTimeResource
     public class IfcCalendarDate : IfcDateTimeSelect, INotifyPropertyChanged, ISupportChangeNotification,
                                    IPersistIfcEntity, IfcObjectReferenceSelect, INotifyPropertyChanging
     {
-#if SupportActivation
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -70,8 +69,6 @@ namespace Xbim.Ifc.DateTimeResource
 
         #endregion
 
-#endif
-
         private IfcDayInMonthNumber _dayComponent;
         private IfcMonthInYearNumber _monthComponent;
         private IfcYearNumber _yearComponent;
@@ -84,12 +81,10 @@ namespace Xbim.Ifc.DateTimeResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _dayComponent;
             }
-            set { ModelManager.SetModelValue(this, ref _dayComponent, value, v => DayComponent = v, "DayComponent"); }
+            set { ModelHelper.SetModelValue(this, ref _dayComponent, value, v => DayComponent = v, "DayComponent"); }
         }
 
         /// <summary>
@@ -100,12 +95,10 @@ namespace Xbim.Ifc.DateTimeResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _monthComponent;
             }
-            set { ModelManager.SetModelValue(this, ref _monthComponent, value, v => MonthComponent = v, "MonthComponent"); }
+            set { ModelHelper.SetModelValue(this, ref _monthComponent, value, v => MonthComponent = v, "MonthComponent"); }
         }
 
         /// <summary>
@@ -116,12 +109,10 @@ namespace Xbim.Ifc.DateTimeResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _yearComponent;
             }
-            set { ModelManager.SetModelValue(this, ref _yearComponent, value, v => YearComponent = v, "YearComponent"); }
+            set { ModelHelper.SetModelValue(this, ref _yearComponent, value, v => YearComponent = v, "YearComponent"); }
         }
 
         #region INotifyPropertyChanged Members

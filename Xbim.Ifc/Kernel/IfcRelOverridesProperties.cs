@@ -58,14 +58,12 @@ namespace Xbim.Ifc.Kernel
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _overridingProperties;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _overridingProperties, value, v => OverridingProperties = v,
+                ModelHelper.SetModelValue(this, ref _overridingProperties, value, v => OverridingProperties = v,
                                            "OverridingProperties");
             }
         }

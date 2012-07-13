@@ -41,12 +41,10 @@ namespace Xbim.Ifc.TimeSeriesResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _timeStep;
             }
-            set { ModelManager.SetModelValue(this, ref _timeStep, value, v => TimeStep = v, "TimeStep"); }
+            set { ModelHelper.SetModelValue(this, ref _timeStep, value, v => TimeStep = v, "TimeStep"); }
         }
 
         [IfcAttribute(10, IfcAttributeState.Mandatory, IfcAttributeType.List, IfcAttributeType.Class, 1)]
@@ -54,12 +52,10 @@ namespace Xbim.Ifc.TimeSeriesResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _values;
             }
-            set { ModelManager.SetModelValue(this, ref _values, value, v => Values = v, "Values"); }
+            set { ModelHelper.SetModelValue(this, ref _values, value, v => Values = v, "Values"); }
         }
 
         public override void IfcParse(int propIndex, IPropertyValue value)

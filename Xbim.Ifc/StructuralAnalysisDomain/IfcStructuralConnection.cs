@@ -38,14 +38,12 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _appliedCondition;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _appliedCondition, value, v => AppliedCondition = v,
+                ModelHelper.SetModelValue(this, ref _appliedCondition, value, v => AppliedCondition = v,
                                            "AppliedCondition");
             }
         }
@@ -56,7 +54,7 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
             get
             {
                 return
-                    ModelManager.ModelOf(this).InstancesWhere<IfcRelConnectsStructuralMember>(
+                    ModelOf.InstancesWhere<IfcRelConnectsStructuralMember>(
                         r => r.RelatedStructuralConnection == this);
             }
         }

@@ -34,14 +34,13 @@ namespace Xbim.Ifc.PresentationAppearanceResource
     public class IfcPresentationStyleAssignment : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                                   INotifyPropertyChanging
     {
-#if SupportActivation
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -70,8 +69,6 @@ namespace Xbim.Ifc.PresentationAppearanceResource
 
         #endregion
 
-#endif
-
         public IfcPresentationStyleAssignment()
         {
             _styles = new XbimSet<IfcPresentationStyleSelect>(this);
@@ -93,12 +90,10 @@ namespace Xbim.Ifc.PresentationAppearanceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _styles;
             }
-            set { ModelManager.SetModelValue(this, ref _styles, value, v => Styles = v, "Styles"); }
+            set { ModelHelper.SetModelValue(this, ref _styles, value, v => Styles = v, "Styles"); }
         }
 
 

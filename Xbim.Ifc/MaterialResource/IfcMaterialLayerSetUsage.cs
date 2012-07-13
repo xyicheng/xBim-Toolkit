@@ -39,14 +39,13 @@ namespace Xbim.Ifc.MaterialResource
     public class IfcMaterialLayerSetUsage : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                             IfcMaterialSelect, INotifyPropertyChanging
     {
-#if SupportActivation
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -75,8 +74,6 @@ namespace Xbim.Ifc.MaterialResource
 
         #endregion
 
-#endif
-
         #region Fields
 
         private IfcMaterialLayerSet _forLayerSet;
@@ -100,12 +97,10 @@ namespace Xbim.Ifc.MaterialResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _forLayerSet;
             }
-            set { ModelManager.SetModelValue(this, ref _forLayerSet, value, v => ForLayerSet = v, "ForLayerSet"); }
+            set { ModelHelper.SetModelValue(this, ref _forLayerSet, value, v => ForLayerSet = v, "ForLayerSet"); }
         }
 
         /// <summary>
@@ -116,14 +111,12 @@ namespace Xbim.Ifc.MaterialResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _layerSetDirection;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _layerSetDirection, value, v => LayerSetDirection = v,
+                ModelHelper.SetModelValue(this, ref _layerSetDirection, value, v => LayerSetDirection = v,
                                            "LayerSetDirection");
             }
         }
@@ -137,12 +130,10 @@ namespace Xbim.Ifc.MaterialResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _directionSense;
             }
-            set { ModelManager.SetModelValue(this, ref _directionSense, value, v => DirectionSense = v, "DirectionSense"); }
+            set { ModelHelper.SetModelValue(this, ref _directionSense, value, v => DirectionSense = v, "DirectionSense"); }
         }
 
 
@@ -154,14 +145,12 @@ namespace Xbim.Ifc.MaterialResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _offsetFromReferenceLine;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _offsetFromReferenceLine, value, v => OffsetFromReferenceLine = v,
+                ModelHelper.SetModelValue(this, ref _offsetFromReferenceLine, value, v => OffsetFromReferenceLine = v,
                                            "OffsetFromReferenceLine");
             }
         }

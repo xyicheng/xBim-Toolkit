@@ -60,14 +60,12 @@ namespace Xbim.Ifc.ExternalReferenceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _referencedSource;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _referencedSource, value, v => ReferencedSource = v,
+                ModelHelper.SetModelValue(this, ref _referencedSource, value, v => ReferencedSource = v,
                                            "ReferencedSource");
             }
         }

@@ -26,14 +26,13 @@ namespace Xbim.Ifc.MeasureResource
     public class IfcMeasureWithUnit : IPersistIfcEntity, IfcAppliedValueSelect, IfcMetricValueSelect,
                                       ISupportChangeNotification, INotifyPropertyChanged, INotifyPropertyChanging
     {
-#if SupportActivation
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -62,8 +61,6 @@ namespace Xbim.Ifc.MeasureResource
 
         #endregion
 
-#endif
-
         #region Part 21 Step file Parse routines
 
         private IfcValue _valueComponent;
@@ -77,12 +74,10 @@ namespace Xbim.Ifc.MeasureResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _valueComponent;
             }
-            set { ModelManager.SetModelValue(this, ref _valueComponent, value, v => ValueComponent = v, "ValueComponent"); }
+            set { ModelHelper.SetModelValue(this, ref _valueComponent, value, v => ValueComponent = v, "ValueComponent"); }
         }
 
         /// <summary>
@@ -93,12 +88,10 @@ namespace Xbim.Ifc.MeasureResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _unitComponent;
             }
-            set { ModelManager.SetModelValue(this, ref _unitComponent, value, v => UnitComponent = v, "UnitComponent"); }
+            set { ModelHelper.SetModelValue(this, ref _unitComponent, value, v => UnitComponent = v, "UnitComponent"); }
         }
 
         public virtual void IfcParse(int propIndex, IPropertyValue value)

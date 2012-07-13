@@ -50,12 +50,10 @@ namespace Xbim.Ifc.GeometryResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _location;
             }
-            set { ModelManager.SetModelValue(this, ref _location, value, v => Location = value, "Location"); }
+            set { ModelHelper.SetModelValue(this, ref _location, value, v => Location = value, "Location"); }
         }
 
         public override void IfcParse(int propIndex, IPropertyValue value)

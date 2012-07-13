@@ -50,7 +50,7 @@ namespace Xbim.Ifc.PropertyResource
         public IfcLabel? UsageName
         {
             get { return _usageName; }
-            set { ModelManager.SetModelValue(this, ref _usageName, value, v => UsageName = v, "UsageName"); }
+            set { ModelHelper.SetModelValue(this, ref _usageName, value, v => UsageName = v, "UsageName"); }
         }
 
         /// <summary>
@@ -61,7 +61,7 @@ namespace Xbim.Ifc.PropertyResource
             get { return _propertyReference; }
             set
             {
-                ModelManager.SetModelValue(this, ref _propertyReference, value, v => PropertyReference = v,
+                ModelHelper.SetModelValue(this, ref _propertyReference, value, v => PropertyReference = v,
                                            "PropertyReference");
             }
         }

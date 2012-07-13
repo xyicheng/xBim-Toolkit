@@ -48,12 +48,10 @@ namespace Xbim.Ifc.ControlExtension
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity)this).Activate(false);
-#endif
                 return _relatingApproval;
             }
-            set { ModelManager.SetModelValue(this, ref _relatingApproval, value, v => RelatingApproval = v, "RelatingApproval"); }
+            set { ModelHelper.SetModelValue(this, ref _relatingApproval, value, v => RelatingApproval = v, "RelatingApproval"); }
         }
 
         #endregion

@@ -45,14 +45,12 @@ namespace Xbim.Ifc.Kernel
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _relatingProcess;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _relatingProcess, value, v => RelatingProcess = v,
+                ModelHelper.SetModelValue(this, ref _relatingProcess, value, v => RelatingProcess = v,
                                            "RelatingProcess");
             }
         }
@@ -65,12 +63,10 @@ namespace Xbim.Ifc.Kernel
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _relatedProcess;
             }
-            set { ModelManager.SetModelValue(this, ref _relatedProcess, value, v => RelatedProcess = v, "RelatedProcess"); }
+            set { ModelHelper.SetModelValue(this, ref _relatedProcess, value, v => RelatedProcess = v, "RelatedProcess"); }
         }
 
         /// <summary>
@@ -81,12 +77,10 @@ namespace Xbim.Ifc.Kernel
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _timeLag;
             }
-            set { ModelManager.SetModelValue(this, ref _timeLag, value, v => TimeLag = v, "TimeLag"); }
+            set { ModelHelper.SetModelValue(this, ref _timeLag, value, v => TimeLag = v, "TimeLag"); }
         }
 
         /// <summary>
@@ -97,12 +91,10 @@ namespace Xbim.Ifc.Kernel
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _sequenceType;
             }
-            set { ModelManager.SetModelValue(this, ref _sequenceType, value, v => SequenceType = v, "SequenceType"); }
+            set { ModelHelper.SetModelValue(this, ref _sequenceType, value, v => SequenceType = v, "SequenceType"); }
         }
 
         #region Part 21 Step file Parse routines

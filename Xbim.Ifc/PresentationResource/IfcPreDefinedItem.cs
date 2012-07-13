@@ -26,14 +26,12 @@ namespace Xbim.Ifc.PresentationResource
     public abstract class IfcPreDefinedItem : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                               INotifyPropertyChanging
     {
-#if SupportActivation
-
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -62,8 +60,6 @@ namespace Xbim.Ifc.PresentationResource
 
         #endregion
 
-#endif
-
         #region Fields
 
         private IfcLabel m_name;
@@ -86,12 +82,10 @@ namespace Xbim.Ifc.PresentationResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return m_name;
             }
-            set { ModelManager.SetModelValue(this, ref m_name, value, v => Name = v, "Name"); }
+            set { ModelHelper.SetModelValue(this, ref m_name, value, v => Name = v, "Name"); }
         }
 
         public virtual void IfcParse(int propIndex, IPropertyValue value)

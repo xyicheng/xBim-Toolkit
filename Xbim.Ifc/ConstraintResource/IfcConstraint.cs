@@ -32,14 +32,13 @@ namespace Xbim.Ifc.ConstraintResource
     public abstract class IfcConstraint : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                           INotifyPropertyChanging
     {
-#if SupportActivation
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -68,8 +67,6 @@ namespace Xbim.Ifc.ConstraintResource
 
         #endregion
 
-#endif
-
         #region Fields
 
         private IfcLabel _name;
@@ -90,12 +87,10 @@ namespace Xbim.Ifc.ConstraintResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _name;
             }
-            set { ModelManager.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
+            set { ModelHelper.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
         }
 
         /// <summary>
@@ -106,12 +101,10 @@ namespace Xbim.Ifc.ConstraintResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _description;
             }
-            set { ModelManager.SetModelValue(this, ref _description, value, v => Description = v, "Description"); }
+            set { ModelHelper.SetModelValue(this, ref _description, value, v => Description = v, "Description"); }
         }
 
         /// <summary>
@@ -122,14 +115,12 @@ namespace Xbim.Ifc.ConstraintResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _constraintGrade;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _constraintGrade, value, v => ConstraintGrade = v,
+                ModelHelper.SetModelValue(this, ref _constraintGrade, value, v => ConstraintGrade = v,
                                            "ConstraintGrade");
             }
         }
@@ -142,14 +133,12 @@ namespace Xbim.Ifc.ConstraintResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _constraintSource;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _constraintSource, value, v => ConstraintSource = v,
+                ModelHelper.SetModelValue(this, ref _constraintSource, value, v => ConstraintSource = v,
                                            "ConstraintSource");
             }
         }
@@ -162,12 +151,10 @@ namespace Xbim.Ifc.ConstraintResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _creatingActor;
             }
-            set { ModelManager.SetModelValue(this, ref _creatingActor, value, v => CreatingActor = v, "CreatingActor"); }
+            set { ModelHelper.SetModelValue(this, ref _creatingActor, value, v => CreatingActor = v, "CreatingActor"); }
         }
 
         /// <summary>
@@ -178,12 +165,10 @@ namespace Xbim.Ifc.ConstraintResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _creationTime;
             }
-            set { ModelManager.SetModelValue(this, ref _creationTime, value, v => CreationTime = v, "CreationTime"); }
+            set { ModelHelper.SetModelValue(this, ref _creationTime, value, v => CreationTime = v, "CreationTime"); }
         }
 
         /// <summary>
@@ -197,14 +182,12 @@ namespace Xbim.Ifc.ConstraintResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _userDefinedGrade;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _userDefinedGrade, value, v => UserDefinedGrade = v,
+                ModelHelper.SetModelValue(this, ref _userDefinedGrade, value, v => UserDefinedGrade = v,
                                            "UserDefinedGrade");
             }
         }
@@ -220,7 +203,7 @@ namespace Xbim.Ifc.ConstraintResource
             get
             {
                 return
-                    ModelManager.ModelOf(this).InstancesWhere<IfcConstraintClassificationRelationship>(
+                    ModelOf.InstancesWhere<IfcConstraintClassificationRelationship>(
                         c => c.ClassifiedConstraint == this);
             }
         }
@@ -234,7 +217,7 @@ namespace Xbim.Ifc.ConstraintResource
             get
             {
                 return
-                    ModelManager.ModelOf(this).InstancesWhere<IfcConstraintRelationship>(
+                    ModelOf.InstancesWhere<IfcConstraintRelationship>(
                         c => c.RelatingConstraint == this);
             }
         }
@@ -248,7 +231,7 @@ namespace Xbim.Ifc.ConstraintResource
             get
             {
                 return
-                    ModelManager.ModelOf(this).InstancesWhere<IfcConstraintRelationship>(
+                    ModelOf.InstancesWhere<IfcConstraintRelationship>(
                         c => c.RelatedConstraints.Contains(this));
             }
         }
@@ -262,7 +245,7 @@ namespace Xbim.Ifc.ConstraintResource
             get
             {
                 return
-                    ModelManager.ModelOf(this).InstancesWhere<IfcPropertyConstraintRelationship>(
+                    ModelOf.InstancesWhere<IfcPropertyConstraintRelationship>(
                         c => c.RelatingConstraint == this);
             }
         }
@@ -276,7 +259,7 @@ namespace Xbim.Ifc.ConstraintResource
             get
             {
                 return
-                    ModelManager.ModelOf(this).InstancesWhere<IfcConstraintAggregationRelationship>(
+                    ModelOf.InstancesWhere<IfcConstraintAggregationRelationship>(
                         c => c.RelatingConstraint == this);
             }
         }
@@ -290,7 +273,7 @@ namespace Xbim.Ifc.ConstraintResource
             get
             {
                 return
-                    ModelManager.ModelOf(this).InstancesWhere<IfcConstraintAggregationRelationship>(
+                    ModelOf.InstancesWhere<IfcConstraintAggregationRelationship>(
                         c => c.RelatedConstraints.Contains(this));
             }
         }

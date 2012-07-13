@@ -75,12 +75,10 @@ namespace Xbim.Ifc.ProductExtension
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity)this).Activate(false);
-#endif
                 return _longName;
             }
-            set { ModelManager.SetModelValue(this, ref _longName, value, v => _longName = v, "LongName"); }
+            set { ModelHelper.SetModelValue(this, ref _longName, value, v => _longName = v, "LongName"); }
         }
 
         /// <summary>
@@ -91,9 +89,7 @@ namespace Xbim.Ifc.ProductExtension
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity)this).Activate(false);
-#endif
                 return _compositionType;
                 ////otherwise calculate it
                 //IEnumerable<ObjectDefinition> children = this.SpatialStructuralElementChildren;
@@ -164,7 +160,7 @@ namespace Xbim.Ifc.ProductExtension
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _compositionType, value, v => _compositionType = v,
+                ModelHelper.SetModelValue(this, ref _compositionType, value, v => _compositionType = v,
                                            "CompositionType");
             }
         }
@@ -219,7 +215,7 @@ namespace Xbim.Ifc.ProductExtension
             get
             {
                 return
-                    ModelManager.ModelOf(this).InstancesWhere<IfcRelReferencedInSpatialStructure>(
+                    ModelOf.InstancesWhere<IfcRelReferencedInSpatialStructure>(
                         r => r.RelatingStructure == this);
             }
         }
@@ -234,7 +230,7 @@ namespace Xbim.Ifc.ProductExtension
             get
             {
                 return
-                    ModelManager.ModelOf(this).InstancesWhere<IfcRelServicesBuildings>(
+                    ModelOf.InstancesWhere<IfcRelServicesBuildings>(
                         r => r.RelatedBuildings.Contains(this));
             }
         }
@@ -252,7 +248,7 @@ namespace Xbim.Ifc.ProductExtension
             get
             {
                 return
-                    ModelManager.ModelOf(this).InstancesWhere<IfcRelContainedInSpatialStructure>(
+                    ModelOf.InstancesWhere<IfcRelContainedInSpatialStructure>(
                         r => r.RelatingStructure == this);
             }
         }

@@ -117,12 +117,10 @@ namespace Xbim.Ifc.ProductExtension
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity)this).Activate(false);
-#endif
                 return _refLatitude;
             }
-            set { ModelManager.SetModelValue(this, ref _refLatitude, value, v => RefLatitude = v, "RefLatitude"); }
+            set { ModelHelper.SetModelValue(this, ref _refLatitude, value, v => RefLatitude = v, "RefLatitude"); }
         }
 
         /// <summary>
@@ -137,12 +135,10 @@ namespace Xbim.Ifc.ProductExtension
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity)this).Activate(false);
-#endif
                 return _refLongitude;
             }
-            set { ModelManager.SetModelValue(this, ref _refLongitude, value, v => RefLongitude = v, "RefLongitude"); }
+            set { ModelHelper.SetModelValue(this, ref _refLongitude, value, v => RefLongitude = v, "RefLongitude"); }
         }
 
         /// <summary>
@@ -154,12 +150,10 @@ namespace Xbim.Ifc.ProductExtension
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity)this).Activate(false);
-#endif
                 return _refElevation;
             }
-            set { ModelManager.SetModelValue(this, ref _refElevation, value, v => RefElevation = v, "RefElevation"); }
+            set { ModelHelper.SetModelValue(this, ref _refElevation, value, v => RefElevation = v, "RefElevation"); }
         }
 
         /// <summary>
@@ -171,14 +165,12 @@ namespace Xbim.Ifc.ProductExtension
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity)this).Activate(false);
-#endif
                 return _landTitleNumber;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _landTitleNumber, value, v => LandTitleNumber = v,
+                ModelHelper.SetModelValue(this, ref _landTitleNumber, value, v => LandTitleNumber = v,
                                            "LandTitleNumber");
             }
         }
@@ -192,12 +184,10 @@ namespace Xbim.Ifc.ProductExtension
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity)this).Activate(false);
-#endif
                 return _siteAddress;
             }
-            set { ModelManager.SetModelValue(this, ref _siteAddress, value, v => SiteAddress = v, "SiteAddress"); }
+            set { ModelHelper.SetModelValue(this, ref _siteAddress, value, v => SiteAddress = v, "SiteAddress"); }
         }
 
 

@@ -42,12 +42,10 @@ namespace Xbim.Ifc.StructuralLoadResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _slippageX;
             }
-            set { ModelManager.SetModelValue(this, ref _slippageX, value, v => SlippageX = v, "SlippageX"); }
+            set { ModelHelper.SetModelValue(this, ref _slippageX, value, v => SlippageX = v, "SlippageX"); }
         }
 
         /// <summary>
@@ -58,12 +56,10 @@ namespace Xbim.Ifc.StructuralLoadResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _slippageY;
             }
-            set { ModelManager.SetModelValue(this, ref _slippageY, value, v => SlippageY = v, "SlippageY"); }
+            set { ModelHelper.SetModelValue(this, ref _slippageY, value, v => SlippageY = v, "SlippageY"); }
         }
 
         /// <summary>
@@ -74,12 +70,10 @@ namespace Xbim.Ifc.StructuralLoadResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _slippageZ;
             }
-            set { ModelManager.SetModelValue(this, ref _slippageZ, value, v => SlippageZ = v, "SlippageZ"); }
+            set { ModelHelper.SetModelValue(this, ref _slippageZ, value, v => SlippageZ = v, "SlippageZ"); }
         }
 
         #endregion

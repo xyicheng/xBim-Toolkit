@@ -46,14 +46,12 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _varyingAppliedLoadLocation;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _varyingAppliedLoadLocation, value,
+                ModelHelper.SetModelValue(this, ref _varyingAppliedLoadLocation, value,
                                            v => VaryingAppliedLoadLocation = v, "VaryingAppliedLoadLocation");
             }
         }
@@ -68,14 +66,12 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _subsequentAppliedLoads;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _subsequentAppliedLoads, value, v => SubsequentAppliedLoads = v,
+                ModelHelper.SetModelValue(this, ref _subsequentAppliedLoads, value, v => SubsequentAppliedLoads = v,
                                            "SubsequentAppliedLoads");
             }
         }

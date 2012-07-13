@@ -38,14 +38,13 @@ namespace Xbim.Ifc.MeasureResource
     public class IfcDerivedUnitElement : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                          INotifyPropertyChanging
     {
-#if SupportActivation
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -74,8 +73,6 @@ namespace Xbim.Ifc.MeasureResource
 
         #endregion
 
-#endif
-
         private IfcNamedUnit _unit;
         private int _exponent;
 
@@ -89,12 +86,10 @@ namespace Xbim.Ifc.MeasureResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _unit;
             }
-            set { ModelManager.SetModelValue(this, ref _unit, value, v => Unit = v, "Unit"); }
+            set { ModelHelper.SetModelValue(this, ref _unit, value, v => Unit = v, "Unit"); }
         }
 
         /// <summary>
@@ -105,12 +100,10 @@ namespace Xbim.Ifc.MeasureResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _exponent;
             }
-            set { ModelManager.SetModelValue(this, ref _exponent, value, v => Exponent = v, "Exponent"); }
+            set { ModelHelper.SetModelValue(this, ref _exponent, value, v => Exponent = v, "Exponent"); }
         }
 
 

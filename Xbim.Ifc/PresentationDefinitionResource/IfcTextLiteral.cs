@@ -44,12 +44,10 @@ namespace Xbim.Ifc.PresentationDefinitionResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _literal;
             }
-            set { ModelManager.SetModelValue(this, ref _literal, value, v => Literal = v, "Literal"); }
+            set { ModelHelper.SetModelValue(this, ref _literal, value, v => Literal = v, "Literal"); }
         }
 
         /// <summary>
@@ -62,12 +60,10 @@ namespace Xbim.Ifc.PresentationDefinitionResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _placement;
             }
-            set { ModelManager.SetModelValue(this, ref _placement, value, v => Placement = v, "Placement"); }
+            set { ModelHelper.SetModelValue(this, ref _placement, value, v => Placement = v, "Placement"); }
         }
 
         /// <summary>
@@ -78,12 +74,10 @@ namespace Xbim.Ifc.PresentationDefinitionResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _path;
             }
-            set { ModelManager.SetModelValue(this, ref _path, value, v => Path = v, "Path"); }
+            set { ModelHelper.SetModelValue(this, ref _path, value, v => Path = v, "Path"); }
         }
 
 

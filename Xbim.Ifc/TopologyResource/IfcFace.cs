@@ -62,12 +62,10 @@ namespace Xbim.Ifc.TopologyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return mBounds;
             }
-            set { ModelManager.SetModelValue(this, ref mBounds, value, v => Bounds = v, "Bounds"); }
+            set { ModelHelper.SetModelValue(this, ref mBounds, value, v => Bounds = v, "Bounds"); }
         }
 
 

@@ -40,14 +40,12 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _destabilizingLoad;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _destabilizingLoad, value, v => DestabilizingLoad = v,
+                ModelHelper.SetModelValue(this, ref _destabilizingLoad, value, v => DestabilizingLoad = v,
                                            "DestabilizingLoad");
             }
         }
@@ -61,12 +59,10 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _causedBy;
             }
-            set { ModelManager.SetModelValue(this, ref _causedBy, value, v => CausedBy = v, "CausedBy"); }
+            set { ModelHelper.SetModelValue(this, ref _causedBy, value, v => CausedBy = v, "CausedBy"); }
         }
 
         #endregion

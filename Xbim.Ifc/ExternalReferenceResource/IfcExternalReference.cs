@@ -43,14 +43,13 @@ namespace Xbim.Ifc.ExternalReferenceResource
     public abstract class IfcExternalReference : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                                  IfcObjectReferenceSelect, INotifyPropertyChanging
     {
-#if SupportActivation
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -79,7 +78,6 @@ namespace Xbim.Ifc.ExternalReferenceResource
 
         #endregion
 
-#endif
 
         #region Fields
 
@@ -101,12 +99,10 @@ namespace Xbim.Ifc.ExternalReferenceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _location;
             }
-            set { ModelManager.SetModelValue(this, ref _location, value, v => Location = v, "Location"); }
+            set { ModelHelper.SetModelValue(this, ref _location, value, v => Location = v, "Location"); }
         }
 
         /// <summary>
@@ -118,12 +114,10 @@ namespace Xbim.Ifc.ExternalReferenceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _itemReference;
             }
-            set { ModelManager.SetModelValue(this, ref _itemReference, value, v => ItemReference = v, "ItemReference"); }
+            set { ModelHelper.SetModelValue(this, ref _itemReference, value, v => ItemReference = v, "ItemReference"); }
         }
 
         /// <summary>
@@ -135,12 +129,10 @@ namespace Xbim.Ifc.ExternalReferenceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _name;
             }
-            set { ModelManager.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
+            set { ModelHelper.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
         }
 
 

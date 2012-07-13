@@ -55,12 +55,10 @@ namespace Xbim.Ifc.TopologyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _faceSurface;
             }
-            set { ModelManager.SetModelValue(this, ref _faceSurface, value, v => Surface = v, "Surface"); }
+            set { ModelHelper.SetModelValue(this, ref _faceSurface, value, v => Surface = v, "Surface"); }
         }
 
         /// <summary>
@@ -71,12 +69,10 @@ namespace Xbim.Ifc.TopologyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _sameSense;
             }
-            set { ModelManager.SetModelValue(this, ref _sameSense, value, v => SameSense = v, "SameSense"); }
+            set { ModelHelper.SetModelValue(this, ref _sameSense, value, v => SameSense = v, "SameSense"); }
         }
 
         public override void IfcParse(int propIndex, IPropertyValue value)

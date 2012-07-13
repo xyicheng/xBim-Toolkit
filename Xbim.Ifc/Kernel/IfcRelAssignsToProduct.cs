@@ -55,14 +55,12 @@ namespace Xbim.Ifc.Kernel
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _relatingProduct;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _relatingProduct, value, v => RelatingProduct = v,
+                ModelHelper.SetModelValue(this, ref _relatingProduct, value, v => RelatingProduct = v,
                                            "RelatingProduct");
             }
         }

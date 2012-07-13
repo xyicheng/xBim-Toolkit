@@ -103,12 +103,10 @@ namespace Xbim.Ifc.SharedBldgElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _overallHeight;
             }
-            set { ModelManager.SetModelValue(this, ref _overallHeight, value, v => OverallHeight = v, "OverallHeight"); }
+            set { ModelHelper.SetModelValue(this, ref _overallHeight, value, v => OverallHeight = v, "OverallHeight"); }
         }
 
 
@@ -122,7 +120,7 @@ namespace Xbim.Ifc.SharedBldgElements
         public IfcPositiveLengthMeasure? OverallWidth
         {
             get { return _overallWidth; }
-            set { ModelManager.SetModelValue(this, ref _overallWidth, value, v => OverallWidth = v, "OverallWidth"); }
+            set { ModelHelper.SetModelValue(this, ref _overallWidth, value, v => OverallWidth = v, "OverallWidth"); }
         }
 
 

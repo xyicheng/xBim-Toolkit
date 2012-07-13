@@ -42,12 +42,10 @@ namespace Xbim.Ifc.ProductExtension
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _relatingPort;
             }
-            set { ModelManager.SetModelValue(this, ref _relatingPort, value, v => RelatingPort = v, "RelatingPort"); }
+            set { ModelHelper.SetModelValue(this, ref _relatingPort, value, v => RelatingPort = v, "RelatingPort"); }
         }
 
         /// <summary>
@@ -58,12 +56,10 @@ namespace Xbim.Ifc.ProductExtension
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _relatedElement;
             }
-            set { ModelManager.SetModelValue(this, ref _relatedElement, value, v => RelatedElement = v, "RelatedElement"); }
+            set { ModelHelper.SetModelValue(this, ref _relatedElement, value, v => RelatedElement = v, "RelatedElement"); }
         }
 
         public override void IfcParse(int propIndex, IPropertyValue value)

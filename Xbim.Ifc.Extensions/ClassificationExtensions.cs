@@ -25,7 +25,7 @@ namespace Xbim.Ifc.Extensions
     {
         public static IEnumerable<IfcClassificationItemRelationship> GetHierarchy(this IfcClassification cls)
         {
-            IModel model = ModelManager.ModelOf(cls);
+            IModel model = cls.ModelOf;
             IEnumerable<IfcClassificationItemRelationship> itemRels =
                 model.InstancesWhere<IfcClassificationItemRelationship>(r => r.RelatingItem.ItemOf == cls);
             Dictionary<IfcClassificationItem, IfcClassificationItemRelationship> roots =

@@ -58,14 +58,14 @@ namespace Xbim.Ifc.ActorResource
     public class IfcPerson : IfcActorSelect, IPersistIfcEntity, IFormattable, ISupportChangeNotification,
                              INotifyPropertyChanged, IfcObjectReferenceSelect, INotifyPropertyChanging
     {
-#if SupportActivation
+
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -94,7 +94,6 @@ namespace Xbim.Ifc.ActorResource
 
         #endregion
 
-#endif
 
         #region Fields and Events
 
@@ -436,12 +435,10 @@ namespace Xbim.Ifc.ActorResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _id;
             }
-            set { ModelManager.SetModelValue(this, ref _id, value, v => Id = v, "Id"); }
+            set { ModelHelper.SetModelValue(this, ref _id, value, v => Id = v, "Id"); }
         }
 
         /// <summary>
@@ -452,12 +449,10 @@ namespace Xbim.Ifc.ActorResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _familyName;
             }
-            set { ModelManager.SetModelValue(this, ref _familyName, value, v => FamilyName = v, "FamilyName"); }
+            set { ModelHelper.SetModelValue(this, ref _familyName, value, v => FamilyName = v, "FamilyName"); }
         }
 
         /// <summary>
@@ -468,12 +463,10 @@ namespace Xbim.Ifc.ActorResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _givenName;
             }
-            set { ModelManager.SetModelValue(this, ref _givenName, value, v => GivenName = v, "GivenName"); }
+            set { ModelHelper.SetModelValue(this, ref _givenName, value, v => GivenName = v, "GivenName"); }
         }
 
         /// <summary>
@@ -484,12 +477,10 @@ namespace Xbim.Ifc.ActorResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _middleNames;
             }
-            set { ModelManager.SetModelValue(this, ref _middleNames, value, v => MiddleNames = v, "MiddleNames"); }
+            set { ModelHelper.SetModelValue(this, ref _middleNames, value, v => MiddleNames = v, "MiddleNames"); }
         }
 
         /// <summary>
@@ -500,12 +491,10 @@ namespace Xbim.Ifc.ActorResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _prefixTitles;
             }
-            set { ModelManager.SetModelValue(this, ref _prefixTitles, value, v => PrefixTitles = v, "PrefixTitles"); }
+            set { ModelHelper.SetModelValue(this, ref _prefixTitles, value, v => PrefixTitles = v, "PrefixTitles"); }
         }
 
         /// <summary>
@@ -516,12 +505,10 @@ namespace Xbim.Ifc.ActorResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _suffixTitles;
             }
-            set { ModelManager.SetModelValue(this, ref _suffixTitles, value, v => SuffixTitles = v, "SuffixTitles"); }
+            set { ModelHelper.SetModelValue(this, ref _suffixTitles, value, v => SuffixTitles = v, "SuffixTitles"); }
         }
 
         /// <summary>
@@ -532,12 +519,10 @@ namespace Xbim.Ifc.ActorResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _roles;
             }
-            set { ModelManager.SetModelValue(this, ref _roles, value, v => Roles = v, "Roles"); }
+            set { ModelHelper.SetModelValue(this, ref _roles, value, v => Roles = v, "Roles"); }
         }
 
         /// <summary>
@@ -552,12 +537,10 @@ namespace Xbim.Ifc.ActorResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _addresses;
             }
-            set { ModelManager.SetModelValue(this, ref _addresses, value, v => Addresses = v, "Addresses"); }
+            set { ModelHelper.SetModelValue(this, ref _addresses, value, v => Addresses = v, "Addresses"); }
         }
 
         #endregion

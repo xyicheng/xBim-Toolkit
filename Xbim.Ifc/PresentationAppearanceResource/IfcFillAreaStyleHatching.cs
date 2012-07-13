@@ -46,14 +46,12 @@ namespace Xbim.Ifc.PresentationAppearanceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _hatchLineAppearance;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _hatchLineAppearance, value, v => HatchLineAppearance = v,
+                ModelHelper.SetModelValue(this, ref _hatchLineAppearance, value, v => HatchLineAppearance = v,
                                            "HatchLineAppearance");
             }
         }
@@ -66,14 +64,12 @@ namespace Xbim.Ifc.PresentationAppearanceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _startOfNextHatchLine;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _startOfNextHatchLine, value, v => StartOfNextHatchLine = v,
+                ModelHelper.SetModelValue(this, ref _startOfNextHatchLine, value, v => StartOfNextHatchLine = v,
                                            "StartOfNextHatchLine");
             }
         }
@@ -89,14 +85,12 @@ namespace Xbim.Ifc.PresentationAppearanceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _pointOfReferenceHatchLine;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _pointOfReferenceHatchLine, value,
+                ModelHelper.SetModelValue(this, ref _pointOfReferenceHatchLine, value,
                                            v => PointOfReferenceHatchLine = v, "PointOfReferenceHatchLine");
             }
         }
@@ -110,12 +104,10 @@ namespace Xbim.Ifc.PresentationAppearanceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _patternStart;
             }
-            set { ModelManager.SetModelValue(this, ref _patternStart, value, v => PatternStart = v, "PatternStart"); }
+            set { ModelHelper.SetModelValue(this, ref _patternStart, value, v => PatternStart = v, "PatternStart"); }
         }
 
         /// <summary>
@@ -126,12 +118,10 @@ namespace Xbim.Ifc.PresentationAppearanceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _hatchLineAngle;
             }
-            set { ModelManager.SetModelValue(this, ref _hatchLineAngle, value, v => HatchLineAngle = v, "HatchLineAngle"); }
+            set { ModelHelper.SetModelValue(this, ref _hatchLineAngle, value, v => HatchLineAngle = v, "HatchLineAngle"); }
         }
 
 

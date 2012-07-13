@@ -65,12 +65,10 @@ namespace Xbim.Ifc.GeometryResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _axis1;
             }
-            set { ModelManager.SetModelValue(this, ref _axis1, value, v => Axis1 = v, "Axis1"); }
+            set { ModelHelper.SetModelValue(this, ref _axis1, value, v => Axis1 = v, "Axis1"); }
         }
 
         /// <summary>
@@ -81,12 +79,10 @@ namespace Xbim.Ifc.GeometryResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _axis2;
             }
-            set { ModelManager.SetModelValue(this, ref _axis2, value, v => Axis2 = v, "Axis2"); }
+            set { ModelHelper.SetModelValue(this, ref _axis2, value, v => Axis2 = v, "Axis2"); }
         }
 
         /// <summary>
@@ -97,12 +93,10 @@ namespace Xbim.Ifc.GeometryResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _localOrigin;
             }
-            set { ModelManager.SetModelValue(this, ref _localOrigin, value, v => LocalOrigin = v, "LocalOrigin"); }
+            set { ModelHelper.SetModelValue(this, ref _localOrigin, value, v => LocalOrigin = v, "LocalOrigin"); }
         }
 
 
@@ -114,12 +108,10 @@ namespace Xbim.Ifc.GeometryResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _scale;
             }
-            set { ModelManager.SetModelValue(this, ref _scale, value, v => Scale = v, "Scale"); }
+            set { ModelHelper.SetModelValue(this, ref _scale, value, v => Scale = v, "Scale"); }
         }
 
 

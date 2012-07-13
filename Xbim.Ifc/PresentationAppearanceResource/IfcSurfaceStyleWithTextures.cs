@@ -26,14 +26,13 @@ namespace Xbim.Ifc.PresentationAppearanceResource
     public class IfcSurfaceStyleWithTextures : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                                IfcSurfaceStyleElementSelect, INotifyPropertyChanging
     {
-#if SupportActivation
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -62,8 +61,6 @@ namespace Xbim.Ifc.PresentationAppearanceResource
 
         #endregion
 
-#endif
-
         public IfcSurfaceStyleWithTextures()
         {
             _textures = new XbimList<IfcSurfaceTexture>(this);
@@ -85,12 +82,10 @@ namespace Xbim.Ifc.PresentationAppearanceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _textures;
             }
-            set { ModelManager.SetModelValue(this, ref _textures, value, v => Textures = v, "Textures"); }
+            set { ModelHelper.SetModelValue(this, ref _textures, value, v => Textures = v, "Textures"); }
         }
 
         #endregion

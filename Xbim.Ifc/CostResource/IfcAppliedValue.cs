@@ -41,14 +41,12 @@ namespace Xbim.Ifc.CostResource
     public abstract class IfcAppliedValue : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                             IfcObjectReferenceSelect, INotifyPropertyChanging
     {
-#if SupportActivation
-
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -77,8 +75,6 @@ namespace Xbim.Ifc.CostResource
 
         #endregion
 
-#endif
-
         #region Fields
 
         private IfcLabel? _name;
@@ -98,12 +94,10 @@ namespace Xbim.Ifc.CostResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _name;
             }
-            set { ModelManager.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
+            set { ModelHelper.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
         }
 
         /// <summary>
@@ -114,12 +108,10 @@ namespace Xbim.Ifc.CostResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _description;
             }
-            set { ModelManager.SetModelValue(this, ref _description, value, v => Description = v, "Description"); }
+            set { ModelHelper.SetModelValue(this, ref _description, value, v => Description = v, "Description"); }
         }
 
         /// <summary>
@@ -130,12 +122,10 @@ namespace Xbim.Ifc.CostResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _appliedValue;
             }
-            set { ModelManager.SetModelValue(this, ref _appliedValue, value, v => Value = v, "Value"); }
+            set { ModelHelper.SetModelValue(this, ref _appliedValue, value, v => Value = v, "Value"); }
         }
 
         /// <summary>
@@ -146,12 +136,10 @@ namespace Xbim.Ifc.CostResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _unitBasis;
             }
-            set { ModelManager.SetModelValue(this, ref _unitBasis, value, v => UnitBasis = v, "UnitBasis"); }
+            set { ModelHelper.SetModelValue(this, ref _unitBasis, value, v => UnitBasis = v, "UnitBasis"); }
         }
 
         /// <summary>
@@ -162,12 +150,10 @@ namespace Xbim.Ifc.CostResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _applicableDate;
             }
-            set { ModelManager.SetModelValue(this, ref _applicableDate, value, v => ApplicableDate = v, "ApplicableDate"); }
+            set { ModelHelper.SetModelValue(this, ref _applicableDate, value, v => ApplicableDate = v, "ApplicableDate"); }
         }
 
         /// <summary>
@@ -178,12 +164,10 @@ namespace Xbim.Ifc.CostResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _fixedUntilDate;
             }
-            set { ModelManager.SetModelValue(this, ref _fixedUntilDate, value, v => FixedUntilDate = v, "FixedUntilDate"); }
+            set { ModelHelper.SetModelValue(this, ref _fixedUntilDate, value, v => FixedUntilDate = v, "FixedUntilDate"); }
         }
 
 
@@ -195,7 +179,7 @@ namespace Xbim.Ifc.CostResource
             get
             {
                 return
-                    ModelManager.ModelOf(this).InstancesWhere<IfcReferencesValueDocument>(
+                    ModelOf.InstancesWhere<IfcReferencesValueDocument>(
                         rv => rv.ReferencingValues.Contains(this));
             }
         }
@@ -208,7 +192,7 @@ namespace Xbim.Ifc.CostResource
             get
             {
                 return
-                    ModelManager.ModelOf(this).InstancesWhere<IfcAppliedValueRelationship>(
+                    ModelOf.InstancesWhere<IfcAppliedValueRelationship>(
                         av => av.ComponentOfTotal == this);
             }
         }
@@ -221,7 +205,7 @@ namespace Xbim.Ifc.CostResource
             get
             {
                 return
-                    ModelManager.ModelOf(this).InstancesWhere<IfcAppliedValueRelationship>(
+                    ModelOf.InstancesWhere<IfcAppliedValueRelationship>(
                         av => av.Components.Contains(this));
             }
         }

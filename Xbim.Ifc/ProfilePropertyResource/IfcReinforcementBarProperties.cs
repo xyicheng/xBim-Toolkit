@@ -26,14 +26,13 @@ namespace Xbim.Ifc.ProfilePropertyResource
     public class IfcReinforcementBarProperties : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                                  INotifyPropertyChanging
     {
-#if SupportActivation
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -62,8 +61,6 @@ namespace Xbim.Ifc.ProfilePropertyResource
 
         #endregion
 
-#endif
-
         #region Fields
 
         private IfcAreaMeasure _totalCrossSectionArea;
@@ -85,14 +82,12 @@ namespace Xbim.Ifc.ProfilePropertyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _totalCrossSectionArea;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _totalCrossSectionArea, value, v => TotalCrossSectionArea = v,
+                ModelHelper.SetModelValue(this, ref _totalCrossSectionArea, value, v => TotalCrossSectionArea = v,
                                            "TotalCrossSectionArea");
             }
         }
@@ -105,12 +100,10 @@ namespace Xbim.Ifc.ProfilePropertyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _steelGrade;
             }
-            set { ModelManager.SetModelValue(this, ref _steelGrade, value, v => SteelGrade = v, "SteelGrade"); }
+            set { ModelHelper.SetModelValue(this, ref _steelGrade, value, v => SteelGrade = v, "SteelGrade"); }
         }
 
         ///<summary>
@@ -121,12 +114,10 @@ namespace Xbim.Ifc.ProfilePropertyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _barSurface;
             }
-            set { ModelManager.SetModelValue(this, ref _barSurface, value, v => BarSurface = v, "BarSurface"); }
+            set { ModelHelper.SetModelValue(this, ref _barSurface, value, v => BarSurface = v, "BarSurface"); }
         }
 
         /// <summary>
@@ -138,12 +129,10 @@ namespace Xbim.Ifc.ProfilePropertyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _effectiveDepth;
             }
-            set { ModelManager.SetModelValue(this, ref _effectiveDepth, value, v => EffectiveDepth = v, "EffectiveDepth"); }
+            set { ModelHelper.SetModelValue(this, ref _effectiveDepth, value, v => EffectiveDepth = v, "EffectiveDepth"); }
         }
 
         /// <summary>
@@ -155,14 +144,12 @@ namespace Xbim.Ifc.ProfilePropertyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _nominalBarDiameter;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _nominalBarDiameter, value, v => NominalBarDiameter = v,
+                ModelHelper.SetModelValue(this, ref _nominalBarDiameter, value, v => NominalBarDiameter = v,
                                            "NominalBarDiameter");
             }
         }
@@ -172,12 +159,10 @@ namespace Xbim.Ifc.ProfilePropertyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _barCount;
             }
-            set { ModelManager.SetModelValue(this, ref _barCount, value, v => BarCount = v, "BarCount"); }
+            set { ModelHelper.SetModelValue(this, ref _barCount, value, v => BarCount = v, "BarCount"); }
         }
 
         #endregion

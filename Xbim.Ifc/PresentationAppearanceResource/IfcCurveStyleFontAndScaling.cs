@@ -27,14 +27,13 @@ namespace Xbim.Ifc.PresentationAppearanceResource
     public class IfcCurveStyleFontAndScaling : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                                IfcCurveFontOrScaledCurveFontSelect, INotifyPropertyChanging
     {
-#if SupportActivation
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -63,8 +62,6 @@ namespace Xbim.Ifc.PresentationAppearanceResource
 
         #endregion
 
-#endif
-
         #region Fields
 
         private IfcLabel? _name;
@@ -83,12 +80,10 @@ namespace Xbim.Ifc.PresentationAppearanceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _name;
             }
-            set { ModelManager.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
+            set { ModelHelper.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
         }
 
         /// <summary>
@@ -99,12 +94,10 @@ namespace Xbim.Ifc.PresentationAppearanceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _curveFont;
             }
-            set { ModelManager.SetModelValue(this, ref _curveFont, value, v => CurveFont = v, "CurveFont"); }
+            set { ModelHelper.SetModelValue(this, ref _curveFont, value, v => CurveFont = v, "CurveFont"); }
         }
 
 
@@ -113,14 +106,12 @@ namespace Xbim.Ifc.PresentationAppearanceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _curveFontScaling;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _curveFontScaling, value, v => CurveFontScaling = v,
+                ModelHelper.SetModelValue(this, ref _curveFontScaling, value, v => CurveFontScaling = v,
                                            "CurveFontScaling");
             }
         }

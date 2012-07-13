@@ -51,12 +51,10 @@ namespace Xbim.Ifc.GeometryResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _axis;
             }
-            set { ModelManager.SetModelValue(this, ref _axis, value, v => Axis = v, "Axis"); }
+            set { ModelHelper.SetModelValue(this, ref _axis, value, v => Axis = v, "Axis"); }
         }
 
 

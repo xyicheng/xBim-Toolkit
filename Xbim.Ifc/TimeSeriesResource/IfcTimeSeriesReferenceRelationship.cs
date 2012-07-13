@@ -26,14 +26,13 @@ namespace Xbim.Ifc.TimeSeriesResource
     public class IfcTimeSeriesReferenceRelationship : INotifyPropertyChanged, ISupportChangeNotification,
                                                       IPersistIfcEntity, INotifyPropertyChanging
     {
-#if SupportActivation
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -62,8 +61,6 @@ namespace Xbim.Ifc.TimeSeriesResource
 
         #endregion
 
-#endif
-
         #region Fields
 
         private IfcTimeSeries _referencedTimeSeries;
@@ -76,14 +73,12 @@ namespace Xbim.Ifc.TimeSeriesResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _referencedTimeSeries;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _referencedTimeSeries, value, v => ReferencedTimeSeries = v,
+                ModelHelper.SetModelValue(this, ref _referencedTimeSeries, value, v => ReferencedTimeSeries = v,
                                            "ReferencedTimeSeries");
             }
         }
@@ -93,14 +88,12 @@ namespace Xbim.Ifc.TimeSeriesResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _timeSeriesReferences;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _timeSeriesReferences, value, v => TimeSeriesReferences = v,
+                ModelHelper.SetModelValue(this, ref _timeSeriesReferences, value, v => TimeSeriesReferences = v,
                                            "TimeSeriesReferences");
             }
         }

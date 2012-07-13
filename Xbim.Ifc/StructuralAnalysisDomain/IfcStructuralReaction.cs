@@ -36,7 +36,7 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class)]
         public IEnumerable<IfcStructuralAction> Causes
         {
-            get { return ModelManager.ModelOf(this).InstancesWhere<IfcStructuralAction>(sa => sa.CausedBy == this); }
+            get { return ModelOf.InstancesWhere<IfcStructuralAction>(sa => sa.CausedBy == this); }
         }
 
         #endregion

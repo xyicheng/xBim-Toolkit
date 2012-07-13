@@ -74,12 +74,10 @@ namespace Xbim.Ifc.GeometryResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _orientation;
             }
-            set { ModelManager.SetModelValue(this, ref _orientation, value, v => Orientation = v, "Orientation"); }
+            set { ModelHelper.SetModelValue(this, ref _orientation, value, v => Orientation = v, "Orientation"); }
         }
 
         /// <summary>
@@ -90,12 +88,10 @@ namespace Xbim.Ifc.GeometryResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _magnitude;
             }
-            set { ModelManager.SetModelValue(this, ref _magnitude, value, v => Magnitude = v, "Magnitude"); }
+            set { ModelHelper.SetModelValue(this, ref _magnitude, value, v => Magnitude = v, "Magnitude"); }
         }
 
         /// <summary>

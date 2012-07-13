@@ -37,14 +37,12 @@ namespace Xbim.Ifc.ElectricalDomain
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _distributionPointFunction;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _distributionPointFunction, value,
+                ModelHelper.SetModelValue(this, ref _distributionPointFunction, value,
                                            v => DistributionPointFunction = v, "DistributionPointFunction");
             }
         }
@@ -54,14 +52,12 @@ namespace Xbim.Ifc.ElectricalDomain
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _userDefinedFunction;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _userDefinedFunction, value, v => UserDefinedFunction = v,
+                ModelHelper.SetModelValue(this, ref _userDefinedFunction, value, v => UserDefinedFunction = v,
                                            "UserDefinedFunction");
             }
         }

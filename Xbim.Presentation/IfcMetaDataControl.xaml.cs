@@ -173,7 +173,7 @@ namespace Xbim.Presentation
             //ModelDataProvider mdp = DataContext as ModelDataProvider;
             if (ifcObj != null)
             {
-                IModel m = ModelManager.ModelOf(ifcObj);
+                IModel m = ifcObj.ModelOf;
                 //write out any material layers
                 IEnumerable<IfcRelAssociatesMaterial> matRels =
                     ifcObj.HasAssociations.OfType<IfcRelAssociatesMaterial>();

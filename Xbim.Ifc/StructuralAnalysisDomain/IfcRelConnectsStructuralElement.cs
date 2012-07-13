@@ -48,14 +48,12 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _relatingElement;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _relatingElement, value, v => RelatingElement = v,
+                ModelHelper.SetModelValue(this, ref _relatingElement, value, v => RelatingElement = v,
                                            "RelatingElement");
             }
         }
@@ -68,14 +66,12 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _relatedStructuralMember;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _relatedStructuralMember, value, v => RelatedStructuralMember = v,
+                ModelHelper.SetModelValue(this, ref _relatedStructuralMember, value, v => RelatedStructuralMember = v,
                                            "RelatedStructuralMember");
             }
         }

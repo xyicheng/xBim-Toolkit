@@ -48,14 +48,12 @@ namespace Xbim.Ifc.Kernel
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _representationMaps;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _representationMaps, value, v => RepresentationMaps = v,
+                ModelHelper.SetModelValue(this, ref _representationMaps, value, v => RepresentationMaps = v,
                                            "RepresentationMaps");
             }
         }
@@ -68,12 +66,10 @@ namespace Xbim.Ifc.Kernel
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _tag;
             }
-            set { ModelManager.SetModelValue(this, ref _tag, value, v => Tag = v, "Tag"); }
+            set { ModelHelper.SetModelValue(this, ref _tag, value, v => Tag = v, "Tag"); }
         }
 
 

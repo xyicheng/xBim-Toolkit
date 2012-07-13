@@ -26,14 +26,13 @@ namespace Xbim.Ifc.MeasureResource
     public class IfcMonetaryUnit : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity, IfcUnit,
                                    INotifyPropertyChanging
     {
-#if SupportActivation
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -62,8 +61,6 @@ namespace Xbim.Ifc.MeasureResource
 
         #endregion
 
-#endif
-
         private IfcCurrencyEnum _currency;
 
         #region Overrides
@@ -85,12 +82,10 @@ namespace Xbim.Ifc.MeasureResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _currency;
             }
-            set { ModelManager.SetModelValue(this, ref _currency, value, v => Currency = v, "Currency"); }
+            set { ModelHelper.SetModelValue(this, ref _currency, value, v => Currency = v, "Currency"); }
         }
 
         #endregion

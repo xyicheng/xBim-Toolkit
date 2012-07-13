@@ -63,14 +63,12 @@ namespace Xbim.Ifc.ProductExtension
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _methodOfMeasurement;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _methodOfMeasurement, value, v => MethodOfMeasurement = v,
+                ModelHelper.SetModelValue(this, ref _methodOfMeasurement, value, v => MethodOfMeasurement = v,
                                            "MethodOfMeasurement");
             }
         }
@@ -80,12 +78,10 @@ namespace Xbim.Ifc.ProductExtension
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _quantities;
             }
-            set { ModelManager.SetModelValue(this, ref _quantities, value, v => Quantities = v, "Quantities"); }
+            set { ModelHelper.SetModelValue(this, ref _quantities, value, v => Quantities = v, "Quantities"); }
         }
 
         public override void IfcParse(int propIndex, IPropertyValue value)

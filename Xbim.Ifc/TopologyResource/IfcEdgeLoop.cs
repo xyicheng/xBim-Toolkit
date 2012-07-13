@@ -49,12 +49,10 @@ namespace Xbim.Ifc.TopologyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _edgeList;
             }
-            set { ModelManager.SetModelValue(this, ref _edgeList, value, v => EdgeList = v, "EdgeList"); }
+            set { ModelHelper.SetModelValue(this, ref _edgeList, value, v => EdgeList = v, "EdgeList"); }
         }
 
         public override void IfcParse(int propIndex, IPropertyValue value)

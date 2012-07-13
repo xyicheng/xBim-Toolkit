@@ -41,12 +41,10 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _predefinedType;
             }
-            set { ModelManager.SetModelValue(this, ref _predefinedType, value, v => PredefinedType = v, "PredefinedType"); }
+            set { ModelHelper.SetModelValue(this, ref _predefinedType, value, v => PredefinedType = v, "PredefinedType"); }
         }
 
         [IfcAttribute(7, IfcAttributeState.Optional)]
@@ -54,14 +52,12 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _orientationOf2DPlane;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _orientationOf2DPlane, value, v => OrientationOf2DPlane = v,
+                ModelHelper.SetModelValue(this, ref _orientationOf2DPlane, value, v => OrientationOf2DPlane = v,
                                            "OrientationOf2DPlane");
             }
         }
@@ -71,12 +67,10 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _loadedBy;
             }
-            set { ModelManager.SetModelValue(this, ref _loadedBy, value, v => LoadedBy = v, "LoadedBy"); }
+            set { ModelHelper.SetModelValue(this, ref _loadedBy, value, v => LoadedBy = v, "LoadedBy"); }
         }
 
         [IfcAttribute(9, IfcAttributeState.Optional)]
@@ -84,12 +78,10 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _hasResults;
             }
-            set { ModelManager.SetModelValue(this, ref _hasResults, value, v => HasResults = v, "HasResults"); }
+            set { ModelHelper.SetModelValue(this, ref _hasResults, value, v => HasResults = v, "HasResults"); }
         }
 
         #endregion

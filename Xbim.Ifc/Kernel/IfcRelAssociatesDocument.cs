@@ -47,14 +47,12 @@ namespace Xbim.Ifc.Kernel
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _relatingDocument;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _relatingDocument, value, v => RelatingDocument = v,
+                ModelHelper.SetModelValue(this, ref _relatingDocument, value, v => RelatingDocument = v,
                                            "RelatingDocument");
             }
         }

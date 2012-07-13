@@ -57,12 +57,10 @@ namespace Xbim.Ifc.GeometricModelResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _outer;
             }
-            set { ModelManager.SetModelValue(this, ref _outer, value, v => Outer = v, "Outer"); }
+            set { ModelHelper.SetModelValue(this, ref _outer, value, v => Outer = v, "Outer"); }
         }
 
         public override void IfcParse(int propIndex, IPropertyValue value)

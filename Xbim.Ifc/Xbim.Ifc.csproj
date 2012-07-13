@@ -1245,8 +1245,6 @@
     <Compile Include="XbimExtensions\XbimListProxy.cs" />
     <Compile Include="XbimExtensions\XbimRepresentationType.cs" />
     <Compile Include="XbimExtensions\XbimSet.cs" />
-    <Compile Include="XbimExtensions\XbimType.cs" />
-    <Compile Include="XbimExtensions\XbimSchemaValidationException.cs" />
     <Compile Include="ProfileResource\IfcArbitraryClosedProfileDef.cs" />
     <Compile Include="ProfileResource\IfcArbitraryOpenProfileDef.cs" />
     <Compile Include="ProfileResource\IfcArbitraryProfileDefWithVoids.cs" />
@@ -1283,7 +1281,7 @@
     <Compile Include="MeasureResource\IfcRatioMeasure.cs" />
     <Compile Include="MeasureResource\IfcTimeStamp.cs" />
     <Compile Include="MeasureResource\IfcVolumeMeasure.cs" />
-    <Compile Include="XbimExtensions\ModelManager.cs" />
+    <Compile Include="XbimExtensions\Helpers\ModelHelper.cs" />
     <Compile Include="PresentationAppearanceResource\IfcNullStyle.cs" />
     <Compile Include="PresentationAppearanceResource\IfcStyledItem.cs" />
     <Compile Include="ProductExtension\IfcAnnotation.cs" />

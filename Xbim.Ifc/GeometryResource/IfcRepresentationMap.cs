@@ -38,14 +38,12 @@ namespace Xbim.Ifc.GeometryResource
     public class IfcRepresentationMap : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                         INotifyPropertyChanging
     {
-#if SupportActivation
-
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -74,8 +72,6 @@ namespace Xbim.Ifc.GeometryResource
 
         #endregion
 
-#endif
-
         #region Fields
 
         private IfcAxis2Placement _mappingOrigin;
@@ -101,15 +97,13 @@ namespace Xbim.Ifc.GeometryResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _mappingOrigin;
             }
             set
             {
                 if (value is IfcAxis2Placement2D || value is IfcAxis2Placement3D || value == null)
-                    ModelManager.SetModelValue(this, ref _mappingOrigin, value, v => _mappingOrigin = v, "MappingOrigin");
+                    ModelHelper.SetModelValue(this, ref _mappingOrigin, value, v => _mappingOrigin = v, "MappingOrigin");
                 else
                     throw new ArgumentException("Illegal Axis2Placement type passed to RepresentationMap.MappingOrigin");
             }
@@ -120,14 +114,12 @@ namespace Xbim.Ifc.GeometryResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _mappedRepresentation;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _mappedRepresentation, value, v => _mappedRepresentation = v,
+                ModelHelper.SetModelValue(this, ref _mappedRepresentation, value, v => _mappedRepresentation = v,
                                            "MappedRepresentation");
             }
         }
@@ -155,7 +147,7 @@ namespace Xbim.Ifc.GeometryResource
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class)]
         public IEnumerable<IfcMappedItem> MapUsage
         {
-            get { return ModelManager.ModelOf(this).InstancesWhere<IfcMappedItem>(m => m.MappingSource == this); }
+            get { return ModelOf.InstancesWhere<IfcMappedItem>(m => m.MappingSource == this); }
         }
 
         #endregion

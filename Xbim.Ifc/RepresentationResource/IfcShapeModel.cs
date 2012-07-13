@@ -73,7 +73,7 @@ namespace Xbim.Ifc.RepresentationResource
             get
             {
                 return
-                    ModelManager.ModelOf(this).InstancesWhere<IfcShapeAspect>(
+                    ModelOf.InstancesWhere<IfcShapeAspect>(
                         s => (s.ShapeRepresentations != null && s.ShapeRepresentations.Contains(this)));
             }
         }

@@ -135,7 +135,7 @@ namespace Xbim.Ifc.Extensions
             if (pset == null)
             {
                 IPersistIfcEntity ent = obj as IPersistIfcEntity;
-                model = ent != null ? ent.ModelOf : ModelManager.ModelOf(obj);
+                model = ent != null ? ent.ModelOf : obj.ModelOf;
                 pset = model.New<IfcPropertySet>();
                 pset.Name = pSetName;
                 obj.AddPropertySet(pset);
@@ -144,7 +144,7 @@ namespace Xbim.Ifc.Extensions
             if (table == null)
             {
                 IPersistIfcEntity ent = obj as IPersistIfcEntity;
-                model = ent != null ? ent.ModelOf : ModelManager.ModelOf(obj);
+                model = ent != null ? ent.ModelOf : obj.ModelOf;
                 table = model.New<IfcPropertyTableValue>(tb => { tb.Name = propertyTableName; });
                 pset.HasProperties.Add_Reversible(table);
                 table.DefinedUnit = definedUnit;
@@ -178,7 +178,7 @@ namespace Xbim.Ifc.Extensions
             {
                 //if (value == null) return;
                 IPersistIfcEntity ent = obj as IPersistIfcEntity;
-                model = ent!= null? ent.ModelOf : ModelManager.ModelOf(obj);
+                model = ent!= null? ent.ModelOf : obj.ModelOf;
                 pset = model.New<IfcPropertySet>();
                 pset.Name = pSetName;
                 obj.AddPropertySet(pset);
@@ -195,7 +195,7 @@ namespace Xbim.Ifc.Extensions
             {
                 //if (value == null) return;
                 IPersistIfcEntity ent = obj as IPersistIfcEntity;
-                model = ent != null ? ent.ModelOf : ModelManager.ModelOf(obj);
+                model = ent != null ? ent.ModelOf : obj.ModelOf;
                 property = model.New<IfcPropertySingleValue>(psv => { psv.Name = propertyName; psv.NominalValue = value; });
                 pset.HasProperties.Add_Reversible(property);
             }
@@ -240,7 +240,7 @@ namespace Xbim.Ifc.Extensions
             if (elem is IPersistIfcEntity) 
                 model = (elem as IPersistIfcEntity).ModelOf;
             else  
-                model = ModelManager.ModelOf(elem);
+                model = elem.ModelOf;
 
             IfcElementQuantity qset = GetElementQuantity(elem, qSetName);
             if (qset == null)

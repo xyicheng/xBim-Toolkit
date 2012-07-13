@@ -52,12 +52,10 @@ namespace Xbim.Ifc.ProductExtension
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _relatedSpace;
             }
-            set { ModelManager.SetModelValue(this, ref _relatedSpace, value, v => RelatedSpace = v, "RelatedSpace"); }
+            set { ModelHelper.SetModelValue(this, ref _relatedSpace, value, v => RelatedSpace = v, "RelatedSpace"); }
         }
 
         /// <summary>
@@ -68,9 +66,7 @@ namespace Xbim.Ifc.ProductExtension
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _relatedCoverings;
             }
         }

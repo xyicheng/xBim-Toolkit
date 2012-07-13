@@ -42,12 +42,10 @@ namespace Xbim.Ifc.MaterialPropertyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _material;
             }
-            set { ModelManager.SetModelValue(this, ref _material, value, v => Material = v, "Material"); }
+            set { ModelHelper.SetModelValue(this, ref _material, value, v => Material = v, "Material"); }
         }
 
 
@@ -118,14 +116,12 @@ namespace Xbim.Ifc.MaterialPropertyResource
 
         #endregion
 
-#if SupportActivation
-
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -154,6 +150,5 @@ namespace Xbim.Ifc.MaterialPropertyResource
 
         #endregion
 
-#endif
     }
 }

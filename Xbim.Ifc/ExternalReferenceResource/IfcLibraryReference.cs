@@ -40,7 +40,7 @@ namespace Xbim.Ifc.ExternalReferenceResource
             get
             {
                 return
-                    ModelManager.ModelOf(this).InstancesWhere<IfcLibraryInformation>(
+                    ModelOf.InstancesWhere<IfcLibraryInformation>(
                         lr => lr.LibraryReference.Contains(this));
             }
         }

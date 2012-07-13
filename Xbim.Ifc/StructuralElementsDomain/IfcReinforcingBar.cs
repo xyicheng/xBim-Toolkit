@@ -42,14 +42,12 @@ namespace Xbim.Ifc.StructuralElementsDomain
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _nominalDiameter;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _nominalDiameter, value, v => NominalDiameter = v,
+                ModelHelper.SetModelValue(this, ref _nominalDiameter, value, v => NominalDiameter = v,
                                            "NominalDiameter");
             }
         }
@@ -59,14 +57,12 @@ namespace Xbim.Ifc.StructuralElementsDomain
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _crossSectionArea;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _crossSectionArea, value, v => CrossSectionArea = v,
+                ModelHelper.SetModelValue(this, ref _crossSectionArea, value, v => CrossSectionArea = v,
                                            "CrossSectionArea");
             }
         }
@@ -76,12 +72,10 @@ namespace Xbim.Ifc.StructuralElementsDomain
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _barLength;
             }
-            set { ModelManager.SetModelValue(this, ref _barLength, value, v => BarLength = v, "BarLength"); }
+            set { ModelHelper.SetModelValue(this, ref _barLength, value, v => BarLength = v, "BarLength"); }
         }
 
         [IfcAttribute(13, IfcAttributeState.Mandatory)]
@@ -89,12 +83,10 @@ namespace Xbim.Ifc.StructuralElementsDomain
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _barRole;
             }
-            set { ModelManager.SetModelValue(this, ref _barRole, value, v => BarRole = v, "BarRole"); }
+            set { ModelHelper.SetModelValue(this, ref _barRole, value, v => BarRole = v, "BarRole"); }
         }
 
         [IfcAttribute(14, IfcAttributeState.Optional)]
@@ -102,12 +94,10 @@ namespace Xbim.Ifc.StructuralElementsDomain
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _barSurface;
             }
-            set { ModelManager.SetModelValue(this, ref _barSurface, value, v => BarSurface = v, "BarSurface"); }
+            set { ModelHelper.SetModelValue(this, ref _barSurface, value, v => BarSurface = v, "BarSurface"); }
         }
 
         #endregion

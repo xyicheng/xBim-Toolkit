@@ -44,14 +44,12 @@ namespace Xbim.Ifc.SharedBldgServiceElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _relatedControlElements;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _relatedControlElements, value, v => RelatedControlElements = v,
+                ModelHelper.SetModelValue(this, ref _relatedControlElements, value, v => RelatedControlElements = v,
                                            "RelatedControlElements");
             }
         }
@@ -64,14 +62,12 @@ namespace Xbim.Ifc.SharedBldgServiceElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _relatingFlowElement;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _relatingFlowElement, value, v => RelatingFlowElement = v,
+                ModelHelper.SetModelValue(this, ref _relatingFlowElement, value, v => RelatingFlowElement = v,
                                            "RelatingFlowElement");
             }
         }

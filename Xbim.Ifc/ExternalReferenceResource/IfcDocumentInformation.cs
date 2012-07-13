@@ -37,14 +37,13 @@ namespace Xbim.Ifc.ExternalReferenceResource
     public class IfcDocumentInformation : IfcDocumentSelect, INotifyPropertyChanged, ISupportChangeNotification,
                                           IPersistIfcEntity, INotifyPropertyChanging
     {
-#if SupportActivation
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -73,7 +72,6 @@ namespace Xbim.Ifc.ExternalReferenceResource
 
         #endregion
 
-#endif
 
         #region Fields
 
@@ -105,12 +103,10 @@ namespace Xbim.Ifc.ExternalReferenceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _documentId;
             }
-            set { ModelManager.SetModelValue(this, ref _documentId, value, v => DocumentId = v, "DocumentId"); }
+            set { ModelHelper.SetModelValue(this, ref _documentId, value, v => DocumentId = v, "DocumentId"); }
         }
 
         /// <summary>
@@ -121,12 +117,10 @@ namespace Xbim.Ifc.ExternalReferenceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _name;
             }
-            set { ModelManager.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
+            set { ModelHelper.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
         }
 
         /// <summary>
@@ -137,12 +131,10 @@ namespace Xbim.Ifc.ExternalReferenceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _description;
             }
-            set { ModelManager.SetModelValue(this, ref _description, value, v => Description = v, "Description"); }
+            set { ModelHelper.SetModelValue(this, ref _description, value, v => Description = v, "Description"); }
         }
 
         /// <summary>
@@ -153,14 +145,12 @@ namespace Xbim.Ifc.ExternalReferenceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _documentReferences;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _documentReferences, value, v => DocumentReferences = v,
+                ModelHelper.SetModelValue(this, ref _documentReferences, value, v => DocumentReferences = v,
                                            "DocumentReferences");
             }
         }
@@ -173,12 +163,10 @@ namespace Xbim.Ifc.ExternalReferenceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _purpose;
             }
-            set { ModelManager.SetModelValue(this, ref _purpose, value, v => Purpose = v, "Purpose"); }
+            set { ModelHelper.SetModelValue(this, ref _purpose, value, v => Purpose = v, "Purpose"); }
         }
 
         /// <summary>
@@ -189,12 +177,10 @@ namespace Xbim.Ifc.ExternalReferenceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _intendedUse;
             }
-            set { ModelManager.SetModelValue(this, ref _intendedUse, value, v => IntendedUse = v, "IntendedUse"); }
+            set { ModelHelper.SetModelValue(this, ref _intendedUse, value, v => IntendedUse = v, "IntendedUse"); }
         }
 
         /// <summary>
@@ -205,12 +191,10 @@ namespace Xbim.Ifc.ExternalReferenceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _scope;
             }
-            set { ModelManager.SetModelValue(this, ref _scope, value, v => Scope = v, "Scope"); }
+            set { ModelHelper.SetModelValue(this, ref _scope, value, v => Scope = v, "Scope"); }
         }
 
         /// <summary>
@@ -221,12 +205,10 @@ namespace Xbim.Ifc.ExternalReferenceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _revision;
             }
-            set { ModelManager.SetModelValue(this, ref _revision, value, v => Revision = v, "Revision"); }
+            set { ModelHelper.SetModelValue(this, ref _revision, value, v => Revision = v, "Revision"); }
         }
 
         /// <summary>
@@ -237,12 +219,10 @@ namespace Xbim.Ifc.ExternalReferenceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _documentOwner;
             }
-            set { ModelManager.SetModelValue(this, ref _documentOwner, value, v => DocumentOwner = v, "DocumentOwner"); }
+            set { ModelHelper.SetModelValue(this, ref _documentOwner, value, v => DocumentOwner = v, "DocumentOwner"); }
         }
 
         /// <summary>
@@ -253,12 +233,10 @@ namespace Xbim.Ifc.ExternalReferenceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _editors;
             }
-            set { ModelManager.SetModelValue(this, ref _editors, value, v => Editors = v, "Editors"); }
+            set { ModelHelper.SetModelValue(this, ref _editors, value, v => Editors = v, "Editors"); }
         }
 
         /// <summary>
@@ -269,12 +247,10 @@ namespace Xbim.Ifc.ExternalReferenceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _creationTime;
             }
-            set { ModelManager.SetModelValue(this, ref _creationTime, value, v => CreationTime = v, "CreationTime"); }
+            set { ModelHelper.SetModelValue(this, ref _creationTime, value, v => CreationTime = v, "CreationTime"); }
         }
 
         /// <summary>
@@ -285,14 +261,12 @@ namespace Xbim.Ifc.ExternalReferenceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _lastRevisionTime;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _lastRevisionTime, value, v => LastRevisionTime = v,
+                ModelHelper.SetModelValue(this, ref _lastRevisionTime, value, v => LastRevisionTime = v,
                                            "LastRevisionTime");
             }
         }
@@ -305,14 +279,12 @@ namespace Xbim.Ifc.ExternalReferenceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _electronicFormat;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _electronicFormat, value, v => ElectronicFormat = v,
+                ModelHelper.SetModelValue(this, ref _electronicFormat, value, v => ElectronicFormat = v,
                                            "ElectronicFormat");
             }
         }
@@ -325,12 +297,10 @@ namespace Xbim.Ifc.ExternalReferenceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _validFrom;
             }
-            set { ModelManager.SetModelValue(this, ref _validFrom, value, v => ValidFrom = v, "ValidFrom"); }
+            set { ModelHelper.SetModelValue(this, ref _validFrom, value, v => ValidFrom = v, "ValidFrom"); }
         }
 
         /// <summary>
@@ -341,12 +311,10 @@ namespace Xbim.Ifc.ExternalReferenceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _validUntil;
             }
-            set { ModelManager.SetModelValue(this, ref _validUntil, value, v => ValidUntil = v, "ValidUntil"); }
+            set { ModelHelper.SetModelValue(this, ref _validUntil, value, v => ValidUntil = v, "ValidUntil"); }
         }
 
         /// <summary>
@@ -357,14 +325,12 @@ namespace Xbim.Ifc.ExternalReferenceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _confidentiality;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _confidentiality, value, v => Confidentiality = v,
+                ModelHelper.SetModelValue(this, ref _confidentiality, value, v => Confidentiality = v,
                                            "Confidentiality");
             }
         }
@@ -377,12 +343,10 @@ namespace Xbim.Ifc.ExternalReferenceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _status;
             }
-            set { ModelManager.SetModelValue(this, ref _status, value, v => Status = v, "Status"); }
+            set { ModelHelper.SetModelValue(this, ref _status, value, v => Status = v, "Status"); }
         }
 
         /// <summary>
@@ -394,7 +358,7 @@ namespace Xbim.Ifc.ExternalReferenceResource
             get
             {
                 return
-                    ModelManager.ModelOf(this).InstancesWhere<IfcDocumentInformationRelationship>(
+                    ModelOf.InstancesWhere<IfcDocumentInformationRelationship>(
                         di => di.RelatedDocuments.Contains(this));
             }
         }
@@ -408,7 +372,7 @@ namespace Xbim.Ifc.ExternalReferenceResource
             get
             {
                 return
-                    ModelManager.ModelOf(this).InstancesWhere<IfcDocumentInformationRelationship>(
+                    ModelOf.InstancesWhere<IfcDocumentInformationRelationship>(
                         di => di.RelatingDocument == this);
             }
         }

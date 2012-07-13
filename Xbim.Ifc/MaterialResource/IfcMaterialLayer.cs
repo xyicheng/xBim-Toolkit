@@ -45,14 +45,12 @@ namespace Xbim.Ifc.MaterialResource
     public class IfcMaterialLayer : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                     IfcMaterialSelect, IfcObjectReferenceSelect, INotifyPropertyChanging
     {
-#if SupportActivation
-
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -81,8 +79,6 @@ namespace Xbim.Ifc.MaterialResource
 
         #endregion
 
-#endif
-
         #region Fields
 
         private IfcMaterial _material;
@@ -105,12 +101,10 @@ namespace Xbim.Ifc.MaterialResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _material;
             }
-            set { ModelManager.SetModelValue(this, ref _material, value, v => Material = v, "Material"); }
+            set { ModelHelper.SetModelValue(this, ref _material, value, v => Material = v, "Material"); }
         }
 
 
@@ -122,12 +116,10 @@ namespace Xbim.Ifc.MaterialResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _layerThickness;
             }
-            set { ModelManager.SetModelValue(this, ref _layerThickness, value, v => LayerThickness = v, "LayerThickness"); }
+            set { ModelHelper.SetModelValue(this, ref _layerThickness, value, v => LayerThickness = v, "LayerThickness"); }
         }
 
 
@@ -144,12 +136,10 @@ namespace Xbim.Ifc.MaterialResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _isVentilated;
             }
-            set { ModelManager.SetModelValue(this, ref _isVentilated, value, v => IsVentilated = v, "IsVentilated"); }
+            set { ModelHelper.SetModelValue(this, ref _isVentilated, value, v => IsVentilated = v, "IsVentilated"); }
         }
 
 
@@ -184,7 +174,7 @@ namespace Xbim.Ifc.MaterialResource
             get
             {
                 return
-                    ModelManager.ModelOf(this).InstancesWhere<IfcMaterialLayerSet>(
+                    ModelOf.InstancesWhere<IfcMaterialLayerSet>(
                         ml => ml.MaterialLayers.Contains(this)).FirstOrDefault();
             }
         }

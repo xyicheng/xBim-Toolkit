@@ -87,14 +87,13 @@ namespace Xbim.Ifc.RepresentationResource
     public class IfcRepresentationContext : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                             INotifyPropertyChanging
     {
-#if SupportActivation
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -122,8 +121,6 @@ namespace Xbim.Ifc.RepresentationResource
         }
 
         #endregion
-
-#endif
 
         #region Fields
 
@@ -154,14 +151,12 @@ namespace Xbim.Ifc.RepresentationResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _contextIdentifier;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _contextIdentifier, value, v => ContextIdentifier = v,
+                ModelHelper.SetModelValue(this, ref _contextIdentifier, value, v => ContextIdentifier = v,
                                            "ContextIdentifier");
             }
         }
@@ -175,12 +170,10 @@ namespace Xbim.Ifc.RepresentationResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _contextType;
             }
-            set { ModelManager.SetModelValue(this, ref _contextType, value, v => ContextType = v, "ContextType"); }
+            set { ModelHelper.SetModelValue(this, ref _contextType, value, v => ContextType = v, "ContextType"); }
         }
 
         public virtual void IfcParse(int propIndex, IPropertyValue value)
@@ -208,7 +201,7 @@ namespace Xbim.Ifc.RepresentationResource
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class)]
         public IEnumerable<IfcRepresentation> RepresentationsInContext
         {
-            get { return ModelManager.ModelOf(this).InstancesWhere<IfcRepresentation>(r => r.ContextOfItems == this); }
+            get { return ModelOf.InstancesWhere<IfcRepresentation>(r => r.ContextOfItems == this); }
         }
 
         #endregion

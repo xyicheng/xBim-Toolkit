@@ -62,7 +62,7 @@ namespace Xbim.DOM.PropertiesQuantities
         /// </summary>
         public static void SetMetersAndMilimetersAsBaseUnit(IfcObjectDefinition ifcObject)
         {
-            IModel model = ModelManager.ModelOf(ifcObject);
+            IModel model = ifcObject.ModelOf;
 
             if (_lengthUnit == null || !(_lengthUnit is IfcSIUnit)) 
             {

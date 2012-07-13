@@ -35,14 +35,14 @@ namespace Xbim.Ifc.ActorResource
     public class IfcOrganizationRelationship : ISupportChangeNotification, INotifyPropertyChanged, IPersistIfcEntity,
                                                INotifyPropertyChanging
     {
-#if SupportActivation
+
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -71,7 +71,7 @@ namespace Xbim.Ifc.ActorResource
 
         #endregion
 
-#endif
+
 
 
         public IfcOrganizationRelationship()
@@ -100,12 +100,10 @@ namespace Xbim.Ifc.ActorResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _name;
             }
-            set { ModelManager.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
+            set { ModelHelper.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
         }
 
         /// <summary>
@@ -116,12 +114,10 @@ namespace Xbim.Ifc.ActorResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _description;
             }
-            set { ModelManager.SetModelValue(this, ref _description, value, v => Description = v, "Description"); }
+            set { ModelHelper.SetModelValue(this, ref _description, value, v => Description = v, "Description"); }
         }
 
         /// <summary>
@@ -132,14 +128,12 @@ namespace Xbim.Ifc.ActorResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _relatingOrganization;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _relatingOrganization, value, v => RelatingOrganization = v,
+                ModelHelper.SetModelValue(this, ref _relatingOrganization, value, v => RelatingOrganization = v,
                                            "RelatingOrganization");
             }
         }
@@ -152,14 +146,12 @@ namespace Xbim.Ifc.ActorResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _relatingOrganizations;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _relatingOrganizations, value, v => RelatedOrganizations = v,
+                ModelHelper.SetModelValue(this, ref _relatingOrganizations, value, v => RelatedOrganizations = v,
                                            "RelatedOrganizations");
             }
         }

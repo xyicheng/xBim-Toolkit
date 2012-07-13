@@ -103,12 +103,10 @@ namespace Xbim.Ifc.GeometricConstraintResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _placementRelTo;
             }
-            set { ModelManager.SetModelValue(this, ref _placementRelTo, value, v => PlacementRelTo = v, "PlacementRelTo"); }
+            set { ModelHelper.SetModelValue(this, ref _placementRelTo, value, v => PlacementRelTo = v, "PlacementRelTo"); }
         }
 
         /// <summary>
@@ -122,14 +120,12 @@ namespace Xbim.Ifc.GeometricConstraintResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _relativePlacement;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _relativePlacement, value, v => RelativePlacement = v,
+                ModelHelper.SetModelValue(this, ref _relativePlacement, value, v => RelativePlacement = v,
                                            "RelativePlacement");
             }
         }

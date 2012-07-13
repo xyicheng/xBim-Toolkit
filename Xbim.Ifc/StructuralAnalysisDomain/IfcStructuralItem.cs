@@ -45,7 +45,7 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
             get
             {
                 return
-                    ModelManager.ModelOf(this).InstancesWhere<IfcRelConnectsStructuralActivity>(
+                    ModelOf.InstancesWhere<IfcRelConnectsStructuralActivity>(
                         r => r.RelatingElement == this);
             }
         }

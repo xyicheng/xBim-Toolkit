@@ -43,12 +43,10 @@ namespace Xbim.Ifc.ProfilePropertyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _physicalWeight;
             }
-            set { ModelManager.SetModelValue(this, ref _physicalWeight, value, v => PhysicalWeight = v, "PhysicalWeight"); }
+            set { ModelHelper.SetModelValue(this, ref _physicalWeight, value, v => PhysicalWeight = v, "PhysicalWeight"); }
         }
 
         /// <summary>
@@ -59,12 +57,10 @@ namespace Xbim.Ifc.ProfilePropertyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _perimeter;
             }
-            set { ModelManager.SetModelValue(this, ref _perimeter, value, v => Perimeter = v, "Perimeter"); }
+            set { ModelHelper.SetModelValue(this, ref _perimeter, value, v => Perimeter = v, "Perimeter"); }
         }
 
         /// <summary>
@@ -77,14 +73,12 @@ namespace Xbim.Ifc.ProfilePropertyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _minimumPlateThickness;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _minimumPlateThickness, value, v => MinimumPlateThickness = v,
+                ModelHelper.SetModelValue(this, ref _minimumPlateThickness, value, v => MinimumPlateThickness = v,
                                            "MinimumPlateThickness");
             }
         }
@@ -99,14 +93,12 @@ namespace Xbim.Ifc.ProfilePropertyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _maximumPlateThickness;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _maximumPlateThickness, value, v => MaximumPlateThickness = v,
+                ModelHelper.SetModelValue(this, ref _maximumPlateThickness, value, v => MaximumPlateThickness = v,
                                            "MaximumPlateThickness");
             }
         }
@@ -119,14 +111,12 @@ namespace Xbim.Ifc.ProfilePropertyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _crossSectionArea;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _crossSectionArea, value, v => CrossSectionArea = v,
+                ModelHelper.SetModelValue(this, ref _crossSectionArea, value, v => CrossSectionArea = v,
                                            "CrossSectionArea");
             }
         }

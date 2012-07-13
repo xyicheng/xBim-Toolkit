@@ -53,12 +53,10 @@ namespace Xbim.Ifc.Kernel
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _relatedObjects;
             }
-            set { ModelManager.SetModelValue(this, ref _relatedObjects, value, v => RelatedObjects = v, "RelatedObjects"); }
+            set { ModelHelper.SetModelValue(this, ref _relatedObjects, value, v => RelatedObjects = v, "RelatedObjects"); }
         }
 
         public override void IfcParse(int propIndex, IPropertyValue value)

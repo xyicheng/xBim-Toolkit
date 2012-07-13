@@ -40,15 +40,13 @@ namespace Xbim.Ifc.GeometryResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _position;
             }
             set
             {
                 if (value is IfcAxis2Placement2D || value is IfcAxis2Placement3D)
-                    ModelManager.SetModelValue(this, ref _position, value, v => Position = v, "Position");
+                    ModelHelper.SetModelValue(this, ref _position, value, v => Position = v, "Position");
                 else
                     throw new ArgumentException("Illegal axis2placement type", "Position");
             }

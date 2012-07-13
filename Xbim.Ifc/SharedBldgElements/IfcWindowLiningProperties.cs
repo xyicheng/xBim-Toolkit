@@ -99,12 +99,10 @@ namespace Xbim.Ifc.SharedBldgElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _liningDepth;
             }
-            set { ModelManager.SetModelValue(this, ref _liningDepth, value, v => LiningDepth = v, "LiningDepth"); }
+            set { ModelHelper.SetModelValue(this, ref _liningDepth, value, v => LiningDepth = v, "LiningDepth"); }
         }
 
         /// <summary>
@@ -115,14 +113,12 @@ namespace Xbim.Ifc.SharedBldgElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _liningThickness;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _liningThickness, value, v => LiningThickness = v,
+                ModelHelper.SetModelValue(this, ref _liningThickness, value, v => LiningThickness = v,
                                            "LiningThickness");
             }
         }
@@ -135,14 +131,12 @@ namespace Xbim.Ifc.SharedBldgElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _transomThickness;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _transomThickness, value, v => TransomThickness = v,
+                ModelHelper.SetModelValue(this, ref _transomThickness, value, v => TransomThickness = v,
                                            "TransomThickness");
             }
         }
@@ -155,14 +149,12 @@ namespace Xbim.Ifc.SharedBldgElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _mullionThickness;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _mullionThickness, value, v => MullionThickness = v,
+                ModelHelper.SetModelValue(this, ref _mullionThickness, value, v => MullionThickness = v,
                                            "MullionThickness");
             }
         }
@@ -175,14 +167,12 @@ namespace Xbim.Ifc.SharedBldgElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _firstTransomOffset;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _firstTransomOffset, value, v => FirstTransomOffset = v,
+                ModelHelper.SetModelValue(this, ref _firstTransomOffset, value, v => FirstTransomOffset = v,
                                            "FirstTransomOffset");
             }
         }
@@ -195,14 +185,12 @@ namespace Xbim.Ifc.SharedBldgElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _secondTransomOffset;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _secondTransomOffset, value, v => SecondTransomOffset = v,
+                ModelHelper.SetModelValue(this, ref _secondTransomOffset, value, v => SecondTransomOffset = v,
                                            "SecondTransomOffset");
             }
         }
@@ -215,14 +203,12 @@ namespace Xbim.Ifc.SharedBldgElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _firstMullionOffset;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _firstMullionOffset, value, v => FirstMullionOffset = v,
+                ModelHelper.SetModelValue(this, ref _firstMullionOffset, value, v => FirstMullionOffset = v,
                                            "FirstMullionOffset");
             }
         }
@@ -235,14 +221,12 @@ namespace Xbim.Ifc.SharedBldgElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _secondMullionOffset;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _secondMullionOffset, value, v => SecondMullionOffset = v,
+                ModelHelper.SetModelValue(this, ref _secondMullionOffset, value, v => SecondMullionOffset = v,
                                            "SecondMullionOffset");
             }
         }
@@ -255,14 +239,12 @@ namespace Xbim.Ifc.SharedBldgElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _shapeAspectStyle;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _shapeAspectStyle, value, v => ShapeAspectStyle = v,
+                ModelHelper.SetModelValue(this, ref _shapeAspectStyle, value, v => ShapeAspectStyle = v,
                                            "ShapeAspectStyle");
             }
         }

@@ -38,12 +38,10 @@ namespace Xbim.Ifc.SharedComponentElements
          {
              get
              {
-#if SupportActivation
                  ((IPersistIfcEntity)this).Activate(false);
-#endif
                  return _nominalDiameter;
              }
-             set { ModelManager.SetModelValue(this, ref _nominalDiameter, value, v => NominalDiameter = v, "NominalDiameter"); }
+             set { ModelHelper.SetModelValue(this, ref _nominalDiameter, value, v => NominalDiameter = v, "NominalDiameter"); }
          }
 
          /// <summary>
@@ -54,12 +52,10 @@ namespace Xbim.Ifc.SharedComponentElements
          {
              get
              {
-#if SupportActivation
                  ((IPersistIfcEntity)this).Activate(false);
-#endif
                  return _nominalLength;
              }
-             set { ModelManager.SetModelValue(this, ref _nominalLength, value, v => NominalLength = v, "NominalLength"); }
+             set { ModelHelper.SetModelValue(this, ref _nominalLength, value, v => NominalLength = v, "NominalLength"); }
          }
          #endregion
 

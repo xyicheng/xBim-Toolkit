@@ -67,12 +67,10 @@ namespace Xbim.Ifc.SharedBldgElements
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _shapeType;
             }
-            set { ModelManager.SetModelValue(this, ref _shapeType, value, v => ShapeType = v, "ShapeType"); }
+            set { ModelHelper.SetModelValue(this, ref _shapeType, value, v => ShapeType = v, "ShapeType"); }
         }
 
 

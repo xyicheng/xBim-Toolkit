@@ -69,12 +69,10 @@ namespace Xbim.Ifc.Kernel
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _relatingObject;
             }
-            set { ModelManager.SetModelValue(this, ref _relatingObject, value, v => RelatingObject = v, "RelatingObject"); }
+            set { ModelHelper.SetModelValue(this, ref _relatingObject, value, v => RelatingObject = v, "RelatingObject"); }
         }
 
         /// <summary>
@@ -86,12 +84,10 @@ namespace Xbim.Ifc.Kernel
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _relatedObjects;
             }
-            set { ModelManager.SetModelValue(this, ref _relatedObjects, value, v => RelatedObjects = v, "RelatedObjects"); }
+            set { ModelHelper.SetModelValue(this, ref _relatedObjects, value, v => RelatedObjects = v, "RelatedObjects"); }
         }
 
 

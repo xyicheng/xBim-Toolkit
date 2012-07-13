@@ -27,14 +27,13 @@ namespace Xbim.Ifc.PresentationOrganizationResource
     public class IfcPresentationLayerAssignment : IPersistIfcEntity, ISupportChangeNotification, INotifyPropertyChanged,
                                                   INotifyPropertyChanging
     {
-#if SupportActivation
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -63,8 +62,6 @@ namespace Xbim.Ifc.PresentationOrganizationResource
 
         #endregion
 
-#endif
-
         public IfcPresentationLayerAssignment()
         {
             _assignedItems = new XbimSet<IfcLayeredItem>(this);
@@ -89,12 +86,10 @@ namespace Xbim.Ifc.PresentationOrganizationResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _name;
             }
-            set { ModelManager.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
+            set { ModelHelper.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
         }
 
         /// <summary>
@@ -105,12 +100,10 @@ namespace Xbim.Ifc.PresentationOrganizationResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _description;
             }
-            set { ModelManager.SetModelValue(this, ref _description, value, v => Description = v, "Description"); }
+            set { ModelHelper.SetModelValue(this, ref _description, value, v => Description = v, "Description"); }
         }
 
         /// <summary>
@@ -121,12 +114,10 @@ namespace Xbim.Ifc.PresentationOrganizationResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _assignedItems;
             }
-            set { ModelManager.SetModelValue(this, ref _assignedItems, value, v => AssignedItems = v, "AssignedItems"); }
+            set { ModelHelper.SetModelValue(this, ref _assignedItems, value, v => AssignedItems = v, "AssignedItems"); }
         }
 
         /// <summary>
@@ -137,12 +128,10 @@ namespace Xbim.Ifc.PresentationOrganizationResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _identifier;
             }
-            set { ModelManager.SetModelValue(this, ref _identifier, value, v => Identifier = v, "Identifier"); }
+            set { ModelHelper.SetModelValue(this, ref _identifier, value, v => Identifier = v, "Identifier"); }
         }
 
 

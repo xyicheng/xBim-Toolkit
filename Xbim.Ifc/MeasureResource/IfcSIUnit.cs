@@ -42,9 +42,7 @@ namespace Xbim.Ifc.MeasureResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return IfcDimensionalExponents.DimensionsForSiUnit(Name);
             }
         }
@@ -57,12 +55,10 @@ namespace Xbim.Ifc.MeasureResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _prefix;
             }
-            set { ModelManager.SetModelValue(this, ref _prefix, value, v => Prefix = v, "Prefix"); }
+            set { ModelHelper.SetModelValue(this, ref _prefix, value, v => Prefix = v, "Prefix"); }
         }
 
 
@@ -74,12 +70,10 @@ namespace Xbim.Ifc.MeasureResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _name;
             }
-            set { ModelManager.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
+            set { ModelHelper.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
         }
 
         public override void IfcParse(int propIndex, IPropertyValue value)

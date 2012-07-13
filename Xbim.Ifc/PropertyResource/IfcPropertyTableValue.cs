@@ -77,12 +77,10 @@ namespace Xbim.Ifc.PropertyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _definingValues;
             }
-            set { ModelManager.SetModelValue(this, ref _definingValues, value, v => DefiningValues = v, "DefiningValues"); }
+            set { ModelHelper.SetModelValue(this, ref _definingValues, value, v => DefiningValues = v, "DefiningValues"); }
         }
 
         /// <summary>
@@ -93,12 +91,10 @@ namespace Xbim.Ifc.PropertyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _definedValues;
             }
-            set { ModelManager.SetModelValue(this, ref _definedValues, value, v => DefinedValues = v, "DefinedValues"); }
+            set { ModelHelper.SetModelValue(this, ref _definedValues, value, v => DefinedValues = v, "DefinedValues"); }
         }
 
         /// <summary>
@@ -109,12 +105,10 @@ namespace Xbim.Ifc.PropertyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _expression;
             }
-            set { ModelManager.SetModelValue(this, ref _expression, value, v => Expression = v, "Expression"); }
+            set { ModelHelper.SetModelValue(this, ref _expression, value, v => Expression = v, "Expression"); }
         }
 
         /// <summary>
@@ -125,12 +119,10 @@ namespace Xbim.Ifc.PropertyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _definingUnit;
             }
-            set { ModelManager.SetModelValue(this, ref _definingUnit, value, v => DefiningUnit = v, "DefiningUnit"); }
+            set { ModelHelper.SetModelValue(this, ref _definingUnit, value, v => DefiningUnit = v, "DefiningUnit"); }
         }
 
         /// <summary>
@@ -141,12 +133,10 @@ namespace Xbim.Ifc.PropertyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _definedUnit;
             }
-            set { ModelManager.SetModelValue(this, ref _definedUnit, value, v => DefinedUnit = v, "DefinedUnit"); }
+            set { ModelHelper.SetModelValue(this, ref _definedUnit, value, v => DefinedUnit = v, "DefinedUnit"); }
         }
 
         public override void IfcParse(int propIndex, IPropertyValue value)

@@ -31,7 +31,7 @@ namespace Xbim.Ifc.ProfileResource
         public IfcPositiveLengthMeasure Thickness
         {
             get { return _thickness; }
-            set { ModelManager.SetModelValue(this, ref _thickness, value, v => Thickness = v, "Thickness"); }
+            set { ModelHelper.SetModelValue(this, ref _thickness, value, v => Thickness = v, "Thickness"); }
         }
 
         #endregion

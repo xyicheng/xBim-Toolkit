@@ -129,12 +129,10 @@ namespace Xbim.Ifc.GeometryResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _basisCurve;
             }
-            set { ModelManager.SetModelValue(this, ref _basisCurve, value, v => BasisCurve = v, "BasisCurve"); }
+            set { ModelHelper.SetModelValue(this, ref _basisCurve, value, v => BasisCurve = v, "BasisCurve"); }
         }
 
 
@@ -146,12 +144,10 @@ namespace Xbim.Ifc.GeometryResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _trim1;
             }
-            set { ModelManager.SetModelValue(this, ref _trim1, value, v => Trim1 = v, "Trim1"); }
+            set { ModelHelper.SetModelValue(this, ref _trim1, value, v => Trim1 = v, "Trim1"); }
         }
 
 
@@ -163,12 +159,10 @@ namespace Xbim.Ifc.GeometryResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _trim2;
             }
-            set { ModelManager.SetModelValue(this, ref _trim2, value, v => Trim2 = v, "Trim2"); }
+            set { ModelHelper.SetModelValue(this, ref _trim2, value, v => Trim2 = v, "Trim2"); }
         }
 
 
@@ -177,12 +171,10 @@ namespace Xbim.Ifc.GeometryResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _senseAgreement;
             }
-            set { ModelManager.SetModelValue(this, ref _senseAgreement, value, v => SenseAgreement = v, "SenseAgreement"); }
+            set { ModelHelper.SetModelValue(this, ref _senseAgreement, value, v => SenseAgreement = v, "SenseAgreement"); }
         }
 
 
@@ -191,14 +183,12 @@ namespace Xbim.Ifc.GeometryResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _masterRepresentation;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _masterRepresentation, value, v => MasterRepresentation = v,
+                ModelHelper.SetModelValue(this, ref _masterRepresentation, value, v => MasterRepresentation = v,
                                            "MasterRepresentation");
             }
         }

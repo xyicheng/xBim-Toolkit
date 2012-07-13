@@ -28,14 +28,13 @@ namespace Xbim.Ifc.TimeSeriesResource
     public abstract class IfcTimeSeries : IfcMetricValueSelect, INotifyPropertyChanged, ISupportChangeNotification,
                                           IPersistIfcEntity, IfcObjectReferenceSelect, INotifyPropertyChanging
     {
-#if SupportActivation
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -64,8 +63,6 @@ namespace Xbim.Ifc.TimeSeriesResource
 
         #endregion
 
-#endif
-
         #region Fields
 
         private IfcLabel _name;
@@ -87,12 +84,10 @@ namespace Xbim.Ifc.TimeSeriesResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _name;
             }
-            set { ModelManager.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
+            set { ModelHelper.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
         }
 
         /// <summary>
@@ -103,12 +98,10 @@ namespace Xbim.Ifc.TimeSeriesResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _description;
             }
-            set { ModelManager.SetModelValue(this, ref _description, value, v => Description = v, "Description"); }
+            set { ModelHelper.SetModelValue(this, ref _description, value, v => Description = v, "Description"); }
         }
 
         /// <summary>
@@ -119,12 +112,10 @@ namespace Xbim.Ifc.TimeSeriesResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _startTime;
             }
-            set { ModelManager.SetModelValue(this, ref _startTime, value, v => StartTime = v, "StartTime"); }
+            set { ModelHelper.SetModelValue(this, ref _startTime, value, v => StartTime = v, "StartTime"); }
         }
 
         /// <summary>
@@ -135,12 +126,10 @@ namespace Xbim.Ifc.TimeSeriesResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _endTime;
             }
-            set { ModelManager.SetModelValue(this, ref _endTime, value, v => EndTime = v, "EndTime"); }
+            set { ModelHelper.SetModelValue(this, ref _endTime, value, v => EndTime = v, "EndTime"); }
         }
 
         /// <summary>
@@ -151,14 +140,12 @@ namespace Xbim.Ifc.TimeSeriesResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _timeSeriesDataType;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _timeSeriesDataType, value, v => TimeSeriesDataType = v,
+                ModelHelper.SetModelValue(this, ref _timeSeriesDataType, value, v => TimeSeriesDataType = v,
                                            "TimeSeriesDataType");
             }
         }
@@ -171,12 +158,10 @@ namespace Xbim.Ifc.TimeSeriesResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _dataOrigin;
             }
-            set { ModelManager.SetModelValue(this, ref _dataOrigin, value, v => DataOrigin = v, "DataOrigin"); }
+            set { ModelHelper.SetModelValue(this, ref _dataOrigin, value, v => DataOrigin = v, "DataOrigin"); }
         }
 
         /// <summary>
@@ -187,14 +172,12 @@ namespace Xbim.Ifc.TimeSeriesResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _userDefinedDataOrigin;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _userDefinedDataOrigin, value, v => UserDefinedDataOrigin = v,
+                ModelHelper.SetModelValue(this, ref _userDefinedDataOrigin, value, v => UserDefinedDataOrigin = v,
                                            "UserDefinedDataOrigin");
             }
         }
@@ -207,12 +190,10 @@ namespace Xbim.Ifc.TimeSeriesResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _unit;
             }
-            set { ModelManager.SetModelValue(this, ref _unit, value, v => Unit = v, "Unit"); }
+            set { ModelHelper.SetModelValue(this, ref _unit, value, v => Unit = v, "Unit"); }
         }
 
         #region Inverses
@@ -223,7 +204,7 @@ namespace Xbim.Ifc.TimeSeriesResource
             get
             {
                 return
-                    ModelManager.ModelOf(this).InstancesWhere<IfcTimeSeriesReferenceRelationship>(
+                    ModelOf.InstancesWhere<IfcTimeSeriesReferenceRelationship>(
                         tr => tr.ReferencedTimeSeries == this);
             }
         }

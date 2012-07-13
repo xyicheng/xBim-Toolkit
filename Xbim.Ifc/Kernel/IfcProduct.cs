@@ -66,14 +66,12 @@ namespace Xbim.Ifc.Kernel
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _objectPlacement;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _objectPlacement, value, v => _objectPlacement = v,
+                ModelHelper.SetModelValue(this, ref _objectPlacement, value, v => _objectPlacement = v,
                                            "ObjectPlacement");
             }
         }
@@ -89,12 +87,10 @@ namespace Xbim.Ifc.Kernel
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _representation;
             }
-            set { ModelManager.SetModelValue(this, ref _representation, value, v => _representation = v, "Representation"); }
+            set { ModelHelper.SetModelValue(this, ref _representation, value, v => _representation = v, "Representation"); }
         }
 
 
@@ -142,7 +138,7 @@ namespace Xbim.Ifc.Kernel
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class)]
         public IEnumerable<IfcRelAssignsToProduct> ReferencedBy
         {
-            get { return ModelManager.ModelOf(this).InstancesWhere<IfcRelAssignsToProduct>(a => a.RelatingProduct == this); }
+            get { return ModelOf.InstancesWhere<IfcRelAssignsToProduct>(a => a.RelatingProduct == this); }
         }
 
         #endregion

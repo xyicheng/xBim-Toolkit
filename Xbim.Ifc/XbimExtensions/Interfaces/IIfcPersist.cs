@@ -31,12 +31,10 @@ namespace Xbim.XbimExtensions.Interfaces
 
     public interface IPersistIfcEntity : IPersistIfc
     {
-#if SupportActivation
         bool Activated { get; }
         void Activate(bool write);
         void Bind(IModel model, long entityLabel);
         IModel ModelOf { get; }
         long EntityLabel { get; }
-#endif
     }
 }

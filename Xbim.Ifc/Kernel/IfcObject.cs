@@ -72,12 +72,10 @@ namespace Xbim.Ifc.Kernel
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _objectType;
             }
-            set { ModelManager.SetModelValue(this, ref _objectType, value, v => ObjectType = v, "ObjectType"); }
+            set { ModelHelper.SetModelValue(this, ref _objectType, value, v => ObjectType = v, "ObjectType"); }
         }
 
 
@@ -110,7 +108,7 @@ namespace Xbim.Ifc.Kernel
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class)]
         public virtual IEnumerable<IfcRelDefines> IsDefinedBy
         {
-            get { return ModelManager.ModelOf(this).InstancesWhere<IfcRelDefines>(r => r.RelatedObjects.Contains(this)); }
+            get { return ModelOf.InstancesWhere<IfcRelDefines>(r => r.RelatedObjects.Contains(this)); }
         }
 
         #endregion
@@ -125,7 +123,7 @@ namespace Xbim.Ifc.Kernel
             get
             {
                 return
-                    ModelManager.ModelOf(this).InstancesWhere<IfcRelDefinesByProperties>(
+                    ModelOf.InstancesWhere<IfcRelDefinesByProperties>(
                         r => (r.RelatedObjects != null && r.RelatedObjects.Contains(this)));
             }
         }

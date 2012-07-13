@@ -53,12 +53,10 @@ namespace Xbim.Ifc.GeometricModelResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _sbsmBoundary;
             }
-            set { ModelManager.SetModelValue(this, ref _sbsmBoundary, value, v => SbsmBoundary = v, "SbsmBoundary"); }
+            set { ModelHelper.SetModelValue(this, ref _sbsmBoundary, value, v => SbsmBoundary = v, "SbsmBoundary"); }
         }
 
 

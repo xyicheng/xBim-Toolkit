@@ -42,14 +42,12 @@ namespace Xbim.Ifc.StructuralLoadResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _deltaT_Constant;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _deltaT_Constant, value, v => DeltaT_Constant = v,
+                ModelHelper.SetModelValue(this, ref _deltaT_Constant, value, v => DeltaT_Constant = v,
                                            "DeltaT_Constant");
             }
         }
@@ -62,12 +60,10 @@ namespace Xbim.Ifc.StructuralLoadResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _deltaT_Y;
             }
-            set { ModelManager.SetModelValue(this, ref _deltaT_Y, value, v => DeltaT_Y = v, "DeltaT_Y"); }
+            set { ModelHelper.SetModelValue(this, ref _deltaT_Y, value, v => DeltaT_Y = v, "DeltaT_Y"); }
         }
 
         /// <summary>
@@ -78,12 +74,10 @@ namespace Xbim.Ifc.StructuralLoadResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _deltaT_Z;
             }
-            set { ModelManager.SetModelValue(this, ref _deltaT_Z, value, v => DeltaT_Z = v, "DeltaT_Z"); }
+            set { ModelHelper.SetModelValue(this, ref _deltaT_Z, value, v => DeltaT_Z = v, "DeltaT_Z"); }
         }
 
         #endregion

@@ -56,12 +56,10 @@ namespace Xbim.Ifc.GeometricModelResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _corner;
             }
-            set { ModelManager.SetModelValue(this, ref _corner, value, v => Corner = v, "Corner"); }
+            set { ModelHelper.SetModelValue(this, ref _corner, value, v => Corner = v, "Corner"); }
         }
 
         /// <summary>
@@ -72,12 +70,10 @@ namespace Xbim.Ifc.GeometricModelResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _xDim;
             }
-            set { ModelManager.SetModelValue(this, ref _xDim, value, v => XDim = v, "XDim"); }
+            set { ModelHelper.SetModelValue(this, ref _xDim, value, v => XDim = v, "XDim"); }
         }
 
         /// <summary>
@@ -88,12 +84,10 @@ namespace Xbim.Ifc.GeometricModelResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _yDim;
             }
-            set { ModelManager.SetModelValue(this, ref _yDim, value, v => YDim = v, "YDim"); }
+            set { ModelHelper.SetModelValue(this, ref _yDim, value, v => YDim = v, "YDim"); }
         }
 
         /// <summary>
@@ -104,12 +98,10 @@ namespace Xbim.Ifc.GeometricModelResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _zDim;
             }
-            set { ModelManager.SetModelValue(this, ref _zDim, value, v => ZDim = v, "ZDim"); }
+            set { ModelHelper.SetModelValue(this, ref _zDim, value, v => ZDim = v, "ZDim"); }
         }
 
 

@@ -26,14 +26,13 @@ namespace Xbim.Ifc.DateTimeResource
     public class IfcLocalTime : IfcDateTimeSelect, IPersistIfcEntity, INotifyPropertyChanged, ISupportChangeNotification,
                                 IfcObjectReferenceSelect, INotifyPropertyChanging
     {
-#if SupportActivation
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -62,7 +61,6 @@ namespace Xbim.Ifc.DateTimeResource
 
         #endregion
 
-#endif
 
         #region Fields
 
@@ -82,12 +80,10 @@ namespace Xbim.Ifc.DateTimeResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _hourComponent;
             }
-            set { ModelManager.SetModelValue(this, ref _hourComponent, value, v => HourComponent = v, "HourComponent"); }
+            set { ModelHelper.SetModelValue(this, ref _hourComponent, value, v => HourComponent = v, "HourComponent"); }
         }
 
         /// <summary>
@@ -98,14 +94,12 @@ namespace Xbim.Ifc.DateTimeResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _minuteComponent;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _minuteComponent, value, v => MinuteComponent = v,
+                ModelHelper.SetModelValue(this, ref _minuteComponent, value, v => MinuteComponent = v,
                                            "MinuteComponent");
             }
         }
@@ -118,14 +112,12 @@ namespace Xbim.Ifc.DateTimeResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _secondComponent;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _secondComponent, value, v => SecondComponent = v,
+                ModelHelper.SetModelValue(this, ref _secondComponent, value, v => SecondComponent = v,
                                            "SecondComponent");
             }
         }
@@ -138,12 +130,10 @@ namespace Xbim.Ifc.DateTimeResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _zone;
             }
-            set { ModelManager.SetModelValue(this, ref _zone, value, v => Zone = v, "Zone"); }
+            set { ModelHelper.SetModelValue(this, ref _zone, value, v => Zone = v, "Zone"); }
         }
 
         /// <summary>
@@ -154,14 +144,12 @@ namespace Xbim.Ifc.DateTimeResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _daylightSavingOffset;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _daylightSavingOffset, value, v => DaylightSavingOffset = v,
+                ModelHelper.SetModelValue(this, ref _daylightSavingOffset, value, v => DaylightSavingOffset = v,
                                            "DaylightSavingOffset");
             }
         }

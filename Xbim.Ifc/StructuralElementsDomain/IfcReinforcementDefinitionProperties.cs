@@ -48,12 +48,10 @@ namespace Xbim.Ifc.StructuralElementsDomain
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _definitionType;
             }
-            set { ModelManager.SetModelValue(this, ref _definitionType, value, v => DefinitionType = v, "DefinitionType"); }
+            set { ModelHelper.SetModelValue(this, ref _definitionType, value, v => DefinitionType = v, "DefinitionType"); }
         }
 
         /// <summary>
@@ -64,14 +62,12 @@ namespace Xbim.Ifc.StructuralElementsDomain
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _reinforcementSectionDefinitions;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _reinforcementSectionDefinitions, value,
+                ModelHelper.SetModelValue(this, ref _reinforcementSectionDefinitions, value,
                                            v => ReinforcementSectionDefinitions = v, "ReinforcementSectionDefinitions");
             }
         }

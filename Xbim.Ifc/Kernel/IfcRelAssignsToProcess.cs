@@ -45,14 +45,12 @@ namespace Xbim.Ifc.Kernel
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _relatingProcess;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _relatingProcess, value, v => RelatingProcess = v,
+                ModelHelper.SetModelValue(this, ref _relatingProcess, value, v => RelatingProcess = v,
                                            "RelatingProcess");
             }
         }
@@ -62,14 +60,12 @@ namespace Xbim.Ifc.Kernel
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _quantityInProcess;
             }
             set
             {
-                ModelManager.SetModelValue(this, ref _quantityInProcess, value, v => QuantityInProcess = v,
+                ModelHelper.SetModelValue(this, ref _quantityInProcess, value, v => QuantityInProcess = v,
                                            "QuantityInProcess");
             }
         }

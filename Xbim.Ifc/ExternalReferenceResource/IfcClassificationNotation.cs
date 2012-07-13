@@ -37,14 +37,13 @@ namespace Xbim.Ifc.ExternalReferenceResource
     public class IfcClassificationNotation : IPersistIfcEntity, INotifyPropertyChanged, ISupportChangeNotification,
                                              IfcClassificationNotationSelect, INotifyPropertyChanging
     {
-#if SupportActivation
 
         #region IPersistIfcEntity Members
 
         private long _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
@@ -73,8 +72,6 @@ namespace Xbim.Ifc.ExternalReferenceResource
 
         #endregion
 
-#endif
-
         public IfcClassificationNotation()
         {
             _notationFacets = new XbimSet<IfcClassificationNotationFacet>(this);
@@ -94,12 +91,10 @@ namespace Xbim.Ifc.ExternalReferenceResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity) this).Activate(false);
-#endif
                 return _notationFacets;
             }
-            set { ModelManager.SetModelValue(this, ref _notationFacets, value, v => NotationFacets = v, "NotationFacets"); }
+            set { ModelHelper.SetModelValue(this, ref _notationFacets, value, v => NotationFacets = v, "NotationFacets"); }
         }
 
         #region INotifyPropertyChanged Members
