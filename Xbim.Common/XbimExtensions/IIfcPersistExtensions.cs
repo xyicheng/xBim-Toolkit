@@ -17,7 +17,7 @@ using Xbim.XbimExtensions.Transactions;
 using System.Runtime.CompilerServices;
 #endregion
 
-[assembly: InternalsVisibleTo("Xbim.IO")]
+[assembly: InternalsVisibleTo("Xbim.IO"), InternalsVisibleTo("Xbim.Ifc2x3")]
 
 namespace Xbim.XbimExtensions
 {

@@ -25,7 +25,7 @@ using System.Runtime.CompilerServices;
 
 #endregion
 [assembly: InternalsVisibleTo("Xbim.Ifc2x3")]
-[assembly: InternalsVisibleTo("Xbim.Ifc2x4")]
+
 namespace Xbim.XbimExtensions
 {
     [IfcPersistedEntityAttribute, Serializable]

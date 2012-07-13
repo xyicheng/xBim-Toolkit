@@ -8,8 +8,8 @@
     <ProjectGuid>{5D4C907D-1293-4E5F-9642-D0862AE4741C}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Xbim.Ifc</RootNamespace>
-    <AssemblyName>Xbim.Ifc</AssemblyName>
+    <RootNamespace>Xbim.Ifc2x3</RootNamespace>
+    <AssemblyName>Xbim.Ifc2x3</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SccProjectName>SAK</SccProjectName>
@@ -83,7 +83,7 @@
     <DebugType>full</DebugType>
     <PlatformTarget>x86</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
-    <DocumentationFile>..\bin\x86\Debug\Xbim.Ifc.XML</DocumentationFile>
+    <DocumentationFile>..\bin\x86\Debug\Xbim.Ifc2x3.xml</DocumentationFile>
     <NoWarn>1591,1573</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
