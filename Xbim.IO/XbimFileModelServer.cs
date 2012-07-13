@@ -48,14 +48,15 @@ namespace Xbim.IO
         private Dictionary<Type, List<long>> _entityTypes;
         private XbimIndex _entityOffsets;
         private string _filename;
-        private IfcFileHeader _header;
+        private IIfcFileHeader _header;
         private BinaryWriter _binaryWriter;
         private Stream _stream;
 
-        public override IfcFileHeader Header
+        public override IIfcFileHeader Header
         {
 
             get { return _header; }
+            set { _header = value; }
         }
 
         public string Filename
@@ -705,20 +706,20 @@ namespace Xbim.IO
             }
         }
 
-        public override IPersistIfcEntity AddNew(IfcType ifcType, long label)
+        public override IPersistIfcEntity AddNew(Type ifcType, long label)
         {
 
-            Debug.Assert(typeof(IPersistIfcEntity).IsAssignableFrom(ifcType.Type), "Type mismacth: IPersistIfcEntity");
+            Debug.Assert(typeof(IPersistIfcEntity).IsAssignableFrom(ifcType), "Type mismatch: IPersistIfcEntity");
             //return (IPersistIfcEntity)CreateInstance(ifcType, label);
 
-            Type t = ifcType.Type;
+            
             IPersistIfcEntity newEntity;
-            XbimIndexEntry entry = _entityOffsets.AddNew(t, out newEntity, label);
+            XbimIndexEntry entry = _entityOffsets.AddNew(ifcType, out newEntity, label);
             List<long> labels;
-            if (!_entityTypes.TryGetValue(t, out labels))
+            if (!_entityTypes.TryGetValue(ifcType, out labels))
             {
                 labels = new List<long>();
-                _entityTypes.Add_Reversible(t, labels);
+                _entityTypes.Add_Reversible(ifcType, labels);
             }
             labels.Add_Reversible(label);
 

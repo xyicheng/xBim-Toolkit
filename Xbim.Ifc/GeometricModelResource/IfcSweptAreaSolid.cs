@@ -43,7 +43,7 @@ namespace Xbim.Ifc.GeometricModelResource
         /// <summary>
         ///   The surface defining the area to be swept. It is given as a profile definition within the xy plane of the position coordinate system.
         /// </summary>
-        [DataMember(Order = 0)]
+
         [XmlElement(typeof (IfcRectangleProfileDef))]
         [IfcAttribute(1, IfcAttributeState.Mandatory)]
         public IfcProfileDef SweptArea
@@ -61,7 +61,7 @@ namespace Xbim.Ifc.GeometricModelResource
         /// <summary>
         ///   Position coordinate system for the swept area.
         /// </summary>
-        [DataMember(Order = 1)]
+
         [IfcAttribute(2, IfcAttributeState.Mandatory)]
         public IfcAxis2Placement3D Position
         {

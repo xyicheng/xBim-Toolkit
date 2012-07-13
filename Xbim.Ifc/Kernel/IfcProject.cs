@@ -73,7 +73,7 @@ namespace Xbim.Ifc.Kernel
         /// <summary>
         ///   Optional. Long name for the project as used for reference purposes.
         /// </summary>
-        [DataMember(EmitDefaultValue = false, IsRequired = false)]
+
         [IfcAttribute(6, IfcAttributeState.Optional)]
         public IfcLabel LongName
         {
@@ -90,7 +90,7 @@ namespace Xbim.Ifc.Kernel
         /// <summary>
         ///   Optional. Current project phase, open to interpretation for all project partner, therefore given as IfcString.
         /// </summary>
-        [DataMember(EmitDefaultValue = false, IsRequired = false)]
+
         [IfcAttribute(7, IfcAttributeState.Optional)]
         public IfcLabel Phase
         {
@@ -107,7 +107,7 @@ namespace Xbim.Ifc.Kernel
         /// <summary>
         ///   Context of the representations used within the project. When the project includes shape representations for its components, one or several geometric representation contexts need to be included that define e.g. the world coordinate system, the coordinate space dimensions, and/or the precision factor.
         /// </summary>
-        [DataMember]
+
         [XmlArrayItem(typeof (IfcGeometricRepresentationContext)),
          XmlArrayItem(typeof (IfcGeometricRepresentationSubContext))]
         [IfcAttribute(8, IfcAttributeState.Mandatory, IfcAttributeType.Set, 1)]

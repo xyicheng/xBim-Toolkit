@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using Xbim.XbimExtensions;
+using Xbim.IO;
 
 namespace XbimConvert
 {

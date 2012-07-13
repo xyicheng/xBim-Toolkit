@@ -117,7 +117,7 @@ namespace Xbim.Ifc.ProfileResource
         /// <summary>
         ///   Defines the type of geometry into which this profile definition shall be resolved, either a curve or a surface area. In case of curve the profile should be referenced by a swept surface, in case of area the profile should be referenced by a swept area solid.
         /// </summary>
-        [DataMember(Order = 0)]
+      
         [IfcAttribute(1, IfcAttributeState.Mandatory)]
         public IfcProfileTypeEnum ProfileType
         {
@@ -135,7 +135,7 @@ namespace Xbim.Ifc.ProfileResource
         /// <summary>
         ///   Optional. Name of the profile type according to some standard profile table.
         /// </summary>
-        [DataMember(Order = 1, IsRequired = false, EmitDefaultValue = false)]
+
         [IfcAttribute(2, IfcAttributeState.Optional)]
         public IfcLabel? ProfileName
         {

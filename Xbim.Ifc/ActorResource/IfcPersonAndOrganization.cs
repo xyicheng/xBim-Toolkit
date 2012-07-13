@@ -92,7 +92,7 @@ namespace Xbim.Ifc.ActorResource
         /// <summary>
         ///   The person who is related to the organization.
         /// </summary>
-        [DataMember(Order = 0)]
+
         [IfcAttribute(1, IfcAttributeState.Mandatory)]
         public IfcPerson ThePerson
         {
@@ -109,7 +109,7 @@ namespace Xbim.Ifc.ActorResource
         /// <summary>
         ///   The organization to which the person is related.
         /// </summary>
-        [DataMember(Order = 1)]
+
         [IfcAttribute(2, IfcAttributeState.Mandatory)]
         public IfcOrganization TheOrganization
         {
@@ -130,7 +130,7 @@ namespace Xbim.Ifc.ActorResource
         /// <summary>
         ///   Roles played by the person within the context of an organization. Use RoleString to set value
         /// </summary>
-        [DataMember(Order = 2, IsRequired = false, EmitDefaultValue = false)]
+
         [IfcAttribute(3, IfcAttributeState.Optional)]
         public ActorRoleCollection Roles
         {

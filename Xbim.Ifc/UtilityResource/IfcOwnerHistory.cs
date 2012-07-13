@@ -84,7 +84,7 @@ namespace Xbim.Ifc.UtilityResource
         /// <summary>
         ///   Direct reference to the end user who currently "owns" this object. Note that IFC includes the concept of ownership transfer from one user to another and therefore distinguishes between the Owning User and Creating User.
         /// </summary>
-        [DataMember(Order = 0)]
+
         [IfcAttribute(1, IfcAttributeState.Mandatory)]
         public IfcPersonAndOrganization OwningUser
         {
@@ -101,7 +101,7 @@ namespace Xbim.Ifc.UtilityResource
         /// <summary>
         ///   Direct reference to the application which currently "Owns" this object on behalf of the owning user, who uses this application. Note that IFC includes the concept of ownership transfer from one app to another and therefore distinguishes between the Owning Application and Creating Application.
         /// </summary>
-        [DataMember(Order = 1)]
+
         [IfcAttribute(2, IfcAttributeState.Mandatory)]
         public IfcApplication OwningApplication
         {
@@ -123,7 +123,7 @@ namespace Xbim.Ifc.UtilityResource
         /// <summary>
         ///   Enumeration that defines the current access state of the object.
         /// </summary>
-        [DataMember(Order = 2, IsRequired = false, EmitDefaultValue = false)]
+
         [IfcAttribute(3, IfcAttributeState.Optional)]
         public IfcStateEnum? State
         {
@@ -140,7 +140,7 @@ namespace Xbim.Ifc.UtilityResource
         /// <summary>
         ///   Enumeration that defines the actions associated with changes made to the object.
         /// </summary>
-        [DataMember(Order = 3)]
+
         [IfcAttribute(4, IfcAttributeState.Mandatory)]
         public IfcChangeActionEnum ChangeAction
         {
@@ -157,7 +157,7 @@ namespace Xbim.Ifc.UtilityResource
         /// <summary>
         ///   Date and Time at which the last modification occurred. This is an optional value and will return null if not defined
         /// </summary>
-        [DataMember(Order = 4, IsRequired = false, EmitDefaultValue = false)]
+
         [IfcAttribute(5, IfcAttributeState.Optional)]
         public IfcTimeStamp? LastModifiedDate
         {
@@ -178,7 +178,7 @@ namespace Xbim.Ifc.UtilityResource
         /// <summary>
         ///   User who carried out the last modification.
         /// </summary>
-        [DataMember(Order = 5, IsRequired = false, EmitDefaultValue = false)]
+
         [IfcAttribute(6, IfcAttributeState.Optional)]
         public IfcPersonAndOrganization LastModifyingUser
         {
@@ -199,7 +199,7 @@ namespace Xbim.Ifc.UtilityResource
         /// <summary>
         ///   Application used to carry out the last modification.
         /// </summary>
-        [DataMember(Order = 6, IsRequired = false, EmitDefaultValue = false)]
+
         [IfcAttribute(7, IfcAttributeState.Optional)]
         public IfcApplication LastModifyingApplication
         {
@@ -220,7 +220,7 @@ namespace Xbim.Ifc.UtilityResource
         /// <summary>
         ///   Time and date of creation. This is an optional value and will return null if not defined
         /// </summary>
-        [DataMember(Order = 7)]
+
         [IfcAttribute(8, IfcAttributeState.Mandatory)]
         public IfcTimeStamp CreationDate
         {

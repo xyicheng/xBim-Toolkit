@@ -49,7 +49,7 @@ namespace Xbim.Ifc.GeometryResource
         /// <summary>
         ///   Optional. The direction used to determine the direction of the local X Axis.
         /// </summary>
-        [DataMember(Order = 1, IsRequired = false, EmitDefaultValue = false)]
+
         [IfcAttribute(2, IfcAttributeState.Optional)]
         public IfcDirection RefDirection
         {

@@ -131,7 +131,7 @@ namespace Xbim.Ifc.ProductExtension
         /// <summary>
         ///   Defines, whether the Space is interior (Internal), or exterior (External), i.e. part of the outer space.
         /// </summary>
-        [DataMember(Order = 9)]
+
         [IfcAttribute(10, IfcAttributeState.Mandatory, IfcAttributeType.Enum)]
         public IfcInternalOrExternalEnum InteriorOrExteriorSpace
         {
@@ -153,7 +153,7 @@ namespace Xbim.Ifc.ProductExtension
         /// <summary>
         ///   Optional. Level of flooring of this space; the average shall be taken, if the space ground surface is sloping or if there are level differences within this space.
         /// </summary>
-        [DataMember(Order = 10, IsRequired = false, EmitDefaultValue = false)]
+
         [IfcAttribute(11, IfcAttributeState.Optional)]
         public IfcLengthMeasure? ElevationWithFlooring
         {

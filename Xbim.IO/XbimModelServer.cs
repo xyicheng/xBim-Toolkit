@@ -692,7 +692,7 @@ namespace Xbim.IO
 
         public abstract TIfcType New<TIfcType>() where TIfcType : IPersistIfcEntity, new();
 
-        public abstract IPersistIfcEntity AddNew(IfcType ifcType, long label);
+        public abstract IPersistIfcEntity AddNew(Type ifcType, long label);
 
 
         public TIfcType New<TIfcType>(InitProperties<TIfcType> initPropertiesFunc)
@@ -723,8 +723,7 @@ namespace Xbim.IO
         /// <returns></returns>
         public abstract long InstancesOfTypeCount(Type t);
 
-        public int ParsePart21(Stream inputStream, FilterViewDefinition filter, TextWriter errorLog,
-                               ReportProgressDelegate progressHandler)
+        public int ParsePart21(Stream inputStream, ReportProgressDelegate progressHandler)
         {
             throw new NotImplementedException();
         }
@@ -1145,8 +1144,8 @@ namespace Xbim.IO
         private void WriteHeader(TextWriter tw)
         {
             //FileDescription fileDescriptor = new FileDescription("2;1");
-            FileDescription fileDescriptor = Header.FileDescription;
-            FileName fileName = Header.FileName;
+            IIfcFileDescription fileDescriptor = Header.FileDescription;
+            IIfcFileName fileName = Header.FileName;
             //FileName fileName = new FileName(DateTime.Now)
             //                        {
             //                            //PreprocessorVersion =
@@ -1160,7 +1159,7 @@ namespace Xbim.IO
             //                            OriginatingSystem = Header.FileName.OriginatingSystem,
             //                            Name = Header.FileName.Name,
             //                        };
-            FileSchema fileSchema = new FileSchema("IFC2X3");
+            IIfcFileSchema fileSchema = new FileSchema("IFC2X3");
             StringBuilder header = new StringBuilder();
             header.AppendLine("ISO-10303-21;");
             header.AppendLine("HEADER;");
@@ -1499,7 +1498,7 @@ namespace Xbim.IO
         }
 
 
-        public abstract IfcFileHeader Header { get; }
+        public abstract IIfcFileHeader Header { get; set; }
         public abstract bool ReOpen();
         public abstract void Close();
 

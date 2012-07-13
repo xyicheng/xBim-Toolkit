@@ -34,7 +34,7 @@ namespace Xbim.Ifc.ProfileResource
 
         #region Part 21 Step file Parse routines
 
-        [DataMember(Order = 3)]
+
         [IfcAttribute(4, IfcAttributeState.Mandatory)]
         public IfcPositiveLengthMeasure XDim
         {
@@ -49,7 +49,7 @@ namespace Xbim.Ifc.ProfileResource
         }
 
 
-        [DataMember(Order = 4)]
+
         [IfcAttribute(5, IfcAttributeState.Mandatory)]
         public IfcPositiveLengthMeasure YDim
         {

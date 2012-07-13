@@ -96,7 +96,7 @@ namespace Xbim.Ifc.GeometricConstraintResource
         /// <summary>
         ///   Optional. Reference to Object that provides the relative placement by its local coordinate system. If it is omitted, then the local placement is given to the WCS, established by the geometric representation context.
         /// </summary>
-        [DataMember(Order = 0, IsRequired = false, EmitDefaultValue = false)]
+
         [XmlElement(typeof (IfcLocalPlacement)), XmlElement(typeof (IfcGridPlacement))]
         [IfcAttribute(1, IfcAttributeState.Optional)]
         public IfcObjectPlacement PlacementRelTo
@@ -114,7 +114,7 @@ namespace Xbim.Ifc.GeometricConstraintResource
         /// <summary>
         ///   Geometric placement that defines the transformation from the related coordinate system into the relating. The placement can be either 2D or 3D, depending on the dimension count of the coordinate system.
         /// </summary>
-        [DataMember(Order = 1)]
+
         [XmlElement(typeof (IfcAxis1Placement)), XmlElement(typeof (IfcAxis2Placement2D)),
          XmlElement(typeof (IfcAxis2Placement3D))]
         [IfcAttribute(2, IfcAttributeState.Mandatory)]

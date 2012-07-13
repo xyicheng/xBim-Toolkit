@@ -25,6 +25,7 @@ using Xbim.Ifc.ProductExtension;
 using Xbim.Ifc.SelectTypes;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
+using Xbim.IO;
 
 #endregion
 

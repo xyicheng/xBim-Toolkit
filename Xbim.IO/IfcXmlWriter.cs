@@ -56,7 +56,7 @@ namespace Xbim.IO
         public string Authorization;
         public string Documentation;
 
-        private IfcFileHeader _fileHeader = new IfcFileHeader();
+        private IIfcFileHeader _fileHeader = new IfcFileHeader();
 
         #endregion
 

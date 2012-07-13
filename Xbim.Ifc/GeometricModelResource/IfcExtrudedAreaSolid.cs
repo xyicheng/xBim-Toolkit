@@ -40,7 +40,7 @@ namespace Xbim.Ifc.GeometricModelResource
 
         #region Part 21 Step file Parse routines
 
-        [DataMember(Order = 2)]
+ 
         [IfcAttribute(3, IfcAttributeState.Mandatory)]
         public IfcDirection ExtrudedDirection
         {
@@ -58,7 +58,7 @@ namespace Xbim.Ifc.GeometricModelResource
             }
         }
 
-        [DataMember(Order = 3)]
+
         [IfcAttribute(4, IfcAttributeState.Mandatory)]
         public IfcPositiveLengthMeasure Depth
         {

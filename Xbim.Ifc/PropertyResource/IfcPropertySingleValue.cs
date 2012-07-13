@@ -73,7 +73,7 @@ namespace Xbim.Ifc.PropertyResource
         ///   defined for the project if no value for the unit attribute is given.
         ///   IFC2x Edition 3 CHANGE  The attribute has been made optional with upward compatibility for file based exchange.
         /// </value>
-        [DataMember(Order = 2, EmitDefaultValue = false, IsRequired = false)]
+
         [IfcAttribute(3, IfcAttributeState.Optional)]
         public IfcValue NominalValue
         {
@@ -90,7 +90,7 @@ namespace Xbim.Ifc.PropertyResource
         /// <summary>
         ///   Optional. Unit for the nominal value, if not given, the default value for the measure type (given by the TYPE of nominal value) is used as defined by the global unit assignment at IfcProject.
         /// </summary>
-        [DataMember(Order = 3, EmitDefaultValue = false, IsRequired = false)]
+
         [IfcAttribute(4, IfcAttributeState.Optional)]
         public IfcUnit Unit
         {

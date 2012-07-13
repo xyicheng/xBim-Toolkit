@@ -123,7 +123,7 @@ namespace Xbim.Ifc.PropertyResource
         /// <summary>
         ///   Name for this property. This label is the significant name string that defines the semantic meaning for the property.
         /// </summary>
-        [DataMember(Order = 0)]
+
         [IfcAttribute(1, IfcAttributeState.Mandatory)]
         public IfcIdentifier Name
         {
@@ -140,7 +140,7 @@ namespace Xbim.Ifc.PropertyResource
         /// <summary>
         ///   Optional. Informative text to explain the property.
         /// </summary>
-        [DataMember(Order = 1, EmitDefaultValue = false, IsRequired = false)]
+
         [IfcAttribute(2, IfcAttributeState.Optional)]
         public IfcText? Description
         {

@@ -546,7 +546,7 @@ namespace Xbim.Ifc.ActorResource
         /// <remarks>
         ///   NOTE - A person may have several addresses.
         /// </remarks>
-        [DataMember(Order = 7, IsRequired = false, EmitDefaultValue = false)]
+
         [IfcAttribute(8, IfcAttributeState.Optional, IfcAttributeType.List)]
         public AddressCollection Addresses
         {

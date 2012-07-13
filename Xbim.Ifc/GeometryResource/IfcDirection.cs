@@ -168,7 +168,7 @@ namespace Xbim.Ifc.GeometryResource
         /// <summary>
         ///   The components in the direction of X axis (DirectionRatios[1]), of Y axis (DirectionRatios[2]), and of Z axis (DirectionRatios[3])
         /// </summary>
-        [DataMember(Order = 0)]
+
         [IfcAttribute(1, IfcAttributeState.Mandatory, IfcAttributeType.List, 2, 3)]
         public IDirectionRatioList<double> DirectionRatios
         {

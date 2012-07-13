@@ -110,6 +110,7 @@
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xaml" />
     <Reference Include="System.Xml.Linq">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -127,10 +128,15 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="FilterViewDefinition.cs" />
     <Compile Include="GeometryCache\GeometryCacheFile.cs" />
     <Compile Include="GeometryCache\MeshGeometry.cs" />
     <Compile Include="GeometryCache\SpaceTriangulatedModel.cs" />
+    <Compile Include="IfcFileHeader.cs" />
+    <Compile Include="IfcFilter.cs" />
+    <Compile Include="IfcFilterDictionary.cs" />
     <Compile Include="IfcInputStream.cs" />
+    <Compile Include="IfcInstances.cs" />
     <Compile Include="IfcOutputStream.cs" />
     <Compile Include="IfcXmlReader.cs" />
     <Compile Include="IfcXmlWriter.cs" />

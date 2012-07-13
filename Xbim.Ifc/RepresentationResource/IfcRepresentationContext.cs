@@ -148,7 +148,7 @@ namespace Xbim.Ifc.RepresentationResource
         /// <summary>
         ///   The optional identifier of the representation context as used within a project.
         /// </summary>
-        [DataMember(EmitDefaultValue = false, IsRequired = false)]
+
         [IfcAttribute(1, IfcAttributeState.Optional)]
         public IfcLabel? ContextIdentifier
         {
@@ -169,7 +169,7 @@ namespace Xbim.Ifc.RepresentationResource
         /// <summary>
         ///   The description of the type of a representation context. The supported values for context type are to be specified by implementers agreements.
         /// </summary>
-        [DataMember(EmitDefaultValue = false, IsRequired = false)]
+
         [IfcAttribute(2, IfcAttributeState.Optional)]
         public IfcLabel? ContextType
         {

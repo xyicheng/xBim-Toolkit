@@ -323,7 +323,7 @@ namespace Xbim.IO
                 {
                     // not been declared in a ref yet
                     // model.New creates an instance uisng type and id
-                    ent = model.AddNew(ifcType, id);
+                    ent = model.AddNew(ifcType.Type, id);
                    
                 }
                 else

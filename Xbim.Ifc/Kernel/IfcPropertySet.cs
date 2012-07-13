@@ -81,7 +81,7 @@ namespace Xbim.Ifc.Kernel
         /// <remarks>
         ///   If a property is not contained within the set of predefined properties, its value has not been set at this time.
         /// </remarks>
-        [DataMember(Order = 4)]
+
         [IfcAttribute(5, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class, 1)]
         public SetOfProperty HasProperties
         {

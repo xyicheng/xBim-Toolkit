@@ -46,7 +46,7 @@ namespace Xbim.Ifc.ProfileResource
         /// <summary>
         ///   Position coordinate system of the parameterized profile definition.
         /// </summary>
-        [DataMember(Order = 2)]
+
         [IfcAttribute(3, IfcAttributeState.Mandatory)]
         public IfcAxis2Placement2D Position
         {

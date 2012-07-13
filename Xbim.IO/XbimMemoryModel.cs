@@ -69,9 +69,6 @@ namespace Xbim.IO
 
         #endregion
 
-        #region Static methods
-
-        #endregion
 
         #region Public Methods
 
@@ -133,7 +130,7 @@ namespace Xbim.IO
             try
             {
                 IfcType ifcType = IfcInstances.IfcTypeLookup[ifcEntityName];
-                return CreateInstance(ifcType, label);
+                return CreateInstance(ifcType.Type, label);
             }
             catch (Exception e)
             {
@@ -142,11 +139,11 @@ namespace Xbim.IO
 
         }
 
-        internal IPersistIfc CreateInstance(IfcType ifcType, long? label)
+        internal IPersistIfc CreateInstance(Type ifcType, long? label)
         {
             try
             {
-                IPersistIfc instance = (IPersistIfc)Activator.CreateInstance(ifcType.Type);
+                IPersistIfc instance = (IPersistIfc)Activator.CreateInstance(ifcType);
                 IPersistIfcEntity persist = instance as IPersistIfcEntity;
                 if (persist != null)
                 {
@@ -160,14 +157,14 @@ namespace Xbim.IO
             }
             catch (Exception e)
             {
-                throw new ArgumentException(string.Format("{0} is not a supported Xbim Type", ifcType.Type.Name),
+                throw new ArgumentException(string.Format("{0} is not a supported Xbim Type", ifcType.Name),
                                             "ifcEntityName)", e);
             }
         }
 
-        public IPersistIfcEntity AddNew(IfcType ifcType, long label)
+        public IPersistIfcEntity AddNew(Type ifcType, long label)
         {
-            Debug.Assert(typeof(IPersistIfcEntity).IsAssignableFrom(ifcType.Type), "Type mismacth: IPersistIfcEntity");
+            Debug.Assert(typeof(IPersistIfcEntity).IsAssignableFrom(ifcType), "Type mismatch: IPersistIfcEntity");
             return (IPersistIfcEntity)CreateInstance(ifcType, label);
         }
 
@@ -597,29 +594,31 @@ namespace Xbim.IO
             }
             else
             {
+                reqParams = null;
                 try
                 {
                     IfcType ifcInstancesIfcTypeLookup = IfcInstances.IfcTypeLookup[className];
-                    reqParams = null;
+                    
                     if (_parseFilter.Contains(ifcInstancesIfcTypeLookup))
                     {
                         IfcFilter filter = _parseFilter[ifcInstancesIfcTypeLookup];
                         if (filter.PropertyIndices != null && filter.PropertyIndices.Length > 0)
                             reqParams = _parseFilter[ifcInstancesIfcTypeLookup].PropertyIndices;
-                        return CreateInstance(ifcInstancesIfcTypeLookup, label);
+                        return CreateInstance(ifcInstancesIfcTypeLookup.Type, label);
                     }
                     else if (ifcInstancesIfcTypeLookup.Type.IsValueType)
                     {
-                        return CreateInstance(ifcInstancesIfcTypeLookup, label);
+                        return CreateInstance(ifcInstancesIfcTypeLookup.Type, label);
                     }
                     else
                     {
                         return null;
                     }
                 }
-                catch (Exception e)
+                catch (Exception )
                 {
-                    throw new Exception(string.Format("Parse Error, Entity {0} could not be created", className), e);
+                    Logger.ErrorFormat(string.Format("Parse Error, Entity {0} could not be created", className));
+                    return null;
                 }
             }
         }
@@ -634,21 +633,15 @@ namespace Xbim.IO
         ///   Parses the part 21 file and returns trhe number of erors found, errorLog contains error details
         /// </summary>
         /// <param name = "inputStream"></param>
-        /// <param name = "filter"></param>
-        /// <param name = "errorLog"></param>
         /// <param name = "progressHandler"></param>
         /// <returns></returns>
-        public int ParsePart21(Stream inputStream, FilterViewDefinition filter, TextWriter errorLog,
-                               ReportProgressDelegate progressHandler)
+        public int ParsePart21(Stream inputStream, ReportProgressDelegate progressHandler)
         {
 
             int errorCount = 0;
 
-            _part21Parser = new P21toModelParser(inputStream, errorLog);
-            if (filter != null)
-                _parseFilter = filter.GetFilter();
-            else
-                _parseFilter = null;
+            _part21Parser = new P21toModelParser(inputStream);
+            _parseFilter = null;
             CreateEntityEventHandler creator;
             if (_parseFilter == null)
                 creator = _part21Parser_EntityCreate;
@@ -657,23 +650,15 @@ namespace Xbim.IO
             _part21Parser.EntityCreate += creator;
             if (progressHandler != null) _part21Parser.ProgressStatus += progressHandler;
 
-            IndentedTextWriter tw = new IndentedTextWriter(errorLog, "    ");
+           
             try
             {
 
                 _part21Parser.Parse();
             }
-            catch (Exception ex)
+            catch (Exception )
             {
-                errorLog.WriteLine("General Parser error.");
-                int indent = tw.Indent;
-                while (ex != null)
-                {
-                    tw.Indent++;
-                    errorLog.WriteLine(ex.Message);
-                    ex = ex.InnerException;
-                }
-                tw.Indent = indent;
+                Logger.Error("Parser errors: The IFC file does not comply with the correct syntax");
                 errorCount++;
             }
             finally
@@ -684,7 +669,7 @@ namespace Xbim.IO
             }
             errorCount = _part21Parser.ErrorCount + errorCount;
             if (errorCount == 0 && BuildIndices)
-                errorCount += _ifcInstances.BuildIndices(errorLog);
+                errorCount += _ifcInstances.BuildIndices();
             return errorCount;
         }
 
@@ -1011,7 +996,7 @@ namespace Xbim.IO
 
         #region IModel Members
 
-        public IfcFileHeader Header
+        public IIfcFileHeader Header
         {
             get { return _header; }
         }

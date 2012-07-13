@@ -108,9 +108,6 @@
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
     <Reference Include="System.Drawing" />
-    <Reference Include="System.Runtime.Serialization">
-      <RequiredTargetFramework>3.0</RequiredTargetFramework>
-    </Reference>
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xaml" />
@@ -391,7 +388,6 @@
     <Compile Include="SelectTypes\IfcDraughtingCalloutElement.cs" />
     <Compile Include="SelectTypes\ExpressComplexType.cs" />
     <Compile Include="SelectTypes\ExpressEnumerable.cs" />
-    <Compile Include="SelectTypes\ExpressHeaderType.cs" />
     <Compile Include="SelectTypes\ExpressSelectType.cs" />
     <Compile Include="SelectTypes\ExpressType.cs" />
     <Compile Include="SelectTypes\IfcFillStyleSelect.cs" />
@@ -1155,17 +1151,17 @@
     <Compile Include="XbimExtensions\DataProviders\IfcWindowStyles.cs" />
     <Compile Include="XbimExtensions\DataProviders\IfcZones.cs" />
     <Compile Include="XbimExtensions\DataProviders\IfcZShapeProfileDefs.cs" />
-    <Compile Include="XbimExtensions\FilterViewDefinition.cs" />
-    <Compile Include="XbimExtensions\IfcFileHeader.cs" />
-    <Compile Include="XbimExtensions\IfcInstances.cs" />
     <Compile Include="XbimExtensions\IfcParserType.cs" />
+    <Compile Include="XbimExtensions\Interfaces\ExpressHeaderType.cs" />
     <Compile Include="XbimExtensions\Interfaces\IBoundary.cs" />
     <Compile Include="XbimExtensions\Interfaces\IFaceBasedModel.cs" />
     <Compile Include="XbimExtensions\Interfaces\IFaceBasedModelCollection.cs" />
-    <Compile Include="XbimExtensions\IfcFilter.cs" />
-    <Compile Include="XbimExtensions\IfcFilterDictionary.cs" />
     <Compile Include="XbimExtensions\Interfaces\IFace.cs" />
     <Compile Include="XbimExtensions\IIfcPersistExtensions.cs" />
+    <Compile Include="XbimExtensions\Interfaces\IIfcFileDescription.cs" />
+    <Compile Include="XbimExtensions\Interfaces\IIfcFileHeader.cs" />
+    <Compile Include="XbimExtensions\Interfaces\IIfcFileName.cs" />
+    <Compile Include="XbimExtensions\Interfaces\IIfcFileSchema.cs" />
     <Compile Include="XbimExtensions\Interfaces\IModel.cs" />
     <Compile Include="XbimExtensions\Interfaces\IIfcCartesianPoint.cs" />
     <Compile Include="XbimExtensions\Interfaces\IIfcClosedShell.cs" />
@@ -1187,7 +1183,6 @@
     <Compile Include="XbimExtensions\Helpers\ExceptionExtensions.cs" />
     <Compile Include="XbimExtensions\Part21Formatter.cs" />
     <Compile Include="XbimExtensions\ValidationFlags.cs" />
-    <Compile Include="XbimExtensions\FramedGeometryModel3D.cs" />
     <Compile Include="XbimExtensions\Interfaces\ISupportChangeNotification.cs" />
     <Compile Include="PresentationAppearanceResource\CurveFontConverter.cs" />
     <Compile Include="PresentationAppearanceResource\IfcCurveStyle.cs" />
@@ -1228,11 +1223,7 @@
     <Compile Include="SharedBldgElements\IfcStairFlight.cs" />
     <Compile Include="StructuralElementsDomain\IfcBuildingElementComponent.cs" />
     <Compile Include="StructuralElementsDomain\IfcBuildingElementPart.cs" />
-    <Compile Include="XbimExtensions\IPlacement3D.cs" />
-    <Compile Include="XbimExtensions\GeometryPrimitive3D.cs" />
-    <Compile Include="XbimExtensions\NonVisualMaterial.cs" />
-    <Compile Include="XbimExtensions\PrimitiveModel3D.cs" />
-    <Compile Include="XbimExtensions\GeometryPrimitive3DGroup.cs" />
+    <Compile Include="XbimExtensions\Interfaces\IPlacement3D.cs" />
     <Compile Include="XbimExtensions\Interfaces\IIfcPersist.cs" />
     <Compile Include="XbimExtensions\Transactions\Edit.cs" />
     <Compile Include="XbimExtensions\Transactions\ICollectionReversibleExtension.cs" />
@@ -1252,7 +1243,6 @@
     <Compile Include="XbimExtensions\XbimIndexedCollectionExtensions.cs" />
     <Compile Include="XbimExtensions\XbimList.cs" />
     <Compile Include="XbimExtensions\XbimListProxy.cs" />
-    <Compile Include="XbimExtensions\XbimPropertyMetaData.cs" />
     <Compile Include="XbimExtensions\XbimRepresentationType.cs" />
     <Compile Include="XbimExtensions\XbimSet.cs" />
     <Compile Include="XbimExtensions\XbimType.cs" />
@@ -1595,7 +1585,6 @@
     <Compile Include="XbimExtensions\StepP21Token.cs" />
     <Compile Include="XbimExtensions\XbimFileType.cs" />
     <Compile Include="XbimExtensions\XbimPropertyDescriptor.cs" />
-    <Compile Include="XbimExtensions\XbimVertex.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ActorResource\ClassDiagramActorResource.cd" />
@@ -1624,12 +1613,10 @@
     <None Include="TimeSeriesResource\ClassDiagramTimeSeriesResource.cd" />
     <None Include="TopologyResource\ClassDiagramTopologyResource.cd" />
     <None Include="UtilityResource\ClassDiagramUtilityResource.cd" />
-    <None Include="XbimExtensions\ClassDiagramXbimExtensions.cd" />
     <None Include="XbimIfcKey.pfx" />
   </ItemGroup>
   <ItemGroup>
     <None Include="GeometricModelResource\ClassDiagramGeometricModelResource.cd" />
-    <None Include="XbimExtensions\ClassDiagram1.cd" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">

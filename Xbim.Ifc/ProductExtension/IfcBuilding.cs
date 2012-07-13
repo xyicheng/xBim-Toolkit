@@ -99,7 +99,7 @@ namespace Xbim.Ifc.ProductExtension
         /// <summary>
         ///   Optional. Elevation above sea level of the reference height used for all storey elevation measures, equals to height 0.0. It is usually the ground floor level.
         /// </summary>
-        [DataMember(Order = 9, IsRequired = false, EmitDefaultValue = false)]
+
         [IfcAttribute(10, IfcAttributeState.Optional)]
         public IfcLengthMeasure? ElevationOfRefHeight
         {
@@ -121,7 +121,7 @@ namespace Xbim.Ifc.ProductExtension
         /// <summary>
         ///   Optional. Elevation above the minimal terrain level around the foot print of the building, given in elevation above sea level.
         /// </summary>
-        [DataMember(Order = 10, IsRequired = false, EmitDefaultValue = false)]
+
         [IfcAttribute(11, IfcAttributeState.Optional)]
         public IfcLengthMeasure? ElevationOfTerrain
         {
@@ -142,7 +142,7 @@ namespace Xbim.Ifc.ProductExtension
         /// <summary>
         ///   Optional. Address given to the building for postal purposes.
         /// </summary>
-        [DataMember(Order = 11, IsRequired = false, EmitDefaultValue = false)]
+
         [IfcAttribute(12, IfcAttributeState.Optional)]
         public IfcPostalAddress BuildingAddress
         {

@@ -19,6 +19,7 @@ using System.IO;
 using System.Linq;
 using Xbim.XbimExtensions.Interfaces;
 using Xbim.XbimExtensions;
+using Xbim.Common.Logging;
 
 #endregion
 
@@ -26,6 +27,7 @@ namespace Xbim.IO.Parser
 {
     public class P21toModelParser : P21Parser
     {
+        private readonly ILogger Logger = LoggerFactory.GetLogger();
         public event ReportProgressDelegate ProgressStatus;
         private readonly Stack<Part21Entity> _processStack = new Stack<Part21Entity>();
         private int _listNestLevel = -1;
@@ -33,7 +35,6 @@ namespace Xbim.IO.Parser
         public event CreateEntityEventHandler EntityCreate;
         private readonly Dictionary<long, IPersistIfc> _entities;
         private PropertyValue _propertyValue;
-        private readonly IndentedTextWriter _errorLog;
         private readonly List<DeferredReference> _deferredReferences;
         private readonly double _streamSize = -1;
         private int _errorCount;
@@ -41,13 +42,7 @@ namespace Xbim.IO.Parser
         private int _percentageParsed;
         private bool _deferListItems;
 
-        public P21toModelParser(Stream file, TextWriter errorLog)
-            : this(file)
-        {
-            if (errorLog != null) _errorLog = new IndentedTextWriter(errorLog, "    ");
-
-            ((Scanner) this.Scanner).ErrorLog = _errorLog;
-        }
+       
 
 
         public P21toModelParser(Stream strm)
@@ -87,8 +82,8 @@ namespace Xbim.IO.Parser
             foreach (DeferredReference defRef in _deferredReferences)
             {
                 if (!TrySetObjectValue(defRef.HostEntity, defRef.ParameterIndex, defRef.ReferenceID))
-                    _errorLog.WriteLine(string.Format("Entity #{0,-5} is referenced but could not be instantiated",
-                                                      defRef.ReferenceID));
+                    Logger.WarnFormat("Entity #{0,-5} is referenced but could not be instantiated",
+                                                      defRef.ReferenceID);
             }
         }
 
@@ -275,7 +270,7 @@ namespace Xbim.IO.Parser
                 if (_currentInstance.Entity != null)
                     _currentInstance.ParameterSetter(_currentInstance.CurrentParamIndex, _propertyValue);
             }
-            catch (Exception ex)
+            catch (Exception )
             {
                 if (_errorCount > MaxErrorCount)
                     throw new Exception("Too many errors in file, parser execution terminated");
@@ -284,29 +279,15 @@ namespace Xbim.IO.Parser
                 if (mainEntity != null)
                 {
                     IfcType ifcType = IfcInstances.IfcEntities[mainEntity.Entity.GetType()];
-                    string err = string.Format("Entity #{0,-5} {1}, error at parameter {2}-{3} value = {4}",
+                    Logger.ErrorFormat("Entity #{0,-5} {1}, error at parameter {2}-{3} value = {4}",
                                                mainEntity.EntityLabel, mainEntity.Entity.GetType().Name.ToUpper(),
                                                mainEntity.CurrentParamIndex + 1,
                                                ifcType.IfcProperties[mainEntity.CurrentParamIndex + 1].PropertyInfo.Name,
                                                value);
-                    if (_errorLog != null)
-                    {
-                        _errorLog.WriteLine(err);
-                        int indent = _errorLog.Indent;
-                        while (ex != null)
-                        {
-                            _errorLog.Indent++;
-                            _errorLog.WriteLine(ex.Message);
-                            ex = ex.InnerException;
-                        }
-                        _errorLog.Indent = indent;
-                    }
-                    else
-                        throw new Exception(err, ex);
                 }
                 else
                 {
-                    //Debug.WriteLine("Unhandled Parser error, in Parser.cs SetEntityParameter");
+                    Logger.Error("Unhandled Parser error, in Parser.cs EndNestedType");
                 }
             }
             if (_listNestLevel == 0)
@@ -331,7 +312,7 @@ namespace Xbim.IO.Parser
                 if (_currentInstance.Entity != null)
                     _currentInstance.ParameterSetter(_currentInstance.CurrentParamIndex, _propertyValue);
             }
-            catch (Exception ex)
+            catch (Exception )
             {
                 if (_errorCount > MaxErrorCount)
                     throw new Exception("Too many errors in file, parser execution terminated");
@@ -344,30 +325,17 @@ namespace Xbim.IO.Parser
                     string propertyName = mainEntity.CurrentParamIndex + 1 > ifcType.IfcProperties.Count ? "[UnknownProperty]" :
                         ifcType.IfcProperties[mainEntity.CurrentParamIndex + 1].PropertyInfo.Name;
 
-                    string err = string.Format("Entity #{0,-5} {1}, error at parameter {2}-{3} value = {4}",
+                    Logger.ErrorFormat("Entity #{0,-5} {1}, error at parameter {2}-{3} value = {4}",
                                                mainEntity.EntityLabel, 
                                                mainEntity.Entity.GetType().Name.ToUpper(),
                                                mainEntity.CurrentParamIndex + 1,
                                                propertyName,
                                                value);
-                    if (_errorLog != null)
-                    {
-                        _errorLog.WriteLine(err);
-                        int indent = _errorLog.Indent;
-                        while (ex != null)
-                        {
-                            _errorLog.Indent++;
-                            _errorLog.WriteLine(ex.Message);
-                            ex = ex.InnerException;
-                        }
-                        _errorLog.Indent = indent;
-                    }
-                    else
-                        throw new Exception(err, ex);
+                   
                 }
                 else
                 {
-                    //Debug.WriteLine("Unhandled Parser error, in Parser.cs SetEntityParameter");
+                    Logger.Error("Unhandled Parser error, in Parser.cs SetEntityParameter");
                 }
             }
             if (_listNestLevel == 0)
@@ -395,7 +363,7 @@ namespace Xbim.IO.Parser
                     return true;
                 }
             }
-            catch (Exception ex)
+            catch (Exception )
             {
                 if (_errorCount > MaxErrorCount)
                     throw new Exception("Too many errors in file, parser execution terminated");
@@ -403,23 +371,10 @@ namespace Xbim.IO.Parser
                 IfcType ifcType = IfcInstances.IfcEntities[host];
                 string propertyName = paramIndex+1 > ifcType.IfcProperties.Count ? "[UnknownProperty]" :
                         ifcType.IfcProperties[paramIndex+1].PropertyInfo.Name;
-                string err = string.Format("Entity #{0,-5} {1}, error at parameter {2}-{3}",
+                Logger.ErrorFormat("Entity #{0,-5} {1}, error at parameter {2}-{3}",
                                            refID, ifcType.Type.Name.ToUpper(), paramIndex + 1,
                                            propertyName);
-                if (_errorLog != null)
-                {
-                    _errorLog.WriteLine(err);
-                    int indent = _errorLog.Indent;
-                    while (ex != null)
-                    {
-                        _errorLog.Indent++;
-                        _errorLog.WriteLine(ex.Message);
-                        ex = ex.InnerException;
-                    }
-                    _errorLog.Indent = indent;
-                }
-                else
-                    throw new Exception(err, ex);
+                
             }
             return false;
         }

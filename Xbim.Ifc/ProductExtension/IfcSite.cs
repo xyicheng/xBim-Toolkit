@@ -111,7 +111,7 @@ namespace Xbim.Ifc.ProductExtension
         /// <remarks>
         ///   Latitudes are measured relative to the equator, north of the equator by positive values - from 0 till +90, south of the equator by negative values - from 0 till -90.
         /// </remarks>
-        [DataMember(Order = 9, IsRequired = false, EmitDefaultValue = false)]
+
         [IfcAttribute(10, IfcAttributeState.Optional)]
         public IfcCompoundPlaneAngleMeasure? RefLatitude
         {
@@ -131,7 +131,7 @@ namespace Xbim.Ifc.ProductExtension
         /// <remarks>
         ///   Longitudes are measured relative to Greenwich as the prime meridian: longitudes west of Greenwich have positive values - from 0 till +180, longitudes east of Greenwich have negative values - from 0 till -180.
         /// </remarks>
-        [DataMember(Order = 10, IsRequired = false, EmitDefaultValue = false)]
+
         [IfcAttribute(11, IfcAttributeState.Optional)]
         public IfcCompoundPlaneAngleMeasure? RefLongitude
         {
@@ -148,7 +148,7 @@ namespace Xbim.Ifc.ProductExtension
         /// <summary>
         ///   Optional. Datum elevation relative to sea level.
         /// </summary>
-        [DataMember(Order = 11, IsRequired = false, EmitDefaultValue = false)]
+
         [IfcAttribute(12, IfcAttributeState.Optional)]
         public IfcLengthMeasure? RefElevation
         {
@@ -165,7 +165,7 @@ namespace Xbim.Ifc.ProductExtension
         /// <summary>
         ///   Optional. The land title number (designation of the site within a regional system).
         /// </summary>
-        [DataMember(Order = 12, IsRequired = false, EmitDefaultValue = false)]
+
         [IfcAttribute(13, IfcAttributeState.Optional)]
         public IfcLabel? LandTitleNumber
         {
@@ -186,7 +186,7 @@ namespace Xbim.Ifc.ProductExtension
         /// <summary>
         ///   Optional. Address given to the site for postal purposes.
         /// </summary>
-        [DataMember(Order = 13, IsRequired = false, EmitDefaultValue = false)]
+
         [IfcAttribute(14, IfcAttributeState.Optional)]
         public IfcPostalAddress SiteAddress
         {

@@ -22,6 +22,7 @@ using Xbim.Ifc.RepresentationResource;
 using Xbim.XbimExtensions;
 using Xbim.ModelGeometry.Scene;
 using Xbim.XbimExtensions.Interfaces;
+using Xbim.IO;
 
 #endregion
 
@@ -67,8 +68,7 @@ namespace Xbim.Presentation
         private readonly MaterialDictionary _materials = new MaterialDictionary();
         private double _transparency = 0.5;
 
-        private readonly Dictionary<IfcRepresentation, FramedGeometryModel3D> _mappedRepresentations =
-            new Dictionary<IfcRepresentation, FramedGeometryModel3D>();
+       
 
         private IXbimScene _scene;
 

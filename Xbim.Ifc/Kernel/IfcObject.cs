@@ -66,7 +66,7 @@ namespace Xbim.Ifc.Kernel
         /// <summary>
         ///   The type denotes a particular type that indicates the object futher. The use has to be established at the level of instantiable subtypes. In particular it holds the user defined type, if the enumeration of the attribute PredefinedType is set to USERDEFINED.
         /// </summary>
-        [DataMember(Order = 4, IsRequired = false, EmitDefaultValue = false)]
+
         [IfcAttribute(5, IfcAttributeState.Optional)]
         public IfcLabel? ObjectType
         {

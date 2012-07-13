@@ -65,14 +65,14 @@ namespace Xbim.IO
         /// <param name = "validate">Level to validate the model after parsing, multiple flags cab be set i.e. (ValidationLevel.Properties|ValidationLevel.Inverses)</param>
         /// <param name = "progressDelegate">delegate to call to report progress</param>
         /// <returns>The number of errors found. -1 indicates a general parsing failure, most likely a the input is not properly formatted to Ifc STEP format</returns>
-        public int Load(IModel intoModel, FilterViewDefinition filter, ValidationFlags validate,
+        public int Load(IModel intoModel, ValidationFlags validate,
                         ReportProgressDelegate progressDelegate)
         {
             IndentedTextWriter tw = new IndentedTextWriter(_errorLog);
             try
             {
                 ModelManager.TransactingModel = intoModel;
-                int errors = intoModel.ParsePart21(_input, filter, _errorLog, progressDelegate);
+                int errors = intoModel.ParsePart21(_input, progressDelegate);
                 if (errors == 0 && validate > 0)
                     errors = intoModel.Validate(_errorLog, progressDelegate);
 
@@ -102,7 +102,7 @@ namespace Xbim.IO
         /// <returns></returns>
         public int Load(IModel intoModel, ValidationFlags validate)
         {
-            return Load(intoModel, null, validate, null);
+            return Load(intoModel, validate, null);
         }
 
         /// <summary>
@@ -112,19 +112,10 @@ namespace Xbim.IO
         /// <returns></returns>
         public int Load(IModel intoModel)
         {
-            return Load(intoModel, null, ValidationFlags.None, null);
+            return Load(intoModel, ValidationFlags.None, null);
         }
 
-        /// <summary>
-        ///   Parses and loads the contents of the stream into the model, only loads items in filter
-        /// </summary>
-        /// <param name = "intoModel">Model to populate with contents of stream, normally this model is empty, use ModelManager.CreateModel to create a model.</param>
-        /// <param name = "filter">Selected entities to load into the model</param>
-        /// <returns></returns>
-        public int Load(IModel intoModel, FilterViewDefinition filter)
-        {
-            return Load(intoModel, filter, ValidationFlags.None, null);
-        }
+       
 
         public int Index(Stream indexStream, /*FilterViewDefinition filter, TextWriter errorLog, */
                          ReportProgressDelegate progressHandler)

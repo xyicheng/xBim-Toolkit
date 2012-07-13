@@ -85,7 +85,7 @@ namespace Xbim.Ifc.UtilityResource
         /// <summary>
         ///   Name of the application developer, being requested to be member of the IAI.
         /// </summary>
-        [DataMember(Order = 0)]
+
         [IfcAttribute(1, IfcAttributeState.Mandatory)]
         public IfcOrganization ApplicationDeveloper
         {
@@ -103,7 +103,7 @@ namespace Xbim.Ifc.UtilityResource
         ///   The version number of this software as specified by the developer of the application.
         /// </summary>
         /// <value>it should be restricted to max. 255 characters.</value>
-        [DataMember(Order = 1)]
+
         [IfcAttribute(2, IfcAttributeState.Mandatory)]
         public IfcLabel Version
         {
@@ -122,7 +122,7 @@ namespace Xbim.Ifc.UtilityResource
         ///   The full name of the application as specified by the application developer.
         /// </summary>
         /// <value>it should be restricted to max. 255 characters.</value>
-        [DataMember(Order = 2)]
+
         [IfcAttribute(3, IfcAttributeState.Mandatory)]
         public IfcLabel ApplicationFullName
         {
@@ -141,7 +141,7 @@ namespace Xbim.Ifc.UtilityResource
         ///   Short identifying name for the application.
         /// </summary>
         /// <value>it should be restricted to max. 255 characters.</value>
-        [DataMember(Order = 3)]
+
         [IfcAttribute(4, IfcAttributeState.Mandatory)]
         public IfcIdentifier ApplicationIdentifier
         {

@@ -75,10 +75,9 @@ namespace Xbim.XbimExtensions.Interfaces
         IEnumerable<IPersistIfcEntity> Instances { get; }
         long InstancesCount { get; }
 
-        IPersistIfcEntity AddNew(IfcType ifcType, long label);
+        IPersistIfcEntity AddNew(Type ifcType, long label);
 
-        int ParsePart21(Stream inputStream, FilterViewDefinition filter, TextWriter errorLog,
-                        ReportProgressDelegate progressHandler);
+        int ParsePart21(Stream inputStream, ReportProgressDelegate progressHandler);
 
         IfcOwnerHistory OwnerHistoryAddObject { get; }
         IfcOwnerHistory OwnerHistoryModifyObject { get; }
@@ -89,7 +88,7 @@ namespace Xbim.XbimExtensions.Interfaces
         IfcApplication DefaultOwningApplication { get; }
         IfcPersonAndOrganization DefaultOwningUser { get; }
         Transaction BeginTransaction(string operationName);
-        IfcFileHeader Header { get; }
+        IIfcFileHeader Header { get; }
         IEnumerable<Tuple<string, long>> ModelStatistics();
         int Validate(TextWriter errStream, ReportProgressDelegate progressDelegate, ValidationFlags validateFlags);
         int Validate(TextWriter errStream, ReportProgressDelegate progressDelegate);

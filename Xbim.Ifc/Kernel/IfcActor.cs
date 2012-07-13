@@ -51,7 +51,7 @@ namespace Xbim.Ifc.Kernel
         /// <summary>
         ///   Reference to the relationship that associates the actor to an object. Can be an Organization, Person or PersonOrganization
         /// </summary>
-        [DataMember(Order = 5)]
+
         [IfcAttribute(6, IfcAttributeState.Mandatory)]
         public IfcActorSelect TheActor
         {

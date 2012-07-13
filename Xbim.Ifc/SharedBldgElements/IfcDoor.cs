@@ -119,7 +119,6 @@ namespace Xbim.Ifc.SharedBldgElements
         ///   NOTE  The body of the door might be wider then the door opening (e.g. in cases where the door lining includes a casing). In these cases the OverallWidth shall still be given as the door opening width, and not as the total width of the door lining.
         /// </remarks>
         [IfcAttribute(10, IfcAttributeState.Optional)]
-        [XbimPropertyMetaData(Affects2DAppearance = true)]
         public IfcPositiveLengthMeasure? OverallWidth
         {
             get { return _overallWidth; }

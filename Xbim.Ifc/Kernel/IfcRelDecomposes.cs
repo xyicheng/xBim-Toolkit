@@ -80,7 +80,7 @@ namespace Xbim.Ifc.Kernel
         /// <summary>
         ///   The objects being nested or aggregated.
         /// </summary>
-        [DataMember(Order = 5)]
+
         [IfcAttribute(6, IfcAttributeState.Mandatory, IfcAttributeType.Set, 1)]
         public ObjectDefinitionSet RelatedObjects
         {

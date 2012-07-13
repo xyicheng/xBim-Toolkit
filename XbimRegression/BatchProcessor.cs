@@ -7,6 +7,7 @@ using Xbim.IO;
 using Xbim.ModelGeometry.Scene;
 using System.Reflection;
 using Xbim.XbimExtensions;
+using Xbim.XbimExtensions.Interfaces;
 
 
 namespace XbimRegression
@@ -153,7 +154,7 @@ namespace XbimRegression
                 model = new XbimFileModelServer(xbimFile, FileAccess.Read);
                 result.Entities = model.InstancesCount;
                 
-                IfcFileHeader header = model.Header;
+                IIfcFileHeader header = model.Header;
                 result.IfcSchema = header.FileSchema.Schemas.FirstOrDefault();
                 result.IfcDescription = String.Format("{0}, {1}", header.FileDescription.Description.FirstOrDefault(), header.FileDescription.ImplementationLevel);
                 // TODO: Ifc Name
