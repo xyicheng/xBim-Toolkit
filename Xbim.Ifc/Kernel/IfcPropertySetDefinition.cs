@@ -21,7 +21,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc.Kernel
 {
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class PropertySetDefinitionSet : XbimSet<IfcPropertySetDefinition>
     {
         internal PropertySetDefinitionSet(IPersistIfcEntity owner)
@@ -40,7 +40,7 @@ namespace Xbim.Ifc.Kernel
     ///   The semantic meaning of each statically defined property is declared by its entity type and the meaning of the properties is defined by the name of the explicit attribute.
     ///   The subtypes of the IfcPropertySetDefinition are either the dynamically extendable IfcPropertySet, or all other statically defined subtypes.
     /// </summary>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public abstract class IfcPropertySetDefinition : IfcPropertyDefinition
     {
         #region Inverse Relationships

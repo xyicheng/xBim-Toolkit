@@ -41,7 +41,7 @@ namespace Xbim.Ifc.GeometryResource
     ///   WR4   :   The Axis and RefDirection shall not be parallel or anti-parallel.  
     ///   WR5   :   Either both (Axis and RefDirection) are not given and therefore defaulted, or both shall be given. This is a further constraint in IFC Release 1.5.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcAxis2Placement3D : IfcPlacement, IfcAxis2Placement
     {
         #region Fields
@@ -104,7 +104,7 @@ namespace Xbim.Ifc.GeometryResource
         /// <summary>
         ///   Derived. The normalized directions of the placement X Axis (P[0]) and the placement Y Axis (P[1]) and the placement Z Axis (P[2]).
         /// </summary>
-        [XmlIgnore]
+       
         public List<IfcDirection> P
         {
             get

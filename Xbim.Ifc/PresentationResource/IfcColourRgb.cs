@@ -22,7 +22,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc.PresentationResource
 {
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcColourRgb : IfcColourSpecification, IfcFillStyleSelect, IfcColourOrFactor
     {
         #region Fields

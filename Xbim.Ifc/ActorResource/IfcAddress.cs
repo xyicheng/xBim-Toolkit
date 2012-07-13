@@ -27,7 +27,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc.ActorResource
 {
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class AddressCollection : XbimList<IfcAddress>
     {
         internal AddressCollection(IPersistIfcEntity owner)
@@ -125,7 +125,7 @@ namespace Xbim.Ifc.ActorResource
     /// <summary>
     ///   WR1   :   EXISTS (InternalLocation) OR EXISTS (AddressLines) OR EXISTS (PostalBox) OR EXISTS (PostalCode) OR EXISTS (Town) OR EXISTS (Region) OR EXISTS (Country);
     /// </summary>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public abstract class IfcAddress : IPersistIfcEntity, IFormattable, ISupportChangeNotification,
                                        INotifyPropertyChanged, IfcObjectReferenceSelect, INotifyPropertyChanging
     {

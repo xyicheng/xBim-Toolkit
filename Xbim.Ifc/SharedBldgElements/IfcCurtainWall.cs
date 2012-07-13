@@ -40,7 +40,7 @@ namespace Xbim.Ifc.SharedBldgElements
     ///   Geometric Representation 
     ///   Currently, the use of 'BoundingBox', 'SurfaceModel', 'Brep' and 'MappedRepresentation' representations of IfcCurtainWall are supported. The conventions to use these representations are given at the level of the supertype, IfcBuildingElement.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcCurtainWall : IfcBuildingElement
     {
     }

@@ -21,7 +21,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc.ProfileResource
 {
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcRectangleHollowProfileDef : IfcRectangleProfileDef
     {
         #region Fields

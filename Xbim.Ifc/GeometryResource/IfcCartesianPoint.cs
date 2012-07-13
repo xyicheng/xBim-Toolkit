@@ -29,7 +29,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc.GeometryResource
 {
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class CartesianPointList : XbimList<IfcCartesianPoint>
     {
         internal CartesianPointList(IPersistIfcEntity owner)
@@ -73,7 +73,7 @@ namespace Xbim.Ifc.GeometryResource
     ///   Formal Propositions:
     ///   WR1   :   Only two or three dimensional points shall be used for the purpose of defining geometry in this IFC Resource
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcCartesianPoint : IfcPoint, IfcTrimmingSelect, IVertex3D, ICoordinateList, IIfcCartesianPoint
     {
         #region Fields

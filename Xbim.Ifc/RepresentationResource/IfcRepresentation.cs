@@ -38,7 +38,7 @@ namespace Xbim.Ifc.RepresentationResource
     ///   IFC2x Edition 3 NOTE  Users should not instantiate the entity IfcRepresentation from IFC2x Edition 3 onwards. It will be changed into an ABSTRACT supertype in future releases of IFC.
     ///   IFC2x Edition 3 CHANGE  The inverse attributes LayerAssignments and RepresentationMap have been added with upward compatibility.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcRepresentation : ISupportChangeNotification, INotifyPropertyChanged, IPersistIfcEntity,
                                      IfcLayeredItem, INotifyPropertyChanging
     {

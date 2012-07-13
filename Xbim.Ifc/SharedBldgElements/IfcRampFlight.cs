@@ -44,7 +44,7 @@ namespace Xbim.Ifc.SharedBldgElements
     ///   Extrusion: The profile shall be extruded in any direction relative to the XY plane of the position coordinate system of the IfcExtrudedAreaSolid. Therefore non-perpendicular sweep operation has to be supported. It might be further constrained to be in the direction of the global z-axis in implementers agreements. 
     ///   Example of geometric representation of IfcRampFlight.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcRampFlight : IfcBuildingElement
     {
     }

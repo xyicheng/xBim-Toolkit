@@ -29,7 +29,7 @@ namespace Xbim.Ifc.Kernel
     ///   Decompositions imply a dependency, i.e. the definition of the whole depends on the definition of the parts and the parts depend on the existence of the whole. The behaviour that is implied from the dependency has to be established inside the applications.
     ///   HISTORY: New entity in IFC Release 2x.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcRelAggregates : IfcRelDecomposes
     {
         public override string WhereRule()

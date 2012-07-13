@@ -3,16 +3,23 @@
 // The eXtensible Building Information Modelling (xBIM) Toolkit
 // Solution:    XbimComplete
 // Project:     Xbim.Ifc
-// Filename:    NonVisualMaterial.cs
+// Filename:    IIfcFaceBound.cs
 // Published:   01, 2012
 // Last Edited: 9:04 AM on 20 12 2011
 // (See accompanying copyright.rtf)
 
 #endregion
 
-namespace Xbim.XbimExtensions
+#region Directives
+
+
+#endregion
+
+namespace Xbim.XbimExtensions.Interfaces
 {
-    public class NonVisualMaterial
+    public interface IIfcFaceBound
     {
+        IIfcEdgeLoop Bound { get; }
+        bool Orientation { get; }
     }
 }

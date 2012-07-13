@@ -23,7 +23,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc.PresentationAppearanceResource
 {
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcCurveStyleFontAndScaling : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                                IfcCurveFontOrScaledCurveFontSelect, INotifyPropertyChanging
     {

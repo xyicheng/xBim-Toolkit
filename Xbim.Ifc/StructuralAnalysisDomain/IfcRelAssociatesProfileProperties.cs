@@ -28,7 +28,7 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
     ///   The IfcRelAssociatesProfileProperties is an objectified relationship between non geometric profile properties (subtypes of IfcProfileProperties) and elements to which these properties apply, e.g. building elements and building element types as used within the structural 
     ///   engineering domain for steel, timber or concrete structures.
     /// </summary>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcRelAssociatesProfileProperties : IfcRelAssociates
     {
         #region Fields

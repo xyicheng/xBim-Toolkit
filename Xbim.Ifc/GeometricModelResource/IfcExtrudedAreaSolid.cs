@@ -24,7 +24,7 @@ using WVector3D = System.Windows.Media.Media3D.Vector3D;
 
 namespace Xbim.Ifc.GeometricModelResource
 {
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcExtrudedAreaSolid : IfcSweptAreaSolid
     {
         #region Fields

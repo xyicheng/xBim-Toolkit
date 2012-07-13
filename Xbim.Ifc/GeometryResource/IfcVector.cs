@@ -26,7 +26,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc.GeometryResource
 {
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     [TypeConverter(typeof (VectorConverter))]
     public class IfcVector : IfcGeometricRepresentationItem
     {

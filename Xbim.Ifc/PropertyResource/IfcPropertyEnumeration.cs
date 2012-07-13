@@ -40,7 +40,7 @@ namespace Xbim.Ifc.PropertyResource
     ///   Formal Propositions:
     ///   WR01   :   All values within the list of EnumerationValues shall be of the same measure type.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcPropertyEnumeration : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                           INotifyPropertyChanging
     {

@@ -44,7 +44,7 @@ namespace Xbim.Ifc.ProductExtension
     ///   Pset_SpaceOccupancyRequirements: common property set for all types of zones to capture the occupancy requirements 
     ///   Pset_SpaceThermalRequirements: common property set for all types of zones to capture the thermal requirements
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcZone : IfcGroup
     {
     }

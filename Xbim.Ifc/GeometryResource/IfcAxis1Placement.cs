@@ -34,7 +34,7 @@ namespace Xbim.Ifc.GeometryResource
     ///   WR1   :   The Axis when given should only reference a three-dimensional IfcDirection.  
     ///   WR2   :   The Cartesian point defining the Location shall have the dimensionality of 3.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcAxis1Placement : IfcPlacement
     {
         #region Fields

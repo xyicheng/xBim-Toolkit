@@ -50,7 +50,7 @@ namespace Xbim.Ifc.PropertyResource
     ///   WR2   :   All values within the list of defining values shall have the same measure type.  
     ///   WR3   :   All values within the list of defined values shall have the same measure type.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcPropertyTableValue : IfcSimpleProperty
     {
         public IfcPropertyTableValue()

@@ -33,7 +33,7 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
     ///   This class provides, via the relationship class IfcRelAssignsToGroup, the needed grouping mechanism. 
     ///   In this way, instances of IfcStructuralAction belonging to a specific load group can be unambiguously determined.
     /// </summary>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcStructuralLoadGroup : IfcGroup
     {
         #region Fields

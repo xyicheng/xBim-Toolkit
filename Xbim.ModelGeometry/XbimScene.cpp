@@ -3,6 +3,7 @@
 #include "IXbimGeometryModel.h"
 #include "XbimGeometryModel.h"
 using namespace System::IO;
+using namespace System::Linq;
 using namespace Xbim::IO;
 using namespace Xbim::ModelGeometry::Scene;
 using namespace Xbim::Common::Exceptions;
@@ -27,7 +28,7 @@ namespace Xbim
 			Logger->Debug("Creating Geometry from IModel..."); 
 			 _graph = gcnew TransformGraph(model, this);
 			 _maps = gcnew Dictionary<IfcRepresentation^, IXbimGeometryModel^>();
-			 _graph->AddProducts(model->IfcProducts->Items);
+			 _graph->AddProducts(Enumerable::Cast<IfcProduct^>(model->IfcProducts));
 		}
 
 		XbimScene::XbimScene(IModel^ model, IEnumerable<IfcProduct^>^ toDraw )

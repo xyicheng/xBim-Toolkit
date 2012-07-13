@@ -31,7 +31,7 @@ namespace Xbim.Ifc.GeometryResource
     ///   A surface has non zero area. 
     ///   A surface is arcwise connected.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public abstract class IfcSurface : IfcGeometricRepresentationItem, IPlacement3D, IfcSurfaceOrFaceSurface,
                                        IfcGeometricSetSelect
     {

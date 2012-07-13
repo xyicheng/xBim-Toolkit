@@ -23,7 +23,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc.RepresentationResource
 {
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class ShapeModelList : XbimList<IfcShapeModel>
     {
         internal ShapeModelList(IPersistIfcEntity owner)
@@ -58,7 +58,7 @@ namespace Xbim.Ifc.RepresentationResource
     ///   Formal Propositions:
     ///   WR11   :   The IfcShapeModel shall either be used by an IfcProductRepresentation, an IfcRepresentationMap or by an IfcShapeAspect
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public abstract class IfcShapeModel : IfcRepresentation
     {
         #region Inverse Relationships

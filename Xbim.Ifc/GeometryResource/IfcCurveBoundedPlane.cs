@@ -21,7 +21,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc.GeometryResource
 {
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcCurveBoundedPlane : IfcBoundedSurface, IPlacement3D
     {
         public IfcCurveBoundedPlane()

@@ -13,7 +13,7 @@ namespace Xbim.Ifc.GeometricConstraintResource
 {
 
 
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcGridAxis : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                     INotifyPropertyChanging
     {

@@ -89,7 +89,7 @@ namespace Xbim.Ifc.SharedBldgElements
     ///   Formal Propositions:
     ///   WR2   :   The attribute UserDefinedType shall be given, if the predefined type is set to USERDEFINED.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcSlab : IfcBuildingElement
     {
         #region Fields

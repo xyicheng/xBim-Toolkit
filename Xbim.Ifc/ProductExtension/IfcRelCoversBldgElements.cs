@@ -30,7 +30,7 @@ namespace Xbim.Ifc.ProductExtension
     ///   IFC2x PLATFORM CHANGE: The data type of the attributeRelatingElement has been changed from IfcBuildingElement to its supertype IfcElement with upward compatibility for file based exchange. 
     ///   EXPRESS specification:
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcRelCoversBldgElements : IfcRelConnects
     {
         public IfcRelCoversBldgElements()

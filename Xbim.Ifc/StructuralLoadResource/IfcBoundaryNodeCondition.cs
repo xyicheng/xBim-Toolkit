@@ -32,7 +32,7 @@ namespace Xbim.Ifc.StructuralLoadResource
     ///   NOTE: Instances of the entity IfcBoundaryNodeCondition are used e.g., to define the boundary condition for instances of 
     ///   IfcStructuralPointConnection or IfcRelConnectsStructuralMember pointing to a structural node connection.
     /// </summary>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcBoundaryNodeCondition : IfcBoundaryCondition
     {
         #region Fields

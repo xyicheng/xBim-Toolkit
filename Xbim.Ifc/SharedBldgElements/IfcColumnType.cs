@@ -31,7 +31,7 @@ namespace Xbim.Ifc.SharedBldgElements
     ///   The occurrences of the IfcColumnType are represented by instances of IfcColumn.
     ///   HISTORY New entity in Release IFC2x Edition 2.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcColumnType : IfcBuildingElementType
     {
         #region Fields

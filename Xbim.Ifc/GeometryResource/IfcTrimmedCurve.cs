@@ -26,7 +26,7 @@ using WPoint = System.Windows.Point;
 
 namespace Xbim.Ifc.GeometryResource
 {
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class TrimmingSelectList : XbimListSet<IfcTrimmingSelect>
     {
         internal TrimmingSelectList(IPersistIfcEntity owner)
@@ -100,7 +100,7 @@ namespace Xbim.Ifc.GeometryResource
     //    }
     //}
 
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcTrimmedCurve : IfcBoundedCurve
     {
         public IfcTrimmedCurve()

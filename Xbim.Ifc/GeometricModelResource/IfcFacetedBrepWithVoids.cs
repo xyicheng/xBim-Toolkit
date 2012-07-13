@@ -34,7 +34,7 @@ namespace Xbim.Ifc.GeometricModelResource
     ///   Each shell in the IfcManifoldSolidBrep shall be referenced only once. 
     ///   All the bounding loops of all the faces of all the shells in the IfcFacetedBrep shall be of type IfcPolyLoop.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcFacetedBrepWithVoids : IfcManifoldSolidBrep
     {
         public IfcFacetedBrepWithVoids()

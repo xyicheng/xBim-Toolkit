@@ -106,7 +106,7 @@ namespace Xbim.DOM
 
             if (_spatialElement.GetFirstShapeRepresentation() == null)
             {
-                _spatialElement.GetNewBrepShapeRepresentation(_document.Model.IfcProject.ModelContext()).Items.Add_Reversible(ifcGeometry);
+                _spatialElement.GetNewBrepShapeRepresentation(((IfcProject)_document.Model.IfcProject).ModelContext()).Items.Add_Reversible(ifcGeometry);
             }
             else
             {
@@ -193,7 +193,7 @@ namespace Xbim.DOM
                 return;
             }
 
-            IfcShapeRepresentation shape = _spatialElement.GetOrCreateSweptSolidShapeRepresentation(_document.IfcModel().IfcProject.ModelContext());
+            IfcShapeRepresentation shape = _spatialElement.GetOrCreateSweptSolidShapeRepresentation(((IfcProject)_document.IfcModel().IfcProject).ModelContext());
             shape.Items.Add_Reversible(ifcGeometry);
         }
 

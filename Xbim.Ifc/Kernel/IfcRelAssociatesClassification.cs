@@ -31,7 +31,7 @@ namespace Xbim.Ifc.Kernel
     ///   The inherited attribute RelatedObjects define the objects to which the classification is applied. The attribute RelatingClassification is the reference to a classification, applied to the object(s).
     ///   HISTORY: New entity in IFC Release 2x.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcRelAssociatesClassification : IfcRelAssociates
     {
         #region Fields

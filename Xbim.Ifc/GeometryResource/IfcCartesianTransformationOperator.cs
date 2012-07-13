@@ -47,7 +47,7 @@ namespace Xbim.Ifc.GeometryResource
     ///   NOTE: Corresponding STEP entity : cartesian_transformation_operator, please refer to ISO/IS 10303-42:1994, p. 32 for the final definition of the formal standard. 
     ///   HISTORY: New entity in IFC Release 2x.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public abstract class IfcCartesianTransformationOperator : IfcGeometricRepresentationItem
     {
         private IfcDirection _axis1;

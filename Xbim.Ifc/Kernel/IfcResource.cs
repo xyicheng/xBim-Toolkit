@@ -32,7 +32,7 @@ namespace Xbim.Ifc.Kernel
     ///   HISTORY New entity in IFC Release 1.0 
     ///   IFC2x PLATFORM CHANGE: The attributes BaseUnit and ResourceConsumption have been removed from the abstract entity, they are reintroduced at a lower level in the hierarchy.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public abstract class IfcResource : IfcObject
     {
         /// <summary>

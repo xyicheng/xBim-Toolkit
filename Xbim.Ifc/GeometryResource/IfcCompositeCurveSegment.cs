@@ -23,7 +23,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc.GeometryResource
 {
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class CompositeCurveSegmentList : XbimList<IfcCompositeCurveSegment>
     {
         internal CompositeCurveSegmentList(IPersistIfcEntity owner)
@@ -33,7 +33,7 @@ namespace Xbim.Ifc.GeometryResource
     }
 
 
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcCompositeCurveSegment : IfcGeometricRepresentationItem
     {
         #region Fields

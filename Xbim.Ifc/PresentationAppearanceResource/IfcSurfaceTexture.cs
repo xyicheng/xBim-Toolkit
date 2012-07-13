@@ -40,7 +40,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
     /// 
     ///   NOTE: Most image formats specify an alpha opacity, not transparency (where alpha = 1 - transparency).
     /// </summary>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public abstract class IfcSurfaceTexture : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                               INotifyPropertyChanging
     {

@@ -8,6 +8,7 @@ using Xbim.Ifc.SelectTypes;
 using Xbim.Ifc.Extensions;
 using Xbim.DOM.PropertiesQuantities;
 using Xbim.Ifc.GeometricConstraintResource;
+using Xbim.Ifc.Kernel;
 
 namespace Xbim.DOM
 {
@@ -52,7 +53,7 @@ namespace Xbim.DOM
             if (parentElement != null) parentElement.AddToSpatialDecomposition(this);
 
             //add the site to the structure of the project if there is not different parrent object
-            if (parentElement == null) _document.Model.IfcProject.AddSite(Site);
+            if (parentElement == null) ((IfcProject)_document.Model.IfcProject).AddSite(Site);
             if (Document.ModelView == XbimModelView.CoordinationView)
             {
                 IfcLocalPlacement lp = Document.Model.New<IfcLocalPlacement>();

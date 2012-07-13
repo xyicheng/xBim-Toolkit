@@ -33,7 +33,7 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
     ///   The preferred placement for topological representations is the placement within the world coordinate system of the project. This is provided by leaving the ObjectPlacement attribute with a NIL value. If the ObjectPlacement however is provided, all geometric entities underneath the topological representation (such as IfcVertexPoint, IfcEdgeCurve, or IfcFaceSurface) are founded within the object coordinate system established by ObjectPlacement.
     ///   HISTORY: New entity in Release IFC2x Edition 2.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public abstract class IfcStructuralItem : IfcProduct, IfcStructuralActivityAssignmentSelect
     {
         /// <summary>

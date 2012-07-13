@@ -29,7 +29,7 @@ namespace Xbim.Ifc.ProductExtension
     ///   IfcRelConnectsPorts is required as the means to define how instances of IfcPort connect together. Each of the port is being attached to the IfcElement by using the IfcRelConnectsPortToElement relationship. Since each element is now considered to have ports for the purpose of connection, it is necessary to achieve the actual connection by the defined approach.
     ///   HISTORY: New entity in IFC 2.0, modified in IFC2x.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcRelConnectsPorts : IfcRelConnects
     {
         #region Fields

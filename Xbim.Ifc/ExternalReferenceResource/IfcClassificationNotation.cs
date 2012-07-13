@@ -33,7 +33,7 @@ namespace Xbim.Ifc.ExternalReferenceResource
     ///   All classifications of an object that are contained within the IFC model are made through the IfcClassificationNotation class. For a given object, the IfcRelAssociatesClassification class makes the connection between the IfcObject and the IfcClassificationNotation. 
     ///   It is a requirement that a classification notation can only bring together facets from the same classification system or source. Bringing together notation facets from different sources within the same classification notation is not allowed. However, multiple classifications can be applied to a single object through the use of more than one instance of IfcRelAssociatesClassification. In this way it is possible to define multiple classification notations where each notation contains facets from a single source.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcClassificationNotation : IPersistIfcEntity, INotifyPropertyChanged, ISupportChangeNotification,
                                              IfcClassificationNotationSelect, INotifyPropertyChanging
     {

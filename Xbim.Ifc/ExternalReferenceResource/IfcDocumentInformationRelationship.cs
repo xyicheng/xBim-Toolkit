@@ -31,7 +31,7 @@ namespace Xbim.Ifc.ExternalReferenceResource
     ///   Use Definitions
     ///   This class can be used to describe relationships in which one document may reference one or more other sub documents or where a document is used as a replacement for another document (but where both the original and the replacing document need to be retained).
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcDocumentInformationRelationship : INotifyPropertyChanged, ISupportChangeNotification,
                                                       IPersistIfcEntity, INotifyPropertyChanging
     {

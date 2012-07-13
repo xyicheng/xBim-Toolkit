@@ -42,7 +42,7 @@ namespace Xbim.Ifc.PropertyResource
     ///   Formal Propositions:
     ///   WR31   :   All values within the list of values shall be of the same measure type.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcPropertyListValue : IfcSimpleProperty
     {
         public IfcPropertyListValue()

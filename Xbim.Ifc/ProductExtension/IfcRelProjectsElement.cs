@@ -29,7 +29,7 @@ namespace Xbim.Ifc.ProductExtension
     ///   The relationship is defined to be a 1:1 relationship, if a building element has more than one projection, several relationship objects have to be used, each pointing to a different projection element.
     ///   HISTORY New entity in Release IFC2x Edition 2.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcRelProjectsElement : IfcRelConnects
     {
         #region Fields

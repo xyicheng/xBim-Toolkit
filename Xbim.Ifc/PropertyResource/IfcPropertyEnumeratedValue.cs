@@ -45,7 +45,7 @@ namespace Xbim.Ifc.PropertyResource
     ///   Formal Propositions:
     ///   WR1   :   Each enumeration value shall be a member of the list of EnumerationValues at the referenced IfcPropertyEnumeration (if given).
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcPropertyEnumeratedValue : IfcSimpleProperty
     {
         public IfcPropertyEnumeratedValue()

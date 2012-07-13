@@ -191,7 +191,7 @@ namespace Xbim
 				for each ( IfcFace^ fc in  _faceSet->CfsFaces)
 				{
 
-					IfcDirection^ normal = ((IFace^)fc)->Normal;
+					IVector3D^ normal = ((IFace^)fc)->Normal;
 					//srl if an invalid normal is returned the face is not valid (sometimes a line or a point is defined) skip the face
 					/*if(normal->IsInvalid()) 
 					{

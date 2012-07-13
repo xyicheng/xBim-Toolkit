@@ -24,7 +24,7 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
     ///   The varying profile properties are assigned through the IfcRelAssociatesProfileProperties with an additional link to the IfcShapeAspect, 
     ///   which relates the profile properties to the different vertices of the structural curve member.
     /// </summary>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcStructuralCurveMemberVarying : IfcStructuralCurveMember
     {
     }

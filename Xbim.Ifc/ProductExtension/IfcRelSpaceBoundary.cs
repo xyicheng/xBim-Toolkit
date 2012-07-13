@@ -55,7 +55,7 @@ namespace Xbim.Ifc.ProductExtension
     ///   Formal Propositions:
     ///   WR1   :   If the space boundary is physical, it shall be provided by an element. If the space boundary is virtual, it shall either have a virtual element providing the space boundary, or none.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcRelSpaceBoundary : IfcRelConnects
     {
         #region Fields

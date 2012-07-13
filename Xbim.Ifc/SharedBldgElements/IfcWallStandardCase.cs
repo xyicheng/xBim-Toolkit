@@ -79,7 +79,7 @@ namespace Xbim.Ifc.SharedBldgElements
     ///   Formal Propositions:
     ///   WR1   :   The IfcWallStandard relies on the provision of an IfcMaterialLayerSetUsage.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcWallStandardCase : IfcWall
     {
         #region Constructors

@@ -32,7 +32,7 @@ namespace Xbim.Ifc.Kernel
     ///   The IfcRoot assigns the globally unique ID, and the ownership and history information to the entity. In addition it may provide for a name and a description about the concepts.
     ///   HISTORY New entity in IFC Release 1.0
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public abstract class IfcRoot : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                     INotifyPropertyChanging
     {
@@ -72,9 +72,9 @@ namespace Xbim.Ifc.Kernel
                 _model.Activate(this, write);
                 if (_ownerHistory != _model.OwnerHistoryAddObject)
                 {
-                    Transaction.AddPropertyChange(v => OwnerHistory = v, _ownerHistory, _model.OwnerHistoryModifyObject);
+                    Transaction.AddPropertyChange(v => OwnerHistory = v, _ownerHistory, (IfcOwnerHistory)_model.OwnerHistoryModifyObject);
                     ((ISupportChangeNotification)this).NotifyPropertyChanging("OwnerHistory");
-                    _ownerHistory = _model.OwnerHistoryModifyObject;
+                    _ownerHistory = (IfcOwnerHistory)_model.OwnerHistoryModifyObject;
                     ((ISupportChangeNotification)this).NotifyPropertyChanged("OwnerHistory");
                 }
             }

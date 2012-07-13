@@ -35,7 +35,7 @@ namespace Xbim.Ifc.MaterialResource
     ///   EXAMPLE: For a slab with vertically extruded geometric representation, the layer set direction shall coincide with the extrusion direction (in positive or negative sense). 
     ///   Fig 1: shows the use of IfcMaterialLayerSetUsage aligned to the axis of a wall.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcMaterialLayerSetUsage : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                             IfcMaterialSelect, INotifyPropertyChanging
     {

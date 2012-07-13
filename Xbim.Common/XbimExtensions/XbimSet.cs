@@ -21,12 +21,13 @@ using System.Linq;
 using Xbim.Ifc.SelectTypes;
 using Xbim.XbimExtensions.Transactions.Extensions;
 using Xbim.XbimExtensions.Interfaces;
+using System.Runtime.CompilerServices;
 
 #endregion
-
+[assembly: InternalsVisibleTo("Xbim.IFC")]
 namespace Xbim.XbimExtensions
 {
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class XbimSet<T> : ICollection<T>, IEnumerable<T>, ICollection, INotifyCollectionChanged,
                               INotifyPropertyChanged, ExpressEnumerable
     {

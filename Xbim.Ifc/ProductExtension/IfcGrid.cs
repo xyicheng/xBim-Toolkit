@@ -62,7 +62,7 @@ namespace Xbim.Ifc.ProductExtension
     ///  
     ///   EXPRESS specification:
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcGrid : IfcProduct
     {
         public IfcGrid()

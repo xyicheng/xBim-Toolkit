@@ -92,7 +92,7 @@ namespace Xbim.Ifc.SharedBldgElements
     ///   RepresentationType : 'MappedRepresentation' 
     ///   The same constraints, as given for the standard 'SweptSolid' and the advanced 'SweptSolid' and 'Clipping' geometric representation, shall apply to the MappedRepresentation of the IfcRepresentationMap.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcColumn : IfcBuildingElement
     {
         #region Part 21 Step file Parse routines

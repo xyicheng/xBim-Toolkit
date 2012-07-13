@@ -31,7 +31,7 @@ namespace Xbim.Ifc.GeometryResource
     ///   NOTE: Corresponding STEP entity: placement. Please refer to ISO/IS 10303-42:1994, p. 27 for the final definition of the formal standard. 
     ///   HISTORY: New entity in IFC Release 1.0
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public abstract class IfcPlacement : IfcGeometricRepresentationItem
     {
         #region Fields

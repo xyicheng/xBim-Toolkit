@@ -32,7 +32,7 @@ namespace Xbim.Ifc.ProfileResource
     ///   IFC2x Platform CHANGE  The IfcParameterizedProfileDef is introduced as an intermediate new abstract entity that unifies the definition and usage of the position coordinate system for all parameterized profiles. The Position attribute has been removed at all subtypes (like IfcRectangleProfileDef, IfcCircleProfileDef, etc.).
     ///   IFC2x Edition 3 CHANGE  All profile origins are now in the center of the bounding box.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public abstract class IfcParameterizedProfileDef : IfcProfileDef
     {
         #region Fields

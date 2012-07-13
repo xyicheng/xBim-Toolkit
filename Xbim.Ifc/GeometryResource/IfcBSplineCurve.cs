@@ -45,7 +45,7 @@ namespace Xbim.Ifc.GeometryResource
     ///   Formal Propositions:
     ///   WR41   :   All control points shall have the same dimensionality.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public abstract class IfcBSplineCurve : IfcBoundedCurve
     {
         public IfcBSplineCurve()

@@ -33,7 +33,7 @@ namespace Xbim.Ifc.GeometryResource
     ///   NOTE Corresponding STEP entity: plane. Please refer to ISO/IS 10303-42:1994, p.69 for the final definition of the formal standard. 
     ///   HISTORY New class in IFC Release 1.5
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcPlane : IfcElementarySurface
     {
         public override string WhereRule()

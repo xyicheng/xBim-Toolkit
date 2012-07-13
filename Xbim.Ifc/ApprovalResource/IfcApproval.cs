@@ -24,7 +24,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc.ApprovalResource
 {
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcApproval : IPersistIfcEntity, ISupportChangeNotification, INotifyPropertyChanged,
                                INotifyPropertyChanging
     {

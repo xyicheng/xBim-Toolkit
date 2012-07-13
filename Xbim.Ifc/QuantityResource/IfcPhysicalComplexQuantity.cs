@@ -33,7 +33,7 @@ namespace Xbim.Ifc.QuantityResource
     ///   Formal Propositions:
     ///   WR21   :   The IfcPhysicalComplexQuantity should not reference itself within the list of HasQuantities.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcPhysicalComplexQuantity : IfcPhysicalQuantity
     {
         public IfcPhysicalComplexQuantity()

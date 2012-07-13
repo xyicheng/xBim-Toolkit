@@ -400,9 +400,7 @@ namespace Xbim.IO
         [NonSerialized]
         private XbimP21Parser _part21Parser;
 
-        [NonSerialized]
-        private IfcCoordinatedUniversalTimeOffset _coordinatedUniversalTimeOffset;
-
+        
         #endregion
 
         #region Constructors and Initialisation
@@ -473,25 +471,6 @@ namespace Xbim.IO
             get { return _ifcInstances.OfType<IfcDistributionFlowElement>().Cast<IfcProduct>(); }
         }
 
-
-        public IfcCoordinatedUniversalTimeOffset CoordinatedUniversalTimeOffset
-        {
-            get
-            {
-                if (_coordinatedUniversalTimeOffset == null)
-                {
-                    _coordinatedUniversalTimeOffset = New<IfcCoordinatedUniversalTimeOffset>();
-                    DateTimeOffset localTime = DateTimeOffset.Now;
-                    _coordinatedUniversalTimeOffset.HourOffset = new IfcHourInDay(localTime.Offset.Hours);
-                    _coordinatedUniversalTimeOffset.MinuteOffset = new IfcMinuteInHour(localTime.Offset.Minutes);
-                    if (localTime.Offset.Hours < 0 || (localTime.Offset.Hours == 0 && localTime.Offset.Minutes < 0))
-                        _coordinatedUniversalTimeOffset.Sense = IfcAheadOrBehind.BEHIND;
-                    else
-                        _coordinatedUniversalTimeOffset.Sense = IfcAheadOrBehind.AHEAD;
-                }
-                return _coordinatedUniversalTimeOffset;
-            }
-        }
 
         public IfcOwnerHistory OwnerHistoryAddObject
         {
@@ -1313,5 +1292,56 @@ namespace Xbim.IO
         }
 
         #endregion
+
+
+        IPersistIfcEntity IModel.OwnerHistoryAddObject
+        {
+            get { return OwnerHistoryAddObject; }
+        }
+
+        IPersistIfcEntity IModel.OwnerHistoryModifyObject
+        {
+            get { return OwnerHistoryModifyObject; }
+        }
+
+        IPersistIfcEntity IModel.IfcProject
+        {
+            get { return IfcProject; }
+        }
+
+        IEnumerable<IPersistIfcEntity> IModel.IfcProducts
+        {
+            get { return InstancesOfType<IfcProduct>().Cast<IPersistIfcEntity>(); }
+        }
+
+        IPersistIfcEntity IModel.DefaultOwningApplication
+        {
+            get { return DefaultOwningApplication; }
+        }
+
+        IPersistIfcEntity IModel.DefaultOwningUser
+        {
+            get { return DefaultOwningUser; }
+        }
+
+        IEnumerable<IPersistIfcEntity> IModel.Walls
+        {
+            get { return Walls; }
+        }
+
+        IEnumerable<IPersistIfcEntity> IModel.Slabs
+        {
+            get { return Slabs; }
+        }
+
+        IEnumerable<IPersistIfcEntity> IModel.Doors
+        {
+            get { return Doors; }
+        }
+
+        IEnumerable<IPersistIfcEntity> IModel.Roofs
+        {
+            get { return Roofs; }
+        }
     }
 }

@@ -48,7 +48,7 @@ namespace Xbim.Ifc.SharedBldgElements
     ///   Formal Propositions:
     ///   WR1   :   Either the ramp is not decomposed into its flights and landings (the ramp can have independent geometry), or the geometry shall not be given at IfcRamp directly.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcRamp : IfcBuildingElement
     {
         #region Fields 

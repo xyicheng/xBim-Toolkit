@@ -19,7 +19,7 @@ using Xbim.XbimExtensions;
 
 namespace Xbim.Ifc.GeometricModelResource
 {
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcBooleanClippingResult : IfcBooleanResult
     {
         #region Ifc Schema Validation Methods

@@ -24,7 +24,7 @@ using Xbim.XbimExtensions;
 
 namespace Xbim.Ifc.PresentationResource
 {
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcDraughtingPreDefinedColour : IfcPreDefinedColour
     {
         #region Constructors

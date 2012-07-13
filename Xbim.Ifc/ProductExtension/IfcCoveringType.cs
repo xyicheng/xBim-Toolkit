@@ -30,7 +30,7 @@ namespace Xbim.Ifc.ProductExtension
     ///   The occurrences of the IfcCoveringType are represented by instances of IfcCovering (or its subtypes).
     ///   HISTORY: New entity in Release IFC2x Edition 2.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcCoveringType : IfcBuildingElementType
     {
         #region Fields

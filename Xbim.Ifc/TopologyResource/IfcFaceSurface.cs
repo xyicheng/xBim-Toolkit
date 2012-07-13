@@ -41,7 +41,7 @@ namespace Xbim.Ifc.TopologyResource
     ///   Loop geometry shall be consistent with face geometry. This implies that any edge - curves or vertex points used in defining the loops bounding the face surface shall lie on the face geometry. 
     ///   The loops of the face shall not intersect.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcFaceSurface : IfcFace, IfcSurfaceOrFaceSurface, IFace
     {
         private IfcSurface _faceSurface;
@@ -100,7 +100,7 @@ namespace Xbim.Ifc.TopologyResource
             get { return Bounds.Cast<IBoundary>(); }
         }
 
-        IfcDirection IFace.Normal
+        IVector3D IFace.Normal
         {
             get
             {

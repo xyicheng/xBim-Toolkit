@@ -31,7 +31,7 @@ namespace Xbim.Ifc.QuantityResource
     ///   Formal Propositions:
     ///   WR21   :   The value of the count shall be greater than or equal to zero.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcQuantityCount : IfcPhysicalSimpleQuantity
     {
         #region Fields

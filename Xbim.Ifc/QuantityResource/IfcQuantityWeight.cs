@@ -32,7 +32,7 @@ namespace Xbim.Ifc.QuantityResource
     ///   WR21   :   If a unit is given, the unit type shall be mass unit. NOTE: There is no distinction between the concept of "Mass" and "Weight" in the current IFC Release.  
     ///   WR22   :   A valid weight quantity shall be greater than or equal to zero.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcQuantityWeight : IfcPhysicalSimpleQuantity
     {
         #region Fields

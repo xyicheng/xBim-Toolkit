@@ -32,7 +32,7 @@ namespace Xbim.Ifc.QuantityResource
     ///   WR21   :   If a unit is given, the unit type shall be area unit.  
     ///   WR22   :   A valid area quantity shall be greater than or equal to zero.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcQuantityArea : IfcPhysicalSimpleQuantity
     {
         #region Fields

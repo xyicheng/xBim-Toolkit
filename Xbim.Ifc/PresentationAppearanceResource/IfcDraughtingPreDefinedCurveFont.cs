@@ -20,7 +20,7 @@ using Xbim.XbimExtensions;
 
 namespace Xbim.Ifc.PresentationAppearanceResource
 {
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcDraughtingPreDefinedCurveFont : IfcPreDefinedCurveFont
     {
         #region Constructors

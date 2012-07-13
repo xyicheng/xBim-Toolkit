@@ -21,7 +21,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc.SharedComponentElements
 {
-     [IfcPersistedEntity, Serializable]
+     [IfcPersistedEntityAttribute, Serializable]
     public class IfcMechanicalFastener : IfcFastener
     {
         #region Fields

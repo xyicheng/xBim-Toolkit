@@ -38,7 +38,7 @@ namespace Xbim.Ifc.TopologyResource
     ///   The edge end is not a part of the edge domain. 
     ///   Vertex geometry shall be consistent with edge geometry.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcEdgeCurve : IfcEdge, IfcCurveOrEdgeCurve
     {
         private bool _sameSense;

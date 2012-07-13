@@ -34,7 +34,7 @@ namespace Xbim.Ifc.StructuralElementsDomain
     ///   Extrusion: All extrusion directions shall be supported. 
     ///   If it is impossible to define the geometry using the swept solid representation the representations defined in its supertype IfcBuildingElement may be used.
     /// </summary>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcFooting : IfcBuildingElement
     {
         #region Fields

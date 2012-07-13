@@ -76,7 +76,7 @@ namespace Xbim.Ifc.SharedBldgElements
     ///   WR33   :   Either both parameter, FirstMullionOffset and SecondMullionOffset are given, or only the FirstMullionOffset, or none of both. It is not valid to only assert the SecondMullionOffset.  
     ///   WR34   :   The IfcWindowLiningProperties shall only be used in the context of an IfcWindowStyle.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcWindowLiningProperties : IfcPropertySetDefinition
     {
         #region Part 21 Step file Parse routines

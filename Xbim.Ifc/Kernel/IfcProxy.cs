@@ -32,7 +32,7 @@ namespace Xbim.Ifc.Kernel
     ///   Formal Propositions:
     ///   WR1   :   The Name attribute has to be provided for a proxy.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcProxy : IfcProduct
     {
         private IfcObjectType _proxyType;

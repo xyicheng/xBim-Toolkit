@@ -44,8 +44,8 @@ namespace Xbim.Ifc.GeometryResource
     ///   NOTE: Corresponding STEP entity: direction. Please refer to ISO/IS 10303-42:1994, p.26 for the final definition of the formal standard. The derived attribute Dim has been added (see also note at IfcGeometricRepresentationItem). 
     ///   HISTORY: New entity in IFC Release 1.0
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
-    public class IfcDirection : IfcGeometricRepresentationItem, IfcOrientationSelect, IDirectionRatioList<double>
+    [IfcPersistedEntityAttribute, Serializable]
+    public class IfcDirection : IfcGeometricRepresentationItem, IfcOrientationSelect, IDirectionRatioList<double>, IVector3D
     {
         #region Fields
 

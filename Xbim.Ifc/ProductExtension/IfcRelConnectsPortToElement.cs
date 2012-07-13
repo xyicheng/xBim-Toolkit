@@ -24,7 +24,7 @@ namespace Xbim.Ifc.ProductExtension
     /// <summary>
     ///   An IfcRelConnectsPortToElement defines the relationship that is made between one port to the IfcElement in which it is contained.
     /// </summary>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcRelConnectsPortToElement : IfcRelConnects
     {
         #region Fields

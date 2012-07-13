@@ -63,7 +63,7 @@ namespace Xbim.Ifc.SharedBldgElements
     ///   PanelPosition = BOTTOM
     ///   OperationType = TILTANDTURNLEFTHAND
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcWindow : IfcBuildingElement
     {
         #region Part 21 Step file Parse routines

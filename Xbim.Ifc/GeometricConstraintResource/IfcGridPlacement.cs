@@ -20,7 +20,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc.GeometricConstraintResource
 {
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcGridPlacement : IfcObjectPlacement
     {
         #region Fields

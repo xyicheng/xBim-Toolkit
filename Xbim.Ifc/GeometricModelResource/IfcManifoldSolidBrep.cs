@@ -42,7 +42,7 @@ namespace Xbim.Ifc.GeometricModelResource
     ///   Each face shall be referenced only once by the shells of the manifold solid brep. 
     ///   The Euler equation shall be satisfied for the boundary representation, where the genus term "shell term" us the sum of the genus values for the shells of the brep.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public abstract class IfcManifoldSolidBrep : IfcSolidModel, IFaceBasedModel
     {
         private IfcClosedShell _outer;

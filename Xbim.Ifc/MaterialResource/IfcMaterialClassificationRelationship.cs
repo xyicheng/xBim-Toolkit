@@ -28,7 +28,7 @@ namespace Xbim.Ifc.MaterialResource
     /// <remarks>
     ///   HISTORY: New entity in Release IFC2x.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcMaterialClassificationRelationship : INotifyPropertyChanged, ISupportChangeNotification,
                                                          IPersistIfcEntity, INotifyPropertyChanging
     {

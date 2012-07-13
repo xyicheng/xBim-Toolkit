@@ -33,7 +33,7 @@ namespace Xbim.Ifc.ExternalReferenceResource
     ///   NOTE: The complete definition of the information in an external library is out of scope in this IFC release. 
     ///   HISTORY: New Entity in IFC Release 2.0. Renamed from IfcLibrary to IfcLibraryInformation in IFC 2x.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcLibraryInformation : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                          IfcLibrarySelect, INotifyPropertyChanging
     {

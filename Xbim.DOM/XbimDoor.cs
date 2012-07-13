@@ -10,6 +10,7 @@ using Xbim.Ifc.ProductExtension;
 using Xbim.Ifc.GeometryResource;
 using Xbim.Ifc.RepresentationResource;
 using Xbim.DOM.PropertiesQuantities;
+using Xbim.Ifc.Kernel;
 
 
 namespace Xbim.DOM
@@ -100,7 +101,7 @@ namespace Xbim.DOM
 
                 IfcShapeRepresentation shapeRepresentation = Document.Model.New<IfcShapeRepresentation>();
                 //set context of geometry to the context of the model
-                shapeRepresentation.ContextOfItems = Document.Model.IfcProject.ModelContext();
+                shapeRepresentation.ContextOfItems = ((IfcProject)Document.Model.IfcProject).ModelContext();
                 shapeRepresentation.RepresentationType = "SweptSolid";
                 shapeRepresentation.RepresentationIdentifier = "Body";
                 shapeRepresentation.Items.Add_Reversible(hole.IfcSweptAreaSolid);

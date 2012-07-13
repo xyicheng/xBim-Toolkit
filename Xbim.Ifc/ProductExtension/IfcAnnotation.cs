@@ -36,7 +36,7 @@ namespace Xbim.Ifc.ProductExtension
     ///   Styled Representations
     ///   The standard representation of IfcAnnotation is defined using the styled item representation by IfcStyledRepresentation that holds the style information assigned to the geometric representation items together with the geometric representation items.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcAnnotation : IfcProduct
     {
         /// <summary>

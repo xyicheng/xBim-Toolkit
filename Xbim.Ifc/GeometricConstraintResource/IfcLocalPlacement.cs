@@ -56,7 +56,7 @@ namespace Xbim.Ifc.GeometricConstraintResource
     ///   Formal Propositions:
     ///   WR21   :   Ensures that a 3D local placement can only be relative (if exists) to a 3D parent local placement (and not to a 2D parent local placement).
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcLocalPlacement : IfcObjectPlacement
     {
         #region Fields

@@ -24,7 +24,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc.MaterialResource
 {
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class MaterLayerList : XbimList<IfcMaterialLayer>
     {
         internal MaterLayerList(IPersistIfcEntity owner)
@@ -41,7 +41,7 @@ namespace Xbim.Ifc.MaterialResource
     ///   Each IfcMaterialLayer is located relative to the referencing IfcMaterialLayerSet. 
     ///   EXAMPLE: A cavity wall with brick masonry used in each leaf would be modeled using three IfcMaterialLayers: Brick-Air-Brick.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcMaterialLayer : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                     IfcMaterialSelect, IfcObjectReferenceSelect, INotifyPropertyChanging
     {

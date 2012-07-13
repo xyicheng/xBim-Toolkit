@@ -34,7 +34,7 @@ namespace Xbim.Ifc.SharedBldgElements
     ///   Interpretation of parameters
     ///   The IfcWindowStyleOperationTypeEnum defines the general layout of the window style. Depending on the enumerator, the appropriate instances of IfcWindowLiningProperties and IfcWindowPanelProperties are attached in the list of HasPropertySets. See geometry use definitions there.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcWindowStyle : IfcTypeProduct
     {
         #region Part 21 Step file Parse routines

@@ -32,7 +32,7 @@ namespace Xbim.Ifc.GeometryResource
     ///  
     ///   WR2   :   The dimensionality of the composite curve shall be 2
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class Ifc2DCompositeCurve : IfcCompositeCurve
     {
     }

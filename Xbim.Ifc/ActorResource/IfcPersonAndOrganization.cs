@@ -23,7 +23,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc.ActorResource
 {
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class PersonAndOrganizationCollection : XbimList<IfcPersonAndOrganization>
     {
         internal PersonAndOrganizationCollection(IPersistIfcEntity owner)
@@ -33,7 +33,7 @@ namespace Xbim.Ifc.ActorResource
     }
 
 
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcPersonAndOrganization : IfcActorSelect, ISupportChangeNotification, INotifyPropertyChanged,
                                             IPersistIfcEntity, IfcObjectReferenceSelect, INotifyPropertyChanging
     {

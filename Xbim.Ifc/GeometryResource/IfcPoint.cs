@@ -20,7 +20,7 @@ using Xbim.XbimExtensions;
 
 namespace Xbim.Ifc.GeometryResource
 {
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public abstract class IfcPoint : IfcGeometricRepresentationItem, IfcPointOrVertexPoint, IfcGeometricSetSelect
     {
         public abstract IfcDimensionCount Dim { get; }

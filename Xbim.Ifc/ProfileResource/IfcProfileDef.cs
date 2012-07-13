@@ -63,7 +63,7 @@ namespace Xbim.Ifc.ProfileResource
     ///   ProfileType = CURVE  
     ///   Table: Resulting area or curve depending on ProfileType
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public abstract class IfcProfileDef : IPersistIfcEntity, ISupportChangeNotification, INotifyPropertyChanged,
                                           INotifyPropertyChanging
     {

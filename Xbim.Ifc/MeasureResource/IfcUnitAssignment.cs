@@ -25,7 +25,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc.MeasureResource
 {
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcUnitAssignment : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                      INotifyPropertyChanging
     {

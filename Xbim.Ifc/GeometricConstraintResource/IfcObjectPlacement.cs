@@ -24,7 +24,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc.GeometricConstraintResource
 {
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public abstract class IfcObjectPlacement : ISupportChangeNotification, INotifyPropertyChanged, IPersistIfcEntity,
                                                INotifyPropertyChanging
     {

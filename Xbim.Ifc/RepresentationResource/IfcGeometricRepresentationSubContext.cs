@@ -38,7 +38,7 @@ namespace Xbim.Ifc.RepresentationResource
     ///   WR31   :   The parent context shall not be another geometric representation sub context.  
     ///   WR32   :   The attribute UserDefinedTargetView shall be given, if the attribute TargetView is set to USERDEFINED.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcGeometricRepresentationSubContext : IfcGeometricRepresentationContext
     {
         #region Fields

@@ -37,7 +37,7 @@ namespace Xbim.Ifc.GeometryResource
     ///   A mapped item shall not be self-defining by participating in the definition of the representation being mapped. 
     ///   The dimensionality of the mapping source and the mapping target has to be the same, if the mapping source is a geometric representation item.
     /// </summary>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcMappedItem : IfcRepresentationItem
     {
         #region Fields

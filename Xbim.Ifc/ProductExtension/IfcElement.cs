@@ -50,7 +50,7 @@ namespace Xbim.Ifc.ProductExtension
     ///   The geometric representation of any IfcElement is given by the IfcProductDefinitionShape and IfcLocalPlacement allowing multiple geometric representations. A detailed specification for the shape representaion is introduced at the level of subtypes of IfcElement.
     ///   information is provided at the level of the subtypes.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public abstract class IfcElement : IfcProduct, IfcStructuralActivityAssignmentSelect
     {
         #region Fields

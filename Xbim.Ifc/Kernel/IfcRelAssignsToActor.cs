@@ -28,7 +28,7 @@ namespace Xbim.Ifc.Kernel
     ///   Example: An occupant (as an actor) may rent (as a special association type) a flat (as a collection of spaces or a zone). This would be an application of this generic relationship.
     ///   Reference to the objects (or single object) on which the actor acts upon in a certain role (if given) is specified in the inherited RelatedObjects attribute.
     /// </summary>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcRelAssignsToActor : IfcRelAssigns
     {
         #region Fields

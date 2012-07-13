@@ -79,7 +79,7 @@ namespace Xbim.Ifc.ProductExtension
     ///   RepresentationType : 'MappedRepresentation' 
     ///   The same constraints, as given for the 'SurfaceModel' and the 'Brep' geometric representation, shall apply to the MappedRepresentation of the IfcRepresentationMap.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public abstract class IfcBuildingElement : IfcElement
     {
     }

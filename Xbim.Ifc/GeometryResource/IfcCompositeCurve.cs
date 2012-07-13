@@ -36,7 +36,7 @@ namespace Xbim.Ifc.GeometryResource
     ///   WR41   :   No transition code should be Discontinuous, except for the last code of an open curve.  
     ///   WR42   :   Ensures, that all segments used in the curve have the same dimensionality.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcCompositeCurve : IfcBoundedCurve
     {
         public IfcCompositeCurve()

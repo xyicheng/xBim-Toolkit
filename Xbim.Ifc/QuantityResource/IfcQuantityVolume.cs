@@ -33,7 +33,7 @@ namespace Xbim.Ifc.QuantityResource
     ///   WR21   :   If a unit is given, the unit type shall be volume unit.  
     ///   WR22   :   A valid volume quantity shall be greater than or equal to zero.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcQuantityVolume : IfcPhysicalSimpleQuantity
     {
         #region Fields

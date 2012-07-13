@@ -24,7 +24,7 @@ namespace Xbim.Ifc.Kernel
     ///   This objectified relationship (IfcRelAssignsToControl) handles the assignment of a control (subtype of IfcControl) to other objects (subtypes of IfcObject, with the exception of controls). 
     ///   For example: The assignment of a cost (as subtype of IfcControl) to a building element (as subtype of IfcObject) is an application of this generic relationship.
     /// </summary>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcRelAssignsToControl : IfcRelAssigns
     {
         #region Fields

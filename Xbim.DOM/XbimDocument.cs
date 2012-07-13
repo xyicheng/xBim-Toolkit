@@ -22,6 +22,7 @@ using Xbim.DOM.PropertiesQuantities;
 using Xbim.Ifc.PropertyResource;
 using Xbim.Ifc.GeometryResource;
 using Xbim.XbimExtensions.Interfaces;
+using Xbim.Ifc.ActorResource;
 
 namespace Xbim.DOM
 {
@@ -243,12 +244,20 @@ namespace Xbim.DOM
 
             using (Transaction trans = _model.BeginTransaction("Model initialization"))
             {
-                _model.DefaultOwningApplication.ApplicationIdentifier = applicationId;
-                _model.DefaultOwningApplication.ApplicationDeveloper.Name = authorName;
-                _model.DefaultOwningApplication.ApplicationFullName = applicationName;
-                _model.DefaultOwningApplication.Version = applicationVersion;
-                _model.DefaultOwningUser.ThePerson.FamilyName = "Unknown";
-                _model.DefaultOwningUser.TheOrganization.Name = "Unknown";
+                IfcApplication app = _model.DefaultOwningApplication as IfcApplication;
+                if (app != null)
+                {
+                    app.ApplicationIdentifier = applicationId;
+                    app.ApplicationDeveloper.Name = authorName;
+                    app.ApplicationFullName = applicationName;
+                    app.Version = applicationVersion;
+                }
+                IfcPersonAndOrganization po = _model.DefaultOwningUser as IfcPersonAndOrganization;
+                if (po != null)
+                {
+                    po.ThePerson.FamilyName = "Unknown";
+                    po.TheOrganization.Name = "Unknown";
+                }
                 _model.Header.FileDescription.Description.Clear();
                 _model.Header.FileDescription.Description.Add(viewDefinition);
                 _model.Header.FileName.AuthorName.Add(authorName);
@@ -484,7 +493,7 @@ namespace Xbim.DOM
         /// <param name="siUnitPrefix">Enumeration of SI units prefixes</param>
         public void SetOrChangeSIUnit(IfcUnitEnum UnitType, IfcSIUnitName siUnitName, IfcSIPrefix siUnitPrefix)
         {
-            Model.IfcProject.SetOrChangeSIUnit(UnitType, siUnitName, siUnitPrefix);
+            ((IfcProject)Model.IfcProject).SetOrChangeSIUnit(UnitType, siUnitName, siUnitPrefix);
         }
 
 
@@ -649,7 +658,7 @@ namespace Xbim.DOM
         private IfcOwnerHistory GetNewOwnerHistory(IfcChangeActionEnum changeAction)
         {
             //existing default owner history
-            IfcOwnerHistory defOwner = Model.OwnerHistoryAddObject;
+            IfcOwnerHistory defOwner = Model.OwnerHistoryAddObject as IfcOwnerHistory;
             IfcTimeStamp stamp = IfcTimeStamp.ToTimeStamp(DateTime.Now);
 
             //return new object
@@ -869,7 +878,7 @@ namespace Xbim.DOM
         public void TryToGetElementNRMQuantitiesFromProperties()
         {
             //get project length units => use right volume units
-            double power = Model.IfcProject.UnitsInContext.LengthUnitPower();
+            double power = ((IfcProject)Model.IfcProject).UnitsInContext.LengthUnitPower();
 
             foreach (var element in AllBuildingElements)
             {

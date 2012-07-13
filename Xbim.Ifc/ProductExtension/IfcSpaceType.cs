@@ -31,7 +31,7 @@ namespace Xbim.Ifc.ProductExtension
     ///   The occurrences of IfcSpaceType are represented by instances of IfcSpace.
     ///   HISTORY  New entity in Release IFC2x Edition 3.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcSpaceType : IfcSpatialStructureElementType
     {
         #region Fields

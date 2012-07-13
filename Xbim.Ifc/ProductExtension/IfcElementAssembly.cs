@@ -38,7 +38,7 @@ namespace Xbim.Ifc.ProductExtension
     ///   Formal Propositions:
     ///   WR1   :   The attribute ObjectType shall be given, if the predefined type is set to USERDEFINED.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcElementAssembly : IfcElement
     {
        

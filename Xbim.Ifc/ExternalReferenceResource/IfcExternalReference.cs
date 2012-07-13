@@ -39,7 +39,7 @@ namespace Xbim.Ifc.ExternalReferenceResource
     ///   Formal Propositions:
     ///   WR1   :   One of the attributes of IfcExternalReference should have a value assigned.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public abstract class IfcExternalReference : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                                  IfcObjectReferenceSelect, INotifyPropertyChanging
     {

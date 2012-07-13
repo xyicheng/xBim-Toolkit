@@ -61,7 +61,7 @@ namespace Xbim.XbimExtensions
     }
 
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
-    public sealed class IfcPersistedEntity : Attribute
+    public sealed class IfcPersistedEntityAttribute : Attribute
     {
     }
 

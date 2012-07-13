@@ -29,7 +29,7 @@ namespace Xbim.Ifc.Kernel
     ///   IfcRelSequence is defined as an one-to-one relationship, therefore it assigns one predecessor to one successor. However, each IfcProcess can have multiple predecessors and successors, as the sequence relationship is truly an N-to-M relationship. 
     ///   HISTORY: New entity in IFC Release 1.0.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcRelSequence : IfcRelConnects
     {
         private IfcTimeMeasure _timeLag;

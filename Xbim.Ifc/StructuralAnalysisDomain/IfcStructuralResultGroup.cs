@@ -29,7 +29,7 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
     ///   The basic functionality for grouping inherited from IfcGroup is used to collect instances from IfcStructuralReaction or 
     ///   its respective subclasses.
     /// </summary>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcStructuralResultGroup : IfcGroup
     {
         #region Fields

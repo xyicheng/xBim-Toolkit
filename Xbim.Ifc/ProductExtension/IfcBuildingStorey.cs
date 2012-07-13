@@ -70,7 +70,7 @@ namespace Xbim.Ifc.ProductExtension
     ///   IfcShapeRepresentation.RepresentationType = 'Brep' 
     ///   Since the building storey shape is usually described by the exterior building elements, an independent shape representation shall only be given, if the building storey is exposed independently from its constituting elements.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcBuildingStorey : IfcSpatialStructureElement
     {
         #region Fields

@@ -23,7 +23,7 @@ namespace Xbim.Ifc.PropertyResource
     /// <summary>
     ///   A generalization of a single property object. The various subtypes of IfcSimpleProperty establish different ways in which a property value can be set.
     /// </summary>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public abstract class IfcSimpleProperty : IfcProperty
     {
         #region Constructors

@@ -14,7 +14,10 @@ using Xbim.Common.Exceptions;
 
 using Xbim.XbimExtensions.Interfaces;
 using Xbim.XbimExtensions.Transactions;
+using System.Runtime.CompilerServices;
 #endregion
+
+[assembly: InternalsVisibleTo("Xbim.IO")]
 
 namespace Xbim.XbimExtensions
 {
@@ -30,6 +33,7 @@ namespace Xbim.XbimExtensions
         /// <param name="persistIfc">The item being parsed.</param>
         /// <param name="propIndex">Index of the property.</param>
         /// <param name="value">The value of the property.</param>
+    
         internal static void HandleUnexpectedAttribute(this IPersistIfc persistIfc, int propIndex, IPropertyValue value)
         {
             // TODO: Review this workaround for older IFC files with extraneous properties

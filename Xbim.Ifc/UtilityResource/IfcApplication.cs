@@ -25,7 +25,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc.UtilityResource
 {
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcApplication : IPersistIfcEntity, ISupportChangeNotification, INotifyPropertyChanged,
                                   INotifyPropertyChanging
     {

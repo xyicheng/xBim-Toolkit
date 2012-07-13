@@ -35,7 +35,7 @@ namespace Xbim.Ifc.GeometricModelResource
     ///   Formal Propositions:
     ///   WR1   :   The dimensionality of the first operand shall be the same as the dimensionality of the second operand.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcBooleanResult : IfcGeometricRepresentationItem, IfcBooleanOperand, IfcCsgSelect
     {
         #region Part 21 Step file Parse routines
@@ -110,9 +110,13 @@ namespace Xbim.Ifc.GeometricModelResource
         /// <summary>
         ///   Derived.   The space dimensionality of this entity. It is identical with the space dimensionality of the first operand. A where rule ensures that both operands have the same space dimensionality.
         /// </summary>
-        public IfcDimensionCount Dim
+        public int Dim
         {
-            get { return _firstOperand.Dim; }
+            get 
+            {
+                
+                return _firstOperand.Dim; 
+            }
         }
 
         #region Ifc Schema Validation Methods

@@ -41,7 +41,7 @@ namespace Xbim.Ifc.ExternalReferenceResource
     ///   Classifications of an object may be referenced from an external source rather than being contained within the IFC model. 
     ///   This is done through the IfcClassificationReference class.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcClassificationReference : IfcExternalReference, IfcClassificationNotationSelect
     {
         #region Fields

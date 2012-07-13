@@ -20,7 +20,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc.SharedBldgServiceElements
 {
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcDistributionChamberElementType : IfcDistributionFlowElementType
     {
         #region Fields

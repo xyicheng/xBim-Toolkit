@@ -35,7 +35,7 @@ namespace Xbim.Ifc.TopologyResource
     ///   NOTE Corresponding STEP entity: edge. Please refer to ISO/IS 10303-42:1994, p. 130 for the final definition of the formal standard. 
     ///   HISTORY New Entity in IFC Release 2.0
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcEdge : IfcTopologicalRepresentationItem
     {
         private IfcVertex _edgeStart;

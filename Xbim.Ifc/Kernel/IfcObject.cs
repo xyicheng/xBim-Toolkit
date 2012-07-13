@@ -25,7 +25,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc.Kernel
 {
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcObjectSet : XbimSet<IfcObject>
     {
         internal IfcObjectSet(IPersistIfcEntity owner)
@@ -52,7 +52,7 @@ namespace Xbim.Ifc.Kernel
     ///   Formal Propositions:
     ///   WR1   :   Only maximum of one relationship to an underlying type (by an IfcRelDefinesByType relationship) should be given for an object instance.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public abstract class IfcObject : IfcObjectDefinition
     {
         #region Fields and Events

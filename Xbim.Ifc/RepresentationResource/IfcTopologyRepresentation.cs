@@ -37,7 +37,7 @@ namespace Xbim.Ifc.RepresentationResource
     ///   WR22   :   A representation type should be given to the topology representation.  
     ///   WR23   :   Checks the proper use of Items according to the RepresentationType.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcTopologyRepresentation : IfcShapeModel
     {
         #region Constructors

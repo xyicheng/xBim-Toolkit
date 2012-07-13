@@ -34,7 +34,7 @@ namespace Xbim.Ifc.MaterialResource
     ///   HISTORY  New entity in IFC1.0
     ///   IFC2x Edition 3 CHANGE  The inverse attribute HasRepresentation has been added. Upward compatibility for file based exchange is guaranteed.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcMaterial : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity, IfcMaterialSelect,
                                IfcObjectReferenceSelect, INotifyPropertyChanging
     {

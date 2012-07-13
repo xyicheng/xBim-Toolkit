@@ -30,7 +30,7 @@ namespace Xbim.Ifc.Kernel
     ///   The inherited attribute RelatedObjects define the objects to which the document association is applied. The attribute RelatingDocument is the reference to a document reference, applied to the object(s).
     ///   HISTORY: New entity in IFC Release 2x.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcRelAssociatesDocument : IfcRelAssociates
     {
         #region Fields

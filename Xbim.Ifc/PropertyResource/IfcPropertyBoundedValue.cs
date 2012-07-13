@@ -63,7 +63,7 @@ namespace Xbim.Ifc.PropertyResource
     ///   WR21   :   The measure type of the upper bound value shall be the same as the measure type of the lower bound value, if both (upper and lower bound) are given.  
     ///   WR22   :   Either the upper bound, or the lower bound, or both bounds shall be given.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcPropertyBoundedValue : IfcSimpleProperty
     {
         #region Fields

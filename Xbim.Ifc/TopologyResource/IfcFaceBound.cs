@@ -33,7 +33,7 @@ namespace Xbim.Ifc.TopologyResource
     ///   NOTE Corresponding STEP entity: face_bound. Please refer to ISO/IS 10303-42:1994, p. 139 for the final definition of the formal standard. 
     ///   HISTORY New class in IFC Release 1.0
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcFaceBound : IfcTopologicalRepresentationItem, IBoundary
     {
         #region Fields
@@ -125,7 +125,7 @@ namespace Xbim.Ifc.TopologyResource
 
         #endregion
 
-        internal IfcDirection Normal()
+        internal IVector3D Normal()
         {
             IfcPolyLoop polyLoop = Bound as IfcPolyLoop;
             if (polyLoop != null)

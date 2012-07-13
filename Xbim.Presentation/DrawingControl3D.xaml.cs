@@ -669,7 +669,7 @@ namespace Xbim.Presentation
                 model = tg.Model;
                 if (model != null)
                 {
-                    proj = model.IfcProject;
+                    proj = model.IfcProject as IfcProject;
                     if (proj != null && proj.UnitsInContext!=null) scaleFactor = proj.UnitsInContext.LengthUnitPower();
                     building = model.InstancesOfType<IfcBuilding>().FirstOrDefault();
                     site = model.InstancesOfType<IfcSite>().FirstOrDefault();

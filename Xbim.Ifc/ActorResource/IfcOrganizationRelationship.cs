@@ -22,7 +22,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc.ActorResource
 {
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class OrganizationRelationshipCollection : XbimList<IfcOrganizationRelationship>
     {
         internal OrganizationRelationshipCollection(IPersistIfcEntity owner)
@@ -31,7 +31,7 @@ namespace Xbim.Ifc.ActorResource
         }
     }
 
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcOrganizationRelationship : ISupportChangeNotification, INotifyPropertyChanged, IPersistIfcEntity,
                                                INotifyPropertyChanging
     {

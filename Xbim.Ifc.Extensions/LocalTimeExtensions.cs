@@ -29,7 +29,15 @@ namespace Xbim.Ifc.Extensions
             lt.HourComponent = localTime.Hour;
             lt.SecondComponent = localTime.Second;
             lt.MinuteComponent = localTime.Minute;
-            lt.Zone = lt.ModelOf.CoordinatedUniversalTimeOffset;
+
+            IfcCoordinatedUniversalTimeOffset coordinatedUniversalTimeOffset = lt.ModelOf.New<IfcCoordinatedUniversalTimeOffset>();
+            coordinatedUniversalTimeOffset.HourOffset = new IfcHourInDay(localTime.Offset.Hours);
+            coordinatedUniversalTimeOffset.MinuteOffset = new IfcMinuteInHour(localTime.Offset.Minutes);
+            if (localTime.Offset.Hours < 0 || (localTime.Offset.Hours == 0 && localTime.Offset.Minutes < 0))
+                coordinatedUniversalTimeOffset.Sense = IfcAheadOrBehind.BEHIND;
+            else
+                coordinatedUniversalTimeOffset.Sense = IfcAheadOrBehind.AHEAD;
+            lt.Zone = coordinatedUniversalTimeOffset;
             TimeZone tz = TimeZone.CurrentTimeZone;
             DaylightTime dt = tz.GetDaylightChanges(localTime.Year);
             lt.DaylightSavingOffset = dt.Delta.Hours;

@@ -24,7 +24,7 @@ namespace Xbim.Ifc.TopologyResource
     ///   A vertex is the topological construct corresponding to a point. It has dimensionality 0 and extent 0. The domain of a vertex, if present, 
     ///   is a point in m dimensional real space RM; this is represented by the vertex point subtype.
     /// </summary>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcVertex : IfcTopologicalRepresentationItem
     {
         public override string WhereRule()

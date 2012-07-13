@@ -1480,6 +1480,58 @@ namespace Xbim.IO
 
 
         public abstract bool ContainsInstance(long entityLabel);
+
+
+
+        IPersistIfcEntity IModel.OwnerHistoryAddObject
+        {
+            get { return OwnerHistoryAddObject; }
+        }
+
+        IPersistIfcEntity IModel.OwnerHistoryModifyObject
+        {
+            get { return OwnerHistoryModifyObject; }
+        }
+
+        IPersistIfcEntity IModel.IfcProject
+        {
+            get { return IfcProject; }
+        }
+
+        IEnumerable<IPersistIfcEntity> IModel.IfcProducts
+        {
+            get { return InstancesOfType<IfcProduct>().Cast<IPersistIfcEntity>(); }
+        }
+
+        IPersistIfcEntity IModel.DefaultOwningApplication
+        {
+            get { return DefaultOwningApplication; }
+        }
+
+        IPersistIfcEntity IModel.DefaultOwningUser
+        {
+            get { return DefaultOwningUser; }
+        }
+
+        IEnumerable<IPersistIfcEntity> IModel.Walls
+        {
+            get { return Walls; }
+        }
+
+        IEnumerable<IPersistIfcEntity> IModel.Slabs
+        {
+            get { return Slabs; }
+        }
+
+        IEnumerable<IPersistIfcEntity> IModel.Doors
+        {
+            get { return Doors; }
+        }
+
+        IEnumerable<IPersistIfcEntity> IModel.Roofs
+        {
+            get { return Roofs; }
+        }
     }
 }
 

@@ -22,7 +22,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc.MeasureResource
 {
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcMeasureWithUnit : IPersistIfcEntity, IfcAppliedValueSelect, IfcMetricValueSelect,
                                       ISupportChangeNotification, INotifyPropertyChanged, INotifyPropertyChanging
     {

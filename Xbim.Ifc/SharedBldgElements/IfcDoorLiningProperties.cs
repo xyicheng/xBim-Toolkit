@@ -73,7 +73,7 @@ namespace Xbim.Ifc.SharedBldgElements
     ///  
     ///   WR35   :   The IfcDoorLiningProperties shall only be used in the context of an IfcDoorStyle.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     [ContentProperty("ShapeAspectStyle")]
     public class IfcDoorLiningProperties : IfcPropertySetDefinition
     {

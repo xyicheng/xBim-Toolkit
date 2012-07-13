@@ -26,7 +26,7 @@ namespace Xbim.Ifc.Kernel
     ///   The IfcRelDefinesByProperties is a 1-to-N relationship, as it allows for the assignment of one property set to a single or to many objects. 
     ///   Those objects then share the same property definition.
     /// </summary>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcRelDefinesByProperties : IfcRelDefines
     {
         #region Fields

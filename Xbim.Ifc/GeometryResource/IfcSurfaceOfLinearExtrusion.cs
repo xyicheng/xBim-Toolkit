@@ -33,7 +33,7 @@ namespace Xbim.Ifc.GeometryResource
     ///   Informal propositions:
     ///   The surface shall not self-intersect
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcSurfaceOfLinearExtrusion : IfcSweptSurface
     {
         #region Fields

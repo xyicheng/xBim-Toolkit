@@ -24,7 +24,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc.Kernel
 {
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class PropertySetCollection : XbimSet<IfcPropertySet>
     {
         internal PropertySetCollection(IPersistIfcEntity owner, ICollection<IfcPropertySet> list)
@@ -59,7 +59,7 @@ namespace Xbim.Ifc.Kernel
     ///  
     ///   WR32   :   Every property within the property set shall have a unique name attribute value.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcPropertySet : IfcPropertySetDefinition
     {
         public IfcPropertySet()

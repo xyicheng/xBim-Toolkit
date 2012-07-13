@@ -29,7 +29,7 @@ namespace Xbim.Ifc.ProductExtension
     ///   EXAMPLE: It may be used to describe the attachment of one element to another where the attachment is realized by a 'fixing' element such as a bracket. It may also be used to describe the mounting of one element onto another such as the requirement for the mounting major plant items onto builders work bases and/or anti-vibration isolators.
     ///   HISTORY: New entity in Release IFC2x Edition 2.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcRelConnectsWithRealizingElements : IfcRelConnectsElements
     {
         /// <summary>

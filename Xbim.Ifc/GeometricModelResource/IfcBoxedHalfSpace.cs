@@ -35,7 +35,7 @@ namespace Xbim.Ifc.GeometricModelResource
     ///   Parameter 
     ///   The Enclosure therefore helps to prevent dealing with infinite-size related issues. The enclosure box is positioned within the positioning coordinate system of the unbounded surface, given by the attribute BaseSurface (see IfcElementarySurface.Position). The AgreementFlag defines whether the box is defined into the direction of the positive z axis (FALSE) or in the direction of the negative z axis (TRUE).
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcBoxedHalfSpace : IfcHalfSpaceSolid
     {
         #region Fields

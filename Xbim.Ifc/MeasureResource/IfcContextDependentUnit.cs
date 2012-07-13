@@ -25,7 +25,7 @@ namespace Xbim.Ifc.MeasureResource
     ///   NOTE The number of parts in an assembly is a physical quantity measured in units that may be called "parts" but which cannot be related to an SI unit. 
     ///   NOTE Corresponding STEP name: context_dependent_unit, please refer to ISO/IS 10303-41:1994 for the final definition of the formal standard.
     /// </summary>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcContextDependentUnit : IfcNamedUnit
     {
         #region Fields

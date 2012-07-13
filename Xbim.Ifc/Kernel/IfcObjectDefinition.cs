@@ -22,7 +22,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc.Kernel
 {
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class ObjectDefinitionSet : XbimSet<IfcObjectDefinition>
     {
         internal ObjectDefinitionSet(IPersistIfcEntity owner)
@@ -50,7 +50,7 @@ namespace Xbim.Ifc.Kernel
     ///   HISTORY  New abstract entity in Release IFC2x Edition 3. 
     ///   IFC2x Edition 3 CHANGE  The abstract entity IfcObjectDefinition has been added. Upward compatibility for file based exchange is guaranteed.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public abstract class IfcObjectDefinition : IfcRoot
     {
         #region Fields and Events

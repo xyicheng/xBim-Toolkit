@@ -40,7 +40,7 @@ namespace Xbim.Ifc.CostResource
     ///   Formal Propositions:
     ///   WR1   :   The attribute UserDefinedCategory must be asserted when the value of the IfcEnvironmentalImpactCategoryEnum is set to USERDEFINED.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcEnvironmentalImpactValue : IfcAppliedValue
     {
         #region Fields

@@ -64,17 +64,23 @@ namespace Xbim.Ifc.MeasureResource
 
         public static string AsPart21(double real)
         {
-            return string.Format(new Part21Formatter(), "{0:R}", real);
-            ////string str = String.Format("{0:F16}", real);
-            //string str = real.ToString();
-            //if (!str.Contains("."))
-            //{
-            //    if (str.Contains("E"))
-            //        str = str.Replace("E", ".E");
-            //    else
-            //        str += ".";
-            //}
-            //return str;
+            double dArg = (double)real;
+            string result = dArg.ToString("R", CultureInfo.CreateSpecificCulture("en-US"));
+
+            // if compiler flag, only then do the following 3 lines
+            string rDoubleStr = dArg.ToString("R", CultureInfo.CreateSpecificCulture("en-US"));
+            double fixedDbl = double.Parse(rDoubleStr);
+            result = fixedDbl.ToString("R", CultureInfo.CreateSpecificCulture("en-US"));
+
+            if (!result.Contains("."))
+            {
+                if (result.Contains("E"))
+                    result = result.Replace("E", ".E");
+                else
+                    result += ".";
+            }
+
+            return result;
         }
 
 

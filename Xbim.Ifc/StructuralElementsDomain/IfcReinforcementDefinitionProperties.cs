@@ -23,7 +23,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc.StructuralElementsDomain
 {
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcReinforcementDefinitionProperties : IfcPropertySetDefinition
     {
         public IfcReinforcementDefinitionProperties()

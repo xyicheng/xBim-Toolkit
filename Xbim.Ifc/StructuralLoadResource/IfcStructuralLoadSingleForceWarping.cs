@@ -29,7 +29,7 @@ namespace Xbim.Ifc.StructuralLoadResource
     ///   activity element as its geometric representation context. The units of the force and moment values are 
     ///   given within the global unit assignment (IfcUnitAssignment).
     /// </summary>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcStructuralLoadSingleForceWarping : IfcStructuralLoadSingleForce
     {
         #region Fields

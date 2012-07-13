@@ -37,7 +37,7 @@ namespace Xbim.Ifc.GeometricModelResource
     ///   The spine curve shall be of type IfcCompositeCurve, each of its segments (IfcCompositeCurveSegment) 
     ///   shall correspond to the part between exactly two consecutive cross-sections.
     /// </summary>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcSectionedSpine : IfcGeometricRepresentationItem
     {
         public IfcSectionedSpine()

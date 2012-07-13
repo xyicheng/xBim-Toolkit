@@ -42,7 +42,7 @@ namespace Xbim.Ifc.ProductExtension
     ///   time measure 
     ///   HISTORY New entity in IFC Release 2.x. NOTE: It replaces the calcXxx attributes used in previous IFC Releases.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcElementQuantity : IfcPropertySetDefinition
     {
         public IfcElementQuantity()

@@ -23,7 +23,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc.PresentationAppearanceResource
 {
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcSurfaceStyleRefraction : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                              IfcSurfaceStyleElementSelect, INotifyPropertyChanging
     {

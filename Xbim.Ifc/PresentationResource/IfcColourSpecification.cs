@@ -23,7 +23,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc.PresentationResource
 {
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public abstract class IfcColourSpecification : IPersistIfcEntity, INotifyPropertyChanged, ISupportChangeNotification,
                                                    IfcColour, INotifyPropertyChanging
     {

@@ -65,5 +65,10 @@ namespace Xbim.Ifc.GeometricModelResource
         }
 
         #endregion
+
+        int IfcBooleanOperand.Dim
+        {
+            get { return Dim; }
+        }
     }
 }

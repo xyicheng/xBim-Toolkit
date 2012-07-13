@@ -22,7 +22,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc.MaterialPropertyResource
 {
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public abstract class IfcMaterialProperties : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                                   INotifyPropertyChanging
     {

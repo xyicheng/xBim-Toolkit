@@ -30,7 +30,7 @@ namespace Xbim.Ifc.ProductExtension
     ///   HISTORY New entity in Release IFC2x Edition 2.
     ///   IFC2x Edition 3 CHANGE  The entity has been made non-abstract
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcFurnishingElementType : IfcElementType
     {
     }

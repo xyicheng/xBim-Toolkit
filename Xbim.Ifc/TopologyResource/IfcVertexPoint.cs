@@ -22,7 +22,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc.TopologyResource
 {
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcVertexPoint : IfcVertex, IfcPointOrVertexPoint
     {
         private IfcPoint _vertexGeometry;

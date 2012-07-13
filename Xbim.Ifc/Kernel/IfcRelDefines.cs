@@ -28,7 +28,7 @@ namespace Xbim.Ifc.Kernel
     ///   EXAMPLE: Several instances of windows within the IFC project model may be of the same (catalogue or manufacturer) type. Thereby they share the same properties. 
     ///   This relationship is established by a subtype of the IfcRelDefines relationship assigning an IfcProductType (or subtype thereof) to the IfcWindow.
     /// </summary>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public abstract class IfcRelDefines : IfcRelationship
     {
         public IfcRelDefines()

@@ -44,7 +44,7 @@ namespace Xbim.Ifc.TopologyResource
     ///   Formal Propositions:
     ///   WR21   :   The space dimensionality of all Points shall be the same.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcPolyLoop : IfcLoop, IBoundary
     {
         private XbimListUnique<IfcCartesianPoint> _polygon;

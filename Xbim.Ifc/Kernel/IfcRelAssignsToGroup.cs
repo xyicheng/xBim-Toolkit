@@ -27,7 +27,7 @@ namespace Xbim.Ifc.Kernel
     ///   The Purpose attribute defined at the supertype IfcReleationship, may assign a descriptor, that defines the purpose of the group.
     ///   The inherited attribute RelatedObjects gives the references to the objects, which are the elements within the group. The RelatingGroup is the group, that comprises all elements.
     /// </summary>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcRelAssignsToGroup : IfcRelAssigns
     {
         #region Fields

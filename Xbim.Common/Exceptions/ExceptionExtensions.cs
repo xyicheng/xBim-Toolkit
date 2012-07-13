@@ -17,7 +17,7 @@ using System.Text;
 
 #endregion
 
-namespace Xbim.XbimExtensions.Helpers
+namespace Xbim.Common.Exceptions
 {
     public static class ExceptionExtensions
     {

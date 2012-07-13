@@ -16,13 +16,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq.Expressions;
-using Xbim.Ifc.ActorResource;
-using Xbim.Ifc.DateTimeResource;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.UtilityResource;
-using Xbim.XbimExtensions.DataProviders;
 using Xbim.XbimExtensions.Transactions;
-using Xbim.Ifc.SharedBldgElements;
+
 
 #endregion
 
@@ -80,14 +75,14 @@ namespace Xbim.XbimExtensions.Interfaces
 
         int ParsePart21(Stream inputStream, ReportProgressDelegate progressHandler);
 
-        IfcOwnerHistory OwnerHistoryAddObject { get; }
-        IfcOwnerHistory OwnerHistoryModifyObject { get; }
-        IfcCoordinatedUniversalTimeOffset CoordinatedUniversalTimeOffset { get; }
-        IfcProject IfcProject { get; }
-        IfcProducts IfcProducts { get; }
+        IPersistIfcEntity OwnerHistoryAddObject { get; }
+        IPersistIfcEntity OwnerHistoryModifyObject { get; }
+       // IfcCoordinatedUniversalTimeOffset CoordinatedUniversalTimeOffset { get; }
+        IPersistIfcEntity IfcProject { get; }
+        IEnumerable<IPersistIfcEntity> IfcProducts { get; }
 
-        IfcApplication DefaultOwningApplication { get; }
-        IfcPersonAndOrganization DefaultOwningUser { get; }
+        IPersistIfcEntity DefaultOwningApplication { get; }
+        IPersistIfcEntity DefaultOwningUser { get; }
         Transaction BeginTransaction(string operationName);
         IIfcFileHeader Header { get; }
         IEnumerable<Tuple<string, long>> ModelStatistics();
@@ -108,10 +103,10 @@ namespace Xbim.XbimExtensions.Interfaces
 
         UndoRedoSession UndoRedo { get; }
         //Simple accessor to standard object
-        IEnumerable<IfcWall> Walls { get; }
-        IEnumerable<IfcSlab> Slabs { get; }
-        IEnumerable<IfcDoor> Doors { get; }
-        IEnumerable<IfcRoof> Roofs { get; }
+        IEnumerable<IPersistIfcEntity> Walls { get; }
+        IEnumerable<IPersistIfcEntity> Slabs { get; }
+        IEnumerable<IPersistIfcEntity> Doors { get; }
+        IEnumerable<IPersistIfcEntity> Roofs { get; }
 
     }
 }

@@ -30,7 +30,7 @@ namespace Xbim.Ifc.DateTimeResource
     ///   NOTE Corresponding STEP name: calendar_date, please refer to ISO/IS 10303-41:1994 for the final definition of the formal standard. 
     ///   HISTORY New entity in IFC Release 1.5.1.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcCalendarDate : IfcDateTimeSelect, INotifyPropertyChanged, ISupportChangeNotification,
                                    IPersistIfcEntity, IfcObjectReferenceSelect, INotifyPropertyChanging
     {

@@ -22,7 +22,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc.PresentationAppearanceResource
 {
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcTextStyleForDefinedFont : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                               IfcCharacterStyleSelect, INotifyPropertyChanging
     {

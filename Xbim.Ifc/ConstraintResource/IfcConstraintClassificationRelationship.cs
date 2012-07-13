@@ -26,7 +26,7 @@ namespace Xbim.Ifc.ConstraintResource
     ///   An IfcClassificationConstraintRelationship is an objectified relationship that enables assigning 
     ///   classifications to instances of IfcConstraint and its subtypes.
     /// </summary>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcConstraintClassificationRelationship : INotifyPropertyChanged, ISupportChangeNotification,
                                                            IPersistIfcEntity, INotifyPropertyChanging
     {

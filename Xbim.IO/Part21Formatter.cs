@@ -19,7 +19,7 @@ using System.Globalization;
 
 #endregion
 
-namespace Xbim.XbimExtensions
+namespace Xbim.IO
 {
     public class Part21Formatter : IFormatProvider, ICustomFormatter
     {

@@ -27,7 +27,7 @@ namespace Xbim.Ifc.RepresentationResource
     ///   The IfcStyleModel can be a style representation (presentation style) of a material (via IfcMaterialDefinitionRepresentation), potentially differentiated for different representation contexts (e.g. different material hatching depending on the scale of the target representation context).
     ///   HISTORY  New entity in Release IFC 2x Edition
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public abstract class IfcStyleModel : IfcRepresentation
     {
         #region Constructors

@@ -39,7 +39,7 @@ namespace Xbim.Ifc.Kernel
     ///   Formal Propositions:
     ///   WR1   :   If an Representation is given, then also a LocalPlacement has to be given.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public abstract class IfcProduct : IfcObject
     {
         #region Fields and Events

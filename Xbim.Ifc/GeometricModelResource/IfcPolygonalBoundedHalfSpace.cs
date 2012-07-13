@@ -45,7 +45,7 @@ namespace Xbim.Ifc.GeometricModelResource
     ///   Parameter
     ///   The PolygonalBoundary defines the 2D polyline which bounds the effectiveness of the half space in Boolean expressions. The BaseSurface is defined by a plane, and the normal of the plane together with the AgreementFlag defines the side of the material of the half space.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcPolygonalBoundedHalfSpace : IfcHalfSpaceSolid
     {
         private IfcAxis2Placement3D _position;

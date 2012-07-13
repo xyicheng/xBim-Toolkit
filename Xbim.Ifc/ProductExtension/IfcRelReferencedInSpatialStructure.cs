@@ -43,7 +43,7 @@ namespace Xbim.Ifc.ProductExtension
     ///   Formal Propositions:
     ///   WR31   :   The relationship object shall not be used to include other spatial structure elements into a spatial structure element. The hierarchy of the spatial structure is defined using IfcRelAggregates.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcRelReferencedInSpatialStructure : IfcRelConnects
     {
         public IfcRelReferencedInSpatialStructure()

@@ -34,7 +34,7 @@ namespace Xbim.Ifc.MeasureResource
     ///   EXAMPLE: Newtons per square millimetre is a derived unit. It has two elements, Newton whose exponent has a value of 1 and millimetre whose exponent is -2. 
     ///   NOTE Corresponding STEP name: derived_unit_element, please refer to ISO/IS 10303-41:1994 for the final definition of the formal standard.
     /// </summary>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcDerivedUnitElement : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                          INotifyPropertyChanging
     {

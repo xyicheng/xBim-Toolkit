@@ -30,7 +30,7 @@ namespace Xbim.Ifc.ProductExtension
     ///   The occurrences of the IfcBuildingElementProxyType are represented by instances of IfcBuildingElementProxy.
     ///   HISTORY  New entity in Release IFC2x Edition 3.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcBuildingElementProxyType : IfcBuildingElementType
     {
         #region Fields

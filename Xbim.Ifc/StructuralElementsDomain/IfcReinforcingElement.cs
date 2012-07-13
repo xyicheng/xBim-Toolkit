@@ -24,7 +24,7 @@ namespace Xbim.Ifc.StructuralElementsDomain
     /// <summary>
     ///   Bars, wires, strands, and other slender members embedded in concrete in such a manner that the reinforcement and the concrete act together in resisting forces.
     /// </summary>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public abstract class IfcReinforcingElement : IfcBuildingElementComponent
     {
         #region Fields

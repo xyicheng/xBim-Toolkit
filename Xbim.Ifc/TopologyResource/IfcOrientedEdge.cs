@@ -32,7 +32,7 @@ namespace Xbim.Ifc.TopologyResource
     ///   Formal Propositions:
     ///   WR1   :   The edge element shall not be an oriented edge.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcOrientedEdge : IfcEdge
     {
         private bool _orientation = true;

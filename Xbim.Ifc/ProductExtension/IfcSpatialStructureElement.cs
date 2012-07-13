@@ -51,7 +51,7 @@ namespace Xbim.Ifc.ProductExtension
     ///   Formal Propositions:
     ///   WR41   :   All spatial structure elements shall be associated (using the IfcRelAggregates relationship) with another spatial structure element, or with IfcProject.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public abstract class IfcSpatialStructureElement : IfcProduct
     {
         #region Fields and Events

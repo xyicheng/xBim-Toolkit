@@ -20,7 +20,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc.TopologyResource
 {
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcLoop : IfcTopologicalRepresentationItem
     {
         public override void IfcParse(int propIndex, IPropertyValue value)

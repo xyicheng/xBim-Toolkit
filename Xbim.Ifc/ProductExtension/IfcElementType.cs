@@ -35,7 +35,7 @@ namespace Xbim.Ifc.ProductExtension
     ///   to instances of that element type to assign a specific style. 
     ///   Element types (the instantiable subtypes) may be exchanged without being already assigned to occurrences.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public abstract class IfcElementType : IfcTypeProduct
     {
         #region Fields

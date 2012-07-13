@@ -55,7 +55,7 @@ namespace Xbim.Ifc.RepresentationResource
     ///   WR23   :   A representation type should be given to the shape representation.  
     ///   WR24   :   Checks the proper use of Items according to the RepresentationType.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcShapeRepresentation : IfcShapeModel
     {
         public override string WhereRule()

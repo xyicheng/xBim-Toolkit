@@ -31,7 +31,7 @@ namespace Xbim.Ifc.RepresentationResource
     ///   NOTE: The definition of this class relates to the STEP entity shape_aspect. Please refer to ISO/IS 10303-41:1994 for the final definition of the formal standard. 
     ///   HISTORY: New Entity in IFC Release 2.0
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcShapeAspect : ISupportChangeNotification, INotifyPropertyChanged, IPersistIfcEntity,
                                   INotifyPropertyChanging
     {

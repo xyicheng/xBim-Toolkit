@@ -51,7 +51,7 @@ namespace Xbim.Ifc.Kernel
     ///   WR32   :   There shall be no instance of IfcGeometricRepresentationSubContext directly included in the set of RepresentationContexts.  
     ///   WR33   :   The IfcProject represents the root of the any decomposition tree. It shall therefore not be used to decompose any other object definition.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcProject : IfcObject
     {
         public IfcProject()

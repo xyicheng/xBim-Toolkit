@@ -71,7 +71,7 @@ namespace Xbim.DOM
                 Debug.WriteLine("XbimBuildingElement: No geometry to be set.");
                 return;
             }
-            IfcShapeRepresentation shape = _ifcBuildingElement.GetOrCreateSweptSolidShapeRepresentation(_document.IfcModel().IfcProject.ModelContext());
+            IfcShapeRepresentation shape = _ifcBuildingElement.GetOrCreateSweptSolidShapeRepresentation(((IfcProject)_document.IfcModel().IfcProject).ModelContext());
             shape.Items.Add_Reversible(ifcGeometry);
         }
 

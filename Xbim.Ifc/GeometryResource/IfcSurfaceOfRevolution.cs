@@ -36,7 +36,7 @@ namespace Xbim.Ifc.GeometryResource
     ///   The surface shall not self-intersect 
     ///   The swept curve shall not be coincident with the axis line for any finite part of its legth.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcSurfaceOfRevolution : IfcSweptSurface
     {
         private IfcAxis1Placement _axisPosition;

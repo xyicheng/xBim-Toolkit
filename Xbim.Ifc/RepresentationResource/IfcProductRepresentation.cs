@@ -32,7 +32,7 @@ namespace Xbim.Ifc.RepresentationResource
     ///   HISTORY: New entity in IFC Release 2.0
     ///   IFC2x Edition 3 NOTE  Users should not instantiate the entity IfcProductRepresentation from IFC2x Edition 3 onwards. It will be changed into an ABSTRACT supertype in future releases of IFC
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     //  [IfcPersistedEntity, Serializable]
     public class IfcProductRepresentation : ISupportChangeNotification, INotifyPropertyChanged, IPersistIfcEntity,
                                             INotifyPropertyChanging

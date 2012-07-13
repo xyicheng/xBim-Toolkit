@@ -44,7 +44,7 @@ namespace Xbim.Ifc.ProductExtension
     ///   Formal Propositions:
     ///   WR1   :   A Name attribute should be asserted for a building element proxy.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcBuildingElementProxy : IfcBuildingElement
     {
         #region Part 21 Step file Parse routines

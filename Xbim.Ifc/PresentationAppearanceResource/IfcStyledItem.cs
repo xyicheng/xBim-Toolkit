@@ -36,7 +36,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
     ///   WR11   :   Restricts the number of styles to 1 (the datatype SET remains for compatibility reasons with ISO 10303-46).  
     ///   WR12   :   A styled item cannot be styled by another styled item.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntityAttribute, Serializable]
     public class IfcStyledItem : IfcRepresentationItem
     {
         public IfcStyledItem()
