@@ -48,7 +48,7 @@ namespace Xbim.Ifc.StructuralLoadResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _displacementX;
             }
-            set { ModelHelper.SetModelValue(this, ref _displacementX, value, v => DisplacementX = v, "DisplacementX"); }
+            set { this.SetModelValue(this, ref _displacementX, value, v => DisplacementX = v, "DisplacementX"); }
         }
 
         /// <summary>
@@ -62,7 +62,7 @@ namespace Xbim.Ifc.StructuralLoadResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _displacementY;
             }
-            set { ModelHelper.SetModelValue(this, ref _displacementY, value, v => DisplacementY = v, "DisplacementY"); }
+            set { this.SetModelValue(this, ref _displacementY, value, v => DisplacementY = v, "DisplacementY"); }
         }
 
         /// <summary>
@@ -76,7 +76,7 @@ namespace Xbim.Ifc.StructuralLoadResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _displacementZ;
             }
-            set { ModelHelper.SetModelValue(this, ref _displacementZ, value, v => DisplacementZ = v, "DisplacementZ"); }
+            set { this.SetModelValue(this, ref _displacementZ, value, v => DisplacementZ = v, "DisplacementZ"); }
         }
 
         /// <summary>
@@ -92,7 +92,7 @@ namespace Xbim.Ifc.StructuralLoadResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _rotationalDisplacementRX, value, v => RotationalDisplacementRX = v,
+                this.SetModelValue(this, ref _rotationalDisplacementRX, value, v => RotationalDisplacementRX = v,
                                            "RotationalDisplacementRX");
             }
         }
@@ -110,7 +110,7 @@ namespace Xbim.Ifc.StructuralLoadResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _rotationalDisplacementRY, value, v => RotationalDisplacementRY = v,
+                this.SetModelValue(this, ref _rotationalDisplacementRY, value, v => RotationalDisplacementRY = v,
                                            "RotationalDisplacementRY");
             }
         }
@@ -128,7 +128,7 @@ namespace Xbim.Ifc.StructuralLoadResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _rotationalDisplacementRZ, value, v => RotationalDisplacementRZ = v,
+                this.SetModelValue(this, ref _rotationalDisplacementRZ, value, v => RotationalDisplacementRZ = v,
                                            "RotationalDisplacementRZ");
             }
         }

@@ -92,7 +92,7 @@ namespace Xbim.Ifc.UtilityResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _applicationDeveloper;
             }
-            set { ModelHelper.SetModelValue(this, ref _applicationDeveloper, value, v => ApplicationDeveloper = v, "ApplicationDeveloper"); }
+            set { this.SetModelValue(this, ref _applicationDeveloper, value, v => ApplicationDeveloper = v, "ApplicationDeveloper"); }
         }
 
         /// <summary>
@@ -108,7 +108,7 @@ namespace Xbim.Ifc.UtilityResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _version;
             }
-            set { ModelHelper.SetModelValue(this, ref _version, value, v => Version = v, "Version"); }
+            set { this.SetModelValue(this, ref _version, value, v => Version = v, "Version"); }
         }
 
 
@@ -125,7 +125,7 @@ namespace Xbim.Ifc.UtilityResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _applicationFullName;
             }
-            set { ModelHelper.SetModelValue(this, ref _applicationFullName, value, v => ApplicationFullName = v, "ApplicationFullName"); }
+            set { this.SetModelValue(this, ref _applicationFullName, value, v => ApplicationFullName = v, "ApplicationFullName"); }
         }
 
 
@@ -142,7 +142,7 @@ namespace Xbim.Ifc.UtilityResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _applicationIdentifier;
             }
-            set { ModelHelper.SetModelValue(this, ref _applicationIdentifier, value, v => ApplicationIdentifier = v, "ApplicationIdentifier"); }
+            set { this.SetModelValue(this, ref _applicationIdentifier, value, v => ApplicationIdentifier = v, "ApplicationIdentifier"); }
         }
 
         #endregion

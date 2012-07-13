@@ -95,7 +95,7 @@ namespace Xbim.Ifc.PropertyResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _dependingProperty, value, v => DependingProperty = v,
+                this.SetModelValue(this, ref _dependingProperty, value, v => DependingProperty = v,
                                            "DependingProperty");
             }
         }
@@ -113,7 +113,7 @@ namespace Xbim.Ifc.PropertyResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _dependantProperty, value, v => DependantProperty = v,
+                this.SetModelValue(this, ref _dependantProperty, value, v => DependantProperty = v,
                                            "DependantProperty");
             }
         }
@@ -130,7 +130,7 @@ namespace Xbim.Ifc.PropertyResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _name;
             }
-            set { ModelHelper.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
+            set { this.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
         }
 
         /// <summary>
@@ -144,7 +144,7 @@ namespace Xbim.Ifc.PropertyResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _description;
             }
-            set { ModelHelper.SetModelValue(this, ref _description, value, v => Description = v, "Description"); }
+            set { this.SetModelValue(this, ref _description, value, v => Description = v, "Description"); }
         }
 
         /// <summary>
@@ -158,7 +158,7 @@ namespace Xbim.Ifc.PropertyResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _expression;
             }
-            set { ModelHelper.SetModelValue(this, ref _expression, value, v => Expression = v, "Expression"); }
+            set { this.SetModelValue(this, ref _expression, value, v => Expression = v, "Expression"); }
         }
 
         #region INotifyPropertyChanged Members

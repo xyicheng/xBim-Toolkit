@@ -42,7 +42,7 @@ namespace Xbim.Ifc.TimeSeriesResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _values;
             }
-            set { ModelHelper.SetModelValue(this, ref _values, value, v => Values = v, "Values"); }
+            set { this.SetModelValue(this, ref _values, value, v => Values = v, "Values"); }
         }
 
         public override void IfcParse(int propIndex, IPropertyValue value)

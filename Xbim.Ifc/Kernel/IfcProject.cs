@@ -82,7 +82,7 @@ namespace Xbim.Ifc.Kernel
                 ((IPersistIfcEntity) this).Activate(false);
                 return _longName;
             }
-            set { ModelHelper.SetModelValue(this, ref _longName, value, v => LongName = v, "LongName"); }
+            set { this.SetModelValue(this, ref _longName, value, v => LongName = v, "LongName"); }
         }
 
         /// <summary>
@@ -97,7 +97,7 @@ namespace Xbim.Ifc.Kernel
                 ((IPersistIfcEntity) this).Activate(false);
                 return _phase;
             }
-            set { ModelHelper.SetModelValue(this, ref _phase, value, v => Phase = v, "Phase"); }
+            set { this.SetModelValue(this, ref _phase, value, v => Phase = v, "Phase"); }
         }
 
         /// <summary>
@@ -116,7 +116,7 @@ namespace Xbim.Ifc.Kernel
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _representationContexts, value, v => RepresentationContexts = v,
+                this.SetModelValue(this, ref _representationContexts, value, v => RepresentationContexts = v,
                                            "RepresentationContexts");
             }
         }
@@ -132,7 +132,7 @@ namespace Xbim.Ifc.Kernel
                 ((IPersistIfcEntity) this).Activate(false);
                 return _unitsInContext;
             }
-            set { ModelHelper.SetModelValue(this, ref _unitsInContext, value, v => UnitsInContext = v, "UnitsInContext"); }
+            set { this.SetModelValue(this, ref _unitsInContext, value, v => UnitsInContext = v, "UnitsInContext"); }
         }
 
 

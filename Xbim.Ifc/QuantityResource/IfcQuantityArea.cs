@@ -49,7 +49,7 @@ namespace Xbim.Ifc.QuantityResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _areaValue;
             }
-            set { ModelHelper.SetModelValue(this, ref _areaValue, value, v => AreaValue = v, "AreaValue"); }
+            set { this.SetModelValue(this, ref _areaValue, value, v => AreaValue = v, "AreaValue"); }
         }
 
         public override void IfcParse(int propIndex, IPropertyValue value)

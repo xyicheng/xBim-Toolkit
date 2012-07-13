@@ -59,7 +59,7 @@ namespace Xbim.Ifc.ProductExtension
                 ((IPersistIfcEntity)this).Activate(false);
                 return _assemblyPlace;
             }
-            set { ModelHelper.SetModelValue(this, ref _assemblyPlace, value, v => AssemblyPlace = v, "AssemblyPlace"); }
+            set { this.SetModelValue(this, ref _assemblyPlace, value, v => AssemblyPlace = v, "AssemblyPlace"); }
         }
 
         /// <summary>
@@ -73,7 +73,7 @@ namespace Xbim.Ifc.ProductExtension
                 ((IPersistIfcEntity)this).Activate(false);
                 return _predefinedType;
             }
-            set { ModelHelper.SetModelValue(this, ref _predefinedType, value, v => PredefinedType = v, "PredefinedType"); }
+            set { this.SetModelValue(this, ref _predefinedType, value, v => PredefinedType = v, "PredefinedType"); }
         }
         #endregion
 

@@ -85,7 +85,7 @@ namespace Xbim.Ifc.ApprovalResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _actor;
             }
-            set { ModelHelper.SetModelValue(this, ref _actor, value, v => Actor = v, "Actor"); }
+            set { this.SetModelValue(this, ref _actor, value, v => Actor = v, "Actor"); }
         }
 
         /// <summary>
@@ -99,7 +99,7 @@ namespace Xbim.Ifc.ApprovalResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _approval;
             }
-            set { ModelHelper.SetModelValue(this, ref _approval, value, v => Approval = v, "Approval"); }
+            set { this.SetModelValue(this, ref _approval, value, v => Approval = v, "Approval"); }
         }
 
         /// <summary>
@@ -113,7 +113,7 @@ namespace Xbim.Ifc.ApprovalResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _role;
             }
-            set { ModelHelper.SetModelValue(this, ref _role, value, v => Role = v, "Role"); }
+            set { this.SetModelValue(this, ref _role, value, v => Role = v, "Role"); }
         }
 
         #endregion

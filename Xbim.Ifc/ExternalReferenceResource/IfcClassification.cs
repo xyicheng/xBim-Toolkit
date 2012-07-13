@@ -88,7 +88,7 @@ namespace Xbim.Ifc.ExternalReferenceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _source;
             }
-            set { ModelHelper.SetModelValue(this, ref _source, value, v => Source = v, "Source"); }
+            set { this.SetModelValue(this, ref _source, value, v => Source = v, "Source"); }
         }
 
         /// <summary>
@@ -102,7 +102,7 @@ namespace Xbim.Ifc.ExternalReferenceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _edition;
             }
-            set { ModelHelper.SetModelValue(this, ref _edition, value, v => Edition = v, "Edition"); }
+            set { this.SetModelValue(this, ref _edition, value, v => Edition = v, "Edition"); }
         }
 
         /// <summary>
@@ -116,7 +116,7 @@ namespace Xbim.Ifc.ExternalReferenceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _editionDate;
             }
-            set { ModelHelper.SetModelValue(this, ref _editionDate, value, v => EditionDate = v, "EditionDate"); }
+            set { this.SetModelValue(this, ref _editionDate, value, v => EditionDate = v, "EditionDate"); }
         }
 
         /// <summary>
@@ -130,7 +130,7 @@ namespace Xbim.Ifc.ExternalReferenceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _name;
             }
-            set { ModelHelper.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
+            set { this.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
         }
 
         /// <summary>

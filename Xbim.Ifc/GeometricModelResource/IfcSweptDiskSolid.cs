@@ -55,7 +55,7 @@ namespace Xbim.Ifc.GeometricModelResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _directrix;
             }
-            set { ModelHelper.SetModelValue(this, ref _directrix, value, v => Directrix = v, "Directrix"); }
+            set { this.SetModelValue(this, ref _directrix, value, v => Directrix = v, "Directrix"); }
         }
 
         /// <summary>
@@ -69,7 +69,7 @@ namespace Xbim.Ifc.GeometricModelResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _radius;
             }
-            set { ModelHelper.SetModelValue(this, ref _radius, value, v => Radius = v, "Radius"); }
+            set { this.SetModelValue(this, ref _radius, value, v => Radius = v, "Radius"); }
         }
 
         /// <summary>
@@ -83,7 +83,7 @@ namespace Xbim.Ifc.GeometricModelResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _innerRadius;
             }
-            set { ModelHelper.SetModelValue(this, ref _innerRadius, value, v => InnerRadius = v, "InnerRadius"); }
+            set { this.SetModelValue(this, ref _innerRadius, value, v => InnerRadius = v, "InnerRadius"); }
         }
 
         /// <summary>
@@ -97,7 +97,7 @@ namespace Xbim.Ifc.GeometricModelResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _startParam;
             }
-            set { ModelHelper.SetModelValue(this, ref _startParam, value, v => StartParam = v, "StartParam"); }
+            set { this.SetModelValue(this, ref _startParam, value, v => StartParam = v, "StartParam"); }
         }
 
         /// <summary>
@@ -111,7 +111,7 @@ namespace Xbim.Ifc.GeometricModelResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _endParam;
             }
-            set { ModelHelper.SetModelValue(this, ref _endParam, value, v => EndParam = v, "EndParam"); }
+            set { this.SetModelValue(this, ref _endParam, value, v => EndParam = v, "EndParam"); }
         }
 
         #endregion

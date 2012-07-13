@@ -43,7 +43,7 @@ namespace Xbim.Ifc.ConstructionMgmtDomain
                 ((IPersistIfcEntity) this).Activate(false);
                 return _resourceGroup;
             }
-            set { ModelHelper.SetModelValue(this, ref _resourceGroup, value, v => ResourceGroup = v, "ResourceGroup"); }
+            set { this.SetModelValue(this, ref _resourceGroup, value, v => ResourceGroup = v, "ResourceGroup"); }
         }
 
 
@@ -60,7 +60,7 @@ namespace Xbim.Ifc.ConstructionMgmtDomain
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _resourceIdentifier, value, v => ResourceIdentifier = v,
+                this.SetModelValue(this, ref _resourceIdentifier, value, v => ResourceIdentifier = v,
                                            "ResourceIdentifier");
             }
         }
@@ -78,7 +78,7 @@ namespace Xbim.Ifc.ConstructionMgmtDomain
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _resourceConsumption, value, v => ResourceConsumption = v,
+                this.SetModelValue(this, ref _resourceConsumption, value, v => ResourceConsumption = v,
                                            "ResourceConsumption");
             }
         }
@@ -94,7 +94,7 @@ namespace Xbim.Ifc.ConstructionMgmtDomain
                 ((IPersistIfcEntity) this).Activate(false);
                 return _baseQuantity;
             }
-            set { ModelHelper.SetModelValue(this, ref _baseQuantity, value, v => BaseQuantity = v, "BaseQuantity"); }
+            set { this.SetModelValue(this, ref _baseQuantity, value, v => BaseQuantity = v, "BaseQuantity"); }
         }
 
         #endregion

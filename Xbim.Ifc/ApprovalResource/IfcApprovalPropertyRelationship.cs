@@ -88,7 +88,7 @@ namespace Xbim.Ifc.ApprovalResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _approvedProperties, value, v => ApprovedProperties = v,
+                this.SetModelValue(this, ref _approvedProperties, value, v => ApprovedProperties = v,
                                            "ApprovedProperties");
             }
         }
@@ -104,7 +104,7 @@ namespace Xbim.Ifc.ApprovalResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _approval;
             }
-            set { ModelHelper.SetModelValue(this, ref _approval, value, v => Approval = v, "Approval"); }
+            set { this.SetModelValue(this, ref _approval, value, v => Approval = v, "Approval"); }
         }
 
         #endregion

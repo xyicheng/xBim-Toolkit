@@ -52,7 +52,7 @@ namespace Xbim.Ifc.Kernel
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _relatingLibrary, value, v => RelatingLibrary = v,
+                this.SetModelValue(this, ref _relatingLibrary, value, v => RelatingLibrary = v,
                                            "RelatingLibrary");
             }
         }

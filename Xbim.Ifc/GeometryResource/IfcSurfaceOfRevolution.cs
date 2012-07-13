@@ -52,7 +52,7 @@ namespace Xbim.Ifc.GeometryResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _axisPosition;
             }
-            set { ModelHelper.SetModelValue(this, ref _axisPosition, value, v => AxisPosition = v, "AxisPosition"); }
+            set { this.SetModelValue(this, ref _axisPosition, value, v => AxisPosition = v, "AxisPosition"); }
         }
 
         /// <summary>

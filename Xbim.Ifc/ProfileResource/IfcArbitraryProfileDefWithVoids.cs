@@ -45,7 +45,7 @@ namespace Xbim.Ifc.ProfileResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _innerCurves;
             }
-            set { ModelHelper.SetModelValue(this, ref _innerCurves, value, v => InnerCurves = v, "InnerCurves"); }
+            set { this.SetModelValue(this, ref _innerCurves, value, v => InnerCurves = v, "InnerCurves"); }
         }
 
 

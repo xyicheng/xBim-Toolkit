@@ -91,7 +91,7 @@ namespace Xbim.Ifc.ExternalReferenceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _notation;
             }
-            set { ModelHelper.SetModelValue(this, ref _notation, value, v => Notation = v, "Notation"); }
+            set { this.SetModelValue(this, ref _notation, value, v => Notation = v, "Notation"); }
         }
 
         /// <summary>
@@ -105,7 +105,7 @@ namespace Xbim.Ifc.ExternalReferenceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _itemOf;
             }
-            set { ModelHelper.SetModelValue(this, ref _itemOf, value, v => ItemOf = v, "ItemOf"); }
+            set { this.SetModelValue(this, ref _itemOf, value, v => ItemOf = v, "ItemOf"); }
         }
 
         /// <summary>
@@ -124,7 +124,7 @@ namespace Xbim.Ifc.ExternalReferenceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _title;
             }
-            set { ModelHelper.SetModelValue(this, ref _title, value, v => Title = v, "Title"); }
+            set { this.SetModelValue(this, ref _title, value, v => Title = v, "Title"); }
         }
 
         /// <summary>

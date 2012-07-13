@@ -64,7 +64,7 @@ namespace Xbim.Ifc.ProductExtension
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _relatingMaterial, value, v => RelatingMaterial = v,
+                this.SetModelValue(this, ref _relatingMaterial, value, v => RelatingMaterial = v,
                                            "RelatingMaterial");
             }
         }

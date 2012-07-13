@@ -37,7 +37,7 @@ namespace Xbim.Ifc.ConstructionMgmtDomain
                 ((IPersistIfcEntity) this).Activate(false);
                 return _skillSet;
             }
-            set { ModelHelper.SetModelValue(this, ref _skillSet, value, v => SkillSet = v, "SkillSet"); }
+            set { this.SetModelValue(this, ref _skillSet, value, v => SkillSet = v, "SkillSet"); }
         }
 
         #region Part 21 Step file Parse routines

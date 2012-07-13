@@ -81,7 +81,7 @@ namespace Xbim.Ifc.TimeSeriesResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _timeStamp;
             }
-            set { ModelHelper.SetModelValue(this, ref _timeStamp, value, v => TimeStamp = v, "TimeStamp"); }
+            set { this.SetModelValue(this, ref _timeStamp, value, v => TimeStamp = v, "TimeStamp"); }
         }
 
         [IfcAttribute(2, IfcAttributeState.Mandatory, IfcAttributeType.List, IfcAttributeType.Class, 1)]
@@ -92,7 +92,7 @@ namespace Xbim.Ifc.TimeSeriesResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _listValues;
             }
-            set { ModelHelper.SetModelValue(this, ref _listValues, value, v => ListValues = v, "ListValues"); }
+            set { this.SetModelValue(this, ref _listValues, value, v => ListValues = v, "ListValues"); }
         }
 
         #region INotifyPropertyChanged Members

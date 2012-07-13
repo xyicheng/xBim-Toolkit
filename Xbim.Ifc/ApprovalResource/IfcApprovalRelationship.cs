@@ -86,7 +86,7 @@ namespace Xbim.Ifc.ApprovalResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _name;
             }
-            set { ModelHelper.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
+            set { this.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
         }
 
         /// <summary>
@@ -100,7 +100,7 @@ namespace Xbim.Ifc.ApprovalResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _description;
             }
-            set { ModelHelper.SetModelValue(this, ref _description, value, v => Description = v, "Description"); }
+            set { this.SetModelValue(this, ref _description, value, v => Description = v, "Description"); }
         }
 
         /// <summary>
@@ -116,7 +116,7 @@ namespace Xbim.Ifc.ApprovalResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _relatedApproval, value, v => RelatedApproval = v,
+                this.SetModelValue(this, ref _relatedApproval, value, v => RelatedApproval = v,
                                            "RelatedApproval");
             }
         }
@@ -134,7 +134,7 @@ namespace Xbim.Ifc.ApprovalResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _relatingApproval, value, v => RelatingApproval = v,
+                this.SetModelValue(this, ref _relatingApproval, value, v => RelatingApproval = v,
                                            "RelatingApproval");
             }
         }

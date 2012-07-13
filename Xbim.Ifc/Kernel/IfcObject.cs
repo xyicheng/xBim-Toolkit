@@ -75,7 +75,7 @@ namespace Xbim.Ifc.Kernel
                 ((IPersistIfcEntity) this).Activate(false);
                 return _objectType;
             }
-            set { ModelHelper.SetModelValue(this, ref _objectType, value, v => ObjectType = v, "ObjectType"); }
+            set { this.SetModelValue(this, ref _objectType, value, v => ObjectType = v, "ObjectType"); }
         }
 
 

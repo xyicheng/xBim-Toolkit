@@ -65,7 +65,7 @@ namespace Xbim.Ifc.Kernel
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _relatedObjectsType, value, v => RelatedObjectsType = v,
+                this.SetModelValue(this, ref _relatedObjectsType, value, v => RelatedObjectsType = v,
                                            "RelatedObjectsType");
             }
         }

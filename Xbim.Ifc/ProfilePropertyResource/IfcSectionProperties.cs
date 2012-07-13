@@ -79,7 +79,7 @@ namespace Xbim.Ifc.ProfilePropertyResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _sectionType;
             }
-            set { ModelHelper.SetModelValue(this, ref _sectionType, value, v => SectionType = v, "SectionType"); }
+            set { this.SetModelValue(this, ref _sectionType, value, v => SectionType = v, "SectionType"); }
         }
 
         [IfcAttribute(2, IfcAttributeState.Mandatory)]
@@ -90,7 +90,7 @@ namespace Xbim.Ifc.ProfilePropertyResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _startProfile;
             }
-            set { ModelHelper.SetModelValue(this, ref _startProfile, value, v => StartProfile = v, "StartProfile"); }
+            set { this.SetModelValue(this, ref _startProfile, value, v => StartProfile = v, "StartProfile"); }
         }
 
         [IfcAttribute(3, IfcAttributeState.Optional)]
@@ -101,7 +101,7 @@ namespace Xbim.Ifc.ProfilePropertyResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _endProfile;
             }
-            set { ModelHelper.SetModelValue(this, ref _endProfile, value, v => EndProfile = v, "EndProfile"); }
+            set { this.SetModelValue(this, ref _endProfile, value, v => EndProfile = v, "EndProfile"); }
         }
 
         #endregion

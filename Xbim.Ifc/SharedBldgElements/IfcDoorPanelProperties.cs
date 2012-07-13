@@ -46,7 +46,7 @@ namespace Xbim.Ifc.SharedBldgElements
                 ((IPersistIfcEntity) this).Activate(false);
                 return _panelDepth;
             }
-            set { ModelHelper.SetModelValue(this, ref _panelDepth, value, v => PanelDepth = v, "PanelDepth"); }
+            set { this.SetModelValue(this, ref _panelDepth, value, v => PanelDepth = v, "PanelDepth"); }
         }
 
         /// <summary>
@@ -60,7 +60,7 @@ namespace Xbim.Ifc.SharedBldgElements
                 ((IPersistIfcEntity) this).Activate(false);
                 return _panelOperation;
             }
-            set { ModelHelper.SetModelValue(this, ref _panelOperation, value, v => PanelOperation = v, "PanelOperation"); }
+            set { this.SetModelValue(this, ref _panelOperation, value, v => PanelOperation = v, "PanelOperation"); }
         }
 
         /// <summary>
@@ -74,7 +74,7 @@ namespace Xbim.Ifc.SharedBldgElements
                 ((IPersistIfcEntity) this).Activate(false);
                 return _panelWidth;
             }
-            set { ModelHelper.SetModelValue(this, ref _panelWidth, value, v => PanelWidth = v, "PanelWidth"); }
+            set { this.SetModelValue(this, ref _panelWidth, value, v => PanelWidth = v, "PanelWidth"); }
         }
 
         /// <summary>
@@ -88,7 +88,7 @@ namespace Xbim.Ifc.SharedBldgElements
                 ((IPersistIfcEntity) this).Activate(false);
                 return _panelPosition;
             }
-            set { ModelHelper.SetModelValue(this, ref _panelPosition, value, v => PanelPosition = v, "PanelPosition"); }
+            set { this.SetModelValue(this, ref _panelPosition, value, v => PanelPosition = v, "PanelPosition"); }
         }
 
         /// <summary>
@@ -104,7 +104,7 @@ namespace Xbim.Ifc.SharedBldgElements
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _shapeAspectStyle, value, v => ShapeAspectStyle = v,
+                this.SetModelValue(this, ref _shapeAspectStyle, value, v => ShapeAspectStyle = v,
                                            "ShapeAspectStyle");
             }
         }

@@ -43,7 +43,7 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _appliedCondition, value, v => AppliedCondition = v,
+                this.SetModelValue(this, ref _appliedCondition, value, v => AppliedCondition = v,
                                            "AppliedCondition");
             }
         }

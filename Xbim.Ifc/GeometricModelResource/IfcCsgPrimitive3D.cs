@@ -41,7 +41,7 @@ namespace Xbim.Ifc.GeometricModelResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _position;
             }
-            set { ModelHelper.SetModelValue(this, ref _position, value, v => Position = v, "Position"); }
+            set { this.SetModelValue(this, ref _position, value, v => Position = v, "Position"); }
         }
 
 

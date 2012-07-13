@@ -46,7 +46,7 @@ namespace Xbim.Ifc.ProfileResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _parentProfile;
             }
-            set { ModelHelper.SetModelValue(this, ref _parentProfile, value, v => ParentProfile = v, "ParentProfile"); }
+            set { this.SetModelValue(this, ref _parentProfile, value, v => ParentProfile = v, "ParentProfile"); }
         }
 
         /// <summary>
@@ -60,7 +60,7 @@ namespace Xbim.Ifc.ProfileResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _operator;
             }
-            set { ModelHelper.SetModelValue(this, ref _operator, value, v => Operator = v, "Operator"); }
+            set { this.SetModelValue(this, ref _operator, value, v => Operator = v, "Operator"); }
         }
 
         [IfcAttribute(5, IfcAttributeState.Optional)]
@@ -71,7 +71,7 @@ namespace Xbim.Ifc.ProfileResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _label;
             }
-            set { ModelHelper.SetModelValue(this, ref _label, value, v => Label = v, "Label"); }
+            set { this.SetModelValue(this, ref _label, value, v => Label = v, "Label"); }
         }
 
         #endregion

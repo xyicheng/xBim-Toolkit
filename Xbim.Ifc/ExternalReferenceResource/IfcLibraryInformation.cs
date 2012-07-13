@@ -93,7 +93,7 @@ namespace Xbim.Ifc.ExternalReferenceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _name;
             }
-            set { ModelHelper.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
+            set { this.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
         }
 
         /// <summary>
@@ -107,7 +107,7 @@ namespace Xbim.Ifc.ExternalReferenceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _version;
             }
-            set { ModelHelper.SetModelValue(this, ref _version, value, v => Version = v, "Version"); }
+            set { this.SetModelValue(this, ref _version, value, v => Version = v, "Version"); }
         }
 
         /// <summary>
@@ -121,7 +121,7 @@ namespace Xbim.Ifc.ExternalReferenceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _publisher;
             }
-            set { ModelHelper.SetModelValue(this, ref _publisher, value, v => Publisher = v, "Publisher"); }
+            set { this.SetModelValue(this, ref _publisher, value, v => Publisher = v, "Publisher"); }
         }
 
         /// <summary>
@@ -135,7 +135,7 @@ namespace Xbim.Ifc.ExternalReferenceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _versionDate;
             }
-            set { ModelHelper.SetModelValue(this, ref _versionDate, value, v => VersionDate = v, "VersionDate"); }
+            set { this.SetModelValue(this, ref _versionDate, value, v => VersionDate = v, "VersionDate"); }
         }
 
         /// <summary>
@@ -151,7 +151,7 @@ namespace Xbim.Ifc.ExternalReferenceResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _libraryReference, value, v => LibraryReference = v,
+                this.SetModelValue(this, ref _libraryReference, value, v => LibraryReference = v,
                                            "LibraryReference");
             }
         }

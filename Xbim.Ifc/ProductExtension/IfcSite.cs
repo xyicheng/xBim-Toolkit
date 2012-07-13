@@ -120,7 +120,7 @@ namespace Xbim.Ifc.ProductExtension
                 ((IPersistIfcEntity)this).Activate(false);
                 return _refLatitude;
             }
-            set { ModelHelper.SetModelValue(this, ref _refLatitude, value, v => RefLatitude = v, "RefLatitude"); }
+            set { this.SetModelValue(this, ref _refLatitude, value, v => RefLatitude = v, "RefLatitude"); }
         }
 
         /// <summary>
@@ -138,7 +138,7 @@ namespace Xbim.Ifc.ProductExtension
                 ((IPersistIfcEntity)this).Activate(false);
                 return _refLongitude;
             }
-            set { ModelHelper.SetModelValue(this, ref _refLongitude, value, v => RefLongitude = v, "RefLongitude"); }
+            set { this.SetModelValue(this, ref _refLongitude, value, v => RefLongitude = v, "RefLongitude"); }
         }
 
         /// <summary>
@@ -153,7 +153,7 @@ namespace Xbim.Ifc.ProductExtension
                 ((IPersistIfcEntity)this).Activate(false);
                 return _refElevation;
             }
-            set { ModelHelper.SetModelValue(this, ref _refElevation, value, v => RefElevation = v, "RefElevation"); }
+            set { this.SetModelValue(this, ref _refElevation, value, v => RefElevation = v, "RefElevation"); }
         }
 
         /// <summary>
@@ -170,7 +170,7 @@ namespace Xbim.Ifc.ProductExtension
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _landTitleNumber, value, v => LandTitleNumber = v,
+                this.SetModelValue(this, ref _landTitleNumber, value, v => LandTitleNumber = v,
                                            "LandTitleNumber");
             }
         }
@@ -187,7 +187,7 @@ namespace Xbim.Ifc.ProductExtension
                 ((IPersistIfcEntity)this).Activate(false);
                 return _siteAddress;
             }
-            set { ModelHelper.SetModelValue(this, ref _siteAddress, value, v => SiteAddress = v, "SiteAddress"); }
+            set { this.SetModelValue(this, ref _siteAddress, value, v => SiteAddress = v, "SiteAddress"); }
         }
 
 

@@ -50,7 +50,7 @@ namespace Xbim.Ifc.Kernel
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _relatingPropertyDefinition, value,
+                this.SetModelValue(this, ref _relatingPropertyDefinition, value,
                                            v => RelatingPropertyDefinition = v, "RelatingPropertyDefinition");
             }
         }

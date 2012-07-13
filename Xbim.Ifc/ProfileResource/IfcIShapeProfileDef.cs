@@ -44,7 +44,7 @@ namespace Xbim.Ifc.ProfileResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _overallWidth;
             }
-            set { ModelHelper.SetModelValue(this, ref _overallWidth, value, v => OverallWidth = v, "OverallWidth"); }
+            set { this.SetModelValue(this, ref _overallWidth, value, v => OverallWidth = v, "OverallWidth"); }
         }
 
         [IfcAttribute(5, IfcAttributeState.Mandatory)]
@@ -55,7 +55,7 @@ namespace Xbim.Ifc.ProfileResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _overallDepth;
             }
-            set { ModelHelper.SetModelValue(this, ref _overallDepth, value, v => OverallDepth = v, "OverallDepth"); }
+            set { this.SetModelValue(this, ref _overallDepth, value, v => OverallDepth = v, "OverallDepth"); }
         }
 
         [IfcAttribute(6, IfcAttributeState.Mandatory)]
@@ -66,7 +66,7 @@ namespace Xbim.Ifc.ProfileResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _webThickness;
             }
-            set { ModelHelper.SetModelValue(this, ref _webThickness, value, v => WebThickness = v, "WebThickness"); }
+            set { this.SetModelValue(this, ref _webThickness, value, v => WebThickness = v, "WebThickness"); }
         }
 
         [IfcAttribute(7, IfcAttributeState.Mandatory)]
@@ -79,7 +79,7 @@ namespace Xbim.Ifc.ProfileResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _flangeThickness, value, v => FlangeThickness = v,
+                this.SetModelValue(this, ref _flangeThickness, value, v => FlangeThickness = v,
                                            "FlangeThickness");
             }
         }
@@ -92,7 +92,7 @@ namespace Xbim.Ifc.ProfileResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _filletRadius;
             }
-            set { ModelHelper.SetModelValue(this, ref _filletRadius, value, v => FilletRadius = v, "FilletRadius"); }
+            set { this.SetModelValue(this, ref _filletRadius, value, v => FilletRadius = v, "FilletRadius"); }
         }
 
         #endregion

@@ -65,7 +65,7 @@ namespace Xbim.Ifc.SharedBldgElements
                 ((IPersistIfcEntity) this).Activate(false);
                 return _operationType;
             }
-            set { ModelHelper.SetModelValue(this, ref _operationType, value, v => OperationType = v, "OperationType"); }
+            set { this.SetModelValue(this, ref _operationType, value, v => OperationType = v, "OperationType"); }
         }
 
         /// <summary>
@@ -81,7 +81,7 @@ namespace Xbim.Ifc.SharedBldgElements
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _constructionType, value, v => ConstructionType = v,
+                this.SetModelValue(this, ref _constructionType, value, v => ConstructionType = v,
                                            "ConstructionType");
             }
         }
@@ -99,7 +99,7 @@ namespace Xbim.Ifc.SharedBldgElements
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _parameterTakesPrecedence, value, v => ParameterTakesPrecedence = v,
+                this.SetModelValue(this, ref _parameterTakesPrecedence, value, v => ParameterTakesPrecedence = v,
                                            "ParameterTakesPrecedence");
             }
         }
@@ -115,7 +115,7 @@ namespace Xbim.Ifc.SharedBldgElements
                 ((IPersistIfcEntity) this).Activate(false);
                 return _sizeable;
             }
-            set { ModelHelper.SetModelValue(this, ref _sizeable, value, v => Sizeable = v, "Sizeable"); }
+            set { this.SetModelValue(this, ref _sizeable, value, v => Sizeable = v, "Sizeable"); }
         }
 
 

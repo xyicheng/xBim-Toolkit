@@ -47,7 +47,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _fillStyles;
             }
-            set { ModelHelper.SetModelValue(this, ref _fillStyles, value, v => FillStyles = v, "FillStyles "); }
+            set { this.SetModelValue(this, ref _fillStyles, value, v => FillStyles = v, "FillStyles "); }
         }
 
 

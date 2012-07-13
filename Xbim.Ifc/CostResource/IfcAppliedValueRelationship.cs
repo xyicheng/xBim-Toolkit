@@ -107,7 +107,7 @@ namespace Xbim.Ifc.CostResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _componentOfTotal, value, v => ComponentOfTotal = v,
+                this.SetModelValue(this, ref _componentOfTotal, value, v => ComponentOfTotal = v,
                                            "ComponentOfTotal");
             }
         }
@@ -123,7 +123,7 @@ namespace Xbim.Ifc.CostResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _components;
             }
-            set { ModelHelper.SetModelValue(this, ref _components, value, v => Components = v, "Components"); }
+            set { this.SetModelValue(this, ref _components, value, v => Components = v, "Components"); }
         }
 
         /// <summary>
@@ -139,7 +139,7 @@ namespace Xbim.Ifc.CostResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _arithmeticOperator, value, v => ArithmeticOperator = v,
+                this.SetModelValue(this, ref _arithmeticOperator, value, v => ArithmeticOperator = v,
                                            "ArithmeticOperator");
             }
         }
@@ -155,7 +155,7 @@ namespace Xbim.Ifc.CostResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _name;
             }
-            set { ModelHelper.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
+            set { this.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
         }
 
         /// <summary>
@@ -169,7 +169,7 @@ namespace Xbim.Ifc.CostResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _description;
             }
-            set { ModelHelper.SetModelValue(this, ref _description, value, v => Description = v, "Description"); }
+            set { this.SetModelValue(this, ref _description, value, v => Description = v, "Description"); }
         }
 
         #region INotifyPropertyChanged Members

@@ -58,7 +58,7 @@ namespace Xbim.Ifc.MeasureResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _prefix;
             }
-            set { ModelHelper.SetModelValue(this, ref _prefix, value, v => Prefix = v, "Prefix"); }
+            set { this.SetModelValue(this, ref _prefix, value, v => Prefix = v, "Prefix"); }
         }
 
 
@@ -73,7 +73,7 @@ namespace Xbim.Ifc.MeasureResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _name;
             }
-            set { ModelHelper.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
+            set { this.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
         }
 
         public override void IfcParse(int propIndex, IPropertyValue value)

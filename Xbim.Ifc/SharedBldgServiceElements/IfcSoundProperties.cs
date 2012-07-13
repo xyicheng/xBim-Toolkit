@@ -43,7 +43,7 @@ namespace Xbim.Ifc.SharedBldgServiceElements
                 ((IPersistIfcEntity) this).Activate(false);
                 return _isAttenuating;
             }
-            set { ModelHelper.SetModelValue(this, ref _isAttenuating, value, v => IsAttenuating = v, "IsAttenuating"); }
+            set { this.SetModelValue(this, ref _isAttenuating, value, v => IsAttenuating = v, "IsAttenuating"); }
         }
 
         /// <summary>
@@ -57,7 +57,7 @@ namespace Xbim.Ifc.SharedBldgServiceElements
                 ((IPersistIfcEntity) this).Activate(false);
                 return _soundScale;
             }
-            set { ModelHelper.SetModelValue(this, ref _soundScale, value, v => SoundScale = v, "SoundScale"); }
+            set { this.SetModelValue(this, ref _soundScale, value, v => SoundScale = v, "SoundScale"); }
         }
 
         /// <summary>
@@ -71,7 +71,7 @@ namespace Xbim.Ifc.SharedBldgServiceElements
                 ((IPersistIfcEntity) this).Activate(false);
                 return _soundValues;
             }
-            set { ModelHelper.SetModelValue(this, ref _soundValues, value, v => SoundValues = v, "SoundValues"); }
+            set { this.SetModelValue(this, ref _soundValues, value, v => SoundValues = v, "SoundValues"); }
         }
 
         #region ISupportIfcParser Members

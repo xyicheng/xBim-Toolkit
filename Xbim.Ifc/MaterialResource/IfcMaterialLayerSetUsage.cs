@@ -100,7 +100,7 @@ namespace Xbim.Ifc.MaterialResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _forLayerSet;
             }
-            set { ModelHelper.SetModelValue(this, ref _forLayerSet, value, v => ForLayerSet = v, "ForLayerSet"); }
+            set { this.SetModelValue(this, ref _forLayerSet, value, v => ForLayerSet = v, "ForLayerSet"); }
         }
 
         /// <summary>
@@ -116,7 +116,7 @@ namespace Xbim.Ifc.MaterialResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _layerSetDirection, value, v => LayerSetDirection = v,
+                this.SetModelValue(this, ref _layerSetDirection, value, v => LayerSetDirection = v,
                                            "LayerSetDirection");
             }
         }
@@ -133,7 +133,7 @@ namespace Xbim.Ifc.MaterialResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _directionSense;
             }
-            set { ModelHelper.SetModelValue(this, ref _directionSense, value, v => DirectionSense = v, "DirectionSense"); }
+            set { this.SetModelValue(this, ref _directionSense, value, v => DirectionSense = v, "DirectionSense"); }
         }
 
 
@@ -150,7 +150,7 @@ namespace Xbim.Ifc.MaterialResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _offsetFromReferenceLine, value, v => OffsetFromReferenceLine = v,
+                this.SetModelValue(this, ref _offsetFromReferenceLine, value, v => OffsetFromReferenceLine = v,
                                            "OffsetFromReferenceLine");
             }
         }

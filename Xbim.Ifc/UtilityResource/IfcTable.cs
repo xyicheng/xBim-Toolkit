@@ -85,7 +85,7 @@ namespace Xbim.Ifc.UtilityResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _name;
             }
-            set { ModelHelper.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
+            set { this.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
         }
 
 
@@ -100,7 +100,7 @@ namespace Xbim.Ifc.UtilityResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _rows;
             }
-            set { ModelHelper.SetModelValue(this, ref _rows, value, v => Rows = v, "Rows"); }
+            set { this.SetModelValue(this, ref _rows, value, v => Rows = v, "Rows"); }
         }
 
         /// <summary>

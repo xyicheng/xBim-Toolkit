@@ -68,7 +68,7 @@ namespace Xbim.Ifc.ProductExtension
                 ((IPersistIfcEntity) this).Activate(false);
                 return _operationType;
             }
-            set { ModelHelper.SetModelValue(this, ref _operationType, value, v => OperationType = v, "OperationType"); }
+            set { this.SetModelValue(this, ref _operationType, value, v => OperationType = v, "OperationType"); }
         }
 
         /// <summary>
@@ -84,7 +84,7 @@ namespace Xbim.Ifc.ProductExtension
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _capacityByWeight, value, v => CapacityByWeight = v,
+                this.SetModelValue(this, ref _capacityByWeight, value, v => CapacityByWeight = v,
                                            "CapacityByWeight");
             }
         }
@@ -102,7 +102,7 @@ namespace Xbim.Ifc.ProductExtension
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _capacityByNumber, value, v => CapacityByNumber = v,
+                this.SetModelValue(this, ref _capacityByNumber, value, v => CapacityByNumber = v,
                                            "CapacityByNumber");
             }
         }

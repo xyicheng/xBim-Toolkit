@@ -38,7 +38,7 @@ namespace Xbim.Ifc.TopologyResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _vertexGeometry;
             }
-            set { ModelHelper.SetModelValue(this, ref _vertexGeometry, value, v => VertexGeometry = v, "VertexGeometry"); }
+            set { this.SetModelValue(this, ref _vertexGeometry, value, v => VertexGeometry = v, "VertexGeometry"); }
         }
 
 

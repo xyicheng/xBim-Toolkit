@@ -51,7 +51,7 @@ namespace Xbim.Ifc.PresentationDefinitionResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _definition;
             }
-            set { ModelHelper.SetModelValue(this, ref _definition, value, v => Definition = v, "Definition"); }
+            set { this.SetModelValue(this, ref _definition, value, v => Definition = v, "Definition"); }
         }
 
         /// <summary>
@@ -65,7 +65,7 @@ namespace Xbim.Ifc.PresentationDefinitionResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _target;
             }
-            set { ModelHelper.SetModelValue(this, ref _target, value, v => Target = v, "Target"); }
+            set { this.SetModelValue(this, ref _target, value, v => Target = v, "Target"); }
         }
 
 

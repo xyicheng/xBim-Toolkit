@@ -51,7 +51,7 @@ namespace Xbim.Ifc.ControlExtension
                 ((IPersistIfcEntity)this).Activate(false);
                 return _relatingApproval;
             }
-            set { ModelHelper.SetModelValue(this, ref _relatingApproval, value, v => RelatingApproval = v, "RelatingApproval"); }
+            set { this.SetModelValue(this, ref _relatingApproval, value, v => RelatingApproval = v, "RelatingApproval"); }
         }
 
         #endregion

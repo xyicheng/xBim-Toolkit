@@ -77,7 +77,7 @@ namespace Xbim.Ifc.MeasureResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return this[0];
             }
-            set { ModelHelper.SetModelValue(this, ref _exponents[0], value, v => LengthExponent = v, "LengthExponent"); }
+            set { this.SetModelValue(this, ref _exponents[0], value, v => LengthExponent = v, "LengthExponent"); }
         }
 
         /// <summary>
@@ -91,7 +91,7 @@ namespace Xbim.Ifc.MeasureResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return this[1];
             }
-            set { ModelHelper.SetModelValue(this, ref _exponents[1], value, v => MassExponent = v, "MassExponent"); }
+            set { this.SetModelValue(this, ref _exponents[1], value, v => MassExponent = v, "MassExponent"); }
         }
 
         /// <summary>
@@ -105,7 +105,7 @@ namespace Xbim.Ifc.MeasureResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return this[2];
             }
-            set { ModelHelper.SetModelValue(this, ref _exponents[2], value, v => TimeExponent = v, "TimeExponent"); }
+            set { this.SetModelValue(this, ref _exponents[2], value, v => TimeExponent = v, "TimeExponent"); }
         }
 
         /// <summary>
@@ -121,7 +121,7 @@ namespace Xbim.Ifc.MeasureResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _exponents[3], value, v => ElectricCurrentExponent = v,
+                this.SetModelValue(this, ref _exponents[3], value, v => ElectricCurrentExponent = v,
                                            "ElectricCurrentExponent");
             }
         }
@@ -139,7 +139,7 @@ namespace Xbim.Ifc.MeasureResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _exponents[4], value, v => ThermodynamicTemperatureExponent = v,
+                this.SetModelValue(this, ref _exponents[4], value, v => ThermodynamicTemperatureExponent = v,
                                            "ThermodynamicTemperatureExponent");
             }
         }
@@ -157,7 +157,7 @@ namespace Xbim.Ifc.MeasureResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _exponents[5], value, v => AmountOfSubstanceExponent = v,
+                this.SetModelValue(this, ref _exponents[5], value, v => AmountOfSubstanceExponent = v,
                                            "AmountOfSubstanceExponent");
             }
         }
@@ -175,7 +175,7 @@ namespace Xbim.Ifc.MeasureResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _exponents[6], value, v => LuminousIntensityExponent = v,
+                this.SetModelValue(this, ref _exponents[6], value, v => LuminousIntensityExponent = v,
                                            "LuminousIntensityExponent");
             }
         }

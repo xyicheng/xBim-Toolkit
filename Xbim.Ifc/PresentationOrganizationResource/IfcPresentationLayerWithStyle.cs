@@ -67,7 +67,7 @@ namespace Xbim.Ifc.PresentationOrganizationResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _layerOn;
             }
-            set { ModelHelper.SetModelValue(this, ref _layerOn, value, v => LayerOn = v, "LayerOn"); }
+            set { this.SetModelValue(this, ref _layerOn, value, v => LayerOn = v, "LayerOn"); }
         }
 
         /// <summary>
@@ -81,7 +81,7 @@ namespace Xbim.Ifc.PresentationOrganizationResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _layerFrozen;
             }
-            set { ModelHelper.SetModelValue(this, ref _layerFrozen, value, v => LayerFrozen = v, "LayerFrozen"); }
+            set { this.SetModelValue(this, ref _layerFrozen, value, v => LayerFrozen = v, "LayerFrozen"); }
         }
 
         /// <summary>
@@ -95,7 +95,7 @@ namespace Xbim.Ifc.PresentationOrganizationResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _layerBlocked;
             }
-            set { ModelHelper.SetModelValue(this, ref _layerBlocked, value, v => LayerBlocked = v, "LayerBlocked"); }
+            set { this.SetModelValue(this, ref _layerBlocked, value, v => LayerBlocked = v, "LayerBlocked"); }
         }
 
         /// <summary>
@@ -109,7 +109,7 @@ namespace Xbim.Ifc.PresentationOrganizationResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _layerStyles;
             }
-            set { ModelHelper.SetModelValue(this, ref _layerStyles, value, v => LayerStyles = v, "LayerStyles"); }
+            set { this.SetModelValue(this, ref _layerStyles, value, v => LayerStyles = v, "LayerStyles"); }
         }
 
         public override void IfcParse(int propIndex, IPropertyValue value)

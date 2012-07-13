@@ -65,7 +65,7 @@ namespace Xbim.Ifc.ExternalReferenceResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _referencedSource, value, v => ReferencedSource = v,
+                this.SetModelValue(this, ref _referencedSource, value, v => ReferencedSource = v,
                                            "ReferencedSource");
             }
         }

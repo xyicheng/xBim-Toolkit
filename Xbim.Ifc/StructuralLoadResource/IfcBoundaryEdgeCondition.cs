@@ -50,7 +50,7 @@ namespace Xbim.Ifc.StructuralLoadResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _linearStiffnessByLengthX, value,
+                this.SetModelValue(this, ref _linearStiffnessByLengthX, value,
                                            v => RotationalStiffnessByLengthByLengthX = v,
                                            "RotationalStiffnessByLengthByLengthX");
             }
@@ -69,7 +69,7 @@ namespace Xbim.Ifc.StructuralLoadResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _linearStiffnessByLengthY, value,
+                this.SetModelValue(this, ref _linearStiffnessByLengthY, value,
                                            v => RotationalStiffnessByLengthByLengthY = v,
                                            "RotationalStiffnessByLengthByLengthY");
             }
@@ -88,7 +88,7 @@ namespace Xbim.Ifc.StructuralLoadResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _linearStiffnessByLengthZ, value,
+                this.SetModelValue(this, ref _linearStiffnessByLengthZ, value,
                                            v => RotationalStiffnessByLengthByLengthZ = v,
                                            "RotationalStiffnessByLengthByLengthZ");
             }
@@ -107,7 +107,7 @@ namespace Xbim.Ifc.StructuralLoadResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _rotationalStiffnessByLengthX, value,
+                this.SetModelValue(this, ref _rotationalStiffnessByLengthX, value,
                                            v => RotationalStiffnessByLengthX = v, "RotationalStiffnessByLengthX");
             }
         }
@@ -125,7 +125,7 @@ namespace Xbim.Ifc.StructuralLoadResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _rotationalStiffnessByLengthY, value,
+                this.SetModelValue(this, ref _rotationalStiffnessByLengthY, value,
                                            v => RotationalStiffnessByLengthY = v, "RotationalStiffnessByLengthY");
             }
         }
@@ -143,7 +143,7 @@ namespace Xbim.Ifc.StructuralLoadResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _rotationalStiffnessByLengthZ, value,
+                this.SetModelValue(this, ref _rotationalStiffnessByLengthZ, value,
                                            v => RotationalStiffnessByLengthZ = v, "RotationalStiffnessByLengthZ");
             }
         }

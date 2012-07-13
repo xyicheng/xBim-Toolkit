@@ -45,7 +45,7 @@ namespace Xbim.Ifc.MaterialPropertyResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _material;
             }
-            set { ModelHelper.SetModelValue(this, ref _material, value, v => Material = v, "Material"); }
+            set { this.SetModelValue(this, ref _material, value, v => Material = v, "Material"); }
         }
 
 

@@ -53,7 +53,7 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _relatingStructuralMember, value, v => RelatingStructuralMember = v,
+                this.SetModelValue(this, ref _relatingStructuralMember, value, v => RelatingStructuralMember = v,
                                            "RelatingStructuralMember");
             }
         }
@@ -71,7 +71,7 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _relatedStructuralConnection, value,
+                this.SetModelValue(this, ref _relatedStructuralConnection, value,
                                            v => RelatedStructuralConnection = v, "RelatedStructuralConnection");
             }
         }
@@ -89,7 +89,7 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _appliedCondition, value, v => AppliedCondition = v,
+                this.SetModelValue(this, ref _appliedCondition, value, v => AppliedCondition = v,
                                            "AppliedCondition");
             }
         }
@@ -107,7 +107,7 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _additionalConditions, value, v => AdditionalConditions = v,
+                this.SetModelValue(this, ref _additionalConditions, value, v => AdditionalConditions = v,
                                            "AdditionalConditions");
             }
         }
@@ -125,7 +125,7 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _supportedLength, value, v => SupportedLength = v,
+                this.SetModelValue(this, ref _supportedLength, value, v => SupportedLength = v,
                                            "SupportedLength");
             }
         }
@@ -144,7 +144,7 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _conditionCoordinateSystem, value,
+                this.SetModelValue(this, ref _conditionCoordinateSystem, value,
                                            v => ConditionCoordinateSystem = v, "ConditionCoordinateSystem");
             }
         }

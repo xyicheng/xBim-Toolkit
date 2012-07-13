@@ -42,7 +42,7 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _connectionConstraint, value, v => ConnectionConstraint = v,
+                this.SetModelValue(this, ref _connectionConstraint, value, v => ConnectionConstraint = v,
                                            "ConnectionConstraint");
             }
         }

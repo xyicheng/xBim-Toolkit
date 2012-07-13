@@ -106,7 +106,7 @@ namespace Xbim.Ifc.GeometricConstraintResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _placementRelTo;
             }
-            set { ModelHelper.SetModelValue(this, ref _placementRelTo, value, v => PlacementRelTo = v, "PlacementRelTo"); }
+            set { this.SetModelValue(this, ref _placementRelTo, value, v => PlacementRelTo = v, "PlacementRelTo"); }
         }
 
         /// <summary>
@@ -125,7 +125,7 @@ namespace Xbim.Ifc.GeometricConstraintResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _relativePlacement, value, v => RelativePlacement = v,
+                this.SetModelValue(this, ref _relativePlacement, value, v => RelativePlacement = v,
                                            "RelativePlacement");
             }
         }

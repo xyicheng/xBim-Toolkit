@@ -58,7 +58,7 @@ namespace Xbim.Ifc.ProductExtension
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _relatingBuildingElement, value, v => RelatingBuildingElement = v,
+                this.SetModelValue(this, ref _relatingBuildingElement, value, v => RelatingBuildingElement = v,
                                            "RelatingBuildingElement");
             }
         }
@@ -76,7 +76,7 @@ namespace Xbim.Ifc.ProductExtension
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _relatedCoverings, value, v => RelatedCoverings = v,
+                this.SetModelValue(this, ref _relatedCoverings, value, v => RelatedCoverings = v,
                                            "RelatedCoverings");
             }
         }

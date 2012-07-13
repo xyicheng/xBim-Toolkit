@@ -44,7 +44,7 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
                 ((IPersistIfcEntity) this).Activate(false);
                 return _predefinedType;
             }
-            set { ModelHelper.SetModelValue(this, ref _predefinedType, value, v => PredefinedType = v, "PredefinedType"); }
+            set { this.SetModelValue(this, ref _predefinedType, value, v => PredefinedType = v, "PredefinedType"); }
         }
 
         [IfcAttribute(7, IfcAttributeState.Optional)]
@@ -57,7 +57,7 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _orientationOf2DPlane, value, v => OrientationOf2DPlane = v,
+                this.SetModelValue(this, ref _orientationOf2DPlane, value, v => OrientationOf2DPlane = v,
                                            "OrientationOf2DPlane");
             }
         }
@@ -70,7 +70,7 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
                 ((IPersistIfcEntity) this).Activate(false);
                 return _loadedBy;
             }
-            set { ModelHelper.SetModelValue(this, ref _loadedBy, value, v => LoadedBy = v, "LoadedBy"); }
+            set { this.SetModelValue(this, ref _loadedBy, value, v => LoadedBy = v, "LoadedBy"); }
         }
 
         [IfcAttribute(9, IfcAttributeState.Optional)]
@@ -81,7 +81,7 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
                 ((IPersistIfcEntity) this).Activate(false);
                 return _hasResults;
             }
-            set { ModelHelper.SetModelValue(this, ref _hasResults, value, v => HasResults = v, "HasResults"); }
+            set { this.SetModelValue(this, ref _hasResults, value, v => HasResults = v, "HasResults"); }
         }
 
         #endregion

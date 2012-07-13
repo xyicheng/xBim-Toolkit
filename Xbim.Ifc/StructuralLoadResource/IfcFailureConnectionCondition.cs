@@ -50,7 +50,7 @@ namespace Xbim.Ifc.StructuralLoadResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _tensionFailureX, value, v => TensionFailureX = v,
+                this.SetModelValue(this, ref _tensionFailureX, value, v => TensionFailureX = v,
                                            "TensionFailureX");
             }
         }
@@ -68,7 +68,7 @@ namespace Xbim.Ifc.StructuralLoadResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _tensionFailureY, value, v => TensionFailureY = v,
+                this.SetModelValue(this, ref _tensionFailureY, value, v => TensionFailureY = v,
                                            "TensionFailureY");
             }
         }
@@ -86,7 +86,7 @@ namespace Xbim.Ifc.StructuralLoadResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _tensionFailureZ, value, v => TensionFailureZ = v,
+                this.SetModelValue(this, ref _tensionFailureZ, value, v => TensionFailureZ = v,
                                            "TensionFailureZ");
             }
         }
@@ -104,7 +104,7 @@ namespace Xbim.Ifc.StructuralLoadResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _compressionFailureX, value, v => CompressionFailureX = v,
+                this.SetModelValue(this, ref _compressionFailureX, value, v => CompressionFailureX = v,
                                            "CompressionFailureX");
             }
         }
@@ -122,7 +122,7 @@ namespace Xbim.Ifc.StructuralLoadResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _compressionFailureY, value, v => CompressionFailureY = v,
+                this.SetModelValue(this, ref _compressionFailureY, value, v => CompressionFailureY = v,
                                            "CompressionFailureY");
             }
         }
@@ -140,7 +140,7 @@ namespace Xbim.Ifc.StructuralLoadResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _compressionFailureZ, value, v => CompressionFailureZ = v,
+                this.SetModelValue(this, ref _compressionFailureZ, value, v => CompressionFailureZ = v,
                                            "CompressionFailureZ");
             }
         }

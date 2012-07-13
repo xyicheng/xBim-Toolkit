@@ -47,7 +47,7 @@ namespace Xbim.Ifc.Kernel
                 ((IPersistIfcEntity) this).Activate(false);
                 return _relatingType;
             }
-            set { ModelHelper.SetModelValue(this, ref _relatingType, value, v => RelatingType = v, "RelatingType"); }
+            set { this.SetModelValue(this, ref _relatingType, value, v => RelatingType = v, "RelatingType"); }
         }
 
 

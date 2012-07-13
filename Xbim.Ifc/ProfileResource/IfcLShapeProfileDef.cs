@@ -50,7 +50,7 @@ namespace Xbim.Ifc.ProfileResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _depth;
             }
-            set { ModelHelper.SetModelValue(this, ref _depth, value, v => Depth = v, "Depth"); }
+            set { this.SetModelValue(this, ref _depth, value, v => Depth = v, "Depth"); }
         }
 
         /// <summary>
@@ -64,7 +64,7 @@ namespace Xbim.Ifc.ProfileResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _width;
             }
-            set { ModelHelper.SetModelValue(this, ref _width, value, v => Width = v, "Width"); }
+            set { this.SetModelValue(this, ref _width, value, v => Width = v, "Width"); }
         }
 
         /// <summary>
@@ -78,7 +78,7 @@ namespace Xbim.Ifc.ProfileResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _thickness;
             }
-            set { ModelHelper.SetModelValue(this, ref _thickness, value, v => Thickness = v, "Thickness"); }
+            set { this.SetModelValue(this, ref _thickness, value, v => Thickness = v, "Thickness"); }
         }
 
 
@@ -93,7 +93,7 @@ namespace Xbim.Ifc.ProfileResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _filletRadius;
             }
-            set { ModelHelper.SetModelValue(this, ref _filletRadius, value, v => FilletRadius = v, "FilletRadius"); }
+            set { this.SetModelValue(this, ref _filletRadius, value, v => FilletRadius = v, "FilletRadius"); }
         }
 
         /// <summary>
@@ -107,7 +107,7 @@ namespace Xbim.Ifc.ProfileResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _edgeRadius;
             }
-            set { ModelHelper.SetModelValue(this, ref _edgeRadius, value, v => EdgeRadius = v, "EdgeRadius"); }
+            set { this.SetModelValue(this, ref _edgeRadius, value, v => EdgeRadius = v, "EdgeRadius"); }
         }
 
         /// <summary>
@@ -121,7 +121,7 @@ namespace Xbim.Ifc.ProfileResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _legSlope;
             }
-            set { ModelHelper.SetModelValue(this, ref _legSlope, value, v => LegSlope = v, "LegSlope"); }
+            set { this.SetModelValue(this, ref _legSlope, value, v => LegSlope = v, "LegSlope"); }
         }
 
         /// <summary>
@@ -137,7 +137,7 @@ namespace Xbim.Ifc.ProfileResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _centreOfGravityInX, value, v => CentreOfGravityInX = v,
+                this.SetModelValue(this, ref _centreOfGravityInX, value, v => CentreOfGravityInX = v,
                                            "CentreOfGravityInX");
             }
         }
@@ -155,7 +155,7 @@ namespace Xbim.Ifc.ProfileResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _centreOfGravityInY, value, v => CentreOfGravityInY = v,
+                this.SetModelValue(this, ref _centreOfGravityInY, value, v => CentreOfGravityInY = v,
                                            "CentreOfGravityInY");
             }
         }

@@ -89,7 +89,7 @@ namespace Xbim.Ifc.PresentationOrganizationResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _name;
             }
-            set { ModelHelper.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
+            set { this.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
         }
 
         /// <summary>
@@ -103,7 +103,7 @@ namespace Xbim.Ifc.PresentationOrganizationResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _description;
             }
-            set { ModelHelper.SetModelValue(this, ref _description, value, v => Description = v, "Description"); }
+            set { this.SetModelValue(this, ref _description, value, v => Description = v, "Description"); }
         }
 
         /// <summary>
@@ -117,7 +117,7 @@ namespace Xbim.Ifc.PresentationOrganizationResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _assignedItems;
             }
-            set { ModelHelper.SetModelValue(this, ref _assignedItems, value, v => AssignedItems = v, "AssignedItems"); }
+            set { this.SetModelValue(this, ref _assignedItems, value, v => AssignedItems = v, "AssignedItems"); }
         }
 
         /// <summary>
@@ -131,7 +131,7 @@ namespace Xbim.Ifc.PresentationOrganizationResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _identifier;
             }
-            set { ModelHelper.SetModelValue(this, ref _identifier, value, v => Identifier = v, "Identifier"); }
+            set { this.SetModelValue(this, ref _identifier, value, v => Identifier = v, "Identifier"); }
         }
 
 

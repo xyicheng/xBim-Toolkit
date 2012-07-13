@@ -102,7 +102,7 @@ namespace Xbim.Ifc.SharedBldgElements
                 ((IPersistIfcEntity) this).Activate(false);
                 return _liningDepth;
             }
-            set { ModelHelper.SetModelValue(this, ref _liningDepth, value, v => LiningDepth = v, "LiningDepth"); }
+            set { this.SetModelValue(this, ref _liningDepth, value, v => LiningDepth = v, "LiningDepth"); }
         }
 
         /// <summary>
@@ -118,7 +118,7 @@ namespace Xbim.Ifc.SharedBldgElements
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _liningThickness, value, v => LiningThickness = v,
+                this.SetModelValue(this, ref _liningThickness, value, v => LiningThickness = v,
                                            "LiningThickness");
             }
         }
@@ -134,7 +134,7 @@ namespace Xbim.Ifc.SharedBldgElements
                 ((IPersistIfcEntity) this).Activate(false);
                 return _thresholdDepth;
             }
-            set { ModelHelper.SetModelValue(this, ref _thresholdDepth, value, v => ThresholdDepth = v, "ThresholdDepth"); }
+            set { this.SetModelValue(this, ref _thresholdDepth, value, v => ThresholdDepth = v, "ThresholdDepth"); }
         }
 
         /// <summary>
@@ -150,7 +150,7 @@ namespace Xbim.Ifc.SharedBldgElements
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _thresholdThickness, value, v => ThresholdThickness = v,
+                this.SetModelValue(this, ref _thresholdThickness, value, v => ThresholdThickness = v,
                                            "ThresholdThickness");
             }
         }
@@ -168,7 +168,7 @@ namespace Xbim.Ifc.SharedBldgElements
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _transomThickness, value, v => TransomThickness = v,
+                this.SetModelValue(this, ref _transomThickness, value, v => TransomThickness = v,
                                            "TransomThickness");
             }
         }
@@ -184,7 +184,7 @@ namespace Xbim.Ifc.SharedBldgElements
                 ((IPersistIfcEntity) this).Activate(false);
                 return _transomOffset;
             }
-            set { ModelHelper.SetModelValue(this, ref _transomOffset, value, v => TransomOffset = v, "TransomOffset"); }
+            set { this.SetModelValue(this, ref _transomOffset, value, v => TransomOffset = v, "TransomOffset"); }
         }
 
         /// <summary>
@@ -198,7 +198,7 @@ namespace Xbim.Ifc.SharedBldgElements
                 ((IPersistIfcEntity) this).Activate(false);
                 return _liningOffset;
             }
-            set { ModelHelper.SetModelValue(this, ref _liningOffset, value, v => LiningOffset = v, "LiningOffset"); }
+            set { this.SetModelValue(this, ref _liningOffset, value, v => LiningOffset = v, "LiningOffset"); }
         }
 
         /// <summary>
@@ -214,7 +214,7 @@ namespace Xbim.Ifc.SharedBldgElements
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _thresholdOffset, value, v => ThresholdOffset = v,
+                this.SetModelValue(this, ref _thresholdOffset, value, v => ThresholdOffset = v,
                                            "ThresholdOffset");
             }
         }
@@ -232,7 +232,7 @@ namespace Xbim.Ifc.SharedBldgElements
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _casingThickness, value, v => CasingThickness = v,
+                this.SetModelValue(this, ref _casingThickness, value, v => CasingThickness = v,
                                            "CasingThickness");
             }
         }
@@ -248,7 +248,7 @@ namespace Xbim.Ifc.SharedBldgElements
                 ((IPersistIfcEntity) this).Activate(false);
                 return _casingDepth;
             }
-            set { ModelHelper.SetModelValue(this, ref _casingDepth, value, v => CasingDepth = v, "CasingDepth"); }
+            set { this.SetModelValue(this, ref _casingDepth, value, v => CasingDepth = v, "CasingDepth"); }
         }
 
         /// <summary>
@@ -264,7 +264,7 @@ namespace Xbim.Ifc.SharedBldgElements
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _shapeAspectStyle, value, v => ShapeAspectStyle = v,
+                this.SetModelValue(this, ref _shapeAspectStyle, value, v => ShapeAspectStyle = v,
                                            "ShapeAspectStyle");
             }
         }

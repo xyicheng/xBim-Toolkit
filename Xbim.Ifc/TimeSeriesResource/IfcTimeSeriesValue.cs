@@ -92,7 +92,7 @@ namespace Xbim.Ifc.TimeSeriesResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _listValues;
             }
-            set { ModelHelper.SetModelValue(this, ref _listValues, value, v => ListValues = v, "ListValues"); }
+            set { this.SetModelValue(this, ref _listValues, value, v => ListValues = v, "ListValues"); }
         }
 
         #region INotifyPropertyChanged Members

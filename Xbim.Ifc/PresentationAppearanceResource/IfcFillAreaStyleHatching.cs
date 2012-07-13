@@ -51,7 +51,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _hatchLineAppearance, value, v => HatchLineAppearance = v,
+                this.SetModelValue(this, ref _hatchLineAppearance, value, v => HatchLineAppearance = v,
                                            "HatchLineAppearance");
             }
         }
@@ -69,7 +69,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _startOfNextHatchLine, value, v => StartOfNextHatchLine = v,
+                this.SetModelValue(this, ref _startOfNextHatchLine, value, v => StartOfNextHatchLine = v,
                                            "StartOfNextHatchLine");
             }
         }
@@ -90,7 +90,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _pointOfReferenceHatchLine, value,
+                this.SetModelValue(this, ref _pointOfReferenceHatchLine, value,
                                            v => PointOfReferenceHatchLine = v, "PointOfReferenceHatchLine");
             }
         }
@@ -107,7 +107,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _patternStart;
             }
-            set { ModelHelper.SetModelValue(this, ref _patternStart, value, v => PatternStart = v, "PatternStart"); }
+            set { this.SetModelValue(this, ref _patternStart, value, v => PatternStart = v, "PatternStart"); }
         }
 
         /// <summary>
@@ -121,7 +121,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _hatchLineAngle;
             }
-            set { ModelHelper.SetModelValue(this, ref _hatchLineAngle, value, v => HatchLineAngle = v, "HatchLineAngle"); }
+            set { this.SetModelValue(this, ref _hatchLineAngle, value, v => HatchLineAngle = v, "HatchLineAngle"); }
         }
 
 

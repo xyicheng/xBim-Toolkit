@@ -50,7 +50,7 @@ namespace Xbim.Ifc.SharedBldgElements
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _relatingPriorities, value, v => RelatingPriorities = v,
+                this.SetModelValue(this, ref _relatingPriorities, value, v => RelatingPriorities = v,
                                            "RelatingPriorities");
             }
         }
@@ -68,7 +68,7 @@ namespace Xbim.Ifc.SharedBldgElements
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _relatedPriorities, value, v => RelatedPriorities = v,
+                this.SetModelValue(this, ref _relatedPriorities, value, v => RelatedPriorities = v,
                                            "RelatedPriorities");
             }
         }
@@ -86,7 +86,7 @@ namespace Xbim.Ifc.SharedBldgElements
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _relatedConnectionType, value, v => RelatedConnectionType = v,
+                this.SetModelValue(this, ref _relatedConnectionType, value, v => RelatedConnectionType = v,
                                            "RelatedConnectionType");
             }
         }
@@ -104,7 +104,7 @@ namespace Xbim.Ifc.SharedBldgElements
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _relatingConnectionType, value, v => RelatingConnectionType = v,
+                this.SetModelValue(this, ref _relatingConnectionType, value, v => RelatingConnectionType = v,
                                            "RelatingConnectionType");
             }
         }

@@ -97,7 +97,7 @@ namespace Xbim.Ifc.CostResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _name;
             }
-            set { ModelHelper.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
+            set { this.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
         }
 
         /// <summary>
@@ -111,7 +111,7 @@ namespace Xbim.Ifc.CostResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _description;
             }
-            set { ModelHelper.SetModelValue(this, ref _description, value, v => Description = v, "Description"); }
+            set { this.SetModelValue(this, ref _description, value, v => Description = v, "Description"); }
         }
 
         /// <summary>
@@ -125,7 +125,7 @@ namespace Xbim.Ifc.CostResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _appliedValue;
             }
-            set { ModelHelper.SetModelValue(this, ref _appliedValue, value, v => Value = v, "Value"); }
+            set { this.SetModelValue(this, ref _appliedValue, value, v => Value = v, "Value"); }
         }
 
         /// <summary>
@@ -139,7 +139,7 @@ namespace Xbim.Ifc.CostResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _unitBasis;
             }
-            set { ModelHelper.SetModelValue(this, ref _unitBasis, value, v => UnitBasis = v, "UnitBasis"); }
+            set { this.SetModelValue(this, ref _unitBasis, value, v => UnitBasis = v, "UnitBasis"); }
         }
 
         /// <summary>
@@ -153,7 +153,7 @@ namespace Xbim.Ifc.CostResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _applicableDate;
             }
-            set { ModelHelper.SetModelValue(this, ref _applicableDate, value, v => ApplicableDate = v, "ApplicableDate"); }
+            set { this.SetModelValue(this, ref _applicableDate, value, v => ApplicableDate = v, "ApplicableDate"); }
         }
 
         /// <summary>
@@ -167,7 +167,7 @@ namespace Xbim.Ifc.CostResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _fixedUntilDate;
             }
-            set { ModelHelper.SetModelValue(this, ref _fixedUntilDate, value, v => FixedUntilDate = v, "FixedUntilDate"); }
+            set { this.SetModelValue(this, ref _fixedUntilDate, value, v => FixedUntilDate = v, "FixedUntilDate"); }
         }
 
 

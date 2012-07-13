@@ -93,7 +93,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _styles;
             }
-            set { ModelHelper.SetModelValue(this, ref _styles, value, v => Styles = v, "Styles"); }
+            set { this.SetModelValue(this, ref _styles, value, v => Styles = v, "Styles"); }
         }
 
 

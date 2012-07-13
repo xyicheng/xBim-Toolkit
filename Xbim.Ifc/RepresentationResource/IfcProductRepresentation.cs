@@ -105,7 +105,7 @@ namespace Xbim.Ifc.RepresentationResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _name;
             }
-            set { ModelHelper.SetModelValue(this, ref _name, value, v => Name = value, "Name"); }
+            set { this.SetModelValue(this, ref _name, value, v => Name = value, "Name"); }
         }
 
         /// <summary>
@@ -119,7 +119,7 @@ namespace Xbim.Ifc.RepresentationResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _description;
             }
-            set { ModelHelper.SetModelValue(this, ref _description, value, v => Description = value, "Description"); }
+            set { this.SetModelValue(this, ref _description, value, v => Description = value, "Description"); }
         }
 
         /// <summary>
@@ -135,7 +135,7 @@ namespace Xbim.Ifc.RepresentationResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _representations, value, v => Representations = v,
+                this.SetModelValue(this, ref _representations, value, v => Representations = v,
                                            "Representations");
             }
         }

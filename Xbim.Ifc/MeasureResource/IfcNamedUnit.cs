@@ -90,7 +90,7 @@ namespace Xbim.Ifc.MeasureResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _dimensions;
             }
-            set { ModelHelper.SetModelValue(this, ref _dimensions, value, v => Dimensions = v, "Dimensions"); }
+            set { this.SetModelValue(this, ref _dimensions, value, v => Dimensions = v, "Dimensions"); }
         }
 
         /// <summary>
@@ -104,7 +104,7 @@ namespace Xbim.Ifc.MeasureResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _unitType;
             }
-            set { ModelHelper.SetModelValue(this, ref _unitType, value, v => UnitType = v, "UnitType"); }
+            set { this.SetModelValue(this, ref _unitType, value, v => UnitType = v, "UnitType"); }
         }
 
        

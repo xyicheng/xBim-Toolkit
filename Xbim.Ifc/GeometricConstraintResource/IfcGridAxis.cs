@@ -68,7 +68,7 @@ namespace Xbim.Ifc.GeometricConstraintResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _axisTag, value, v => AxisTag = v, "AxisTag");
+                this.SetModelValue(this, ref _axisTag, value, v => AxisTag = v, "AxisTag");
             }
         }
 
@@ -85,7 +85,7 @@ namespace Xbim.Ifc.GeometricConstraintResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _axisCurve, value, v => AxisCurve = v, "AxisCurve");
+                this.SetModelValue(this, ref _axisCurve, value, v => AxisCurve = v, "AxisCurve");
             }
         }
 
@@ -102,7 +102,7 @@ namespace Xbim.Ifc.GeometricConstraintResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _sameSense, value, v => SameSense = v, "SameSense");
+                this.SetModelValue(this, ref _sameSense, value, v => SameSense = v, "SameSense");
             }
         }
 

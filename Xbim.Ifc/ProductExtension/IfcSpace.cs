@@ -142,7 +142,7 @@ namespace Xbim.Ifc.ProductExtension
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _interiorOrExteriorSpace, value, v => InteriorOrExteriorSpace = v,
+                this.SetModelValue(this, ref _interiorOrExteriorSpace, value, v => InteriorOrExteriorSpace = v,
                                            "InteriorOrExteriorSpace");
             }
         }
@@ -162,7 +162,7 @@ namespace Xbim.Ifc.ProductExtension
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _elevationWithFlooring, value, v => ElevationWithFlooring = v,
+                this.SetModelValue(this, ref _elevationWithFlooring, value, v => ElevationWithFlooring = v,
                                            "ElevationWithFlooring");
             }
         }

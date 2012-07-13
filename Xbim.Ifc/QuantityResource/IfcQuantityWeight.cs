@@ -49,7 +49,7 @@ namespace Xbim.Ifc.QuantityResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _weightValue;
             }
-            set { ModelHelper.SetModelValue(this, ref _weightValue, value, v => WeightValue = v, "WeightValue"); }
+            set { this.SetModelValue(this, ref _weightValue, value, v => WeightValue = v, "WeightValue"); }
         }
 
         public override void IfcParse(int propIndex, IPropertyValue value)

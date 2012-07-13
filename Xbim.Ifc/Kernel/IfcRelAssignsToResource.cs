@@ -49,7 +49,7 @@ namespace Xbim.Ifc.Kernel
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _relatingResource, value, v => RelatingResource = v,
+                this.SetModelValue(this, ref _relatingResource, value, v => RelatingResource = v,
                                            "RelatingResource");
             }
         }

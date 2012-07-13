@@ -80,7 +80,7 @@ namespace Xbim.Ifc.DateTimeResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _hourOffset;
             }
-            set { ModelHelper.SetModelValue(this, ref _hourOffset, value, v => HourOffset = v, "HourOffset"); }
+            set { this.SetModelValue(this, ref _hourOffset, value, v => HourOffset = v, "HourOffset"); }
         }
 
         /// <summary>
@@ -94,7 +94,7 @@ namespace Xbim.Ifc.DateTimeResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _minuteOffset;
             }
-            set { ModelHelper.SetModelValue(this, ref _minuteOffset, value, v => MinuteOffset = v, "MinuteOffset"); }
+            set { this.SetModelValue(this, ref _minuteOffset, value, v => MinuteOffset = v, "MinuteOffset"); }
         }
 
         /// <summary>
@@ -108,7 +108,7 @@ namespace Xbim.Ifc.DateTimeResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _sense;
             }
-            set { ModelHelper.SetModelValue(this, ref _sense, value, v => Sense = v, "Sense"); }
+            set { this.SetModelValue(this, ref _sense, value, v => Sense = v, "Sense"); }
         }
 
         #region ISupportIfcParser Members

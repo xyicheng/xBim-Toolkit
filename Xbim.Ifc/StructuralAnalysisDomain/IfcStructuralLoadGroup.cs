@@ -60,7 +60,7 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
                 ((IPersistIfcEntity) this).Activate(false);
                 return _predefinedType;
             }
-            set { ModelHelper.SetModelValue(this, ref _predefinedType, value, v => PredefinedType = v, "PredefinedType"); }
+            set { this.SetModelValue(this, ref _predefinedType, value, v => PredefinedType = v, "PredefinedType"); }
         }
 
         /// <summary>
@@ -74,7 +74,7 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
                 ((IPersistIfcEntity) this).Activate(false);
                 return _actionType;
             }
-            set { ModelHelper.SetModelValue(this, ref _actionType, value, v => ActionType = v, "ActionType"); }
+            set { this.SetModelValue(this, ref _actionType, value, v => ActionType = v, "ActionType"); }
         }
 
         /// <summary>
@@ -88,7 +88,7 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
                 ((IPersistIfcEntity) this).Activate(false);
                 return _actionSource;
             }
-            set { ModelHelper.SetModelValue(this, ref _actionSource, value, v => ActionSource = v, "ActionSource"); }
+            set { this.SetModelValue(this, ref _actionSource, value, v => ActionSource = v, "ActionSource"); }
         }
 
         /// <summary>
@@ -102,7 +102,7 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
                 ((IPersistIfcEntity) this).Activate(false);
                 return _coefficient;
             }
-            set { ModelHelper.SetModelValue(this, ref _coefficient, value, v => Coefficient = v, "Coefficient"); }
+            set { this.SetModelValue(this, ref _coefficient, value, v => Coefficient = v, "Coefficient"); }
         }
 
         /// <summary>
@@ -117,7 +117,7 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
                 ((IPersistIfcEntity) this).Activate(false);
                 return _purpose;
             }
-            set { ModelHelper.SetModelValue(this, ref _purpose, value, v => Purpose = v, "Purpose"); }
+            set { this.SetModelValue(this, ref _purpose, value, v => Purpose = v, "Purpose"); }
         }
 
         /// <summary>

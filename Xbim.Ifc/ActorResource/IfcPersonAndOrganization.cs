@@ -100,7 +100,7 @@ namespace Xbim.Ifc.ActorResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _thePerson;
             }
-            set { ModelHelper.SetModelValue(this, ref _thePerson, value, v => ThePerson = v, "ThePerson"); }
+            set { this.SetModelValue(this, ref _thePerson, value, v => ThePerson = v, "ThePerson"); }
         }
 
         /// <summary>
@@ -117,7 +117,7 @@ namespace Xbim.Ifc.ActorResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _theOrganization, value, v => TheOrganization = v,
+                this.SetModelValue(this, ref _theOrganization, value, v => TheOrganization = v,
                                            "TheOrganization");
             }
         }
@@ -134,7 +134,7 @@ namespace Xbim.Ifc.ActorResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _roles;
             }
-            private set { ModelHelper.SetModelValue(this, ref _roles, value, v => Roles = v, "Roles"); }
+            private set { this.SetModelValue(this, ref _roles, value, v => Roles = v, "Roles"); }
         }
 
         #endregion

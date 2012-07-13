@@ -86,7 +86,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _name;
             }
-            set { ModelHelper.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
+            set { this.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
         }
 
 
@@ -98,7 +98,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _patternList;
             }
-            set { ModelHelper.SetModelValue(this, ref _patternList, value, v => PatternList = v, "PatternList"); }
+            set { this.SetModelValue(this, ref _patternList, value, v => PatternList = v, "PatternList"); }
         }
 
 

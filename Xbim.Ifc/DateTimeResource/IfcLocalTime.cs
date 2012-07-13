@@ -83,7 +83,7 @@ namespace Xbim.Ifc.DateTimeResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _hourComponent;
             }
-            set { ModelHelper.SetModelValue(this, ref _hourComponent, value, v => HourComponent = v, "HourComponent"); }
+            set { this.SetModelValue(this, ref _hourComponent, value, v => HourComponent = v, "HourComponent"); }
         }
 
         /// <summary>
@@ -99,7 +99,7 @@ namespace Xbim.Ifc.DateTimeResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _minuteComponent, value, v => MinuteComponent = v,
+                this.SetModelValue(this, ref _minuteComponent, value, v => MinuteComponent = v,
                                            "MinuteComponent");
             }
         }
@@ -117,7 +117,7 @@ namespace Xbim.Ifc.DateTimeResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _secondComponent, value, v => SecondComponent = v,
+                this.SetModelValue(this, ref _secondComponent, value, v => SecondComponent = v,
                                            "SecondComponent");
             }
         }
@@ -133,7 +133,7 @@ namespace Xbim.Ifc.DateTimeResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _zone;
             }
-            set { ModelHelper.SetModelValue(this, ref _zone, value, v => Zone = v, "Zone"); }
+            set { this.SetModelValue(this, ref _zone, value, v => Zone = v, "Zone"); }
         }
 
         /// <summary>
@@ -149,7 +149,7 @@ namespace Xbim.Ifc.DateTimeResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _daylightSavingOffset, value, v => DaylightSavingOffset = v,
+                this.SetModelValue(this, ref _daylightSavingOffset, value, v => DaylightSavingOffset = v,
                                            "DaylightSavingOffset");
             }
         }

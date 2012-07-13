@@ -50,7 +50,7 @@ namespace Xbim.Ifc.Kernel
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _relatingProcess, value, v => RelatingProcess = v,
+                this.SetModelValue(this, ref _relatingProcess, value, v => RelatingProcess = v,
                                            "RelatingProcess");
             }
         }
@@ -65,7 +65,7 @@ namespace Xbim.Ifc.Kernel
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _quantityInProcess, value, v => QuantityInProcess = v,
+                this.SetModelValue(this, ref _quantityInProcess, value, v => QuantityInProcess = v,
                                            "QuantityInProcess");
             }
         }

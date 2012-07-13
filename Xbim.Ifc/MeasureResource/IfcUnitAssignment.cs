@@ -85,7 +85,7 @@ namespace Xbim.Ifc.MeasureResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _units;
             }
-            set { ModelHelper.SetModelValue(this, ref _units, value, v => Units = v, "Units"); }
+            set { this.SetModelValue(this, ref _units, value, v => Units = v, "Units"); }
         }
 
 

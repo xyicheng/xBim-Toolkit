@@ -94,7 +94,7 @@ namespace Xbim.Ifc.ExternalReferenceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _notationFacets;
             }
-            set { ModelHelper.SetModelValue(this, ref _notationFacets, value, v => NotationFacets = v, "NotationFacets"); }
+            set { this.SetModelValue(this, ref _notationFacets, value, v => NotationFacets = v, "NotationFacets"); }
         }
 
         #region INotifyPropertyChanged Members

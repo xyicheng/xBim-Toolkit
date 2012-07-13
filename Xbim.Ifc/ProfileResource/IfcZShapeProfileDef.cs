@@ -45,7 +45,7 @@ namespace Xbim.Ifc.ProfileResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _depth;
             }
-            set { ModelHelper.SetModelValue(this, ref _depth, value, v => Depth = v, "Depth"); }
+            set { this.SetModelValue(this, ref _depth, value, v => Depth = v, "Depth"); }
         }
 
         [IfcAttribute(5, IfcAttributeState.Mandatory)]
@@ -56,7 +56,7 @@ namespace Xbim.Ifc.ProfileResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _flangeWidth;
             }
-            set { ModelHelper.SetModelValue(this, ref _flangeWidth, value, v => FlangeWidth = v, "FlangeWidth"); }
+            set { this.SetModelValue(this, ref _flangeWidth, value, v => FlangeWidth = v, "FlangeWidth"); }
         }
 
         [IfcAttribute(6, IfcAttributeState.Mandatory)]
@@ -67,7 +67,7 @@ namespace Xbim.Ifc.ProfileResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _webThickness;
             }
-            set { ModelHelper.SetModelValue(this, ref _webThickness, value, v => WebThickness = v, "WebThickness"); }
+            set { this.SetModelValue(this, ref _webThickness, value, v => WebThickness = v, "WebThickness"); }
         }
 
         [IfcAttribute(7, IfcAttributeState.Mandatory)]
@@ -80,7 +80,7 @@ namespace Xbim.Ifc.ProfileResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _flangeThickness, value, v => FlangeThickness = v,
+                this.SetModelValue(this, ref _flangeThickness, value, v => FlangeThickness = v,
                                            "FlangeThickness");
             }
         }
@@ -93,7 +93,7 @@ namespace Xbim.Ifc.ProfileResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _filletRadius;
             }
-            set { ModelHelper.SetModelValue(this, ref _filletRadius, value, v => FilletRadius = v, "FilletRadius"); }
+            set { this.SetModelValue(this, ref _filletRadius, value, v => FilletRadius = v, "FilletRadius"); }
         }
 
         [IfcAttribute(9, IfcAttributeState.Optional)]
@@ -104,7 +104,7 @@ namespace Xbim.Ifc.ProfileResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _edgeRadius;
             }
-            set { ModelHelper.SetModelValue(this, ref _edgeRadius, value, v => EdgeRadius = v, "EdgeRadius"); }
+            set { this.SetModelValue(this, ref _edgeRadius, value, v => EdgeRadius = v, "EdgeRadius"); }
         }
 
         #endregion

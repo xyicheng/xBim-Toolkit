@@ -54,7 +54,7 @@ namespace Xbim.Ifc.ProductExtension
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _connectionGeometry, value, v => ConnectionGeometry = v,
+                this.SetModelValue(this, ref _connectionGeometry, value, v => ConnectionGeometry = v,
                                            "ConnectionGeometry");
             }
         }
@@ -72,7 +72,7 @@ namespace Xbim.Ifc.ProductExtension
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _relatingElement, value, v => RelatingElement = v,
+                this.SetModelValue(this, ref _relatingElement, value, v => RelatingElement = v,
                                            "RelatingElement");
             }
         }
@@ -88,7 +88,7 @@ namespace Xbim.Ifc.ProductExtension
                 ((IPersistIfcEntity) this).Activate(false);
                 return _relatedElement;
             }
-            set { ModelHelper.SetModelValue(this, ref _relatedElement, value, v => RelatedElement = v, "RelatedElement"); }
+            set { this.SetModelValue(this, ref _relatedElement, value, v => RelatedElement = v, "RelatedElement"); }
         }
 
 

@@ -58,7 +58,7 @@ namespace Xbim.Ifc.GeometryResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _refDirection;
             }
-            set { ModelHelper.SetModelValue(this, ref _refDirection, value, v => RefDirection = v, "RefDirection"); }
+            set { this.SetModelValue(this, ref _refDirection, value, v => RefDirection = v, "RefDirection"); }
         }
 
 

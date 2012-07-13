@@ -46,7 +46,7 @@ namespace Xbim.Ifc.GeometryResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _points;
             }
-            set { ModelHelper.SetModelValue(this, ref _points, value, v => Points = v, "Points"); }
+            set { this.SetModelValue(this, ref _points, value, v => Points = v, "Points"); }
         }
 
 

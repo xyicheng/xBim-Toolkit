@@ -50,7 +50,7 @@ namespace Xbim.Ifc.Kernel
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _relatingProcess, value, v => RelatingProcess = v,
+                this.SetModelValue(this, ref _relatingProcess, value, v => RelatingProcess = v,
                                            "RelatingProcess");
             }
         }
@@ -66,7 +66,7 @@ namespace Xbim.Ifc.Kernel
                 ((IPersistIfcEntity) this).Activate(false);
                 return _relatedProcess;
             }
-            set { ModelHelper.SetModelValue(this, ref _relatedProcess, value, v => RelatedProcess = v, "RelatedProcess"); }
+            set { this.SetModelValue(this, ref _relatedProcess, value, v => RelatedProcess = v, "RelatedProcess"); }
         }
 
         /// <summary>
@@ -80,7 +80,7 @@ namespace Xbim.Ifc.Kernel
                 ((IPersistIfcEntity) this).Activate(false);
                 return _timeLag;
             }
-            set { ModelHelper.SetModelValue(this, ref _timeLag, value, v => TimeLag = v, "TimeLag"); }
+            set { this.SetModelValue(this, ref _timeLag, value, v => TimeLag = v, "TimeLag"); }
         }
 
         /// <summary>
@@ -94,7 +94,7 @@ namespace Xbim.Ifc.Kernel
                 ((IPersistIfcEntity) this).Activate(false);
                 return _sequenceType;
             }
-            set { ModelHelper.SetModelValue(this, ref _sequenceType, value, v => SequenceType = v, "SequenceType"); }
+            set { this.SetModelValue(this, ref _sequenceType, value, v => SequenceType = v, "SequenceType"); }
         }
 
         #region Part 21 Step file Parse routines

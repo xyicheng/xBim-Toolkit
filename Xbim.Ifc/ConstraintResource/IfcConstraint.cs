@@ -90,7 +90,7 @@ namespace Xbim.Ifc.ConstraintResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _name;
             }
-            set { ModelHelper.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
+            set { this.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
         }
 
         /// <summary>
@@ -104,7 +104,7 @@ namespace Xbim.Ifc.ConstraintResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _description;
             }
-            set { ModelHelper.SetModelValue(this, ref _description, value, v => Description = v, "Description"); }
+            set { this.SetModelValue(this, ref _description, value, v => Description = v, "Description"); }
         }
 
         /// <summary>
@@ -120,7 +120,7 @@ namespace Xbim.Ifc.ConstraintResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _constraintGrade, value, v => ConstraintGrade = v,
+                this.SetModelValue(this, ref _constraintGrade, value, v => ConstraintGrade = v,
                                            "ConstraintGrade");
             }
         }
@@ -138,7 +138,7 @@ namespace Xbim.Ifc.ConstraintResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _constraintSource, value, v => ConstraintSource = v,
+                this.SetModelValue(this, ref _constraintSource, value, v => ConstraintSource = v,
                                            "ConstraintSource");
             }
         }
@@ -154,7 +154,7 @@ namespace Xbim.Ifc.ConstraintResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _creatingActor;
             }
-            set { ModelHelper.SetModelValue(this, ref _creatingActor, value, v => CreatingActor = v, "CreatingActor"); }
+            set { this.SetModelValue(this, ref _creatingActor, value, v => CreatingActor = v, "CreatingActor"); }
         }
 
         /// <summary>
@@ -168,7 +168,7 @@ namespace Xbim.Ifc.ConstraintResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _creationTime;
             }
-            set { ModelHelper.SetModelValue(this, ref _creationTime, value, v => CreationTime = v, "CreationTime"); }
+            set { this.SetModelValue(this, ref _creationTime, value, v => CreationTime = v, "CreationTime"); }
         }
 
         /// <summary>
@@ -187,7 +187,7 @@ namespace Xbim.Ifc.ConstraintResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _userDefinedGrade, value, v => UserDefinedGrade = v,
+                this.SetModelValue(this, ref _userDefinedGrade, value, v => UserDefinedGrade = v,
                                            "UserDefinedGrade");
             }
         }

@@ -48,7 +48,7 @@ namespace Xbim.Ifc.QuantityResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _countValue;
             }
-            set { ModelHelper.SetModelValue(this, ref _countValue, value, v => CountValue = v, "CountValue"); }
+            set { this.SetModelValue(this, ref _countValue, value, v => CountValue = v, "CountValue"); }
         }
 
         public override void IfcParse(int propIndex, IPropertyValue value)

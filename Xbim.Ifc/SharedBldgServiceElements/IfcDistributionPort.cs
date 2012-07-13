@@ -38,7 +38,7 @@ namespace Xbim.Ifc.SharedBldgServiceElements
                 ((IPersistIfcEntity) this).Activate(false);
                 return _flowDirection;
             }
-            set { ModelHelper.SetModelValue(this, ref _flowDirection, value, v => FlowDirection = v, "FlowDirection"); }
+            set { this.SetModelValue(this, ref _flowDirection, value, v => FlowDirection = v, "FlowDirection"); }
         }
 
         public override void IfcParse(int propIndex, IPropertyValue value)

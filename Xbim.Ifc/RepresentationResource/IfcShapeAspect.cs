@@ -104,7 +104,7 @@ namespace Xbim.Ifc.RepresentationResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _shapeRepresentations, value, v => ShapeRepresentations = v,
+                this.SetModelValue(this, ref _shapeRepresentations, value, v => ShapeRepresentations = v,
                                            "ShapeRepresentations");
             }
         }
@@ -120,7 +120,7 @@ namespace Xbim.Ifc.RepresentationResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _name;
             }
-            set { ModelHelper.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
+            set { this.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
         }
 
         /// <summary>
@@ -134,7 +134,7 @@ namespace Xbim.Ifc.RepresentationResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _description;
             }
-            set { ModelHelper.SetModelValue(this, ref _description, value, v => Description = v, "Description"); }
+            set { this.SetModelValue(this, ref _description, value, v => Description = v, "Description"); }
         }
 
         /// <summary>
@@ -156,7 +156,7 @@ namespace Xbim.Ifc.RepresentationResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _productDefinitional, value, v => ProductDefinitional = v,
+                this.SetModelValue(this, ref _productDefinitional, value, v => ProductDefinitional = v,
                                            "ProductDefinitional");
             }
         }
@@ -174,7 +174,7 @@ namespace Xbim.Ifc.RepresentationResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _partOfProductDefinitionShape, value,
+                this.SetModelValue(this, ref _partOfProductDefinitionShape, value,
                                            v => PartOfProductDefinitionShape = v, "PartOfProductDefinitionShape");
             }
         }

@@ -146,7 +146,7 @@ namespace Xbim.Ifc.RepresentationResource
                 ((IPersistIfcEntity)this).Activate(false);
                 return _parentContext;
             }
-            set { ModelHelper.SetModelValue(this, ref _parentContext, value, v => ParentContext = v, "ParentContext"); }
+            set { this.SetModelValue(this, ref _parentContext, value, v => ParentContext = v, "ParentContext"); }
         }
 
 
@@ -166,7 +166,7 @@ namespace Xbim.Ifc.RepresentationResource
                 ((IPersistIfcEntity)this).Activate(false);
                 return _targetScale;
             }
-            set { ModelHelper.SetModelValue(this, ref _targetScale, value, v => TargetScale = v, "TargetScale"); }
+            set { this.SetModelValue(this, ref _targetScale, value, v => TargetScale = v, "TargetScale"); }
         }
 
 
@@ -183,7 +183,7 @@ namespace Xbim.Ifc.RepresentationResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _targetView, value, v => TargetView = v, "TargetView");
+                this.SetModelValue(this, ref _targetView, value, v => TargetView = v, "TargetView");
                 if (value != IfcGeometricProjectionEnum.USERDEFINED) UserDefinedTargetView = null;
             }
         }
@@ -202,7 +202,7 @@ namespace Xbim.Ifc.RepresentationResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _userDefinedTargetView, value, v => UserDefinedTargetView = v,
+                this.SetModelValue(this, ref _userDefinedTargetView, value, v => UserDefinedTargetView = v,
                                            "UserDefinedTargetView");
                 if (value != null) TargetView = IfcGeometricProjectionEnum.USERDEFINED;
             }

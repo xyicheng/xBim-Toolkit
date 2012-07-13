@@ -56,7 +56,7 @@ namespace Xbim.Ifc.TopologyResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _bound;
             }
-            set { ModelHelper.SetModelValue(this, ref _bound, value, v => Bound = v, "Bound"); }
+            set { this.SetModelValue(this, ref _bound, value, v => Bound = v, "Bound"); }
         }
 
         /// <summary>
@@ -70,7 +70,7 @@ namespace Xbim.Ifc.TopologyResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _orientation;
             }
-            set { ModelHelper.SetModelValue(this, ref _orientation, value, v => Orientation = v, "Orientation"); }
+            set { this.SetModelValue(this, ref _orientation, value, v => Orientation = v, "Orientation"); }
         }
 
         public override void IfcParse(int propIndex, IPropertyValue value)

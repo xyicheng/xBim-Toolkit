@@ -81,7 +81,7 @@ namespace Xbim.Ifc.ActorResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _telephoneNumbers, value, v => _telephoneNumbers = v,
+                this.SetModelValue(this, ref _telephoneNumbers, value, v => _telephoneNumbers = v,
                                            "TelephoneNumbers");
             }
         }
@@ -100,7 +100,7 @@ namespace Xbim.Ifc.ActorResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _facsimileNumbers, value, v => _facsimileNumbers = v,
+                this.SetModelValue(this, ref _facsimileNumbers, value, v => _facsimileNumbers = v,
                                            "FacsimileNumbers");
             }
         }
@@ -116,7 +116,7 @@ namespace Xbim.Ifc.ActorResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _pagerNumber;
             }
-            set { ModelHelper.SetModelValue(this, ref _pagerNumber, value, v => PagerNumber = v, "PagerNumber"); }
+            set { this.SetModelValue(this, ref _pagerNumber, value, v => PagerNumber = v, "PagerNumber"); }
         }
 
 
@@ -133,7 +133,7 @@ namespace Xbim.Ifc.ActorResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _electronicMailAddresses, value, v => ElectronicMailAddresses = v,
+                this.SetModelValue(this, ref _electronicMailAddresses, value, v => ElectronicMailAddresses = v,
                                            "ElectronicMailAddresses");
             }
         }
@@ -152,7 +152,7 @@ namespace Xbim.Ifc.ActorResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _wwwHomePageUrl;
             }
-            set { ModelHelper.SetModelValue(this, ref _wwwHomePageUrl, value, v => WWWHomePageUrl = v, "WwwHomePageUrl"); }
+            set { this.SetModelValue(this, ref _wwwHomePageUrl, value, v => WWWHomePageUrl = v, "WwwHomePageUrl"); }
         }
 
         #endregion

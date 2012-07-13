@@ -45,7 +45,7 @@ namespace Xbim.Ifc.GeometryResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _basisCurve;
             }
-            set { ModelHelper.SetModelValue(this, ref _basisCurve, value, v => BasisCurve = v, "BasisCurve"); }
+            set { this.SetModelValue(this, ref _basisCurve, value, v => BasisCurve = v, "BasisCurve"); }
         }
 
         /// <summary>
@@ -59,7 +59,7 @@ namespace Xbim.Ifc.GeometryResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _distance;
             }
-            set { ModelHelper.SetModelValue(this, ref _distance, value, v => Distance = v, "Distance"); }
+            set { this.SetModelValue(this, ref _distance, value, v => Distance = v, "Distance"); }
         }
 
         /// <summary>
@@ -73,7 +73,7 @@ namespace Xbim.Ifc.GeometryResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _selfIntersect;
             }
-            set { ModelHelper.SetModelValue(this, ref _selfIntersect, value, v => SelfIntersect = v, "SelfIntersect"); }
+            set { this.SetModelValue(this, ref _selfIntersect, value, v => SelfIntersect = v, "SelfIntersect"); }
         }
 
         /// <summary>
@@ -87,7 +87,7 @@ namespace Xbim.Ifc.GeometryResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _refDirection;
             }
-            set { ModelHelper.SetModelValue(this, ref _refDirection, value, v => RefDirection = v, "RefDirection"); }
+            set { this.SetModelValue(this, ref _refDirection, value, v => RefDirection = v, "RefDirection"); }
         }
 
         public override IfcDimensionCount Dim

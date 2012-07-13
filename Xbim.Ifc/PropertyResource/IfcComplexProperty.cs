@@ -68,7 +68,7 @@ namespace Xbim.Ifc.PropertyResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _usageName;
             }
-            set { ModelHelper.SetModelValue(this, ref _usageName, value, v => UsageName = v, "UsageName"); }
+            set { this.SetModelValue(this, ref _usageName, value, v => UsageName = v, "UsageName"); }
         }
 
         [IfcAttribute(4, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class, 1)]
@@ -79,7 +79,7 @@ namespace Xbim.Ifc.PropertyResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _hasProperties;
             }
-            set { ModelHelper.SetModelValue(this, ref _hasProperties, value, v => HasProperties = v, "HasProperties"); }
+            set { this.SetModelValue(this, ref _hasProperties, value, v => HasProperties = v, "HasProperties"); }
         }
 
         public override void IfcParse(int propIndex, IPropertyValue value)

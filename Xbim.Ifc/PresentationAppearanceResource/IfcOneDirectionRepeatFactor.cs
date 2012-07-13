@@ -41,7 +41,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _repeatFactor;
             }
-            set { ModelHelper.SetModelValue(this, ref _repeatFactor, value, v => RepeatFactor = v, "RepeatFactor"); }
+            set { this.SetModelValue(this, ref _repeatFactor, value, v => RepeatFactor = v, "RepeatFactor"); }
         }
 
         public override void IfcParse(int propIndex, IPropertyValue value)

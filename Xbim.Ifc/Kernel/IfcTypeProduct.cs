@@ -53,7 +53,7 @@ namespace Xbim.Ifc.Kernel
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _representationMaps, value, v => RepresentationMaps = v,
+                this.SetModelValue(this, ref _representationMaps, value, v => RepresentationMaps = v,
                                            "RepresentationMaps");
             }
         }
@@ -69,7 +69,7 @@ namespace Xbim.Ifc.Kernel
                 ((IPersistIfcEntity) this).Activate(false);
                 return _tag;
             }
-            set { ModelHelper.SetModelValue(this, ref _tag, value, v => Tag = v, "Tag"); }
+            set { this.SetModelValue(this, ref _tag, value, v => Tag = v, "Tag"); }
         }
 
 

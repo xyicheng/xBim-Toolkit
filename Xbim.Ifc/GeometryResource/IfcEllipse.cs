@@ -44,7 +44,7 @@ namespace Xbim.Ifc.GeometryResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _semiAxis1;
             }
-            set { ModelHelper.SetModelValue(this, ref _semiAxis1, value, v => SemiAxis1 = v, "SemiAxis1"); }
+            set { this.SetModelValue(this, ref _semiAxis1, value, v => SemiAxis1 = v, "SemiAxis1"); }
         }
 
         /// <summary>
@@ -58,7 +58,7 @@ namespace Xbim.Ifc.GeometryResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _semiAxis2;
             }
-            set { ModelHelper.SetModelValue(this, ref _semiAxis2, value, v => SemiAxis2 = v, "SemiAxis2"); }
+            set { this.SetModelValue(this, ref _semiAxis2, value, v => SemiAxis2 = v, "SemiAxis2"); }
         }
 
 

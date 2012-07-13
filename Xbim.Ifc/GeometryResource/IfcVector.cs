@@ -77,7 +77,7 @@ namespace Xbim.Ifc.GeometryResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _orientation;
             }
-            set { ModelHelper.SetModelValue(this, ref _orientation, value, v => Orientation = v, "Orientation"); }
+            set { this.SetModelValue(this, ref _orientation, value, v => Orientation = v, "Orientation"); }
         }
 
         /// <summary>
@@ -91,7 +91,7 @@ namespace Xbim.Ifc.GeometryResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _magnitude;
             }
-            set { ModelHelper.SetModelValue(this, ref _magnitude, value, v => Magnitude = v, "Magnitude"); }
+            set { this.SetModelValue(this, ref _magnitude, value, v => Magnitude = v, "Magnitude"); }
         }
 
         /// <summary>

@@ -50,7 +50,7 @@ namespace Xbim.Ifc.Kernel
                 ((IPersistIfcEntity) this).Activate(false);
                 return _relatingGroup;
             }
-            set { ModelHelper.SetModelValue(this, ref _relatingGroup, value, v => RelatingGroup = v, "RelatingGroup"); }
+            set { this.SetModelValue(this, ref _relatingGroup, value, v => RelatingGroup = v, "RelatingGroup"); }
         }
 
         public override void IfcParse(int propIndex, IPropertyValue value)

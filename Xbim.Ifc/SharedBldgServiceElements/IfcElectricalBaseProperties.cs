@@ -47,7 +47,7 @@ namespace Xbim.Ifc.SharedBldgServiceElements
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _electricCurrentType, value, v => ElectricCurrentType = v,
+                this.SetModelValue(this, ref _electricCurrentType, value, v => ElectricCurrentType = v,
                                            "ElectricCurrentType");
             }
         }
@@ -60,7 +60,7 @@ namespace Xbim.Ifc.SharedBldgServiceElements
                 ((IPersistIfcEntity) this).Activate(false);
                 return _inputVoltage;
             }
-            set { ModelHelper.SetModelValue(this, ref _inputVoltage, value, v => InputVoltage = v, "InputVoltage"); }
+            set { this.SetModelValue(this, ref _inputVoltage, value, v => InputVoltage = v, "InputVoltage"); }
         }
 
         [IfcAttribute(9, IfcAttributeState.Mandatory)]
@@ -71,7 +71,7 @@ namespace Xbim.Ifc.SharedBldgServiceElements
                 ((IPersistIfcEntity) this).Activate(false);
                 return _inputFrequency;
             }
-            set { ModelHelper.SetModelValue(this, ref _inputFrequency, value, v => InputFrequency = v, "InputFrequency"); }
+            set { this.SetModelValue(this, ref _inputFrequency, value, v => InputFrequency = v, "InputFrequency"); }
         }
 
         [IfcAttribute(10, IfcAttributeState.Optional)]
@@ -84,7 +84,7 @@ namespace Xbim.Ifc.SharedBldgServiceElements
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _fullLoadCurrent, value, v => FullLoadCurrent = v,
+                this.SetModelValue(this, ref _fullLoadCurrent, value, v => FullLoadCurrent = v,
                                            "FullLoadCurrent");
             }
         }
@@ -99,7 +99,7 @@ namespace Xbim.Ifc.SharedBldgServiceElements
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _minimumCircuitCurrent, value, v => MinimumCircuitCurrent = v,
+                this.SetModelValue(this, ref _minimumCircuitCurrent, value, v => MinimumCircuitCurrent = v,
                                            "MinimumCircuitCurrent");
             }
         }
@@ -114,7 +114,7 @@ namespace Xbim.Ifc.SharedBldgServiceElements
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _maximumPowerInput, value, v => MaximumPowerInput = v,
+                this.SetModelValue(this, ref _maximumPowerInput, value, v => MaximumPowerInput = v,
                                            "MaximumPowerInput");
             }
         }
@@ -129,7 +129,7 @@ namespace Xbim.Ifc.SharedBldgServiceElements
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _ratedPowerInput, value, v => RatedPowerInput = v,
+                this.SetModelValue(this, ref _ratedPowerInput, value, v => RatedPowerInput = v,
                                            "RatedPowerInput");
             }
         }
@@ -142,7 +142,7 @@ namespace Xbim.Ifc.SharedBldgServiceElements
                 ((IPersistIfcEntity) this).Activate(false);
                 return _inputPhase;
             }
-            set { ModelHelper.SetModelValue(this, ref _inputPhase, value, v => InputPhase = v, "InputPhase"); }
+            set { this.SetModelValue(this, ref _inputPhase, value, v => InputPhase = v, "InputPhase"); }
         }
 
         public override void IfcParse(int propIndex, IPropertyValue value)

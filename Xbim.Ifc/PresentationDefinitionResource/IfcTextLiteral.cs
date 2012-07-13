@@ -47,7 +47,7 @@ namespace Xbim.Ifc.PresentationDefinitionResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _literal;
             }
-            set { ModelHelper.SetModelValue(this, ref _literal, value, v => Literal = v, "Literal"); }
+            set { this.SetModelValue(this, ref _literal, value, v => Literal = v, "Literal"); }
         }
 
         /// <summary>
@@ -63,7 +63,7 @@ namespace Xbim.Ifc.PresentationDefinitionResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _placement;
             }
-            set { ModelHelper.SetModelValue(this, ref _placement, value, v => Placement = v, "Placement"); }
+            set { this.SetModelValue(this, ref _placement, value, v => Placement = v, "Placement"); }
         }
 
         /// <summary>
@@ -77,7 +77,7 @@ namespace Xbim.Ifc.PresentationDefinitionResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _path;
             }
-            set { ModelHelper.SetModelValue(this, ref _path, value, v => Path = v, "Path"); }
+            set { this.SetModelValue(this, ref _path, value, v => Path = v, "Path"); }
         }
 
 

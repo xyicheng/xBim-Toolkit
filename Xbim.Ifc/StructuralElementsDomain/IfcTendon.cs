@@ -47,7 +47,7 @@ namespace Xbim.Ifc.StructuralElementsDomain
                 ((IPersistIfcEntity) this).Activate(false);
                 return _predefinedType;
             }
-            set { ModelHelper.SetModelValue(this, ref _predefinedType, value, v => PredefinedType = v, "PredefinedType"); }
+            set { this.SetModelValue(this, ref _predefinedType, value, v => PredefinedType = v, "PredefinedType"); }
         }
 
         [IfcAttribute(11, IfcAttributeState.Mandatory)]
@@ -60,7 +60,7 @@ namespace Xbim.Ifc.StructuralElementsDomain
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _nominalDiameter, value, v => NominalDiameter = v,
+                this.SetModelValue(this, ref _nominalDiameter, value, v => NominalDiameter = v,
                                            "NominalDiameter");
             }
         }
@@ -75,7 +75,7 @@ namespace Xbim.Ifc.StructuralElementsDomain
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _crossSectionArea, value, v => CrossSectionArea = v,
+                this.SetModelValue(this, ref _crossSectionArea, value, v => CrossSectionArea = v,
                                            "CrossSectionArea");
             }
         }
@@ -88,7 +88,7 @@ namespace Xbim.Ifc.StructuralElementsDomain
                 ((IPersistIfcEntity) this).Activate(false);
                 return _tensionForce;
             }
-            set { ModelHelper.SetModelValue(this, ref _tensionForce, value, v => TensionForce = v, "TensionForce"); }
+            set { this.SetModelValue(this, ref _tensionForce, value, v => TensionForce = v, "TensionForce"); }
         }
 
         [IfcAttribute(14, IfcAttributeState.Optional)]
@@ -99,7 +99,7 @@ namespace Xbim.Ifc.StructuralElementsDomain
                 ((IPersistIfcEntity) this).Activate(false);
                 return _preStress;
             }
-            set { ModelHelper.SetModelValue(this, ref _preStress, value, v => PreStress = v, "PreStress"); }
+            set { this.SetModelValue(this, ref _preStress, value, v => PreStress = v, "PreStress"); }
         }
 
         [IfcAttribute(15, IfcAttributeState.Optional)]
@@ -112,7 +112,7 @@ namespace Xbim.Ifc.StructuralElementsDomain
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _frictionCoefficient, value, v => FrictionCoefficient = v,
+                this.SetModelValue(this, ref _frictionCoefficient, value, v => FrictionCoefficient = v,
                                            "FrictionCoefficient");
             }
         }
@@ -125,7 +125,7 @@ namespace Xbim.Ifc.StructuralElementsDomain
                 ((IPersistIfcEntity) this).Activate(false);
                 return _anchorageSlip;
             }
-            set { ModelHelper.SetModelValue(this, ref _anchorageSlip, value, v => AnchorageSlip = v, "AnchorageSlip"); }
+            set { this.SetModelValue(this, ref _anchorageSlip, value, v => AnchorageSlip = v, "AnchorageSlip"); }
         }
 
         [IfcAttribute(17, IfcAttributeState.Optional)]
@@ -138,7 +138,7 @@ namespace Xbim.Ifc.StructuralElementsDomain
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _minCurvatureRadius, value, v => MinCurvatureRadius = v,
+                this.SetModelValue(this, ref _minCurvatureRadius, value, v => MinCurvatureRadius = v,
                                            "MinCurvatureRadius");
             }
         }

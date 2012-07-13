@@ -54,7 +54,7 @@ namespace Xbim.Ifc.GeometricConstraintResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _curveOnRelatingElement, value, v => CurveOnRelatingElement = v,
+                this.SetModelValue(this, ref _curveOnRelatingElement, value, v => CurveOnRelatingElement = v,
                                            "CurveOnRelatingElement");
             }
         }
@@ -72,7 +72,7 @@ namespace Xbim.Ifc.GeometricConstraintResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _curveOnRelatedElement, value, v => CurveOnRelatedElement = v,
+                this.SetModelValue(this, ref _curveOnRelatedElement, value, v => CurveOnRelatedElement = v,
                                            "CurveOnRelatedElement");
             }
         }

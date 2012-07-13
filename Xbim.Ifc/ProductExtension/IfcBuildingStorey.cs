@@ -97,7 +97,7 @@ namespace Xbim.Ifc.ProductExtension
                 ((IPersistIfcEntity) this).Activate(false);
                 return _elevation;
             }
-            set { ModelHelper.SetModelValue(this, ref _elevation, value, v => _elevation = v, "Elevation"); }
+            set { this.SetModelValue(this, ref _elevation, value, v => _elevation = v, "Elevation"); }
         }
 
 

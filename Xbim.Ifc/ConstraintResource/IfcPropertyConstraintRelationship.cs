@@ -89,7 +89,7 @@ namespace Xbim.Ifc.ConstraintResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _relatingConstraint, value, v => RelatingConstraint = v,
+                this.SetModelValue(this, ref _relatingConstraint, value, v => RelatingConstraint = v,
                                            "RelatingConstraint");
             }
         }
@@ -107,7 +107,7 @@ namespace Xbim.Ifc.ConstraintResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _relatedProperties, value, v => RelatedProperties = v,
+                this.SetModelValue(this, ref _relatedProperties, value, v => RelatedProperties = v,
                                            "RelatedProperties");
             }
         }
@@ -123,7 +123,7 @@ namespace Xbim.Ifc.ConstraintResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _name;
             }
-            set { ModelHelper.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
+            set { this.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
         }
 
         /// <summary>
@@ -137,7 +137,7 @@ namespace Xbim.Ifc.ConstraintResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _description;
             }
-            set { ModelHelper.SetModelValue(this, ref _description, value, v => Description = v, "Description"); }
+            set { this.SetModelValue(this, ref _description, value, v => Description = v, "Description"); }
         }
 
         #region INotifyPropertyChanged Members

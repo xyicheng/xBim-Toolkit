@@ -47,7 +47,7 @@ namespace Xbim.Ifc.SharedBldgElements
                 ((IPersistIfcEntity) this).Activate(false);
                 return _numberOfRiser;
             }
-            set { ModelHelper.SetModelValue(this, ref _numberOfRiser, value, v => NumberOfRiser = v, "NumberOfRiser"); }
+            set { this.SetModelValue(this, ref _numberOfRiser, value, v => NumberOfRiser = v, "NumberOfRiser"); }
         }
 
         /// <summary>
@@ -61,7 +61,7 @@ namespace Xbim.Ifc.SharedBldgElements
                 ((IPersistIfcEntity) this).Activate(false);
                 return _numberOfTreads;
             }
-            set { ModelHelper.SetModelValue(this, ref _numberOfTreads, value, v => NumberOfTreads = v, "NumberOfTreads"); }
+            set { this.SetModelValue(this, ref _numberOfTreads, value, v => NumberOfTreads = v, "NumberOfTreads"); }
         }
 
         /// <summary>
@@ -75,7 +75,7 @@ namespace Xbim.Ifc.SharedBldgElements
                 ((IPersistIfcEntity) this).Activate(false);
                 return _riserHeight;
             }
-            set { ModelHelper.SetModelValue(this, ref _riserHeight, value, v => RiserHeight = v, "RiserHeight"); }
+            set { this.SetModelValue(this, ref _riserHeight, value, v => RiserHeight = v, "RiserHeight"); }
         }
 
         /// <summary>
@@ -89,7 +89,7 @@ namespace Xbim.Ifc.SharedBldgElements
                 ((IPersistIfcEntity) this).Activate(false);
                 return _treadLength;
             }
-            set { ModelHelper.SetModelValue(this, ref _treadLength, value, v => TreadLength = v, "TreadLength"); }
+            set { this.SetModelValue(this, ref _treadLength, value, v => TreadLength = v, "TreadLength"); }
         }
 
 

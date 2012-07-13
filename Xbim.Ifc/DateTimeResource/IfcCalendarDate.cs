@@ -84,7 +84,7 @@ namespace Xbim.Ifc.DateTimeResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _dayComponent;
             }
-            set { ModelHelper.SetModelValue(this, ref _dayComponent, value, v => DayComponent = v, "DayComponent"); }
+            set { this.SetModelValue(this, ref _dayComponent, value, v => DayComponent = v, "DayComponent"); }
         }
 
         /// <summary>
@@ -98,7 +98,7 @@ namespace Xbim.Ifc.DateTimeResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _monthComponent;
             }
-            set { ModelHelper.SetModelValue(this, ref _monthComponent, value, v => MonthComponent = v, "MonthComponent"); }
+            set { this.SetModelValue(this, ref _monthComponent, value, v => MonthComponent = v, "MonthComponent"); }
         }
 
         /// <summary>
@@ -112,7 +112,7 @@ namespace Xbim.Ifc.DateTimeResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _yearComponent;
             }
-            set { ModelHelper.SetModelValue(this, ref _yearComponent, value, v => YearComponent = v, "YearComponent"); }
+            set { this.SetModelValue(this, ref _yearComponent, value, v => YearComponent = v, "YearComponent"); }
         }
 
         #region INotifyPropertyChanged Members

@@ -55,7 +55,7 @@ namespace Xbim.Ifc.SharedBldgServiceElements
                 ((IPersistIfcEntity) this).Activate(false);
                 return _propertySource;
             }
-            set { ModelHelper.SetModelValue(this, ref _propertySource, value, v => PropertySource = v, "PropertySource"); }
+            set { this.SetModelValue(this, ref _propertySource, value, v => PropertySource = v, "PropertySource"); }
         }
 
         [IfcAttribute(6, IfcAttributeState.Optional)]
@@ -68,7 +68,7 @@ namespace Xbim.Ifc.SharedBldgServiceElements
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _flowConditionTimeSeries, value, v => FlowConditionTimeSeries = v,
+                this.SetModelValue(this, ref _flowConditionTimeSeries, value, v => FlowConditionTimeSeries = v,
                                            "FlowConditionTimeSeries");
             }
         }
@@ -83,7 +83,7 @@ namespace Xbim.Ifc.SharedBldgServiceElements
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _velocityTimeSeries, value, v => VelocityTimeSeries = v,
+                this.SetModelValue(this, ref _velocityTimeSeries, value, v => VelocityTimeSeries = v,
                                            "VelocityTimeSeries");
             }
         }
@@ -98,7 +98,7 @@ namespace Xbim.Ifc.SharedBldgServiceElements
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _flowrateTimeSeries, value, v => FlowrateTimeSeries = v,
+                this.SetModelValue(this, ref _flowrateTimeSeries, value, v => FlowrateTimeSeries = v,
                                            "FlowrateTimeSeries");
             }
         }
@@ -111,7 +111,7 @@ namespace Xbim.Ifc.SharedBldgServiceElements
                 ((IPersistIfcEntity) this).Activate(false);
                 return _fluid;
             }
-            set { ModelHelper.SetModelValue(this, ref _fluid, value, v => Fluid = v, "Fluid"); }
+            set { this.SetModelValue(this, ref _fluid, value, v => Fluid = v, "Fluid"); }
         }
 
         [IfcAttribute(10, IfcAttributeState.Optional)]
@@ -124,7 +124,7 @@ namespace Xbim.Ifc.SharedBldgServiceElements
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _pressureTimeSeries, value, v => PressureTimeSeries = v,
+                this.SetModelValue(this, ref _pressureTimeSeries, value, v => PressureTimeSeries = v,
                                            "PressureTimeSeries");
             }
         }
@@ -139,7 +139,7 @@ namespace Xbim.Ifc.SharedBldgServiceElements
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _userDefinedPropertySource, value,
+                this.SetModelValue(this, ref _userDefinedPropertySource, value,
                                            v => UserDefinedPropertySource = v, "UserDefinedPropertySource");
             }
         }
@@ -154,7 +154,7 @@ namespace Xbim.Ifc.SharedBldgServiceElements
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _temperatureSingleValue, value, v => TemperatureSingleValue = v,
+                this.SetModelValue(this, ref _temperatureSingleValue, value, v => TemperatureSingleValue = v,
                                            "TemperatureSingleValue");
             }
         }
@@ -169,7 +169,7 @@ namespace Xbim.Ifc.SharedBldgServiceElements
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _wetBulbTemperatureSingleValue, value,
+                this.SetModelValue(this, ref _wetBulbTemperatureSingleValue, value,
                                            v => WetBulbTemperatureSingleValue = v, "WetBulbTemperatureSingleValue");
             }
         }
@@ -184,7 +184,7 @@ namespace Xbim.Ifc.SharedBldgServiceElements
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _wetBulbTemperatureTimeSeries, value,
+                this.SetModelValue(this, ref _wetBulbTemperatureTimeSeries, value,
                                            v => WetBulbTemperatureTimeSeries = v, "WetBulbTemperatureTimeSeries");
             }
         }
@@ -199,7 +199,7 @@ namespace Xbim.Ifc.SharedBldgServiceElements
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _temperatureTimeSeries, value, v => TemperatureTimeSeries = v,
+                this.SetModelValue(this, ref _temperatureTimeSeries, value, v => TemperatureTimeSeries = v,
                                            "TemperatureTimeSeries");
             }
         }
@@ -214,7 +214,7 @@ namespace Xbim.Ifc.SharedBldgServiceElements
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _flowrateSingleValue, value, v => FlowrateSingleValue = v,
+                this.SetModelValue(this, ref _flowrateSingleValue, value, v => FlowrateSingleValue = v,
                                            "FlowrateSingleValue");
             }
         }
@@ -229,7 +229,7 @@ namespace Xbim.Ifc.SharedBldgServiceElements
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _flowConditionSingleValue, value, v => FlowConditionSingleValue = v,
+                this.SetModelValue(this, ref _flowConditionSingleValue, value, v => FlowConditionSingleValue = v,
                                            "FlowConditionSingleValue");
             }
         }
@@ -244,7 +244,7 @@ namespace Xbim.Ifc.SharedBldgServiceElements
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _velocitySingleValue, value, v => VelocitySingleValue = v,
+                this.SetModelValue(this, ref _velocitySingleValue, value, v => VelocitySingleValue = v,
                                            "VelocitySingleValue");
             }
         }
@@ -259,7 +259,7 @@ namespace Xbim.Ifc.SharedBldgServiceElements
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _pressureSingleValue, value, v => PressureSingleValue = v,
+                this.SetModelValue(this, ref _pressureSingleValue, value, v => PressureSingleValue = v,
                                            "PressureSingleValue");
             }
         }

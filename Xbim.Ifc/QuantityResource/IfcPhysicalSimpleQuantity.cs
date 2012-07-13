@@ -51,7 +51,7 @@ namespace Xbim.Ifc.QuantityResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _unit;
             }
-            set { ModelHelper.SetModelValue(this, ref _unit, value, v => Unit = v, "Unit"); }
+            set { this.SetModelValue(this, ref _unit, value, v => Unit = v, "Unit"); }
         }
 
         public override void IfcParse(int propIndex, IPropertyValue value)

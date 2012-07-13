@@ -200,7 +200,7 @@ namespace Xbim.Ifc.ActorResource
                         throw new ArgumentException(
                             "An Address Type may not be explicitly set as UserDefined. Set the value of the UserDefinedPurpose Property instead");
 
-                    ModelHelper.SetModelValue(this, ref _purpose, value, v => Purpose = v, "Purpose");
+                    this.SetModelValue(this, ref _purpose, value, v => Purpose = v, "Purpose");
                 }
             }
         }
@@ -216,7 +216,7 @@ namespace Xbim.Ifc.ActorResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _description;
             }
-            set { ModelHelper.SetModelValue(this, ref _description, value, v => Description = v, "Description"); }
+            set { this.SetModelValue(this, ref _description, value, v => Description = v, "Description"); }
         }
 
         /// <summary>
@@ -232,7 +232,7 @@ namespace Xbim.Ifc.ActorResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _userDefinedPurpose, value, v => UserDefinedPurpose = v,
+                this.SetModelValue(this, ref _userDefinedPurpose, value, v => UserDefinedPurpose = v,
                                            "UserDefinedPurpose");
             }
         }

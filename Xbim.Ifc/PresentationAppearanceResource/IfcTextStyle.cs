@@ -42,7 +42,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _textCharacterAppearance, value, v => TextCharacterAppearance = v,
+                this.SetModelValue(this, ref _textCharacterAppearance, value, v => TextCharacterAppearance = v,
                                            "TextCharacterAppearance");
             }
         }
@@ -55,7 +55,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _textStyle;
             }
-            set { ModelHelper.SetModelValue(this, ref _textStyle, value, v => TextStyleVal = v, "TextStyleVal"); }
+            set { this.SetModelValue(this, ref _textStyle, value, v => TextStyleVal = v, "TextStyleVal"); }
         }
 
         [IfcAttribute(4, IfcAttributeState.Optional)]
@@ -66,7 +66,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _textFontStyle;
             }
-            set { ModelHelper.SetModelValue(this, ref _textFontStyle, value, v => TextFontStyle = v, "TextFontStyle"); }
+            set { this.SetModelValue(this, ref _textFontStyle, value, v => TextFontStyle = v, "TextFontStyle"); }
         }
 
         public override void IfcParse(int propIndex, IPropertyValue value)

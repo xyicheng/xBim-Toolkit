@@ -38,7 +38,7 @@ namespace Xbim.Ifc.SharedFacilitiesElements
                 ((IPersistIfcEntity) this).Activate(false);
                 return _assemblyPlace;
             }
-            set { ModelHelper.SetModelValue(this, ref _assemblyPlace, value, v => AssemblyPlace = v, "AssemblyPlace"); }
+            set { this.SetModelValue(this, ref _assemblyPlace, value, v => AssemblyPlace = v, "AssemblyPlace"); }
         }
 
         public override void IfcParse(int propIndex, IPropertyValue value)

@@ -60,7 +60,7 @@ namespace Xbim.Ifc.Kernel
                     throw new ArgumentException(
                         "RelatingClassification must be of type ClassificationNotation or ClassificationReference");
 #endif
-                ModelHelper.SetModelValue(this, ref _relatingClassification, value, v => RelatingClassification = v,
+                this.SetModelValue(this, ref _relatingClassification, value, v => RelatingClassification = v,
                                            "RelatingClassification");
             }
         }

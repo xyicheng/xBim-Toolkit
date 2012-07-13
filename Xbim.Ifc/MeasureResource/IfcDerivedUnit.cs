@@ -120,7 +120,7 @@ namespace Xbim.Ifc.MeasureResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _unitType, value, v => UnitType = v, "UnitType");
+                this.SetModelValue(this, ref _unitType, value, v => UnitType = v, "UnitType");
                 if (value != IfcDerivedUnitEnum.USERDEFINED)
                     UserDefinedType = null;
             }
@@ -137,7 +137,7 @@ namespace Xbim.Ifc.MeasureResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _userDefinedType, value, v => UserDefinedType = v,
+                this.SetModelValue(this, ref _userDefinedType, value, v => UserDefinedType = v,
                                            "UserDefinedType");
                 UnitType = IfcDerivedUnitEnum.USERDEFINED;
             }

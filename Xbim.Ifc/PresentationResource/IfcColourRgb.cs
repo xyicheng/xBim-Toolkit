@@ -43,7 +43,7 @@ namespace Xbim.Ifc.PresentationResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _red;
             }
-            set { ModelHelper.SetModelValue(this, ref _red, value, v => Red = v, "Red"); }
+            set { this.SetModelValue(this, ref _red, value, v => Red = v, "Red"); }
         }
 
 
@@ -55,7 +55,7 @@ namespace Xbim.Ifc.PresentationResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _green;
             }
-            set { ModelHelper.SetModelValue(this, ref _green, value, v => Green = v, "Green"); }
+            set { this.SetModelValue(this, ref _green, value, v => Green = v, "Green"); }
         }
 
 
@@ -67,7 +67,7 @@ namespace Xbim.Ifc.PresentationResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _blue;
             }
-            set { ModelHelper.SetModelValue(this, ref _blue, value, v => Blue = v, "Blue"); }
+            set { this.SetModelValue(this, ref _blue, value, v => Blue = v, "Blue"); }
         }
 
 

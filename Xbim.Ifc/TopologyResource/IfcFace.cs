@@ -65,7 +65,7 @@ namespace Xbim.Ifc.TopologyResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return mBounds;
             }
-            set { ModelHelper.SetModelValue(this, ref mBounds, value, v => Bounds = v, "Bounds"); }
+            set { this.SetModelValue(this, ref mBounds, value, v => Bounds = v, "Bounds"); }
         }
 
 

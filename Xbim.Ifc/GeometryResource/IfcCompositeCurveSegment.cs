@@ -57,7 +57,7 @@ namespace Xbim.Ifc.GeometryResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _transition;
             }
-            set { ModelHelper.SetModelValue(this, ref _transition, value, v => Transition = v, "Transition"); }
+            set { this.SetModelValue(this, ref _transition, value, v => Transition = v, "Transition"); }
         }
 
         /// <summary>
@@ -71,7 +71,7 @@ namespace Xbim.Ifc.GeometryResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _sameSense;
             }
-            set { ModelHelper.SetModelValue(this, ref _sameSense, value, v => SameSense = v, "SameSense"); }
+            set { this.SetModelValue(this, ref _sameSense, value, v => SameSense = v, "SameSense"); }
         }
 
         /// <summary>
@@ -85,7 +85,7 @@ namespace Xbim.Ifc.GeometryResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _parentCurve;
             }
-            set { ModelHelper.SetModelValue(this, ref _parentCurve, value, v => ParentCurve = v, "ParentCurve"); }
+            set { this.SetModelValue(this, ref _parentCurve, value, v => ParentCurve = v, "ParentCurve"); }
         }
 
 

@@ -46,7 +46,7 @@ namespace Xbim.Ifc.GeometryResource
             set
             {
                 if (value is IfcAxis2Placement2D || value is IfcAxis2Placement3D)
-                    ModelHelper.SetModelValue(this, ref _position, value, v => Position = v, "Position");
+                    this.SetModelValue(this, ref _position, value, v => Position = v, "Position");
                 else
                     throw new ArgumentException("Illegal axis2placement type", "Position");
             }

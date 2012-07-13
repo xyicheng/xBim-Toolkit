@@ -106,7 +106,7 @@ namespace Xbim.Ifc.ExternalReferenceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _documentId;
             }
-            set { ModelHelper.SetModelValue(this, ref _documentId, value, v => DocumentId = v, "DocumentId"); }
+            set { this.SetModelValue(this, ref _documentId, value, v => DocumentId = v, "DocumentId"); }
         }
 
         /// <summary>
@@ -120,7 +120,7 @@ namespace Xbim.Ifc.ExternalReferenceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _name;
             }
-            set { ModelHelper.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
+            set { this.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
         }
 
         /// <summary>
@@ -134,7 +134,7 @@ namespace Xbim.Ifc.ExternalReferenceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _description;
             }
-            set { ModelHelper.SetModelValue(this, ref _description, value, v => Description = v, "Description"); }
+            set { this.SetModelValue(this, ref _description, value, v => Description = v, "Description"); }
         }
 
         /// <summary>
@@ -150,7 +150,7 @@ namespace Xbim.Ifc.ExternalReferenceResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _documentReferences, value, v => DocumentReferences = v,
+                this.SetModelValue(this, ref _documentReferences, value, v => DocumentReferences = v,
                                            "DocumentReferences");
             }
         }
@@ -166,7 +166,7 @@ namespace Xbim.Ifc.ExternalReferenceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _purpose;
             }
-            set { ModelHelper.SetModelValue(this, ref _purpose, value, v => Purpose = v, "Purpose"); }
+            set { this.SetModelValue(this, ref _purpose, value, v => Purpose = v, "Purpose"); }
         }
 
         /// <summary>
@@ -180,7 +180,7 @@ namespace Xbim.Ifc.ExternalReferenceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _intendedUse;
             }
-            set { ModelHelper.SetModelValue(this, ref _intendedUse, value, v => IntendedUse = v, "IntendedUse"); }
+            set { this.SetModelValue(this, ref _intendedUse, value, v => IntendedUse = v, "IntendedUse"); }
         }
 
         /// <summary>
@@ -194,7 +194,7 @@ namespace Xbim.Ifc.ExternalReferenceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _scope;
             }
-            set { ModelHelper.SetModelValue(this, ref _scope, value, v => Scope = v, "Scope"); }
+            set { this.SetModelValue(this, ref _scope, value, v => Scope = v, "Scope"); }
         }
 
         /// <summary>
@@ -208,7 +208,7 @@ namespace Xbim.Ifc.ExternalReferenceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _revision;
             }
-            set { ModelHelper.SetModelValue(this, ref _revision, value, v => Revision = v, "Revision"); }
+            set { this.SetModelValue(this, ref _revision, value, v => Revision = v, "Revision"); }
         }
 
         /// <summary>
@@ -222,7 +222,7 @@ namespace Xbim.Ifc.ExternalReferenceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _documentOwner;
             }
-            set { ModelHelper.SetModelValue(this, ref _documentOwner, value, v => DocumentOwner = v, "DocumentOwner"); }
+            set { this.SetModelValue(this, ref _documentOwner, value, v => DocumentOwner = v, "DocumentOwner"); }
         }
 
         /// <summary>
@@ -236,7 +236,7 @@ namespace Xbim.Ifc.ExternalReferenceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _editors;
             }
-            set { ModelHelper.SetModelValue(this, ref _editors, value, v => Editors = v, "Editors"); }
+            set { this.SetModelValue(this, ref _editors, value, v => Editors = v, "Editors"); }
         }
 
         /// <summary>
@@ -250,7 +250,7 @@ namespace Xbim.Ifc.ExternalReferenceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _creationTime;
             }
-            set { ModelHelper.SetModelValue(this, ref _creationTime, value, v => CreationTime = v, "CreationTime"); }
+            set { this.SetModelValue(this, ref _creationTime, value, v => CreationTime = v, "CreationTime"); }
         }
 
         /// <summary>
@@ -266,7 +266,7 @@ namespace Xbim.Ifc.ExternalReferenceResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _lastRevisionTime, value, v => LastRevisionTime = v,
+                this.SetModelValue(this, ref _lastRevisionTime, value, v => LastRevisionTime = v,
                                            "LastRevisionTime");
             }
         }
@@ -284,7 +284,7 @@ namespace Xbim.Ifc.ExternalReferenceResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _electronicFormat, value, v => ElectronicFormat = v,
+                this.SetModelValue(this, ref _electronicFormat, value, v => ElectronicFormat = v,
                                            "ElectronicFormat");
             }
         }
@@ -300,7 +300,7 @@ namespace Xbim.Ifc.ExternalReferenceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _validFrom;
             }
-            set { ModelHelper.SetModelValue(this, ref _validFrom, value, v => ValidFrom = v, "ValidFrom"); }
+            set { this.SetModelValue(this, ref _validFrom, value, v => ValidFrom = v, "ValidFrom"); }
         }
 
         /// <summary>
@@ -314,7 +314,7 @@ namespace Xbim.Ifc.ExternalReferenceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _validUntil;
             }
-            set { ModelHelper.SetModelValue(this, ref _validUntil, value, v => ValidUntil = v, "ValidUntil"); }
+            set { this.SetModelValue(this, ref _validUntil, value, v => ValidUntil = v, "ValidUntil"); }
         }
 
         /// <summary>
@@ -330,7 +330,7 @@ namespace Xbim.Ifc.ExternalReferenceResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _confidentiality, value, v => Confidentiality = v,
+                this.SetModelValue(this, ref _confidentiality, value, v => Confidentiality = v,
                                            "Confidentiality");
             }
         }
@@ -346,7 +346,7 @@ namespace Xbim.Ifc.ExternalReferenceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _status;
             }
-            set { ModelHelper.SetModelValue(this, ref _status, value, v => Status = v, "Status"); }
+            set { this.SetModelValue(this, ref _status, value, v => Status = v, "Status"); }
         }
 
         /// <summary>

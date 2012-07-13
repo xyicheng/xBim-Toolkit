@@ -53,7 +53,7 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
                 ((IPersistIfcEntity) this).Activate(false);
                 return _theoryType;
             }
-            set { ModelHelper.SetModelValue(this, ref _theoryType, value, v => TheoryType = v, "TheoryType"); }
+            set { this.SetModelValue(this, ref _theoryType, value, v => TheoryType = v, "TheoryType"); }
         }
 
         /// <summary>
@@ -69,7 +69,7 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _resultForLoadGroup, value, v => ResultForLoadGroup = v,
+                this.SetModelValue(this, ref _resultForLoadGroup, value, v => ResultForLoadGroup = v,
                                            "ResultForLoadGroup");
             }
         }
@@ -85,7 +85,7 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
                 ((IPersistIfcEntity) this).Activate(false);
                 return _isLinear;
             }
-            set { ModelHelper.SetModelValue(this, ref _isLinear, value, v => IsLinear = v, "IsLinear"); }
+            set { this.SetModelValue(this, ref _isLinear, value, v => IsLinear = v, "IsLinear"); }
         }
 
         /// <summary>

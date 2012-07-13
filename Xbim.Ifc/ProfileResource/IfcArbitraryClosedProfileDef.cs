@@ -40,7 +40,7 @@ namespace Xbim.Ifc.ProfileResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _outerCurve;
             }
-            set { ModelHelper.SetModelValue(this, ref _outerCurve, value, v => OuterCurve = v, "OuterCurve"); }
+            set { this.SetModelValue(this, ref _outerCurve, value, v => OuterCurve = v, "OuterCurve"); }
         }
 
 

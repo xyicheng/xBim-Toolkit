@@ -48,7 +48,7 @@ namespace Xbim.Ifc.GeometricConstraintResource
             get { return _pointOnRelatingElement; }
             set
             {
-                ModelHelper.SetModelValue(this, ref _pointOnRelatingElement, value, v => PointOnRelatingElement = v,
+                this.SetModelValue(this, ref _pointOnRelatingElement, value, v => PointOnRelatingElement = v,
                                            "PointOnRelatingElement");
             }
         }
@@ -61,7 +61,7 @@ namespace Xbim.Ifc.GeometricConstraintResource
             get { return _pointOnRelatedElement; }
             set
             {
-                ModelHelper.SetModelValue(this, ref _pointOnRelatedElement, value, v => PointOnRelatedElement = v,
+                this.SetModelValue(this, ref _pointOnRelatedElement, value, v => PointOnRelatedElement = v,
                                            "PointOnRelatedElement");
             }
         }

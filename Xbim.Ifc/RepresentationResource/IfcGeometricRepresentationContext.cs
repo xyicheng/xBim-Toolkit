@@ -71,7 +71,7 @@ namespace Xbim.Ifc.RepresentationResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _coordinateSpaceDimension, value, v => CoordinateSpaceDimension = v,
+                this.SetModelValue(this, ref _coordinateSpaceDimension, value, v => CoordinateSpaceDimension = v,
                                            "CoordinateSpaceDimension");
             }
         }
@@ -87,7 +87,7 @@ namespace Xbim.Ifc.RepresentationResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _precision;
             }
-            set { ModelHelper.SetModelValue(this, ref _precision, value, v => Precision = v, "Precision"); }
+            set { this.SetModelValue(this, ref _precision, value, v => Precision = v, "Precision"); }
         }
 
         
@@ -106,7 +106,7 @@ namespace Xbim.Ifc.RepresentationResource
             set
             {
                 if (value is IfcAxis2Placement2D || value is IfcAxis2Placement3D || value == null)
-                    ModelHelper.SetModelValue(this, ref _worldCoordinateSystem, value, v => WorldCoordinateSystem = v,
+                    this.SetModelValue(this, ref _worldCoordinateSystem, value, v => WorldCoordinateSystem = v,
                                                "WorldCoordinateSystem");
                 else
                     throw new ArgumentException(
@@ -126,7 +126,7 @@ namespace Xbim.Ifc.RepresentationResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _trueNorth;
             }
-            set { ModelHelper.SetModelValue(this, ref _trueNorth, value, v => TrueNorth = v, "TrueNorth"); }
+            set { this.SetModelValue(this, ref _trueNorth, value, v => TrueNorth = v, "TrueNorth"); }
         }
 
 

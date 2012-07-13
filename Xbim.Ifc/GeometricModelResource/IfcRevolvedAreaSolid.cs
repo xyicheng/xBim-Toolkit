@@ -38,7 +38,7 @@ namespace Xbim.Ifc.GeometricModelResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _Axis;
             }
-            set { ModelHelper.SetModelValue(this, ref _Axis, value, v => Axis = v, "Axis"); }
+            set { this.SetModelValue(this, ref _Axis, value, v => Axis = v, "Axis"); }
         }
 
         /// <summary>
@@ -54,7 +54,7 @@ namespace Xbim.Ifc.GeometricModelResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _Angle;
             }
-            set { ModelHelper.SetModelValue(this, ref _Angle, value, v => Angle = v, "Angle"); }
+            set { this.SetModelValue(this, ref _Angle, value, v => Angle = v, "Angle"); }
         }
 
         /// <summary>

@@ -51,7 +51,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _fontFamily;
             }
-            set { ModelHelper.SetModelValue(this, ref _fontFamily, value, v => FontFamily = v, "FontFamily"); }
+            set { this.SetModelValue(this, ref _fontFamily, value, v => FontFamily = v, "FontFamily"); }
         }
 
         /// <summary>
@@ -65,7 +65,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _fontStyle;
             }
-            set { ModelHelper.SetModelValue(this, ref _fontStyle, value, v => FontStyle = v, "FontStyle"); }
+            set { this.SetModelValue(this, ref _fontStyle, value, v => FontStyle = v, "FontStyle"); }
         }
 
         /// <summary>
@@ -79,7 +79,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _fontVariant;
             }
-            set { ModelHelper.SetModelValue(this, ref _fontVariant, value, v => FontVariant = v, "FontVariant"); }
+            set { this.SetModelValue(this, ref _fontVariant, value, v => FontVariant = v, "FontVariant"); }
         }
 
         /// <summary>
@@ -93,7 +93,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _fontWeight;
             }
-            set { ModelHelper.SetModelValue(this, ref _fontWeight, value, v => FontWeight = v, "FontWeight"); }
+            set { this.SetModelValue(this, ref _fontWeight, value, v => FontWeight = v, "FontWeight"); }
         }
 
         /// <summary>
@@ -108,7 +108,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _fontSize;
             }
-            set { ModelHelper.SetModelValue(this, ref _fontSize, value, v => FontSize = v, "FontSize"); }
+            set { this.SetModelValue(this, ref _fontSize, value, v => FontSize = v, "FontSize"); }
         }
 
         #endregion

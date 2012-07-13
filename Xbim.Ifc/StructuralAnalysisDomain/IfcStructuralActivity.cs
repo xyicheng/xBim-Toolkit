@@ -43,7 +43,7 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
                 ((IPersistIfcEntity) this).Activate(false);
                 return _appliedLoad;
             }
-            set { ModelHelper.SetModelValue(this, ref _appliedLoad, value, v => AppliedLoad = v, "AppliedLoad"); }
+            set { this.SetModelValue(this, ref _appliedLoad, value, v => AppliedLoad = v, "AppliedLoad"); }
         }
 
         [IfcAttribute(9, IfcAttributeState.Mandatory)]
@@ -54,7 +54,7 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
                 ((IPersistIfcEntity) this).Activate(false);
                 return _globalOrLocal;
             }
-            set { ModelHelper.SetModelValue(this, ref _globalOrLocal, value, v => GlobalOrLocal = v, "GlobalOrLocal"); }
+            set { this.SetModelValue(this, ref _globalOrLocal, value, v => GlobalOrLocal = v, "GlobalOrLocal"); }
         }
 
         public override void IfcParse(int propIndex, IPropertyValue value)

@@ -45,7 +45,7 @@ namespace Xbim.Ifc.ProfileResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _depth;
             }
-            set { ModelHelper.SetModelValue(this, ref _depth, value, v => Depth = v, "Depth"); }
+            set { this.SetModelValue(this, ref _depth, value, v => Depth = v, "Depth"); }
         }
 
         [IfcAttribute(5, IfcAttributeState.Mandatory)]
@@ -56,7 +56,7 @@ namespace Xbim.Ifc.ProfileResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _width;
             }
-            set { ModelHelper.SetModelValue(this, ref _width, value, v => Width = v, "Width"); }
+            set { this.SetModelValue(this, ref _width, value, v => Width = v, "Width"); }
         }
 
         [IfcAttribute(6, IfcAttributeState.Mandatory)]
@@ -67,7 +67,7 @@ namespace Xbim.Ifc.ProfileResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _wallThickness;
             }
-            set { ModelHelper.SetModelValue(this, ref _wallThickness, value, v => WallThickness = v, "WallThickness"); }
+            set { this.SetModelValue(this, ref _wallThickness, value, v => WallThickness = v, "WallThickness"); }
         }
 
         [IfcAttribute(7, IfcAttributeState.Mandatory)]
@@ -78,7 +78,7 @@ namespace Xbim.Ifc.ProfileResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _girth;
             }
-            set { ModelHelper.SetModelValue(this, ref _girth, value, v => Girth = v, "Girth"); }
+            set { this.SetModelValue(this, ref _girth, value, v => Girth = v, "Girth"); }
         }
 
         [IfcAttribute(8, IfcAttributeState.Optional)]
@@ -91,7 +91,7 @@ namespace Xbim.Ifc.ProfileResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _internalFilletRadius, value, v => InternalFilletRadius = v,
+                this.SetModelValue(this, ref _internalFilletRadius, value, v => InternalFilletRadius = v,
                                            "InternalFilletRadius");
             }
         }
@@ -106,7 +106,7 @@ namespace Xbim.Ifc.ProfileResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _centreOfGravityInX, value, v => CentreOfGravityInX = v,
+                this.SetModelValue(this, ref _centreOfGravityInX, value, v => CentreOfGravityInX = v,
                                            "CentreOfGravityInX");
             }
         }

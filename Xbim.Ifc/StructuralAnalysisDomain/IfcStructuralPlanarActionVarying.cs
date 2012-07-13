@@ -51,7 +51,7 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _varyingAppliedLoadLocation, value,
+                this.SetModelValue(this, ref _varyingAppliedLoadLocation, value,
                                            v => VaryingAppliedLoadLocation = v, "VaryingAppliedLoadLocation");
             }
         }
@@ -71,7 +71,7 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _subsequentAppliedLoads, value, v => SubsequentAppliedLoads = v,
+                this.SetModelValue(this, ref _subsequentAppliedLoads, value, v => SubsequentAppliedLoads = v,
                                            "SubsequentAppliedLoads");
             }
         }

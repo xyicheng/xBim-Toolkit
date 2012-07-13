@@ -97,7 +97,7 @@ namespace Xbim.Ifc.MaterialResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _materialLayers;
             }
-            set { ModelHelper.SetModelValue(this, ref _materialLayers, value, v => MaterialLayers = v, "MaterialLayers"); }
+            set { this.SetModelValue(this, ref _materialLayers, value, v => MaterialLayers = v, "MaterialLayers"); }
         }
 
         /// <summary>
@@ -111,7 +111,7 @@ namespace Xbim.Ifc.MaterialResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _layerSetName;
             }
-            set { ModelHelper.SetModelValue(this, ref _layerSetName, value, v => LayerSetName = v, "LayerSetName"); }
+            set { this.SetModelValue(this, ref _layerSetName, value, v => LayerSetName = v, "LayerSetName"); }
         }
 
 

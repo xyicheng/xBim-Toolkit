@@ -52,7 +52,7 @@ namespace Xbim.Ifc.SharedBldgServiceElements
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _applicableValueRatio, value, v => ApplicableValueRatio = v,
+                this.SetModelValue(this, ref _applicableValueRatio, value, v => ApplicableValueRatio = v,
                                            "ApplicableValueRatio");
             }
         }
@@ -67,7 +67,7 @@ namespace Xbim.Ifc.SharedBldgServiceElements
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _thermalLoadSource, value, v => ThermalLoadSource = v,
+                this.SetModelValue(this, ref _thermalLoadSource, value, v => ThermalLoadSource = v,
                                            "ThermalLoadSource");
             }
         }
@@ -80,7 +80,7 @@ namespace Xbim.Ifc.SharedBldgServiceElements
                 ((IPersistIfcEntity) this).Activate(false);
                 return _propertySource;
             }
-            set { ModelHelper.SetModelValue(this, ref _propertySource, value, v => PropertySource = v, "PropertySource"); }
+            set { this.SetModelValue(this, ref _propertySource, value, v => PropertySource = v, "PropertySource"); }
         }
 
         [IfcAttribute(8, IfcAttributeState.Optional)]
@@ -93,7 +93,7 @@ namespace Xbim.Ifc.SharedBldgServiceElements
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _sourceDescription, value, v => SourceDescription = v,
+                this.SetModelValue(this, ref _sourceDescription, value, v => SourceDescription = v,
                                            "SourceDescription");
             }
         }
@@ -106,7 +106,7 @@ namespace Xbim.Ifc.SharedBldgServiceElements
                 ((IPersistIfcEntity) this).Activate(false);
                 return _maximumValue;
             }
-            set { ModelHelper.SetModelValue(this, ref _maximumValue, value, v => MaximumValue = v, "MaximumValue"); }
+            set { this.SetModelValue(this, ref _maximumValue, value, v => MaximumValue = v, "MaximumValue"); }
         }
 
         [IfcAttribute(10, IfcAttributeState.Optional)]
@@ -117,7 +117,7 @@ namespace Xbim.Ifc.SharedBldgServiceElements
                 ((IPersistIfcEntity) this).Activate(false);
                 return _minimumValue;
             }
-            set { ModelHelper.SetModelValue(this, ref _minimumValue, value, v => MinimumValue = v, "MinimumValue"); }
+            set { this.SetModelValue(this, ref _minimumValue, value, v => MinimumValue = v, "MinimumValue"); }
         }
 
         [IfcAttribute(11, IfcAttributeState.Optional)]
@@ -130,7 +130,7 @@ namespace Xbim.Ifc.SharedBldgServiceElements
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _thermalLoadTimeSeriesValues, value,
+                this.SetModelValue(this, ref _thermalLoadTimeSeriesValues, value,
                                            v => ThermalLoadTimeSeriesValues = v, "ThermalLoadTimeSeriesValues");
             }
         }
@@ -145,7 +145,7 @@ namespace Xbim.Ifc.SharedBldgServiceElements
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _userDefinedThermalLoadSource, value,
+                this.SetModelValue(this, ref _userDefinedThermalLoadSource, value,
                                            v => UserDefinedThermalLoadSource = v, "UserDefinedThermalLoadSource");
             }
         }
@@ -160,7 +160,7 @@ namespace Xbim.Ifc.SharedBldgServiceElements
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _userDefinedPropertySource, value,
+                this.SetModelValue(this, ref _userDefinedPropertySource, value,
                                            v => UserDefinedPropertySource = v, "UserDefinedPropertySource");
             }
         }
@@ -175,7 +175,7 @@ namespace Xbim.Ifc.SharedBldgServiceElements
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _thermalLoadType, value, v => ThermalLoadType = v,
+                this.SetModelValue(this, ref _thermalLoadType, value, v => ThermalLoadType = v,
                                            "ThermalLoadType");
             }
         }

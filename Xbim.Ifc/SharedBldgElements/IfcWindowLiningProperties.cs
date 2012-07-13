@@ -102,7 +102,7 @@ namespace Xbim.Ifc.SharedBldgElements
                 ((IPersistIfcEntity) this).Activate(false);
                 return _liningDepth;
             }
-            set { ModelHelper.SetModelValue(this, ref _liningDepth, value, v => LiningDepth = v, "LiningDepth"); }
+            set { this.SetModelValue(this, ref _liningDepth, value, v => LiningDepth = v, "LiningDepth"); }
         }
 
         /// <summary>
@@ -118,7 +118,7 @@ namespace Xbim.Ifc.SharedBldgElements
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _liningThickness, value, v => LiningThickness = v,
+                this.SetModelValue(this, ref _liningThickness, value, v => LiningThickness = v,
                                            "LiningThickness");
             }
         }
@@ -136,7 +136,7 @@ namespace Xbim.Ifc.SharedBldgElements
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _transomThickness, value, v => TransomThickness = v,
+                this.SetModelValue(this, ref _transomThickness, value, v => TransomThickness = v,
                                            "TransomThickness");
             }
         }
@@ -154,7 +154,7 @@ namespace Xbim.Ifc.SharedBldgElements
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _mullionThickness, value, v => MullionThickness = v,
+                this.SetModelValue(this, ref _mullionThickness, value, v => MullionThickness = v,
                                            "MullionThickness");
             }
         }
@@ -172,7 +172,7 @@ namespace Xbim.Ifc.SharedBldgElements
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _firstTransomOffset, value, v => FirstTransomOffset = v,
+                this.SetModelValue(this, ref _firstTransomOffset, value, v => FirstTransomOffset = v,
                                            "FirstTransomOffset");
             }
         }
@@ -190,7 +190,7 @@ namespace Xbim.Ifc.SharedBldgElements
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _secondTransomOffset, value, v => SecondTransomOffset = v,
+                this.SetModelValue(this, ref _secondTransomOffset, value, v => SecondTransomOffset = v,
                                            "SecondTransomOffset");
             }
         }
@@ -208,7 +208,7 @@ namespace Xbim.Ifc.SharedBldgElements
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _firstMullionOffset, value, v => FirstMullionOffset = v,
+                this.SetModelValue(this, ref _firstMullionOffset, value, v => FirstMullionOffset = v,
                                            "FirstMullionOffset");
             }
         }
@@ -226,7 +226,7 @@ namespace Xbim.Ifc.SharedBldgElements
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _secondMullionOffset, value, v => SecondMullionOffset = v,
+                this.SetModelValue(this, ref _secondMullionOffset, value, v => SecondMullionOffset = v,
                                            "SecondMullionOffset");
             }
         }
@@ -244,7 +244,7 @@ namespace Xbim.Ifc.SharedBldgElements
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _shapeAspectStyle, value, v => ShapeAspectStyle = v,
+                this.SetModelValue(this, ref _shapeAspectStyle, value, v => ShapeAspectStyle = v,
                                            "ShapeAspectStyle");
             }
         }

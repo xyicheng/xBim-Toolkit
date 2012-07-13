@@ -63,7 +63,7 @@ namespace Xbim.Ifc.Kernel
             set
             {
                 if (value == null || value is IfcPerson || value is IfcOrganization || value is IfcPersonAndOrganization)
-                    ModelHelper.SetModelValue(this, ref _theActor, value, v => TheActor = v, "TheActor");
+                    this.SetModelValue(this, ref _theActor, value, v => TheActor = v, "TheActor");
                 else
                     throw new ArgumentException(
                         "Illegal Actor type, must be Organization, Person,  PersonOrganization or null", "TheActor");

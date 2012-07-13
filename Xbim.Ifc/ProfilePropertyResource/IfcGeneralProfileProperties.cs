@@ -46,7 +46,7 @@ namespace Xbim.Ifc.ProfilePropertyResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _physicalWeight;
             }
-            set { ModelHelper.SetModelValue(this, ref _physicalWeight, value, v => PhysicalWeight = v, "PhysicalWeight"); }
+            set { this.SetModelValue(this, ref _physicalWeight, value, v => PhysicalWeight = v, "PhysicalWeight"); }
         }
 
         /// <summary>
@@ -60,7 +60,7 @@ namespace Xbim.Ifc.ProfilePropertyResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _perimeter;
             }
-            set { ModelHelper.SetModelValue(this, ref _perimeter, value, v => Perimeter = v, "Perimeter"); }
+            set { this.SetModelValue(this, ref _perimeter, value, v => Perimeter = v, "Perimeter"); }
         }
 
         /// <summary>
@@ -78,7 +78,7 @@ namespace Xbim.Ifc.ProfilePropertyResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _minimumPlateThickness, value, v => MinimumPlateThickness = v,
+                this.SetModelValue(this, ref _minimumPlateThickness, value, v => MinimumPlateThickness = v,
                                            "MinimumPlateThickness");
             }
         }
@@ -98,7 +98,7 @@ namespace Xbim.Ifc.ProfilePropertyResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _maximumPlateThickness, value, v => MaximumPlateThickness = v,
+                this.SetModelValue(this, ref _maximumPlateThickness, value, v => MaximumPlateThickness = v,
                                            "MaximumPlateThickness");
             }
         }
@@ -116,7 +116,7 @@ namespace Xbim.Ifc.ProfilePropertyResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _crossSectionArea, value, v => CrossSectionArea = v,
+                this.SetModelValue(this, ref _crossSectionArea, value, v => CrossSectionArea = v,
                                            "CrossSectionArea");
             }
         }

@@ -63,7 +63,7 @@ namespace Xbim.Ifc.Kernel
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _overridingProperties, value, v => OverridingProperties = v,
+                this.SetModelValue(this, ref _overridingProperties, value, v => OverridingProperties = v,
                                            "OverridingProperties");
             }
         }

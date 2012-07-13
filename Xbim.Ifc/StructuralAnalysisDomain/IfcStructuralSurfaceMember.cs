@@ -49,7 +49,7 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
                 ((IPersistIfcEntity) this).Activate(false);
                 return _predefinedType;
             }
-            set { ModelHelper.SetModelValue(this, ref _predefinedType, value, v => PredefinedType = v, "PredefinedType"); }
+            set { this.SetModelValue(this, ref _predefinedType, value, v => PredefinedType = v, "PredefinedType"); }
         }
 
         /// <summary>
@@ -63,7 +63,7 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
                 ((IPersistIfcEntity) this).Activate(false);
                 return _thickness;
             }
-            set { ModelHelper.SetModelValue(this, ref _thickness, value, v => Thickness = v, "Thickness"); }
+            set { this.SetModelValue(this, ref _thickness, value, v => Thickness = v, "Thickness"); }
         }
 
         #endregion

@@ -45,7 +45,7 @@ namespace Xbim.Ifc.ProfileResource
                 ((IPersistIfcEntity)this).Activate(false);
                 return _wallThickness;
             }
-            set { ModelHelper.SetModelValue(this, ref _wallThickness, value, v => WallThickness = v, "WallThickness"); }
+            set { this.SetModelValue(this, ref _wallThickness, value, v => WallThickness = v, "WallThickness"); }
         }
 
         /// <summary>
@@ -62,7 +62,7 @@ namespace Xbim.Ifc.ProfileResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _innerFilletRadius, value, v => InnerFilletRadius = v,
+                this.SetModelValue(this, ref _innerFilletRadius, value, v => InnerFilletRadius = v,
                                            "InnerFilletRadius");
             }
         }
@@ -81,7 +81,7 @@ namespace Xbim.Ifc.ProfileResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _outerFilletRadius, value, v => OuterFilletRadius = v,
+                this.SetModelValue(this, ref _outerFilletRadius, value, v => OuterFilletRadius = v,
                                            "OuterFilletRadius");
             }
         }

@@ -85,7 +85,7 @@ namespace Xbim.Ifc.ExternalReferenceResource
         public IfcLabel? FileExtension
         {
             get { return _fileExtension; }
-            set { ModelHelper.SetModelValue(this, ref _fileExtension, value, v => FileExtension = v, "FileExtension"); }
+            set { this.SetModelValue(this, ref _fileExtension, value, v => FileExtension = v, "FileExtension"); }
         }
 
         /// <summary>
@@ -96,7 +96,7 @@ namespace Xbim.Ifc.ExternalReferenceResource
             get { return _mimeContentType; }
             set
             {
-                ModelHelper.SetModelValue(this, ref _mimeContentType, value, v => MimeContentType = v,
+                this.SetModelValue(this, ref _mimeContentType, value, v => MimeContentType = v,
                                            "MimeContentType");
             }
         }
@@ -107,7 +107,7 @@ namespace Xbim.Ifc.ExternalReferenceResource
         public IfcLabel? MimeSubtype
         {
             get { return _mimeSubtype; }
-            set { ModelHelper.SetModelValue(this, ref _mimeSubtype, value, v => MimeSubtype = v, "MimeSubtype"); }
+            set { this.SetModelValue(this, ref _mimeSubtype, value, v => MimeSubtype = v, "MimeSubtype"); }
         }
 
         #region INotifyPropertyChanged Members

@@ -83,7 +83,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _textIndent;
             }
-            set { ModelHelper.SetModelValue(this, ref _textIndent, value, v => TextIndent = v, "TextIndent"); }
+            set { this.SetModelValue(this, ref _textIndent, value, v => TextIndent = v, "TextIndent"); }
         }
 
         [IfcAttribute(2, IfcAttributeState.Optional)]
@@ -94,7 +94,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _textAlign;
             }
-            set { ModelHelper.SetModelValue(this, ref _textAlign, value, v => TextAlign = v, "TextAlign"); }
+            set { this.SetModelValue(this, ref _textAlign, value, v => TextAlign = v, "TextAlign"); }
         }
 
         [IfcAttribute(3, IfcAttributeState.Optional)]
@@ -105,7 +105,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _textDecoration;
             }
-            set { ModelHelper.SetModelValue(this, ref _textDecoration, value, v => TextDecoration = v, "TextDecoration"); }
+            set { this.SetModelValue(this, ref _textDecoration, value, v => TextDecoration = v, "TextDecoration"); }
         }
 
         [IfcAttribute(4, IfcAttributeState.Optional)]
@@ -116,7 +116,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _letterSpacing;
             }
-            set { ModelHelper.SetModelValue(this, ref _letterSpacing, value, v => LetterSpacing = v, "LetterSpacing"); }
+            set { this.SetModelValue(this, ref _letterSpacing, value, v => LetterSpacing = v, "LetterSpacing"); }
         }
 
         [IfcAttribute(5, IfcAttributeState.Optional)]
@@ -127,7 +127,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _wordSpacing;
             }
-            set { ModelHelper.SetModelValue(this, ref _wordSpacing, value, v => WordSpacing = v, "WordSpacing"); }
+            set { this.SetModelValue(this, ref _wordSpacing, value, v => WordSpacing = v, "WordSpacing"); }
         }
 
         [IfcAttribute(6, IfcAttributeState.Optional)]
@@ -138,7 +138,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _textTransform;
             }
-            set { ModelHelper.SetModelValue(this, ref _textTransform, value, v => TextTransform = v, "TextTransform"); }
+            set { this.SetModelValue(this, ref _textTransform, value, v => TextTransform = v, "TextTransform"); }
         }
 
         [IfcAttribute(7, IfcAttributeState.Optional)]
@@ -149,7 +149,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _lineHeight;
             }
-            set { ModelHelper.SetModelValue(this, ref _lineHeight, value, v => LineHeight = v, "LineHeight"); }
+            set { this.SetModelValue(this, ref _lineHeight, value, v => LineHeight = v, "LineHeight"); }
         }
 
         #endregion

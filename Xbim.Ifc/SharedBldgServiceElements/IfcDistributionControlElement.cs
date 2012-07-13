@@ -43,7 +43,7 @@ namespace Xbim.Ifc.SharedBldgServiceElements
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _controlElementId, value, v => ControlElementId = v,
+                this.SetModelValue(this, ref _controlElementId, value, v => ControlElementId = v,
                                            "ControlElementId");
             }
         }

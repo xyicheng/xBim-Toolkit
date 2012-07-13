@@ -45,7 +45,7 @@ namespace Xbim.Ifc.StructuralLoadResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _warpingStiffness, value, v => WarpingStiffness = v,
+                this.SetModelValue(this, ref _warpingStiffness, value, v => WarpingStiffness = v,
                                            "WarpingStiffness");
             }
         }

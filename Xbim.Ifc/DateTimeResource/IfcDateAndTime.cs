@@ -76,7 +76,7 @@ namespace Xbim.Ifc.DateTimeResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _dateComponent;
             }
-            set { ModelHelper.SetModelValue(this, ref _dateComponent, value, v => DateComponent = v, "DateComponent"); }
+            set { this.SetModelValue(this, ref _dateComponent, value, v => DateComponent = v, "DateComponent"); }
         }
 
         [IfcAttribute(2, IfcAttributeState.Mandatory)]
@@ -87,7 +87,7 @@ namespace Xbim.Ifc.DateTimeResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _localTime;
             }
-            set { ModelHelper.SetModelValue(this, ref _localTime, value, v => TimeComponent = v, "TimeComponent"); }
+            set { this.SetModelValue(this, ref _localTime, value, v => TimeComponent = v, "TimeComponent"); }
         }
 
         #region INotifyPropertyChanged Members

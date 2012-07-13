@@ -105,7 +105,7 @@ namespace Xbim.Ifc.GeometricConstraintResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _intersectingAxes, value, v => IntersectingAxes = v, "IntersectingAxes");
+                this.SetModelValue(this, ref _intersectingAxes, value, v => IntersectingAxes = v, "IntersectingAxes");
             }
             
         }
@@ -122,7 +122,7 @@ namespace Xbim.Ifc.GeometricConstraintResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _offsetDistances, value, v => OffsetDistances = v, "OffsetDistances");
+                this.SetModelValue(this, ref _offsetDistances, value, v => OffsetDistances = v, "OffsetDistances");
             }
            
         }

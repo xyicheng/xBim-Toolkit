@@ -60,7 +60,7 @@ namespace Xbim.Ifc.GeometricModelResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _outer;
             }
-            set { ModelHelper.SetModelValue(this, ref _outer, value, v => Outer = v, "Outer"); }
+            set { this.SetModelValue(this, ref _outer, value, v => Outer = v, "Outer"); }
         }
 
         public override void IfcParse(int propIndex, IPropertyValue value)

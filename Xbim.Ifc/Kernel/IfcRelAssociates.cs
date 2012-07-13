@@ -51,7 +51,7 @@ namespace Xbim.Ifc.Kernel
                 ((IPersistIfcEntity) this).Activate(false);
                 return _relatedObjects;
             }
-            set { ModelHelper.SetModelValue(this, ref _relatedObjects, value, v => RelatedObjects = v, "RelatedObjects"); }
+            set { this.SetModelValue(this, ref _relatedObjects, value, v => RelatedObjects = v, "RelatedObjects"); }
         }
 
         public override void IfcParse(int propIndex, IPropertyValue value)

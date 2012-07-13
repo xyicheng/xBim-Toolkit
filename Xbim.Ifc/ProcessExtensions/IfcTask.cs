@@ -34,7 +34,7 @@ namespace Xbim.Ifc.ProcessExtensions
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _taskId, value, v => TaskId = v,
+                this.SetModelValue(this, ref _taskId, value, v => TaskId = v,
                                            "TaskId");
             }
         }
@@ -53,7 +53,7 @@ namespace Xbim.Ifc.ProcessExtensions
                 ((IPersistIfcEntity)this).Activate(false);
                 return _status;
             }
-            set { ModelHelper.SetModelValue(this, ref _status, value, v => Status = v, "Status"); }
+            set { this.SetModelValue(this, ref _status, value, v => Status = v, "Status"); }
         }
 
         /// <summary>
@@ -69,7 +69,7 @@ namespace Xbim.Ifc.ProcessExtensions
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _workMethod, value, v => WorkMethod = v,
+                this.SetModelValue(this, ref _workMethod, value, v => WorkMethod = v,
                                            "WorkMethod");
             }
         }
@@ -90,7 +90,7 @@ namespace Xbim.Ifc.ProcessExtensions
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _isMilestone, value, v => IsMilestone = v,
+                this.SetModelValue(this, ref _isMilestone, value, v => IsMilestone = v,
                                            "IsMilestone");
             }
         }
@@ -105,7 +105,7 @@ namespace Xbim.Ifc.ProcessExtensions
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _priority, value, v => Priority = v,
+                this.SetModelValue(this, ref _priority, value, v => Priority = v,
                                            "Priority");
             }
         }

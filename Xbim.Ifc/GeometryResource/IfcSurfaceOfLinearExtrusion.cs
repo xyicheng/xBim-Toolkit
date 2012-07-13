@@ -56,7 +56,7 @@ namespace Xbim.Ifc.GeometryResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _extrudedDirection, value, v => ExtrudedDirection = v,
+                this.SetModelValue(this, ref _extrudedDirection, value, v => ExtrudedDirection = v,
                                            "ExtrudedDirection");
             }
         }
@@ -72,7 +72,7 @@ namespace Xbim.Ifc.GeometryResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _depth;
             }
-            set { ModelHelper.SetModelValue(this, ref _depth, value, v => Depth = v, "Depth"); }
+            set { this.SetModelValue(this, ref _depth, value, v => Depth = v, "Depth"); }
         }
 
         /// <summary>

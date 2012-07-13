@@ -53,7 +53,7 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _relatingProfileProperties, value,
+                this.SetModelValue(this, ref _relatingProfileProperties, value,
                                            v => RelatingProfileProperties = v, "RelatingProfileProperties");
             }
         }
@@ -71,7 +71,7 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _profileSectionLocation, value, v => ProfileSectionLocation = v,
+                this.SetModelValue(this, ref _profileSectionLocation, value, v => ProfileSectionLocation = v,
                                            "ProfileSectionLocation");
             }
         }
@@ -92,7 +92,7 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _profileOrientation, value, v => ProfileOrientation = v,
+                this.SetModelValue(this, ref _profileOrientation, value, v => ProfileOrientation = v,
                                            "ProfileOrientation");
             }
         }

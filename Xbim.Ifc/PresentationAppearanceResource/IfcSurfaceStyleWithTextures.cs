@@ -85,7 +85,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _textures;
             }
-            set { ModelHelper.SetModelValue(this, ref _textures, value, v => Textures = v, "Textures"); }
+            set { this.SetModelValue(this, ref _textures, value, v => Textures = v, "Textures"); }
         }
 
         #endregion

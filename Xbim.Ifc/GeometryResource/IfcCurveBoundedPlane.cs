@@ -50,7 +50,7 @@ namespace Xbim.Ifc.GeometryResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _basisSurface;
             }
-            set { ModelHelper.SetModelValue(this, ref _basisSurface, value, v => BasisSurface = v, "BasisSurface"); }
+            set { this.SetModelValue(this, ref _basisSurface, value, v => BasisSurface = v, "BasisSurface"); }
         }
 
 
@@ -65,7 +65,7 @@ namespace Xbim.Ifc.GeometryResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _outerBoundary;
             }
-            set { ModelHelper.SetModelValue(this, ref _outerBoundary, value, v => OuterBoundary = v, "OuterBoundary"); }
+            set { this.SetModelValue(this, ref _outerBoundary, value, v => OuterBoundary = v, "OuterBoundary"); }
         }
 
 
@@ -82,7 +82,7 @@ namespace Xbim.Ifc.GeometryResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _innerBoundaries, value, v => InnerBoundaries = v,
+                this.SetModelValue(this, ref _innerBoundaries, value, v => InnerBoundaries = v,
                                            "InnerBoundaries");
             }
         }

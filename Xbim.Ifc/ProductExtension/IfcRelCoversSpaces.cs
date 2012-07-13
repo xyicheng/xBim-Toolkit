@@ -55,7 +55,7 @@ namespace Xbim.Ifc.ProductExtension
                 ((IPersistIfcEntity) this).Activate(false);
                 return _relatedSpace;
             }
-            set { ModelHelper.SetModelValue(this, ref _relatedSpace, value, v => RelatedSpace = v, "RelatedSpace"); }
+            set { this.SetModelValue(this, ref _relatedSpace, value, v => RelatedSpace = v, "RelatedSpace"); }
         }
 
         /// <summary>

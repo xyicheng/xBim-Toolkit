@@ -64,7 +64,7 @@ namespace Xbim.Ifc.GeometricModelResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _spineCurve;
             }
-            set { ModelHelper.SetModelValue(this, ref _spineCurve, value, v => SpineCurve = v, "SpineCurve"); }
+            set { this.SetModelValue(this, ref _spineCurve, value, v => SpineCurve = v, "SpineCurve"); }
         }
 
         [IfcAttribute(2, IfcAttributeState.Mandatory, IfcAttributeType.List, IfcAttributeType.Class, 2)]
@@ -75,7 +75,7 @@ namespace Xbim.Ifc.GeometricModelResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _crossSections;
             }
-            set { ModelHelper.SetModelValue(this, ref _crossSections, value, v => CrossSections = v, "CrossSections"); }
+            set { this.SetModelValue(this, ref _crossSections, value, v => CrossSections = v, "CrossSections"); }
         }
 
         [IfcAttribute(3, IfcAttributeState.Mandatory, IfcAttributeType.List, IfcAttributeType.Class, 2)]
@@ -88,7 +88,7 @@ namespace Xbim.Ifc.GeometricModelResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _crossSectionPositions, value, v => CrossSectionPositions = v,
+                this.SetModelValue(this, ref _crossSectionPositions, value, v => CrossSectionPositions = v,
                                            "CrossSectionPositions");
             }
         }

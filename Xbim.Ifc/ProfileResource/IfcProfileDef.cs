@@ -123,7 +123,7 @@ namespace Xbim.Ifc.ProfileResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _profileType;
             }
-            set { ModelHelper.SetModelValue(this, ref _profileType, value, v => ProfileType = v, "ProfileType"); }
+            set { this.SetModelValue(this, ref _profileType, value, v => ProfileType = v, "ProfileType"); }
         }
 
 
@@ -139,7 +139,7 @@ namespace Xbim.Ifc.ProfileResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _profileName;
             }
-            set { ModelHelper.SetModelValue(this, ref _profileName, value, v => ProfileName = v, "ProfileName"); }
+            set { this.SetModelValue(this, ref _profileName, value, v => ProfileName = v, "ProfileName"); }
         }
 
         public virtual void IfcParse(int propIndex, IPropertyValue value)

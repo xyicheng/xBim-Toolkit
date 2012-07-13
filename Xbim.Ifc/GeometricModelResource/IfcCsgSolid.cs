@@ -46,7 +46,7 @@ namespace Xbim.Ifc.GeometricModelResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _treeRootExpression, value, v => TreeRootExpression = v,
+                this.SetModelValue(this, ref _treeRootExpression, value, v => TreeRootExpression = v,
                                            "TreeRootExpression");
             }
         }

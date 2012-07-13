@@ -156,7 +156,7 @@ namespace Xbim.Ifc.RepresentationResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _contextIdentifier, value, v => ContextIdentifier = v,
+                this.SetModelValue(this, ref _contextIdentifier, value, v => ContextIdentifier = v,
                                            "ContextIdentifier");
             }
         }
@@ -173,7 +173,7 @@ namespace Xbim.Ifc.RepresentationResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _contextType;
             }
-            set { ModelHelper.SetModelValue(this, ref _contextType, value, v => ContextType = v, "ContextType"); }
+            set { this.SetModelValue(this, ref _contextType, value, v => ContextType = v, "ContextType"); }
         }
 
         public virtual void IfcParse(int propIndex, IPropertyValue value)

@@ -48,7 +48,7 @@ namespace Xbim.Ifc.StructuralLoadResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _linearForceX;
             }
-            set { ModelHelper.SetModelValue(this, ref _linearForceX, value, v => LinearForceX = v, "LinearForceX"); }
+            set { this.SetModelValue(this, ref _linearForceX, value, v => LinearForceX = v, "LinearForceX"); }
         }
 
         /// <summary>
@@ -62,7 +62,7 @@ namespace Xbim.Ifc.StructuralLoadResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _linearForceY;
             }
-            set { ModelHelper.SetModelValue(this, ref _linearForceY, value, v => LinearForceY = v, "LinearForceY"); }
+            set { this.SetModelValue(this, ref _linearForceY, value, v => LinearForceY = v, "LinearForceY"); }
         }
 
         /// <summary>
@@ -76,7 +76,7 @@ namespace Xbim.Ifc.StructuralLoadResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _linearForceZ;
             }
-            set { ModelHelper.SetModelValue(this, ref _linearForceZ, value, v => LinearForceZ = v, "LinearForceZ"); }
+            set { this.SetModelValue(this, ref _linearForceZ, value, v => LinearForceZ = v, "LinearForceZ"); }
         }
 
         /// <summary>
@@ -90,7 +90,7 @@ namespace Xbim.Ifc.StructuralLoadResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _linearMomentX;
             }
-            set { ModelHelper.SetModelValue(this, ref _linearMomentX, value, v => LinearMomentX = v, "LinearMomentX"); }
+            set { this.SetModelValue(this, ref _linearMomentX, value, v => LinearMomentX = v, "LinearMomentX"); }
         }
 
         /// <summary>
@@ -104,7 +104,7 @@ namespace Xbim.Ifc.StructuralLoadResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _linearMomentY;
             }
-            set { ModelHelper.SetModelValue(this, ref _linearMomentY, value, v => LinearMomentY = v, "LinearMomentY"); }
+            set { this.SetModelValue(this, ref _linearMomentY, value, v => LinearMomentY = v, "LinearMomentY"); }
         }
 
         /// <summary>
@@ -118,7 +118,7 @@ namespace Xbim.Ifc.StructuralLoadResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _linearMomentZ;
             }
-            set { ModelHelper.SetModelValue(this, ref _linearMomentZ, value, v => LinearMomentZ = v, "LinearMomentZ"); }
+            set { this.SetModelValue(this, ref _linearMomentZ, value, v => LinearMomentZ = v, "LinearMomentZ"); }
         }
 
         #endregion

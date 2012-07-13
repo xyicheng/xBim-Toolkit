@@ -60,7 +60,7 @@ namespace Xbim.Ifc.GeometricModelResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _baseSurface;
             }
-            set { ModelHelper.SetModelValue(this, ref _baseSurface, value, v => BaseSurface = v, "BaseSurface"); }
+            set { this.SetModelValue(this, ref _baseSurface, value, v => BaseSurface = v, "BaseSurface"); }
         }
 
         /// <summary>
@@ -74,7 +74,7 @@ namespace Xbim.Ifc.GeometricModelResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _agreementFlag;
             }
-            set { ModelHelper.SetModelValue(this, ref _agreementFlag, value, v => AgreementFlag = v, "AgreementFlag"); }
+            set { this.SetModelValue(this, ref _agreementFlag, value, v => AgreementFlag = v, "AgreementFlag"); }
         }
 
 

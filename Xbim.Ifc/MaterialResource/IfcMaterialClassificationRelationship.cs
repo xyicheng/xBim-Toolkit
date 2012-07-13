@@ -94,7 +94,7 @@ namespace Xbim.Ifc.MaterialResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _materialClassifications, value, v => MaterialClassifications = v,
+                this.SetModelValue(this, ref _materialClassifications, value, v => MaterialClassifications = v,
                                            "MaterialClassifications");
             }
         }
@@ -112,7 +112,7 @@ namespace Xbim.Ifc.MaterialResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _classifiedMaterial, value, v => ClassifiedMaterial = v,
+                this.SetModelValue(this, ref _classifiedMaterial, value, v => ClassifiedMaterial = v,
                                            "ClassifiedMaterial");
             }
         }

@@ -92,7 +92,7 @@ namespace Xbim.Ifc.ConstraintResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _classifiedConstraint, value, v => ClassifiedConstraint = v,
+                this.SetModelValue(this, ref _classifiedConstraint, value, v => ClassifiedConstraint = v,
                                            "ClassifiedConstraint");
             }
         }
@@ -110,7 +110,7 @@ namespace Xbim.Ifc.ConstraintResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _relatedClassifications, value, v => RelatedClassifications = v,
+                this.SetModelValue(this, ref _relatedClassifications, value, v => RelatedClassifications = v,
                                            "RelatedClassifications");
             }
         }

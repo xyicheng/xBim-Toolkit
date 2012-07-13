@@ -103,7 +103,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _repeatS;
             }
-            set { ModelHelper.SetModelValue(this, ref _repeatS, value, v => RepeatS = v, "RepeatS"); }
+            set { this.SetModelValue(this, ref _repeatS, value, v => RepeatS = v, "RepeatS"); }
         }
 
         /// <summary>
@@ -119,7 +119,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _repeatT;
             }
-            set { ModelHelper.SetModelValue(this, ref _repeatT, value, v => RepeatT = v, "RepeatT"); }
+            set { this.SetModelValue(this, ref _repeatT, value, v => RepeatT = v, "RepeatT"); }
         }
 
         /// <summary>
@@ -133,7 +133,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _textureType;
             }
-            set { ModelHelper.SetModelValue(this, ref _textureType, value, v => TextureType = v, "TextureType"); }
+            set { this.SetModelValue(this, ref _textureType, value, v => TextureType = v, "TextureType"); }
         }
 
         /// <summary>
@@ -154,7 +154,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _textureTransform, value, v => TextureTransform = v,
+                this.SetModelValue(this, ref _textureTransform, value, v => TextureTransform = v,
                                            "TextureTransform");
             }
         }

@@ -80,7 +80,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _surfaceColour;
             }
-            set { ModelHelper.SetModelValue(this, ref _surfaceColour, value, v => SurfaceColour = v, "SurfaceColour"); }
+            set { this.SetModelValue(this, ref _surfaceColour, value, v => SurfaceColour = v, "SurfaceColour"); }
         }
 
 

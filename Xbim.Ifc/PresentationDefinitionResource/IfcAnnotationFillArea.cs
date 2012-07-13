@@ -41,7 +41,7 @@ namespace Xbim.Ifc.PresentationDefinitionResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _outerBoundary;
             }
-            set { ModelHelper.SetModelValue(this, ref _outerBoundary, value, v => OuterBoundary = v, "OuterBoundary"); }
+            set { this.SetModelValue(this, ref _outerBoundary, value, v => OuterBoundary = v, "OuterBoundary"); }
         }
 
         [IfcAttribute(2, IfcAttributeState.Optional, IfcAttributeType.Set, IfcAttributeType.Class, 1)]
@@ -54,7 +54,7 @@ namespace Xbim.Ifc.PresentationDefinitionResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _innerBoundaries, value, v => InnerBoundaries = v,
+                this.SetModelValue(this, ref _innerBoundaries, value, v => InnerBoundaries = v,
                                            "InnerBoundaries");
             }
         }
@@ -83,7 +83,7 @@ namespace Xbim.Ifc.PresentationDefinitionResource
         public void AddInnerBoundary(IfcCurve inner)
         {
             if (_innerBoundaries == null)
-                ModelHelper.SetModelValue(this, ref _innerBoundaries, new CurveSet(this), v => _innerBoundaries = v,
+                this.SetModelValue(this, ref _innerBoundaries, new CurveSet(this), v => _innerBoundaries = v,
                                            "InnerBoundaries");
             _innerBoundaries.Add_Reversible(inner);
         }

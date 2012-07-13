@@ -50,7 +50,7 @@ namespace Xbim.Ifc.ProductExtension
                 ((IPersistIfcEntity) this).Activate(false);
                 return _predefinedType;
             }
-            set { ModelHelper.SetModelValue(this, ref _predefinedType, value, v => _predefinedType = v, "PredefinedType"); }
+            set { this.SetModelValue(this, ref _predefinedType, value, v => _predefinedType = v, "PredefinedType"); }
         }
 
         public override void IfcParse(int propIndex, IPropertyValue value)

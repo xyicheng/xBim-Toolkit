@@ -82,7 +82,7 @@ namespace Xbim.Ifc.ProfilePropertyResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _profileName;
             }
-            set { ModelHelper.SetModelValue(this, ref _profileName, value, v => ProfileName = v, "ProfileName"); }
+            set { this.SetModelValue(this, ref _profileName, value, v => ProfileName = v, "ProfileName"); }
         }
 
         /// <summary>
@@ -98,7 +98,7 @@ namespace Xbim.Ifc.ProfilePropertyResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _profileDefinition, value, v => ProfileDefinition = v,
+                this.SetModelValue(this, ref _profileDefinition, value, v => ProfileDefinition = v,
                                            "ProfileDefinition");
             }
         }

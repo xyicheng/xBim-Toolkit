@@ -111,7 +111,7 @@ namespace Xbim.Ifc.RepresentationResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _contextOfItems;
             }
-            set { ModelHelper.SetModelValue(this, ref _contextOfItems, value, v => ContextOfItems = v, "ContextOfItems"); }
+            set { this.SetModelValue(this, ref _contextOfItems, value, v => ContextOfItems = v, "ContextOfItems"); }
         }
 
         /// <summary>
@@ -127,7 +127,7 @@ namespace Xbim.Ifc.RepresentationResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _representationIdentifier, value, v => RepresentationIdentifier = v,
+                this.SetModelValue(this, ref _representationIdentifier, value, v => RepresentationIdentifier = v,
                                            "RepresentationIdentifier");
             }
         }
@@ -148,7 +148,7 @@ namespace Xbim.Ifc.RepresentationResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _representationType, value, v => RepresentationType = v,
+                this.SetModelValue(this, ref _representationType, value, v => RepresentationType = v,
                                            "RepresentationType");
             }
         }
@@ -165,7 +165,7 @@ namespace Xbim.Ifc.RepresentationResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _items;
             }
-            set { ModelHelper.SetModelValue(this, ref _items, value, v => Items = v, "Items"); }
+            set { this.SetModelValue(this, ref _items, value, v => Items = v, "Items"); }
         }
 
 

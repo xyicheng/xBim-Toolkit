@@ -63,7 +63,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _curveFont;
             }
-            set { ModelHelper.SetModelValue(this, ref _curveFont, value, v => CurveFont = v, "CurveFont "); }
+            set { this.SetModelValue(this, ref _curveFont, value, v => CurveFont = v, "CurveFont "); }
         }
 
 
@@ -85,7 +85,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
                 if (value is IfcRatioMeasure || value is IfcLengthMeasure || value is IfcDescriptiveMeasure ||
                     value is IfcPositiveLengthMeasure || value is IfcNormalisedRatioMeasure ||
                     value is IfcPositiveRatioMeasure)
-                    ModelHelper.SetModelValue(this, ref _curveWidth, value, v => CurveWidth = v, "CurveWidth");
+                    this.SetModelValue(this, ref _curveWidth, value, v => CurveWidth = v, "CurveWidth");
                 else
                     throw new ArgumentException("Invalid width, must be SizeSelect", "CurveWidth");
             }
@@ -104,7 +104,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
             set
             {
                 if (value is IfcDraughtingPreDefinedColour || value is IfcColourRgb)
-                    ModelHelper.SetModelValue(this, ref _curveColour, value, v => CurveColour = v, "CurveColour");
+                    this.SetModelValue(this, ref _curveColour, value, v => CurveColour = v, "CurveColour");
                 else
                     throw new ArgumentException("Invalid colour, must be DraughtingPreDefinedColour or ColourRgb",
                                                 "CurveColour");

@@ -103,7 +103,7 @@ namespace Xbim.Ifc.PropertyResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _name;
             }
-            set { ModelHelper.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
+            set { this.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
         }
 
         /// <summary>
@@ -119,7 +119,7 @@ namespace Xbim.Ifc.PropertyResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _enumerationValues, value, v => EnumerationValues = v,
+                this.SetModelValue(this, ref _enumerationValues, value, v => EnumerationValues = v,
                                            "EnumerationValues");
             }
         }
@@ -135,7 +135,7 @@ namespace Xbim.Ifc.PropertyResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _unit;
             }
-            set { ModelHelper.SetModelValue(this, ref _unit, value, v => Unit = v, "Unit"); }
+            set { this.SetModelValue(this, ref _unit, value, v => Unit = v, "Unit"); }
         }
 
         #region ISupportIfcParser Members

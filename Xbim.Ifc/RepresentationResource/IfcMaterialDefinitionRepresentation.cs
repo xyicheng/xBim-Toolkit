@@ -59,7 +59,7 @@ namespace Xbim.Ifc.RepresentationResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _representedMaterial, value, v => RepresentedMaterial = v,
+                this.SetModelValue(this, ref _representedMaterial, value, v => RepresentedMaterial = v,
                                            "RepresentedMaterial");
             }
         }

@@ -41,7 +41,7 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _projectedOrTrue, value, v => ProjectedOrTrue = v,
+                this.SetModelValue(this, ref _projectedOrTrue, value, v => ProjectedOrTrue = v,
                                            "ProjectedOrTrue");
             }
         }

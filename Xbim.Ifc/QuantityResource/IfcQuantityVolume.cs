@@ -53,7 +53,7 @@ namespace Xbim.Ifc.QuantityResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _volumeValue;
             }
-            set { ModelHelper.SetModelValue(this, ref _volumeValue, value, v => VolumeValue = v, "VolumeValue"); }
+            set { this.SetModelValue(this, ref _volumeValue, value, v => VolumeValue = v, "VolumeValue"); }
         }
 
         public override void IfcParse(int propIndex, IPropertyValue value)

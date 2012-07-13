@@ -43,7 +43,7 @@ namespace Xbim.Ifc.ProfileResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _XDim;
             }
-            set { ModelHelper.SetModelValue(this, ref _XDim, value, v => XDim = v, "XDim"); }
+            set { this.SetModelValue(this, ref _XDim, value, v => XDim = v, "XDim"); }
         }
 
 
@@ -56,7 +56,7 @@ namespace Xbim.Ifc.ProfileResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _YDim;
             }
-            set { ModelHelper.SetModelValue(this, ref _YDim, value, v => YDim = v, "YDim"); }
+            set { this.SetModelValue(this, ref _YDim, value, v => YDim = v, "YDim"); }
         }
 
 

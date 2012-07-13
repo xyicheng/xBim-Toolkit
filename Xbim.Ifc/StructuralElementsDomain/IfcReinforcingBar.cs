@@ -47,7 +47,7 @@ namespace Xbim.Ifc.StructuralElementsDomain
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _nominalDiameter, value, v => NominalDiameter = v,
+                this.SetModelValue(this, ref _nominalDiameter, value, v => NominalDiameter = v,
                                            "NominalDiameter");
             }
         }
@@ -62,7 +62,7 @@ namespace Xbim.Ifc.StructuralElementsDomain
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _crossSectionArea, value, v => CrossSectionArea = v,
+                this.SetModelValue(this, ref _crossSectionArea, value, v => CrossSectionArea = v,
                                            "CrossSectionArea");
             }
         }
@@ -75,7 +75,7 @@ namespace Xbim.Ifc.StructuralElementsDomain
                 ((IPersistIfcEntity) this).Activate(false);
                 return _barLength;
             }
-            set { ModelHelper.SetModelValue(this, ref _barLength, value, v => BarLength = v, "BarLength"); }
+            set { this.SetModelValue(this, ref _barLength, value, v => BarLength = v, "BarLength"); }
         }
 
         [IfcAttribute(13, IfcAttributeState.Mandatory)]
@@ -86,7 +86,7 @@ namespace Xbim.Ifc.StructuralElementsDomain
                 ((IPersistIfcEntity) this).Activate(false);
                 return _barRole;
             }
-            set { ModelHelper.SetModelValue(this, ref _barRole, value, v => BarRole = v, "BarRole"); }
+            set { this.SetModelValue(this, ref _barRole, value, v => BarRole = v, "BarRole"); }
         }
 
         [IfcAttribute(14, IfcAttributeState.Optional)]
@@ -97,7 +97,7 @@ namespace Xbim.Ifc.StructuralElementsDomain
                 ((IPersistIfcEntity) this).Activate(false);
                 return _barSurface;
             }
-            set { ModelHelper.SetModelValue(this, ref _barSurface, value, v => BarSurface = v, "BarSurface"); }
+            set { this.SetModelValue(this, ref _barSurface, value, v => BarSurface = v, "BarSurface"); }
         }
 
         #endregion

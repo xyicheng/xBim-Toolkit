@@ -95,7 +95,7 @@ namespace Xbim.Ifc.ExternalReferenceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _relatingItem;
             }
-            set { ModelHelper.SetModelValue(this, ref _relatingItem, value, v => RelatingItem = v, "RelatingItem"); }
+            set { this.SetModelValue(this, ref _relatingItem, value, v => RelatingItem = v, "RelatingItem"); }
         }
 
         /// <summary>
@@ -109,7 +109,7 @@ namespace Xbim.Ifc.ExternalReferenceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _relatedItems;
             }
-            set { ModelHelper.SetModelValue(this, ref _relatedItems, value, v => RelatedItems = v, "RelatedItems"); }
+            set { this.SetModelValue(this, ref _relatedItems, value, v => RelatedItems = v, "RelatedItems"); }
         }
 
         #region INotifyPropertyChanged Members

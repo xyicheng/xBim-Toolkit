@@ -93,7 +93,7 @@ namespace Xbim.Ifc.MaterialResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _materials;
             }
-            set { ModelHelper.SetModelValue(this, ref _materials, value, v => Materials = v, "Materials"); }
+            set { this.SetModelValue(this, ref _materials, value, v => Materials = v, "Materials"); }
         }
 
         #endregion

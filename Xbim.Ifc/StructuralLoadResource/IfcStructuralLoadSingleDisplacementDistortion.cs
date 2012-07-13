@@ -52,7 +52,7 @@ namespace Xbim.Ifc.StructuralLoadResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _distortion;
             }
-            set { ModelHelper.SetModelValue(this, ref _distortion, value, v => Distortion = v, "Distortion"); }
+            set { this.SetModelValue(this, ref _distortion, value, v => Distortion = v, "Distortion"); }
         }
 
         #endregion

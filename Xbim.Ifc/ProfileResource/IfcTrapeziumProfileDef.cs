@@ -46,7 +46,7 @@ namespace Xbim.Ifc.ProfileResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _bottomXDim;
             }
-            set { ModelHelper.SetModelValue(this, ref _bottomXDim, value, v => BottomXDim = v, "BottomXDim"); }
+            set { this.SetModelValue(this, ref _bottomXDim, value, v => BottomXDim = v, "BottomXDim"); }
         }
 
         /// <summary>
@@ -60,7 +60,7 @@ namespace Xbim.Ifc.ProfileResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _topXDim;
             }
-            set { ModelHelper.SetModelValue(this, ref _topXDim, value, v => TopXDim = v, "TopXDim"); }
+            set { this.SetModelValue(this, ref _topXDim, value, v => TopXDim = v, "TopXDim"); }
         }
 
         /// <summary>
@@ -74,7 +74,7 @@ namespace Xbim.Ifc.ProfileResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _yDim;
             }
-            set { ModelHelper.SetModelValue(this, ref _yDim, value, v => YDim = v, "YDim"); }
+            set { this.SetModelValue(this, ref _yDim, value, v => YDim = v, "YDim"); }
         }
 
         /// <summary>
@@ -88,7 +88,7 @@ namespace Xbim.Ifc.ProfileResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _topXOffset;
             }
-            set { ModelHelper.SetModelValue(this, ref _topXOffset, value, v => TopXOffset = v, "TopXOffset"); }
+            set { this.SetModelValue(this, ref _topXOffset, value, v => TopXOffset = v, "TopXOffset"); }
         }
 
         #endregion

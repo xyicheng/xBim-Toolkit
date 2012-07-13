@@ -40,7 +40,7 @@ namespace Xbim.Ifc.ProfileResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _curve;
             }
-            set { ModelHelper.SetModelValue(this, ref _curve, value, v => Curve = v, "Curve"); }
+            set { this.SetModelValue(this, ref _curve, value, v => Curve = v, "Curve"); }
         }
 
 

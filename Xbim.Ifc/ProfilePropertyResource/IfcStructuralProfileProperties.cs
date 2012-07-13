@@ -55,7 +55,7 @@ namespace Xbim.Ifc.ProfilePropertyResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref this._torsionalConstantX, value, v => TorsionalConstantX = v,
+                this.SetModelValue(this, ref this._torsionalConstantX, value, v => TorsionalConstantX = v,
                                            "TorsionalConstantX");
             }
         }
@@ -70,7 +70,7 @@ namespace Xbim.Ifc.ProfilePropertyResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref this._momentOfInertiaYZ, value, v => MomentOfInertiaYZ = v,
+                this.SetModelValue(this, ref this._momentOfInertiaYZ, value, v => MomentOfInertiaYZ = v,
                                            "MomentOfInertiaYZ");
             }
         }
@@ -85,7 +85,7 @@ namespace Xbim.Ifc.ProfilePropertyResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref this._momentOfInertiaY, value, v => MomentOfInertiaY = v,
+                this.SetModelValue(this, ref this._momentOfInertiaY, value, v => MomentOfInertiaY = v,
                                            "MomentOfInertiaY");
             }
         }
@@ -100,7 +100,7 @@ namespace Xbim.Ifc.ProfilePropertyResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref this._momentOfInertiaZ, value, v => MomentOfInertiaZ = v,
+                this.SetModelValue(this, ref this._momentOfInertiaZ, value, v => MomentOfInertiaZ = v,
                                            "MomentOfInertiaZ");
             }
         }
@@ -115,7 +115,7 @@ namespace Xbim.Ifc.ProfilePropertyResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref this._warpingConstant, value, v => WarpingConstant = v,
+                this.SetModelValue(this, ref this._warpingConstant, value, v => WarpingConstant = v,
                                            "WarpingConstant");
             }
         }
@@ -128,7 +128,7 @@ namespace Xbim.Ifc.ProfilePropertyResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return this._shearCentreZ;
             }
-            set { ModelHelper.SetModelValue(this, ref this._shearCentreZ, value, v => ShearCentreZ = v, "ShearCentreZ"); }
+            set { this.SetModelValue(this, ref this._shearCentreZ, value, v => ShearCentreZ = v, "ShearCentreZ"); }
         }
 
         [IfcAttribute(14, IfcAttributeState.Optional)]
@@ -139,7 +139,7 @@ namespace Xbim.Ifc.ProfilePropertyResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return this._shearCentreY;
             }
-            set { ModelHelper.SetModelValue(this, ref this._shearCentreY, value, v => ShearCentreY = v, "ShearCentreY"); }
+            set { this.SetModelValue(this, ref this._shearCentreY, value, v => ShearCentreY = v, "ShearCentreY"); }
         }
 
         [IfcAttribute(15, IfcAttributeState.Optional)]
@@ -152,7 +152,7 @@ namespace Xbim.Ifc.ProfilePropertyResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref this._shearDeformationAreaZ, value, v => ShearDeformationAreaZ = v,
+                this.SetModelValue(this, ref this._shearDeformationAreaZ, value, v => ShearDeformationAreaZ = v,
                                            "ShearDeformationAreaZ");
             }
         }
@@ -167,7 +167,7 @@ namespace Xbim.Ifc.ProfilePropertyResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref this._shearDeformationAreaY, value, v => ShearDeformationAreaY = v,
+                this.SetModelValue(this, ref this._shearDeformationAreaY, value, v => ShearDeformationAreaY = v,
                                            "ShearDeformationAreaY");
             }
         }
@@ -182,7 +182,7 @@ namespace Xbim.Ifc.ProfilePropertyResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref this._maximumSectionModulusY, value,
+                this.SetModelValue(this, ref this._maximumSectionModulusY, value,
                                            v => MaximumSectionModulusY = v, "MaximumSectionModulusY");
             }
         }
@@ -197,7 +197,7 @@ namespace Xbim.Ifc.ProfilePropertyResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref this._minimumSectionModulusY, value,
+                this.SetModelValue(this, ref this._minimumSectionModulusY, value,
                                            v => MinimumSectionModulusY = v, "MinimumSectionModulusY");
             }
         }
@@ -212,7 +212,7 @@ namespace Xbim.Ifc.ProfilePropertyResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref this._maximumSectionModulusZ, value,
+                this.SetModelValue(this, ref this._maximumSectionModulusZ, value,
                                            v => MaximumSectionModulusZ = v, "MaximumSectionModulusZ");
             }
         }
@@ -227,7 +227,7 @@ namespace Xbim.Ifc.ProfilePropertyResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref this._minimumSectionModulusZ, value,
+                this.SetModelValue(this, ref this._minimumSectionModulusZ, value,
                                            v => MinimumSectionModulusZ = v, "MinimumSectionModulusZ");
             }
         }
@@ -242,7 +242,7 @@ namespace Xbim.Ifc.ProfilePropertyResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref this._centreOfGravityInX, value, v => CentreOfGravityInX = v,
+                this.SetModelValue(this, ref this._centreOfGravityInX, value, v => CentreOfGravityInX = v,
                                            "CentreOfGravityInX");
             }
         }
@@ -257,7 +257,7 @@ namespace Xbim.Ifc.ProfilePropertyResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref this._centreOfGravityInY, value, v => CentreOfGravityInY = v,
+                this.SetModelValue(this, ref this._centreOfGravityInY, value, v => CentreOfGravityInY = v,
                                            "CentreOfGravityInY");
             }
         }

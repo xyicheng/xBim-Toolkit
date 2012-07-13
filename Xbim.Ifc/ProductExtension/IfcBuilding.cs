@@ -110,7 +110,7 @@ namespace Xbim.Ifc.ProductExtension
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _elevationOfRefHeight, value, v => ElevationOfRefHeight = v,
+                this.SetModelValue(this, ref _elevationOfRefHeight, value, v => ElevationOfRefHeight = v,
                                            "ElevationOfRefHeight");
             }
         }
@@ -130,7 +130,7 @@ namespace Xbim.Ifc.ProductExtension
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _elevationOfTerrain, value, v => ElevationOfTerrain = v,
+                this.SetModelValue(this, ref _elevationOfTerrain, value, v => ElevationOfTerrain = v,
                                            "ElevationOfTerrain");
             }
         }
@@ -149,7 +149,7 @@ namespace Xbim.Ifc.ProductExtension
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _buildingAddress, value, v => BuildingAddress = v,
+                this.SetModelValue(this, ref _buildingAddress, value, v => BuildingAddress = v,
                                            "BuildingAddress");
             }
         }

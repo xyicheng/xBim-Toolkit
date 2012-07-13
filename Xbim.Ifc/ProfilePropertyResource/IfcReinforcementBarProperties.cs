@@ -87,7 +87,7 @@ namespace Xbim.Ifc.ProfilePropertyResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _totalCrossSectionArea, value, v => TotalCrossSectionArea = v,
+                this.SetModelValue(this, ref _totalCrossSectionArea, value, v => TotalCrossSectionArea = v,
                                            "TotalCrossSectionArea");
             }
         }
@@ -103,7 +103,7 @@ namespace Xbim.Ifc.ProfilePropertyResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _steelGrade;
             }
-            set { ModelHelper.SetModelValue(this, ref _steelGrade, value, v => SteelGrade = v, "SteelGrade"); }
+            set { this.SetModelValue(this, ref _steelGrade, value, v => SteelGrade = v, "SteelGrade"); }
         }
 
         ///<summary>
@@ -117,7 +117,7 @@ namespace Xbim.Ifc.ProfilePropertyResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _barSurface;
             }
-            set { ModelHelper.SetModelValue(this, ref _barSurface, value, v => BarSurface = v, "BarSurface"); }
+            set { this.SetModelValue(this, ref _barSurface, value, v => BarSurface = v, "BarSurface"); }
         }
 
         /// <summary>
@@ -132,7 +132,7 @@ namespace Xbim.Ifc.ProfilePropertyResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _effectiveDepth;
             }
-            set { ModelHelper.SetModelValue(this, ref _effectiveDepth, value, v => EffectiveDepth = v, "EffectiveDepth"); }
+            set { this.SetModelValue(this, ref _effectiveDepth, value, v => EffectiveDepth = v, "EffectiveDepth"); }
         }
 
         /// <summary>
@@ -149,7 +149,7 @@ namespace Xbim.Ifc.ProfilePropertyResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _nominalBarDiameter, value, v => NominalBarDiameter = v,
+                this.SetModelValue(this, ref _nominalBarDiameter, value, v => NominalBarDiameter = v,
                                            "NominalBarDiameter");
             }
         }
@@ -162,7 +162,7 @@ namespace Xbim.Ifc.ProfilePropertyResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _barCount;
             }
-            set { ModelHelper.SetModelValue(this, ref _barCount, value, v => BarCount = v, "BarCount"); }
+            set { this.SetModelValue(this, ref _barCount, value, v => BarCount = v, "BarCount"); }
         }
 
         #endregion

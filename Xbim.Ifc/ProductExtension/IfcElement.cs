@@ -76,7 +76,7 @@ namespace Xbim.Ifc.ProductExtension
                 ((IPersistIfcEntity) this).Activate(false);
                 return _tag;
             }
-            set { ModelHelper.SetModelValue(this, ref _tag, value, v => _tag = v, "Tag"); }
+            set { this.SetModelValue(this, ref _tag, value, v => _tag = v, "Tag"); }
         }
 
         public override void IfcParse(int propIndex, IPropertyValue value)

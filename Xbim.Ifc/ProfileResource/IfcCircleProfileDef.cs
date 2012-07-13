@@ -43,7 +43,7 @@ namespace Xbim.Ifc.ProfileResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _radius;
             }
-            set { ModelHelper.SetModelValue(this, ref _radius, value, v => Radius = v, "Radius"); }
+            set { this.SetModelValue(this, ref _radius, value, v => Radius = v, "Radius"); }
         }
 
 

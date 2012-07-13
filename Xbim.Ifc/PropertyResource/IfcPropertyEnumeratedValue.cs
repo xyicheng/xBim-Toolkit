@@ -73,7 +73,7 @@ namespace Xbim.Ifc.PropertyResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _enumerationValues, value, v => EnumerationValues = v,
+                this.SetModelValue(this, ref _enumerationValues, value, v => EnumerationValues = v,
                                            "EnumerationValues");
             }
         }
@@ -91,7 +91,7 @@ namespace Xbim.Ifc.PropertyResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _enumerationReference, value, v => EnumerationReference = v,
+                this.SetModelValue(this, ref _enumerationReference, value, v => EnumerationReference = v,
                                            "EnumerationReference");
             }
         }

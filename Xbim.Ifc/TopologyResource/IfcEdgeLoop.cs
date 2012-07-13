@@ -52,7 +52,7 @@ namespace Xbim.Ifc.TopologyResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _edgeList;
             }
-            set { ModelHelper.SetModelValue(this, ref _edgeList, value, v => EdgeList = v, "EdgeList"); }
+            set { this.SetModelValue(this, ref _edgeList, value, v => EdgeList = v, "EdgeList"); }
         }
 
         public override void IfcParse(int propIndex, IPropertyValue value)

@@ -61,7 +61,7 @@ namespace Xbim.Ifc.GeometryResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _segments;
             }
-            set { ModelHelper.SetModelValue(this, ref _segments, value, v => Segments = v, "Segments"); }
+            set { this.SetModelValue(this, ref _segments, value, v => Segments = v, "Segments"); }
         }
 
         [IfcAttribute(2, IfcAttributeState.Mandatory)]
@@ -72,7 +72,7 @@ namespace Xbim.Ifc.GeometryResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _selfIntersect;
             }
-            set { ModelHelper.SetModelValue(this, ref _selfIntersect, value, v => SelfIntersect = v, "SelfIntersect "); }
+            set { this.SetModelValue(this, ref _selfIntersect, value, v => SelfIntersect = v, "SelfIntersect "); }
         }
 
         public int NSegments

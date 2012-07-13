@@ -49,7 +49,7 @@ namespace Xbim.Ifc.SharedBldgServiceElements
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _relatedControlElements, value, v => RelatedControlElements = v,
+                this.SetModelValue(this, ref _relatedControlElements, value, v => RelatedControlElements = v,
                                            "RelatedControlElements");
             }
         }
@@ -67,7 +67,7 @@ namespace Xbim.Ifc.SharedBldgServiceElements
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _relatingFlowElement, value, v => RelatingFlowElement = v,
+                this.SetModelValue(this, ref _relatingFlowElement, value, v => RelatingFlowElement = v,
                                            "RelatingFlowElement");
             }
         }

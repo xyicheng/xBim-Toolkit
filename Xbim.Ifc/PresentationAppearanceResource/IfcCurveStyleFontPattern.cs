@@ -80,7 +80,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _visibleSegmentLength, value, v => VisibleSegmentLength = v,
+                this.SetModelValue(this, ref _visibleSegmentLength, value, v => VisibleSegmentLength = v,
                                            "VisibleSegmentLength");
             }
         }
@@ -99,7 +99,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
                 if (value <= 0)
                     throw new ArgumentException("CurveStyleFontPattern.InvisibleSegmentLength must be greater than 0");
                 else
-                    ModelHelper.SetModelValue(this, ref _invisibleSegmentLength, value, v => InvisibleSegmentLength = v,
+                    this.SetModelValue(this, ref _invisibleSegmentLength, value, v => InvisibleSegmentLength = v,
                                                "InvisibleSegmentLength");
             }
         }

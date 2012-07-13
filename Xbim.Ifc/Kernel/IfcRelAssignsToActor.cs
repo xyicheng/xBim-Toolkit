@@ -55,7 +55,7 @@ namespace Xbim.Ifc.Kernel
                 ((IPersistIfcEntity) this).Activate(false);
                 return _relatingActor;
             }
-            set { ModelHelper.SetModelValue(this, ref _relatingActor, value, v => RelatingActor = v, "RelatingActor"); }
+            set { this.SetModelValue(this, ref _relatingActor, value, v => RelatingActor = v, "RelatingActor"); }
         }
 
         /// <summary>
@@ -69,7 +69,7 @@ namespace Xbim.Ifc.Kernel
                 ((IPersistIfcEntity) this).Activate(false);
                 return _actingRole;
             }
-            set { ModelHelper.SetModelValue(this, ref _actingRole, value, v => ActingRole = v, "ActingRole"); }
+            set { this.SetModelValue(this, ref _actingRole, value, v => ActingRole = v, "ActingRole"); }
         }
 
         #endregion

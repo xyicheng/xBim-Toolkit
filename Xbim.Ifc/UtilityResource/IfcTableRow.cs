@@ -86,7 +86,7 @@ namespace Xbim.Ifc.UtilityResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _rowCells;
             }
-            set { ModelHelper.SetModelValue(this, ref _rowCells, value, v => RowCells = v, "RowCells"); }
+            set { this.SetModelValue(this, ref _rowCells, value, v => RowCells = v, "RowCells"); }
         }
 
         /// <summary>
@@ -100,7 +100,7 @@ namespace Xbim.Ifc.UtilityResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _isHeading;
             }
-            set { ModelHelper.SetModelValue(this, ref _isHeading, value, v => IsHeading = v, "IsHeading"); }
+            set { this.SetModelValue(this, ref _isHeading, value, v => IsHeading = v, "IsHeading"); }
         }
 
         /// <summary>

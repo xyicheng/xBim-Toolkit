@@ -47,7 +47,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _transparency;
             }
-            set { ModelHelper.SetModelValue(this, ref _transparency, value, v => Transparency = v, "Transparency"); }
+            set { this.SetModelValue(this, ref _transparency, value, v => Transparency = v, "Transparency"); }
         }
 
         [IfcAttribute(3, IfcAttributeState.Optional)]
@@ -58,7 +58,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _diffuseColour;
             }
-            set { ModelHelper.SetModelValue(this, ref _diffuseColour, value, v => DiffuseColour = v, "DiffuseColour"); }
+            set { this.SetModelValue(this, ref _diffuseColour, value, v => DiffuseColour = v, "DiffuseColour"); }
         }
 
         [IfcAttribute(4, IfcAttributeState.Optional)]
@@ -71,7 +71,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _transmissionColour, value, v => TransmissionColour = v,
+                this.SetModelValue(this, ref _transmissionColour, value, v => TransmissionColour = v,
                                            "TransmissionColour");
             }
         }
@@ -87,7 +87,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _diffuseTransmissionColour, value,
+                this.SetModelValue(this, ref _diffuseTransmissionColour, value,
                                            v => DiffuseTransmissionColour = v, "DiffuseTransmissionColour");
             }
         }
@@ -102,7 +102,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _reflectionColour, value, v => ReflectionColour = v,
+                this.SetModelValue(this, ref _reflectionColour, value, v => ReflectionColour = v,
                                            "ReflectionColour");
             }
         }
@@ -115,7 +115,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _specularColour;
             }
-            set { ModelHelper.SetModelValue(this, ref _specularColour, value, v => SpecularColour = v, "SpecularColour"); }
+            set { this.SetModelValue(this, ref _specularColour, value, v => SpecularColour = v, "SpecularColour"); }
         }
 
         [IfcAttribute(8, IfcAttributeState.Optional)]
@@ -128,7 +128,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _specularHighlight, value, v => SpecularHighlight = v,
+                this.SetModelValue(this, ref _specularHighlight, value, v => SpecularHighlight = v,
                                            "SpecularHighlight");
             }
         }
@@ -143,7 +143,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _reflectanceMethod, value, v => ReflectanceMethod = v,
+                this.SetModelValue(this, ref _reflectanceMethod, value, v => ReflectanceMethod = v,
                                            "ReflectanceMethod");
             }
         }

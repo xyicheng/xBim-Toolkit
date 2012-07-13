@@ -55,7 +55,7 @@ namespace Xbim.Ifc.GeometricModelResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _operator;
             }
-            set { ModelHelper.SetModelValue(this, ref _operator, value, v => Operator = v, "Operator"); }
+            set { this.SetModelValue(this, ref _operator, value, v => Operator = v, "Operator"); }
         }
 
         /// <summary>
@@ -69,7 +69,7 @@ namespace Xbim.Ifc.GeometricModelResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _firstOperand;
             }
-            set { ModelHelper.SetModelValue(this, ref _firstOperand, value, v => FirstOperand = v, "FirstOperand"); }
+            set { this.SetModelValue(this, ref _firstOperand, value, v => FirstOperand = v, "FirstOperand"); }
         }
 
         /// <summary>
@@ -83,7 +83,7 @@ namespace Xbim.Ifc.GeometricModelResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _secondOperand;
             }
-            set { ModelHelper.SetModelValue(this, ref _secondOperand, value, v => SecondOperand = v, "SecondOperand"); }
+            set { this.SetModelValue(this, ref _secondOperand, value, v => SecondOperand = v, "SecondOperand"); }
         }
 
 

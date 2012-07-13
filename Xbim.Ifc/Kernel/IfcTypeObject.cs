@@ -47,7 +47,7 @@ namespace Xbim.Ifc.Kernel
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _applicableOccurrence, value, v => ApplicableOccurrence = v,
+                this.SetModelValue(this, ref _applicableOccurrence, value, v => ApplicableOccurrence = v,
                                            "ApplicableOccurrence");
             }
         }
@@ -65,7 +65,7 @@ namespace Xbim.Ifc.Kernel
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _hasPropertySets, value, v => HasPropertySets = v,
+                this.SetModelValue(this, ref _hasPropertySets, value, v => HasPropertySets = v,
                                            "HasPropertySets");
             }
         }

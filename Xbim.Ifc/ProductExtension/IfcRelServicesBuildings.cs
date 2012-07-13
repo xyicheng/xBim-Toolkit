@@ -57,7 +57,7 @@ namespace Xbim.Ifc.ProductExtension
                 ((IPersistIfcEntity) this).Activate(false);
                 return _relatingSystem;
             }
-            set { ModelHelper.SetModelValue(this, ref _relatingSystem, value, v => RelatingSystem = v, "RelatingSystem"); }
+            set { this.SetModelValue(this, ref _relatingSystem, value, v => RelatingSystem = v, "RelatingSystem"); }
         }
 
         /// <summary>
@@ -76,7 +76,7 @@ namespace Xbim.Ifc.ProductExtension
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _relatedBuildings, value, v => RelatedBuildings = v,
+                this.SetModelValue(this, ref _relatedBuildings, value, v => RelatedBuildings = v,
                                            "RelatedBuildings");
             }
         }

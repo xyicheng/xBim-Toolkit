@@ -76,7 +76,7 @@ namespace Xbim.Ifc.GeometryResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _degree;
             }
-            set { ModelHelper.SetModelValue(this, ref _degree, value, v => Degree = v, "Degree"); }
+            set { this.SetModelValue(this, ref _degree, value, v => Degree = v, "Degree"); }
         }
 
 
@@ -93,7 +93,7 @@ namespace Xbim.Ifc.GeometryResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _controlPointsList, value, v => ControlPointsList = v,
+                this.SetModelValue(this, ref _controlPointsList, value, v => ControlPointsList = v,
                                            "ControlPointsList");
             }
         }
@@ -110,7 +110,7 @@ namespace Xbim.Ifc.GeometryResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _curveForm;
             }
-            set { ModelHelper.SetModelValue(this, ref _curveForm, value, v => CurveForm = v, "CurveForm"); }
+            set { this.SetModelValue(this, ref _curveForm, value, v => CurveForm = v, "CurveForm"); }
         }
 
 
@@ -125,7 +125,7 @@ namespace Xbim.Ifc.GeometryResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _closedCurve;
             }
-            set { ModelHelper.SetModelValue(this, ref _closedCurve, value, v => ClosedCurve = v, "ClosedCurve"); }
+            set { this.SetModelValue(this, ref _closedCurve, value, v => ClosedCurve = v, "ClosedCurve"); }
         }
 
 
@@ -140,7 +140,7 @@ namespace Xbim.Ifc.GeometryResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _selfIntersect;
             }
-            set { ModelHelper.SetModelValue(this, ref _selfIntersect, value, v => SelfIntersect = v, "SelfIntersect"); }
+            set { this.SetModelValue(this, ref _selfIntersect, value, v => SelfIntersect = v, "SelfIntersect"); }
         }
 
 

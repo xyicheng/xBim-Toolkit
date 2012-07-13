@@ -438,7 +438,7 @@ namespace Xbim.Ifc.ActorResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _id;
             }
-            set { ModelHelper.SetModelValue(this, ref _id, value, v => Id = v, "Id"); }
+            set { this.SetModelValue(this, ref _id, value, v => Id = v, "Id"); }
         }
 
         /// <summary>
@@ -452,7 +452,7 @@ namespace Xbim.Ifc.ActorResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _familyName;
             }
-            set { ModelHelper.SetModelValue(this, ref _familyName, value, v => FamilyName = v, "FamilyName"); }
+            set { this.SetModelValue(this, ref _familyName, value, v => FamilyName = v, "FamilyName"); }
         }
 
         /// <summary>
@@ -466,7 +466,7 @@ namespace Xbim.Ifc.ActorResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _givenName;
             }
-            set { ModelHelper.SetModelValue(this, ref _givenName, value, v => GivenName = v, "GivenName"); }
+            set { this.SetModelValue(this, ref _givenName, value, v => GivenName = v, "GivenName"); }
         }
 
         /// <summary>
@@ -480,7 +480,7 @@ namespace Xbim.Ifc.ActorResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _middleNames;
             }
-            set { ModelHelper.SetModelValue(this, ref _middleNames, value, v => MiddleNames = v, "MiddleNames"); }
+            set { this.SetModelValue(this, ref _middleNames, value, v => MiddleNames = v, "MiddleNames"); }
         }
 
         /// <summary>
@@ -494,7 +494,7 @@ namespace Xbim.Ifc.ActorResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _prefixTitles;
             }
-            set { ModelHelper.SetModelValue(this, ref _prefixTitles, value, v => PrefixTitles = v, "PrefixTitles"); }
+            set { this.SetModelValue(this, ref _prefixTitles, value, v => PrefixTitles = v, "PrefixTitles"); }
         }
 
         /// <summary>
@@ -508,7 +508,7 @@ namespace Xbim.Ifc.ActorResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _suffixTitles;
             }
-            set { ModelHelper.SetModelValue(this, ref _suffixTitles, value, v => SuffixTitles = v, "SuffixTitles"); }
+            set { this.SetModelValue(this, ref _suffixTitles, value, v => SuffixTitles = v, "SuffixTitles"); }
         }
 
         /// <summary>
@@ -522,7 +522,7 @@ namespace Xbim.Ifc.ActorResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _roles;
             }
-            set { ModelHelper.SetModelValue(this, ref _roles, value, v => Roles = v, "Roles"); }
+            set { this.SetModelValue(this, ref _roles, value, v => Roles = v, "Roles"); }
         }
 
         /// <summary>
@@ -540,7 +540,7 @@ namespace Xbim.Ifc.ActorResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _addresses;
             }
-            set { ModelHelper.SetModelValue(this, ref _addresses, value, v => Addresses = v, "Addresses"); }
+            set { this.SetModelValue(this, ref _addresses, value, v => Addresses = v, "Addresses"); }
         }
 
         #endregion

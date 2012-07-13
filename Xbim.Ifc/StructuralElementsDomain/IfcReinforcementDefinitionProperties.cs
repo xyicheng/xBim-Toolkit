@@ -51,7 +51,7 @@ namespace Xbim.Ifc.StructuralElementsDomain
                 ((IPersistIfcEntity) this).Activate(false);
                 return _definitionType;
             }
-            set { ModelHelper.SetModelValue(this, ref _definitionType, value, v => DefinitionType = v, "DefinitionType"); }
+            set { this.SetModelValue(this, ref _definitionType, value, v => DefinitionType = v, "DefinitionType"); }
         }
 
         /// <summary>
@@ -67,7 +67,7 @@ namespace Xbim.Ifc.StructuralElementsDomain
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _reinforcementSectionDefinitions, value,
+                this.SetModelValue(this, ref _reinforcementSectionDefinitions, value,
                                            v => ReinforcementSectionDefinitions = v, "ReinforcementSectionDefinitions");
             }
         }

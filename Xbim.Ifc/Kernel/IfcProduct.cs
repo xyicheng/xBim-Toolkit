@@ -71,7 +71,7 @@ namespace Xbim.Ifc.Kernel
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _objectPlacement, value, v => _objectPlacement = v,
+                this.SetModelValue(this, ref _objectPlacement, value, v => _objectPlacement = v,
                                            "ObjectPlacement");
             }
         }
@@ -90,7 +90,7 @@ namespace Xbim.Ifc.Kernel
                 ((IPersistIfcEntity) this).Activate(false);
                 return _representation;
             }
-            set { ModelHelper.SetModelValue(this, ref _representation, value, v => _representation = v, "Representation"); }
+            set { this.SetModelValue(this, ref _representation, value, v => _representation = v, "Representation"); }
         }
 
 

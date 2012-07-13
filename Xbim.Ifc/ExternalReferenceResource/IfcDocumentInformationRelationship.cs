@@ -97,7 +97,7 @@ namespace Xbim.Ifc.ExternalReferenceResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _relatingDocument, value, v => RelatingDocument = v,
+                this.SetModelValue(this, ref _relatingDocument, value, v => RelatingDocument = v,
                                            "RelatingDocument");
             }
         }
@@ -115,7 +115,7 @@ namespace Xbim.Ifc.ExternalReferenceResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _relatedDocuments, value, v => RelatedDocuments = v,
+                this.SetModelValue(this, ref _relatedDocuments, value, v => RelatedDocuments = v,
                                            "RelatedDocuments");
             }
         }
@@ -133,7 +133,7 @@ namespace Xbim.Ifc.ExternalReferenceResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _relationshipType, value, v => RelationshipType = v,
+                this.SetModelValue(this, ref _relationshipType, value, v => RelationshipType = v,
                                            "RelationshipType");
             }
         }

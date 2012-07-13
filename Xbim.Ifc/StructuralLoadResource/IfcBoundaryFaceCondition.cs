@@ -47,7 +47,7 @@ namespace Xbim.Ifc.StructuralLoadResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _linearStiffnessByAreaX, value, v => LinearStiffnessByAreaX = v,
+                this.SetModelValue(this, ref _linearStiffnessByAreaX, value, v => LinearStiffnessByAreaX = v,
                                            "LinearStiffnessByAreaX");
             }
         }
@@ -65,7 +65,7 @@ namespace Xbim.Ifc.StructuralLoadResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _linearStiffnessByAreaY, value, v => LinearStiffnessByAreaY = v,
+                this.SetModelValue(this, ref _linearStiffnessByAreaY, value, v => LinearStiffnessByAreaY = v,
                                            "LinearStiffnessByAreaY");
             }
         }
@@ -83,7 +83,7 @@ namespace Xbim.Ifc.StructuralLoadResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _linearStiffnessByAreaZ, value, v => LinearStiffnessByAreaZ = v,
+                this.SetModelValue(this, ref _linearStiffnessByAreaZ, value, v => LinearStiffnessByAreaZ = v,
                                            "LinearStiffnessByAreaZ");
             }
         }

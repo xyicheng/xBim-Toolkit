@@ -60,7 +60,7 @@ namespace Xbim.Ifc.Kernel
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _relatingProduct, value, v => RelatingProduct = v,
+                this.SetModelValue(this, ref _relatingProduct, value, v => RelatingProduct = v,
                                            "RelatingProduct");
             }
         }

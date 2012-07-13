@@ -62,7 +62,7 @@ namespace Xbim.Ifc.CostResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _impactType;
             }
-            set { ModelHelper.SetModelValue(this, ref _impactType, value, v => ImpactType = v, "ImpactType"); }
+            set { this.SetModelValue(this, ref _impactType, value, v => ImpactType = v, "ImpactType"); }
         }
 
         /// <summary>
@@ -76,7 +76,7 @@ namespace Xbim.Ifc.CostResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _category;
             }
-            set { ModelHelper.SetModelValue(this, ref _category, value, v => Category = v, "Category"); }
+            set { this.SetModelValue(this, ref _category, value, v => Category = v, "Category"); }
         }
 
         /// <summary>
@@ -92,7 +92,7 @@ namespace Xbim.Ifc.CostResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _userDefinedCategory, value, v => UserDefinedCategory = v,
+                this.SetModelValue(this, ref _userDefinedCategory, value, v => UserDefinedCategory = v,
                                            "UserDefinedCategory");
             }
         }

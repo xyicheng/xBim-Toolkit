@@ -124,7 +124,7 @@ namespace Xbim.Ifc.ActorResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _id;
             }
-            set { ModelHelper.SetModelValue(this, ref _id, value, v => Id = v, "Id"); }
+            set { this.SetModelValue(this, ref _id, value, v => Id = v, "Id"); }
         }
 
         /// <summary>
@@ -138,7 +138,7 @@ namespace Xbim.Ifc.ActorResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _name;
             }
-            set { ModelHelper.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
+            set { this.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
         }
 
         /// <summary>
@@ -152,7 +152,7 @@ namespace Xbim.Ifc.ActorResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _description;
             }
-            set { ModelHelper.SetModelValue(this, ref _description, value, v => Description = v, "Description"); }
+            set { this.SetModelValue(this, ref _description, value, v => Description = v, "Description"); }
         }
 
 
@@ -167,7 +167,7 @@ namespace Xbim.Ifc.ActorResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _roles;
             }
-            set { ModelHelper.SetModelValue(this, ref _roles, value, v => Roles = v, "Roles"); }
+            set { this.SetModelValue(this, ref _roles, value, v => Roles = v, "Roles"); }
         }
 
         /// <summary>
@@ -181,7 +181,7 @@ namespace Xbim.Ifc.ActorResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _addresses;
             }
-            set { ModelHelper.SetModelValue(this, ref _addresses, value, v => Addresses = v, "Addresses"); }
+            set { this.SetModelValue(this, ref _addresses, value, v => Addresses = v, "Addresses"); }
         }
 
         #endregion

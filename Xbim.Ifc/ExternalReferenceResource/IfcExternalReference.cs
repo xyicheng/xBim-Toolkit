@@ -102,7 +102,7 @@ namespace Xbim.Ifc.ExternalReferenceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _location;
             }
-            set { ModelHelper.SetModelValue(this, ref _location, value, v => Location = v, "Location"); }
+            set { this.SetModelValue(this, ref _location, value, v => Location = v, "Location"); }
         }
 
         /// <summary>
@@ -117,7 +117,7 @@ namespace Xbim.Ifc.ExternalReferenceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _itemReference;
             }
-            set { ModelHelper.SetModelValue(this, ref _itemReference, value, v => ItemReference = v, "ItemReference"); }
+            set { this.SetModelValue(this, ref _itemReference, value, v => ItemReference = v, "ItemReference"); }
         }
 
         /// <summary>
@@ -132,7 +132,7 @@ namespace Xbim.Ifc.ExternalReferenceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _name;
             }
-            set { ModelHelper.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
+            set { this.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
         }
 
 

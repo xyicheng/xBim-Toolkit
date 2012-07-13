@@ -41,7 +41,7 @@ namespace Xbim.Ifc.SharedBldgElements
                 ((IPersistIfcEntity) this).Activate(false);
                 return _shapeType;
             }
-            set { ModelHelper.SetModelValue(this, ref _shapeType, value, v => _shapeType = v, "ShapeType"); }
+            set { this.SetModelValue(this, ref _shapeType, value, v => _shapeType = v, "ShapeType"); }
         }
 
         public override void IfcParse(int propIndex, IPropertyValue value)

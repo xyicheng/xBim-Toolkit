@@ -45,7 +45,7 @@ namespace Xbim.Ifc.ConstraintResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _benchmarkValues, value, v => BenchmarkValues = v,
+                this.SetModelValue(this, ref _benchmarkValues, value, v => BenchmarkValues = v,
                                            "BenchmarkValues");
             }
         }
@@ -61,7 +61,7 @@ namespace Xbim.Ifc.ConstraintResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _resultValues;
             }
-            set { ModelHelper.SetModelValue(this, ref _resultValues, value, v => ResultValues = v, "ResultValues"); }
+            set { this.SetModelValue(this, ref _resultValues, value, v => ResultValues = v, "ResultValues"); }
         }
 
         /// <summary>
@@ -77,7 +77,7 @@ namespace Xbim.Ifc.ConstraintResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _objectiveQualifier, value, v => ObjectiveQualifier = v,
+                this.SetModelValue(this, ref _objectiveQualifier, value, v => ObjectiveQualifier = v,
                                            "ObjectiveQualifier");
             }
         }
@@ -95,7 +95,7 @@ namespace Xbim.Ifc.ConstraintResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _userDefinedQualifier, value, v => UserDefinedQualifier = v,
+                this.SetModelValue(this, ref _userDefinedQualifier, value, v => UserDefinedQualifier = v,
                                            "UserDefinedQualifier");
             }
         }

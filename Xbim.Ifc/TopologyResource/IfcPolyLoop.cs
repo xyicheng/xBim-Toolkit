@@ -67,7 +67,7 @@ namespace Xbim.Ifc.TopologyResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _polygon;
             }
-            set { ModelHelper.SetModelValue(this, ref _polygon, value, v => Polygon = v, "Polygon"); }
+            set { this.SetModelValue(this, ref _polygon, value, v => Polygon = v, "Polygon"); }
         }
 
 

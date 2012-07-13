@@ -85,7 +85,7 @@ namespace Xbim.Ifc.MeasureResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _currency;
             }
-            set { ModelHelper.SetModelValue(this, ref _currency, value, v => Currency = v, "Currency"); }
+            set { this.SetModelValue(this, ref _currency, value, v => Currency = v, "Currency"); }
         }
 
         #endregion

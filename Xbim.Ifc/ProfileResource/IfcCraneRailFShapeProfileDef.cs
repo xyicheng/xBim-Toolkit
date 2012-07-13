@@ -54,7 +54,7 @@ namespace Xbim.Ifc.ProfileResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _overallHeight;
             }
-            set { ModelHelper.SetModelValue(this, ref _overallHeight, value, v => OverallHeight = v, "OverallHeight"); }
+            set { this.SetModelValue(this, ref _overallHeight, value, v => OverallHeight = v, "OverallHeight"); }
         }
 
         /// <summary>
@@ -68,7 +68,7 @@ namespace Xbim.Ifc.ProfileResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _headWidth;
             }
-            set { ModelHelper.SetModelValue(this, ref _headWidth, value, v => HeadWidth = v, "HeadWidth"); }
+            set { this.SetModelValue(this, ref _headWidth, value, v => HeadWidth = v, "HeadWidth"); }
         }
 
         /// <summary>
@@ -82,7 +82,7 @@ namespace Xbim.Ifc.ProfileResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _radius;
             }
-            set { ModelHelper.SetModelValue(this, ref _radius, value, v => Radius = v, "Radius"); }
+            set { this.SetModelValue(this, ref _radius, value, v => Radius = v, "Radius"); }
         }
 
         /// <summary>
@@ -96,7 +96,7 @@ namespace Xbim.Ifc.ProfileResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _headDepth2;
             }
-            set { ModelHelper.SetModelValue(this, ref _headDepth2, value, v => HeadDepth2 = v, "HeadDepth2"); }
+            set { this.SetModelValue(this, ref _headDepth2, value, v => HeadDepth2 = v, "HeadDepth2"); }
         }
 
         /// <summary>
@@ -110,7 +110,7 @@ namespace Xbim.Ifc.ProfileResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _headDepth3;
             }
-            set { ModelHelper.SetModelValue(this, ref _headDepth3, value, v => HeadDepth3 = v, "HeadDepth3"); }
+            set { this.SetModelValue(this, ref _headDepth3, value, v => HeadDepth3 = v, "HeadDepth3"); }
         }
 
         /// <summary>
@@ -124,7 +124,7 @@ namespace Xbim.Ifc.ProfileResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _webThickness;
             }
-            set { ModelHelper.SetModelValue(this, ref _webThickness, value, v => WebThickness = v, "WebThickness"); }
+            set { this.SetModelValue(this, ref _webThickness, value, v => WebThickness = v, "WebThickness"); }
         }
 
 
@@ -139,7 +139,7 @@ namespace Xbim.Ifc.ProfileResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _baseDepth1;
             }
-            set { ModelHelper.SetModelValue(this, ref _baseDepth1, value, v => BaseDepth1 = v, "BaseDepth1"); }
+            set { this.SetModelValue(this, ref _baseDepth1, value, v => BaseDepth1 = v, "BaseDepth1"); }
         }
 
         /// <summary>
@@ -153,7 +153,7 @@ namespace Xbim.Ifc.ProfileResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _baseDepth2;
             }
-            set { ModelHelper.SetModelValue(this, ref _baseDepth2, value, v => BaseDepth2 = v, "BaseDepth2"); }
+            set { this.SetModelValue(this, ref _baseDepth2, value, v => BaseDepth2 = v, "BaseDepth2"); }
         }
 
 
@@ -170,7 +170,7 @@ namespace Xbim.Ifc.ProfileResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _centreOfGravityInY, value, v => CentreOfGravityInY = v,
+                this.SetModelValue(this, ref _centreOfGravityInY, value, v => CentreOfGravityInY = v,
                                            "CentreOfGravityInY");
             }
         }

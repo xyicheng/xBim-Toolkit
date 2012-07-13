@@ -90,7 +90,7 @@ namespace Xbim.Ifc.ProductExtension
                 ((IPersistIfcEntity) this).Activate(false);
                 return _uAxes;
             }
-            set { ModelHelper.SetModelValue(this, ref _uAxes, value, v => UAxes = v, "UAxes"); }
+            set { this.SetModelValue(this, ref _uAxes, value, v => UAxes = v, "UAxes"); }
         }
 
         /// <summary>
@@ -104,7 +104,7 @@ namespace Xbim.Ifc.ProductExtension
                 ((IPersistIfcEntity) this).Activate(false);
                 return _vAxes;
             }
-            set { ModelHelper.SetModelValue(this, ref _vAxes, value, v => VAxes = v, "VAxes"); }
+            set { this.SetModelValue(this, ref _vAxes, value, v => VAxes = v, "VAxes"); }
         }
 
         /// <summary>
@@ -118,7 +118,7 @@ namespace Xbim.Ifc.ProductExtension
                 ((IPersistIfcEntity) this).Activate(false);
                 return _uAxes;
             }
-            set { ModelHelper.SetModelValue(this, ref _wAxes, value, v => WAxes = v, "WAxes"); }
+            set { this.SetModelValue(this, ref _wAxes, value, v => WAxes = v, "WAxes"); }
         }
 
         public override void IfcParse(int propIndex, IPropertyValue value)

@@ -50,7 +50,7 @@ namespace Xbim.Ifc.ProfileResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _profiles;
             }
-            set { ModelHelper.SetModelValue(this, ref _profiles, value, v => Profiles = v, "Profiles"); }
+            set { this.SetModelValue(this, ref _profiles, value, v => Profiles = v, "Profiles"); }
         }
 
         [IfcAttribute(5, IfcAttributeState.Optional)]
@@ -61,7 +61,7 @@ namespace Xbim.Ifc.ProfileResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _label;
             }
-            set { ModelHelper.SetModelValue(this, ref _label, value, v => Label = v, "Label"); }
+            set { this.SetModelValue(this, ref _label, value, v => Label = v, "Label"); }
         }
 
         #endregion

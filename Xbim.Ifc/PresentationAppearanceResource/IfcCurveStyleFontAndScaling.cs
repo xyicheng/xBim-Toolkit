@@ -83,7 +83,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _name;
             }
-            set { ModelHelper.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
+            set { this.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
         }
 
         /// <summary>
@@ -97,7 +97,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _curveFont;
             }
-            set { ModelHelper.SetModelValue(this, ref _curveFont, value, v => CurveFont = v, "CurveFont"); }
+            set { this.SetModelValue(this, ref _curveFont, value, v => CurveFont = v, "CurveFont"); }
         }
 
 
@@ -111,7 +111,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _curveFontScaling, value, v => CurveFontScaling = v,
+                this.SetModelValue(this, ref _curveFontScaling, value, v => CurveFontScaling = v,
                                            "CurveFontScaling");
             }
         }

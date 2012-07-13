@@ -90,7 +90,7 @@ namespace Xbim.Ifc.UtilityResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _owningUser;
             }
-            set { ModelHelper.SetModelValue(this, ref _owningUser, value, v => OwningUser = v, "OwningUser"); }
+            set { this.SetModelValue(this, ref _owningUser, value, v => OwningUser = v, "OwningUser"); }
         }
 
         /// <summary>
@@ -108,7 +108,7 @@ namespace Xbim.Ifc.UtilityResource
 
             set
             {
-                ModelHelper.SetModelValue(this, ref _owningApplication, value, v => OwningApplication = v,
+                this.SetModelValue(this, ref _owningApplication, value, v => OwningApplication = v,
                                            "OwningApplication");
             }
         }
@@ -125,7 +125,7 @@ namespace Xbim.Ifc.UtilityResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _state;
             }
-            set { ModelHelper.SetModelValue(this, ref _state, value, v => State = v, "State"); }
+            set { this.SetModelValue(this, ref _state, value, v => State = v, "State"); }
         }
 
         /// <summary>
@@ -140,7 +140,7 @@ namespace Xbim.Ifc.UtilityResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _changeAction;
             }
-            set { ModelHelper.SetModelValue(this, ref _changeAction, value, v => ChangeAction = v, "ChangeAction"); }
+            set { this.SetModelValue(this, ref _changeAction, value, v => ChangeAction = v, "ChangeAction"); }
         }
 
         /// <summary>
@@ -157,7 +157,7 @@ namespace Xbim.Ifc.UtilityResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _lastModifiedDate, value, v => LastModifiedDate = v,
+                this.SetModelValue(this, ref _lastModifiedDate, value, v => LastModifiedDate = v,
                                            "LastModifiedDate");
             }
         }
@@ -176,7 +176,7 @@ namespace Xbim.Ifc.UtilityResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _lastModifyingUser, value, v => LastModifyingUser = v,
+                this.SetModelValue(this, ref _lastModifyingUser, value, v => LastModifyingUser = v,
                                            "LastModifyingUser");
             }
         }
@@ -195,7 +195,7 @@ namespace Xbim.Ifc.UtilityResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _lastModifyingApplication, value, v => LastModifyingApplication = v,
+                this.SetModelValue(this, ref _lastModifyingApplication, value, v => LastModifyingApplication = v,
                                            "LastModifyingApplication");
             }
         }
@@ -212,7 +212,7 @@ namespace Xbim.Ifc.UtilityResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _creationDate;
             }
-            set { ModelHelper.SetModelValue(this, ref _creationDate, value, v => CreationDate = v, "CreationDate"); }
+            set { this.SetModelValue(this, ref _creationDate, value, v => CreationDate = v, "CreationDate"); }
         }
 
         public virtual void IfcParse(int propIndex, IPropertyValue value)

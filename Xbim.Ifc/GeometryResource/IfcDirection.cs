@@ -180,13 +180,13 @@ namespace Xbim.Ifc.GeometryResource
                     switch (i)
                     {
                         case 0:
-                            ModelHelper.SetModelValue(this, ref _x, value[0], v => _x = v, "X");
+                            this.SetModelValue(this, ref _x, value[0], v => _x = v, "X");
                             break;
                         case 1:
-                            ModelHelper.SetModelValue(this, ref _y, value[1], v => _y = v, "Y");
+                            this.SetModelValue(this, ref _y, value[1], v => _y = v, "Y");
                             break;
                         case 2:
-                            ModelHelper.SetModelValue(this, ref _z, value[2], v => _z = v, "Z");
+                            this.SetModelValue(this, ref _z, value[2], v => _z = v, "Z");
                             break;
                     }
                 }
@@ -244,16 +244,16 @@ namespace Xbim.Ifc.GeometryResource
                 switch (axis)
                 {
                     case 0:
-                        ModelHelper.SetModelValue(this, ref _x, value, v => _x = v, "X");
+                        this.SetModelValue(this, ref _x, value, v => _x = v, "X");
                         break;
                     case 1:
-                        if (double.IsNaN(_x)) ModelHelper.SetModelValue(this, ref _x, 0, v => _x = v, "X");
-                        ModelHelper.SetModelValue(this, ref _y, value, v => _y = v, "Y");
+                        if (double.IsNaN(_x)) this.SetModelValue(this, ref _x, 0, v => _x = v, "X");
+                        this.SetModelValue(this, ref _y, value, v => _y = v, "Y");
                         break;
                     case 2:
-                        if (double.IsNaN(_x)) ModelHelper.SetModelValue(this, ref _x, 0, v => _x = v, "X");
-                        if (double.IsNaN(_y)) ModelHelper.SetModelValue(this, ref _y, 0, v => _y = v, "Y");
-                        ModelHelper.SetModelValue(this, ref _z, value, v => _z = v, "Z");
+                        if (double.IsNaN(_x)) this.SetModelValue(this, ref _x, 0, v => _x = v, "X");
+                        if (double.IsNaN(_y)) this.SetModelValue(this, ref _y, 0, v => _y = v, "Y");
+                        this.SetModelValue(this, ref _z, value, v => _z = v, "Z");
                         break;
                     default:
                         throw new Exception("Index out of bounds for CartesianPoint");
@@ -284,7 +284,7 @@ namespace Xbim.Ifc.GeometryResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _x;
             }
-            set { ModelHelper.SetModelValue(this, ref _x, value, v => _x = v, "X"); }
+            set { this.SetModelValue(this, ref _x, value, v => _x = v, "X"); }
         }
 
         public double Y
@@ -294,7 +294,7 @@ namespace Xbim.Ifc.GeometryResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _y;
             }
-            set { ModelHelper.SetModelValue(this, ref _y, value, v => _y = v, "X"); }
+            set { this.SetModelValue(this, ref _y, value, v => _y = v, "X"); }
         }
 
         public double Z
@@ -304,15 +304,15 @@ namespace Xbim.Ifc.GeometryResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _z;
             }
-            set { ModelHelper.SetModelValue(this, ref _z, value, v => _z = v, "Z"); }
+            set { this.SetModelValue(this, ref _z, value, v => _z = v, "Z"); }
         }
 
         public void SetXYZ(double x, double y, double z)
         {
                 ((IPersistIfcEntity) this).Activate(false);
-            ModelHelper.SetModelValue(this, ref _x, x, v => _x = v, "X");
-            ModelHelper.SetModelValue(this, ref _y, y, v => _y = v, "Y");
-            ModelHelper.SetModelValue(this, ref _z, z, v => _z = v, "Z");
+            this.SetModelValue(this, ref _x, x, v => _x = v, "X");
+            this.SetModelValue(this, ref _y, y, v => _y = v, "Y");
+            this.SetModelValue(this, ref _z, z, v => _z = v, "Z");
         }
 
         public bool IsInvalid()
@@ -333,9 +333,9 @@ namespace Xbim.Ifc.GeometryResource
         public void SetXY(double x, double y)
         {
             ((IPersistIfcEntity)this).Activate(false);
-            ModelHelper.SetModelValue(this, ref _x, x, v => _x = v, "X");
-            ModelHelper.SetModelValue(this, ref _y, y, v => _y = v, "Y");
-            ModelHelper.SetModelValue(this, ref _z, double.NaN, v => _z = v, "Z");
+            this.SetModelValue(this, ref _x, x, v => _x = v, "X");
+            this.SetModelValue(this, ref _y, y, v => _y = v, "Y");
+            this.SetModelValue(this, ref _z, double.NaN, v => _z = v, "Z");
         }
 
         public override string ToString()

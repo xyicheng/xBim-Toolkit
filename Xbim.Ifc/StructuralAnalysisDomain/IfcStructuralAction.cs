@@ -45,7 +45,7 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _destabilizingLoad, value, v => DestabilizingLoad = v,
+                this.SetModelValue(this, ref _destabilizingLoad, value, v => DestabilizingLoad = v,
                                            "DestabilizingLoad");
             }
         }
@@ -62,7 +62,7 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
                 ((IPersistIfcEntity) this).Activate(false);
                 return _causedBy;
             }
-            set { ModelHelper.SetModelValue(this, ref _causedBy, value, v => CausedBy = v, "CausedBy"); }
+            set { this.SetModelValue(this, ref _causedBy, value, v => CausedBy = v, "CausedBy"); }
         }
 
         #endregion

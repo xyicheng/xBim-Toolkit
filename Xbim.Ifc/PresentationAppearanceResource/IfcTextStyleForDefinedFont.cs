@@ -76,7 +76,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _colour;
             }
-            set { ModelHelper.SetModelValue(this, ref _colour, value, v => Colour = v, "Colour"); }
+            set { this.SetModelValue(this, ref _colour, value, v => Colour = v, "Colour"); }
         }
 
         [IfcAttribute(2, IfcAttributeState.Optional)]
@@ -89,7 +89,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _backgroundColour, value, v => BackgroundColour = v,
+                this.SetModelValue(this, ref _backgroundColour, value, v => BackgroundColour = v,
                                            "BackgroundColour");
             }
         }

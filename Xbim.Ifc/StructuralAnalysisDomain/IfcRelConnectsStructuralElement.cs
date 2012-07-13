@@ -53,7 +53,7 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _relatingElement, value, v => RelatingElement = v,
+                this.SetModelValue(this, ref _relatingElement, value, v => RelatingElement = v,
                                            "RelatingElement");
             }
         }
@@ -71,7 +71,7 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _relatedStructuralMember, value, v => RelatedStructuralMember = v,
+                this.SetModelValue(this, ref _relatedStructuralMember, value, v => RelatedStructuralMember = v,
                                            "RelatedStructuralMember");
             }
         }

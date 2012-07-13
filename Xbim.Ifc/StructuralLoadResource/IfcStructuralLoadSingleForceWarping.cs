@@ -51,7 +51,7 @@ namespace Xbim.Ifc.StructuralLoadResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _warpingMoment;
             }
-            set { ModelHelper.SetModelValue(this, ref _warpingMoment, value, v => WarpingMoment = v, "WarpingMoment"); }
+            set { this.SetModelValue(this, ref _warpingMoment, value, v => WarpingMoment = v, "WarpingMoment"); }
         }
 
         #endregion

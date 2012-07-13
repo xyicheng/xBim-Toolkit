@@ -43,7 +43,7 @@ namespace Xbim.Ifc.GeometryResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _scale2;
             }
-            set { ModelHelper.SetModelValue(this, ref _scale2, value, v => Scale2 = v, "Scale2"); }
+            set { this.SetModelValue(this, ref _scale2, value, v => Scale2 = v, "Scale2"); }
         }
 
         /// <summary>
@@ -57,7 +57,7 @@ namespace Xbim.Ifc.GeometryResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _scale3;
             }
-            set { ModelHelper.SetModelValue(this, ref _scale3, value, v => Scale3 = v, "Scale3"); }
+            set { this.SetModelValue(this, ref _scale3, value, v => Scale3 = v, "Scale3"); }
         }
 
         public override void IfcParse(int propIndex, IPropertyValue value)

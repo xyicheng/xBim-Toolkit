@@ -46,7 +46,7 @@ namespace Xbim.Ifc.StructuralElementsDomain
                 ((IPersistIfcEntity) this).Activate(false);
                 return _steelGrade;
             }
-            set { ModelHelper.SetModelValue(this, ref _steelGrade, value, v => SteelGrade = v, "SteelGrade"); }
+            set { this.SetModelValue(this, ref _steelGrade, value, v => SteelGrade = v, "SteelGrade"); }
         }
 
         #endregion

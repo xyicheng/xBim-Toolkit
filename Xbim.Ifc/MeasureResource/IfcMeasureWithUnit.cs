@@ -77,7 +77,7 @@ namespace Xbim.Ifc.MeasureResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _valueComponent;
             }
-            set { ModelHelper.SetModelValue(this, ref _valueComponent, value, v => ValueComponent = v, "ValueComponent"); }
+            set { this.SetModelValue(this, ref _valueComponent, value, v => ValueComponent = v, "ValueComponent"); }
         }
 
         /// <summary>
@@ -91,7 +91,7 @@ namespace Xbim.Ifc.MeasureResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _unitComponent;
             }
-            set { ModelHelper.SetModelValue(this, ref _unitComponent, value, v => UnitComponent = v, "UnitComponent"); }
+            set { this.SetModelValue(this, ref _unitComponent, value, v => UnitComponent = v, "UnitComponent"); }
         }
 
         public virtual void IfcParse(int propIndex, IPropertyValue value)

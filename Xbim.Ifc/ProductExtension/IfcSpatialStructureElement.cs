@@ -78,7 +78,7 @@ namespace Xbim.Ifc.ProductExtension
                 ((IPersistIfcEntity)this).Activate(false);
                 return _longName;
             }
-            set { ModelHelper.SetModelValue(this, ref _longName, value, v => _longName = v, "LongName"); }
+            set { this.SetModelValue(this, ref _longName, value, v => _longName = v, "LongName"); }
         }
 
         /// <summary>
@@ -160,7 +160,7 @@ namespace Xbim.Ifc.ProductExtension
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _compositionType, value, v => _compositionType = v,
+                this.SetModelValue(this, ref _compositionType, value, v => _compositionType = v,
                                            "CompositionType");
             }
         }

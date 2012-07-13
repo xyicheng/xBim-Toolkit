@@ -52,7 +52,7 @@ namespace Xbim.Ifc.ProductExtension
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _relatingElement, value, v => RelatingElement = v,
+                this.SetModelValue(this, ref _relatingElement, value, v => RelatingElement = v,
                                            "RelatingElement");
             }
         }
@@ -70,7 +70,7 @@ namespace Xbim.Ifc.ProductExtension
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _relatedFeatureElement, value, v => RelatedFeatureElement = v,
+                this.SetModelValue(this, ref _relatedFeatureElement, value, v => RelatedFeatureElement = v,
                                            "RelatedFeatureElement");
             }
         }

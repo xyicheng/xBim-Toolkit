@@ -81,7 +81,7 @@ namespace Xbim.Ifc.ProductExtension
                 ((IPersistIfcEntity) this).Activate(false);
                 return _relatingSpace;
             }
-            set { ModelHelper.SetModelValue(this, ref _relatingSpace, value, v => RelatingSpace = v, "RelatingSpace"); }
+            set { this.SetModelValue(this, ref _relatingSpace, value, v => RelatingSpace = v, "RelatingSpace"); }
         }
 
         /// <summary>
@@ -97,7 +97,7 @@ namespace Xbim.Ifc.ProductExtension
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _relatedBuildingElement, value, v => RelatedBuildingElement = v,
+                this.SetModelValue(this, ref _relatedBuildingElement, value, v => RelatedBuildingElement = v,
                                            "RelatedBuildingElement");
             }
         }
@@ -115,7 +115,7 @@ namespace Xbim.Ifc.ProductExtension
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _connectionGeometry, value, v => ConnectionGeometry = v,
+                this.SetModelValue(this, ref _connectionGeometry, value, v => ConnectionGeometry = v,
                                            "ConnectionGeometry");
             }
         }
@@ -133,7 +133,7 @@ namespace Xbim.Ifc.ProductExtension
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _physicalOrVirtualBoundary, value,
+                this.SetModelValue(this, ref _physicalOrVirtualBoundary, value,
                                            v => PhysicalOrVirtualBoundary = v, "PhysicalOrVirtualBoundary");
             }
         }
@@ -151,7 +151,7 @@ namespace Xbim.Ifc.ProductExtension
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _internalOrExternalBoundary, value,
+                this.SetModelValue(this, ref _internalOrExternalBoundary, value,
                                            v => InternalOrExternalBoundary = v, "InternalOrExternalBoundary");
             }
         }

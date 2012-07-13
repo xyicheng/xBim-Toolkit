@@ -56,7 +56,7 @@ namespace Xbim.Ifc.GeometryResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _axis3;
             }
-            set { ModelHelper.SetModelValue(this, ref _axis3, value, v => Axis3 = v, "Axis3"); }
+            set { this.SetModelValue(this, ref _axis3, value, v => Axis3 = v, "Axis3"); }
         }
 
         public override void IfcParse(int propIndex, IPropertyValue value)

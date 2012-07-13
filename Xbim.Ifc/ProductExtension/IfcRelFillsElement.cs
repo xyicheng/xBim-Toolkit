@@ -54,7 +54,7 @@ namespace Xbim.Ifc.ProductExtension
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _relatingOpeningElement, value, v => RelatingOpeningElement = v,
+                this.SetModelValue(this, ref _relatingOpeningElement, value, v => RelatingOpeningElement = v,
                                            "RelatingOpeningElement");
             }
         }
@@ -72,7 +72,7 @@ namespace Xbim.Ifc.ProductExtension
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _relatedBuildingElement, value, v => RelatedBuildingElement = v,
+                this.SetModelValue(this, ref _relatedBuildingElement, value, v => RelatedBuildingElement = v,
                                            "RelatedBuildingElement");
             }
         }

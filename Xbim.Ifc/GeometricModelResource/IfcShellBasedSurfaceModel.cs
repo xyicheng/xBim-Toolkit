@@ -56,7 +56,7 @@ namespace Xbim.Ifc.GeometricModelResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _sbsmBoundary;
             }
-            set { ModelHelper.SetModelValue(this, ref _sbsmBoundary, value, v => SbsmBoundary = v, "SbsmBoundary"); }
+            set { this.SetModelValue(this, ref _sbsmBoundary, value, v => SbsmBoundary = v, "SbsmBoundary"); }
         }
 
 

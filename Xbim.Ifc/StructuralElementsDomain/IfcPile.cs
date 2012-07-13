@@ -44,7 +44,7 @@ namespace Xbim.Ifc.StructuralElementsDomain
                 ((IPersistIfcEntity) this).Activate(false);
                 return _predefinedType;
             }
-            set { ModelHelper.SetModelValue(this, ref _predefinedType, value, v => PredefinedType = v, "PredefinedType"); }
+            set { this.SetModelValue(this, ref _predefinedType, value, v => PredefinedType = v, "PredefinedType"); }
         }
 
         /// <summary>
@@ -60,7 +60,7 @@ namespace Xbim.Ifc.StructuralElementsDomain
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _constructionType, value, v => ConstructionType = v,
+                this.SetModelValue(this, ref _constructionType, value, v => ConstructionType = v,
                                            "ConstructionType");
             }
         }

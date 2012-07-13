@@ -104,7 +104,7 @@ namespace Xbim.Ifc.MaterialResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _material;
             }
-            set { ModelHelper.SetModelValue(this, ref _material, value, v => Material = v, "Material"); }
+            set { this.SetModelValue(this, ref _material, value, v => Material = v, "Material"); }
         }
 
 
@@ -119,7 +119,7 @@ namespace Xbim.Ifc.MaterialResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _layerThickness;
             }
-            set { ModelHelper.SetModelValue(this, ref _layerThickness, value, v => LayerThickness = v, "LayerThickness"); }
+            set { this.SetModelValue(this, ref _layerThickness, value, v => LayerThickness = v, "LayerThickness"); }
         }
 
 
@@ -139,7 +139,7 @@ namespace Xbim.Ifc.MaterialResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _isVentilated;
             }
-            set { ModelHelper.SetModelValue(this, ref _isVentilated, value, v => IsVentilated = v, "IsVentilated"); }
+            set { this.SetModelValue(this, ref _isVentilated, value, v => IsVentilated = v, "IsVentilated"); }
         }
 
 

@@ -52,7 +52,7 @@ namespace Xbim.Ifc.Kernel
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _relatingDocument, value, v => RelatingDocument = v,
+                this.SetModelValue(this, ref _relatingDocument, value, v => RelatingDocument = v,
                                            "RelatingDocument");
             }
         }

@@ -43,7 +43,7 @@ namespace Xbim.Ifc.GeometricConstraintResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _surfaceOnRelatingElement, value, v => SurfaceOnRelatingElement = v,
+                this.SetModelValue(this, ref _surfaceOnRelatingElement, value, v => SurfaceOnRelatingElement = v,
                                            "SurfaceOnRelatingElement");
             }
         }
@@ -58,7 +58,7 @@ namespace Xbim.Ifc.GeometricConstraintResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _surfaceOnRelatedElement, value, v => SurfaceOnRelatedElement = v,
+                this.SetModelValue(this, ref _surfaceOnRelatedElement, value, v => SurfaceOnRelatedElement = v,
                                            "SurfaceOnRelatedElement");
             }
         }

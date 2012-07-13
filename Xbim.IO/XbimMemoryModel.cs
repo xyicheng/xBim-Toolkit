@@ -398,7 +398,7 @@ namespace Xbim.IO
         private UndoRedoSession _undoRedoSession;
 
         [NonSerialized]
-        private P21toModelParser _part21Parser;
+        private XbimP21Parser _part21Parser;
 
         [NonSerialized]
         private IfcCoordinatedUniversalTimeOffset _coordinatedUniversalTimeOffset;
@@ -640,7 +640,7 @@ namespace Xbim.IO
 
             int errorCount = 0;
 
-            _part21Parser = new P21toModelParser(inputStream);
+            _part21Parser = new XbimP21Parser(inputStream);
             _parseFilter = null;
             CreateEntityEventHandler creator;
             if (_parseFilter == null)

@@ -61,7 +61,7 @@ namespace Xbim.Ifc.QuantityResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _hasQuantities;
             }
-            set { ModelHelper.SetModelValue(this, ref _hasQuantities, value, v => HasQuantities = v, "HasQuantities"); }
+            set { this.SetModelValue(this, ref _hasQuantities, value, v => HasQuantities = v, "HasQuantities"); }
         }
 
         /// <summary>
@@ -75,7 +75,7 @@ namespace Xbim.Ifc.QuantityResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _discrimination;
             }
-            set { ModelHelper.SetModelValue(this, ref _discrimination, value, v => Discrimination = v, "Discrimination"); }
+            set { this.SetModelValue(this, ref _discrimination, value, v => Discrimination = v, "Discrimination"); }
         }
 
         /// <summary>
@@ -89,7 +89,7 @@ namespace Xbim.Ifc.QuantityResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _quality;
             }
-            set { ModelHelper.SetModelValue(this, ref _quality, value, v => Quality = v, "Quality"); }
+            set { this.SetModelValue(this, ref _quality, value, v => Quality = v, "Quality"); }
         }
 
         /// <summary>
@@ -103,7 +103,7 @@ namespace Xbim.Ifc.QuantityResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _usage;
             }
-            set { ModelHelper.SetModelValue(this, ref _usage, value, v => Usage = v, "Usage"); }
+            set { this.SetModelValue(this, ref _usage, value, v => Usage = v, "Usage"); }
         }
 
         public override void IfcParse(int propIndex, IPropertyValue value)

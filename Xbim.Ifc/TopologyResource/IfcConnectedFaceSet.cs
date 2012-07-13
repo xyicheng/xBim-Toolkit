@@ -48,7 +48,7 @@ namespace Xbim.Ifc.TopologyResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _cfsFaces;
             }
-            set { ModelHelper.SetModelValue(this, ref _cfsFaces, value, v => CfsFaces = v, "CfsFaces"); }
+            set { this.SetModelValue(this, ref _cfsFaces, value, v => CfsFaces = v, "CfsFaces"); }
         }
 
 

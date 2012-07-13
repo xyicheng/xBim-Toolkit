@@ -51,7 +51,7 @@ namespace Xbim.Ifc.GeometricModelResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _fbsmFaces;
             }
-            set { ModelHelper.SetModelValue(this, ref _fbsmFaces, value, v => FbsmFaces = v, "FbsmFaces"); }
+            set { this.SetModelValue(this, ref _fbsmFaces, value, v => FbsmFaces = v, "FbsmFaces"); }
         }
 
         public IfcDimensionCount Dim

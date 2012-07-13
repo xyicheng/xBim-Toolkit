@@ -42,7 +42,7 @@ namespace Xbim.Ifc.ElectricalDomain
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _distributionPointFunction, value,
+                this.SetModelValue(this, ref _distributionPointFunction, value,
                                            v => DistributionPointFunction = v, "DistributionPointFunction");
             }
         }
@@ -57,7 +57,7 @@ namespace Xbim.Ifc.ElectricalDomain
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _userDefinedFunction, value, v => UserDefinedFunction = v,
+                this.SetModelValue(this, ref _userDefinedFunction, value, v => UserDefinedFunction = v,
                                            "UserDefinedFunction");
             }
         }

@@ -25,7 +25,7 @@ using Xbim.Common.Logging;
 
 namespace Xbim.IO.Parser
 {
-    public class P21toModelParser : P21Parser
+    public class XbimP21Parser : P21Parser
     {
         private readonly ILogger Logger = LoggerFactory.GetLogger();
         public event ReportProgressDelegate ProgressStatus;
@@ -45,7 +45,7 @@ namespace Xbim.IO.Parser
        
 
 
-        public P21toModelParser(Stream strm)
+        public XbimP21Parser(Stream strm)
             : base(strm)
         {
             int entityApproxCount = 5000;

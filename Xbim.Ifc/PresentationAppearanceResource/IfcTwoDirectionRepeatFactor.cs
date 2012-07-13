@@ -46,7 +46,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _secondRepeatFactor, value, v => SecondRepeatFactor = v,
+                this.SetModelValue(this, ref _secondRepeatFactor, value, v => SecondRepeatFactor = v,
                                            "RepeatFactor");
             }
         }

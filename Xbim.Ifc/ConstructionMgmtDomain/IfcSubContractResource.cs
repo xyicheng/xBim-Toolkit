@@ -39,7 +39,7 @@ namespace Xbim.Ifc.ConstructionMgmtDomain
                 ((IPersistIfcEntity) this).Activate(false);
                 return _subContractor;
             }
-            set { ModelHelper.SetModelValue(this, ref _subContractor, value, v => SubContractor = v, "SubContractor"); }
+            set { this.SetModelValue(this, ref _subContractor, value, v => SubContractor = v, "SubContractor"); }
         }
 
         /// <summary>
@@ -53,7 +53,7 @@ namespace Xbim.Ifc.ConstructionMgmtDomain
                 ((IPersistIfcEntity) this).Activate(false);
                 return _jobDescription;
             }
-            set { ModelHelper.SetModelValue(this, ref _jobDescription, value, v => JobDescription = v, "JobDescription"); }
+            set { this.SetModelValue(this, ref _jobDescription, value, v => JobDescription = v, "JobDescription"); }
         }
 
         #region Part 21 Step file Parse routines

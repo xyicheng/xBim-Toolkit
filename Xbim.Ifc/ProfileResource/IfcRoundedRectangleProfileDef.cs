@@ -35,7 +35,7 @@ namespace Xbim.Ifc.ProfileResource
         public IfcPositiveLengthMeasure RoundingRadius
         {
             get { return _roundingRadius; }
-            set { ModelHelper.SetModelValue(this, ref _roundingRadius, value, v => RoundingRadius = v, "RoundingRadius"); }
+            set { this.SetModelValue(this, ref _roundingRadius, value, v => RoundingRadius = v, "RoundingRadius"); }
         }
 
         #endregion

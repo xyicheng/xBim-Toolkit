@@ -114,7 +114,7 @@ namespace Xbim.Ifc.Kernel
                 ((IPersistIfcEntity) this).Activate(false);
                 return _globalId;
             }
-            set { ModelHelper.SetModelValue(this, ref _globalId, value, v => GlobalId = v, "GlobalId"); }
+            set { this.SetModelValue(this, ref _globalId, value, v => GlobalId = v, "GlobalId"); }
         }
 
 
@@ -131,7 +131,7 @@ namespace Xbim.Ifc.Kernel
                 
                 return _ownerHistory;
             }
-            set { ModelHelper.SetModelValue(this, ref _ownerHistory, value, v => OwnerHistory = v, "OwnerHistory"); }
+            set { this.SetModelValue(this, ref _ownerHistory, value, v => OwnerHistory = v, "OwnerHistory"); }
         }
 
         /// <summary>
@@ -145,7 +145,7 @@ namespace Xbim.Ifc.Kernel
                 ((IPersistIfcEntity) this).Activate(false);
                 return _name;
             }
-            set { ModelHelper.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
+            set { this.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
         }
 
         /// <summary>
@@ -161,7 +161,7 @@ namespace Xbim.Ifc.Kernel
                 ((IPersistIfcEntity) this).Activate(false);
                 return _description;
             }
-            set { ModelHelper.SetModelValue(this, ref _description, value, v => Description = v, "Description"); }
+            set { this.SetModelValue(this, ref _description, value, v => Description = v, "Description"); }
         }
 
         #endregion

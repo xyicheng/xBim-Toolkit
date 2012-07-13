@@ -87,7 +87,7 @@ namespace Xbim.Ifc.TimeSeriesResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _name;
             }
-            set { ModelHelper.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
+            set { this.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
         }
 
         /// <summary>
@@ -101,7 +101,7 @@ namespace Xbim.Ifc.TimeSeriesResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _description;
             }
-            set { ModelHelper.SetModelValue(this, ref _description, value, v => Description = v, "Description"); }
+            set { this.SetModelValue(this, ref _description, value, v => Description = v, "Description"); }
         }
 
         /// <summary>
@@ -115,7 +115,7 @@ namespace Xbim.Ifc.TimeSeriesResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _startTime;
             }
-            set { ModelHelper.SetModelValue(this, ref _startTime, value, v => StartTime = v, "StartTime"); }
+            set { this.SetModelValue(this, ref _startTime, value, v => StartTime = v, "StartTime"); }
         }
 
         /// <summary>
@@ -129,7 +129,7 @@ namespace Xbim.Ifc.TimeSeriesResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _endTime;
             }
-            set { ModelHelper.SetModelValue(this, ref _endTime, value, v => EndTime = v, "EndTime"); }
+            set { this.SetModelValue(this, ref _endTime, value, v => EndTime = v, "EndTime"); }
         }
 
         /// <summary>
@@ -145,7 +145,7 @@ namespace Xbim.Ifc.TimeSeriesResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _timeSeriesDataType, value, v => TimeSeriesDataType = v,
+                this.SetModelValue(this, ref _timeSeriesDataType, value, v => TimeSeriesDataType = v,
                                            "TimeSeriesDataType");
             }
         }
@@ -161,7 +161,7 @@ namespace Xbim.Ifc.TimeSeriesResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _dataOrigin;
             }
-            set { ModelHelper.SetModelValue(this, ref _dataOrigin, value, v => DataOrigin = v, "DataOrigin"); }
+            set { this.SetModelValue(this, ref _dataOrigin, value, v => DataOrigin = v, "DataOrigin"); }
         }
 
         /// <summary>
@@ -177,7 +177,7 @@ namespace Xbim.Ifc.TimeSeriesResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _userDefinedDataOrigin, value, v => UserDefinedDataOrigin = v,
+                this.SetModelValue(this, ref _userDefinedDataOrigin, value, v => UserDefinedDataOrigin = v,
                                            "UserDefinedDataOrigin");
             }
         }
@@ -193,7 +193,7 @@ namespace Xbim.Ifc.TimeSeriesResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _unit;
             }
-            set { ModelHelper.SetModelValue(this, ref _unit, value, v => Unit = v, "Unit"); }
+            set { this.SetModelValue(this, ref _unit, value, v => Unit = v, "Unit"); }
         }
 
         #region Inverses

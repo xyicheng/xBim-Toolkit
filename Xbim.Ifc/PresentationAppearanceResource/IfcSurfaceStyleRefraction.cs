@@ -86,7 +86,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _refractionIndex, value, v => RefractionIndex = v,
+                this.SetModelValue(this, ref _refractionIndex, value, v => RefractionIndex = v,
                                            "RefractionIndex");
             }
         }
@@ -106,7 +106,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _dispersionFactor, value, v => DispersionFactor = v,
+                this.SetModelValue(this, ref _dispersionFactor, value, v => DispersionFactor = v,
                                            "DispersionFactor");
             }
         }

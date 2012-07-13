@@ -47,7 +47,7 @@ namespace Xbim.Ifc.StructuralElementsDomain
                 ((IPersistIfcEntity) this).Activate(false);
                 return _meshLength;
             }
-            set { ModelHelper.SetModelValue(this, ref _meshLength, value, v => MeshLength = v, "MeshLength"); }
+            set { this.SetModelValue(this, ref _meshLength, value, v => MeshLength = v, "MeshLength"); }
         }
 
         [IfcAttribute(11, IfcAttributeState.Optional)]
@@ -58,7 +58,7 @@ namespace Xbim.Ifc.StructuralElementsDomain
                 ((IPersistIfcEntity) this).Activate(false);
                 return _meshWidth;
             }
-            set { ModelHelper.SetModelValue(this, ref _meshWidth, value, v => MeshWidth = v, "MeshWidth"); }
+            set { this.SetModelValue(this, ref _meshWidth, value, v => MeshWidth = v, "MeshWidth"); }
         }
 
         [IfcAttribute(12, IfcAttributeState.Mandatory)]
@@ -71,7 +71,7 @@ namespace Xbim.Ifc.StructuralElementsDomain
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _longitudinalBarNominalDiameter, value,
+                this.SetModelValue(this, ref _longitudinalBarNominalDiameter, value,
                                            v => LongitudinalBarNominalDiameter = v, "LongitudinalBarNominalDiameter");
             }
         }
@@ -86,7 +86,7 @@ namespace Xbim.Ifc.StructuralElementsDomain
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _transverseBarNominalDiameter, value,
+                this.SetModelValue(this, ref _transverseBarNominalDiameter, value,
                                            v => TransverseBarNominalDiameter = v, "TransverseBarNominalDiameter");
             }
         }
@@ -101,7 +101,7 @@ namespace Xbim.Ifc.StructuralElementsDomain
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _longitudinalBarCrossSectionArea, value,
+                this.SetModelValue(this, ref _longitudinalBarCrossSectionArea, value,
                                            v => LongitudinalBarCrossSectionArea = v, "LongitudinalBarCrossSectionArea");
             }
         }
@@ -116,7 +116,7 @@ namespace Xbim.Ifc.StructuralElementsDomain
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _transverseBarCrossSectionArea, value,
+                this.SetModelValue(this, ref _transverseBarCrossSectionArea, value,
                                            v => TransverseBarCrossSectionArea = v, "TransverseBarCrossSectionArea");
             }
         }
@@ -131,7 +131,7 @@ namespace Xbim.Ifc.StructuralElementsDomain
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _longitudinalBarSpacing, value, v => LongitudinalBarSpacing = v,
+                this.SetModelValue(this, ref _longitudinalBarSpacing, value, v => LongitudinalBarSpacing = v,
                                            "LongitudinalBarSpacing");
             }
         }
@@ -146,7 +146,7 @@ namespace Xbim.Ifc.StructuralElementsDomain
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _transverseBarSpacing, value, v => TransverseBarSpacing = v,
+                this.SetModelValue(this, ref _transverseBarSpacing, value, v => TransverseBarSpacing = v,
                                            "TransverseBarSpacing");
             }
         }

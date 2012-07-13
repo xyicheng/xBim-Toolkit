@@ -78,7 +78,7 @@ namespace Xbim.Ifc.TimeSeriesResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _referencedTimeSeries, value, v => ReferencedTimeSeries = v,
+                this.SetModelValue(this, ref _referencedTimeSeries, value, v => ReferencedTimeSeries = v,
                                            "ReferencedTimeSeries");
             }
         }
@@ -93,7 +93,7 @@ namespace Xbim.Ifc.TimeSeriesResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _timeSeriesReferences, value, v => TimeSeriesReferences = v,
+                this.SetModelValue(this, ref _timeSeriesReferences, value, v => TimeSeriesReferences = v,
                                            "TimeSeriesReferences");
             }
         }

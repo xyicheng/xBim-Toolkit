@@ -1281,7 +1281,6 @@
     <Compile Include="MeasureResource\IfcRatioMeasure.cs" />
     <Compile Include="MeasureResource\IfcTimeStamp.cs" />
     <Compile Include="MeasureResource\IfcVolumeMeasure.cs" />
-    <Compile Include="XbimExtensions\Helpers\ModelHelper.cs" />
     <Compile Include="PresentationAppearanceResource\IfcNullStyle.cs" />
     <Compile Include="PresentationAppearanceResource\IfcStyledItem.cs" />
     <Compile Include="ProductExtension\IfcAnnotation.cs" />

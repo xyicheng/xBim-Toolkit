@@ -45,7 +45,7 @@ namespace Xbim.Ifc.PresentationResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _sizeInX;
             }
-            set { ModelHelper.SetModelValue(this, ref _sizeInX, value, v => SizeInX = v, "SizeInX"); }
+            set { this.SetModelValue(this, ref _sizeInX, value, v => SizeInX = v, "SizeInX"); }
         }
 
         /// <summary>
@@ -59,7 +59,7 @@ namespace Xbim.Ifc.PresentationResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _sizeInY;
             }
-            set { ModelHelper.SetModelValue(this, ref _sizeInY, value, v => SizeInY = v, "SizeInY"); }
+            set { this.SetModelValue(this, ref _sizeInY, value, v => SizeInY = v, "SizeInY"); }
         }
 
         #endregion

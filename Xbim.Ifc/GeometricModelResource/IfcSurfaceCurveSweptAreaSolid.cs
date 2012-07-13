@@ -55,7 +55,7 @@ namespace Xbim.Ifc.GeometricModelResource
                 ((IPersistIfcEntity)this).Activate(false);
                 return _directrix;
             }
-            set { ModelHelper.SetModelValue(this, ref _directrix, value, v => Directrix = v, "Directrix"); }
+            set { this.SetModelValue(this, ref _directrix, value, v => Directrix = v, "Directrix"); }
         }
 
         /// <summary>
@@ -70,7 +70,7 @@ namespace Xbim.Ifc.GeometricModelResource
                 ((IPersistIfcEntity)this).Activate(false);
                 return _startParam;
             }
-            set { ModelHelper.SetModelValue(this, ref _startParam, value, v => StartParam = v, "StartParam"); }
+            set { this.SetModelValue(this, ref _startParam, value, v => StartParam = v, "StartParam"); }
         }
 
         /// <summary>
@@ -85,7 +85,7 @@ namespace Xbim.Ifc.GeometricModelResource
                 ((IPersistIfcEntity)this).Activate(false);
                 return _endParam;
             }
-            set { ModelHelper.SetModelValue(this, ref _endParam, value, v => EndParam = v, "EndParam"); }
+            set { this.SetModelValue(this, ref _endParam, value, v => EndParam = v, "EndParam"); }
         }
 
         /// <summary>
@@ -100,7 +100,7 @@ namespace Xbim.Ifc.GeometricModelResource
                 ((IPersistIfcEntity)this).Activate(false);
                 return _referenceSurface;
             }
-            set { ModelHelper.SetModelValue(this, ref _referenceSurface, value, v => ReferenceSurface = v, "ReferenceSurface"); }
+            set { this.SetModelValue(this, ref _referenceSurface, value, v => ReferenceSurface = v, "ReferenceSurface"); }
         }
 
 

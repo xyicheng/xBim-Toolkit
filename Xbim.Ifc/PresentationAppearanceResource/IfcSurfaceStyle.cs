@@ -47,7 +47,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _side;
             }
-            set { ModelHelper.SetModelValue(this, ref _side, value, v => Side = v, "Side"); }
+            set { this.SetModelValue(this, ref _side, value, v => Side = v, "Side"); }
         }
 
         [IfcAttribute(3, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class, 1, 5)]
@@ -58,7 +58,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _styles;
             }
-            set { ModelHelper.SetModelValue(this, ref _styles, value, v => Styles = v, "Styles"); }
+            set { this.SetModelValue(this, ref _styles, value, v => Styles = v, "Styles"); }
         }
 
 

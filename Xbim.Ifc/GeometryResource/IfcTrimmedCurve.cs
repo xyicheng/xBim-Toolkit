@@ -132,7 +132,7 @@ namespace Xbim.Ifc.GeometryResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _basisCurve;
             }
-            set { ModelHelper.SetModelValue(this, ref _basisCurve, value, v => BasisCurve = v, "BasisCurve"); }
+            set { this.SetModelValue(this, ref _basisCurve, value, v => BasisCurve = v, "BasisCurve"); }
         }
 
 
@@ -147,7 +147,7 @@ namespace Xbim.Ifc.GeometryResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _trim1;
             }
-            set { ModelHelper.SetModelValue(this, ref _trim1, value, v => Trim1 = v, "Trim1"); }
+            set { this.SetModelValue(this, ref _trim1, value, v => Trim1 = v, "Trim1"); }
         }
 
 
@@ -162,7 +162,7 @@ namespace Xbim.Ifc.GeometryResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _trim2;
             }
-            set { ModelHelper.SetModelValue(this, ref _trim2, value, v => Trim2 = v, "Trim2"); }
+            set { this.SetModelValue(this, ref _trim2, value, v => Trim2 = v, "Trim2"); }
         }
 
 
@@ -174,7 +174,7 @@ namespace Xbim.Ifc.GeometryResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _senseAgreement;
             }
-            set { ModelHelper.SetModelValue(this, ref _senseAgreement, value, v => SenseAgreement = v, "SenseAgreement"); }
+            set { this.SetModelValue(this, ref _senseAgreement, value, v => SenseAgreement = v, "SenseAgreement"); }
         }
 
 
@@ -188,7 +188,7 @@ namespace Xbim.Ifc.GeometryResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _masterRepresentation, value, v => MasterRepresentation = v,
+                this.SetModelValue(this, ref _masterRepresentation, value, v => MasterRepresentation = v,
                                            "MasterRepresentation");
             }
         }

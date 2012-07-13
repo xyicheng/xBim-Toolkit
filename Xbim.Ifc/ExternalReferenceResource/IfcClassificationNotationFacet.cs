@@ -84,7 +84,7 @@ namespace Xbim.Ifc.ExternalReferenceResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _notationValue;
             }
-            set { ModelHelper.SetModelValue(this, ref _notationValue, value, v => NotationValue = v, "NotationValue"); }
+            set { this.SetModelValue(this, ref _notationValue, value, v => NotationValue = v, "NotationValue"); }
         }
 
         #region INotifyPropertyChanged Members

@@ -90,7 +90,7 @@ namespace Xbim.Ifc.Kernel
                 ((IPersistIfcEntity) this).Activate(false);
                 return _hasProperties;
             }
-            private set { ModelHelper.SetModelValue(this, ref _hasProperties, value, v => HasProperties = v, "HasProperties"); }
+            private set { this.SetModelValue(this, ref _hasProperties, value, v => HasProperties = v, "HasProperties"); }
         }
 
 

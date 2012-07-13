@@ -55,7 +55,7 @@ namespace Xbim.Ifc.GeometricModelResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _voids;
             }
-            set { ModelHelper.SetModelValue(this, ref _voids, value, v => Voids = v, "Voids"); }
+            set { this.SetModelValue(this, ref _voids, value, v => Voids = v, "Voids"); }
         }
 
         public override void IfcParse(int propIndex, IPropertyValue value)

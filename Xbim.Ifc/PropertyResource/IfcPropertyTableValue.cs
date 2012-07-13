@@ -80,7 +80,7 @@ namespace Xbim.Ifc.PropertyResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _definingValues;
             }
-            set { ModelHelper.SetModelValue(this, ref _definingValues, value, v => DefiningValues = v, "DefiningValues"); }
+            set { this.SetModelValue(this, ref _definingValues, value, v => DefiningValues = v, "DefiningValues"); }
         }
 
         /// <summary>
@@ -94,7 +94,7 @@ namespace Xbim.Ifc.PropertyResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _definedValues;
             }
-            set { ModelHelper.SetModelValue(this, ref _definedValues, value, v => DefinedValues = v, "DefinedValues"); }
+            set { this.SetModelValue(this, ref _definedValues, value, v => DefinedValues = v, "DefinedValues"); }
         }
 
         /// <summary>
@@ -108,7 +108,7 @@ namespace Xbim.Ifc.PropertyResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _expression;
             }
-            set { ModelHelper.SetModelValue(this, ref _expression, value, v => Expression = v, "Expression"); }
+            set { this.SetModelValue(this, ref _expression, value, v => Expression = v, "Expression"); }
         }
 
         /// <summary>
@@ -122,7 +122,7 @@ namespace Xbim.Ifc.PropertyResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _definingUnit;
             }
-            set { ModelHelper.SetModelValue(this, ref _definingUnit, value, v => DefiningUnit = v, "DefiningUnit"); }
+            set { this.SetModelValue(this, ref _definingUnit, value, v => DefiningUnit = v, "DefiningUnit"); }
         }
 
         /// <summary>
@@ -136,7 +136,7 @@ namespace Xbim.Ifc.PropertyResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _definedUnit;
             }
-            set { ModelHelper.SetModelValue(this, ref _definedUnit, value, v => DefinedUnit = v, "DefinedUnit"); }
+            set { this.SetModelValue(this, ref _definedUnit, value, v => DefinedUnit = v, "DefinedUnit"); }
         }
 
         public override void IfcParse(int propIndex, IPropertyValue value)

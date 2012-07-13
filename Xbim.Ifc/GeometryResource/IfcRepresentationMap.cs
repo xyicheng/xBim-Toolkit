@@ -103,7 +103,7 @@ namespace Xbim.Ifc.GeometryResource
             set
             {
                 if (value is IfcAxis2Placement2D || value is IfcAxis2Placement3D || value == null)
-                    ModelHelper.SetModelValue(this, ref _mappingOrigin, value, v => _mappingOrigin = v, "MappingOrigin");
+                    this.SetModelValue(this, ref _mappingOrigin, value, v => _mappingOrigin = v, "MappingOrigin");
                 else
                     throw new ArgumentException("Illegal Axis2Placement type passed to RepresentationMap.MappingOrigin");
             }
@@ -119,7 +119,7 @@ namespace Xbim.Ifc.GeometryResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _mappedRepresentation, value, v => _mappedRepresentation = v,
+                this.SetModelValue(this, ref _mappedRepresentation, value, v => _mappedRepresentation = v,
                                            "MappedRepresentation");
             }
         }

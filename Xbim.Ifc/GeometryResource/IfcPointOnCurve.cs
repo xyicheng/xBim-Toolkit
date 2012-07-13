@@ -45,7 +45,7 @@ namespace Xbim.Ifc.GeometryResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _basisCurve;
             }
-            set { ModelHelper.SetModelValue(this, ref _basisCurve, value, v => BasisCurve = v, "BasisCurve"); }
+            set { this.SetModelValue(this, ref _basisCurve, value, v => BasisCurve = v, "BasisCurve"); }
         }
 
 
@@ -60,7 +60,7 @@ namespace Xbim.Ifc.GeometryResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _pointParameter;
             }
-            set { ModelHelper.SetModelValue(this, ref _pointParameter, value, v => PointParameter = v, "PointParameter"); }
+            set { this.SetModelValue(this, ref _pointParameter, value, v => PointParameter = v, "PointParameter"); }
         }
 
         public override void IfcParse(int propIndex, IPropertyValue value)

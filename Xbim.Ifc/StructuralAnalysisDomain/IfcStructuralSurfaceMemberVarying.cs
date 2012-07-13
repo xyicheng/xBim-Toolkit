@@ -52,7 +52,7 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _subsequentThickness, value, v => SubsequentThickness = v,
+                this.SetModelValue(this, ref _subsequentThickness, value, v => SubsequentThickness = v,
                                            "SubsequentThickness");
             }
         }
@@ -67,7 +67,7 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _varyingThicknessLocation, value, v => VaryingThicknessLocation = v,
+                this.SetModelValue(this, ref _varyingThicknessLocation, value, v => VaryingThicknessLocation = v,
                                            "VaryingThicknessLocation");
             }
         }

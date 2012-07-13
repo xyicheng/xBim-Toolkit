@@ -96,7 +96,7 @@ namespace Xbim.Ifc.CostResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _relatingMonetaryUnit, value, v => RelatingMonetaryUnit = v,
+                this.SetModelValue(this, ref _relatingMonetaryUnit, value, v => RelatingMonetaryUnit = v,
                                            "RelatingMonetaryUnit");
             }
         }
@@ -114,7 +114,7 @@ namespace Xbim.Ifc.CostResource
             }
             set
             {
-                ModelHelper.SetModelValue(this, ref _relatedMonetaryUnit, value, v => RelatedMonetaryUnit = v,
+                this.SetModelValue(this, ref _relatedMonetaryUnit, value, v => RelatedMonetaryUnit = v,
                                            "RelatedMonetaryUnit");
             }
         }
@@ -130,7 +130,7 @@ namespace Xbim.Ifc.CostResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _exchangeRate;
             }
-            set { ModelHelper.SetModelValue(this, ref _exchangeRate, value, v => ExchangeRate = v, "ExchangeRate"); }
+            set { this.SetModelValue(this, ref _exchangeRate, value, v => ExchangeRate = v, "ExchangeRate"); }
         }
 
         /// <summary>
@@ -144,7 +144,7 @@ namespace Xbim.Ifc.CostResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _rateDateTime;
             }
-            set { ModelHelper.SetModelValue(this, ref _rateDateTime, value, v => RateDateTime = v, "RateDateTime"); }
+            set { this.SetModelValue(this, ref _rateDateTime, value, v => RateDateTime = v, "RateDateTime"); }
         }
 
         /// <summary>
@@ -158,7 +158,7 @@ namespace Xbim.Ifc.CostResource
                 ((IPersistIfcEntity) this).Activate(false);
                 return _rateSource;
             }
-            set { ModelHelper.SetModelValue(this, ref _rateSource, value, v => RateSource = v, "RateSource"); }
+            set { this.SetModelValue(this, ref _rateSource, value, v => RateSource = v, "RateSource"); }
         }
 
         #region INotifyPropertyChanged Members

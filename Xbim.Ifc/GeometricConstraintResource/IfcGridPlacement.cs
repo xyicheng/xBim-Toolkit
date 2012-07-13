@@ -45,7 +45,7 @@ namespace Xbim.Ifc.GeometricConstraintResource
             }
             protected set
             {
-                ModelHelper.SetModelValue(this, ref _placementLocation, value, v => PlacementLocation = v,
+                this.SetModelValue(this, ref _placementLocation, value, v => PlacementLocation = v,
                                            "PlacementLocation ");
             }
         }
@@ -64,7 +64,7 @@ namespace Xbim.Ifc.GeometricConstraintResource
             }
             protected set
             {
-                ModelHelper.SetModelValue(this, ref _placementRefDirection, value, v => PlacementRefDirection = v,
+                this.SetModelValue(this, ref _placementRefDirection, value, v => PlacementRefDirection = v,
                                            "PlacementRefDirection ");
             }
         }
