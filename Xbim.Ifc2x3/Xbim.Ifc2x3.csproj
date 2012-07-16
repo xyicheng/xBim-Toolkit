@@ -966,7 +966,6 @@
     <None Include="DateTimeResource\ClassDiagramDateTime.cd" />
     <None Include="ExternalReferenceResource\ClassDiagramExternalReference.cd" />
     <None Include="Kernel\ClassDiagramKernel.cd" />
-    <None Include="MaterialResource\ClassDiagramMaterialResource.cd" />
     <None Include="MeasureResource\ClassDiagramMeasureResource.cd" />
     <None Include="PropertyResource\ClassDiagramProperty.cd">
       <CustomToolNamespace>xbim.IfcLib.PropertyResource</CustomToolNamespace>

@@ -84,7 +84,7 @@ namespace Xbim.XbimExtensions.Interfaces
         IPersistIfcEntity DefaultOwningApplication { get; }
         IPersistIfcEntity DefaultOwningUser { get; }
         Transaction BeginTransaction(string operationName);
-        IIfcFileHeader Header { get; }
+        IIfcFileHeader Header { get; set; }
         IEnumerable<Tuple<string, long>> ModelStatistics();
         int Validate(TextWriter errStream, ReportProgressDelegate progressDelegate, ValidationFlags validateFlags);
         int Validate(TextWriter errStream, ReportProgressDelegate progressDelegate);
@@ -102,11 +102,7 @@ namespace Xbim.XbimExtensions.Interfaces
         void Close();
 
         UndoRedoSession UndoRedo { get; }
-        //Simple accessor to standard object
-        IEnumerable<IPersistIfcEntity> Walls { get; }
-        IEnumerable<IPersistIfcEntity> Slabs { get; }
-        IEnumerable<IPersistIfcEntity> Doors { get; }
-        IEnumerable<IPersistIfcEntity> Roofs { get; }
+
 
     }
 }

@@ -53,17 +53,15 @@ namespace Xbim.IO
 {
 
     [Serializable]
-    public class XbimMemoryModel : IModel, ISupportChangeNotification, INotifyPropertyChanged, INotifyPropertyChanging
+    public class XbimMemoryModel : XbimModel, ISupportChangeNotification, INotifyPropertyChanged, INotifyPropertyChanging
     {
         #region Fields
 		private readonly ILogger Logger = LoggerFactory.GetLogger();
-        private readonly IfcFileHeader _header = new IfcFileHeader();
-        private IfcInstances _ifcInstances = new IfcInstances();
-
+        
         /// <summary>
         ///   Default true, builds indices to improve access performance for retrieving instances, set to false to increase laod speed where access speed is unimportant
         /// </summary>
-        public bool BuildIndices = true;
+        public bool BuildIndices = false;
 
         private IfcFilterDictionary _parseFilter;
 
@@ -72,14 +70,11 @@ namespace Xbim.IO
 
         #region Public Methods
 
-        IEnumerable<IPersistIfcEntity> IModel.Instances
-        {
-            get { return _ifcInstances; }
-        }
+       
 
-        public bool Delete(IPersistIfcEntity instance)
+        public override bool Delete(IPersistIfcEntity instance)
         {
-            return _ifcInstances.Remove(instance);
+            return instances.Remove(instance);
         }
 
         public void Commit()
@@ -94,31 +89,6 @@ namespace Xbim.IO
             if (txn != null) txn.Rollback();
         }
 
-
-        public ICollection<IPersistIfcEntity> Instances
-        {
-            get { return _ifcInstances; }
-        }
-
-        public void SetInstances(IfcInstances instances)
-        {
-            _ifcInstances = instances;
-        }
-
-        /// <summary>
-        ///   Returns true if the instance is contained in this model
-        /// </summary>
-        /// <param name = "instance">instance to locate</param>
-        /// <returns></returns>
-        public bool ContainsInstance(IPersistIfcEntity instance)
-        {
-            return _ifcInstances.Contains(instance);
-        }
-
-        public bool ContainsInstance(long entityLabel)
-        {
-            return _ifcInstances.ContainsInstance(entityLabel);
-        }
 
         /// <summary>
         ///   Creates an Ifc Persistent Instance from an entity name string, this is NOT an undoable operation
@@ -150,7 +120,7 @@ namespace Xbim.IO
                     Debug.Assert(label.HasValue);
                     _highestLabel = Math.Max(_highestLabel, label.Value);
                     persist.Bind(this, label.Value);
-                    _ifcInstances.AddRaw(persist);
+                    instances.AddRaw(persist);
                 }
 
                 return instance;
@@ -162,74 +132,16 @@ namespace Xbim.IO
             }
         }
 
-        public IPersistIfcEntity AddNew(Type ifcType, long label)
-        {
-            Debug.Assert(typeof(IPersistIfcEntity).IsAssignableFrom(ifcType), "Type mismatch: IPersistIfcEntity");
-            return (IPersistIfcEntity)CreateInstance(ifcType, label);
-        }
+      
 
-        /// <summary>
-        ///   Creates an Ifc Persistent Instance, this is an undoable operation
-        /// </summary>
-        /// <typeparam name = "TIfcType"> The Ifc Type, this cannot be an abstract class. An exception will be thrown if the type is not a valid Ifc Type  </typeparam>
-        public TIfcType New<TIfcType>() where TIfcType : IPersistIfcEntity, new()
-        {
-            TIfcType instance = new TIfcType();
-            if (IfcInstances.IfcEntities.Contains(instance.GetType()))
-            {
-                instance.Bind(this, NextLabel());
-                _ifcInstances.Add_Reversible(instance);
-                IfcRoot rt = instance as IfcRoot;
-                if (rt != null) rt.OwnerHistory = this.OwnerHistoryAddObject;
-
-                return instance;
-            }
-            else
-                throw new ArgumentException(string.Format("{0} is not a supported Ifc Type", instance.GetType().Name),
-                                            "Model.New<CType>()");
-        }
-
-        private long _highestLabel;
-
-        private long NextLabel()
-        {
-            _highestLabel++;
-
-            return _highestLabel;
-        }
-
-        /// <summary>
-        ///   Creates and Instance of TIfcType and initializes the properties in accordance with the lambda expression
-        ///   i.e. Person person = CreateInstance&gt;Person&lt;(p =&lt; { p.FamilyName = "Undefined"; p.GivenName = "Joe"; });
-        /// </summary>
-        /// <typeparam name = "TIfcType"></typeparam>
-        /// <param name = "initPropertiesFunc"></param>
-        /// <returns></returns>
-        public TIfcType New<TIfcType>(InitProperties<TIfcType> initPropertiesFunc)
-            where TIfcType : IPersistIfcEntity, new()
-        {
-            TIfcType instance = new TIfcType();
-
-            if (IfcInstances.IfcEntities.Contains(instance.GetType()))
-            {
-                instance.Bind(this, NextLabel());
-                _ifcInstances.Add_Reversible(instance);
-                IfcRoot rt = instance as IfcRoot;
-                if (rt != null) rt.OwnerHistory = this.OwnerHistoryAddObject;
-                initPropertiesFunc(instance);
-                return instance;
-            }
-            else
-                throw new ArgumentException(string.Format("{0} is not a supported Ifc Type", instance.GetType().Name),
-                                            "Model.New<CType>()");
-        }
+       
 
         /// <summary>
         ///   Removes all instances in the model, this is an undoable operation
         /// </summary>
         public void ClearAllInstances()
         {
-            _ifcInstances.Clear_Reversible();
+            instances.Clear_Reversible();
         }
 
 
@@ -239,13 +151,13 @@ namespace Xbim.IO
         /// <param name = "forceRetentionOf">Enumeration of Types whose instances will always be retained</param>
         public void PurgeInstances(IEnumerable<Type> forceRetentionOf)
         {
-            IfcInstances retainedInstances = new IfcInstances();
+            IfcInstances retainedInstances = new IfcInstances(this);
 
             foreach (Type type in forceRetentionOf)
             {
-                _ifcInstances.CopyTo(retainedInstances, type);
+                instances.CopyTo(retainedInstances, type);
             }
-            IfcInstances refInstances = new IfcInstances();
+            IfcInstances refInstances = new IfcInstances(this);
             foreach (IPersistIfcEntity instance in retainedInstances)
             {
                 CopyReferences(refInstances, instance);
@@ -254,8 +166,8 @@ namespace Xbim.IO
             {
                 refInstances.Add(item);
             }
-            _ifcInstances = refInstances;
-            //  ModelManager.SetModelValue<IfcInstances>(this, ref _ifcInstances, newInstances, v => _ifcInstances = v);
+            instances = refInstances;
+            //  ModelManager.SetModelValue<IfcInstances>(this, ref instances, newInstances, v => instances = v);
         }
 
         /// <summary>
@@ -266,55 +178,34 @@ namespace Xbim.IO
             PurgeInstances(new[] { typeof(IfcRoot) });
         }
 
-        /// <summary>
-        ///   Returns all instances in the model of IfcType, IfcType may be an abstract Type
-        /// </summary>
-        /// <typeparam name = "TIfcType"></typeparam>
-        /// <returns></returns>
-        public IEnumerable<TIfcType> InstancesOfType<TIfcType>() where TIfcType : IPersistIfcEntity
-        {
-            return _ifcInstances.OfType<TIfcType>();
-        }
-
-        /// <summary>
-        ///   Filters the Ifc Instances based on their Type and the predicate
-        /// </summary>
-        /// <typeparam name = "TIfcType">Ifc Type to filter</typeparam>
-        /// <param name = "expression">function to execute</param>
-        /// <returns></returns>
-        public IEnumerable<TIfcType> InstancesWhere<TIfcType>(Expression<Func<TIfcType, bool>> expression)
-            where TIfcType : IPersistIfcEntity
-        {
-            return _ifcInstances.Where(expression);
-        }
-
+       
         //public IEnumerable<TIfcType> InstancesWhere<TIfcType>(Predicate<TIfcType> expr) where TIfcType : IPersistIfc
         //{
-        //    return _ifcInstances.Where<TIfcType>(expr);
+        //    return instances.Where<TIfcType>(expr);
         //}
         /// <summary>
         ///   Returns IEnumerable of all instances that are not referenced through any hierarchy that contains instances of the types in forceRetentionOf
         /// </summary>
         /// <param name = "forceRetentionOf">Enumeration of Types whose instances will always be retained</param>
-        public IEnumerable<IPersistIfcEntity> UnreferencedInstances(IEnumerable<Type> forceRetentionOf)
+        public IEnumerable<long> UnreferencedInstances(IEnumerable<Type> forceRetentionOf)
         {
-            IfcInstances newInstances = new IfcInstances();
+            IfcInstances newInstances = new IfcInstances(this);
             foreach (Type type in forceRetentionOf)
             {
-                _ifcInstances.CopyTo(newInstances, type);
+                instances.CopyTo(newInstances, type);
             }
             foreach (IPersistIfcEntity instance in newInstances)
             {
                 CopyReferences(newInstances, instance);
             }
-            return _ifcInstances.Except(newInstances);
+            return instances.Except((IEnumerable<long>)newInstances);
         }
 
         /// <summary>
         ///   Returns IEnumerable of all instances that are not referenced through any hierarchy that contains all root instances (Ifc Exchangeable Instances)
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<IPersistIfcEntity> UnreferencedInstances()
+        public IEnumerable<long> UnreferencedInstances()
         {
             return UnreferencedInstances(new[] { typeof(IfcRoot) });
         }
@@ -359,10 +250,7 @@ namespace Xbim.IO
 
         #region Serialized Members
 
-        public IfcProject IfcProject
-        {
-            get { return _ifcInstances.OfType<IfcProject>().FirstOrDefault(); }
-        }
+        
 
         /// <summary>
         ///   Unique identifier for the model
@@ -379,23 +267,6 @@ namespace Xbim.IO
 
         #region NonSerialized Members
 
-        [NonSerialized]
-        private IfcOwnerHistory _ownerHistoryDeleteObject;
-
-        [NonSerialized]
-        private IfcOwnerHistory _ownerHistoryAddObject;
-
-        [NonSerialized]
-        private IfcOwnerHistory _ownerHistoryModifyObject;
-
-        [NonSerialized]
-        private IfcPersonAndOrganization _defaultOwningUser;
-        [NonSerialized]
-        private IfcApplication _defaultOwningApplication;
-
-
-        [NonSerialized]
-        private UndoRedoSession _undoRedoSession;
 
         [NonSerialized]
         private XbimP21Parser _part21Parser;
@@ -411,7 +282,7 @@ namespace Xbim.IO
         public XbimMemoryModel(bool useUndoRedo)
         {
             if (useUndoRedo)
-                _undoRedoSession = new UndoRedoSession();
+                undoRedoSession = new UndoRedoSession();
         }
         /// <summary>
         /// Creates an in memory Model with no UndoRedoSesion
@@ -430,10 +301,6 @@ namespace Xbim.IO
             get { return new IfcObjects(this); }
         }
 
-        public IfcProducts IfcProducts
-        {
-            get { return new IfcProducts(this); }
-        }
 
         public IfcTypeObjects TypeObjects
         {
@@ -461,58 +328,18 @@ namespace Xbim.IO
             get
             {
                 return
-                    _ifcInstances.OfType<IfcBeam>().Cast<IfcProduct>().Concat<IfcProduct>(
-                        _ifcInstances.OfType<IfcColumn>().Cast<IfcProduct>());
+                    instances.OfType<IfcBeam>().Cast<IfcProduct>().Concat<IfcProduct>(
+                        instances.OfType<IfcColumn>().Cast<IfcProduct>());
             }
         }
 
         public IEnumerable<IfcProduct> Services
         {
-            get { return _ifcInstances.OfType<IfcDistributionFlowElement>().Cast<IfcProduct>(); }
+            get { return instances.OfType<IfcDistributionFlowElement>().Cast<IfcProduct>(); }
         }
 
 
-        public IfcOwnerHistory OwnerHistoryAddObject
-        {
-            get
-            {
-                return _ownerHistoryAddObject;
-            }
-        }
-
-        public IfcOwnerHistory OwnerHistoryDeleteObject
-        {
-            get
-            {
-                if (_ownerHistoryDeleteObject == null)
-                {
-                    _ownerHistoryDeleteObject = this.New<IfcOwnerHistory>();
-                    _ownerHistoryDeleteObject.OwningUser = _defaultOwningUser;
-                    _ownerHistoryDeleteObject.OwningApplication = _defaultOwningApplication;
-                    _ownerHistoryDeleteObject.ChangeAction = IfcChangeActionEnum.DELETED;
-                }
-                return _ownerHistoryDeleteObject;
-            }
-        }
-
-        public IfcOwnerHistory OwnerHistoryModifyObject
-        {
-            get
-            {
-                return _ownerHistoryModifyObject;
-            }
-        }
-
-        public IfcApplication DefaultOwningApplication
-        {
-            get { return _defaultOwningApplication; }
-        }
-
-        public IfcPersonAndOrganization DefaultOwningUser
-        {
-            get { return _defaultOwningUser; }
-        }
-
+       
 
         /// <summary>
         ///   Gets the reversible transaction holding all changes made in this document and that can be
@@ -520,13 +347,13 @@ namespace Xbim.IO
         /// </summary>
         public UndoRedoSession UndoRedoSession
         {
-            get { return _undoRedoSession; }
+            get { return undoRedoSession; }
         }
 
 
         public IEnumerable<IfcApplication> Applications
         {
-            get { return _ifcInstances.OfType<IfcApplication>(); }
+            get { return instances.OfType<IfcApplication>(); }
         }
 
         #endregion
@@ -602,11 +429,7 @@ namespace Xbim.IO
             }
         }
 
-        public long InstancesCount
-        {
-            get { return _ifcInstances.Count; }
-        }
-
+       
 
         /// <summary>
         ///   Parses the part 21 file and returns trhe number of erors found, errorLog contains error details
@@ -614,7 +437,7 @@ namespace Xbim.IO
         /// <param name = "inputStream"></param>
         /// <param name = "progressHandler"></param>
         /// <returns></returns>
-        public int ParsePart21(Stream inputStream, ReportProgressDelegate progressHandler)
+        public override int ParsePart21(Stream inputStream, ReportProgressDelegate progressHandler)
         {
 
             int errorCount = 0;
@@ -648,7 +471,7 @@ namespace Xbim.IO
             }
             errorCount = _part21Parser.ErrorCount + errorCount;
             if (errorCount == 0 && BuildIndices)
-                errorCount += _ifcInstances.BuildIndices();
+                errorCount += instances.BuildIndices();
             return errorCount;
         }
 
@@ -660,59 +483,11 @@ namespace Xbim.IO
 
         #region Session Methods
 
-        public Transaction BeginTransaction()
-        {
-            return this.BeginTransaction(null);
-        }
+       
 
-        public Transaction BeginTransaction(string operationName)
-        {
-            Transaction txn = null;
-            if (_undoRedoSession != null)
-            {
-                txn = _undoRedoSession.Begin(operationName);
-            }
-            else
-            {
-                // create new _undoRedoSession
-                _undoRedoSession = new UndoRedoSession();
-                txn = Transaction.Begin(operationName);
-                InitialiseDefaultOwnership();
-            }
+        
 
-            return txn;
-        }
-
-        private void InitialiseDefaultOwnership()
-        {
-            IfcPerson person = New<IfcPerson>();
-
-            IfcOrganization organization = New<IfcOrganization>();
-            IfcPersonAndOrganization owninguser = New<IfcPersonAndOrganization>(po =>
-            {
-                po.TheOrganization = organization;
-                po.ThePerson = person;
-            });
-            Transaction.AddPropertyChange<IfcPersonAndOrganization>(m => _defaultOwningUser = m, _defaultOwningUser, owninguser);
-            IfcApplication app = New<IfcApplication>(a => a.ApplicationDeveloper = New<IfcOrganization>());
-            Transaction.AddPropertyChange<IfcApplication>(m => _defaultOwningApplication = m, _defaultOwningApplication, app);
-            IfcOwnerHistory oh = New<IfcOwnerHistory>();
-            oh.OwningUser = _defaultOwningUser;
-            oh.OwningApplication = _defaultOwningApplication;
-            oh.ChangeAction = IfcChangeActionEnum.ADDED;
-            Transaction.AddPropertyChange<IfcOwnerHistory>(m => _ownerHistoryAddObject = m, _ownerHistoryAddObject, oh);
-            _defaultOwningUser = owninguser;
-            _defaultOwningApplication = app;
-            _ownerHistoryAddObject = oh;
-            IfcOwnerHistory ohc = New<IfcOwnerHistory>();
-            ohc.OwningUser = _defaultOwningUser;
-            ohc.OwningApplication = _defaultOwningApplication;
-            ohc.ChangeAction = IfcChangeActionEnum.MODIFIED;
-            Transaction.AddPropertyChange<IfcOwnerHistory>(m => _ownerHistoryModifyObject = m, _ownerHistoryModifyObject, ohc);
-            _defaultOwningUser = owninguser;
-            _defaultOwningApplication = app;
-            _ownerHistoryModifyObject = ohc;
-        }
+       
 
         #endregion
 
@@ -771,201 +546,23 @@ namespace Xbim.IO
 
         #endregion
 
-        #region Validation
-
-        /// <summary>
-        ///   Only executes the flagged validation routines
-        /// </summary>
-        /// <param name = "errStream"></param>
-        /// <param name = "progressDelegate"></param>
-        /// <param name = "validateFlags"></param>
-        /// <returns></returns>
-        public int Validate(TextWriter errStream, ReportProgressDelegate progressDelegate, ValidationFlags validateFlags)
-        {
-            IndentedTextWriter tw = new IndentedTextWriter(errStream, "    ");
-            tw.Indent = 0;
-            double total = _ifcInstances.Count;
-            int idx = 0;
-            int errors = 0;
-            int percentage = -1;
-
-            foreach (IPersistIfcEntity ent in _ifcInstances)
-            {
-                idx++;
-                errors += Validate(ent, tw, validateFlags);
-
-                if (progressDelegate != null)
-                {
-                    int newPercentage = (int)(idx / total * 100.0);
-                    if (newPercentage != percentage) progressDelegate(percentage, "");
-                    percentage = newPercentage;
-                }
-            }
-            return errors;
-        }
-
-        /// <summary>
-        ///   Executes all validation routines and reports progress
-        /// </summary>
-        /// <param name = "errStream"></param>
-        /// <param name = "progressDelegate"></param>
-        /// <returns></returns>
-        public int Validate(TextWriter errStream, ReportProgressDelegate progressDelegate)
-        {
-            return Validate(errStream, progressDelegate, ValidationFlags.All);
-        }
-
-        /// <summary>
-        ///   Validates the all aspects of all model instances
-        /// </summary>
-        /// <param name = "errStream"></param>
-        /// <returns></returns>
-        public int Validate(TextWriter errStream)
-        {
-            return Validate(errStream, null, ValidationFlags.All);
-        }
-
-        public static int Validate(IPersistIfcEntity ent, IndentedTextWriter tw, ValidationFlags validateLevel)
-        {
-            if (validateLevel == ValidationFlags.None) return 0; //nothing to do
-            IfcType ifcType = IfcInstances.IfcEntities[ent];
-            bool notIndented = true;
-            int errors = 0;
-            if (validateLevel == ValidationFlags.Properties || validateLevel == ValidationFlags.All)
-            {
-                foreach (IfcMetaProperty ifcProp in ifcType.IfcProperties.Values)
-                {
-                    string err = GetIfcSchemaError(ent, ifcProp);
-                    if (!String.IsNullOrEmpty(err))
-                    {
-                        if (notIndented)
-                        {
-                            tw.WriteLine(string.Format("#{0} - {1}", ent.EntityLabel, ifcType.Type.Name));
-                            tw.Indent++;
-                            notIndented = false;
-                        }
-                        tw.WriteLine(err.Trim('\n'));
-                        errors++;
-                    }
-                }
-            }
-            if (validateLevel == ValidationFlags.Inverses || validateLevel == ValidationFlags.All)
-            {
-                foreach (IfcMetaProperty ifcInv in ifcType.IfcInverses)
-                {
-                    string err = GetIfcSchemaError(ent, ifcInv);
-                    if (!String.IsNullOrEmpty(err))
-                    {
-                        if (notIndented)
-                        {
-                            tw.WriteLine(string.Format("#{0} - {1}", ent.EntityLabel, ifcType.Type.Name));
-                            tw.Indent++;
-                            notIndented = false;
-                        }
-                        tw.WriteLine(err.Trim('\n'));
-                        errors++;
-                    }
-                }
-            }
-
-            string str = ent.WhereRule();
-            if (!String.IsNullOrEmpty(str))
-            {
-                if (notIndented)
-                {
-                    tw.WriteLine(string.Format("#{0} - {1}", ent.EntityLabel, ifcType.Type.Name));
-                    tw.Indent++;
-                    notIndented = false;
-                }
-                tw.WriteLine(str.Trim('\n'));
-                errors++;
-            }
-            if (!notIndented) tw.Indent--;
-            return errors;
-        }
-
-        private static string GetIfcSchemaError(IPersistIfc instance, IfcMetaProperty prop)
-        {
-            //IfcAttribute ifcAttr, object instance, object propVal, string propName
-
-            IfcAttribute ifcAttr = prop.IfcAttribute;
-            object propVal = prop.PropertyInfo.GetValue(instance, null);
-            string propName = prop.PropertyInfo.Name;
-
-            if (propVal is ExpressType)
-            {
-                string err = "";
-                string val = ((ExpressType)propVal).ToPart21;
-                if (ifcAttr.State == IfcAttributeState.Mandatory && val == "$")
-                    err += string.Format("{0}.{1} is not optional", instance.GetType().Name, propName);
-                err += ((IPersistIfc)propVal).WhereRule();
-                if (!string.IsNullOrEmpty(err)) return err;
-            }
-
-            if (ifcAttr.State == IfcAttributeState.Mandatory && propVal == null)
-                return string.Format("{0}.{1} is not optional", instance.GetType().Name, propName);
-            if (ifcAttr.State == IfcAttributeState.Optional && propVal == null)
-                //if it is null and optional then it is ok
-                return null;
-            if (ifcAttr.IfcType == IfcAttributeType.Set || ifcAttr.IfcType == IfcAttributeType.List ||
-                ifcAttr.IfcType == IfcAttributeType.ListUnique)
-            {
-                if (ifcAttr.MinCardinality < 1 && ifcAttr.MaxCardinality < 0) //we don't care how many so don't check
-                    return null;
-                ICollection coll = propVal as ICollection;
-                int count = 0;
-                if (coll != null)
-                    count = coll.Count;
-                else
-                {
-                    IEnumerable en = (IEnumerable)propVal;
-
-                    foreach (object item in en)
-                    {
-                        count++;
-                        if (count >= ifcAttr.MinCardinality && ifcAttr.MaxCardinality == -1)
-                            //we have met the requirements
-                            break;
-                        if (ifcAttr.MaxCardinality > -1 && count > ifcAttr.MaxCardinality) //we are out of bounds
-                            break;
-                    }
-                }
-
-                if (count < ifcAttr.MinCardinality)
-                {
-                    return string.Format("{0}.{1} must have at least {2} item(s). It has {3}", instance.GetType().Name,
-                                         propName, ifcAttr.MinCardinality, count);
-                }
-                if (ifcAttr.MaxCardinality > -1 && count > ifcAttr.MaxCardinality)
-                {
-                    return string.Format("{0}.{1} must have no more than {2} item(s). It has at least {3}",
-                                         instance.GetType().Name, propName, ifcAttr.MaxCardinality, count);
-                }
-            }
-            return null;
-        }
-
-        #endregion
+       
 
         #region IModel Members
 
         public IEnumerable<IfcRoot> RootInstances
         {
-            get { return _ifcInstances.OfType<IfcRoot>(); }
+            get { return instances.OfType<IfcRoot>(); }
         }
 
 #if SupportActivation
 
-        public long Activate(IPersistIfcEntity entity, bool write)
-        {
-            IfcRoot root = entity as IfcRoot;
-            //if (root != null && root.OwnerHistory != _ownerHistoryModifyObject) root.OwnerHistory = _ownerHistoryModifyObject;
-            return entity.EntityLabel;
-        }
 
-        public IPersistIfcEntity GetInstance(long label)
+
+        public override IPersistIfcEntity GetInstance(long label)
         {
-            return _ifcInstances.GetInstance(label);
+            long fileOffset;
+            return instances.GetOrCreateEntity(this, label, out fileOffset);
         }
 
 
@@ -975,21 +572,17 @@ namespace Xbim.IO
 
         #region IModel Members
 
-        public IIfcFileHeader Header
-        {
-            get { return _header; }
-        }
 
         #endregion
 
 
-        public bool ReOpen()
+        public override bool ReOpen()
         {
             //nothing to do
             return true;
         }
 
-        public void Close()
+        public override void Close()
         {
             //nothing to do
         }
@@ -997,15 +590,15 @@ namespace Xbim.IO
 
 
 
-        public IEnumerable<Tuple<string, long>> ModelStatistics()
+        public override IEnumerable<Tuple<string, long>> ModelStatistics()
         {
             List<Tuple<string, long>> results = new List<Tuple<string, long>>();
             IfcType ifcType = IfcInstances.IfcEntities[typeof(IfcBuildingElement)];
             foreach (Type elemType in ifcType.NonAbstractSubTypes)
             {
-                if (this._ifcInstances.ContainsKey(elemType))
+                if (this.instances.ContainsKey(elemType))
                 {
-                    long cnt = this._ifcInstances[elemType].Count;
+                    long cnt = this.instances[elemType].Count;
                     results.Add(Tuple.Create(elemType.Name, cnt));
                 }
             }
@@ -1014,13 +607,7 @@ namespace Xbim.IO
 
 
 
-        public string Validate(ValidationFlags validateFlags)
-        {
-            StringBuilder sb = new StringBuilder();
-            TextWriter tw = new StringWriter(sb);
-            Validate(tw, null, validateFlags);
-            return sb.ToString();
-        }
+       
 
         // TODO: Review why these properties are here on the model.
         public IEnumerable<IfcWall> Walls
@@ -1044,134 +631,8 @@ namespace Xbim.IO
         }
 
 
-        public UndoRedoSession UndoRedo
-        {
-            get { return _undoRedoSession; }
-        }
-
-        private void ExportIfc(string fileName, bool compress, bool isGZip = true)
-        {
-            StreamWriter ifcFile = null;
-            FileStream fs = null;
-            try
-            {
-                if (compress)
-                {
-                    if (isGZip)
-                    {
-                        fs = new FileStream(fileName, FileMode.Create, FileAccess.Write);
-                        GZipStream zip = new GZipStream(fs, CompressionMode.Compress);
-                        ifcFile = new StreamWriter(zip);
-                    }
-                    else // if isGZip == false then use sharpziplib
-                    {
-                        string ext = "";
-                        if (fileName.ToLower().EndsWith(".zip") == false || fileName.ToLower().EndsWith(".ifczip") == false) ext = ".ifczip";
-                        fs = new FileStream(fileName + ext, FileMode.Create, FileAccess.Write);
-                        ZipOutputStream zipStream = new ZipOutputStream(fs);
-                        zipStream.SetLevel(3); //0-9, 9 being the highest level of compression
-                        ZipEntry newEntry = new ZipEntry(fileName);
-                        newEntry.DateTime = DateTime.Now;
-                        zipStream.PutNextEntry(newEntry);
-
-                        ifcFile = new StreamWriter(zipStream);
-                    }
-                }
-                else
-                {
-                    ifcFile = new StreamWriter(fileName);
-                }
-                
-
-                Part21FileWriter p21 = new Part21FileWriter(ifcFile);
-                p21.WriteHeader(this);
-                foreach (IPersistIfcEntity item in this.Instances)
-                {
-                    p21.Write(item);
-                }
-                p21.WriteFooter();
-                p21.Close();
-                
-                
-                ifcFile.Flush();
-            }
-            catch (Exception e)
-            {
-                throw new Exception("Error creating Ifc File = " + fileName, e);
-            }
-            finally
-            {
-                if (ifcFile != null) ifcFile.Close();
-                if (fs != null) fs.Close();
-            }
-        }
-
-        public void Export(XbimStorageType fileType, string outputFileName)
-        {
-            if (fileType.HasFlag(XbimStorageType.XBIM))
-            {
-                try
-                {
-                    BinaryFormatter formatter = new BinaryFormatter();
-                    formatter.AssemblyFormat = FormatterAssemblyStyle.Simple;
-                    this.Header.FileDescription.EntityCount = this.Instances.Count();
-                    Stream stream = new FileStream(outputFileName, FileMode.Create, FileAccess.Write, FileShare.None);
-                    formatter.Serialize(stream, this);
-                    formatter.Serialize(stream, this);
-                    stream.Close();
-                }
-                catch (Exception ex)
-                {
-                    throw new Exception("Error exporting file: " + ex.Message);
-                }
-            }
-            else if (fileType.HasFlag(XbimStorageType.IFC))
-            {
-                try
-                {
-                    ExportIfc(outputFileName, false);
-                }
-                catch (Exception ex)
-                {
-                    throw new Exception("Error exporting file: " + ex.Message);
-                }
-            }
-            else if (fileType.HasFlag(XbimStorageType.IFCXML))
-            {
-                FileStream xmlOutStream = null;
-                try
-                {
-                    xmlOutStream = new FileStream(outputFileName, FileMode.Create, FileAccess.ReadWrite);
-                    XmlWriterSettings settings = new XmlWriterSettings { Indent = true };
-                    using (XmlWriter xmlWriter = XmlWriter.Create(xmlOutStream, settings))
-                    {
-                        IfcXmlWriter writer = new IfcXmlWriter();
-                        writer.Write(this, xmlWriter, null);
-                    }
-                }
-                catch (Exception e)
-                {
-                    throw new Exception("Failed to write IfcXml file " + outputFileName, e);
-                }
-                finally
-                {
-                    if (xmlOutStream != null) xmlOutStream.Close();
-                }
-            }
-            else if (fileType.HasFlag(XbimStorageType.IFCZIP))
-            {
-                try
-                {
-                    ExportIfc(outputFileName, true, true);
-                }
-                catch (Exception ex)
-                {
-                    throw new Exception("Error exporting file: " + ex.Message);
-                }
-            }
-        }
-
-        public string Open(string inputFileName)
+       
+        public override string Open(string inputFileName)
         {
             string outputFileName = Path.ChangeExtension(inputFileName, "xbim");
 
@@ -1266,17 +727,8 @@ namespace Xbim.IO
         }
 
 
-        public bool Save()
-        {
-            return true;
-        }
 
-        public bool SaveAs(string outputFileName)
-        {
-            return true;
-        }
-
-        public void Import(string inputFileName)
+        public override void Import(string inputFileName)
         {
             throw new NotImplementedException("Import functionality: not implemented yet");
         }
@@ -1286,7 +738,7 @@ namespace Xbim.IO
         #region IModel Members
 
 
-        public string Open(string inputFileName, ReportProgressDelegate progDelegate)
+        public override string Open(string inputFileName, ReportProgressDelegate progDelegate)
         {
             return Open(inputFileName, progDelegate);
         }
@@ -1294,54 +746,17 @@ namespace Xbim.IO
         #endregion
 
 
-        IPersistIfcEntity IModel.OwnerHistoryAddObject
+
+
+
+        public override bool Save()
         {
-            get { return OwnerHistoryAddObject; }
+            throw new NotImplementedException();
         }
 
-        IPersistIfcEntity IModel.OwnerHistoryModifyObject
+        protected override void ActivateEntity(long offset, IPersistIfcEntity entity)
         {
-            get { return OwnerHistoryModifyObject; }
-        }
-
-        IPersistIfcEntity IModel.IfcProject
-        {
-            get { return IfcProject; }
-        }
-
-        IEnumerable<IPersistIfcEntity> IModel.IfcProducts
-        {
-            get { return InstancesOfType<IfcProduct>().Cast<IPersistIfcEntity>(); }
-        }
-
-        IPersistIfcEntity IModel.DefaultOwningApplication
-        {
-            get { return DefaultOwningApplication; }
-        }
-
-        IPersistIfcEntity IModel.DefaultOwningUser
-        {
-            get { return DefaultOwningUser; }
-        }
-
-        IEnumerable<IPersistIfcEntity> IModel.Walls
-        {
-            get { return Walls; }
-        }
-
-        IEnumerable<IPersistIfcEntity> IModel.Slabs
-        {
-            get { return Slabs; }
-        }
-
-        IEnumerable<IPersistIfcEntity> IModel.Doors
-        {
-            get { return Doors; }
-        }
-
-        IEnumerable<IPersistIfcEntity> IModel.Roofs
-        {
-            get { return Roofs; }
+            //do nothing it is already activated in a memory model
         }
     }
 }

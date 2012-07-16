@@ -460,9 +460,9 @@ namespace Xbim.Tests
                 modelServer.Open(fileName1);
                 XbimFileModelServer modelServer2 = new XbimFileModelServer();
                 modelServer2.Open(fileName2);
-                foreach (XbimIndexEntry xi in modelServer.EntityOffsets)
+                foreach (long xi in modelServer.EntityLabels)
                 {
-                    IPersistIfcEntity entity = modelServer.GetInstance(xi.EntityLabel);
+                    IPersistIfcEntity entity = modelServer.GetInstance(xi);
                     long entityLabel = entity.EntityLabel;
                     byte[] b1 = modelServer.GetEntityBinaryData(entity);
 

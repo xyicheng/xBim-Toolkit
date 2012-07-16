@@ -585,19 +585,19 @@ namespace Xbim.DOM
 
         public bool InsertBuildingElementType (XbimBuildingElementType newType)
         {
-            XbimBuildingElementType test = AllBuildingElementTypes.Where(t => t == newType || t.GlobalId == newType.GlobalId).FirstOrDefault();
-            if (test != null) return false; //if it is already there there is no point in inserting that
+            //XbimBuildingElementType test = AllBuildingElementTypes.Where(t => t == newType || t.GlobalId == newType.GlobalId).FirstOrDefault();
+            //if (test != null) return false; //if it is already there there is no point in inserting that
 
-            //if model is Transient model it is possible to use side effect
-            XbimMemoryModel model = Model as XbimMemoryModel;
-            if (model != null)
-            {
-                //create new actual owner history with proper state
-                newType.IfcTypeProduct.OwnerHistory = GetNewOwnerHistory(IfcChangeActionEnum.ADDED);
-                model.Instances.Add(newType.IfcTypeProduct);
-                return true;
-            }
-
+            ////if model is Transient model it is possible to use side effect
+            //XbimMemoryModel model = Model as XbimMemoryModel;
+            //if (model != null)
+            //{
+            //    //create new actual owner history with proper state
+            //    newType.IfcTypeProduct.OwnerHistory = GetNewOwnerHistory(IfcChangeActionEnum.ADDED);
+            //    model.AddNew(newType.IfcTypeProduct);
+            //    return true;
+            //}
+ 
             //other types of models are not supported at the moment
             throw new NotImplementedException(); //todo: implement inserting of elements
         }
@@ -624,11 +624,12 @@ namespace Xbim.DOM
         public XbimDocument GetModificationDocument()
         {
             XbimMemoryModel model = new XbimMemoryModel();
-            IEnumerable<IfcRoot> instances = this.Model.InstancesWhere<IfcRoot>(r => r.OwnerHistory.ChangeAction == IfcChangeActionEnum.MODIFIED || r.OwnerHistory.ChangeAction == IfcChangeActionEnum.MODIFIEDADDED || r.OwnerHistory.ChangeAction == IfcChangeActionEnum.ADDED);
-            foreach (var item in instances)
-            {
-                model.Instances.Add(item);
-            }
+           /// TODO: ResolveEventArgs this code
+            //IEnumerable<IfcRoot> instances = this.Model.InstancesWhere<IfcRoot>(r => r.OwnerHistory.ChangeAction == IfcChangeActionEnum.MODIFIED || r.OwnerHistory.ChangeAction == IfcChangeActionEnum.MODIFIEDADDED || r.OwnerHistory.ChangeAction == IfcChangeActionEnum.ADDED);
+            //foreach (var item in instances)
+            //{
+            //    model.Instances.Add(item);
+            //}
             XbimDocument result = new XbimDocument(model);
             return result;
         }

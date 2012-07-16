@@ -29,7 +29,7 @@ namespace XbimConvert
                 {
                     return -1;
                 }
-                
+                XbimMemoryModel mod;
                 try
                 {
                     Logger.InfoFormat("Starting conversion of {0}", args[0]);
@@ -39,6 +39,8 @@ namespace XbimConvert
                     System.Diagnostics.Stopwatch watch = new System.Diagnostics.Stopwatch();
 
                     watch.Start();
+
+                   
                     XbimFileModelServer model = ParseModelFile(xbimFileName);
 
                     GenerateGeometry(xbimGeometryFileName, model);

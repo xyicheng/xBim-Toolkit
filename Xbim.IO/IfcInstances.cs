@@ -27,6 +27,7 @@ using Xbim.XbimExtensions.Transactions.Extensions;
 using Xbim.XbimExtensions.Interfaces;
 using Xbim.XbimExtensions;
 using Xbim.Common.Logging;
+using Xbim.XbimExtensions.Transactions;
 
 #endregion
 
@@ -39,131 +40,31 @@ namespace Xbim.IO
     }
 
 
-    public class IfcType
-    {
-        public Type Type;
-        public SortedList<int, IfcMetaProperty> IfcProperties = new SortedList<int, IfcMetaProperty>();
-        public List<IfcMetaProperty> IfcInverses = new List<IfcMetaProperty>();
-        public IfcType IfcSuperType;
-        public List<IfcType> IfcSubTypes = new List<IfcType>();
-        private List<Type> _nonAbstractSubTypes;
-        private PropertyInfo _primaryIndex;
-        private List<PropertyInfo> _secondaryIndices;
-        private List<IfcMetaProperty> _expressEnumerableProperties;
-
-        public List<IfcMetaProperty> ExpressEnumerableProperties
-        {
-            get
-            {
-                if (_expressEnumerableProperties == null)
-                {
-                    _expressEnumerableProperties = new List<IfcMetaProperty>();
-                    foreach (IfcMetaProperty prop in IfcProperties.Values)
-                    {
-                        if (typeof (ExpressEnumerable).IsAssignableFrom(prop.PropertyInfo.PropertyType))
-                            _expressEnumerableProperties.Add(prop);
-                    }
-                }
-                return _expressEnumerableProperties;
-            }
-        }
-
-        public override string ToString()
-        {
-            return Type.Name;
-        }
-
-        public IList<Type> NonAbstractSubTypes
-        {
-            get
-            {
-                if (_nonAbstractSubTypes == null)
-                {
-                    _nonAbstractSubTypes = new List<Type>();
-                    AddNonAbstractTypes(this, _nonAbstractSubTypes);
-                }
-                return _nonAbstractSubTypes;
-            }
-        }
-
-        public List<PropertyInfo> SecondaryIndices
-        {
-            get { return _secondaryIndices; }
-            internal set { _secondaryIndices = value; }
-        }
-
-        public PropertyInfo PrimaryIndex
-        {
-            get { return _primaryIndex; }
-            internal set { _primaryIndex = value; }
-        }
-
-        /// <summary>
-        ///   Returns true if there is a primary or secondar index on this class
-        /// </summary>
-        public bool HasIndex
-        {
-            get { return _primaryIndex != null || (_secondaryIndices != null && _secondaryIndices.Count > 0); }
-        }
-
-
-        private void AddNonAbstractTypes(IfcType ifcType, List<Type> nonAbstractTypes)
-        {
-            if (!ifcType.Type.IsAbstract) //this is a concrete type so add it
-                nonAbstractTypes.Add(ifcType.Type);
-            foreach (IfcType subType in ifcType.IfcSubTypes)
-                AddNonAbstractTypes(subType, nonAbstractTypes);
-        }
-    }
-
-    public class IfcTypeDictionary : KeyedCollection<Type, IfcType>
-    {
-        protected override Type GetKeyForItem(IfcType item)
-        {
-            return item.Type;
-        }
-
-        public IfcType this[IPersistIfc ent]
-        {
-            get { return this[ent.GetType()]; }
-        }
-
-        public IfcType this[string ifcTypeName]
-        {
-            get { return IfcInstances.IfcTypeLookup[ifcTypeName]; }
-        }
-
-        public IfcType Add(string ifcTypeName)
-        {
-            IfcType ret = IfcInstances.IfcTypeLookup[ifcTypeName];
-            this.Add(ret);
-            return ret;
-        }
-    }
-
-    [Serializable]
-    public class InstanceKeyedCollection : KeyedCollection<long, IPersistIfcEntity>
-    {
-        protected override long GetKeyForItem(IPersistIfcEntity item)
-        {
-            return item.EntityLabel;
-        }
-    }
+   
+  
 
 
     /// <summary>
     ///   A collection of IPersistIfcEntity instances, optimised for IFC models
     /// </summary>
     [Serializable]
-    public class IfcInstances : ICollection<IPersistIfcEntity>
+    public class IfcInstances : ICollection<IPersistIfcEntity>, IEnumerable<long>
     {
         private readonly ILogger Logger = LoggerFactory.GetLogger();
-        private readonly Dictionary<Type, ICollection<IPersistIfcEntity>> _instances =
-            new Dictionary<Type, ICollection<IPersistIfcEntity>>();
+        private readonly Dictionary<Type, ICollection<long>> _typeLookup = new Dictionary<Type, ICollection<long>>();
+        private IfcInstanceKeyedCollection _entityHandleLookup = new IfcInstanceKeyedCollection();
+        private  bool _buildIndices = true;
+        private readonly IModel _model;
+        private long _highestLabel;
 
-        private readonly InstanceKeyedCollection _entityHandleLookup = new InstanceKeyedCollection();
-        private readonly bool _buildIndices = true;
-        [NonSerialized] private static IfcTypeDictionary _IfcEntities;
+        private long NextLabel()
+        {  
+            return _highestLabel+1;
+        }
+
+
+        [NonSerialized] 
+        private static IfcTypeDictionary _IfcEntities;
 
         public static IfcTypeDictionary IfcEntities
         {
@@ -332,13 +233,15 @@ namespace Xbim.IO
             }
         }
 
-        public IfcInstances()
+        public IfcInstances(IModel model)
         {
+            _model = model;
         }
 
-        public IfcInstances(bool buildIndices)
+        public IfcInstances(IModel model, bool buildIndices)
         {
             _buildIndices = buildIndices;
+            _model = model;
         }
 
         public override string ToString()
@@ -352,12 +255,12 @@ namespace Xbim.IO
             IfcType ifcType = IfcEntities[type];
             foreach (Type item in ifcType.NonAbstractSubTypes)
             {
-                ICollection<IPersistIfcEntity> entities;
-                if (_instances.TryGetValue(item, out entities))
+                ICollection<long> entities;
+                if (_typeLookup.TryGetValue(item, out entities))
                 {
-                    foreach (IPersistIfcEntity ent in entities)
+                    foreach (long label in entities)
                     {
-                        yield return (TIfcType) ent;
+                        yield return (TIfcType)_entityHandleLookup.GetEntity(label);
                     }
                 }
             }
@@ -366,14 +269,14 @@ namespace Xbim.IO
 
         public void CopyTo(IfcInstances copyTo, Type type)
         {
-            foreach (KeyValuePair<Type, ICollection<IPersistIfcEntity>> item in _instances)
+            foreach (KeyValuePair<Type, ICollection<long>> label in _typeLookup)
             {
-                ICollection<IPersistIfcEntity> entities;
-                if (_instances.TryGetValue(type, out entities))
+                ICollection<long> entities;
+                if (_typeLookup.TryGetValue(type, out entities))
                 {
-                    foreach (IPersistIfcEntity ent in entities)
+                    foreach (long entLabel in entities)
                     {
-                        copyTo.Add_Reversible(ent);
+                        copyTo.Add_Reversible(_entityHandleLookup.GetEntity(entLabel));
                     }
                 }
             }
@@ -381,21 +284,13 @@ namespace Xbim.IO
 
         #region IEnumerable<object> Members
 
-        public IEnumerator<IPersistIfcEntity> GetEnumerator()
-        {
-            IfcInstanceEnumerator enumer = new IfcInstanceEnumerator(_instances);
-            return enumer;
-        }
+       
 
         #endregion
 
         #region IEnumerable Members
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            IfcInstanceEnumerator enumer = new IfcInstanceEnumerator(_instances);
-            return enumer;
-        }
+       
 
         #endregion
 
@@ -404,74 +299,103 @@ namespace Xbim.IO
         private void Add_Reversible(IPersistIfcEntity instance)
         {
             Type type = instance.GetType();
-            ICollection<IPersistIfcEntity> entities;
-            if (!_instances.TryGetValue(type, out entities))
+            ICollection<long> entities;
+            if (!_typeLookup.TryGetValue(type, out entities))
             {
                 IfcType ifcType = IfcEntities[type];
                 if (_buildIndices && ifcType.PrimaryIndex != null)
-                    entities = new XbimIndexedCollection<IPersistIfcEntity>(ifcType.SecondaryIndices);
+                    entities = new XbimIndexedCollection<long>(ifcType.SecondaryIndices);
                 else
-                    entities = new HashSet<IPersistIfcEntity>();
-                _instances.Add_Reversible(new KeyValuePair<Type, ICollection<IPersistIfcEntity>>(type, entities));
+                    entities = new List<long>();
+                _typeLookup.Add_Reversible(new KeyValuePair<Type, ICollection<long>>(type, entities));
             }
-            entities.Add_Reversible(instance);
+            entities.Add_Reversible(instance.EntityLabel);
             _entityHandleLookup.Add_Reversible(instance);
         }
 
         public IPersistIfcEntity GetInstance(long label)
         {
-            return _entityHandleLookup[label];
+            return _entityHandleLookup.GetEntity(label);
         }
 
         public bool ContainsInstance(long label)
         {
-            return _entityHandleLookup.Contains(label);
+            return _entityHandleLookup.Keys.Contains(label);
         }
 
-        public void AddRaw(IPersistIfcEntity instance)
+        internal void AddRaw(IPersistIfcEntity instance)
+        {
+            AddRawTypeReference(instance);
+            _entityHandleLookup.Add(instance);
+        }
+
+        private void AddRawTypeReference(IPersistIfcEntity instance)
         {
             Type type = instance.GetType();
-            ICollection<IPersistIfcEntity> entities;
-            if (!_instances.TryGetValue(type, out entities))
+            ICollection<long> entities;
+            if (!_typeLookup.TryGetValue(type, out entities))
             {
-                entities = new HashSet<IPersistIfcEntity>();
-                _instances.Add(type, entities);
+                entities = new List<long>();
+                _typeLookup.Add_Reversible(type, entities);
             }
-            entities.Add(instance);
-            _entityHandleLookup.Add(instance);
+            entities.Add_Reversible(instance.EntityLabel);
+        }
+        
+        internal IPersistIfcEntity AddNew(XbimModel xbimModel, Type ifcType, long label)
+        {
+            Transaction txn = Transaction.Current;
+            if (txn != null)
+                Transaction.AddPropertyChange<long>(h => _highestLabel = h, Math.Max(label, _highestLabel), label);
+            IPersistIfcEntity ent = _entityHandleLookup.CreateEntity(xbimModel, ifcType, label);
+            _highestLabel = Math.Max(label, _highestLabel);
+            AddTypeReference(ent);
+            return ent;
+        }
+        
+        internal IPersistIfcEntity AddNew(IModel xbimModel, Type ifcType)
+        {
+            long label = NextLabel();
+            Transaction txn = Transaction.Current;
+            if (txn != null)
+                Transaction.AddPropertyChange<long>(h => _highestLabel = h, _highestLabel, label);
+            IPersistIfcEntity ent = _entityHandleLookup.CreateEntity(xbimModel, ifcType, label);
+            _highestLabel = label;
+            AddTypeReference(ent);
+            return ent;
         }
 
         public void Add(IPersistIfcEntity instance)
         {
+            AddTypeReference(instance);
+            _entityHandleLookup.Add(instance);
+            
+        }
+
+        private void AddTypeReference(IPersistIfcEntity instance)
+        {
             Type type = instance.GetType();
-            ICollection<IPersistIfcEntity> entities;
-            if (!_instances.TryGetValue(type, out entities))
+            ICollection<long> entities;
+            if (!_typeLookup.TryGetValue(type, out entities))
             {
                 IfcType ifcType = IfcEntities[type];
                 if (_buildIndices && ifcType.PrimaryIndex != null)
-                    entities = new XbimIndexedCollection<IPersistIfcEntity>(ifcType.SecondaryIndices);
+                    entities = new XbimIndexedCollection<long>(ifcType.SecondaryIndices);
                 else
-                    entities = new HashSet<IPersistIfcEntity>();
-                _instances.Add(type, entities);
+                    entities = new List<long>();
+                _typeLookup.Add(type, entities);
             }
-            entities.Add(instance);
-            _entityHandleLookup.Add(instance);
+            entities.Add(instance.EntityLabel);
         }
 
         public void Clear_Reversible()
         {
-            _instances.Clear_Reversible();
+            _typeLookup.Clear_Reversible();
             _entityHandleLookup.Clear_Reversible();
         }
 
         public bool Contains(IPersistIfcEntity instance)
         {
-            Type type = instance.GetType();
-            ICollection<IPersistIfcEntity> entities;
-            if (_instances.TryGetValue(type, out entities))
-                return entities.Contains(instance);
-            else
-                return false;
+            return _entityHandleLookup.Contains(instance.EntityLabel);
         }
 
         /// <summary>
@@ -488,52 +412,45 @@ namespace Xbim.IO
         {
             get
             {
-                int cnt = 0;
-                foreach (ICollection<IPersistIfcEntity> item in _instances.Values)
-                {
-                    cnt += item.Count;
-                }
-                return cnt;
+                return _entityHandleLookup.Count;
             }
         }
 
         public bool IsReadOnly
         {
-            get { return ((IDictionary) _instances).IsReadOnly; }
+            get { return ((IDictionary) _typeLookup).IsReadOnly; }
         }
 
         private bool Remove_Reversible(IPersistIfcEntity instance)
         {
             Type type = instance.GetType();
-            ICollection<IPersistIfcEntity> entities;
-            if (_instances.TryGetValue(type, out entities))
-                return entities.Remove_Reversible(instance);
-            else
-                return false;
+            ICollection<long> entities;
+            if (_typeLookup.TryGetValue(type, out entities))
+                entities.Remove_Reversible(instance.EntityLabel);
+            return _entityHandleLookup.Remove_Reversible(instance.EntityLabel);
         }
 
         public bool Remove(IPersistIfcEntity instance)
         {
             Type type = instance.GetType();
-            ICollection<IPersistIfcEntity> entities;
-            if (_instances.TryGetValue(type, out entities))
-                return entities.Remove(instance);
-            else
-                return false;
+            ICollection<long> entities;
+            if (_typeLookup.TryGetValue(type, out entities))
+                 entities.Remove(instance.EntityLabel);
+            return _entityHandleLookup.Remove(instance.EntityLabel);
         }
 
         #endregion
 
-        public bool TryGetValue(Type key, out ICollection<IPersistIfcEntity> value)
+        public bool TryGetValue(Type key, out ICollection<long> value)
         {
-            return _instances.TryGetValue(key, out value);
+            return _typeLookup.TryGetValue(key, out value);
         }
 
         #region ICollection<IPersistIfc> Members
 
         public void Clear()
         {
-            _instances.Clear();
+            _typeLookup.Clear();
             _entityHandleLookup.Clear();
         }
 
@@ -555,12 +472,12 @@ namespace Xbim.IO
 
         public ICollection<Type> Types
         {
-            get { return _instances.Keys; }
+            get { return _typeLookup.Keys; }
         }
 
-        public ICollection<IPersistIfcEntity> this[Type type]
+        public ICollection<long> this[Type type]
         {
-            get { return _instances[type]; }
+            get { return _typeLookup[type]; }
         }
 
 
@@ -572,16 +489,16 @@ namespace Xbim.IO
                 
                 if (!ifcType.Type.IsAbstract && ifcType.HasIndex)
                 {
-                    ICollection<IPersistIfcEntity> entities;
-                    if (_instances.TryGetValue(ifcType.Type, out entities))
+                    ICollection<long> entities;
+                    if (_typeLookup.TryGetValue(ifcType.Type, out entities))
                     {
                         try
                         {
-                            XbimIndexedCollection<IPersistIfcEntity> index =
-                                new XbimIndexedCollection<IPersistIfcEntity>(ifcType.PrimaryIndex,
+                            XbimIndexedCollection<long> index =
+                                new XbimIndexedCollection<long>(ifcType.PrimaryIndex,
                                                                              ifcType.SecondaryIndices, entities);
-                            _instances.Remove(ifcType.Type);
-                            _instances.Add(ifcType.Type, index);
+                            _typeLookup.Remove(ifcType.Type);
+                            _typeLookup.Add(ifcType.Type, index);
                         }
                         catch (Exception)
                         {
@@ -599,230 +516,76 @@ namespace Xbim.IO
 
         public bool ContainsKey(Type key)
         {
-            return _instances.ContainsKey(key);
+            return _typeLookup.ContainsKey(key);
+        }
+
+        internal void Add(XbimInstanceHandle xbimInstanceHandle)
+        {
+            Type type = xbimInstanceHandle.EntityType;
+            ICollection<long> entities;
+            if (!_typeLookup.TryGetValue(type, out entities))
+            {
+                IfcType ifcType = IfcEntities[type];
+                if (_buildIndices && ifcType.PrimaryIndex != null)
+                    entities = new XbimIndexedCollection<long>(ifcType.SecondaryIndices);
+                else
+                    entities = new List<long>();
+                _typeLookup.Add(type, entities);
+            }
+            entities.Add(xbimInstanceHandle.EntityLabel);
+            _entityHandleLookup.Add(xbimInstanceHandle.EntityLabel, xbimInstanceHandle);
+
+        }
+
+        internal void DropAll()
+        {
+            IfcInstanceKeyedCollection newEntityHandleLookup = new IfcInstanceKeyedCollection();
+            foreach (IXbimInstance item in _entityHandleLookup.Values)
+            {
+                newEntityHandleLookup.Add(item.EntityLabel, new XbimInstanceHandle(item));
+            }
+            _entityHandleLookup = newEntityHandleLookup;
+        }
+
+        internal IPersistIfcEntity GetOrCreateEntity(IModel model, long label, out long fileOffset)
+        {
+            return _entityHandleLookup.GetOrCreateEntity(model, label, out fileOffset);
+        }
+
+        internal bool Contains(long entityLabel)
+        {
+            return _entityHandleLookup.Contains(entityLabel);
+        }
+
+        public IEnumerator<IPersistIfcEntity> GetEnumerator()
+        {
+            return _entityHandleLookup.GetEnumerator(_model);
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return _entityHandleLookup.GetEnumerator(_model);
+        }
+
+        internal long GetFileOffset(long label)
+        {
+            return _entityHandleLookup.GetFileOffset(label);
+        }
+
+        internal long InstancesOfTypeCount(Type type)
+        {
+            ICollection<long> entities;
+            if (_typeLookup.TryGetValue(type, out entities))
+                return entities.Count;
+            else
+                return 0;
+        }
+
+        IEnumerator<long> IEnumerable<long>.GetEnumerator()
+        {
+            return _entityHandleLookup.Keys.GetEnumerator();
         }
     }
 
-    #region Extensions
-
-    public static class IfcInstancesExtensions
-    {
-        public static IEnumerable<T> Where<T>(this IfcInstances instances, Expression<Func<T, bool>> expr)
-        {
-            Type type = typeof (T);
-            IfcType ifcType = IfcInstances.IfcEntities[type];
-            foreach (Type itemType in ifcType.NonAbstractSubTypes)
-            {
-                ICollection<IPersistIfcEntity> entities;
-
-                if (instances.TryGetValue(itemType, out entities))
-                {
-                    bool noIndex = true;
-                    XbimIndexedCollection<IPersistIfcEntity> indexColl =
-                        entities as XbimIndexedCollection<IPersistIfcEntity>;
-                    if (indexColl != null)
-                    {
-                        //our indexes work from the hash values of that which is indexed, regardless of type
-                        object hashRight = null;
-
-                        //indexes only work on equality expressions here
-                        if (expr.Body.NodeType == ExpressionType.Equal)
-                        {
-                            //Equality is a binary expression
-                            BinaryExpression binExp = (BinaryExpression) expr.Body;
-                            //Get some aliases for either side
-                            Expression leftSide = binExp.Left;
-                            Expression rightSide = binExp.Right;
-
-                            hashRight = GetRight(leftSide, rightSide);
-
-                            //if we were able to create a hash from the right side (likely)
-                            MemberExpression returnedEx = GetIndexablePropertyOnLeft<T>(leftSide);
-                            if (returnedEx != null)
-                            {
-                                //cast to MemberExpression - it allows us to get the property
-                                MemberExpression propExp = returnedEx;
-                                string property = propExp.Member.Name;
-                                if (indexColl.HasIndex(property))
-                                {
-                                    IEnumerable<IPersistIfcEntity> values = indexColl.GetValues(property, hashRight);
-                                    if (values != null)
-                                    {
-                                        foreach (T item in values.Cast<T>())
-                                        {
-                                            yield return item;
-                                        }
-                                        noIndex = false;
-                                    }
-                                }
-                            }
-                        }
-                        else if (expr.Body.NodeType == ExpressionType.Call)
-                        {
-                            MethodCallExpression callExp = (MethodCallExpression) expr.Body;
-                            if (callExp.Method.Name == "Contains")
-                            {
-                                Expression keyExpr = callExp.Arguments[0];
-                                if (keyExpr.NodeType == ExpressionType.Constant)
-                                {
-                                    ConstantExpression constExp = (ConstantExpression) keyExpr;
-                                    object key = constExp.Value;
-                                    if (callExp.Object.NodeType == ExpressionType.MemberAccess)
-                                    {
-                                        MemberExpression memExp = (MemberExpression) callExp.Object;
-
-                                        string property = memExp.Member.Name;
-                                        if (indexColl.HasIndex(property))
-                                        {
-                                            IEnumerable<IPersistIfcEntity> values = indexColl.GetValues(property, key);
-                                            if (values != null)
-                                            {
-                                                foreach (T item in values.Cast<T>())
-                                                {
-                                                    yield return item;
-                                                }
-                                                noIndex = false;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    if (noIndex)
-                    {
-                        IEnumerable<T> sourceEnum = entities.Cast<T>();
-                        Func<T, bool> predicate = expr.Compile();
-                        // IEnumerable<T> result = sourceEnum.Where<T>(expr.Compile());
-                        foreach (T resultItem in sourceEnum)
-                            if (predicate(resultItem)) yield return resultItem;
-                    }
-                }
-            }
-        }
-
-
-        private static MemberExpression GetIndexablePropertyOnLeft<T>(Expression leftSide)
-        {
-            MemberExpression mex = leftSide as MemberExpression;
-            if (leftSide.NodeType == ExpressionType.Call)
-            {
-                MethodCallExpression call = leftSide as MethodCallExpression;
-                if (call.Method.Name == "CompareString")
-                {
-                    mex = call.Arguments[0] as MemberExpression;
-                }
-            }
-
-            return mex;
-        }
-
-
-        private static object GetRight(Expression leftSide, Expression rightSide)
-        {
-            if (leftSide.NodeType == ExpressionType.Call)
-            {
-                MethodCallExpression call = leftSide as MethodCallExpression;
-                if (call.Method.Name == "CompareString")
-                {
-                    LambdaExpression evalRight = Expression.Lambda(call.Arguments[1], null);
-                    //Compile it, invoke it, and get the resulting hash
-                    return (evalRight.Compile().DynamicInvoke(null));
-                }
-            }
-            //rightside is where we get our hash...
-            switch (rightSide.NodeType)
-            {
-                    //shortcut constants, dont eval, will be faster
-                case ExpressionType.Constant:
-                    ConstantExpression constExp
-                        = (ConstantExpression) rightSide;
-                    return (constExp.Value);
-
-                    //if not constant (which is provably terminal in a tree), convert back to Lambda and eval to get the hash.
-                default:
-                    //Lambdas can be created from expressions... yay
-                    LambdaExpression evalRight = Expression.Lambda(rightSide, null);
-                    //Compile and invoke it, and get the resulting hash
-                    return (evalRight.Compile().DynamicInvoke(null));
-            }
-        }
-    }
-
-    #endregion
-
-    #region Helper Class
-
-    internal class IfcInstanceEnumerator : IEnumerator<IPersistIfcEntity>
-    {
-        private IPersistIfcEntity _current;
-        private readonly Dictionary<Type, ICollection<IPersistIfcEntity>> _instances;
-        private Dictionary<Type, ICollection<IPersistIfcEntity>>.Enumerator _typeEnumerator;
-        private IEnumerator<IPersistIfcEntity> _instanceEnumerator;
-
-        public IfcInstanceEnumerator(Dictionary<Type, ICollection<IPersistIfcEntity>> instances)
-        {
-            _instances = instances;
-            Reset();
-        }
-
-        #region IEnumerator<ISupportIfcParser> Members
-
-        public object Current
-        {
-            get { return _current; }
-        }
-
-        #endregion
-
-        #region IDisposable Members
-
-        public void Dispose()
-        {
-        }
-
-        #endregion
-
-        #region IEnumerator Members
-
-        public bool MoveNext()
-        {
-            if (_instanceEnumerator != null && _instanceEnumerator.MoveNext()) //can we get an instance
-            {
-                _current = _instanceEnumerator.Current;
-                return true;
-            }
-
-            while (_typeEnumerator.MoveNext()) //we can get a type collection and see if it has any instances
-            {
-                _instanceEnumerator = _typeEnumerator.Current.Value.GetEnumerator();
-                if (_instanceEnumerator != null && _instanceEnumerator.MoveNext()) //can we get an instance
-                {
-                    _current = _instanceEnumerator.Current;
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        public void Reset()
-        {
-            _current = null;
-            _typeEnumerator = _instances.GetEnumerator();
-            _instanceEnumerator = null;
-        }
-
-        #endregion
-
-        #region IEnumerator<ISupportIfcParser> Members
-
-        IPersistIfcEntity IEnumerator<IPersistIfcEntity>.Current
-        {
-            get { return _current; }
-        }
-
-        #endregion
-    }
-
-    #endregion
+   
 }

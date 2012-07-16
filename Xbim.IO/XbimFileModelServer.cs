@@ -45,19 +45,14 @@ namespace Xbim.IO
     public class XbimFileModelServer : XbimModelServer
     {
         private BinaryReader _binaryReader;
-        private Dictionary<Type, List<long>> _entityTypes;
-        private XbimIndex _entityOffsets;
+        
+        
         private string _filename;
-        private IIfcFileHeader _header;
+       
         private BinaryWriter _binaryWriter;
         private Stream _stream;
 
-        public override IIfcFileHeader Header
-        {
-
-            get { return _header; }
-            set { _header = value; }
-        }
+       
 
         public string Filename
         {
@@ -83,10 +78,7 @@ namespace Xbim.IO
             Open(fileName, fileAccess);
         }
                 
-        public XbimIndex EntityOffsets
-        {
-            get { return _entityOffsets; }
-        }
+       
 
         /// <summary>
         ///   Opens an xbim model server file, exception is thrown if errors are encountered
@@ -105,9 +97,9 @@ namespace Xbim.IO
                 _filename = filename;
 
                 // we have _header of the opened file, set that header to the Header property of XbimModelServer
-                Header.FileName = _header.FileName;
-                Header.FileDescription = _header.FileDescription;
-                Header.FileSchema = _header.FileSchema;
+                Header.FileName = header.FileName;
+                Header.FileDescription = header.FileDescription;
+                Header.FileSchema = header.FileSchema;
             }
             catch (Exception e)
             {
@@ -304,10 +296,10 @@ namespace Xbim.IO
             semanticBinaryWriter.Write(new byte[reservedSize]);
             // semanticBinaryWriter.Write(Assembly.GetAssembly(typeof(Xbim.XbimExtensions.Parser.P21Parser)).GetName().Version.ToString());
             // semanticBinaryWriter.Write(Assembly.GetExecutingAssembly().GetName().Version.ToString());
-            _header.Write(semanticBinaryWriter);
+            header.Write(semanticBinaryWriter);
 
             //release anything that is in memory
-            _entityOffsets.DropAll();
+            instances.DropAll();
 
             Dictionary<Type, List<long>> entityTypes = new Dictionary<Type, List<long>>();
             foreach (var entity in Instances.Where(inst =>
@@ -363,7 +355,7 @@ namespace Xbim.IO
             int reservedSize = 32;
             semanticBinaryWriter.Write(reservedSize);
             semanticBinaryWriter.Write(new byte[reservedSize]);
-            _header.Write(semanticBinaryWriter);
+            header.Write(semanticBinaryWriter);
             Dictionary<Type, List<long>> entityTypes = new Dictionary<Type, List<long>>();
             foreach (var entity in Instances.Where(inst => !toDrop.Contains((ulong)Math.Abs(inst.EntityLabel))))
             {
@@ -553,13 +545,14 @@ namespace Xbim.IO
             int reservedSize = _binaryReader.ReadInt32();
             byte[] reservedBytes = _binaryReader.ReadBytes(reservedSize);
 
-            _header = new IfcFileHeader();
-            _header.Read(_binaryReader);
+            header = new IfcFileHeader();
+            header.Read(_binaryReader);
 
             _binaryReader.BaseStream.Seek(start, SeekOrigin.Begin);
             long entityCount = _binaryReader.ReadInt64();
             long highestLabel = _binaryReader.ReadInt64();
-            _entityOffsets = new XbimIndex(entityCount);
+
+            instances = new IfcInstances(this, false);
             //set up the required ownership objects
 
             int entityTypeCount = _binaryReader.ReadInt32();
@@ -572,21 +565,24 @@ namespace Xbim.IO
             }
             for (int i = 0; i < entityCount; i++)
             {
-                _entityOffsets.Add(new XbimIndexEntry(_binaryReader.ReadInt64(), _binaryReader.ReadInt64(),
-                                                      classIndices[_binaryReader.ReadInt16()]));
+                long label = _binaryReader.ReadInt64();
+                long offset = _binaryReader.ReadInt64();
+                Int16 classIndex = _binaryReader.ReadInt16();
+
+                instances.Add(new XbimInstanceHandle(label, classIndices[classIndex], offset));
             }
 
-            _entityTypes = new Dictionary<Type, List<long>>(entityTypeCount);
-            foreach (var item in _entityOffsets)
-            {
-                List<long> labels;
-                if (!_entityTypes.TryGetValue(item.Type, out labels))
-                {
-                    labels = new List<long>();
-                    _entityTypes.Add(item.Type, labels);
-                }
-                labels.Add(item.EntityLabel);
-            }
+            //_entityTypes = new Dictionary<Type, List<long>>(entityTypeCount);
+            //foreach (var item in _entityOffsets)
+            //{
+            //    List<long> labels;
+            //    if (!_entityTypes.TryGetValue(item.Type, out labels))
+            //    {
+            //        labels = new List<long>();
+            //        _entityTypes.Add(item.Type, labels);
+            //    }
+            //    labels.Add(item.EntityLabel);
+            //}
             long nextIndexStart = _binaryReader.ReadInt64();
 
             while (nextIndexStart > 0)
@@ -604,39 +600,18 @@ namespace Xbim.IO
             get { return _entityTypes; }
         }
 
-        public IPersistIfcEntity GetOrCreateEntity(long label)
+       
+
+        protected override IPersistIfcEntity GetOrCreateEntity(long label)
         {
-            return GetOrCreateEntity(label, null);
+            long fileOffset;
+            return instances.GetOrCreateEntity(this, label, out fileOffset);
         }
 
-        protected override IPersistIfcEntity GetOrCreateEntity(long label, Type type)
+        protected override void ActivateEntity(long offset, IPersistIfcEntity entity)
         {
-            //try
-            //{
-
-            XbimIndexEntry paramEntry = _entityOffsets[label];
-            IPersistIfcEntity paramEntity = paramEntry.Entity;
-            if (paramEntity == null)
-            {
-                //Debug.Assert(type == paramEntry.Type);
-                paramEntity = CreateEntity(paramEntry.EntityLabel, paramEntry.Type);
-                paramEntry.Entity = paramEntity;
-            }
-            return paramEntity;
-
-            //}
-            //catch (Exception e)
-            //{
-
-            //    throw;
-            //}
-        }
-
-        protected void ActivateEntity(XbimIndexEntry entry, IPersistIfcEntity entity)
-        {
-            long offset = Math.Abs(entry.Offset);
-
-            if (entry.Offset > 0)
+           //if less than 1 it is not written to the file
+            if (offset > 0)
             {
                 lock (this)
                 {
@@ -681,98 +656,12 @@ namespace Xbim.IO
             _filename = null;
             ToWrite.Clear();
             undoRedoSession = null;
-            _entityOffsets = null;
+            instances = null;
         }
 
-        public override IEnumerable<TIfcType> InstancesOfType<TIfcType>()
-        {
-            if (InstancesCount > 0)
-            {
-                Type type = typeof(TIfcType);
-                IfcType ifcType = IfcInstances.IfcEntities[type];
-                IList<Type> types = ifcType.NonAbstractSubTypes;
-
-                foreach (var entType in _entityTypes)
-                {
-                    if (types.Contains(entType.Key))
-                    {
-                        foreach (var entityLabel in entType.Value)
-                        {
-                            IPersistIfcEntity entity = GetOrCreateEntity(entityLabel);
-                            yield return (TIfcType)entity;
-                        }
-                    }
-                }
-            }
-        }
-
-        public override IPersistIfcEntity AddNew(Type ifcType, long label)
-        {
-
-            Debug.Assert(typeof(IPersistIfcEntity).IsAssignableFrom(ifcType), "Type mismatch: IPersistIfcEntity");
-            //return (IPersistIfcEntity)CreateInstance(ifcType, label);
-
-            
-            IPersistIfcEntity newEntity;
-            XbimIndexEntry entry = _entityOffsets.AddNew(ifcType, out newEntity, label);
-            List<long> labels;
-            if (!_entityTypes.TryGetValue(ifcType, out labels))
-            {
-                labels = new List<long>();
-                _entityTypes.Add_Reversible(ifcType, labels);
-            }
-            labels.Add_Reversible(label);
-
-            newEntity.Bind(this, label);
+       
 
 
-            return newEntity;
-
-        }
-
-        public override TIfcType New<TIfcType>()
-        {
-            Transaction txn = Transaction.Current;
-            Debug.Assert(txn != null); //model must be in the active transaction to create new entities
-            Type t = typeof(TIfcType);
-            IPersistIfcEntity newEntity;
-            XbimIndexEntry entry = _entityOffsets.AddNew<TIfcType>(out newEntity);
-            List<long> labels;
-            if (!_entityTypes.TryGetValue(t, out labels))
-            {
-                labels = new List<long>();
-                _entityTypes.Add_Reversible(t, labels);
-            }
-            labels.Add_Reversible(entry.EntityLabel);
-
-            newEntity.Bind(this, entry.EntityLabel);
-            if (typeof(IfcRoot).IsAssignableFrom(t))
-                ((IfcRoot)newEntity).OwnerHistory = OwnerHistoryAddObject;
-            ToWrite.Add_Reversible(newEntity);
-            return (TIfcType)newEntity;
-        }
-
-        public override bool ContainsInstance(IPersistIfcEntity instance)
-        {
-            Type targetType = instance.GetType();
-            foreach (var eType in _entityTypes)
-            {
-                if (eType.Key == targetType)
-                {
-                    foreach (var offset in eType.Value)
-                    {
-                        if (_entityOffsets.Contains(offset))
-                            return _entityOffsets[offset].Entity != null;
-                    }
-                }
-            }
-            return false;
-        }
-
-        public override bool ContainsInstance(long entityLabel)
-        {
-            return _entityOffsets.Contains(entityLabel);
-        }
 
         protected override void TransactionFinalised()
         {
@@ -789,7 +678,6 @@ namespace Xbim.IO
         {
             entityWriter.Seek(0, SeekOrigin.Begin);
             entityWriter.Write((int)0);
-            XbimIndexEntry entry = _entityOffsets[item.EntityLabel];
             WriteEntity(entityWriter, item);
             int len = Convert.ToInt32(entityStream.Position);
             entityWriter.Seek(0, SeekOrigin.Begin);
@@ -798,38 +686,14 @@ namespace Xbim.IO
             return len;
         }
 
-        public override IEnumerable<IPersistIfcEntity> Instances
-        {
-            get
-            {
-                foreach (XbimIndexEntry entry in _entityOffsets)
-                {
-                    IPersistIfcEntity entity = GetOrCreateEntity(entry.EntityLabel);
-                    yield return entity;
-                }
-            }
-        }
-
-        public override long InstancesCount
-        {
-            get { return _entityOffsets == null ? 0 : _entityOffsets.Count; }
-        }
+       
 
 
         public override IPersistIfcEntity GetInstance(long entityLabel)
         {
-            long posLabel = Math.Abs(entityLabel);
-            XbimIndexEntry entry = _entityOffsets[posLabel];
-            IPersistIfcEntity entity = entry.Entity;
-            if (entity != null && entity.Activated)
-                return entity; //already loaded and activated
-            else if (entity == null) //Create one
-            {
-                entity = CreateEntity(entry.EntityLabel, entry.Type);
-                entry.Entity = entity;
-            }
-            ActivateEntity(entry, entity);
-            entity.Bind(this, posLabel);
+            long fileOffset;
+            IPersistIfcEntity entity = instances.GetOrCreateEntity(this, entityLabel, out fileOffset);
+            ActivateEntity(fileOffset, entity);
             return entity;
         }
 
@@ -847,10 +711,9 @@ namespace Xbim.IO
             }
             else
             {
-                XbimIndexEntry entry = _entityOffsets[Math.Abs(entity.EntityLabel)];
+                long fileOffset = instances.GetFileOffset(entity.EntityLabel);
                 BinaryReader br = _binaryReader;
-                long offset = Math.Abs(entry.Offset);
-                br.BaseStream.Seek(offset, SeekOrigin.Begin);
+                br.BaseStream.Seek(fileOffset, SeekOrigin.Begin);
                 int len = br.ReadInt32();
                 return br.ReadBytes(len);
             }
@@ -862,34 +725,7 @@ namespace Xbim.IO
             entity.Bind(this, Math.Abs(entity.EntityLabel));
         }
 
-        public override long Activate(IPersistIfcEntity entity, bool write)
-        {
-
-            long label = entity.EntityLabel;
-            //   Debug.Assert((!write && label < 0) || (write && label > 0)); //cannot call to write if we hven't read current state;
-            long posLabel = Math.Abs(label);
-
-            if (!write) //we want to activate for reading, if entry offset == 0 it is a new oject with no data set
-            {
-                XbimIndexEntry entry = _entityOffsets[posLabel];
-                if (entry.Offset != 0)
-                    ActivateEntity(entry, entity);
-            }
-            else //it is activated for reading and we now want to write so remember until the transaction is committed
-            {
-
-                if (!Transaction.IsRollingBack)
-                {
-                    // Debug.Assert(Transaction.Current != null); //don't write things if not in a transaction
-                    if (!ToWrite.Contains(entity))
-                    {
-                        ToWrite.Add_Reversible(entity);
-                    }
-                }
-            }
-
-            return posLabel;
-        }
+       
 
         public long Count<TIfcType>()
         {
@@ -929,50 +765,7 @@ namespace Xbim.IO
             if (_stream != null) _stream.Close();
         }
 
-        /// <summary>
-        ///   Returns the number of instances of a specific type, NB does not include subtypes
-        /// </summary>
-        /// <param name = "t"></param>
-        /// <returns></returns>
-        public override long InstancesOfTypeCount(Type t)
-        {
-            if (_entityTypes.Keys.Contains(t))
-                return _entityTypes[t].Count;
-            else
-                return 0;
-        }
-
-        /// <summary>
-        ///   Only executes the flagged validation routines
-        /// </summary>
-        /// <param name = "errStream"></param>
-        /// <param name = "progressDelegate"></param>
-        /// <param name = "validateFlags"></param>
-        /// <returns></returns>
-        public override int Validate(TextWriter errStream, ReportProgressDelegate progressDelegate,
-                                     ValidationFlags validateFlags)
-        {
-            IndentedTextWriter tw = new IndentedTextWriter(errStream, "    ");
-            tw.Indent = 0;
-            double total = InstancesCount;
-            int idx = 0;
-            int errors = 0;
-            int percentage = -1;
-
-            foreach (var ent in Instances)
-            {
-                idx++;
-                errors += XbimMemoryModel.Validate(ent, tw, validateFlags);
-
-                if (progressDelegate != null)
-                {
-                    int newPercentage = (int)((double)idx / total * 100.0);
-                    if (newPercentage != percentage) progressDelegate(percentage, "");
-                    percentage = newPercentage;
-                }
-            }
-            return errors;
-        }
+       
 
         public override void WriteChanges(BinaryWriter dataStream)
         {
@@ -1105,10 +898,10 @@ namespace Xbim.IO
 
                 WriteHeader();
 
-                _header = new IfcFileHeader();
+                header = new IfcFileHeader();
                 _binaryWriter = new BinaryWriter(_stream);
-                _header.FileName.Name = xmlFilename;
-                _header.Write(_binaryWriter);
+                header.FileName.Name = xmlFilename;
+                header.Write(_binaryWriter);
 
 
                 _entityOffsets = new XbimIndex();
@@ -1214,6 +1007,8 @@ namespace Xbim.IO
             throw new NotImplementedException("Import functionality: not implemented yet");
         }
 
+
+       
     }
 
 }
