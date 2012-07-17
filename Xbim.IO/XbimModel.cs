@@ -20,7 +20,6 @@ using Xbim.Ifc2x3.MeasureResource;
 using Xbim.Ifc2x3.GeometryResource;
 using System.Linq.Expressions;
 using System.Diagnostics;
-using Xbim.XbimExtensions.Transactions;
 using Xbim.XbimExtensions.Transactions.Extensions;
 namespace Xbim.IO
 {
@@ -233,7 +232,7 @@ namespace Xbim.IO
             Transaction txn = Transaction.Current;
             Debug.Assert(txn != null); //model must be in the active transaction to create new entities
             Type t = typeof(TIfcType);
-            IPersistIfcEntity newEntity = instances.AddNew(this, t);
+            IPersistIfcEntity newEntity = instances.AddNew_Reversable(this, t);
             if (typeof(IfcRoot).IsAssignableFrom(t))
                 ((IfcRoot)newEntity).OwnerHistory = OwnerHistoryAddObject;
             return (TIfcType)newEntity;
@@ -282,14 +281,14 @@ namespace Xbim.IO
         }
 
         /// <summary>
-        /// Creates a new instance of ifcType with entity label
+        /// Creates a new instance of ifcType with entity label, this operation is NOT undoable
         /// </summary>
         /// <param name="ifcType"></param>
         /// <param name="label"></param>
         /// <returns></returns>
         public IPersistIfcEntity AddNew(Type ifcType, long label)
         {
-            return instances.AddNew(this, ifcType, label);
+            return instances.AddNew_Reversable(this, ifcType, label);
         }
 
         abstract public int ParsePart21(System.IO.Stream inputStream, ReportProgressDelegate progressHandler);
@@ -549,8 +548,12 @@ namespace Xbim.IO
 
         abstract public void Import(string inputFileName);
 
-       
-        abstract public IPersistIfcEntity GetInstance(long label);
+
+        public IPersistIfcEntity GetInstance(long label)
+        {
+            return instances.GetOrCreateEntity(label);
+        }
+
 
         abstract public bool ReOpen();
 
@@ -992,6 +995,41 @@ namespace Xbim.IO
                 return instances;
             }
         }
+
+
+
+        /// <summary>
+        ///   Creates an Ifc Persistent Instance from an entity name string and label, this is NOT an undoable operation
+        /// </summary>
+        /// <param name = "ifcEntityName">Ifc Entity Name i.e. IFCDOOR, IFCWALL, IFCWINDOW etc. Name must be in uppercase</param>
+        /// <returns></returns>
+        internal IPersistIfc CreateInstance(string ifcEntityName, long? label)
+        {
+            try
+            {
+                IfcType ifcType = IfcInstances.IfcTypeLookup[ifcEntityName];
+                return CreateInstance(ifcType.Type, label);
+            }
+            catch (Exception e)
+            {
+                throw new ArgumentException(string.Format("Error creating entity {0}, it is not a supported Xbim type, {1}", ifcEntityName, e.Message));
+            }
+
+        }
+        /// <summary>
+        /// Creates an Ifc Persistent Instance from an entity type and label, this is NOT an undoable operation
+        /// </summary>
+        /// <param name="ifcType"></param>
+        /// <param name="label"></param>
+        /// <returns></returns>
+        internal IPersistIfc CreateInstance(Type ifcType, long ?label)
+        {
+          
+             return instances.AddNew(this,ifcType,label.Value);
+                
+        }
+
+      
 
     }
 }

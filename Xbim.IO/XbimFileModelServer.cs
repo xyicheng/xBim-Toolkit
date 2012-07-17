@@ -289,7 +289,7 @@ namespace Xbim.IO
 
         private XbimIndex WriteToFileSemantic(BinaryWriter semanticBinaryWriter, HashSet<ulong> toDrop)
         {
-            XbimIndex index = new XbimIndex(EntityOffsets.HighestLabel);
+            XbimIndex index = new XbimIndex(instances.HighestLabel);
             semanticBinaryWriter.Write(0L); //data
             int reservedSize = 32;
             semanticBinaryWriter.Write(reservedSize);
@@ -350,7 +350,7 @@ namespace Xbim.IO
 
         private XbimIndex WriteToFileRepresentation(BinaryWriter semanticBinaryWriter, HashSet<ulong> toDrop)
         {
-            XbimIndex index = new XbimIndex(EntityOffsets.HighestLabel);
+            XbimIndex index = new XbimIndex(instances.HighestLabel);
             semanticBinaryWriter.Write(0L); //data
             int reservedSize = 32;
             semanticBinaryWriter.Write(reservedSize);
@@ -552,7 +552,7 @@ namespace Xbim.IO
             long entityCount = _binaryReader.ReadInt64();
             long highestLabel = _binaryReader.ReadInt64();
 
-            instances = new IfcInstances(this, false);
+            instances = new IfcInstances(this, true);
             //set up the required ownership objects
 
             int entityTypeCount = _binaryReader.ReadInt32();
@@ -572,17 +572,7 @@ namespace Xbim.IO
                 instances.Add(new XbimInstanceHandle(label, classIndices[classIndex], offset));
             }
 
-            //_entityTypes = new Dictionary<Type, List<long>>(entityTypeCount);
-            //foreach (var item in _entityOffsets)
-            //{
-            //    List<long> labels;
-            //    if (!_entityTypes.TryGetValue(item.Type, out labels))
-            //    {
-            //        labels = new List<long>();
-            //        _entityTypes.Add(item.Type, labels);
-            //    }
-            //    labels.Add(item.EntityLabel);
-            //}
+
             long nextIndexStart = _binaryReader.ReadInt64();
 
             while (nextIndexStart > 0)
@@ -595,18 +585,7 @@ namespace Xbim.IO
             if (currentTrans != null) currentTrans.Enter();
         }
 
-        public Dictionary<Type, List<long>> EntityTypes
-        {
-            get { return _entityTypes; }
-        }
-
        
-
-        protected override IPersistIfcEntity GetOrCreateEntity(long label)
-        {
-            long fileOffset;
-            return instances.GetOrCreateEntity(this, label, out fileOffset);
-        }
 
         protected override void ActivateEntity(long offset, IPersistIfcEntity entity)
         {
@@ -686,16 +665,6 @@ namespace Xbim.IO
             return len;
         }
 
-       
-
-
-        public override IPersistIfcEntity GetInstance(long entityLabel)
-        {
-            long fileOffset;
-            IPersistIfcEntity entity = instances.GetOrCreateEntity(this, entityLabel, out fileOffset);
-            ActivateEntity(fileOffset, entity);
-            return entity;
-        }
 
         public byte[] GetEntityBinaryData(IPersistIfcEntity entity)
         {
@@ -726,20 +695,6 @@ namespace Xbim.IO
         }
 
        
-
-        public long Count<TIfcType>()
-        {
-            Type type = typeof(TIfcType);
-            IfcType ifcType = IfcInstances.IfcEntities[type];
-            IList<Type> types = ifcType.NonAbstractSubTypes;
-            long count = 0;
-            foreach (var entType in _entityTypes)
-            {
-                if (types.Contains(entType.Key))
-                    count += entType.Value.Count;
-            }
-            return count;
-        }
 
         public override bool ReOpen()
         {
@@ -773,7 +728,7 @@ namespace Xbim.IO
             UndoRedo.Exit();
             MemoryStream entityStream = new MemoryStream(Int16.MaxValue);
             BinaryWriter entityWriter = new BinaryWriter(entityStream);
-            XbimIndex changesIndex = new XbimIndex(_entityOffsets.HighestLabel);
+            XbimIndex changesIndex = new XbimIndex(instances.HighestLabel);
             long start = dataStream.BaseStream.Position;
             dataStream.Write(new Byte[sizeof(long)], 0, sizeof(long));
             foreach (var item in ToWrite)
@@ -781,7 +736,8 @@ namespace Xbim.IO
 
                 entityWriter.Seek(0, SeekOrigin.Begin);
                 entityWriter.Write((int)0);
-                XbimIndexEntry entry = new XbimIndexEntry(_entityOffsets[item.EntityLabel]);
+                XbimIndexEntry entry =instances.GetXbimIndexEntry(item.EntityLabel);
+                 
                 changesIndex.Add(entry);
                 WriteEntity(entityWriter, item);
                 int len = Convert.ToInt32(entityStream.Position);
@@ -801,51 +757,52 @@ namespace Xbim.IO
         }
         public override void MergeChanges(Stream dataStream)
         {
+            //srl need to resolve
 
-            byte[] indexLen = new byte[sizeof(long)];
-            dataStream.Read(indexLen, 0, sizeof(long));
-            long indexStart = BitConverter.ToInt64(indexLen, 0);
-            dataStream.Seek(indexStart, SeekOrigin.Begin);
-            XbimIndex changes = XbimIndex.Read(dataStream);
-            long endIndex = dataStream.Position;
-            foreach (var item in changes)
-            {
-                item.Entity = CreateEntity(item.EntityLabel, item.Type);
-                List<long> labels;
-                if (!_entityTypes.TryGetValue(item.Type, out labels))
-                {
-                    labels = new List<long>();
-                    _entityTypes.Add_Reversible(item.Type, labels);
-                }
-                labels.Add_Reversible(item.EntityLabel);
-                if (_entityOffsets.Contains(item.EntityLabel)) //we have one to amend
-                {
-                    XbimIndexEntry idx = _entityOffsets[item.EntityLabel];
-                    idx.Entity = item.Entity; //update entity
-                }
-                else //new entity
-                    _entityOffsets.Add(item);
-                item.Entity.Bind(this, item.EntityLabel);
-                ToWrite.Add(item.Entity);
+            //////byte[] indexLen = new byte[sizeof(long)];
+            //////dataStream.Read(indexLen, 0, sizeof(long));
+            //////long indexStart = BitConverter.ToInt64(indexLen, 0);
+            //////dataStream.Seek(indexStart, SeekOrigin.Begin);
+            //////XbimIndex changes = XbimIndex.Read(dataStream);
+            //////long endIndex = dataStream.Position;
+            //////foreach (var item in changes)
+            //////{
+            //////    item.Entity = CreateEntity(item.EntityLabel, item.Type);
+            //////    List<long> labels;
+            //////    if (!_entityTypes.TryGetValue(item.Type, out labels))
+            //////    {
+            //////        labels = new List<long>();
+            //////        _entityTypes.Add_Reversible(item.Type, labels);
+            //////    }
+            //////    labels.Add_Reversible(item.EntityLabel);
+            //////    if (_entityOffsets.Contains(item.EntityLabel)) //we have one to amend
+            //////    {
+            //////        XbimIndexEntry idx = _entityOffsets[item.EntityLabel];
+            //////        idx.Entity = item.Entity; //update entity
+            //////    }
+            //////    else //new entity
+            //////        _entityOffsets.Add(item);
+            //////    item.Entity.Bind(this, item.EntityLabel);
+            //////    ToWrite.Add(item.Entity);
 
-            }
-            foreach (var item in changes) //load the data
-            {
-                lock (this)
-                {
-                    byte[] bLen = new byte[sizeof(int)];
-                    dataStream.Seek(item.Offset, SeekOrigin.Begin);
-                    dataStream.Read(bLen, 0, sizeof(int));
-                    int len = BitConverter.ToInt32(bLen, 0);
-                    byte[] bContent = new byte[len];
-                    dataStream.Read(bContent, 0, len);
-                    MemoryStream ms = new MemoryStream(bContent);
-                    BinaryReader br = new BinaryReader(ms);
-                    PopulateProperties(item.Entity, br);
-                }
-            }
-            //leave us at the end of the index
-            dataStream.Seek(endIndex, SeekOrigin.Begin);
+            //////}
+            //////foreach (var item in changes) //load the data
+            //////{
+            //////    lock (this)
+            //////    {
+            //////        byte[] bLen = new byte[sizeof(int)];
+            //////        dataStream.Seek(item.Offset, SeekOrigin.Begin);
+            //////        dataStream.Read(bLen, 0, sizeof(int));
+            //////        int len = BitConverter.ToInt32(bLen, 0);
+            //////        byte[] bContent = new byte[len];
+            //////        dataStream.Read(bContent, 0, len);
+            //////        MemoryStream ms = new MemoryStream(bContent);
+            //////        BinaryReader br = new BinaryReader(ms);
+            //////        PopulateProperties(item.Entity, br);
+            //////    }
+            //////}
+            ////////leave us at the end of the index
+            //////dataStream.Seek(endIndex, SeekOrigin.Begin);
         }
 
         override public bool Save()
@@ -864,21 +821,22 @@ namespace Xbim.IO
 
         private void WriteToStream(IPersistIfcEntity entity)
         {
-            lock (this)
-            {
-                //BinaryWriter entityWriter = new BinaryWriter(_streamReader);
-                _stream.Seek(0, SeekOrigin.End);
-                long posIndex = _stream.Position;
-                //IPersistIfcEntity entity = GetOrCreateEntity(el);
-                //var offset = _entityOffsets[el];
-                _entityOffsets[entity.EntityLabel].Offset = posIndex;
-                _binaryWriter.Write((int)0); // reserve 4 bytes of length of stream
-                int len = WriteEntity(_binaryWriter, entity); // write data and get length
-                long prevPos = _stream.Position; // record current pos for later
-                _stream.Seek(posIndex, SeekOrigin.Begin); // seak the position for the length of stream
-                _binaryWriter.Write(len); // write the len and move back to prev position
-                _stream.Seek(prevPos, SeekOrigin.Begin);
-            }
+            //srl need to resolve
+            //////lock (this)
+            //////{
+               
+            //////    _stream.Seek(0, SeekOrigin.End);
+            //////    long posIndex = _stream.Position;
+            //////    //IPersistIfcEntity entity = GetOrCreateEntity(el);
+            //////    //var offset = _entityOffsets[el];
+            //////    _entityOffsets[entity.EntityLabel].Offset = posIndex;
+            //////    _binaryWriter.Write((int)0); // reserve 4 bytes of length of stream
+            //////    int len = WriteEntity(_binaryWriter, entity); // write data and get length
+            //////    long prevPos = _stream.Position; // record current pos for later
+            //////    _stream.Seek(posIndex, SeekOrigin.Begin); // seak the position for the length of stream
+            //////    _binaryWriter.Write(len); // write the len and move back to prev position
+            //////    _stream.Seek(prevPos, SeekOrigin.Begin);
+            //////}
             
         }
         /// <summary>
@@ -903,9 +861,7 @@ namespace Xbim.IO
                 header.FileName.Name = xmlFilename;
                 header.Write(_binaryWriter);
 
-
-                _entityOffsets = new XbimIndex();
-                _entityTypes = new Dictionary<Type, List<long>>();
+                instances = new IfcInstances(this);
 
                                 
                 int errors = 0;
@@ -921,32 +877,32 @@ namespace Xbim.IO
                     errors = reader.Read(this, xmlReader);
                 }
 
+                //srl need to resolve this
 
+                ////////if (errors == 0)
+                ////////{
+                ////////    long posIndex = -1;
 
-                if (errors == 0)
-                {
-                    long posIndex = -1;
+                ////////    posIndex = _stream.Position;
 
-                    posIndex = _stream.Position;
+                ////////    _entityOffsets.Write(_binaryWriter);
 
-                    _entityOffsets.Write(_binaryWriter);
+                ////////    _stream.Write(BitConverter.GetBytes(0L), 0, sizeof(long));
 
-                    _stream.Write(BitConverter.GetBytes(0L), 0, sizeof(long));
+                ////////    _stream.Seek(0, SeekOrigin.Begin);
+                ////////    _stream.Write(BitConverter.GetBytes(posIndex), 0, sizeof(long));
+                ////////    _stream.Flush();
+                ////////    _stream.Close();
+                ////////    _stream = new FileStream(xbimFilename, FileMode.Open, FileAccess.ReadWrite);
+                ////////    Initialise();
 
-                    _stream.Seek(0, SeekOrigin.Begin);
-                    _stream.Write(BitConverter.GetBytes(posIndex), 0, sizeof(long));
-                    _stream.Flush();
-                    _stream.Close();
-                    _stream = new FileStream(xbimFilename, FileMode.Open, FileAccess.ReadWrite);
-                    Initialise();
-                    
-                    _filename = xbimFilename;
-                    return _filename;
-                }
-                else
-                {
-                    throw new Exception("xBIM file reading or initialisation errors\n");
-                }
+                _filename = xbimFilename;
+                return _filename;
+                ////////}
+                ////////else
+                ////////{
+                ////////    throw new Exception("xBIM file reading or initialisation errors\n");
+                ////////}
             }
             catch (Exception e)
             {

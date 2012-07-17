@@ -90,50 +90,6 @@ namespace Xbim.IO
         }
 
 
-        /// <summary>
-        ///   Creates an Ifc Persistent Instance from an entity name string, this is NOT an undoable operation
-        /// </summary>
-        /// <param name = "ifcEntityName">Ifc Entity Name i.e. IFCDOOR, IFCWALL, IFCWINDOW etc. Name must be in uppercase</param>
-        /// <returns></returns>
-        internal IPersistIfc CreateInstance(string ifcEntityName, long? label)
-        {
-            try
-            {
-                IfcType ifcType = IfcInstances.IfcTypeLookup[ifcEntityName];
-                return CreateInstance(ifcType.Type, label);
-            }
-            catch (Exception e)
-            {
-                throw new ArgumentException(string.Format("Error creating entity {0}, it is not a supported Xbim type, {1}", ifcEntityName, e.Message));
-            }
-
-        }
-
-        internal IPersistIfc CreateInstance(Type ifcType, long? label)
-        {
-            try
-            {
-                IPersistIfc instance = (IPersistIfc)Activator.CreateInstance(ifcType);
-                IPersistIfcEntity persist = instance as IPersistIfcEntity;
-                if (persist != null)
-                {
-                    Debug.Assert(label.HasValue);
-                    _highestLabel = Math.Max(_highestLabel, label.Value);
-                    persist.Bind(this, label.Value);
-                    instances.AddRaw(persist);
-                }
-
-                return instance;
-            }
-            catch (Exception e)
-            {
-                throw new ArgumentException(string.Format("{0} is not a supported Xbim Type", ifcType.Name),
-                                            "ifcEntityName)", e);
-            }
-        }
-
-      
-
        
 
         /// <summary>
@@ -555,18 +511,7 @@ namespace Xbim.IO
             get { return instances.OfType<IfcRoot>(); }
         }
 
-#if SupportActivation
 
-
-
-        public override IPersistIfcEntity GetInstance(long label)
-        {
-            long fileOffset;
-            return instances.GetOrCreateEntity(this, label, out fileOffset);
-        }
-
-
-#endif
 
         #endregion
 

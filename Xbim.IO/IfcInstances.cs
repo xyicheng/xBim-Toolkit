@@ -57,6 +57,12 @@ namespace Xbim.IO
         private readonly IModel _model;
         private long _highestLabel;
 
+        public long HighestLabel
+        {
+            get { return _highestLabel; }
+            
+        }
+
         private long NextLabel()
         {  
             return _highestLabel+1;
@@ -260,7 +266,7 @@ namespace Xbim.IO
                 {
                     foreach (long label in entities)
                     {
-                        yield return (TIfcType)_entityHandleLookup.GetEntity(label);
+                        yield return (TIfcType)_entityHandleLookup.GetOrCreateEntity(_model, label);
                     }
                 }
             }
@@ -325,52 +331,14 @@ namespace Xbim.IO
 
         internal void AddRaw(IPersistIfcEntity instance)
         {
-            AddRawTypeReference(instance);
-            _entityHandleLookup.Add(instance);
-        }
-
-        private void AddRawTypeReference(IPersistIfcEntity instance)
-        {
-            Type type = instance.GetType();
-            ICollection<long> entities;
-            if (!_typeLookup.TryGetValue(type, out entities))
-            {
-                entities = new List<long>();
-                _typeLookup.Add_Reversible(type, entities);
-            }
-            entities.Add_Reversible(instance.EntityLabel);
-        }
-        
-        internal IPersistIfcEntity AddNew(XbimModel xbimModel, Type ifcType, long label)
-        {
-            Transaction txn = Transaction.Current;
-            if (txn != null)
-                Transaction.AddPropertyChange<long>(h => _highestLabel = h, Math.Max(label, _highestLabel), label);
-            IPersistIfcEntity ent = _entityHandleLookup.CreateEntity(xbimModel, ifcType, label);
-            _highestLabel = Math.Max(label, _highestLabel);
-            AddTypeReference(ent);
-            return ent;
-        }
-        
-        internal IPersistIfcEntity AddNew(IModel xbimModel, Type ifcType)
-        {
-            long label = NextLabel();
-            Transaction txn = Transaction.Current;
-            if (txn != null)
-                Transaction.AddPropertyChange<long>(h => _highestLabel = h, _highestLabel, label);
-            IPersistIfcEntity ent = _entityHandleLookup.CreateEntity(xbimModel, ifcType, label);
-            _highestLabel = label;
-            AddTypeReference(ent);
-            return ent;
-        }
-
-        public void Add(IPersistIfcEntity instance)
-        {
             AddTypeReference(instance);
             _entityHandleLookup.Add(instance);
-            
         }
 
+        /// <summary>
+        /// Adds the instance to the tpye referncing dictionaries, this is NOT an undoable action
+        /// </summary>
+        /// <param name="instance"></param>
         private void AddTypeReference(IPersistIfcEntity instance)
         {
             Type type = instance.GetType();
@@ -382,9 +350,78 @@ namespace Xbim.IO
                     entities = new XbimIndexedCollection<long>(ifcType.SecondaryIndices);
                 else
                     entities = new List<long>();
+
                 _typeLookup.Add(type, entities);
             }
             entities.Add(instance.EntityLabel);
+        }
+         /// <summary>
+        /// creates and adds a new entity to the model, this operation is NOT undoable
+        /// </summary>
+        /// <param name="xbimModel"></param>
+        /// <param name="ifcType"></param>
+        /// <param name="label"></param>
+        /// <returns></returns>
+        internal IPersistIfcEntity AddNew(XbimModel xbimModel, Type ifcType, long label)
+        {
+
+            IPersistIfcEntity ent = _entityHandleLookup.CreateEntity(xbimModel, ifcType, label);
+            _highestLabel = Math.Max(label, _highestLabel);
+            AddTypeReference(ent);
+            return ent;
+        }
+
+
+        /// <summary>
+        /// creates and adds a new entity to the model, this operation is undoable
+        /// </summary>
+        /// <param name="xbimModel"></param>
+        /// <param name="ifcType"></param>
+        /// <param name="label"></param>
+        /// <returns></returns>
+        internal IPersistIfcEntity AddNew_Reversable(IModel xbimModel, Type ifcType, long label)
+        {
+            Transaction txn = Transaction.Current;
+            if (txn != null)
+                Transaction.AddPropertyChange<long>(h => _highestLabel = h, Math.Max(label, _highestLabel), label);
+            IPersistIfcEntity ent = _entityHandleLookup.CreateEntity(xbimModel, ifcType, label);
+            _highestLabel = Math.Max(label, _highestLabel);
+            AddTypeReference_Reversable(ent);
+            return ent;
+        }
+        /// <summary>
+        /// creates and adds a new entity to the model, this operation is undoable
+        /// </summary>
+        /// <param name="xbimModel"></param>
+        /// <param name="ifcType"></param>
+        /// <returns></returns>
+        internal IPersistIfcEntity AddNew_Reversable(IModel xbimModel, Type ifcType)
+        {
+            long label = NextLabel();
+            return AddNew_Reversable(xbimModel, ifcType, label);
+        }
+
+        public void Add(IPersistIfcEntity instance)
+        {
+            AddTypeReference_Reversable(instance);
+            _entityHandleLookup.Add(instance);
+            
+        }
+
+        private void AddTypeReference_Reversable(IPersistIfcEntity instance)
+        {
+            Type type = instance.GetType();
+            ICollection<long> entities;
+            if (!_typeLookup.TryGetValue(type, out entities))
+            {
+                IfcType ifcType = IfcEntities[type];
+                if (_buildIndices && ifcType.PrimaryIndex != null)
+                    entities = new XbimIndexedCollection<long>(ifcType.SecondaryIndices);
+                else
+                    entities = new List<long>();
+                _typeLookup.Add_Reversible(type, entities);
+            }
+            entities.Add_Reversible(instance.EntityLabel);
         }
 
         public void Clear_Reversible()
@@ -547,9 +584,14 @@ namespace Xbim.IO
             _entityHandleLookup = newEntityHandleLookup;
         }
 
-        internal IPersistIfcEntity GetOrCreateEntity(IModel model, long label, out long fileOffset)
+        internal IPersistIfcEntity GetOrCreateEntity(long label, out long fileOffset)
         {
-            return _entityHandleLookup.GetOrCreateEntity(model, label, out fileOffset);
+            return _entityHandleLookup.GetOrCreateEntity(_model, label, out fileOffset);
+        }
+
+        internal IPersistIfcEntity GetOrCreateEntity(long label)
+        {
+            return _entityHandleLookup.GetOrCreateEntity(_model, label);
         }
 
         internal bool Contains(long entityLabel)
@@ -584,6 +626,13 @@ namespace Xbim.IO
         IEnumerator<long> IEnumerable<long>.GetEnumerator()
         {
             return _entityHandleLookup.Keys.GetEnumerator();
+        }
+
+        //temp methhod should be removed
+        internal Parser.XbimIndexEntry GetXbimIndexEntry(long p)
+        {
+            IXbimInstance inst = _entityHandleLookup[p];
+            return new Xbim.IO.Parser.XbimIndexEntry(inst.EntityLabel,inst.FileOffset,inst.EntityType);
         }
     }
 

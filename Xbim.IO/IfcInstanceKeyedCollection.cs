@@ -85,7 +85,9 @@ namespace Xbim.IO
         {
             get { return _entityType; }
         }
-
+        /// <summary>
+        /// The entity label this will always be positive
+        /// </summary>
         public long EntityLabel
         {
             get { return _entityLabel; }
@@ -142,22 +144,29 @@ namespace Xbim.IO
         {
             return new IfcInstanceEnumerator(model, this);
         }
-
+        /// <summary>
+        /// Converts a XbimInstance, this is NOT and undoable action
+        /// </summary>
+        /// <param name="model"></param>
+        /// <param name="entityType"></param>
+        /// <param name="handle"></param>
+        /// <returns></returns>
         internal IPersistIfcEntity CreateEntity(IModel model, Type entityType, long handle)
         {
-            long absHandle = Math.Abs(handle);
-            IPersistIfcEntity entity = (IPersistIfcEntity)Activator.CreateInstance(entityType);
-            entity.Bind(model, (absHandle * -1)); //a negative handle determines that the attributes of this entity have not been loaded yet
-            Add_Reversible(entity);
-            return entity;
+            return CreateEntity(model, new XbimInstanceHandle(handle,entityType,-1));
         }
-
+        /// <summary>
+        /// Converts a XbimInstanceHandle into an XbimInstance, this is NOT and undoable action
+        /// </summary>
+        /// <param name="model"></param>
+        /// <param name="handle"></param>
+        /// <returns></returns>
         internal IPersistIfcEntity CreateEntity(IModel model, XbimInstanceHandle handle)
         {
             IPersistIfcEntity entity = (IPersistIfcEntity)Activator.CreateInstance(handle.EntityType);
             entity.Bind(model, (handle.EntityLabel * -1)); //a negative handle determines that the attributes of this entity have not been loaded yet
             XbimInstance inst = new XbimInstance(entity, handle.FileOffset);
-            this.Add_Reversible(new KeyValuePair<long, IXbimInstance>(Math.Abs(handle.EntityLabel), inst));
+            this[handle.EntityLabel]= inst;
             return entity;
         }
         /// <summary>
@@ -176,6 +185,20 @@ namespace Xbim.IO
                 return CreateEntity(model, (XbimInstanceHandle)xbimInst);
         }
 
+        /// <summary>
+        /// If the entity is in memory returns it, if not a blank instance is returned
+        /// </summary>
+        /// <param name="model"></param>
+        /// <param name="label"></param>
+        /// <returns></returns>
+        internal IPersistIfcEntity GetOrCreateEntity(IModel model, long label)
+        {
+            IXbimInstance xbimInst = this[Math.Abs(label)]; //this should never fail
+            if (xbimInst.IsLoaded)
+                return ((XbimInstance)xbimInst).Entity;
+            else
+                return CreateEntity(model, (XbimInstanceHandle)xbimInst);
+        }
 
 
         internal bool Contains(long p)

@@ -94,11 +94,14 @@ namespace Xbim.IO
                     }
                     if (noIndex)
                     {
-                        IEnumerable<T> sourceEnum = entities.Cast<T>();
+                        
                         Func<T, bool> predicate = expr.Compile();
                         // IEnumerable<T> result = sourceEnum.Where<T>(expr.Compile());
-                        foreach (T resultItem in sourceEnum)
+                        foreach (long handle in entities)
+                        {
+                            T resultItem = (T)instances.GetOrCreateEntity(handle);
                             if (predicate(resultItem)) yield return resultItem;
+                        }
                     }
                 }
             }

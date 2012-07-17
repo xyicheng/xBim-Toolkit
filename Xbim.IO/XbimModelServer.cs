@@ -342,13 +342,13 @@ namespace Xbim.IO
                         parserState.SetOverrideValue();
                         break;
                     case P21ParseAction.SetObjectValueUInt16:
-                        parserState.SetObjectValue(GetOrCreateEntity(br.ReadUInt16()));
+                        parserState.SetObjectValue(GetInstance(br.ReadUInt16()));
                         break;
                     case P21ParseAction.SetObjectValueUInt32:
-                        parserState.SetObjectValue(GetOrCreateEntity(br.ReadUInt32()));
+                        parserState.SetObjectValue(GetInstance(br.ReadUInt32()));
                         break;
                     case P21ParseAction.SetObjectValueInt64:
-                        parserState.SetObjectValue(GetOrCreateEntity(br.ReadInt64()));
+                        parserState.SetObjectValue(GetInstance(br.ReadInt64()));
                         break;
                     case P21ParseAction.BeginNestedType:
                         parserState.BeginNestedType(br.ReadString());
@@ -369,7 +369,7 @@ namespace Xbim.IO
             }
         }
 
-        protected abstract IPersistIfcEntity GetOrCreateEntity(long label);
+
 
         #region IDisposable Members
 
