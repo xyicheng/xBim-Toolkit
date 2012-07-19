@@ -34,7 +34,15 @@ namespace Xbim.IO.Tree
             {
                 return _nodeMap;
             }
-        } 
+        }
+
+        public IModel Model
+        {
+            get
+            {
+                return _model;
+            }
+        }
 
         public virtual TreeNodes GetTreeStructure()
         {
