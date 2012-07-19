@@ -21,10 +21,21 @@ using Xbim.Ifc2x3.GeometryResource;
 using System.Linq.Expressions;
 using System.Diagnostics;
 using Xbim.XbimExtensions.Transactions.Extensions;
+using Xbim.Common.Logging;
 namespace Xbim.IO
 {
     abstract public class XbimModel : IModel
     {
+        public static string IfcInstanceTableName = "IfcInstances";
+        /// <summary>
+        /// Columnid of the Entity Label.
+        /// </summary>
+        public static string colNameEntityLabel = "EntityLabel";
+        public static string colNameSecondaryKey = "SecondaryKey";
+        public static string colNameIfcType = "IfcType";
+        public static string colNameEntityData = "EntityData";
+
+        protected  readonly ILogger Logger = LoggerFactory.GetLogger();
         [NonSerialized]
         private IfcOwnerHistory _ownerHistoryDeleteObject;
 
@@ -207,7 +218,7 @@ namespace Xbim.IO
         /// </summary>
         /// <typeparam name = "TIfcType"></typeparam>
         /// <returns></returns>
-        public IEnumerable<TIfcType> InstancesOfType<TIfcType>() where TIfcType : IPersistIfcEntity
+        public virtual IEnumerable<TIfcType> InstancesOfType<TIfcType>() where TIfcType : IPersistIfcEntity
         {
             return instances.OfType<TIfcType>();
         }

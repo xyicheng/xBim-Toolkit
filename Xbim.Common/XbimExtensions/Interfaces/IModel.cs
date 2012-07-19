@@ -56,7 +56,9 @@ namespace Xbim.XbimExtensions.Interfaces
     }
     public interface IModel
     {
-       
+        
+
+
         IEnumerable<TIfcType> InstancesOfType<TIfcType>() where TIfcType : IPersistIfcEntity;
 
         IEnumerable<TIfcType> InstancesWhere<TIfcType>(Expression<Func<TIfcType, bool>> expression)
@@ -102,6 +104,8 @@ namespace Xbim.XbimExtensions.Interfaces
         void Close();
 
         UndoRedoSession UndoRedo { get; }
+
+
 
 
     }

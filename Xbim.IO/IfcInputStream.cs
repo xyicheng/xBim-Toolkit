@@ -19,6 +19,9 @@ using System.Text;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 using Xbim.IO.Parser;
+using Microsoft.Isam.Esent.Interop;
+using System.Collections.Generic;
+using Xbim.Common.Exceptions;
 
 #endregion
 
@@ -71,7 +74,7 @@ namespace Xbim.IO
             IndentedTextWriter tw = new IndentedTextWriter(_errorLog);
             try
             {
-                
+
                 int errors = intoModel.ParsePart21(_input, progressDelegate);
                 if (errors == 0 && validate > 0)
                     errors = intoModel.Validate(_errorLog, progressDelegate);
@@ -115,7 +118,7 @@ namespace Xbim.IO
             return Load(intoModel, ValidationFlags.None, null);
         }
 
-       
+
 
         public int Index(Stream indexStream, /*FilterViewDefinition filter, TextWriter errorLog, */
                          ReportProgressDelegate progressHandler)
@@ -129,7 +132,7 @@ namespace Xbim.IO
                 {
                     if (progressHandler != null) part21Parser.ProgressStatus += progressHandler;
                     part21Parser.Parse();
-                    
+
                 }
                 catch (Exception ex)
                 {
@@ -168,6 +171,88 @@ namespace Xbim.IO
         public int Index(Stream stream)
         {
             return Index(stream, null);
+        }
+
+        private static JET_err StatusCallback(JET_SESID sesid, JET_SNP snp, JET_SNT snt, object data)
+        {
+            Console.WriteLine("{0} {1} {2} {3}", sesid, snp, snt, data);
+            return JET_err.Success;
+        }
+        /// <summary>
+        /// Imports the contents of the ifc file into the named database
+        /// </summary>
+        /// <param name="databaseName"></param>
+        /// <param name="progressHandler"></param>
+        /// <returns></returns>
+        internal bool Import(string databaseName, ReportProgressDelegate progressHandler)
+        {
+
+            using (var instance = new Instance("importIfcData"))
+            {
+                // Creating an Instance object doesn't call JetInit. 
+                // This is done to allow some parameters to be set
+                // before the instance is initialized.
+
+                // Circular logging is very useful; it automatically deletes
+                // logfiles that are no longer needed. Most applications
+                // should use it.
+                instance.Parameters.CircularLog = true;
+
+                // Initialize the instance. This creates the logs and temporary database.
+                // If logs are present in the log directory then recovery will run
+                // automatically.
+
+                instance.Parameters.Recovery = false; //By default its True
+                SystemParameters.CacheSizeMin = 16 * 1024;
+                instance.Parameters.LogFileSize = 16 * 1024;
+                instance.Parameters.LogBuffers = 8 * 1024;
+                instance.Init();
+                // Create a disposable wrapper around a new JET_SESID. All database
+                // access is done with a session (JET_SESID). Transactions and database
+                // record visibility is per-session. Do not share sessions between
+                // threads, instead create different sessions for different threads.
+                using (var session = new Session(instance))
+                {
+                    JET_DBID dbid;
+
+                    // The database only has to be attached once per instance, but each
+                    // session has to open the database. Redundant JetAttachDatabase calls
+                    // are safe to make though.
+
+                    Api.JetAttachDatabase(session, databaseName, AttachDatabaseGrbit.None);
+                    Api.JetOpenDatabase(session, databaseName, null, out dbid, OpenDatabaseGrbit.None);
+
+                    using (var table = new Table(session, dbid, XbimModel.IfcInstanceTableName, OpenTableGrbit.None))
+                    {
+                        using (var transaction = new Transaction(session))
+                        {
+
+                            using (P21toIndexParser part21Parser = new P21toIndexParser(_input, session, table))
+                            {
+                                try
+                                {
+                                    if (progressHandler != null) part21Parser.ProgressStatus += progressHandler;
+                                    part21Parser.Parse();
+                                }
+                                catch (Exception e)
+                                {
+                                    transaction.Rollback();
+                                    throw e;
+                                }
+                                finally
+                                {
+                                    if (progressHandler != null) part21Parser.ProgressStatus -= progressHandler;
+                                }
+                            }
+                            transaction.Commit(CommitTransactionGrbit.None);
+                        }
+                    }
+                    Api.JetCloseDatabase(session, dbid, CloseDatabaseGrbit.None);
+                   
+                    return true;
+                }
+            }
+
         }
     }
 }

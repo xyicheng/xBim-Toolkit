@@ -35,6 +35,8 @@ using System.Xml;
 using System.Windows.Markup;
 using Xbim.IO.Parser;
 using Xbim.XbimExtensions.Interfaces;
+using Microsoft.Isam.Esent.Interop;
+using Xbim.Common.Exceptions;
 
 #endregion
 
@@ -45,14 +47,136 @@ namespace Xbim.IO
     public class XbimFileModelServer : XbimModelServer
     {
         private BinaryReader _binaryReader;
-        
+       
         
         private string _filename;
-       
+        private Instance _jetInstance;
+        private Session _jetSession;
+        private JET_DBID _jetDatabaseId;
+        private Table _jetEntityTable;
+        private JET_COLUMNID columnidEntityLabel;
+        private JET_COLUMNID columnidSecondaryKey;
+        private JET_COLUMNID columnidIfcType;
+        private JET_COLUMNID columnidEntityData;
+        Int64ColumnValue _colEnityLabel;
+        Int16ColumnValue _colTypeId;
+        BytesColumnValue _colData;
+        ColumnValue[] _colValues;
+
         private BinaryWriter _binaryWriter;
         private Stream _stream;
+        private FileAccess _desiredAccessMode;
+
+        /// <summary>
+        /// Creates an empty xbim file, overwrites any existing file of the same name
+        /// </summary>
+        /// <returns></returns>
+        private bool CreateDatabase(string fileName)
+        {
+           
+           // _filename = Path.ChangeExtension(fileName, "xBIM");
+            using (var instance = new Instance("createXbimDB"))
+            {
+               
+                instance.Init();
+                using (var session = new Session(instance))
+                {
+                    JET_DBID dbid;
+                    Api.JetCreateDatabase(session, fileName, null, out dbid, CreateDatabaseGrbit.OverwriteExisting);
+                    using (var transaction = new Microsoft.Isam.Esent.Interop.Transaction(session))
+                    {
+                        // A newly created table is opened exclusively. This is necessary to add
+                        // a primary index to the table (a primary index can only be added if the table
+                        // is empty and opened exclusively). Columns and indexes can be added to a 
+                        // table which is opened normally.
+                        JET_TABLEID tableid;
+                        Api.JetCreateTable(session, dbid, XbimModel.IfcInstanceTableName, 16, 80, out tableid);
+                        CreateColumnsAndIndexes(session, tableid);
+                        Api.JetCloseTable(session, tableid);
+
+                        // Lazily commit the transaction. Normally committing a transaction forces the
+                        // associated log records to be flushed to disk, so the commit has to wait for
+                        // the I/O to complete. Using the LazyFlush option means that the log records
+                        // are kept in memory and will be flushed later. This will preserve transaction
+                        // atomicity (all operations in the transaction will either happen or be rolled
+                        // back) but will not preserve durability (a crash after the commit call may
+                        // result in the transaction updates being lost). Lazy transaction commits are
+                        // considerably faster though, as they don't have to wait for an I/O.
+                        transaction.Commit(CommitTransactionGrbit.LazyFlush);
+                    }
+                    if (dbid == JET_DBID.Nil)
+                    {
+                        Logger.ErrorFormat("Failed to create Xbim Database {0}", _filename);
+                        return false;
+                    }
+                    else
+                        return true;
+                }
+            }
+           
+        }
+
+        /// <summary>
+        /// Setup the meta-data for the table.
+        /// </summary>
+        /// <param name="sesid">The session to use.</param>
+        /// <param name="tableid">
+        /// The table to add the columns/indexes to. This table must be opened exclusively.
+        /// </param>
+        private static void CreateColumnsAndIndexes(JET_SESID sesid, JET_TABLEID tableid)
+        {
+            using (var transaction = new Microsoft.Isam.Esent.Interop.Transaction(sesid))
+            {
+                JET_COLUMNID columnid;
+
+                // Stock symbol : text column
+                var columndef = new JET_COLUMNDEF
+                {
+                    
+                    coltyp = JET_coltyp.Currency,
+                    grbit = ColumndefGrbit.ColumnNotNULL
+                };
+                
+                Api.JetAddColumn(sesid, tableid, XbimModel.colNameEntityLabel, columndef, null, 0, out columnid);
+
+                columndef.grbit = ColumndefGrbit.ColumnTagged;
+                // Name of the secondary key : for lookup by a property value of the object that is a foreign object
+                Api.JetAddColumn(sesid, tableid, XbimModel.colNameSecondaryKey, columndef, null, 0, out columnid);
+                // Identity of the type of the object : 16-bit integer looked up in IfcType Table
+                columndef = new JET_COLUMNDEF
+                {
+                    coltyp = JET_coltyp.Short,
+                    grbit = ColumndefGrbit.ColumnNotNULL
+                };
+                Api.JetAddColumn(sesid, tableid, XbimModel.colNameIfcType, columndef, null, 0, out columnid);
+                columndef = new JET_COLUMNDEF
+                {
+                    coltyp = JET_coltyp.LongBinary,
+                    grbit = ColumndefGrbit.ColumnMaybeNull
+                };
+                Api.JetAddColumn(sesid, tableid, XbimModel.colNameEntityData, columndef, null, 0, out columnid);
+
+                // Now add indexes. An index consists of several index segments (see
+                // EsentVersion.Capabilities.ColumnsKeyMost to determine the maximum number of
+                // segments). Each segment consists of a sort direction ('+' for ascending,
+                // '-' for descending), a column name, and a '\0' separator. The index definition
+                // must end with "\0\0". The count of characters should include all terminators.
+
+                // The primary index is the type and the entity label.
+                string indexDef = string.Format("+{0}\0+{1}\0\0", XbimModel.colNameIfcType, XbimModel.colNameEntityLabel);
+                //string indexDef = string.Format("+{0}\0\0",  XbimModel.colNameEntityLabel);
+                Api.JetCreateIndex(sesid, tableid, "primary", CreateIndexGrbit.IndexPrimary, indexDef, indexDef.Length, 100);
+
+                // An index on the type and secondary key. For quick access to IfcRelation entities and the like
+                indexDef = string.Format("+{0}\0+{1}\0\0", XbimModel.colNameIfcType,XbimModel.colNameSecondaryKey);
+                Api.JetCreateIndex(sesid, tableid, "type", CreateIndexGrbit.IndexIgnoreAnyNull, indexDef, indexDef.Length, 100);
+
+                transaction.Commit(CommitTransactionGrbit.LazyFlush);
+            }
+        }
 
        
+
 
         public string Filename
         {
@@ -71,10 +195,12 @@ namespace Xbim.IO
 
         public XbimFileModelServer()
         {
+           
         }
 
-        public XbimFileModelServer(string fileName, FileAccess fileAccess = FileAccess.Read)
+        public XbimFileModelServer(string fileName, FileAccess fileAccess = FileAccess.Read):this()
         {
+           
             Open(fileName, fileAccess);
         }
                 
@@ -89,21 +215,41 @@ namespace Xbim.IO
         {
             try
             {
-                Dispose();
-                // now we have streamReader and streamWriter, choose the right one to use
-                _stream = new FileStream(filename, FileMode.Open, fileAccess);
+                _desiredAccessMode = fileAccess;
+
+                if (!string.IsNullOrEmpty(_filename))
+                {
+                    Api.JetDetachDatabase(_jetSession, _filename);
+                    _filename = null;
+                }
+                if (_jetInstance == null) //if we have never created an instance do it now
+                {
+                    _jetInstance = new Instance("XbimInstance");
+                    _jetInstance.Init();
+                    _jetSession = new Session(_jetInstance);
+                }
                 
-                Initialise();
+                Api.JetAttachDatabase(_jetSession, filename, AttachDatabaseGrbit.None);
+                Api.JetOpenDatabase(_jetSession, filename, null, out _jetDatabaseId, OpenDatabaseGrbit.None);
                 _filename = filename;
+                _jetEntityTable = new Table(_jetSession, _jetDatabaseId, XbimModel.IfcInstanceTableName, OpenTableGrbit.None);
+                IDictionary<string, JET_COLUMNID> columnids = Api.GetColumnDictionary(_jetSession, _jetEntityTable);
+                columnidEntityLabel = columnids[XbimModel.colNameEntityLabel];
+                columnidSecondaryKey = columnids[XbimModel.colNameSecondaryKey];
+                columnidIfcType = columnids[XbimModel.colNameIfcType];
+                columnidEntityData = columnids[XbimModel.colNameEntityData];
+                _colEnityLabel = new Int64ColumnValue { Columnid = columnidEntityLabel };
+                _colTypeId = new Int16ColumnValue { Columnid = columnidIfcType };
+                _colData = new BytesColumnValue { Columnid = columnidEntityData };
+                _colValues = new ColumnValue[] { _colEnityLabel, _colTypeId, _colData };
 
                 // we have _header of the opened file, set that header to the Header property of XbimModelServer
-                Header.FileName = header.FileName;
-                Header.FileDescription = header.FileDescription;
-                Header.FileSchema = header.FileSchema;
+                //Header.FileName = header.FileName;
+                //Header.FileDescription = header.FileDescription;
+                //Header.FileSchema = header.FileSchema;
             }
             catch (Exception e)
             {
-                Dispose();
                 throw new Exception("Failed to open " + filename, e);
             }
         }
@@ -139,39 +285,28 @@ namespace Xbim.IO
         {
             FileStream inputFile = null;
             IfcInputStream input = null;
+           
             try
             {
-                Dispose(); //clear up any issues from previous runs
+                if (!CreateDatabase(xbimFilename)) //failed to create database
+                return "";
+                //Dispose(); //clear up any issues from previous runs
                 inputFile = new FileStream(filename, FileMode.Open, FileAccess.Read);
                 //attach it to the Ifc Stream Parser
                 input = new IfcInputStream(inputFile);
-                using ( FileStream outputFile = new FileStream(xbimFilename, FileMode.Create, FileAccess.ReadWrite)                )
-                {
-                    int errors = input.Index(outputFile, progress);
-                    if (errors == 0)
-                    {
-                        _stream = new FileStream(xbimFilename, FileMode.Open, FileAccess.ReadWrite);
-                        Initialise();
-                        _filename = xbimFilename;
-                        return _filename;
-                    }
-                    else
-                    {
-                        throw new Xbim.Common.Exceptions.XbimException("Ifc file reading or initialisation errors\n" + input.ErrorLog.ToString());
-                    }
-                }
-                
+                input.Import(xbimFilename, progress);
             }
-            catch (Exception e)
+            catch (XbimParserException e)
             {
-                Dispose();
-                throw new Xbim.Common.Exceptions.XbimException("Failed to import " + filename + "\n" + input.ErrorLog.ToString(), e);
+                //Dispose();
+                Logger.ErrorFormat("Failed to import {0}\n{1}", filename, e.Message);
             }
             finally
             {
                 if (inputFile != null) inputFile.Close();
                 
             }
+            return _filename;
         }
 
 
@@ -538,7 +673,7 @@ namespace Xbim.IO
             if (!_stream.CanSeek)
                 throw new Exception("Input Stream must be able to support Seek operations");
 
-            Transaction currentTrans = Transaction.Current;
+            Xbim.XbimExtensions.Transactions.Transaction currentTrans = Xbim.XbimExtensions.Transactions.Transaction.Current;
             if (currentTrans != null) currentTrans.Exit();
             _binaryReader = new BinaryReader(_stream);
             long start = _binaryReader.ReadInt64();
@@ -626,6 +761,12 @@ namespace Xbim.IO
 
         public override void Dispose()
         {
+            if (_jetEntityTable != null) _jetEntityTable.Dispose();
+            if (_jetSession != null) _jetSession.Dispose();
+            if (_jetInstance != null) _jetInstance.Dispose();
+
+
+
             if (_binaryReader != null) _binaryReader.Close();
             _binaryReader = null;
 
@@ -716,8 +857,18 @@ namespace Xbim.IO
 
         public override void Close()
         {
-
-            if (_stream != null) _stream.Close();
+            if (_jetEntityTable != null)
+            {
+                _jetEntityTable.Close();
+                _jetEntityTable.Dispose();
+                _jetEntityTable = null;
+            }
+            if (!string.IsNullOrEmpty(_filename))
+            {
+                Api.JetCloseDatabase(_jetSession, _jetDatabaseId, CloseDatabaseGrbit.None);
+                Api.JetDetachDatabase(_jetSession, _filename);
+                _filename = null;
+            }
         }
 
        

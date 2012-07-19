@@ -10,6 +10,7 @@ using System.IO;
 using Xbim.Common.Logging;
 using Xbim.Ifc2x3.Kernel;
 
+
 namespace XbimConvert
 {
     class Program
@@ -29,11 +30,12 @@ namespace XbimConvert
                 {
                     return -1;
                 }
-                XbimMemoryModel mod;
+                
                 try
                 {
+                    
                     Logger.InfoFormat("Starting conversion of {0}", args[0]);
-
+                    
                     string xbimFileName = BuildFileName(arguments.IfcFileName, ".xbim");
                     string xbimGeometryFileName = BuildFileName(arguments.IfcFileName, ".xbimGC");
                     System.Diagnostics.Stopwatch watch = new System.Diagnostics.Stopwatch();
@@ -42,8 +44,8 @@ namespace XbimConvert
 
                    
                     XbimFileModelServer model = ParseModelFile(xbimFileName);
-
-                    GenerateGeometry(xbimGeometryFileName, model);
+                    model = new XbimFileModelServer(xbimFileName);
+                    //GenerateGeometry(xbimGeometryFileName, model);
                     model.Close();
 
                     watch.Stop();

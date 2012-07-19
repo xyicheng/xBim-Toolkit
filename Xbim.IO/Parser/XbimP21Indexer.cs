@@ -21,6 +21,7 @@ using Xbim.XbimExtensions.Transactions.Extensions;
 using Xbim.XbimExtensions.Transactions;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
+using Microsoft.Isam.Esent.Interop;
 #endregion
 
 namespace Xbim.IO.Parser
@@ -127,20 +128,52 @@ namespace Xbim.IO.Parser
         private readonly Stream _indexStrm;
         private long _currentLabel;
         private string _currentType;
-        private long _startOffset = -1;
+       
 
         private Part21Entity _currentInstance;
         private readonly Stack<Part21Entity> _processStack = new Stack<Part21Entity>();
         private PropertyValue _propertyValue;
         private int _listNestLevel = -1;
         private readonly IfcFileHeader _header = new IfcFileHeader();
-
+   
+        private Microsoft.Isam.Esent.Interop.Session session;
+        private Microsoft.Isam.Esent.Interop.Table table;
+        private JET_COLUMNID columnidEntityLabel;
+        private JET_COLUMNID columnidSecondaryKey;
+        private JET_COLUMNID columnidIfcType;
+        private JET_COLUMNID columnidEntityData;
+        Int64ColumnValue _colEnityLabel;
+        Int16ColumnValue _colTypeId;
+        BytesColumnValue _colData;
+        ColumnValue[] _colValues;
+        const int _transactionBatchSize = 100;
+        private int _entityCount = 0;
         public P21toIndexParser(Stream inputP21, Stream indexStrm)
             : base(inputP21)
         {
             if (inputP21.CanSeek)
                 _streamSize = inputP21.Length;
             _indexStrm = indexStrm;
+        }
+
+        public P21toIndexParser(Stream inputP21, Session session, Table table)
+            : base(inputP21)
+        {
+            this.session = session;
+            this.table = table;
+            IDictionary<string, JET_COLUMNID> columnids = Api.GetColumnDictionary(session, table);
+            columnidEntityLabel = columnids[XbimModel.colNameEntityLabel];
+            columnidSecondaryKey = columnids[XbimModel.colNameSecondaryKey];
+            columnidIfcType = columnids[XbimModel.colNameIfcType];
+            columnidEntityData = columnids[XbimModel.colNameEntityData];
+            _colEnityLabel = new Int64ColumnValue { Columnid = columnidEntityLabel};
+            _colTypeId = new Int16ColumnValue { Columnid = columnidIfcType };
+            _colData = new BytesColumnValue { Columnid = columnidEntityData };
+            _colValues = new ColumnValue[] { _colEnityLabel, _colTypeId, _colData };
+
+            _entityCount = 0;
+            if (inputP21.CanSeek)
+                _streamSize = inputP21.Length;
         }
 
         internal override void SetErrorMessage()
@@ -155,12 +188,7 @@ namespace Xbim.IO.Parser
 
         internal override void BeginParse()
         {
-            if (_binaryWriter != null) _binaryWriter.Close();
-            _binaryWriter = new BinaryWriter(_indexStrm);
-            _binaryWriter.Write(0L); //data
-            int reservedSize = 32;
-            _binaryWriter.Write(reservedSize);
-            _binaryWriter.Write(new byte[reservedSize]);
+            _binaryWriter = new BinaryWriter(new MemoryStream(0x7FFF));
         }
 
         internal override void EndParse()
@@ -176,7 +204,7 @@ namespace Xbim.IO.Parser
 
         internal override void EndHeader()
         {
-            _header.Write(_binaryWriter);
+           // _header.Write(_binaryWriter);
         }
 
         internal override void BeginScope()
@@ -232,8 +260,11 @@ namespace Xbim.IO.Parser
 
         internal override void NewEntity(string entityLabel)
         {
+            _entityCount++;
             _currentLabel = Convert.ToInt64(entityLabel.TrimStart('#'));
-            _startOffset = _indexStrm.Position;
+            MemoryStream data = _binaryWriter.BaseStream as MemoryStream;
+            data.SetLength(0);
+           
             _binaryWriter.Write((int)0);
             _binaryWriter.Write((byte)P21ParseAction.NewEntity);
             if (_streamSize != -1 && ProgressStatus != null)
@@ -277,14 +308,22 @@ namespace Xbim.IO.Parser
 
         internal override void EndEntity()
         {
-            _index.Add(_currentLabel, _currentType, _startOffset);
-            _currentLabel = -1;
-            _currentType = null;
-            _binaryWriter.Write((byte)P21ParseAction.EndEntity);
-            long endpos = _indexStrm.Position;
-            _indexStrm.Seek(_startOffset, SeekOrigin.Begin);
-            _binaryWriter.Write((int)(endpos - _startOffset - sizeof(int)));
-            _indexStrm.Seek(endpos, SeekOrigin.Begin);
+            using (var update = new Update(session, table, JET_prep.Insert))
+            {
+                MemoryStream data = _binaryWriter.BaseStream as MemoryStream;
+
+                _colEnityLabel.Value = _currentLabel;
+                _colTypeId. Value = IfcInstances.IfcTypeLookup[_currentType].TypeId;
+                _colData.Value = data.ToArray();
+                Api.SetColumns(session, table, _colValues);
+                update.Save();
+                if (_entityCount % _transactionBatchSize == (_transactionBatchSize - 1))
+                {
+                    Api.JetCommitTransaction(session, CommitTransactionGrbit.LazyFlush);
+                    Api.JetBeginTransaction(session);
+                }
+            }
+           
         }
 
         internal override void EndHeaderEntity()

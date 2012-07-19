@@ -97,6 +97,12 @@
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Esent.Collections">
+      <HintPath>..\packages\ManagedEsent.1.6\lib\net20\Esent.Collections.dll</HintPath>
+    </Reference>
+    <Reference Include="Esent.Interop">
+      <HintPath>..\packages\ManagedEsent.1.6\lib\net20\Esent.Interop.dll</HintPath>
+    </Reference>
     <Reference Include="ICSharpCode.SharpZipLib">
       <HintPath>..\packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
     </Reference>
@@ -144,6 +150,7 @@
     <Compile Include="IfcXmlReader.cs" />
     <Compile Include="IfcXmlWriter.cs" />
     <Compile Include="IfcInstanceKeyedCollection.cs" />
+    <Compile Include="IPersistIfcEntityExtensions.cs" />
     <Compile Include="Parser\IndexPropertyValue.cs" />
     <Compile Include="Parser\IStepP21Parser.cs" />
     <Compile Include="Parser\PropertyValue.cs" />
@@ -207,6 +214,7 @@
     <None Include="Parser\StepP21Lex.lex" />
     <None Include="Parser\StepP21Parser.y" />
     <None Include="Parser\XbimViewerKey.pfx" />
+    <None Include="README.rtf" />
     <None Include="XbimIfcKey.pfx" />
   </ItemGroup>
   <ItemGroup>

@@ -56,7 +56,7 @@ namespace Xbim.IO
     public class XbimMemoryModel : XbimModel, ISupportChangeNotification, INotifyPropertyChanged, INotifyPropertyChanging
     {
         #region Fields
-		private readonly ILogger Logger = LoggerFactory.GetLogger();
+		
         
         /// <summary>
         ///   Default true, builds indices to improve access performance for retrieving instances, set to false to increase laod speed where access speed is unimportant

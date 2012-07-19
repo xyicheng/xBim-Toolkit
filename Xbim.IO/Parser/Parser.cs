@@ -21,6 +21,7 @@ using System.Text.RegularExpressions;
 using QUT.Gppg;
 using Xbim.XbimExtensions.Interfaces;
 using Xbim.XbimExtensions;
+using Xbim.Common.Logging;
 
 #endregion
 
@@ -28,22 +29,11 @@ namespace Xbim.IO.Parser
 {
     public sealed partial class Scanner : ScanBase
     {
-        private IndentedTextWriter _errorLog;
-
-        internal IndentedTextWriter ErrorLog
-        {
-            set { _errorLog = value; }
-        }
-
+        private readonly ILogger Logger = LoggerFactory.GetLogger();
         public override void yyerror(string format, params object[] args)
         {
             string errmsg = string.Format(format, args);
-            if (_errorLog != null)
-                _errorLog.WriteLine(string.Format("Illegal character found at line {0}, column {1}\n{2}", this.yyline,
-                                                  this.yycol, errmsg));
-            else
-                throw new Exception(string.Format("Illegal character found at line {0}, column {1}\n{2}", this.yyline,
-                                                  this.yycol, errmsg));
+            Logger.ErrorFormat("Illegal character found at line {0}, column {1}\n{2}", this.yyline, this.yycol, errmsg);
         }
     }
 
