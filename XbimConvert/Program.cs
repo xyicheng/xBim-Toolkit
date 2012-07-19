@@ -46,6 +46,7 @@ namespace XbimConvert
                     XbimFileModelServer model = ParseModelFile(xbimFileName);
                     model = new XbimFileModelServer(xbimFileName);
                     //GenerateGeometry(xbimGeometryFileName, model);
+                    IEnumerable<IfcDoor> doors = model.InstancesOfType<IfcDoor>();
                     model.Close();
 
                     watch.Stop();

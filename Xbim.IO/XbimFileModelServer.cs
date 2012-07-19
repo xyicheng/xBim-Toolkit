@@ -66,7 +66,8 @@ namespace Xbim.IO
         private BinaryWriter _binaryWriter;
         private Stream _stream;
         private FileAccess _desiredAccessMode;
-
+        private const string _EntityTablePrimaryIndex = "primary";
+        private const string _EntityTableTypeIndex = "secondary";
         /// <summary>
         /// Creates an empty xbim file, overwrites any existing file of the same name
         /// </summary>
@@ -165,11 +166,11 @@ namespace Xbim.IO
                 // The primary index is the type and the entity label.
                 string indexDef = string.Format("+{0}\0+{1}\0\0", XbimModel.colNameIfcType, XbimModel.colNameEntityLabel);
                 //string indexDef = string.Format("+{0}\0\0",  XbimModel.colNameEntityLabel);
-                Api.JetCreateIndex(sesid, tableid, "primary", CreateIndexGrbit.IndexPrimary, indexDef, indexDef.Length, 100);
+                Api.JetCreateIndex(sesid, tableid, _EntityTablePrimaryIndex, CreateIndexGrbit.IndexPrimary, indexDef, indexDef.Length, 100);
 
                 // An index on the type and secondary key. For quick access to IfcRelation entities and the like
                 indexDef = string.Format("+{0}\0+{1}\0\0", XbimModel.colNameIfcType,XbimModel.colNameSecondaryKey);
-                Api.JetCreateIndex(sesid, tableid, "type", CreateIndexGrbit.IndexIgnoreAnyNull, indexDef, indexDef.Length, 100);
+                Api.JetCreateIndex(sesid, tableid, _EntityTableTypeIndex, CreateIndexGrbit.IndexIgnoreAnyNull, indexDef, indexDef.Length, 100);
 
                 transaction.Commit(CommitTransactionGrbit.LazyFlush);
             }
@@ -253,7 +254,30 @@ namespace Xbim.IO
                 throw new Exception("Failed to open " + filename, e);
             }
         }
-                
+
+        public override IEnumerable<TIfcType> InstancesOfType<TIfcType>() 
+        {
+            Type t = typeof(TIfcType);
+            short typeId = IfcInstances.IfcTypeLookup[t.Name.ToUpper()].TypeId;
+            Api.JetSetCurrentIndex(_jetSession, _jetEntityTable, _EntityTablePrimaryIndex);
+            Api.MakeKey(_jetSession, _jetEntityTable, typeId, MakeKeyGrbit.NewKey);
+            if (Api.TrySeek(_jetSession, _jetEntityTable, SeekGrbit.SeekGE))
+            {
+                Api.MakeKey(_jetSession, _jetEntityTable, typeId, MakeKeyGrbit.NewKey);
+                int i=0;
+                if (Api.TrySetIndexRange(_jetSession, _jetEntityTable, SetIndexRangeGrbit.RangeUpperLimit))
+                {
+                    do
+                    {
+                       i++;
+                        yield return (TIfcType)new Xbim.Ifc2x3.SharedBldgElements.IfcDoor();
+                    }
+                    while (Api.TryMoveNext(_jetSession, _jetEntityTable));
+                }
+            }
+
+        }
+        
         /// <summary>
         ///   Imports an Ifc file into the model server, throws exception if errors are encountered
         /// </summary>
