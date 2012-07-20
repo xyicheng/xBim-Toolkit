@@ -100,7 +100,7 @@ namespace Xbim.XbimExtensions.Interfaces
         void Import(string inputFileName);
         long Activate(IPersistIfcEntity entity, bool write);
         IPersistIfcEntity GetInstance(long label);
-        bool ReOpen();
+       
         void Close();
 
         UndoRedoSession UndoRedo { get; }

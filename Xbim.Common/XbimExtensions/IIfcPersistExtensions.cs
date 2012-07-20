@@ -66,8 +66,9 @@ namespace Xbim.XbimExtensions
 
             if (iPropChanged != null)
             {
-                Transaction.AddPropertyChange(setter, field, newValue);
                 target.Activate(true);
+                Transaction.AddPropertyChange(setter, field, newValue);
+                
                 iPropChanged.NotifyPropertyChanging(notifyPropertyName);
                 field = newValue;
                 iPropChanged.NotifyPropertyChanged(notifyPropertyName);

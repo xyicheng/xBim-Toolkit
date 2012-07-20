@@ -46,7 +46,7 @@ using Xbim.IO.Parser;
 
 namespace Xbim.IO
 {
-    public abstract class XbimModelServer : XbimModel, IDisposable
+    public abstract class XbimModelServer : XbimModel
     {
        
 
@@ -373,7 +373,7 @@ namespace Xbim.IO
 
         #region IDisposable Members
 
-        public abstract void Dispose();
+       
 
         #endregion
 
@@ -643,7 +643,6 @@ namespace Xbim.IO
         public abstract void WriteChanges(BinaryWriter dataStream);
         public abstract void MergeChanges(Stream dataStream);
 
-       
     }
 }
 

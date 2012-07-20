@@ -521,12 +521,6 @@ namespace Xbim.IO
         #endregion
 
 
-        public override bool ReOpen()
-        {
-            //nothing to do
-            return true;
-        }
-
         public override void Close()
         {
             //nothing to do

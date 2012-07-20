@@ -77,7 +77,7 @@ namespace Xbim.IO
 
         protected abstract void ActivateEntity(long offset, IPersistIfcEntity entity);
 
-        public long Activate(IPersistIfcEntity entity, bool write)
+        public virtual long Activate(IPersistIfcEntity entity, bool write)
         {
 
             long label = entity.EntityLabel;
@@ -232,35 +232,6 @@ namespace Xbim.IO
         public IEnumerable<TIfcType> InstancesWhere<TIfcType>(Expression<Func<TIfcType, bool>> expression) where TIfcType : IPersistIfcEntity
         {
             return instances.Where(expression);
-        }
-
-        /// <summary>
-        ///   Creates an Ifc Persistent Instance, this is an undoable operation
-        /// </summary>
-        /// <typeparam name = "TIfcType"> The Ifc Type, this cannot be an abstract class. An exception will be thrown if the type is not a valid Ifc Type  </typeparam>
-        public TIfcType New<TIfcType>() where TIfcType : IPersistIfcEntity, new()
-        {
-            Transaction txn = Transaction.Current;
-            Debug.Assert(txn != null); //model must be in the active transaction to create new entities
-            Type t = typeof(TIfcType);
-            IPersistIfcEntity newEntity = instances.AddNew_Reversable(this, t);
-            if (typeof(IfcRoot).IsAssignableFrom(t))
-                ((IfcRoot)newEntity).OwnerHistory = OwnerHistoryAddObject;
-            return (TIfcType)newEntity;
-        }
-
-        /// <summary>
-        ///   Creates and Instance of TIfcType and initializes the properties in accordance with the lambda expression
-        ///   i.e. Person person = CreateInstance&gt;Person&lt;(p =&lt; { p.FamilyName = "Undefined"; p.GivenName = "Joe"; });
-        /// </summary>
-        /// <typeparam name = "TIfcType"></typeparam>
-        /// <param name = "initPropertiesFunc"></param>
-        /// <returns></returns>
-        public TIfcType New<TIfcType>(InitProperties<TIfcType> initPropertiesFunc) where TIfcType : IPersistIfcEntity, new()
-        {
-            TIfcType instance = New<TIfcType>();
-            initPropertiesFunc(instance);
-            return instance; 
         }
 
         abstract public bool Delete(IPersistIfcEntity instance);
@@ -560,13 +531,10 @@ namespace Xbim.IO
         abstract public void Import(string inputFileName);
 
 
-        public IPersistIfcEntity GetInstance(long label)
+        public virtual IPersistIfcEntity GetInstance(long label)
         {
             return instances.GetOrCreateEntity(label);
         }
-
-
-        abstract public bool ReOpen();
 
         abstract public void Close();
 
@@ -1037,10 +1005,42 @@ namespace Xbim.IO
         {
           
              return instances.AddNew(this,ifcType,label.Value);
-                
+
         }
 
-      
+        #region Recoded delete
+        
+        /// <summary>
+        ///   Creates an Ifc Persistent Instance, this is an undoable operation
+        /// </summary>
+        /// <typeparam name = "TIfcType"> The Ifc Type, this cannot be an abstract class. An exception will be thrown if the type is not a valid Ifc Type  </typeparam>
+        public TIfcType New<TIfcType>() where TIfcType : IPersistIfcEntity, new()
+        {
+            Transaction txn = Transaction.Current;
+            Debug.Assert(txn != null); //model must be in the active transaction to create new entities
+            Type t = typeof(TIfcType);
+            IPersistIfcEntity newEntity = instances.AddNew_Reversable(this, t);
+            if (typeof(IfcRoot).IsAssignableFrom(t))
+                ((IfcRoot)newEntity).OwnerHistory = OwnerHistoryAddObject;
+            return (TIfcType)newEntity;
+        }
+
+        /// <summary>
+        ///   Creates and Instance of TIfcType and initializes the properties in accordance with the lambda expression
+        ///   i.e. Person person = CreateInstance&gt;Person&lt;(p =&lt; { p.FamilyName = "Undefined"; p.GivenName = "Joe"; });
+        /// </summary>
+        /// <typeparam name = "TIfcType"></typeparam>
+        /// <param name = "initPropertiesFunc"></param>
+        /// <returns></returns>
+        public TIfcType New<TIfcType>(InitProperties<TIfcType> initPropertiesFunc) where TIfcType : IPersistIfcEntity, new()
+        {
+            TIfcType instance = New<TIfcType>();
+            initPropertiesFunc(instance);
+            return instance; 
+        }
+
+        #endregion
+
 
     }
 }

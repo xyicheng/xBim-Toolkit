@@ -52,21 +52,8 @@ namespace Xbim.DOM
 
         public IModel Model { get { return _model; } }
         public IModel IfcModel() { return _model; }
-        /// <summary>
-        /// Opens all resources that are IDisposables, intended for stateless WEB deployment
-        /// </summary>
-        /// <returns></returns>
-        public void Activate()
-        {
-             _model.Close();
-        }
-        /// <summary>
-        /// Close all resources that are IDisposables, intended for stateless WEB deployment
-        /// </summary>
-        public void DeActivate()
-        {
-            _model.ReOpen();
-        }
+        
+
         #endregion
 
         public IEnumerable<IfcBuildingElement> IsMadeOf(XbimMaterial material)
@@ -975,16 +962,18 @@ namespace Xbim.DOM
                 {
                     _transaction.Commit();
                 }
-
-                //close model server if it is the case
-                if (Model is XbimModelServer)
-                {
-                    (Model as XbimModelServer).Dispose();
-                }
-                if (Model is XbimMemoryModel)
-                {
-                    _model  = null;
-                }
+                //srl this code needs to be resolved due to changes to the XbimModel server
+                _model  = null;
+                Debug.Assert(false, "Code attention required below this line");
+                ////close model server if it is the case
+                //if (Model is XbimFileModelServer)
+                //{
+                //    (Model as XbimFileModelServer).Dispose(true);
+                //}
+                //if (Model is XbimMemoryModel)
+                //{
+                //    _model  = null;
+                //}
             }
         }
 

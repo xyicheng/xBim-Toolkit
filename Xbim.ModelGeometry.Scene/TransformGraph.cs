@@ -87,11 +87,7 @@ namespace Xbim.ModelGeometry.Scene
             _model.Close();
         }
 
-        public bool ReOpen()
-        {
-            
-            return _model.ReOpen();
-        }
+       
 
 
         /// <summary>

@@ -9,6 +9,7 @@ using Xbim.ModelGeometry;
 using System.IO;
 using Xbim.Common.Logging;
 using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.SharedBldgElements;
 
 
 namespace XbimConvert
@@ -33,22 +34,29 @@ namespace XbimConvert
                 
                 try
                 {
-                    
+
                     Logger.InfoFormat("Starting conversion of {0}", args[0]);
-                    
+
                     string xbimFileName = BuildFileName(arguments.IfcFileName, ".xbim");
                     string xbimGeometryFileName = BuildFileName(arguments.IfcFileName, ".xbimGC");
                     System.Diagnostics.Stopwatch watch = new System.Diagnostics.Stopwatch();
 
                     watch.Start();
 
-                   
-                    XbimFileModelServer model = ParseModelFile(xbimFileName);
-                    model = new XbimFileModelServer(xbimFileName);
-                    //GenerateGeometry(xbimGeometryFileName, model);
-                    IEnumerable<IfcDoor> doors = model.InstancesOfType<IfcDoor>();
-                    model.Close();
-
+                    using(XbimFileModelServer model = ParseModelFile(xbimFileName))
+                    {
+                        
+                        model.Open(xbimFileName);
+                        //GenerateGeometry(xbimGeometryFileName, model);
+                        IEnumerable < IfcProduct > doors = model.InstancesOfType<IfcProduct>();
+                        int i = 1;
+                        foreach (var door in doors)
+                        {
+                            Console.WriteLine(door.Name);
+                           
+                        }
+                        model.Close();
+                    }
                     watch.Stop();
 
                     ResetCursor(Console.CursorTop + 1);

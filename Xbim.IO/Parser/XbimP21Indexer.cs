@@ -308,6 +308,7 @@ namespace Xbim.IO.Parser
 
         internal override void EndEntity()
         {
+            _binaryWriter.Write((byte)P21ParseAction.EndEntity);
             using (var update = new Update(session, table, JET_prep.Insert))
             {
                 MemoryStream data = _binaryWriter.BaseStream as MemoryStream;

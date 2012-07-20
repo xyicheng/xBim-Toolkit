@@ -43,8 +43,10 @@ using Xbim.Common.Exceptions;
 namespace Xbim.IO
 {
 
-
-    public class XbimFileModelServer : XbimModelServer
+    /// <summary>
+    /// A class for model serving Ifc Entities, this is a disposable entity
+    /// </summary>
+    public class XbimFileModelServer : XbimModelServer, IDisposable
     {
         private BinaryReader _binaryReader;
        
@@ -53,26 +55,88 @@ namespace Xbim.IO
         private Instance _jetInstance;
         private Session _jetSession;
         private JET_DBID _jetDatabaseId;
-        private Table _jetEntityTable;
-        private JET_COLUMNID columnidEntityLabel;
-        private JET_COLUMNID columnidSecondaryKey;
-        private JET_COLUMNID columnidIfcType;
-        private JET_COLUMNID columnidEntityData;
-        Int64ColumnValue _colEnityLabel;
-        Int16ColumnValue _colTypeId;
-        BytesColumnValue _colData;
+        private Table _jetEntityCursor;
+        private Table _jetTypeCursor;
+        private Table _jetActivateCursor;
+        private JET_COLUMNID _columnidEntityLabel;
+        private JET_COLUMNID _columnidSecondaryKey;
+        private JET_COLUMNID _columnidIfcType;
+        private JET_COLUMNID _columnidEntityData;
+        Int64ColumnValue _colValEntityLabel;
+        Int16ColumnValue _colValTypeId;
+        BytesColumnValue _colValData;
         ColumnValue[] _colValues;
-
-        private BinaryWriter _binaryWriter;
-        private Stream _stream;
-        private FileAccess _desiredAccessMode;
         private const string _EntityTablePrimaryIndex = "primary";
         private const string _EntityTableTypeIndex = "secondary";
+        private FileAccess _desiredAccessMode;
+        private bool disposed = false;
+        int InstancesCacheDefaultSize = 5000;
+        private Dictionary<long, IPersistIfcEntity> _instancesCache;
+        private HashSet<IPersistIfcEntity> _instancesWriteCache;
+        
+        
+        private BinaryWriter _binaryWriter;
+        private Stream _stream;
+
+        /// <summary>
+        /// Starts a session, all instances will be kept alive in the session until EndSession is called
+        /// or the Server goes out of scope
+        /// </summary>
+        public void BeginSession()
+        {
+
+        }
+        /// <summary>
+        /// Releases all resources cached in the server, objects retrieved in the session will be freed and invalid after this call
+        /// </summary>
+        public void EndSession()
+        {
+           
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            // Take yourself off the Finalization queue 
+            // to prevent finalization code for this object
+            // from executing a second time.
+            GC.SuppressFinalize(this); 
+        }
+
+        ~XbimFileModelServer()
+        {
+            Dispose(false);
+        }
+        protected virtual void Dispose(bool disposing)
+        {
+            // Check to see if Dispose has already been called.
+            if (!this.disposed)
+            {
+                // If disposing equals true, dispose all managed 
+                // and unmanaged resources.
+                if (disposing)
+                {
+                    // Dispose managed resources.
+                    if (_jetActivateCursor != null) { _jetActivateCursor.Close(); _jetActivateCursor.Dispose(); };
+                    if (_jetTypeCursor != null) { _jetTypeCursor.Close(); _jetTypeCursor.Dispose(); };
+                    if (_jetEntityCursor != null) { _jetEntityCursor.Close(); _jetEntityCursor.Dispose(); };
+                    if (_jetSession != null) _jetSession.Dispose();
+                    if (_jetInstance != null) _jetInstance.Dispose();
+                    _instancesCache = null;
+                    _instancesWriteCache = null;
+                    undoRedoSession = null;
+                    instances = null;
+                }
+                
+            }
+            disposed = true;
+        }
+
         /// <summary>
         /// Creates an empty xbim file, overwrites any existing file of the same name
         /// </summary>
         /// <returns></returns>
-        private bool CreateDatabase(string fileName)
+        public static bool CreateDatabase(string fileName)
         {
            
            // _filename = Path.ChangeExtension(fileName, "xBIM");
@@ -92,7 +156,7 @@ namespace Xbim.IO
                         // table which is opened normally.
                         JET_TABLEID tableid;
                         Api.JetCreateTable(session, dbid, XbimModel.IfcInstanceTableName, 16, 80, out tableid);
-                        CreateColumnsAndIndexes(session, tableid);
+                        CreateEntityTable(session, tableid);
                         Api.JetCloseTable(session, tableid);
 
                         // Lazily commit the transaction. Normally committing a transaction forces the
@@ -107,7 +171,6 @@ namespace Xbim.IO
                     }
                     if (dbid == JET_DBID.Nil)
                     {
-                        Logger.ErrorFormat("Failed to create Xbim Database {0}", _filename);
                         return false;
                     }
                     else
@@ -118,13 +181,13 @@ namespace Xbim.IO
         }
 
         /// <summary>
-        /// Setup the meta-data for the table.
+        /// Creates the entity table
         /// </summary>
         /// <param name="sesid">The session to use.</param>
         /// <param name="tableid">
         /// The table to add the columns/indexes to. This table must be opened exclusively.
         /// </param>
-        private static void CreateColumnsAndIndexes(JET_SESID sesid, JET_TABLEID tableid)
+        private static void CreateEntityTable(JET_SESID sesid, JET_TABLEID tableid)
         {
             using (var transaction = new Microsoft.Isam.Esent.Interop.Transaction(sesid))
             {
@@ -164,12 +227,12 @@ namespace Xbim.IO
                 // must end with "\0\0". The count of characters should include all terminators.
 
                 // The primary index is the type and the entity label.
-                string indexDef = string.Format("+{0}\0+{1}\0\0", XbimModel.colNameIfcType, XbimModel.colNameEntityLabel);
+                string indexDef = string.Format("+{0}\0\0",  XbimModel.colNameEntityLabel);
                 //string indexDef = string.Format("+{0}\0\0",  XbimModel.colNameEntityLabel);
                 Api.JetCreateIndex(sesid, tableid, _EntityTablePrimaryIndex, CreateIndexGrbit.IndexPrimary, indexDef, indexDef.Length, 100);
 
                 // An index on the type and secondary key. For quick access to IfcRelation entities and the like
-                indexDef = string.Format("+{0}\0+{1}\0\0", XbimModel.colNameIfcType,XbimModel.colNameSecondaryKey);
+                indexDef = string.Format("+{0}\0\0", XbimModel.colNameIfcType);
                 Api.JetCreateIndex(sesid, tableid, _EntityTableTypeIndex, CreateIndexGrbit.IndexIgnoreAnyNull, indexDef, indexDef.Length, 100);
 
                 transaction.Commit(CommitTransactionGrbit.LazyFlush);
@@ -185,37 +248,36 @@ namespace Xbim.IO
         }
 
 
-
-        public XbimFileModelServer(Stream stream)
-        {
-            _stream = stream;
-            FileStream fstream = _stream as FileStream;
-            if (fstream != null)
-                _filename = fstream.Name;
-        }
-
         public XbimFileModelServer()
         {
            
         }
-
-        public XbimFileModelServer(string fileName, FileAccess fileAccess = FileAccess.Read):this()
-        {
-           
+        /// <summary>
+        /// Creates an XbimFileModelServer and opens the Xbim file with requested access
+        /// </summary>
+        /// <param name="fileName"></param>
+        /// <param name="fileAccess">FileAcess Model</param>
+        public XbimFileModelServer(string fileName, FileAccess fileAccess = FileAccess.Read)
+            : this()
+        {   
             Open(fileName, fileAccess);
         }
                 
        
 
-        /// <summary>
-        ///   Opens an xbim model server file, exception is thrown if errors are encountered
-        /// </summary>
-        /// <param name = "filename"></param>
-        /// <returns></returns>
+       /// <summary>
+        ///  Opens an xbim model server file, exception is thrown if errors are encountered
+       /// </summary>
+       /// <param name="filename"></param>
+       /// <param name="fileAccess">Normally set to read, this does not prevent the option to write at a later stage, but improves performance</param>
         public void Open(string filename, FileAccess fileAccess = FileAccess.Read)
         {
             try
             {
+                //reset the instances cache to clear any previous loads
+                _instancesCache = new Dictionary<long, IPersistIfcEntity>(InstancesCacheDefaultSize);
+                _instancesWriteCache = new HashSet<IPersistIfcEntity>();
+
                 _desiredAccessMode = fileAccess;
 
                 if (!string.IsNullOrEmpty(_filename))
@@ -226,23 +288,35 @@ namespace Xbim.IO
                 if (_jetInstance == null) //if we have never created an instance do it now
                 {
                     _jetInstance = new Instance("XbimInstance");
+                    if (fileAccess == FileAccess.Read)
+                    {
+                        _jetInstance.Parameters.Recovery = false; //By default its True, only set this if we plan to write
+                    }
+                    SystemParameters.CacheSizeMin = 16 * 1024;
+                    _jetInstance.Parameters.LogFileSize = 16 * 1024;
+                    _jetInstance.Parameters.LogBuffers = 8 * 1024;
                     _jetInstance.Init();
                     _jetSession = new Session(_jetInstance);
                 }
                 
                 Api.JetAttachDatabase(_jetSession, filename, AttachDatabaseGrbit.None);
-                Api.JetOpenDatabase(_jetSession, filename, null, out _jetDatabaseId, OpenDatabaseGrbit.None);
+                if(fileAccess==FileAccess.Read)
+                    Api.JetOpenDatabase(_jetSession, filename, null, out _jetDatabaseId, OpenDatabaseGrbit.ReadOnly);
+                else
+                    Api.JetOpenDatabase(_jetSession, filename, null, out _jetDatabaseId, OpenDatabaseGrbit.None);
                 _filename = filename;
-                _jetEntityTable = new Table(_jetSession, _jetDatabaseId, XbimModel.IfcInstanceTableName, OpenTableGrbit.None);
-                IDictionary<string, JET_COLUMNID> columnids = Api.GetColumnDictionary(_jetSession, _jetEntityTable);
-                columnidEntityLabel = columnids[XbimModel.colNameEntityLabel];
-                columnidSecondaryKey = columnids[XbimModel.colNameSecondaryKey];
-                columnidIfcType = columnids[XbimModel.colNameIfcType];
-                columnidEntityData = columnids[XbimModel.colNameEntityData];
-                _colEnityLabel = new Int64ColumnValue { Columnid = columnidEntityLabel };
-                _colTypeId = new Int16ColumnValue { Columnid = columnidIfcType };
-                _colData = new BytesColumnValue { Columnid = columnidEntityData };
-                _colValues = new ColumnValue[] { _colEnityLabel, _colTypeId, _colData };
+                _jetEntityCursor = new Table(_jetSession, _jetDatabaseId, XbimModel.IfcInstanceTableName, OpenTableGrbit.None);
+                _jetTypeCursor = new Table(_jetSession, _jetDatabaseId, XbimModel.IfcInstanceTableName, OpenTableGrbit.None);
+                _jetActivateCursor = new Table(_jetSession, _jetDatabaseId, XbimModel.IfcInstanceTableName, OpenTableGrbit.None);
+                IDictionary<string, JET_COLUMNID> columnids = Api.GetColumnDictionary(_jetSession, _jetEntityCursor);
+                _columnidEntityLabel = columnids[XbimModel.colNameEntityLabel];
+                _columnidSecondaryKey = columnids[XbimModel.colNameSecondaryKey];
+                _columnidIfcType = columnids[XbimModel.colNameIfcType];
+                _columnidEntityData = columnids[XbimModel.colNameEntityData];
+                _colValEntityLabel = new Int64ColumnValue { Columnid = _columnidEntityLabel };
+                _colValTypeId = new Int16ColumnValue { Columnid = _columnidIfcType };
+                _colValData = new BytesColumnValue { Columnid = _columnidEntityData };
+                _colValues = new ColumnValue[] { _colValEntityLabel, _colValTypeId, _colValData };
 
                 // we have _header of the opened file, set that header to the Header property of XbimModelServer
                 //Header.FileName = header.FileName;
@@ -255,29 +329,44 @@ namespace Xbim.IO
             }
         }
 
-        public override IEnumerable<TIfcType> InstancesOfType<TIfcType>() 
+        /// <summary>
+        ///   Creates a new Ifc Persistent Instance, this is an undoable operation
+        /// </summary>
+        /// <typeparam name = "TIfcType"> The Ifc Type, this cannot be an abstract class. An exception will be thrown if the type is not a valid Ifc Type  </typeparam>
+        public TIfcType New<TIfcType>() where TIfcType : IPersistIfcEntity, new()
         {
             Type t = typeof(TIfcType);
-            short typeId = IfcInstances.IfcTypeLookup[t.Name.ToUpper()].TypeId;
-            Api.JetSetCurrentIndex(_jetSession, _jetEntityTable, _EntityTablePrimaryIndex);
-            Api.MakeKey(_jetSession, _jetEntityTable, typeId, MakeKeyGrbit.NewKey);
-            if (Api.TrySeek(_jetSession, _jetEntityTable, SeekGrbit.SeekGE))
-            {
-                Api.MakeKey(_jetSession, _jetEntityTable, typeId, MakeKeyGrbit.NewKey);
-                int i=0;
-                if (Api.TrySetIndexRange(_jetSession, _jetEntityTable, SetIndexRangeGrbit.RangeUpperLimit))
-                {
-                    do
-                    {
-                       i++;
-                        yield return (TIfcType)new Xbim.Ifc2x3.SharedBldgElements.IfcDoor();
-                    }
-                    while (Api.TryMoveNext(_jetSession, _jetEntityTable));
-                }
-            }
-
+            IPersistIfcEntity entity = (IPersistIfcEntity)Activator.CreateInstance(t);
+            entity.Bind(this, -posLabel); //a negative handle determines that the attributes of this entity have not been loaded yet
+            _instancesCache.Add(posLabel, entity);
+            IPersistIfcEntity newEntity = instances.AddNew_Reversable(this, t);
+            if (typeof(IfcRoot).IsAssignableFrom(t))
+                ((IfcRoot)newEntity).OwnerHistory = OwnerHistoryAddObject;
+            return (TIfcType)newEntity;
         }
+
+        /// <summary>
+        ///   Creates and Instance of TIfcType and initializes the properties in accordance with the lambda expression
+        ///   i.e. Person person = CreateInstance&gt;Person&lt;(p =&lt; { p.FamilyName = "Undefined"; p.GivenName = "Joe"; });
+        /// </summary>
+        /// <typeparam name = "TIfcType"></typeparam>
+        /// <param name = "initPropertiesFunc"></param>
+        /// <returns></returns>
+        public TIfcType New<TIfcType>(InitProperties<TIfcType> initPropertiesFunc) where TIfcType : IPersistIfcEntity, new()
+        {
+            TIfcType instance = New<TIfcType>();
+            initPropertiesFunc(instance);
+            return instance;
+        }
+
+
+
+
+
+        #region To Review
         
+       
+
         /// <summary>
         ///   Imports an Ifc file into the model server, throws exception if errors are encountered
         /// </summary>
@@ -301,6 +390,9 @@ namespace Xbim.IO
         {
             return ImportIfc(filename, xbimFilename, null);
         }
+
+       
+
         /// <summary>
         ///   Imports an Ifc file into the model server, throws exception if errors are encountered
         /// </summary>
@@ -691,7 +783,7 @@ namespace Xbim.IO
             binaryWriter.Write(reservedSize);
             binaryWriter.Write(new byte[reservedSize]);
         }
-
+        //to remove
         private void Initialise()
         {
             if (!_stream.CanSeek)
@@ -744,66 +836,115 @@ namespace Xbim.IO
             if (currentTrans != null) currentTrans.Enter();
         }
 
-       
-
-        protected override void ActivateEntity(long offset, IPersistIfcEntity entity)
+        public override long Activate(IPersistIfcEntity entity, bool write)
         {
-           //if less than 1 it is not written to the file
-            if (offset > 0)
+
+            long label = entity.EntityLabel;
+            //   Debug.Assert((!write && label < 0) || (write && label > 0)); //cannot call to write if we hven't read current state;
+            long posLabel = Math.Abs(label);
+
+            if (!write) //we want to activate for reading, if entry offset == 0 it is a new oject with no data set
             {
-                lock (this)
+                Api.JetSetCurrentIndex(_jetSession, _jetActivateCursor, _EntityTablePrimaryIndex);
+                Api.MakeKey(_jetSession, _jetActivateCursor, posLabel, MakeKeyGrbit.NewKey);
+                if (Api.TrySeek(_jetSession, _jetActivateCursor, SeekGrbit.SeekEQ))
                 {
-                    byte[] bLen = new byte[sizeof(int)];
-                    _stream.Seek(offset, SeekOrigin.Begin);
-                    _stream.Read(bLen, 0, sizeof(int));
-                    int len = BitConverter.ToInt32(bLen, 0);
-
-#if DEBUG
-                    long maxByte = 0xffff; //should be about as big as an object should ever get
-                    if (_stream is FileStream)
-                        maxByte = ((FileStream)_stream).Length;
-
-                    if (len < 0 || len > maxByte)
-                    {
-                        
-                        throw new Xbim.Common.Exceptions.XbimException("Error in xbim file: invalid entity binary length. Length: " + len.ToString());
-                    }
-#endif
-
-
-                    byte[] bContent = new byte[len];
-                    _stream.Read(bContent, 0, len);
-                    MemoryStream ms = new MemoryStream(bContent);
-                    BinaryReader br = new BinaryReader(ms);
-                    PopulateProperties(entity, br);
-
+                    byte[] properties = Api.RetrieveColumn(_jetSession, _jetActivateCursor, _columnidEntityData);
+                    PopulateProperties(entity, new BinaryReader(new MemoryStream(properties)));
                 }
             }
-
+            else //it is activated for reading and we now want to write so remember until the transaction is committed
+            {
+                if (!Xbim.XbimExtensions.Transactions.Transaction.IsRollingBack)
+                {
+                    // Debug.Assert(Transaction.Current != null); //don't write things if not in a transaction
+                    if (!ToWrite.Contains(entity))
+                        ToWrite.Add_Reversible(entity);
+                }
+            }
+            return posLabel;
         }
 
 
-        public override void Dispose()
+
+        /// <summary>
+        /// Returns an instance of the entity with the specified label,
+        /// if the instance has alrady been loaded it is returned from the caache
+        /// if it has not been loaded a blank instance is loaded, i.e. will not have been activated
+        /// </summary>
+        /// <param name="label"></param>
+        /// <returns></returns>
+        public override IPersistIfcEntity GetInstance(long label)
         {
-            if (_jetEntityTable != null) _jetEntityTable.Dispose();
-            if (_jetSession != null) _jetSession.Dispose();
-            if (_jetInstance != null) _jetInstance.Dispose();
-
-
-
-            if (_binaryReader != null) _binaryReader.Close();
-            _binaryReader = null;
-
-            if (_stream != null) _stream.Close();
-            _stream = null;
-             
-            _filename = null;
-            ToWrite.Clear();
-            undoRedoSession = null;
-            instances = null;
+            long posLabel = Math.Abs(label);
+            IPersistIfcEntity entity;
+            if (_instancesCache.TryGetValue(posLabel, out entity))
+                return entity;
+            else
+                return GetInstanceFromStore(posLabel);
+        }
+        /// <summary>
+        /// Loads a blank instance from the database, do not call this before checking that the instance is in the instances cache
+        /// </summary>
+        /// <param name="posLabel">Must be a positive value of the label</param>
+        /// <returns></returns>
+        private IPersistIfcEntity GetInstanceFromStore(long posLabel)
+        {
+            Debug.Assert(!_instancesCache.ContainsKey(posLabel));
+            Api.JetSetCurrentIndex(_jetSession, _jetEntityCursor, _EntityTablePrimaryIndex);
+            Api.MakeKey(_jetSession, _jetEntityCursor, posLabel, MakeKeyGrbit.NewKey);
+            if (Api.TrySeek(_jetSession, _jetEntityCursor, SeekGrbit.SeekEQ))
+            {
+                short? typeId = Api.RetrieveColumnAsInt16(_jetSession, _jetEntityCursor, _columnidIfcType);
+                if (typeId.HasValue)
+                {
+                    IfcType ifcType = IfcInstances.IfcIdIfcTypeLookup[typeId.Value];
+                    IPersistIfcEntity entity = (IPersistIfcEntity)Activator.CreateInstance(ifcType.Type);
+                    entity.Bind(this, -posLabel); //a negative handle determines that the attributes of this entity have not been loaded yet
+                    _instancesCache.Add(posLabel, entity);
+                    return entity;
+                }
+            }
+            return null;
         }
 
+
+        public override IEnumerable<TIfcType> InstancesOfType<TIfcType>()
+        {
+            
+
+            IfcType ifcType = IfcInstances.IfcEntities[typeof(TIfcType)];
+            foreach (Type t in ifcType.NonAbstractSubTypes)
+            {
+                short typeId = IfcInstances.IfcEntities[t].TypeId;
+                Api.JetSetCurrentIndex(_jetSession, _jetTypeCursor, _EntityTableTypeIndex);
+                Api.MakeKey(_jetSession, _jetTypeCursor, typeId, MakeKeyGrbit.NewKey);
+                if (Api.TrySeek(_jetSession, _jetTypeCursor, SeekGrbit.SeekGE))
+                {
+                    Api.MakeKey(_jetSession, _jetTypeCursor, typeId, MakeKeyGrbit.NewKey);
+                    if (Api.TrySetIndexRange(_jetSession, _jetTypeCursor, SetIndexRangeGrbit.RangeUpperLimit | SetIndexRangeGrbit.RangeInclusive))
+                    {
+                        do
+                        {
+                            Int64 posLabel = (Int64)Api.RetrieveColumnAsInt64(_jetSession, _jetTypeCursor, _columnidEntityLabel); //it is a non null db value so just cast
+                            IPersistIfcEntity entity;
+                            if (!_instancesCache.TryGetValue(posLabel, out entity))//if already in the cache just return it, else create a blank
+                            {
+                                entity = (IPersistIfcEntity)Activator.CreateInstance(t);
+                                entity.Bind(this, -posLabel); //a negative handle determines that the attributes of this entity have not been loaded yet
+                            }
+                            yield return (TIfcType)entity;
+                        }
+                        while (Api.TryMoveNext(_jetSession, _jetTypeCursor));
+                    }
+                }
+            }
+        }
+        
        
+
+
+
 
 
 
@@ -861,31 +1002,21 @@ namespace Xbim.IO
 
        
 
-        public override bool ReOpen()
-        {
-            try
-            {
-                if (string.IsNullOrEmpty(_filename))
-                    return false;
-
-                _stream = new FileStream(_filename, FileMode.Open, FileAccess.Read);
-                _binaryReader = new BinaryReader(_stream);
-
-                return true;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-        }
-
         public override void Close()
         {
-            if (_jetEntityTable != null)
+            _instancesCache = null;
+            _instancesWriteCache = null 
+            if (_jetEntityCursor != null)
             {
-                _jetEntityTable.Close();
-                _jetEntityTable.Dispose();
-                _jetEntityTable = null;
+                _jetActivateCursor.Close();
+                _jetActivateCursor.Dispose();
+                _jetActivateCursor = null;
+                _jetTypeCursor.Close();
+                _jetTypeCursor.Dispose();
+                _jetTypeCursor = null;
+                _jetEntityCursor.Close();
+                _jetEntityCursor.Dispose();
+                _jetEntityCursor = null;
             }
             if (!string.IsNullOrEmpty(_filename))
             {
@@ -994,26 +1125,7 @@ namespace Xbim.IO
 
         }
 
-        private void WriteToStream(IPersistIfcEntity entity)
-        {
-            //srl need to resolve
-            //////lock (this)
-            //////{
-               
-            //////    _stream.Seek(0, SeekOrigin.End);
-            //////    long posIndex = _stream.Position;
-            //////    //IPersistIfcEntity entity = GetOrCreateEntity(el);
-            //////    //var offset = _entityOffsets[el];
-            //////    _entityOffsets[entity.EntityLabel].Offset = posIndex;
-            //////    _binaryWriter.Write((int)0); // reserve 4 bytes of length of stream
-            //////    int len = WriteEntity(_binaryWriter, entity); // write data and get length
-            //////    long prevPos = _stream.Position; // record current pos for later
-            //////    _stream.Seek(posIndex, SeekOrigin.Begin); // seak the position for the length of stream
-            //////    _binaryWriter.Write(len); // write the len and move back to prev position
-            //////    _stream.Seek(prevPos, SeekOrigin.Begin);
-            //////}
-            
-        }
+
         /// <summary>
         ///   Imports an Xml file memory model into the model server, throws exception if errors are encountered
         /// </summary>
@@ -1047,7 +1159,9 @@ namespace Xbim.IO
                 {
                     IfcXmlReader reader = new IfcXmlReader();
             
-                    reader.AppendToStream += WriteToStream;
+                    //srl need to write this to the database
+                    throw new NotImplementedException();
+                    //reader.AppendToStream += WriteToStream;
 
                     errors = reader.Read(this, xmlReader);
                 }
@@ -1095,6 +1209,7 @@ namespace Xbim.IO
             return Open(inputFileName, null);
         }
 
+
         public override string Open(string inputFileName, ReportProgressDelegate progReport)
         {
             string outputFileName = Path.ChangeExtension(inputFileName, "xbim");
@@ -1139,7 +1254,13 @@ namespace Xbim.IO
         }
 
 
-       
+
+
+        protected override void ActivateEntity(long offset, IPersistIfcEntity entity)
+        {
+            throw new NotImplementedException();
+        }
+        #endregion
     }
 
 }
