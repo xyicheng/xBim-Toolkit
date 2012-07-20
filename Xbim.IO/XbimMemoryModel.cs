@@ -53,7 +53,7 @@ namespace Xbim.IO
 {
 
     [Serializable]
-    public class XbimMemoryModel : XbimModel, ISupportChangeNotification, INotifyPropertyChanged, INotifyPropertyChanging
+    public class XbimMemoryModel :  ISupportChangeNotification, INotifyPropertyChanged, INotifyPropertyChanging
     {
         #region Fields
 		
@@ -72,11 +72,7 @@ namespace Xbim.IO
 
        
 
-        public override bool Delete(IPersistIfcEntity instance)
-        {
-            return instances.Remove(instance);
-        }
-
+       
         public void Commit()
         {
             Transaction txn = Transaction.Current;
@@ -314,78 +310,7 @@ namespace Xbim.IO
 
         #endregion
 
-        private IPersistIfc _part21Parser_EntityCreate(string className, long? label, bool headerEntity,
-                                                       out int[] reqParams)
-        {
-            reqParams = null;
-            if (headerEntity)
-            {
-                switch (className)
-                {
-                    case "FILE_DESCRIPTION":
-                        return new FileDescription();
-                    case "FILE_NAME":
-                        return new FileName();
-                    case "FILE_SCHEMA":
-                        return new FileSchema();
-                    default:
-                        throw new ArgumentException(string.Format("Invalid Header entity type {0}", className));
-                }
-            }
-            else
-                return CreateInstance(className, label);
-        }
-
-        private IPersistIfc _part21Parser_EntityCreateWithFilter(string className, long? label, bool headerEntity,
-                                                                 out int[] reqParams)
-        {
-            if (headerEntity)
-            {
-                reqParams = null;
-                switch (className)
-                {
-                    case "FILE_DESCRIPTION":
-                        return new FileDescription();
-                    case "FILE_NAME":
-                        return new FileName();
-                    case "FILE_SCHEMA":
-                        return new FileSchema();
-                    default:
-                        throw new ArgumentException(string.Format("Invalid Header entity type {0}", className));
-                }
-            }
-            else
-            {
-                reqParams = null;
-                try
-                {
-                    IfcType ifcInstancesIfcTypeLookup = IfcInstances.IfcTypeLookup[className];
-                    
-                    if (_parseFilter.Contains(ifcInstancesIfcTypeLookup))
-                    {
-                        IfcFilter filter = _parseFilter[ifcInstancesIfcTypeLookup];
-                        if (filter.PropertyIndices != null && filter.PropertyIndices.Length > 0)
-                            reqParams = _parseFilter[ifcInstancesIfcTypeLookup].PropertyIndices;
-                        return CreateInstance(ifcInstancesIfcTypeLookup.Type, label);
-                    }
-                    else if (ifcInstancesIfcTypeLookup.Type.IsValueType)
-                    {
-                        return CreateInstance(ifcInstancesIfcTypeLookup.Type, label);
-                    }
-                    else
-                    {
-                        return null;
-                    }
-                }
-                catch (Exception )
-                {
-                    Logger.ErrorFormat(string.Format("Parse Error, Entity {0} could not be created", className));
-                    return null;
-                }
-            }
-        }
-
-       
+      
 
         /// <summary>
         ///   Parses the part 21 file and returns trhe number of erors found, errorLog contains error details
@@ -393,7 +318,7 @@ namespace Xbim.IO
         /// <param name = "inputStream"></param>
         /// <param name = "progressHandler"></param>
         /// <returns></returns>
-        public override int ParsePart21(Stream inputStream, ReportProgressDelegate progressHandler)
+        public  int ParsePart21(Stream inputStream, ReportProgressDelegate progressHandler)
         {
 
             int errorCount = 0;
@@ -546,126 +471,7 @@ namespace Xbim.IO
 
 
 
-       
-
-        // TODO: Review why these properties are here on the model.
-        public IEnumerable<IfcWall> Walls
-        {
-            get { return InstancesOfType<IfcWall>(); }
-        }
-
-        public IEnumerable<IfcSlab> Slabs
-        {
-            get { return InstancesOfType<IfcSlab>(); }
-        }
-
-        public IEnumerable<IfcDoor> Doors
-        {
-            get { return InstancesOfType<IfcDoor>(); }
-        }
-
-        public IEnumerable<IfcRoof> Roofs
-        {
-            get { return InstancesOfType<IfcRoof>(); }
-        }
-
-
-       
-        public override string Open(string inputFileName)
-        {
-            string outputFileName = Path.ChangeExtension(inputFileName, "xbim");
-
-            XbimStorageType fileType = XbimStorageType.XBIM;
-            string ext = Path.GetExtension(inputFileName).ToLower();
-            if (ext == ".xbim") fileType = XbimStorageType.XBIM;
-            else if (ext == ".ifc") fileType = XbimStorageType.IFC;
-            else if (ext == ".ifcxml") fileType = XbimStorageType.IFCXML;
-            else if (ext == ".zip" || ext == ".ifczip") fileType = XbimStorageType.IFCZIP;
-            else
-                throw new Exception("Invalid file type: " + ext);
-            try
-            {
-                if (fileType.HasFlag(XbimStorageType.IFCZIP))
-                {
-                    // get the ifc file from zip
-                    //using (Stream zipStream = new FileStream(inputFileName, FileMode.Open, FileAccess.Read))
-                    //{
-                    //    ZipInputStream zis = new ZipInputStream(zipStream);
-                    //}
-                    using (ZipInputStream zis = new ZipInputStream(File.OpenRead(inputFileName)))
-                    {
-                        ZipEntry zs = zis.GetNextEntry();
-                        while (zs != null)
-                        {
-                            String fileName = Path.GetFileName(zs.Name);
-                            if (fileName.ToLower().EndsWith(".ifc") || fileName.ToLower().EndsWith(".ifcxml"))
-                            {
-                                if (fileName.ToLower().EndsWith(".ifc"))
-                                {
-                                    ZipFile zf = new ZipFile(inputFileName);
-                                    Stream entryStream = zf.GetInputStream(zs);
-                                    using (IfcInputStream input = new IfcInputStream(entryStream))
-                                    {
-                                        if (input.Load(this) != 0)
-                                            throw new Exception("Ifc file parsing errors\n" + input.ErrorLog.ToString());
-                                    }                                    
-                                    break;
-                                }
-                                else if (fileName.ToLower().EndsWith(".ifcxml"))
-                                {
-                                    ZipFile zf = new ZipFile(inputFileName);
-                                    XmlReaderSettings settings = new XmlReaderSettings() { IgnoreComments = true, IgnoreWhitespace = false };
-                                    Stream entryStream = zf.GetInputStream(zs);
-                                    using (XmlReader xmlReader = XmlReader.Create(entryStream, settings))
-                                    {
-                                        IfcXmlReader reader = new IfcXmlReader();
-                                        reader.Read(this, xmlReader);
-                                    }
-                                    break;
-                                }                                                                
-                            }
-                        }
-
-                    }
-                }
-
-                else if (fileType.HasFlag(XbimStorageType.IFCXML))
-                {
-                    // input to be xml file, output will be xbim file
-                    XmlReaderSettings settings = new XmlReaderSettings() { IgnoreComments = true, IgnoreWhitespace = false };
-                    Stream xmlInStream = new FileStream(inputFileName, FileMode.Open, FileAccess.Read);
-
-                    using (XmlReader xmlReader = XmlReader.Create(xmlInStream, settings))
-                    {
-                        IfcXmlReader reader = new IfcXmlReader();
-                        reader.Read(this, xmlReader);
-                    }
-                }
-                else if (fileType.HasFlag(XbimStorageType.IFC))
-                {
-                    //attach it to the Ifc Stream Parser
-                    using (IfcInputStream input = new IfcInputStream(
-						new FileStream(inputFileName, FileMode.Open, FileAccess.Read)))
-                    {
-						if (input.Load(this) != 0)
-						{
-							Logger.WarnFormat("IFC file {0} failed to load.", inputFileName);
-							throw new Exception("Ifc file parsing errors\n" + input.ErrorLog.ToString());
-						}
-                    }
-
-                }
-
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Ifc file parsing errors\n" + inputFileName, ex);
-            }
-
-            return outputFileName;
-        }
-
-
+      
 
         public override void Import(string inputFileName)
         {
@@ -674,16 +480,7 @@ namespace Xbim.IO
 
 
 
-        #region IModel Members
-
-
-        public override string Open(string inputFileName, ReportProgressDelegate progDelegate)
-        {
-            return Open(inputFileName, progDelegate);
-        }
-
-        #endregion
-
+        
 
 
 

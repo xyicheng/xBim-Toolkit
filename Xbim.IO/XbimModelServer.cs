@@ -389,20 +389,7 @@ namespace Xbim.IO
         }
 
 
-
-        public override bool Delete(IPersistIfcEntity instance)
-        {
-            throw new NotImplementedException();
-        }
-
        
-
-
-        public override int ParsePart21(Stream inputStream, ReportProgressDelegate progressHandler)
-        {
-            throw new NotImplementedException();
-        }
-
 
         protected int WriteEntity(BinaryWriter entityWriter, IPersistIfcEntity entity)
         {

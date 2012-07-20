@@ -70,10 +70,8 @@ namespace Xbim.IO
         private const string _EntityTableTypeIndex = "secondary";
         private FileAccess _desiredAccessMode;
         private bool disposed = false;
-        int InstancesCacheDefaultSize = 5000;
-        private Dictionary<long, IPersistIfcEntity> _instancesCache;
-        private HashSet<IPersistIfcEntity> _instancesWriteCache;
         
+  
         
         private BinaryWriter _binaryWriter;
         private Stream _stream;
@@ -122,8 +120,8 @@ namespace Xbim.IO
                     if (_jetEntityCursor != null) { _jetEntityCursor.Close(); _jetEntityCursor.Dispose(); };
                     if (_jetSession != null) _jetSession.Dispose();
                     if (_jetInstance != null) _jetInstance.Dispose();
-                    _instancesCache = null;
-                    _instancesWriteCache = null;
+                    Cached = null;
+                    ToWrite = null;
                     undoRedoSession = null;
                     instances = null;
                 }
@@ -275,9 +273,9 @@ namespace Xbim.IO
             try
             {
                 //reset the instances cache to clear any previous loads
-                _instancesCache = new Dictionary<long, IPersistIfcEntity>(InstancesCacheDefaultSize);
-                _instancesWriteCache = new HashSet<IPersistIfcEntity>();
-
+                Cached = new Dictionary<long, IPersistIfcEntity>(CacheDefaultSize);
+                ToWrite = new HashSet<IPersistIfcEntity>();
+                _highestLabel = -1;
                 _desiredAccessMode = fileAccess;
 
                 if (!string.IsNullOrEmpty(_filename))
@@ -329,37 +327,29 @@ namespace Xbim.IO
             }
         }
 
-        /// <summary>
-        ///   Creates a new Ifc Persistent Instance, this is an undoable operation
-        /// </summary>
-        /// <typeparam name = "TIfcType"> The Ifc Type, this cannot be an abstract class. An exception will be thrown if the type is not a valid Ifc Type  </typeparam>
-        public TIfcType New<TIfcType>() where TIfcType : IPersistIfcEntity, new()
+       
+        private long HighestLabel
         {
-            Type t = typeof(TIfcType);
-            IPersistIfcEntity entity = (IPersistIfcEntity)Activator.CreateInstance(t);
-            entity.Bind(this, -posLabel); //a negative handle determines that the attributes of this entity have not been loaded yet
-            _instancesCache.Add(posLabel, entity);
-            IPersistIfcEntity newEntity = instances.AddNew_Reversable(this, t);
-            if (typeof(IfcRoot).IsAssignableFrom(t))
-                ((IfcRoot)newEntity).OwnerHistory = OwnerHistoryAddObject;
-            return (TIfcType)newEntity;
+            get
+            {
+                if (_highestLabel == -1)
+                {
+                    Api.JetSetCurrentIndex(_jetSession, _jetEntityCursor, _EntityTablePrimaryIndex);
+                    if (Api.TryMoveLast(_jetSession, _jetEntityCursor))
+                    {
+                        Int64 posLabel = (Int64)Api.RetrieveColumnAsInt64(_jetSession, _jetEntityCursor, _columnidEntityLabel); //it is a non null db value so just cast
+                        _highestLabel = posLabel;
+                    }
+                    else
+                        _highestLabel = 0;
+                }
+                return _highestLabel;
+            }
         }
 
-        /// <summary>
-        ///   Creates and Instance of TIfcType and initializes the properties in accordance with the lambda expression
-        ///   i.e. Person person = CreateInstance&gt;Person&lt;(p =&lt; { p.FamilyName = "Undefined"; p.GivenName = "Joe"; });
-        /// </summary>
-        /// <typeparam name = "TIfcType"></typeparam>
-        /// <param name = "initPropertiesFunc"></param>
-        /// <returns></returns>
-        public TIfcType New<TIfcType>(InitProperties<TIfcType> initPropertiesFunc) where TIfcType : IPersistIfcEntity, new()
-        {
-            TIfcType instance = New<TIfcType>();
-            initPropertiesFunc(instance);
-            return instance;
-        }
+       
 
-
+        
 
 
 
@@ -878,7 +868,7 @@ namespace Xbim.IO
         {
             long posLabel = Math.Abs(label);
             IPersistIfcEntity entity;
-            if (_instancesCache.TryGetValue(posLabel, out entity))
+            if (Cached.TryGetValue(posLabel, out entity))
                 return entity;
             else
                 return GetInstanceFromStore(posLabel);
@@ -890,7 +880,7 @@ namespace Xbim.IO
         /// <returns></returns>
         private IPersistIfcEntity GetInstanceFromStore(long posLabel)
         {
-            Debug.Assert(!_instancesCache.ContainsKey(posLabel));
+            Debug.Assert(!Cached.ContainsKey(posLabel));
             Api.JetSetCurrentIndex(_jetSession, _jetEntityCursor, _EntityTablePrimaryIndex);
             Api.MakeKey(_jetSession, _jetEntityCursor, posLabel, MakeKeyGrbit.NewKey);
             if (Api.TrySeek(_jetSession, _jetEntityCursor, SeekGrbit.SeekEQ))
@@ -901,7 +891,7 @@ namespace Xbim.IO
                     IfcType ifcType = IfcInstances.IfcIdIfcTypeLookup[typeId.Value];
                     IPersistIfcEntity entity = (IPersistIfcEntity)Activator.CreateInstance(ifcType.Type);
                     entity.Bind(this, -posLabel); //a negative handle determines that the attributes of this entity have not been loaded yet
-                    _instancesCache.Add(posLabel, entity);
+                    Cached.Add(posLabel, entity);
                     return entity;
                 }
             }
@@ -928,7 +918,7 @@ namespace Xbim.IO
                         {
                             Int64 posLabel = (Int64)Api.RetrieveColumnAsInt64(_jetSession, _jetTypeCursor, _columnidEntityLabel); //it is a non null db value so just cast
                             IPersistIfcEntity entity;
-                            if (!_instancesCache.TryGetValue(posLabel, out entity))//if already in the cache just return it, else create a blank
+                            if (!Cached.TryGetValue(posLabel, out entity))//if already in the cache just return it, else create a blank
                             {
                                 entity = (IPersistIfcEntity)Activator.CreateInstance(t);
                                 entity.Bind(this, -posLabel); //a negative handle determines that the attributes of this entity have not been loaded yet
@@ -1004,8 +994,8 @@ namespace Xbim.IO
 
         public override void Close()
         {
-            _instancesCache = null;
-            _instancesWriteCache = null 
+            Cached = null;
+            ToWrite = null;
             if (_jetEntityCursor != null)
             {
                 _jetActivateCursor.Close();
@@ -1210,43 +1200,7 @@ namespace Xbim.IO
         }
 
 
-        public override string Open(string inputFileName, ReportProgressDelegate progReport)
-        {
-            string outputFileName = Path.ChangeExtension(inputFileName, "xbim");
-
-            XbimStorageType fileType = XbimStorageType.XBIM;
-            string ext = Path.GetExtension(inputFileName).ToLower();
-            if (ext == ".xbim") fileType = XbimStorageType.XBIM;
-            else if (ext == ".ifc") fileType = XbimStorageType.IFC;
-            else if (ext == ".ifcxml") fileType = XbimStorageType.IFCXML;
-            else if (ext == ".zip" || ext == ".ifczip") fileType = XbimStorageType.IFCZIP;
-            else
-                throw new Exception("Invalid file type: " + ext);
-
-            if (fileType.HasFlag(XbimStorageType.XBIM))
-            {
-                Open(inputFileName, FileAccess.ReadWrite);
-            }
-            else if (fileType.HasFlag(XbimStorageType.IFCXML))
-            {
-                // input to be xml file, output will be xbim file
-                ImportXml(inputFileName, outputFileName);
-            }
-            else if (fileType.HasFlag(XbimStorageType.IFC))
-            {
-                // input to be ifc file, output will be xbim file
-                ImportIfc(inputFileName, outputFileName, progReport);
-            }
-            else if (fileType.HasFlag(XbimStorageType.IFCZIP))
-            {
-                // get the ifc file from zip
-                string ifcFileName = ExportZippedIfc(inputFileName);
-                // convert ifc to xbim
-                ImportIfc(ifcFileName, outputFileName);
-            }
-
-            return outputFileName;
-        }
+       
 
         public override void Import(string inputFileName)
         {
@@ -1261,6 +1215,8 @@ namespace Xbim.IO
             throw new NotImplementedException();
         }
         #endregion
+
+      
     }
 
 }

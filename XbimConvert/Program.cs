@@ -47,6 +47,7 @@ namespace XbimConvert
                     {
                         
                         model.Open(xbimFileName);
+                        IfcWindow window = model.New<IfcWindow>();
                         //GenerateGeometry(xbimGeometryFileName, model);
                         IEnumerable < IfcProduct > doors = model.InstancesOfType<IfcProduct>();
                         int i = 1;

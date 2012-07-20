@@ -70,12 +70,8 @@ namespace Xbim.XbimExtensions.Interfaces
         bool Delete(IPersistIfcEntity instance);
         bool ContainsInstance(IPersistIfcEntity instance);
         bool ContainsInstance(long entityLabel);
-        IEnumerable<IPersistIfcEntity> Instances { get; }
+
         long InstancesCount { get; }
-
-        IPersistIfcEntity AddNew(Type ifcType, long label);
-
-        int ParsePart21(Stream inputStream, ReportProgressDelegate progressHandler);
 
         IPersistIfcEntity OwnerHistoryAddObject { get; }
         IPersistIfcEntity OwnerHistoryModifyObject { get; }

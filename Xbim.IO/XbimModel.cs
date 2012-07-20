@@ -22,6 +22,7 @@ using System.Linq.Expressions;
 using System.Diagnostics;
 using Xbim.XbimExtensions.Transactions.Extensions;
 using Xbim.Common.Logging;
+using Xbim.IO.Parser;
 namespace Xbim.IO
 {
     abstract public class XbimModel : IModel
@@ -56,8 +57,12 @@ namespace Xbim.IO
 
         protected IIfcFileHeader header;
         protected IfcInstances instances;
+        protected IIfcInstanceCache Cached;
         protected HashSet<IPersistIfcEntity> ToWrite = new HashSet<IPersistIfcEntity>();
-       
+        protected HashSet<IPersistIfcEntity> ToDelete = new HashSet<IPersistIfcEntity>();
+        private long _highestLabel = -1;
+        protected int CacheDefaultSize = 5000;
+
 
         public static Type GetItemTypeFromGenericType(Type genericType)
         {
@@ -77,31 +82,19 @@ namespace Xbim.IO
 
         protected abstract void ActivateEntity(long offset, IPersistIfcEntity entity);
 
+        //the entity is already in memory so do nothing if to read, add to write colection if changing
         public virtual long Activate(IPersistIfcEntity entity, bool write)
         {
 
-            long label = entity.EntityLabel;
-            //   Debug.Assert((!write && label < 0) || (write && label > 0)); //cannot call to write if we hven't read current state;
             long posLabel = Math.Abs(label);
-
-            if (!write) //we want to activate for reading, if entry offset == 0 it is a new oject with no data set
+            if (write) //we want to activate for reading, if entry offset == 0 it is a new oject with no data set
             {
-                long fileOffset = instances.GetFileOffset(label);
-                ActivateEntity(fileOffset, entity);
-            }
-            else //it is activated for reading and we now want to write so remember until the transaction is committed
-            {
-
                 if (!Transaction.IsRollingBack)
                 {
-                    // Debug.Assert(Transaction.Current != null); //don't write things if not in a transaction
                     if (!ToWrite.Contains(entity))
-                    {
                         ToWrite.Add_Reversible(entity);
-                    }
                 }
             }
-
             return posLabel;
         }
 
@@ -208,11 +201,6 @@ namespace Xbim.IO
             get { return _defaultOwningUser; }
         }
 
-
-
-
-
-
         /// <summary>
         ///   Returns all instances in the model of IfcType, IfcType may be an abstract Type
         /// </summary>
@@ -234,46 +222,77 @@ namespace Xbim.IO
             return instances.Where(expression);
         }
 
-        abstract public bool Delete(IPersistIfcEntity instance);
 
-        public bool ContainsInstance(IPersistIfcEntity instance)
+
+        /// <summary>
+        /// Registers an entity for deletion
+        /// </summary>
+        /// <param name="instance"></param>
+        /// <returns></returns>
+        public bool Delete(IPersistIfcEntity instance)
         {
-            return instances.Contains(instance.EntityLabel);
+            ToDelete.Add_Reversible(instance);
         }
 
-        public bool ContainsInstance(long entityLabel)
+        public virtual bool ContainsInstance(IPersistIfcEntity instance)
         {
-             return instances.Contains(entityLabel);
+            return Cached.Contains(instance.EntityLabel);
         }
 
-        public IEnumerable<IPersistIfcEntity> Instances 
+        public virtual bool ContainsInstance(long entityLabel)
+        {
+            return Cached.Contains(entityLabel);
+        }
+
+        public virtual long InstancesCount 
         {
             get
             {
-                return instances;
-            }
-        }
-
-        public long InstancesCount 
-        {
-            get
-            {
-                return instances.Count;
+                return Cached.Count;
             }
         }
 
         /// <summary>
-        /// Creates a new instance of ifcType with entity label, this operation is NOT undoable
+        ///   Creates a new Ifc Persistent Instance, this is an undoable operation
         /// </summary>
-        /// <param name="ifcType"></param>
-        /// <param name="label"></param>
-        /// <returns></returns>
-        public IPersistIfcEntity AddNew(Type ifcType, long label)
+        /// <typeparam name = "TIfcType"> The Ifc Type, this cannot be an abstract class. An exception will be thrown if the type is not a valid Ifc Type  </typeparam>
+        public TIfcType New<TIfcType>() where TIfcType : IPersistIfcEntity, new()
         {
-            return instances.AddNew_Reversable(this, ifcType, label);
+            Type t = typeof(TIfcType);
+            long nextLabel = HighestLabel + 1;
+            return (TIfcType)New(t, nextLabel);
+        }
+        /// <summary>
+        ///   Creates and Instance of TIfcType and initializes the properties in accordance with the lambda expression
+        ///   i.e. Person person = CreateInstance&gt;Person&lt;(p =&lt; { p.FamilyName = "Undefined"; p.GivenName = "Joe"; });
+        /// </summary>
+        /// <typeparam name = "TIfcType"></typeparam>
+        /// <param name = "initPropertiesFunc"></param>
+        /// <returns></returns>
+        public TIfcType New<TIfcType>(InitProperties<TIfcType> initPropertiesFunc) where TIfcType : IPersistIfcEntity, new()
+        {
+            TIfcType instance = New<TIfcType>();
+            initPropertiesFunc(instance);
+            return instance;
         }
 
-        abstract public int ParsePart21(System.IO.Stream inputStream, ReportProgressDelegate progressHandler);
+        internal IPersistIfcEntity New(Type t, long label)
+        {
+            long nextLabel = Math.Abs(label);
+            IPersistIfcEntity entity = (IPersistIfcEntity)Activator.CreateInstance(t);
+            Xbim.XbimExtensions.Transactions.Transaction.AddPropertyChange<long>(h => _highestLabel = h, HighestLabel, nextLabel);
+            _highestLabel = Math.Max(nextLabel, _highestLabel);
+            entity.Bind(this, -nextLabel); //a negative handle determines that the attributes of this entity have not been loaded yet
+            Cached.Add_Reversible(nextLabel, entity);
+            ToWrite.Add_Reversible(entity);
+            if (typeof(IfcRoot).IsAssignableFrom(t))
+                ((IfcRoot)entity).OwnerHistory = OwnerHistoryAddObject;
+            return entity;
+
+        }
+
+        //------------------
+       
 
         IPersistIfcEntity IModel.OwnerHistoryAddObject
         {
@@ -513,10 +532,172 @@ namespace Xbim.IO
 
         #endregion
 
+        private IPersistIfc _part21Parser_EntityCreate(string className, long? label, bool headerEntity,
+                                                     out int[] reqParams)
+        {
+            reqParams = null;
+            if (headerEntity)
+            {
+                switch (className)
+                {
+                    case "FILE_DESCRIPTION":
+                        return new FileDescription();
+                    case "FILE_NAME":
+                        return new FileName();
+                    case "FILE_SCHEMA":
+                        return new FileSchema();
+                    default:
+                        throw new ArgumentException(string.Format("Invalid Header entity type {0}", className));
+                }
+            }
+            else
+                return CreateInstance(className, label);
+        }
 
-        abstract public string Open(string inputFileName);
+        private IPersistIfc _part21Parser_EntityCreateWithFilter(string className, long? label, bool headerEntity,
+                                                                 out int[] reqParams)
+        {
+            if (headerEntity)
+            {
+                reqParams = null;
+                switch (className)
+                {
+                    case "FILE_DESCRIPTION":
+                        return new FileDescription();
+                    case "FILE_NAME":
+                        return new FileName();
+                    case "FILE_SCHEMA":
+                        return new FileSchema();
+                    default:
+                        throw new ArgumentException(string.Format("Invalid Header entity type {0}", className));
+                }
+            }
+            else
+            {
+                reqParams = null;
+                try
+                {
+                    IfcType ifcInstancesIfcTypeLookup = IfcInstances.IfcTypeLookup[className];
 
-        abstract public string Open(string inputFileName, ReportProgressDelegate progDelegate);
+                    if (_parseFilter.Contains(ifcInstancesIfcTypeLookup))
+                    {
+                        IfcFilter filter = _parseFilter[ifcInstancesIfcTypeLookup];
+                        if (filter.PropertyIndices != null && filter.PropertyIndices.Length > 0)
+                            reqParams = _parseFilter[ifcInstancesIfcTypeLookup].PropertyIndices;
+                        return CreateInstance(ifcInstancesIfcTypeLookup.Type, label);
+                    }
+                    else if (ifcInstancesIfcTypeLookup.Type.IsValueType)
+                    {
+                        return CreateInstance(ifcInstancesIfcTypeLookup.Type, label);
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+                catch (Exception)
+                {
+                    Logger.ErrorFormat(string.Format("Parse Error, Entity {0} could not be created", className));
+                    return null;
+                }
+            }
+        }
+
+        public virtual string ImportIfc(Stream inputStream, ReportProgressDelegate progress)
+        {
+            int errorCount = 0;
+
+            _part21Parser = new XbimP21Parser(inputStream);
+            _parseFilter = null;
+            CreateEntityEventHandler creator;
+            if (_parseFilter == null)
+                creator = _part21Parser_EntityCreate;
+            else
+                creator = _part21Parser_EntityCreateWithFilter;
+            _part21Parser.EntityCreate += creator;
+            if (progressHandler != null) _part21Parser.ProgressStatus += progressHandler;
+
+
+            try
+            {
+
+                _part21Parser.Parse();
+            }
+            catch (Exception)
+            {
+                Logger.Error("Parser errors: The IFC file does not comply with the correct syntax");
+                errorCount++;
+            }
+            finally
+            {
+                _part21Parser.EntityCreate -= creator;
+                if (progressHandler != null) _part21Parser.ProgressStatus -= progressHandler;
+
+            }
+            errorCount = _part21Parser.ErrorCount + errorCount;
+            if (errorCount == 0 && BuildIndices)
+                errorCount += instances.BuildIndices();
+            return errorCount;
+        }
+
+        public virtual string ImportIfc(string filename, ReportProgressDelegate progress)
+        {
+            FileStream fs = null;
+            try
+            {
+                fs = new FileStream(filename, FileMode.Open, FileAccess.Read);
+                ImportIfc(fs, progress);
+            }
+            catch (Exception e)
+            {
+
+                Logger.ErrorFormat("Unable to open file {0}\n{1}", filename, e.Message);
+            }
+            finally
+            {
+                if (fs != null) fs.Close();
+            }
+           
+            return filename;
+        }
+
+        public string Open(string inputFileName, ReportProgressDelegate progReport)
+        {
+            string outputFileName = Path.ChangeExtension(inputFileName, "xbim");
+
+            XbimStorageType fileType = XbimStorageType.XBIM;
+            string ext = Path.GetExtension(inputFileName).ToLower();
+            if (ext == ".xbim") fileType = XbimStorageType.XBIM;
+            else if (ext == ".ifc") fileType = XbimStorageType.IFC;
+            else if (ext == ".ifcxml") fileType = XbimStorageType.IFCXML;
+            else if (ext == ".zip" || ext == ".ifczip") fileType = XbimStorageType.IFCZIP;
+            else
+                throw new Exception("Invalid file type: " + ext);
+
+            if (fileType.HasFlag(XbimStorageType.XBIM))
+            {
+                Open(inputFileName, FileAccess.ReadWrite);
+            }
+            else if (fileType.HasFlag(XbimStorageType.IFCXML))
+            {
+                // input to be xml file, output will be xbim file
+                ImportXml(inputFileName, outputFileName);
+            }
+            else if (fileType.HasFlag(XbimStorageType.IFC))
+            {
+                // input to be ifc file, output will be xbim file
+                ImportIfc(inputFileName, outputFileName, progReport);
+            }
+            else if (fileType.HasFlag(XbimStorageType.IFCZIP))
+            {
+                // get the ifc file from zip
+                string ifcFileName = ExportZippedIfc(inputFileName);
+                // convert ifc to xbim
+                ImportIfc(ifcFileName, outputFileName);
+            }
+
+            return outputFileName;
+        }
 
         abstract public bool Save();
 
@@ -533,7 +714,9 @@ namespace Xbim.IO
 
         public virtual IPersistIfcEntity GetInstance(long label)
         {
-            return instances.GetOrCreateEntity(label);
+            IPersistIfcEntity entity = null;
+            Cached.TryGetValue(label, out entity);
+            return entity;
         }
 
         abstract public void Close();
@@ -1008,38 +1191,11 @@ namespace Xbim.IO
 
         }
 
-        #region Recoded delete
-        
-        /// <summary>
-        ///   Creates an Ifc Persistent Instance, this is an undoable operation
-        /// </summary>
-        /// <typeparam name = "TIfcType"> The Ifc Type, this cannot be an abstract class. An exception will be thrown if the type is not a valid Ifc Type  </typeparam>
-        public TIfcType New<TIfcType>() where TIfcType : IPersistIfcEntity, new()
-        {
-            Transaction txn = Transaction.Current;
-            Debug.Assert(txn != null); //model must be in the active transaction to create new entities
-            Type t = typeof(TIfcType);
-            IPersistIfcEntity newEntity = instances.AddNew_Reversable(this, t);
-            if (typeof(IfcRoot).IsAssignableFrom(t))
-                ((IfcRoot)newEntity).OwnerHistory = OwnerHistoryAddObject;
-            return (TIfcType)newEntity;
-        }
+    
 
-        /// <summary>
-        ///   Creates and Instance of TIfcType and initializes the properties in accordance with the lambda expression
-        ///   i.e. Person person = CreateInstance&gt;Person&lt;(p =&lt; { p.FamilyName = "Undefined"; p.GivenName = "Joe"; });
-        /// </summary>
-        /// <typeparam name = "TIfcType"></typeparam>
-        /// <param name = "initPropertiesFunc"></param>
-        /// <returns></returns>
-        public TIfcType New<TIfcType>(InitProperties<TIfcType> initPropertiesFunc) where TIfcType : IPersistIfcEntity, new()
-        {
-            TIfcType instance = New<TIfcType>();
-            initPropertiesFunc(instance);
-            return instance; 
-        }
 
-        #endregion
+
+
 
 
     }
