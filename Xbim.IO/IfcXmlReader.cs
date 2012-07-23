@@ -319,7 +319,7 @@ namespace Xbim.IO
             if (id > -1 && IsIfcEntity(elementName, out ifcType)) //we have an element which is an Ifc Entity
             {
                 IPersistIfcEntity ent;
-                if (!model.ContainsInstance(id))
+                if (!model.ContainsEntityLabel(id))
                 {
                     // not been declared in a ref yet
                     // model.New creates an instance uisng type and id

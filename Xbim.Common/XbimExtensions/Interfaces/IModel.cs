@@ -60,49 +60,45 @@ namespace Xbim.XbimExtensions.Interfaces
 
 
         IEnumerable<TIfcType> InstancesOfType<TIfcType>() where TIfcType : IPersistIfcEntity;
+        IEnumerable<TIfcType> InstancesWhere<TIfcType>(Expression<Func<TIfcType, bool>> expression) where TIfcType : IPersistIfcEntity;
 
-        IEnumerable<TIfcType> InstancesWhere<TIfcType>(Expression<Func<TIfcType, bool>> expression)
-            where TIfcType : IPersistIfcEntity;
+       
+        TIfcType New<TIfcType>(InitProperties<TIfcType> initPropertiesFunc = null) where TIfcType : IPersistIfcEntity, new();
 
-        TIfcType New<TIfcType>() where TIfcType : IPersistIfcEntity, new();
-        TIfcType New<TIfcType>(InitProperties<TIfcType> initPropertiesFunc) where TIfcType : IPersistIfcEntity, new();
-
-        bool Delete(IPersistIfcEntity instance);
+        void Activate(IPersistIfcEntity owningEntity, bool write);
+        void Delete(IPersistIfcEntity instance);
         bool ContainsInstance(IPersistIfcEntity instance);
-        bool ContainsInstance(long entityLabel);
+        bool ContainsEntityLabel(long entityLabel);
+        IPersistIfcEntity GetInstance(long label);
 
         long InstancesCount { get; }
-
-        IPersistIfcEntity OwnerHistoryAddObject { get; }
-        IPersistIfcEntity OwnerHistoryModifyObject { get; }
-       // IfcCoordinatedUniversalTimeOffset CoordinatedUniversalTimeOffset { get; }
+        
         IPersistIfcEntity IfcProject { get; }
         IEnumerable<IPersistIfcEntity> IfcProducts { get; }
 
+        IPersistIfcEntity OwnerHistoryAddObject { get; }
+        IPersistIfcEntity OwnerHistoryModifyObject { get; }
         IPersistIfcEntity DefaultOwningApplication { get; }
         IPersistIfcEntity DefaultOwningUser { get; }
-        Transaction BeginTransaction(string operationName);
-        IIfcFileHeader Header { get; set; }
-        IEnumerable<Tuple<string, long>> ModelStatistics();
-        int Validate(TextWriter errStream, ReportProgressDelegate progressDelegate, ValidationFlags validateFlags);
-        int Validate(TextWriter errStream, ReportProgressDelegate progressDelegate);
-        int Validate(TextWriter errStream);
-        string Validate(ValidationFlags validateFlags);
-        void Export(XbimStorageType fileType, string outputFileName);
-        string Open(string inputFileName);
-        string Open(string inputFileName, ReportProgressDelegate progDelegate);
-        bool Save();
-        bool SaveAs(string outputFileName);
-        void Import(string inputFileName);
-        long Activate(IPersistIfcEntity entity, bool write);
-        IPersistIfcEntity GetInstance(long label);
-       
+
+        IIfcFileHeader Header { get;}
+        
+        Transaction BeginTransaction(string operationName = null);
+
+        bool CreateFrom(string fileName, string importFrom, ReportProgressDelegate progDelegate = null);
+        bool Create(string fileName);
+
+        bool Save(ReportProgressDelegate progDelegate = null);
+        bool SaveAs(string saveFileName, ReportProgressDelegate progDelegate = null);
+        bool CanSave { get; }
+        bool Saved{ get; }
+        string Open(string fileName, ReportProgressDelegate progDelegate);
+        
         void Close();
 
-        UndoRedoSession UndoRedo { get; }
+        int Validate(TextWriter errStream, ReportProgressDelegate progressDelegate, ValidationFlags? validateFlags = null);
 
 
-
-
+       
     }
 }

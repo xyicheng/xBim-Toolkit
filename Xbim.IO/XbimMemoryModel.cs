@@ -312,50 +312,6 @@ namespace Xbim.IO
 
       
 
-        /// <summary>
-        ///   Parses the part 21 file and returns trhe number of erors found, errorLog contains error details
-        /// </summary>
-        /// <param name = "inputStream"></param>
-        /// <param name = "progressHandler"></param>
-        /// <returns></returns>
-        public  int ParsePart21(Stream inputStream, ReportProgressDelegate progressHandler)
-        {
-
-            int errorCount = 0;
-
-            _part21Parser = new XbimP21Parser(inputStream);
-            _parseFilter = null;
-            CreateEntityEventHandler creator;
-            if (_parseFilter == null)
-                creator = _part21Parser_EntityCreate;
-            else
-                creator = _part21Parser_EntityCreateWithFilter;
-            _part21Parser.EntityCreate += creator;
-            if (progressHandler != null) _part21Parser.ProgressStatus += progressHandler;
-
-           
-            try
-            {
-
-                _part21Parser.Parse();
-            }
-            catch (Exception )
-            {
-                Logger.Error("Parser errors: The IFC file does not comply with the correct syntax");
-                errorCount++;
-            }
-            finally
-            {
-                _part21Parser.EntityCreate -= creator;
-                if (progressHandler != null) _part21Parser.ProgressStatus -= progressHandler;
-
-            }
-            errorCount = _part21Parser.ErrorCount + errorCount;
-            if (errorCount == 0 && BuildIndices)
-                errorCount += instances.BuildIndices();
-            return errorCount;
-        }
-
 
         private void _part21Parser_ProgressStatus(string operation, int percentage)
         {
@@ -372,16 +328,7 @@ namespace Xbim.IO
 
         #endregion
 
-        #region Ifc Schema Validation Methods
-
-        public string WhereRule()
-        {
-            if (IfcProject == null)
-                return "WR1 Model: A Model must have a valid Project attribute";
-            return "";
-        }
-
-        #endregion
+       
 
         #region ISupportChangeNotification Members
 

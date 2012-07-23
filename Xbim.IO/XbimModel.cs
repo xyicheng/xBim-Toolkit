@@ -25,8 +25,16 @@ using Xbim.Common.Logging;
 using Xbim.IO.Parser;
 namespace Xbim.IO
 {
-    abstract public class XbimModel : IModel
+    /// <summary>
+    /// General Model class for memory based model suport
+    /// </summary>
+    public class XbimModel : IModel
     {
+
+        #region Fields  
+
+        #region Static fields
+
         public static string IfcInstanceTableName = "IfcInstances";
         /// <summary>
         /// Columnid of the Entity Label.
@@ -35,8 +43,11 @@ namespace Xbim.IO
         public static string colNameSecondaryKey = "SecondaryKey";
         public static string colNameIfcType = "IfcType";
         public static string colNameEntityData = "EntityData";
+        #endregion
+        
+        #region OwnerHistory Fields
 
-        protected  readonly ILogger Logger = LoggerFactory.GetLogger();
+
         [NonSerialized]
         private IfcOwnerHistory _ownerHistoryDeleteObject;
 
@@ -48,21 +59,42 @@ namespace Xbim.IO
 
         [NonSerialized]
         private IfcPersonAndOrganization _defaultOwningUser;
-        
+
         [NonSerialized]
         private IfcApplication _defaultOwningApplication;
+        #endregion
 
+        #region Logging Fields
+        
+        protected readonly ILogger Logger = LoggerFactory.GetLogger();
+
+        #endregion
+        
+        #region Model Instances fields
+        [NonSerialized]
+        protected IIfcInstanceCache Cached;
+        [NonSerialized]
+        protected HashSet<IPersistIfcEntity> ToWrite = new HashSet<IPersistIfcEntity>();
+        [NonSerialized]
+        protected HashSet<IPersistIfcEntity> ToDelete = new HashSet<IPersistIfcEntity>();
+        private long _highestLabel = -1;
+        [NonSerialized]
+        protected int CacheDefaultSize = 5000;
         [NonSerialized]
         protected UndoRedoSession undoRedoSession;
 
-        protected IIfcFileHeader header;
-        protected IfcInstances instances;
-        protected IIfcInstanceCache Cached;
-        protected HashSet<IPersistIfcEntity> ToWrite = new HashSet<IPersistIfcEntity>();
-        protected HashSet<IPersistIfcEntity> ToDelete = new HashSet<IPersistIfcEntity>();
-        private long _highestLabel = -1;
-        protected int CacheDefaultSize = 5000;
+        #endregion
 
+        private IfcFilterDictionary _parseFilter;
+        protected IfcInstances instances;
+        protected IIfcFileHeader header;
+
+        #endregion
+        #region IModel implementation
+        
+        #endregion
+
+        #region Helper Functions
 
         public static Type GetItemTypeFromGenericType(Type genericType)
         {
@@ -80,13 +112,15 @@ namespace Xbim.IO
             return null;
         }
 
-        protected abstract void ActivateEntity(long offset, IPersistIfcEntity entity);
+        #endregion
+        
 
+       
         //the entity is already in memory so do nothing if to read, add to write colection if changing
         public virtual long Activate(IPersistIfcEntity entity, bool write)
         {
-
-            long posLabel = Math.Abs(label);
+            Debug.Assert(entity.EntityLabel > 0);
+   
             if (write) //we want to activate for reading, if entry offset == 0 it is a new oject with no data set
             {
                 if (!Transaction.IsRollingBack)
@@ -95,9 +129,14 @@ namespace Xbim.IO
                         ToWrite.Add_Reversible(entity);
                 }
             }
-            return posLabel;
+            return entity.EntityLabel;
         }
 
+        #region Transaction support
+        
+       /// <summary>
+       /// Set up the owner history objects for add, delete and modify operations
+       /// </summary>
         private void InitialiseDefaultOwnership()
         {
             IfcPerson person = New<IfcPerson>();
@@ -155,9 +194,7 @@ namespace Xbim.IO
             //txn.Reversed += TransactionReversed;
             return txn;
         }
-
-        
-       
+ 
         public IfcOwnerHistory OwnerHistoryModifyObject
         {
             get
@@ -200,7 +237,9 @@ namespace Xbim.IO
         {
             get { return _defaultOwningUser; }
         }
+        #endregion
 
+        #region IModel interface implementation
         /// <summary>
         ///   Returns all instances in the model of IfcType, IfcType may be an abstract Type
         /// </summary>
@@ -222,35 +261,48 @@ namespace Xbim.IO
             return instances.Where(expression);
         }
 
-
-
         /// <summary>
         /// Registers an entity for deletion
         /// </summary>
         /// <param name="instance"></param>
         /// <returns></returns>
-        public bool Delete(IPersistIfcEntity instance)
+        public void Delete(IPersistIfcEntity instance)
         {
             ToDelete.Add_Reversible(instance);
         }
 
+        /// <summary>
+        /// Returns true if the instance is in the current model
+        /// </summary>
+        /// <param name="instance"></param>
+        /// <returns></returns>
         public virtual bool ContainsInstance(IPersistIfcEntity instance)
         {
-            return Cached.Contains(instance.EntityLabel);
+            return Cached.Contains(instance);
         }
 
-        public virtual bool ContainsInstance(long entityLabel)
+        /// <summary>
+        /// Returns true if the instance label is in the current model, 
+        /// Use with care, does not check that the instance is in the current model, only the label exists
+        /// </summary>
+        /// <param name="entityLabel"></param>
+        /// <returns></returns>
+        public virtual bool ContainsEntityLabel(long entityLabel)
         {
             return Cached.Contains(entityLabel);
         }
 
-        public virtual long InstancesCount 
+        /// <summary>
+        /// Retruns the total number of Ifc Instances in the model
+        /// </summary>
+        public virtual long InstancesCount
         {
             get
             {
                 return Cached.Count;
             }
         }
+
 
         /// <summary>
         ///   Creates a new Ifc Persistent Instance, this is an undoable operation
@@ -259,7 +311,7 @@ namespace Xbim.IO
         public TIfcType New<TIfcType>() where TIfcType : IPersistIfcEntity, new()
         {
             Type t = typeof(TIfcType);
-            long nextLabel = HighestLabel + 1;
+            long nextLabel = Cached.HighestLabel + 1;
             return (TIfcType)New(t, nextLabel);
         }
         /// <summary>
@@ -276,14 +328,48 @@ namespace Xbim.IO
             return instance;
         }
 
+        /// <summary>
+        /// Creates a new Model and populates with instances from the specified file, Ifc, IfcXML, IfcZip and Xbim are all supported.
+        ///  All instances and changes are stored in memory
+        /// </summary>
+        /// <param name="fileName">Name of the file that changes will be saved to Ifc, IfcXML, IfcZip and Xbim. 
+        /// This file is not created unless Save is called</param>
+        /// <param name="importFrom">Name of the file containing the instances to import</param>
+        /// <returns></returns>
+        public bool CreateFrom(string fileName, string importFrom)
+        {
+            return true;
+        }
+        
+        /// <summary>
+        /// Creates a new empty model and sets the name of the file for changes to be saved to. 
+        /// This file will not be created unless Save is called
+        /// All instances and changes are stored in memory
+        /// </summary>
+        /// <param name="fileName">Name of the file that changes will be saved to, Ifc, IfcXML, IfcZip and Xbim.</param>
+        public bool Create(string fileName)
+        {
+            return true;
+        }
+
+
+        #endregion
+
+
+        
+        
+        //------------------
         internal IPersistIfcEntity New(Type t, long label)
         {
             long nextLabel = Math.Abs(label);
-            IPersistIfcEntity entity = (IPersistIfcEntity)Activator.CreateInstance(t);
-            Xbim.XbimExtensions.Transactions.Transaction.AddPropertyChange<long>(h => _highestLabel = h, HighestLabel, nextLabel);
-            _highestLabel = Math.Max(nextLabel, _highestLabel);
-            entity.Bind(this, -nextLabel); //a negative handle determines that the attributes of this entity have not been loaded yet
-            Cached.Add_Reversible(nextLabel, entity);
+   
+            IPersistIfcEntity entity = Cached.CreateNew_Reversable(t);
+            //Cached.SetHighestLabel_Reversable(nextLabel);
+            //long highestLabel = Cached.HighestLabel;
+            //Xbim.XbimExtensions.Transactions.Transaction.AddPropertyChange<long>(h => _highestLabel = h, highestLabel, nextLabel);
+            //_highestLabel = Math.Max(nextLabel, _highestLabel);
+            //entity.Bind(this, -nextLabel); //a negative handle determines that the attributes of this entity have not been loaded yet
+            //Cached.Add_Reversible(nextLabel, entity);
             ToWrite.Add_Reversible(entity);
             if (typeof(IfcRoot).IsAssignableFrom(t))
                 ((IfcRoot)entity).OwnerHistory = OwnerHistoryAddObject;
@@ -291,49 +377,10 @@ namespace Xbim.IO
 
         }
 
-        //------------------
+        
        
 
-        IPersistIfcEntity IModel.OwnerHistoryAddObject
-        {
-            get { return OwnerHistoryAddObject; }
-        }
-
-        IPersistIfcEntity IModel.OwnerHistoryModifyObject
-        {
-            get { return OwnerHistoryModifyObject; }
-        }
-
-        public IfcProject IfcProject
-        {
-            get { return InstancesOfType<IfcProject>().FirstOrDefault(); }
-        }
-
-        IPersistIfcEntity IModel.IfcProject
-        {
-            get { return IfcProject; }
-        }
-
-        public IfcProducts IfcProducts
-        {
-            get { return new IfcProducts(this); }
-        }
-
-        IEnumerable<IPersistIfcEntity> IModel.IfcProducts
-        {
-            get { return InstancesOfType<IfcProduct>().Cast<IPersistIfcEntity>(); }
-        }
-
-        IPersistIfcEntity IModel.DefaultOwningApplication
-        {
-            get { return DefaultOwningApplication; }
-        }
-
-        IPersistIfcEntity IModel.DefaultOwningUser
-        {
-            get { return DefaultOwningUser; }
-        }
-
+       
 
 
         public IIfcFileHeader Header
@@ -343,11 +390,7 @@ namespace Xbim.IO
             set { header = value; }
         }
 
-        abstract public IEnumerable<Tuple<string, long>> ModelStatistics();
-
-        
-
-
+       
         #region Validation
 
         public string Validate(ValidationFlags validateFlags)
@@ -532,6 +575,10 @@ namespace Xbim.IO
 
         #endregion
 
+
+        #region Part 21 parse functions
+        
+
         private IPersistIfc _part21Parser_EntityCreate(string className, long? label, bool headerEntity,
                                                      out int[] reqParams)
         {
@@ -602,6 +649,73 @@ namespace Xbim.IO
                 }
             }
         }
+        #endregion
+
+
+        #region Ifc Schema Validation Methods
+
+        public string WhereRule()
+        {
+            if (this.IfcProject == null)
+                return "WR1 Model: A Model must have a valid Project attribute";
+            return "";
+        }
+
+        #endregion
+
+
+        #region General Model operations
+
+
+
+        /// <summary>
+        /// Closes the current model and releases all resources and instances
+        /// </summary>
+        public virtual void Close()
+        {
+        }
+
+        /// <summary>
+        /// If the filename has been set, saves the current model to the specified filename in the format of the filename's extension
+        /// </summary>
+        /// <returns></returns>
+        public virtual bool Save()
+        {
+            if (!CanSave) return false;
+            //otherwise save the contents
+            return true;
+        }
+
+        /// <summary>
+        /// Returns true if the model can be saved to the specified filename
+        /// </summary>
+        public bool CanSave
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Returns true if ther are no changes to save in the model.
+        /// </summary>
+        public bool Saved
+        {
+            get
+            {
+                return ToWrite.Count == 0 && ToDelete.Count == 0; ;
+            }
+        }
+
+        #endregion
+
+
+
+
+
+
+
 
         public virtual string ImportIfc(Stream inputStream, ReportProgressDelegate progress)
         {
@@ -699,7 +813,7 @@ namespace Xbim.IO
             return outputFileName;
         }
 
-        abstract public bool Save();
+       
 
         public bool SaveAs(string outputFileName)
         {
@@ -719,7 +833,7 @@ namespace Xbim.IO
             return entity;
         }
 
-        abstract public void Close();
+        
 
 
         public UndoRedoSession UndoRedo
@@ -734,7 +848,7 @@ namespace Xbim.IO
         /// <returns></returns>
         public long InstancesOfTypeCount(Type t)
         {
-           return instances.InstancesOfTypeCount(t);
+           return Cached.InstancesOfTypeCount(t);
         }
 
 
@@ -866,24 +980,16 @@ namespace Xbim.IO
             WriteFooter(entityWriter);
         }
 
+        /// <summary>
+        /// Writes a Part 21 Header
+        /// </summary>
+        /// <param name="tw"></param>
         private void WriteHeader(TextWriter tw)
         {
             //FileDescription fileDescriptor = new FileDescription("2;1");
             IIfcFileDescription fileDescriptor = Header.FileDescription;
             IIfcFileName fileName = Header.FileName;
-            //FileName fileName = new FileName(DateTime.Now)
-            //                        {
-            //                            //PreprocessorVersion =
-            //                            //    string.Format("Xbim.Ifc File Processor version {0}",
-            //                            //                  Assembly.GetAssembly(typeof (P21Parser)).GetName().Version),
-            //                            //OriginatingSystem =
-            //                            //    string.Format("Xbim version {0}",
-            //                            //                  Assembly.GetExecutingAssembly().GetName().Version),
 
-            //                            PreprocessorVersion = Header.FileName.PreprocessorVersion,
-            //                            OriginatingSystem = Header.FileName.OriginatingSystem,
-            //                            Name = Header.FileName.Name,
-            //                        };
             IIfcFileSchema fileSchema = new FileSchema("IFC2X3");
             StringBuilder header = new StringBuilder();
             header.AppendLine("ISO-10303-21;");
@@ -927,8 +1033,11 @@ namespace Xbim.IO
             tw.Write(header.ToString());
         }
 
-
-
+        /// <summary>
+        /// Writes the entity to a TextWriter in the Part21 format
+        /// </summary>
+        /// <param name="entityWriter">The TextWriter</param>
+        /// <param name="entity">The entity to write</param>
         private void WriteEntity(TextWriter entityWriter, IPersistIfcEntity entity)
         {
       
@@ -960,6 +1069,12 @@ namespace Xbim.IO
 
         }
 
+        /// <summary>
+        /// Writes a property of an entity to the TextWriter in the Part21 format
+        /// </summary>
+        /// <param name="propType"></param>
+        /// <param name="propVal"></param>
+        /// <param name="entityWriter"></param>
         private void WriteProperty(Type propType, object propVal, TextWriter entityWriter)
         {
             Type itemType;
@@ -1069,6 +1184,12 @@ namespace Xbim.IO
                                                   propType.Name, propType.Name));
         }
 
+        /// <summary>
+        /// Writes the value of a property to the TextWriter in the Part 21 format
+        /// </summary>
+        /// <param name="pInfoType"></param>
+        /// <param name="pVal"></param>
+        /// <param name="entityWriter"></param>
         private void WriteValueType(Type pInfoType, object pVal, TextWriter entityWriter)
         {
             if (pInfoType == typeof(Double))
@@ -1111,12 +1232,18 @@ namespace Xbim.IO
                 throw new ArgumentException(string.Format("Invalid Value Type {0}", pInfoType.Name), "pInfoType");
         }
 
-
+        /// <summary>
+        /// Writes the Part 21 Footer
+        /// </summary>
+        /// <param name="tw"></param>
         private void WriteFooter(TextWriter tw)
         {
             tw.WriteLine("ENDSEC;");
             tw.WriteLine("END-ISO-10303-21;");
         }
+
+
+
 
         public void ExportIfcXml(string ifcxmlFileName)
         {

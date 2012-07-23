@@ -44,7 +44,7 @@ namespace Xbim.IO
 {
 
     /// <summary>
-    /// A class for model serving Ifc Entities, this is a disposable entity
+    /// A class for model serving Ifc Entities that are persisted in database, this is a disposable entity
     /// </summary>
     public class XbimFileModelServer : XbimModelServer, IDisposable
     {
