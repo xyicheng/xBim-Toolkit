@@ -15,7 +15,7 @@ using Xbim.IO;
 using Xbim.XbimExtensions.Transactions;
 using Xbim.Ifc2x3.MeasureResource;
 using Xbim.Ifc2x3.MaterialResource;
-using Xbim.Ifc2x3.SelectTypes;
+using Xbim.XbimExtensions.SelectTypes;
 using Xbim.Ifc2x3.UtilityResource;
 using System.Diagnostics;
 using Xbim.DOM.PropertiesQuantities;
@@ -267,24 +267,19 @@ namespace Xbim.DOM
         public XbimDocument(string fileName)
         {
             BaseInit();
-
-            IfcInputStream input = null;
+           
             try
             {
-                _model = new XbimMemoryModel();
-                input = new IfcInputStream(new FileStream(fileName, FileMode.Open, FileAccess.Read));
-                int errs = input.Load(_model);               
-                if (errs > 0) throw new Exception(input.ErrorLog.ToString());
+                _model = new XbimModel();
+                Model.CreateFrom(fileName);
+
             }
             catch (Exception e)
             {
                 throw new Exception(string.Format("{0} is not a valid Ifc File\n{1}", fileName, e.Message)); //todo: different form of error messaging - it is possible that it is wrong data but we can do something with that
 
             }
-            finally
-            {
-                if(input !=null) input.Close();
-            }
+           
 
             //make all existing elements accessible via the document
             InitMaterials();
@@ -313,7 +308,7 @@ namespace Xbim.DOM
         protected virtual void BaseInit()
         {
             _creator = new XbimObjectCreator(this);
-            if (_model == null) _model = new XbimMemoryModel();
+            if (_model == null) _model = new XbimModel();
             _transaction = _model.BeginTransaction("XbimDocument transaction");
             _wcs = _model.New<IfcAxis2Placement3D>();
             //set world coordinate system
@@ -433,8 +428,7 @@ namespace Xbim.DOM
         {
 
             _model.Header.FileName.Name = Path.GetFileName(fileName);
-            IfcOutputStream oStream = new Xbim.IO.IfcOutputStream(new StreamWriter(fileName));
-            oStream.Store(_model);
+            _model.SaveAs(fileName, XbimStorageType.IFC);
 
         }
 
@@ -463,10 +457,7 @@ namespace Xbim.DOM
                 Model.Validate(txtWriter, null);
                 output = txtWriter.ToString();
             }
-
-            IfcOutputStream oStream = new Xbim.IO.IfcOutputStream(new StreamWriter(FileName));
-            oStream.Store(Model);
-
+            Model.SaveAs(FileName, XbimStorageType.IFC);
             return output;
         }
 
@@ -610,7 +601,7 @@ namespace Xbim.DOM
         /// <returns></returns>
         public XbimDocument GetModificationDocument()
         {
-            XbimMemoryModel model = new XbimMemoryModel();
+            XbimModel model = new XbimModel();
            /// TODO: ResolveEventArgs this code
             //IEnumerable<IfcRoot> instances = this.Model.InstancesWhere<IfcRoot>(r => r.OwnerHistory.ChangeAction == IfcChangeActionEnum.MODIFIED || r.OwnerHistory.ChangeAction == IfcChangeActionEnum.MODIFIEDADDED || r.OwnerHistory.ChangeAction == IfcChangeActionEnum.ADDED);
             //foreach (var item in instances)

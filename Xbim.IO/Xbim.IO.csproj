@@ -142,10 +142,9 @@
     <Compile Include="IfcFilter.cs" />
     <Compile Include="IfcFilterDictionary.cs" />
     <Compile Include="IfcInMemoryInstanceCache.cs" />
-    <Compile Include="IfcInputStream.cs" />
+    <Compile Include="IfcInstanceHandle.cs" />
     <Compile Include="IfcInstances.cs" />
     <Compile Include="IfcInstancesExtensions.cs" />
-    <Compile Include="IfcOutputStream.cs" />
     <Compile Include="IfcPersistedInstanceCache.cs" />
     <Compile Include="IfcType.cs" />
     <Compile Include="IfcTypeDictionary.cs" />
@@ -169,8 +168,6 @@
     <Compile Include="Part21FileWriter.cs" />
     <Compile Include="Part21Formatter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="XbimFileModelServer.cs" />
-    <Compile Include="XbimMemoryModel.cs" />
     <Compile Include="XbimModel.cs" />
     <Compile Include="XbimModelServer.cs" />
     <Compile Include="XbimInputStream.cs" />

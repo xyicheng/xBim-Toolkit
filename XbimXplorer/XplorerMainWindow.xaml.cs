@@ -231,11 +231,12 @@ namespace XbimXplorer
             BackgroundWorker worker = s as BackgroundWorker;
             string ifcFilename = args.Argument as string;
 
-            IModel model = new XbimFileModelServer();
+            IModel model = new XbimModel();
             try
             {
                 //attach it to the Ifc Stream Parser
-                model.Open(ifcFilename, worker.ReportProgress);
+                model.CreateFrom(ifcFilename, "test.xbim" ,worker.ReportProgress);
+                model.Open("test.xbim");
                 XbimScene geomEngine = new XbimScene(model);
                 ModelProvider.Scene = geomEngine;
             }
@@ -262,7 +263,7 @@ namespace XbimXplorer
             ModelDataProvider modelProvider = ModelProvider;
             string fileName = args.Argument as string;
 
-            IModel m = new XbimFileModelServer();
+            IModel m = new XbimModel();
             try
             {
                 m.Open(fileName);
@@ -295,7 +296,7 @@ namespace XbimXplorer
 
             string fileName = args.Argument as string;
 
-            XbimFileModelServer m = new XbimFileModelServer();
+            XbimModel m = new XbimModel();
             ModelDataProvider modelProvider = ModelProvider;
             
             try
@@ -321,7 +322,7 @@ namespace XbimXplorer
             BackgroundWorker worker = s as BackgroundWorker;
             string zipFilename = args.Argument as string;
 
-            IModel model = new XbimMemoryModel();
+            IModel model = new XbimModel();
             try
             {
                 model.Open(zipFilename);
@@ -533,7 +534,7 @@ namespace XbimXplorer
 
                                               string xbimFileName = Path.ChangeExtension(dlg.FileName, ".xbim");
                                               string xbimGeometryFileName = Path.ChangeExtension(dlg.FileName, ".xbimGC");
-                                              XbimScene scene = new XbimScene(dlg.FileName, xbimFileName, xbimGeometryFileName, false);
+                                              XbimScene scene = new XbimScene(dlg.FileName, xbimFileName, xbimGeometryFileName);
                                               ModelProvider.Scene = scene.AsSceneStream();
                                           }
                                           catch (Exception ex)
@@ -646,8 +647,8 @@ namespace XbimXplorer
                 {
                     if (fInfo.Exists) fInfo.Delete();
                     ModelDataProvider modelProvider = ModelProvider;
-                    XbimFileModelServer fs = modelProvider.Model as XbimFileModelServer;
-                    if (fs != null) fs.ExportIfc(dlg.FileName);
+                    XbimModel fs = modelProvider.Model as XbimModel;
+                    if (fs != null) fs.SaveAs(dlg.FileName,XbimStorageType.IFC);
                     else throw new Exception("Invalid Model Server");
                 }
                 catch (Exception except)
@@ -668,8 +669,8 @@ namespace XbimXplorer
                 {
                     if (fInfo.Exists) fInfo.Delete();
                     ModelDataProvider modelProvider = ModelProvider;
-                    XbimFileModelServer fs = modelProvider.Model as XbimFileModelServer;
-                    if (fs != null) fs.ExportIfcXml(dlg.FileName);
+                    XbimModel fs = modelProvider.Model as XbimModel;
+                    if (fs != null) fs.SaveAs(dlg.FileName, XbimStorageType.IFCXML);
                     else throw new Exception("Invalid Model Server");
                 }
                 catch (Exception except)
@@ -701,8 +702,8 @@ namespace XbimXplorer
                 {
                     if (fInfo.Exists) fInfo.Delete();
                     ModelDataProvider modelProvider = ModelProvider;
-                    XbimFileModelServer fs = modelProvider.Model as XbimFileModelServer;
-                    if (fs != null) fs.ExportIfc(dlg.FileName, true);
+                    XbimModel fs = modelProvider.Model as XbimModel;
+                    if (fs != null) fs.SaveAs(dlg.FileName,XbimStorageType.IFCZIP);
                     else throw new Exception("Invalid Model Server");
                 }
                 catch (Exception except)

@@ -71,19 +71,6 @@ namespace Xbim.ModelGeometry.Scene
             }
         }
 
-        public bool ReOpen()
-        {
-            try
-            {
-                _sceneStream = new FileStream(_sceneStreamFileName, FileMode.Open, FileAccess.Read);
-                return true;
-            }
-            catch (Exception)
-            {
-
-                return false;
-            }
-            
-        }
+       
     }
 }

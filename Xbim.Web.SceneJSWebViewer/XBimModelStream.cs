@@ -89,7 +89,7 @@ namespace Xbim.SceneJSWebViewer
             }
 
             _modelId = model;
-            _model = new XbimFileModelServer();
+            _model = new XbimModel();
             _model.Open(xbimFile);
             _scene = new XbimSceneStream(_model, gcFile); // opens the pre-calculated Geometry file
             Init(model);
@@ -481,7 +481,7 @@ namespace Xbim.SceneJSWebViewer
         private List<String> TypeList = new List<string>();
         private List<GeometryLabel> ProductsList = new List<GeometryLabel>();
         private Camera DefaultCamera = new Camera();
-        private XbimFileModelServer _model;
+        private XbimModel _model;
         private IXbimScene _scene;
         private string _modelId;
         #endregion

@@ -16,7 +16,7 @@ using System;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.Serialization;
-using Xbim.Ifc2x3.SelectTypes;
+using Xbim.XbimExtensions.SelectTypes;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 using Xbim.Ifc2x3.MeasureResource;

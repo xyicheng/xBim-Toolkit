@@ -23,7 +23,7 @@ namespace Xbim
 			String^ _sceneStreamFileName;
 			Dictionary<IfcRepresentation^, IXbimGeometryModel^>^ _maps;
 			static ILogger^ Logger = LoggerFactory::GetLogger();
-			void ImportIfc(String ^ ifcFileName,String ^ xBimFileName,String ^ xBimGeometryFileName, bool removeIfcGeometry, ProcessModel ^ processingDelegate);
+			void ImportIfc(String ^ ifcFileName,String ^ xBimFileName,String ^ xBimGeometryFileName,  ProcessModel ^ processingDelegate);
 
 			void Initialise(void)
 			{
@@ -32,12 +32,12 @@ namespace Xbim
 		public:
 			XbimScene(IModel^ model);
 			XbimScene(IModel^ model, IEnumerable<IfcProduct^>^ toDraw);
-			XbimScene(String ^ ifcFileName, String ^ xbimFileName,String ^ xBimGeometryFileName, bool removeIfcGeoemtry);
-			XbimScene(String ^ ifcFileName,String ^ xBimFileName,String ^ xBimGeometryFileName, bool removeIfcGeometry, ProcessModel ^ processingDelegate);
+			XbimScene(String ^ ifcFileName, String ^ xbimFileName,String ^ xBimGeometryFileName);
+			XbimScene(String ^ ifcFileName,String ^ xBimFileName,String ^ xBimGeometryFileName, ProcessModel ^ processingDelegate);
 			!XbimScene();
 			~XbimScene();
 			virtual void Close();
-			virtual bool ReOpen();
+			
 			XbimSceneStream^ AsSceneStream();
 			virtual XbimTriangulatedModelStream^ Triangulate(TransformNode^ node);
 			virtual property TransformGraph^ Graph

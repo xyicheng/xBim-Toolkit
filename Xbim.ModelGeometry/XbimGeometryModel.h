@@ -9,7 +9,7 @@
 #include <TopTools_DataMapOfShapeInteger.hxx>
 #include <TopTools_IndexedMapOfShape.hxx>
 using namespace Xbim::Ifc2x3::GeometryResource;
-using namespace Xbim::Ifc2x3::SelectTypes;
+using namespace Xbim::XbimExtensions::SelectTypes;
 using namespace Xbim::Ifc2x3::GeometricModelResource;
 using namespace Xbim::Ifc2x3::GeometricConstraintResource;
 using namespace Xbim::Ifc2x3::RepresentationResource;

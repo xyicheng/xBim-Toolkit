@@ -20,7 +20,7 @@ using System.Windows;
 using System.Windows.Media.Media3D;
 using System.Xml.Serialization;
 using Xbim.Ifc2x3.MeasureResource;
-using Xbim.Ifc2x3.SelectTypes;
+using Xbim.XbimExtensions.SelectTypes;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 

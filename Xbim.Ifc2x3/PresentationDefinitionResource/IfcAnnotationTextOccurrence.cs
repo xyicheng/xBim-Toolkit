@@ -12,7 +12,7 @@
 
 #region Directives
 
-using Xbim.Ifc2x3.SelectTypes;
+using Xbim.XbimExtensions.SelectTypes;
 
 #endregion
 

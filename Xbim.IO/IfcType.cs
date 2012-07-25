@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Reflection;
-using Xbim.Ifc2x3.SelectTypes;
+using Xbim.XbimExtensions.SelectTypes;
 
 namespace Xbim.IO
 {
@@ -19,7 +19,8 @@ namespace Xbim.IO
         private PropertyInfo _primaryIndex;
         private List<PropertyInfo> _secondaryIndices;
         private List<IfcMetaProperty> _expressEnumerableProperties;
-
+        internal int PrimaryKeyIndex = -1; 
+        
         public List<IfcMetaProperty> ExpressEnumerableProperties
         {
             get
@@ -83,6 +84,8 @@ namespace Xbim.IO
             foreach (IfcType subType in ifcType.IfcSubTypes)
                 AddNonAbstractTypes(subType, nonAbstractTypes);
         }
+
+      
     }
 
 }

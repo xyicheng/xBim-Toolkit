@@ -31,6 +31,11 @@ namespace Xbim.XbimExtensions.Interfaces
     public enum XbimStorageType
     {
         /// <summary>
+        /// Invalid Xbim storage type
+        /// </summary>
+        INVALID = 0,
+
+        /// <summary>
         ///   IFC in XML format
         /// </summary>
         IFCXML = 1,
@@ -65,7 +70,7 @@ namespace Xbim.XbimExtensions.Interfaces
        
         TIfcType New<TIfcType>(InitProperties<TIfcType> initPropertiesFunc = null) where TIfcType : IPersistIfcEntity, new();
 
-        void Activate(IPersistIfcEntity owningEntity, bool write);
+        long Activate(IPersistIfcEntity owningEntity, bool write);
         void Delete(IPersistIfcEntity instance);
         bool ContainsInstance(IPersistIfcEntity instance);
         bool ContainsEntityLabel(long entityLabel);
@@ -85,14 +90,14 @@ namespace Xbim.XbimExtensions.Interfaces
         
         Transaction BeginTransaction(string operationName = null);
 
-        bool CreateFrom(string fileName, string importFrom, ReportProgressDelegate progDelegate = null);
-        bool Create(string fileName);
+        bool CreateFrom(string importFrom, string xbimDbName = null, ReportProgressDelegate progDelegate = null);
+        bool Create(string fileName = null);
 
         bool Save(ReportProgressDelegate progDelegate = null);
-        bool SaveAs(string saveFileName, ReportProgressDelegate progDelegate = null);
+        bool SaveAs(string saveFileName, XbimStorageType storageType, ReportProgressDelegate progDelegate = null);
         bool CanSave { get; }
         bool Saved{ get; }
-        string Open(string fileName, ReportProgressDelegate progDelegate);
+        bool Open(string fileName, ReportProgressDelegate progDelegate = null);
         
         void Close();
 

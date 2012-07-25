@@ -20,7 +20,7 @@ using System.Globalization;
 using System.Runtime.Serialization;
 using System.Windows.Media;
 using System.Xml.Serialization;
-using Xbim.Ifc2x3.SelectTypes;
+using Xbim.XbimExtensions.SelectTypes;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 using WinVector = System.Windows.Vector;

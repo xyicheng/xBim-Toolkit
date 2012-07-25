@@ -19,7 +19,7 @@ namespace Xbim.Web.Viewer3D.ServerSide
 {
     public class XbimRepo
     {
-        private XbimFileModelServer _model;
+        private XbimModel _model;
         private IXbimScene _scene;
 
         public IXbimScene Scene { get { return _scene; } }
@@ -31,12 +31,12 @@ namespace Xbim.Web.Viewer3D.ServerSide
             if (!File.Exists(xbimFile)) throw new Exception("Semantic file does not exist");
             if (!File.Exists(gcFile)) throw new Exception("Geometry file does not exist");
 
-            _model = new XbimFileModelServer();
+            _model = new XbimModel();
             _model.Open(xbimFile);
             _scene = new XbimSceneStream(_model, gcFile); // opens the pre-calculated Geometry file
              
         }
-        public XbimRepo(XbimFileModelServer model, IXbimScene scene)
+        public XbimRepo(XbimModel model, IXbimScene scene)
         {
             _model = model;
             _scene = scene;

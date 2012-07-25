@@ -6,7 +6,7 @@ using Xbim.Ifc2x3.Extensions;
 using Xbim.Ifc2x3.GeometricModelResource;
 using Xbim.Ifc2x3.TopologyResource;
 using Xbim.Ifc2x3.GeometryResource;
-using Xbim.Ifc2x3.SelectTypes;
+using Xbim.XbimExtensions.SelectTypes;
 using Xbim.Ifc2x3.MeasureResource;
 using System.Diagnostics;
 using Xbim.Ifc2x3.ProfileResource;

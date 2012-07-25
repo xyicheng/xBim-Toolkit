@@ -16,7 +16,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Xml;
-using Xbim.Ifc2x3.SelectTypes;
+using Xbim.XbimExtensions.SelectTypes;
 using System.Text.RegularExpressions;
 using Xbim.XbimExtensions.Interfaces;
 using Xbim.Ifc2x3.MeasureResource;
@@ -27,12 +27,15 @@ using Xbim.Ifc2x3.GeometryResource;
 using System.Windows.Markup;
 using Xbim.XbimExtensions;
 using Xbim.IO.Parser;
+using Microsoft.Isam.Esent.Interop;
 
 #endregion
 
 namespace Xbim.IO
 {
-     public delegate void WriteXMLEntityEventHandler( IPersistIfcEntity entity);
+     
+    public delegate void WriteXMLEntityEventHandler( IPersistIfcEntity entity, int count);
+
     public class IfcXmlReader
     {
         private static readonly Dictionary<string, IfcParserType> primitives;
@@ -211,99 +214,14 @@ namespace Xbim.IO
                     default:
                         throw new Exception("Unknown list type, " + CType);
                 }
-                foreach (XmlNode item in Entities)
-                {
-
-                    //if (item.Value != null) SetValue(model, reader, item);
-                }
+                
             }
         }
 
         private XmlNode _currentNode;
-       
-        private event WriteXMLEntityEventHandler _appendToStream ;
-
-        public event WriteXMLEntityEventHandler AppendToStream
-        {
-            add { _appendToStream += value; }
-            remove { _appendToStream -= value; }
-        }
-
-        public int Read(IModel model, XmlReader input)
-        {
-            int errors = 0;
-            // Read until end of file
-
-            
-            
-
-            while (_currentNode == null && input.Read()) //read through to UOS
-            {
-                switch (input.NodeType)
-                {
-                    case XmlNodeType.Element:
-                        if (string.Compare(input.Name, "uos", true) == 0)
-                            _currentNode = new XmlUosCollection();
-                        break;
-                    default:
-                        break;
-                }
-            }
-
-            XmlNodeType prevInputType = XmlNodeType.None;
-            string prevInputName = "";
-
-            // set counter for start of every element that is not empty, and reduce it on every end of that element
-           
-            // this will create id of each element
-            Dictionary<string, int> ids = new Dictionary<string, int>();                        
-            while (input.Read())
-            {
-                
-
-                switch (input.NodeType)
-                {
-                    case XmlNodeType.Element:
-                        StartElement(model, input);
-                            
-                        break;
-                    case XmlNodeType.EndElement:
-                        
-                        EndElement(model, input, prevInputType, prevInputName);
-                        break;
-                    case XmlNodeType.Whitespace:
-                        Debug.WriteLine("WS" );
-                        SetValue(model, input, prevInputType, prevInputName);
-
-                        break;
-                    
-                    case XmlNodeType.Text:
-
-                        SetValue(model, input, prevInputType, prevInputName);
-                        break;
-
-                    
-
-
-                    default:
-                        break;
-                }
-                prevInputType = input.NodeType;
-                prevInputName = input.Name;
-
-
-
-                }
-
-            //long highestId = 0;
-
-
-            return errors;
-        }
-
-       
-
-        private void StartElement(IModel model, XmlReader input)
+        private int _entitiesParsed = 0;
+        
+        private void StartElement(IIfcInstanceCache cache, XmlReader input)
         {
             string elementName = input.Name;
             bool isRefType;
@@ -319,22 +237,28 @@ namespace Xbim.IO
             if (id > -1 && IsIfcEntity(elementName, out ifcType)) //we have an element which is an Ifc Entity
             {
                 IPersistIfcEntity ent;
-                if (!model.ContainsEntityLabel(id))
+                if (!cache.Contains(id))
                 {
                     // not been declared in a ref yet
                     // model.New creates an instance uisng type and id
-                    ent = model.New(ifcType.Type, id);
+                    ent = cache.CreateNew(ifcType.Type, id);
                    
                 }
                 else
                 {
-                    ent = model.GetInstance(id);
+                    ent = cache.GetInstance(id, false, true);
                 }
 
                 XmlEntity xmlEnt = new XmlEntity(_currentNode, ent);
-                if (input.IsEmptyElement && _appendToStream != null && !isRefType)
-                    _appendToStream(xmlEnt.Entity);
-                        
+               
+                //if we have a completely empty element that is not a ref we need to make sure it is written to the database as EndElement will not be called
+                if (input.IsEmptyElement && !isRefType)
+                {
+                    _entitiesParsed++;
+                    cache.UpdateEntity(xmlEnt.Entity, _entitiesParsed);
+                }
+                
+
                 string pos = input.GetAttribute("pos");
                 if (!string.IsNullOrEmpty(pos))
                     xmlEnt.Position = Convert.ToInt32(pos);
@@ -554,7 +478,7 @@ namespace Xbim.IO
             return IfcInstances.IfcTypeLookup.TryGetValue(elementName.ToUpper(), out ifcType);
         }
 
-        private void EndElement(IModel model, XmlReader input, XmlNodeType prevInputType, string prevInputName)
+        private void EndElement(IIfcInstanceCache cache, XmlReader input, XmlNodeType prevInputType, string prevInputName, out IPersistIfcEntity writeEntity)
         {
             try
             {
@@ -742,14 +666,12 @@ namespace Xbim.IO
                 }
 
 
-
+                writeEntity = null;
                 if (_currentNode.Parent != null) // we are not at UOS yet
                 {
-                    if (_currentNode is XmlEntity && _appendToStream != null)
-                        _appendToStream(((XmlEntity)_currentNode).Entity);
-
+                    if (_currentNode is XmlEntity)
+                        writeEntity = ((XmlEntity)_currentNode).Entity;
                     _currentNode = _currentNode.Parent;
-                    
                 }
             }
             catch (Exception e)
@@ -774,7 +696,7 @@ namespace Xbim.IO
             return null;
         }
 
-        private void SetValue(IModel model, XmlReader input, XmlNodeType prevInputType, string prevInputName)
+        private void SetValue(XmlReader input, XmlNodeType prevInputType, string prevInputName)
         {
             try
             {
@@ -850,5 +772,101 @@ namespace Xbim.IO
         }
 
 
+
+        internal IfcFileHeader Read(IIfcInstanceCache instanceCache,  XmlReader input)
+        {
+           
+            // Read until end of file
+
+            _entitiesParsed = 0;
+
+            IfcFileHeader header = new IfcFileHeader();
+            string headerId="";
+            while (_currentNode == null && input.Read()) //read through to UOS
+            {
+                switch (input.NodeType)
+                {
+                    case XmlNodeType.Element:
+                        if (string.Compare(input.Name, "uos", true) == 0)
+                            _currentNode = new XmlUosCollection();
+                        else
+                            headerId = input.Name.ToLower();
+                        break;
+                    case XmlNodeType.Text:
+                        switch (headerId)
+                        {
+                            case "ex:name":
+                                header.FileName.Name = input.Value;
+                                break;
+                            case "ex:time_stamp":
+                                header.FileName.TimeStamp= input.Value;
+                                break;
+                            case "ex:author":
+                                header.FileName.AuthorName.Add(input.Value);
+                                break;
+                            case "ex:organization":
+                                header.FileName.Organization.Add(input.Value);
+                                break;
+                            case "ex:preprocessor_version":
+                                header.FileName.PreprocessorVersion = input.Value;
+                                break;
+                            case "ex:originating_system":
+                                header.FileName.OriginatingSystem = input.Value;
+                                break;
+                            case "ex:authorization":
+                                header.FileName.AuthorizationName = input.Value;
+                                break;
+                            case "ex:documentation":
+                                header.FileDescription.Description.Add(input.Value);
+                                break;
+                            default:
+                                break;
+                        }
+                        break;
+                    default:
+                        break;
+                }
+               
+            }
+
+            XmlNodeType prevInputType = XmlNodeType.None;
+            string prevInputName = "";
+
+            // set counter for start of every element that is not empty, and reduce it on every end of that element
+
+            // this will create id of each element
+            Dictionary<string, int> ids = new Dictionary<string, int>();
+            while (input.Read())
+            {
+                switch (input.NodeType)
+                {
+                    case XmlNodeType.Element:
+                        StartElement(instanceCache, input);
+                        break;
+                    case XmlNodeType.EndElement:
+                        IPersistIfcEntity toWrite;
+                        //if toWrite has a value we have completed an Ifc Entity
+                        EndElement(instanceCache, input, prevInputType, prevInputName, out toWrite);
+                        if (toWrite != null)
+                        {
+                            _entitiesParsed++;
+                            //now write the entity to the database
+                            instanceCache.UpdateEntity(toWrite, _entitiesParsed);
+                        }
+                        break;
+                    case XmlNodeType.Whitespace:
+                        SetValue(input, prevInputType, prevInputName);
+                        break;
+                    case XmlNodeType.Text:
+                        SetValue(input, prevInputType, prevInputName);
+                        break;
+                    default:
+                        break;
+                }
+                prevInputType = input.NodeType;
+                prevInputName = input.Name;
+            }
+            return header;
+        }
     }
 }

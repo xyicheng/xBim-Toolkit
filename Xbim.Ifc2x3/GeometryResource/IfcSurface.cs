@@ -13,7 +13,7 @@
 #region Directives
 
 using System;
-using Xbim.Ifc2x3.SelectTypes;
+using Xbim.XbimExtensions.SelectTypes;
 using Xbim.XbimExtensions;
 
 #endregion

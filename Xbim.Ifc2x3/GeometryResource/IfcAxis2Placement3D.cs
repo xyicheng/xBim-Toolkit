@@ -15,7 +15,7 @@
 using System;
 using System.Collections.Generic;
 using System.Xml.Serialization;
-using Xbim.Ifc2x3.SelectTypes;
+using Xbim.XbimExtensions.SelectTypes;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 using WVector3D = System.Windows.Media.Media3D.Vector3D;

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Xbim.Ifc2x3.Kernel;
 using Xbim.Ifc2x3.Extensions;
-using Xbim.Ifc2x3.SelectTypes;
+using Xbim.XbimExtensions.SelectTypes;
 
 namespace Xbim.DOM.PropertiesQuantities
 {

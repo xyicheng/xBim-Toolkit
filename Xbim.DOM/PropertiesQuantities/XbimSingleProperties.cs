@@ -6,7 +6,7 @@ using Xbim.Ifc2x3.Kernel;
 using Xbim.XbimExtensions;
 using Xbim.Ifc2x3.MeasureResource;
 using Xbim.Ifc2x3.Extensions;
-using Xbim.Ifc2x3.SelectTypes;
+using Xbim.XbimExtensions.SelectTypes;
 
 namespace Xbim.DOM.PropertiesQuantities
 {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Xbim.Ifc2x3.SharedBldgElements;
-using Xbim.Ifc2x3.SelectTypes;
+using Xbim.XbimExtensions.SelectTypes;
 using Xbim.Ifc2x3.MeasureResource;
 
 namespace Xbim.DOM.PropertiesQuantities

@@ -16,7 +16,7 @@ using System.Collections.Generic;
 
 #endregion
 
-namespace Xbim.Ifc2x3.SelectTypes
+namespace Xbim.XbimExtensions.SelectTypes
 {
     public interface ExpressComplexType
     {

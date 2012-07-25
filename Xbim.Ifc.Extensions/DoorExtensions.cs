@@ -5,7 +5,7 @@ using System.Text;
 using Xbim.Ifc2x3.MeasureResource;
 using Xbim.Ifc2x3.SharedBldgElements;
 using Xbim.Ifc2x3.QuantityResource;
-using Xbim.Ifc2x3.SelectTypes;
+using Xbim.XbimExtensions.SelectTypes;
 
 namespace Xbim.Ifc2x3.Extensions
 {

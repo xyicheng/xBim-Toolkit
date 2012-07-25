@@ -43,19 +43,13 @@ namespace XbimConvert
 
                     watch.Start();
 
-                    using(XbimFileModelServer model = ParseModelFile(xbimFileName))
+                    using(XbimModel model = ParseModelFile(xbimFileName))
                     {
                         
                         model.Open(xbimFileName);
-                        IfcWindow window = model.New<IfcWindow>();
-                        //GenerateGeometry(xbimGeometryFileName, model);
-                        IEnumerable < IfcProduct > doors = model.InstancesOfType<IfcProduct>();
-                        int i = 1;
-                        foreach (var door in doors)
-                        {
-                            Console.WriteLine(door.Name);
-                           
-                        }
+                        
+                        GenerateGeometry(xbimGeometryFileName, model);
+                        
                         model.Close();
                     }
                     watch.Stop();
@@ -88,7 +82,7 @@ namespace XbimConvert
             
         }
 
-        private static void GenerateGeometry(string xbimGeometryFileName, XbimFileModelServer model)
+        private static void GenerateGeometry(string xbimGeometryFileName, XbimModel model)
         {
             //now convert the geometry
 
@@ -107,14 +101,14 @@ namespace XbimConvert
             }
         }
 
-        private static IEnumerable<IfcProduct> GetProducts(XbimFileModelServer model)
+        private static IEnumerable<IfcProduct> GetProducts(XbimModel model)
         {
             IEnumerable<IfcProduct> result = null;
 
             switch (arguments.FilterType)
             {
                 case FilterType.None:
-                    result = model.IfcProducts.Items;
+                    result = model.InstancesOfType<IfcProduct>();
                     Logger.Debug("All geometry items will be generated");
                     break;
 
@@ -137,14 +131,14 @@ namespace XbimConvert
             return result;
         }
 
-        private static XbimFileModelServer ParseModelFile(string xbimFileName)
+        private static XbimModel ParseModelFile(string xbimFileName)
         {
-            XbimFileModelServer model = new XbimFileModelServer();
+            XbimModel model = new XbimModel();
             //create a callback for progress
             switch (Path.GetExtension(arguments.IfcFileName).ToLowerInvariant())
             {
                 case ".ifc":
-                    model.ImportIfc(arguments.IfcFileName,
+                    model.CreateFrom(arguments.IfcFileName,
                         xbimFileName,
                         delegate(int percentProgress, object userState)
                         {
@@ -162,7 +156,7 @@ namespace XbimConvert
                     break;
 
                 case ".ifcxml":
-                    model.ImportXml(arguments.IfcFileName, xbimFileName);
+                    model.CreateFrom(arguments.IfcFileName, xbimFileName);
                     break;
                 default:
                     throw new NotImplementedException(String.Format("XbimConvert does not support {0} file formats currently", Path.GetExtension(arguments.IfcFileName)));

@@ -17,7 +17,7 @@ using System.Collections.Generic;
 using System.Xml.Serialization;
 using Xbim.Ifc2x3.Kernel;
 using Xbim.Ifc2x3.MeasureResource;
-using Xbim.Ifc2x3.SelectTypes;
+using Xbim.XbimExtensions.SelectTypes;
 using Xbim.Ifc2x3.StructuralAnalysisDomain;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;

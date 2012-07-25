@@ -14,7 +14,7 @@ using System;
 using System.Linq;
 using Xbim.Ifc2x3.Kernel;
 using Xbim.Ifc2x3.MaterialResource;
-using Xbim.Ifc2x3.SelectTypes;
+using Xbim.XbimExtensions.SelectTypes;
 using Xbim.Ifc2x3.ProductExtension;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;

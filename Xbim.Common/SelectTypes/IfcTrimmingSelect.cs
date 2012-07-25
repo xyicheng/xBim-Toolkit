@@ -10,7 +10,7 @@
 
 #endregion
 
-namespace Xbim.Ifc2x3.SelectTypes
+namespace Xbim.XbimExtensions.SelectTypes
 {
     public interface IfcTrimmingSelect : ExpressSelectType
     {

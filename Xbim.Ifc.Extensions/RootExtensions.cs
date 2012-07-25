@@ -16,7 +16,7 @@ using System.Diagnostics;
 using System.Linq;
 using Xbim.Ifc2x3.ExternalReferenceResource;
 using Xbim.Ifc2x3.Kernel;
-using Xbim.Ifc2x3.SelectTypes;
+using Xbim.XbimExtensions.SelectTypes;
 using Xbim.XbimExtensions;
 using System;
 using Xbim.Ifc2x3.MaterialResource;

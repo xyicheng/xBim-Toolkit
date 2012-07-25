@@ -15,7 +15,7 @@
 using System;
 using System.Collections.Generic;
 using Xbim.Ifc2x3.PropertyResource;
-using Xbim.Ifc2x3.SelectTypes;
+using Xbim.XbimExtensions.SelectTypes;
 using Xbim.XbimExtensions;
 
 #endregion

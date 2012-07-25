@@ -143,7 +143,7 @@ namespace XbimRegression
             String xbimGCFile = BuildFileName(ifcFile, ".xbimgc");
             if (!File.Exists(xbimFile))
                 return;
-            XbimFileModelServer model=null;
+            XbimModel model=null;
             IXbimScene scene=null;
             try
             {
@@ -151,7 +151,8 @@ namespace XbimRegression
                 result.XbimLength = ReadFileLength(xbimFile);
                 result.XbimGCLength = ReadFileLength(xbimGCFile);
 
-                model = new XbimFileModelServer(xbimFile, FileAccess.Read);
+                model = new XbimModel();
+                model.Open(xbimFile);
                 result.Entities = model.InstancesCount;
                 
                 IIfcFileHeader header = model.Header;

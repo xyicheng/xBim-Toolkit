@@ -15,7 +15,7 @@
 using System.Linq;
 using Xbim.Ifc2x3.MeasureResource;
 using Xbim.XbimExtensions;
-using Xbim.Ifc2x3.SelectTypes;
+using Xbim.XbimExtensions.SelectTypes;
 using Xbim.XbimExtensions.Interfaces;
 
 #endregion

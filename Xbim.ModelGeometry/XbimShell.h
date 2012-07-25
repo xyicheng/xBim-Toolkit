@@ -9,7 +9,7 @@
 
 using namespace Xbim::Ifc2x3::TopologyResource;
 using namespace Xbim::Ifc2x3::GeometryResource;
-using namespace Xbim::Ifc2x3::SelectTypes;
+using namespace Xbim::XbimExtensions::SelectTypes;
 using namespace Xbim::XbimExtensions::Interfaces;
 using namespace System::Collections::Generic;
 using namespace System::IO;

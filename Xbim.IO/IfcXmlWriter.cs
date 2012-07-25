@@ -19,7 +19,7 @@ using System.Reflection;
 using System.Xml;
 using Xbim.Ifc2x3.GeometryResource;
 using Xbim.Ifc2x3.Kernel;
-using Xbim.Ifc2x3.SelectTypes;
+using Xbim.XbimExtensions.SelectTypes;
 using Xbim.XbimExtensions.Interfaces;
 using Xbim.IO.Parser;
 using Xbim.XbimExtensions;
@@ -71,7 +71,7 @@ namespace Xbim.IO
         }
 
 
-        public void Write(IModel model, XmlWriter output, IEnumerable<IPersistIfcEntity> instances = null)
+        public void Write(XbimModel model, XmlWriter output)
         {
             try
             {
@@ -98,23 +98,10 @@ namespace Xbim.IO
                 output.WriteAttributeString("xmlns", "ifc", null, _namespace);
                 output.WriteAttributeString("xsi", "schemaLocation", null, string.Format("{0} {1}", _namespace, _ifcXSD));
 
-                if (model.IfcProject != null && instances == null)
+                foreach (IfcInstanceHandle item in model.InstanceHandles)
                 {
-                    Write(model, model.IfcProject, output);
-                    foreach (IPersistIfcEntity item in model.Instances.Where(i => i.GetType() != typeof(IfcProject)))
-                    {
-                        Write(model, item, output);
-                    }
+                    Write(model, item, output);
                 }
-                else
-                {
-                    if (instances == null) instances = model.Instances; // so we can make custom xmlof only specified instances for debuging
-                    foreach (IPersistIfcEntity item in instances)
-                    {
-                        Write(model, item, output);
-                    }
-                }
-
 
                 output.WriteEndElement(); //uos
                 output.WriteEndElement(); //iso_10303_28
@@ -161,18 +148,18 @@ namespace Xbim.IO
             output.WriteEndElement(); //end iso_10303_28_header
         }
 
-        private void Write(IModel model, IPersistIfcEntity entity, XmlWriter output, int pos = -1)
+        private void Write(XbimModel model, IfcInstanceHandle handle, XmlWriter output, int pos = -1)
         {
-            long lbl = Math.Abs(entity.EntityLabel);
+            long lbl = Math.Abs(handle.EntityLabel);
             if (_written.Contains(lbl)) //we have already done it
                 return;
             //int nextId = _written.Count + 1;
             _written.Add(lbl);
 
-            IfcType ifcType = IfcInstances.IfcEntities[entity.GetType()];
-            output.WriteStartElement(entity.GetType().Name);
+            IfcType ifcType = IfcInstances.IfcEntities[handle.EntityType];
+
+            output.WriteStartElement(ifcType.Type.Name);
             
-            //output.WriteAttributeString("id", string.Format("i{0}", nextId));
             output.WriteAttributeString("id", string.Format("i{0}", lbl));
             if (pos > -1) //we are writing out a list element
                 output.WriteAttributeString("pos", pos.ToString());
@@ -188,6 +175,7 @@ namespace Xbim.IO
             {
                 toWrite = ifcType.IfcProperties.Values;
             }
+            IPersistIfcEntity entity = model.GetInstanceVolatile(handle.EntityLabel); //load either the cache or a volatile version of the entity
             foreach (IfcMetaProperty ifcProperty in toWrite) //only write out persistent attributes, ignore inverses
             {
                 if (ifcProperty.IfcAttribute.State != IfcAttributeState.DerivedOverride)
@@ -202,7 +190,7 @@ namespace Xbim.IO
             output.WriteEndElement();
         }
 
-        private void WriteProperty(IModel model, string propName, Type propType, object propVal, object entity, XmlWriter output,
+        private void WriteProperty(XbimModel model, string propName, Type propType, object propVal, object entity, XmlWriter output,
                                    int pos, IfcAttribute attr)
         {
             if (propVal == null)
@@ -304,7 +292,7 @@ namespace Xbim.IO
             {
                 IPersistIfcEntity persistVal = (IPersistIfcEntity)propVal;
                 if (pos == -1) output.WriteStartElement(propName);
-                if (_written.Contains(Math.Abs(persistVal.EntityLabel))) //we have already wruitten it so use an xlink
+                if (_written.Contains(Math.Abs(persistVal.EntityLabel))) //we have already written it so use an xlink
                 {
                     output.WriteStartElement(propVal.GetType().Name);
                     output.WriteAttributeString("ref", string.Format("i{0}", Math.Abs(persistVal.EntityLabel)));
@@ -315,7 +303,7 @@ namespace Xbim.IO
                 }
                 else
                 {
-                    Write(model, (IPersistIfcEntity)propVal, output, pos);
+                    Write(model, new IfcInstanceHandle(Math.Abs(persistVal.EntityLabel), propVal.GetType()), output, pos);
                 }
                 if (pos == -1) output.WriteEndElement();
             }

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Xbim.Ifc2x3.ProductExtension;
 using Xbim.Ifc2x3.MeasureResource;
-using Xbim.Ifc2x3.SelectTypes;
+using Xbim.XbimExtensions.SelectTypes;
 using Xbim.Ifc2x3.Extensions;
 using Xbim.DOM.PropertiesQuantities;
 using Xbim.Ifc2x3.GeometricConstraintResource;

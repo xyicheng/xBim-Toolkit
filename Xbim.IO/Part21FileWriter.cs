@@ -20,36 +20,23 @@ using System.Reflection;
 using System.Runtime.Serialization.Formatters;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
-using Xbim.Ifc2x3.SelectTypes;
+using Xbim.XbimExtensions.SelectTypes;
 using Xbim.XbimExtensions.Interfaces;
 using Xbim.Ifc2x3.GeometryResource;
 using Xbim.Ifc2x3.MeasureResource;
 using Xbim.XbimExtensions;
+using Xbim.Common.Exceptions;
 
 #endregion
 
 namespace Xbim.IO
 {
-    public class Part21FileWriter : IDisposable
+    public class Part21FileWriter 
     {
 
-
-        [NonSerialized]
-        private TextWriter _output;
-        [NonSerialized]
         private HashSet<long> _written;
         
-        public Part21FileWriter()
-        {
-        }
-        public Part21FileWriter (TextWriter Output)
-        {
-            _written = new HashSet<long>();
-            _output = Output;
-        }
-               
-
-        private void WriteEntity(Type type, List<string> tokens, string id)
+        private void WriteEntity(TextWriter output, Type type, List<string> tokens, string id)
         {
             StringBuilder str = new StringBuilder();
             str.AppendFormat("{0}={1}(", id, type.Name.ToUpper());
@@ -61,54 +48,50 @@ namespace Xbim.IO
                     str.AppendFormat(",{0}", tokens[i]);
             }
             str.Append(");");
-            _output.WriteLine(str);
+            output.WriteLine(str);
         }
 
 
-        public void Write(IModel model, TextWriter output)
+        public void Write(XbimModel model, TextWriter output)
         {
             try
             {
 
                 _written = new HashSet<long>();
-                _output = output;
-                WriteHeader(model);
-
-                foreach (IPersistIfcEntity item in model.Instances /*.Types.OrderBy(t=>t.Name)*/)
+                output.Write(HeaderAsString(model.Header));
+                foreach (IfcInstanceHandle item in model.InstanceHandles /*.Types.OrderBy(t=>t.Name)*/)
                 {
-                    //foreach (var item in model.Instances[type])
-                    //{
-                    Write(item);
-                    //}
+                    IPersistIfcEntity entity = model.GetInstanceVolatile(item.EntityLabel);
+                    entity.WriteEntity(output);
                 }
 
-                WriteFooter();
-                Close();
+                output.WriteLine("ENDSEC;");
+                output.WriteLine("END-ISO-10303-21;");
+               
             }
             catch (Exception e)
-            {
-                Close();
-                throw new Exception("Failed to write Ifc file", e);
+            {  
+                throw new XbimException("Failed to write Ifc file", e);
             }
             finally
             {
                 _written = null;
-                _output = null;
             }
         }
 
-        public string Write(IPersistIfcEntity entity)
+        private string Write(XbimModel model, TextWriter output, IfcInstanceHandle handle)
         {
-            string id = string.Format("#{0}", entity.EntityLabel);
-            if (_written.Contains(entity.EntityLabel))
+            string id = string.Format("#{0}", handle.EntityLabel);
+            if (_written.Contains(handle.EntityLabel))
                 return id;
             else
             {
-                _written.Add(entity.EntityLabel);
+                _written.Add(handle.EntityLabel);
             }
-            IfcType ifcType = IfcInstances.IfcEntities[entity.GetType()];
+            IfcType ifcType = IfcInstances.IfcEntities[handle.EntityType];
 
             List<string> tokens = new List<string>();
+            IPersistIfcEntity entity = model.GetInstanceVolatile(handle.EntityLabel); //load either the cache or a volatile version of the entity
             foreach (IfcMetaProperty ifcProperty in ifcType.IfcProperties.Values)
             //only write out persistent attributes, ignore inverses
             {
@@ -119,17 +102,14 @@ namespace Xbim.IO
                     Type propType = ifcProperty.PropertyInfo.PropertyType;
                     object propVal = ifcProperty.PropertyInfo.GetValue(entity, null);
 
-                    tokens.Add(ConvertPropertyToPart21String(propType, propVal, entity));
+                    tokens.Add(ConvertPropertyToPart21String(model, output, propType, propVal, entity));
                 }
             }
-
-
-            WriteEntity(ifcType.Type, tokens, id);
-
+            WriteEntity(output, ifcType.Type, tokens, id);
             return id;
         }
 
-        private string ConvertPropertyToPart21String(Type propType, object propVal, object entity)
+        private string ConvertPropertyToPart21String(XbimModel model, TextWriter output, Type propType, object propVal, object entity)
         {
             Type itemType;
             if (propVal == null) //null or a value type that maybe null
@@ -144,7 +124,7 @@ namespace Xbim.IO
                 if (realType != propType)
                     //we have a type but it is a select type use the actual value but write out explicitly
                     return string.Format("{0}({1})", realType.Name.ToUpper(),
-                                         ConvertPropertyToPart21String(realType, propVal, entity));
+                                         ConvertPropertyToPart21String(model, output, realType, propVal, entity));
                 else
                     return ((ExpressType)propVal).ToPart21;
             }
@@ -159,13 +139,13 @@ namespace Xbim.IO
                 {
                     if (first)
                     {
-                        listStr.Append(ConvertPropertyToPart21String(itemType, item, entity));
+                        listStr.Append(ConvertPropertyToPart21String(model, output, itemType, item, entity));
                         first = false;
                     }
                     else
                     {
                         listStr.Append(",");
-                        listStr.Append(ConvertPropertyToPart21String(itemType, item, entity));
+                        listStr.Append(ConvertPropertyToPart21String(model, output, itemType, item, entity));
                     }
                 }
                 listStr.Append(")");
@@ -174,7 +154,7 @@ namespace Xbim.IO
 
             else if (typeof(IPersistIfcEntity).IsAssignableFrom(propType))
                 //all writable entities must support this interface and ExpressType have been handled so only entities left
-                return Write((IPersistIfcEntity)propVal);
+                return Write(model, output, new IfcInstanceHandle(((IPersistIfcEntity)propVal).EntityLabel, propVal.GetType()));
             else if (propType.IsValueType) //it might be an in-built value type double, string etc
                 return ConvertValueTypeToPart21String(propVal.GetType(), propVal);
             else if (typeof(ExpressSelectType).IsAssignableFrom(propType))
@@ -182,10 +162,10 @@ namespace Xbim.IO
             {
                 if (propVal.GetType().IsValueType) //we have a value type, so write out explicitly
                     return string.Format("{0}({1})", propVal.GetType().Name.ToUpper(),
-                                         ConvertPropertyToPart21String(propVal.GetType(), propVal,
+                                         ConvertPropertyToPart21String(model, output, propVal.GetType(), propVal,
                                                                        entity));
                 else //could be anything so re-evaluate actual type
-                    return ConvertPropertyToPart21String(propVal.GetType(), propVal, entity);
+                    return ConvertPropertyToPart21String(model, output, propVal.GetType(), propVal, entity);
                 //reduce to actual type
             }
             else
@@ -210,15 +190,6 @@ namespace Xbim.IO
             return null;
 
 
-        }
-
-        public void Close()
-        {
-            if (_output != null)
-            {
-                _output.Flush();
-                _output.Close();
-            }
         }
 
 
@@ -248,125 +219,69 @@ namespace Xbim.IO
             return "$";
         }
 
-        public void WriteHeader(IModel model)
+        private string HeaderAsString(IIfcFileHeader header)
         {
-            StringBuilder header = new StringBuilder();
-            header.AppendLine("ISO-10303-21;");
-            header.AppendLine("HEADER;");
+            StringBuilder headerStr = new StringBuilder();
+            headerStr.AppendLine("ISO-10303-21;");
+            headerStr.AppendLine("HEADER;");
             //FILE_DESCRIPTION
-            header.Append("FILE_DESCRIPTION ((");
+            headerStr.Append("FILE_DESCRIPTION ((");
             int i = 0;
 
-            if (model.Header.FileDescription.Description.Count == 0)
+            if (header.FileDescription.Description.Count == 0)
             {
-                header.Append(@"''");
+                headerStr.Append(@"''");
             }
             else
             {
-                foreach (string item in model.Header.FileDescription.Description)
+                foreach (string item in header.FileDescription.Description)
                 {
-                    header.AppendFormat(@"{0}'{1}'", i == 0 ? "" : ",", item);
+                    headerStr.AppendFormat(@"{0}'{1}'", i == 0 ? "" : ",", item);
                     i++;
                 }
             }
-            header.AppendFormat(@"), '{0}');", model.Header.FileDescription.ImplementationLevel);
-            header.AppendLine();
+            headerStr.AppendFormat(@"), '{0}');", header.FileDescription.ImplementationLevel);
+            headerStr.AppendLine();
             //FileName
-            header.Append("FILE_NAME (");
-            header.AppendFormat(@"'{0}'", model.Header.FileName.Name);
-            header.AppendFormat(@", '{0}'", model.Header.FileName.TimeStamp);
-            header.Append(", (");
+            headerStr.Append("FILE_NAME (");
+            headerStr.AppendFormat(@"'{0}'", header.FileName.Name);
+            headerStr.AppendFormat(@", '{0}'", header.FileName.TimeStamp);
+            headerStr.Append(", (");
             i = 0;
-            if (model.Header.FileName.AuthorName.Count == 0)
-                header.Append(@"''");
+            if (header.FileName.AuthorName.Count == 0)
+                headerStr.Append(@"''");
             else
             {
-                foreach (string item in model.Header.FileName.AuthorName)
+                foreach (string item in header.FileName.AuthorName)
                 {
-                    header.AppendFormat(@"{0}'{1}'", i == 0 ? "" : ",", item);
+                    headerStr.AppendFormat(@"{0}'{1}'", i == 0 ? "" : ",", item);
                     i++;
                 }
             }
-            header.Append("), (");
+            headerStr.Append("), (");
             i = 0;
-            if (model.Header.FileName.Organization.Count == 0)
-                header.Append(@"''");
+            if (header.FileName.Organization.Count == 0)
+                headerStr.Append(@"''");
             else
             {
-                foreach (string item in model.Header.FileName.Organization)
+                foreach (string item in header.FileName.Organization)
                 {
-                    header.AppendFormat(@"{0}'{1}'", i == 0 ? "" : ",", item);
+                    headerStr.AppendFormat(@"{0}'{1}'", i == 0 ? "" : ",", item);
                     i++;
                 }
             }
-            header.AppendFormat(@"), '{0}', '{1}', '{2}');", model.Header.FileName.PreprocessorVersion, model.Header.FileName.OriginatingSystem,
-                                model.Header.FileName.AuthorizationName);
-            header.AppendLine();
+            headerStr.AppendFormat(@"), '{0}', '{1}', '{2}');", header.FileName.PreprocessorVersion, header.FileName.OriginatingSystem,
+                                header.FileName.AuthorizationName);
+            headerStr.AppendLine();
             //FileSchema
-            header.AppendFormat("FILE_SCHEMA (('{0}'));", model.Header.FileSchema.Schemas.FirstOrDefault());
-            header.AppendLine();
-            header.AppendLine("ENDSEC;");
-            header.AppendLine("DATA;");
-            _output.Write(header.ToString());
+            headerStr.AppendFormat("FILE_SCHEMA (('{0}'));", header.FileSchema.Schemas.FirstOrDefault());
+            headerStr.AppendLine();
+            headerStr.AppendLine("ENDSEC;");
+            headerStr.AppendLine("DATA;");
+            return headerStr.ToString();
         }
 
-        public void WriteFooter()
-        {
-            _output.WriteLine("ENDSEC;");
-            _output.WriteLine("END-ISO-10303-21;");
-        }
-
-        //public bool Save(XbimMemoryModel model, string fileName, XbimFileType fileType)
-        //{
-        //    switch (fileType)
-        //    {
-        //        case XbimFileType.Xbim:
-        //            try
-        //            {
-        //                BinaryFormatter formatter = new BinaryFormatter();
-        //                formatter.AssemblyFormat = FormatterAssemblyStyle.Simple;
-        //                model.Header.FileDescription.EntityCount = model.Instances.Count();
-        //                Stream stream = new FileStream(fileName, FileMode.Create, FileAccess.Write, FileShare.None);
-        //                formatter.Serialize(stream, this);
-        //                formatter.Serialize(stream, model);
-        //                stream.Close();
-        //                return true;
-        //            }
-        //            catch (Exception)
-        //            {
-        //                return false;
-        //            }
-        //        case XbimFileType.Ifc:
-        //            try
-        //            {
-        //                _written = new HashSet<long>();
-        //                _output = new StreamWriter(fileName);
-        //                WriteHeader(model);
-        //                foreach (IPersistIfcEntity item in model.Instances)
-        //                {
-        //                    Write(item);
-        //                }
-        //                WriteFooter();
-        //                Close();
-        //                return true;
-        //            }
-        //            catch (Exception)
-        //            {
-        //                return false;
-        //            }
-
-        //        default:
-        //            return false;
-        //    }
-        //}
-
-        #region IDisposable Members
-
-        public void Dispose()
-        {
-            if (_output != null) _output.Close();
-        }
-
-        #endregion
+       
+        
     }
 }

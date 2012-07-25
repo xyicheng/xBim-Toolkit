@@ -125,16 +125,22 @@ namespace Xbim.IO.Parser
         private long _streamSize = -1;
         private readonly XbimP21Indexer _index = new XbimP21Indexer();
         private BinaryWriter _binaryWriter;
-        private readonly Stream _indexStrm;
+        
         private long _currentLabel;
         private string _currentType;
-       
+        private int _primaryKeyIdx = -1;
 
         private Part21Entity _currentInstance;
         private readonly Stack<Part21Entity> _processStack = new Stack<Part21Entity>();
         private PropertyValue _propertyValue;
         private int _listNestLevel = -1;
         private readonly IfcFileHeader _header = new IfcFileHeader();
+
+        public IfcFileHeader Header
+        {
+            get { return _header; }
+        } 
+
    
         private Microsoft.Isam.Esent.Interop.Session session;
         private Microsoft.Isam.Esent.Interop.Table table;
@@ -142,20 +148,14 @@ namespace Xbim.IO.Parser
         private JET_COLUMNID columnidSecondaryKey;
         private JET_COLUMNID columnidIfcType;
         private JET_COLUMNID columnidEntityData;
-        Int64ColumnValue _colEnityLabel;
+        Int64ColumnValue _colEntityLabel;
+        Int64ColumnValue _colSecondaryKey;
         Int16ColumnValue _colTypeId;
         BytesColumnValue _colData;
         ColumnValue[] _colValues;
         const int _transactionBatchSize = 100;
         private int _entityCount = 0;
-        public P21toIndexParser(Stream inputP21, Stream indexStrm)
-            : base(inputP21)
-        {
-            if (inputP21.CanSeek)
-                _streamSize = inputP21.Length;
-            _indexStrm = indexStrm;
-        }
-
+        private long _primaryKeyValue = -1;
         public P21toIndexParser(Stream inputP21, Session session, Table table)
             : base(inputP21)
         {
@@ -166,10 +166,11 @@ namespace Xbim.IO.Parser
             columnidSecondaryKey = columnids[XbimModel.colNameSecondaryKey];
             columnidIfcType = columnids[XbimModel.colNameIfcType];
             columnidEntityData = columnids[XbimModel.colNameEntityData];
-            _colEnityLabel = new Int64ColumnValue { Columnid = columnidEntityLabel};
+            _colEntityLabel = new Int64ColumnValue { Columnid = columnidEntityLabel};
+            _colSecondaryKey = new Int64ColumnValue { Columnid = columnidSecondaryKey };
             _colTypeId = new Int16ColumnValue { Columnid = columnidIfcType };
             _colData = new BytesColumnValue { Columnid = columnidEntityData };
-            _colValues = new ColumnValue[] { _colEnityLabel, _colTypeId, _colData };
+            _colValues = new ColumnValue[] { _colEntityLabel, _colSecondaryKey, _colTypeId, _colData };
 
             _entityCount = 0;
             if (inputP21.CanSeek)
@@ -224,27 +225,21 @@ namespace Xbim.IO.Parser
 
         internal override void BeginList()
         {
-            if (InHeader)
-            {
-                Part21Entity p21 = _processStack.Peek();
-                if (p21.CurrentParamIndex == -1)
-                    p21.CurrentParamIndex++; //first time in take the forst argument
-
-                _listNestLevel++;
-            }
-            else
+            Part21Entity p21 = _processStack.Peek();
+            if (p21.CurrentParamIndex == -1)
+                p21.CurrentParamIndex++; //first time in take the forst argument
+            _listNestLevel++;
+            if (!InHeader)
                 _binaryWriter.Write((byte)P21ParseAction.BeginList);
+
         }
 
         internal override void EndList()
         {
-            if (InHeader)
-            {
-                _listNestLevel--;
-                Part21Entity p21 = _processStack.Peek();
-                p21.CurrentParamIndex++;
-            }
-            else
+            _listNestLevel--;
+            Part21Entity p21 = _processStack.Peek();
+            p21.CurrentParamIndex++;
+            if (!InHeader)
                 _binaryWriter.Write((byte)P21ParseAction.EndList);
         }
 
@@ -260,12 +255,14 @@ namespace Xbim.IO.Parser
 
         internal override void NewEntity(string entityLabel)
         {
+            _currentInstance = new Part21Entity(entityLabel);
+            _processStack.Push(_currentInstance);
             _entityCount++;
+            _primaryKeyValue = -1;
             _currentLabel = Convert.ToInt64(entityLabel.TrimStart('#'));
             MemoryStream data = _binaryWriter.BaseStream as MemoryStream;
             data.SetLength(0);
-           
-            _binaryWriter.Write((int)0);
+
             _binaryWriter.Write((byte)P21ParseAction.NewEntity);
             if (_streamSize != -1 && ProgressStatus != null)
             {
@@ -303,25 +300,39 @@ namespace Xbim.IO.Parser
                 _processStack.Push(_currentInstance);
             }
             else
+            {
+
                 _currentType = entityTypeName;
+                IfcType ifcType = IfcInstances.IfcTypeLookup[_currentType];
+                _primaryKeyIdx = ifcType.PrimaryKeyIndex;
+            }
         }
 
         internal override void EndEntity()
         {
-            _binaryWriter.Write((byte)P21ParseAction.EndEntity);
-            using (var update = new Update(session, table, JET_prep.Insert))
+            Part21Entity p21 = _processStack.Pop();
+            Debug.Assert(_processStack.Count == 0);
+            _currentInstance = null;
+            if (_currentType != null)
             {
-                MemoryStream data = _binaryWriter.BaseStream as MemoryStream;
-
-                _colEnityLabel.Value = _currentLabel;
-                _colTypeId. Value = IfcInstances.IfcTypeLookup[_currentType].TypeId;
-                _colData.Value = data.ToArray();
-                Api.SetColumns(session, table, _colValues);
-                update.Save();
-                if (_entityCount % _transactionBatchSize == (_transactionBatchSize - 1))
+                _binaryWriter.Write((byte)P21ParseAction.EndEntity);
+                using (var update = new Update(session, table, JET_prep.Insert))
                 {
-                    Api.JetCommitTransaction(session, CommitTransactionGrbit.LazyFlush);
-                    Api.JetBeginTransaction(session);
+                    MemoryStream data = _binaryWriter.BaseStream as MemoryStream;
+
+                    _colEntityLabel.Value = _currentLabel;
+                    IfcType ifcType = IfcInstances.IfcTypeLookup[_currentType];
+                    _colTypeId.Value = ifcType.TypeId;
+                    if (_primaryKeyValue > -1) 
+                        _colSecondaryKey.Value = _primaryKeyValue;
+                    _colData.Value = data.ToArray();
+                    Api.SetColumns(session, table, _colValues);
+                    update.Save();
+                    if (_entityCount % _transactionBatchSize == (_transactionBatchSize - 1))
+                    {
+                        Api.JetCommitTransaction(session, CommitTransactionGrbit.LazyFlush);
+                        Api.JetBeginTransaction(session);
+                    }
                 }
             }
            
@@ -340,13 +351,14 @@ namespace Xbim.IO.Parser
                 _propertyValue.Init(value, IfcParserType.Integer);
                 if (_currentInstance.Entity != null)
                     _currentInstance.ParameterSetter(_currentInstance.CurrentParamIndex, _propertyValue);
-                if (_listNestLevel == 0) _currentInstance.CurrentParamIndex++;
+               
             }
             else
             {
                 _binaryWriter.Write((byte)P21ParseAction.SetIntegerValue);
                 _binaryWriter.Write(Convert.ToInt64(value));
             }
+            if (_listNestLevel == 0) _currentInstance.CurrentParamIndex++;
         }
 
         internal override void SetHexValue(string value)
@@ -356,13 +368,15 @@ namespace Xbim.IO.Parser
                 _propertyValue.Init(value, IfcParserType.HexaDecimal);
                 if (_currentInstance.Entity != null)
                     _currentInstance.ParameterSetter(_currentInstance.CurrentParamIndex, _propertyValue);
-                if (_listNestLevel == 0) _currentInstance.CurrentParamIndex++;
+                
             }
             else
             {
                 _binaryWriter.Write((byte)P21ParseAction.SetHexValue);
                 _binaryWriter.Write(Convert.ToInt64(value, 16));
+                
             }
+            if (_listNestLevel == 0) _currentInstance.CurrentParamIndex++;
         }
 
         internal override void SetFloatValue(string value)
@@ -372,13 +386,14 @@ namespace Xbim.IO.Parser
                 _propertyValue.Init(value, IfcParserType.Real);
                 if (_currentInstance.Entity != null)
                     _currentInstance.ParameterSetter(_currentInstance.CurrentParamIndex, _propertyValue);
-                if (_listNestLevel == 0) _currentInstance.CurrentParamIndex++;
+               
             }
             else
             {
                 _binaryWriter.Write((byte)P21ParseAction.SetFloatValue);
                 _binaryWriter.Write(Convert.ToDouble(value));
             }
+            if (_listNestLevel == 0) _currentInstance.CurrentParamIndex++;
         }
 
         internal override void SetStringValue(string value)
@@ -388,8 +403,7 @@ namespace Xbim.IO.Parser
                 _propertyValue.Init(value, IfcParserType.String);
                 if (_currentInstance.Entity != null)
                     _currentInstance.ParameterSetter(_currentInstance.CurrentParamIndex, _propertyValue);
-                if (_listNestLevel == 0)
-                    _currentInstance.CurrentParamIndex++;
+                
             }
             else
             {
@@ -400,6 +414,8 @@ namespace Xbim.IO.Parser
                 _binaryWriter.Write(res);
                 
             }
+            if (_listNestLevel == 0)
+                _currentInstance.CurrentParamIndex++;
         }
 
         internal override void SetEnumValue(string value)
@@ -409,13 +425,14 @@ namespace Xbim.IO.Parser
                 _propertyValue.Init(value, IfcParserType.Enum);
                 if (_currentInstance.Entity != null)
                     _currentInstance.ParameterSetter(_currentInstance.CurrentParamIndex, _propertyValue);
-                if (_listNestLevel == 0) _currentInstance.CurrentParamIndex++;
+                
             }
             else
             {
                 _binaryWriter.Write((byte)P21ParseAction.SetEnumValue);
                 _binaryWriter.Write(value.Trim('.'));
             }
+            if (_listNestLevel == 0) _currentInstance.CurrentParamIndex++;
         }
 
         internal override void SetBooleanValue(string value)
@@ -425,61 +442,61 @@ namespace Xbim.IO.Parser
                 _propertyValue.Init(value, IfcParserType.Boolean);
                 if (_currentInstance.Entity != null)
                     _currentInstance.ParameterSetter(_currentInstance.CurrentParamIndex, _propertyValue);
-                if (_listNestLevel == 0) _currentInstance.CurrentParamIndex++;
             }
             else
             {
                 _binaryWriter.Write((byte)P21ParseAction.SetBooleanValue);
                 _binaryWriter.Write(value == ".T.");
             }
+            if (_listNestLevel == 0) _currentInstance.CurrentParamIndex++;
         }
 
         internal override void SetNonDefinedValue()
         {
-            if (InHeader && _listNestLevel == 0)
-                _currentInstance.CurrentParamIndex++;
-            else
-                _binaryWriter.Write((byte)P21ParseAction.SetNonDefinedValue);
+            if (_listNestLevel == 0) _currentInstance.CurrentParamIndex++;
+            _binaryWriter.Write((byte)P21ParseAction.SetNonDefinedValue);
         }
 
         internal override void SetOverrideValue()
         {
-            if (InHeader && _listNestLevel == 0)
-                _currentInstance.CurrentParamIndex++;
-            else
-                _binaryWriter.Write((byte)P21ParseAction.SetOverrideValue);
+            if (_listNestLevel == 0) _currentInstance.CurrentParamIndex++;
+            _binaryWriter.Write((byte)P21ParseAction.SetOverrideValue);
         }
 
         internal override void SetObjectValue(string value)
         {
-            if (InHeader && _listNestLevel == 0)
-                _currentInstance.CurrentParamIndex++;
-            else
+            long val = Convert.ToInt64(value.TrimStart('#'));
+
+            if (_currentInstance.CurrentParamIndex == _primaryKeyIdx)
+                _primaryKeyValue = val;
+
+            if (_listNestLevel == 0) _currentInstance.CurrentParamIndex++;
+           
+            if (val <= UInt16.MaxValue)
             {
-                long val = Convert.ToInt64(value.TrimStart('#'));
-                if (val <= UInt16.MaxValue)
-                {
-                    _binaryWriter.Write((byte)P21ParseAction.SetObjectValueUInt16);
-                    _binaryWriter.Write(Convert.ToUInt16(val));
-                }
-                else if (val <= UInt32.MaxValue)
-                {
-                    _binaryWriter.Write((byte)P21ParseAction.SetObjectValueUInt32);
-                    _binaryWriter.Write(Convert.ToUInt32(val));
-                }
-                else if (val <= Int64.MaxValue)
-                {
-                    _binaryWriter.Write((byte)P21ParseAction.SetObjectValueInt64);
-                    _binaryWriter.Write(val);
-                }
-                else
-                    throw new Exception("Entity Label exceeds maximim value for a long number");
+                _binaryWriter.Write((byte)P21ParseAction.SetObjectValueUInt16);
+                _binaryWriter.Write(Convert.ToUInt16(val));
             }
+            else if (val <= UInt32.MaxValue)
+            {
+                _binaryWriter.Write((byte)P21ParseAction.SetObjectValueUInt32);
+                _binaryWriter.Write(Convert.ToUInt32(val));
+            }
+            else if (val <= Int64.MaxValue)
+            {
+                _binaryWriter.Write((byte)P21ParseAction.SetObjectValueInt64);
+                _binaryWriter.Write(val);
+            }
+            else
+                throw new Exception("Entity Label exceeds maximim value for a long number");
+
+
         }
 
         internal override void EndNestedType(string value)
         {
             _binaryWriter.Write((byte)P21ParseAction.EndNestedType);
+            if (_listNestLevel == 0) _currentInstance.CurrentParamIndex++;
         }
 
         internal override void BeginNestedType(string value)

@@ -6,7 +6,7 @@
 
 
 using namespace Xbim::Ifc2x3::GeometryResource;
-using namespace Xbim::Ifc2x3::SelectTypes;
+using namespace Xbim::XbimExtensions::SelectTypes;
 using namespace System::Windows::Media::Media3D;
 using namespace Xbim::Common::Exceptions;
 namespace Xbim

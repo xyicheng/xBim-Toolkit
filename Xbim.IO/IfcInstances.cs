@@ -22,7 +22,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using Xbim.Ifc2x3.Kernel;
-using Xbim.Ifc2x3.SelectTypes;
+using Xbim.XbimExtensions.SelectTypes;
 using Xbim.XbimExtensions.Transactions.Extensions;
 using Xbim.XbimExtensions.Interfaces;
 using Xbim.XbimExtensions;
@@ -620,22 +620,28 @@ namespace Xbim.IO
                 ifcType.Type.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy);
             foreach (PropertyInfo propInfo in properties)
             {
+                int attributeIdx = -1;
                 IfcAttribute[] ifcAttributes =
                     (IfcAttribute[]) propInfo.GetCustomAttributes(typeof (IfcAttribute), false);
                 if (ifcAttributes.GetLength(0) > 0) //we have an ifc property
                 {
                     if (ifcAttributes[0].Order > 0)
+                    {
                         ifcType.IfcProperties.Add(ifcAttributes[0].Order,
-                                                  new IfcMetaProperty
-                                                      {PropertyInfo = propInfo, IfcAttribute = ifcAttributes[0]});
+                                                  new IfcMetaProperty { PropertyInfo = propInfo, IfcAttribute = ifcAttributes[0] });
+                        attributeIdx = ifcAttributes[0].Order;
+                    }
+
                     else
-                        ifcType.IfcInverses.Add(new IfcMetaProperty
-                                                    {PropertyInfo = propInfo, IfcAttribute = ifcAttributes[0]});
+                        ifcType.IfcInverses.Add(new IfcMetaProperty { PropertyInfo = propInfo, IfcAttribute = ifcAttributes[0] });
                 }
                 IfcPrimaryIndex[] ifcPrimaryIndices =
                     (IfcPrimaryIndex[]) propInfo.GetCustomAttributes(typeof (IfcPrimaryIndex), false);
                 if (ifcPrimaryIndices.GetLength(0) > 0) //we have an ifc primary index
+                {
                     ifcType.PrimaryIndex = propInfo;
+                    ifcType.PrimaryKeyIndex = attributeIdx;
+                }
                 IfcSecondaryIndex[] ifcSecondaryIndices =
                     (IfcSecondaryIndex[]) propInfo.GetCustomAttributes(typeof (IfcSecondaryIndex), false);
                 if (ifcSecondaryIndices.GetLength(0) > 0) //we have an ifc primary index
