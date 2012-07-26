@@ -51,26 +51,28 @@ namespace XbimConvert
                     Console.WriteLine("Success. Processed in " + watch.ElapsedMilliseconds + " ms");
                     GetInput();
                 }
-                catch (XbimException e)
-                {
-                    // Errors we have already handled
-                    Logger.ErrorFormat("One or more errors converting {0}. Exiting...", arguments.IfcFileName);
-                    CreateLogFile(arguments.IfcFileName, eventTrace.Events);
-
-                    DisplayError(string.Format("One or more errors converting {0}, {1}", arguments.IfcFileName, e.Message));
-
-                    return -1;
-                }
                 catch (Exception e)
                 {
-                    // Unexpected failures
-                    Logger.Fatal(String.Format("Fatal Error converting {0}. Exiting...", arguments.IfcFileName), e);
-                    CreateLogFile(arguments.IfcFileName, eventTrace.Events);
+                    if(e is XbimException || e is NotImplementedException)
+                    {
+                         // Errors we have already handled or know about. Keep details brief in the log
+                        Logger.ErrorFormat("One or more errors converting {0}. Exiting...", arguments.IfcFileName);
+                        CreateLogFile(arguments.IfcFileName, eventTrace.Events);
 
-                    DisplayError(string.Format("Fatal Error converting {0}, {1}", arguments.IfcFileName, e.Message));
+                        DisplayError(string.Format("One or more errors converting {0}, {1}", arguments.IfcFileName, e.Message));
+                    }
+                    else
+                    {
+                        // Unexpected failures. Log exception details
+                        Logger.Fatal(String.Format("Fatal Error converting {0}. Exiting...", arguments.IfcFileName), e);
+                        CreateLogFile(arguments.IfcFileName, eventTrace.Events);
 
+                        DisplayError(string.Format("Fatal Error converting {0}, {1}", arguments.IfcFileName, e.Message));
+                    }
                     return -1;
                 }
+                Logger.Info("XbimConvert finished successfully...");
+
                 int errors = (from e in eventTrace.Events
                              where (e.EventLevel > EventLevel.INFO)
                              select e).Count();
@@ -80,7 +82,7 @@ namespace XbimConvert
                     CreateLogFile(arguments.IfcFileName, eventTrace.Events);
                 }
 
-                Logger.Info("XbimConvert finished successfully...");
+                
                 return errors;
             }
             
@@ -184,12 +186,13 @@ namespace XbimConvert
                 {
                     foreach (Event logEvent in events)
                     {
+                        string message = SanitiseMessage(logEvent.Message);
                         writer.WriteLine("{0:yyyy-MM-dd HH:mm:ss} : {1:-5} {2}.{3} - {4}",
                             logEvent.EventTime,
                             logEvent.EventLevel.ToString(),
                             logEvent.Logger,
                             logEvent.Method,
-                            logEvent.Message
+                            message
                             );
                     }
                     writer.Flush();
@@ -200,6 +203,19 @@ namespace XbimConvert
             {
                 Logger.Error(String.Format("Failed to create Log File for {0}", ifcFile), e);
             }
+        }
+
+        private static string SanitiseMessage(string message)
+        {
+            if (arguments.SanitiseLogs == false)
+                return message;
+
+            string modelPath = Path.GetDirectoryName(arguments.IfcFileName);
+            string currentPath = Environment.CurrentDirectory;
+
+            return message
+                .Replace(modelPath, String.Empty)
+                .Replace(currentPath, String.Empty);
         }
 
         private static string BuildFileName(string file, string extension)

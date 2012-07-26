@@ -42,7 +42,7 @@ namespace Xbim.Common.Logging.Providers
             // Set up some default properties we can use to provide consistent log
             // file naming conventions. 
             // Skip if already set - GlobalContext is global and Properties may be set by another part of the application. Don't over-write
-            if (log4net.GlobalContext.Properties["LogName"] != null)
+            if (log4net.GlobalContext.Properties["LogName"] == null)
             {
                 log4net.GlobalContext.Properties["LogName"] = Path.Combine(LogPath, LogFileName);
                 log4net.GlobalContext.Properties["ApplicationName"] = ApplicationName;
