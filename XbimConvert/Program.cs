@@ -9,6 +9,7 @@ using Xbim.ModelGeometry;
 using System.IO;
 using Xbim.Common.Logging;
 using Xbim.Ifc.Kernel;
+using Xbim.Common.Exceptions;
 
 namespace XbimConvert
 {
@@ -29,7 +30,7 @@ namespace XbimConvert
                 {
                     return -1;
                 }
-                
+
                 try
                 {
                     Logger.InfoFormat("Starting conversion of {0}", args[0]);
@@ -50,14 +51,24 @@ namespace XbimConvert
                     Console.WriteLine("Success. Processed in " + watch.ElapsedMilliseconds + " ms");
                     GetInput();
                 }
+                catch (XbimException e)
+                {
+                    // Errors we have already handled
+                    Logger.ErrorFormat("One or more errors converting {0}. Exiting...", arguments.IfcFileName);
+                    CreateLogFile(arguments.IfcFileName, eventTrace.Events);
+
+                    DisplayError(string.Format("One or more errors converting {0}, {1}", arguments.IfcFileName, e.Message));
+
+                    return -1;
+                }
                 catch (Exception e)
                 {
-                    ResetCursor(Console.CursorTop + 1);
-                    Console.WriteLine(string.Format("Error converting {0}, {1}", arguments.IfcFileName, e.Message));
-                    Logger.Error(String.Format("Error converting {0}", arguments.IfcFileName), e);
+                    // Unexpected failures
+                    Logger.Fatal(String.Format("Fatal Error converting {0}. Exiting...", arguments.IfcFileName), e);
                     CreateLogFile(arguments.IfcFileName, eventTrace.Events);
-                    GetInput();
-                    
+
+                    DisplayError(string.Format("Fatal Error converting {0}, {1}", arguments.IfcFileName, e.Message));
+
                     return -1;
                 }
                 int errors = (from e in eventTrace.Events
@@ -69,10 +80,17 @@ namespace XbimConvert
                     CreateLogFile(arguments.IfcFileName, eventTrace.Events);
                 }
 
-                Logger.Debug("XbimConvert finished...");
+                Logger.Info("XbimConvert finished successfully...");
                 return errors;
             }
             
+        }
+
+        private static void DisplayError(String  message)
+        {
+            ResetCursor(Console.CursorTop + 1);
+            Console.WriteLine(message);
+            GetInput();
         }
 
         private static void GenerateGeometry(string xbimGeometryFileName, XbimFileModelServer model)
@@ -82,9 +100,6 @@ namespace XbimConvert
             IEnumerable<IfcProduct> toDraw = GetProducts(model);
 
             XbimScene scene = new XbimScene(model, toDraw);
-            //TransformGraph graph = new TransformGraph(model, scene);
-            //add everything with a representation
-            //graph.AddProducts(model.IfcProducts.Items);
 
             using (FileStream sceneStream = new FileStream(xbimGeometryFileName, FileMode.Create, FileAccess.ReadWrite))
             {
@@ -139,7 +154,7 @@ namespace XbimConvert
                         {
                             if (!arguments.IsQuiet)
                             {
-                                Console.Write(string.Format("{0:D2}% Converted", percentProgress));
+                                Console.Write(string.Format("{0:D2}% Parsed", percentProgress));
                                 ResetCursor(Console.CursorTop);
                             }
                         }
