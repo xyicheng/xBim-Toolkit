@@ -31,6 +31,7 @@
 #include <GeomLProp_SLProps.hxx>
 #include <BRepLib.hxx>
 using namespace Xbim::Ifc::ProductExtension;
+using namespace Xbim::Ifc::SharedComponentElements;
 using namespace System::Linq;
 using namespace Xbim::IO;
 using namespace Xbim::Common::Exceptions;
@@ -265,20 +266,34 @@ namespace Xbim
 {
 	namespace ModelGeometry
 	{
-		XbimGeometryModel::XbimGeometryModel(void)
+	
+		bool XbimGeometryModel::CutOpenings(IfcProduct^ product, XbimLOD lod)
 		{
+			if(dynamic_cast<IfcElement^>(product))
+			{
+				//add in additional types here that you don't want to cut
+				if(dynamic_cast<IfcBeam^>(product) ||
+					dynamic_cast<IfcColumn^>(product) ||
+					dynamic_cast<IfcMember^>(product)||
+					dynamic_cast<IfcElementAssembly^>(product)||
+					dynamic_cast<IfcPlate^>(product))
+				{
+					return lod==XbimLOD::LOD400;
+				}
+				else
+					return true;
+			}
+			else
+				return false;
 		}
-
 		/* Creates a 3D Model geometry for the product based upon the first "Body" ShapeRepresentation that can be found in  
 		Products.ProductRepresentation that is within the specified GeometricRepresentationContext, if the Representation 
 		context is null the first "Body" ShapeRepresentation is used. Returns null if their is no valid geometric definition
 		*/
-		IXbimGeometryModel^ XbimGeometryModel::CreateFrom(IfcProduct^ product, IfcGeometricRepresentationContext^ repContext, Dictionary<IfcRepresentation^, IXbimGeometryModel^>^ maps, bool forceSolid)
+		IXbimGeometryModel^ XbimGeometryModel::CreateFrom(IfcProduct^ product, IfcGeometricRepresentationContext^ repContext, Dictionary<IfcRepresentation^, IXbimGeometryModel^>^ maps, bool forceSolid, XbimLOD lod)
 		{
 			if(product->Representation == nullptr ||  product->Representation->Representations == nullptr) 
 				return nullptr; //if it doesn't have one do nothing
-
-
 			//we should cast the shape below to a ShapeRepresentation but using IfcRepresentation means this works for older IFC2x formats  and there is no data loss
 
 			for each(IfcRepresentation^ shape in product->Representation->Representations)
@@ -293,7 +308,8 @@ namespace Xbim
 					{
 						if(dynamic_cast<IfcGeometricRepresentationContext^>(shape->ContextOfItems))
 							BRepLib::Precision((Standard_Real)((IfcGeometricRepresentationContext^)(shape->ContextOfItems))->DefaultPrecision);
-						if(dynamic_cast<IfcElement^>(product))
+						
+						if(CutOpenings(product, lod))
 						{
 							IfcElement^ element = (IfcElement^) product;
 							//check if we have openings or projections
@@ -310,7 +326,7 @@ namespace Xbim
 									IfcFeatureElementAddition^ fe = rel->RelatedFeatureElement;
 									if(fe->Representation!=nullptr)
 									{
-										IXbimGeometryModel^ im = CreateFrom(fe,repContext, maps, true);
+										IXbimGeometryModel^ im = CreateFrom(fe,repContext, maps, true, lod);
 										if(!dynamic_cast<XbimSolid^>(im))
 											throw gcnew XbimGeometryException("FeatureElementAdditions must be of type solid");
 
@@ -324,7 +340,7 @@ namespace Xbim
 									IfcFeatureElementSubtraction^ fe = rel->RelatedOpeningElement;
 									if(fe->Representation!=nullptr)
 									{
-										IXbimGeometryModel^ im = CreateFrom(fe, repContext, maps, true);
+										IXbimGeometryModel^ im = CreateFrom(fe, repContext, maps, true,lod);
 										if(im!=nullptr)
 										{	
 											im = im->CopyTo(fe->ObjectPlacement);
@@ -349,17 +365,17 @@ namespace Xbim
 									}
 									
 								}
-								IXbimGeometryModel^ baseShape = CreateFrom(shape, maps, true);	
+								IXbimGeometryModel^ baseShape = CreateFrom(shape, maps, true,lod);	
 								
 								IXbimGeometryModel^ fShape =  gcnew XbimFeaturedShape(baseShape, openingSolids, projectionSolids);
 
 								return fShape;
 							}
 							else //we have no openings or projections
-								return CreateFrom(shape, maps, forceSolid);
+								return CreateFrom(shape, maps, forceSolid,lod);
 						}
 						else
-							return CreateFrom(shape, maps, forceSolid);
+							return CreateFrom(shape, maps, forceSolid,lod);
 					}
 				}
 			}
@@ -368,18 +384,18 @@ namespace Xbim
 			return nullptr;
 		}
 
-		IXbimGeometryModel^ XbimGeometryModel::CreateFrom(IfcProduct^ product, Dictionary<IfcRepresentation^, IXbimGeometryModel^>^ maps, bool forceSolid)
+		IXbimGeometryModel^ XbimGeometryModel::CreateFrom(IfcProduct^ product, Dictionary<IfcRepresentation^, IXbimGeometryModel^>^ maps, bool forceSolid, XbimLOD lod)
 		{
-			return CreateFrom(product, nullptr, maps, forceSolid);
+			return CreateFrom(product, nullptr, maps, forceSolid, lod);
 		}
 
-		IXbimGeometryModel^ XbimGeometryModel::CreateFrom(IfcProduct^ product, bool forceSolid)
+		IXbimGeometryModel^ XbimGeometryModel::CreateFrom(IfcProduct^ product, bool forceSolid, XbimLOD lod)
 		{
 			// HACK: Ideally we shouldn't need this try-catch handler. This just allows us to log the fault, and raise a managed exception, before the application terminates.
 			// Upstream callers should ideally terminate the application ASAP.
 			__try
 			{
-				return CreateFrom(product, nullptr, gcnew Dictionary<IfcRepresentation^, IXbimGeometryModel^>(), forceSolid);
+				return CreateFrom(product, nullptr, gcnew Dictionary<IfcRepresentation^, IXbimGeometryModel^>(), forceSolid,lod);
 			}
 			__except(GetExceptionCode() == EXCEPTION_ACCESS_VIOLATION)
 			{
@@ -457,21 +473,21 @@ namespace Xbim
 		/*
 		Create a model geometry for a given shape
 		*/
-		IXbimGeometryModel^ XbimGeometryModel::CreateFrom(IfcRepresentation^ rep, Dictionary<IfcRepresentation^, IXbimGeometryModel^>^ maps, bool forceSolid)
+		IXbimGeometryModel^ XbimGeometryModel::CreateFrom(IfcRepresentation^ rep, Dictionary<IfcRepresentation^, IXbimGeometryModel^>^ maps, bool forceSolid, XbimLOD lod)
 		{
 
 			if(rep->Items->Count == 0) //we have nothing to do
 				return nullptr;
 			else if (rep->Items->Count == 1) //we have a single shape geometry
 			{
-				return CreateFrom(rep->Items->First,maps, forceSolid);
+				return CreateFrom(rep->Items->First,maps, forceSolid,lod);
 			}
 			else // we have a compound shape
 			{
 				XbimGeometryModelCollection^ gms = gcnew XbimGeometryModelCollection();
 				for each (IfcRepresentationItem^ repItem in rep->Items)
 				{
-					gms->Add(CreateFrom(repItem,maps,forceSolid));
+					gms->Add(CreateFrom(repItem,maps,forceSolid,lod));
 				}
 				if(forceSolid)
 					return gms->Solidify();
@@ -480,17 +496,17 @@ namespace Xbim
 			}
 		}
 
-		IXbimGeometryModel^ XbimGeometryModel::CreateFrom(IfcRepresentation^ rep, bool forceSolid)
+		IXbimGeometryModel^ XbimGeometryModel::CreateFrom(IfcRepresentation^ rep, bool forceSolid, XbimLOD lod)
 		{
-			return CreateFrom(rep, gcnew Dictionary<IfcRepresentation^, IXbimGeometryModel^>(), forceSolid);
+			return CreateFrom(rep, gcnew Dictionary<IfcRepresentation^, IXbimGeometryModel^>(), forceSolid,lod);
 		}
 
-		IXbimGeometryModel^ XbimGeometryModel::CreateFrom(IfcRepresentationItem^ repItem, bool forceSolid)
+		IXbimGeometryModel^ XbimGeometryModel::CreateFrom(IfcRepresentationItem^ repItem, bool forceSolid, XbimLOD lod)
 		{
-			return CreateFrom(repItem, gcnew Dictionary<IfcRepresentation^, IXbimGeometryModel^>(), forceSolid);
+			return CreateFrom(repItem, gcnew Dictionary<IfcRepresentation^, IXbimGeometryModel^>(), forceSolid,lod);
 		}
 
-		IXbimGeometryModel^ XbimGeometryModel::CreateFrom(IfcRepresentationItem^ repItem, Dictionary<IfcRepresentation^, IXbimGeometryModel^>^ maps, bool forceSolid)
+		IXbimGeometryModel^ XbimGeometryModel::CreateFrom(IfcRepresentationItem^ repItem, Dictionary<IfcRepresentation^, IXbimGeometryModel^>^ maps, bool forceSolid,XbimLOD lod)
 		{
 			if(!forceSolid && dynamic_cast<IfcFacetedBrep^>(repItem))
 				return gcnew XbimFacetedShell(((IfcFacetedBrep^)repItem)->Outer);
@@ -515,7 +531,7 @@ namespace Xbim
 				IXbimGeometryModel^ mg;
 				if(!maps->TryGetValue(repMap->MappedRepresentation, mg)) //look it up
 				{
-					mg =  CreateFrom(repMap->MappedRepresentation,maps, forceSolid); //make the first one
+					mg =  CreateFrom(repMap->MappedRepresentation,maps, forceSolid,lod); //make the first one
 					maps->Add(repMap->MappedRepresentation, mg);
 				}
 
