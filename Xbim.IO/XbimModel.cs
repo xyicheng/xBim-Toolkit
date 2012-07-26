@@ -229,9 +229,9 @@ namespace Xbim.IO
         /// </summary>
         /// <typeparam name = "TIfcType"></typeparam>
         /// <returns></returns>
-        public IEnumerable<TIfcType> InstancesOfType<TIfcType>() where TIfcType : IPersistIfcEntity
+        public IEnumerable<TIfcType> InstancesOfType<TIfcType>(bool activate = false) where TIfcType : IPersistIfcEntity
         {
-            return Cached.OfType<TIfcType>();
+            return Cached.OfType<TIfcType>(activate);
         }
 
         /// <summary>
@@ -1103,7 +1103,10 @@ namespace Xbim.IO
 
 
 
-
+        public void Print()
+        {
+           ((IfcPersistedInstanceCache) Cached).Print();
+        }
 
 
 

@@ -45,7 +45,7 @@ namespace Xbim.IO
         /// <param name="entity"></param>
         void Activate(IPersistIfcEntity entity);
 
-        IEnumerable<TIfcType> OfType<TIfcType>(long secondaryKey = -1);
+        IEnumerable<TIfcType> OfType<TIfcType>(bool activate = false, long secondaryKey = -1);
 
         void SaveAs(XbimStorageType _storageType, string _storageFileName,  ReportProgressDelegate progress = null);
 

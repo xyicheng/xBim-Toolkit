@@ -323,8 +323,10 @@ namespace Xbim.IO.Parser
                     _colEntityLabel.Value = _currentLabel;
                     IfcType ifcType = IfcInstances.IfcTypeLookup[_currentType];
                     _colTypeId.Value = ifcType.TypeId;
-                    if (_primaryKeyValue > -1) 
+                    if (_primaryKeyValue > -1)
                         _colSecondaryKey.Value = _primaryKeyValue;
+                    else
+                        _colSecondaryKey.Value = null;
                     _colData.Value = data.ToArray();
                     Api.SetColumns(session, table, _colValues);
                     update.Save();

@@ -309,15 +309,15 @@ namespace Xbim
 						if(dynamic_cast<IfcGeometricRepresentationContext^>(shape->ContextOfItems))
 							BRepLib::Precision((Standard_Real)((IfcGeometricRepresentationContext^)(shape->ContextOfItems))->DefaultPrecision);
 						
-						if(CutOpenings(product, lod))
+						//srl optimisation openings and projects cannot have openings or projection so don't check for them
+						if(CutOpenings(product, lod) && !dynamic_cast<IfcFeatureElement^>(product ))
 						{
 							IfcElement^ element = (IfcElement^) product;
 							//check if we have openings or projections
 							IEnumerable<IfcRelProjectsElement^>^ projections = element->HasProjections;
 							IEnumerable<IfcRelVoidsElement^>^ openings = element->HasOpenings;
-							//srl optimisation openings and projects cannot have openings or projection so don't check for them
-							if( !dynamic_cast<IfcFeatureElement^>(product ) && 
-								( Enumerable::FirstOrDefault(openings) !=nullptr || Enumerable::FirstOrDefault(projections) !=nullptr ))
+							
+							if(( Enumerable::FirstOrDefault(openings) !=nullptr || Enumerable::FirstOrDefault(projections) !=nullptr ))
 							{
 								List<IXbimGeometryModel^>^ projectionSolids = gcnew List<IXbimGeometryModel^>();
 								List<IXbimGeometryModel^>^ openingSolids = gcnew List<IXbimGeometryModel^>();

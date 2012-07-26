@@ -47,7 +47,7 @@ namespace XbimConvert
                     {
                         
                         model.Open(xbimFileName);
-                        
+                        model.Print();
                         GenerateGeometry(xbimGeometryFileName, model);
                         
                         model.Close();

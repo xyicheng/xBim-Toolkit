@@ -61,10 +61,10 @@ namespace Xbim.XbimExtensions.Interfaces
     }
     public interface IModel
     {
-        
 
 
-        IEnumerable<TIfcType> InstancesOfType<TIfcType>() where TIfcType : IPersistIfcEntity;
+
+        IEnumerable<TIfcType> InstancesOfType<TIfcType>(bool activate = false) where TIfcType : IPersistIfcEntity;
         IEnumerable<TIfcType> InstancesWhere<TIfcType>(Expression<Func<TIfcType, bool>> expression) where TIfcType : IPersistIfcEntity;
 
        

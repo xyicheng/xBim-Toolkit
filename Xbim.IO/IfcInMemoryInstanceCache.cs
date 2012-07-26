@@ -103,7 +103,7 @@ namespace Xbim.IO
             throw new NotImplementedException();
         }
 
-        public IEnumerable<TIfcType> OfType<TIfcType>(long secondaryKey = -1)
+        public IEnumerable<TIfcType> OfType<TIfcType>(bool activate = false, long secondaryKey = -1)
         {
             throw new NotImplementedException();
         }

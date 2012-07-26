@@ -188,7 +188,7 @@ namespace Xbim.IO
 
                 // An index on the type and secondary key. For quick access to IfcRelation entities and the like
                 indexDef = string.Format("+{0}\0{1}\0\0", XbimModel.colNameIfcType,XbimModel.colNameSecondaryKey);
-                Api.JetCreateIndex(sesid, tableid, _EntityTableTypeIndex, CreateIndexGrbit.IndexIgnoreAnyNull, indexDef, indexDef.Length, 100);
+                Api.JetCreateIndex(sesid, tableid, _EntityTableTypeIndex, CreateIndexGrbit.IndexIgnoreFirstNull, indexDef, indexDef.Length, 100);
 
                 transaction.Commit(CommitTransactionGrbit.LazyFlush);
             }
@@ -527,23 +527,22 @@ namespace Xbim.IO
                 {
                     yield return new IfcInstanceHandle(ent.EntityLabel, ent.GetType());
                 }
-                using (var enumCursor = new Table(_jetSession, _jetDatabaseId, XbimModel.IfcInstanceTableName, OpenTableGrbit.ReadOnly))
+                Api.JetSetCurrentIndex(_jetSession, _jetEntityCursor, _EntityTablePrimaryIndex);
+                if (Api.TryMoveFirst(_jetSession, _jetEntityCursor))
                 {
-                    Api.JetSetCurrentIndex(_jetSession, enumCursor, _EntityTablePrimaryIndex);
-                    if (Api.TryMoveFirst(_jetSession, enumCursor))
+                    List<IfcInstanceHandle> entities = new List<IfcInstanceHandle>();
+                    do
                     {
-                        do
+                        long label = (long)Api.RetrieveColumnAsInt64(_jetSession, _jetEntityCursor, _columnidEntityLabel);
+                        if (!this.ContainsKey(label)) //we have already returned the entity from the cache
                         {
-                            long label = (long)Api.RetrieveColumnAsInt64(_jetSession, enumCursor, _columnidEntityLabel);
-                            if (!this.ContainsKey(label)) //we have already returned the entity from the cache
-                            {
-                                short typeId = (short)Api.RetrieveColumnAsInt16(_jetSession, enumCursor, _columnidIfcType);
-
-                                yield return new IfcInstanceHandle(label, IfcInstances.IfcIdIfcTypeLookup[typeId].Type);
-                            }
+                            short typeId = (short)Api.RetrieveColumnAsInt16(_jetSession, _jetEntityCursor, _columnidIfcType);
+                            entities.Add(new IfcInstanceHandle(label, IfcInstances.IfcIdIfcTypeLookup[typeId].Type));
                         }
-                        while (Api.TryMoveNext(_jetSession, enumCursor));
                     }
+                    while (Api.TryMoveNext(_jetSession, _jetEntityCursor));
+                    foreach (var item in entities)
+                        yield return item;
                 }
             }
         }
@@ -570,18 +569,20 @@ namespace Xbim.IO
                     Api.MakeKey(_jetSession, _jetTypeCursor, typeId, MakeKeyGrbit.NewKey);
                     if (Api.TrySetIndexRange(_jetSession, _jetTypeCursor, SetIndexRangeGrbit.RangeUpperLimit | SetIndexRangeGrbit.RangeInclusive))
                     {
+                        List<IfcInstanceHandle> entities = new List<IfcInstanceHandle>();
                         do
                         {
                             Int64 posLabel = (Int64)Api.RetrieveColumnAsInt64(_jetSession, _jetTypeCursor, _columnidEntityLabel); //it is a non null db value so just cast
                             if (!this.ContainsKey(posLabel)) //we have already returned the entity from the cache
-                                yield return new IfcInstanceHandle(posLabel, t);
+                                entities.Add( new IfcInstanceHandle(posLabel, t));
                         }
                         while (Api.TryMoveNext(_jetSession, _jetTypeCursor));
+                        foreach (var item in entities)
+                             yield return item;
                     }
                 }
             }
         }
-
 
         /// <summary>
         /// Returns an instance of the entity with the specified label,
@@ -599,9 +600,6 @@ namespace Xbim.IO
             else
                 return GetInstanceFromStore(posLabel, loadProperties, unCached);
         }
-
-
-
 
         /// <summary>
         /// Loads a blank instance from the database, do not call this before checking that the instance is in the instances cache
@@ -639,12 +637,39 @@ namespace Xbim.IO
             return null;
         }
 
+        public void Print()
+        {
+            Api.JetSetCurrentIndex(_jetSession, _jetTypeCursor, _EntityTableTypeIndex);
+            Api.MakeKey(_jetSession, _jetTypeCursor, (short)17200, MakeKeyGrbit.NewKey);
+            Api.MakeKey(_jetSession, _jetTypeCursor, (long)48790, MakeKeyGrbit.None);
+            if (Api.TrySeek(_jetSession, _jetTypeCursor, SeekGrbit.SeekGE))
+            {
+                Api.MakeKey(_jetSession, _jetTypeCursor, (short)17200, MakeKeyGrbit.NewKey );
+                Api.MakeKey(_jetSession, _jetTypeCursor, (long)48790, MakeKeyGrbit.None);
+                if (Api.TrySetIndexRange(_jetSession, _jetTypeCursor,  SetIndexRangeGrbit.RangeInclusive|SetIndexRangeGrbit.RangeUpperLimit))
+                {
+                    do
+                    {
+                        Int64 firLabel = (Int64)Api.RetrieveColumnAsInt64(_jetSession, _jetTypeCursor, _columnidEntityLabel); //it is a non null db value so just cast
+                        Int64? secLabel = Api.RetrieveColumnAsInt64(_jetSession, _jetTypeCursor, _columnidSecondaryKey); //it is a non null db value so just cast
+                        Int16 typeId = (Int16)Api.RetrieveColumnAsInt16(_jetSession, _jetTypeCursor, _columnidIfcType); //it is a non null db value so just cast
+                        System.Diagnostics.Debug.WriteLine("#{0}={1}, Key = {2}", firLabel, IfcInstances.IfcIdIfcTypeLookup[typeId].Type.Name, secLabel.HasValue ? secLabel.Value : -1);
+                    }
+                    while (Api.TryMoveNext(_jetSession, _jetTypeCursor));
+                }
+            }
+        }
+
+
+
         /// <summary>
-        /// Enumerates of all instances of the specified type. The values are cached
+        /// Enumerates of all instances of the specified type. The values are cached, if activate is true all the properties of the entity are loaded
         /// </summary>
         /// <typeparam name="TIfcType"></typeparam>
+        /// <param name="activate">if true loads the properties of the entity</param>
+        /// <param name="secondaryKey">if the entity has a key object, optimises to search for this handle</param>
         /// <returns></returns>
-        public IEnumerable<TIfcType> OfType<TIfcType>(long secondaryKey = -1)
+        public IEnumerable<TIfcType> OfType<TIfcType>(bool activate = false, long secondaryKey = -1)
         {
             IfcType ifcType = IfcInstances.IfcEntities[typeof(TIfcType)];
             foreach (Type t in ifcType.NonAbstractSubTypes)
@@ -652,7 +677,10 @@ namespace Xbim.IO
                 short typeId = IfcInstances.IfcEntities[t].TypeId;
                 Api.JetSetCurrentIndex(_jetSession, _jetTypeCursor, _EntityTableTypeIndex);
                 Api.MakeKey(_jetSession, _jetTypeCursor, typeId, MakeKeyGrbit.NewKey);
-                if (secondaryKey > -1) Api.MakeKey(_jetSession, _jetTypeCursor, null, MakeKeyGrbit.None);
+                
+                if (secondaryKey > -1)
+                    Api.MakeKey(_jetSession, _jetTypeCursor, secondaryKey, MakeKeyGrbit.None);
+
                 if (Api.TrySeek(_jetSession, _jetTypeCursor, SeekGrbit.SeekGE))
                 {
 
@@ -665,6 +693,7 @@ namespace Xbim.IO
                         Api.MakeKey(_jetSession, _jetTypeCursor, typeId, MakeKeyGrbit.NewKey | MakeKeyGrbit.FullColumnEndLimit);
                     if (Api.TrySetIndexRange(_jetSession, _jetTypeCursor, SetIndexRangeGrbit.RangeUpperLimit | SetIndexRangeGrbit.RangeInclusive))
                     {
+                        List<TIfcType> entities = new List<TIfcType>(); //get them all in one go to avoid problems with cursor scope when yield is called
                         do
                         {
                             Int64 posLabel = (Int64)Api.RetrieveColumnAsInt64(_jetSession, _jetTypeCursor, _columnidEntityLabel); //it is a non null db value so just cast
@@ -672,15 +701,25 @@ namespace Xbim.IO
                             if (!this.TryGetValue(posLabel, out entity))//if already in the cache just return it, else create a blank
                             {
                                 entity = (IPersistIfcEntity)Activator.CreateInstance(t);
-                                entity.Bind(_model, -posLabel); //a negative handle determines that the attributes of this entity have not been loaded yet
+                                if (activate)
+                                {
+                                    byte[] properties = Api.RetrieveColumn(_jetSession, _jetTypeCursor, _columnidEntityData);
+                                    entity.ReadEntityProperties(this, new BinaryReader(new MemoryStream(properties)), false);
+                                    entity.Bind(_model, posLabel); //a positive handle determines that the attributes of this entity have been loaded yet
+                                }
+                                else
+                                    entity.Bind(_model, -posLabel); //a negative handle determines that the attributes of this entity have not been loaded yet
                                 base.Add(posLabel, entity);
                             }
-                            yield return (TIfcType)entity;
+                            entities.Add( (TIfcType)entity);
                         }
                         while (Api.TryMoveNext(_jetSession, _jetTypeCursor));
+                        foreach (var item in entities)
+                            yield return item;
                     }
                 }
             }
+            
         }
 
 
@@ -941,53 +980,16 @@ namespace Xbim.IO
                         if (pKey.Name == property) //we have a primary key match
                         {
                             IPersistIfcEntity entity = hashRight as IPersistIfcEntity;
-                            if(entity!=null)
-                                return OfType<T>(Math.Abs(entity.EntityLabel));
-                            //IEnumerable<long> values = indexColl.GetValues(property, hashRight);
-                            //if (values != null)
-                            //{
-                            //    foreach (T item in values.Cast<T>())
-                            //    {
-                            //        yield return item;
-                            //    }
-                            //    noIndex = false;
-                            //}
-                        }
-                    }
-            }
-            else if (expr.Body.NodeType == ExpressionType.Call) //this is for the contains calls
-            {
-                MethodCallExpression callExp = (MethodCallExpression)expr.Body;
-                if (callExp.Method.Name == "Contains")
-                {
-                    Expression keyExpr = callExp.Arguments[0];
-                    if (keyExpr.NodeType == ExpressionType.Constant)
-                    {
-                        ConstantExpression constExp = (ConstantExpression)keyExpr;
-                        object key = constExp.Value;
-                        if (callExp.Object.NodeType == ExpressionType.MemberAccess)
-                        {
-                            MemberExpression memExp = (MemberExpression)callExp.Object;
-
-                            //string property = memExp.Member.Name;
-                            //if (indexColl.HasIndex(property))
-                            //{
-                            //    IEnumerable<long> values = indexColl.GetValues(property, key);
-                            //    if (values != null)
-                            //    {
-                            //        foreach (T item in values.Cast<T>())
-                            //        {
-                            //            yield return item;
-                            //        }
-                            //        noIndex = false;
-                            //    }
-                            //}
+                            if (entity != null)
+                                return OfType<T>(true, Math.Abs(entity.EntityLabel));
                         }
                     }
                 }
             }
-            }
-            return null;
+
+            //we cannot optimise so just do it
+            return OfType<T>(true).Where<T>(expr.Compile());
+
         }
         #endregion
     }
