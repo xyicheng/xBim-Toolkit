@@ -361,7 +361,13 @@
     <Compile Include="PresentationResource\IfcFontWeight.cs" />
     <Compile Include="PresentationResource\IfcPresentableText.cs" />
     <Compile Include="PresentationResource\IfcTextFontName.cs" />
+    <Compile Include="ProcessExtensions\IfcRelAssignsTasks.cs" />
+    <Compile Include="ProcessExtensions\IfcScheduleTimeControl.cs" />
     <Compile Include="ProcessExtensions\IfcTask.cs" />
+    <Compile Include="ProcessExtensions\IfcWorkControl.cs" />
+    <Compile Include="ProcessExtensions\IfcWorkControlTypeEnum.cs" />
+    <Compile Include="ProcessExtensions\IfcWorkPlan.cs" />
+    <Compile Include="ProcessExtensions\IfcWorkSchedule.cs" />
     <Compile Include="ProductExtension\IfcElementType.cs" />
     <Compile Include="ProfilePropertyResource\IfcGeneralProfileProperties.cs" />
     <Compile Include="ProfilePropertyResource\IfcProfileProperties.cs" />
