@@ -18,7 +18,7 @@
 #include <ShapeFix_Shell.hxx> 
 #include <ShapeFix_Shape.hxx> 
 #include <ShapeFix_ShapeTolerance.hxx> 
-#include <BRepBuilderAPI_Sewing.hxx> 
+
 using namespace System::Linq;
 using namespace Xbim::Common::Exceptions;
 
@@ -26,6 +26,46 @@ namespace Xbim
 {
 	namespace ModelGeometry
 	{
+
+		// cuts a shape from the result shape and updates thre result shape if it was successful
+		bool XbimFeaturedShape::DoCut(const TopoDS_Shape& toCut)
+		{
+			BRepAlgo_Cut boolOp(*(mResultShape->Handle),toCut);
+			const TopoDS_Shape & shape = boolOp.Shape();
+			//check if we have any shells and composites, these need to be done individually or they mess up the shape
+			if(shape.ShapeType() == TopAbs_SOLID)
+				mResultShape = gcnew XbimSolid(TopoDS::Solid(shape), HasCurvedEdges);
+			else if(shape.ShapeType() == TopAbs_SHELL)	
+				mResultShape = gcnew XbimShell(TopoDS::Shell(shape), HasCurvedEdges);
+			else if(shape.ShapeType() == TopAbs_COMPOUND)
+				mResultShape = gcnew XbimSolid(shape, HasCurvedEdges);
+			else
+			{
+				Logger->Warn("Failed to cut an opening in an element");
+				return false;
+			}
+			return true;
+		}
+
+		// unions a shape from the result shape and updates thre result shape if it was successful
+		bool XbimFeaturedShape::DoUnion(const TopoDS_Shape& toUnion)
+		{
+			BRepAlgoAPI_Fuse boolOp(*(mResultShape->Handle),toUnion);
+			const TopoDS_Shape & shape = boolOp.Shape();
+			//check if we have any shells and composites, these need to be done individually or they mess up the shape
+			if(shape.ShapeType() == TopAbs_SOLID)
+				mResultShape = gcnew XbimSolid(TopoDS::Solid(shape), HasCurvedEdges);
+			else if(shape.ShapeType() == TopAbs_SHELL)	
+				mResultShape = gcnew XbimShell(TopoDS::Shell(shape), HasCurvedEdges);
+			else if(shape.ShapeType() == TopAbs_COMPOUND)
+				mResultShape = gcnew XbimSolid(shape, HasCurvedEdges);
+			else
+			{
+				Logger->Warn("Failed to union a projection to an element");
+				return false;
+			}
+			return true;
+		}
 
 		XbimFeaturedShape::XbimFeaturedShape(IXbimGeometryModel^ baseShape, IEnumerable<IXbimGeometryModel^>^ openings, IEnumerable<IXbimGeometryModel^>^ projections)
 		{
@@ -36,11 +76,32 @@ namespace Xbim
 			}
 			mBaseShape = baseShape;
 			mResultShape =  mBaseShape;
+			
+
 			if(projections!=nullptr && Enumerable::Count<IXbimGeometryModel^>(projections) > 0)
 			{
 				mProjections = gcnew List<IXbimGeometryModel^>(projections);
-				for each(IXbimGeometryModel^ projection in mProjections)
-					mResultShape = mResultShape->Union(projection);
+				TopoDS_Compound c;
+				BRep_Builder b;
+				b.MakeCompound(c);
+				for each(IXbimGeometryModel^ projection in mProjections) // quick joinung 
+					b.Add(c,*(projection->Handle));
+				try
+				{
+					DoUnion(c);
+					//BRepTools::Write(c,"comp.txt");
+					//BRepTools::Write(*(mResultShape->Handle),"body1.txt");
+				}
+				catch(...)
+				{
+					mResultShape =  mBaseShape; //go back to start
+					//try each cut separately
+					for each(IXbimGeometryModel^ projection in mProjections) //one by one joinung for tricky geometries, opencascade is less likely to fail
+					{
+						DoUnion(*(projection->Handle));
+					}
+					//BRepTools::Write(*(mResultShape->Handle),"body2.txt");
+				}
 			}
 			if(openings!=nullptr && Enumerable::Count<IXbimGeometryModel^>(openings) > 0)
 			{
@@ -48,36 +109,29 @@ namespace Xbim
 				TopoDS_Compound c;
 				BRep_Builder b;
 				b.MakeCompound(c);
-				for each(IXbimGeometryModel^ opening in mOpenings) //temp disable quick cutting in favour of accuracy
+				for each(IXbimGeometryModel^ opening in mOpenings) // quick cutting 
 					b.Add(c,*(opening->Handle));
-				BRepAlgoAPI_Cut boolOp(*(mResultShape->Handle),c);
-				/*BRepTools::Write(c,"comp.txt");
-				BRepTools::Write(*(mResultShape->Handle),"body.txt");*/
-				if(boolOp.ErrorStatus() == 0) //it worked so use the result or we didn't have any solids to cut
+				try
 				{
-					//check if we have any shells and composites, these need to be done individually or they mess up the shape
-					const TopoDS_Shape & shape = boolOp.Shape();
-					//BRepTools::Write(shape,"res.txt");
-					if(shape.ShapeType() == TopAbs_SOLID)
-						mResultShape = gcnew XbimSolid(TopoDS::Solid(shape), HasCurvedEdges);
-					else if(shape.ShapeType() == TopAbs_SHELL)	
-						mResultShape = gcnew XbimShell(TopoDS::Shell(shape), HasCurvedEdges);
-					else if(shape.ShapeType() == TopAbs_COMPOUND)
-						mResultShape = gcnew XbimSolid(shape, HasCurvedEdges);
-					else if(shape.ShapeType() == TopAbs_COMPSOLID)
-						Logger->Warn("Failed to form difference between two shapes, Compound Solids not supported");
-					else
-						Logger->Warn("Failed to cut an opening in an element");
+					DoCut(c);
+					//BRepTools::Write(c,"comp.txt");
+					//BRepTools::Write(*(mResultShape->Handle),"body1.txt");
 				}
-				else //still failed stuff them all in and do one at a time
+				catch(...)
 				{
-					Logger->Warn("Failed to cut an opening in an element");
+					//try each cut separately
+					for each(IXbimGeometryModel^ opening in mOpenings) //one by one cutting for tricky geometries. opencascade is less likely to fail
+					{
+						DoCut(*(opening->Handle));
+					}
+					//BRepTools::Write(*(mResultShape->Handle),"body2.txt");
 				}
 			}
 		}
 
 		IXbimGeometryModel^ XbimFeaturedShape::Cut(IXbimGeometryModel^ shape)
 		{
+
 			BRepAlgoAPI_Cut boolOp(*(mResultShape->Handle),*(shape->Handle));
 
 			if(boolOp.ErrorStatus() == 0) //find the solid

@@ -29,6 +29,8 @@
 #include <TopTools_HSequenceOfShape.hxx> 
 #include <BRepBuilderAPI_Sewing.hxx> 
 #include <ShapeUpgrade_ShellSewing.hxx> 
+#include <BRepOffsetAPI_Sewing.hxx> 
+#include <BRepLib.hxx>
 using namespace Xbim::XbimExtensions;
 using namespace Xbim::Ifc::Extensions;
 using namespace System::Windows::Media::Media3D;
@@ -293,38 +295,39 @@ namespace Xbim
 		TopoDS_Solid XbimSolid::Build(IfcFacetedBrep^ repItem, bool% hasCurves)
 		{
 			
-			TopoDS_Shell shell = XbimShell::Build(repItem->Outer, hasCurves);
-			/*ShapeFix_Shell fixer(shell);
-			fixer.Perform();
-			shell= fixer.Shell();
-			GProp_GProps System;
-			BRepGProp::VolumeProperties(shell, System, Standard_True);
-			if(System.Mass() <0)
-				shell.Reverse();*/
-			BRep_Builder b;
-			TopoDS_Solid solid;
-			b.MakeSolid(solid);
-			b.Add(solid, shell);
-			return solid;
+			return XbimSolid::Build(repItem->Outer, hasCurves);
+
 
 		}
 
 		TopoDS_Solid XbimSolid::Build(IfcClosedShell^ cShell, bool% hasCurves)
 		{
-			TopoDS_Shell shell = XbimShell::Build(cShell, hasCurves);
-			/*ShapeFix_Shell fixer(shell);
-			fixer.Perform();
-			shell= fixer.Shell();
-			GProp_GProps System;
-			BRepGProp::VolumeProperties(shell, System, Standard_True);
-			if(System.Mass() <0)
-				shell.Reverse();*/
-			BRep_Builder b;
-			TopoDS_Solid solid;
-			b.MakeSolid(solid);
-			b.Add(solid, shell);
-			return solid;;
 
+			TopoDS_Shape shell = XbimShell::Build(cShell, hasCurves);
+
+			BRepOffsetAPI_Sewing builder;
+			builder.SetTolerance(BRepLib::Precision());
+			builder.SetMaxTolerance(BRepLib::Precision());
+			builder.SetMinTolerance(BRepLib::Precision());
+			TopExp_Explorer exp(shell,TopAbs_FACE);
+			if ( exp.More() )
+			{
+				for ( ; exp.More(); exp.Next() ) {
+					TopoDS_Face face = TopoDS::Face(exp.Current());
+					builder.Add(face);
+				}
+				builder.Perform();
+				shell = builder.SewedShape();
+				try {
+					ShapeFix_Solid sf_solid;
+					sf_solid.LimitTolerance(BRepLib::Precision());
+					return sf_solid.SolidFromShell(TopoDS::Shell(shell));
+				} catch(...) 
+				{
+				}
+			}
+			return TopoDS_Solid();
+			
 		}
 		TopoDS_Solid XbimSolid::Build(IfcManifoldSolidBrep^ manifold, bool% hasCurves)
 		{
@@ -565,6 +568,7 @@ namespace Xbim
 			gp_Vec vec(dir->X,dir->Y,dir->Z );
 			vec*= depth;
 			BRepPrimAPI_MakePrism prism(face , vec);
+
 			return TopoDS::Solid(prism.Shape());
 		}
 
