@@ -40,10 +40,7 @@ namespace Xbim
 			else if(shape.ShapeType() == TopAbs_COMPOUND)
 				mResultShape = gcnew XbimSolid(shape, HasCurvedEdges);
 			else
-			{
-				Logger->Warn("Failed to cut an opening in an element");
 				return false;
-			}
 			return true;
 		}
 
@@ -60,10 +57,7 @@ namespace Xbim
 			else if(shape.ShapeType() == TopAbs_COMPOUND)
 				mResultShape = gcnew XbimSolid(shape, HasCurvedEdges);
 			else
-			{
-				Logger->Warn("Failed to union a projection to an element");
 				return false;
-			}
 			return true;
 		}
 
@@ -89,18 +83,23 @@ namespace Xbim
 				try
 				{
 					DoUnion(c);
-					//BRepTools::Write(c,"comp.txt");
-					//BRepTools::Write(*(mResultShape->Handle),"body1.txt");
+					
 				}
 				catch(...)
 				{
-					mResultShape =  mBaseShape; //go back to start
-					//try each cut separately
-					for each(IXbimGeometryModel^ projection in mProjections) //one by one joinung for tricky geometries, opencascade is less likely to fail
+					try
 					{
-						DoUnion(*(projection->Handle));
+						mResultShape =  mBaseShape; //go back to start
+						//try each cut separately
+						for each(IXbimGeometryModel^ projection in mProjections) //one by one joinung for tricky geometries, opencascade is less likely to fail
+						{
+							DoUnion(*(projection->Handle));
+						}
 					}
-					//BRepTools::Write(*(mResultShape->Handle),"body2.txt");
+					catch(...)
+					{
+						throw gcnew XbimGeometryException("XbimFeaturedShape Boolean Add Projections failed");
+					}
 				}
 			}
 			if(openings!=nullptr && Enumerable::Count<IXbimGeometryModel^>(openings) > 0)
@@ -114,17 +113,21 @@ namespace Xbim
 				try
 				{
 					DoCut(c);
-					//BRepTools::Write(c,"comp.txt");
-					//BRepTools::Write(*(mResultShape->Handle),"body1.txt");
 				}
 				catch(...)
 				{
-					//try each cut separately
-					for each(IXbimGeometryModel^ opening in mOpenings) //one by one cutting for tricky geometries. opencascade is less likely to fail
+					try
 					{
-						DoCut(*(opening->Handle));
+						//try each cut separately
+						for each(IXbimGeometryModel^ opening in mOpenings) //one by one cutting for tricky geometries. opencascade is less likely to fail
+						{
+							DoCut(*(opening->Handle));
+						}
 					}
-					//BRepTools::Write(*(mResultShape->Handle),"body2.txt");
+					catch(...)
+					{
+						throw gcnew XbimGeometryException("XbimFeaturedShape Boolean Cut Opening failed");
+					}
 				}
 			}
 		}

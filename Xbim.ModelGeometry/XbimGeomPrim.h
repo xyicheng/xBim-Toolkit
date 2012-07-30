@@ -41,7 +41,8 @@ namespace Xbim
 			static gp_Trsf ToTransform(Matrix3D m3D);
 			// Converts an Axis2Placement3D to a Plane
 			static gp_Pln ToPlane(IfcAxis2Placement3D^ axis3D);
-
+			//converts an Axis2Placement2D into a Transform matrix
+			static gp_Trsf ToTransform(IfcAxis2Placement3D^ axis3D);
 		};
 	}
 }

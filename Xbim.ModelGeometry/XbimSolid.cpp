@@ -31,6 +31,8 @@
 #include <ShapeUpgrade_ShellSewing.hxx> 
 #include <BRepOffsetAPI_Sewing.hxx> 
 #include <BRepLib.hxx>
+#include <BRepAlgo_Cut.hxx>
+#include <BRepCheck_Analyzer.hxx>
 using namespace Xbim::XbimExtensions;
 using namespace Xbim::Ifc::Extensions;
 using namespace System::Windows::Media::Media3D;
@@ -215,28 +217,25 @@ namespace Xbim
 		IXbimGeometryModel^ XbimSolid::Cut(IXbimGeometryModel^ shape)
 		{
 			bool hasCurves =  _hasCurvedEdges || shape->HasCurvedEdges; //one has a curve the result will have one
-			BRepAlgoAPI_Cut boolOp(*nativeHandle,*(shape->Handle));
-		
-			if(boolOp.ErrorStatus() == 0) //find the solid
-			{ 
-				const TopoDS_Shape & res = boolOp.Shape();
-				if(res.ShapeType() == TopAbs_SOLID)
-					return gcnew XbimSolid(TopoDS::Solid(res), hasCurves);
-				else if(res.ShapeType() == TopAbs_SHELL)	
+			try
+			{
+				BRepAlgoAPI_Cut boolOp(*nativeHandle,*(shape->Handle));
+				if(boolOp.ErrorStatus() == 0)
 				{
-					ShapeFix_Shell shellFix(TopoDS::Shell(res));
-					shellFix.Perform();
-					ShapeFix_Solid sfs;
-					sfs.CreateOpenSolidMode() = Standard_True;
-					return gcnew XbimSolid(sfs.SolidFromShell(shellFix.Shell()), hasCurves);
+					const TopoDS_Shape & res = boolOp.Shape();
+					if(res.ShapeType() == TopAbs_SOLID)
+						return gcnew XbimSolid(TopoDS::Solid(res), hasCurves);
+					else if(res.ShapeType() == TopAbs_COMPOUND || res.ShapeType() == TopAbs_COMPSOLID) //find the solid inside, often added to a compound, no solid means failed
+						for (TopExp_Explorer solidEx(res,TopAbs_SOLID) ; solidEx.More(); solidEx.Next())  
+							return gcnew XbimSolid(TopoDS::Solid(solidEx.Current()), hasCurves);
 				}
-				else if(res.ShapeType() == TopAbs_COMPOUND || res.ShapeType() == TopAbs_COMPSOLID)
-					for (TopExp_Explorer solidEx(res,TopAbs_SOLID) ; solidEx.More(); solidEx.Next())  
-						return gcnew XbimSolid(TopoDS::Solid(solidEx.Current()), hasCurves);
 			}
-			Logger->Warn("Failed to form difference between two shapes");
-			return nullptr;
+			catch(...) //some internal cascade failure
+			{
+			}
+			throw gcnew XbimGeometryException("Failed to form difference between two shapes");
 		}
+
 		IXbimGeometryModel^ XbimSolid::Union(IXbimGeometryModel^ shape)
 		{
 			bool hasCurves =  _hasCurvedEdges || shape->HasCurvedEdges; //one has a curve the result will have one
@@ -292,7 +291,7 @@ namespace Xbim
 
 
 
-		TopoDS_Solid XbimSolid::Build(IfcFacetedBrep^ repItem, bool% hasCurves)
+		TopoDS_Shape XbimSolid::Build(IfcFacetedBrep^ repItem, bool% hasCurves)
 		{
 			
 			return XbimSolid::Build(repItem->Outer, hasCurves);
@@ -300,7 +299,7 @@ namespace Xbim
 
 		}
 
-		TopoDS_Solid XbimSolid::Build(IfcClosedShell^ cShell, bool% hasCurves)
+		TopoDS_Shape XbimSolid::Build(IfcClosedShell^ cShell, bool% hasCurves)
 		{
 
 			TopoDS_Shape shell = XbimShell::Build(cShell, hasCurves);
@@ -325,11 +324,12 @@ namespace Xbim
 				} catch(...) 
 				{
 				}
+				return shell;
 			}
-			return TopoDS_Solid();
+			throw gcnew XbimException(String::Format("Failed to build a solid #{0} of type IfcClosedShell",cShell->GetType()->Name));
 			
 		}
-		TopoDS_Solid XbimSolid::Build(IfcManifoldSolidBrep^ manifold, bool% hasCurves)
+		TopoDS_Shape XbimSolid::Build(IfcManifoldSolidBrep^ manifold, bool% hasCurves)
 		{
 			if(dynamic_cast<IfcFacetedBrep^>(manifold))
 				return Build((IfcFacetedBrep^)manifold, hasCurves);
@@ -445,6 +445,21 @@ namespace Xbim
 			}
 		}
 
+		TopoDS_Solid XbimSolid::MakeHalfSpace(IfcHalfSpaceSolid^ hs, bool% hasCurves, bool shift)
+		{
+			IfcSurface^ surface = (IfcSurface^)hs->BaseSurface;
+			if(!dynamic_cast<IfcPlane^>(surface)) throw gcnew Exception("Non-Planar half spaces are not supported");
+			IfcPlane^ ifcPlane = (IfcPlane^)surface;
+			gp_Ax3 ax3 = XbimGeomPrim::ToAx3(ifcPlane->Position);
+			gp_Pln pln(ax3);
+			gp_Vec direction = hs->AgreementFlag ? -pln.Axis().Direction() : pln.Axis().Direction();
+			const gp_Pnt pnt = pln.Location().Translated(direction );
+			if(shift)
+				pln.SetLocation(pln.Location().Translated(direction * -BRepLib::Precision()));
+			return BRepPrimAPI_MakeHalfSpace(BRepBuilderAPI_MakeFace(pln),pnt).Solid();
+	
+		}
+
 
 		TopoDS_Solid XbimSolid::Build(IfcHalfSpaceSolid^ hs, bool% hasCurves)
 		{
@@ -454,71 +469,55 @@ namespace Xbim
 				return Build((IfcBoxedHalfSpace^)hs, hasCurves);
 			else //it is a simple Half space
 			{
-				IfcSurface^ surface = (IfcSurface^)hs->BaseSurface;
-				TopoDS_Face face = XbimFace::Build(surface, hasCurves);
-				IfcAxis2Placement3D^ axis3D = ((IPlacement3D^)surface)->Position;
-				Vector3D zDir = Axis2Placement3DExtensions::ZAxisDirection(axis3D);
-				gp_Vec zVec(zDir.X,zDir.Y,zDir.Z);
-				gp_Pnt pnt(axis3D->Location->X,axis3D->Location->Y,axis3D->Location->Z);
-				if(hs->AgreementFlag) zVec.Reverse();
-				pnt.Translate(zVec);
-
-				BRepPrimAPI_MakeHalfSpace halfSpaceBulder(face, pnt);
-
-				return halfSpaceBulder.Solid();		
+				return MakeHalfSpace(hs, hasCurves, false);
 			}
 		}
 
 		TopoDS_Solid XbimSolid::Build(IfcPolygonalBoundedHalfSpace^ pbhs, bool% hasCurves)
 		{
+			//creates polygon and its plane normal direction
+			gp_Ax3 ax3Polygon = XbimGeomPrim::ToAx3(pbhs->Position);
+			gp_Dir normPolygon = ax3Polygon.Direction();	
+			TopoDS_Wire wire =  XbimFaceBound::Build(pbhs->PolygonalBoundary, hasCurves); //get the polygon
+			BRepBuilderAPI_MakeFace makeFace(wire);
 			
-				//creates polygon and its plane normal direction
-				gp_Ax3 ax3Polygon = XbimGeomPrim::ToAx3(pbhs->Position);
-				gp_Dir normPolygon = ax3Polygon.Direction();	
-				TopoDS_Wire wire =  XbimFaceBound::Build(pbhs->PolygonalBoundary, hasCurves); //get the polygon
+			TopoDS_Face face = makeFace.Face();
+			
+			gp_Trsf toPos = XbimGeomPrim::ToTransform(pbhs->Position);
+			face.Move(toPos);			
+			TopoDS_Shape pris = BRepPrimAPI_MakePrism(face, gp_Vec(normPolygon)*2e7); //create infinite extrusion,  this is a work around as infinite half space don't work properly in open cascade
+			//Move the prism so that it approximates to infinit in both directions
+			gp_Trsf away; 
+			away.SetTranslation(gp_Vec(normPolygon)*-1e7);
+			pris.Move(away);
 
-				BRepBuilderAPI_MakeFace makeFace(wire, Standard_True);
-				TopoDS_Face face = makeFace.Face();
+			TopoDS_Solid hs = MakeHalfSpace((IfcHalfSpaceSolid^)pbhs,hasCurves,false );//cast to build the half space
+			
+			BRepAlgoAPI_Common joiner(pris, hs);
+			
+			if(joiner.ErrorStatus() == 0) //find the solid and return it, else throw an exception
+			{
+				TopoDS_Shape result = joiner.Shape();
+				if( BRepCheck_Analyzer(result).IsValid() == 0) //try and move half space in case it is co-planar with a face. This cause OpenCascade to delete the face and make an illegal solid
+				{
+					TopoDS_Solid hsMoved = MakeHalfSpace((IfcHalfSpaceSolid^)pbhs,hasCurves, true );//cast to build the half space
+					BRepAlgoAPI_Common joiner2(pris, hsMoved);
+					if(BRepCheck_Analyzer(joiner2.Shape()).IsValid() != 0)
+						result = joiner2.Shape();
+					else
+						throw gcnew XbimGeometryException("Failed create polygonally bounded half space");
+				}
 
-				//move the face to create a very big prism, this is a work around as infinite half space don't work properly in open cascade
-				gp_Trsf trsf;
-				gp_Pnt origin = ax3Polygon.Location();
-				origin.Translate(gp_Vec(normPolygon) * -1e8);
-				ax3Polygon.SetLocation(origin);
-				trsf.SetTransformation(ax3Polygon,gp_Ax3());	
-				face.Move(TopLoc_Location(trsf));
-
-				IfcSurface^ surface = pbhs->BaseSurface; //find the base surface
-				TopoDS_Face cutFace = XbimFace::Build(surface, hasCurves);
-
-
-				//BRepPrimAPI_MakePrism mpris(face, normPolygon, Standard_True); //create infinite extrusion
-				BRepPrimAPI_MakePrism mpris(face,  gp_Vec(normPolygon) * 2e8); //create approx to infinite extrusion
-				TopoDS_Solid prism = TopoDS::Solid(mpris.Shape());
+				if(result.ShapeType() == TopAbs_SOLID) //if we have a solid just send it
+					return TopoDS::Solid(joiner.Shape());
 				
-					IfcAxis2Placement3D^ axis3D = ((IPlacement3D^)surface)->Position;
-					Vector3D zDir = Axis2Placement3DExtensions::ZAxisDirection(axis3D);
-					gp_Vec zVec(zDir.X,zDir.Y,zDir.Z);
-					gp_Pnt pnt(axis3D->Location->X,axis3D->Location->Y,axis3D->Location->Z);
-					if(pbhs->AgreementFlag) zVec.Reverse();
-					pnt.Translate(zVec);
-					BRepPrimAPI_MakeHalfSpace halfSpaceBulder(cutFace, pnt);
-
-					TopoDS_Solid halfSpace = halfSpaceBulder.Solid();		
-
-					//find common semi-infinite extrusion with half space
-					BRepAlgoAPI_Common boolOp(prism, halfSpace);
-
-					if(boolOp.ErrorStatus() == 0) //find the solid
-					{ 
-
-						const TopoDS_Shape & res = boolOp.Shape();
-						for (TopExp_Explorer solidEx(res,TopAbs_SOLID) ; solidEx.More(); solidEx.Next())  
-							return TopoDS::Solid(solidEx.Current());
+					for (TopExp_Explorer solidEx(result,TopAbs_SOLID) ; solidEx.More(); solidEx.Next())  
+					{
+						
+						return TopoDS::Solid(solidEx.Current());
 					}
-				
-				Logger->Warn("Failed create polygonally bounded half space, returning just half space");
-				return prism; //just return the half space as the bound has failed		
+			}
+			throw gcnew XbimGeometryException("Failed create polygonally bounded half space");
 		}
 
 
