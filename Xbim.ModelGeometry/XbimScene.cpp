@@ -100,7 +100,7 @@ namespace Xbim
 				_sceneStream = gcnew FileStream(_sceneStreamFileName, FileMode::Create, FileAccess::ReadWrite);
 				BinaryWriter^ bw = gcnew BinaryWriter(_sceneStream);
 				{
-					_graph->Write(bw);
+					_graph->Write(bw, nullptr);
 					bw->Flush();
 					Close();
 					ReOpen();

@@ -317,12 +317,15 @@ namespace Xbim
 				}
 				builder.Perform();
 				shell = builder.SewedShape();
-				try {
-					ShapeFix_Solid sf_solid;
-					sf_solid.LimitTolerance(BRepLib::Precision());
-					return sf_solid.SolidFromShell(TopoDS::Shell(shell));
-				} catch(...) 
+				if(shell.ShapeType() == TopAbs_SHELL)
 				{
+					try {
+						ShapeFix_Solid sf_solid;
+						sf_solid.LimitTolerance(BRepLib::Precision());
+						return sf_solid.SolidFromShell(TopoDS::Shell(shell));
+					} catch(...) 
+					{
+					}
 				}
 				return shell;
 			}
@@ -455,7 +458,7 @@ namespace Xbim
 			gp_Vec direction = hs->AgreementFlag ? -pln.Axis().Direction() : pln.Axis().Direction();
 			const gp_Pnt pnt = pln.Location().Translated(direction );
 			if(shift)
-				pln.SetLocation(pln.Location().Translated(direction * -BRepLib::Precision()));
+				pln.SetLocation(pln.Location().Translated(direction * 10 * -BRepLib::Precision())); //shift a little to avoid covergent faces
 			return BRepPrimAPI_MakeHalfSpace(BRepBuilderAPI_MakeFace(pln),pnt).Solid();
 	
 		}
@@ -490,9 +493,9 @@ namespace Xbim
 			gp_Trsf away; 
 			away.SetTranslation(gp_Vec(normPolygon)*-1e7);
 			pris.Move(away);
-
-			TopoDS_Solid hs = MakeHalfSpace((IfcHalfSpaceSolid^)pbhs,hasCurves,false );//cast to build the half space
 			
+			TopoDS_Solid hs = MakeHalfSpace((IfcHalfSpaceSolid^)pbhs,hasCurves,false );//cast to build the half space
+
 			BRepAlgoAPI_Common joiner(pris, hs);
 			
 			if(joiner.ErrorStatus() == 0) //find the solid and return it, else throw an exception
@@ -501,21 +504,23 @@ namespace Xbim
 				if( BRepCheck_Analyzer(result).IsValid() == 0) //try and move half space in case it is co-planar with a face. This cause OpenCascade to delete the face and make an illegal solid
 				{
 					TopoDS_Solid hsMoved = MakeHalfSpace((IfcHalfSpaceSolid^)pbhs,hasCurves, true );//cast to build the half space
+			
 					BRepAlgoAPI_Common joiner2(pris, hsMoved);
 					if(BRepCheck_Analyzer(joiner2.Shape()).IsValid() != 0)
 						result = joiner2.Shape();
-					else
-						throw gcnew XbimGeometryException("Failed create polygonally bounded half space");
+					else //these shapes have nothing in common, so just return an empty solid
+						return TopoDS_Solid();
 				}
 
 				if(result.ShapeType() == TopAbs_SOLID) //if we have a solid just send it
-					return TopoDS::Solid(joiner.Shape());
-				
-					for (TopExp_Explorer solidEx(result,TopAbs_SOLID) ; solidEx.More(); solidEx.Next())  
-					{
-						
-						return TopoDS::Solid(solidEx.Current());
-					}
+				{
+					return TopoDS::Solid(result);
+				}
+
+				for (TopExp_Explorer solidEx(result,TopAbs_SOLID) ; solidEx.More(); solidEx.Next())  
+				{
+					return TopoDS::Solid(solidEx.Current());
+				}
 			}
 			throw gcnew XbimGeometryException("Failed create polygonally bounded half space");
 		}

@@ -88,7 +88,14 @@ namespace XbimConvert
             using (FileStream sceneStream = new FileStream(xbimGeometryFileName, FileMode.Create, FileAccess.ReadWrite))
             {
                 BinaryWriter bw = new BinaryWriter(sceneStream);
-                scene.Graph.Write(bw);
+                scene.Graph.Write(bw, delegate(int percentProgress, object userState)
+                {
+                    if (!arguments.IsQuiet)
+                    {
+                        Console.Write(string.Format("{0:D2}% {1}", percentProgress, userState));
+                        ResetCursor(Console.CursorTop);
+                    }
+                });
                 bw.Flush();
             }
         }
@@ -136,7 +143,7 @@ namespace XbimConvert
                         {
                             if (!arguments.IsQuiet)
                             {
-                                Console.Write(string.Format("{0:D2}% Converted", percentProgress));
+                                Console.Write(string.Format("{0:D2}% Parsed", percentProgress));
                                 ResetCursor(Console.CursorTop);
                             }
                         }

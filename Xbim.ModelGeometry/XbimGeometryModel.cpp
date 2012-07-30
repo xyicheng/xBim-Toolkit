@@ -467,6 +467,9 @@ namespace Xbim
 
 				}
 
+				if((*(shape2->Handle)).IsNull())
+					return shape1; //nothing to subtract
+
 				switch(repItem->Operator)
 				{
 				case IfcBooleanOperator::Union:
