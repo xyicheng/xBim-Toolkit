@@ -127,7 +127,8 @@ namespace Xbim.ModelGeometry.Scene
             _root.Write(strm);
             strm.BaseStream.Seek(0, SeekOrigin.Begin);
             strm.Write(pos);
-            progressStatus(100, "Geometry Conversion Complete");
+            if (progressStatus != null)
+                progressStatus(100, "Geometry Conversion Complete");
         }
 
 
