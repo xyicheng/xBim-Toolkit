@@ -1,0 +1,170 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Xbim.COBie.COBieExtensions;
+using System.Runtime.Serialization;
+using Xbim.XbimExtensions;
+using Xbim.Ifc.Kernel;
+using Xbim.Ifc.ActorResource;
+using System.Reflection;
+
+
+namespace Xbim.COBie
+{
+    [Serializable()]
+    public class COBieContactRow : COBieRow 
+    {
+        static COBieContactRow()
+        {
+            _columns = new Dictionary<int, COBieColumn>();
+            //Properties = typeof(COBieContact).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            Properties = typeof(COBieContactRow).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+
+            // add column info 
+            foreach (PropertyInfo propInfo in Properties)
+            {
+                object[] attrs = propInfo.GetCustomAttributes(typeof(COBieAttributes), true);
+                if (attrs != null && attrs.Length > 0)
+                {
+                    _columns.Add(((COBieAttributes)attrs[0]).Order, new COBieColumn(((COBieAttributes)attrs[0]).ColumnName, ((COBieAttributes)attrs[0]).MaxLength, ((COBieAttributes)attrs[0]).AllowedType, ((COBieAttributes)attrs[0]).KeyType));
+                }
+            }
+        }      
+
+        public COBieContactRow()
+        {
+        }
+
+        public COBieCell this[int i]
+        {
+            get
+            {                
+                foreach (PropertyInfo propInfo in Properties)
+                {
+                    object[] attrs = propInfo.GetCustomAttributes(typeof(COBieAttributes), true);
+                    if (attrs != null && attrs.Length > 0)
+                    {
+                        if (((COBieAttributes)attrs[0]).Order == i) // return (COBieCell)propInfo.GetValue(this, null);
+                        {
+                            //COBieCell cell = (COBieCell)propInfo.GetValue(this, null);
+                            PropertyInfo pinfo = this.GetType().GetProperty(propInfo.Name);
+                            COBieCell cell = new COBieCell(pinfo.GetValue(this, null).ToString());
+                            cell.COBieState = ((COBieAttributes)attrs[0]).State;
+                            cell.CobieCol = _columns[((COBieAttributes)attrs[0]).Order];
+                            
+                            
+
+                            return cell;
+                        }
+                    }
+
+                }
+
+                return null;
+            }
+        }
+
+        public COBieCell this[string name]
+        {
+            get
+            {
+                foreach (PropertyInfo propInfo in Properties)
+                {
+                    object[] attrs = propInfo.GetCustomAttributes(typeof(COBieAttributes), true);
+                    if (attrs != null && attrs.Length > 0)
+                    {
+                        if (((COBieAttributes)attrs[0]).ColumnName == name) // return (COBieCell)propInfo.GetValue(this, null);
+                        {
+                            //COBieCell cell = (COBieCell)propInfo.GetValue(this, null);
+
+                            PropertyInfo pinfo = this.GetType().GetProperty(propInfo.Name);
+                            COBieCell cell = new COBieCell(pinfo.GetValue(this, null).ToString());
+                            cell.COBieState = ((COBieAttributes)attrs[0]).State;
+                            cell.CobieCol = _columns[((COBieAttributes)attrs[0]).Order];
+
+                           
+
+                            return cell;
+                        }
+                    }
+
+                }
+
+                return null;
+            }
+        }
+
+        [COBieAttributes(0, COBieKeyType.PrimaryKey, COBieAttributeState.Required, "Email", 255, COBieAllowedType.AlphaNumeric)]
+        public string Email { get; set; }
+
+        [COBieAttributes(1, COBieKeyType.None, COBieAttributeState.Required, "CreatedBy", 255, COBieAllowedType.Email)]
+        public string CreatedBy { get; set; }
+
+        [COBieAttributes(2, COBieKeyType.None, COBieAttributeState.Required, "CreatedOn", 19, COBieAllowedType.ISODate)]
+        public string CreatedOn { get; set; }
+
+        [COBieAttributes(3, COBieKeyType.None, COBieAttributeState.Required, "Category", 255, COBieAllowedType.AlphaNumeric)]
+        public string Category { get; set; }
+
+        [COBieAttributes(4, COBieKeyType.None, COBieAttributeState.Required, "Company", 255, COBieAllowedType.AlphaNumeric)]
+        public string Company { get; set; }
+
+        [COBieAttributes(5, COBieKeyType.None, COBieAttributeState.Required, "Phone", 255, COBieAllowedType.AlphaNumeric)]
+        public string Phone { get; set; }
+
+        [COBieAttributes(6, COBieKeyType.None, COBieAttributeState.System, "ExternalSystem", 255, COBieAllowedType.AlphaNumeric)]
+        public string ExtSystem { get; set; }
+
+        [COBieAttributes(7, COBieKeyType.None, COBieAttributeState.System, "ExternalObject", 255, COBieAllowedType.AlphaNumeric)]
+        public string ExtObject { get; set; }
+
+        [COBieAttributes(8, COBieKeyType.None, COBieAttributeState.System, "ExternalIdentifier", 255, COBieAllowedType.AlphaNumeric)]
+        public string ExtIdentifier { get; set; }
+
+        [COBieAttributes(9, COBieKeyType.None, COBieAttributeState.As_Specified, "Department", 255, COBieAllowedType.AlphaNumeric)]
+        public string Department { get; set; }
+
+        [COBieAttributes(10, COBieKeyType.None, COBieAttributeState.As_Specified, "OrganizationCode", 255, COBieAllowedType.AlphaNumeric)]
+        public string OrganizationCode { get; set; }
+
+        [COBieAttributes(11, COBieKeyType.None, COBieAttributeState.As_Specified, "GivenName", 255, COBieAllowedType.AlphaNumeric)]
+        public string GivenName { get; set; }
+
+        [COBieAttributes(12, COBieKeyType.None, COBieAttributeState.As_Specified, "FamilyName", 255, COBieAllowedType.AlphaNumeric)]
+        public string FamilyName { get; set; }
+
+        [COBieAttributes(13, COBieKeyType.None, COBieAttributeState.As_Specified, "Street", 255, COBieAllowedType.AlphaNumeric)]
+        public string Street { get; set; }
+
+        [COBieAttributes(14, COBieKeyType.None, COBieAttributeState.As_Specified, "PostalBox", 255, COBieAllowedType.AlphaNumeric)]
+        public string PostalBox { get; set; }
+
+        [COBieAttributes(15, COBieKeyType.None, COBieAttributeState.As_Specified, "Town", 255, COBieAllowedType.AlphaNumeric)]
+        public string Town { get; set; }
+
+        [COBieAttributes(16, COBieKeyType.None, COBieAttributeState.As_Specified, "StateRegion", 255, COBieAllowedType.AlphaNumeric)]
+        public string StateRegion { get; set; }
+
+        [COBieAttributes(17, COBieKeyType.None, COBieAttributeState.As_Specified, "PostalCode", 255, COBieAllowedType.AlphaNumeric)]
+        public string PostalCode { get; set; }
+
+        [COBieAttributes(18, COBieKeyType.None, COBieAttributeState.As_Specified, "Country", 255, COBieAllowedType.AlphaNumeric)]
+        public string Country { get; set; }
+
+        ////Deserialization constructor.
+        //public COBieContact(SerializationInfo info, StreamingContext context)
+        //{
+        //    //Get the values from info and assign them to the appropriate properties
+        //    ContactId = (int)info.GetValue("ContactId", typeof(int));
+        //    Email = (String)info.GetValue("Email", typeof(string));
+        //}
+        
+        ////Serialization function.
+        //public void GetObjectData(SerializationInfo info, StreamingContext context)
+        //{
+        //    info.AddValue("ContactId", ContactId);
+        //    info.AddValue("Email", Email);
+        //}
+    }
+}
