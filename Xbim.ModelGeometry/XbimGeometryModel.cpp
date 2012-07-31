@@ -469,7 +469,7 @@ namespace Xbim
 
 				if((*(shape2->Handle)).IsNull())
 					return shape1; //nothing to subtract
-
+				
 				switch(repItem->Operator)
 				{
 				case IfcBooleanOperator::Union:
@@ -508,7 +508,8 @@ namespace Xbim
 				XbimGeometryModelCollection^ gms = gcnew XbimGeometryModelCollection();
 				for each (IfcRepresentationItem^ repItem in rep->Items)
 				{
-					gms->Add(CreateFrom(repItem,maps,forceSolid,lod));
+					IXbimGeometryModel^ geom = CreateFrom(repItem,maps,forceSolid,lod);
+					if(!(dynamic_cast<XbimSolid^>(geom) && (*(geom->Handle)).IsNull())) gms->Add(geom); //don't add solids that are empty
 				}
 				if(forceSolid)
 					return gms->Solidify();

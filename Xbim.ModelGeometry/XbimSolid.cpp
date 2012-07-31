@@ -219,15 +219,37 @@ namespace Xbim
 			bool hasCurves =  _hasCurvedEdges || shape->HasCurvedEdges; //one has a curve the result will have one
 			try
 			{
+
 				BRepAlgoAPI_Cut boolOp(*nativeHandle,*(shape->Handle));
 				if(boolOp.ErrorStatus() == 0)
 				{
-					const TopoDS_Shape & res = boolOp.Shape();
+					TopoDS_Shape res = boolOp.Shape();
+					if(res.IsNull()) return this; //nothing happened, stay as we were 
 					if(res.ShapeType() == TopAbs_SOLID)
 						return gcnew XbimSolid(TopoDS::Solid(res), hasCurves);
-					else if(res.ShapeType() == TopAbs_COMPOUND || res.ShapeType() == TopAbs_COMPSOLID) //find the solid inside, often added to a compound, no solid means failed
-						for (TopExp_Explorer solidEx(res,TopAbs_SOLID) ; solidEx.More(); solidEx.Next())  
-							return gcnew XbimSolid(TopoDS::Solid(solidEx.Current()), hasCurves);
+					if(res.ShapeType() == TopAbs_COMPOUND)
+					{
+						TopExp_Explorer compExp(res,TopAbs_SOLID);
+						if(compExp.More())	return gcnew XbimSolid(TopoDS::Solid(TopoDS::Solid(compExp.Current())));//grab the first solid 
+						compExp.Init(res,TopAbs_SHELL);
+						if(compExp.More())	res = compExp.Current();//grab the first shell and solidify in next block
+					}
+					if(res.ShapeType() == TopAbs_SHELL)
+					{
+						try 
+						{
+							ShapeFix_Solid sf_solid;
+							sf_solid.LimitTolerance(BRepLib::Precision());
+							return gcnew XbimSolid(sf_solid.SolidFromShell(TopoDS::Shell(res)));
+						} catch(...) 
+						{
+						}
+					}
+					XbimBoundingBox^ bb1 = GetBoundingBox(true);
+					XbimBoundingBox^ bb2 = shape->GetBoundingBox(true);
+					if(!bb1->Intersects(bb2)) //the two shapes never intersected
+						return this; //just return what we had in the first place
+					//totally invalid shape give up and throw an error
 				}
 			}
 			catch(...) //some internal cascade failure
@@ -303,7 +325,7 @@ namespace Xbim
 		{
 
 			TopoDS_Shape shell = XbimShell::Build(cShell, hasCurves);
-
+		
 			BRepOffsetAPI_Sewing builder;
 			builder.SetTolerance(BRepLib::Precision());
 			builder.SetMaxTolerance(BRepLib::Precision());
@@ -317,6 +339,15 @@ namespace Xbim
 				}
 				builder.Perform();
 				shell = builder.SewedShape();
+				
+				if(shell.ShapeType() == TopAbs_SOLID) return TopoDS::Solid(shell);
+				if(shell.ShapeType() == TopAbs_COMPOUND)
+				{
+					TopExp_Explorer compExp(shell,TopAbs_SOLID);
+					if(compExp.More())	return TopoDS::Solid(TopoDS::Solid(compExp.Current()));//grab the first solid 
+					compExp.Init(shell,TopAbs_SHELL);
+					if(compExp.More())	shell = compExp.Current();//grab the first shell and solidift in next block
+				}
 				if(shell.ShapeType() == TopAbs_SHELL)
 				{
 					try {
@@ -377,7 +408,7 @@ namespace Xbim
 			else
 			{
 				Type ^ type = repItem->SweptArea->GetType();
-				Logger->WarnFormat(String::Format("XbimSolid. Could not build geometry for {0} = #{1}. The face definition is illegal",type->Name,
+				Logger->WarnFormat(String::Format("The face definition for {0} = #{1} is illegal and does not form a solid. It has been ignored",type->Name,
 					repItem->SweptArea->EntityLabel));
 				return TopoDS_Solid();
 			}
