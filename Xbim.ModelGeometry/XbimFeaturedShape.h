@@ -23,7 +23,8 @@ namespace Xbim
 			List<IXbimGeometryModel^>^ mOpenings;
 			List<IXbimGeometryModel^>^ mProjections;
 			XbimFeaturedShape(XbimFeaturedShape^ copy, IfcObjectPlacement^ location);
-			
+			bool DoCut(const TopoDS_Shape& shape);
+			bool DoUnion(const TopoDS_Shape& shape);
 		public:
 			XbimFeaturedShape(IXbimGeometryModel^ baseShape, IEnumerable<IXbimGeometryModel^>^ openings, IEnumerable<IXbimGeometryModel^>^ projections);
 			

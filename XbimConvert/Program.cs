@@ -105,11 +105,16 @@ namespace XbimConvert
 
             using (FileStream sceneStream = new FileStream(xbimGeometryFileName, FileMode.Create, FileAccess.ReadWrite))
             {
-                using (BinaryWriter bw = new BinaryWriter(sceneStream))
+                BinaryWriter bw = new BinaryWriter(sceneStream);
+                scene.Graph.Write(bw, delegate(int percentProgress, object userState)
                 {
-                    scene.Graph.Write(bw);
-                    bw.Flush();
-                }
+                    if (!arguments.IsQuiet)
+                    {
+                        Console.Write(string.Format("{0:D2}% {1}", percentProgress, userState));
+                        ResetCursor(Console.CursorTop);
+                    }
+                });
+                bw.Flush();
             }
         }
 

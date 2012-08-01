@@ -327,11 +327,18 @@ namespace Xbim
 				const TopoDS_Wire& wire = makeWire.Wire();
 				
 				BRepBuilderAPI_FindPlane  FP(wire, 1e-3);
+				
 				if(!FP.Found())
 				{
-					//Debug::WriteLine(String::Format("XbimShell::Build(ConnectedFaceSet) could not find a plane for face id = #{0}",fc->EntityLabel));
-
-					break;
+					//keep the buffers in sync
+					int* pInnerBoundCount = (int*)vBuff; vBuff+=sizeof(int);
+					for(int i = 0; i< *pInnerBoundCount;i++)
+					{
+						int* pInnerPointCount = (int*)vBuff; vBuff+=sizeof(int);
+						for(int p = 0; p< *pInnerPointCount;p++)
+							int* pBeginPointIdx = (int*)vBuff; vBuff+=sizeof(int);
+					}
+					continue;
 				}
 				gp_Pln pln = FP.Plane()->Pln();
 

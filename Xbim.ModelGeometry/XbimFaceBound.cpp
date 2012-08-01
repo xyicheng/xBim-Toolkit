@@ -21,8 +21,9 @@
 #include <TopoDS_Vertex.hxx>
 #include <BRepBuilderAPI_MakeEdge.hxx>
 #include <GC_MakeSegment.hxx>
-//#include <ShapeFix_ShapeTolerance.hxx> 
-//#include <BRep_TEdge.hxx> 
+#include <BRepLib.hxx>
+#include <ShapeFix_ShapeTolerance.hxx> 
+#include <BRepTools.hxx> 
 #include <TopExp_Explorer.hxx> 
 #include <BRepLib_MakePolygon.hxx> 
 using namespace System;
@@ -407,13 +408,18 @@ namespace Xbim
 			BRepBuilderAPI_MakeWire wire;
 			for each(IfcCompositeCurveSegment^ seg in cCurve->Segments)
 			{
-				
-				
+
+
 				///TODO: Need to add support for curve segment continuity a moment only continuos supported
 				TopoDS_Wire wireSeg = Build(seg->ParentCurve, hasCurves);
-				wireSeg.Orientation(seg->SameSense ? TopAbs_FORWARD : TopAbs_REVERSED);
-				wire.Add(wireSeg);
-				
+				if(!wireSeg.IsNull())
+				{
+					if(!seg->SameSense) wireSeg.Reverse();
+					ShapeFix_ShapeTolerance FTol;
+					FTol.SetTolerance(wireSeg, BRepLib::Precision()*10, TopAbs_WIRE);
+					wire.Add(wireSeg);
+				}
+
 			}
 			
 			return wire.Wire();
@@ -528,6 +534,7 @@ namespace Xbim
 			BRepLib_MakePolygon poly;	
 
 			int nbPoints = pLine->Points->Count;
+			
 			gp_Pnt first, last;
 			bool is3D = (pLine->Dim == 3);
 			for(int i=0; i<nbPoints; i++) //ignore the last repeated point
@@ -540,8 +547,11 @@ namespace Xbim
 					last = pt;
 
 			}
-			if(nbPoints>2 && first.IsEqual(last, Precision::Confusion()))
-				poly.Close();
+			if(nbPoints==2 && first.IsEqual(last, BRepLib::Precision())) //we have no edge just two convergent points
+				return TopoDS_Wire(); //return an empty wire
+			/*if(nbPoints>2 && first.IsEqual(last, Precision::Confusion()))
+				poly.Close();*/
+			
 			return poly.Wire();	
 
 		}

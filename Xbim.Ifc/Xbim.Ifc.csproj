@@ -361,6 +361,7 @@
     <Compile Include="PresentationResource\IfcFontWeight.cs" />
     <Compile Include="PresentationResource\IfcPresentableText.cs" />
     <Compile Include="PresentationResource\IfcTextFontName.cs" />
+    <Compile Include="ProcessExtensions\IfcProcedure.cs" />
     <Compile Include="ProcessExtensions\IfcRelAssignsTasks.cs" />
     <Compile Include="ProcessExtensions\IfcScheduleTimeControl.cs" />
     <Compile Include="ProcessExtensions\IfcTask.cs" />
