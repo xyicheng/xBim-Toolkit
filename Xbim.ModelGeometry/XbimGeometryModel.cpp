@@ -506,9 +506,10 @@ namespace Xbim
 			else // we have a compound shape
 			{
 				XbimGeometryModelCollection^ gms = gcnew XbimGeometryModelCollection();
+
 				for each (IfcRepresentationItem^ repItem in rep->Items)
 				{
-					IXbimGeometryModel^ geom = CreateFrom(repItem,maps,forceSolid,lod);
+					IXbimGeometryModel^ geom = CreateFrom(repItem,maps,false,lod); // we will make a solid when we have all the bits if necessary
 					if(!(dynamic_cast<XbimSolid^>(geom) && (*(geom->Handle)).IsNull())) gms->Add(geom); //don't add solids that are empty
 				}
 				if(forceSolid)

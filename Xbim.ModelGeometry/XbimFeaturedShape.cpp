@@ -59,7 +59,7 @@ namespace Xbim
 			{
 
 				
-				if(BRepCheck_Analyzer(res).IsValid() == 0) return false;//messed up try individual cutting or throw an error
+				if(BRepCheck_Analyzer(res, Standard_False).IsValid() == 0) return false;//messed up try individual cutting or throw an error
 				if(res.IsNull()) return true; //nothing happened, stay as we were 
 				if(res.ShapeType() == TopAbs_SOLID)
 				{	 *(mResultShape->Handle)=TopoDS::Solid(res); return true;}
@@ -167,8 +167,14 @@ namespace Xbim
 					if(!DoCut(c)) //try the fast option first
 					{
 						//try each cut separately
+						bool failed = false;
 						for each(IXbimGeometryModel^ opening in mOpenings) //one by one cutting for tricky geometries. opencascade is less likely to fail
-							DoCut(*(opening->Handle));
+						{
+							if(!DoCut(*(opening->Handle)))
+								failed=true;
+						}
+						if(failed) throw gcnew XbimGeometryException("XbimFeaturedShape Boolean Cut Opening failed");
+
 					}
 				}
 				catch(...)
