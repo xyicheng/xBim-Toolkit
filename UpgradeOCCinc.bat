@@ -6,6 +6,7 @@ set src=C:\OpenCASCADE6.5.3\ros\inc
 set target=G:\Documents\XbimCP\XbimFramework\Dev\OpenCascadeUpgrade\Xbim.ModelGeometry\OpenCascade\inc
 echo Copying from %src% to %target%
 pause
+copy %src%\BRepOffsetAPI_Sewing.hxx %target%
 copy %src%\GC_MakeEllipse.hxx %target%
 copy %src%\Handle_Geom_Ellipse.hxx %target%
 copy %src%\GeomAbs_JoinType.hxx %target%
