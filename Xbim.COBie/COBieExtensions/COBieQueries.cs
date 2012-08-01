@@ -910,7 +910,6 @@ namespace Xbim.COBie.COBieExtensions
             IfcOwnerHistory ifcOwnerHistory = model.InstancesOfType<IfcOwnerHistory>().FirstOrDefault();
             COBieSheet<COBieSystemRow> systems = new COBieSheet<COBieSystemRow>();
 
-            int ids = 0;
             foreach (IfcSystem s in ifcSystems)
             {
                 COBieSystemRow sys = new COBieSystemRow();

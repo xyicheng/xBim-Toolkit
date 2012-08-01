@@ -213,9 +213,10 @@ namespace Xbim.COBie.COBieExtensions
                 //}
                 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                
+                // TODO: Handle
+                throw;
             }
         }
 
@@ -244,7 +245,7 @@ namespace Xbim.COBie.COBieExtensions
 
             DataSet dsSheets = new DataSet();
 
-            DataTable dt;
+            // DataTable dt;
 
             // xml 
             string filePath = "cobieData.xml";
