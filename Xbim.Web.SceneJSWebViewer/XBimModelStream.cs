@@ -107,7 +107,7 @@ namespace Xbim.SceneJSWebViewer
         public void Close()
         {
             _scene.Close();
-            _model.Close();
+            _model.Dispose();
             _scene = null;
             _model = null;
         }

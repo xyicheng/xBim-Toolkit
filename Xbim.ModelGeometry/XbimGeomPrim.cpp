@@ -67,7 +67,7 @@ namespace Xbim
 			}
 
 		}
-
+		
 
 		TopLoc_Location XbimGeomPrim::ToLocation(IfcAxis2Placement3D^ axis3D)
 		{
@@ -125,12 +125,22 @@ namespace Xbim
 		{
 			return gp_Pln(ToAx3(axis3D));
 		}
+		
+		
+		gp_Trsf XbimGeomPrim::ToTransform(IfcAxis2Placement3D^ axis3D)
+		{
+			gp_Trsf trsf;
+			trsf.SetTransformation(ToAx3(axis3D),gp_Ax3(gp_Pnt(),gp_Dir(0,0,1),gp_Dir(1,0,0)));	
+			return trsf;
+		}
 
 		gp_Trsf XbimGeomPrim::ToTransform(IfcCartesianTransformationOperator^ tForm)
 		{
-
 			if(dynamic_cast<IfcCartesianTransformationOperator3DnonUniform^>(tForm))
-				return ToTransform((IfcCartesianTransformationOperator3DnonUniform^) tForm);
+				//Call the special case method for non uniform transforms and use BRepBuilderAPI_GTransform
+				//instead of BRepBuilderAPI_Transform,  see opencascade issue
+				// http://www.opencascade.org/org/forum/thread_300/?forum=3
+				throw (gcnew XbimGeometryException("XbimGeomPrim. IfcCartesianTransformationOperator3DnonUniform require a specific call"));
 			else if(dynamic_cast<IfcCartesianTransformationOperator3D^>(tForm))
 				return ToTransform((IfcCartesianTransformationOperator3D^) tForm);
 			else if(dynamic_cast<IfcCartesianTransformationOperator2D^>(tForm))
@@ -202,7 +212,7 @@ namespace Xbim
 			return trsf;
 		}
 
-		gp_Trsf XbimGeomPrim::ToTransform(IfcCartesianTransformationOperator3DnonUniform^ ct3D)
+		gp_GTrsf XbimGeomPrim::ToTransform(IfcCartesianTransformationOperator3DnonUniform^ ct3D)
 		{
 			Vector3D U3; //Z Axis Direction
 			Vector3D U2; //X Axis Direction
@@ -252,14 +262,16 @@ namespace Xbim
 
 			Point3D% LO = ct3D->LocalOrigin->WPoint3D(); //local origin
 
-			gp_Trsf trsf;
-			trsf.SetValues(	ct3D->Scl *U1.X, U1.Y, U1.Z, 0,
-				U2.X, ct3D->Scl2 * U2.Y, U2.Z, 0,
-				U3.X, U3.Y, ct3D->Scl3 * U3.Z, 0, 
-				Precision::Angular() ,Precision::Approximation());
+			double s1=ct3D->Scl*U1.X;
+			double s2=ct3D->Scl2* U2.Y;
+			double s3=ct3D->Scl3* U3.Z;
+			gp_GTrsf trsf(
+				gp_Mat(	s1, U1.Y, U1.Z,
+				U2.X, s2 , U2.Z,
+				U3.X, U3.Y, s3 
+				),
+				gp_XYZ(LO.X, LO.Y, LO.Z));
 
-			trsf.SetTranslationPart(gp_Vec(LO.X, LO.Y, LO.Z));
-			
 			return trsf;
 		}
 

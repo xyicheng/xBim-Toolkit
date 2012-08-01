@@ -12,6 +12,7 @@ using System;
 using System.Configuration;
 using System.Diagnostics;
 using Xbim.Common.Logging.Providers;
+using System.Runtime.CompilerServices;
 
 namespace Xbim.Common.Logging
 {
@@ -99,6 +100,7 @@ namespace Xbim.Common.Logging
 		/// <remarks>By supplying the Type it is possible to configure the logging system
 		/// to log messages for each type differently. This can allow the user to change the log level,
 		/// and the means of output for particular areas of the system.</remarks>
+        [MethodImpl(MethodImplOptions.NoInlining)]
 		public static ILogger GetLogger(Type callingType)
 		{
 			return LoggingProvider.GetLogger(callingType);
@@ -113,11 +115,13 @@ namespace Xbim.Common.Logging
 		/// to log messages from each type differently. This can allow the user to change the log level,
 		/// and the means of output for particular areas of the system.
 		/// </remarks>
+        [MethodImpl(MethodImplOptions.NoInlining)]
 		public static ILogger GetLogger()
 		{
 			return LoggingProvider.GetLogger(GetCallingType());
 		}
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
 		private static Type GetCallingType()
 		{
 			System.Diagnostics.StackTrace stack = new System.Diagnostics.StackTrace();
@@ -127,5 +131,15 @@ namespace Xbim.Common.Logging
 
         #endregion GetLogger
 
+        /// <summary>
+        /// Creates an EventTrace object that captures events from the underlying LoggingProvider using an in memory provider.
+        /// </summary>
+        /// <remarks>Currently only supported by the Log4Net provider.
+        /// The EventTrace class should be Disposed of as soon as possible to avoid excessive memory usage</remarks>
+        /// <returns>An EventTrace object</returns>
+        public static EventTrace CreateEventTrace()
+        {
+            return new EventTrace(LoggingProvider);
+        }
 	}
 }

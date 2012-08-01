@@ -9,6 +9,7 @@
 #endregion
 
 using System;
+using System.Collections.Generic;
 
 namespace Xbim.Common.Logging.Providers
 {
@@ -32,5 +33,12 @@ namespace Xbim.Common.Logging.Providers
 		/// parts of the application.</remarks>
 		/// <returns>An <see cref="ILogger"/> for this Type.</returns>
 		ILogger GetLogger(Type type);
+
+        String AttachMemoryLogger();
+
+        List<Event> GetEvents(String name);
+
+        void DetatchMemoryLogger(String name);
+
 	}
 }

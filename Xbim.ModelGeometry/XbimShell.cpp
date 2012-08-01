@@ -8,7 +8,7 @@
 #include <BRep_Builder.hxx>
 #include <BRepBuilderAPI_MakeFace.hxx>
 #include <BRepBuilderAPI_Transform.hxx>
-
+#include <BRepBuilderAPI_GTransform.hxx>
 #include <ShapeFix_Solid.hxx> 
 #include <ShapeFix_Shell.hxx> 
 #include <BRepTools.hxx> 
@@ -98,10 +98,17 @@ namespace Xbim
 			if(origin!=nullptr)
 				temp.Move(XbimGeomPrim::ToLocation(origin));
 			if(transform!=nullptr)
-			{				
-				BRepBuilderAPI_Transform gTran(temp,XbimGeomPrim::ToTransform(transform));
-				*pShell = TopoDS::Shell(gTran.Shape());
-
+			{	
+				if(dynamic_cast<IfcCartesianTransformationOperator3DnonUniform^>( transform))
+				{
+					BRepBuilderAPI_GTransform gTran(temp,XbimGeomPrim::ToTransform((IfcCartesianTransformationOperator3DnonUniform^)transform));
+					*pShell = TopoDS::Shell(gTran.Shape());
+				}
+				else
+				{
+					BRepBuilderAPI_Transform gTran(temp,XbimGeomPrim::ToTransform(transform));
+					*pShell = TopoDS::Shell(gTran.Shape());
+				}
 			}
 			else
 				*pShell = temp;
@@ -320,11 +327,18 @@ namespace Xbim
 				const TopoDS_Wire& wire = makeWire.Wire();
 				
 				BRepBuilderAPI_FindPlane  FP(wire, 1e-3);
+				
 				if(!FP.Found())
 				{
-					//Debug::WriteLine(String::Format("XbimShell::Build(ConnectedFaceSet) could not find a plane for face id = #{0}",fc->EntityLabel));
-
-					break;
+					//keep the buffers in sync
+					int* pInnerBoundCount = (int*)vBuff; vBuff+=sizeof(int);
+					for(int i = 0; i< *pInnerBoundCount;i++)
+					{
+						int* pInnerPointCount = (int*)vBuff; vBuff+=sizeof(int);
+						for(int p = 0; p< *pInnerPointCount;p++)
+							int* pBeginPointIdx = (int*)vBuff; vBuff+=sizeof(int);
+					}
+					continue;
 				}
 				gp_Pln pln = FP.Plane()->Pln();
 

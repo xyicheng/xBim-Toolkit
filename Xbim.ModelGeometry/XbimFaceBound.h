@@ -62,6 +62,23 @@ namespace Xbim
 
 			void Print();
 			//static methods
+			// SRL: Builds a wire from a IfcCraneRailFShapeProfileDef
+			static TopoDS_Wire Build(IfcCraneRailFShapeProfileDef ^ profile, bool% hasCurves);
+			
+			// SRL: Builds a wire from a IfcCraneRailAShapeProfileDef
+			static TopoDS_Wire Build(IfcCraneRailAShapeProfileDef ^ profile, bool% hasCurves);
+
+			// SRL: Builds a wire from a IfcEllipseProfileDef
+			static TopoDS_Wire Build(IfcEllipseProfileDef ^ profile, bool% hasCurves);
+
+			// SRL: Builds a wire from a IfcCShapeProfileDef
+			static TopoDS_Wire Build(IfcCShapeProfileDef ^ profile, bool% hasCurves);
+			
+			// SRL: Builds a wire from a IfcTShapeProfileDef
+			static TopoDS_Wire Build(IfcTShapeProfileDef ^ profile, bool% hasCurves);
+
+			// SRL: Builds a wire from a IfcZShapeProfileDef
+			static TopoDS_Wire Build(IfcZShapeProfileDef ^ profile, bool% hasCurves);
 
 			// AK: Builds a wire from a IfcLShapeProfileDef
 			static TopoDS_Wire Build(IfcLShapeProfileDef ^ profile, bool% hasCurves);

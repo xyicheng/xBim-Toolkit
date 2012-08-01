@@ -12,5 +12,6 @@ namespace Xbim.ModelGeometry.Scene
         bool ReOpen();
         XbimTriangulatedModelStream Triangulate(TransformNode node);
         TransformGraph Graph { get; }
+        XbimLOD LOD { get; set; }
     }
 }

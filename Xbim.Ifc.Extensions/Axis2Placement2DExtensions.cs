@@ -23,6 +23,17 @@ namespace Xbim.Ifc.Extensions
 {
     public static class Axis2Placement2DExtensions
     {
+
+        static public IfcAxis2Placement2D Create(this IfcAxis2Placement2D ax, IfcCartesianPoint centre, IfcDirection xAxisDirection)
+        {
+            IfcAxis2Placement2D ax2 = new IfcAxis2Placement2D()
+            {
+                RefDirection = xAxisDirection,
+                Location = centre
+            };
+            return ax2;
+        }
+
         public static Matrix ToMatrix(this IfcAxis2Placement2D axis2)
         {
             if (axis2.RefDirection != null)
