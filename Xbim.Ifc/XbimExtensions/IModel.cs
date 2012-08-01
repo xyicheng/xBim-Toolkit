@@ -58,7 +58,7 @@ namespace Xbim.XbimExtensions
         /// </summary>
         XBIM = 16
     }
-    public interface IModel
+    public interface IModel : IDisposable
     {
         IEnumerable<TIfcType> InstancesOfType<TIfcType>() where TIfcType : IPersistIfcEntity;
 

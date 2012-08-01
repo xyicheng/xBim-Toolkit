@@ -232,10 +232,10 @@ namespace Xbim.Tests
             bool isValidFile = (data.Length > 0);
             Assert.IsTrue(isValidFile);
 
-            XbimFileModelServer modelServer = new XbimFileModelServer();
-            modelServer.Open(nonGeomFileName);
-            modelServer.Close();
-            modelServer.Dispose();
+            using(XbimFileModelServer modelServer = new XbimFileModelServer())
+            {
+                modelServer.Open(nonGeomFileName);
+            }
         }
 
         #endregion
@@ -245,33 +245,37 @@ namespace Xbim.Tests
         [TestMethod]
         public void Test_OpenIfcXml_FileModel()
         {
-            IModel model = new XbimFileModelServer();
-            model.Open(m_TestSourceFileIfcXml);
-            model.Close();
+            using (IModel model = new XbimFileModelServer())
+            {
+                model.Open(m_TestSourceFileIfcXml);
+            }
         }
 
         [TestMethod]
         public void Test_OpenIfc_FileModel()
         {
-            IModel model = new XbimFileModelServer();
-            model.Open(m_TestSourceFileIfc);
-            model.Close();
+            using (IModel model = new XbimFileModelServer())
+            {
+                model.Open(m_TestSourceFileIfc);
+            }
         }
 
         [TestMethod]
         public void Test_OpenXbim_FileModel()
         {
-            IModel model = new XbimFileModelServer();
-            model.Open(m_TestSourceFileXbim);
-            model.Close();
+            using (IModel model = new XbimFileModelServer())
+            {
+                model.Open(m_TestSourceFileXbim);
+            }
         }
 
         [TestMethod]
         public void Test_OpenIfcXml_MemoryModel()
         {
-            IModel model = new XbimMemoryModel();
-            model.Open(m_TestSourceFileIfcXml);
-            model.Close();
+            using (IModel model = new XbimMemoryModel())
+            {
+                model.Open(m_TestSourceFileIfcXml);
+            }
         }
 
         [TestMethod]
@@ -285,9 +289,10 @@ namespace Xbim.Tests
         [TestMethod]
         public void Test_OpenXbim_MemoryModel()
         {
-            IModel model = new XbimMemoryModel();
-            model.Open(m_TestSourceFileXbim);
-            model.Close();
+            using (IModel model = new XbimMemoryModel())
+            {
+                model.Open(m_TestSourceFileXbim);
+            }
         }
 #endregion
 
@@ -316,12 +321,11 @@ namespace Xbim.Tests
                 string nonGeomXbimFileName = xbimFilePath + "\\Temp\\" + Path.GetRandomFileName() + ".xbim";
 
                 // create xbim semantic file without geometry
-                XbimFileModelServer modelServer = new XbimFileModelServer();
-                modelServer.Open(xbimSourceFile);
-                modelServer.ExtractSemantic(nonGeomXbimFileName, XbimStorageType.XBIM, null);
-                modelServer.Close();
-                modelServer.Dispose();
-
+                using (XbimFileModelServer modelServer = new XbimFileModelServer())
+                {
+                    modelServer.Open(xbimSourceFile);
+                    modelServer.ExtractSemantic(nonGeomXbimFileName, XbimStorageType.XBIM, null);
+                }
                 return nonGeomXbimFileName;
             }
 
@@ -331,11 +335,11 @@ namespace Xbim.Tests
                 string geomXbimFileName = xbimFilePath + "\\Temp\\" + Path.GetRandomFileName() + ".xbimGC";
 
                 // create xbim geometry file
-                XbimFileModelServer modelServer = new XbimFileModelServer();
-                modelServer.Open(xbimSourceFile);
-                modelServer.ExtractSemantic(geomXbimFileName, XbimStorageType.XBIM, null);
-                modelServer.Close();
-                modelServer.Dispose();
+                using (XbimFileModelServer modelServer = new XbimFileModelServer())
+                {
+                    modelServer.Open(xbimSourceFile);
+                    modelServer.ExtractSemantic(geomXbimFileName, XbimStorageType.XBIM, null);
+                }
 
                 return geomXbimFileName;
             }
@@ -350,11 +354,10 @@ namespace Xbim.Tests
                     string xbimFileName = ifcFilePath + "\\Temp\\" + Path.GetRandomFileName() + ".xbim";
                     if (targetPath != null)
                         xbimFileName = targetPath;
-                    XbimFileModelServer modelServer = new XbimFileModelServer();
-                    modelServer.ImportIfc(sourceFilePath, xbimFileName);
-                    modelServer.Close();
-                    modelServer.Dispose();
-
+                    using (XbimFileModelServer modelServer = new XbimFileModelServer())
+                    {
+                        modelServer.ImportIfc(sourceFilePath, xbimFileName);
+                    }
                     return xbimFileName;
                 }
                 else if (ext.ToLower() == ".ifcxml" || ext.ToLower() == ".xml")
@@ -363,11 +366,10 @@ namespace Xbim.Tests
                     string xbimFileName = ifcxmlFilePath + "\\Temp\\" + Path.GetRandomFileName() + ".xbim";
                     if (targetPath != null)
                         xbimFileName = targetPath;
-                    XbimFileModelServer modelServer = new XbimFileModelServer();
-                    modelServer.ImportXml(sourceFilePath, xbimFileName);
-                    modelServer.Close();
-                    modelServer.Dispose();
-
+                    using (XbimFileModelServer modelServer = new XbimFileModelServer())
+                    {
+                        modelServer.ImportXml(sourceFilePath, xbimFileName);
+                    }
                     return xbimFileName;
                 }
                 return "";
@@ -401,11 +403,10 @@ namespace Xbim.Tests
                     string ifcXmlFileName = xbimFilePath + "\\Temp\\" + Path.GetRandomFileName() + ".ifcxml";
                     if (targetPath != null)
                         ifcXmlFileName = targetPath;
-                    XbimFileModelServer modelServer = new XbimFileModelServer(sourceFilePath, FileAccess.ReadWrite);
-                    modelServer.Export(XbimStorageType.IFCXML, ifcXmlFileName);
-                    modelServer.Close();
-                    modelServer.Dispose();
-
+                    using (XbimFileModelServer modelServer = new XbimFileModelServer(sourceFilePath, FileAccess.ReadWrite))
+                    {
+                        modelServer.Export(XbimStorageType.IFCXML, ifcXmlFileName);
+                    }
                     return ifcXmlFileName;
                 }
                 return "";
@@ -422,17 +423,15 @@ namespace Xbim.Tests
                     string xbimFileName = ifcFilePath + "\\Temp\\" + Path.GetRandomFileName() + ".xbim";
 
                     // convert xml to xbim first
-                    XbimFileModelServer modelServer = new XbimFileModelServer();
-                    modelServer.ImportXml(sourceFilePath, xbimFileName);
-                    modelServer.Close();
-                    modelServer.Dispose();
-
+                    using (XbimFileModelServer modelServer = new XbimFileModelServer())
+                    {
+                        modelServer.ImportXml(sourceFilePath, xbimFileName);
+                    }
                     // export temp xbim to ifc
-                    modelServer = new XbimFileModelServer(xbimFileName, FileAccess.ReadWrite);
-                    modelServer.ExportIfc(ifcFileName);
-                    modelServer.Close();
-                    modelServer.Dispose();
-
+                    using (XbimFileModelServer modelServer = new XbimFileModelServer(xbimFileName, FileAccess.ReadWrite))
+                    {
+                        modelServer.ExportIfc(ifcFileName);
+                    }
                     return ifcFileName;
                 }
                 else if (ext.ToLower() == ".xbim")
@@ -441,11 +440,10 @@ namespace Xbim.Tests
                     string ifcFileName = xbimFilePath + "\\Temp\\" + Path.GetRandomFileName() + ".ifc";
                     if (targetPath != null)
                         ifcFileName = targetPath;
-                    XbimFileModelServer modelServer = new XbimFileModelServer(sourceFilePath, FileAccess.ReadWrite);
-                    modelServer.Export(XbimStorageType.IFC, ifcFileName);
-                    modelServer.Close();
-                    modelServer.Dispose();
-
+                    using (XbimFileModelServer modelServer = new XbimFileModelServer(sourceFilePath, FileAccess.ReadWrite))
+                    {
+                        modelServer.Export(XbimStorageType.IFC, ifcFileName);
+                    }
                     return ifcFileName;
                 }
                 return "";
@@ -455,58 +453,57 @@ namespace Xbim.Tests
             {
                 List<long> badLabels = new List<long>();
 
-                XbimFileModelServer modelServer = new XbimFileModelServer();
-                modelServer.Open(fileName1);
-                XbimFileModelServer modelServer2 = new XbimFileModelServer();
-                modelServer2.Open(fileName2);
-                foreach (XbimIndexEntry xi in modelServer.EntityOffsets)
+                using (XbimFileModelServer modelServer = new XbimFileModelServer())
                 {
-                    IPersistIfcEntity entity = modelServer.GetInstance(xi.EntityLabel);
-                    long entityLabel = entity.EntityLabel;
-                    byte[] b1 = modelServer.GetEntityBinaryData(entity);
-
-                    long posLabel = Math.Abs(entityLabel);
-
-                    // we have entityLabel from 1st file, this should be in second file as well
-                    IPersistIfcEntity entity2 = null;
-                    bool isBadEntity = false;
-                    entity2 = modelServer2.GetInstance(entityLabel); //GetInstance(modelServer2, entityLabel); //modelServer2.GetInstance(entityLabel);
-
-                    if (entity2 != null)
+                    modelServer.Open(fileName1);
+                    
+                    using (XbimFileModelServer modelServer2 = new XbimFileModelServer())
                     {
-                        byte[] b2 = modelServer2.GetEntityBinaryData(entity2);
-
-
-                        IStructuralEquatable eqb1 = b1;
-                        bool isEqual = eqb1.Equals(b2, StructuralComparisons.StructuralEqualityComparer);
-                        if (!isEqual)
+                        modelServer2.Open(fileName2);
+                        foreach (XbimIndexEntry xi in modelServer.EntityOffsets)
                         {
-                            // they may be equal but showing unequal because of decimal precision
-                            // check if its decimal and if yes, then lower the precision and compare
+                            IPersistIfcEntity entity = modelServer.GetInstance(xi.EntityLabel);
+                            long entityLabel = entity.EntityLabel;
+                            byte[] b1 = modelServer.GetEntityBinaryData(entity);
 
-                            //if (!CompareBytes(modelServer, entity, b1, b2))
-                            isBadEntity = true;
-                            throw new Exception("Entity mismatch: EntityLabel: " + entityLabel + " \n" + b1.ToString() + " \n" + b2.ToString());
+                            long posLabel = Math.Abs(entityLabel);
+
+                            // we have entityLabel from 1st file, this should be in second file as well
+                            IPersistIfcEntity entity2 = null;
+                            bool isBadEntity = false;
+                            entity2 = modelServer2.GetInstance(entityLabel); //GetInstance(modelServer2, entityLabel); //modelServer2.GetInstance(entityLabel);
+
+                            if (entity2 != null)
+                            {
+                                byte[] b2 = modelServer2.GetEntityBinaryData(entity2);
+
+
+                                IStructuralEquatable eqb1 = b1;
+                                bool isEqual = eqb1.Equals(b2, StructuralComparisons.StructuralEqualityComparer);
+                                if (!isEqual)
+                                {
+                                    // they may be equal but showing unequal because of decimal precision
+                                    // check if its decimal and if yes, then lower the precision and compare
+
+                                    //if (!CompareBytes(modelServer, entity, b1, b2))
+                                    isBadEntity = true;
+                                    throw new Exception("Entity mismatch: EntityLabel: " + entityLabel + " \n" + b1.ToString() + " \n" + b2.ToString());
+                                }
+                            }
+                            else
+                            {
+                                // file1 entity dosent exist in file2
+                                isBadEntity = true;
+
+                            }
+                            if (isBadEntity)
+                            {
+                                // add label to badLabels List
+                                badLabels.Add(posLabel);
+                            }
                         }
-                    }
-                    else
-                    {
-                        // file1 entity dosent exist in file2
-                        isBadEntity = true;
-
-                    }
-                    if (isBadEntity)
-                    {
-                        // add label to badLabels List
-                        badLabels.Add(posLabel);
-                    }
-                }
-
-                modelServer.Close();
-                modelServer.Dispose();
-                modelServer2.Close();
-                modelServer2.Dispose();
-
+                    } // end modelServer2 using
+                } // end modelServer using
                 return badLabels;
             }
 

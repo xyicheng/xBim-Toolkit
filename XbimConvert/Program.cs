@@ -40,10 +40,11 @@ namespace XbimConvert
                     System.Diagnostics.Stopwatch watch = new System.Diagnostics.Stopwatch();
 
                     watch.Start();
-                    XbimFileModelServer model = ParseModelFile(xbimFileName);
-
-                    GenerateGeometry(xbimGeometryFileName, model);
-                    model.Close();
+                    using (XbimFileModelServer model = ParseModelFile(xbimFileName))
+                    {
+                        GenerateGeometry(xbimGeometryFileName, model);
+                        model.Close();
+                    }
 
                     watch.Stop();
 
