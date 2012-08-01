@@ -11,6 +11,7 @@ namespace Xbim.Ifc.ProcessExtensions
     {
         #region ISupportIfcParser Members
 
+        // TODO: Implement IfcProcedure
         public override void IfcParse(int propIndex, IPropertyValue value)
         {
 
