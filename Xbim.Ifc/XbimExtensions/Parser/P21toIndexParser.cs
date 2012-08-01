@@ -19,6 +19,8 @@ using System.Diagnostics;
 using System.IO;
 using Xbim.XbimExtensions.Transactions.Extensions;
 using Xbim.XbimExtensions.Transactions;
+using Xbim.Common.Logging;
+using Xbim.Common.Exceptions;
 #endregion
 
 namespace Xbim.XbimExtensions.Parser
@@ -118,6 +120,7 @@ namespace Xbim.XbimExtensions.Parser
     public class XbimIndex : KeyedCollection<long, XbimIndexEntry>
     {
         private long _highestLabel;
+        private readonly ILogger Logger = LoggerFactory.GetLogger();
 
         public long NextLabel
         {
@@ -276,6 +279,7 @@ namespace Xbim.XbimExtensions.Parser
     {
         private readonly XbimIndex _entityOffsets = new XbimIndex();
         private readonly Dictionary<Type, List<long>> _entityTypes = new Dictionary<Type, List<long>>();
+        private readonly ILogger Logger = LoggerFactory.GetLogger();
 
         public XbimIndex EntityOffsets
         {
@@ -301,9 +305,12 @@ namespace Xbim.XbimExtensions.Parser
                 }
                 offsets.Add(fileOffset);
             }
-            catch (Exception e)
+            catch (KeyNotFoundException)
             {
-                throw new Exception("Unsupported Ifc Type found " + entityType + "in entity #" + entityLabel, e);
+                string message = string.Format("Unsupported IFC Type found. #{1} '{0}' is not a recognised type", entityType, entityLabel);
+
+                Logger.Error(message);
+                throw new XbimParserException(message);
             }
         }
 

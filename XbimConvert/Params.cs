@@ -22,7 +22,7 @@ namespace XbimConvert
             if (args.Length < 1)
             {
                 Console.WriteLine("Invalid number of Parameters, filename required");
-                Console.WriteLine("Syntax: XbimConvert source [-quiet|-q] [-keepextension|-ke] [-filter|-f <elementid|elementtype>]");
+                Console.WriteLine("Syntax: XbimConvert source [-quiet|-q] [-keepextension|-ke] [-filter|-f <elementid|elementtype>] [-sanitiselog]");
                 return;
             }
 
@@ -30,7 +30,6 @@ namespace XbimConvert
             if (!File.Exists(IfcFileName))
             {
                 Console.WriteLine("Invalid ifc filename {0}", IfcFileName);
-                Console.Error.WriteLine("Invalid ifc filename {0}", IfcFileName);
                 return;
             }
 
@@ -58,6 +57,10 @@ namespace XbimConvert
                             case "-f":
                                 paramType = CompoundParameter.Filter;
                                 // need to read next param
+                                break;
+
+                            case "-sanitiselog":
+                                SanitiseLogs = true;
                                 break;
 
                             default:
@@ -108,6 +111,10 @@ namespace XbimConvert
         public FilterType FilterType { get; set; }
         public long ElementIdFilter {get;set;}
         public IfcType ElementTypeFilter { get; set; }
+        /// <summary>
+        /// Indicates that logs should not contain sensitive path information.
+        /// </summary>
+        public bool SanitiseLogs { get; set; }
 
         private enum CompoundParameter
         {
