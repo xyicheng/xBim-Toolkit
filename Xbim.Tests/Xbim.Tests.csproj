@@ -144,7 +144,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <Content Include="..\Xbim.COBie\COBieExtensions\PickLists.xml">
+    <Content Include="..\Xbim.COBie\PickLists.xml">
       <Link>TestSourceFiles\PickLists.xml</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

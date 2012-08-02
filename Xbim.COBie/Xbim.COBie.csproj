@@ -129,7 +129,10 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="COBieExtensions\PickLists.xml" />
+    <Content Include="PickLists.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="COBieExtensions\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
