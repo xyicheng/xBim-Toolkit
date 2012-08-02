@@ -13,7 +13,7 @@ using System.Reflection;
 namespace Xbim.COBie
 {
     [Serializable()]
-    public class COBieContactRow : COBieRow 
+    public class COBieContactRow : COBieRow
     {
         static COBieContactRow()
         {
@@ -31,69 +31,6 @@ namespace Xbim.COBie
                 }
             }
         }      
-
-        public COBieContactRow()
-        {
-        }
-
-        public COBieCell this[int i]
-        {
-            get
-            {                
-                foreach (PropertyInfo propInfo in Properties)
-                {
-                    object[] attrs = propInfo.GetCustomAttributes(typeof(COBieAttributes), true);
-                    if (attrs != null && attrs.Length > 0)
-                    {
-                        if (((COBieAttributes)attrs[0]).Order == i) // return (COBieCell)propInfo.GetValue(this, null);
-                        {
-                            //COBieCell cell = (COBieCell)propInfo.GetValue(this, null);
-                            PropertyInfo pinfo = this.GetType().GetProperty(propInfo.Name);
-                            COBieCell cell = new COBieCell(pinfo.GetValue(this, null).ToString());
-                            cell.COBieState = ((COBieAttributes)attrs[0]).State;
-                            cell.CobieCol = _columns[((COBieAttributes)attrs[0]).Order];
-                            
-                            
-
-                            return cell;
-                        }
-                    }
-
-                }
-
-                return null;
-            }
-        }
-
-        public COBieCell this[string name]
-        {
-            get
-            {
-                foreach (PropertyInfo propInfo in Properties)
-                {
-                    object[] attrs = propInfo.GetCustomAttributes(typeof(COBieAttributes), true);
-                    if (attrs != null && attrs.Length > 0)
-                    {
-                        if (((COBieAttributes)attrs[0]).ColumnName == name) // return (COBieCell)propInfo.GetValue(this, null);
-                        {
-                            //COBieCell cell = (COBieCell)propInfo.GetValue(this, null);
-
-                            PropertyInfo pinfo = this.GetType().GetProperty(propInfo.Name);
-                            COBieCell cell = new COBieCell(pinfo.GetValue(this, null).ToString());
-                            cell.COBieState = ((COBieAttributes)attrs[0]).State;
-                            cell.CobieCol = _columns[((COBieAttributes)attrs[0]).Order];
-
-                           
-
-                            return cell;
-                        }
-                    }
-
-                }
-
-                return null;
-            }
-        }
 
         [COBieAttributes(0, COBieKeyType.PrimaryKey, COBieAttributeState.Required, "Email", 255, COBieAllowedType.AlphaNumeric)]
         public string Email { get; set; }
@@ -152,19 +89,6 @@ namespace Xbim.COBie
         [COBieAttributes(18, COBieKeyType.None, COBieAttributeState.As_Specified, "Country", 255, COBieAllowedType.AlphaNumeric)]
         public string Country { get; set; }
 
-        ////Deserialization constructor.
-        //public COBieContact(SerializationInfo info, StreamingContext context)
-        //{
-        //    //Get the values from info and assign them to the appropriate properties
-        //    ContactId = (int)info.GetValue("ContactId", typeof(int));
-        //    Email = (String)info.GetValue("Email", typeof(string));
-        //}
         
-        ////Serialization function.
-        //public void GetObjectData(SerializationInfo info, StreamingContext context)
-        //{
-        //    info.AddValue("ContactId", ContactId);
-        //    info.AddValue("Email", Email);
-        //}
     }
 }

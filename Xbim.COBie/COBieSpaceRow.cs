@@ -28,219 +28,43 @@ namespace Xbim.COBie
             }
         } 
 
-        public COBieSpaceRow()
-        {
-        }
-
-        public COBieCell this[int i]
-        {
-            get
-            {
-                foreach (PropertyInfo propInfo in Properties)
-                {
-                    object[] attrs = propInfo.GetCustomAttributes(typeof(COBieAttributes), true);
-                    if (attrs != null && attrs.Length > 0)
-                    {
-                        if (((COBieAttributes)attrs[0]).Order == i) // return (COBieCell)propInfo.GetValue(this, null);
-                        {
-                            //COBieCell cell = (COBieCell)propInfo.GetValue(this, null);
-                            PropertyInfo pinfo = this.GetType().GetProperty(propInfo.Name);
-                            COBieCell cell = new COBieCell(pinfo.GetValue(this, null).ToString());
-                            cell.COBieState = ((COBieAttributes)attrs[0]).State;
-                            cell.CobieCol = _columns[((COBieAttributes)attrs[0]).Order];
-
-                            return cell;
-                        }
-                    }
-
-                }
-
-                return null;
-            }
-        }
-
-        public COBieCell this[string name]
-        {
-            get
-            {
-                foreach (PropertyInfo propInfo in Properties)
-                {
-                    object[] attrs = propInfo.GetCustomAttributes(typeof(COBieAttributes), true);
-                    if (attrs != null && attrs.Length > 0)
-                    {
-                        if (((COBieAttributes)attrs[0]).ColumnName == name) // return (COBieCell)propInfo.GetValue(this, null);
-                        {
-                            //COBieCell cell = (COBieCell)propInfo.GetValue(this, null);
-                            PropertyInfo pinfo = this.GetType().GetProperty(propInfo.Name);
-                            COBieCell cell = new COBieCell(pinfo.GetValue(this, null).ToString());
-                            cell.COBieState = ((COBieAttributes)attrs[0]).State;
-                            cell.CobieCol = _columns[((COBieAttributes)attrs[0]).Order];
-
-                            return cell;
-                        }
-                    }
-
-                }
-
-                return null;
-            }
-        }
-
-        private string _name;
-        private string _createdBy;
-        private string _createdOn;
-        private string _category;
-        private string _floorName;
-        private string _description;
-        private string _extSystem;
-        private string _extObject;
-        private string _extIdentifier;
-        private string _roomTag;
-        private string _usableHeight;
-        private string _grossArea;
-        private string _netArea;
-
-        private COBieReader _cobieReader = new COBieReader();
-
         [COBieAttributes(0, COBieKeyType.PrimaryKey, COBieAttributeState.Required, "Name", 255, COBieAllowedType.AlphaNumeric)]
-        public string Name
-        {
-            get
-            { return _name; }
-            set
-            {
-                _name = value;
-            }
-        }
+        public string Name { get; set; }
 
         [COBieAttributes(1, COBieKeyType.None, COBieAttributeState.Required, "CreatedBy", 255, COBieAllowedType.Email)]
-        public string CreatedBy
-        {
-            get { return _createdBy; }
-            set
-            {
-                _createdBy = value;
-            }
-        }
+        public string CreatedBy { get; set; }
 
         [COBieAttributes(2, COBieKeyType.None, COBieAttributeState.Required, "CreatedOn", 19, COBieAllowedType.ISODate)]
-        public string CreatedOn
-        {
-            get { return _createdOn; }
-            set
-            {
-                _createdOn = value;
-            }
-        }
+        public string CreatedOn { get; set; }
 
         [COBieAttributes(3, COBieKeyType.None, COBieAttributeState.Required, "Category", 255, COBieAllowedType.AlphaNumeric)]
-        public string Category
-        {
-            get
-            { return _category; }
-            set
-            {
-                _category = value;
-            }
-        }
+        public string Category { get; set; }
 
         [COBieAttributes(4, COBieKeyType.None, COBieAttributeState.Required, "FloorName", 255, COBieAllowedType.AlphaNumeric)]
-        public string FloorName
-        {
-            get
-            { return _floorName; }
-            set
-            {
-                _floorName = value;
-            }
-        }
+        public string FloorName { get; set; }
 
         [COBieAttributes(5, COBieKeyType.None, COBieAttributeState.Required, "Description", 255, COBieAllowedType.AlphaNumeric)]
-        public string Description
-        {
-            get
-            { return _description; }
-            set
-            {
-                _description = value;
-            }
-        }
+        public string Description { get; set; }
 
         [COBieAttributes(6, COBieKeyType.None, COBieAttributeState.System, "ExtSystem", 255, COBieAllowedType.AlphaNumeric)]
-        public string ExtSystem
-        {
-            get
-            { return _extSystem; }
-            set
-            {
-                _extSystem = value;
-            }
-        }
+        public string ExtSystem { get; set; }
 
         [COBieAttributes(7, COBieKeyType.None, COBieAttributeState.System, "ExtObject", 255, COBieAllowedType.AlphaNumeric)]
-        public string ExtObject
-        {
-            get
-            { return _extObject; }
-            set
-            {
-                _extObject = value;
-            }
-        }
+        public string ExtObject { get; set; }
 
         [COBieAttributes(8, COBieKeyType.None, COBieAttributeState.System, "ExtIdentifier", 255, COBieAllowedType.AlphaNumeric)]
-        public string ExtIdentifier
-        {
-            get
-            { return _extIdentifier; }
-            set
-            {
-                _extIdentifier = value;
-            }
-        }
+        public string ExtIdentifier { get; set; }
 
         [COBieAttributes(9, COBieKeyType.None, COBieAttributeState.As_Specified, "RoomTag", 255, COBieAllowedType.AlphaNumeric)]
-        public string RoomTag
-        {
-            get
-            { return _roomTag; }
-            set
-            {
-                _roomTag = value;
-            }
-        }
+        public string RoomTag { get; set; }
 
         [COBieAttributes(10, COBieKeyType.None, COBieAttributeState.As_Specified, "UsableHeight", sizeof(double), COBieAllowedType.Numeric)]
-        public string UsableHeight
-        {
-            get
-            { return _usableHeight; }
-            set
-            {
-                _usableHeight = value;
-            }
-        }
+        public string UsableHeight { get; set; }
 
         [COBieAttributes(11, COBieKeyType.None, COBieAttributeState.As_Specified, "GrossArea", sizeof(double), COBieAllowedType.Numeric)]
-        public string GrossArea
-        {
-            get
-            { return _grossArea; }
-            set
-            {
-                _grossArea = value;
-            }
-        }
+        public string GrossArea { get; set; }
 
         [COBieAttributes(12, COBieKeyType.None, COBieAttributeState.As_Specified, "NetArea", sizeof(double), COBieAllowedType.Numeric)]
-        public string NetArea
-        {
-            get
-            { return _netArea; }
-            set
-            {
-                _netArea = value;
-            }
-        }
+        public string NetArea { get; set; }
     }
 }
