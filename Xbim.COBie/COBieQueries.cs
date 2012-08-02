@@ -20,8 +20,9 @@ using Xbim.Ifc.ApprovalResource;
 using Xbim.Ifc.ProcessExtensions;
 using Xbim.Ifc.ConstructionMgmtDomain;
 using System.Xml;
+using Xbim.COBie.Rows;
 
-namespace Xbim.COBie.COBieExtensions
+namespace Xbim.COBie
 {
     public class COBieQueries
     {
@@ -545,7 +546,7 @@ namespace Xbim.COBie.COBieExtensions
                 floor.Category = floor.Category.TrimEnd(',');
 
                 floor.ExtSystem = GetIfcApplication().ApplicationFullName;
-                floor.ExtObject = floor.GetType().Name;
+                floor.ExtObject = bs.GetType().Name;
                 floor.ExtIdentifier = bs.GlobalId;
                 floor.Description = GetFloorDescription(bs);
                 floor.Elevation = bs.Elevation.ToString();

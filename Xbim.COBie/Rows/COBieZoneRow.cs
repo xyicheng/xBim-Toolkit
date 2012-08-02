@@ -2,10 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Xbim.COBie.COBieExtensions;
 using System.Reflection;
 
-namespace Xbim.COBie
+namespace Xbim.COBie.Rows
 {
     [Serializable()]
     public class COBieZoneRow : COBieRow

@@ -1,45 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Xbim.XbimExtensions;
 using System.Data;
-using System.Xml.Serialization;
 using System.IO;
-using Xbim.XbimExtensions.Parser;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.ActorResource;
-using Xbim.Ifc.ProductExtension;
 using System.Xml;
-using System.Text.RegularExpressions;
-using System.Diagnostics;
-using System.Reflection;
+using System.Xml.Serialization;
+using Xbim.COBie.Rows;
+using Xbim.XbimExtensions;
 
-namespace Xbim.COBie.COBieExtensions
+namespace Xbim.COBie
 {
    
-
-    public class COBieCell
-    {
-        public COBieCell()
-        {
-
-        }
-
-        public COBieCell(string cellValue)
-        {
-            CellValue = cellValue;
-        }
-
-        public string CellValue { get; set; }        
-        public COBieColumn CobieCol {get; set;}
-        public COBieAttributeState COBieState { get; set; }
-
-        
-                
-        public static Regex RegExAlphaNumeric = new Regex("^[a-zA-Z0-9]*$");
-        public static Regex RegExEmail = new Regex("[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?");
-    }
 
     public class COBieReader
     {

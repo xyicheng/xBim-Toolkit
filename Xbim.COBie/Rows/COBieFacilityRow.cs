@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Xbim.COBie.COBieExtensions;
 using Xbim.XbimExtensions;
 using Xbim.Ifc.Kernel;
 using Xbim.Ifc.ProductExtension;
@@ -11,7 +10,7 @@ using Xbim.Ifc.UtilityResource;
 using Xbim.Ifc.SelectTypes;
 using System.Reflection;
 
-namespace Xbim.COBie
+namespace Xbim.COBie.Rows
 {
     [Serializable()]
     public class COBieFacilityRow : COBieRow

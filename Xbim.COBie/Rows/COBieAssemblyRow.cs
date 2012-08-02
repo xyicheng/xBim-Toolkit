@@ -2,11 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Xbim.COBie.COBieExtensions;
 using System.Reflection;
 using System.Text.RegularExpressions;
 
-namespace Xbim.COBie
+namespace Xbim.COBie.Rows
 {
     [Serializable()]
     public class COBieAssemblyRow : COBieRow

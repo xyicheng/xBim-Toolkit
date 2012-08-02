@@ -1,13 +1,9 @@
-﻿using System;
-using System.Text;
-using System.Collections.Generic;
+﻿using System.Diagnostics;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Xbim.IO;
-using System.IO;
-using Xbim.COBie.COBieExtensions;
 using Xbim.COBie;
-using System.Diagnostics;
+using Xbim.COBie.Rows;
+using Xbim.IO;
 using Xbim.XbimExtensions;
 
 namespace Xbim.Tests.COBie

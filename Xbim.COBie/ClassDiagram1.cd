@@ -1,186 +1,168 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ClassDiagram MajorVersion="1" MinorVersion="1">
-  <Class Name="Xbim.COBie.COBieConnectionRow" Collapsed="true">
+  <Class Name="Xbim.COBie.Rows.COBieConnectionRow" Collapsed="true">
     <Position X="0.5" Y="5" Width="1.75" />
     <TypeIdentifier>
-      <HashCode>AIAAAAAQAAAgAAAACAAAAgQMAAACABAAAAAAAIAAAAE=</HashCode>
-      <FileName>COBieConnectionRow.cs</FileName>
+      <HashCode>AIAAAAAQAAAgAAAAAAAAAgQMAAACABAAAAAAAIAAAAE=</HashCode>
+      <FileName>Rows\COBieConnectionRow.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Xbim.COBie.COBieContactRow" Collapsed="true" BaseTypeListCollapsed="true">
+  <Class Name="Xbim.COBie.Rows.COBieContactRow" Collapsed="true" BaseTypeListCollapsed="true">
     <Position X="7.5" Y="5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAIAAAAQAiCAAAAAKAAEAgAEEAICAAAAAAIAJAAASAE=</HashCode>
-      <FileName>COBieContactRow.cs</FileName>
+      <HashCode>AAIAAAAQAiCAAAAAIAAEAgAEEAICAAAAAAIAJAAASAE=</HashCode>
+      <FileName>Rows\COBieContactRow.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Xbim.COBie.COBieDocumentRow" Collapsed="true">
+  <Class Name="Xbim.COBie.Rows.COBieDocumentRow" Collapsed="true">
     <Position X="9.75" Y="5" Width="1.75" />
     <TypeIdentifier>
-      <HashCode>AAAAABCQAAAgAAAACAAAAgQEAAAGAAAAEAgAAAAgCAE=</HashCode>
-      <FileName>COBieDocumentRow.cs</FileName>
+      <HashCode>AAAAABCQAAAgAAAAAAAAAgQEAAAGAAAAEAgAAAAgCAE=</HashCode>
+      <FileName>Rows\COBieDocumentRow.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Xbim.COBie.COBieFacilityRow" Collapsed="true">
+  <Class Name="Xbim.COBie.Rows.COBieFacilityRow" Collapsed="true">
     <Position X="0.75" Y="6" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAIGAIABAAoCgAIKggIwAQAQAACgAAEEoTAIBgAjCE=</HashCode>
-      <FileName>COBieFacilityRow.cs</FileName>
+      <FileName>Rows\COBieFacilityRow.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Xbim.COBie.COBieImpactRow" Collapsed="true">
+  <Class Name="Xbim.COBie.Rows.COBieImpactRow" Collapsed="true">
     <Position X="3" Y="6" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAABAUAAAiAAAACABAAgQEAAgCAAAIAAAgAAAgAAE=</HashCode>
-      <FileName>COBieImpactRow.cs</FileName>
+      <HashCode>AAAAABAUAAAiAAAAAABAAgQEAAgCAAAIAAAgAAAgAAE=</HashCode>
+      <FileName>Rows\COBieImpactRow.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Xbim.COBie.COBieIssueRow" Collapsed="true">
+  <Class Name="Xbim.COBie.Rows.COBieIssueRow" Collapsed="true">
     <Position X="7.5" Y="6" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAACQAAEgAAAACAAAEgQEAAACAAQIkQAAAIAAAAE=</HashCode>
-      <FileName>COBieIssueRow.cs</FileName>
+      <HashCode>AAAAAACQAAEgAAAAAAAAEgQEAAACAAQIkQAAAIAAAAE=</HashCode>
+      <FileName>Rows\COBieIssueRow.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Xbim.COBie.COBieJobRow" Collapsed="true">
+  <Class Name="Xbim.COBie.Rows.COBieJobRow" Collapsed="true">
     <Position X="9.75" Y="6" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAUACAiAAAASAAAAgQkAIACABgAAAAAAAABCwE=</HashCode>
-      <FileName>COBieJobRow.cs</FileName>
+      <HashCode>AAAAAAAUACAiAAAAQAAAAgQkAIACABgAAAAAAAABCwE=</HashCode>
+      <FileName>Rows\COBieJobRow.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Xbim.COBie.COBiePickListsRow" Collapsed="true">
+  <Class Name="Xbim.COBie.Rows.COBiePickListsRow" Collapsed="true">
     <Position X="0.5" Y="7" Width="1.75" />
     <TypeIdentifier>
-      <HashCode>GIoCICAcBggAQQBACAZAQCAIFAgBUApcECAAAABCETA=</HashCode>
-      <FileName>COBiePickListsRow.cs</FileName>
+      <HashCode>GIoCICAcBggAQQBAAAZAQCAIFAgBUApcECAAAABCETA=</HashCode>
+      <FileName>Rows\COBiePickListsRow.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Xbim.COBie.COBieResourceRow" Collapsed="true">
+  <Class Name="Xbim.COBie.Rows.COBieResourceRow" Collapsed="true">
     <Position X="5.25" Y="6" Width="1.75" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAQAAAgAAAACAAAAgQEAAACAAAAAAAAAAAACAE=</HashCode>
-      <FileName>COBieResourceRow.cs</FileName>
+      <HashCode>AAAAAAAQAAAgAAAAAAAAAgQEAAACAAAAAAAAAAAACAE=</HashCode>
+      <FileName>Rows\COBieResourceRow.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Xbim.COBie.COBieSpaceRow" Collapsed="true">
+  <Class Name="Xbim.COBie.Rows.COBieSpaceRow" Collapsed="true">
     <Position X="7.75" Y="7" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAEAOAAQAAAgBAAEKAAAQkQEEAICAAigAEAAAAAACQk=</HashCode>
-      <FileName>COBieSpaceRow.cs</FileName>
+      <HashCode>AAEAAAAQAAAgAAAAIAAAAgQEAAACAAgAAAAAAAAACQk=</HashCode>
+      <FileName>Rows\COBieSpaceRow.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Xbim.COBie.COBieSpareRow" Collapsed="true">
+  <Class Name="Xbim.COBie.Rows.COBieSpareRow" Collapsed="true">
     <Position X="5.25" Y="5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAQAAAgAIAASABAAgQEAAACABAAAAAAAAAACAE=</HashCode>
-      <FileName>COBieSpareRow.cs</FileName>
+      <HashCode>AAAAAAAQAAAgAIAAQABAAgQEAAACABAAAAAAAAAACAE=</HashCode>
+      <FileName>Rows\COBieSpareRow.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Xbim.COBie.COBieSystemRow" Collapsed="true">
+  <Class Name="Xbim.COBie.Rows.COBieSystemRow" Collapsed="true">
     <Position X="3" Y="7" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AABAAAAQAAAgAAAACAAAAgQEAAACAAAAAAAAAAAACAE=</HashCode>
-      <FileName>COBieSystemRow.cs</FileName>
+      <HashCode>AABAAAAQAAAgAAAAAAAAAgQEAAACAAAAAAAAAAAACAE=</HashCode>
+      <FileName>Rows\COBieSystemRow.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Xbim.COBie.COBieTypeRow" Collapsed="true">
+  <Class Name="Xbim.COBie.Rows.COBieTypeRow" Collapsed="true">
     <Position X="5.25" Y="7" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AEgFkEAQAQIgzAAACABJAgQFAAISAAgAAARAABGACQk=</HashCode>
-      <FileName>COBieTypeRow.cs</FileName>
+      <HashCode>AEgFkEAQAQIgzAAAAABJAgQFAAISAAgAAARAABGACQk=</HashCode>
+      <FileName>Rows\COBieTypeRow.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Xbim.COBie.COBieZoneRow" Collapsed="true">
+  <Class Name="Xbim.COBie.Rows.COBieZoneRow" Collapsed="true">
     <Position X="10" Y="7" Width="1.5" />
-    <InheritanceLine Type="Xbim.COBie.COBieRow" ManuallyRouted="true">
-      <Path>
-        <Point X="6" Y="4.247" />
-        <Point X="6" Y="4.625" />
-        <Point X="7.25" Y="4.625" />
-        <Point X="7.25" Y="7.939" />
-        <Point X="11.875" Y="7.939" />
-        <Point X="11.875" Y="7.346" />
-        <Point X="11.5" Y="7.346" />
-      </Path>
-    </InheritanceLine>
     <TypeIdentifier>
-      <HashCode>AAAAAAAQAAEgAAAACAAAAgQEAAACAAAAAAAAAAAACAE=</HashCode>
-      <FileName>COBieZoneRow.cs</FileName>
+      <HashCode>AAAAAAAQAAEgAAAAAAAAAgQEAAACAAAAAAAAAAAACAE=</HashCode>
+      <FileName>Rows\COBieZoneRow.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Xbim.COBie.COBieExtensions.COBieAttributes" Collapsed="true">
+  <Class Name="Xbim.COBie.COBieAttributes" Collapsed="true">
     <Position X="10.5" Y="1.75" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAEIAAAGAAEAIAAAAABACAEAAAAQAAAAAAAQBAAAAAg=</HashCode>
-      <FileName>COBieExtensions\COBieAttributes.cs</FileName>
+      <HashCode>AAEIAAAGAAEAIAAAAABACAEAAAAQAAAAAAAQBABAAAg=</HashCode>
+      <FileName>COBieAttributes.cs</FileName>
     </TypeIdentifier>
     <ShowAsAssociation>
       <Property Name="COBieAttributeState" />
       <Property Name="COBieAllowedType" />
     </ShowAsAssociation>
   </Class>
-  <Class Name="Xbim.COBie.COBieExtensions.COBieQueries" Collapsed="true">
+  <Class Name="Xbim.COBie.COBieQueries" Collapsed="true">
     <Position X="0.75" Y="0.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>ACCBACJEAAQAAggACoqEAAEAAIAASMAKSCACAQAAADA=</HashCode>
-      <FileName>COBieExtensions\COBieQueries.cs</FileName>
+      <FileName>COBieQueries.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Xbim.COBie.COBieExtensions.COBieCell" Collapsed="true">
-    <Position X="6.5" Y="0.75" Width="1.5" />
-    <TypeIdentifier>
-      <HashCode>AAAACBAAAAAAAAAAAAADAAAAAAAAAAAAAAgAAAAAAAA=</HashCode>
-      <FileName>COBieExtensions\COBieReader.cs</FileName>
-    </TypeIdentifier>
-  </Class>
-  <Class Name="Xbim.COBie.COBieExtensions.COBieReader" Collapsed="true">
+  <Class Name="Xbim.COBie.COBieReader" Collapsed="true">
     <Position X="2.5" Y="0.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAkBQQAEAAhACAAgBQAABAAIAIQABECYAERAAiAAAIE=</HashCode>
-      <FileName>COBieExtensions\COBieReader.cs</FileName>
+      <FileName>COBieReader.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="Xbim.COBie.COBieSheet&lt;CobieRowType&gt;" Collapsed="true">
     <Position X="1.5" Y="2" Width="2.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAACAAEAAAQAAAAAAAgAAAAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>COBieSheet.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Xbim.COBie.COBieAssemblyRow" Collapsed="true">
+  <Class Name="Xbim.COBie.Rows.COBieAssemblyRow" Collapsed="true">
     <Position X="2.75" Y="5" Width="2" />
     <TypeIdentifier>
-      <HashCode>AAAAIAAQAAAgAAAECAAQQkREAAICQQggAEABAAAAAAE=</HashCode>
-      <FileName>COBieAssemblyRow.cs</FileName>
+      <HashCode>AAAAAAAQAAAgAAAAAAAQAgREAAACQAAAAAAAAAAAAAE=</HashCode>
+      <FileName>Rows\COBieAssemblyRow.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="Xbim.COBie.COBieColumn" Collapsed="true">
     <Position X="4.5" Y="0.75" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAABAAEAAAAAACAAABAAAAAABAQAAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>COBieColumn.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="Xbim.COBie.COBieRow">
     <Position X="5.25" Y="2.5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgCAAA=</HashCode>
+      <HashCode>AAAAAQAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAgCAAA=</HashCode>
       <FileName>COBieRow.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Enum Name="Xbim.COBie.COBieExtensions.COBieAttributeState" Collapsed="true">
+  <Enum Name="Xbim.COBie.COBieAttributeState" Collapsed="true">
     <Position X="8.25" Y="1.25" Width="1.75" />
     <TypeIdentifier>
       <HashCode>AAAgAAAAAIEAQIAAAAAAAAAAgAAAEAIAAAAAAAEAAAA=</HashCode>
-      <FileName>COBieExtensions\COBieAttributes.cs</FileName>
+      <FileName>Enums.cs</FileName>
     </TypeIdentifier>
   </Enum>
-  <Enum Name="Xbim.COBie.COBieExtensions.COBieAllowedType" Collapsed="true">
+  <Enum Name="Xbim.COBie.COBieAllowedType" Collapsed="true">
     <Position X="8.25" Y="2.75" Width="1.75" />
     <TypeIdentifier>
       <HashCode>AAAAAAEAACAAAAIAAAAAAgACAAAAAAAAAAAACAAAAAA=</HashCode>
-      <FileName>COBieExtensions\COBieAttributes.cs</FileName>
+      <FileName>Enums.cs</FileName>
     </TypeIdentifier>
   </Enum>
   <Font Name="Segoe UI" Size="9" />

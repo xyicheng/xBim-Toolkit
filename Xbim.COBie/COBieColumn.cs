@@ -3,18 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Collections.ObjectModel;
-using Xbim.COBie.COBieExtensions;
 
 namespace Xbim.COBie
 {
-    public class COBieColumnCollection : KeyedCollection<string, COBieColumn>
-    {
-        protected override string GetKeyForItem(COBieColumn item)
-        {
-            return item.ColumnName;
-        }
-    }
-
+    
     public class COBieColumn
     {
         public bool IsPrimaryKey { get; set; }

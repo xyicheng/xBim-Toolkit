@@ -2,18 +2,18 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Xbim.COBie.COBieExtensions;
+using Xbim.XbimExtensions;
 using System.Reflection;
 
-namespace Xbim.COBie
+namespace Xbim.COBie.Rows
 {
     [Serializable()]
-    public class COBieComponentRow : COBieRow
+    public class COBieSpaceRow : COBieRow
     {
-        static COBieComponentRow()
+        static COBieSpaceRow()
         {
             _columns = new Dictionary<int, COBieColumn>();
-            Properties = typeof(COBieComponentRow).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            Properties = typeof(COBieSpaceRow).GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
             // add column info 
             foreach (PropertyInfo propInfo in Properties)
@@ -25,8 +25,7 @@ namespace Xbim.COBie
                 }
 
             }
-        }
-
+        } 
 
         [COBieAttributes(0, COBieKeyType.PrimaryKey, COBieAttributeState.Required, "Name", 255, COBieAllowedType.AlphaNumeric)]
         public string Name { get; set; }
@@ -37,12 +36,11 @@ namespace Xbim.COBie
         [COBieAttributes(2, COBieKeyType.None, COBieAttributeState.Required, "CreatedOn", 19, COBieAllowedType.ISODate)]
         public string CreatedOn { get; set; }
 
+        [COBieAttributes(3, COBieKeyType.None, COBieAttributeState.Required, "Category", 255, COBieAllowedType.AlphaNumeric)]
+        public string Category { get; set; }
 
-        [COBieAttributes(3, COBieKeyType.None, COBieAttributeState.Required, "TypeName", 255, COBieAllowedType.AlphaNumeric)]
-        public string TypeName { get; set; }
-
-        [COBieAttributes(4, COBieKeyType.None, COBieAttributeState.Required, "Space", 255, COBieAllowedType.AlphaNumeric)]
-        public string Space { get; set; }
+        [COBieAttributes(4, COBieKeyType.None, COBieAttributeState.Required, "FloorName", 255, COBieAllowedType.AlphaNumeric)]
+        public string FloorName { get; set; }
 
         [COBieAttributes(5, COBieKeyType.None, COBieAttributeState.Required, "Description", 255, COBieAllowedType.AlphaNumeric)]
         public string Description { get; set; }
@@ -56,22 +54,16 @@ namespace Xbim.COBie
         [COBieAttributes(8, COBieKeyType.None, COBieAttributeState.System, "ExtIdentifier", 255, COBieAllowedType.AlphaNumeric)]
         public string ExtIdentifier { get; set; }
 
-        [COBieAttributes(9, COBieKeyType.None, COBieAttributeState.Required, "SerialNumber", 255, COBieAllowedType.AlphaNumeric)]
-        public string SerialNumber { get; set; }
+        [COBieAttributes(9, COBieKeyType.None, COBieAttributeState.As_Specified, "RoomTag", 255, COBieAllowedType.AlphaNumeric)]
+        public string RoomTag { get; set; }
 
-        [COBieAttributes(10, COBieKeyType.None, COBieAttributeState.Required, "InstallationDate", 19, COBieAllowedType.ISODate)]
-        public string InstallationDate { get; set; }
+        [COBieAttributes(10, COBieKeyType.None, COBieAttributeState.As_Specified, "UsableHeight", sizeof(double), COBieAllowedType.Numeric)]
+        public string UsableHeight { get; set; }
 
-        [COBieAttributes(11, COBieKeyType.None, COBieAttributeState.Required, "WarrantyStartDate", 19, COBieAllowedType.ISODate)]
-        public string WarrantyStartDate { get; set; }
+        [COBieAttributes(11, COBieKeyType.None, COBieAttributeState.As_Specified, "GrossArea", sizeof(double), COBieAllowedType.Numeric)]
+        public string GrossArea { get; set; }
 
-        [COBieAttributes(12, COBieKeyType.None, COBieAttributeState.As_Specified, "TagNumber", 255, COBieAllowedType.AlphaNumeric)]
-        public string TagNumber { get; set; }
-
-        [COBieAttributes(13, COBieKeyType.None, COBieAttributeState.As_Specified, "BarCode", 255, COBieAllowedType.AlphaNumeric)]
-        public string BarCode { get; set; }
-
-        [COBieAttributes(14, COBieKeyType.None, COBieAttributeState.As_Specified, "AssetIdentifier", 255, COBieAllowedType.AlphaNumeric)]
-        public string AssetIdentifier { get; set; }
+        [COBieAttributes(12, COBieKeyType.None, COBieAttributeState.As_Specified, "NetArea", sizeof(double), COBieAllowedType.Numeric)]
+        public string NetArea { get; set; }
     }
 }

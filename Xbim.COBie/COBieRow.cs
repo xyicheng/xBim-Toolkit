@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Reflection;
-using Xbim.COBie.COBieExtensions;
 
 namespace Xbim.COBie
 {
