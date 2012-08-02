@@ -52,14 +52,26 @@ namespace Xbim
 		bool XbimFeaturedShape::DoCut(const TopoDS_Shape& toCut)
 		{
 			
-			
 			TopoDS_Shape res;
-			
 			if(LowLevelCut(*(mResultShape->Handle),toCut,res))
 			{
-
 				
-				if(BRepCheck_Analyzer(res, Standard_False).IsValid() == 0) return false;//messed up try individual cutting or throw an error
+				if(BRepCheck_Analyzer(res, Standard_False).IsValid() == 0) 
+				{
+					//try and fix it
+					ShapeFix_Shape fixer(res);
+					fixer.SetMinTolerance(BRepLib::Precision());
+					fixer.SetMaxTolerance(BRepLib::Precision());
+					
+					
+					fixer.Perform();
+					
+					
+					if(BRepCheck_Analyzer(fixer.Shape(), Standard_False).IsValid() == 0) 
+						return false;//messed up try individual cutting or throw an error
+					else
+						*(mResultShape->Handle) = fixer.Shape();
+				}
 				if(res.IsNull()) return true; //nothing happened, stay as we were 
 				if(res.ShapeType() == TopAbs_SOLID)
 				{	 *(mResultShape->Handle)=TopoDS::Solid(res); return true;}
@@ -84,13 +96,17 @@ namespace Xbim
 
 				}
 
+				Bnd_Box bb3;
+				BRepBndLib::Add(res, bb3);
+				if(bb3.IsVoid()) return true; //the result is empty, i.e. cutting a from b left no solid, a is > b
+
 				Bnd_Box bb1;
 				BRepBndLib::Add(*(mResultShape->Handle), bb1);
 				Bnd_Box bb2;
 				BRepBndLib::Add(toCut, bb2);
 				if(bb1.IsOut(bb2)) //the two shapes never intersected
 					return true; //just return what we had in the first place
-
+				
 			}
 			return false;//totally invalid shape give up and try the individual ones or throw an error
 		}
@@ -164,7 +180,7 @@ namespace Xbim
 				
 				try
 				{
-					if(!DoCut(c)) //try the fast option first
+					if(mResultShape->Handle->ShapeType() == TopAbs_SHELL || !DoCut(c)) //try the fast option first if it is not a shell
 					{
 						//try each cut separately
 						bool failed = false;

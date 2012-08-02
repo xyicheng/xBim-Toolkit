@@ -38,6 +38,7 @@
 #include <TopTools_Array1OfShape.hxx>
 #include <TopTools_DataMapOfIntegerShape.hxx>
 #include <BRepBuilderAPI_MakePolygon.hxx>
+#include <BRepLib.hxx>
 using namespace System::Linq;
 using namespace System::Diagnostics;
 using namespace System::Windows::Media::Media3D;
@@ -304,7 +305,7 @@ namespace Xbim
 				double* pZ = (double*)pPoint;
 				gp_XYZ pt(*pX,*pY,*pZ);
 				TopoDS_Vertex vertex;
-				b.MakeVertex(vertex , pt, Precision::Confusion());
+				b.MakeVertex(vertex , pt, BRepLib::Precision());
 				points.SetValue(i, vertex);
 			}
 			

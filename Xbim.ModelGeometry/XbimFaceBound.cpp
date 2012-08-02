@@ -26,6 +26,7 @@
 #include <BRepTools.hxx> 
 #include <TopExp_Explorer.hxx> 
 #include <BRepLib_MakePolygon.hxx> 
+#include <BRepBuilderAPI_WireError.hxx> 
 using namespace System;
 
 namespace Xbim
@@ -410,22 +411,20 @@ namespace Xbim
 			BRepBuilderAPI_MakeWire wire;
 			for each(IfcCompositeCurveSegment^ seg in cCurve->Segments)
 			{
-
-
 				///TODO: Need to add support for curve segment continuity a moment only continuos supported
 				TopoDS_Wire wireSeg = Build(seg->ParentCurve, hasCurves);
 				if(!wireSeg.IsNull())
 				{
 					if(!seg->SameSense) wireSeg.Reverse();
 					ShapeFix_ShapeTolerance FTol;
-					FTol.SetTolerance(wireSeg, BRepLib::Precision()*10, TopAbs_WIRE);
+					FTol.SetTolerance(wireSeg, BRepLib::Precision()*1000, TopAbs_WIRE);
 					wire.Add(wireSeg);
 				}
-
 			}
-			
-			return wire.Wire();
-
+			if(wire.IsDone())
+				return wire.Wire();
+			else
+				throw gcnew XbimGeometryException("Invalid wire forming IfcFaceBound #" + cCurve->EntityLabel);
 		}
 
 		//Builds a wire from a CircleProfileDef
