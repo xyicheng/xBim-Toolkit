@@ -636,34 +636,227 @@ namespace Xbim.COBie
 
         #endregion
 
+        #region Facility
+
+        public COBieSheet<COBieFacilityRow> GetCOBieFacilitySheet(IModel model, COBieSheet<COBiePickListsRow> pickLists)
+        {
+            _model = model;
+
+            IfcProject ifcProject = _model.IfcProject;
+            IfcSite ifcSite = _model.InstancesOfType<IfcSite>().FirstOrDefault();
+            IfcBuilding ifcBuilding = _model.InstancesOfType<IfcBuilding>().FirstOrDefault();
+                        
+            IEnumerable<IfcTelecomAddress> ifcTelecomAddresses = model.InstancesOfType<IfcTelecomAddress>();
+            if (ifcTelecomAddresses == null) ifcTelecomAddresses = Enumerable.Empty<IfcTelecomAddress>();
+
+            IfcOwnerHistory ifcOwnerHistory = model.InstancesOfType<IfcOwnerHistory>().FirstOrDefault();
+            COBieSheet<COBieFacilityRow> facilities = new COBieSheet<COBieFacilityRow>();
+
+            COBieFacilityRow facility = new COBieFacilityRow();
+
+            facility.Name = ifcBuilding.Name.ToString();
+
+            facility.CreatedBy = "";
+            foreach (IfcTelecomAddress address in ifcTelecomAddresses)
+                facility.CreatedBy = (address == null) ? "" : address.ToString() + ",";
+            facility.CreatedBy = facility.CreatedBy.TrimEnd(',');
+
+            facility.CreatedOn = ifcOwnerHistory.CreationDate.ToString();
+
+            facility.Category = "";
+            foreach (COBiePickListsRow plRow in pickLists.Rows)
+                facility.Category = (plRow == null) ? "" : plRow.CategoryFacility + ",";
+            facility.Category = facility.Category.TrimEnd(',');
+
+            facility.ProjectName = GetFacilityProjectName(ifcProject);
+            facility.SiteName = GetFacilitySiteName(ifcSite);
+            facility.LinearUnits = GetLinearUnits();
+            facility.AreaUnits = GetAreaUnits();
+            facility.VolumeUnits = GetVolumeUnits();
+            facility.CurrencyUnit = DEFAULT_VAL;
+            facility.AreaMeasurement = DEFAULT_VAL;
+            facility.ExtSystem = GetIfcApplication().ApplicationFullName;
+            facility.ExtProjectObject = "IfcProject";
+            facility.ExtProjectIdentifier = ifcProject.GlobalId;
+            facility.ExtSiteObject = "IfcSite";
+            facility.ExtFacilityIdentifier = ifcBuilding.GlobalId;
+            facility.ExtFacilityObject = "IfcBuilding";
+            facility.ExtProjectIdentifier = ifcSite.GlobalId;
+            facility.Description = GetFacilityDescription(ifcBuilding);
+            facility.ProjectDescription = GetFacilityProjectDescription(ifcProject);
+            facility.SiteDescription = GetFacilitySiteDescription(ifcSite);
+            facility.Phase = _model.IfcProject.Phase;
+
+            facilities.Rows.Add(facility);
+
+            return facilities;
+        }
+
+        private string GetFacilityDescription(IfcBuilding ifcBuilding)
+        {
+            if (ifcBuilding != null)
+            {
+                if (!string.IsNullOrEmpty(ifcBuilding.LongName)) return ifcBuilding.LongName;
+                else if (!string.IsNullOrEmpty(ifcBuilding.Description)) return ifcBuilding.Description;
+                else if (!string.IsNullOrEmpty(ifcBuilding.Name)) return ifcBuilding.Name;
+            }
+            return "n/a";
+        }
+
+        private string GetFacilityProjectDescription(IfcProject ifcProject)
+        {
+            if (ifcProject != null)
+            {
+                if (!string.IsNullOrEmpty(ifcProject.LongName)) return ifcProject.LongName;
+                else if (!string.IsNullOrEmpty(ifcProject.Description)) return ifcProject.Description;
+                else if (!string.IsNullOrEmpty(ifcProject.Name)) return ifcProject.Name;
+            }
+            return "Project Description";
+        }
+
+        private string GetFacilitySiteDescription(IfcSite ifcSite)
+        {
+            if (ifcSite != null)
+            {
+                if (!string.IsNullOrEmpty(ifcSite.LongName)) return ifcSite.LongName;
+                else if (!string.IsNullOrEmpty(ifcSite.Description)) return ifcSite.Description;
+                else if (!string.IsNullOrEmpty(ifcSite.Name)) return ifcSite.Name;
+            }
+            return "Site Description";
+        }
+
+        private string GetFacilitySiteName(IfcSite ifcSite)
+        {
+            if (ifcSite != null)
+            {
+                if (!string.IsNullOrEmpty(ifcSite.Name)) return ifcSite.Name;
+                else if (!string.IsNullOrEmpty(ifcSite.LongName)) return ifcSite.LongName;
+                else if (!string.IsNullOrEmpty(ifcSite.GlobalId)) return ifcSite.GlobalId;
+            }
+            return "Site Name";
+        }
+
+        private string GetFacilityProjectName(IfcProject ifcProject)
+        {
+            if (ifcProject != null)
+            {
+                if (!string.IsNullOrEmpty(ifcProject.Name)) return ifcProject.Name;
+                else if (!string.IsNullOrEmpty(ifcProject.LongName)) return ifcProject.LongName;
+                else if (!string.IsNullOrEmpty(ifcProject.GlobalId)) return ifcProject.GlobalId;
+            }
+            return "Site Name";
+        }
+
+        private string GetLinearUnits()
+        {
+            IEnumerable<IfcUnitAssignment> unitAssignments = _model.InstancesOfType<IfcUnitAssignment>();
+            foreach (IfcUnitAssignment ua in unitAssignments)
+            {
+                UnitSet us = ua.Units;
+                foreach (IfcUnit u in us)
+                {
+                    if (u is IfcSIUnit)
+                    {
+                        if (((IfcSIUnit)u).UnitType == IfcUnitEnum.LENGTHUNIT)
+                        {
+                            if (((IfcSIUnit)u).Prefix.ToString().ToLower() == "milli") return "millimetres";
+                            if (((IfcSIUnit)u).Name.ToString().ToLower() == "metre") return "metres";
+                            if (((IfcSIUnit)u).Name.ToString().ToLower() == "inch") return "inches";
+                        }
+                    }
+                }
+            }
+            return "feet";
+        }
+
+        private string GetAreaUnits()
+        {
+            IEnumerable<IfcUnitAssignment> unitAssignments = _model.InstancesOfType<IfcUnitAssignment>();
+            foreach (IfcUnitAssignment ua in unitAssignments)
+            {
+                UnitSet us = ua.Units;
+                foreach (IfcUnit u in us)
+                {
+                    if (u is IfcSIUnit)
+                    {
+                        if (((IfcSIUnit)u).UnitType == IfcUnitEnum.AREAUNIT)
+                            if (((IfcSIUnit)u).Name.ToString().ToLower() == "square_metre") return "squaremetres";
+                    }
+                    else if (u is IfcConversionBasedUnit)
+                    {
+                        if (((IfcConversionBasedUnit)u).UnitType == IfcUnitEnum.AREAUNIT)
+                            if (((IfcConversionBasedUnit)u).Name.ToString().ToLower() == "square_metre") return "squaremetres";
+                    }
+                }
+            }
+
+            return "squarefeet";
+        }
+
+        private string GetVolumeUnits()
+        {
+            IEnumerable<IfcUnitAssignment> unitAssignments = _model.InstancesOfType<IfcUnitAssignment>();
+            foreach (IfcUnitAssignment ua in unitAssignments)
+            {
+                UnitSet us = ua.Units;
+                foreach (IfcUnit u in us)
+                {
+                    if (u is IfcSIUnit)
+                    {
+                        if (((IfcSIUnit)u).UnitType == IfcUnitEnum.VOLUMEUNIT)
+                            if (((IfcSIUnit)u).Name.ToString().ToLower() == "cubic_metre") return "cubicmetres";
+                    }
+                    else if (u is IfcConversionBasedUnit)
+                    {
+                        if (((IfcConversionBasedUnit)u).UnitType == IfcUnitEnum.VOLUMEUNIT)
+                            if (((IfcConversionBasedUnit)u).Name.ToString().ToLower() == "cubic_metre") return "cubicmetres";
+                    }
+                }
+            }
+            return "cubicfeet";
+        }
+
+        #endregion
+
         #region Spare
 
-        public COBieSheet<COBieSpareRow> GetCOBieSpareSheet(IModel model)
+        public COBieSheet<COBieSpareRow> GetCOBieSpareSheet(IModel model, COBieSheet<COBiePickListsRow> pickLists)
         {
             _model = model;
 
             // get all IfcBuildingStory objects from IFC file
-            IEnumerable<IfcBuildingStorey> buildingStories = model.InstancesOfType<IfcBuildingStorey>();
-            IfcTelecomAddress ifcTelecomAddres = model.InstancesOfType<IfcTelecomAddress>().FirstOrDefault();
+            IEnumerable<IfcConstructionProductResource> ifcConstructionProductResources = model.InstancesOfType<IfcConstructionProductResource>();
+
+            IEnumerable<IfcTelecomAddress> ifcTelecomAddresses = model.InstancesOfType<IfcTelecomAddress>();
+            if (ifcTelecomAddresses == null) ifcTelecomAddresses = Enumerable.Empty<IfcTelecomAddress>();
+
             IfcOwnerHistory ifcOwnerHistory = model.InstancesOfType<IfcOwnerHistory>().FirstOrDefault();
-            IfcConstructionProductResource cpr = model.InstancesOfType<IfcConstructionProductResource>().FirstOrDefault();
-            IfcClassification classification = model.InstancesOfType<IfcClassification>().FirstOrDefault();
             IfcTypeObject typeObject = model.InstancesOfType<IfcTypeObject>().FirstOrDefault();
 
             COBieSheet<COBieSpareRow> spares = new COBieSheet<COBieSpareRow>();
 
-            foreach (IfcBuildingStorey bs in buildingStories)
+            foreach (IfcConstructionProductResource cpr in ifcConstructionProductResources)
             {
                 COBieSpareRow spare = new COBieSpareRow();
-                spare.Name = (cpr == null) ? "" : cpr.Name.ToString();
-                spare.CreatedBy = (ifcTelecomAddres == null) ? "" : ifcTelecomAddres.ElectronicMailAddresses[0].ToString();
+                spare.Name = (string.IsNullOrEmpty(cpr.Name)) ? "" : cpr.Name.ToString();
+
+                spare.CreatedBy = "";
+                foreach (IfcTelecomAddress address in ifcTelecomAddresses)
+                    spare.CreatedBy = (address == null) ? "" : address.ToString() + ",";
+                spare.CreatedBy = spare.CreatedBy.TrimEnd(',');
+
                 spare.CreatedOn = (ifcOwnerHistory.CreationDate == null) ? "" : ifcOwnerHistory.CreationDate.ToString();
-                spare.Category = (classification == null) ? "" : classification.Name.ToString();
+
+                spare.Category = "";
+                foreach (COBiePickListsRow plRow in pickLists.Rows)
+                    spare.Category = (plRow == null) ? "" : plRow.SpareType + ",";
+                spare.Category = spare.Category.TrimEnd(',');
+
                 spare.TypeName = (typeObject == null) ? "" : typeObject.Name.ToString();
                 spare.Suppliers = "";
                 spare.ExtSystem = GetIfcApplication().ApplicationFullName;
                 spare.ExtObject = "";
-                spare.ExtIdentifier = bs.GlobalId;
+                spare.ExtIdentifier = cpr.GlobalId;
                 spare.Description = (cpr == null) ? "" : cpr.Description.ToString();
                 spare.SetNumber = "";
                 spare.PartNumber = "";

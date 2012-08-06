@@ -24,7 +24,7 @@
   <Class Name="Xbim.COBie.Rows.COBieFacilityRow" Collapsed="true">
     <Position X="0.75" Y="6" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAIGAIABAAoCgAIKggIwAQAQAACgAAEEoTAIBgAjCE=</HashCode>
+      <HashCode>AAAAAAAwBAAsCgAACgAAQAQAAAACAAAEAoBAYBAADVE=</HashCode>
       <FileName>Rows\COBieFacilityRow.cs</FileName>
     </TypeIdentifier>
   </Class>
@@ -112,21 +112,14 @@
   <Class Name="Xbim.COBie.COBieQueries" Collapsed="true">
     <Position X="0.75" Y="0.75" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>ACCBACJEAAQAAggACoqEAAEAAIAASMAKSCACAQAAADA=</HashCode>
+      <HashCode>ASCBACJEAAQAAggICoqMAAEAwMAASMAKyCACAQAAADA=</HashCode>
       <FileName>COBieQueries.cs</FileName>
-    </TypeIdentifier>
-  </Class>
-  <Class Name="Xbim.COBie.COBieReader" Collapsed="true">
-    <Position X="2.5" Y="0.75" Width="1.5" />
-    <TypeIdentifier>
-      <HashCode>AAkBQQAEAAhACAAgBQAABAAIAIQABECYAERAAiAAAIE=</HashCode>
-      <FileName>COBieReader.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="Xbim.COBie.COBieSheet&lt;CobieRowType&gt;" Collapsed="true">
     <Position X="1.5" Y="2" Width="2.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>AAAAAAAAAACAAEAAAQAAAAAAAgAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>COBieSheet.cs</FileName>
     </TypeIdentifier>
   </Class>
@@ -140,7 +133,7 @@
   <Class Name="Xbim.COBie.COBieColumn" Collapsed="true">
     <Position X="4.5" Y="0.75" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>AAAABAAEAAAAAACAAABAAAAAABAQAAAAAAAAAAAAAAA=</HashCode>
       <FileName>COBieColumn.cs</FileName>
     </TypeIdentifier>
   </Class>
@@ -149,6 +142,13 @@
     <TypeIdentifier>
       <HashCode>AAAAAQAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAgCAAA=</HashCode>
       <FileName>COBieRow.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Xbim.COBie.COBieReader" Collapsed="true">
+    <Position X="2.5" Y="0.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAkBQQAEAAhACAAgBQAABAAIAIQABECYAERAAiAAAIE=</HashCode>
+      <FileName>COBieReader.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Enum Name="Xbim.COBie.COBieAttributeState" Collapsed="true">
