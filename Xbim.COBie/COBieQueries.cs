@@ -44,7 +44,7 @@ namespace Xbim.COBie
 
             IfcOwnerHistory ifcOwnerHistory = model.InstancesOfType<IfcOwnerHistory>().FirstOrDefault();
             //IfcPostalAddress address = model.InstancesOfType<IfcPostalAddress>().FirstOrDefault();
-            COBieSheet<COBieContactRow> contacts = new COBieSheet<COBieContactRow>();
+            COBieSheet<COBieContactRow> contacts = new COBieSheet<COBieContactRow>("Contact");
 
             foreach (IfcPersonAndOrganization po in personsOrganizations)
             {
@@ -89,7 +89,7 @@ namespace Xbim.COBie
                 contact.ExtSystem = GetIfcApplication().ApplicationFullName;
                 contact.ExtObject = po.GetType().Name;
                 contact.ExtIdentifier = person.Id;
-                contact.Department = (organization.Addresses == null) ? DEFAULT_VAL : organization.Addresses.PostalAddresses.FirstOrDefault().InternalLocation.ToString();
+                contact.Department = (organization.Addresses == null || organization.Addresses.PostalAddresses == null || organization.Addresses.PostalAddresses.Count() == 0) ? DEFAULT_VAL : organization.Addresses.PostalAddresses.FirstOrDefault().InternalLocation.ToString();
                 contact.OrganizationCode = (string.IsNullOrEmpty(organization.Name)) ? DEFAULT_VAL : organization.Name.ToString();
                 contact.GivenName = (string.IsNullOrEmpty(person.GivenName)) ? DEFAULT_VAL : person.GivenName.ToString();
                 contact.FamilyName = (string.IsNullOrEmpty(person.FamilyName)) ? DEFAULT_VAL : person.FamilyName.ToString();
@@ -121,7 +121,7 @@ namespace Xbim.COBie
             if (ifcTelecomAddresses == null) ifcTelecomAddresses = Enumerable.Empty<IfcTelecomAddress>();
 
             IfcOwnerHistory ifcOwnerHistory = model.InstancesOfType<IfcOwnerHistory>().FirstOrDefault();
-            COBieSheet<COBieDocumentRow> documents = new COBieSheet<COBieDocumentRow>();
+			COBieSheet<COBieDocumentRow> documents = new COBieSheet<COBieDocumentRow>(Constants.WORKSHEET_DOCUMENT);
 
             foreach (IfcDocumentInformation di in docInfos)
             {
@@ -194,7 +194,7 @@ namespace Xbim.COBie
             if (ifcTelecomAddresses == null) ifcTelecomAddresses = Enumerable.Empty<IfcTelecomAddress>();
 
             IfcOwnerHistory ifcOwnerHistory = model.InstancesOfType<IfcOwnerHistory>().FirstOrDefault();
-            COBieSheet<COBieImpactRow> impacts = new COBieSheet<COBieImpactRow>();
+			COBieSheet<COBieImpactRow> impacts = new COBieSheet<COBieImpactRow>(Constants.WORKSHEET_IMPACT);
 
             foreach (IfcPropertySet ppt in ifcProperties)
             {
@@ -254,7 +254,7 @@ namespace Xbim.COBie
 
             IfcOwnerHistory ifcOwnerHistory = model.InstancesOfType<IfcOwnerHistory>().FirstOrDefault();
             IfcApproval approval = model.InstancesOfType<IfcApproval>().FirstOrDefault();
-            COBieSheet<COBieIssueRow> issues = new COBieSheet<COBieIssueRow>();
+			COBieSheet<COBieIssueRow> issues = new COBieSheet<COBieIssueRow>(Constants.WORKSHEET_ISSUE);
 
             foreach (IfcApproval app in ifcApprovals)
             {
@@ -321,8 +321,8 @@ namespace Xbim.COBie
             
             IfcTypeObject typObj = model.InstancesOfType<IfcTypeObject>().FirstOrDefault();
             IfcConstructionEquipmentResource cer = model.InstancesOfType<IfcConstructionEquipmentResource>().FirstOrDefault();
-            
-            COBieSheet<COBieJobRow> jobs = new COBieSheet<COBieJobRow>();
+
+			COBieSheet<COBieJobRow> jobs = new COBieSheet<COBieJobRow>(Constants.WORKSHEET_JOB);
 
             foreach (IfcTask task in ifcTasks)
             {
@@ -383,7 +383,7 @@ namespace Xbim.COBie
             xdoc.Load(pickListsXMLFilePath);
             XmlNodeList items = xdoc.SelectNodes("//PickLists//Item");
 
-            COBieSheet<COBiePickListsRow> pickLists = new COBieSheet<COBiePickListsRow>();
+			COBieSheet<COBiePickListsRow> pickLists = new COBieSheet<COBiePickListsRow>(Constants.WORKSHEET_PICKLISTS);
 
             foreach (XmlNode node in items)
             {
@@ -482,8 +482,8 @@ namespace Xbim.COBie
             if (ifcTelecomAddresses == null) ifcTelecomAddresses = Enumerable.Empty<IfcTelecomAddress>();
 
             IfcOwnerHistory ifcOwnerHistory = model.InstancesOfType<IfcOwnerHistory>().FirstOrDefault();
-            
-            COBieSheet<COBieResourceRow> resources = new COBieSheet<COBieResourceRow>();
+
+			COBieSheet<COBieResourceRow> resources = new COBieSheet<COBieResourceRow>(Constants.WORKSHEET_RESOURCE);
 
             foreach (IfcConstructionEquipmentResource cer in ifcCer)
             {
@@ -523,7 +523,7 @@ namespace Xbim.COBie
             if (ifcTelecomAddresses == null) ifcTelecomAddresses = Enumerable.Empty<IfcTelecomAddress>();
 
             IfcOwnerHistory ifcOwnerHistory = model.InstancesOfType<IfcOwnerHistory>().FirstOrDefault();
-            COBieSheet<COBieFloorRow> floors = new COBieSheet<COBieFloorRow>();
+			COBieSheet<COBieFloorRow> floors = new COBieSheet<COBieFloorRow>(Constants.WORKSHEET_FLOOR);
 
             IfcClassification ifcClassification = model.InstancesOfType<IfcClassification>().FirstOrDefault();
             
@@ -584,7 +584,7 @@ namespace Xbim.COBie
             if (ifcTelecomAddresses == null) ifcTelecomAddresses = Enumerable.Empty<IfcTelecomAddress>();
 
             IfcOwnerHistory ifcOwnerHistory = model.InstancesOfType<IfcOwnerHistory>().FirstOrDefault();
-            COBieSheet<COBieSpaceRow> spaces = new COBieSheet<COBieSpaceRow>();
+			COBieSheet<COBieSpaceRow> spaces = new COBieSheet<COBieSpaceRow>(Constants.WORKSHEET_SPACE);
 
             foreach (IfcSpace sp in ifcSpaces)
             {
@@ -833,7 +833,7 @@ namespace Xbim.COBie
             IfcOwnerHistory ifcOwnerHistory = model.InstancesOfType<IfcOwnerHistory>().FirstOrDefault();
             IfcTypeObject typeObject = model.InstancesOfType<IfcTypeObject>().FirstOrDefault();
 
-            COBieSheet<COBieSpareRow> spares = new COBieSheet<COBieSpareRow>();
+			COBieSheet<COBieSpareRow> spares = new COBieSheet<COBieSpareRow>(Constants.WORKSHEET_SPARE);
 
             foreach (IfcConstructionProductResource cpr in ifcConstructionProductResources)
             {
@@ -882,7 +882,7 @@ namespace Xbim.COBie
             if (ifcTelecomAddresses == null) ifcTelecomAddresses = Enumerable.Empty<IfcTelecomAddress>();
                         
             IfcOwnerHistory ifcOwnerHistory = model.InstancesOfType<IfcOwnerHistory>().FirstOrDefault();
-            COBieSheet<COBieZoneRow> zones = new COBieSheet<COBieZoneRow>();
+			COBieSheet<COBieZoneRow> zones = new COBieSheet<COBieZoneRow>(Constants.WORKSHEET_ZONE);
 
             foreach (IfcZone zn in ifcZones)
             {
@@ -930,7 +930,7 @@ namespace Xbim.COBie
             IEnumerable<IfcTypeObject> ifcTypeObjects = model.InstancesOfType<IfcTypeObject>();
             IfcTelecomAddress ifcTelecomAddres = model.InstancesOfType<IfcTelecomAddress>().FirstOrDefault();
             IfcOwnerHistory ifcOwnerHistory = model.InstancesOfType<IfcOwnerHistory>().FirstOrDefault();
-            COBieSheet<COBieTypeRow> types = new COBieSheet<COBieTypeRow>();
+			COBieSheet<COBieTypeRow> types = new COBieSheet<COBieTypeRow>(Constants.WORKSHEET_TYPE);
 
             foreach (IfcTypeObject to in ifcTypeObjects)
             {
@@ -1053,7 +1053,7 @@ namespace Xbim.COBie
             IEnumerable<IfcFlowTerminal> ifcFlowTerminals = model.InstancesOfType<IfcFlowTerminal>();
             IfcTelecomAddress ifcTelecomAddres = model.InstancesOfType<IfcTelecomAddress>().FirstOrDefault();
             IfcOwnerHistory ifcOwnerHistory = model.InstancesOfType<IfcOwnerHistory>().FirstOrDefault();
-            COBieSheet<COBieComponentRow> components = new COBieSheet<COBieComponentRow>();
+			COBieSheet<COBieComponentRow> components = new COBieSheet<COBieComponentRow>(Constants.WORKSHEET_COMPONENT);
 
             foreach (IfcFlowTerminal ft in ifcFlowTerminals)
             {
@@ -1102,7 +1102,7 @@ namespace Xbim.COBie
             IEnumerable<IfcSystem> ifcSystems = model.InstancesOfType<IfcSystem>();
             IfcTelecomAddress ifcTelecomAddres = model.InstancesOfType<IfcTelecomAddress>().FirstOrDefault();
             IfcOwnerHistory ifcOwnerHistory = model.InstancesOfType<IfcOwnerHistory>().FirstOrDefault();
-            COBieSheet<COBieSystemRow> systems = new COBieSheet<COBieSystemRow>();
+			COBieSheet<COBieSystemRow> systems = new COBieSheet<COBieSystemRow>(Constants.WORKSHEET_SYSTEM);
 
             foreach (IfcSystem s in ifcSystems)
             {
@@ -1149,7 +1149,7 @@ namespace Xbim.COBie
             // get all IfcBuildingStory objects from IFC file
             IEnumerable<IfcRelAggregates> ifcRelAggregates = model.InstancesOfType<IfcRelAggregates>();
             IfcTelecomAddress ifcTelecomAddres = model.InstancesOfType<IfcTelecomAddress>().FirstOrDefault();
-            COBieSheet<COBieAssemblyRow> assemblies = new COBieSheet<COBieAssemblyRow>();
+			COBieSheet<COBieAssemblyRow> assemblies = new COBieSheet<COBieAssemblyRow>(Constants.WORKSHEET_ASSEMBLY);
 
             IfcOwnerHistory ifcOwnerHistory = model.InstancesOfType<IfcOwnerHistory>().FirstOrDefault();
             IfcProduct ifcProduct = model.InstancesOfType<IfcProduct>().FirstOrDefault();
@@ -1238,7 +1238,7 @@ namespace Xbim.COBie
             IEnumerable<IfcRelConnectsElements> ifcConnections = model.InstancesOfType<IfcRelConnectsElements>();
             IfcTelecomAddress ifcTelecomAddres = model.InstancesOfType<IfcTelecomAddress>().FirstOrDefault();
             IfcOwnerHistory ifcOwnerHistory = model.InstancesOfType<IfcOwnerHistory>().FirstOrDefault();
-            COBieSheet<COBieConnectionRow> connections = new COBieSheet<COBieConnectionRow>();
+			COBieSheet<COBieConnectionRow> connections = new COBieSheet<COBieConnectionRow>(Constants.WORKSHEET_CONNECTION);
 
             IfcRelConnectsPorts relCP = model.InstancesOfType<IfcRelConnectsPorts>().FirstOrDefault();
 
@@ -1284,7 +1284,13 @@ namespace Xbim.COBie
             IfcBuildingStorey ifcBuildingStorey = model.InstancesOfType<IfcBuildingStorey>().FirstOrDefault();
             IfcTelecomAddress ifcTelecomAddres = model.InstancesOfType<IfcTelecomAddress>().FirstOrDefault();
             IfcCartesianPoint ifcCartesianPoint = model.InstancesOfType<IfcCartesianPoint>().FirstOrDefault();
-            COBieSheet<COBieCoordinateRow> coordinates = new COBieSheet<COBieCoordinateRow>();
+			COBieSheet<COBieCoordinateRow> coordinates = new COBieSheet<COBieCoordinateRow>(Constants.WORKSHEET_COORDINATE);
+
+			if (ifcCartesianPoint == null)
+			{
+				// Model doesn't contain geometry
+				return coordinates;
+			}
 
             IfcOwnerHistory ifcOwnerHistory = model.InstancesOfType<IfcOwnerHistory>().FirstOrDefault();
             IfcProduct ifcProduct = model.InstancesOfType<IfcProduct>().FirstOrDefault();
@@ -1342,7 +1348,7 @@ namespace Xbim.COBie
             IfcBuildingStorey ifcBuildingStorey = model.InstancesOfType<IfcBuildingStorey>().FirstOrDefault();
             IfcTelecomAddress ifcTelecomAddres = model.InstancesOfType<IfcTelecomAddress>().FirstOrDefault();
             IfcCartesianPoint ifcCartesianPoint = model.InstancesOfType<IfcCartesianPoint>().FirstOrDefault();
-            COBieSheet<COBieAttributeRow> attributes = new COBieSheet<COBieAttributeRow>();
+			COBieSheet<COBieAttributeRow> attributes = new COBieSheet<COBieAttributeRow>(Constants.WORKSHEET_ATTRIBUTE);
 
             IfcOwnerHistory ifcOwnerHistory = model.InstancesOfType<IfcOwnerHistory>().FirstOrDefault();
             IfcProduct ifcProduct = model.InstancesOfType<IfcProduct>().FirstOrDefault();

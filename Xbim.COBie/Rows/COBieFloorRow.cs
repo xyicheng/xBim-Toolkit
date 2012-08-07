@@ -12,9 +12,9 @@ namespace Xbim.COBie.Rows
     public class COBieFloorRow : COBieRow
     {
 
-        static COBieFloorRow()
+        public COBieFloorRow()
         {
-            _columns = new Dictionary<int, COBieColumn>();
+            Columns = new Dictionary<int, COBieColumn>();
             Properties = typeof(COBieFloorRow).GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
             // add column info 
@@ -24,7 +24,7 @@ namespace Xbim.COBie.Rows
                 if (attrs != null && attrs.Length > 0)
                 {
                     COBieAttributes attr = (COBieAttributes)attrs[0];
-                    _columns.Add(attr.Order, new COBieColumn(attr.ColumnName, attr.MaxLength, attr.AllowedType, attr.KeyType));
+                    Columns.Add(attr.Order, new COBieColumn(attr.ColumnName, attr.MaxLength, attr.AllowedType, attr.KeyType));
                 }
             }
         }

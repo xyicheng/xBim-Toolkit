@@ -9,9 +9,9 @@ namespace Xbim.COBie.Rows
     [Serializable()]
     public class COBieCoordinateRow : COBieRow
     {
-        static COBieCoordinateRow()
+        public COBieCoordinateRow()
         {
-            _columns = new Dictionary<int, COBieColumn>();
+            Columns = new Dictionary<int, COBieColumn>();
             Properties = typeof(COBieCoordinateRow).GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
             // add column info 
@@ -20,7 +20,7 @@ namespace Xbim.COBie.Rows
                 object[] attrs = propInfo.GetCustomAttributes(typeof(COBieAttributes), true);
                 if (attrs != null && attrs.Length > 0)
                 {
-                    _columns.Add(((COBieAttributes)attrs[0]).Order, new COBieColumn(((COBieAttributes)attrs[0]).ColumnName, ((COBieAttributes)attrs[0]).MaxLength, ((COBieAttributes)attrs[0]).AllowedType, ((COBieAttributes)attrs[0]).KeyType));
+                    Columns.Add(((COBieAttributes)attrs[0]).Order, new COBieColumn(((COBieAttributes)attrs[0]).ColumnName, ((COBieAttributes)attrs[0]).MaxLength, ((COBieAttributes)attrs[0]).AllowedType, ((COBieAttributes)attrs[0]).KeyType));
                 }
 
             }

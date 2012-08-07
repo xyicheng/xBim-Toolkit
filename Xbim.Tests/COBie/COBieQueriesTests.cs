@@ -2,9 +2,9 @@
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Xbim.COBie;
-using Xbim.COBie.Rows;
 using Xbim.IO;
 using Xbim.XbimExtensions;
+using Xbim.COBie.Rows;
 
 namespace Xbim.Tests.COBie
 {
@@ -26,7 +26,6 @@ namespace Xbim.Tests.COBie
         [ClassInitialize]
         public static void LoadModel(TestContext context)
         {
-
             _model = new XbimFileModelServer();
             _model.Open(SourceFile);
             COBieQueries cobieEngine = new COBieQueries();
@@ -51,12 +50,8 @@ namespace Xbim.Tests.COBie
 
             Assert.AreEqual(4, floors.Rows.Count);
 
-            FormatFloors(floors);
-
-            
-        }
-
-        
+            FormatFloors(floors);           
+        }        
 
         [TestMethod]
         public void Should_Return_Spaces()
@@ -68,15 +63,13 @@ namespace Xbim.Tests.COBie
             Assert.AreEqual(22, spaces.Rows.Count);
 
             FormatSpaces(spaces);
-
-
         }
 
         // TODO: refactor to generic
         private static void FormatFloors(COBieSheet<COBieFloorRow> floors)
         {
             int columns = 0;
-            foreach (var column in COBieFloorRow.Columns.OrderBy(c => c.Key))
+            foreach (var column in floors.Rows.First().Columns.OrderBy(c => c.Key))
             {
                 Debug.Write(column.Value.ColumnName);
                 Debug.Write(", ");
@@ -90,7 +83,6 @@ namespace Xbim.Tests.COBie
                     Debug.Write(row[i].CellValue);
                     Debug.Write(",");
                 }
-
             }
         }
 
@@ -98,7 +90,7 @@ namespace Xbim.Tests.COBie
         private static void FormatSpaces(COBieSheet<COBieSpaceRow> spaces)
         {
             int columns = 0;
-            foreach (var column in COBieSpaceRow.Columns.OrderBy(c => c.Key))
+            foreach (var column in spaces.Rows.First().Columns.OrderBy(c => c.Key))
             {
                 Debug.Write(column.Value.ColumnName);
                 Debug.Write(", ");
@@ -112,7 +104,6 @@ namespace Xbim.Tests.COBie
                     Debug.Write(row[i].CellValue);
                     Debug.Write(",");
                 }
-
             }
         }
 

@@ -9,9 +9,8 @@ namespace Xbim.COBie.Rows
     [Serializable()]
     public class COBieConnectionRow : COBieRow
     {
-        static COBieConnectionRow()
+        public COBieConnectionRow()
         {
-            _columns = new Dictionary<int, COBieColumn>();
             //Properties = typeof(COBieConnection).GetProperties(BindingFlags.Public | BindingFlags.Instance);
             Properties = typeof(COBieConnectionRow).GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
@@ -21,7 +20,7 @@ namespace Xbim.COBie.Rows
                 object[] attrs = propInfo.GetCustomAttributes(typeof(COBieAttributes), true);
                 if (attrs != null && attrs.Length > 0)
                 {
-                    _columns.Add(((COBieAttributes)attrs[0]).Order, new COBieColumn(((COBieAttributes)attrs[0]).ColumnName, ((COBieAttributes)attrs[0]).MaxLength, ((COBieAttributes)attrs[0]).AllowedType, ((COBieAttributes)attrs[0]).KeyType));
+                    Columns.Add(((COBieAttributes)attrs[0]).Order, new COBieColumn(((COBieAttributes)attrs[0]).ColumnName, ((COBieAttributes)attrs[0]).MaxLength, ((COBieAttributes)attrs[0]).AllowedType, ((COBieAttributes)attrs[0]).KeyType));
                 }
             }
         }

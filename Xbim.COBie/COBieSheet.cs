@@ -9,12 +9,15 @@ namespace Xbim.COBie
 {
     public class COBieSheet<CobieRowType> where CobieRowType : COBieRow
     {
+		public string SheetName { get; set; }
+
         public List<CobieRowType> Rows { get; set; }
         //public Dictionary<int, COBieColumn> Columns;
 
-        public COBieSheet()
+        public COBieSheet(string sheetName)
         {
             Rows = new List<CobieRowType>();
+			SheetName = sheetName;
         }
 
         public void Validate(out List<COBieError> errors)

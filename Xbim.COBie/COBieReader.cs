@@ -6,24 +6,179 @@ using System.Xml;
 using System.Xml.Serialization;
 using Xbim.COBie.Rows;
 using Xbim.XbimExtensions;
+using System.Linq;
 
 namespace Xbim.COBie
-{
-   
-
+{ 
+	/// <summary>
+	/// Interrogates IFC models and builds COBie-format objects from the models
+	/// </summary>
     public class COBieReader
     {
+		/// <summary>
+		/// Default constructor
+		/// </summary>
+		public COBieReader()
+		{
+			ResetWorksheets();
+		}
 
-        public DataSet COBieDataSheets { get; set; }
+		/// <summary>
+		/// Constructor which also sets the Context
+		/// </summary>
+		/// <param name="context"></param>
+		public COBieReader(COBieContext context) : this()
+		{
+			Context = context;
+			GenerateCOBieData();
+		}
 
-        private List<COBieError> _cobieErrors = new List<COBieError>();
-        public List<COBieError> CobieErrors { get { return _cobieErrors; } }
+		/// <summary>
+		/// The context
+		/// </summary>
+		public COBieContext Context { get; set; }
 
+		// Worksheets
+
+		/// <summary>
+		/// Contacts
+		/// </summary>
+		public COBieSheet<COBieContactRow> CobieContacts { get; set; }
+
+		/// <summary>
+		/// Assemblies
+		/// </summary>
+		public COBieSheet<COBieAssemblyRow> CobieAssemblies { get; set; }
+
+		/// <summary>
+		/// Components
+		/// </summary>
+		public COBieSheet<COBieComponentRow> CobieComponents { get; set; }
+
+		/// <summary>
+		/// Connections
+		/// </summary>
+		public COBieSheet<COBieConnectionRow> CobieConnections { get; set; }
+
+		/// <summary>
+		/// Coordinates
+		/// </summary>
+		public COBieSheet<COBieCoordinateRow> CobieCoordinates { get; set; }
+
+		/// <summary>
+		/// Documents
+		/// </summary>
+		public COBieSheet<COBieDocumentRow> CobieDocuments { get; set; }
+
+		/// <summary>
+		/// Facilities
+		/// </summary>
+		public COBieSheet<COBieFacilityRow> CobieFacilities { get; set; }
+
+		/// <summary>
+		/// Floors
+		/// </summary>
+		public COBieSheet<COBieFloorRow> CobieFloors { get; set; }
+
+		/// <summary>
+		/// Impacts
+		/// </summary>
+		public COBieSheet<COBieImpactRow> CobieImpacts { get; set; }
+
+		/// <summary>
+		/// Issues
+		/// </summary>
+		public COBieSheet<COBieIssueRow> CobieIssues { get; set; }
+
+		/// <summary>
+		/// Jobs
+		/// </summary>
+		public COBieSheet<COBieJobRow> CobieJobs { get; set; }
+
+		/// <summary>
+		/// PickLists
+		/// </summary>
+		public COBieSheet<COBiePickListsRow> CobiePickLists { get; set; }
+
+		/// <summary>
+		/// Resources
+		/// </summary>
+		public COBieSheet<COBieResourceRow> CobieResources { get; set; }
+
+		/// <summary>
+		/// Spaces
+		/// </summary>
+		public COBieSheet<COBieSpaceRow> CobieSpaces { get; set; }
+
+		/// <summary>
+		/// Spares
+		/// </summary>
+		public COBieSheet<COBieSpareRow> CobieSpares { get; set; }
+
+		/// <summary>
+		/// Systems
+		/// </summary>
+		public COBieSheet<COBieSystemRow> CobieSystems { get; set; }
+
+		/// <summary>
+		/// Types
+		/// </summary>
+		public COBieSheet<COBieTypeRow> CobieTypes { get; set; }
+
+		/// <summary>
+		/// Zones
+		/// </summary>
+		public COBieSheet<COBieZoneRow> CobieZones { get; set; }
+
+		/// <summary>
+		/// Attributes
+		/// </summary>
+		public COBieSheet<COBieAttributeRow> CobieAttributes { get; set; }
+
+		/// <summary>
+		/// Errors
+		/// </summary>
+		public List<COBieError> CobieErrors { get; set; }
+
+		/// <summary>
+		/// Adds an error to the errors collection
+		/// </summary>
+		/// <param name="cobieError"></param>
         public void AddCOBieError(COBieError cobieError)
         {
-            _cobieErrors.Add(cobieError);
+            CobieErrors.Add(cobieError);
         }
 
+		private void ResetWorksheets()
+		{
+			CobieContacts = new COBieSheet<COBieContactRow>(Constants.WORKSHEET_CONTACT);
+			CobieAssemblies = new COBieSheet<COBieAssemblyRow>(Constants.WORKSHEET_ASSEMBLY);
+			CobieComponents = new COBieSheet<COBieComponentRow>(Constants.WORKSHEET_COMPONENT);
+			CobieConnections = new COBieSheet<COBieConnectionRow>(Constants.WORKSHEET_CONNECTION);
+			CobieCoordinates = new COBieSheet<COBieCoordinateRow>(Constants.WORKSHEET_COORDINATE);
+			CobieDocuments = new COBieSheet<COBieDocumentRow>(Constants.WORKSHEET_DOCUMENT);
+			CobieFacilities = new COBieSheet<COBieFacilityRow>(Constants.WORKSHEET_FACILITY);
+			CobieFloors = new COBieSheet<COBieFloorRow>(Constants.WORKSHEET_FLOOR);
+			CobieImpacts = new COBieSheet<COBieImpactRow>(Constants.WORKSHEET_IMPACT);
+			CobieIssues = new COBieSheet<COBieIssueRow>(Constants.WORKSHEET_ISSUE);
+			CobieJobs = new COBieSheet<COBieJobRow>(Constants.WORKSHEET_JOB);
+			CobiePickLists = new COBieSheet<COBiePickListsRow>(Constants.WORKSHEET_PICKLISTS);
+			CobieResources = new COBieSheet<COBieResourceRow>(Constants.WORKSHEET_RESOURCE);
+			CobieSpaces = new COBieSheet<COBieSpaceRow>(Constants.WORKSHEET_SPACE);
+			CobieSpares = new COBieSheet<COBieSpareRow>(Constants.WORKSHEET_SPARE);
+			CobieSystems = new COBieSheet<COBieSystemRow>(Constants.WORKSHEET_SYSTEM);
+			CobieTypes = new COBieSheet<COBieTypeRow>(Constants.WORKSHEET_TYPE);
+			CobieZones = new COBieSheet<COBieZoneRow>(Constants.WORKSHEET_ZONE);
+			CobieAttributes = new COBieSheet<COBieAttributeRow>(Constants.WORKSHEET_ATTRIBUTE);
+			CobieErrors = new List<COBieError>();
+		}
+
+		/// <summary>
+		/// Gets errors found for the cell on the sheet
+		/// </summary>
+		/// <param name="cell"></param>
+		/// <param name="sheetName"></param>
+		/// <returns></returns>
         public COBieError GetCobieError(COBieCell cell, string sheetName)
         {
             int maxLength = cell.CobieCol.ColumnLength;
@@ -31,7 +186,7 @@ namespace Xbim.COBie
             COBieError err = new COBieError(sheetName, cell.CobieCol.ColumnName, "", COBieError.ErrorTypes.None);
             if (cell.CellValue.Length > maxLength)
             {
-                err.ErrorDescription = "Value must be under 255 characters";
+                err.ErrorDescription = "Value must be under " + maxLength + " characters";
                 err.ErrorType = COBieError.ErrorTypes.Value_Out_of_Bounds;
             }
             if (allowedType == COBieAllowedType.AlphaNumeric && !COBieCell.RegExAlphaNumeric.IsMatch(cell.CellValue))
@@ -56,132 +211,67 @@ namespace Xbim.COBie
             return err;
         }
         
-        COBieSheet<COBieContactRow> _cobieContracts = new COBieSheet<COBieContactRow>();
-
-        //COBieSheet<COBieAssemblyRow> _cobieAssemblySheet = new COBieSheet<COBieAssemblyRow>();
-
-
-        COBieSheet<COBieAssemblyRow> _cobieAssemblies = new COBieSheet<COBieAssemblyRow>();
-        COBieSheet<COBieComponentRow> _cobieComponents = new COBieSheet<COBieComponentRow>();
-        COBieSheet<COBieConnectionRow> _cobieConnections = new COBieSheet<COBieConnectionRow>();
-        COBieSheet<COBieCoordinateRow> _cobieCoordinates = new COBieSheet<COBieCoordinateRow>();
-        COBieSheet<COBieDocumentRow> _cobieDocuments = new COBieSheet<COBieDocumentRow>();
-        COBieSheet<COBieFacilityRow> _cobieFacilities = new COBieSheet<COBieFacilityRow>();
-        COBieSheet<COBieFloorRow> _cobieFloors = new COBieSheet<COBieFloorRow>();
-        COBieSheet<COBieImpactRow> _cobieImpacts = new COBieSheet<COBieImpactRow>();
-        COBieSheet<COBieIssueRow> _cobieIssues = new COBieSheet<COBieIssueRow>();
-        COBieSheet<COBieJobRow> _cobieJobs = new COBieSheet<COBieJobRow>();
-        COBieSheet<COBiePickListsRow> _cobiePickLists = new COBieSheet<COBiePickListsRow>();
-        COBieSheet<COBieResourceRow> _cobieResources = new COBieSheet<COBieResourceRow>();
-        COBieSheet<COBieSpaceRow> _cobieSpaces = new COBieSheet<COBieSpaceRow>();
-        COBieSheet<COBieSpareRow> _cobieSpares = new COBieSheet<COBieSpareRow>();
-        COBieSheet<COBieSystemRow> _cobieSystems = new COBieSheet<COBieSystemRow>();
-        COBieSheet<COBieTypeRow> _cobieTypes = new COBieSheet<COBieTypeRow>();
-        COBieSheet<COBieZoneRow> _cobieZones = new COBieSheet<COBieZoneRow>();
-        COBieSheet<COBieAttributeRow> _cobieAttributes = new COBieSheet<COBieAttributeRow>();
-                
-        private void IntialiseFromModel(IModel model, string pickListsXMLFilePath)
+		private void Intialise()
         {
+			if (Context == null) { throw new InvalidOperationException("COBieReader can't initialise without a valid Context."); }
+			if (Context.Models == null || Context.Models.Count == 0) { throw new ArgumentException("COBieReader context must contain one or more models."); }
+
+			IModel model = Context.Models.First();
+
             // set all the properties
             COBieQueries cq = new COBieQueries();
 
             // create pick lists from xml
-            _cobiePickLists = cq.GetCOBiePickListsSheet(pickListsXMLFilePath);
+            CobiePickLists = cq.GetCOBiePickListsSheet("PickLists.xml");
 
             // populate all sheets from model
-            _cobieAssemblies = cq.GetCOBieAssemblySheet(model);
-            _cobieAttributes = cq.GetCOBieAttributeSheet(model);
-            _cobieComponents = cq.GetCOBieComponentSheet(model);
-            _cobieConnections = cq.GetCOBieConnectionSheet(model);
-            _cobieContracts = cq.GetCOBieContactSheet(model, _cobiePickLists);
-            _cobieCoordinates = cq.GetCOBieCoordinateSheet(model);
-            _cobieDocuments = cq.GetCOBieDocumentSheet(model, _cobiePickLists);
+            CobieAssemblies = cq.GetCOBieAssemblySheet(model);
+            CobieAttributes = cq.GetCOBieAttributeSheet(model);
+            CobieComponents = cq.GetCOBieComponentSheet(model);
+            CobieConnections = cq.GetCOBieConnectionSheet(model);
+            CobieContacts = cq.GetCOBieContactSheet(model, CobiePickLists);
+            CobieCoordinates = cq.GetCOBieCoordinateSheet(model);
+            CobieDocuments = cq.GetCOBieDocumentSheet(model, CobiePickLists);
             Populate_COBieFacilities(model);
-            _cobieFloors = cq.GetCOBieFloorSheet(model, _cobiePickLists);
-            _cobieImpacts = cq.GetCOBieImpactSheet(model, _cobiePickLists);
-            _cobieIssues = cq.GetCOBieIssueSheet(model, _cobiePickLists);
-            _cobieJobs = cq.GetCOBieJobSheet(model, _cobiePickLists);
+            CobieFloors = cq.GetCOBieFloorSheet(model, CobiePickLists);
+            CobieImpacts = cq.GetCOBieImpactSheet(model, CobiePickLists);
+            CobieIssues = cq.GetCOBieIssueSheet(model, CobiePickLists);
+            CobieJobs = cq.GetCOBieJobSheet(model, CobiePickLists);
             
-            _cobieResources = cq.GetCOBieResourceSheet(model);
-            _cobieSpaces = cq.GetCOBieSpaceSheet(model, _cobiePickLists);
-            _cobieSpares = cq.GetCOBieSpareSheet(model);
-            _cobieSystems = cq.GetCOBieSystemSheet(model);
-            _cobieTypes = cq.GetCOBieTypeSheet(model);
-            _cobieZones = cq.GetCOBieZoneSheet(model, _cobiePickLists);
-            
-            
-            
-            
-            
-            
-            
-
-            //_cobieAssemblySheet = cq.GetCOBieAssemblySheet(model);
-
-            
-
-            
-            
+            CobieResources = cq.GetCOBieResourceSheet(model);
+            CobieSpaces = cq.GetCOBieSpaceSheet(model, CobiePickLists);
+            CobieSpares = cq.GetCOBieSpareSheet(model);
+            CobieSystems = cq.GetCOBieSystemSheet(model);
+            CobieTypes = cq.GetCOBieTypeSheet(model);
+            CobieZones = cq.GetCOBieZoneSheet(model, CobiePickLists);
         }
 
         private void PopulateErrors()
         {
             try
             {
-                _cobieErrors = new List<COBieError>();
+                CobieErrors = new List<COBieError>();
 
                 List<COBieError> errors;
-                _cobieAssemblies.Validate(out errors);
-                _cobieAttributes.Validate(out errors);
-                _cobieComponents.Validate(out errors);
-                _cobieConnections.Validate(out errors);
-                _cobieContracts.Validate(out errors);
-                _cobieCoordinates.Validate(out errors);
-                _cobieDocuments.Validate(out errors);
-                _cobieFacilities.Validate(out errors);
-                _cobieFloors.Validate( out errors);
-                _cobieImpacts.Validate(out errors);
-                _cobieIssues.Validate(out errors);
-                _cobieJobs.Validate(out errors);
-                _cobiePickLists.Validate(out errors);
-                _cobieResources.Validate(out errors);
-                _cobieSpaces.Validate(out errors);
-                _cobieSpares.Validate(out errors);
-                _cobieSystems.Validate(out errors);
-                _cobieTypes.Validate(out errors);
-                _cobieZones.Validate(out errors);                
-                
-                               
-                
-                
-
-                //// loop through all the sheets and preopare error dataset
-                //if (_cobieFloors.Rows.Count > 0)
-                //{
-                //    // loop through each floor row
-                //    IEnumerable<PropertyInfo> Properties = typeof(COBieFloorRow).GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                //                                    .Where(prop => prop.GetSetMethod() != null);
-                    
-                //    foreach (COBieFloorRow row in _cobieFloors.Rows)
-                //    {
-                //        // loop through each column, get its attributes and check if column value matches the attributes constraints
-                //        foreach (PropertyInfo propInfo in Properties)
-                //        {
-                //            COBieCell cell = row[propInfo.Name];
-                //            COBieError err = GetCobieError(cell, "COBieFloor");
-
-                //            // check for primary key
-                //            if (HasDuplicateFloorValues(_cobieFloors, cell.CellValue))
-                //            {
-                //                err.ErrorDescription = cell.CellValue + " duplication";
-                //                err.ErrorType = COBieError.ErrorTypes.PrimaryKey_Violation;
-                //            }
-
-                //            if (err.ErrorType != COBieError.ErrorTypes.None) _cobieErrors.Add(err);
-                //        }
-                //    }
-                //}
-                
+                CobieAssemblies.Validate(out errors);
+                CobieAttributes.Validate(out errors);
+                CobieComponents.Validate(out errors);
+                CobieConnections.Validate(out errors);
+                CobieContacts.Validate(out errors);
+                CobieCoordinates.Validate(out errors);
+                CobieDocuments.Validate(out errors);
+                CobieFacilities.Validate(out errors);
+                CobieFloors.Validate( out errors);
+                CobieImpacts.Validate(out errors);
+                CobieIssues.Validate(out errors);
+                CobieJobs.Validate(out errors);
+                CobiePickLists.Validate(out errors);
+                CobieResources.Validate(out errors);
+                CobieSpaces.Validate(out errors);
+                CobieSpares.Validate(out errors);
+                CobieSystems.Validate(out errors);
+                CobieTypes.Validate(out errors);
+                CobieZones.Validate(out errors);                
             }
             catch (Exception)
             {
@@ -193,7 +283,7 @@ namespace Xbim.COBie
         private bool HasDuplicateFloorValues(COBieSheet<COBieFloorRow> sheet, string val)
         {
             int count = 0;
-            foreach (COBieFloorRow row in _cobieFloors.Rows)
+            foreach (COBieFloorRow row in CobieFloors.Rows)
             {
                 if (row.Name == val) count++; 
             }
@@ -202,92 +292,24 @@ namespace Xbim.COBie
             return false;
         }
 
-        public DataSet GetCOBieData(IModel model, string pickListsXMLFilePath)
+        public void GenerateCOBieData()
         {
-            //COBieContact cobieContact = new COBieContact(model);
-            //COBieContact[] cobieContacts = { cobieContact };
+            Intialise();
 
-            //DataSet ds = ToDataSet(cobieContacts);
-            IntialiseFromModel(model, pickListsXMLFilePath);
-
-            PopulateErrors();
-
-
-            DataSet dsSheets = new DataSet();
-
-            // DataTable dt;
-
-            // xml 
-            string filePath = "cobieData.xml";
-            XmlTextWriter textWriter = new XmlTextWriter(filePath, null);   
-
-            //if (_cobieContracts.Count > 0)
-            //{
-            //    dt = ToDataTable(_cobieContracts.ToArray(), "COBieContract");
-            //    dsSheets.Tables.Add(dt.Copy());
-            //}
-
-            //if (_cobieAssemblies.Count > 0)
-            //{
-            //    dt = ToDataTable(_cobieAssemblies.ToArray(), "COBieAssemblyRow");
-            //    dsSheets.Tables.Add(dt.Copy());
-
-            //    //ToXML(_cobieAssemblies.ToArray(), "COBieAssemblyRow", textWriter);
-
-            //}
-
-            
-
-            //if (_cobieComponents.Count > 0)
-            //{
-            //    dt = ToDataTable(_cobieComponents.ToArray(), "COBieComponent");
-            //    dsSheets.Tables.Add(dt.Copy());
-            //}
-
-            //if (_cobieFacilities.Count > 0)
-            //{
-            //    dt = ToDataTable(_cobieFacilities.ToArray(), "COBieFacility");
-            //    dsSheets.Tables.Add(dt.Copy());
-            //}
-
-            //if (_cobieFloors.Count > 0)
-            //{
-            //    dt = ToDataTable(_cobieFloors.ToArray(), "COBieFloor");
-            //    dsSheets.Tables.Add(dt.Copy());
-            //}
-
-            //if (_cobieSpaces.Count > 0)
-            //{
-            //    dt = ToDataTable(_cobieSpaces.ToArray(), "COBieSpace");
-            //    dsSheets.Tables.Add(dt.Copy());
-            //}
-
-            //if (_cobieZones.Count > 0)
-            //{
-            //    dt = ToDataTable(_cobieZones.ToArray(), "COBieZone");
-            //    dsSheets.Tables.Add(dt.Copy());
-            //}
-
-            //if (_cobieTypes.Count > 0)
-            //{
-            //    dt = ToDataTable(_cobieTypes.ToArray(), "COBieType");
-            //    dsSheets.Tables.Add(dt.Copy());
-            //}
-
-            //if (_cobieSystems.Count > 0)
-            //{
-            //    dt = ToDataTable(_cobieTypes.ToArray(), "COBieSystem");
-            //    dsSheets.Tables.Add(dt.Copy());
-            //}
-
-            //if (_cobieConnections.Count > 0)
-            //{
-            //    dt = ToDataTable(_cobieTypes.ToArray(), "COBieConnection");
-            //    dsSheets.Tables.Add(dt.Copy());
-            //}
-
-            return dsSheets;
+            PopulateErrors();			
         }
+
+		/// <summary>
+		/// Passes this instance of the COBieReader into the provided ICOBieFormatter
+		/// </summary>
+		/// <param name="formatter">The object implementing the ICOBieFormatter interface.</param>
+		public void Export(ICOBieFormatter formatter)
+		{
+			if (formatter == null) { throw new ArgumentNullException("formatter", "Parameter passed to COBieReader.Export(ICOBieFormatter) must not be null."); }
+
+			// Passes this 
+			formatter.Format(this);
+		}
 
         public DataTable ToDataTable(object[] objectArray, string tableName)
         {

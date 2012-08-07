@@ -6,19 +6,28 @@ using System.Reflection;
 
 namespace Xbim.COBie
 {
+	/// <summary>
+	/// Abstract base class for Rows
+	/// </summary>
     abstract public class COBieRow
     {
-        static protected Dictionary<int, COBieColumn> _columns; 
-        protected static PropertyInfo[] Properties;
-        static public Dictionary<int, COBieColumn> Columns
-        {
-            get
-            {
-                return _columns;
-            }
-        }
-      
+		public Dictionary<int, COBieColumn> Columns;
+        public PropertyInfo[] Properties;
+
+		/// <summary>
+		/// Instantiates the COBieRow
+		/// </summary>
+		public COBieRow()
+		{
+			Columns = new Dictionary<int, COBieColumn>();
+			Properties = null;
+		}
    
+		/// <summary>
+		/// Returns the item at the given index
+		/// </summary>
+		/// <param name="i">The index</param>
+		/// <returns>A COBieCell or null</returns>
         public COBieCell this[int i]
         {
             get
@@ -32,10 +41,21 @@ namespace Xbim.COBie
                         {
                             //COBieCell cell = (COBieCell)propInfo.GetValue(this, null);
                             PropertyInfo pinfo = this.GetType().GetProperty(propInfo.Name);
-                            COBieCell cell = new COBieCell(pinfo.GetValue(this, null).ToString());
-                            cell.COBieState = ((COBieAttributes)attrs[0]).State;
-                            cell.CobieCol = _columns[((COBieAttributes)attrs[0]).Order];
 
+							object pVal = pinfo.GetValue(this, null);
+							
+							COBieCell cell;
+
+							if (pVal != null)
+							{
+								cell = new COBieCell(pinfo.GetValue(this, null).ToString());
+								cell.COBieState = ((COBieAttributes)attrs[0]).State;
+								cell.CobieCol = Columns[((COBieAttributes)attrs[0]).Order];
+							}
+							else
+							{
+								cell = new COBieCell("n/a");
+							}
 
 
                             return cell;
@@ -64,7 +84,7 @@ namespace Xbim.COBie
                             PropertyInfo pinfo = this.GetType().GetProperty(propInfo.Name);
                             COBieCell cell = new COBieCell(pinfo.GetValue(this, null).ToString());
                             cell.COBieState = ((COBieAttributes)attrs[0]).State;
-                            cell.CobieCol = _columns[((COBieAttributes)attrs[0]).Order];
+                            cell.CobieCol = Columns[((COBieAttributes)attrs[0]).Order];
 
 
 
