@@ -650,7 +650,7 @@ namespace Xbim.COBie
             if (ifcTelecomAddresses == null) ifcTelecomAddresses = Enumerable.Empty<IfcTelecomAddress>();
 
             IfcOwnerHistory ifcOwnerHistory = model.InstancesOfType<IfcOwnerHistory>().FirstOrDefault();
-            COBieSheet<COBieFacilityRow> facilities = new COBieSheet<COBieFacilityRow>();
+            COBieSheet<COBieFacilityRow> facilities = new COBieSheet<COBieFacilityRow>(Constants.WORKSHEET_FACILITY);
 
             COBieFacilityRow facility = new COBieFacilityRow();
 

@@ -240,7 +240,7 @@ namespace Xbim.COBie
             
             CobieResources = cq.GetCOBieResourceSheet(model);
             CobieSpaces = cq.GetCOBieSpaceSheet(model, CobiePickLists);
-            CobieSpares = cq.GetCOBieSpareSheet(model);
+            CobieSpares = cq.GetCOBieSpareSheet(model, CobiePickLists);
             CobieSystems = cq.GetCOBieSystemSheet(model);
             CobieTypes = cq.GetCOBieTypeSheet(model);
             CobieZones = cq.GetCOBieZoneSheet(model, CobiePickLists);
