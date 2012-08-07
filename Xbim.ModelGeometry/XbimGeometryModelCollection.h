@@ -16,6 +16,7 @@ namespace Xbim
 			TopoDS_Compound* pCompound;
 			List<IXbimGeometryModel^>^ shapes;
 			bool _hasCurvedEdges;
+			Int64 _representationLabel;
 		public:
 			
 			XbimGeometryModelCollection()
@@ -95,7 +96,11 @@ virtual property XbimLocation ^ Location
 					return volume;
 				}
 			}
-
+			virtual property Int64 RepresentationLabel
+			{
+				Int64 get(){return _representationLabel; }
+				void set(Int64 value){ _representationLabel=value; }
+			}
 			virtual XbimBoundingBox^ GetBoundingBox(bool precise)
 			{
 				

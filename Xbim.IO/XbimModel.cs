@@ -35,17 +35,6 @@ namespace Xbim.IO
 
         #region Static fields
 
-        public static string IfcInstanceTableName = "IfcInstances";
-        public static string IfcHeaderTableName = "Header";
-        /// <summary>
-        /// Columnid of the Entity Label.
-        /// </summary>
-        public static string colNameEntityLabel = "EntityLabel";
-        public static string colNameSecondaryKey = "SecondaryKey";
-        public static string colNameIfcType = "IfcType";
-        public static string colNameEntityData = "EntityData";
-        public static string headerData = "HeaderData";
-        public static string headerId = "HeaderId";
         #endregion
         
         #region OwnerHistory Fields
@@ -96,10 +85,21 @@ namespace Xbim.IO
         
         #endregion
 
-       
-        
+        /// <summary>
+        /// Starts a transaction to allow bulk updates on the geoemtry table
+        /// </summary>
+        /// <returns></returns>
+        public XbimGeometryTable BeginGeometryUpdate()
+        {
+            return Cached.BeginGeometryUpdate();
+        }
+        public void EndGeometryUpdate(XbimGeometryTable table)
+        {
+            Cached.EndGeometryUpdate(table);
+        }
 
        
+
         //Loads the property data of an entity, if it is not already loaded
         public virtual long Activate(IPersistIfcEntity entity, bool write)
         {
@@ -367,16 +367,16 @@ namespace Xbim.IO
             switch (toImportStorageType)
             {                
                 case XbimStorageType.IFCXML:
-                    Cached.ImportIfcXml(importFrom);
+                    Cached.ImportIfcXml(importFrom, progDelegate);
                     break;
                 case XbimStorageType.IFC:
-                    Cached.ImportIfc(importFrom);
+                    Cached.ImportIfc(importFrom, progDelegate);
                     break;
                 case XbimStorageType.IFCZIP:
-                    Cached.ImportIfcZip( importFrom);
+                    Cached.ImportIfcZip(importFrom, progDelegate);
                     break;
                 case XbimStorageType.XBIM:
-                    Cached.ImportXbim(importFrom);
+                    Cached.ImportXbim(importFrom, progDelegate);
                     break;
                 case XbimStorageType.INVALID:
                 default:
@@ -841,8 +841,7 @@ namespace Xbim.IO
         #endregion
 
 
-
-
+       
 
 
         public bool Open(string fileName, ReportProgressDelegate progDelegate = null)
@@ -978,6 +977,7 @@ namespace Xbim.IO
             return "";
         }
 
+       
        
 
 
@@ -1177,5 +1177,7 @@ namespace Xbim.IO
             }
             disposed = true;
         }
+
+       
     }
 }

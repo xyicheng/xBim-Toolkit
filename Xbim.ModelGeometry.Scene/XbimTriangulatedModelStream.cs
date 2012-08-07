@@ -98,6 +98,17 @@ namespace Xbim.ModelGeometry.Scene
            
         }
 
+        public Byte[] ToArray()
+        {
+            long len = _dataStream.Length + sizeof(int) + sizeof(ushort) + sizeof(byte);
+            MemoryStream memStrm = new MemoryStream((int)len);
+            BinaryWriter bw = new BinaryWriter(memStrm);
+            bw.Write((int)(_dataStream.Length));
+            bw.Write(_numChildren);
+            bw.Write(_hasData);
+            bw.Write(_dataStream.GetBuffer(), 0, (int)_dataStream.Length);
+            return memStrm.ToArray();
+        }
       
 
         public void AddChild(XbimTriangulatedModelStream child)

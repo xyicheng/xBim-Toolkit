@@ -84,8 +84,9 @@ namespace Xbim
 		protected:
 			TopoDS_Shape* nativeHandle;
 			static ILogger^ Logger = LoggerFactory::GetLogger();
-		private:
 			
+		private:
+			Int64 _representationLabel;
 			bool _hasCurvedEdges;
 				
 			
@@ -176,7 +177,11 @@ namespace Xbim
 					return System.Mass();
 				}
 			}
-
+			virtual property Int64 RepresentationLabel
+			{
+				Int64 get(){return _representationLabel; }
+				void set(Int64 value){ _representationLabel=value; }
+			}
 			/*Interfaces*/
 
 

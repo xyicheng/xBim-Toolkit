@@ -47,7 +47,7 @@ namespace XbimConvert
                     {
                         
                         model.Open(xbimFileName);
-                        model.Print();
+                       
                         GenerateGeometry(xbimGeometryFileName, model);
                         
                         model.Close();
@@ -88,17 +88,18 @@ namespace XbimConvert
 
             IEnumerable<IfcProduct> toDraw = GetProducts(model);
 
-            XbimScene scene = new XbimScene(model, toDraw);
+            XbimScene.ConvertGeometry(model);
+            //XbimScene scene = new XbimScene(model, toDraw);
             //TransformGraph graph = new TransformGraph(model, scene);
             //add everything with a representation
             //graph.AddProducts(model.IfcProducts.Items);
 
-            using (FileStream sceneStream = new FileStream(xbimGeometryFileName, FileMode.Create, FileAccess.ReadWrite))
-            {
-                BinaryWriter bw = new BinaryWriter(sceneStream);
-                scene.Graph.Write(bw);
-                bw.Flush();
-            }
+            //using (FileStream sceneStream = new FileStream(xbimGeometryFileName, FileMode.Create, FileAccess.ReadWrite))
+            //{
+            //    BinaryWriter bw = new BinaryWriter(sceneStream);
+            //    scene.Graph.Write(bw);
+            //    bw.Flush();
+            //}
         }
 
         private static IEnumerable<IfcProduct> GetProducts(XbimModel model)

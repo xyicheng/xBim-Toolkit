@@ -16,7 +16,7 @@ namespace Xbim
 		{
 		private:
 			static ILogger^ Logger = LoggerFactory::GetLogger();
-
+			Int64 _representationLabel;
 		protected:
 			IXbimGeometryModel^ mResultShape;
 			IXbimGeometryModel^ mBaseShape;
@@ -90,7 +90,11 @@ namespace Xbim
 			virtual XbimTriangulatedModelStream^ Mesh(bool withNormals, double deflection);
 			virtual XbimTriangulatedModelStream^ Mesh(bool withNormals);
 			virtual XbimTriangulatedModelStream^ Mesh();
-			
+			virtual property Int64 RepresentationLabel
+			{
+				Int64 get(){return _representationLabel; }
+				void set(Int64 value){ _representationLabel=value; }
+			}
 		};
 	}
 }

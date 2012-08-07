@@ -368,14 +368,22 @@ namespace Xbim
 								IXbimGeometryModel^ baseShape = CreateFrom(shape, maps, true,lod);	
 								
 								IXbimGeometryModel^ fShape =  gcnew XbimFeaturedShape(baseShape, openingSolids, projectionSolids);
-
+								fShape->RepresentationLabel = shape->EntityLabel;
 								return fShape;
 							}
 							else //we have no openings or projections
-								return CreateFrom(shape, maps, forceSolid,lod);
+							{
+								IXbimGeometryModel^ geomModel= CreateFrom(shape, maps, forceSolid,lod);
+								geomModel->RepresentationLabel = shape->EntityLabel;
+								return geomModel;
+							}
 						}
 						else
-							return CreateFrom(shape, maps, forceSolid,lod);
+						{
+							IXbimGeometryModel^ geomModel= CreateFrom(shape, maps, forceSolid,lod);
+							geomModel->RepresentationLabel = shape->EntityLabel;
+							return geomModel;
+						}
 					}
 				}
 			}
@@ -399,7 +407,7 @@ namespace Xbim
 			}
 			__except(GetExceptionCode() == EXCEPTION_ACCESS_VIOLATION)
 			{
-				Logger->Fatal("Access Violation in geometry engine. This may leave the application in an inconsistent state!");
+				Logger->Fatal("Access Violation in geometry engine. Thireturns may leave the application in an inconsistent state!");
 				throw gcnew AccessViolationException(
 					"A memory access violation occurred in the geometry engine. The application and geometry may be in an inconsistent state and the process should be terminated.");
 			}

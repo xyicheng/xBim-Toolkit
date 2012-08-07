@@ -8,6 +8,7 @@ using namespace Xbim::ModelGeometry::Scene;
 using namespace Xbim::Ifc2x3::Kernel;
 using namespace Xbim::XbimExtensions;
 using namespace Xbim::Common::Logging;
+using namespace Xbim::IO;
 namespace Xbim
 {
 	namespace ModelGeometry
@@ -16,6 +17,9 @@ namespace Xbim
 
 		public ref class XbimScene :  IXbimScene
 		{
+	
+		public:
+			static void ConvertGeometry(XbimModel^ model);
 		private:
 			XbimLOD _lod;
 			TransformGraph^ _graph;

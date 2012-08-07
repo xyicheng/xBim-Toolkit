@@ -155,5 +155,24 @@ namespace Xbim.IO
         {
             throw new NotImplementedException();
         }
+
+
+        public void AddXbimGeometry(Ifc2x3.Kernel.IfcProduct product, byte[] geoemtryMesh, byte[] boundingBox)
+        {
+            throw new NotImplementedException();
+        }
+
+
+        public XbimGeometryTable BeginGeometryUpdate()
+        {
+            throw new NotImplementedException();
+        }
+
+
+
+        public void EndGeometryUpdate(XbimGeometryTable table)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

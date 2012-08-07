@@ -40,6 +40,70 @@ namespace Xbim
 			 _graph->AddProducts(toDraw);
 			
 		}
+		
+		void XbimScene::ConvertGeometry(XbimModel^ model)
+		{
+		TransformGraph^ graph = gcnew TransformGraph(model);
+		//create a new dictionary to hold maps
+		Dictionary<IfcRepresentation^, IXbimGeometryModel^>^ maps = gcnew Dictionary<IfcRepresentation^, IXbimGeometryModel^>();
+		//add everything that may have a representation
+		graph->AddProducts(model->InstancesOfType<IfcProduct^>(true)); //load the products as we will be accessing their geometry
+		XbimGeometryTable^ geomTable = model->BeginGeometryUpdate();
+		
+		
+		for each(TransformNode^ node in graph->ProductNodes->Values) //go over every node that represents a product
+		{
+			IfcProduct^ product = node->Product;
+				try
+				{
+					XbimLOD lod = XbimLOD::LOD_Unspecified;
+					IXbimGeometryModel^ geomModel = XbimGeometryModel::CreateFrom(product, maps, false, lod);
+					if (geomModel != nullptr)  //it has no geometry
+					{
+						
+						XbimTriangulatedModelStream^ tm = geomModel->Mesh(true);
+						XbimBoundingBox^ bb = geomModel->GetBoundingBox(true);
+						node->BoundingBox = bb->GetRect3D();
+						Matrix3D matrix3d = node->WorldMatrix();
+						geomTable->AddGeometry(product->EntityLabel,geomModel->RepresentationLabel, 1, matrix3d, tm->ToArray(),nullptr ) ;
+					
+					}
+				}
+				catch(Exception^ e)
+				{
+					String^ message = String::Format("Error Triangulating product geometry of entity {0} - {1}", 
+						product->EntityLabel,
+						product->ToString());
+					Logger->Warn(message, e);
+				}
+		}
+		model->EndGeometryUpdate(geomTable);
+
+			//find the body context
+			/*IEnumerable<IfcGeometricRepresentationContext^>^ contexts = model->InstancesOfType<IfcGeometricRepresentationContext^>();
+			for each (IfcGeometricRepresentationContext^ context in contexts)
+			{
+
+			}*/
+			//store all the bounding boxes
+			//IEnumerable<IfcShapeRepresentation^>^ shapes = model->InstancesOfType<IfcShapeRepresentation^>();
+			//for each(IfcShapeRepresentation^ shape in shapes)
+			//{
+			//	if(shape->RepresentationType.HasValue &&
+			//		String::Compare(shape->RepresentationType,"BoundingBox",CompareOptions::IgnoreCase)==0) //add a body box
+			//	{
+			//		model->AddBoundingBox(IfcBoundingBox);
+			//	} 
+			//	//have a look for bodies or shells
+			//	if( shape->RepresentationIdentifier.HasValue &&
+			//													((String::Compare(shape->RepresentationIdentifier.Value, "body" , CompareOptions::IgnoreCase)==0)||
+			//													String::Compare(shape->RepresentationIdentifier.Value, "facetation" , CompareOptions::IgnoreCase)==0))
+			//	{
+
+			//	}
+			//}
+		}
+
 
 		void XbimScene::Close()
 		{

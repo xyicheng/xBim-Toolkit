@@ -67,5 +67,10 @@ namespace Xbim.IO
         IPersistIfcEntity CreateNew(Type type, long id);
 
         IEnumerable<T> Where<T>(Expression<Func<T, bool>> expression);
+
+       
+        XbimGeometryTable BeginGeometryUpdate();
+
+        void EndGeometryUpdate(XbimGeometryTable table);
     }
 }

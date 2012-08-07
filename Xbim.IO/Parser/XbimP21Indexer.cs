@@ -143,35 +143,17 @@ namespace Xbim.IO.Parser
 
    
         private Microsoft.Isam.Esent.Interop.Session session;
-        private Microsoft.Isam.Esent.Interop.Table table;
-        private JET_COLUMNID columnidEntityLabel;
-        private JET_COLUMNID columnidSecondaryKey;
-        private JET_COLUMNID columnidIfcType;
-        private JET_COLUMNID columnidEntityData;
-        Int64ColumnValue _colEntityLabel;
-        Int64ColumnValue _colSecondaryKey;
-        Int16ColumnValue _colTypeId;
-        BytesColumnValue _colData;
-        ColumnValue[] _colValues;
+        private XbimEntityTable table;
+       
         const int _transactionBatchSize = 100;
         private int _entityCount = 0;
         private long _primaryKeyValue = -1;
-        public P21toIndexParser(Stream inputP21, Session session, Table table)
+        public P21toIndexParser(Stream inputP21, Session session, XbimEntityTable table)
             : base(inputP21)
         {
             this.session = session;
             this.table = table;
-            IDictionary<string, JET_COLUMNID> columnids = Api.GetColumnDictionary(session, table);
-            columnidEntityLabel = columnids[XbimModel.colNameEntityLabel];
-            columnidSecondaryKey = columnids[XbimModel.colNameSecondaryKey];
-            columnidIfcType = columnids[XbimModel.colNameIfcType];
-            columnidEntityData = columnids[XbimModel.colNameEntityData];
-            _colEntityLabel = new Int64ColumnValue { Columnid = columnidEntityLabel};
-            _colSecondaryKey = new Int64ColumnValue { Columnid = columnidSecondaryKey };
-            _colTypeId = new Int16ColumnValue { Columnid = columnidIfcType };
-            _colData = new BytesColumnValue { Columnid = columnidEntityData };
-            _colValues = new ColumnValue[] { _colEntityLabel, _colSecondaryKey, _colTypeId, _colData };
-
+            
             _entityCount = 0;
             if (inputP21.CanSeek)
                 _streamSize = inputP21.Length;
@@ -319,16 +301,9 @@ namespace Xbim.IO.Parser
                 using (var update = new Update(session, table, JET_prep.Insert))
                 {
                     MemoryStream data = _binaryWriter.BaseStream as MemoryStream;
-
-                    _colEntityLabel.Value = _currentLabel;
                     IfcType ifcType = IfcInstances.IfcTypeLookup[_currentType];
-                    _colTypeId.Value = ifcType.TypeId;
-                    if (_primaryKeyValue > -1)
-                        _colSecondaryKey.Value = _primaryKeyValue;
-                    else
-                        _colSecondaryKey.Value = null;
-                    _colData.Value = data.ToArray();
-                    Api.SetColumns(session, table, _colValues);
+                    table.SetColumnValues(_currentLabel, ifcType.TypeId, _primaryKeyValue, data.ToArray());
+                    Api.SetColumns(session, table, table.ColumnValues);
                     update.Save();
                     if (_entityCount % _transactionBatchSize == (_transactionBatchSize - 1))
                     {

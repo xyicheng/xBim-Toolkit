@@ -25,6 +25,7 @@ namespace Xbim
 			TopoDS_Shell * pShell;
 			bool _hasCurvedEdges;
 			static ILogger^ Logger = LoggerFactory::GetLogger();
+			Int64 _representationLabel;
 		public:
 			XbimShell(IfcConnectedFaceSet^ faceSet);
 			XbimShell(IfcClosedShell^ shell);
@@ -89,7 +90,12 @@ namespace Xbim
 			{
 				return XbimGeometryModel::GetBoundingBox(this, precise);
 			};
-
+			
+			virtual property Int64 RepresentationLabel
+			{
+				Int64 get(){return _representationLabel; }
+				void set(Int64 value){ _representationLabel=value; }
+			}
 			virtual property TopoDS_Shape* Handle
 			{
 				TopoDS_Shape* get(){return pShell;};			

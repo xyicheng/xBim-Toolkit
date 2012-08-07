@@ -10,6 +10,7 @@ using Xbim.Ifc2x3.GeometryResource;
 using Xbim.Ifc2x3.MeasureResource;
 using Xbim.XbimExtensions;
 using Xbim.Common.Exceptions;
+using System.Reflection;
 
 namespace Xbim.IO
 {
@@ -38,6 +39,15 @@ namespace Xbim.IO
             return IfcInstances.IfcEntities[entity.GetType()];
         }
 
+        public static object SecondaryKeyValue(this  IPersistIfcEntity entity)
+        {
+
+            PropertyInfo pInfo = entity.IfcType().PrimaryIndex;
+            if (pInfo != null)
+                return pInfo.GetValue(entity, null);
+            else
+                return null;
+        }
 
         internal static void WriteEntity(this IPersistIfcEntity entity, TextWriter tw, byte[] propertyData)
         {
