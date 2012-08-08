@@ -19,10 +19,16 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Runtime.Serialization.Formatters;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
-using System.Windows.Markup;
+using System.Xml;
+using ICSharpCode.SharpZipLib.Zip;
+using Xbim.Common.Exceptions;
+using Xbim.Common.Logging;
 using Xbim.Ifc.ActorResource;
 using Xbim.Ifc.DateTimeResource;
 using Xbim.Ifc.Kernel;
@@ -31,18 +37,11 @@ using Xbim.Ifc.SelectTypes;
 using Xbim.Ifc.SharedBldgElements;
 using Xbim.Ifc.SharedBldgServiceElements;
 using Xbim.Ifc.UtilityResource;
+using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.DataProviders;
 using Xbim.XbimExtensions.Parser;
 using Xbim.XbimExtensions.Transactions;
 using Xbim.XbimExtensions.Transactions.Extensions;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Runtime.Serialization.Formatters;
-using System.Xml;
-using System.IO.Compression;
-using ICSharpCode.SharpZipLib.Zip;
-using Xbim.XbimExtensions;
-using ICSharpCode.SharpZipLib.Core;
-using Xbim.Common.Logging;
 
 
 #endregion
@@ -1226,52 +1225,25 @@ namespace Xbim.IO
             {
                 if (fileType.HasFlag(XbimStorageType.IFCZIP))
                 {
-                    // get the ifc file from zip
-                    //using (Stream zipStream = new FileStream(inputFileName, FileMode.Open, FileAccess.Read))
-                    //{
-                    //    ZipInputStream zis = new ZipInputStream(zipStream);
-                    //}
 
-                    using (FileStream stream = File.OpenRead(inputFileName))
+                    using (IfcZipInputStream zipstream = new IfcZipInputStream(inputFileName))
                     {
-                        using (ZipInputStream zis = new ZipInputStream(stream))
+                        if (zipstream.FileExt == ".ifc")
                         {
-                            ZipEntry zs = zis.GetNextEntry();
-                            while (zs != null)
+                            using (IfcInputStream input = new IfcInputStream(zipstream.InputFile))
                             {
-                                String fileName = Path.GetFileName(zs.Name);
-                                if (fileName.ToLower().EndsWith(".ifc") || fileName.ToLower().EndsWith(".ifcxml"))
-                                {
-                                    if (fileName.ToLower().EndsWith(".ifc"))
-                                    {
-                                        using (ZipFile zf = new ZipFile(inputFileName))
-                                        {
-                                            Stream entryStream = zf.GetInputStream(zs);
-                                            using (IfcInputStream input = new IfcInputStream(entryStream))
-                                            {
-                                                if (input.Load(this) != 0)
-                                                    throw new Exception("Ifc file parsing errors\n" + input.ErrorLog.ToString());
-                                            }
-                                        }
-                                        break;
-                                    }
-                                    else if (fileName.ToLower().EndsWith(".ifcxml"))
-                                    {
-                                        using (ZipFile zf = new ZipFile(inputFileName))
-                                        {
-                                            XmlReaderSettings settings = new XmlReaderSettings() { IgnoreComments = true, IgnoreWhitespace = false };
-                                            Stream entryStream = zf.GetInputStream(zs);
-                                            using (XmlReader xmlReader = XmlReader.Create(entryStream, settings))
-                                            {
-                                                IfcXmlReader reader = new IfcXmlReader();
-                                                reader.Read(this, xmlReader);
-                                            }
-                                        }
-                                        break;
-                                    }
-                                }
+                                if (input.Load(this) != 0)
+                                    throw new XbimException("Ifc file parsing errors\n" + input.ErrorLog.ToString());
                             }
-
+                        }
+                        else if (zipstream.FileExt == ".ifcxml")
+                        {
+                            XmlReaderSettings settings = new XmlReaderSettings() { IgnoreComments = true, IgnoreWhitespace = false };
+                            using (XmlReader xmlReader = XmlReader.Create(zipstream.InputFile, settings))
+                            {
+                                IfcXmlReader reader = new IfcXmlReader();
+                                reader.Read(this, xmlReader);
+                            }
                         }
                     }
                 }
