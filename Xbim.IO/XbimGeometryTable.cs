@@ -17,19 +17,20 @@ namespace Xbim.IO
 
         const string geometryTablePrimaryIndex = "GeomPrimaryIndex";
         const string colNameProductLabel = "GeomProductLabel";
-        const string colNameRepresentationLabel = "GeomRepresentationLabel";
-        const string colNameBoundingBoxData = "GeomBoundindBoxData";
+        const string colNameGeomType = "GeomType";
+        const string colNameTransformMatrix = "GeomTransformMatrix";
         const string colNameShapeData = "GeomShapeData";
 
         private Table _jetCursor;
         private JET_COLUMNID _colIdProductLabel;
-        private JET_COLUMNID _colIdRepresentationLabel;
+        private JET_COLUMNID _colIdGeomType;
         private JET_COLUMNID _colIdShapeData;
-        private JET_COLUMNID _colIdBoundingBoxData;
-        Int64ColumnValue _colValGeometryProductLabel;
-        Int64ColumnValue _colValGeometryRepLabel;        
+        private JET_COLUMNID _colIdTransformMatrix;
+        UInt64ColumnValue _colValGeometryProductLabel;
+        ByteColumnValue _colValGeomType;      
+        BytesColumnValue _colValTransformMatrix;  
         BytesColumnValue _colValXbimGeometryData;
-        BytesColumnValue _colValBBGeometryData;
+       
         ColumnValue[] _colValues;
         private Transaction _transaction;
         private int _added ;
@@ -47,37 +48,21 @@ namespace Xbim.IO
                     coltyp = JET_coltyp.Currency,
                     grbit = ColumndefGrbit.ColumnNotNULL
                 };
-
-                Api.JetAddColumn(sesid, tableid, colNameRepresentationLabel, columndef, null, 0, out columnid);
-                
                 Api.JetAddColumn(sesid, tableid, colNameProductLabel, columndef, null, 0, out columnid);
+
                 columndef.coltyp = JET_coltyp.UnsignedByte;
-                columndef.grbit = ColumndefGrbit.ColumnMaybeNull;
-
-                // Name of the secondary key : for lookup by a property value of the object that is a foreign object
-                Api.JetAddColumn(sesid, tableid, colNameBoundingBoxData, columndef, null, 0, out columnid);
-                // Identity of the type of the object : 16-bit integer looked up in IfcType Table
-
+                Api.JetAddColumn(sesid, tableid, colNameGeomType, columndef, null, 0, out columnid);
+                
+               
+                columndef.coltyp = JET_coltyp.Binary;
+                Api.JetAddColumn(sesid, tableid, colNameTransformMatrix, columndef, null, 0, out columnid);
+               
                 columndef.coltyp = JET_coltyp.LongBinary;
-                columndef.grbit = ColumndefGrbit.ColumnMaybeNull;
-
                 Api.JetAddColumn(sesid, tableid, colNameShapeData, columndef, null, 0, out columnid);
 
-                // Now add indexes. An index consists of several index segments (see
-                // EsentVersion.Capabilities.ColumnsKeyMost to determine the maximum number of
-                // segments). Each segment consists of a sort direction ('+' for ascending,
-                // '-' for descending), a column name, and a '\0' separator. The index definition
-                // must end with "\0\0". The count of characters should include all terminators.
-
                 // The primary index is the type and the entity label.
-                string indexDef = string.Format("+{0}\0\0", colNameRepresentationLabel);
-
+                string indexDef = string.Format("+{0}\0{1}\0\0", colNameGeomType, colNameProductLabel);
                 Api.JetCreateIndex(sesid, tableid, geometryTablePrimaryIndex, CreateIndexGrbit.IndexPrimary, indexDef, indexDef.Length, 100);
-
-                //// An index on the type and secondary key. For quick access to IfcRelation entities and the like
-                //indexDef = string.Format("+{0}\0{1}\0\0", XbimModel.colNameIfcType,XbimModel.colNameSecondaryKey);
-                //Api.JetCreateIndex(sesid, tableid, _EntityTableTypeIndex, CreateIndexGrbit.IndexIgnoreFirstNull, indexDef, indexDef.Length, 100);
-
                 transaction.Commit(CommitTransactionGrbit.LazyFlush);
             }
             Api.JetCloseTable(sesid, tableid);
@@ -86,15 +71,15 @@ namespace Xbim.IO
         private void InitColumns()
         {
             IDictionary<string, JET_COLUMNID> columnids = Api.GetColumnDictionary(_jetSession, _jetCursor);
-            _colIdRepresentationLabel = columnids[colNameRepresentationLabel];
+            _colIdGeomType = columnids[colNameGeomType];
             _colIdProductLabel = columnids[colNameProductLabel];
-            _colIdBoundingBoxData = columnids[colNameBoundingBoxData];
+            _colIdTransformMatrix = columnids[colNameTransformMatrix];
             _colIdShapeData = columnids[colNameShapeData];
-            _colValGeometryRepLabel = new Int64ColumnValue { Columnid = _colIdRepresentationLabel };
-            _colValGeometryProductLabel = new Int64ColumnValue { Columnid = _colIdProductLabel };
-            _colValBBGeometryData = new BytesColumnValue { Columnid = _colIdBoundingBoxData };
+            _colValGeomType = new ByteColumnValue { Columnid = _colIdGeomType };
+            _colValGeometryProductLabel = new UInt64ColumnValue { Columnid = _colIdProductLabel };
+            _colValTransformMatrix = new BytesColumnValue { Columnid = _colIdTransformMatrix };
             _colValXbimGeometryData = new BytesColumnValue { Columnid = _colIdShapeData };
-            _colValues = new ColumnValue[] { _colValGeometryRepLabel, _colValGeometryProductLabel, _colValBBGeometryData, _colValXbimGeometryData };
+            _colValues = new ColumnValue[] { _colValGeomType, _colValGeometryProductLabel, _colValTransformMatrix, _colValXbimGeometryData };
 
         }
         public XbimGeometryTable(Session jetSession, JET_DBID jetDatabaseId, OpenTableGrbit openTableGrbit)
@@ -131,15 +116,15 @@ namespace Xbim.IO
             _transaction = new Transaction(_jetSession);
             _added = 0;
         }
-        public void AddGeometry(long prodLabel, long repLabel, short type, byte[] shapeData, byte[] boundingBoxData)
+        public void AddGeometry(ulong prodLabel, XbimGeometryType type, byte[] transform, byte[] shapeData)
         {
 
             using (var update = new Update(_jetSession, _jetCursor, JET_prep.Insert))
             {
                 _colValGeometryProductLabel.Value = prodLabel;
-                _colValGeometryRepLabel.Value = repLabel;
+                _colValGeomType.Value = (Byte)type;
+                _colValTransformMatrix.Value = transform;
                 _colValXbimGeometryData.Value = shapeData;
-                _colValBBGeometryData.Value = boundingBoxData;
                 Api.SetColumns(_jetSession, _jetCursor, _colValues);
                 update.Save();
                 _added++;

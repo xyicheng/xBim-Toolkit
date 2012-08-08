@@ -64,9 +64,9 @@ namespace Xbim
 						XbimTriangulatedModelStream^ tm = geomModel->Mesh(true);
 						XbimBoundingBox^ bb = geomModel->GetBoundingBox(true);
 						node->BoundingBox = bb->GetRect3D();
-						Matrix3D matrix3d = node->WorldMatrix();
-						geomTable->AddGeometry(product->EntityLabel,geomModel->RepresentationLabel, 1, matrix3d, tm->ToArray(),nullptr ) ;
-					
+						array<Byte>^ matrix = Matrix3DExtensions::ToArray(node->WorldMatrix(), true);
+						geomTable->AddGeometry(product->EntityLabel, XbimGeometryType::BoundingBox, matrix, bb->ToArray() ) ;
+					    geomTable->AddGeometry(product->EntityLabel, XbimGeometryType::TriangulatedMesh, matrix, tm->ToArray() ) ;
 					}
 				}
 				catch(Exception^ e)
