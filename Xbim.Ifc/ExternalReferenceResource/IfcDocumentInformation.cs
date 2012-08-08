@@ -513,7 +513,7 @@ namespace Xbim.Ifc.ExternalReferenceResource
                 case 15:
                     _confidentiality =
                         (IfcDocumentConfidentialityEnum)
-                        Enum.Parse(typeof (IfcDocumentConfidentialityEnum), value.StringVal, true);
+                        Enum.Parse(typeof (IfcDocumentConfidentialityEnum), value.EnumVal, true);
                     break;
                 case 16:
                     _status = (IfcDocumentStatusEnum) Enum.Parse(typeof (IfcDocumentStatusEnum), value.EnumVal, true);
