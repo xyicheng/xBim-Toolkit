@@ -107,7 +107,7 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
                     break;
                 case 5:
                     _predefinedType =
-                        (IfcAnalysisModelTypeEnum) Enum.Parse(typeof (IfcAnalysisModelTypeEnum), value.StringVal, true);
+                        (IfcAnalysisModelTypeEnum) Enum.Parse(typeof (IfcAnalysisModelTypeEnum), value.EnumVal, true);
                     break;
                 case 6:
                     _orientationOf2DPlane = (IfcAxis2Placement3D) value.EntityVal;
