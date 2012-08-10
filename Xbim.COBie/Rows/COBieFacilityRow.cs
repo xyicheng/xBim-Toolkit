@@ -15,54 +15,9 @@ namespace Xbim.COBie.Rows
     [Serializable()]
     public class COBieFacilityRow : COBieRow
     {
-        IfcProject _ifcProject;
-        IfcSite _ifcSite;
-        IfcBuilding _ifcBuilding;
-        IModel _model;
-
-        public COBieFacilityRow()
-        {
-            Columns = new Dictionary<int, COBieColumn>();
-            //Properties = typeof(COBieFacility).GetProperties(BindingFlags.Public | BindingFlags.Instance);
-            Properties = typeof(COBieFacilityRow).GetProperties(BindingFlags.Public | BindingFlags.Instance);
-
-            // add column info 
-            foreach (PropertyInfo propInfo in Properties)
-            {
-                object[] attrs = propInfo.GetCustomAttributes(typeof(COBieAttributes), true);
-                if (attrs != null && attrs.Length > 0)
-                {
-                    Columns.Add(((COBieAttributes)attrs[0]).Order, new COBieColumn(((COBieAttributes)attrs[0]).ColumnName, ((COBieAttributes)attrs[0]).MaxLength, ((COBieAttributes)attrs[0]).AllowedType, ((COBieAttributes)attrs[0]).KeyType));
-                }
-            }
-
-            
-        }
-
-        // TODO: Review this
-        public void InitFacility(IModel model)
-        {
-            _model = model;
-            _ifcProject = model.IfcProject;
-            _ifcSite = model.InstancesOfType<IfcSite>().FirstOrDefault();
-            _ifcBuilding = model.InstancesOfType<IfcBuilding>().FirstOrDefault();
-            //if (_ifcProject != null)
-            //    _ifcSite = _ifcProject.GetSites().FirstOrDefault();
-            //else
-            //    _ifcSite = model.InstancesOfType<IfcSite>().FirstOrDefault();
-            //if (_ifcSite != null)
-            //    _ifcBuilding = _ifcSite.GetBuildings().FirstOrDefault();
-            //else
-            //    _ifcBuilding = model.InstancesOfType<IfcBuilding>().FirstOrDefault();
-
+        public COBieFacilityRow(ICOBieSheet<COBieFacilityRow> parentSheet)
+            : base(parentSheet) { }
            
-        }
-
-        
-
-
-
-
         [COBieAttributes(0, COBieKeyType.PrimaryKey, COBieAttributeState.Required, "Name", 255, COBieAllowedType.AlphaNumeric)]
         public string Name { get; set; }
 

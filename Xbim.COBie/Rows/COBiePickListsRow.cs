@@ -9,23 +9,8 @@ namespace Xbim.COBie.Rows
     [Serializable()]
     public class COBiePickListsRow : COBieRow
     {
-        public COBiePickListsRow()
-        {
-            Columns = new Dictionary<int, COBieColumn>();
-            //Properties = typeof(COBiePickLists).GetProperties(BindingFlags.Public | BindingFlags.Instance);
-            Properties = typeof(COBiePickListsRow).GetProperties(BindingFlags.Public | BindingFlags.Instance);
-
-            // add column info 
-            foreach (PropertyInfo propInfo in Properties)
-            {
-                object[] attrs = propInfo.GetCustomAttributes(typeof(COBieAttributes), true);
-                if (attrs != null && attrs.Length > 0)
-                {
-                    Columns.Add(((COBieAttributes)attrs[0]).Order, new COBieColumn(((COBieAttributes)attrs[0]).ColumnName, ((COBieAttributes)attrs[0]).MaxLength, ((COBieAttributes)attrs[0]).AllowedType, ((COBieAttributes)attrs[0]).KeyType));
-                }
-            }
-        }      
-
+        public COBiePickListsRow(ICOBieSheet<COBiePickListsRow> parentSheet)
+            : base(parentSheet) { }
 
         [COBieAttributes(0, COBieKeyType.None, COBieAttributeState.Required, "ApprovalBy", 255, COBieAllowedType.AlphaNumeric)]
         public string ApprovalBy { get; set; }

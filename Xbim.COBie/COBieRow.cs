@@ -9,61 +9,43 @@ namespace Xbim.COBie
 	/// <summary>
 	/// Abstract base class for Rows
 	/// </summary>
-    abstract public class COBieRow
+    public abstract class COBieRow
     {
-		public Dictionary<int, COBieColumn> Columns;
-        public PropertyInfo[] Properties;
+        public ICOBieSheet<COBieRow> ParentSheet;
 
-		/// <summary>
-		/// Instantiates the COBieRow
-		/// </summary>
-		public COBieRow()
-		{
-			Columns = new Dictionary<int, COBieColumn>();
-			Properties = null;
-		}
-   
-		/// <summary>
-		/// Returns the item at the given index
-		/// </summary>
-		/// <param name="i">The index</param>
-		/// <returns>A COBieCell or null</returns>
+        public COBieRow(ICOBieSheet<COBieRow> parentSheet)
+        {
+            ParentSheet = parentSheet;
+        }
+
         public COBieCell this[int i]
         {
             get
             {
-                foreach (PropertyInfo propInfo in Properties)
+                foreach (PropertyInfo propInfo in ParentSheet.Properties)
                 {
-                    object[] attrs = propInfo.GetCustomAttributes(typeof(COBieAttributes), true);
+                    object[] attrs = ParentSheet.Attributes[propInfo];
                     if (attrs != null && attrs.Length > 0)
                     {
-                        if (((COBieAttributes)attrs[0]).Order == i) // return (COBieCell)propInfo.GetValue(this, null);
+                        if (((COBieAttributes)attrs[0]).Order == i)
                         {
-                            //COBieCell cell = (COBieCell)propInfo.GetValue(this, null);
-                            PropertyInfo pinfo = this.GetType().GetProperty(propInfo.Name);
+                            object pVal = propInfo.GetValue(this, null);
+                            COBieCell cell;
 
-							object pVal = pinfo.GetValue(this, null);
-							
-							COBieCell cell;
-
-							if (pVal != null)
-							{
-								cell = new COBieCell(pinfo.GetValue(this, null).ToString());
-								cell.COBieState = ((COBieAttributes)attrs[0]).State;
-								cell.CobieCol = Columns[((COBieAttributes)attrs[0]).Order];
-							}
-							else
-							{
-								cell = new COBieCell("n/a");
-							}
-
-
+                            if (pVal != null)
+                            {
+                                cell = new COBieCell(pVal.ToString());
+                                cell.COBieState = ((COBieAttributes)attrs[0]).State;
+                                cell.CobieCol = ParentSheet.Columns[((COBieAttributes)attrs[0]).Order];
+                            }
+                            else
+                            {
+                                cell = new COBieCell("n/a");
+                            }
                             return cell;
                         }
                     }
-
                 }
-
                 return null;
             }
         }
@@ -72,28 +54,22 @@ namespace Xbim.COBie
         {
             get
             {
-                foreach (PropertyInfo propInfo in Properties)
+                foreach (PropertyInfo propInfo in ParentSheet.Properties)
                 {
-                    object[] attrs = propInfo.GetCustomAttributes(typeof(COBieAttributes), true);
+                    object[] attrs = ParentSheet.Attributes[propInfo];
                     if (attrs != null && attrs.Length > 0)
                     {
-                        if (((COBieAttributes)attrs[0]).ColumnName == name) // return (COBieCell)propInfo.GetValue(this, null);
+                        if (((COBieAttributes)attrs[0]).ColumnName == name)
                         {
-                            //COBieCell cell = (COBieCell)propInfo.GetValue(this, null);
-
-                            PropertyInfo pinfo = this.GetType().GetProperty(propInfo.Name);
-                            COBieCell cell = new COBieCell(pinfo.GetValue(this, null).ToString());
+                            COBieCell cell = new COBieCell(propInfo.GetValue(this, null).ToString());
                             cell.COBieState = ((COBieAttributes)attrs[0]).State;
-                            cell.CobieCol = Columns[((COBieAttributes)attrs[0]).Order];
-
-
+                            cell.CobieCol = ParentSheet.Columns[((COBieAttributes)attrs[0]).Order];
 
                             return cell;
                         }
                     }
 
                 }
-
                 return null;
             }
         }

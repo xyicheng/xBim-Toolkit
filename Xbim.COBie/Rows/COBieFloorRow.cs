@@ -11,23 +11,8 @@ namespace Xbim.COBie.Rows
     [Serializable()]
     public class COBieFloorRow : COBieRow
     {
-
-        public COBieFloorRow()
-        {
-            Columns = new Dictionary<int, COBieColumn>();
-            Properties = typeof(COBieFloorRow).GetProperties(BindingFlags.Public | BindingFlags.Instance);
-
-            // add column info 
-            foreach (PropertyInfo propInfo in Properties)
-            {
-                object[] attrs = propInfo.GetCustomAttributes(typeof(COBieAttributes), true);
-                if (attrs != null && attrs.Length > 0)
-                {
-                    COBieAttributes attr = (COBieAttributes)attrs[0];
-                    Columns.Add(attr.Order, new COBieColumn(attr.ColumnName, attr.MaxLength, attr.AllowedType, attr.KeyType));
-                }
-            }
-        }
+        public COBieFloorRow(ICOBieSheet<COBieFloorRow> parentSheet)
+            : base(parentSheet) { }
 
         [COBieAttributes(0, COBieKeyType.PrimaryKey, COBieAttributeState.Required, "Name", 255, COBieAllowedType.AlphaNumeric)]
         public string Name { get; set; }

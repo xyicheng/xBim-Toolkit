@@ -95,6 +95,7 @@
     <Compile Include="Constants.cs" />
     <Compile Include="Enums.cs" />
     <Compile Include="Formatters\DataSetFormatter.cs" />
+    <Compile Include="ICOBieSheet.cs" />
     <Compile Include="Rows\COBieAssemblyRow.cs" />
     <Compile Include="Rows\COBieAttributeRow.cs" />
     <Compile Include="COBieColumn.cs" />

@@ -2,64 +2,82 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Reflection;
-
+using System.Reflection; 
 
 namespace Xbim.COBie
 {
-    public class COBieSheet<CobieRowType> where CobieRowType : COBieRow
+    public class COBieSheet<T> : ICOBieSheet<T> where T : COBieRow
     {
 		public string SheetName { get; set; }
+        public List<T> Rows { get; set; }
 
-        public List<CobieRowType> Rows { get; set; }
-        //public Dictionary<int, COBieColumn> Columns;
+        public Dictionary<int, COBieColumn> Columns { get { return _columns; } }
+        public PropertyInfo[] Properties { get { return _properties; } }
+        public Dictionary<PropertyInfo, object[]> Attributes { get { return _attributes; } }
+        
+        private Dictionary<int, COBieColumn> _columns;
+        private PropertyInfo[] _properties;
+        private Dictionary<PropertyInfo, object[]> _attributes;
+
+        #region reflection delegates
+        Func<BindingFlags, PropertyInfo[]> GetProperties;
+        //Func<T, bool> GetCustomAttributes;
+        //Func<object, object[]> GetValue;
+        #endregion
 
         public COBieSheet(string sheetName)
         {
-            Rows = new List<CobieRowType>();
+            SetReflectionDelegates();
+            
+            Rows = new List<T>();
 			SheetName = sheetName;
+            //_properties = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(prop => prop.GetSetMethod() != null).ToArray();
+            _properties = GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(prop => prop.GetSetMethod() != null).ToArray();
+            _columns = new Dictionary<int, COBieColumn>();
+            _attributes = new Dictionary<PropertyInfo, object[]>();
+
+            // add column info 
+            foreach (PropertyInfo propInfo in _properties)
+            {
+                object[] attrs = propInfo.GetCustomAttributes(typeof(COBieAttributes), true);
+                if (attrs != null && attrs.Length > 0)
+                {
+                    _columns.Add(((COBieAttributes)attrs[0]).Order, new COBieColumn(((COBieAttributes)attrs[0]).ColumnName, ((COBieAttributes)attrs[0]).MaxLength, ((COBieAttributes)attrs[0]).AllowedType, ((COBieAttributes)attrs[0]).KeyType));
+                    _attributes.Add(propInfo, attrs);
+                }
+            }
         }
 
         public void Validate(out List<COBieError> errors)
         {
             errors = new List<COBieError>();
 
-            // loop through all the sheets and preopare error dataset
-            if (Rows.Count > 0)
+            foreach (T row in Rows)
             {
-                // loop through each floor row
-                Type t = Rows[0].GetType();
-                IEnumerable<PropertyInfo> Properties = t.GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                                                .Where(prop => prop.GetSetMethod() != null);
-
-                foreach (CobieRowType row in Rows)
+                // loop through each column, get its attributes and check if column value matches the attributes constraints
+                foreach (PropertyInfo propInfo in Properties)
                 {
-                    // loop through each column, get its attributes and check if column value matches the attributes constraints
-                    foreach (PropertyInfo propInfo in Properties)
+                    object[] attrs = Attributes[propInfo];
+                    if (attrs != null && attrs.Length > 0)
                     {
-                        object[] attrs = propInfo.GetCustomAttributes(typeof(COBieAttributes), true);
-                        if (attrs != null && attrs.Length > 0)
+                        Type cobieType = row.GetType();
+                        string val = (propInfo.GetValue(row, null) == null) ? "" : propInfo.GetValue(row, null).ToString();
+                        COBieCell cell = new COBieCell(val);
+                        cell.COBieState = ((COBieAttributes)attrs[0]).State;
+                        cell.CobieCol = new COBieColumn(((COBieAttributes)attrs[0]).ColumnName, ((COBieAttributes)attrs[0]).MaxLength, ((COBieAttributes)attrs[0]).AllowedType, ((COBieAttributes)attrs[0]).KeyType);
+                        COBieError err = GetCobieError(cell, SheetName);
+
+                        // if this cell is set as primary key then check its value with other cells
+                        if (cell.CobieCol.KeyType == COBieKeyType.PrimaryKey)
                         {
-                            Type cobieType = row.GetType();
-                            PropertyInfo pinfo = cobieType.GetProperty(propInfo.Name);
-                            string val = (pinfo.GetValue(row, null) == null) ? "" : pinfo.GetValue(row, null).ToString();
-                            COBieCell cell = new COBieCell(val);
-                            cell.COBieState = ((COBieAttributes)attrs[0]).State;
-                            cell.CobieCol = new COBieColumn(((COBieAttributes)attrs[0]).ColumnName, ((COBieAttributes)attrs[0]).MaxLength, ((COBieAttributes)attrs[0]).AllowedType, ((COBieAttributes)attrs[0]).KeyType);
-                            COBieError err = GetCobieError(cell, "COBieFloor");
-
-                            // if this cell is set as primary key then check its value with other cells
-                            if (cell.CobieCol.KeyType == COBieKeyType.PrimaryKey)
+                            if (HasDuplicateValues(cell))
                             {
-                                if (HasDuplicateValues(cell))
-                                {
-                                    err.ErrorDescription = cell.CellValue + " duplication";
-                                    err.ErrorType = COBieError.ErrorTypes.PrimaryKey_Violation;
-                                }
-                            }                            
+                                err.ErrorDescription = cell.CellValue + " duplication";
+                                err.ErrorType = COBieError.ErrorTypes.PrimaryKey_Violation;
+                            }
+                        }
 
-                            if (err.ErrorType != COBieError.ErrorTypes.None) errors.Add(err);
-                        }                      
+                        if (err.ErrorType != COBieError.ErrorTypes.None) errors.Add(err);
                     }
                 }
             }
@@ -70,7 +88,7 @@ namespace Xbim.COBie
             int count = 0;
             string val = cell.CellValue;
             string colName = cell.CobieCol.ColumnName;
-            foreach (CobieRowType row in Rows)
+            foreach (T row in Rows)
             {
                 //if (row.Name == val) count++;
             }
@@ -110,7 +128,28 @@ namespace Xbim.COBie
 
             return err;
         }
-    }
 
-    
+        private void SetReflectionDelegates()
+        { 
+            GetProperties = (Func<BindingFlags, PropertyInfo[]>)Delegate.CreateDelegate(typeof(Func<BindingFlags, PropertyInfo[]>), typeof(T), GetPropertiesSignature()); 
+            //TODO - 
+            //GetCustomAttributes = (Func<T, bool>)Delegate.CreateDelegate(typeof(Func<T, bool>), GetPropertiesSignature());
+            //GetValue = (Func<object, object[]>)Delegate.CreateDelegate(typeof(Func<object, object[]>), GetValueSignature());
+        }
+
+        public MethodInfo GetPropertiesSignature()
+        {
+            return typeof(Type).GetMethod("GetProperties", new Type[] { typeof(BindingFlags) });
+        }
+
+        private MethodInfo CustomAttributesSignature()
+        {
+            return typeof(PropertyInfo).GetMethod("GetCustomAttributes", new Type[] { typeof(T), typeof(bool) });
+        }
+
+        private MethodInfo GetValueSignature()
+        {
+            return typeof(PropertyInfo).GetMethod("GetValue", new Type[] { typeof(object), typeof(object[]) });
+        }
+    }  
 }

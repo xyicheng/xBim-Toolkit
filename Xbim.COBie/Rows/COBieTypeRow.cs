@@ -9,23 +9,8 @@ namespace Xbim.COBie.Rows
     [Serializable()]
     public class COBieTypeRow : COBieRow
     {
-        public COBieTypeRow()
-        {
-            Columns = new Dictionary<int, COBieColumn>();
-            //Properties = typeof(COBieType).GetProperties(BindingFlags.Public | BindingFlags.Instance);
-            Properties = typeof(COBieTypeRow).GetProperties(BindingFlags.Public | BindingFlags.Instance);
-
-            // add column info 
-            foreach (PropertyInfo propInfo in Properties)
-            {
-                object[] attrs = propInfo.GetCustomAttributes(typeof(COBieAttributes), true);
-                if (attrs != null && attrs.Length > 0)
-                {
-                    Columns.Add(((COBieAttributes)attrs[0]).Order, new COBieColumn(((COBieAttributes)attrs[0]).ColumnName, ((COBieAttributes)attrs[0]).MaxLength, ((COBieAttributes)attrs[0]).AllowedType, ((COBieAttributes)attrs[0]).KeyType));
-                }
-            }
-        }      
-
+        public COBieTypeRow(ICOBieSheet<COBieTypeRow> parentSheet)
+            : base(parentSheet) { } 
 
         [COBieAttributes(0, COBieKeyType.PrimaryKey, COBieAttributeState.Required, "Name", 255, COBieAllowedType.AlphaNumeric)]
         public string Name { get; set; }

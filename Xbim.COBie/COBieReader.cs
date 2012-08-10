@@ -232,7 +232,7 @@ namespace Xbim.COBie
             CobieContacts = cq.GetCOBieContactSheet(model, CobiePickLists);
             CobieCoordinates = cq.GetCOBieCoordinateSheet(model);
             CobieDocuments = cq.GetCOBieDocumentSheet(model, CobiePickLists);
-            Populate_COBieFacilities(model);
+            CobieFacilities = cq.GetCOBieFacilitySheet(model, CobiePickLists);
             CobieFloors = cq.GetCOBieFloorSheet(model, CobiePickLists);
             CobieImpacts = cq.GetCOBieImpactSheet(model, CobiePickLists);
             CobieIssues = cq.GetCOBieIssueSheet(model, CobiePickLists);
@@ -362,16 +362,7 @@ namespace Xbim.COBie
 
         #region Extract data form IModel
 
-        
-
-        private void Populate_COBieFacilities(IModel model)
-        {
-            COBieFacilityRow facility = new COBieFacilityRow();
-            facility.InitFacility(model);
-            // should only be 1 facility in 1 spreadsheet            
-            //_cobieFacilities.Add(facility);
-        }
-
+       
         #endregion
     }
 }

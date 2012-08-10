@@ -48,7 +48,7 @@ namespace Xbim.COBie
 
             foreach (IfcPersonAndOrganization po in personsOrganizations)
             {
-                COBieContactRow contact = new COBieContactRow();
+                COBieContactRow contact = new COBieContactRow(contacts);
                 IfcPerson person = po.ThePerson;
                 IfcOrganization organization = po.TheOrganization;
 
@@ -125,7 +125,7 @@ namespace Xbim.COBie
 
             foreach (IfcDocumentInformation di in docInfos)
             {
-                COBieDocumentRow doc = new COBieDocumentRow();
+                COBieDocumentRow doc = new COBieDocumentRow(documents);
                 doc.Name = (di == null) ? "" : di.Name.ToString();
 
                 doc.CreatedBy = "";
@@ -198,7 +198,7 @@ namespace Xbim.COBie
 
             foreach (IfcPropertySet ppt in ifcProperties)
             {
-                COBieImpactRow impact = new COBieImpactRow();
+                COBieImpactRow impact = new COBieImpactRow(impacts);
                 impact.Name = ppt.Name;
 
                 impact.CreatedBy = "";
@@ -258,7 +258,7 @@ namespace Xbim.COBie
 
             foreach (IfcApproval app in ifcApprovals)
             {
-                COBieIssueRow issue = new COBieIssueRow();
+                COBieIssueRow issue = new COBieIssueRow(issues);
                 issue.Name = (approval == null) ? "" : approval.Name.ToString();
 
                 issue.CreatedBy = "";
@@ -326,7 +326,7 @@ namespace Xbim.COBie
 
             foreach (IfcTask task in ifcTasks)
             {
-                COBieJobRow job = new COBieJobRow();
+                COBieJobRow job = new COBieJobRow(jobs);
                 job.Name = (task == null) ? "" : task.Name.ToString();
 
                 job.CreatedBy = "";
@@ -387,7 +387,7 @@ namespace Xbim.COBie
 
             foreach (XmlNode node in items)
             {
-                COBiePickListsRow pickList = new COBiePickListsRow();
+                COBiePickListsRow pickList = new COBiePickListsRow(pickLists);
                 XmlElement itemEle = (XmlElement)node;
 
                 pickList.ApprovalBy = itemEle.GetElementsByTagName("ApprovalBy")[0].InnerText;
@@ -487,7 +487,7 @@ namespace Xbim.COBie
 
             foreach (IfcConstructionEquipmentResource cer in ifcCer)
             {
-                COBieResourceRow resource = new COBieResourceRow();
+                COBieResourceRow resource = new COBieResourceRow(resources);
                 resource.Name = (cer == null) ? "" : cer.Name.ToString();
 
                 resource.CreatedBy = "";
@@ -529,7 +529,7 @@ namespace Xbim.COBie
             
             foreach (IfcBuildingStorey bs in buildingStories)
             {
-                COBieFloorRow floor = new COBieFloorRow();               
+                COBieFloorRow floor = new COBieFloorRow(floors);               
 
                 floor.Name = bs.Name.ToString();
 
@@ -588,7 +588,7 @@ namespace Xbim.COBie
 
             foreach (IfcSpace sp in ifcSpaces)
             {
-                COBieSpaceRow space = new COBieSpaceRow();
+                COBieSpaceRow space = new COBieSpaceRow(spaces);
                 space.Name = sp.Name;
 
                 space.CreatedBy = "";
@@ -652,7 +652,7 @@ namespace Xbim.COBie
             IfcOwnerHistory ifcOwnerHistory = model.InstancesOfType<IfcOwnerHistory>().FirstOrDefault();
             COBieSheet<COBieFacilityRow> facilities = new COBieSheet<COBieFacilityRow>(Constants.WORKSHEET_FACILITY);
 
-            COBieFacilityRow facility = new COBieFacilityRow();
+            COBieFacilityRow facility = new COBieFacilityRow(facilities);
 
             facility.Name = ifcBuilding.Name.ToString();
 
@@ -837,7 +837,7 @@ namespace Xbim.COBie
 
             foreach (IfcConstructionProductResource cpr in ifcConstructionProductResources)
             {
-                COBieSpareRow spare = new COBieSpareRow();
+                COBieSpareRow spare = new COBieSpareRow(spares);
                 spare.Name = (string.IsNullOrEmpty(cpr.Name)) ? "" : cpr.Name.ToString();
 
                 spare.CreatedBy = "";
@@ -886,7 +886,7 @@ namespace Xbim.COBie
 
             foreach (IfcZone zn in ifcZones)
             {
-                COBieZoneRow zone = new COBieZoneRow();
+                COBieZoneRow zone = new COBieZoneRow(zones);
                 zone.Name = zn.Name.ToString();
 
                 zone.CreatedBy = "";
@@ -934,7 +934,7 @@ namespace Xbim.COBie
 
             foreach (IfcTypeObject to in ifcTypeObjects)
             {
-                COBieTypeRow typ = new COBieTypeRow();
+                COBieTypeRow typ = new COBieTypeRow(types);
                 typ.Name = to.Name;
                 typ.CreatedBy = (ifcTelecomAddres == null) ? "" : ifcTelecomAddres.ElectronicMailAddresses[0].ToString();
                 typ.CreatedOn = ifcOwnerHistory.CreationDate.ToString();
@@ -1057,7 +1057,7 @@ namespace Xbim.COBie
 
             foreach (IfcFlowTerminal ft in ifcFlowTerminals)
             {
-                COBieComponentRow component = new COBieComponentRow();
+                COBieComponentRow component = new COBieComponentRow(components);
                 component.Name = ft.Name;
                 component.CreatedBy = (ifcTelecomAddres == null) ? "" : ifcTelecomAddres.ElectronicMailAddresses[0].ToString();
                 component.CreatedOn = ifcOwnerHistory.CreationDate.ToString();
@@ -1106,7 +1106,7 @@ namespace Xbim.COBie
 
             foreach (IfcSystem s in ifcSystems)
             {
-                COBieSystemRow sys = new COBieSystemRow();
+                COBieSystemRow sys = new COBieSystemRow(systems);
                 sys.Name = s.Name;
                 sys.CreatedBy = (ifcTelecomAddres == null) ? "" : ifcTelecomAddres.ElectronicMailAddresses[0].ToString();
                 sys.CreatedOn = ifcOwnerHistory.CreationDate.ToString();
@@ -1158,7 +1158,7 @@ namespace Xbim.COBie
 
             foreach (IfcRelAggregates ra in ifcRelAggregates)
             {
-                COBieAssemblyRow assembly = new COBieAssemblyRow();
+                COBieAssemblyRow assembly = new COBieAssemblyRow(assemblies);
                 assembly.Name = (ra.Name == null || ra.Name.ToString() == "") ? "AssemblyName" : ra.Name.ToString();
                 assembly.CreatedBy = (ifcTelecomAddres == null) ? "" : ifcTelecomAddres.ElectronicMailAddresses[0].ToString();
                 assembly.CreatedOn = ifcOwnerHistory.CreationDate.ToString();
@@ -1172,8 +1172,6 @@ namespace Xbim.COBie
                 assembly.Description = GetAssemblyDescription(ra);
 
                 assemblies.Rows.Add(assembly);
-
-                COBieCell testCell = assembly[7];
             }
 
             return assemblies;
@@ -1247,7 +1245,7 @@ namespace Xbim.COBie
             int ids = 0;
             foreach (IfcRelConnectsElements c in ifcConnections)
             {
-                COBieConnectionRow conn = new COBieConnectionRow();
+                COBieConnectionRow conn = new COBieConnectionRow(connections);
                 conn.Name = (string.IsNullOrEmpty(c.Name)) ? ids.ToString() : c.Name.ToString();
                 conn.CreatedBy = (ifcTelecomAddres == null) ? "" : ifcTelecomAddres.ElectronicMailAddresses[0].ToString();
                 conn.CreatedOn = ifcOwnerHistory.CreationDate.ToString();
@@ -1299,7 +1297,7 @@ namespace Xbim.COBie
 
             foreach (IfcRelAggregates ra in ifcRelAggregates)
             {
-                COBieCoordinateRow coordinate = new COBieCoordinateRow();
+                COBieCoordinateRow coordinate = new COBieCoordinateRow(coordinates);
                 coordinate.Name = (ifcBuildingStorey == null || ifcBuildingStorey.Name.ToString() == "") ? "CoordinateName" : ifcBuildingStorey.Name.ToString();
                 coordinate.CreatedBy = (ifcTelecomAddres == null) ? "" : ifcTelecomAddres.ElectronicMailAddresses[0].ToString();
                 coordinate.CreatedOn = ifcOwnerHistory.CreationDate.ToString();
@@ -1357,7 +1355,7 @@ namespace Xbim.COBie
 
             foreach (IfcObject obj in ifcObject)
             {
-                COBieAttributeRow attribute = new COBieAttributeRow();
+                COBieAttributeRow attribute = new COBieAttributeRow(attributes);
                 attribute.Name = (ifcBuildingStorey == null || ifcBuildingStorey.Name.ToString() == "") ? "AttributeName" : ifcBuildingStorey.Name.ToString();
                 attribute.CreatedBy = (ifcTelecomAddres == null) ? "" : ifcTelecomAddres.ElectronicMailAddresses[0].ToString();
                 attribute.CreatedOn = ifcOwnerHistory.CreationDate.ToString();
