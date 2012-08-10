@@ -7,7 +7,9 @@
 #include <BRepAlgoAPI_Cut.hxx>
 #include <BRepAlgoAPI_Common.hxx>
 #include <BRepAlgoAPI_Fuse.hxx>
-
+#include <BRepOffsetAPI_Sewing.hxx>
+#include <BRepLib.hxx>
+#include <ShapeUpgrade_ShellSewing.hxx>
 using namespace System::Linq;
 using namespace Xbim::Common::Exceptions;
 
@@ -175,12 +177,15 @@ namespace Xbim
 				throw(gcnew InvalidOperationException("XbimSolid::CopyTo only supports IfcLocalPlacement type"));*/
 
 		}
-
+		///Every element should be a solid bedore this is called. returns a compound solid
 		IXbimGeometryModel^ XbimGeometryModelCollection::Solidify()
 		{
-
-			return XbimGeometryModel::Fix(this);
-
+			BRep_Builder b;
+			TopoDS_Compound compound;
+			b.MakeCompound(compound);
+			for each(IXbimGeometryModel^ shape in shapes)
+				b.Add(compound, *(shape->Handle));
+			return gcnew XbimSolid(compound);
 		}
 	}
 }

@@ -252,6 +252,7 @@ gp_Dir GetNormal(const TopoDS_Face& face)
 {
 	// get bounds of face
 	Standard_Real umin, umax, vmin, vmax;
+	
 	BRepTools::UVBounds(face, umin, umax, vmin, vmax);          // create surface
 	Handle(Geom_Surface) surf=BRep_Tool::Surface(face);          // get surface properties
 	GeomLProp_SLProps props(surf, umin, vmin, 1, 0.01);          // get surface normal
@@ -441,6 +442,7 @@ namespace Xbim
 				
 			try
 			{
+
 				if(dynamic_cast<IfcBooleanResult^>(sOp))
 					shape2 = Build((IfcBooleanResult^)sOp);
 				else if(dynamic_cast<IfcSolidModel^>(sOp))
@@ -506,9 +508,10 @@ namespace Xbim
 			else // we have a compound shape
 			{
 				XbimGeometryModelCollection^ gms = gcnew XbimGeometryModelCollection();
+
 				for each (IfcRepresentationItem^ repItem in rep->Items)
 				{
-					IXbimGeometryModel^ geom = CreateFrom(repItem,maps,forceSolid,lod);
+					IXbimGeometryModel^ geom = CreateFrom(repItem,maps,false,lod); // we will make a solid when we have all the bits if necessary
 					if(!(dynamic_cast<XbimSolid^>(geom) && (*(geom->Handle)).IsNull())) gms->Add(geom); //don't add solids that are empty
 				}
 				if(forceSolid)
@@ -634,7 +637,8 @@ namespace Xbim
 				if(forceSolid)
 				{
 					XbimShell^ shell = gcnew XbimShell(repItem->FbsmFaces->First);
-					return  Fix(shell);
+					return shell;
+				
 				}
 				else
 					return gcnew XbimFacetedShell(repItem->FbsmFaces->First);
@@ -652,7 +656,7 @@ namespace Xbim
 						else 
 						{
 							XbimShell^ shell = gcnew XbimShell(repItem->FbsmFaces->First);
-							return  Fix(shell);
+							return  shell;
 						}
 						
 					}
@@ -731,8 +735,9 @@ namespace Xbim
 		IXbimGeometryModel^ XbimGeometryModel::Fix(IXbimGeometryModel^ shape)
 		{
 
+			
 			ShapeUpgrade_ShellSewing ss;
-			TopoDS_Shape res = ss.ApplySewing(*(shape->Handle));
+			TopoDS_Shape res = ss.ApplySewing(*(shape->Handle), BRepLib::Precision()*10);
 			if(res.IsNull())
 			{
 				Logger->Warn("Failed to fix shape, an empty solid has been found");
@@ -966,6 +971,7 @@ namespace Xbim
 				int memSize =  sizeof(int) + (vertexCount * 3 *sizeof(double)); //number of points plus x,y,z of each point
 
 				memSize += sizeof(unsigned int); //allow int for total number of faces
+				
 				int indexSize;
 				if(vertexCount<=0xFF) //we will use byte for indices
 					indexSize =sizeof(unsigned char) ;
@@ -978,6 +984,7 @@ namespace Xbim
 					memSize += triangleIndexCount * indexSize; //write out each indices
 				else
 					memSize += (maxVertexCount*indexSize) + (maxVertexCount); //assume worst case each face is made only of triangles, Max number of indices + Triangle Mode=1byte per triangle
+				memSize*=1.5; //add a bit of capacity
 				IntPtr vertexPtr = Marshal::AllocHGlobal(memSize);
 				unsigned char* pointBuffer = (unsigned char*)vertexPtr.ToPointer();
 				//decide which meshing algorithm to use, Opencascade is slow but necessary to resolve curved edges

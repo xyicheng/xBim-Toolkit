@@ -26,6 +26,7 @@
 #include <BRepTools.hxx> 
 #include <TopExp_Explorer.hxx> 
 #include <BRepLib_MakePolygon.hxx> 
+#include <BRepBuilderAPI_WireError.hxx> 
 using namespace System;
 
 namespace Xbim
@@ -226,6 +227,7 @@ namespace Xbim
 			IfcAxis2Placement2D^ ax2 = (IfcAxis2Placement2D^)profile->Position;
 			gp_Ax2 gpax2(gp_Pnt(ax2->Location->X, ax2->Location->Y,0), gp_Dir(0,0,1),gp_Dir(ax2->P[0]->X, ax2->P[0]->Y,0.));			
 			gp_Elips gc(gpax2,profile->SemiAxis1, profile->SemiAxis2);
+			if(profile->SemiAxis1<=0 || profile->SemiAxis2 <=0) throw gcnew XbimGeometryException("Illegal Ellipse Semi Axix, for IfcEllipseProfileDef, must be greater than 0, in entity #" + profile->EntityLabel);
 			Handle(Geom_Ellipse) hellipse = GC_MakeEllipse(gc);
 			TopoDS_Edge edge = BRepBuilderAPI_MakeEdge(hellipse);
 			BRepBuilderAPI_MakeWire wire;
@@ -322,12 +324,13 @@ namespace Xbim
 			double dY = profile->Depth/2;
 			double dG = profile->Girth;
 			double tW = profile->WallThickness;
-
+			if(dG<=0) throw gcnew XbimGeometryException("Illegal girth for IfcCShapeProfileDef, must be greater than 0, in entity #"+profile->EntityLabel);
+			if(tW<=0) throw gcnew XbimGeometryException("Illegal wall thickness for IfcCShapeProfileDef, must be greater than 0, in entity #"+profile->EntityLabel);
 			gp_Pnt p1(-dX,dY,0);
 			gp_Pnt p2(dX,dY,0);
 			gp_Pnt p3(dX,dY-dG,0);
 			gp_Pnt p4(dX-tW,dY-dG,0);
-			gp_Pnt p5(dX-tW,dY-dG,0);
+			gp_Pnt p5(dX-tW,dY-tW,0);
 			gp_Pnt p6(-dX+tW,dY-tW,0);
 			gp_Pnt p7(-dX+tW,-dY+tW,0);
 			gp_Pnt p8(dX-tW,-dY+tW,0);
@@ -408,22 +411,20 @@ namespace Xbim
 			BRepBuilderAPI_MakeWire wire;
 			for each(IfcCompositeCurveSegment^ seg in cCurve->Segments)
 			{
-
-
 				///TODO: Need to add support for curve segment continuity a moment only continuos supported
 				TopoDS_Wire wireSeg = Build(seg->ParentCurve, hasCurves);
 				if(!wireSeg.IsNull())
 				{
 					if(!seg->SameSense) wireSeg.Reverse();
 					ShapeFix_ShapeTolerance FTol;
-					FTol.SetTolerance(wireSeg, BRepLib::Precision()*10, TopAbs_WIRE);
+					FTol.SetTolerance(wireSeg, BRepLib::Precision()*1000, TopAbs_WIRE);
 					wire.Add(wireSeg);
 				}
-
 			}
-			
-			return wire.Wire();
-
+			if(wire.IsDone())
+				return wire.Wire();
+			else
+				throw gcnew XbimGeometryException("Invalid wire forming IfcFaceBound #" + cCurve->EntityLabel);
 		}
 
 		//Builds a wire from a CircleProfileDef

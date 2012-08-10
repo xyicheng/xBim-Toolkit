@@ -80,7 +80,7 @@ namespace Xbim
 			}
 			virtual XbimBoundingBox^ GetBoundingBox(bool precise)
 			{
-				return XbimGeometryModel::GetBoundingBox(this, precise);
+				return XbimGeometryModel::GetBoundingBox(mBaseShape, precise);
 			};
 
 			virtual IXbimGeometryModel^ Cut(IXbimGeometryModel^ shape);

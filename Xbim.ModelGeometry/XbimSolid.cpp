@@ -398,6 +398,13 @@ namespace Xbim
 
 		TopoDS_Solid XbimSolid::Build(IfcExtrudedAreaSolid^ repItem, bool% hasCurves)
 		{
+			if(repItem->Depth<=0)
+			{
+				Logger->WarnFormat(String::Format("Invalid Solid Extrusion, Extrusion Depth must be >0, found in Entity #{0}=IfcExtrudedAreaSolid\nIt has been ignored",
+					repItem->EntityLabel));
+				return TopoDS_Solid();
+			}
+		
 			TopoDS_Face face = XbimFace::Build(repItem->SweptArea,hasCurves);
 			if(!face.IsNull())
 			{
