@@ -217,6 +217,14 @@
     <Compile Include="ElectricalDomain\IfcSwitchingDeviceTypeEnum.cs" />
     <Compile Include="ElectricalDomain\IfcTransformerType.cs" />
     <Compile Include="ElectricalDomain\IfcTransformerTypeEnum.cs" />
+    <Compile Include="FacilitiesMgmtDomain\IfcActionRequest.cs" />
+    <Compile Include="FacilitiesMgmtDomain\IfcCondition.cs" />
+    <Compile Include="FacilitiesMgmtDomain\IfcConditionCriterion.cs" />
+    <Compile Include="FacilitiesMgmtDomain\IfcEquipmentStandard.cs" />
+    <Compile Include="FacilitiesMgmtDomain\IfcFurnitureStandard.cs" />
+    <Compile Include="FacilitiesMgmtDomain\IfcMove.cs" />
+    <Compile Include="FacilitiesMgmtDomain\IfcOrderAction.cs" />
+    <Compile Include="FacilitiesMgmtDomain\IfcPermit.cs" />
     <Compile Include="GeometricConstraintResource\IfcConnectionCurveGeometry.cs" />
     <Compile Include="GeometricConstraintResource\IfcConnectionGeometry.cs" />
     <Compile Include="GeometricConstraintResource\IfcConnectionPointEccentricity.cs" />
@@ -392,6 +400,7 @@
     <Compile Include="SelectTypes\IfcClassificationNotationSelect.cs" />
     <Compile Include="SelectTypes\IfcColour.cs" />
     <Compile Include="SelectTypes\IfcColourOrFactor.cs" />
+    <Compile Include="SelectTypes\IfcConditionCriterionSelect.cs" />
     <Compile Include="SelectTypes\IfcCsgSelect.cs" />
     <Compile Include="SelectTypes\IfcCurveFontOrScaledCurveFontSelect.cs" />
     <Compile Include="SelectTypes\IfcCurveOrEdgeCurve.cs" />

@@ -8,7 +8,7 @@ using ICSharpCode.SharpZipLib.Zip;
 namespace Xbim.IO
 {
     /// <summary>
-    /// Class to retrieve  the file stream of a Ifc file within a zip file
+    /// Class to retrieve the file stream of an IFC file within a ZIP file
     /// </summary>
     public class IfcZipInputStream : IDisposable
     {
