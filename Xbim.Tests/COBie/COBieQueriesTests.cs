@@ -69,8 +69,9 @@ namespace Xbim.Tests.COBie
         private static void FormatFloors(COBieSheet<COBieFloorRow> floors)
         {
             int columns = 0;
-            foreach (var column in floors.Rows.First().Columns.OrderBy(c => c.Key))
+            foreach (var column in floors.Columns.OrderBy(c => c.Key))
             {
+
                 Debug.Write(column.Value.ColumnName);
                 Debug.Write(", ");
                 columns++;
@@ -90,7 +91,7 @@ namespace Xbim.Tests.COBie
         private static void FormatSpaces(COBieSheet<COBieSpaceRow> spaces)
         {
             int columns = 0;
-            foreach (var column in spaces.Rows.First().Columns.OrderBy(c => c.Key))
+            foreach (var column in spaces.Columns.OrderBy(c => c.Key))
             {
                 Debug.Write(column.Value.ColumnName);
                 Debug.Write(", ");
