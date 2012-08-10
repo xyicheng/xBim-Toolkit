@@ -242,7 +242,7 @@ namespace Xbim.COBie
             CobieSpaces = cq.GetCOBieSpaceSheet(model, CobiePickLists);
             CobieSpares = cq.GetCOBieSpareSheet(model, CobiePickLists);
             CobieSystems = cq.GetCOBieSystemSheet(model);
-            CobieTypes = cq.GetCOBieTypeSheet(model);
+            CobieTypes = cq.GetCOBieTypeSheet(model, CobiePickLists);
             CobieZones = cq.GetCOBieZoneSheet(model, CobiePickLists);
         }
 

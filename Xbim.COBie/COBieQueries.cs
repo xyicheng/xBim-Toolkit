@@ -21,6 +21,8 @@ using Xbim.Ifc.ProcessExtensions;
 using Xbim.Ifc.ConstructionMgmtDomain;
 using System.Xml;
 using Xbim.COBie.Rows;
+using Xbim.Ifc.QuantityResource;
+using Xbim.Ifc.PropertyResource;
 
 namespace Xbim.COBie
 {
@@ -44,7 +46,7 @@ namespace Xbim.COBie
 
             IfcOwnerHistory ifcOwnerHistory = model.InstancesOfType<IfcOwnerHistory>().FirstOrDefault();
             //IfcPostalAddress address = model.InstancesOfType<IfcPostalAddress>().FirstOrDefault();
-            COBieSheet<COBieContactRow> contacts = new COBieSheet<COBieContactRow>("Contact");
+            COBieSheet<COBieContactRow> contacts = new COBieSheet<COBieContactRow>(Constants.WORKSHEET_CONTACT);
 
             foreach (IfcPersonAndOrganization po in personsOrganizations)
             {
@@ -121,7 +123,7 @@ namespace Xbim.COBie
             if (ifcTelecomAddresses == null) ifcTelecomAddresses = Enumerable.Empty<IfcTelecomAddress>();
 
             IfcOwnerHistory ifcOwnerHistory = model.InstancesOfType<IfcOwnerHistory>().FirstOrDefault();
-			COBieSheet<COBieDocumentRow> documents = new COBieSheet<COBieDocumentRow>(Constants.WORKSHEET_DOCUMENT);
+            COBieSheet<COBieDocumentRow> documents = new COBieSheet<COBieDocumentRow>(Constants.WORKSHEET_DOCUMENT);
 
             foreach (IfcDocumentInformation di in docInfos)
             {
@@ -190,21 +192,17 @@ namespace Xbim.COBie
             // get all IfcBuildingStory objects from IFC file
             IEnumerable<IfcPropertySet> ifcProperties = model.InstancesOfType<IfcPropertySet>();
 
-            IEnumerable<IfcTelecomAddress> ifcTelecomAddresses = model.InstancesOfType<IfcTelecomAddress>();
-            if (ifcTelecomAddresses == null) ifcTelecomAddresses = Enumerable.Empty<IfcTelecomAddress>();
-
-            IfcOwnerHistory ifcOwnerHistory = model.InstancesOfType<IfcOwnerHistory>().FirstOrDefault();
-			COBieSheet<COBieImpactRow> impacts = new COBieSheet<COBieImpactRow>(Constants.WORKSHEET_IMPACT);
+            COBieSheet<COBieImpactRow> impacts = new COBieSheet<COBieImpactRow>(Constants.WORKSHEET_IMPACT);
 
             foreach (IfcPropertySet ppt in ifcProperties)
             {
                 COBieImpactRow impact = new COBieImpactRow(impacts);
+
+                IfcOwnerHistory ifcOwnerHistory = ppt.OwnerHistory;
+
                 impact.Name = ppt.Name;
 
-                impact.CreatedBy = "";
-                foreach (IfcTelecomAddress address in ifcTelecomAddresses)
-                    impact.CreatedBy = (address == null) ? "" : address.ToString() + ",";
-                impact.CreatedBy = impact.CreatedBy.TrimEnd(',');
+                impact.CreatedBy = GetTelecomEmailAddress(ifcOwnerHistory);
 
                 impact.CreatedOn = (ifcOwnerHistory.CreationDate == null) ? "" : ifcOwnerHistory.CreationDate.ToString();
 
@@ -254,7 +252,7 @@ namespace Xbim.COBie
 
             IfcOwnerHistory ifcOwnerHistory = model.InstancesOfType<IfcOwnerHistory>().FirstOrDefault();
             IfcApproval approval = model.InstancesOfType<IfcApproval>().FirstOrDefault();
-			COBieSheet<COBieIssueRow> issues = new COBieSheet<COBieIssueRow>(Constants.WORKSHEET_ISSUE);
+            COBieSheet<COBieIssueRow> issues = new COBieSheet<COBieIssueRow>(Constants.WORKSHEET_ISSUE);
 
             foreach (IfcApproval app in ifcApprovals)
             {
@@ -314,25 +312,20 @@ namespace Xbim.COBie
             // get all IfcBuildingStory objects from IFC file
             IEnumerable<IfcTask> ifcTasks = model.InstancesOfType<IfcTask>();
 
-            IEnumerable<IfcTelecomAddress> ifcTelecomAddresses = model.InstancesOfType<IfcTelecomAddress>();
-            if (ifcTelecomAddresses == null) ifcTelecomAddresses = Enumerable.Empty<IfcTelecomAddress>();
-
-            IfcOwnerHistory ifcOwnerHistory = model.InstancesOfType<IfcOwnerHistory>().FirstOrDefault();
-            
             IfcTypeObject typObj = model.InstancesOfType<IfcTypeObject>().FirstOrDefault();
             IfcConstructionEquipmentResource cer = model.InstancesOfType<IfcConstructionEquipmentResource>().FirstOrDefault();
 
-			COBieSheet<COBieJobRow> jobs = new COBieSheet<COBieJobRow>(Constants.WORKSHEET_JOB);
+            COBieSheet<COBieJobRow> jobs = new COBieSheet<COBieJobRow>(Constants.WORKSHEET_JOB);
 
             foreach (IfcTask task in ifcTasks)
             {
                 COBieJobRow job = new COBieJobRow(jobs);
+
+                IfcOwnerHistory ifcOwnerHistory = task.OwnerHistory;
+
                 job.Name = (task == null) ? "" : task.Name.ToString();
 
-                job.CreatedBy = "";
-                foreach (IfcTelecomAddress address in ifcTelecomAddresses)
-                    job.CreatedBy = (address == null) ? "" : address.ToString() + ",";
-                job.CreatedBy = job.CreatedBy.TrimEnd(',');
+                job.CreatedBy = GetTelecomEmailAddress(ifcOwnerHistory);
 
                 job.CreatedOn = (ifcOwnerHistory.CreationDate == null) ? "" : ifcOwnerHistory.CreationDate.ToString();
                 job.Category = (task == null) ? "" : task.ObjectType.ToString();
@@ -375,6 +368,85 @@ namespace Xbim.COBie
 
         #region PickLists
 
+        // Populate PickLists by row
+
+        //public COBieSheet<COBiePickListsRow> GetCOBiePickListsSheet(string pickListsXMLFilePath)
+        //{
+        //    // read xml document for picklists
+        //    if (string.IsNullOrEmpty(pickListsXMLFilePath)) pickListsXMLFilePath = "PickLists.xml";
+        //    XmlDocument xdoc = new XmlDocument();
+        //    xdoc.Load(pickListsXMLFilePath);
+        //    XmlNodeList items = xdoc.SelectNodes("//PickLists//Item");
+
+        //    COBieSheet<COBiePickListsRow> pickLists = new COBieSheet<COBiePickListsRow>();
+
+        //    foreach (XmlNode node in items)
+        //    {
+        //        COBiePickListsRow pickList = new COBiePickListsRow();
+        //        XmlElement itemEle = (XmlElement)node;
+
+        //        pickList.ApprovalBy = itemEle.GetElementsByTagName("ApprovalBy")[0].InnerText;
+        //        pickList.AreaUnit = itemEle.GetElementsByTagName("AreaUnit")[0].InnerText;
+        //        pickList.AssetType = itemEle.GetElementsByTagName("AssetType")[0].InnerText;
+        //        pickList.CategoryFacility = itemEle.GetElementsByTagName("Category-Facility")[0].InnerText;
+        //        pickList.CategorySpace = itemEle.GetElementsByTagName("Category-Space")[0].InnerText;
+        //        pickList.CategoryElement = itemEle.GetElementsByTagName("Category-Element")[0].InnerText;
+        //        pickList.CategoryProduct = itemEle.GetElementsByTagName("Category-Product")[0].InnerText;
+        //        pickList.CategoryRole = itemEle.GetElementsByTagName("Category-Role")[0].InnerText;
+        //        pickList.CoordinateSheet = itemEle.GetElementsByTagName("CoordinateSheet")[0].InnerText;
+        //        pickList.ConnectionType = itemEle.GetElementsByTagName("ConnectionType")[0].InnerText;
+        //        pickList.CoordinateType = itemEle.GetElementsByTagName("CoordinateType")[0].InnerText;
+        //        pickList.DocumentType = itemEle.GetElementsByTagName("DocumentType")[0].InnerText;
+        //        pickList.DurationUnit = itemEle.GetElementsByTagName("DurationUnit")[0].InnerText;
+        //        pickList.FloorType = itemEle.GetElementsByTagName("FloorType")[0].InnerText;
+        //        pickList.IssueCategory = itemEle.GetElementsByTagName("IssueCategory")[0].InnerText;
+        //        pickList.IssueChance = itemEle.GetElementsByTagName("IssueChance")[0].InnerText;
+        //        pickList.IssueImpact = itemEle.GetElementsByTagName("IssueImpact")[0].InnerText;
+        //        pickList.IssueRisk = itemEle.GetElementsByTagName("IssueRisk")[0].InnerText;
+        //        pickList.JobStatusType = itemEle.GetElementsByTagName("JobStatusType")[0].InnerText;
+        //        pickList.JobType = itemEle.GetElementsByTagName("JobType")[0].InnerText;
+        //        pickList.ObjAttribute = itemEle.GetElementsByTagName("objAttribute")[0].InnerText;
+        //        pickList.ObjAttributeType = itemEle.GetElementsByTagName("objAttributeType")[0].InnerText;
+        //        pickList.ObjComponent = itemEle.GetElementsByTagName("objComponent")[0].InnerText;
+        //        pickList.ObjConnection = itemEle.GetElementsByTagName("objConnection")[0].InnerText;
+        //        pickList.ObjContact = itemEle.GetElementsByTagName("objContact")[0].InnerText;
+        //        pickList.ObjCoordinate = itemEle.GetElementsByTagName("objCoordinate")[0].InnerText;
+        //        pickList.ObjDocument = itemEle.GetElementsByTagName("objDocument")[0].InnerText;
+        //        pickList.ObjFacility = itemEle.GetElementsByTagName("objFacility")[0].InnerText;
+        //        pickList.ObjFloor = itemEle.GetElementsByTagName("objFloor")[0].InnerText;
+        //        pickList.ObjIssue = itemEle.GetElementsByTagName("objIssue")[0].InnerText;
+        //        pickList.ObjJob = itemEle.GetElementsByTagName("objJob")[0].InnerText;
+        //        pickList.ObjProject = itemEle.GetElementsByTagName("objProject")[0].InnerText;
+        //        pickList.ObjResource = itemEle.GetElementsByTagName("objResource")[0].InnerText;
+        //        pickList.ObjSite = itemEle.GetElementsByTagName("objSite")[0].InnerText;
+        //        pickList.ObjSpace = itemEle.GetElementsByTagName("objSpace")[0].InnerText;
+        //        pickList.ObjSpare = itemEle.GetElementsByTagName("objSpare")[0].InnerText;
+        //        pickList.ObjSystem = itemEle.GetElementsByTagName("objSystem")[0].InnerText;
+        //        pickList.ObjType = itemEle.GetElementsByTagName("objType")[0].InnerText;
+        //        pickList.ObjWarranty = itemEle.GetElementsByTagName("objWarranty")[0].InnerText;
+        //        pickList.ObjZone = itemEle.GetElementsByTagName("objZone")[0].InnerText;
+        //        pickList.ResourceType = itemEle.GetElementsByTagName("ResourceType")[0].InnerText;
+        //        pickList.SheetType = itemEle.GetElementsByTagName("SheetType")[0].InnerText;
+        //        pickList.SpareType = itemEle.GetElementsByTagName("SpareType")[0].InnerText;
+        //        pickList.StageType = itemEle.GetElementsByTagName("StageType")[0].InnerText;
+        //        pickList.ZoneType = itemEle.GetElementsByTagName("ZoneType")[0].InnerText;
+        //        pickList.LinearUnit = itemEle.GetElementsByTagName("LinearUnit")[0].InnerText;
+        //        pickList.VolumeUnit = itemEle.GetElementsByTagName("VolumeUnit")[0].InnerText;
+        //        pickList.CostUnit = itemEle.GetElementsByTagName("CostUnit")[0].InnerText;
+        //        pickList.AssemblyType = itemEle.GetElementsByTagName("AssemblyType")[0].InnerText;
+        //        pickList.ImpactType = itemEle.GetElementsByTagName("ImpactType")[0].InnerText;
+        //        pickList.ImpactStage = itemEle.GetElementsByTagName("ImpactStage")[0].InnerText;
+        //        pickList.ImpactUnit = itemEle.GetElementsByTagName("ImpactUnit")[0].InnerText;
+        //        pickList.ObjAssembly = itemEle.GetElementsByTagName("objAssembly")[0].InnerText;
+        //        pickList.ObjImpact = itemEle.GetElementsByTagName("objImpact")[0].InnerText;
+
+        //        pickLists.Rows.Add(pickList);
+        //    }
+
+        //    return pickLists;
+        //}
+
+        // Populate PickLists by column
         public COBieSheet<COBiePickListsRow> GetCOBiePickListsSheet(string pickListsXMLFilePath)
         {
             // read xml document for picklists
@@ -383,7 +455,7 @@ namespace Xbim.COBie
             xdoc.Load(pickListsXMLFilePath);
             XmlNodeList items = xdoc.SelectNodes("//PickLists//Item");
 
-			COBieSheet<COBiePickListsRow> pickLists = new COBieSheet<COBiePickListsRow>(Constants.WORKSHEET_PICKLISTS);
+            COBieSheet<COBiePickListsRow> pickLists = new COBieSheet<COBiePickListsRow>(Constants.WORKSHEET_PICKLISTS);
 
             foreach (XmlNode node in items)
             {
@@ -478,22 +550,16 @@ namespace Xbim.COBie
             // get all IfcBuildingStory objects from IFC file
             IEnumerable<IfcConstructionEquipmentResource> ifcCer = model.InstancesOfType<IfcConstructionEquipmentResource>();
 
-            IEnumerable<IfcTelecomAddress> ifcTelecomAddresses = model.InstancesOfType<IfcTelecomAddress>();
-            if (ifcTelecomAddresses == null) ifcTelecomAddresses = Enumerable.Empty<IfcTelecomAddress>();
-
-            IfcOwnerHistory ifcOwnerHistory = model.InstancesOfType<IfcOwnerHistory>().FirstOrDefault();
-
-			COBieSheet<COBieResourceRow> resources = new COBieSheet<COBieResourceRow>(Constants.WORKSHEET_RESOURCE);
+            COBieSheet<COBieResourceRow> resources = new COBieSheet<COBieResourceRow>(Constants.WORKSHEET_RESOURCE);
 
             foreach (IfcConstructionEquipmentResource cer in ifcCer)
             {
                 COBieResourceRow resource = new COBieResourceRow(resources);
+                IfcOwnerHistory ifcOwnerHistory = cer.OwnerHistory;
+
                 resource.Name = (cer == null) ? "" : cer.Name.ToString();
 
-                resource.CreatedBy = "";
-                foreach (IfcTelecomAddress address in ifcTelecomAddresses)
-                    resource.CreatedBy = (address == null) ? "" : address.ToString() + ",";
-                resource.CreatedBy = resource.CreatedBy.TrimEnd(',');
+                resource.CreatedBy = GetTelecomEmailAddress(ifcOwnerHistory);
 
                 resource.CreatedOn = (ifcOwnerHistory.CreationDate == null) ? "" : ifcOwnerHistory.CreationDate.ToString();
                 resource.Category = (cer == null) ? "" : cer.ObjectType.ToString();                
@@ -519,30 +585,26 @@ namespace Xbim.COBie
             // get all IfcBuildingStory objects from IFC file
             IEnumerable<IfcBuildingStorey> buildingStories = model.InstancesOfType<IfcBuildingStorey>();
 
-            IEnumerable<IfcTelecomAddress> ifcTelecomAddresses = model.InstancesOfType<IfcTelecomAddress>();
-            if (ifcTelecomAddresses == null) ifcTelecomAddresses = Enumerable.Empty<IfcTelecomAddress>();
-
-            IfcOwnerHistory ifcOwnerHistory = model.InstancesOfType<IfcOwnerHistory>().FirstOrDefault();
-			COBieSheet<COBieFloorRow> floors = new COBieSheet<COBieFloorRow>(Constants.WORKSHEET_FLOOR);
+            COBieSheet<COBieFloorRow> floors = new COBieSheet<COBieFloorRow>(Constants.WORKSHEET_FLOOR);
 
             IfcClassification ifcClassification = model.InstancesOfType<IfcClassification>().FirstOrDefault();
             
             foreach (IfcBuildingStorey bs in buildingStories)
             {
-                COBieFloorRow floor = new COBieFloorRow(floors);               
+                COBieFloorRow floor = new COBieFloorRow(floors);
+
+                IfcOwnerHistory ifcOwnerHistory = bs.OwnerHistory;
 
                 floor.Name = bs.Name.ToString();
 
-                floor.CreatedBy = "";
-                foreach (IfcTelecomAddress address in ifcTelecomAddresses)
-                    floor.CreatedBy = (address == null) ? "" : address.ToString() + ",";
-                floor.CreatedBy = floor.CreatedBy.TrimEnd(',');
+                floor.CreatedBy = GetTelecomEmailAddress(ifcOwnerHistory);
 
                 floor.CreatedOn = ifcOwnerHistory.CreationDate.ToString();
 
                 floor.Category = "";
                 foreach (COBiePickListsRow plRow in pickLists.Rows)
-                    floor.Category = (plRow == null) ? "" : plRow.FloorType + ",";
+                    if (plRow != null)
+                        floor.Category += plRow.FloorType + ",";
                 floor.Category = floor.Category.TrimEnd(',');
 
                 floor.ExtSystem = GetIfcApplication().ApplicationFullName;
@@ -550,7 +612,8 @@ namespace Xbim.COBie
                 floor.ExtIdentifier = bs.GlobalId;
                 floor.Description = GetFloorDescription(bs);
                 floor.Elevation = bs.Elevation.ToString();
-                floor.Height = DEFAULT_VAL;
+                IEnumerable<IfcQuantityLength> qLen = bs.IsDefinedByProperties.Select(p => p.RelatedObjects.OfType<IfcQuantityLength>()).FirstOrDefault();
+                floor.Height = (qLen.FirstOrDefault() == null) ? "0" : qLen.FirstOrDefault().LengthValue.ToString();
 
                 floors.Rows.Add(floor);                
             }
@@ -580,37 +643,48 @@ namespace Xbim.COBie
             // get all IfcBuildingStory objects from IFC file
             IEnumerable<IfcSpace> ifcSpaces = model.InstancesOfType<IfcSpace>();
 
-            IEnumerable<IfcTelecomAddress> ifcTelecomAddresses = model.InstancesOfType<IfcTelecomAddress>();
-            if (ifcTelecomAddresses == null) ifcTelecomAddresses = Enumerable.Empty<IfcTelecomAddress>();
-
-            IfcOwnerHistory ifcOwnerHistory = model.InstancesOfType<IfcOwnerHistory>().FirstOrDefault();
-			COBieSheet<COBieSpaceRow> spaces = new COBieSheet<COBieSpaceRow>(Constants.WORKSHEET_SPACE);
+            COBieSheet<COBieSpaceRow> spaces = new COBieSheet<COBieSpaceRow>(Constants.WORKSHEET_SPACE);
 
             foreach (IfcSpace sp in ifcSpaces)
             {
                 COBieSpaceRow space = new COBieSpaceRow(spaces);
+
+                IfcOwnerHistory ifcOwnerHistory = sp.OwnerHistory;
+                
                 space.Name = sp.Name;
 
-                space.CreatedBy = "";
-                foreach (IfcTelecomAddress address in ifcTelecomAddresses)
-                    space.CreatedBy = (address == null) ? "" : address.ToString() + ",";
-                space.CreatedBy = space.CreatedBy.TrimEnd(',');
+                space.CreatedBy = GetTelecomEmailAddress(ifcOwnerHistory);
 
                 space.CreatedOn = ifcOwnerHistory.CreationDate.ToString();
 
                 space.Category = "";
                 foreach (COBiePickListsRow plRow in pickLists.Rows)
-                    space.Category = (plRow == null) ? "" : plRow.CategorySpace + ",";
+                    if (plRow != null)
+                        space.Category += plRow.CategorySpace + ",";
                 space.Category = space.Category.TrimEnd(',');
 
-                space.FloorName = sp.Name;
+                space.FloorName = sp.SpatialStructuralElementParent.Name.ToString();
                 space.Description = GetSpaceDescription(sp);
                 space.ExtSystem = GetIfcApplication().ApplicationFullName;
                 space.ExtObject = sp.GetType().Name;
                 space.ExtIdentifier = sp.GlobalId;
                 space.RoomTag = GetSpaceDescription(sp);
-                space.UsableHeight = DEFAULT_VAL;
-                space.GrossArea = DEFAULT_VAL;
+
+                IEnumerable<IfcQuantityLength> qLen = sp.IsDefinedByProperties.Select(p => p.RelatedObjects.OfType<IfcQuantityLength>()).FirstOrDefault();
+                space.UsableHeight = (qLen.FirstOrDefault() == null) ? "0" : qLen.FirstOrDefault().LengthValue.ToString();
+
+                //IEnumerable<IfcQuantityArea> qArea = sp.HasAssignments.Select(p => p.RelatedObjects.OfType<IfcQuantityArea>()).FirstOrDefault(); // sp.IsDefinedByProperties.Select(p => p.RelatedObjects.OfType<IfcQuantityArea>()).FirstOrDefault();
+                IEnumerable<IfcQuantityArea> elemQ = sp.IsDefinedByProperties.Select(p => p.RelatedObjects.OfType<IfcQuantityArea>()).FirstOrDefault();
+
+                if (elemQ.FirstOrDefault() != null)
+                {
+                    //IEnumerable<IfcQuantityArea> qArea = elemQ.FirstOrDefault().Quantities.OfType<IfcQuantityArea>();
+
+                    space.GrossArea = (elemQ.FirstOrDefault() == null) ? "0" : elemQ.FirstOrDefault().AreaValue.ToString();
+                }
+                else 
+                    space.GrossArea = "0";
+                //space.GrossArea = (sp.HasAssociations.OfType<IfcQuantityArea>().FirstOrDefault() == null) ? "0" : sp.HasAssociations.OfType<IfcQuantityArea>().FirstOrDefault().AreaValue.ToString();
                 space.NetArea = DEFAULT_VAL;
                 spaces.Rows.Add(space);
             }
@@ -645,27 +719,30 @@ namespace Xbim.COBie
             IfcProject ifcProject = _model.IfcProject;
             IfcSite ifcSite = _model.InstancesOfType<IfcSite>().FirstOrDefault();
             IfcBuilding ifcBuilding = _model.InstancesOfType<IfcBuilding>().FirstOrDefault();
+            IfcMonetaryUnit ifcMonetaryUnit = _model.InstancesOfType<IfcMonetaryUnit>().FirstOrDefault();
+            IfcElementQuantity ifcElementQuantity = _model.InstancesOfType<IfcElementQuantity>().FirstOrDefault();
                         
-            IEnumerable<IfcTelecomAddress> ifcTelecomAddresses = model.InstancesOfType<IfcTelecomAddress>();
-            if (ifcTelecomAddresses == null) ifcTelecomAddresses = Enumerable.Empty<IfcTelecomAddress>();
+            //IEnumerable<IfcTelecomAddress> ifcTelecomAddresses = model.InstancesOfType<IfcTelecomAddress>();
+            //if (ifcTelecomAddresses == null) ifcTelecomAddresses = Enumerable.Empty<IfcTelecomAddress>();
 
-            IfcOwnerHistory ifcOwnerHistory = model.InstancesOfType<IfcOwnerHistory>().FirstOrDefault();
+            IfcOwnerHistory ifcOwnerHistory = ifcBuilding.OwnerHistory; //model.InstancesOfType<IfcOwnerHistory>().FirstOrDefault();
             COBieSheet<COBieFacilityRow> facilities = new COBieSheet<COBieFacilityRow>(Constants.WORKSHEET_FACILITY);
 
             COBieFacilityRow facility = new COBieFacilityRow(facilities);
 
             facility.Name = ifcBuilding.Name.ToString();
+            
+            facility.CreatedBy = GetTelecomEmailAddress(ifcOwnerHistory);
 
-            facility.CreatedBy = "";
-            foreach (IfcTelecomAddress address in ifcTelecomAddresses)
-                facility.CreatedBy = (address == null) ? "" : address.ToString() + ",";
-            facility.CreatedBy = facility.CreatedBy.TrimEnd(',');
-
-            facility.CreatedOn = ifcOwnerHistory.CreationDate.ToString();
+            int seconds = Convert.ToInt32(ifcOwnerHistory.CreationDate.Value);
+            DateTime origin = new DateTime(1970, 1, 1, 0, 0, 0, 0);
+            DateTime dt = origin.AddSeconds(seconds);
+            facility.CreatedOn = dt.ToString();
 
             facility.Category = "";
             foreach (COBiePickListsRow plRow in pickLists.Rows)
-                facility.Category = (plRow == null) ? "" : plRow.CategoryFacility + ",";
+                if (plRow != null)
+                    facility.Category += plRow.CategoryFacility + ",";
             facility.Category = facility.Category.TrimEnd(',');
 
             facility.ProjectName = GetFacilityProjectName(ifcProject);
@@ -673,15 +750,19 @@ namespace Xbim.COBie
             facility.LinearUnits = GetLinearUnits();
             facility.AreaUnits = GetAreaUnits();
             facility.VolumeUnits = GetVolumeUnits();
-            facility.CurrencyUnit = DEFAULT_VAL;
-            facility.AreaMeasurement = DEFAULT_VAL;
+            facility.CurrencyUnit = (ifcMonetaryUnit == null) ? DEFAULT_VAL : ifcMonetaryUnit.Currency.ToString();
+            facility.AreaMeasurement = (ifcElementQuantity == null) ? "" : ifcElementQuantity.MethodOfMeasurement.ToString();
             facility.ExtSystem = GetIfcApplication().ApplicationFullName;
+
             facility.ExtProjectObject = "IfcProject";
             facility.ExtProjectIdentifier = ifcProject.GlobalId;
+            
             facility.ExtSiteObject = "IfcSite";
-            facility.ExtFacilityIdentifier = ifcBuilding.GlobalId;
+            facility.ExtSiteIdentifier = ifcSite.GlobalId;
+
             facility.ExtFacilityObject = "IfcBuilding";
-            facility.ExtProjectIdentifier = ifcSite.GlobalId;
+            facility.ExtFacilityIdentifier = ifcBuilding.GlobalId;
+            
             facility.Description = GetFacilityDescription(ifcBuilding);
             facility.ProjectDescription = GetFacilityProjectDescription(ifcProject);
             facility.SiteDescription = GetFacilitySiteDescription(ifcSite);
@@ -759,7 +840,7 @@ namespace Xbim.COBie
                     {
                         if (((IfcSIUnit)u).UnitType == IfcUnitEnum.LENGTHUNIT)
                         {
-                            if (((IfcSIUnit)u).Prefix.ToString().ToLower() == "milli") return "millimetres";
+                            if (((IfcSIUnit)u).Name.ToString().ToLower() == "milli") return "millimetres";
                             if (((IfcSIUnit)u).Name.ToString().ToLower() == "metre") return "metres";
                             if (((IfcSIUnit)u).Name.ToString().ToLower() == "inch") return "inches";
                         }
@@ -826,24 +907,20 @@ namespace Xbim.COBie
 
             // get all IfcBuildingStory objects from IFC file
             IEnumerable<IfcConstructionProductResource> ifcConstructionProductResources = model.InstancesOfType<IfcConstructionProductResource>();
-
-            IEnumerable<IfcTelecomAddress> ifcTelecomAddresses = model.InstancesOfType<IfcTelecomAddress>();
-            if (ifcTelecomAddresses == null) ifcTelecomAddresses = Enumerable.Empty<IfcTelecomAddress>();
-
-            IfcOwnerHistory ifcOwnerHistory = model.InstancesOfType<IfcOwnerHistory>().FirstOrDefault();
+            
             IfcTypeObject typeObject = model.InstancesOfType<IfcTypeObject>().FirstOrDefault();
 
-			COBieSheet<COBieSpareRow> spares = new COBieSheet<COBieSpareRow>(Constants.WORKSHEET_SPARE);
+            COBieSheet<COBieSpareRow> spares = new COBieSheet<COBieSpareRow>(Constants.WORKSHEET_SPARE);
 
             foreach (IfcConstructionProductResource cpr in ifcConstructionProductResources)
             {
                 COBieSpareRow spare = new COBieSpareRow(spares);
+
+                IfcOwnerHistory ifcOwnerHistory = cpr.OwnerHistory;
+
                 spare.Name = (string.IsNullOrEmpty(cpr.Name)) ? "" : cpr.Name.ToString();
 
-                spare.CreatedBy = "";
-                foreach (IfcTelecomAddress address in ifcTelecomAddresses)
-                    spare.CreatedBy = (address == null) ? "" : address.ToString() + ",";
-                spare.CreatedBy = spare.CreatedBy.TrimEnd(',');
+                spare.CreatedBy = GetTelecomEmailAddress(ifcOwnerHistory);
 
                 spare.CreatedOn = (ifcOwnerHistory.CreationDate == null) ? "" : ifcOwnerHistory.CreationDate.ToString();
 
@@ -855,7 +932,12 @@ namespace Xbim.COBie
                 spare.TypeName = (typeObject == null) ? "" : typeObject.Name.ToString();
                 spare.Suppliers = "";
                 spare.ExtSystem = GetIfcApplication().ApplicationFullName;
+                
                 spare.ExtObject = "";
+                foreach (COBiePickListsRow plRow in pickLists.Rows)
+                    spare.ExtObject = (plRow == null) ? "" : plRow.ObjType + ",";
+                spare.ExtObject = spare.ExtObject.TrimEnd(',');
+
                 spare.ExtIdentifier = cpr.GlobalId;
                 spare.Description = (cpr == null) ? "" : cpr.Description.ToString();
                 spare.SetNumber = "";
@@ -878,41 +960,41 @@ namespace Xbim.COBie
             // get all IfcBuildingStory objects from IFC file
             IEnumerable<IfcZone> ifcZones = model.InstancesOfType<IfcZone>();
 
-            IEnumerable<IfcTelecomAddress> ifcTelecomAddresses = model.InstancesOfType<IfcTelecomAddress>();
-            if (ifcTelecomAddresses == null) ifcTelecomAddresses = Enumerable.Empty<IfcTelecomAddress>();
-                        
-            IfcOwnerHistory ifcOwnerHistory = model.InstancesOfType<IfcOwnerHistory>().FirstOrDefault();
-			COBieSheet<COBieZoneRow> zones = new COBieSheet<COBieZoneRow>(Constants.WORKSHEET_ZONE);
+            COBieSheet<COBieZoneRow> zones = new COBieSheet<COBieZoneRow>(Constants.WORKSHEET_ZONE);
 
             foreach (IfcZone zn in ifcZones)
             {
-                COBieZoneRow zone = new COBieZoneRow(zones);
-                zone.Name = zn.Name.ToString();
-
-                zone.CreatedBy = "";
-                foreach (IfcTelecomAddress address in ifcTelecomAddresses)
-                    zone.CreatedBy = (address == null) ? "" : address.ToString() + ",";
-                zone.CreatedBy = zone.CreatedBy.TrimEnd(',');
-                
-                zone.CreatedOn = ifcOwnerHistory.CreationDate.ToString();
-
-                zone.Category = "";
-                foreach (COBiePickListsRow plRow in pickLists.Rows)
-                    zone.Category = (plRow == null) ? "" : plRow.ZoneType + ",";
-                zone.Category = zone.Category.TrimEnd(',');
-
+                // create zone for each space found
                 IEnumerable<IfcSpace> spaces = (zn.IsGroupedBy == null) ? Enumerable.Empty<IfcSpace>() : zn.IsGroupedBy.RelatedObjects.OfType<IfcSpace>();
-                zone.SpaceNames = "";
-                foreach (IfcLabel lbl in spaces.Select(s => s.Name))
-                    zone.SpaceNames = (lbl == null) ? "" : lbl.ToString() + ",";
-                zone.SpaceNames = zone.SpaceNames.TrimEnd(',');
+                foreach (IfcSpace sp in spaces)
+                {
+                    COBieZoneRow zone = new COBieZoneRow(zones);
+
+                    IfcOwnerHistory ifcOwnerHistory = zn.OwnerHistory;
+
+                    zone.Name = zn.Name.ToString();
+
+                    zone.CreatedBy = GetTelecomEmailAddress(ifcOwnerHistory);
+
+                    zone.CreatedOn = ifcOwnerHistory.CreationDate.ToString();
+
+                    zone.Category = "";
+                    foreach (COBiePickListsRow plRow in pickLists.Rows)
+                        if (plRow != null)
+                            zone.Category += plRow.ZoneType + ",";
+                    zone.Category = zone.Category.TrimEnd(',');
+
+
+                    zone.SpaceNames = sp.Name;
+
+                    zone.ExtSystem = GetIfcApplication().ApplicationFullName;
+                    zone.ExtObject = zn.GetType().Name;
+                    zone.ExtIdentifier = zn.GlobalId;
+                    zone.Description = (string.IsNullOrEmpty(zn.Description)) ? DEFAULT_VAL : zn.Description.ToString();
+
+                    zones.Rows.Add(zone);
+                }
                 
-                zone.ExtSystem = GetIfcApplication().ApplicationFullName;
-                zone.ExtObject = zn.GetType().Name;
-                zone.ExtIdentifier = zn.GlobalId;
-                zone.Description = (string.IsNullOrEmpty(zn.Description)) ? DEFAULT_VAL : zn.Description.ToString();
-                                
-                zones.Rows.Add(zone);
             }
 
             return zones;
@@ -922,33 +1004,58 @@ namespace Xbim.COBie
 
         #region Type
 
-        public COBieSheet<COBieTypeRow> GetCOBieTypeSheet(IModel model)
+        public COBieSheet<COBieTypeRow> GetCOBieTypeSheet(IModel model, COBieSheet<COBiePickListsRow> pickLists)
         {
             _model = model;
 
             // get all IfcBuildingStory objects from IFC file
             IEnumerable<IfcTypeObject> ifcTypeObjects = model.InstancesOfType<IfcTypeObject>();
-            IfcTelecomAddress ifcTelecomAddres = model.InstancesOfType<IfcTelecomAddress>().FirstOrDefault();
-            IfcOwnerHistory ifcOwnerHistory = model.InstancesOfType<IfcOwnerHistory>().FirstOrDefault();
-			COBieSheet<COBieTypeRow> types = new COBieSheet<COBieTypeRow>(Constants.WORKSHEET_TYPE);
+
+            COBieSheet<COBieTypeRow> types = new COBieSheet<COBieTypeRow>(Constants.WORKSHEET_TYPE);
 
             foreach (IfcTypeObject to in ifcTypeObjects)
             {
                 COBieTypeRow typ = new COBieTypeRow(types);
+
+                IfcOwnerHistory ifcOwnerHistory = to.OwnerHistory;
+
                 typ.Name = to.Name;
-                typ.CreatedBy = (ifcTelecomAddres == null) ? "" : ifcTelecomAddres.ElectronicMailAddresses[0].ToString();
+
+                typ.CreatedBy = GetTelecomEmailAddress(ifcOwnerHistory);
+
                 typ.CreatedOn = ifcOwnerHistory.CreationDate.ToString();
-                typ.Category = GetTypeProductCategory(to);
+
+                typ.Category = (to.HasAssociations.OfType<IfcClassification>().FirstOrDefault() == null) ? "" : to.HasAssociations.OfType<IfcClassification>().FirstOrDefault().Name.ToString();
+
                 typ.Description = GetDoorStyleDescription(to);
-                typ.AssetType = "";
-                typ.Manufacturer = "";
+
                 typ.ExtSystem = GetIfcApplication().ApplicationFullName;
                 typ.ExtObject = to.GetType().ToString().Substring(to.GetType().ToString().LastIndexOf('.') + 1);
                 typ.ExtIdentifier = to.GlobalId;
+
+                typ.WarrantyDurationUnit = "";
+                foreach (COBiePickListsRow plRow in pickLists.Rows)
+                    typ.WarrantyDurationUnit = (plRow == null) ? "" : plRow.DurationUnit + ",";
+                typ.WarrantyDurationUnit = typ.WarrantyDurationUnit.TrimEnd(',');
+
+                //IEnumerable<IfcTypeObject> itoAssetTypes = ifcTypeObjects.Where(p => p.Name.ToString().Contains("AssetAccountingType"));
+                //typ.AssetType = "";
+                //foreach (IfcTypeObject ito in itoAssetTypes)
+                //    typ.AssetType = (ito == null) ? "" : ito.Name.ToString() + ",";
+                //typ.AssetType = typ.AssetType.TrimEnd(',');
+
+                IEnumerable<IfcRelAssociates> test = to.HasAssociations;
+
+                IEnumerable<IfcLabel?> itos = ifcTypeObjects.Select(p => p.Name);
+                typ.AssetType = "";
+                typ.Manufacturer = "";
+                typ.ModelNumber = "";
+                typ.WarrantyGuarantorParts = "";
+                typ.WarrantyDurationParts = "";
+                typ.WarrantyGuarantorLabour = "";
+                typ.WarrantyDurationLabour = "";
                 typ.ReplacementCost = "";
                 typ.ExpectedLife = "";
-                typ.DurationUnit = "";
-                typ.WarrantyDescription = GetTypeWarrantyDescription(to);
                 typ.NominalLength = "";
                 typ.NominalWidth = "";
                 typ.NominalHeight = "";
@@ -956,6 +1063,7 @@ namespace Xbim.COBie
                 typ.Shape = "";
                 typ.Size = "";
                 typ.Colour = "";
+
                 typ.Finish = "";
                 typ.Grade = "";
                 typ.Material = "";
@@ -964,58 +1072,82 @@ namespace Xbim.COBie
                 typ.AccessibilityPerformance = "";
                 typ.CodePerformance = "";
                 typ.SustainabilityPerformance = "";
+                foreach (IfcLabel ito in itos)
+                {
+                    if (ito != null)
+                    {
+                        string itoLower = ito.ToString().ToLower();
+                        if (itoLower.Contains("assetaccountingtype")) typ.AssetType = ito.ToString() + ",";
+                        else if (itoLower.Contains("manufacturer")) typ.Manufacturer = ito.ToString() + ",";
+                        else if (itoLower.Contains("articlenumber") || itoLower.Contains("modellabel")) typ.ModelNumber = ito.ToString() + ",";
+                        else if (itoLower.Contains("warrantyguarantorparts") || itoLower.Contains("pointofcontact")) typ.WarrantyGuarantorParts = ito.ToString() + ",";
+                        else if (itoLower.Contains("warrantydurationparts")) typ.WarrantyDurationParts = ito.ToString() + ",";
+                        else if (itoLower.Contains("warrantyguarantorlabour") || itoLower.Contains("pointofcontact")) typ.WarrantyGuarantorLabour = ito.ToString() + ",";
+                        else if (itoLower.Contains("warrantydurationlabour")) typ.WarrantyDurationLabour = ito.ToString() + ",";
+                        else if (itoLower.Contains("replacement") || itoLower.Contains("cost")) typ.ReplacementCost = ito.ToString() + ",";
+                        else if (itoLower.Contains("servicelifeduration") || itoLower.Contains("expected")) typ.ExpectedLife = ito.ToString() + ",";
+
+                        else if (itoLower.Contains("nominallength") || itoLower.Contains("overallwidth")) typ.NominalLength = ito.ToString() + ",";
+                        else if (itoLower.Contains("nominalwidth") || itoLower.Contains("width")) typ.NominalWidth = ito.ToString() + ",";
+                        else if (itoLower.Contains("nominalheight") || itoLower.Contains("height")) typ.NominalHeight = ito.ToString() + ",";
+
+                        else if (itoLower.Contains("modelreference") || itoLower.Contains("reference")) typ.ModelReference = ito.ToString() + ",";
+                        else if (itoLower.Contains("shape")) typ.Shape = ito.ToString() + ",";
+                        else if (itoLower.Contains("size")) typ.Size = ito.ToString() + ",";
+                        else if (itoLower.Contains("colour") || itoLower.Contains("color")) typ.Colour = ito.ToString() + ",";
+
+                        else if (itoLower.Contains("finish")) typ.Finish = ito.ToString() + ",";
+                        else if (itoLower.Contains("grade")) typ.Grade = ito.ToString() + ",";
+                        else if (itoLower.Contains("material")) typ.Material = ito.ToString() + ",";
+                        else if (itoLower.Contains("constituents") || itoLower.Contains("parts")) typ.Constituents = ito.ToString() + ",";
+                        else if (itoLower.Contains("features")) typ.Features = ito.ToString() + ",";
+                        else if (itoLower.Contains("accessibilityperformance") || itoLower.Contains("access")) typ.AccessibilityPerformance = ito.ToString() + ",";
+                        else if (itoLower.Contains("codeperformance") || itoLower.Contains("regulation")) typ.CodePerformance = ito.ToString() + ",";
+                        else if (itoLower.Contains("sustainabilityperformance") || itoLower.Contains("environmental")) typ.SustainabilityPerformance = ito.ToString() + ",";
+                    }
+                    
+                }
+                typ.Manufacturer = typ.Manufacturer.TrimEnd(',');
+                typ.ModelNumber = typ.ModelNumber.TrimEnd(',');
+                typ.WarrantyGuarantorParts = typ.WarrantyGuarantorParts.TrimEnd(',');
+                typ.WarrantyDurationParts = typ.WarrantyDurationParts.TrimEnd(',');
+                typ.WarrantyGuarantorLabour = typ.WarrantyGuarantorLabour.TrimEnd(',');
+                typ.WarrantyDurationLabour = typ.WarrantyDurationLabour.TrimEnd(',');
+                typ.ReplacementCost = typ.ReplacementCost.TrimEnd(',');
+                typ.ExpectedLife = typ.ExpectedLife.TrimEnd(',');
+                typ.NominalLength = typ.NominalLength.TrimEnd(',');
+                typ.NominalWidth = typ.NominalWidth.TrimEnd(',');
+                typ.NominalHeight = typ.NominalHeight.TrimEnd(',');
+                typ.ModelReference = typ.ModelReference.TrimEnd(',');
+                typ.Shape = typ.Shape.TrimEnd(',');
+                typ.Size = typ.Size.TrimEnd(',');
+                typ.Colour = typ.Colour.TrimEnd(',');
+                typ.Finish = typ.Finish.TrimEnd(',');
+                typ.Grade = typ.Grade.TrimEnd(',');
+                typ.Material = typ.Material.TrimEnd(',');
+                typ.Constituents = typ.Constituents.TrimEnd(',');
+                typ.Features = typ.Features.TrimEnd(',');
+                typ.AccessibilityPerformance = typ.AccessibilityPerformance.TrimEnd(',');
+                typ.CodePerformance = typ.CodePerformance.TrimEnd(',');
+                typ.SustainabilityPerformance = typ.SustainabilityPerformance.TrimEnd(',');
+
+                                
+                typ.WarrantyDescription = GetTypeWarrantyDescription(to);
+                           
+                
+                
+                
+                
+                
+                
 
                 types.Rows.Add(typ);
-
-            //// get all IfcBuildingStory objects from IFC file
-            //IEnumerable<IfcDoorStyle> ifcDoorStyles = model.InstancesOfType<IfcDoorStyle>();
-            //List<COBieType> types = new List<COBieType>();
-
-            //int ids = 0;
-            //foreach (IfcDoorStyle ds in ifcDoorStyles)
-            //{
-            //    COBieType typ = new COBieType();
-            //    typ.TypeId = ids++;
-            //    typ.Name = ds.Name;
-            //    typ.CreatedBy = "";
-            //    typ.CreatedOn = DateTime.Now;
-            //    typ.Category = GetDoorStyleCategory(ds);
-            //    typ.Description = GetDoorStyleDescription(ds);
-            //    typ.AssetType = "";
-            //    typ.Manufacturer = "";
-            //    typ.ExtSystem = GetIfcApplication().ApplicationFullName;
-            //    typ.ExtObject = "IfcZone";
-            //    typ.ExtIdentifier = ds.GlobalId;
-            //    typ.ReplacementCost = "";
-            //    typ.ExpectedLife = "";
-            //    typ.DurationUnit = "";
-            //    typ.WarrantyDescription = GetTypeWarrantyDescription(ds);
-            //    typ.NominalLength = "";
-            //    typ.NominalWidth = "";
-            //    typ.NominalHeight = "";
-            //    typ.ModelReference = "";
-            //    typ.Shape = "";
-            //    typ.Size = "";
-            //    typ.Colour = "";
-            //    typ.Finish = "";
-            //    typ.Grade = "";
-            //    typ.Material = "";
-            //    typ.Constituents = "";
-            //    typ.Features = "";
-            //    typ.AccessibilityPerformance = "";
-            //    typ.CodePerformance = "";
-            //    typ.SustainabilityPerformance = "";
-
-            //    types.Add(typ);
             }
 
             return types;
         }
 
-        private string GetTypeProductCategory(IfcTypeObject ds)
-        {
-            return ds.Description;
-        }
+        
 
         private string GetDoorStyleDescription(IfcTypeObject ds)
         {
@@ -1050,27 +1182,34 @@ namespace Xbim.COBie
             _model = model;
 
             // get all IfcBuildingStory objects from IFC file
-            IEnumerable<IfcFlowTerminal> ifcFlowTerminals = model.InstancesOfType<IfcFlowTerminal>();
-            IfcTelecomAddress ifcTelecomAddres = model.InstancesOfType<IfcTelecomAddress>().FirstOrDefault();
-            IfcOwnerHistory ifcOwnerHistory = model.InstancesOfType<IfcOwnerHistory>().FirstOrDefault();
-			COBieSheet<COBieComponentRow> components = new COBieSheet<COBieComponentRow>(Constants.WORKSHEET_COMPONENT);
+            IEnumerable<IfcProduct> ifcproducts = model.InstancesOfType<IfcProduct>();
 
-            foreach (IfcFlowTerminal ft in ifcFlowTerminals)
+            COBieSheet<COBieComponentRow> components = new COBieSheet<COBieComponentRow>(Constants.WORKSHEET_COMPONENT);
+
+            foreach (IfcProduct pdt in ifcproducts)
             {
+                if (pdt.GetType().Name.ToString() == "IfcSpace" || pdt.GetType().Name.ToString() == "IfcBuildingStorey" ||
+                    pdt.GetType().Name.ToString() == "IfcBuilding" || pdt.GetType().Name.ToString() == "IfcSite") continue;
+
                 COBieComponentRow component = new COBieComponentRow(components);
-                component.Name = ft.Name;
-                component.CreatedBy = (ifcTelecomAddres == null) ? "" : ifcTelecomAddres.ElectronicMailAddresses[0].ToString();
+
+                IfcOwnerHistory ifcOwnerHistory = pdt.OwnerHistory;
+
+                component.Name = pdt.Name;
+
+                component.CreatedBy = GetTelecomEmailAddress(ifcOwnerHistory);
+
                 component.CreatedOn = ifcOwnerHistory.CreationDate.ToString();
-                component.TypeName = ft.ObjectType.ToString();
+                component.TypeName = pdt.ObjectType.ToString();
                 component.Space = "";
-                component.Description = GetComponentDescription(ft);
+                component.Description = GetComponentDescription(pdt);
                 component.ExtSystem = GetIfcApplication().ApplicationFullName;
                 component.ExtObject = "IfcFlowTerminal";
-                component.ExtIdentifier = ft.GlobalId;
+                component.ExtIdentifier = pdt.GlobalId;
                 component.SerialNumber = "";
                 component.InstallationDate = "";
                 component.WarrantyStartDate = "";
-                component.TagNumber = ft.Tag.ToString();
+                //component.TagNumber = pdt.Tag.ToString();
                 component.BarCode = "";
                 component.AssetIdentifier = "";
 
@@ -1080,12 +1219,12 @@ namespace Xbim.COBie
             return components;
         }
 
-        private string GetComponentDescription(IfcFlowTerminal ft)
+        private string GetComponentDescription(IfcProduct pdt)
         {
-            if (ft != null)
+            if (pdt != null)
             {
-                if (!string.IsNullOrEmpty(ft.Description)) return ft.Description;
-                else if (!string.IsNullOrEmpty(ft.Name)) return ft.Name;
+                if (!string.IsNullOrEmpty(pdt.Description)) return pdt.Description;
+                else if (!string.IsNullOrEmpty(pdt.Name)) return pdt.Name;
             }
             return DEFAULT_VAL;
         }
@@ -1100,24 +1239,34 @@ namespace Xbim.COBie
 
             // get all IfcBuildingStory objects from IFC file
             IEnumerable<IfcSystem> ifcSystems = model.InstancesOfType<IfcSystem>();
-            IfcTelecomAddress ifcTelecomAddres = model.InstancesOfType<IfcTelecomAddress>().FirstOrDefault();
-            IfcOwnerHistory ifcOwnerHistory = model.InstancesOfType<IfcOwnerHistory>().FirstOrDefault();
-			COBieSheet<COBieSystemRow> systems = new COBieSheet<COBieSystemRow>(Constants.WORKSHEET_SYSTEM);
+
+            COBieSheet<COBieSystemRow> systems = new COBieSheet<COBieSystemRow>(Constants.WORKSHEET_SYSTEM);
 
             foreach (IfcSystem s in ifcSystems)
             {
-                COBieSystemRow sys = new COBieSystemRow(systems);
-                sys.Name = s.Name;
-                sys.CreatedBy = (ifcTelecomAddres == null) ? "" : ifcTelecomAddres.ElectronicMailAddresses[0].ToString();
-                sys.CreatedOn = ifcOwnerHistory.CreationDate.ToString();
-                sys.Category = GetSystemCategory(s);
-                sys.ComponentName = s.Name;
-                sys.ExtSystem = GetIfcApplication().ApplicationFullName;
-                sys.ExtObject = "IfcSystem";
-                sys.ExtIdentifier = s.GlobalId;
-                sys.Description = GetSystemDescription(s);
+                IEnumerable<IfcProduct> ifcProducts = (s.IsGroupedBy == null) ? Enumerable.Empty<IfcProduct>() : s.IsGroupedBy.RelatedObjects.OfType<IfcProduct>();
 
-                systems.Rows.Add(sys);
+                foreach (IfcProduct product in ifcProducts)
+                {
+                    COBieSystemRow sys = new COBieSystemRow(systems);
+
+                    IfcOwnerHistory ifcOwnerHistory = s.OwnerHistory;
+
+                    sys.Name = s.Name;
+
+                    sys.CreatedBy = GetTelecomEmailAddress(ifcOwnerHistory);
+
+                    sys.CreatedOn = ifcOwnerHistory.CreationDate.ToString();
+                    sys.Category = GetSystemCategory(s);
+                    sys.ComponentName = product.Name;
+                    sys.ExtSystem = GetIfcApplication().ApplicationFullName;
+                    sys.ExtObject = "IfcSystem";
+                    sys.ExtIdentifier = product.GlobalId;
+                    sys.Description = GetSystemDescription(s);
+
+                    systems.Rows.Add(sys);
+                }
+                
             }
 
             return systems;
@@ -1148,10 +1297,9 @@ namespace Xbim.COBie
 
             // get all IfcBuildingStory objects from IFC file
             IEnumerable<IfcRelAggregates> ifcRelAggregates = model.InstancesOfType<IfcRelAggregates>();
-            IfcTelecomAddress ifcTelecomAddres = model.InstancesOfType<IfcTelecomAddress>().FirstOrDefault();
-			COBieSheet<COBieAssemblyRow> assemblies = new COBieSheet<COBieAssemblyRow>(Constants.WORKSHEET_ASSEMBLY);
 
-            IfcOwnerHistory ifcOwnerHistory = model.InstancesOfType<IfcOwnerHistory>().FirstOrDefault();
+            COBieSheet<COBieAssemblyRow> assemblies = new COBieSheet<COBieAssemblyRow>(Constants.WORKSHEET_ASSEMBLY);
+                        
             IfcProduct ifcProduct = model.InstancesOfType<IfcProduct>().FirstOrDefault();
             IfcClassification ifcClassification = model.InstancesOfType<IfcClassification>().FirstOrDefault();
             string applicationFullName = GetIfcApplication().ApplicationFullName;
@@ -1159,8 +1307,11 @@ namespace Xbim.COBie
             foreach (IfcRelAggregates ra in ifcRelAggregates)
             {
                 COBieAssemblyRow assembly = new COBieAssemblyRow(assemblies);
+
+                IfcOwnerHistory ifcOwnerHistory = ra.OwnerHistory;
+
                 assembly.Name = (ra.Name == null || ra.Name.ToString() == "") ? "AssemblyName" : ra.Name.ToString();
-                assembly.CreatedBy = (ifcTelecomAddres == null) ? "" : ifcTelecomAddres.ElectronicMailAddresses[0].ToString();
+                assembly.CreatedBy = GetTelecomEmailAddress(ifcOwnerHistory);
                 assembly.CreatedOn = ifcOwnerHistory.CreationDate.ToString();
                 assembly.SheetName = "SheetName:";
                 assembly.ParentName = ifcProduct.Name;
@@ -1172,6 +1323,8 @@ namespace Xbim.COBie
                 assembly.Description = GetAssemblyDescription(ra);
 
                 assemblies.Rows.Add(assembly);
+
+                COBieCell testCell = assembly[7];
             }
 
             return assemblies;
@@ -1236,7 +1389,7 @@ namespace Xbim.COBie
             IEnumerable<IfcRelConnectsElements> ifcConnections = model.InstancesOfType<IfcRelConnectsElements>();
             IfcTelecomAddress ifcTelecomAddres = model.InstancesOfType<IfcTelecomAddress>().FirstOrDefault();
             IfcOwnerHistory ifcOwnerHistory = model.InstancesOfType<IfcOwnerHistory>().FirstOrDefault();
-			COBieSheet<COBieConnectionRow> connections = new COBieSheet<COBieConnectionRow>(Constants.WORKSHEET_CONNECTION);
+            COBieSheet<COBieConnectionRow> connections = new COBieSheet<COBieConnectionRow>(Constants.WORKSHEET_CONNECTION);
 
             IfcRelConnectsPorts relCP = model.InstancesOfType<IfcRelConnectsPorts>().FirstOrDefault();
 
@@ -1282,13 +1435,7 @@ namespace Xbim.COBie
             IfcBuildingStorey ifcBuildingStorey = model.InstancesOfType<IfcBuildingStorey>().FirstOrDefault();
             IfcTelecomAddress ifcTelecomAddres = model.InstancesOfType<IfcTelecomAddress>().FirstOrDefault();
             IfcCartesianPoint ifcCartesianPoint = model.InstancesOfType<IfcCartesianPoint>().FirstOrDefault();
-			COBieSheet<COBieCoordinateRow> coordinates = new COBieSheet<COBieCoordinateRow>(Constants.WORKSHEET_COORDINATE);
-
-			if (ifcCartesianPoint == null)
-			{
-				// Model doesn't contain geometry
-				return coordinates;
-			}
+            COBieSheet<COBieCoordinateRow> coordinates = new COBieSheet<COBieCoordinateRow>(Constants.WORKSHEET_COORDINATE);
 
             IfcOwnerHistory ifcOwnerHistory = model.InstancesOfType<IfcOwnerHistory>().FirstOrDefault();
             IfcProduct ifcProduct = model.InstancesOfType<IfcProduct>().FirstOrDefault();
@@ -1346,7 +1493,7 @@ namespace Xbim.COBie
             IfcBuildingStorey ifcBuildingStorey = model.InstancesOfType<IfcBuildingStorey>().FirstOrDefault();
             IfcTelecomAddress ifcTelecomAddres = model.InstancesOfType<IfcTelecomAddress>().FirstOrDefault();
             IfcCartesianPoint ifcCartesianPoint = model.InstancesOfType<IfcCartesianPoint>().FirstOrDefault();
-			COBieSheet<COBieAttributeRow> attributes = new COBieSheet<COBieAttributeRow>(Constants.WORKSHEET_ATTRIBUTE);
+            COBieSheet<COBieAttributeRow> attributes = new COBieSheet<COBieAttributeRow>(Constants.WORKSHEET_ATTRIBUTE);
 
             IfcOwnerHistory ifcOwnerHistory = model.InstancesOfType<IfcOwnerHistory>().FirstOrDefault();
             IfcProduct ifcProduct = model.InstancesOfType<IfcProduct>().FirstOrDefault();
@@ -1382,6 +1529,38 @@ namespace Xbim.COBie
         {
             IfcApplication app = _model.InstancesOfType<IfcApplication>().FirstOrDefault();
             return app;
+        }
+
+        private string GetTelecomEmailAddress(IfcOwnerHistory ifcOwnerHistory)
+        {
+            string emails = "";
+
+            IfcPerson ifcP = ifcOwnerHistory.OwningUser.ThePerson;
+            IEnumerable<IfcTelecomAddress> ifcTelecomAddresses = (ifcP.Addresses == null) ? null : ifcP.Addresses.TelecomAddresses;
+            if (ifcTelecomAddresses == null) ifcTelecomAddresses = Enumerable.Empty<IfcTelecomAddress>();
+            foreach (IfcTelecomAddress address in ifcTelecomAddresses)
+            {
+                if (address != null)
+                    emails += address.ElectronicMailAddresses[0].ToString() + ",";
+            }
+            emails = emails.TrimEnd(',');
+
+            if (emails == "")
+            {
+                IfcOrganization ifcO = ifcOwnerHistory.OwningUser.TheOrganization;
+                ifcTelecomAddresses = ifcO.Addresses.TelecomAddresses;
+                if (ifcTelecomAddresses == null) ifcTelecomAddresses = Enumerable.Empty<IfcTelecomAddress>();
+
+                foreach (IfcTelecomAddress address in ifcTelecomAddresses)
+                {
+                    if (address != null)
+                        emails += address.ElectronicMailAddresses[0].ToString() + ",";
+                }
+                emails = emails.TrimEnd(',');
+            }
+                        
+            if (emails == "") return DEFAULT_VAL;
+            else return emails;
         }
     }
 }
