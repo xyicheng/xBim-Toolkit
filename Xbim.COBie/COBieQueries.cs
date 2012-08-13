@@ -39,70 +39,79 @@ namespace Xbim.COBie
             _model = model;
 
             // get all IfcBuildingStory objects from IFC file
-            IEnumerable<IfcPersonAndOrganization> personsOrganizations = model.InstancesOfType<IfcPersonAndOrganization>();
+            //IEnumerable<IfcPersonAndOrganization> personsOrganizations = model.InstancesOfType<IfcPersonAndOrganization>();
+            IEnumerable<IfcOwnerHistory> ifcOwnerHistories = model.InstancesOfType<IfcOwnerHistory>();
             
-            IEnumerable<IfcTelecomAddress> ifcTelecomAddresses = model.InstancesOfType<IfcTelecomAddress>();
-            if (ifcTelecomAddresses == null) ifcTelecomAddresses = Enumerable.Empty<IfcTelecomAddress>();
-
-            IfcOwnerHistory ifcOwnerHistory = model.InstancesOfType<IfcOwnerHistory>().FirstOrDefault();
             //IfcPostalAddress address = model.InstancesOfType<IfcPostalAddress>().FirstOrDefault();
             COBieSheet<COBieContactRow> contacts = new COBieSheet<COBieContactRow>(Constants.WORKSHEET_CONTACT);
 
-            foreach (IfcPersonAndOrganization po in personsOrganizations)
+            foreach (IfcOwnerHistory oh in ifcOwnerHistories)
             {
                 COBieContactRow contact = new COBieContactRow(contacts);
-                IfcPerson person = po.ThePerson;
-                IfcOrganization organization = po.TheOrganization;
 
-                IEnumerable<IfcTelecomAddress> telAddresses = Enumerable.Empty<IfcTelecomAddress>();
-                if (organization.Addresses != null)
-                    telAddresses = organization.Addresses.TelecomAddresses;
+                // get person and organization
+                IfcOrganization organization = oh.OwningUser.TheOrganization;
+                IfcPerson person = oh.OwningUser.ThePerson;
 
-                contact.Email = "";
-                contact.CreatedBy = "";
-                foreach (IfcTelecomAddress ta in telAddresses)
+                contact.Email = GetTelecomEmailAddress(oh);
+                // check if this email is alerady in the contacts (as it only needs to exist once)
+                bool emailExists = false;
+                foreach (COBieContactRow c in contacts.Rows)
                 {
-                    foreach (IfcLabel email in ta.ElectronicMailAddresses)
+                    if (c.Email == contact.Email)
+                        emailExists = true;
+                }
+
+                // check if it belongs to ActorRole, if yes then add to contacts
+                IEnumerable<IfcActorRole> ifcRoles = organization.Roles;
+                if (emailExists == false) 
+                {
+                    if (ifcRoles != null)
                     {
-                        contact.Email = (email == null) ? "" : email.ToString() + ",";
-                        contact.CreatedBy = (email == null) ? "" : email.ToString() + ",";
-                    }                   
+                        IfcActorRole ifcAR = ifcRoles.FirstOrDefault();
+                        contact.Category = ifcAR.UserDefinedRole.ToString();
+
+                        contact.CreatedBy = GetTelecomEmailAddress(oh);
+                        contact.CreatedOn = GetDate(oh.CreationDate.Value.ToString());
+
+                        contact.Company = (string.IsNullOrEmpty(oh.OwningUser.TheOrganization.Name)) ? DEFAULT_VAL : oh.OwningUser.TheOrganization.Name.ToString();
+
+                        IEnumerable<IfcTelecomAddress> telAddresses = Enumerable.Empty<IfcTelecomAddress>();
+                        if (organization.Addresses != null)
+                            telAddresses = organization.Addresses.TelecomAddresses;
+
+                        contact.Phone = "";
+                        foreach (IfcTelecomAddress ta in telAddresses)
+                        {
+                            foreach (IfcLabel phone in ta.TelephoneNumbers)
+                                contact.Phone = (phone == null) ? "" : phone.ToString() + ",";
+                        }
+                        contact.Phone = contact.Phone.TrimEnd(',');
+
+                        contact.ExtSystem = GetIfcApplication().ApplicationFullName;
+                        contact.ExtObject = "IfcPersonAndOrganization";
+                        contact.ExtIdentifier = person.Id;
+                        contact.Department = (organization.Addresses == null || organization.Addresses.PostalAddresses == null || organization.Addresses.PostalAddresses.Count() == 0) ? DEFAULT_VAL : organization.Addresses.PostalAddresses.FirstOrDefault().InternalLocation.ToString();
+                        if ((contact.Department == DEFAULT_VAL || contact.Department == "") && organization.Description != null) contact.Department = organization.Description;
+
+                        // guideline say it should be organization.Name but example spreadsheet uses organization.Id
+                        contact.OrganizationCode = (string.IsNullOrEmpty(organization.Id)) ? DEFAULT_VAL : organization.Id.ToString();
+
+                        contact.GivenName = (string.IsNullOrEmpty(person.GivenName)) ? DEFAULT_VAL : person.GivenName.ToString();
+                        contact.FamilyName = (string.IsNullOrEmpty(person.FamilyName)) ? DEFAULT_VAL : person.FamilyName.ToString();
+                        contact.Street = (person.Addresses == null) ? "" : person.Addresses.PostalAddresses.FirstOrDefault().AddressLines.FirstOrDefault().Value.ToString();
+                        contact.PostalBox = (person.Addresses == null) ? "" : person.Addresses.PostalAddresses.FirstOrDefault().PostalBox.ToString();
+                        contact.Town = (person.Addresses == null) ? "" : person.Addresses.PostalAddresses.FirstOrDefault().Town.ToString();
+                        contact.StateRegion = (person.Addresses == null) ? "" : person.Addresses.PostalAddresses.FirstOrDefault().Region.ToString();
+                        contact.PostalCode = (person.Addresses == null) ? "" : person.Addresses.PostalAddresses.FirstOrDefault().PostalCode.ToString();
+                        contact.Country = (person.Addresses == null) ? "" : person.Addresses.PostalAddresses.FirstOrDefault().Country.ToString();
+
+                        contacts.Rows.Add(contact);
+                    }
+
+                    
+
                 }
-                contact.Email = contact.Email.TrimEnd(',');
-                contact.CreatedBy = contact.CreatedBy.TrimEnd(',');
-                                
-                contact.CreatedOn = (ifcOwnerHistory.CreationDate == null) ? "" : ifcOwnerHistory.CreationDate.ToString();
-
-                contact.Category = "";
-                foreach (COBiePickListsRow plRow in pickLists.Rows)
-                    contact.Category = plRow.CategoryRole + ",";
-                contact.Category = contact.Category.TrimEnd(',');
-
-                contact.Company = (string.IsNullOrEmpty(organization.Name)) ? DEFAULT_VAL : organization.Name.ToString();
-
-                contact.Phone = "";
-                foreach (IfcTelecomAddress ta in telAddresses)
-                {
-                    foreach (IfcLabel phone in ta.TelephoneNumbers)
-                        contact.Phone = (phone == null) ? "" : phone.ToString() + ",";
-                }
-                contact.Phone = contact.Phone.TrimEnd(',');
-
-                contact.ExtSystem = GetIfcApplication().ApplicationFullName;
-                contact.ExtObject = po.GetType().Name;
-                contact.ExtIdentifier = person.Id;
-                contact.Department = (organization.Addresses == null || organization.Addresses.PostalAddresses == null || organization.Addresses.PostalAddresses.Count() == 0) ? DEFAULT_VAL : organization.Addresses.PostalAddresses.FirstOrDefault().InternalLocation.ToString();
-                contact.OrganizationCode = (string.IsNullOrEmpty(organization.Name)) ? DEFAULT_VAL : organization.Name.ToString();
-                contact.GivenName = (string.IsNullOrEmpty(person.GivenName)) ? DEFAULT_VAL : person.GivenName.ToString();
-                contact.FamilyName = (string.IsNullOrEmpty(person.FamilyName)) ? DEFAULT_VAL : person.FamilyName.ToString();
-                contact.Street = (person.Addresses == null) ? "" : person.Addresses.PostalAddresses.FirstOrDefault().AddressLines.ToString();
-                contact.PostalBox = (person.Addresses == null) ? "" : person.Addresses.PostalAddresses.FirstOrDefault().PostalBox.ToString();
-                contact.Town = (person.Addresses == null) ? "" : person.Addresses.PostalAddresses.FirstOrDefault().Town.ToString();
-                contact.StateRegion = (person.Addresses == null) ? "" : person.Addresses.PostalAddresses.FirstOrDefault().Region.ToString();
-                contact.PostalCode = (person.Addresses == null) ? "" : person.Addresses.PostalAddresses.FirstOrDefault().PostalCode.ToString();
-                contact.Country = (person.Addresses == null) ? "" : person.Addresses.PostalAddresses.FirstOrDefault().Country.ToString();
-
-                contacts.Rows.Add(contact);
             }
 
             return contacts;
@@ -134,13 +143,12 @@ namespace Xbim.COBie
                 foreach (IfcTelecomAddress address in ifcTelecomAddresses)
                     doc.CreatedBy = (address == null) ? "" : address.ToString() + ",";
                 doc.CreatedBy = doc.CreatedBy.TrimEnd(',');
-                                
-                doc.CreatedOn = (ifcOwnerHistory.CreationDate == null) ? "" : ifcOwnerHistory.CreationDate.ToString();
 
+                doc.CreatedOn = GetDate(ifcOwnerHistory.CreationDate.Value.ToString());
+
+                //IfcRelAssociatesClassification ifcRAC = di.HasAssociations.OfType<IfcRelAssociatesClassification>().FirstOrDefault();
+                //IfcClassificationReference ifcCR = (IfcClassificationReference)ifcRAC.RelatingClassification;
                 doc.Category = "";
-                foreach (COBiePickListsRow plRow in pickLists.Rows)
-                    doc.Category = (plRow == null) ? "" : plRow.ZoneType + ",";
-                doc.Category = doc.Category.TrimEnd(',');
 
                 doc.ApprovalBy = di.IntendedUse.ToString();
                 doc.Stage = di.Scope.ToString();
@@ -204,7 +212,7 @@ namespace Xbim.COBie
 
                 impact.CreatedBy = GetTelecomEmailAddress(ifcOwnerHistory);
 
-                impact.CreatedOn = (ifcOwnerHistory.CreationDate == null) ? "" : ifcOwnerHistory.CreationDate.ToString();
+                impact.CreatedOn = GetDate(ifcOwnerHistory.CreationDate.Value.ToString());
 
                 impact.ImpactType = "";
                 impact.ImpactStage = "";
@@ -264,7 +272,7 @@ namespace Xbim.COBie
                     issue.CreatedBy = (address == null) ? "" : address.ToString() + ",";
                 issue.CreatedBy = issue.CreatedBy.TrimEnd(',');
 
-                issue.CreatedOn = (ifcOwnerHistory.CreationDate == null) ? "" : ifcOwnerHistory.CreationDate.ToString();
+                issue.CreatedOn = GetDate(ifcOwnerHistory.CreationDate.Value.ToString());
 
                 issue.Type = "";
                 issue.Risk = "";
@@ -327,8 +335,18 @@ namespace Xbim.COBie
 
                 job.CreatedBy = GetTelecomEmailAddress(ifcOwnerHistory);
 
-                job.CreatedOn = (ifcOwnerHistory.CreationDate == null) ? "" : ifcOwnerHistory.CreationDate.ToString();
-                job.Category = (task == null) ? "" : task.ObjectType.ToString();
+                job.CreatedOn = GetDate(ifcOwnerHistory.CreationDate.Value.ToString());
+                
+                //job.Category = (task == null) ? "" : task.ObjectType.ToString();
+                IfcRelAssociatesClassification ifcRAC = task.HasAssociations.OfType<IfcRelAssociatesClassification>().FirstOrDefault();
+                if (ifcRAC != null)
+                {
+                    IfcClassificationReference ifcCR = (IfcClassificationReference)ifcRAC.RelatingClassification;
+                    job.Category = ifcCR.Name;
+                }
+                else
+                    job.Category = "";
+
                 job.Status = (task == null) ? "" : task.Status.ToString();
 
                 job.TypeName = (task.ObjectType == null) ? "" : task.ObjectType.ToString();
@@ -561,8 +579,13 @@ namespace Xbim.COBie
 
                 resource.CreatedBy = GetTelecomEmailAddress(ifcOwnerHistory);
 
-                resource.CreatedOn = (ifcOwnerHistory.CreationDate == null) ? "" : ifcOwnerHistory.CreationDate.ToString();
+                resource.CreatedOn = GetDate(ifcOwnerHistory.CreationDate.Value.ToString());
+                
                 resource.Category = (cer == null) ? "" : cer.ObjectType.ToString();                
+                //IfcRelAssociatesClassification ifcRAC = to.HasAssociations.OfType<IfcRelAssociatesClassification>().FirstOrDefault();
+                //IfcClassificationReference ifcCR = (IfcClassificationReference)ifcRAC.RelatingClassification;
+                //resource.Category = ifcCR.Name;
+
                 resource.ExtSystem = GetIfcApplication().ApplicationFullName;
                 resource.ExtObject = cer.GetType().Name;
                 resource.ExtIdentifier = cer.GlobalId;
@@ -599,13 +622,16 @@ namespace Xbim.COBie
 
                 floor.CreatedBy = GetTelecomEmailAddress(ifcOwnerHistory);
 
-                floor.CreatedOn = ifcOwnerHistory.CreationDate.ToString();
-
-                floor.Category = "";
-                foreach (COBiePickListsRow plRow in pickLists.Rows)
-                    if (plRow != null)
-                        floor.Category += plRow.FloorType + ",";
-                floor.Category = floor.Category.TrimEnd(',');
+                floor.CreatedOn = GetDate(ifcOwnerHistory.CreationDate.Value.ToString());
+                                
+                IfcRelAssociatesClassification ifcRAC = bs.HasAssociations.OfType<IfcRelAssociatesClassification>().FirstOrDefault();
+                if (ifcRAC != null)
+                {
+                    IfcClassificationReference ifcCR = (IfcClassificationReference)ifcRAC.RelatingClassification;
+                    floor.Category = ifcCR.Name;
+                }
+                else
+                    floor.Category = "";
 
                 floor.ExtSystem = GetIfcApplication().ApplicationFullName;
                 floor.ExtObject = bs.GetType().Name;
@@ -655,13 +681,16 @@ namespace Xbim.COBie
 
                 space.CreatedBy = GetTelecomEmailAddress(ifcOwnerHistory);
 
-                space.CreatedOn = ifcOwnerHistory.CreationDate.ToString();
+                space.CreatedOn = GetDate(ifcOwnerHistory.CreationDate.Value.ToString());
 
-                space.Category = "";
-                foreach (COBiePickListsRow plRow in pickLists.Rows)
-                    if (plRow != null)
-                        space.Category += plRow.CategorySpace + ",";
-                space.Category = space.Category.TrimEnd(',');
+                IfcRelAssociatesClassification ifcRAC = sp.HasAssociations.OfType<IfcRelAssociatesClassification>().FirstOrDefault();
+                if (ifcRAC != null)
+                {
+                    IfcClassificationReference ifcCR = (IfcClassificationReference)ifcRAC.RelatingClassification;
+                    space.Category = ifcCR.Name;
+                }
+                else
+                    space.Category = "";
 
                 space.FloorName = sp.SpatialStructuralElementParent.Name.ToString();
                 space.Description = GetSpaceDescription(sp);
@@ -734,16 +763,21 @@ namespace Xbim.COBie
             
             facility.CreatedBy = GetTelecomEmailAddress(ifcOwnerHistory);
 
-            int seconds = Convert.ToInt32(ifcOwnerHistory.CreationDate.Value);
-            DateTime origin = new DateTime(1970, 1, 1, 0, 0, 0, 0);
-            DateTime dt = origin.AddSeconds(seconds);
-            facility.CreatedOn = dt.ToString();
+            facility.CreatedOn = GetDate(ifcOwnerHistory.CreationDate.Value.ToString());
 
-            facility.Category = "";
-            foreach (COBiePickListsRow plRow in pickLists.Rows)
-                if (plRow != null)
-                    facility.Category += plRow.CategoryFacility + ",";
-            facility.Category = facility.Category.TrimEnd(',');
+            //facility.Category = "";
+            //foreach (COBiePickListsRow plRow in pickLists.Rows)
+            //    if (plRow != null)
+            //        facility.Category += plRow.CategoryFacility + ",";
+            //facility.Category = facility.Category.TrimEnd(',');
+            IfcRelAssociatesClassification ifcRAC = ifcBuilding.HasAssociations.OfType<IfcRelAssociatesClassification>().FirstOrDefault();
+            if (ifcRAC != null)
+            {
+                IfcClassificationReference ifcCR = (IfcClassificationReference)ifcRAC.RelatingClassification;
+                facility.Category = ifcCR.Name;
+            }
+            else 
+                facility.Category = "";
 
             facility.ProjectName = GetFacilityProjectName(ifcProject);
             facility.SiteName = GetFacilitySiteName(ifcSite);
@@ -781,7 +815,7 @@ namespace Xbim.COBie
                 else if (!string.IsNullOrEmpty(ifcBuilding.Description)) return ifcBuilding.Description;
                 else if (!string.IsNullOrEmpty(ifcBuilding.Name)) return ifcBuilding.Name;
             }
-            return "n/a";
+            return DEFAULT_VAL;
         }
 
         private string GetFacilityProjectDescription(IfcProject ifcProject)
@@ -922,12 +956,15 @@ namespace Xbim.COBie
 
                 spare.CreatedBy = GetTelecomEmailAddress(ifcOwnerHistory);
 
-                spare.CreatedOn = (ifcOwnerHistory.CreationDate == null) ? "" : ifcOwnerHistory.CreationDate.ToString();
+                spare.CreatedOn = GetDate(ifcOwnerHistory.CreationDate.Value.ToString());
 
+                IfcRelAssociatesClassification ifcRAC = cpr.HasAssociations.OfType<IfcRelAssociatesClassification>().FirstOrDefault();
+                if (ifcRAC != null)
+                {
+                    IfcClassificationReference ifcCR = (IfcClassificationReference)ifcRAC.RelatingClassification;
+                    spare.Category = ifcCR.Name;
+                }
                 spare.Category = "";
-                foreach (COBiePickListsRow plRow in pickLists.Rows)
-                    spare.Category = (plRow == null) ? "" : plRow.SpareType + ",";
-                spare.Category = spare.Category.TrimEnd(',');
 
                 spare.TypeName = (typeObject == null) ? "" : typeObject.Name.ToString();
                 spare.Suppliers = "";
@@ -976,14 +1013,16 @@ namespace Xbim.COBie
 
                     zone.CreatedBy = GetTelecomEmailAddress(ifcOwnerHistory);
 
-                    zone.CreatedOn = ifcOwnerHistory.CreationDate.ToString();
+                    zone.CreatedOn = GetDate(ifcOwnerHistory.CreationDate.Value.ToString());
 
-                    zone.Category = "";
-                    foreach (COBiePickListsRow plRow in pickLists.Rows)
-                        if (plRow != null)
-                            zone.Category += plRow.ZoneType + ",";
-                    zone.Category = zone.Category.TrimEnd(',');
-
+                    IfcRelAssociatesClassification ifcRAC = zn.HasAssociations.OfType<IfcRelAssociatesClassification>().FirstOrDefault();
+                    if (ifcRAC != null)
+                    {
+                        IfcClassificationReference ifcCR = (IfcClassificationReference)ifcRAC.RelatingClassification;
+                        zone.Category = ifcCR.Name;
+                    }
+                    else
+                        zone.Category = "";
 
                     zone.SpaceNames = sp.Name;
 
@@ -1023,9 +1062,17 @@ namespace Xbim.COBie
 
                 typ.CreatedBy = GetTelecomEmailAddress(ifcOwnerHistory);
 
-                typ.CreatedOn = ifcOwnerHistory.CreationDate.ToString();
+                typ.CreatedOn = GetDate(ifcOwnerHistory.CreationDate.Value.ToString());
 
-                typ.Category = (to.HasAssociations.OfType<IfcClassification>().FirstOrDefault() == null) ? "" : to.HasAssociations.OfType<IfcClassification>().FirstOrDefault().Name.ToString();
+                //typ.Category = (to.HasAssociations.OfType<IfcClassification>().FirstOrDefault() == null) ? "" : to.HasAssociations.OfType<IfcClassification>().FirstOrDefault().Name.ToString();
+                IfcRelAssociatesClassification ifcRAC = to.HasAssociations.OfType<IfcRelAssociatesClassification>().FirstOrDefault();
+                if (ifcRAC != null)
+                {
+                    IfcClassificationReference ifcCR = (IfcClassificationReference)ifcRAC.RelatingClassification;
+                    typ.Category = ifcCR.Name;
+                }
+                else
+                    typ.Category = "";
 
                 typ.Description = GetDoorStyleDescription(to);
 
@@ -1046,6 +1093,7 @@ namespace Xbim.COBie
 
                 IEnumerable<IfcRelAssociates> test = to.HasAssociations;
 
+                // this should be IfcPropertySingleValue (instead of IfcLabel) and then check propSingleVal.Name string to contain the following values
                 IEnumerable<IfcLabel?> itos = ifcTypeObjects.Select(p => p.Name);
                 typ.AssetType = "";
                 typ.Manufacturer = "";
@@ -1198,9 +1246,11 @@ namespace Xbim.COBie
                 component.Name = pdt.Name;
 
                 component.CreatedBy = GetTelecomEmailAddress(ifcOwnerHistory);
+                
+                component.CreatedOn = GetDate(ifcOwnerHistory.CreationDate.Value.ToString());
 
-                component.CreatedOn = ifcOwnerHistory.CreationDate.ToString();
                 component.TypeName = pdt.ObjectType.ToString();
+                
                 component.Space = "";
                 component.Description = GetComponentDescription(pdt);
                 component.ExtSystem = GetIfcApplication().ApplicationFullName;
@@ -1256,8 +1306,17 @@ namespace Xbim.COBie
 
                     sys.CreatedBy = GetTelecomEmailAddress(ifcOwnerHistory);
 
-                    sys.CreatedOn = ifcOwnerHistory.CreationDate.ToString();
-                    sys.Category = GetSystemCategory(s);
+                    sys.CreatedOn = GetDate(ifcOwnerHistory.CreationDate.Value.ToString());
+
+                    IfcRelAssociatesClassification ifcRAC = s.HasAssociations.OfType<IfcRelAssociatesClassification>().FirstOrDefault();
+                    if (ifcRAC != null)
+                    {
+                        IfcClassificationReference ifcCR = (IfcClassificationReference)ifcRAC.RelatingClassification;
+                        sys.Category = ifcCR.Name;
+                    }
+                    else
+                        sys.Category = "";
+
                     sys.ComponentName = product.Name;
                     sys.ExtSystem = GetIfcApplication().ApplicationFullName;
                     sys.ExtObject = "IfcSystem";
@@ -1270,11 +1329,6 @@ namespace Xbim.COBie
             }
 
             return systems;
-        }
-
-        private string GetSystemCategory(IfcSystem s)
-        {
-            return s.Description;
         }
 
         private string GetSystemDescription(IfcSystem s)
@@ -1312,7 +1366,7 @@ namespace Xbim.COBie
 
                 assembly.Name = (ra.Name == null || ra.Name.ToString() == "") ? "AssemblyName" : ra.Name.ToString();
                 assembly.CreatedBy = GetTelecomEmailAddress(ifcOwnerHistory);
-                assembly.CreatedOn = ifcOwnerHistory.CreationDate.ToString();
+                assembly.CreatedOn = GetDate(ifcOwnerHistory.CreationDate.Value.ToString());
                 assembly.SheetName = "SheetName:";
                 assembly.ParentName = ifcProduct.Name;
                 assembly.ChildNames = ifcProduct.Name;
@@ -1401,7 +1455,7 @@ namespace Xbim.COBie
                 COBieConnectionRow conn = new COBieConnectionRow(connections);
                 conn.Name = (string.IsNullOrEmpty(c.Name)) ? ids.ToString() : c.Name.ToString();
                 conn.CreatedBy = (ifcTelecomAddres == null) ? "" : ifcTelecomAddres.ElectronicMailAddresses[0].ToString();
-                conn.CreatedOn = ifcOwnerHistory.CreationDate.ToString();
+                conn.CreatedOn = GetDate(ifcOwnerHistory.CreationDate.Value.ToString());
                 conn.ConnectionType = c.Description;
                 conn.SheetName = "";
                 conn.RowName1 = (product == null) ? "" : product.Name.ToString();
@@ -1447,8 +1501,12 @@ namespace Xbim.COBie
                 COBieCoordinateRow coordinate = new COBieCoordinateRow(coordinates);
                 coordinate.Name = (ifcBuildingStorey == null || ifcBuildingStorey.Name.ToString() == "") ? "CoordinateName" : ifcBuildingStorey.Name.ToString();
                 coordinate.CreatedBy = (ifcTelecomAddres == null) ? "" : ifcTelecomAddres.ElectronicMailAddresses[0].ToString();
-                coordinate.CreatedOn = ifcOwnerHistory.CreationDate.ToString();
-                coordinate.Category = "PickList.CoordinateType";
+                coordinate.CreatedOn = GetDate(ifcOwnerHistory.CreationDate.Value.ToString());
+
+                //IfcRelAssociatesClassification ifcRAC = ra.HasAssociations.OfType<IfcRelAssociatesClassification>().FirstOrDefault();
+                //IfcClassificationReference ifcCR = (IfcClassificationReference)ifcRAC.RelatingClassification;
+                coordinate.Category = "";
+                
                 coordinate.SheetName = "PickList.SheetType";
                 coordinate.RowName = DEFAULT_VAL;
                 coordinate.CoordinateXAxis = ifcCartesianPoint[0].ToString();
@@ -1505,8 +1563,16 @@ namespace Xbim.COBie
                 COBieAttributeRow attribute = new COBieAttributeRow(attributes);
                 attribute.Name = (ifcBuildingStorey == null || ifcBuildingStorey.Name.ToString() == "") ? "AttributeName" : ifcBuildingStorey.Name.ToString();
                 attribute.CreatedBy = (ifcTelecomAddres == null) ? "" : ifcTelecomAddres.ElectronicMailAddresses[0].ToString();
-                attribute.CreatedOn = ifcOwnerHistory.CreationDate.ToString();
-                attribute.Category = "Requirement";
+                attribute.CreatedOn = GetDate(ifcOwnerHistory.CreationDate.Value.ToString());
+
+                IfcRelAssociatesClassification ifcRAC = obj.HasAssociations.OfType<IfcRelAssociatesClassification>().FirstOrDefault();
+                if (ifcRAC != null)
+                {
+                    IfcClassificationReference ifcCR = (IfcClassificationReference)ifcRAC.RelatingClassification;
+                    attribute.Category = ifcCR.Name;
+                }
+                attribute.Category = "";
+
                 attribute.SheetName = "PickList.SheetType";
                 attribute.RowName = DEFAULT_VAL;
                 attribute.Value = "";
@@ -1561,6 +1627,15 @@ namespace Xbim.COBie
                         
             if (emails == "") return DEFAULT_VAL;
             else return emails;
+        }
+                
+        private string GetDate(string secondsSince1970)
+        {
+            int seconds = Convert.ToInt32(secondsSince1970);
+            DateTime origin = new DateTime(1970, 1, 1, 0, 0, 0, 0);
+            DateTime dt = origin.AddSeconds(seconds);
+
+            return dt.ToString();
         }
     }
 }
