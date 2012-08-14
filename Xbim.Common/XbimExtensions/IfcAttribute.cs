@@ -55,8 +55,8 @@ namespace Xbim.XbimExtensions
     {
     }
 
-    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
-    public sealed class IfcPrimaryIndex : Attribute
+    [AttributeUsage(AttributeTargets.Property,Inherited=true, AllowMultiple = false)]
+    public sealed class IfcIndex : Attribute
     {
     }
 

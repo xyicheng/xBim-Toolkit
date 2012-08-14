@@ -635,8 +635,8 @@ namespace Xbim.IO
                     else
                         ifcType.IfcInverses.Add(new IfcMetaProperty { PropertyInfo = propInfo, IfcAttribute = ifcAttributes[0] });
                 }
-                IfcPrimaryIndex[] ifcPrimaryIndices =
-                    (IfcPrimaryIndex[]) propInfo.GetCustomAttributes(typeof (IfcPrimaryIndex), false);
+                IfcIndex[] ifcPrimaryIndices =
+                    (IfcIndex[]) propInfo.GetCustomAttributes(typeof (IfcIndex), false);
                 if (ifcPrimaryIndices.GetLength(0) > 0) //we have an ifc primary index
                 {
                     ifcType.PrimaryIndex = propInfo;

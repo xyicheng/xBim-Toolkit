@@ -155,5 +155,35 @@ namespace Xbim.Ifc2x3.Extensions
             element.SetMaterialLayerSetUsage(model, forLayerSet, layerSetDirection, directionSense,
                                              offsetFromReferenceLine);
         }
+
+
+        public static String CreateFriendlyName(this IfcRoot ifcObject)
+        {
+            String name;
+
+            name = BuildName(ifcObject);
+
+            return name;
+        }
+        private static String BuildName(IfcRoot ifcObject)
+        {
+            String name;
+            if (ifcObject is IfcRelDecomposes)
+            {
+                IfcRelDecomposes rel = ifcObject as IfcRelDecomposes;
+                name = BuildName(rel.RelatingObject);
+            }
+            else
+            {
+                name = ifcObject.Name;
+            }
+
+            if (String.IsNullOrEmpty(name))
+            {
+                name = ifcObject.ToString();
+            }
+
+            return name;
+        }
     }
 }

@@ -231,7 +231,7 @@ namespace Xbim.Ifc2x3.CostResource
                 case 2:
                     _arithmeticOperator =
                         (IfcArithmeticOperatorEnum)
-                        Enum.Parse(typeof (IfcArithmeticOperatorEnum), value.StringVal, true);
+                        Enum.Parse(typeof (IfcArithmeticOperatorEnum), value.EnumVal, true);
                     break;
                 case 3:
                     _name = value.StringVal;

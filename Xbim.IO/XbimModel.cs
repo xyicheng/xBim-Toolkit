@@ -1115,7 +1115,10 @@ namespace Xbim.IO
 
         public IPersistIfcEntity IfcProject
         {
-            get { return Cached.OfType<IfcProject>().FirstOrDefault(); }
+            get 
+            { 
+                return Cached.OfType<IfcProject>().FirstOrDefault(); 
+            }
         }
 
         public IEnumerable<IPersistIfcEntity> IfcProducts
@@ -1178,6 +1181,25 @@ namespace Xbim.IO
             disposed = true;
         }
 
-       
+
+
+        internal XbimGeometryData GetGeometryData(IfcProduct product, XbimGeometryType geomType)
+        {
+            return Cached.GetGeometry(product, geomType);
+        }
+        public IDictionary<string,XbimViewDefinition> Views
+        {
+            get
+            {
+                Dictionary<string, XbimViewDefinition> views = new Dictionary<string, XbimViewDefinition>();
+                views.Add("Default", new XbimViewDefinition());
+                return views;
+            }
+        }
+
+        public IEnumerable<XbimGeometryData> Shapes(XbimGeometryType ofType)
+        {
+           return Cached.Shapes(ofType);
+        }
     }
 }

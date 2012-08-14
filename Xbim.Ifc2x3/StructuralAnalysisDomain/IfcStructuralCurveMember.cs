@@ -70,7 +70,7 @@ namespace Xbim.Ifc2x3.StructuralAnalysisDomain
                 case 7:
                     _predefinedType =
                         (IfcStructuralCurveTypeEnum)
-                        Enum.Parse(typeof (IfcStructuralCurveTypeEnum), value.StringVal, true);
+                        Enum.Parse(typeof (IfcStructuralCurveTypeEnum), value.EnumVal, true);
                     break;
                 default:
                     this.HandleUnexpectedAttribute(propIndex, value); break;

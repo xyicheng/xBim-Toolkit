@@ -162,14 +162,14 @@ namespace Xbim.Ifc2x3.StructuralAnalysisDomain
                     break;
                 case 5:
                     _predefinedType =
-                        (IfcLoadGroupTypeEnum) Enum.Parse(typeof (IfcLoadGroupTypeEnum), value.StringVal, true);
+                        (IfcLoadGroupTypeEnum) Enum.Parse(typeof (IfcLoadGroupTypeEnum), value.EnumVal, true);
                     break;
                 case 6:
-                    _actionType = (IfcActionTypeEnum) Enum.Parse(typeof (IfcActionTypeEnum), value.StringVal, true);
+                    _actionType = (IfcActionTypeEnum) Enum.Parse(typeof (IfcActionTypeEnum), value.EnumVal, true);
                     break;
                 case 7:
                     _actionSource =
-                        (IfcActionSourceTypeEnum) Enum.Parse(typeof (IfcActionSourceTypeEnum), value.StringVal, true);
+                        (IfcActionSourceTypeEnum) Enum.Parse(typeof (IfcActionSourceTypeEnum), value.EnumVal, true);
                     break;
                 case 8:
                     _coefficient = value.RealVal;

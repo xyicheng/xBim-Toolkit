@@ -22,10 +22,10 @@ namespace Xbim
 			IXbimGeometryModel^ Cut(IXbimGeometryModel^ shape);
 			IXbimGeometryModel^ Union(IXbimGeometryModel^ shape);
 			IXbimGeometryModel^ Intersection(IXbimGeometryModel^ shape);
-			XbimTriangulatedModelStream^ Mesh(bool withNormals, double deflection, Matrix3D transform );
-			XbimTriangulatedModelStream^ Mesh(bool withNormals, double deflection );
-			XbimTriangulatedModelStream^ Mesh(bool withNormals);
-			XbimTriangulatedModelStream^ Mesh();
+			XbimTriangulatedModelCollection^ Mesh(bool withNormals, double deflection, Matrix3D transform );
+			XbimTriangulatedModelCollection^ Mesh(bool withNormals, double deflection );
+			XbimTriangulatedModelCollection^ Mesh(bool withNormals);
+			XbimTriangulatedModelCollection^ Mesh();
 			IXbimGeometryModel^ CopyTo(IfcObjectPlacement^ placement);
 			property XbimLocation ^ Location {XbimLocation ^ get(); void set(XbimLocation ^ location);};
 			XbimBoundingBox^ GetBoundingBox(bool precise);

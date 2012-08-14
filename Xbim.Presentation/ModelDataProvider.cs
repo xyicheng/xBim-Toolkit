@@ -37,7 +37,8 @@ namespace Xbim.Presentation
 
     public class ModelDataProvider : INotifyPropertyChanged 
     {
-      
+
+        private XbimModel _model;
         public ModelDataProvider()
         {
             _defaultMaterials = new MaterialDictionary();
@@ -57,9 +58,10 @@ namespace Xbim.Presentation
                                   new DiffuseMaterial(new SolidColorBrush(Colors.WhiteSmoke) {Opacity = 0.7}));
             _defaultMaterials.Add("IfcDistributionFlowElement",
                                   new DiffuseMaterial(new SolidColorBrush(Colors.AntiqueWhite) {Opacity = 1.0}));
-            _defaultMaterials.Add("IfcSpace", new DiffuseMaterial(new SolidColorBrush(Colors.Red) {Opacity = 0.7}));
+            _defaultMaterials.Add("IfcSpace", new DiffuseMaterial(new SolidColorBrush(Colors.Red) {Opacity = 0.4}));
             _defaultMaterials.Add("IfcPlate", new DiffuseMaterial(new SolidColorBrush(Colors.LightBlue) {Opacity = 0.4}));
             _defaultMaterials.Add("IfcRailing", new DiffuseMaterial(new SolidColorBrush(Colors.Goldenrod) {  }));
+            _defaultMaterials.Add("IfcOpeningElement", new DiffuseMaterial(new SolidColorBrush(Colors.Red) { Opacity = 0.4 }));
         }
 
         #region Fields
@@ -70,14 +72,7 @@ namespace Xbim.Presentation
 
        
 
-        private IXbimScene _scene;
-
-        public IXbimScene Scene
-        {
-            get { return _scene; }
-            set { _scene = value; NotifyPropertyChanged("Model"); NotifyPropertyChanged("Scene"); }
-        }
-
+        
         #endregion
 
 
@@ -117,12 +112,16 @@ namespace Xbim.Presentation
         }
 
 
-        public IModel Model
+        public XbimModel Model
         {
-            get {
-                if (_scene != null && _scene.Graph != null)
-                    return _scene.Graph.Model;
-                return null;
+            get 
+            {
+                return _model;
+            }
+            set
+            {
+                _model = value;
+                NotifyPropertyChanged("Model");
             }
         }
 

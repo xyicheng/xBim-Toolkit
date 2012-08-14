@@ -38,7 +38,19 @@ namespace Xbim.ModelGeometry.Scene
         {
             Empty = new XbimTriangulatedModelStream(true);    
         }
+        public XbimTriangulatedModelStream(XbimTriangulatedModelCollection collection)
+        {
+            _dataStream = new MemoryStream();
+            BinaryWriter bw = new BinaryWriter(_dataStream);
+            foreach (var item in collection)
+            {
+                 bw.Write(item.ToArray());
+            }
 
+            _numChildren = (ushort)collection.Count;
+            _hasData = 0;
+
+        }
         internal XbimTriangulatedModelStream(bool empty)
         {
 
@@ -66,11 +78,10 @@ namespace Xbim.ModelGeometry.Scene
 
         public XbimTriangulatedModelStream(byte []  data)
         {
-            _dataStream = new MemoryStream(0x4000);
-            _dataStream.Write(data, 0, data.Length);
-            _hasData = 1;
+            _dataStream = new MemoryStream(data);
+            
         }
-
+        
         public XbimTriangulatedModelStream(byte[] data, UInt16 numChildren, Byte hasData)
         {
             _dataStream = new MemoryStream(data);
@@ -100,13 +111,13 @@ namespace Xbim.ModelGeometry.Scene
 
         public Byte[] ToArray()
         {
-            long len = _dataStream.Length + sizeof(int) + sizeof(ushort) + sizeof(byte);
+            long len = _dataStream.Length + sizeof(ushort) + sizeof(byte);
             MemoryStream memStrm = new MemoryStream((int)len);
             BinaryWriter bw = new BinaryWriter(memStrm);
-            bw.Write((int)(_dataStream.Length));
+           // bw.Write((int)(_dataStream.Length));
             bw.Write(_numChildren);
             bw.Write(_hasData);
-            bw.Write(_dataStream.GetBuffer(), 0, (int)_dataStream.Length);
+            bw.Write(_dataStream.ToArray());
             return memStrm.ToArray();
         }
       
@@ -135,16 +146,8 @@ namespace Xbim.ModelGeometry.Scene
 			{
 				_dataStream.Seek(0, SeekOrigin.Begin);
 				BinaryReader br = new BinaryReader(_dataStream);
-
 				builder.BeginBuild();
-				if (_hasData > 0) //has data 
-					Build(builder, br);
-				for (int i = 0; i < _numChildren; i++)
-				{
-					builder.BeginChild();
-					Build(builder, br);
-					builder.EndChild();
-				}
+				Build(builder, br);
 				builder.EndBuild();
 			}
 			catch (Exception ex)

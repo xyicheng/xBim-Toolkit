@@ -38,6 +38,7 @@
 #include <TopTools_Array1OfShape.hxx>
 #include <TopTools_DataMapOfIntegerShape.hxx>
 #include <BRepBuilderAPI_MakePolygon.hxx>
+#include <BRepLib.hxx>
 using namespace System::Linq;
 using namespace System::Diagnostics;
 using namespace System::Windows::Media::Media3D;
@@ -67,24 +68,24 @@ namespace Xbim
 			_hasCurvedEdges = hasCurves;
 		}
 
-		XbimTriangulatedModelStream^ XbimShell::Mesh()
+		XbimTriangulatedModelCollection^ XbimShell::Mesh()
 		{
 			return Mesh(true, XbimGeometryModel::DefaultDeflection, Matrix3D::Identity);
 		}
 
-		XbimTriangulatedModelStream^ XbimShell::Mesh( bool withNormals )
+		XbimTriangulatedModelCollection^ XbimShell::Mesh( bool withNormals )
 		{
 			return Mesh(withNormals, XbimGeometryModel::DefaultDeflection, Matrix3D::Identity);
 		}
 
-		XbimTriangulatedModelStream^ XbimShell::Mesh(bool withNormals, double deflection )
+		XbimTriangulatedModelCollection^ XbimShell::Mesh(bool withNormals, double deflection )
 		{
 
 			return XbimGeometryModel::Mesh(this,withNormals,deflection, Matrix3D::Identity);
 			
 		}
 
-		XbimTriangulatedModelStream^ XbimShell::Mesh(bool withNormals, double deflection, Matrix3D transform )
+		XbimTriangulatedModelCollection^ XbimShell::Mesh(bool withNormals, double deflection, Matrix3D transform )
 		{
 			return XbimGeometryModel::Mesh(this,withNormals,deflection, transform);
 			
@@ -304,7 +305,7 @@ namespace Xbim
 				double* pZ = (double*)pPoint;
 				gp_XYZ pt(*pX,*pY,*pZ);
 				TopoDS_Vertex vertex;
-				b.MakeVertex(vertex , pt, Precision::Confusion());
+				b.MakeVertex(vertex , pt, BRepLib::Precision());
 				points.SetValue(i, vertex);
 			}
 			
@@ -327,11 +328,18 @@ namespace Xbim
 				const TopoDS_Wire& wire = makeWire.Wire();
 				
 				BRepBuilderAPI_FindPlane  FP(wire, 1e-3);
+				
 				if(!FP.Found())
 				{
-					//Debug::WriteLine(String::Format("XbimShell::Build(ConnectedFaceSet) could not find a plane for face id = #{0}",fc->EntityLabel));
-
-					break;
+					//keep the buffers in sync
+					int* pInnerBoundCount = (int*)vBuff; vBuff+=sizeof(int);
+					for(int i = 0; i< *pInnerBoundCount;i++)
+					{
+						int* pInnerPointCount = (int*)vBuff; vBuff+=sizeof(int);
+						for(int p = 0; p< *pInnerPointCount;p++)
+							int* pBeginPointIdx = (int*)vBuff; vBuff+=sizeof(int);
+					}
+					continue;
 				}
 				gp_Pln pln = FP.Plane()->Pln();
 

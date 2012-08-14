@@ -18,22 +18,22 @@ using System.Diagnostics.CodeAnalysis;
 
 [assembly:
     SuppressMessage("Microsoft.Design", "CA1020:AvoidNamespacesWithFewTypes", Scope = "namespace",
-        Target = "Xbim.Ifc.PresentationAppearanceResource")]
+        Target = "Xbim.Ifc2x3.PresentationAppearanceResource")]
 [assembly:
     SuppressMessage("Microsoft.Design", "CA1020:AvoidNamespacesWithFewTypes", Scope = "namespace",
-        Target = "Xbim.Ifc.PresentationOrganizationResource")]
+        Target = "Xbim.Ifc2x3.PresentationOrganizationResource")]
 [assembly:
     SuppressMessage("Microsoft.Design", "CA1020:AvoidNamespacesWithFewTypes", Scope = "namespace",
-        Target = "Xbim.Ifc.StructuralAnalysisDomain")]
+        Target = "Xbim.Ifc2x3.StructuralAnalysisDomain")]
 [assembly:
     SuppressMessage("Microsoft.Design", "CA1020:AvoidNamespacesWithFewTypes", Scope = "namespace",
-        Target = "Xbim.Ifc.TimeSeriesResource")]
+        Target = "Xbim.Ifc2x3.TimeSeriesResource")]
 [assembly:
     SuppressMessage("Microsoft.Design", "CA1020:AvoidNamespacesWithFewTypes", Scope = "namespace",
-        Target = "Xbim.Ifc.Model")]
+        Target = "Xbim.Ifc2x3.Model")]
 [assembly:
     SuppressMessage("Microsoft.Naming", "CA1702:CompoundWordsShouldBeCasedCorrectly", MessageId = "ComissioningEngineer"
-        , Scope = "member", Target = "Xbim.Ifc.ActorResource.RoleEnum.#ComissioningEngineer")]
+        , Scope = "member", Target = "Xbim.Ifc2x3.ActorResource.RoleEnum.#ComissioningEngineer")]
 [assembly:
     SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Comissioning",
-        Scope = "member", Target = "Xbim.Ifc.ActorResource.Role.#ComissioningEngineer")]
+        Scope = "member", Target = "Xbim.Ifc2x3.ActorResource.Role.#ComissioningEngineer")]

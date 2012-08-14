@@ -28,6 +28,7 @@ namespace Xbim.IO
         //tables open read only
         private XbimEntityTable _jetTypeCursor;
         private XbimEntityTable _jetEntityCursor;
+        private XbimGeometryTable _geometryTable;
         const int _transactionBatchSize = 100;
 
 
@@ -58,7 +59,7 @@ namespace Xbim.IO
             if (_jetInstance == null) //if we have never created an instance do it now
             {
                 _jetInstance = new Instance("XbimInstance");
-                _jetInstance.Parameters.Recovery = false; //By default its True, only set this if we plan to write
+               //_jetInstance.Parameters.Recovery = false; //By default its True, only set this if we plan to write
                 SystemParameters.CacheSizeMin = 16 * 1024;
                 _jetInstance.Parameters.LogFileSize = 16 * 1024;
                 _jetInstance.Parameters.LogBuffers = 8 * 1024;
@@ -532,6 +533,7 @@ namespace Xbim.IO
         public IEnumerable<TIfcType> OfType<TIfcType>(bool activate = false, long secondaryKey = -1)
         {
             IfcType ifcType = IfcInstances.IfcEntities[typeof(TIfcType)];
+            if (_jetTypeCursor == null) yield return default(TIfcType);
             foreach (Type t in ifcType.NonAbstractSubTypes)
             {
                 short typeId = IfcInstances.IfcEntities[t].TypeId;
@@ -866,7 +868,24 @@ namespace Xbim.IO
             table.Close();
         }
 
-        
+
+
+
+        public XbimGeometryData GetGeometry(IfcProduct product, XbimGeometryType geomType)
+        {
+            if (_geometryTable == null)
+                _geometryTable = new XbimGeometryTable(_jetSession, _jetDatabaseId,OpenTableGrbit.ReadOnly);
+            return _geometryTable.GeometryData(product,geomType);
+        }
+
+
+
+        public IEnumerable<XbimGeometryData> Shapes(XbimGeometryType ofType)
+        {
+            if (_geometryTable == null)
+                _geometryTable = new XbimGeometryTable(_jetSession, _jetDatabaseId, OpenTableGrbit.ReadOnly);
+            return _geometryTable.Shapes(ofType);
+        }
     }
 }
 

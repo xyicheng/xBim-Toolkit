@@ -40,10 +40,10 @@ namespace Xbim
 			{
 				return _boundingBox;
 			};
-			virtual XbimTriangulatedModelStream^ Mesh(bool withNormals, double deflection, Matrix3D transform);
-			virtual XbimTriangulatedModelStream^ Mesh(bool withNormals, double deflection);
-			virtual XbimTriangulatedModelStream^ Mesh(bool withNormals);
-			virtual XbimTriangulatedModelStream^ Mesh();
+			virtual XbimTriangulatedModelCollection^ Mesh(bool withNormals, double deflection, Matrix3D transform);
+			virtual XbimTriangulatedModelCollection^ Mesh(bool withNormals, double deflection);
+			virtual XbimTriangulatedModelCollection^ Mesh(bool withNormals);
+			virtual XbimTriangulatedModelCollection^ Mesh();
 			virtual property double Volume
 			{
 				double get()

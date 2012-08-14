@@ -65,7 +65,7 @@ namespace Xbim.Ifc2x3.StructuralAnalysisDomain
                 case 11:
                     _projectedOrTrue =
                         (IfcProjectedOrTrueLengthEnum)
-                        Enum.Parse(typeof (IfcProjectedOrTrueLengthEnum), value.StringVal, true);
+                        Enum.Parse(typeof (IfcProjectedOrTrueLengthEnum), value.EnumVal, true);
                     break;
                 default:
                     this.HandleUnexpectedAttribute(propIndex, value); break;

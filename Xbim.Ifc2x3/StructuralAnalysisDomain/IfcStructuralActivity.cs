@@ -75,7 +75,7 @@ namespace Xbim.Ifc2x3.StructuralAnalysisDomain
                     break;
                 case 8:
                     _globalOrLocal =
-                        (IfcGlobalOrLocalEnum) Enum.Parse(typeof (IfcGlobalOrLocalEnum), value.StringVal, true);
+                        (IfcGlobalOrLocalEnum) Enum.Parse(typeof (IfcGlobalOrLocalEnum), value.EnumVal, true);
                     break;
                 default:
                     this.HandleUnexpectedAttribute(propIndex, value); break;

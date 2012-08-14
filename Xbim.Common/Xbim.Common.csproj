@@ -138,6 +138,7 @@
     <Compile Include="SelectTypes\IfcClassificationNotationSelect.cs" />
     <Compile Include="SelectTypes\IfcColour.cs" />
     <Compile Include="SelectTypes\IfcColourOrFactor.cs" />
+    <Compile Include="SelectTypes\IfcConditionCriterionSelect.cs" />
     <Compile Include="SelectTypes\IfcCsgSelect.cs" />
     <Compile Include="SelectTypes\IfcCurveFontOrScaledCurveFontSelect.cs" />
     <Compile Include="SelectTypes\IfcCurveOrEdgeCurve.cs" />
@@ -218,6 +219,7 @@
     <Compile Include="XbimExtensions\Transactions\UndoRedoSession.cs" />
     <Compile Include="XbimExtensions\ValidationFlags.cs" />
     <Compile Include="XbimExtensions\XbimArray.cs" />
+    <Compile Include="XbimExtensions\XbimGeometryData.cs" />
     <Compile Include="XbimExtensions\XbimIndexedCollection.cs" />
     <Compile Include="XbimExtensions\XbimIndexedCollectionExtensions.cs" />
     <Compile Include="XbimExtensions\XbimList.cs" />
@@ -225,6 +227,7 @@
     <Compile Include="XbimExtensions\XbimPropertyDescriptor.cs" />
     <Compile Include="XbimExtensions\XbimRepresentationType.cs" />
     <Compile Include="XbimExtensions\XbimSet.cs" />
+    <Compile Include="XbimExtensions\XbimGeometryType.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

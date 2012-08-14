@@ -104,6 +104,5 @@ namespace Xbim.XbimExtensions.Interfaces
         int Validate(TextWriter errStream, ReportProgressDelegate progressDelegate, ValidationFlags? validateFlags = null);
 
 
-       
     }
 }

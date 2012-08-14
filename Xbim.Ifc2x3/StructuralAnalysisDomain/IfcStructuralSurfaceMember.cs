@@ -84,7 +84,7 @@ namespace Xbim.Ifc2x3.StructuralAnalysisDomain
                 case 7:
                     _predefinedType =
                         (IfcStructuralSurfaceTypeEnum)
-                        Enum.Parse(typeof (IfcStructuralSurfaceTypeEnum), value.StringVal, true);
+                        Enum.Parse(typeof (IfcStructuralSurfaceTypeEnum), value.EnumVal, true);
                     break;
                 case 8:
                     _thickness = value.RealVal;

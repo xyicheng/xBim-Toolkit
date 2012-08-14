@@ -19,7 +19,7 @@ namespace Xbim
 		{
 	
 		public:
-			static void ConvertGeometry(XbimModel^ model);
+			static void ConvertGeometry(XbimModel^ model, IEnumerable<IfcProduct^>^ toConvert);
 		private:
 			XbimLOD _lod;
 			TransformGraph^ _graph;

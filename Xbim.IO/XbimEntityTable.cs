@@ -119,7 +119,7 @@ namespace Xbim.IO
             _colValTypeId = new Int16ColumnValue { Columnid = _colIdIfcType };
             _colValSecondaryKey = new Int64ColumnValue { Columnid = _colIdSecondaryKey };
             _colValData = new BytesColumnValue { Columnid = _colIdEntityData };
-            _colValues = new ColumnValue[] { _colValEntityLabel, _colValTypeId, _colValData };
+            _colValues = new ColumnValue[] { _colValEntityLabel,_colValSecondaryKey, _colValTypeId, _colValData };
 
         }
         /// <summary>

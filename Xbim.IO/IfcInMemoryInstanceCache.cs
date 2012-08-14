@@ -5,6 +5,7 @@ using System.Text;
 using Xbim.XbimExtensions.Interfaces;
 using System.Xml;
 using System.IO;
+using Xbim.XbimExtensions;
 
 namespace Xbim.IO
 {
@@ -171,6 +172,153 @@ namespace Xbim.IO
 
 
         public void EndGeometryUpdate(XbimGeometryTable table)
+        {
+            throw new NotImplementedException();
+        }
+
+
+        public XbimGeometryData GetGeometry(Ifc2x3.Kernel.IfcProduct product, XbimGeometryType geomType)
+        {
+            throw new NotImplementedException();
+        }
+
+        bool IIfcInstanceCache.Contains(IPersistIfcEntity instance)
+        {
+            throw new NotImplementedException();
+        }
+
+        bool IIfcInstanceCache.Contains(long p)
+        {
+            throw new NotImplementedException();
+        }
+
+        long IIfcInstanceCache.Count
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        long IIfcInstanceCache.HighestLabel
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        void IIfcInstanceCache.SetHighestLabel_Reversable(long nextLabel)
+        {
+            throw new NotImplementedException();
+        }
+
+        long IIfcInstanceCache.InstancesOfTypeCount(Type t)
+        {
+            throw new NotImplementedException();
+        }
+
+        IEnumerable<IfcInstanceHandle> IIfcInstanceCache.InstanceHandles
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        IPersistIfcEntity IIfcInstanceCache.GetInstance(long label, bool loadProperties, bool unCached)
+        {
+            throw new NotImplementedException();
+        }
+
+        IPersistIfcEntity IIfcInstanceCache.CreateNew_Reversable(Type t, long label)
+        {
+            throw new NotImplementedException();
+        }
+
+        void IIfcInstanceCache.Close()
+        {
+            throw new NotImplementedException();
+        }
+
+        void IIfcInstanceCache.ImportIfc(string importFrom, ReportProgressDelegate progressHandler)
+        {
+            throw new NotImplementedException();
+        }
+
+        void IIfcInstanceCache.ImportXbim(string importFrom, ReportProgressDelegate progressHandler)
+        {
+            throw new NotImplementedException();
+        }
+
+        void IIfcInstanceCache.ImportIfcXml(string importFrom, ReportProgressDelegate progressHandler)
+        {
+            throw new NotImplementedException();
+        }
+
+        void IIfcInstanceCache.ImportIfcZip(string importFrom, ReportProgressDelegate progressHandler)
+        {
+            throw new NotImplementedException();
+        }
+
+        void IIfcInstanceCache.UpdateEntity(IPersistIfcEntity toWrite, int entitiesParsed)
+        {
+            throw new NotImplementedException();
+        }
+
+        void IIfcInstanceCache.Activate(IPersistIfcEntity entity)
+        {
+            throw new NotImplementedException();
+        }
+
+        IEnumerable<TIfcType> IIfcInstanceCache.OfType<TIfcType>(bool activate, long secondaryKey)
+        {
+            throw new NotImplementedException();
+        }
+
+        void IIfcInstanceCache.SaveAs(XbimStorageType _storageType, string _storageFileName, ReportProgressDelegate progress)
+        {
+            throw new NotImplementedException();
+        }
+
+        IEnumerable<IfcInstanceHandle> IIfcInstanceCache.InstanceHandlesOfType<T>()
+        {
+            throw new NotImplementedException();
+        }
+
+        void IIfcInstanceCache.Delete_Reversable(IPersistIfcEntity instance)
+        {
+            throw new NotImplementedException();
+        }
+
+        void IIfcInstanceCache.Update_Reversible(IPersistIfcEntity entity)
+        {
+            throw new NotImplementedException();
+        }
+
+        bool IIfcInstanceCache.Saved
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        IPersistIfcEntity IIfcInstanceCache.CreateNew(Type type, long id)
+        {
+            throw new NotImplementedException();
+        }
+
+        IEnumerable<T> IIfcInstanceCache.Where<T>(System.Linq.Expressions.Expression<Func<T, bool>> expression)
+        {
+            throw new NotImplementedException();
+        }
+
+        XbimGeometryTable IIfcInstanceCache.BeginGeometryUpdate()
+        {
+            throw new NotImplementedException();
+        }
+
+        void IIfcInstanceCache.EndGeometryUpdate(XbimGeometryTable table)
+        {
+            throw new NotImplementedException();
+        }
+
+        XbimGeometryData IIfcInstanceCache.GetGeometry(Ifc2x3.Kernel.IfcProduct product, XbimGeometryType geomType)
+        {
+            throw new NotImplementedException();
+        }
+
+
+        public IEnumerable<XbimGeometryData> Shapes(XbimGeometryType ofType)
         {
             throw new NotImplementedException();
         }

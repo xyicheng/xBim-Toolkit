@@ -161,7 +161,7 @@ namespace Xbim.Ifc2x3.StructuralElementsDomain
                     base.IfcParse(propIndex, value);
                     break;
                 case 9:
-                    _predefinedType = (IfcTendonTypeEnum) Enum.Parse(typeof (IfcTendonTypeEnum), value.StringVal, true);
+                    _predefinedType = (IfcTendonTypeEnum) Enum.Parse(typeof (IfcTendonTypeEnum), value.EnumVal, true);
                     break;
                 case 10:
                     _nominalDiameter = value.RealVal;

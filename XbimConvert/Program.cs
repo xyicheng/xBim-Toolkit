@@ -11,6 +11,7 @@ using Xbim.Common.Logging;
 using Xbim.Ifc2x3.Kernel;
 using Xbim.Ifc2x3.SharedBldgElements;
 
+using Xbim.Common.Exceptions;
 
 namespace XbimConvert
 {
@@ -31,7 +32,7 @@ namespace XbimConvert
                 {
                     return -1;
                 }
-                
+
                 try
                 {
 
@@ -60,13 +61,26 @@ namespace XbimConvert
                 }
                 catch (Exception e)
                 {
-                    ResetCursor(Console.CursorTop + 1);
-                    Console.WriteLine(string.Format("Error converting {0}, {1}", arguments.IfcFileName, e.Message));
-                    Logger.Error(String.Format("Error converting {0}", arguments.IfcFileName), e);
-                    GetInput();
-                    
+                    if(e is XbimException || e is NotImplementedException)
+                    {
+                         // Errors we have already handled or know about. Keep details brief in the log
+                        Logger.ErrorFormat("One or more errors converting {0}. Exiting...", arguments.IfcFileName);
+                        CreateLogFile(arguments.IfcFileName, eventTrace.Events);
+
+                        DisplayError(string.Format("One or more errors converting {0}, {1}", arguments.IfcFileName, e.Message));
+                    }
+                    else
+                    {
+                        // Unexpected failures. Log exception details
+                        Logger.Fatal(String.Format("Fatal Error converting {0}. Exiting...", arguments.IfcFileName), e);
+                        CreateLogFile(arguments.IfcFileName, eventTrace.Events);
+
+                        DisplayError(string.Format("Fatal Error converting {0}, {1}", arguments.IfcFileName, e.Message));
+                    }
                     return -1;
                 }
+                Logger.Info("XbimConvert finished successfully...");
+
                 int errors = (from e in eventTrace.Events
                              where (e.EventLevel > EventLevel.INFO)
                              select e).Count();
@@ -76,10 +90,17 @@ namespace XbimConvert
                     CreateLogFile(arguments.IfcFileName, eventTrace.Events);
                 }
 
-                Logger.Debug("XbimConvert finished...");
+                
                 return errors;
             }
             
+        }
+
+        private static void DisplayError(String  message)
+        {
+            ResetCursor(Console.CursorTop + 1);
+            Console.WriteLine(message);
+            GetInput();
         }
 
         private static void GenerateGeometry(string xbimGeometryFileName, XbimModel model)
@@ -88,7 +109,7 @@ namespace XbimConvert
 
             IEnumerable<IfcProduct> toDraw = GetProducts(model);
 
-            XbimScene.ConvertGeometry(model);
+            XbimScene.ConvertGeometry(model, toDraw);
             //XbimScene scene = new XbimScene(model, toDraw);
             //TransformGraph graph = new TransformGraph(model, scene);
             //add everything with a representation
@@ -145,7 +166,7 @@ namespace XbimConvert
                         {
                             if (!arguments.IsQuiet)
                             {
-                                Console.Write(string.Format("{0:D2}% Converted", percentProgress));
+                                Console.Write(string.Format("{0:D2}% Parsed", percentProgress));
                                 ResetCursor(Console.CursorTop);
                             }
                         }
@@ -175,12 +196,13 @@ namespace XbimConvert
                 {
                     foreach (Event logEvent in events)
                     {
+                        string message = SanitiseMessage(logEvent.Message);
                         writer.WriteLine("{0:yyyy-MM-dd HH:mm:ss} : {1:-5} {2}.{3} - {4}",
                             logEvent.EventTime,
                             logEvent.EventLevel.ToString(),
                             logEvent.Logger,
                             logEvent.Method,
-                            logEvent.Message
+                            message
                             );
                     }
                     writer.Flush();
@@ -191,6 +213,19 @@ namespace XbimConvert
             {
                 Logger.Error(String.Format("Failed to create Log File for {0}", ifcFile), e);
             }
+        }
+
+        private static string SanitiseMessage(string message)
+        {
+            if (arguments.SanitiseLogs == false)
+                return message;
+
+            string modelPath = Path.GetDirectoryName(arguments.IfcFileName);
+            string currentPath = Environment.CurrentDirectory;
+
+            return message
+                .Replace(modelPath, String.Empty)
+                .Replace(currentPath, String.Empty);
         }
 
         private static string BuildFileName(string file, string extension)

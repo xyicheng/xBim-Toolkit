@@ -102,6 +102,7 @@
     <Compile Include="XbimLOD.cs" />
     <Compile Include="XbimMeshGeometry3D.cs" />
     <Compile Include="XbimSceneStream.cs" />
+    <Compile Include="XbimTriangulatedModelCollection.cs" />
     <Compile Include="XbimTriangulatedModelStream.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -53,21 +53,21 @@ namespace Xbim
 			throw gcnew NotImplementedException("CopyTo needs to be implemented");
 		}
 
-		XbimTriangulatedModelStream^ XbimMap::Mesh()
+		XbimTriangulatedModelCollection^ XbimMap::Mesh()
 		{
 			return Mesh(true, XbimGeometryModel::DefaultDeflection,_transform);
 		}
 
-		XbimTriangulatedModelStream^ XbimMap::Mesh( bool withNormals )
+		XbimTriangulatedModelCollection^ XbimMap::Mesh( bool withNormals )
 		{
 			return Mesh(withNormals, XbimGeometryModel::DefaultDeflection, _transform);
 		}
-		XbimTriangulatedModelStream^ XbimMap::Mesh(bool withNormals, double deflection )
+		XbimTriangulatedModelCollection^ XbimMap::Mesh(bool withNormals, double deflection )
 		{
 			return _mappedItem->Mesh(withNormals, deflection, _transform);
 		}
 
-		XbimTriangulatedModelStream^ XbimMap::Mesh(bool withNormals, double deflection, Matrix3D transform )
+		XbimTriangulatedModelCollection^ XbimMap::Mesh(bool withNormals, double deflection, Matrix3D transform )
 		{
 			if(Matrix3D::Identity==transform)
 				return _mappedItem->Mesh(withNormals, deflection, _transform);

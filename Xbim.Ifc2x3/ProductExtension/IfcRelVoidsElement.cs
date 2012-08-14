@@ -44,7 +44,7 @@ namespace Xbim.Ifc2x3.ProductExtension
         ///   Reference to element in which a void is created by associated feature subtraction element.
         /// </summary>
         [IfcAttribute(5, IfcAttributeState.Mandatory)]
-        [IfcPrimaryIndex]
+        [IfcIndex]
         public IfcElement RelatingBuildingElement
         {
             get

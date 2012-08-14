@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using Xbim.XbimExtensions.Interfaces;
 using System.Linq.Expressions;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.XbimExtensions;
 
 namespace Xbim.IO
 {
@@ -72,5 +74,9 @@ namespace Xbim.IO
         XbimGeometryTable BeginGeometryUpdate();
 
         void EndGeometryUpdate(XbimGeometryTable table);
+
+        XbimGeometryData GetGeometry(IfcProduct product, XbimGeometryType geomType);
+
+        IEnumerable<XbimGeometryData> Shapes(XbimGeometryType ofType);
     }
 }

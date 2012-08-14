@@ -67,7 +67,7 @@ namespace Xbim
 			}
 
 		}
-
+		
 
 		TopLoc_Location XbimGeomPrim::ToLocation(IfcAxis2Placement3D^ axis3D)
 		{
@@ -124,6 +124,14 @@ namespace Xbim
 		gp_Pln XbimGeomPrim::ToPlane(IfcAxis2Placement3D^ axis3D)
 		{
 			return gp_Pln(ToAx3(axis3D));
+		}
+		
+		
+		gp_Trsf XbimGeomPrim::ToTransform(IfcAxis2Placement3D^ axis3D)
+		{
+			gp_Trsf trsf;
+			trsf.SetTransformation(ToAx3(axis3D),gp_Ax3(gp_Pnt(),gp_Dir(0,0,1),gp_Dir(1,0,0)));	
+			return trsf;
 		}
 
 		gp_Trsf XbimGeomPrim::ToTransform(IfcCartesianTransformationOperator^ tForm)

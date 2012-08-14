@@ -22,13 +22,57 @@ namespace Xbim.ModelGeometry.Scene
 {
     public static class Matrix3DExtensions
     {
+        public static Matrix3D FromArray(this Matrix3D m3D, byte[] array, bool useDouble = true)
+        {
+            MemoryStream ms = new MemoryStream(array);
+            BinaryReader strm = new BinaryReader(ms);
+            if (useDouble)
+            {
+                m3D.M11 = strm.ReadDouble();
+                m3D.M12 = strm.ReadDouble();
+                m3D.M13 = strm.ReadDouble();
+                m3D.M14 = strm.ReadDouble();
+                m3D.M21 = strm.ReadDouble();
+                m3D.M22 = strm.ReadDouble();
+                m3D.M23 = strm.ReadDouble();
+                m3D.M24 = strm.ReadDouble();
+                m3D.M31 = strm.ReadDouble();
+                m3D.M32 = strm.ReadDouble();
+                m3D.M33 = strm.ReadDouble();
+                m3D.M34 = strm.ReadDouble();
+                m3D.OffsetX = strm.ReadDouble();
+                m3D.OffsetY = strm.ReadDouble();
+                m3D.OffsetZ = strm.ReadDouble();
+                m3D.M44 = strm.ReadDouble();
+            }
+            else
+            {
+                m3D.M11 = strm.ReadSingle();
+                m3D.M12 = strm.ReadSingle();
+                m3D.M13 = strm.ReadSingle();
+                m3D.M14 = strm.ReadSingle();
+                m3D.M21 = strm.ReadSingle();
+                m3D.M22 = strm.ReadSingle();
+                m3D.M23 = strm.ReadSingle();
+                m3D.M24 = strm.ReadSingle();
+                m3D.M31 = strm.ReadSingle();
+                m3D.M32 = strm.ReadSingle();
+                m3D.M33 = strm.ReadSingle();
+                m3D.M34 = strm.ReadSingle();
+                m3D.OffsetX = strm.ReadSingle();
+                m3D.OffsetY = strm.ReadSingle();
+                m3D.OffsetZ = strm.ReadSingle();
+                m3D.M44 = strm.ReadSingle();
+            }
+            return m3D;
+        }
         /// <summary>
         /// Creates an array of bytes of the matrix
         /// </summary>
         /// <param name="m3D"></param>
         /// <param name="useDouble">if true double values are used, if false float values are used</param>
         /// <returns></returns>
-        public static Byte[] ToArray(this Matrix3D m3D, bool useDouble = false)
+        public static Byte[] ToArray(this Matrix3D m3D, bool useDouble = true)
         {
             if (useDouble)
             {

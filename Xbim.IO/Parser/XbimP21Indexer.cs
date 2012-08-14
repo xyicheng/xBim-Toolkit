@@ -128,7 +128,7 @@ namespace Xbim.IO.Parser
         
         private long _currentLabel;
         private string _currentType;
-        private int _primaryKeyIdx = -1;
+        private int _ifcKeyIdx = -1;
 
         private Part21Entity _currentInstance;
         private readonly Stack<Part21Entity> _processStack = new Stack<Part21Entity>();
@@ -142,7 +142,7 @@ namespace Xbim.IO.Parser
         } 
 
    
-        private Microsoft.Isam.Esent.Interop.Session session;
+        private Session session;
         private XbimEntityTable table;
        
         const int _transactionBatchSize = 100;
@@ -286,7 +286,7 @@ namespace Xbim.IO.Parser
 
                 _currentType = entityTypeName;
                 IfcType ifcType = IfcInstances.IfcTypeLookup[_currentType];
-                _primaryKeyIdx = ifcType.PrimaryKeyIndex;
+                _ifcKeyIdx = ifcType.PrimaryKeyIndex;
             }
         }
 
@@ -444,7 +444,7 @@ namespace Xbim.IO.Parser
         {
             long val = Convert.ToInt64(value.TrimStart('#'));
 
-            if (_currentInstance.CurrentParamIndex == _primaryKeyIdx)
+            if (_currentInstance.CurrentParamIndex  == (_ifcKeyIdx -1)) //current param index is 0 based and ifcKey is 1 based
                 _primaryKeyValue = val;
 
             if (_listNestLevel == 0) _currentInstance.CurrentParamIndex++;

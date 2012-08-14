@@ -90,10 +90,10 @@ namespace Xbim
 
 			
 			XbimGeometryModel(void){};
-			virtual XbimTriangulatedModelStream^ Mesh(bool withNormals, double deflection, Matrix3D transform) abstract;
-			virtual XbimTriangulatedModelStream^ Mesh(bool withNormals, double deflection) abstract;
-			virtual XbimTriangulatedModelStream^ Mesh(bool withNormals) abstract;
-			virtual XbimTriangulatedModelStream^ Mesh() abstract;
+			virtual XbimTriangulatedModelCollection^ Mesh(bool withNormals, double deflection, Matrix3D transform) abstract;
+			virtual XbimTriangulatedModelCollection^ Mesh(bool withNormals, double deflection) abstract;
+			virtual XbimTriangulatedModelCollection^ Mesh(bool withNormals) abstract;
+			virtual XbimTriangulatedModelCollection^ Mesh() abstract;
 			property TopoDS_Shape* Handle{ virtual TopoDS_Shape* get() abstract;};
 			virtual IXbimGeometryModel^ Cut(IXbimGeometryModel^ shape) abstract;
 			virtual IXbimGeometryModel^ Union(IXbimGeometryModel^ shape)abstract;
@@ -111,7 +111,7 @@ namespace Xbim
 			static IXbimGeometryModel^ CreateMap(IXbimGeometryModel^ item, IfcAxis2Placement^ origin, Dictionary<IfcRepresentation^, IXbimGeometryModel^>^ maps, bool forceSolid);
 			static IXbimGeometryModel^ CreateMap(IXbimGeometryModel^ item, Dictionary<IfcRepresentation^, IXbimGeometryModel^>^ maps, bool forceSolid);
 			static IXbimGeometryModel^ Fix(IXbimGeometryModel^ shape);
-			static XbimTriangulatedModelStream^ Mesh(IXbimGeometryModel^ shape,  bool withNormals, double deflection, Matrix3D transform );
+			static XbimTriangulatedModelCollection^ Mesh(IXbimGeometryModel^ shape,  bool withNormals, double deflection, Matrix3D transform );
 			virtual XbimBoundingBox^ GetBoundingBox(bool precise) abstract;
 			static XbimBoundingBox^ GetBoundingBox(IXbimGeometryModel^ shape, bool precise);
 			property double Volume {virtual double get()abstract;};

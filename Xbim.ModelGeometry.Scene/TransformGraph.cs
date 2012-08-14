@@ -95,20 +95,36 @@ namespace Xbim.ModelGeometry.Scene
         /// </summary>
         /// <param name = "strm"></param>
         /// <returns></returns>
-        public void Write(BinaryWriter strm)
+        public void Write(BinaryWriter strm, ReportProgressDelegate progressStatus = null)
         {
             strm.Write((long) -1);
+            double total = _productNodes.Values.Count;
+            double current = 0;
+            int percentageParsed = 0;
+            if(progressStatus != null)
+                progressStatus(0, "Geometry Converted");
             foreach (var node in _productNodes.Values)
             {
                 node.FilePosition = strm.BaseStream.Position;
                 node.TriangulatedModel.Write(strm);
                 node.TriangulatedModel = null; //delete data to save memory, can always get back fro the stream later
-            
+                if (progressStatus != null)
+                {
+                    current++;
+                    int newPercentage = Convert.ToInt32(current / total * 100.0);
+                    if (newPercentage > percentageParsed)
+                    {
+                        percentageParsed = newPercentage;
+                        progressStatus(percentageParsed, "Geometry Converted");
+                    }
+                }
             }
             long pos = strm.BaseStream.Position;
             _root.Write(strm);
             strm.BaseStream.Seek(0, SeekOrigin.Begin);
             strm.Write(pos);
+            if (progressStatus != null)
+                progressStatus(100, "Geometry Conversion Complete");
         }
 
 

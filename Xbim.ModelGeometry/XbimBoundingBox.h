@@ -54,6 +54,8 @@ namespace Xbim
 					return true;
 			}
 
+			
+
 			void Add(XbimBoundingBox^ other)
 			{
 				pBox->Add(*(other->pBox));

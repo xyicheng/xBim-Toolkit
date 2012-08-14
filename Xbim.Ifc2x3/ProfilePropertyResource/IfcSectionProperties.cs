@@ -111,7 +111,7 @@ namespace Xbim.Ifc2x3.ProfilePropertyResource
             switch (propIndex)
             {
                 case 0:
-                    _sectionType = (IfcSectionTypeEnum) Enum.Parse(typeof (IfcSectionTypeEnum), value.StringVal, true);
+                    _sectionType = (IfcSectionTypeEnum) Enum.Parse(typeof (IfcSectionTypeEnum), value.EnumVal, true);
                     break;
                 case 1:
                     _startProfile = (IfcProfileDef) value.EntityVal;

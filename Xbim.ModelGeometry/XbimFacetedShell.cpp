@@ -66,22 +66,22 @@ namespace Xbim
 			throw gcnew NotImplementedException("CopyTo needs to be implemented");
 		}
 
-		XbimTriangulatedModelStream^ XbimFacetedShell::Mesh()
+		XbimTriangulatedModelCollection^ XbimFacetedShell::Mesh()
 		{
 			return Mesh(true, XbimGeometryModel::DefaultDeflection, Matrix3D::Identity);
 		}
 
-		XbimTriangulatedModelStream^ XbimFacetedShell::Mesh( bool withNormals )
+		XbimTriangulatedModelCollection^ XbimFacetedShell::Mesh( bool withNormals )
 		{
 			return Mesh(withNormals, XbimGeometryModel::DefaultDeflection, Matrix3D::Identity);
 		}
 		
-		XbimTriangulatedModelStream^ XbimFacetedShell::Mesh(bool withNormals, double deflection )
+		XbimTriangulatedModelCollection^ XbimFacetedShell::Mesh(bool withNormals, double deflection )
 		{
 			return Mesh(withNormals, deflection, Matrix3D::Identity);
 		}
 
-		XbimTriangulatedModelStream^ XbimFacetedShell::Mesh(bool withNormals, double deflection, Matrix3D transform )
+		XbimTriangulatedModelCollection^ XbimFacetedShell::Mesh(bool withNormals, double deflection, Matrix3D transform )
 		{
 
 			GLUtesselator *tess = gluNewTess();
@@ -144,13 +144,13 @@ namespace Xbim
 
 			GLdouble glPt3D[3];
 
-			if(vertexCount==0) return XbimTriangulatedModelStream::Empty;
+			if(vertexCount==0) return XbimTriangulatedModelCollection::Empty;
 			int memSize =  sizeof(int) + (vertexCount * 3 *sizeof(double)); //number of points plus x,y,z of each point
 			memSize += sizeof(unsigned int); //allow unsigned int for total number of faces
 			memSize += faceCount * (sizeof(unsigned char)+(2*sizeof(unsigned short)) +sizeof(unsigned short)+ 3 * sizeof(double)); //allow space for the type of triangulation (1 byte plus number of indices - 2 bytes plus polygon count-2 bytes) + normal count + the normal
 			memSize += (totalIndices*indexSize*2) ; //assume worst case each face is made only of triangles, Max number of indices + Triangle Mode=1byte per triangle
 			
-			IntPtr vertexPtr = Marshal::AllocHGlobal(memSize);
+			IntPtr vertexPtr = Marshal::AllocHGlobal(memSize*2); //temporary fix add a amargin of error
 			try
 			{	
 				unsigned char* pointBuffer = (unsigned char*)vertexPtr.ToPointer();
@@ -237,14 +237,14 @@ namespace Xbim
 				//System::Diagnostics::Debug::WriteLine(String::Format("MemSize={0}, Actual={1}, Diff={2}", memSize/2, len, (memSize/2) - len));
 				array<unsigned char>^ managedArray = gcnew array<unsigned char>(len);
 				Marshal::Copy(vertexPtr, managedArray, 0, len);
-				return gcnew XbimTriangulatedModelStream(managedArray);
+				return gcnew XbimTriangulatedModelCollection(managedArray);
 			}
 			catch(Exception^ e)
 			{
 				String^ message = String::Format("XbimFacetedShell, General failure in Shell #{0}",_faceSet->EntityLabel);
 				Logger->Error(message, e);
 
-				return XbimTriangulatedModelStream::Empty;		
+				return XbimTriangulatedModelCollection::Empty;		
 			}
 			finally
 			{

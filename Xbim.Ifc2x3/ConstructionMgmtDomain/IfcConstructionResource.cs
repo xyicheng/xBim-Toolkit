@@ -120,7 +120,7 @@ namespace Xbim.Ifc2x3.ConstructionMgmtDomain
                     break;
                 case 7:
                     _resourceConsumption =
-                        (IfcResourceConsumptionEnum) Enum.Parse(typeof (IfcResourceConsumptionEnum), value.StringVal);
+                        (IfcResourceConsumptionEnum) Enum.Parse(typeof (IfcResourceConsumptionEnum), value.EnumVal);
                     break;
                 case 8:
                     _baseQuantity = (IfcMeasureWithUnit) value.EntityVal;

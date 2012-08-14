@@ -7,7 +7,9 @@
 #include <BRepAlgoAPI_Cut.hxx>
 #include <BRepAlgoAPI_Common.hxx>
 #include <BRepAlgoAPI_Fuse.hxx>
-
+#include <BRepOffsetAPI_Sewing.hxx>
+#include <BRepLib.hxx>
+#include <ShapeUpgrade_ShellSewing.hxx>
 using namespace System::Linq;
 using namespace Xbim::Common::Exceptions;
 
@@ -132,32 +134,32 @@ namespace Xbim
 			//	return nullptr;
 			//}
 		}
-		XbimTriangulatedModelStream^ XbimGeometryModelCollection::Mesh( )
+		XbimTriangulatedModelCollection^ XbimGeometryModelCollection::Mesh( )
 		{
 			return Mesh(true, XbimGeometryModel::DefaultDeflection, Matrix3D::Identity);
 		}
 
-		XbimTriangulatedModelStream^ XbimGeometryModelCollection::Mesh(bool withNormals )
+		XbimTriangulatedModelCollection^ XbimGeometryModelCollection::Mesh(bool withNormals )
 		{
 			return Mesh(withNormals, XbimGeometryModel::DefaultDeflection, Matrix3D::Identity);
 		}
-		XbimTriangulatedModelStream^ XbimGeometryModelCollection::Mesh(bool withNormals, double deflection )
+		XbimTriangulatedModelCollection^ XbimGeometryModelCollection::Mesh(bool withNormals, double deflection )
 		{ 
 			return Mesh(withNormals, deflection, Matrix3D::Identity);
 		}
 
-		XbimTriangulatedModelStream^ XbimGeometryModelCollection::Mesh(bool withNormals, double deflection, Matrix3D transform )
+		XbimTriangulatedModelCollection^ XbimGeometryModelCollection::Mesh(bool withNormals, double deflection, Matrix3D transform )
 		{ 
 			
 			if(shapes->Count > 0) //we have children that need special materials etc
 			{
-				XbimTriangulatedModelStream^ tm = gcnew XbimTriangulatedModelStream();
+				XbimTriangulatedModelCollection^ tm = gcnew XbimTriangulatedModelCollection();
 				for each(IXbimGeometryModel^ gm in shapes)
-					tm->AddChild(gm->Mesh(withNormals, deflection, transform));
+					tm->Add(gm->Mesh(withNormals, deflection, transform));
 				return tm;
 			}
 			else
-				return XbimTriangulatedModelStream::Empty;
+				return XbimTriangulatedModelCollection::Empty;
 			
 		}
 
@@ -175,12 +177,15 @@ namespace Xbim
 				throw(gcnew InvalidOperationException("XbimSolid::CopyTo only supports IfcLocalPlacement type"));*/
 
 		}
-
+		///Every element should be a solid bedore this is called. returns a compound solid
 		IXbimGeometryModel^ XbimGeometryModelCollection::Solidify()
 		{
-
-			return XbimGeometryModel::Fix(this);
-
+			BRep_Builder b;
+			TopoDS_Compound compound;
+			b.MakeCompound(compound);
+			for each(IXbimGeometryModel^ shape in shapes)
+				b.Add(compound, *(shape->Handle));
+			return gcnew XbimSolid(compound);
 		}
 	}
 }

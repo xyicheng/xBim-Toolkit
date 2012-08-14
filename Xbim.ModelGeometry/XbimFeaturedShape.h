@@ -23,7 +23,8 @@ namespace Xbim
 			List<IXbimGeometryModel^>^ mOpenings;
 			List<IXbimGeometryModel^>^ mProjections;
 			XbimFeaturedShape(XbimFeaturedShape^ copy, IfcObjectPlacement^ location);
-			
+			bool DoCut(const TopoDS_Shape& shape);
+			bool DoUnion(const TopoDS_Shape& shape);
 		public:
 			XbimFeaturedShape(IXbimGeometryModel^ baseShape, IEnumerable<IXbimGeometryModel^>^ openings, IEnumerable<IXbimGeometryModel^>^ projections);
 			
@@ -79,17 +80,17 @@ namespace Xbim
 			}
 			virtual XbimBoundingBox^ GetBoundingBox(bool precise)
 			{
-				return XbimGeometryModel::GetBoundingBox(this, precise);
+				return XbimGeometryModel::GetBoundingBox(mBaseShape, precise);
 			};
 
 			virtual IXbimGeometryModel^ Cut(IXbimGeometryModel^ shape);
 			virtual IXbimGeometryModel^ Union(IXbimGeometryModel^ shape);
 			virtual IXbimGeometryModel^ Intersection(IXbimGeometryModel^ shape);
 			virtual IXbimGeometryModel^ CopyTo(IfcObjectPlacement^ placement);
-			virtual XbimTriangulatedModelStream^ Mesh(bool withNormals, double deflection, Matrix3D transform);
-			virtual XbimTriangulatedModelStream^ Mesh(bool withNormals, double deflection);
-			virtual XbimTriangulatedModelStream^ Mesh(bool withNormals);
-			virtual XbimTriangulatedModelStream^ Mesh();
+			virtual XbimTriangulatedModelCollection^ Mesh(bool withNormals, double deflection, Matrix3D transform);
+			virtual XbimTriangulatedModelCollection^ Mesh(bool withNormals, double deflection);
+			virtual XbimTriangulatedModelCollection^ Mesh(bool withNormals);
+			virtual XbimTriangulatedModelCollection^ Mesh();
 			virtual property Int64 RepresentationLabel
 			{
 				Int64 get(){return _representationLabel; }

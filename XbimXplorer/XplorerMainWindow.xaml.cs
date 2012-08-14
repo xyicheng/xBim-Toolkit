@@ -234,12 +234,13 @@ namespace XbimXplorer
             IModel model = new XbimModel();
             try
             {
+                ClosePreviousModel();
                 //attach it to the Ifc Stream Parser
                 model.CreateFrom(ifcFilename, "test.xbim" ,worker.ReportProgress);
                 model.Open("test.xbim");
                 XbimScene geomEngine = new XbimScene(model, model.IfcProducts.Cast<IfcProduct>());
 
-                ModelProvider.Scene = geomEngine;
+               // ModelProvider.Scene = geomEngine;
             }
             catch (Exception ex)
             {
@@ -258,6 +259,14 @@ namespace XbimXplorer
             }
         }
 
+        private void ClosePreviousModel()
+        {
+            if (ModelProvider.Model != null)
+            {
+                ModelProvider.Model.Dispose();
+            }
+        }
+
         private void OpenIfcXmlFile(object s, DoWorkEventArgs args)
         {
             BackgroundWorker worker = s as BackgroundWorker;
@@ -267,9 +276,10 @@ namespace XbimXplorer
             IModel m = new XbimModel();
             try
             {
+                ClosePreviousModel();
                 m.Open(fileName);
                 XbimScene geomEngine = new XbimScene(m);
-                modelProvider.Scene = geomEngine;
+               // modelProvider.Scene = geomEngine;
             }
             catch (Exception ex)
             {
@@ -291,12 +301,9 @@ namespace XbimXplorer
         /// </summary>
         /// <param name = "s"></param>
         /// <param name = "args"></param>
-        private void OpenXbimFile(object s, DoWorkEventArgs args)
+        private void OpenXbimFile(string fileName)
         {
-            BackgroundWorker worker = s as BackgroundWorker;
-
-            string fileName = args.Argument as string;
-
+            
             XbimModel m = new XbimModel();
             ModelDataProvider modelProvider = ModelProvider;
             
@@ -306,15 +313,13 @@ namespace XbimXplorer
                     return;
                 else
                     _currentModelFileName = fileName.ToLower();
-                string cacheFile = Path.ChangeExtension(_currentModelFileName, "xbimGC");
-               
+
                 m.Open(fileName); //load entities into the model
-                ModelProvider.Scene = new XbimSceneStream(m, cacheFile);
-               
+                modelProvider.Model = m; //this Triggers the event to load the model into the views 
             }
             catch (Exception el)
             {
-                args.Result = el;
+                MessageBox.Show(this, "Error opening Xbim File " + fileName + "\n"+el.Message,"File Open Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -326,9 +331,10 @@ namespace XbimXplorer
             IModel model = new XbimModel();
             try
             {
+                ClosePreviousModel();
                 model.Open(zipFilename);
                 XbimScene geomEngine = new XbimScene(model);
-                ModelProvider.Scene = geomEngine;
+               // ModelProvider.Scene = geomEngine;
             }
             catch (Exception ex)
             {
@@ -355,9 +361,9 @@ namespace XbimXplorer
                         _worker.DoWork += OpenIfcXmlFile;
                         _worker.RunWorkerAsync(dlg.FileName);
                         break;
-                    case ".xbim": //it is an xbim File
-                        _worker.DoWork += OpenXbimFile;
-                        _worker.RunWorkerAsync(dlg.FileName);
+                    case ".xbim": //it is an xbim File, just open it in the main thread
+                        OpenXbimFile(dlg.FileName);
+                        
                         break;
                     case ".ifczip": //it is a xip file containing xbim or ifc File
                         _worker.DoWork += OpenZipFile;
@@ -536,7 +542,7 @@ namespace XbimXplorer
                                               string xbimFileName = Path.ChangeExtension(dlg.FileName, ".xbim");
                                               string xbimGeometryFileName = Path.ChangeExtension(dlg.FileName, ".xbimGC");
                                               XbimScene scene = new XbimScene(dlg.FileName, xbimFileName, xbimGeometryFileName);
-                                              ModelProvider.Scene = scene.AsSceneStream();
+                                             // ModelProvider.Scene = scene.AsSceneStream();
                                           }
                                           catch (Exception ex)
                                           {

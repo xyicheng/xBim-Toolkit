@@ -16,6 +16,7 @@ namespace Xbim.IO
 {
     public static class IPersistIfcEntityExtensions
     {
+       
 
         #region Write the properties of an IPersistIfcEntity to a stream
 

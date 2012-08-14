@@ -7,7 +7,7 @@ using namespace System::Linq;
 using namespace Xbim::IO;
 using namespace Xbim::ModelGeometry::Scene;
 using namespace Xbim::Common::Exceptions;
-
+using namespace Xbim::XbimExtensions;
 namespace Xbim
 {
 	namespace ModelGeometry
@@ -41,13 +41,13 @@ namespace Xbim
 			
 		}
 		
-		void XbimScene::ConvertGeometry(XbimModel^ model)
+		void XbimScene::ConvertGeometry(XbimModel^ model, IEnumerable<IfcProduct^>^ toConvert)
 		{
 		TransformGraph^ graph = gcnew TransformGraph(model);
 		//create a new dictionary to hold maps
 		Dictionary<IfcRepresentation^, IXbimGeometryModel^>^ maps = gcnew Dictionary<IfcRepresentation^, IXbimGeometryModel^>();
 		//add everything that may have a representation
-		graph->AddProducts(model->InstancesOfType<IfcProduct^>(true)); //load the products as we will be accessing their geometry
+		graph->AddProducts(toConvert); //load the products as we will be accessing their geometry
 		XbimGeometryTable^ geomTable = model->BeginGeometryUpdate();
 		
 		
@@ -61,12 +61,18 @@ namespace Xbim
 					if (geomModel != nullptr)  //it has no geometry
 					{
 						
-						XbimTriangulatedModelStream^ tm = geomModel->Mesh(true);
+						XbimTriangulatedModelCollection^ tm = geomModel->Mesh(true);
 						XbimBoundingBox^ bb = geomModel->GetBoundingBox(true);
 						node->BoundingBox = bb->GetRect3D();
 						array<Byte>^ matrix = Matrix3DExtensions::ToArray(node->WorldMatrix(), true);
-						geomTable->AddGeometry(product->EntityLabel, XbimGeometryType::BoundingBox, matrix, bb->ToArray() ) ;
-					    geomTable->AddGeometry(product->EntityLabel, XbimGeometryType::TriangulatedMesh, matrix, tm->ToArray() ) ;
+						geomTable->AddGeometry(product->EntityLabel, XbimGeometryType::BoundingBox, matrix, bb->ToArray(), 0, 0 ) ;
+						int subPart = 0;
+						for each(array<Byte>^ b in tm)
+						{
+							geomTable->AddGeometry(product->EntityLabel, XbimGeometryType::TriangulatedMesh, matrix, b , geomModel->RepresentationLabel, subPart) ;
+							subPart++;
+						}
+					   
 					}
 				}
 				catch(Exception^ e)
@@ -148,7 +154,7 @@ namespace Xbim
 				_sceneStream = gcnew FileStream(_sceneStreamFileName, FileMode::Create, FileAccess::ReadWrite);
 				BinaryWriter^ bw = gcnew BinaryWriter(_sceneStream);
 				{
-					_graph->Write(bw);
+					_graph->Write(bw, nullptr);
 					bw->Flush();
 					
 				}
@@ -186,10 +192,10 @@ namespace Xbim
 					IXbimGeometryModel^ geomModel = XbimGeometryModel::CreateFrom(product, _maps, false, _lod);
 					if (geomModel != nullptr)  //it has no geometry
 					{
-						XbimTriangulatedModelStream^ tm = geomModel->Mesh(true);
+						XbimTriangulatedModelCollection^ tm = geomModel->Mesh(true);
 						XbimBoundingBox^ bb = geomModel->GetBoundingBox(true);
 						node->BoundingBox = bb->GetRect3D();
-						return tm;
+						return gcnew XbimTriangulatedModelStream(tm);
 					}
 				}
 				catch(Exception^ e)

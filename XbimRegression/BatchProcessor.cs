@@ -61,7 +61,7 @@ namespace XbimRegression
                     else
                     {
                         Console.WriteLine("Processing failed for {0} after {1}ms.",
-                            file, result.ExitCode, result.Duration);
+                            file, result.Duration);
                     }
                 }
                 writer.Close();
@@ -73,6 +73,8 @@ namespace XbimRegression
         private ProcessResult ProcessFile(string ifcFile)
         {
             Process proc = null;
+            int exitcode = int.MinValue;
+            bool timedOut = false;
             try
             {
                 RemoveFiles(ifcFile);
@@ -81,16 +83,28 @@ namespace XbimRegression
                 Stopwatch watch = new Stopwatch();
 
                 watch.Start();
-                proc = Process.Start(startInfo);
-                if (proc.WaitForExit(Params.Timeout) == false)
+                using (proc = Process.Start(startInfo))
                 {
-                    // timed out.
-                    KillProcess(proc);
-                    Logger.WarnFormat("Timed out processing {0} - hit {1} second limit.", ifcFile, Params.Timeout / 1000);
+                    if (proc.WaitForExit(Params.Timeout) == false)
+                    {
+                        // timed out.
+                        KillProcess(proc);
+                        Logger.WarnFormat("Timed out processing {0} - hit {1} second limit.", ifcFile, Params.Timeout / 1000);
+                        timedOut = true;
+                    }
+                    watch.Stop();
+                    if (timedOut)
+                    {
+                        exitcode = -2;
+                    }
+                    else
+                    {
+                        exitcode = proc.ExitCode; 
+                        proc.Close();
+                    }
+                    
                 }
-                watch.Stop();
-
-                return CaptureResults(ifcFile, proc.ExitCode, watch.ElapsedMilliseconds);
+                return CaptureResults(ifcFile, exitcode, watch.ElapsedMilliseconds);
             }
             catch (Exception ex)
             {
@@ -151,21 +165,37 @@ namespace XbimRegression
                 result.XbimLength = ReadFileLength(xbimFile);
                 result.XbimGCLength = ReadFileLength(xbimGCFile);
 
-                model = new XbimModel();
-                model.Open(xbimFile);
-                result.Entities = model.InstancesCount;
-                
-                IIfcFileHeader header = model.Header;
-                result.IfcSchema = header.FileSchema.Schemas.FirstOrDefault();
-                result.IfcDescription = String.Format("{0}, {1}", header.FileDescription.Description.FirstOrDefault(), header.FileDescription.ImplementationLevel);
-                // TODO: Ifc Name
+                try
+                {
+                    model = new XbimModel();
+					model.Open(xbimFile);
+                    result.Entities = model.InstancesCount;
+
+                    IIfcFileHeader header = model.Header;
+                    result.IfcSchema = header.FileSchema.Schemas.FirstOrDefault();
+                    result.IfcDescription = String.Format("{0}, {1}", header.FileDescription.Description.FirstOrDefault(), header.FileDescription.ImplementationLevel);
+                    // TODO: Ifc Name
+                }
+                catch (IOException)
+                {
+                    Logger.Debug("XBim file was corrupt");
+                    // XBIM corrupt - usually due to timeout before completion
+                }
 
                 if (!File.Exists(xbimGCFile))
                     return;
 
-                scene = new XbimSceneStream(model, xbimGCFile);
-                // TODO: verify if there is a better metric
-                result.GeometryEntries = scene.Graph.ProductNodes.Count();
+                try
+                {
+                    scene = new XbimSceneStream(model, xbimGCFile);
+                    // TODO: verify if there is a better metric
+                    result.GeometryEntries = scene.Graph.ProductNodes.Count();
+                }
+                catch (IOException)
+                {
+                    Logger.Debug("XBimGC file was corrupt");
+                    // XBIMGC corrupt - usually due to timeout before completion
+                }
             }
             finally
             {
@@ -210,8 +240,12 @@ namespace XbimRegression
 
         private static void KillProcess(Process proc)
         {
-            if (proc!=null && !proc.HasExited)
+            if (proc != null && !proc.HasExited)
+            {
                 proc.Kill();
+                // Give the process time to die, as we'll likely be reading files it has open next.
+                System.Threading.Thread.Sleep(500);
+            }
         }
 
         private static long ReadFileLength(string file)

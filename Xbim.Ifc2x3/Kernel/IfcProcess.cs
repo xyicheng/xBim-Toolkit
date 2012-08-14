@@ -14,6 +14,8 @@
 
 using System;
 using Xbim.XbimExtensions;
+using System.Xml.Serialization;
+using System.Collections.Generic;
 
 #endregion
 
@@ -22,22 +24,53 @@ namespace Xbim.Ifc2x3.Kernel
     [IfcPersistedEntityAttribute, Serializable]
     public abstract class IfcProcess : IfcObject
     {
-        public int OperatesOn
+        #region Inverse Relationships
+        /// <summary>
+        ///   Inverse. Set of Relationships to objects that are operated on by the process.
+        /// </summary>
+        [XmlIgnore]
+        [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class)]
+        public IEnumerable<IfcRelAssignsToProcess> OperatesOn
         {
-            get { throw new NotImplementedException(); }
-            set { }
+            get
+            {
+                return
+                    this.ModelOf.InstancesWhere<IfcRelAssignsToProcess>(
+                        r => (r.RelatingProcess != null && r.RelatingProcess == this));
+            }
         }
 
-        public int IsSuccessorFrom
+        //TODO: Check validity of IsSuccessorFrom and IsPredecessorTo
+
+        /// <summary>
+        ///  Inverse. Relative placement in time, refers to the previous processes for which this process is successor.
+        /// </summary>
+        [XmlIgnore]
+        [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class)]
+        public IEnumerable<IfcRelSequence> IsSuccessorFrom
         {
-            get { throw new NotImplementedException(); }
-            set { }
+            get
+            {
+                return
+                    this.ModelOf.InstancesWhere<IfcRelSequence>(
+                        r => (r.RelatingProcess != null && r.RelatedProcess == this));
+            }
         }
 
-        public int IsPredecessorTo
+        /// <summary>
+        ///  Inverse. Relative placement in time, refers to the subsequent processes for which this process is predecessor.
+        /// </summary>
+        [XmlIgnore]
+        [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class)]
+        public IEnumerable<IfcRelSequence> IsPredecessorTo
         {
-            get { throw new NotImplementedException(); }
-            set { }
+            get
+            {
+                return
+                    this.ModelOf.InstancesWhere<IfcRelSequence>(
+                        r => (r.RelatedProcess != null && r.RelatingProcess == this));
+            }
         }
+        #endregion
     }
 }

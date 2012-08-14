@@ -113,7 +113,7 @@ namespace Xbim.Ifc2x3.StructuralAnalysisDomain
                 case 5:
                     _theoryType =
                         (IfcAnalysisTheoryTypeEnum)
-                        Enum.Parse(typeof (IfcAnalysisTheoryTypeEnum), value.StringVal, true);
+                        Enum.Parse(typeof (IfcAnalysisTheoryTypeEnum), value.EnumVal, true);
                     break;
                 case 6:
                     _resultForLoadGroup = (IfcStructuralLoadGroup) value.EntityVal;
