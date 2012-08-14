@@ -31,6 +31,35 @@ namespace Xbim.COBie
 
         IModel _model;
         const string DEFAULT_VAL = "n/a";
+        #region Methods
+
+        /// <summary>
+        /// Extract the Created On date from the passed entity
+        /// </summary>
+        /// <param name="rootEntity">Entity to extract the Create On date</param>
+        /// <returns></returns>
+        protected string GetCreatedOnDateAsFmtString(IfcOwnerHistory ownerHistory)
+        {
+            int CreatedOnTStamp = (int)ownerHistory.CreationDate;
+            //return (CreatedOnTStamp <= 0) ? "Unknown" : IfcTimeStamp.ToFormattedString(CreatedOnTStamp);
+            if (CreatedOnTStamp <= 0)
+            {
+                return "Unknown";
+            }
+            else
+            {
+                //to remove trailing decimal seconds use a set format string as "o" option is to long.
+
+                //We have a day light saving problem with the comparison with other COBie Export Programs. if we convert to local time we get a match
+                //but if the time stamp is Coordinated Universal Time (UTC), then daylight time should be ignored. see http://msdn.microsoft.com/en-us/library/bb546099.aspx
+                //IfcTimeStamp.ToDateTime(CreatedOnTStamp).ToLocalTime()...; //test to see if corrects 1 hour difference, and yes it did, but should we?
+
+                return IfcTimeStamp.ToDateTime(CreatedOnTStamp).ToString("yyyy-MM-ddTHH:mm:ss");
+            }
+
+        }
+
+        #endregion
 
         #region Contact
 
@@ -72,7 +101,7 @@ namespace Xbim.COBie
                         contact.Category = ifcAR.UserDefinedRole.ToString();
 
                         contact.CreatedBy = GetTelecomEmailAddress(oh);
-                        contact.CreatedOn = GetDate(oh.CreationDate.Value.ToString());
+                        contact.CreatedOn = GetCreatedOnDateAsFmtString(oh);
 
                         contact.Company = (string.IsNullOrEmpty(oh.OwningUser.TheOrganization.Name)) ? DEFAULT_VAL : oh.OwningUser.TheOrganization.Name.ToString();
 
@@ -139,13 +168,9 @@ namespace Xbim.COBie
                 COBieDocumentRow doc = new COBieDocumentRow(documents);
                 doc.Name = (di == null) ? "" : di.Name.ToString();
 
-                doc.CreatedBy = "";
-                foreach (IfcTelecomAddress address in ifcTelecomAddresses)
-                    doc.CreatedBy = (address == null) ? "" : address.ToString() + ",";
-                doc.CreatedBy = doc.CreatedBy.TrimEnd(',');
-
-                doc.CreatedOn = GetDate(ifcOwnerHistory.CreationDate.Value.ToString());
-
+                doc.CreatedBy = GetTelecomEmailAddress(ifcOwnerHistory);
+                doc.CreatedOn = GetCreatedOnDateAsFmtString(ifcOwnerHistory);
+                
                 //IfcRelAssociatesClassification ifcRAC = di.HasAssociations.OfType<IfcRelAssociatesClassification>().FirstOrDefault();
                 //IfcClassificationReference ifcCR = (IfcClassificationReference)ifcRAC.RelatingClassification;
                 doc.Category = "";
@@ -206,13 +231,12 @@ namespace Xbim.COBie
             {
                 COBieImpactRow impact = new COBieImpactRow(impacts);
 
-                IfcOwnerHistory ifcOwnerHistory = ppt.OwnerHistory;
+                //IfcOwnerHistory ifcOwnerHistory = ppt.OwnerHistory;
 
                 impact.Name = ppt.Name;
 
-                impact.CreatedBy = GetTelecomEmailAddress(ifcOwnerHistory);
-
-                impact.CreatedOn = GetDate(ifcOwnerHistory.CreationDate.Value.ToString());
+                impact.CreatedBy = GetTelecomEmailAddress(ppt.OwnerHistory);
+                impact.CreatedOn = GetCreatedOnDateAsFmtString(ppt.OwnerHistory); 
 
                 impact.ImpactType = "";
                 impact.ImpactStage = "";
@@ -267,12 +291,9 @@ namespace Xbim.COBie
                 COBieIssueRow issue = new COBieIssueRow(issues);
                 issue.Name = (approval == null) ? "" : approval.Name.ToString();
 
-                issue.CreatedBy = "";
-                foreach (IfcTelecomAddress address in ifcTelecomAddresses)
-                    issue.CreatedBy = (address == null) ? "" : address.ToString() + ",";
-                issue.CreatedBy = issue.CreatedBy.TrimEnd(',');
-
-                issue.CreatedOn = GetDate(ifcOwnerHistory.CreationDate.Value.ToString());
+                //TODO: See if we can get CreatedOn and CreatedBy from app object
+                issue.CreatedBy = GetTelecomEmailAddress(ifcOwnerHistory);
+                issue.CreatedOn = GetCreatedOnDateAsFmtString(ifcOwnerHistory);              
 
                 issue.Type = "";
                 issue.Risk = "";
@@ -329,13 +350,12 @@ namespace Xbim.COBie
             {
                 COBieJobRow job = new COBieJobRow(jobs);
 
-                IfcOwnerHistory ifcOwnerHistory = task.OwnerHistory;
+                //IfcOwnerHistory ifcOwnerHistory = task.OwnerHistory;
 
                 job.Name = (task == null) ? "" : task.Name.ToString();
 
-                job.CreatedBy = GetTelecomEmailAddress(ifcOwnerHistory);
-
-                job.CreatedOn = GetDate(ifcOwnerHistory.CreationDate.Value.ToString());
+                job.CreatedBy = GetTelecomEmailAddress(task.OwnerHistory);
+                job.CreatedOn = GetCreatedOnDateAsFmtString(task.OwnerHistory);
                 
                 //job.Category = (task == null) ? "" : task.ObjectType.ToString();
                 IfcRelAssociatesClassification ifcRAC = task.HasAssociations.OfType<IfcRelAssociatesClassification>().FirstOrDefault();
@@ -573,13 +593,12 @@ namespace Xbim.COBie
             foreach (IfcConstructionEquipmentResource cer in ifcCer)
             {
                 COBieResourceRow resource = new COBieResourceRow(resources);
-                IfcOwnerHistory ifcOwnerHistory = cer.OwnerHistory;
+                //IfcOwnerHistory ifcOwnerHistory = cer.OwnerHistory;
 
                 resource.Name = (cer == null) ? "" : cer.Name.ToString();
 
-                resource.CreatedBy = GetTelecomEmailAddress(ifcOwnerHistory);
-
-                resource.CreatedOn = GetDate(ifcOwnerHistory.CreationDate.Value.ToString());
+                resource.CreatedBy = GetTelecomEmailAddress(cer.OwnerHistory);
+                resource.CreatedOn = GetCreatedOnDateAsFmtString(cer.OwnerHistory); 
                 
                 resource.Category = (cer == null) ? "" : cer.ObjectType.ToString();                
                 //IfcRelAssociatesClassification ifcRAC = to.HasAssociations.OfType<IfcRelAssociatesClassification>().FirstOrDefault();
@@ -616,13 +635,12 @@ namespace Xbim.COBie
             {
                 COBieFloorRow floor = new COBieFloorRow(floors);
 
-                IfcOwnerHistory ifcOwnerHistory = bs.OwnerHistory;
+                //IfcOwnerHistory ifcOwnerHistory = bs.OwnerHistory;
 
                 floor.Name = bs.Name.ToString();
 
-                floor.CreatedBy = GetTelecomEmailAddress(ifcOwnerHistory);
-
-                floor.CreatedOn = GetDate(ifcOwnerHistory.CreationDate.Value.ToString());
+                floor.CreatedBy = GetTelecomEmailAddress(bs.OwnerHistory);
+                floor.CreatedOn = GetCreatedOnDateAsFmtString(bs.OwnerHistory);
                                 
                 IfcRelAssociatesClassification ifcRAC = bs.HasAssociations.OfType<IfcRelAssociatesClassification>().FirstOrDefault();
                 if (ifcRAC != null)
@@ -675,13 +693,12 @@ namespace Xbim.COBie
             {
                 COBieSpaceRow space = new COBieSpaceRow(spaces);
 
-                IfcOwnerHistory ifcOwnerHistory = sp.OwnerHistory;
+                //IfcOwnerHistory ifcOwnerHistory = sp.OwnerHistory;
                 
                 space.Name = sp.Name;
 
-                space.CreatedBy = GetTelecomEmailAddress(ifcOwnerHistory);
-
-                space.CreatedOn = GetDate(ifcOwnerHistory.CreationDate.Value.ToString());
+                space.CreatedBy = GetTelecomEmailAddress(sp.OwnerHistory);
+                space.CreatedOn = GetCreatedOnDateAsFmtString(sp.OwnerHistory); 
 
                 IfcRelAssociatesClassification ifcRAC = sp.HasAssociations.OfType<IfcRelAssociatesClassification>().FirstOrDefault();
                 if (ifcRAC != null)
@@ -754,17 +771,16 @@ namespace Xbim.COBie
             //IEnumerable<IfcTelecomAddress> ifcTelecomAddresses = model.InstancesOfType<IfcTelecomAddress>();
             //if (ifcTelecomAddresses == null) ifcTelecomAddresses = Enumerable.Empty<IfcTelecomAddress>();
 
-            IfcOwnerHistory ifcOwnerHistory = ifcBuilding.OwnerHistory; //model.InstancesOfType<IfcOwnerHistory>().FirstOrDefault();
+            //IfcOwnerHistory ifcOwnerHistory = ifcBuilding.OwnerHistory; //model.InstancesOfType<IfcOwnerHistory>().FirstOrDefault();
             COBieSheet<COBieFacilityRow> facilities = new COBieSheet<COBieFacilityRow>(Constants.WORKSHEET_FACILITY);
 
             COBieFacilityRow facility = new COBieFacilityRow(facilities);
 
             facility.Name = ifcBuilding.Name.ToString();
+
+            facility.CreatedBy = GetTelecomEmailAddress(ifcBuilding.OwnerHistory);
+            facility.CreatedOn = GetCreatedOnDateAsFmtString(ifcBuilding.OwnerHistory); 
             
-            facility.CreatedBy = GetTelecomEmailAddress(ifcOwnerHistory);
-
-            facility.CreatedOn = GetDate(ifcOwnerHistory.CreationDate.Value.ToString());
-
             //facility.Category = "";
             //foreach (COBiePickListsRow plRow in pickLists.Rows)
             //    if (plRow != null)
@@ -950,13 +966,12 @@ namespace Xbim.COBie
             {
                 COBieSpareRow spare = new COBieSpareRow(spares);
 
-                IfcOwnerHistory ifcOwnerHistory = cpr.OwnerHistory;
+                //IfcOwnerHistory ifcOwnerHistory = cpr.OwnerHistory;
 
                 spare.Name = (string.IsNullOrEmpty(cpr.Name)) ? "" : cpr.Name.ToString();
 
-                spare.CreatedBy = GetTelecomEmailAddress(ifcOwnerHistory);
-
-                spare.CreatedOn = GetDate(ifcOwnerHistory.CreationDate.Value.ToString());
+                spare.CreatedBy = GetTelecomEmailAddress(cpr.OwnerHistory);
+                spare.CreatedOn = GetCreatedOnDateAsFmtString(cpr.OwnerHistory);
 
                 IfcRelAssociatesClassification ifcRAC = cpr.HasAssociations.OfType<IfcRelAssociatesClassification>().FirstOrDefault();
                 if (ifcRAC != null)
@@ -964,6 +979,7 @@ namespace Xbim.COBie
                     IfcClassificationReference ifcCR = (IfcClassificationReference)ifcRAC.RelatingClassification;
                     spare.Category = ifcCR.Name;
                 }
+                else
                 spare.Category = "";
 
                 spare.TypeName = (typeObject == null) ? "" : typeObject.Name.ToString();
@@ -1007,13 +1023,13 @@ namespace Xbim.COBie
                 {
                     COBieZoneRow zone = new COBieZoneRow(zones);
 
-                    IfcOwnerHistory ifcOwnerHistory = zn.OwnerHistory;
+                    //IfcOwnerHistory ifcOwnerHistory = zn.OwnerHistory;
 
                     zone.Name = zn.Name.ToString();
 
-                    zone.CreatedBy = GetTelecomEmailAddress(ifcOwnerHistory);
+                    zone.CreatedBy = GetTelecomEmailAddress(zn.OwnerHistory);
+                    zone.CreatedOn = GetCreatedOnDateAsFmtString(zn.OwnerHistory); 
 
-                    zone.CreatedOn = GetDate(ifcOwnerHistory.CreationDate.Value.ToString());
 
                     IfcRelAssociatesClassification ifcRAC = zn.HasAssociations.OfType<IfcRelAssociatesClassification>().FirstOrDefault();
                     if (ifcRAC != null)
@@ -1056,13 +1072,13 @@ namespace Xbim.COBie
             {
                 COBieTypeRow typ = new COBieTypeRow(types);
 
-                IfcOwnerHistory ifcOwnerHistory = to.OwnerHistory;
+                //IfcOwnerHistory ifcOwnerHistory = to.OwnerHistory;
 
                 typ.Name = to.Name;
 
-                typ.CreatedBy = GetTelecomEmailAddress(ifcOwnerHistory);
+                typ.CreatedBy = GetTelecomEmailAddress(to.OwnerHistory);
+                typ.CreatedOn = GetCreatedOnDateAsFmtString(to.OwnerHistory);
 
-                typ.CreatedOn = GetDate(ifcOwnerHistory.CreationDate.Value.ToString());
 
                 //typ.Category = (to.HasAssociations.OfType<IfcClassification>().FirstOrDefault() == null) ? "" : to.HasAssociations.OfType<IfcClassification>().FirstOrDefault().Name.ToString();
                 IfcRelAssociatesClassification ifcRAC = to.HasAssociations.OfType<IfcRelAssociatesClassification>().FirstOrDefault();
@@ -1241,13 +1257,12 @@ namespace Xbim.COBie
 
                 COBieComponentRow component = new COBieComponentRow(components);
 
-                IfcOwnerHistory ifcOwnerHistory = pdt.OwnerHistory;
+                //IfcOwnerHistory ifcOwnerHistory = pdt.OwnerHistory;
 
                 component.Name = pdt.Name;
 
-                component.CreatedBy = GetTelecomEmailAddress(ifcOwnerHistory);
-                
-                component.CreatedOn = GetDate(ifcOwnerHistory.CreationDate.Value.ToString());
+                component.CreatedBy = GetTelecomEmailAddress(pdt.OwnerHistory);
+                component.CreatedOn = GetCreatedOnDateAsFmtString(pdt.OwnerHistory);
 
                 component.TypeName = pdt.ObjectType.ToString();
                 
@@ -1300,13 +1315,12 @@ namespace Xbim.COBie
                 {
                     COBieSystemRow sys = new COBieSystemRow(systems);
 
-                    IfcOwnerHistory ifcOwnerHistory = s.OwnerHistory;
+                    //IfcOwnerHistory ifcOwnerHistory = s.OwnerHistory;
 
                     sys.Name = s.Name;
 
-                    sys.CreatedBy = GetTelecomEmailAddress(ifcOwnerHistory);
-
-                    sys.CreatedOn = GetDate(ifcOwnerHistory.CreationDate.Value.ToString());
+                    sys.CreatedBy = GetTelecomEmailAddress(s.OwnerHistory);
+                    sys.CreatedOn = GetCreatedOnDateAsFmtString(s.OwnerHistory);
 
                     IfcRelAssociatesClassification ifcRAC = s.HasAssociations.OfType<IfcRelAssociatesClassification>().FirstOrDefault();
                     if (ifcRAC != null)
@@ -1362,11 +1376,13 @@ namespace Xbim.COBie
             {
                 COBieAssemblyRow assembly = new COBieAssemblyRow(assemblies);
 
-                IfcOwnerHistory ifcOwnerHistory = ra.OwnerHistory;
+                //IfcOwnerHistory ifcOwnerHistory = ra.OwnerHistory;
 
                 assembly.Name = (ra.Name == null || ra.Name.ToString() == "") ? "AssemblyName" : ra.Name.ToString();
-                assembly.CreatedBy = GetTelecomEmailAddress(ifcOwnerHistory);
-                assembly.CreatedOn = GetDate(ifcOwnerHistory.CreationDate.Value.ToString());
+
+                assembly.CreatedBy = GetTelecomEmailAddress(ra.OwnerHistory);
+                assembly.CreatedOn = GetCreatedOnDateAsFmtString(ra.OwnerHistory);
+
                 assembly.SheetName = "SheetName:";
                 assembly.ParentName = ifcProduct.Name;
                 assembly.ChildNames = ifcProduct.Name;
@@ -1454,8 +1470,8 @@ namespace Xbim.COBie
             {
                 COBieConnectionRow conn = new COBieConnectionRow(connections);
                 conn.Name = (string.IsNullOrEmpty(c.Name)) ? ids.ToString() : c.Name.ToString();
-                conn.CreatedBy = (ifcTelecomAddres == null) ? "" : ifcTelecomAddres.ElectronicMailAddresses[0].ToString();
-                conn.CreatedOn = GetDate(ifcOwnerHistory.CreationDate.Value.ToString());
+                conn.CreatedBy = GetTelecomEmailAddress(c.OwnerHistory);
+                conn.CreatedOn = GetCreatedOnDateAsFmtString(c.OwnerHistory);
                 conn.ConnectionType = c.Description;
                 conn.SheetName = "";
                 conn.RowName1 = (product == null) ? "" : product.Name.ToString();
@@ -1500,8 +1516,9 @@ namespace Xbim.COBie
             {
                 COBieCoordinateRow coordinate = new COBieCoordinateRow(coordinates);
                 coordinate.Name = (ifcBuildingStorey == null || ifcBuildingStorey.Name.ToString() == "") ? "CoordinateName" : ifcBuildingStorey.Name.ToString();
-                coordinate.CreatedBy = (ifcTelecomAddres == null) ? "" : ifcTelecomAddres.ElectronicMailAddresses[0].ToString();
-                coordinate.CreatedOn = GetDate(ifcOwnerHistory.CreationDate.Value.ToString());
+
+                coordinate.CreatedBy = GetTelecomEmailAddress(ra.OwnerHistory);
+                coordinate.CreatedOn = GetCreatedOnDateAsFmtString(ra.OwnerHistory);
 
                 //IfcRelAssociatesClassification ifcRAC = ra.HasAssociations.OfType<IfcRelAssociatesClassification>().FirstOrDefault();
                 //IfcClassificationReference ifcCR = (IfcClassificationReference)ifcRAC.RelatingClassification;
@@ -1562,8 +1579,9 @@ namespace Xbim.COBie
             {
                 COBieAttributeRow attribute = new COBieAttributeRow(attributes);
                 attribute.Name = (ifcBuildingStorey == null || ifcBuildingStorey.Name.ToString() == "") ? "AttributeName" : ifcBuildingStorey.Name.ToString();
-                attribute.CreatedBy = (ifcTelecomAddres == null) ? "" : ifcTelecomAddres.ElectronicMailAddresses[0].ToString();
-                attribute.CreatedOn = GetDate(ifcOwnerHistory.CreationDate.Value.ToString());
+
+                attribute.CreatedBy = GetTelecomEmailAddress(obj.OwnerHistory);
+                attribute.CreatedOn = GetCreatedOnDateAsFmtString(obj.OwnerHistory);
 
                 IfcRelAssociatesClassification ifcRAC = obj.HasAssociations.OfType<IfcRelAssociatesClassification>().FirstOrDefault();
                 if (ifcRAC != null)
@@ -1596,7 +1614,11 @@ namespace Xbim.COBie
             IfcApplication app = _model.InstancesOfType<IfcApplication>().FirstOrDefault();
             return app;
         }
-
+        /// <summary>
+        /// Extract the email address lists for the owner of the IfcOwnerHistory passed
+        /// </summary>
+        /// <param name="ifcOwnerHistory">Entity to extract the email addresses for</param>
+        /// <returns>string of comma delimited addresses</returns>
         private string GetTelecomEmailAddress(IfcOwnerHistory ifcOwnerHistory)
         {
             string emails = "";
@@ -1606,7 +1628,7 @@ namespace Xbim.COBie
             if (ifcTelecomAddresses == null) ifcTelecomAddresses = Enumerable.Empty<IfcTelecomAddress>();
             foreach (IfcTelecomAddress address in ifcTelecomAddresses)
             {
-                if (address != null)
+                if ((address != null) && (address.ElectronicMailAddresses != null))
                     emails += address.ElectronicMailAddresses[0].ToString() + ",";
             }
             emails = emails.TrimEnd(',');
@@ -1614,28 +1636,21 @@ namespace Xbim.COBie
             if (emails == "")
             {
                 IfcOrganization ifcO = ifcOwnerHistory.OwningUser.TheOrganization;
-                ifcTelecomAddresses = ifcO.Addresses.TelecomAddresses;
+                ifcTelecomAddresses = (ifcP.Addresses == null) ? null : ifcO.Addresses.TelecomAddresses;
                 if (ifcTelecomAddresses == null) ifcTelecomAddresses = Enumerable.Empty<IfcTelecomAddress>();
 
                 foreach (IfcTelecomAddress address in ifcTelecomAddresses)
                 {
-                    if (address != null)
+                    if ((address != null) && (address.ElectronicMailAddresses != null))
                         emails += address.ElectronicMailAddresses[0].ToString() + ",";
                 }
                 emails = emails.TrimEnd(',');
             }
-                        
-            if (emails == "") return DEFAULT_VAL;
-            else return emails;
-        }
-                
-        private string GetDate(string secondsSince1970)
-        {
-            int seconds = Convert.ToInt32(secondsSince1970);
-            DateTime origin = new DateTime(1970, 1, 1, 0, 0, 0, 0);
-            DateTime dt = origin.AddSeconds(seconds);
 
-            return dt.ToString();
+            if (emails == "") return "Unknown"; //DEFAULT_VAL
+
+            return emails;
         }
+       
     }
 }
