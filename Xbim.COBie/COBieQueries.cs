@@ -23,9 +23,21 @@ using System.Xml;
 using Xbim.COBie.Rows;
 using Xbim.Ifc.QuantityResource;
 using Xbim.Ifc.PropertyResource;
+using Xbim.Ifc.Extensions;
 
 namespace Xbim.COBie
 {
+    /// <summary>
+    /// ICompare class for IfcLabels, used to order by 
+    /// </summary>
+    public class CompareIfcLabel : IComparer<IfcLabel?>
+    {
+        public int Compare(IfcLabel? x, IfcLabel? y)
+        {
+            return string.Compare((string)x, (string)y, true); //ignore case set to true
+        }
+    }
+
     public class COBieQueries
     {
 
@@ -44,7 +56,7 @@ namespace Xbim.COBie
             //return (CreatedOnTStamp <= 0) ? "Unknown" : IfcTimeStamp.ToFormattedString(CreatedOnTStamp);
             if (CreatedOnTStamp <= 0)
             {
-                return "Unknown";
+                return DEFAULT_VAL;
             }
             else
             {
@@ -685,7 +697,7 @@ namespace Xbim.COBie
             _model = model;
 
             // get all IfcBuildingStory objects from IFC file
-            IEnumerable<IfcSpace> ifcSpaces = model.InstancesOfType<IfcSpace>();
+            IEnumerable<IfcSpace> ifcSpaces = model.InstancesOfType<IfcSpace>();//.OrderBy(ifcSpace => ifcSpace.Name, new CompareIfcLabel());
 
             COBieSheet<COBieSpaceRow> spaces = new COBieSheet<COBieSpaceRow>(Constants.WORKSHEET_SPACE);
 
@@ -715,29 +727,33 @@ namespace Xbim.COBie
                 space.ExtObject = sp.GetType().Name;
                 space.ExtIdentifier = sp.GlobalId;
                 space.RoomTag = GetSpaceDescription(sp);
+                //Do Usable Height
+                IfcLengthMeasure usableHt = sp.GetHeight();
+                if (usableHt != null) space.UsableHeight = ((double)usableHt).ToString("F3");
+                else space.UsableHeight = DEFAULT_VAL;
+                
+                //Do Gross Areas 
+                IfcAreaMeasure grossAreaValue = sp.GetGrossFloorArea();
+                //if we fail on try GSA keys
+                IfcQuantityArea spArea = null; 
+                if (grossAreaValue == null) spArea = sp.GetQuantity<IfcQuantityArea>("GSA Space Areas", "GSA BIM Area");
+                
+                if (grossAreaValue != null) space.GrossArea = ((double)grossAreaValue).ToString("F3");
+                else if ((spArea is IfcQuantityArea) && (spArea.AreaValue != null)) space.GrossArea = ((double)spArea.AreaValue).ToString("F3");
+                else space.GrossArea = DEFAULT_VAL;
 
-                IEnumerable<IfcQuantityLength> qLen = sp.IsDefinedByProperties.Select(p => p.RelatedObjects.OfType<IfcQuantityLength>()).FirstOrDefault();
-                space.UsableHeight = (qLen.FirstOrDefault() == null) ? "0" : qLen.FirstOrDefault().LengthValue.ToString();
+                //Do Net Areas 
+                IfcAreaMeasure netAreaValue = sp.GetNetFloorArea();  //this extension has the GSA built in so no need to get again
+                if (netAreaValue != null) space.NetArea = ((double)netAreaValue).ToString("F3");
+                else space.NetArea = DEFAULT_VAL;       
 
-                //IEnumerable<IfcQuantityArea> qArea = sp.HasAssignments.Select(p => p.RelatedObjects.OfType<IfcQuantityArea>()).FirstOrDefault(); // sp.IsDefinedByProperties.Select(p => p.RelatedObjects.OfType<IfcQuantityArea>()).FirstOrDefault();
-                IEnumerable<IfcQuantityArea> elemQ = sp.IsDefinedByProperties.Select(p => p.RelatedObjects.OfType<IfcQuantityArea>()).FirstOrDefault();
-
-                if (elemQ.FirstOrDefault() != null)
-                {
-                    //IEnumerable<IfcQuantityArea> qArea = elemQ.FirstOrDefault().Quantities.OfType<IfcQuantityArea>();
-
-                    space.GrossArea = (elemQ.FirstOrDefault() == null) ? "0" : elemQ.FirstOrDefault().AreaValue.ToString();
-                }
-                else 
-                    space.GrossArea = "0";
-                //space.GrossArea = (sp.HasAssociations.OfType<IfcQuantityArea>().FirstOrDefault() == null) ? "0" : sp.HasAssociations.OfType<IfcQuantityArea>().FirstOrDefault().AreaValue.ToString();
-                space.NetArea = DEFAULT_VAL;
                 spaces.Rows.Add(space);
             }
 
             return spaces;
         }
 
+       
         private string GetSpaceCategory(IfcSpace sp)
         {
             return sp.LongName;
@@ -1647,7 +1663,7 @@ namespace Xbim.COBie
                 emails = emails.TrimEnd(',');
             }
 
-            if (emails == "") return "Unknown"; //DEFAULT_VAL
+            if (emails == "") return DEFAULT_VAL; //DEFAULT_VAL
 
             return emails;
         }
