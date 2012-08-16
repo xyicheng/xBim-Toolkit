@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Reflection;
+using Xbim.Ifc.ProductExtension;
 
 namespace Xbim.COBie.Rows
 {
@@ -12,6 +13,29 @@ namespace Xbim.COBie.Rows
         public COBieComponentRow(ICOBieSheet<COBieComponentRow> parentSheet)
             : base(parentSheet) { }
 
+        internal string GetComponentRelatedSpace(IfcElement el)
+        {
+            if(el != null && el.ContainedInStructure.Count() > 0)
+            {
+                var owningSpace = el.ContainedInStructure.First().RelatingStructure;
+                if (owningSpace.GetType() == typeof(IfcSpace))
+                    return owningSpace.Name.ToString();
+            }
+            return Constants.DEFAULT_VAL;
+        }
+
+        internal string GetComponentDescription(IfcElement el)
+        {
+            if (el != null)
+            {
+                if (!string.IsNullOrEmpty(el.Description)) return el.Description;
+                else if (!string.IsNullOrEmpty(el.Name)) return el.Name;
+            }
+            return Constants.DEFAULT_VAL;
+        }
+
+        #region Attributes Properties
+
         [COBieAttributes(0, COBieKeyType.PrimaryKey, COBieAttributeState.Required, "Name", 255, COBieAllowedType.AlphaNumeric)]
         public string Name { get; set; }
 
@@ -20,7 +44,6 @@ namespace Xbim.COBie.Rows
 
         [COBieAttributes(2, COBieKeyType.None, COBieAttributeState.Required, "CreatedOn", 19, COBieAllowedType.ISODate)]
         public string CreatedOn { get; set; }
-
 
         [COBieAttributes(3, COBieKeyType.None, COBieAttributeState.Required, "TypeName", 255, COBieAllowedType.AlphaNumeric)]
         public string TypeName { get; set; }
@@ -57,5 +80,7 @@ namespace Xbim.COBie.Rows
 
         [COBieAttributes(14, COBieKeyType.None, COBieAttributeState.As_Specified, "AssetIdentifier", 255, COBieAllowedType.AlphaNumeric)]
         public string AssetIdentifier { get; set; }
+
+        #endregion
     }
 }

@@ -19,20 +19,11 @@ namespace Xbim.COBie
         private PropertyInfo[] _properties;
         private Dictionary<PropertyInfo, object[]> _attributes;
 
-        #region reflection delegates
-        Func<BindingFlags, PropertyInfo[]> GetProperties;
-        //Func<T, bool> GetCustomAttributes;
-        //Func<object, object[]> GetValue;
-        #endregion
-
         public COBieSheet(string sheetName)
         {
-            SetReflectionDelegates();
-            
             Rows = new List<T>();
 			SheetName = sheetName;
-            //_properties = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(prop => prop.GetSetMethod() != null).ToArray();
-            _properties = GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(prop => prop.GetSetMethod() != null).ToArray();
+            _properties = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(prop => prop.GetSetMethod() != null).ToArray();
             _columns = new Dictionary<int, COBieColumn>();
             _attributes = new Dictionary<PropertyInfo, object[]>();
 
@@ -62,6 +53,7 @@ namespace Xbim.COBie
                     {
                         Type cobieType = row.GetType();
                         string val = (propInfo.GetValue(row, null) == null) ? "" : propInfo.GetValue(row, null).ToString();
+
                         COBieCell cell = new COBieCell(val);
                         cell.COBieState = ((COBieAttributes)attrs[0]).State;
                         cell.CobieCol = new COBieColumn(((COBieAttributes)attrs[0]).ColumnName, ((COBieAttributes)attrs[0]).MaxLength, ((COBieAttributes)attrs[0]).AllowedType, ((COBieAttributes)attrs[0]).KeyType);
@@ -127,29 +119,6 @@ namespace Xbim.COBie
             if (allowedType == COBieAllowedType.Numeric && d == 0) err.ErrorDescription = "Value must be a valid double";
 
             return err;
-        }
-
-        private void SetReflectionDelegates()
-        { 
-            GetProperties = (Func<BindingFlags, PropertyInfo[]>)Delegate.CreateDelegate(typeof(Func<BindingFlags, PropertyInfo[]>), typeof(T), GetPropertiesSignature()); 
-            //TODO - 
-            //GetCustomAttributes = (Func<T, bool>)Delegate.CreateDelegate(typeof(Func<T, bool>), GetPropertiesSignature());
-            //GetValue = (Func<object, object[]>)Delegate.CreateDelegate(typeof(Func<object, object[]>), GetValueSignature());
-        }
-
-        public MethodInfo GetPropertiesSignature()
-        {
-            return typeof(Type).GetMethod("GetProperties", new Type[] { typeof(BindingFlags) });
-        }
-
-        private MethodInfo CustomAttributesSignature()
-        {
-            return typeof(PropertyInfo).GetMethod("GetCustomAttributes", new Type[] { typeof(T), typeof(bool) });
-        }
-
-        private MethodInfo GetValueSignature()
-        {
-            return typeof(PropertyInfo).GetMethod("GetValue", new Type[] { typeof(object), typeof(object[]) });
         }
     }  
 }

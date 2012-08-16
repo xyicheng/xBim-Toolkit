@@ -225,9 +225,10 @@ namespace Xbim.COBie
             CobiePickLists = cq.GetCOBiePickListsSheet("PickLists.xml");
 
             // populate all sheets from model
+            CobieSpaces = cq.GetCOBieSpaceSheet(model, CobiePickLists);
+            CobieComponents = cq.GetCOBieComponentSheet(model);
             CobieAssemblies = cq.GetCOBieAssemblySheet(model);
             CobieAttributes = cq.GetCOBieAttributeSheet(model);
-            CobieComponents = cq.GetCOBieComponentSheet(model);
             CobieConnections = cq.GetCOBieConnectionSheet(model);
             CobieContacts = cq.GetCOBieContactSheet(model, CobiePickLists);
             CobieCoordinates = cq.GetCOBieCoordinateSheet(model);
@@ -239,7 +240,6 @@ namespace Xbim.COBie
             CobieJobs = cq.GetCOBieJobSheet(model, CobiePickLists);
             
             CobieResources = cq.GetCOBieResourceSheet(model);
-            CobieSpaces = cq.GetCOBieSpaceSheet(model, CobiePickLists);
             CobieSpares = cq.GetCOBieSpareSheet(model, CobiePickLists);
             CobieSystems = cq.GetCOBieSystemSheet(model);
             CobieTypes = cq.GetCOBieTypeSheet(model, CobiePickLists);

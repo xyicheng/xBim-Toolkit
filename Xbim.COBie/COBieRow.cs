@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Reflection;
+using Xbim.Ifc.Kernel;
+using Xbim.Ifc.ExternalReferenceResource;
 
 namespace Xbim.COBie
 {
@@ -16,6 +18,29 @@ namespace Xbim.COBie
         public COBieRow(ICOBieSheet<COBieRow> parentSheet)
         {
             ParentSheet = parentSheet;
+        }
+
+        public string GetCategory(IfcObject obj)
+        {
+            //Try by relationship first
+            IfcRelAssociatesClassification ifcRAC = obj.HasAssociations.OfType<IfcRelAssociatesClassification>().FirstOrDefault();
+            if (ifcRAC != null)
+            {
+                IfcClassificationReference ifcCR = (IfcClassificationReference)ifcRAC.RelatingClassification;
+                return ifcCR.Name;
+            }
+            //Try by PropertySet as fallback
+            var query = from PSet in obj.PropertySets
+                        from Props in PSet.HasProperties
+                        where Props.Name.ToString() == "OmniClass Table 13 Category" || Props.Name.ToString() == "Category Code"
+                        select Props.ToString().TrimEnd();
+            string val = query.FirstOrDefault();
+
+            if (!String.IsNullOrEmpty(val))
+            {
+                return val;
+            }
+            return "n/a";
         }
 
         public COBieCell this[int i]

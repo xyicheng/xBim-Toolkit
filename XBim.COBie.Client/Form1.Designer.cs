@@ -69,7 +69,7 @@
             this.txtPath.Name = "txtPath";
             this.txtPath.Size = new System.Drawing.Size(348, 20);
             this.txtPath.TabIndex = 1;
-            this.txtPath.Text = "2012-03-23-Duplex-Design.ifc";
+            this.txtPath.Text = "Clinic_A_20110906.ifc";
             // 
             // btnBrowse
             // 

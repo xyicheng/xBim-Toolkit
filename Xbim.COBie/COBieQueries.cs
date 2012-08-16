@@ -1299,43 +1299,88 @@ namespace Xbim.COBie
         }
 
         #endregion
-        
+
         #region Component
 
         public COBieSheet<COBieComponentRow> GetCOBieComponentSheet(IModel model)
         {
             _model = model;
 
-            // get all IfcBuildingStory objects from IFC file
-            IEnumerable<IfcProduct> ifcproducts = model.InstancesOfType<IfcProduct>();
+            List<Type> excludedTypes = new List<Type>{  typeof(IfcWall),
+                                                            typeof(IfcWallStandardCase),
+                                                            typeof(IfcWall),
+                                                            typeof(IfcWallStandardCase),
+                                                            typeof(IfcSlab),
+                                                            typeof(IfcBeam),
+                                                            typeof(IfcSpace),
+                                                            typeof(IfcBuildingStorey),
+                                                            typeof(IfcBuilding),
+                                                            typeof(IfcSite),
+                                                            typeof(IfcProject),
+                                                            typeof(IfcColumn),
+                                                            typeof(IfcMember),
+                                                            typeof(IfcPlate),
+                                                            typeof(IfcRailing),
+                                                            typeof(IfcStairFlight),
+                                                            typeof(IfcCurtainWall),
+                                                            typeof(IfcRampFlight),
+                                                            typeof(IfcVirtualElement),
+                                                            typeof(IfcFeatureElement),
+                                                            typeof(Xbim.Ifc.SharedComponentElements.IfcFastener),
+                                                            typeof(Xbim.Ifc.SharedComponentElements.IfcMechanicalFastener),
+                                                            typeof(IfcElementAssembly),
+                                                            typeof(Xbim.Ifc.StructuralElementsDomain.IfcBuildingElementPart),
+                                                            typeof(Xbim.Ifc.StructuralElementsDomain.IfcReinforcingBar),
+                                                            typeof(Xbim.Ifc.StructuralElementsDomain.IfcReinforcingMesh),
+                                                            typeof(Xbim.Ifc.StructuralElementsDomain.IfcTendon),
+                                                            typeof(Xbim.Ifc.StructuralElementsDomain.IfcTendonAnchor),
+                                                            typeof(Xbim.Ifc.StructuralElementsDomain.IfcFooting),
+                                                            typeof(Xbim.Ifc.StructuralElementsDomain.IfcPile),
+                                                            typeof(IfcRamp),
+                                                            typeof(IfcRoof),
+                                                            typeof(IfcStair),
+                                                            typeof(IfcFlowFitting),
+                                                            typeof(IfcFlowSegment),
+                                                            typeof(IfcDistributionPort) };
 
             COBieSheet<COBieComponentRow> components = new COBieSheet<COBieComponentRow>(Constants.WORKSHEET_COMPONENT);
 
-            foreach (IfcProduct pdt in ifcproducts)
-            {
-                if (pdt.GetType().Name.ToString() == "IfcSpace" || pdt.GetType().Name.ToString() == "IfcBuildingStorey" ||
-                    pdt.GetType().Name.ToString() == "IfcBuilding" || pdt.GetType().Name.ToString() == "IfcSite") continue;
+            IEnumerable<IfcRelAggregates> relAggregates = _model.InstancesOfType<IfcRelAggregates>();
+            IEnumerable<IfcRelContainedInSpatialStructure> relSpatial = _model.InstancesOfType<IfcRelContainedInSpatialStructure>();
 
+            var q1 = from x in relAggregates
+                     from y in x.RelatedObjects
+                     where !excludedTypes.Contains(y.GetType())
+                     select y;
+
+            var q2 = from x in relSpatial
+                     from y in x.RelatedElements
+                     where !excludedTypes.Contains(y.GetType())
+                     select y;
+
+            var res = q1.Concat(q2).GroupBy(el => el.Name)
+                                   .Select(g => g.First())
+                                   .ToList();
+
+            foreach (var obj in res)
+            {
                 COBieComponentRow component = new COBieComponentRow(components);
 
-                //IfcOwnerHistory ifcOwnerHistory = pdt.OwnerHistory;
-
-                component.Name = pdt.Name;
-
-                component.CreatedBy = GetTelecomEmailAddress(pdt.OwnerHistory);
-                component.CreatedOn = GetCreatedOnDateAsFmtString(pdt.OwnerHistory);
-
-                component.TypeName = pdt.ObjectType.ToString();
-                
-                component.Space = "";
-                component.Description = GetComponentDescription(pdt);
+                IfcElement el = obj as IfcElement;
+                //IfcOwnerHistory ifcOwnerHistory = el.OwnerHistory;
+                component.Name = el.Name;
+                component.CreatedBy = GetTelecomEmailAddress(el.OwnerHistory);
+                component.CreatedOn = GetCreatedOnDateAsFmtString(el.OwnerHistory);
+                component.TypeName = el.ObjectType.ToString();
+                component.Space = component.GetComponentRelatedSpace(el);
+                component.Description = component.GetComponentDescription(el);
                 component.ExtSystem = GetIfcApplication().ApplicationFullName;
-                component.ExtObject = "IfcFlowTerminal";
-                component.ExtIdentifier = pdt.GlobalId;
+                component.ExtObject = el.GetType().Name;
+                component.ExtIdentifier = el.GlobalId;
                 component.SerialNumber = "";
                 component.InstallationDate = "";
                 component.WarrantyStartDate = "";
-                //component.TagNumber = pdt.Tag.ToString();
+                //component.TagNumber = el.Tag.ToString();
                 component.BarCode = "";
                 component.AssetIdentifier = "";
 
@@ -1343,16 +1388,6 @@ namespace Xbim.COBie
             }
 
             return components;
-        }
-
-        private string GetComponentDescription(IfcProduct pdt)
-        {
-            if (pdt != null)
-            {
-                if (!string.IsNullOrEmpty(pdt.Description)) return pdt.Description;
-                else if (!string.IsNullOrEmpty(pdt.Name)) return pdt.Name;
-            }
-            return DEFAULT_VAL;
         }
 
         #endregion
