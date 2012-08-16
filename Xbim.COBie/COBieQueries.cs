@@ -34,7 +34,18 @@ namespace Xbim.COBie
     {
         public int Compare(IfcLabel? x, IfcLabel? y)
         {
-            return string.Compare((string)x, (string)y, true); //ignore case set to true
+            return string.Compare(x.ToString(), y.ToString(), true); //ignore case set to true
+        }
+    }
+
+    /// <summary>
+    /// ICompare class for String, used to order by 
+    /// </summary>
+    public class CompareString : IComparer<string>
+    {
+        public int Compare(string x, string y)
+        {
+            return string.Compare(x, y, true); //ignore case set to true
         }
     }
 
@@ -52,11 +63,13 @@ namespace Xbim.COBie
         /// <returns></returns>
         protected string GetCreatedOnDateAsFmtString(IfcOwnerHistory ownerHistory)
         {
+            const string strFormat = "yyyy-MM-ddTHH:mm:ss";
+
             int CreatedOnTStamp = (int)ownerHistory.CreationDate;
             //return (CreatedOnTStamp <= 0) ? "Unknown" : IfcTimeStamp.ToFormattedString(CreatedOnTStamp);
             if (CreatedOnTStamp <= 0)
             {
-                return DEFAULT_VAL;
+                return DateTime.Now.ToString(strFormat);
             }
             else
             {
@@ -66,7 +79,7 @@ namespace Xbim.COBie
                 //but if the time stamp is Coordinated Universal Time (UTC), then daylight time should be ignored. see http://msdn.microsoft.com/en-us/library/bb546099.aspx
                 //IfcTimeStamp.ToDateTime(CreatedOnTStamp).ToLocalTime()...; //test to see if corrects 1 hour difference, and yes it did, but should we?
 
-                return IfcTimeStamp.ToDateTime(CreatedOnTStamp).ToString("yyyy-MM-ddTHH:mm:ss");
+                return IfcTimeStamp.ToDateTime(CreatedOnTStamp).ToString(strFormat);
             }
 
         }
@@ -1061,11 +1074,43 @@ namespace Xbim.COBie
                     zone.ExtSystem = GetIfcApplication().ApplicationFullName;
                     zone.ExtObject = zn.GetType().Name;
                     zone.ExtIdentifier = zn.GlobalId;
-                    zone.Description = (string.IsNullOrEmpty(zn.Description)) ? DEFAULT_VAL : zn.Description.ToString();
+                    zone.Description = (string.IsNullOrEmpty(zn.Description)) ? zn.Name.ToString() : zn.Description.ToString(); //if IsNullOrEmpty on Description then output Name
 
                     zones.Rows.Add(zone);
                 }
                 
+            }
+            //Check to see if we have any zones within the spaces
+            IEnumerable<IfcSpace> ifcSpaces = model.InstancesOfType<IfcSpace>();//.OrderBy(ifcSpace => ifcSpace.Name, new CompareIfcLabel());
+            foreach (IfcSpace sp in ifcSpaces)
+            {
+                IEnumerable<IfcPropertySingleValue> spProperties = Enumerable.Empty<IfcPropertySingleValue>();
+                foreach (IfcPropertySet pset in sp.GetAllPropertySets()) //was just looking at sp.GetPropertySet("PSet_Revit_Other") but 2012-08-07-COBieResponsibilityMatrix-v07.xlsx appears to want all
+                {
+                    spProperties = spProperties.Concat(pset.HasProperties.Where<IfcPropertySingleValue>(p => p.Name.ToString().Contains("ZoneName")));
+                }
+
+                //TODO: COBieResponsibilityMatrix-v07 states that Zone - "Repeated names consolidated", have to implemented as not clear on what is required
+                //spProperties = spProperties.OrderBy(p => p.Name.ToString(), new CompareString()); //consolidate test, Concat as looping spaces then sort then dump to COBieZoneRow foreach
+                
+                foreach (IfcPropertySingleValue spProp in spProperties)
+                {
+                    COBieZoneRow zone = new COBieZoneRow(zones);
+                    zone.Name = spProp.NominalValue.ToString();
+
+                    zone.CreatedBy = GetTelecomEmailAddress(sp.OwnerHistory);
+                    zone.CreatedOn = GetCreatedOnDateAsFmtString(sp.OwnerHistory);
+
+                    zone.Category = spProp.Name;
+                    zone.SpaceNames = sp.Name;
+
+                    zone.ExtSystem = GetIfcApplication().ApplicationFullName;
+                    zone.ExtObject = spProp.GetType().Name;
+                    zone.ExtIdentifier = DEFAULT_VAL;
+                    zone.Description = (string.IsNullOrEmpty(spProp.NominalValue.ToString())) ? DEFAULT_VAL : spProp.NominalValue.ToString();;
+
+                    zones.Rows.Add(zone);
+                }
             }
 
             return zones;
@@ -1662,8 +1707,11 @@ namespace Xbim.COBie
                 }
                 emails = emails.TrimEnd(',');
             }
-
-            if (emails == "") return DEFAULT_VAL; //DEFAULT_VAL
+            //if still no email lets make one up
+            if (emails == "")
+            {
+                emails = ifcP.GivenName + "." + ifcP.FamilyName + "@bimunknown.com";
+            }
 
             return emails;
         }
