@@ -1163,8 +1163,8 @@ namespace Xbim.COBie
 
 
             COBieSheet<COBieTypeRow> types = new COBieSheet<COBieTypeRow>(Constants.WORKSHEET_TYPE);
-            Stopwatch StopW = new Stopwatch();
-            StopW.Start();
+            //Stopwatch StopW = new Stopwatch();
+            //StopW.Start();
             //list of required attributes
             List<string> AttNames = new List<string> {  "AssetAccountingType", "Manufacturer", "ModelLabel", "WarrantyGuarantorParts", 
                                                         "WarrantyDurationParts", "WarrantyGuarantorLabor", "WarrantyDurationLabor", 
@@ -1240,8 +1240,8 @@ namespace Xbim.COBie
 
                 types.Rows.Add(typ);
             }
-            StopW.Stop();
-            Debug.WriteLine(StopW.Elapsed.ToString());
+            //StopW.Stop();
+            //Debug.WriteLine(StopW.Elapsed.ToString());
             return types;
         }
 
