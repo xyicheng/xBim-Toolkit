@@ -26,6 +26,8 @@ using Xbim.Ifc.PropertyResource;
 using Xbim.Ifc.Extensions;
 using Xbim.Ifc.MaterialResource;
 using System.Reflection;
+using System.Diagnostics;
+using System.Timers;
 
 namespace Xbim.COBie
 {
@@ -1161,7 +1163,8 @@ namespace Xbim.COBie
 
 
             COBieSheet<COBieTypeRow> types = new COBieSheet<COBieTypeRow>(Constants.WORKSHEET_TYPE);
-
+            Stopwatch StopW = new Stopwatch();
+            StopW.Start();
             foreach (IfcTypeObject to in ifcTypeObjects)
             {
                 COBieTypeRow typ = new COBieTypeRow(types);
@@ -1227,7 +1230,8 @@ namespace Xbim.COBie
 
                 types.Rows.Add(typ);
             }
-
+            StopW.Stop();
+            Debug.WriteLine(StopW.Elapsed.ToString());
             return types;
         }
 
@@ -1244,7 +1248,7 @@ namespace Xbim.COBie
         private string GetTypeObjAttribute(IfcTypeObject TypeObj, string propSetName, string propName)
         {
             IfcPropertySingleValue pSngValue = TypeObj.GetPropertySingleValue(propSetName, propName);
-            if (pSngValue != null)
+            if ((pSngValue != null) && (pSngValue.NominalValue != null))
             {
                 return pSngValue.NominalValue.ToString();
             }
@@ -1261,8 +1265,12 @@ namespace Xbim.COBie
                     if (objProperties.Count() > 0) break; //exit loop as soon as we have something
                 }
             }
-            
-            if (objProperties.Count() > 0) return objProperties.First().NominalValue.ToString(); //have a value so return first, should only be one
+
+            if (objProperties.Count() > 0)
+            {
+                IfcValue temp = objProperties.First().NominalValue;
+                if (temp != null) return temp.ToString(); else return DEFAULT_VAL; //have a value so return first, should only be one
+            }
             else return DEFAULT_VAL;
         }
 
