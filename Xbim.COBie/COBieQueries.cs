@@ -1165,6 +1165,13 @@ namespace Xbim.COBie
             COBieSheet<COBieTypeRow> types = new COBieSheet<COBieTypeRow>(Constants.WORKSHEET_TYPE);
             Stopwatch StopW = new Stopwatch();
             StopW.Start();
+            //list of required attributes
+            List<string> AttNames = new List<string> {  "AssetAccountingType", "Manufacturer", "ModelLabel", "WarrantyGuarantorParts", 
+                                                        "WarrantyDurationParts", "WarrantyGuarantorLabor", "WarrantyDurationLabor", 
+                                                        "ReplacementCost", "ServiceLifeDuration", "WarrantyDescription", "WarrantyDurationUnit" , "NominalLength", "NominalWidth",
+                                                        "NominalHeight", "ModelReference", "Shape", "Colour", "Color", "Finish", "Grade", 
+                                                        "Material", "Constituents", "Features", "Size", "AccessibilityPerformance", "CodePerformance", 
+                                                        "SustainabilityPerformance"};
             foreach (IfcTypeObject to in ifcTypeObjects)
             {
                 COBieTypeRow typ = new COBieTypeRow(types);
@@ -1194,39 +1201,42 @@ namespace Xbim.COBie
                 typ.ExtObject = to.GetType().ToString().Substring(to.GetType().ToString().LastIndexOf('.') + 1);
                 typ.ExtIdentifier = to.GlobalId;
 
-                //typ.WarrantyDurationUnit = "";
-                //foreach (COBiePickListsRow plRow in pickLists.Rows)
-                //    typ.WarrantyDurationUnit = (plRow == null) ? "" : plRow.DurationUnit + ",";
-                //typ.WarrantyDurationUnit = typ.WarrantyDurationUnit.TrimEnd(',');
+                //get related object properties to extract from if main way fails
+                IEnumerable<IfcPropertySingleValue> relAtts = GetTypeObjRelAttributes(to, AttNames);
 
+                typ.AssetType = GetTypeObjAttribute(to, "Pset_Asset", "AssetAccountingType", relAtts);
+                typ.Manufacturer = GetTypeObjAttribute(to, "Pset_ManufacturersTypeInformation", "Manufacturer", relAtts);
+                typ.ModelNumber = GetTypeObjAttribute(to, "Pset_ManufacturersTypeInformation", "ModelLabel", relAtts);
+                typ.WarrantyGuarantorParts = GetTypeObjAttribute(to, "Pset_Warranty", "WarrantyGuarantorParts", relAtts);
+                typ.WarrantyDurationParts = GetTypeObjAttribute(to, "Pset_Warranty", "WarrantyDurationParts", relAtts);
+                typ.WarrantyGuarantorLabour = GetTypeObjAttribute(to, "Pset_Warranty", "WarrantyGuarantorLabor", relAtts);
+                typ.WarrantyDurationLabour = GetTypeObjAttribute(to, "Pset_Warranty", "WarrantyDurationLabor", relAtts);
+                typ.WarrantyDurationUnit = GetWarrantyDurationUnit(model); 
+                typ.ReplacementCost = GetTypeObjAttribute(to, "Pset_EconomicImpactValues", "ReplacementCost", relAtts);
+                typ.ExpectedLife = GetTypeObjAttribute(to, "Pset_ServiceLife", "ServiceLifeDuration", relAtts);
+                typ.DurationUnit = GetDurationUnit(model);
+                typ.WarrantyDescription = GetTypeObjAttribute(to, "Pset_Warranty", "WarrantyDescription", relAtts); 
 
-                typ.AssetType = GetTypeObjAttribute(to, "Pset_Asset", "AssetAccountingType");
-                typ.Manufacturer = GetTypeObjAttribute(to, "Pset_ManufacturersTypeInformation", "Manufacturer");
-                typ.ModelNumber = GetTypeObjAttribute(to, "Pset_ManufacturersTypeInformation", "ModelLabel");
-                typ.WarrantyGuarantorParts = GetTypeObjAttribute(to, "Pset_Warranty", "WarrantyGuarantorParts");
-                typ.WarrantyDurationParts = GetTypeObjAttribute(to, "Pset_Warranty", "WarrantyDurationParts");
-                typ.WarrantyGuarantorLabour = GetTypeObjAttribute(to, "Pset_Warranty", "WarrantyGuarantorLabor");
-                typ.WarrantyDurationLabour = GetTypeObjAttribute(to, "Pset_Warranty", "WarrantyDurationLabor");
-                typ.WarrantyDurationUnit = "???";
-                typ.ReplacementCost = GetTypeObjAttribute(to, "Pset_EconomicImpactValues", "ReplacementCost");
-                typ.ExpectedLife = GetTypeObjAttribute(to, "Pset_ServiceLife", "ServiceLifeDuration");
-                typ.WarrantyDescription = GetTypeObjAttribute(to, "Pset_Warranty", "WarrantyDescription"); //GetTypeWarrantyDescription(to); 
-                typ.NominalLength = GetTypeObjAttribute(to, "Pset_Specification", "NominalLength");
-                typ.NominalWidth = GetTypeObjAttribute(to, "Pset_Specification", "NominalWidth");
-                typ.NominalHeight = GetTypeObjAttribute(to, "Pset_Specification", "NominalHeight");
-                typ.ModelReference = GetTypeObjAttribute(to, "Pset_Specification", "ModelReference");
-                typ.Shape = GetTypeObjAttribute(to, "Pset_Specification", "Shape");
-                typ.Size = GetTypeObjAttribute(to, "Pset_Specification", "Size");
-                typ.Colour = GetTypeObjAttribute(to, "Pset_Specification", "Colour");
-                if (typ.Colour == DEFAULT_VAL)typ.Colour = GetTypeObjAttribute(to, "Pset_Specification", "Color"); //try US 'color'
-                typ.Finish = GetTypeObjAttribute(to, "Pset_Specification", "Finish");
-                typ.Grade = GetTypeObjAttribute(to, "Pset_Specification", "Grade");
-                typ.Material = GetTypeObjAttribute(to, "Pset_Specification", "Material");
-                typ.Constituents = GetTypeObjAttribute(to, "Pset_Specification", "Constituents");
-                typ.Features = GetTypeObjAttribute(to, "Pset_Specification", "Features");
-                typ.AccessibilityPerformance = GetTypeObjAttribute(to, "Pset_Specification", "AccessibilityPerformance");
-                typ.CodePerformance = GetTypeObjAttribute(to, "Pset_Specification", "CodePerformance");
-                typ.SustainabilityPerformance = GetTypeObjAttribute(to, "Pset_Specification", "SustainabilityPerformance");
+                typ.NominalLength = GetTypeObjAttribute(to, "Pset_Specification", "NominalLength", relAtts);
+                typ.NominalLength = ConvertNumberOrDefault(typ.NominalLength); //ensure we comply with a number value
+                typ.NominalWidth = GetTypeObjAttribute(to, "Pset_Specification", "NominalWidth", relAtts);
+                typ.NominalWidth = ConvertNumberOrDefault(typ.NominalWidth); //ensure we comply with a number value
+                typ.NominalHeight = GetTypeObjAttribute(to, "Pset_Specification", "NominalHeight", relAtts);
+                typ.NominalHeight = ConvertNumberOrDefault(typ.NominalHeight); //ensure we comply with a number value
+
+                typ.ModelReference = GetTypeObjAttribute(to, "Pset_Specification", "ModelReference", relAtts);
+                typ.Shape = GetTypeObjAttribute(to, "Pset_Specification", "Shape", relAtts);
+                typ.Size = GetTypeObjAttribute(to, "Pset_Specification", "Size", relAtts);
+                typ.Colour = GetTypeObjAttribute(to, "Pset_Specification", "Colour", relAtts);
+                if (typ.Colour == DEFAULT_VAL) typ.Colour = GetTypeObjAttribute(to, "Pset_Specification", "Color", relAtts); //try US 'color'
+                typ.Finish = GetTypeObjAttribute(to, "Pset_Specification", "Finish", relAtts);
+                typ.Grade = GetTypeObjAttribute(to, "Pset_Specification", "Grade", relAtts);
+                typ.Material = GetTypeObjAttribute(to, "Pset_Specification", "Material", relAtts);
+                typ.Constituents = GetTypeObjAttribute(to, "Pset_Specification", "Constituents", relAtts);
+                typ.Features = GetTypeObjAttribute(to, "Pset_Specification", "Features", relAtts);
+                typ.AccessibilityPerformance = GetTypeObjAttribute(to, "Pset_Specification", "AccessibilityPerformance", relAtts);
+                typ.CodePerformance = GetTypeObjAttribute(to, "Pset_Specification", "CodePerformance", relAtts);
+                typ.SustainabilityPerformance = GetTypeObjAttribute(to, "Pset_Specification", "SustainabilityPerformance", relAtts);
 
                 types.Rows.Add(typ);
             }
@@ -1235,7 +1245,33 @@ namespace Xbim.COBie
             return types;
         }
 
-        
+        private string GetDurationUnit(IModel model)
+        {
+            IEnumerable<IfcConversionBasedUnit> ifcConversionBasedUnit = model.InstancesOfType<IfcConversionBasedUnit>().Where(u => u.UnitType == IfcUnitEnum.TIMEUNIT);
+            IfcConversionBasedUnit TimeBaeUnit = ifcConversionBasedUnit.FirstOrDefault();
+            if ((TimeBaeUnit != null) && (TimeBaeUnit.Name != null))
+            {
+                return TimeBaeUnit.Name.ToString();
+            }
+            return "0";
+        }
+
+        /// <summary>
+        /// Get the Time unit used in the model
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        private string GetWarrantyDurationUnit(IModel model)
+        {
+            return GetDurationUnit(model);
+            //IEnumerable<IfcConversionBasedUnit> ifcConversionBasedUnit = model.InstancesOfType<IfcConversionBasedUnit>().Where(u => u.UnitType == IfcUnitEnum.TIMEUNIT);
+            //IfcConversionBasedUnit TimeBaeUnit = ifcConversionBasedUnit.FirstOrDefault();
+            //if ((TimeBaeUnit != null) && (TimeBaeUnit.Name != null))
+            //{
+            //    return TimeBaeUnit.Name.ToString();
+            //}
+            //return "0";
+        }
 
 
         /// <summary>
@@ -1244,34 +1280,76 @@ namespace Xbim.COBie
         /// <param name="TypeObj">IfcTypeObject </param>
         /// <param name="propSetName">Property Set Name to retrieve IfcPropertySet Object</param>
         /// <param name="propName">Property Name held in IfcPropertySingleValue object</param>
+        /// <param name="relAtts">List of IfcPropertySingleValue filtered to attribute names we require</param>
         /// <returns>NominalValue of IfcPropertySingleValue as a string</returns>
-        private string GetTypeObjAttribute(IfcTypeObject TypeObj, string propSetName, string propName)
+        private string GetTypeObjAttribute(IfcTypeObject TypeObj, string propSetName, string propName, IEnumerable<IfcPropertySingleValue> relAtts)
         {
+            //try to get the property from the IfcTypeObject
             IfcPropertySingleValue pSngValue = TypeObj.GetPropertySingleValue(propSetName, propName);
-            if ((pSngValue != null) && (pSngValue.NominalValue != null))
-            {
-                return pSngValue.NominalValue.ToString();
-            }
+            //if null then try and get from a first related object i.e. window type is associated with a window so look at window, should we do this or just return some default value here???
+            if (pSngValue == null) pSngValue = relAtts.Where(p => p.Name == propName).FirstOrDefault();
+            //if we have a value return the string for input to row field
+            if ((pSngValue != null) && (pSngValue.NominalValue != null)) return pSngValue.NominalValue.ToString();
+            else return DEFAULT_VAL; //nothing found return default
 
-            //if first selection method fails try the long one on the holding object i.e. window type is associated with a window so look at window
-            //Note: Possible performance hit by multiple calls to function, could expand into calling function and set all values
+            //if null then try and get from all related object i.e. 
+            //if (pSngValue == null)
+            //{
+            //    foreach (IfcPropertySingleValue pSV in relAtts.Where(p => p.Name == propName))
+            //    {
+            //        if (pSV != null)
+            //        {
+            //            pSngValue = pSV;
+            //            break; //we have a value so break
+            //        }
+            //    }
+            //}
+        }
+
+        /// <summary>
+        /// Converts string to formatted string and if it fails then passes 0 back, mainly to check that we always have a number returned
+        /// </summary>
+        /// <param name="num">string to convert</param>
+        /// <returns>string converted to a formatted string using "F2" as formatter</returns>
+        private string ConvertNumberOrDefault(string num)
+        {
+            double temp;
+            
+            if (double.TryParse(num, out temp))
+            {
+                return temp.ToString("F2"); // two decimal places
+            }
+            else
+            {
+                return "0"; //default
+            }
+            
+        }
+
+        /// <summary>
+        /// Get the IfcPropertySingleValue list for the passed in list of attribute names
+        /// 
+        /// </summary>
+        /// <param name="TypeObj">IfcTypeObject </param>
+        /// <param name="AttNames">list of attribute names</param>
+        /// <returns>IEnumerable<IfcPropertySingleValue> list of IfcPropertySingleValue which are contained in AttNames</returns>
+        private IEnumerable<IfcPropertySingleValue> GetTypeObjRelAttributes(IfcTypeObject TypeObj, List<string> AttNames)
+        {
+            Dictionary<string, string> keyList = new Dictionary<string, string>();
+            //string key = "";
+            //string value = DEFAULT_VAL;
             IEnumerable<IfcPropertySingleValue> objProperties = Enumerable.Empty<IfcPropertySingleValue>();
-            var objTypeOf = TypeObj.ObjectTypeOf.First(); //can hold zero or 1 ObjectTypeOf so test return
+            var objTypeOf = TypeObj.ObjectTypeOf.FirstOrDefault(); //can hold zero or 1 ObjectTypeOf so test return
             if (objTypeOf != null)
             {
                 foreach (IfcPropertySet pset in objTypeOf.RelatedObjects.First().GetAllPropertySets()) //has to have 1 ore more so get first and see what we get
                 {
-                    objProperties = pset.HasProperties.Where<IfcPropertySingleValue>(p => p.Name.ToString().Contains(propName));
-                    if (objProperties.Count() > 0) break; //exit loop as soon as we have something
+                    objProperties = objProperties.Concat(pset.HasProperties.Where<IfcPropertySingleValue>(p => AttNames.Contains(p.Name.ToString())));
                 }
             }
 
-            if (objProperties.Count() > 0)
-            {
-                IfcValue temp = objProperties.First().NominalValue;
-                if (temp != null) return temp.ToString(); else return DEFAULT_VAL; //have a value so return first, should only be one
-            }
-            else return DEFAULT_VAL;
+
+            return objProperties;
         }
 
         private string GetTypeObjDescription(IfcTypeObject ds)
