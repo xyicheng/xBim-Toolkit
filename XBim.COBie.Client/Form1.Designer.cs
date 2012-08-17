@@ -29,21 +29,21 @@
         private void InitializeComponent()
         {
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.label1 = new System.Windows.Forms.Label();
-            this.txtPath = new System.Windows.Forms.TextBox();
             this.btnBrowse = new System.Windows.Forms.Button();
+            this.label1 = new System.Windows.Forms.Label();
             this.btnGenerate = new System.Windows.Forms.Button();
             this.btnClear = new System.Windows.Forms.Button();
             this.txtOutput = new System.Windows.Forms.RichTextBox();
+            this.txtPath = new System.Windows.Forms.ComboBox();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
             // groupBox1
             // 
-            this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.groupBox1.Controls.Add(this.btnBrowse);
             this.groupBox1.Controls.Add(this.txtPath);
+            this.groupBox1.Controls.Add(this.btnBrowse);
             this.groupBox1.Controls.Add(this.label1);
             this.groupBox1.Location = new System.Drawing.Point(13, 13);
             this.groupBox1.Name = "groupBox1";
@@ -51,25 +51,6 @@
             this.groupBox1.TabIndex = 0;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "IFC File Location";
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(6, 23);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(56, 13);
-            this.label1.TabIndex = 0;
-            this.label1.Text = "Select file:";
-            // 
-            // txtPath
-            // 
-            this.txtPath.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtPath.Location = new System.Drawing.Point(68, 20);
-            this.txtPath.Name = "txtPath";
-            this.txtPath.Size = new System.Drawing.Size(348, 20);
-            this.txtPath.TabIndex = 1;
-            this.txtPath.Text = "Clinic_A_20110906.ifc";
             // 
             // btnBrowse
             // 
@@ -80,6 +61,15 @@
             this.btnBrowse.TabIndex = 2;
             this.btnBrowse.Text = "&Browse...";
             this.btnBrowse.UseVisualStyleBackColor = true;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(6, 23);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(56, 13);
+            this.label1.TabIndex = 0;
+            this.label1.Text = "Select file:";
             // 
             // btnGenerate
             // 
@@ -104,20 +94,32 @@
             // 
             // txtOutput
             // 
-            this.txtOutput.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
+            this.txtOutput.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.txtOutput.Location = new System.Drawing.Point(13, 70);
             this.txtOutput.Name = "txtOutput";
-            this.txtOutput.Size = new System.Drawing.Size(422, 192);
+            this.txtOutput.Size = new System.Drawing.Size(422, 191);
             this.txtOutput.TabIndex = 5;
             this.txtOutput.Text = "";
+            // 
+            // txtPath
+            // 
+            this.txtPath.FormattingEnabled = true;
+            this.txtPath.Items.AddRange(new object[] {
+            "2012-03-23-Duplex-Design.ifc",
+            "Clinic_A_20110906.ifc"});
+            this.txtPath.Location = new System.Drawing.Point(68, 20);
+            this.txtPath.Name = "txtPath";
+            this.txtPath.Size = new System.Drawing.Size(337, 21);
+            this.txtPath.TabIndex = 3;
+            this.txtPath.Text = "2012-03-23-Duplex-Design.ifc";
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(528, 274);
+            this.ClientSize = new System.Drawing.Size(528, 273);
             this.Controls.Add(this.txtOutput);
             this.Controls.Add(this.btnClear);
             this.Controls.Add(this.btnGenerate);
@@ -134,11 +136,11 @@
 
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.Button btnBrowse;
-        private System.Windows.Forms.TextBox txtPath;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button btnGenerate;
         private System.Windows.Forms.Button btnClear;
         private System.Windows.Forms.RichTextBox txtOutput;
+        private System.Windows.Forms.ComboBox txtPath;
     }
 }
 

@@ -24,6 +24,8 @@ using Xbim.COBie.Rows;
 using Xbim.Ifc.QuantityResource;
 using Xbim.Ifc.PropertyResource;
 using Xbim.Ifc.Extensions;
+using Xbim.Ifc.MaterialResource;
+using System.Reflection;
 
 namespace Xbim.COBie
 {
@@ -724,15 +726,8 @@ namespace Xbim.COBie
 
                 space.CreatedBy = GetTelecomEmailAddress(sp.OwnerHistory);
                 space.CreatedOn = GetCreatedOnDateAsFmtString(sp.OwnerHistory); 
-
-                IfcRelAssociatesClassification ifcRAC = sp.HasAssociations.OfType<IfcRelAssociatesClassification>().FirstOrDefault();
-                if (ifcRAC != null)
-                {
-                    IfcClassificationReference ifcCR = (IfcClassificationReference)ifcRAC.RelatingClassification;
-                    space.Category = ifcCR.Name;
-                }
-                else
-                    space.Category = "";
+                
+                space.Category = space.GetCategory(sp);
 
                 space.FloorName = sp.SpatialStructuralElementParent.Name.ToString();
                 space.Description = GetSpaceDescription(sp);
@@ -1123,9 +1118,47 @@ namespace Xbim.COBie
         public COBieSheet<COBieTypeRow> GetCOBieTypeSheet(IModel model, COBieSheet<COBiePickListsRow> pickLists)
         {
             _model = model;
+            //TODO: after IfcRampType and IfcStairType are implemented then add to excludedTypes list
+            List<Type> excludedTypes = new List<Type>{  typeof(IfcTypeProduct),
+                                                            typeof(IfcElementType),
+                                                            typeof(IfcBeamType),
+                                                            typeof(IfcColumnType),
+                                                            typeof(IfcCurtainWallType),
+                                                            typeof(IfcMemberType),
+                                                            typeof(IfcPlateType),
+                                                            typeof(IfcRailingType),
+                                                            typeof(IfcRampFlightType),
+                                                            //typeof(Xbim.Ifc.SharedBldgElements.IfcRampType), //IFC2x Edition 4.
+                                                            typeof(IfcSlabType),
+                                                            typeof(IfcStairFlightType),
+                                                            //typeof(IfcStairType), //IFC2x Edition 4.
+                                                            typeof(IfcWallType),
+                                                            typeof(IfcDuctFittingType ),
+                                                            typeof(Xbim.Ifc.ElectricalDomain.IfcJunctionBoxType ),
+                                                            typeof(IfcPipeFittingType),
+                                                            typeof(Xbim.Ifc.ElectricalDomain.IfcCableCarrierSegmentType),
+                                                            typeof(Xbim.Ifc.ElectricalDomain.IfcCableSegmentType),
+                                                            typeof(IfcDuctSegmentType),
+                                                            typeof(IfcPipeSegmentType),
+                                                            typeof(Xbim.Ifc.SharedComponentElements.IfcFastenerType),
+                                                            typeof(IfcSpaceType),
+                                                             };
+            // get all IfcTypeObject objects from IFC file
+            IEnumerable<IfcTypeObject> ifcTypeObjects = model.InstancesOfType<IfcTypeObject>().GroupBy(TypeObj => TypeObj.Name).Select(g => g.First()).Where(ty => !excludedTypes.Contains(ty.GetType()));
 
-            // get all IfcBuildingStory objects from IFC file
-            IEnumerable<IfcTypeObject> ifcTypeObjects = model.InstancesOfType<IfcTypeObject>();
+            //IEnumerable<IfcMaterial> ifcMaterial = _model.InstancesOfType<IfcMaterial>();
+            //IEnumerable<IfcMaterialLayerSet> ifcMaterialLayerSet = _model.InstancesOfType<IfcMaterialLayerSet>();
+
+            //var matLaySet = from x in ifcMaterialLayerSet
+            //         from y in x.MaterialLayers
+            //         select y.Material;
+
+            //ifcMaterial = ifcMaterial.Concat(matLaySet).GroupBy(mat => mat.Name)
+            //                       .Select(g => g.First())
+            //                       .ToList();
+
+           
+
 
             COBieSheet<COBieTypeRow> types = new COBieSheet<COBieTypeRow>(Constants.WORKSHEET_TYPE);
 
@@ -1141,130 +1174,56 @@ namespace Xbim.COBie
                 typ.CreatedOn = GetCreatedOnDateAsFmtString(to.OwnerHistory);
 
 
-                //typ.Category = (to.HasAssociations.OfType<IfcClassification>().FirstOrDefault() == null) ? "" : to.HasAssociations.OfType<IfcClassification>().FirstOrDefault().Name.ToString();
                 IfcRelAssociatesClassification ifcRAC = to.HasAssociations.OfType<IfcRelAssociatesClassification>().FirstOrDefault();
                 if (ifcRAC != null)
                 {
                     IfcClassificationReference ifcCR = (IfcClassificationReference)ifcRAC.RelatingClassification;
-                    typ.Category = ifcCR.Name;
+                    typ.Category = (string.IsNullOrEmpty(ifcCR.Name)) ? DEFAULT_VAL : ifcCR.Name.ToString();
                 }
                 else
-                    typ.Category = "";
+                    typ.Category = DEFAULT_VAL;
 
-                typ.Description = GetDoorStyleDescription(to);
+                typ.Description = GetTypeObjDescription(to);
+
+               
 
                 typ.ExtSystem = GetIfcApplication().ApplicationFullName;
                 typ.ExtObject = to.GetType().ToString().Substring(to.GetType().ToString().LastIndexOf('.') + 1);
                 typ.ExtIdentifier = to.GlobalId;
 
-                typ.WarrantyDurationUnit = "";
-                foreach (COBiePickListsRow plRow in pickLists.Rows)
-                    typ.WarrantyDurationUnit = (plRow == null) ? "" : plRow.DurationUnit + ",";
-                typ.WarrantyDurationUnit = typ.WarrantyDurationUnit.TrimEnd(',');
+                //typ.WarrantyDurationUnit = "";
+                //foreach (COBiePickListsRow plRow in pickLists.Rows)
+                //    typ.WarrantyDurationUnit = (plRow == null) ? "" : plRow.DurationUnit + ",";
+                //typ.WarrantyDurationUnit = typ.WarrantyDurationUnit.TrimEnd(',');
 
-                //IEnumerable<IfcTypeObject> itoAssetTypes = ifcTypeObjects.Where(p => p.Name.ToString().Contains("AssetAccountingType"));
-                //typ.AssetType = "";
-                //foreach (IfcTypeObject ito in itoAssetTypes)
-                //    typ.AssetType = (ito == null) ? "" : ito.Name.ToString() + ",";
-                //typ.AssetType = typ.AssetType.TrimEnd(',');
 
-                IEnumerable<IfcRelAssociates> test = to.HasAssociations;
-
-                // this should be IfcPropertySingleValue (instead of IfcLabel) and then check propSingleVal.Name string to contain the following values
-                IEnumerable<IfcLabel?> itos = ifcTypeObjects.Select(p => p.Name);
-                typ.AssetType = "";
-                typ.Manufacturer = "";
-                typ.ModelNumber = "";
-                typ.WarrantyGuarantorParts = "";
-                typ.WarrantyDurationParts = "";
-                typ.WarrantyGuarantorLabour = "";
-                typ.WarrantyDurationLabour = "";
-                typ.ReplacementCost = "";
-                typ.ExpectedLife = "";
-                typ.NominalLength = "";
-                typ.NominalWidth = "";
-                typ.NominalHeight = "";
-                typ.ModelReference = "";
-                typ.Shape = "";
-                typ.Size = "";
-                typ.Colour = "";
-
-                typ.Finish = "";
-                typ.Grade = "";
-                typ.Material = "";
-                typ.Constituents = "";
-                typ.Features = "";
-                typ.AccessibilityPerformance = "";
-                typ.CodePerformance = "";
-                typ.SustainabilityPerformance = "";
-                foreach (IfcLabel ito in itos)
-                {
-                    if (ito != null)
-                    {
-                        string itoLower = ito.ToString().ToLower();
-                        if (itoLower.Contains("assetaccountingtype")) typ.AssetType = ito.ToString() + ",";
-                        else if (itoLower.Contains("manufacturer")) typ.Manufacturer = ito.ToString() + ",";
-                        else if (itoLower.Contains("articlenumber") || itoLower.Contains("modellabel")) typ.ModelNumber = ito.ToString() + ",";
-                        else if (itoLower.Contains("warrantyguarantorparts") || itoLower.Contains("pointofcontact")) typ.WarrantyGuarantorParts = ito.ToString() + ",";
-                        else if (itoLower.Contains("warrantydurationparts")) typ.WarrantyDurationParts = ito.ToString() + ",";
-                        else if (itoLower.Contains("warrantyguarantorlabour") || itoLower.Contains("pointofcontact")) typ.WarrantyGuarantorLabour = ito.ToString() + ",";
-                        else if (itoLower.Contains("warrantydurationlabour")) typ.WarrantyDurationLabour = ito.ToString() + ",";
-                        else if (itoLower.Contains("replacement") || itoLower.Contains("cost")) typ.ReplacementCost = ito.ToString() + ",";
-                        else if (itoLower.Contains("servicelifeduration") || itoLower.Contains("expected")) typ.ExpectedLife = ito.ToString() + ",";
-
-                        else if (itoLower.Contains("nominallength") || itoLower.Contains("overallwidth")) typ.NominalLength = ito.ToString() + ",";
-                        else if (itoLower.Contains("nominalwidth") || itoLower.Contains("width")) typ.NominalWidth = ito.ToString() + ",";
-                        else if (itoLower.Contains("nominalheight") || itoLower.Contains("height")) typ.NominalHeight = ito.ToString() + ",";
-
-                        else if (itoLower.Contains("modelreference") || itoLower.Contains("reference")) typ.ModelReference = ito.ToString() + ",";
-                        else if (itoLower.Contains("shape")) typ.Shape = ito.ToString() + ",";
-                        else if (itoLower.Contains("size")) typ.Size = ito.ToString() + ",";
-                        else if (itoLower.Contains("colour") || itoLower.Contains("color")) typ.Colour = ito.ToString() + ",";
-
-                        else if (itoLower.Contains("finish")) typ.Finish = ito.ToString() + ",";
-                        else if (itoLower.Contains("grade")) typ.Grade = ito.ToString() + ",";
-                        else if (itoLower.Contains("material")) typ.Material = ito.ToString() + ",";
-                        else if (itoLower.Contains("constituents") || itoLower.Contains("parts")) typ.Constituents = ito.ToString() + ",";
-                        else if (itoLower.Contains("features")) typ.Features = ito.ToString() + ",";
-                        else if (itoLower.Contains("accessibilityperformance") || itoLower.Contains("access")) typ.AccessibilityPerformance = ito.ToString() + ",";
-                        else if (itoLower.Contains("codeperformance") || itoLower.Contains("regulation")) typ.CodePerformance = ito.ToString() + ",";
-                        else if (itoLower.Contains("sustainabilityperformance") || itoLower.Contains("environmental")) typ.SustainabilityPerformance = ito.ToString() + ",";
-                    }
-                    
-                }
-                typ.Manufacturer = typ.Manufacturer.TrimEnd(',');
-                typ.ModelNumber = typ.ModelNumber.TrimEnd(',');
-                typ.WarrantyGuarantorParts = typ.WarrantyGuarantorParts.TrimEnd(',');
-                typ.WarrantyDurationParts = typ.WarrantyDurationParts.TrimEnd(',');
-                typ.WarrantyGuarantorLabour = typ.WarrantyGuarantorLabour.TrimEnd(',');
-                typ.WarrantyDurationLabour = typ.WarrantyDurationLabour.TrimEnd(',');
-                typ.ReplacementCost = typ.ReplacementCost.TrimEnd(',');
-                typ.ExpectedLife = typ.ExpectedLife.TrimEnd(',');
-                typ.NominalLength = typ.NominalLength.TrimEnd(',');
-                typ.NominalWidth = typ.NominalWidth.TrimEnd(',');
-                typ.NominalHeight = typ.NominalHeight.TrimEnd(',');
-                typ.ModelReference = typ.ModelReference.TrimEnd(',');
-                typ.Shape = typ.Shape.TrimEnd(',');
-                typ.Size = typ.Size.TrimEnd(',');
-                typ.Colour = typ.Colour.TrimEnd(',');
-                typ.Finish = typ.Finish.TrimEnd(',');
-                typ.Grade = typ.Grade.TrimEnd(',');
-                typ.Material = typ.Material.TrimEnd(',');
-                typ.Constituents = typ.Constituents.TrimEnd(',');
-                typ.Features = typ.Features.TrimEnd(',');
-                typ.AccessibilityPerformance = typ.AccessibilityPerformance.TrimEnd(',');
-                typ.CodePerformance = typ.CodePerformance.TrimEnd(',');
-                typ.SustainabilityPerformance = typ.SustainabilityPerformance.TrimEnd(',');
-
-                                
-                typ.WarrantyDescription = GetTypeWarrantyDescription(to);
-                           
-                
-                
-                
-                
-                
-                
+                typ.AssetType = GetTypeObjAttribute(to, "Pset_Asset", "AssetAccountingType");
+                typ.Manufacturer = GetTypeObjAttribute(to, "Pset_ManufacturersTypeInformation", "Manufacturer");
+                typ.ModelNumber = GetTypeObjAttribute(to, "Pset_ManufacturersTypeInformation", "ModelLabel");
+                typ.WarrantyGuarantorParts = GetTypeObjAttribute(to, "Pset_Warranty", "WarrantyGuarantorParts");
+                typ.WarrantyDurationParts = GetTypeObjAttribute(to, "Pset_Warranty", "WarrantyDurationParts");
+                typ.WarrantyGuarantorLabour = GetTypeObjAttribute(to, "Pset_Warranty", "WarrantyGuarantorLabor");
+                typ.WarrantyDurationLabour = GetTypeObjAttribute(to, "Pset_Warranty", "WarrantyDurationLabor");
+                typ.WarrantyDurationUnit = "???";
+                typ.ReplacementCost = GetTypeObjAttribute(to, "Pset_EconomicImpactValues", "ReplacementCost");
+                typ.ExpectedLife = GetTypeObjAttribute(to, "Pset_ServiceLife", "ServiceLifeDuration");
+                typ.WarrantyDescription = GetTypeObjAttribute(to, "Pset_Warranty", "WarrantyDescription"); //GetTypeWarrantyDescription(to); 
+                typ.NominalLength = GetTypeObjAttribute(to, "Pset_Specification", "NominalLength");
+                typ.NominalWidth = GetTypeObjAttribute(to, "Pset_Specification", "NominalWidth");
+                typ.NominalHeight = GetTypeObjAttribute(to, "Pset_Specification", "NominalHeight");
+                typ.ModelReference = GetTypeObjAttribute(to, "Pset_Specification", "ModelReference");
+                typ.Shape = GetTypeObjAttribute(to, "Pset_Specification", "Shape");
+                typ.Size = GetTypeObjAttribute(to, "Pset_Specification", "Size");
+                typ.Colour = GetTypeObjAttribute(to, "Pset_Specification", "Colour");
+                if (typ.Colour == DEFAULT_VAL)typ.Colour = GetTypeObjAttribute(to, "Pset_Specification", "Color"); //try US 'color'
+                typ.Finish = GetTypeObjAttribute(to, "Pset_Specification", "Finish");
+                typ.Grade = GetTypeObjAttribute(to, "Pset_Specification", "Grade");
+                typ.Material = GetTypeObjAttribute(to, "Pset_Specification", "Material");
+                typ.Constituents = GetTypeObjAttribute(to, "Pset_Specification", "Constituents");
+                typ.Features = GetTypeObjAttribute(to, "Pset_Specification", "Features");
+                typ.AccessibilityPerformance = GetTypeObjAttribute(to, "Pset_Specification", "AccessibilityPerformance");
+                typ.CodePerformance = GetTypeObjAttribute(to, "Pset_Specification", "CodePerformance");
+                typ.SustainabilityPerformance = GetTypeObjAttribute(to, "Pset_Specification", "SustainabilityPerformance");
 
                 types.Rows.Add(typ);
             }
@@ -1274,29 +1233,92 @@ namespace Xbim.COBie
 
         
 
-        private string GetDoorStyleDescription(IfcTypeObject ds)
+
+        /// <summary>
+        /// Get the Attribute for a IfcTypeObject
+        /// </summary>
+        /// <param name="TypeObj">IfcTypeObject </param>
+        /// <param name="propSetName">Property Set Name to retrieve IfcPropertySet Object</param>
+        /// <param name="propName">Property Name held in IfcPropertySingleValue object</param>
+        /// <returns>NominalValue of IfcPropertySingleValue as a string</returns>
+        private string GetTypeObjAttribute(IfcTypeObject TypeObj, string propSetName, string propName)
+        {
+            IfcPropertySingleValue pSngValue = TypeObj.GetPropertySingleValue(propSetName, propName);
+            if (pSngValue != null)
+            {
+                return pSngValue.NominalValue.ToString();
+            }
+
+            //if first selection method fails try the long one on the holding object i.e. window type is associated with a window so look at window
+            //Note: Possible performance hit by multiple calls to function, could expand into calling function and set all values
+            IEnumerable<IfcPropertySingleValue> objProperties = Enumerable.Empty<IfcPropertySingleValue>();
+            var objTypeOf = TypeObj.ObjectTypeOf.First(); //can hold zero or 1 ObjectTypeOf so test return
+            if (objTypeOf != null)
+            {
+                foreach (IfcPropertySet pset in objTypeOf.RelatedObjects.First().GetAllPropertySets()) //has to have 1 ore more so get first and see what we get
+                {
+                    objProperties = pset.HasProperties.Where<IfcPropertySingleValue>(p => p.Name.ToString().Contains(propName));
+                    if (objProperties.Count() > 0) break; //exit loop as soon as we have something
+                }
+            }
+            
+            if (objProperties.Count() > 0) return objProperties.First().NominalValue.ToString(); //have a value so return first, should only be one
+            else return DEFAULT_VAL;
+        }
+
+        private string GetTypeObjDescription(IfcTypeObject ds)
         {
             if (ds != null)
             {
                 if (!string.IsNullOrEmpty(ds.Description)) return ds.Description;
                 else if (!string.IsNullOrEmpty(ds.Name)) return ds.Name;
+                else 
+                {
+                    //if supports PredefinedType and no description or name then use the predefined type or ElementType if they exist
+                    IEnumerable<PropertyInfo> pInfo = ds.GetType().GetProperties(); //get properties
+
+                    if (pInfo.Where(p => p.Name == "PredefinedType").Count() == 1)
+                    {
+                        string temp = pInfo.First().GetValue(ds, null).ToString(); //get predefindtype as description
+
+                        if (!string.IsNullOrEmpty(temp))
+                        {
+                            if (temp == "USERDEFINED")
+                            {
+                                //if used defined then the type description should be in ElementType, so see if property exists
+                                if (pInfo.Where(p => p.Name == "ElementType").Count() == 1)
+                                {
+                                    temp = pInfo.First().GetValue(ds, null).ToString(); //get ElementType
+                                    if (!string.IsNullOrEmpty(temp)) return temp; 
+                                }
+                            }
+                            if (temp == "NOTDEFINED") //if not defined then give up and return default
+                            {
+                                return DEFAULT_VAL;
+                            }
+
+                            return temp;
+                        }
+	                   
+                    }
+                }
             }
             return DEFAULT_VAL;
         }
 
-        private string GetTypeWarrantyDescription(object ds)
-        {
-            string desc = "";
-            int index = ds.GetType().ToString().LastIndexOf('.');
-            desc = ds.GetType().ToString().Substring(index + 4);
+        //private string GetTypeWarrantyDescription(object ds)
+        //{
+        //    string desc = "";
+        //    int index = ds.GetType().ToString().LastIndexOf('.');
+        //    desc = ds.GetType().ToString().Substring(index + 4);
             
-            if (ds is IfcDistributionElementType)
-                desc += " " + ((IfcDistributionElementType)ds).Name;
-            else if (ds is IfcElementType)
-                desc += " " + ((IfcElementType)ds).Name;
+        //    if (ds is IfcDistributionElementType)
+        //        desc += " " + ((IfcDistributionElementType)ds).Name;
+        //    else if (ds is IfcElementType)
+        //        desc += " " + ((IfcElementType)ds).Name;
 
-            return desc;
-        }
+        //    return desc;
+        //}
 
         #endregion
 
@@ -1743,9 +1765,12 @@ namespace Xbim.COBie
                 emails = emails.TrimEnd(',');
             }
             //if still no email lets make one up
-            if (emails == "")
+            if (string.IsNullOrEmpty(emails))
             {
-                emails = ifcP.GivenName + "." + ifcP.FamilyName + "@bimunknown.com";
+                if (!(string.IsNullOrEmpty(ifcP.GivenName))) emails = ifcP.GivenName;
+                if (!(string.IsNullOrEmpty(ifcP.GivenName) && string.IsNullOrEmpty(ifcP.FamilyName))) emails += ".";
+                if (!(string.IsNullOrEmpty(ifcP.FamilyName))) emails += ifcP.FamilyName;
+                emails += string.IsNullOrEmpty(emails) ? "unknown@bimunknown.com" : "@bimunknown.com";
             }
 
             return emails;
