@@ -70,10 +70,9 @@ namespace Xbim.COBie
             const string strFormat = "yyyy-MM-ddTHH:mm:ss";
 
             int CreatedOnTStamp = (int)ownerHistory.CreationDate;
-            //return (CreatedOnTStamp <= 0) ? "Unknown" : IfcTimeStamp.ToFormattedString(CreatedOnTStamp);
             if (CreatedOnTStamp <= 0)
             {
-                return DateTime.Now.ToString(strFormat);
+                return DateTime.Now.ToString(strFormat); //we have to return a date to comply. so now is used
             }
             else
             {
@@ -112,7 +111,7 @@ namespace Xbim.COBie
                 IfcPerson person = oh.OwningUser.ThePerson;
 
                 contact.Email = GetTelecomEmailAddress(oh);
-                // check if this email is alerady in the contacts (as it only needs to exist once)
+                // check if this email is already in the contacts (as it only needs to exist once)
                 bool emailExists = false;
                 foreach (COBieContactRow c in contacts.Rows)
                 {
@@ -363,6 +362,7 @@ namespace Xbim.COBie
 
         #region Job
 
+        
         public COBieSheet<COBieJobRow> GetCOBieJobSheet(IModel model, COBieSheet<COBiePickListsRow> pickLists)
         {
             _model = model;
@@ -1171,7 +1171,8 @@ namespace Xbim.COBie
                                                         "ReplacementCost", "ServiceLifeDuration", "WarrantyDescription", "WarrantyDurationUnit" , "NominalLength", "NominalWidth",
                                                         "NominalHeight", "ModelReference", "Shape", "Colour", "Color", "Finish", "Grade", 
                                                         "Material", "Constituents", "Features", "Size", "AccessibilityPerformance", "CodePerformance", 
-                                                        "SustainabilityPerformance"};
+                                                        "SustainabilityPerformance", "Warranty Information"};
+            Dictionary<string, string> DurationAndValue;
             foreach (IfcTypeObject to in ifcTypeObjects)
             {
                 COBieTypeRow typ = new COBieTypeRow(types);
@@ -1210,11 +1211,13 @@ namespace Xbim.COBie
                 typ.WarrantyGuarantorParts = GetTypeObjAttribute(to, "Pset_Warranty", "WarrantyGuarantorParts", relAtts);
                 typ.WarrantyDurationParts = GetTypeObjAttribute(to, "Pset_Warranty", "WarrantyDurationParts", relAtts);
                 typ.WarrantyGuarantorLabour = GetTypeObjAttribute(to, "Pset_Warranty", "WarrantyGuarantorLabor", relAtts);
-                typ.WarrantyDurationLabour = GetTypeObjAttribute(to, "Pset_Warranty", "WarrantyDurationLabor", relAtts);
-                typ.WarrantyDurationUnit = GetWarrantyDurationUnit(model); 
+                DurationAndValue = GetDurationUnitAndValue(to, "Pset_Warranty", "WarrantyDurationLabor", relAtts);
+                typ.WarrantyDurationLabour = DurationAndValue["VALUE"];  //GetTypeObjAttribute(to, "Pset_Warranty", "WarrantyDurationLabor", relAtts);
+                typ.WarrantyDurationUnit = DurationAndValue["UNIT"];  //GetWarrantyDurationUnit(to, relAtts); 
                 typ.ReplacementCost = GetTypeObjAttribute(to, "Pset_EconomicImpactValues", "ReplacementCost", relAtts);
-                typ.ExpectedLife = GetTypeObjAttribute(to, "Pset_ServiceLife", "ServiceLifeDuration", relAtts);
-                typ.DurationUnit = GetDurationUnit(model);
+                DurationAndValue = GetDurationUnitAndValue(to, "Pset_ServiceLife", "ServiceLifeDuration", relAtts);
+                typ.ExpectedLife = DurationAndValue["VALUE"];// GetTypeObjAttribute(to, "Pset_ServiceLife", "ServiceLifeDuration", relAtts);
+                typ.DurationUnit = DurationAndValue["UNIT"];  //GetDurationUnit(to, relAtts);
                 typ.WarrantyDescription = GetTypeObjAttribute(to, "Pset_Warranty", "WarrantyDescription", relAtts); 
 
                 typ.NominalLength = GetTypeObjAttribute(to, "Pset_Specification", "NominalLength", relAtts);
@@ -1245,33 +1248,74 @@ namespace Xbim.COBie
             return types;
         }
 
-        private string GetDurationUnit(IModel model)
+
+        
+
+        /// <summary>
+        /// Get the Time unit and value for the passed in property
+        /// </summary>
+        /// <param name="TypeObj">IfcTypeObject </param>
+        /// <param name="propSetName">Property Set Name to retrieve IfcPropertySet Object</param>
+        /// <param name="propName">Property Name held in IfcPropertySingleValue object</param>
+        /// <param name="relAtts">List of IfcPropertySingleValue filtered to attribute names we require</param>
+        /// <returns>Dictionary holding unit and value e.g. Year, 2.0</returns>
+        private Dictionary<string, string> GetDurationUnitAndValue(IfcTypeObject TypeObj, string propSetName, string propName, IEnumerable<IfcPropertySingleValue> relAtts)
         {
-            IEnumerable<IfcConversionBasedUnit> ifcConversionBasedUnit = model.InstancesOfType<IfcConversionBasedUnit>().Where(u => u.UnitType == IfcUnitEnum.TIMEUNIT);
-            IfcConversionBasedUnit TimeBaeUnit = ifcConversionBasedUnit.FirstOrDefault();
-            if ((TimeBaeUnit != null) && (TimeBaeUnit.Name != null))
+            const string Default = "Second"; //n/a is not acceptable, so lets how a value which is obviously incorrect
+            Dictionary<string, string> Ret = new Dictionary<string, string>() { { "UNIT", Default }, { "VALUE", Default } };
+            //try to get the property from the IfcTypeObject
+            IfcPropertySingleValue pSngValue = TypeObj.GetPropertySingleValue(propSetName, propName);
+            //if null then try and get from a first related object i.e. window type is associated with a window so look at window, should we do this or just return some default value here???
+            if (pSngValue == null) pSngValue = relAtts.Where(p => p.Name == propName).FirstOrDefault();
+            double convert = 0.0;
+            //Get the unit type
+            if ((pSngValue != null) && (pSngValue.Unit is IfcConversionBasedUnit) && (pSngValue.Unit != null))
             {
-                return TimeBaeUnit.Name.ToString();
+                Ret["UNIT"] = ((IfcConversionBasedUnit)pSngValue.Unit).Name.ToString(); //get unit type name
+                convert = (double)((IfcConversionBasedUnit)pSngValue.Unit).ConversionFactor.ValueComponent.Value; //get the conversion factor value to work out time period
             }
-            return "0";
+            else if ((pSngValue != null) && (pSngValue.NominalValue != null))   //no IfcConversionBasedUnit so go for "Warranty Information" prop. then value for passed in propName
+            {
+                if ((pSngValue != null) && (propName.Contains("Warranty")))
+                {
+                    IfcPropertySingleValue pSngUnit = relAtts.Where(p => p.Name == "Warranty Information").FirstOrDefault(); //appears in clinic file so grab
+                    if (pSngUnit != null) Ret["UNIT"] = pSngUnit.NominalValue.Value.ToString();
+                }
+                else
+                    Ret["UNIT"] = pSngValue.NominalValue.Value.ToString(); // value for passed in propName
+                    
+            }
+            //Get the time period value
+            if ((pSngValue != null) && (pSngValue.NominalValue != null) && (pSngValue.NominalValue is IfcReal)) //if a number then we can calculate
+            {
+                double val = (double)pSngValue.NominalValue.Value; //get value
+                if (convert > 0.0) val = val / convert; //convert if we have a convert value
+                Ret["VALUE"] = val.ToString("F1");
+            }
+            else if ((pSngValue != null) && (pSngValue.NominalValue != null)) //no number value so just show value for passed in propName
+                Ret["VALUE"] = pSngValue.NominalValue.Value.ToString(); 
+            
+            return Ret;
         }
 
         /// <summary>
-        /// Get the Time unit used in the model
+        /// Get the Time unit for the warranty
         /// </summary>
-        /// <param name="model"></param>
-        /// <returns></returns>
-        private string GetWarrantyDurationUnit(IModel model)
-        {
-            return GetDurationUnit(model);
-            //IEnumerable<IfcConversionBasedUnit> ifcConversionBasedUnit = model.InstancesOfType<IfcConversionBasedUnit>().Where(u => u.UnitType == IfcUnitEnum.TIMEUNIT);
-            //IfcConversionBasedUnit TimeBaeUnit = ifcConversionBasedUnit.FirstOrDefault();
-            //if ((TimeBaeUnit != null) && (TimeBaeUnit.Name != null))
-            //{
-            //    return TimeBaeUnit.Name.ToString();
-            //}
-            //return "0";
-        }
+        /// <param name="TypeObj">IfcTypeObject </param>
+        /// <param name="relAtts">List of IfcPropertySingleValue filtered to attribute names we require</param>
+        /// <returns>string as time unit, example = year</returns>
+        //private string GetWarrantyDurationUnit(IfcTypeObject TypeObj, IEnumerable<IfcPropertySingleValue> relAtts)
+        //{
+        //    //try to get the property from the IfcTypeObject
+        //    IfcPropertySingleValue pSngValue = TypeObj.GetPropertySingleValue("Pset_Warranty", "WarrantyDurationLabor");
+        //    //if null then try and get from a first related object i.e. window type is associated with a window so look at window, should we do this or just return some default value here???
+        //    if (pSngValue == null) pSngValue = relAtts.Where(p => p.Name == "WarrantyDurationLabor").FirstOrDefault();
+        //    if ((pSngValue != null) && (pSngValue.Unit is IfcConversionBasedUnit) && (pSngValue.Unit != null)) 
+        //        return ((IfcConversionBasedUnit)pSngValue.Unit).Name.ToString();
+
+        //    return DEFAULT_VAL;
+            
+        //}
 
 
         /// <summary>
