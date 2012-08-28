@@ -6,6 +6,24 @@ set src=C:\OpenCASCADE6.5.3\ros\inc
 set target=G:\Documents\XbimCP\XbimFramework\Dev\OpenCascadeUpgrade\Xbim.ModelGeometry\OpenCascade\inc
 echo Copying from %src% to %target%
 pause
+copy %src%\Standard_NullObject.hxx %target%
+copy %src%\Handle_TColStd_HArray1OfReal.hxx %target%
+copy %src%\Handle_Standard_NullObject.hxx %target%
+copy %src%\Handle_Geom2d_BSplineCurve.hxx %target%
+copy %src%\Handle_Geom2d_BoundedCurve.hxx %target%
+copy %src%\Handle_Geom2d_BezierCurve.hxx %target%
+copy %src%\Handle_Adaptor2d_HCurve2d.hxx %target%
+copy %src%\GeomAbs_IsoType.hxx %target%
+copy %src%\Geom2dAdaptor_Curve.lxx %target%
+copy %src%\Geom2dAdaptor_Curve.hxx %target%
+copy %src%\Geom2d_Geometry.hxx %target%
+copy %src%\Geom2d_Curve.hxx %target%
+copy %src%\BRepGProp_Face.lxx %target%
+copy %src%\BRepGProp_Face.hxx %target%
+copy %src%\BRepAdaptor_Surface.lxx %target%
+copy %src%\BRepAdaptor_Surface.hxx %target%
+copy %src%\BRepAdaptor_Surface.hxx %target%
+
 copy %src%\BRepOffsetAPI_Sewing.hxx %target%
 copy %src%\GC_MakeEllipse.hxx %target%
 copy %src%\Handle_Geom_Ellipse.hxx %target%

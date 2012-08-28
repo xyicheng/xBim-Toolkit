@@ -272,6 +272,24 @@ namespace Xbim.Ifc.GeometryResource
             set { ModelManager.SetModelValue(this, ref _x, value, v => _x = v, "X"); }
         }
 
+        public void XYZ(out double x, out double y, out double z)
+        {
+            if (Dim == 3)
+            {
+               
+                x = _x; y = _z; z = _z;
+            }
+            else if (Dim == 2)
+            {
+               
+                x = _x; y = _y; z = 0;
+            }
+            else
+            {
+                z = y = x = double.NaN;
+            }
+        }
+
         public double Y
         {
             get

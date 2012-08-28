@@ -42,7 +42,9 @@ using Xbim.XbimExtensions.DataProviders;
 using Xbim.XbimExtensions.Parser;
 using Xbim.XbimExtensions.Transactions;
 using Xbim.XbimExtensions.Transactions.Extensions;
-
+using Xbim.Common;
+using Xbim.Ifc.MeasureResource;
+using Xbim.Ifc.Extensions;
 
 #endregion
 
@@ -552,6 +554,65 @@ namespace Xbim.IO
         }
 
         #endregion
+        private XbimModelFactors _modelFactors;
+
+        public XbimModelFactors GetModelFactors
+        {
+            get
+            {
+                if (_modelFactors == null)
+                {
+                   
+                    double angleToRadiansConversionFactor = 0.0174532925199433; //assume degrees
+                    double lengthToMetresConversionFactor = 1; //assume metres
+
+                    IfcUnitAssignment ua = InstancesOfType<IfcUnitAssignment>().FirstOrDefault();
+                    if (ua != null)
+                    {
+
+                        foreach (var unit in ua.Units)
+                        {
+                            double value = 1.0;
+                            IfcConversionBasedUnit cbUnit = unit as IfcConversionBasedUnit;
+                            IfcSIUnit siUnit = unit as IfcSIUnit;
+                            if (cbUnit != null)
+                            {
+                                IfcMeasureWithUnit mu = cbUnit.ConversionFactor;
+                                if (mu.UnitComponent is IfcSIUnit)
+                                    siUnit = (IfcSIUnit)mu.UnitComponent;
+                                ExpressType et = ((ExpressType)mu.ValueComponent);
+
+                                if (et.UnderlyingSystemType == typeof(double))
+                                    value *= (double)et.Value;
+                                else if (et.UnderlyingSystemType == typeof(int))
+                                    value *= (double)((int)et.Value);
+                                else if (et.UnderlyingSystemType == typeof(long))
+                                    value *= (double)((long)et.Value);
+                            }
+                            if (siUnit != null)
+                            {
+                                value *= siUnit.Power();
+                                switch (siUnit.UnitType)
+                                {
+                                    case IfcUnitEnum.LENGTHUNIT:
+                                        lengthToMetresConversionFactor = value;
+                                        break;
+                                    case IfcUnitEnum.PLANEANGLEUNIT:
+                                        angleToRadiansConversionFactor = value;
+                                        break;
+                                    default:
+                                        break;
+                                }
+                            }
+                        }
+                    }
+
+                    _modelFactors = new XbimModelFactors(angleToRadiansConversionFactor, lengthToMetresConversionFactor);
+                }
+                return _modelFactors;
+            }
+        }
+
 
         private IPersistIfc _part21Parser_EntityCreate(string className, long? label, bool headerEntity,
                                                        out int[] reqParams)

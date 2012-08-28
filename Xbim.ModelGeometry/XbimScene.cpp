@@ -6,7 +6,8 @@ using namespace System::IO;
 using namespace Xbim::IO;
 using namespace Xbim::ModelGeometry::Scene;
 using namespace Xbim::Common::Exceptions;
-
+using namespace Xbim::XbimExtensions;
+using namespace Xbim::Common;
 namespace Xbim
 {
 	namespace ModelGeometry
@@ -140,8 +141,9 @@ namespace Xbim
 
 		XbimTriangulatedModelStream^ XbimScene::Triangulate(TransformNode^ node)
 		{
-
+			
 			IfcProduct^ product = node->Product;
+			XbimModelFactors^ mf = ((IPersistIfcEntity^)product)->ModelOf->GetModelFactors;
 			if(product!=nullptr) //there is no product at this node
 			{
 				try
@@ -149,7 +151,7 @@ namespace Xbim
 					IXbimGeometryModel^ geomModel = XbimGeometryModel::CreateFrom(product, _maps, false, _lod);
 					if (geomModel != nullptr)  //it has no geometry
 					{
-						XbimTriangulatedModelStream^ tm = geomModel->Mesh(true);
+						XbimTriangulatedModelStream^ tm = geomModel->Mesh(true,mf->DeflectionTolerance);
 						XbimBoundingBox^ bb = geomModel->GetBoundingBox(true);
 						node->BoundingBox = bb->GetRect3D();
 						return tm;

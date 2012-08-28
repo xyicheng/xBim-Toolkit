@@ -24,6 +24,7 @@ using Xbim.XbimExtensions.DataProviders;
 using Xbim.XbimExtensions.Parser;
 using Xbim.XbimExtensions.Transactions;
 using Xbim.Ifc.SharedBldgElements;
+using Xbim.Common;
 
 #endregion
 
@@ -60,6 +61,7 @@ namespace Xbim.XbimExtensions
     }
     public interface IModel : IDisposable
     {
+        XbimModelFactors GetModelFactors { get; }
         IEnumerable<TIfcType> InstancesOfType<TIfcType>() where TIfcType : IPersistIfcEntity;
 
         IEnumerable<TIfcType> InstancesWhere<TIfcType>(Expression<Func<TIfcType, bool>> expression)

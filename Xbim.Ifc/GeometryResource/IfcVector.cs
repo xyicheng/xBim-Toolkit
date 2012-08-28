@@ -153,6 +153,29 @@ namespace Xbim.Ifc.GeometryResource
             return string.Format("{0},{1}", Magnitude, Orientation);
         }
 
+        /// <summary>
+        /// returns the x, y z values of the vector, if invalid all values are set to NAN
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="z"></param>
+        public void XYZ(out double x, out double y, out double z)
+        {
+            if (Dim == 3)
+            {
+                Vector3D v3d = WVector3D();
+                x = v3d.X; y = v3d.Y; z = v3d.Z;
+            }
+            else if (Dim == 2)
+            {
+                Vector v3d = WVector();
+                x = v3d.X; y = v3d.Y; z = 0;
+            }
+            else 
+            {
+                z = y = x = double.NaN;
+            }
+        }
         public override string WhereRule()
         {
             if (Magnitude < 0)

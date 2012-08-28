@@ -35,80 +35,57 @@ namespace Xbim
 
 			try
 			{
+				if(toCut.IsNull() || from.IsNull()) 
+					return false;
 				BRepAlgoAPI_Cut boolOp(from,toCut);
-				ok = (boolOp.ErrorStatus()==0);
+				Standard_Integer err = boolOp.ErrorStatus();
+				ok = (err==0);
 				if(ok) result = boolOp.Shape();
+				/*else
+				{
+					BRepAlgo_Cut boolOp2(from,toCut);
+					ok = boolOp2.IsDone();
+					if(ok) result = boolOp2.Shape();
+				}*/
+
 			}
-			catch(SEHException^ )
+			catch(... )
 			{
-				BRepAlgo_Cut boolOp(from,toCut); //try this sometimes works better
-				ok = (boolOp.IsDone()==Standard_True);
-				if(ok) result = boolOp.Shape();
 			}
 			return ok;
 		}
 
 		// cuts a shape from the result shape and updates thre result shape if it was successful
-		bool XbimFeaturedShape::DoCut(const TopoDS_Shape& toCut)
-		{
-			
+		bool XbimFeaturedShape::DoCut(const TopoDS_Shape& toCut, bool tryToRepair)
+		{	
 			TopoDS_Shape res;
 			if(LowLevelCut(*(mResultShape->Handle),toCut,res))
-			{
+			{		
 				
-				if(BRepCheck_Analyzer(res, Standard_False).IsValid() == 0) 
+				if( BRepCheck_Analyzer(res, Standard_False).IsValid() == 0) 
 				{
+					
+					if(!tryToRepair) return false; //sometimes repairing can alter the tolerances of shapes and cause problems
 					//try and fix it
+					
+					//BRepTools::Write(res,"r");
 					ShapeFix_Shape fixer(res);
+					fixer.SetPrecision(BRepLib::Precision());
 					fixer.SetMinTolerance(BRepLib::Precision());
 					fixer.SetMaxTolerance(BRepLib::Precision());
-					
-					
 					fixer.Perform();
-					
-					
+
 					if(BRepCheck_Analyzer(fixer.Shape(), Standard_False).IsValid() == 0) 
 						return false;//messed up try individual cutting or throw an error
 					else
 						*(mResultShape->Handle) = fixer.Shape();
 				}
-				if(res.IsNull()) return true; //nothing happened, stay as we were 
-				if(res.ShapeType() == TopAbs_SOLID)
-				{	 *(mResultShape->Handle)=TopoDS::Solid(res); return true;}
-				if(res.ShapeType() == TopAbs_COMPOUND)
-				{
-					TopExp_Explorer compExp(res,TopAbs_SOLID);
-					if(compExp.More())
-					{
-						*(mResultShape->Handle)=TopoDS::Solid(TopoDS::Solid(compExp.Current()));//grab the first solid 
-						return true;
-					}
-					compExp.Init(res,TopAbs_SHELL);
-					if(compExp.More())	res = compExp.Current();//grab the first shell and solidify in next block
-				}
-				if(res.ShapeType() == TopAbs_SHELL)
-				{
-
-					ShapeFix_Solid sf_solid;
-					sf_solid.LimitTolerance(BRepLib::Precision());
-					*(mResultShape->Handle)=sf_solid.SolidFromShell(TopoDS::Shell(res));
-					return true;
-
-				}
-
-				Bnd_Box bb3;
-				BRepBndLib::Add(res, bb3);
-				if(bb3.IsVoid()) return true; //the result is empty, i.e. cutting a from b left no solid, a is > b
-
-				Bnd_Box bb1;
-				BRepBndLib::Add(*(mResultShape->Handle), bb1);
-				Bnd_Box bb2;
-				BRepBndLib::Add(toCut, bb2);
-				if(bb1.IsOut(bb2)) //the two shapes never intersected
-					return true; //just return what we had in the first place
-				
+				else
+					*(mResultShape->Handle) = res;
+				return true;
 			}
-			return false;//totally invalid shape give up and try the individual ones or throw an error
+			else
+				return false;
 		}
 
 		// unions a shape from the result shape and updates thre result shape if it was successful
@@ -128,7 +105,7 @@ namespace Xbim
 			return true;
 		}
 
-		XbimFeaturedShape::XbimFeaturedShape(IXbimGeometryModel^ baseShape, IEnumerable<IXbimGeometryModel^>^ openings, IEnumerable<IXbimGeometryModel^>^ projections)
+		XbimFeaturedShape::XbimFeaturedShape(IfcProduct^ product, IXbimGeometryModel^ baseShape, IEnumerable<IXbimGeometryModel^>^ openings, IEnumerable<IXbimGeometryModel^>^ projections)
 		{
 			if(baseShape==nullptr)
 			{
@@ -172,30 +149,65 @@ namespace Xbim
 			if(openings!=nullptr && Enumerable::Count<IXbimGeometryModel^>(openings) > 0)
 			{
 				mOpenings = gcnew List<IXbimGeometryModel^>(openings);
-				TopoDS_Compound c;
-				BRep_Builder b;
-				b.MakeCompound(c);
-				for each(IXbimGeometryModel^ opening in mOpenings) // quick cutting 
-					b.Add(c,*(opening->Handle));
 				
+				BRep_Builder b;
+				TopoDS_Shape c;
+				if(mOpenings->Count>1)
+				{
+					TopoDS_Compound comp;
+					b.MakeCompound(comp);
+					for each(IXbimGeometryModel^ opening in mOpenings) // quick cutting 
+						b.Add(comp,*(opening->Handle));
+					c = comp;
+				}
+				else
+					c =  *(mOpenings[0]->Handle);
 				try
 				{
-					if(mResultShape->Handle->ShapeType() == TopAbs_SHELL || !DoCut(c)) //try the fast option first if it is not a shell
-					{
-						//try each cut separately
-						bool failed = false;
-						for each(IXbimGeometryModel^ opening in mOpenings) //one by one cutting for tricky geometries. opencascade is less likely to fail
-						{
-							if(!DoCut(*(opening->Handle)))
-								failed=true;
-						}
-						if(failed) throw gcnew XbimGeometryException("XbimFeaturedShape Boolean Cut Opening failed");
 
+					/*BRepTools::Write(c, "c");
+					BRepTools::Write(*(mResultShape->Handle), "b");*/
+					if(!DoCut(c,false) ) //try the fast option first if it is not a shell, if more than one opening try slow
+					{
+						//increase the tolerances and try again
+						ShapeFix_ShapeTolerance fTol;
+						double prec = Math::Max(1e-5,BRepLib::Precision()*1000 );
+						fTol.SetTolerance(*(mResultShape->Handle), prec);
+						fTol.SetTolerance(c,prec);
+						if(!DoCut(c,false) )
+						{
+							//try each cut separately
+							bool failed = false;
+							for each(IXbimGeometryModel^ opening in mOpenings) //one by one cutting for tricky geometries. opencascade is less likely to fail
+							{
+								//BRepTools::Write(*(opening->Handle),"h");
+								if(mOpenings->Count==1 || !DoCut(*(opening->Handle),false)) //if only one opening just do sub parts, else try each opening before doing sub parts
+								{
+									//getting harder, the geometry is most likley badly defined try each of the sub shells
+									for (TopExp_Explorer ex(*(opening->Handle),TopAbs_SHELL) ; ex.More(); ex.Next())  
+									{
+										try 
+										{
+											ShapeFix_Solid sf_solid;
+											sf_solid.SetPrecision(BRepLib::Precision());
+											sf_solid.LimitTolerance(BRepLib::Precision());
+											TopoDS_Solid solid = sf_solid.SolidFromShell(TopoDS::Shell(ex.Current()));
+											/*BRepTools::Write(solid,"s");*/
+											if(!DoCut(solid,true))
+												failed=true;
+										} catch(...) {failed=true;}
+									}
+								}
+							}
+							if(failed)
+								Logger->WarnFormat("Failed cut an opening in entity #{0}={1}\nA simplified representation for the shape has been used",product->EntityLabel,product->GetType()->Name);
+						}
 					}
 				}
 				catch(...)
 				{
-					throw gcnew XbimGeometryException("XbimFeaturedShape Boolean Cut Opening failed");
+					Logger->ErrorFormat("Failed cut all openings in entity #{0}={1}\nA simplified representation for the shape has been used",product->EntityLabel,product->GetType()->Name);
+
 				}
 			}
 		}

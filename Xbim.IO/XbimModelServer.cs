@@ -1631,6 +1631,9 @@ namespace Xbim.IO
 
 
         public abstract bool ContainsInstance(long entityLabel);
+
+        public abstract Common.XbimModelFactors GetModelFactors { get; }
+        
     }
 }
 

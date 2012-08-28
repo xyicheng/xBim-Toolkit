@@ -20,6 +20,8 @@ using Xbim.Ifc.MeasureResource;
 using Xbim.Ifc.ProductExtension;
 using Xbim.Ifc.RepresentationResource;
 using Xbim.XbimExtensions;
+using Xbim.Common;
+using Xbim.Ifc.SelectTypes;
 
 #endregion
 
@@ -181,6 +183,7 @@ namespace Xbim.Ifc.Extensions
             return string.Join(", ", tokens);
         }
 
+       
         public static IfcNamedUnit GetAreaUnit(this IfcProject ifcProject)
         {
             return ifcProject.UnitsInContext.GetAreaUnit();
