@@ -28,7 +28,7 @@ namespace Xbim.Tests.COBie
         {
             _model = new XbimFileModelServer();
             _model.Open(SourceFile);
-            COBieQueries cobieEngine = new COBieQueries();
+            COBieQueries cobieEngine = new COBieQueries(_model);
 
             _picklists = cobieEngine.GetCOBiePickListsSheet(PickListFile);
         }
@@ -44,9 +44,9 @@ namespace Xbim.Tests.COBie
         [TestMethod]
         public void Should_Return_Floors()
         {
-            COBieQueries cobieEngine = new COBieQueries();
+            COBieQueries cobieEngine = new COBieQueries(Model);
 
-            var floors = cobieEngine.GetCOBieFloorSheet(Model, PickList);
+            var floors = cobieEngine.GetCOBieFloorSheet();
 
             Assert.AreEqual(4, floors.Rows.Count);
 
@@ -56,9 +56,9 @@ namespace Xbim.Tests.COBie
         [TestMethod]
         public void Should_Return_Spaces()
         {
-            COBieQueries cobieEngine = new COBieQueries();
+            COBieQueries cobieEngine = new COBieQueries(Model);
 
-            var spaces = cobieEngine.GetCOBieSpaceSheet(Model, PickList );
+            var spaces = cobieEngine.GetCOBieSpaceSheet();
 
             Assert.AreEqual(22, spaces.Rows.Count);
 

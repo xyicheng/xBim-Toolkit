@@ -219,31 +219,31 @@ namespace Xbim.COBie
 			IModel model = Context.Models.First();
 
             // set all the properties
-            COBieQueries cq = new COBieQueries();
+            COBieQueries cq = new COBieQueries(model);
 
             // create pick lists from xml
-            CobiePickLists = cq.GetCOBiePickListsSheet("PickLists.xml");
+            //CobiePickLists = cq.GetCOBiePickListsSheet("PickLists.xml");
 
             // populate all sheets from model
-            CobieSpaces = cq.GetCOBieSpaceSheet(model, CobiePickLists);
-            CobieComponents = cq.GetCOBieComponentSheet(model);
-            CobieAssemblies = cq.GetCOBieAssemblySheet(model);
-            CobieAttributes = cq.GetCOBieAttributeSheet(model);
-            CobieConnections = cq.GetCOBieConnectionSheet(model);
-            CobieContacts = cq.GetCOBieContactSheet(model, CobiePickLists);
-            CobieCoordinates = cq.GetCOBieCoordinateSheet(model);
-            CobieDocuments = cq.GetCOBieDocumentSheet(model, CobiePickLists);
-            CobieFacilities = cq.GetCOBieFacilitySheet(model, CobiePickLists);
-            CobieFloors = cq.GetCOBieFloorSheet(model, CobiePickLists);
-            CobieImpacts = cq.GetCOBieImpactSheet(model, CobiePickLists);
-            CobieIssues = cq.GetCOBieIssueSheet(model, CobiePickLists);
-            CobieJobs = cq.GetCOBieJobSheet(model, CobiePickLists);
+            CobieSpaces = cq.GetCOBieSpaceSheet();
+            CobieComponents = cq.GetCOBieComponentSheet();
+            CobieAssemblies = cq.GetCOBieAssemblySheet();
+            CobieAttributes = cq.GetCOBieAttributeSheet();
+            CobieConnections = cq.GetCOBieConnectionSheet();
+            CobieContacts = cq.GetCOBieContactSheet();
+            CobieCoordinates = cq.GetCOBieCoordinateSheet();
+            CobieDocuments = cq.GetCOBieDocumentSheet();
+            CobieFacilities = cq.GetCOBieFacilitySheet();
+            CobieFloors = cq.GetCOBieFloorSheet();
+            CobieImpacts = cq.GetCOBieImpactSheet();
+            CobieIssues = cq.GetCOBieIssueSheet();
+            CobieJobs = cq.GetCOBieJobSheet();
             
-            CobieResources = cq.GetCOBieResourceSheet(model);
-            CobieSpares = cq.GetCOBieSpareSheet(model, CobiePickLists);
-            CobieSystems = cq.GetCOBieSystemSheet(model);
-            CobieTypes = cq.GetCOBieTypeSheet(model, CobiePickLists);
-            CobieZones = cq.GetCOBieZoneSheet(model, CobiePickLists);
+            CobieResources = cq.GetCOBieResourceSheet();
+            CobieSpares = cq.GetCOBieSpareSheet();
+            CobieSystems = cq.GetCOBieSystemSheet();
+            CobieTypes = cq.GetCOBieTypeSheet();
+            CobieZones = cq.GetCOBieZoneSheet();
         }
 
         private void PopulateErrors()

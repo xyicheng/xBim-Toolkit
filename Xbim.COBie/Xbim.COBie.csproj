@@ -92,8 +92,27 @@
   <ItemGroup>
     <Compile Include="COBieCell.cs" />
     <Compile Include="COBieContext.cs" />
+    <Compile Include="Data\COBieData.cs" />
+    <Compile Include="Data\COBieDataAssembly.cs" />
+    <Compile Include="Data\COBieDataAttribute.cs" />
+    <Compile Include="Data\COBieDataComponent.cs" />
+    <Compile Include="Data\COBieDataConnection.cs" />
+    <Compile Include="Data\COBieDataContact.cs" />
+    <Compile Include="Data\COBieDataCoordinate.cs" />
+    <Compile Include="Data\COBieDataDocument.cs" />
+    <Compile Include="Data\COBieDataFacility.cs" />
+    <Compile Include="Data\COBieDataFloor.cs" />
+    <Compile Include="Data\COBieDataImpact.cs" />
     <Compile Include="COBiePickList.cs" />
     <Compile Include="Constants.cs" />
+    <Compile Include="Data\COBieDataIssue.cs" />
+    <Compile Include="Data\COBieDataJob.cs" />
+    <Compile Include="Data\COBieDataResource.cs" />
+    <Compile Include="Data\COBieDataSpace.cs" />
+    <Compile Include="Data\COBieDataSpare.cs" />
+    <Compile Include="Data\COBieDataSystem.cs" />
+    <Compile Include="Data\COBieDataType.cs" />
+    <Compile Include="Data\COBieDataZone.cs" />
     <Compile Include="Enums.cs" />
     <Compile Include="Formatters\DataSetFormatter.cs" />
     <Compile Include="ICOBieSheet.cs" />
