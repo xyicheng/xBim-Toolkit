@@ -22,6 +22,29 @@ namespace XBim.COBie.Client
             InitializeComponent();
         }
 
+        public string ModelFile
+        {
+            get
+            {
+                return txtPath.Text;
+            }
+        }
+
+        public string TemplateFile
+        {
+            get
+            {
+                if (File.Exists(txtTemplate.Text))
+                {
+                    return txtTemplate.Text;
+                }
+                else
+                {
+                    return Path.Combine("Templates", txtTemplate.Text);
+                }
+            }
+        }
+
         private void btnGenerate_Click(object sender, EventArgs e)
         {
             Generate();
@@ -31,9 +54,7 @@ namespace XBim.COBie.Client
         {
             try
             {
-
-                string inputFile = txtPath.Text;
-                string outputFile = Path.ChangeExtension(inputFile, ".xls");
+                string outputFile = Path.ChangeExtension(ModelFile, ".xls");
 
                 if (!File.Exists(txtPath.Text))
                 {
@@ -41,11 +62,11 @@ namespace XBim.COBie.Client
                     return;
                 }
 
-                Log(String.Format("Loading model {0}...", Path.GetFileName(inputFile)));
+                Log(String.Format("Loading model {0}...", Path.GetFileName(ModelFile)));
                 using(IModel model = new XbimFileModelServer())
                 {
 
-                    model.Open(inputFile);
+                    model.Open(ModelFile);
 
                     // Build context
                     COBieContext context = new COBieContext();
@@ -56,9 +77,9 @@ namespace XBim.COBie.Client
                     COBieReader reader = new COBieReader(context);
 
                     // Export
-                    Log("Formatting as XLS...");
+                    Log(String.Format("Formatting as XLS using {0} template...", Path.GetFileName(TemplateFile)));
                     
-                    ICOBieFormatter formatter = new XLSFormatter(outputFile);
+                    ICOBieFormatter formatter = new XLSFormatter(outputFile, TemplateFile );
                     reader.Export(formatter);
                 }
                 
@@ -102,6 +123,27 @@ namespace XBim.COBie.Client
         private void btnClear_Click(object sender, EventArgs e)
         {
             txtOutput.Clear();
+        }
+
+        private void btnBrowseTemplate_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog dlg = new OpenFileDialog();
+
+            dlg.Filter = "XLS Files|*.xls";
+            dlg.Title = "Choose a COBie template file";
+            dlg.CheckFileExists = true;
+            // Show open file dialog box 
+            dlg.FileOk += new CancelEventHandler(dlg_TemplateFileOk);
+            dlg.ShowDialog();
+        }
+
+        private void dlg_TemplateFileOk(object sender, CancelEventArgs ce)
+        {
+            OpenFileDialog dlg = sender as OpenFileDialog;
+            if (dlg != null)
+            {
+                txtTemplate.Text = dlg.FileName;
+            }
         }
     }
 }
