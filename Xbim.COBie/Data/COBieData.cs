@@ -27,10 +27,10 @@ namespace Xbim.COBie.Data
         /// <returns></returns>
         protected string GetCreatedOnDateAsFmtString(IfcOwnerHistory ownerHistory)
         {
-            const string strFormat = "yyyy-MM-ddTHH:mm:ss";
+            const string strFormat = "yyyy-MM-dd HH:mm:ss";
 
-            int CreatedOnTStamp = (int)ownerHistory.CreationDate;
-            if (CreatedOnTStamp <= 0)
+            int createdOnTStamp = (int)ownerHistory.CreationDate;
+            if (createdOnTStamp <= 0)
             {
                 return DateTime.Now.ToString(strFormat); //we have to return a date to comply. so now is used
             }
@@ -42,7 +42,7 @@ namespace Xbim.COBie.Data
                 //but if the time stamp is Coordinated Universal Time (UTC), then daylight time should be ignored. see http://msdn.microsoft.com/en-us/library/bb546099.aspx
                 //IfcTimeStamp.ToDateTime(CreatedOnTStamp).ToLocalTime()...; //test to see if corrects 1 hour difference, and yes it did, but should we?
 
-                return IfcTimeStamp.ToDateTime(CreatedOnTStamp).ToString(strFormat);
+                return IfcTimeStamp.ToDateTime(createdOnTStamp).ToString(strFormat);
             }
 
         }

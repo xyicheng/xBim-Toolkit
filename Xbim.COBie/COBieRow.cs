@@ -5,6 +5,7 @@ using System.Text;
 using System.Reflection;
 using Xbim.Ifc.Kernel;
 using Xbim.Ifc.ExternalReferenceResource;
+using Xbim.COBie.Data;
 
 namespace Xbim.COBie
 {
@@ -40,7 +41,7 @@ namespace Xbim.COBie
             {
                 return val;
             }
-            return "n/a";
+            return COBieData.DEFAULT_VAL;
         }
 
         public COBieCell this[int i]
@@ -60,13 +61,13 @@ namespace Xbim.COBie
                             if (pVal != null)
                             {
                                 cell = new COBieCell(pVal.ToString());
-                                cell.COBieState = ((COBieAttributes)attrs[0]).State;
-                                cell.CobieCol = ParentSheet.Columns[((COBieAttributes)attrs[0]).Order];
                             }
                             else
                             {
-                                cell = new COBieCell("n/a");
+                                cell = new COBieCell(COBieData.DEFAULT_VAL);
                             }
+                            cell.COBieState = ((COBieAttributes)attrs[0]).State;
+                            cell.CobieCol = ParentSheet.Columns[((COBieAttributes)attrs[0]).Order];
                             return cell;
                         }
                     }

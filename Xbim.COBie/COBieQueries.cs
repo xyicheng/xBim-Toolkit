@@ -233,83 +233,7 @@ namespace Xbim.COBie
 
         #region PickLists
 
-        // Populate PickLists by row
-
-        //public COBieSheet<COBiePickListsRow> GetCOBiePickListsSheet(string pickListsXMLFilePath)
-        //{
-        //    // read xml document for picklists
-        //    if (string.IsNullOrEmpty(pickListsXMLFilePath)) pickListsXMLFilePath = "PickLists.xml";
-        //    XmlDocument xdoc = new XmlDocument();
-        //    xdoc.Load(pickListsXMLFilePath);
-        //    XmlNodeList items = xdoc.SelectNodes("//PickLists//Item");
-
-        //    COBieSheet<COBiePickListsRow> pickLists = new COBieSheet<COBiePickListsRow>();
-
-        //    foreach (XmlNode node in items)
-        //    {
-        //        COBiePickListsRow pickList = new COBiePickListsRow();
-        //        XmlElement itemEle = (XmlElement)node;
-
-        //        pickList.ApprovalBy = itemEle.GetElementsByTagName("ApprovalBy")[0].InnerText;
-        //        pickList.AreaUnit = itemEle.GetElementsByTagName("AreaUnit")[0].InnerText;
-        //        pickList.AssetType = itemEle.GetElementsByTagName("AssetType")[0].InnerText;
-        //        pickList.CategoryFacility = itemEle.GetElementsByTagName("Category-Facility")[0].InnerText;
-        //        pickList.CategorySpace = itemEle.GetElementsByTagName("Category-Space")[0].InnerText;
-        //        pickList.CategoryElement = itemEle.GetElementsByTagName("Category-Element")[0].InnerText;
-        //        pickList.CategoryProduct = itemEle.GetElementsByTagName("Category-Product")[0].InnerText;
-        //        pickList.CategoryRole = itemEle.GetElementsByTagName("Category-Role")[0].InnerText;
-        //        pickList.CoordinateSheet = itemEle.GetElementsByTagName("CoordinateSheet")[0].InnerText;
-        //        pickList.ConnectionType = itemEle.GetElementsByTagName("ConnectionType")[0].InnerText;
-        //        pickList.CoordinateType = itemEle.GetElementsByTagName("CoordinateType")[0].InnerText;
-        //        pickList.DocumentType = itemEle.GetElementsByTagName("DocumentType")[0].InnerText;
-        //        pickList.DurationUnit = itemEle.GetElementsByTagName("DurationUnit")[0].InnerText;
-        //        pickList.FloorType = itemEle.GetElementsByTagName("FloorType")[0].InnerText;
-        //        pickList.IssueCategory = itemEle.GetElementsByTagName("IssueCategory")[0].InnerText;
-        //        pickList.IssueChance = itemEle.GetElementsByTagName("IssueChance")[0].InnerText;
-        //        pickList.IssueImpact = itemEle.GetElementsByTagName("IssueImpact")[0].InnerText;
-        //        pickList.IssueRisk = itemEle.GetElementsByTagName("IssueRisk")[0].InnerText;
-        //        pickList.JobStatusType = itemEle.GetElementsByTagName("JobStatusType")[0].InnerText;
-        //        pickList.JobType = itemEle.GetElementsByTagName("JobType")[0].InnerText;
-        //        pickList.ObjAttribute = itemEle.GetElementsByTagName("objAttribute")[0].InnerText;
-        //        pickList.ObjAttributeType = itemEle.GetElementsByTagName("objAttributeType")[0].InnerText;
-        //        pickList.ObjComponent = itemEle.GetElementsByTagName("objComponent")[0].InnerText;
-        //        pickList.ObjConnection = itemEle.GetElementsByTagName("objConnection")[0].InnerText;
-        //        pickList.ObjContact = itemEle.GetElementsByTagName("objContact")[0].InnerText;
-        //        pickList.ObjCoordinate = itemEle.GetElementsByTagName("objCoordinate")[0].InnerText;
-        //        pickList.ObjDocument = itemEle.GetElementsByTagName("objDocument")[0].InnerText;
-        //        pickList.ObjFacility = itemEle.GetElementsByTagName("objFacility")[0].InnerText;
-        //        pickList.ObjFloor = itemEle.GetElementsByTagName("objFloor")[0].InnerText;
-        //        pickList.ObjIssue = itemEle.GetElementsByTagName("objIssue")[0].InnerText;
-        //        pickList.ObjJob = itemEle.GetElementsByTagName("objJob")[0].InnerText;
-        //        pickList.ObjProject = itemEle.GetElementsByTagName("objProject")[0].InnerText;
-        //        pickList.ObjResource = itemEle.GetElementsByTagName("objResource")[0].InnerText;
-        //        pickList.ObjSite = itemEle.GetElementsByTagName("objSite")[0].InnerText;
-        //        pickList.ObjSpace = itemEle.GetElementsByTagName("objSpace")[0].InnerText;
-        //        pickList.ObjSpare = itemEle.GetElementsByTagName("objSpare")[0].InnerText;
-        //        pickList.ObjSystem = itemEle.GetElementsByTagName("objSystem")[0].InnerText;
-        //        pickList.ObjType = itemEle.GetElementsByTagName("objType")[0].InnerText;
-        //        pickList.ObjWarranty = itemEle.GetElementsByTagName("objWarranty")[0].InnerText;
-        //        pickList.ObjZone = itemEle.GetElementsByTagName("objZone")[0].InnerText;
-        //        pickList.ResourceType = itemEle.GetElementsByTagName("ResourceType")[0].InnerText;
-        //        pickList.SheetType = itemEle.GetElementsByTagName("SheetType")[0].InnerText;
-        //        pickList.SpareType = itemEle.GetElementsByTagName("SpareType")[0].InnerText;
-        //        pickList.StageType = itemEle.GetElementsByTagName("StageType")[0].InnerText;
-        //        pickList.ZoneType = itemEle.GetElementsByTagName("ZoneType")[0].InnerText;
-        //        pickList.LinearUnit = itemEle.GetElementsByTagName("LinearUnit")[0].InnerText;
-        //        pickList.VolumeUnit = itemEle.GetElementsByTagName("VolumeUnit")[0].InnerText;
-        //        pickList.CostUnit = itemEle.GetElementsByTagName("CostUnit")[0].InnerText;
-        //        pickList.AssemblyType = itemEle.GetElementsByTagName("AssemblyType")[0].InnerText;
-        //        pickList.ImpactType = itemEle.GetElementsByTagName("ImpactType")[0].InnerText;
-        //        pickList.ImpactStage = itemEle.GetElementsByTagName("ImpactStage")[0].InnerText;
-        //        pickList.ImpactUnit = itemEle.GetElementsByTagName("ImpactUnit")[0].InnerText;
-        //        pickList.ObjAssembly = itemEle.GetElementsByTagName("objAssembly")[0].InnerText;
-        //        pickList.ObjImpact = itemEle.GetElementsByTagName("objImpact")[0].InnerText;
-
-        //        pickLists.Rows.Add(pickList);
-        //    }
-
-        //    return pickLists;
-        //}
+       
 
         // Populate PickLists by column
         public COBieSheet<COBiePickListsRow> GetCOBiePickListsSheet(string pickListsXMLFilePath)
@@ -388,21 +312,6 @@ namespace Xbim.COBie
             return pickLists;
         }
 
-        private string GetPickListCategory(IfcBuildingStorey bs)
-        {
-            return (bs.LongName == null) ? "Category" : bs.LongName.ToString();
-        }
-
-        private string GetPickListDescription(IfcBuildingStorey bs)
-        {
-            if (bs != null)
-            {
-                if (!string.IsNullOrEmpty(bs.LongName)) return bs.LongName;
-                else if (!string.IsNullOrEmpty(bs.Description)) return bs.Description;
-                else if (!string.IsNullOrEmpty(bs.Name)) return bs.Name;
-            }
-            return "n/a";
-        }
 
         #endregion
 

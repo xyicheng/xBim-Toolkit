@@ -1,6 +1,6 @@
 ﻿namespace XBim.COBie.Client
 {
-    partial class Form1
+    partial class COBieGenerator
     {
         /// <summary>
         /// Required designer variable.
@@ -29,12 +29,12 @@
         private void InitializeComponent()
         {
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.txtPath = new System.Windows.Forms.ComboBox();
             this.btnBrowse = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.btnGenerate = new System.Windows.Forms.Button();
             this.btnClear = new System.Windows.Forms.Button();
             this.txtOutput = new System.Windows.Forms.RichTextBox();
-            this.txtPath = new System.Windows.Forms.ComboBox();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -52,15 +52,28 @@
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "IFC File Location";
             // 
+            // txtPath
+            // 
+            this.txtPath.FormattingEnabled = true;
+            this.txtPath.Items.AddRange(new object[] {
+            "2012-03-23-Duplex-Design.ifc",
+            "Clinic_A_20110906.ifc"});
+            this.txtPath.Location = new System.Drawing.Point(68, 20);
+            this.txtPath.Name = "txtPath";
+            this.txtPath.Size = new System.Drawing.Size(337, 21);
+            this.txtPath.TabIndex = 0;
+            this.txtPath.Text = "2012-03-23-Duplex-Design.ifc";
+            // 
             // btnBrowse
             // 
             this.btnBrowse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnBrowse.Location = new System.Drawing.Point(422, 18);
             this.btnBrowse.Name = "btnBrowse";
             this.btnBrowse.Size = new System.Drawing.Size(75, 23);
-            this.btnBrowse.TabIndex = 2;
+            this.btnBrowse.TabIndex = 1;
             this.btnBrowse.Text = "&Browse...";
             this.btnBrowse.UseVisualStyleBackColor = true;
+            this.btnBrowse.Click += new System.EventHandler(this.btnBrowse_Click);
             // 
             // label1
             // 
@@ -74,10 +87,10 @@
             // btnGenerate
             // 
             this.btnGenerate.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnGenerate.Location = new System.Drawing.Point(441, 69);
+            this.btnGenerate.Location = new System.Drawing.Point(441, 238);
             this.btnGenerate.Name = "btnGenerate";
             this.btnGenerate.Size = new System.Drawing.Size(75, 23);
-            this.btnGenerate.TabIndex = 3;
+            this.btnGenerate.TabIndex = 2;
             this.btnGenerate.Text = "&Generate";
             this.btnGenerate.UseVisualStyleBackColor = true;
             this.btnGenerate.Click += new System.EventHandler(this.btnGenerate_Click);
@@ -85,12 +98,13 @@
             // btnClear
             // 
             this.btnClear.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnClear.Location = new System.Drawing.Point(441, 99);
+            this.btnClear.Location = new System.Drawing.Point(441, 209);
             this.btnClear.Name = "btnClear";
             this.btnClear.Size = new System.Drawing.Size(75, 23);
             this.btnClear.TabIndex = 4;
             this.btnClear.Text = "&Clear";
             this.btnClear.UseVisualStyleBackColor = true;
+            this.btnClear.Click += new System.EventHandler(this.btnClear_Click);
             // 
             // txtOutput
             // 
@@ -103,19 +117,7 @@
             this.txtOutput.TabIndex = 5;
             this.txtOutput.Text = "";
             // 
-            // txtPath
-            // 
-            this.txtPath.FormattingEnabled = true;
-            this.txtPath.Items.AddRange(new object[] {
-            "2012-03-23-Duplex-Design.ifc",
-            "Clinic_A_20110906.ifc"});
-            this.txtPath.Location = new System.Drawing.Point(68, 20);
-            this.txtPath.Name = "txtPath";
-            this.txtPath.Size = new System.Drawing.Size(337, 21);
-            this.txtPath.TabIndex = 3;
-            this.txtPath.Text = "2012-03-23-Duplex-Design.ifc";
-            // 
-            // Form1
+            // COBieGenerator
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -124,8 +126,8 @@
             this.Controls.Add(this.btnClear);
             this.Controls.Add(this.btnGenerate);
             this.Controls.Add(this.groupBox1);
-            this.Name = "Form1";
-            this.Text = "4Projects COBie";
+            this.Name = "COBieGenerator";
+            this.Text = "Xbim COBie Test Harness";
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.ResumeLayout(false);
