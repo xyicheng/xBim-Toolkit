@@ -93,6 +93,7 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="COBieAliasAttribute.cs" />
     <Compile Include="COBieCell.cs" />
     <Compile Include="COBieContext.cs" />
     <Compile Include="Data\COBieData.cs" />

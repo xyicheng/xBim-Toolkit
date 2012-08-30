@@ -33,10 +33,27 @@ namespace Xbim.COBie
                 object[] attrs = propInfo.GetCustomAttributes(typeof(COBieAttributes), true);
                 if (attrs != null && attrs.Length > 0)
                 {
-                    _columns.Add(((COBieAttributes)attrs[0]).Order, new COBieColumn(((COBieAttributes)attrs[0]).ColumnName, ((COBieAttributes)attrs[0]).MaxLength, ((COBieAttributes)attrs[0]).AllowedType, ((COBieAttributes)attrs[0]).KeyType));
+                    COBieAttributes attr = (COBieAttributes)attrs[0];
+                    List<string> aliases = GetAliases(propInfo);
+                    _columns.Add(attr.Order, new COBieColumn(attr.ColumnName, attr.MaxLength, attr.AllowedType, attr.KeyType, aliases));
                     _attributes.Add(propInfo, attrs);
                 }
             }
+        }
+
+        private List<string> GetAliases(PropertyInfo propInfo)
+        {
+            object[] attrs = propInfo.GetCustomAttributes(typeof(COBieAliasAttribute), true);
+
+            if (attrs != null && attrs.Length > 0)
+            {
+                return attrs.Cast<COBieAliasAttribute>().Select(s => s.Name).ToList<string>();
+            }
+            else
+            {
+                return new List<string>();
+            }
+            
         }
 
         public void Validate(out List<COBieError> errors)
@@ -55,8 +72,9 @@ namespace Xbim.COBie
                         string val = (propInfo.GetValue(row, null) == null) ? "" : propInfo.GetValue(row, null).ToString();
 
                         COBieCell cell = new COBieCell(val);
-                        cell.COBieState = ((COBieAttributes)attrs[0]).State;
-                        cell.CobieCol = new COBieColumn(((COBieAttributes)attrs[0]).ColumnName, ((COBieAttributes)attrs[0]).MaxLength, ((COBieAttributes)attrs[0]).AllowedType, ((COBieAttributes)attrs[0]).KeyType);
+                        COBieAttributes attr = (COBieAttributes)attrs[0];
+                        cell.COBieState = attr.State;
+                        cell.CobieCol = new COBieColumn(attr.ColumnName, attr.MaxLength, attr.AllowedType, attr.KeyType);
                         COBieError err = GetCobieError(cell, SheetName);
 
                         // if this cell is set as primary key then check its value with other cells

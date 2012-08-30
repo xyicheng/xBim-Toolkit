@@ -25,6 +25,7 @@ namespace Xbim.COBie.Rows
         public string Category { get; set; }
 
         [COBieAttributes(4, COBieKeyType.CompoundKey, COBieAttributeState.Required, "SpaceName", 255, COBieAllowedType.Text)]
+        [COBieAlias("SpaceNames")]
         public string SpaceNames { get; set; }
 
         [COBieAttributes(5, COBieKeyType.None, COBieAttributeState.System, "ExtSystem", 255, COBieAllowedType.AlphaNumeric)]

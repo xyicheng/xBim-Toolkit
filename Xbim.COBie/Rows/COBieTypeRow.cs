@@ -43,9 +43,11 @@ namespace Xbim.COBie.Rows
         public string WarrantyDurationParts { get; set; }
 
         [COBieAttributes(10, COBieKeyType.None, COBieAttributeState.Required, "WarrantyGuarantorLabour", 255, COBieAllowedType.Email)]
+        [COBieAlias("WarrantyGuarantorLabor")]
         public string WarrantyGuarantorLabour { get; set; }
 
         [COBieAttributes(11, COBieKeyType.None, COBieAttributeState.Required, "WarrantyDurationLabour", sizeof(double), COBieAllowedType.Numeric)]
+        [COBieAlias("WarrantyDurationLabor")]
         public string WarrantyDurationLabour { get; set; }
 
         [COBieAttributes(12, COBieKeyType.None, COBieAttributeState.Required, "WarrantyDurationUnit", 255, COBieAllowedType.Text)]
@@ -91,6 +93,7 @@ namespace Xbim.COBie.Rows
         public string Size { get; set; }
 
         [COBieAttributes(26, COBieKeyType.None, COBieAttributeState.As_Specified, "Colour", 255, COBieAllowedType.AlphaNumeric)]
+        [COBieAlias("Color")]
         public string Colour { get; set; }
 
         [COBieAttributes(27, COBieKeyType.None, COBieAttributeState.As_Specified, "Finish", 255, COBieAllowedType.AlphaNumeric)]

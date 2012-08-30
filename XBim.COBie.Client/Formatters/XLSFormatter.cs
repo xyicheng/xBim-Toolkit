@@ -162,6 +162,11 @@ namespace XBim.COBie.Client.Formatters
             
             ISheet excelSheet = Workbook.GetSheet(sheet.SheetName) ?? Workbook.CreateSheet(sheet.SheetName);
 
+            var datasetHeaders = sheet.Columns.Values.ToList();
+            var sheetHeaders = GetTargetHeaders(excelSheet);
+            ValidateHeaders(datasetHeaders, sheetHeaders, sheet.SheetName);
+
+
             // Enumerate rows
             for (int r = 0; r < sheet.Rows.Count; r++)
             {
@@ -182,6 +187,44 @@ namespace XBim.COBie.Client.Formatters
             }
 
             RecalculateSheet(excelSheet);
+        }
+
+        private void ValidateHeaders(List<COBieColumn> columns, List<string> sheetHeaders, string sheetName)
+        {
+            if (columns.Count != sheetHeaders.Count)
+            {
+                Console.WriteLine("Mis-matched number of columns in '{2}. {0} vs {1}", columns.Count, sheetHeaders.Count, sheetName);
+            }
+
+            for (int i = 0; i < columns.Count; i++)
+            {
+                if (!columns[i].IsMatch(sheetHeaders[i]))
+                {
+                    Console.WriteLine(@"{2}
+Mismatch: {0}
+          {1}",
+              columns[i].ColumnName, sheetHeaders[i], sheetName);
+                }
+            }
+        }
+
+
+
+        
+        private List<string> GetTargetHeaders(ISheet excelSheet)
+        {
+            List<string> headers = new List<string>();
+
+            IRow headerRow = excelSheet.GetRow(0);
+            if (headerRow == null)
+                return headers;
+
+            foreach (ICell cell in headerRow.Cells)
+            {
+                headers.Add(cell.StringCellValue);
+            }
+            return headers;
+
         }
 
         private void FormatCell(ICell excelCell, COBieCell cell)
@@ -212,7 +255,15 @@ namespace XBim.COBie.Client.Formatters
                         break;
 
                     case COBieAllowedType.Numeric:
-                        excelCell.SetCellValue(Double.Parse(cell.CellValue, CultureInfo.InvariantCulture));
+                        Double val;
+                        if (Double.TryParse(cell.CellValue, out val))
+                        {
+                            excelCell.SetCellValue(val);
+                        }
+                        else
+                        {
+                            excelCell.SetCellValue(cell.CellValue);
+                        }
                         break;
 
                     default:
