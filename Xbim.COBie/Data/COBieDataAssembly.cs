@@ -59,7 +59,7 @@ namespace Xbim.COBie.Data
                 assembly.AssemblyType = (ifcClassification == null) ? "" : ifcClassification.Name.ToString();
                 assembly.ExtSystem = applicationFullName;
                 assembly.ExtObject = "IfcRelAggregates";
-                assembly.ExtIdentifier = string.IsNullOrEmpty(ra.GlobalId) ? DEFAULT_VAL : ra.GlobalId.ToString();
+                assembly.ExtIdentifier = string.IsNullOrEmpty(ra.GlobalId) ? DEFAULT_STRING : ra.GlobalId.ToString();
                 assembly.Description = GetAssemblyDescription(ra);
 
                 assemblies.Rows.Add(assembly);
@@ -77,7 +77,7 @@ namespace Xbim.COBie.Data
                 if (!string.IsNullOrEmpty(ra.Description)) return ra.Description;
                 else if (!string.IsNullOrEmpty(ra.Name)) return ra.Name;
             }
-            return DEFAULT_VAL;
+            return DEFAULT_STRING;
         }
 
         #endregion

@@ -15,9 +15,9 @@ namespace Xbim.COBie.Data
     public abstract class COBieData
     {
         protected IModel Model { get; set; }
-        //protected IModel _model = null;
-        public const string DEFAULT_VAL = "n/a";
-
+        
+        public const string DEFAULT_STRING = "n/a";
+        public const string DEFAULT_NUMERIC = "0";
         #region Methods
 
         /// <summary>

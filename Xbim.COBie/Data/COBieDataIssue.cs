@@ -69,10 +69,10 @@ namespace Xbim.COBie.Data
                 //issue.Impact = issue.Impact.TrimEnd(',');
                 //issue.SheetName1 = issue.SheetName1.TrimEnd(',');
 
-                issue.RowName1 = DEFAULT_VAL;
+                issue.RowName1 = DEFAULT_STRING;
                 issue.SheetName2 = "";
-                issue.RowName2 = DEFAULT_VAL;
-                issue.Description = (approval == null) ? DEFAULT_VAL : approval.Description.ToString();
+                issue.RowName2 = DEFAULT_STRING;
+                issue.Description = (approval == null) ? DEFAULT_STRING : approval.Description.ToString();
                 issue.Owner = issue.CreatedBy;
                 issue.Mitigation = "";
                 issue.ExtSystem = GetIfcApplication().ApplicationFullName;

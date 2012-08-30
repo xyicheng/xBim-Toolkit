@@ -57,7 +57,7 @@ namespace Xbim.COBie.Data
                 //impact.ImpactStage = impact.ImpactStage.TrimEnd(',');
                 //impact.SheetName = impact.SheetName.TrimEnd(',');
 
-                impact.RowName = DEFAULT_VAL;
+                impact.RowName = DEFAULT_STRING;
                 impact.Value = "";
                 impact.ImpactUnit = "";
                 impact.LeadInTime = "";
@@ -66,7 +66,7 @@ namespace Xbim.COBie.Data
                 impact.ExtSystem = GetIfcApplication().ApplicationFullName;
                 impact.ExtObject = impact.GetType().Name;
                 impact.ExtIdentifier = ppt.GlobalId;
-                impact.Description = (ppt.Description == null) ? DEFAULT_VAL : ppt.Description.ToString();
+                impact.Description = (ppt.Description == null) ? DEFAULT_STRING : ppt.Description.ToString();
 
                 impacts.Rows.Add(impact);
             }

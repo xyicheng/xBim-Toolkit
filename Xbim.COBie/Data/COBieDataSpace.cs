@@ -59,7 +59,7 @@ namespace Xbim.COBie.Data
                 //Do Usable Height
                 IfcLengthMeasure usableHt = sp.GetHeight();
                 if (usableHt != null) space.UsableHeight = ((double)usableHt).ToString("F3");
-                else space.UsableHeight = DEFAULT_VAL;
+                else space.UsableHeight = DEFAULT_NUMERIC;
 
                 //Do Gross Areas 
                 IfcAreaMeasure grossAreaValue = sp.GetGrossFloorArea();
@@ -69,12 +69,12 @@ namespace Xbim.COBie.Data
 
                 if (grossAreaValue != null) space.GrossArea = ((double)grossAreaValue).ToString("F3");
                 else if ((spArea is IfcQuantityArea) && (spArea.AreaValue != null)) space.GrossArea = ((double)spArea.AreaValue).ToString("F3");
-                else space.GrossArea = DEFAULT_VAL;
+                else space.GrossArea = DEFAULT_NUMERIC;
 
                 //Do Net Areas 
                 IfcAreaMeasure netAreaValue = sp.GetNetFloorArea();  //this extension has the GSA built in so no need to get again
                 if (netAreaValue != null) space.NetArea = ((double)netAreaValue).ToString("F3");
-                else space.NetArea = DEFAULT_VAL;
+                else space.NetArea = DEFAULT_NUMERIC;
 
                 spaces.Rows.Add(space);
             }
@@ -95,7 +95,7 @@ namespace Xbim.COBie.Data
                 else if (!string.IsNullOrEmpty(sp.Description)) return sp.Description;
                 else if (!string.IsNullOrEmpty(sp.Name)) return sp.Name;
             }
-            return DEFAULT_VAL;
+            return DEFAULT_STRING;
         }
         #endregion
     }

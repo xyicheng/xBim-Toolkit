@@ -61,16 +61,16 @@ namespace Xbim.COBie.Data
                 coordinate.Category = "";
 
                 coordinate.SheetName = "PickList.SheetType";
-                coordinate.RowName = DEFAULT_VAL;
+                coordinate.RowName = DEFAULT_STRING;
                 coordinate.CoordinateXAxis = ifcCartesianPoint[0].ToString();
                 coordinate.CoordinateYAxis = ifcCartesianPoint[1].ToString();
                 coordinate.CoordinateZAxis = ifcCartesianPoint[2].ToString();
                 coordinate.ExtSystem = applicationFullName;
                 coordinate.ExtObject = GetExtObject(Model);
                 coordinate.ExtIdentifier = "PickList.objType";
-                coordinate.ClockwiseRotation = DEFAULT_VAL;
-                coordinate.ElevationalRotation = DEFAULT_VAL;
-                coordinate.YawRotation = DEFAULT_VAL;
+                coordinate.ClockwiseRotation = DEFAULT_NUMERIC;
+                coordinate.ElevationalRotation = DEFAULT_NUMERIC;
+                coordinate.YawRotation = DEFAULT_NUMERIC;
 
                 coordinates.Rows.Add(coordinate);
             }
@@ -88,7 +88,7 @@ namespace Xbim.COBie.Data
             else if (string.IsNullOrEmpty(ifcSpace.GlobalId)) return ifcSpace.GlobalId.ToString();
             else if (string.IsNullOrEmpty(ifcProduct.GlobalId)) return ifcProduct.GlobalId.ToString();
 
-            return DEFAULT_VAL;
+            return DEFAULT_STRING;
         }
         #endregion
     }

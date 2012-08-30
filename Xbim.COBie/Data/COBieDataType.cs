@@ -95,10 +95,10 @@ namespace Xbim.COBie.Data
                 if (ifcRAC != null)
                 {
                     IfcClassificationReference ifcCR = (IfcClassificationReference)ifcRAC.RelatingClassification;
-                    typ.Category = (string.IsNullOrEmpty(ifcCR.Name)) ? DEFAULT_VAL : ifcCR.Name.ToString();
+                    typ.Category = (string.IsNullOrEmpty(ifcCR.Name)) ? DEFAULT_STRING : ifcCR.Name.ToString();
                 }
                 else
-                    typ.Category = DEFAULT_VAL;
+                    typ.Category = DEFAULT_STRING;
 
                 typ.Description = GetTypeObjDescription(to);
 
@@ -137,7 +137,7 @@ namespace Xbim.COBie.Data
                 typ.Shape = GetTypeObjAttribute(to, "Pset_Specification", "Shape", relAtts);
                 typ.Size = GetTypeObjAttribute(to, "Pset_Specification", "Size", relAtts);
                 typ.Colour = GetTypeObjAttribute(to, "Pset_Specification", "Colour", relAtts);
-                if (typ.Colour == DEFAULT_VAL) typ.Colour = GetTypeObjAttribute(to, "Pset_Specification", "Color", relAtts); //try US 'color'
+                if (typ.Colour == DEFAULT_STRING) typ.Colour = GetTypeObjAttribute(to, "Pset_Specification", "Color", relAtts); //try US 'color'
                 typ.Finish = GetTypeObjAttribute(to, "Pset_Specification", "Finish", relAtts);
                 typ.Grade = GetTypeObjAttribute(to, "Pset_Specification", "Grade", relAtts);
                 typ.Material = GetTypeObjAttribute(to, "Pset_Specification", "Material", relAtts);
@@ -187,7 +187,7 @@ namespace Xbim.COBie.Data
                             }
                             if (temp == "NOTDEFINED") //if not defined then give up and return default
                             {
-                                return DEFAULT_VAL;
+                                return DEFAULT_STRING;
                             }
 
                             return temp;
@@ -196,7 +196,7 @@ namespace Xbim.COBie.Data
                     }
                 }
             }
-            return DEFAULT_VAL;
+            return DEFAULT_STRING;
         }
 
         /// <summary>
@@ -241,7 +241,7 @@ namespace Xbim.COBie.Data
             if (pSngValue == null) pSngValue = relAtts.Where(p => p.Name == propName).FirstOrDefault();
             //if we have a value return the string for input to row field
             if ((pSngValue != null) && (pSngValue.NominalValue != null)) return pSngValue.NominalValue.ToString();
-            else return DEFAULT_VAL; //nothing found return default
+            else return DEFAULT_STRING; //nothing found return default
 
             //if null then try and get from all related object i.e. 
             //if (pSngValue == null)

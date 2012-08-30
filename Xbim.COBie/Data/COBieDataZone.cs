@@ -103,8 +103,8 @@ namespace Xbim.COBie.Data
 
                     zone.ExtSystem = GetIfcApplication().ApplicationFullName;
                     zone.ExtObject = spProp.GetType().Name;
-                    zone.ExtIdentifier = DEFAULT_VAL;
-                    zone.Description = (string.IsNullOrEmpty(spProp.NominalValue.ToString())) ? DEFAULT_VAL : spProp.NominalValue.ToString(); ;
+                    zone.ExtIdentifier = DEFAULT_STRING;
+                    zone.Description = (string.IsNullOrEmpty(spProp.NominalValue.ToString())) ? DEFAULT_STRING : spProp.NominalValue.ToString(); ;
 
                     zones.Rows.Add(zone);
                 }

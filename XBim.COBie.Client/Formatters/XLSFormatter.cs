@@ -126,7 +126,7 @@ namespace XBim.COBie.Client.Formatters
         {
             try
             {
-                if (String.IsNullOrEmpty(cell.CellValue) || cell.CellValue == COBieData.DEFAULT_VAL)
+                if (String.IsNullOrEmpty(cell.CellValue) || cell.CellValue == COBieData.DEFAULT_STRING)
                 {
                     excelCell.SetCellValue(cell.CellValue);
                     return;

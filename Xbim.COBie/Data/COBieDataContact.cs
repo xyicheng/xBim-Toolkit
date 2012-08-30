@@ -66,7 +66,7 @@ namespace Xbim.COBie.Data
                         contact.CreatedBy = GetTelecomEmailAddress(oh);
                         contact.CreatedOn = GetCreatedOnDateAsFmtString(oh);
 
-                        contact.Company = (string.IsNullOrEmpty(oh.OwningUser.TheOrganization.Name)) ? DEFAULT_VAL : oh.OwningUser.TheOrganization.Name.ToString();
+                        contact.Company = (string.IsNullOrEmpty(oh.OwningUser.TheOrganization.Name)) ? DEFAULT_STRING : oh.OwningUser.TheOrganization.Name.ToString();
 
                         IEnumerable<IfcTelecomAddress> telAddresses = Enumerable.Empty<IfcTelecomAddress>();
                         if (organization.Addresses != null)
@@ -83,14 +83,14 @@ namespace Xbim.COBie.Data
                         contact.ExtSystem = GetIfcApplication().ApplicationFullName;
                         contact.ExtObject = "IfcPersonAndOrganization";
                         contact.ExtIdentifier = person.Id;
-                        contact.Department = (organization.Addresses == null || organization.Addresses.PostalAddresses == null || organization.Addresses.PostalAddresses.Count() == 0) ? DEFAULT_VAL : organization.Addresses.PostalAddresses.FirstOrDefault().InternalLocation.ToString();
-                        if ((contact.Department == DEFAULT_VAL || contact.Department == "") && organization.Description != null) contact.Department = organization.Description;
+                        contact.Department = (organization.Addresses == null || organization.Addresses.PostalAddresses == null || organization.Addresses.PostalAddresses.Count() == 0) ? DEFAULT_STRING : organization.Addresses.PostalAddresses.FirstOrDefault().InternalLocation.ToString();
+                        if ((contact.Department == DEFAULT_STRING || contact.Department == "") && organization.Description != null) contact.Department = organization.Description;
 
                         // guideline say it should be organization.Name but example spreadsheet uses organization.Id
-                        contact.OrganizationCode = (string.IsNullOrEmpty(organization.Id)) ? DEFAULT_VAL : organization.Id.ToString();
+                        contact.OrganizationCode = (string.IsNullOrEmpty(organization.Id)) ? DEFAULT_STRING : organization.Id.ToString();
 
-                        contact.GivenName = (string.IsNullOrEmpty(person.GivenName)) ? DEFAULT_VAL : person.GivenName.ToString();
-                        contact.FamilyName = (string.IsNullOrEmpty(person.FamilyName)) ? DEFAULT_VAL : person.FamilyName.ToString();
+                        contact.GivenName = (string.IsNullOrEmpty(person.GivenName)) ? DEFAULT_STRING : person.GivenName.ToString();
+                        contact.FamilyName = (string.IsNullOrEmpty(person.FamilyName)) ? DEFAULT_STRING : person.FamilyName.ToString();
                         contact.Street = (person.Addresses == null) ? "" : person.Addresses.PostalAddresses.FirstOrDefault().AddressLines.FirstOrDefault().Value.ToString();
                         contact.PostalBox = (person.Addresses == null) ? "" : person.Addresses.PostalAddresses.FirstOrDefault().PostalBox.ToString();
                         contact.Town = (person.Addresses == null) ? "" : person.Addresses.PostalAddresses.FirstOrDefault().Town.ToString();

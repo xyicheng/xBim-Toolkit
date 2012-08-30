@@ -41,7 +41,7 @@ namespace Xbim.COBie
             {
                 return val;
             }
-            return COBieData.DEFAULT_VAL;
+            return COBieData.DEFAULT_STRING;
         }
 
         public COBieCell this[int i]
@@ -64,7 +64,7 @@ namespace Xbim.COBie
                             }
                             else
                             {
-                                cell = new COBieCell(COBieData.DEFAULT_VAL);
+                                cell = new COBieCell(COBieData.DEFAULT_STRING);
                             }
                             cell.COBieState = ((COBieAttributes)attrs[0]).State;
                             cell.CobieCol = ParentSheet.Columns[((COBieAttributes)attrs[0]).Order];

@@ -74,7 +74,7 @@ namespace Xbim.COBie.Data
             facility.LinearUnits = GetLinearUnits();
             facility.AreaUnits = GetAreaUnits();
             facility.VolumeUnits = GetVolumeUnits();
-            facility.CurrencyUnit = (ifcMonetaryUnit == null) ? DEFAULT_VAL : ifcMonetaryUnit.Currency.ToString();
+            facility.CurrencyUnit = (ifcMonetaryUnit == null) ? DEFAULT_STRING : ifcMonetaryUnit.Currency.ToString();
             facility.AreaMeasurement = (ifcElementQuantity == null) ? "" : ifcElementQuantity.MethodOfMeasurement.ToString();
             facility.ExtSystem = GetIfcApplication().ApplicationFullName;
 
@@ -106,7 +106,7 @@ namespace Xbim.COBie.Data
                 else if (!string.IsNullOrEmpty(ifcBuilding.Description)) return ifcBuilding.Description;
                 else if (!string.IsNullOrEmpty(ifcBuilding.Name)) return ifcBuilding.Name;
             }
-            return DEFAULT_VAL;
+            return DEFAULT_STRING;
         }
 
         private string GetFacilityProjectDescription(IfcProject ifcProject)

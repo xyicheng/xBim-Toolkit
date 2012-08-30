@@ -61,7 +61,7 @@ namespace Xbim.COBie.Data
                 //    doc.SheetName = (plRow == null) ? "" : plRow.SheetType + ",";
                 //doc.SheetName = doc.SheetName.TrimEnd(',');
 
-                doc.RowName = DEFAULT_VAL;
+                doc.RowName = DEFAULT_STRING;
                 doc.Directory = di.DocumentId.ToString();
                 doc.File = di.DocumentId.ToString();
                 doc.ExtSystem = GetIfcApplication().ApplicationFullName;

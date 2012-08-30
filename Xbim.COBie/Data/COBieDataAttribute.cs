@@ -65,7 +65,7 @@ namespace Xbim.COBie.Data
                 attribute.Category = "";
 
                 attribute.SheetName = "PickList.SheetType";
-                attribute.RowName = DEFAULT_VAL;
+                attribute.RowName = DEFAULT_STRING;
                 attribute.Value = "";
                 attribute.Unit = "";
                 attribute.ExtSystem = applicationFullName;

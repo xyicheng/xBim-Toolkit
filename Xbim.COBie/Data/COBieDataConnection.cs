@@ -60,7 +60,7 @@ namespace Xbim.COBie.Data
                 conn.ExtSystem = GetIfcApplication().ApplicationFullName;
                 conn.ExtObject = "";
                 conn.ExtIdentifier = c.GlobalId;
-                conn.Description = (string.IsNullOrEmpty(c.Description)) ? DEFAULT_VAL : c.Description.ToString();
+                conn.Description = (string.IsNullOrEmpty(c.Description)) ? DEFAULT_STRING : c.Description.ToString();
 
                 connections.Rows.Add(conn);
 
