@@ -11,7 +11,7 @@ namespace Xbim.COBie
     public class COBieQueries
     {
         private IModel _model;
-
+        private COBieSheet<COBieAttributeRow> _attributes;
         /// <summary>
         /// Constructor 
         /// </summary>
@@ -19,6 +19,7 @@ namespace Xbim.COBie
         public COBieQueries(IModel model)
         {
             _model = model;
+            _attributes = new COBieSheet<COBieAttributeRow>(Constants.WORKSHEET_ATTRIBUTE); //create the attribute sheet
         }
 
         /// <summary>
@@ -98,7 +99,7 @@ namespace Xbim.COBie
         public COBieSheet<COBieFloorRow> GetCOBieFloorSheet()
         {
             COBieDataFloor floors = new COBieDataFloor(_model);
-            return floors.Fill();
+            return floors.Fill(ref _attributes);
         }
             
         
@@ -110,7 +111,7 @@ namespace Xbim.COBie
         public COBieSheet<COBieSpaceRow> GetCOBieSpaceSheet()
         {
             COBieDataSpace spaces = new COBieDataSpace(_model);
-            return spaces.Fill();
+            return spaces.Fill(ref _attributes);
         }
 
         /// <summary>
@@ -226,8 +227,9 @@ namespace Xbim.COBie
         /// <returns>COBieSheet<COBieAttributeRow></returns>
         public COBieSheet<COBieAttributeRow> GetCOBieAttributeSheet()
         {
-            COBieDataAttribute attributes = new COBieDataAttribute(_model);
-            return attributes.Fill();
+            //COBieDataAttribute attributes = new COBieDataAttribute(_model);
+            //return attributes.Fill();
+            return _attributes;
         }
 
 

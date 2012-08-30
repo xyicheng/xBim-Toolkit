@@ -8,6 +8,10 @@ using Xbim.Ifc.MeasureResource;
 using Xbim.Ifc.ProductExtension;
 using Xbim.Ifc.QuantityResource;
 using Xbim.XbimExtensions;
+using System.Collections;
+using Xbim.Ifc.PropertyResource;
+using Xbim.Ifc.Kernel;
+using Xbim.Ifc.ExternalReferenceResource;
 
 namespace Xbim.COBie.Data
 {
@@ -31,13 +35,13 @@ namespace Xbim.COBie.Data
         /// Fill sheet rows for Space sheet
         /// </summary>
         /// <returns>COBieSheet<COBieSpaceRow></returns>
-        public COBieSheet<COBieSpaceRow> Fill()
+        public COBieSheet<COBieSpaceRow> Fill(ref COBieSheet<COBieAttributeRow> attributes)
         {
             //create new sheet 
             COBieSheet<COBieSpaceRow> spaces = new COBieSheet<COBieSpaceRow>(Constants.WORKSHEET_SPACE);
 
             // get all IfcBuildingStory objects from IFC file
-            IEnumerable<IfcSpace> ifcSpaces = Model.InstancesOfType<IfcSpace>();//.OrderBy(ifcSpace => ifcSpace.Name, new CompareIfcLabel());
+            IEnumerable<IfcSpace> ifcSpaces = Model.InstancesOfType<IfcSpace>().OrderBy(ifcSpace => ifcSpace.Name, new CompareIfcLabel());
                         
             foreach (IfcSpace sp in ifcSpaces)
             {
@@ -48,7 +52,7 @@ namespace Xbim.COBie.Data
                 space.CreatedBy = GetTelecomEmailAddress(sp.OwnerHistory);
                 space.CreatedOn = GetCreatedOnDateAsFmtString(sp.OwnerHistory);
 
-                space.Category = space.GetCategory(sp);
+                space.Category = GetCategory(sp);
 
                 space.FloorName = sp.SpatialStructuralElementParent.Name.ToString();
                 space.Description = GetSpaceDescription(sp);
@@ -77,6 +81,24 @@ namespace Xbim.COBie.Data
                 else space.NetArea = DEFAULT_NUMERIC;
 
                 spaces.Rows.Add(space);
+
+                //----------fill in the attribute information for spaces-----------
+                //required property date <PropertySetName, PropertyName>
+                List<KeyValuePair<string, string>> ReqdProps = new List<KeyValuePair<string,string>>(); //get over the unique key with dictionary
+                ReqdProps.Add(new KeyValuePair<string, string>("Pset_SpaceCommon", "Reference"));
+                ReqdProps.Add(new KeyValuePair<string, string>("PSet_Revit_Dimensions", "Perimeter"));
+                ReqdProps.Add(new KeyValuePair<string, string>("PSet_Revit_Dimensions", "Volume"));
+                //pass data from this sheet info as Dictionary
+                Dictionary<string, string> passedValues = new Dictionary<string, string>(){{"Sheet", "Space"}, 
+                                                                                          {"Name", space.Name},
+                                                                                          {"CreatedBy", space.CreatedBy},
+                                                                                          {"CreatedOn", space.CreatedOn},
+                                                                                          {"ExtSystem", space.ExtSystem}
+                                                                                          };
+                //add the attributes to the passed attributes sheet
+                SetAttributeSheet(sp, passedValues, ReqdProps, ref attributes);
+                            
+                
             }
 
             return spaces;

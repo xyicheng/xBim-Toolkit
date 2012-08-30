@@ -56,15 +56,7 @@ namespace Xbim.COBie.Data
                     zone.CreatedBy = GetTelecomEmailAddress(zn.OwnerHistory);
                     zone.CreatedOn = GetCreatedOnDateAsFmtString(zn.OwnerHistory);
 
-
-                    IfcRelAssociatesClassification ifcRAC = zn.HasAssociations.OfType<IfcRelAssociatesClassification>().FirstOrDefault();
-                    if (ifcRAC != null)
-                    {
-                        IfcClassificationReference ifcCR = (IfcClassificationReference)ifcRAC.RelatingClassification;
-                        zone.Category = ifcCR.Name;
-                    }
-                    else
-                        zone.Category = "";
+                    zone.Category = GetCategory(zn);
 
                     zone.SpaceNames = sp.Name;
 

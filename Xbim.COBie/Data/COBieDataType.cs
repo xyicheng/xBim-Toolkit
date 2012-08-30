@@ -90,19 +90,9 @@ namespace Xbim.COBie.Data
                 typ.CreatedBy = GetTelecomEmailAddress(to.OwnerHistory);
                 typ.CreatedOn = GetCreatedOnDateAsFmtString(to.OwnerHistory);
 
-
-                IfcRelAssociatesClassification ifcRAC = to.HasAssociations.OfType<IfcRelAssociatesClassification>().FirstOrDefault();
-                if (ifcRAC != null)
-                {
-                    IfcClassificationReference ifcCR = (IfcClassificationReference)ifcRAC.RelatingClassification;
-                    typ.Category = (string.IsNullOrEmpty(ifcCR.Name)) ? DEFAULT_STRING : ifcCR.Name.ToString();
-                }
-                else
-                    typ.Category = DEFAULT_STRING;
+                typ.Category = GetCategory(to);
 
                 typ.Description = GetTypeObjDescription(to);
-
-
 
                 typ.ExtSystem = GetIfcApplication().ApplicationFullName;
                 typ.ExtObject = to.GetType().ToString().Substring(to.GetType().ToString().LastIndexOf('.') + 1);
@@ -200,8 +190,7 @@ namespace Xbim.COBie.Data
         }
 
         /// <summary>
-        /// Get the IfcPropertySingleValue list for the passed in list of attribute names
-        /// 
+        /// Get the IfcPropertySingleValue list for the passed in list of attribute names 
         /// </summary>
         /// <param name="TypeObj">IfcTypeObject </param>
         /// <param name="AttNames">list of attribute names</param>
@@ -209,13 +198,11 @@ namespace Xbim.COBie.Data
         private IEnumerable<IfcPropertySingleValue> GetTypeObjRelAttributes(IfcTypeObject TypeObj, List<string> AttNames)
         {
             Dictionary<string, string> keyList = new Dictionary<string, string>();
-            //string key = "";
-            //string value = DEFAULT_VAL;
             IEnumerable<IfcPropertySingleValue> objProperties = Enumerable.Empty<IfcPropertySingleValue>();
-            var objTypeOf = TypeObj.ObjectTypeOf.FirstOrDefault(); //can hold zero or 1 ObjectTypeOf so test return
+            var objTypeOf = TypeObj.ObjectTypeOf.FirstOrDefault(); //can hold zero or 1 ObjectTypeOf (IfcRelDefinesByType- holds list of objects of this type in RelatedObjects property) so test return
             if (objTypeOf != null)
             {
-                foreach (IfcPropertySet pset in objTypeOf.RelatedObjects.First().GetAllPropertySets()) //has to have 1 ore more so get first and see what we get
+                foreach (IfcPropertySet pset in objTypeOf.RelatedObjects.First().GetAllPropertySets()) //has to have 1 or more object that are of this type, so get first and see what we get
                 {
                     objProperties = objProperties.Concat(pset.HasProperties.Where<IfcPropertySingleValue>(p => AttNames.Contains(p.Name.ToString())));
                 }
@@ -302,6 +289,51 @@ namespace Xbim.COBie.Data
                 Ret["VALUE"] = pSngValue.NominalValue.Value.ToString();
 
             return Ret;
+        }
+
+        /// <summary>
+        /// Get the Category for the IfcTypeObject
+        /// </summary>
+        /// <param name="obj">IfcTypeObject</param>
+        /// <returns>string of the category</returns>
+        public string GetCategory(IfcTypeObject obj)
+        {
+            List<string> CatStr = new List<string> { "OmniClass Table 13 Category", "Category Code" };
+
+            //Try by relationship first
+            IfcRelAssociatesClassification ifcRAC = obj.HasAssociations.OfType<IfcRelAssociatesClassification>().FirstOrDefault();
+            if (ifcRAC != null)
+            {
+                IfcClassificationReference ifcCR = (IfcClassificationReference)ifcRAC.RelatingClassification;
+                return ifcCR.Name;
+            }
+
+            //Try by PropertySet as fallback
+
+            //var query = from PSet in obj.HasPropertySets
+            //            where PSet is IfcPropertySet //.GetAllPropertySets()  
+            //            from Props in ((IfcPropertySet)PSet).HasProperties
+
+            var query = from PSet in obj.GetAllPropertySets()  
+                        from Props in PSet.HasProperties
+                        where CatStr.Contains(Props.Name.ToString()) //== "OmniClass Table 13 Category" || Props.Name.ToString() == "Category Code"
+                        select Props.ToString().TrimEnd();
+            string val = query.FirstOrDefault();
+
+            //second fall back on objects defined by this type, see if they hold a category on the first related object to this type
+            if (string.IsNullOrEmpty(val))
+            {
+                //get first object defined by this type and try and get category from this object 
+                IEnumerable<IfcPropertySingleValue> relAtts = GetTypeObjRelAttributes(obj, CatStr);
+                IfcPropertySingleValue pSngValue = relAtts.Where(p => CatStr.Contains(p.Name)).FirstOrDefault();
+                if ((pSngValue != null) && (pSngValue.NominalValue != null)) return pSngValue.NominalValue.ToString();
+            }
+            else
+            {
+                return val;
+            }
+
+            return DEFAULT_STRING;
         }
         #endregion
     }

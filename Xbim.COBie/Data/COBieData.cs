@@ -6,6 +6,11 @@ using Xbim.Ifc.UtilityResource;
 using Xbim.Ifc.MeasureResource;
 using Xbim.XbimExtensions;
 using Xbim.Ifc.ActorResource;
+using Xbim.COBie.Rows;
+using Xbim.Ifc.PropertyResource;
+using Xbim.Ifc.Kernel;
+using Xbim.Ifc.Extensions;
+using Xbim.Ifc.ExternalReferenceResource;
 
 namespace Xbim.COBie.Data
 {
@@ -119,6 +124,113 @@ namespace Xbim.COBie.Data
                 return "0"; //default
             }
 
+        }
+
+        /// <summary>
+        /// Get Category method
+        /// </summary>
+        /// <param name="obj">Object to try and extract method from</param>
+        /// <returns></returns>
+        public string GetCategory(IfcObject obj)
+        {
+            //Try by relationship first
+            IfcRelAssociatesClassification ifcRAC = obj.HasAssociations.OfType<IfcRelAssociatesClassification>().FirstOrDefault();
+            if (ifcRAC != null)
+            {
+                IfcClassificationReference ifcCR = (IfcClassificationReference)ifcRAC.RelatingClassification;
+                return ifcCR.Name;
+            }
+            //Try by PropertySet as fallback
+            var query = from PSet in obj.PropertySets
+                        from Props in PSet.HasProperties
+                        where Props.Name.ToString() == "OmniClass Table 13 Category" || Props.Name.ToString() == "Category Code"
+                        select Props.ToString().TrimEnd();
+            string val = query.FirstOrDefault();
+
+            if (!String.IsNullOrEmpty(val))
+            {
+                return val;
+            }
+            return COBieData.DEFAULT_STRING;
+        }
+
+        /// <summary>
+        /// Retrieve Attribute data from other sheets
+        /// </summary>
+        /// <param name="obj">Object holding the additional properties(Attributes)</param>
+        /// <param name="passedValues">Holder to pass values form calling sheet function</param>
+        /// <param name="reqdProps">List of PropertySet names / Property Name pairs to extract</param>
+        /// <param name="attributes">The attribute Sheet to add the properties to its rows</param>
+        protected void SetAttributeSheet(IfcObject obj, Dictionary<string, string> passedValues, List<KeyValuePair<string, string>> reqdProps, ref COBieSheet<COBieAttributeRow> attributes)
+        {
+           
+            foreach (KeyValuePair<string, string> item in reqdProps)
+            {
+                //IfcPropertySingleValue PropValue = sp.GetPropertySingleValue(item.Key.ToString(), item.Value.ToString());
+
+                IfcPropertySingleValue PropValue = null;
+                IfcPropertySet PropSet = obj.GetPropertySet(item.Key.ToString());
+                if (PropSet != null)
+                {
+
+                    COBieAttributeRow attribute = new COBieAttributeRow(attributes);
+                    PropValue = PropSet.HasProperties.Where<IfcPropertySingleValue>(p => p.Name == item.Value.ToString()).FirstOrDefault();
+
+                    attribute.Name = item.Value.ToString();
+                    
+
+                    //Get category
+                    //(((PropSet.HasAssociations.ToArray()[0] as IfcRelAssociatesClassification).RelatingClassification)as IfcClassificationReference).Name
+                    IEnumerable<IfcClassificationReference> Cats = from IRAC in PropSet.HasAssociations
+                                                                   where IRAC is IfcRelAssociatesClassification
+                                                                   && ((IfcRelAssociatesClassification)IRAC).RelatingClassification is IfcClassificationReference
+                                                                   select ((IfcRelAssociatesClassification)IRAC).RelatingClassification as IfcClassificationReference;
+                    IfcClassificationReference Cat = Cats.FirstOrDefault();
+                    attribute.Category = (Cat != null) ? Cat.Name.ToString() : DEFAULT_STRING;
+
+                    //passed properties from the sheet
+                    attribute.SheetName = passedValues["Sheet"];
+                    attribute.RowName = passedValues["Name"];
+                    attribute.CreatedBy = passedValues["CreatedBy"];
+                    attribute.CreatedOn = passedValues["CreatedOn"];
+                    attribute.ExtSystem = passedValues["ExtSystem"];
+
+                    attribute.Value = DEFAULT_STRING;                  //set initially to default, saves the else statements
+                    attribute.Unit = DEFAULT_STRING;
+                    attribute.ExtIdentifier = PropSet.GlobalId;
+                    attribute.ExtObject = item.Key.ToString();
+                    attribute.Description = DEFAULT_STRING;
+                    attribute.AllowedValues = DEFAULT_STRING;
+
+
+                    if (PropValue != null)
+                    {
+                        if (PropValue.NominalValue != null)
+                        {
+                            attribute.Value = PropValue.NominalValue.Value.ToString();
+                            double num;
+                            if (double.TryParse(attribute.Value, out num))
+                            {
+                                attribute.Value = num.ToString("F3");
+                            }
+                        }
+
+                        if ((PropValue.Unit != null) && (PropValue.Unit is IfcContextDependentUnit))
+                        {
+                            attribute.Unit = ((IfcContextDependentUnit)PropValue.Unit).Name.ToString();
+                            attribute.AllowedValues = ((IfcContextDependentUnit)PropValue.Unit).UnitType.ToString();
+                        }
+
+                        attribute.Description = PropValue.Description.ToString();
+                        if (string.IsNullOrEmpty(attribute.Description)) //if no description then just use name property
+                        {
+                            attribute.Description = attribute.Name;
+                        }
+                    }
+
+                    attributes.Rows.Add(attribute);
+                }
+            }
         }
         #endregion
     }

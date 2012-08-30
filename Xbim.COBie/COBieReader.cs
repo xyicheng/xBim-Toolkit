@@ -228,7 +228,6 @@ namespace Xbim.COBie
             CobieSpaces = cq.GetCOBieSpaceSheet();
             CobieComponents = cq.GetCOBieComponentSheet();
             CobieAssemblies = cq.GetCOBieAssemblySheet();
-            CobieAttributes = cq.GetCOBieAttributeSheet();
             CobieConnections = cq.GetCOBieConnectionSheet();
             CobieContacts = cq.GetCOBieContactSheet();
             CobieCoordinates = cq.GetCOBieCoordinateSheet();
@@ -244,6 +243,9 @@ namespace Xbim.COBie
             CobieSystems = cq.GetCOBieSystemSheet();
             CobieTypes = cq.GetCOBieTypeSheet();
             CobieZones = cq.GetCOBieZoneSheet();
+            //we need to fill this one last as the calls to the above sheet add data for the AttributeSheet
+            CobieAttributes = cq.GetCOBieAttributeSheet();
+            
         }
 
         private void PopulateErrors()

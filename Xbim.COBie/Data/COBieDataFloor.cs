@@ -31,7 +31,7 @@ namespace Xbim.COBie.Data
         /// Fill sheet rows for Floor sheet
         /// </summary>
         /// <returns>COBieSheet<COBieFloorRow></returns>
-        public COBieSheet<COBieFloorRow> Fill()
+        public COBieSheet<COBieFloorRow> Fill(ref COBieSheet<COBieAttributeRow> attributes)
         {
             //create new sheet 
             COBieSheet<COBieFloorRow> floors = new COBieSheet<COBieFloorRow>(Constants.WORKSHEET_FLOOR);
@@ -71,6 +71,24 @@ namespace Xbim.COBie.Data
                 floor.Height = (qLen.FirstOrDefault() == null) ? "0" : qLen.FirstOrDefault().LengthValue.ToString();
 
                 floors.Rows.Add(floor);
+
+                //----------fill in the attribute information for floor-----------
+                //required property date <PropertySetName, PropertyName>
+                List<KeyValuePair<string, string>> ReqdProps = new List<KeyValuePair<string, string>>(); //get over the unique key with dictionary
+                ReqdProps.Add(new KeyValuePair<string, string>("PSet_Revit_Type_Graphics", "Line Weight"));
+                ReqdProps.Add(new KeyValuePair<string, string>("PSet_Revit_Type_Graphics", "Symbol at End 1 Default"));
+                ReqdProps.Add(new KeyValuePair<string, string>("PSet_Revit_Type_Graphics", "Symbol at End 2 Default"));
+                ReqdProps.Add(new KeyValuePair<string, string>("PSet_Revit_Type_Graphics", "Color"));
+                ReqdProps.Add(new KeyValuePair<string, string>("PSet_Revit_Type_Constraints", "Elevation Base"));
+                //pass data from this sheet info as Dictionary
+                Dictionary<string, string> passedValues = new Dictionary<string, string>(){{"Sheet", "Floor"}, 
+                                                                                          {"Name", floor.Name},
+                                                                                          {"CreatedBy", floor.CreatedBy},
+                                                                                          {"CreatedOn", floor.CreatedOn},
+                                                                                          {"ExtSystem", floor.ExtSystem}
+                                                                                          };
+                //add the attributes to the passed attributes sheet
+                SetAttributeSheet(bs, passedValues, ReqdProps, ref attributes);
             }
 
             return floors;
