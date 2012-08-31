@@ -42,7 +42,10 @@ namespace Xbim.COBie.Data
 
             // get all IfcBuildingStory objects from IFC file
             IEnumerable<IfcSpace> ifcSpaces = Model.InstancesOfType<IfcSpace>().OrderBy(ifcSpace => ifcSpace.Name, new CompareIfcLabel());
-                        
+
+            //list of attributes to exclude form attribute sheet
+            List<string> ExcludeAtts = new List<string> {"RoomTag" , "Area", "Number", "ZoneName"};
+
             foreach (IfcSpace sp in ifcSpaces)
             {
                 COBieSpaceRow space = new COBieSpaceRow(spaces);
@@ -83,20 +86,16 @@ namespace Xbim.COBie.Data
                 spaces.Rows.Add(space);
 
                 //----------fill in the attribute information for spaces-----------
-                //required property date <PropertySetName, PropertyName>
-                List<KeyValuePair<string, string>> ReqdProps = new List<KeyValuePair<string,string>>(); //get over the unique key with dictionary
-                ReqdProps.Add(new KeyValuePair<string, string>("Pset_SpaceCommon", "Reference"));
-                ReqdProps.Add(new KeyValuePair<string, string>("PSet_Revit_Dimensions", "Perimeter"));
-                ReqdProps.Add(new KeyValuePair<string, string>("PSet_Revit_Dimensions", "Volume"));
                 //pass data from this sheet info as Dictionary
                 Dictionary<string, string> passedValues = new Dictionary<string, string>(){{"Sheet", "Space"}, 
                                                                                           {"Name", space.Name},
                                                                                           {"CreatedBy", space.CreatedBy},
                                                                                           {"CreatedOn", space.CreatedOn},
                                                                                           {"ExtSystem", space.ExtSystem}
-                                                                                          };
-                //add the attributes to the passed attributes sheet
-                SetAttributeSheet(sp, passedValues, ReqdProps, ref attributes);
+                                                                                          };//required property date <PropertySetName, PropertyName>
+                
+                //add *ALL* the attributes to the passed attributes sheet except property names that match the passed List<string>
+                SetAttributeSheet(sp, passedValues, ExcludeAtts, new List<string>(), ref attributes);
                             
                 
             }

@@ -74,8 +74,12 @@ namespace XBim.COBie.Client
 
                     // Create COBieReader
                     Log("Generating COBie data...");
+                    Stopwatch StopW = new Stopwatch();
+                    StopW.Start();
                     COBieReader reader = new COBieReader(context);
-
+                    StopW.Stop();
+                    Log(String.Format("Time to generate COBie data = {0}",StopW.Elapsed.ToString()));
+                    
                     // Export
                     Log(String.Format("Formatting as XLS using {0} template...", Path.GetFileName(TemplateFile)));
                     

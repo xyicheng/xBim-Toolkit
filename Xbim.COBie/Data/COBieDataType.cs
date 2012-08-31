@@ -36,7 +36,7 @@ namespace Xbim.COBie.Data
         /// Fill sheet rows for Type sheet
         /// </summary>
         /// <returns>COBieSheet<COBieTypeRow></returns>
-        public COBieSheet<COBieTypeRow> Fill()
+        public COBieSheet<COBieTypeRow> Fill(ref COBieSheet<COBieAttributeRow> attributes)
         {
             //Create new Sheet
             COBieSheet<COBieTypeRow> types = new COBieSheet<COBieTypeRow>(Constants.WORKSHEET_TYPE);
@@ -78,6 +78,12 @@ namespace Xbim.COBie.Data
                                                         "NominalHeight", "ModelReference", "Shape", "Colour", "Color", "Finish", "Grade", 
                                                         "Material", "Constituents", "Features", "Size", "AccessibilityPerformance", "CodePerformance", 
                                                         "SustainabilityPerformance", "Warranty Information"};
+            //list of attributes to exclude form attribute sheet
+            List<string> ExcludeAtts = new List<string> {"WarrantyName","DurationUnit","ServiceLifeType","ExpectedLife","LifeCyclePhase",
+                                                         "Cost","ModelNumber","IsFixed","AssetType"
+                                                        };
+            ExcludeAtts = ExcludeAtts.Concat(AttNames).ToList(); //add the attributes from the type sheet to exclude from the attribute sheet
+
             Dictionary<string, string> DurationAndValue;
             foreach (IfcTypeObject to in ifcTypeObjects)
             {
@@ -138,6 +144,16 @@ namespace Xbim.COBie.Data
                 typ.SustainabilityPerformance = GetTypeObjAttribute(to, "Pset_Specification", "SustainabilityPerformance", relAtts);
 
                 types.Rows.Add(typ);
+                //----------fill in the attribute information for spaces-----------
+                //pass data from this sheet info as Dictionary
+                Dictionary<string, string> passedValues = new Dictionary<string, string>(){{"Sheet", "Type"}, 
+                                                                                          {"Name", typ.Name},
+                                                                                          {"CreatedBy", typ.CreatedBy},
+                                                                                          {"CreatedOn", typ.CreatedOn},
+                                                                                          {"ExtSystem", typ.ExtSystem}
+                                                                                          };//required property date <PropertySetName, PropertyName>
+                //add *ALL* the attributes to the passed attributes sheet except property names that match the passed List<string>
+                SetAttributeSheet(to, passedValues, ExcludeAtts, new List<string>(), ref attributes);
             }
             //StopW.Stop();
             //Debug.WriteLine(StopW.Elapsed.ToString());
@@ -197,7 +213,6 @@ namespace Xbim.COBie.Data
         /// <returns>IEnumerable<IfcPropertySingleValue> list of IfcPropertySingleValue which are contained in AttNames</returns>
         private IEnumerable<IfcPropertySingleValue> GetTypeObjRelAttributes(IfcTypeObject TypeObj, List<string> AttNames)
         {
-            Dictionary<string, string> keyList = new Dictionary<string, string>();
             IEnumerable<IfcPropertySingleValue> objProperties = Enumerable.Empty<IfcPropertySingleValue>();
             var objTypeOf = TypeObj.ObjectTypeOf.FirstOrDefault(); //can hold zero or 1 ObjectTypeOf (IfcRelDefinesByType- holds list of objects of this type in RelatedObjects property) so test return
             if (objTypeOf != null)

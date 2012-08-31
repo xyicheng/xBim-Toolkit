@@ -157,7 +157,7 @@ namespace Xbim.COBie
         public COBieSheet<COBieTypeRow> GetCOBieTypeSheet()
         {
             COBieDataType types = new COBieDataType(_model);
-            return types.Fill();
+            return types.Fill(ref _attributes);
         }
         
         /// <summary>
@@ -168,7 +168,7 @@ namespace Xbim.COBie
         public COBieSheet<COBieComponentRow> GetCOBieComponentSheet()
         {
             COBieDataComponent components = new COBieDataComponent(_model);
-            return components.Fill();
+            return components.Fill(ref _attributes);
         }
 
         

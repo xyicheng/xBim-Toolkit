@@ -13,26 +13,7 @@ namespace Xbim.COBie.Rows
         public COBieComponentRow(ICOBieSheet<COBieComponentRow> parentSheet)
             : base(parentSheet) { }
 
-        internal string GetComponentRelatedSpace(IfcElement el)
-        {
-            if(el != null && el.ContainedInStructure.Count() > 0)
-            {
-                var owningSpace = el.ContainedInStructure.First().RelatingStructure;
-                if (owningSpace.GetType() == typeof(IfcSpace))
-                    return owningSpace.Name.ToString();
-            }
-            return Constants.DEFAULT_VAL;
-        }
-
-        internal string GetComponentDescription(IfcElement el)
-        {
-            if (el != null)
-            {
-                if (!string.IsNullOrEmpty(el.Description)) return el.Description;
-                else if (!string.IsNullOrEmpty(el.Name)) return el.Name;
-            }
-            return Constants.DEFAULT_VAL;
-        }
+        
 
         #region Attributes Properties
 

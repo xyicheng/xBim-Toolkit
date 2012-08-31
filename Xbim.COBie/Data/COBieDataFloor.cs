@@ -73,22 +73,29 @@ namespace Xbim.COBie.Data
                 floors.Rows.Add(floor);
 
                 //----------fill in the attribute information for floor-----------
-                //required property date <PropertySetName, PropertyName>
-                List<KeyValuePair<string, string>> ReqdProps = new List<KeyValuePair<string, string>>(); //get over the unique key with dictionary
-                ReqdProps.Add(new KeyValuePair<string, string>("PSet_Revit_Type_Graphics", "Line Weight"));
-                ReqdProps.Add(new KeyValuePair<string, string>("PSet_Revit_Type_Graphics", "Symbol at End 1 Default"));
-                ReqdProps.Add(new KeyValuePair<string, string>("PSet_Revit_Type_Graphics", "Symbol at End 2 Default"));
-                ReqdProps.Add(new KeyValuePair<string, string>("PSet_Revit_Type_Graphics", "Color"));
-                ReqdProps.Add(new KeyValuePair<string, string>("PSet_Revit_Type_Constraints", "Elevation Base"));
                 //pass data from this sheet info as Dictionary
                 Dictionary<string, string> passedValues = new Dictionary<string, string>(){{"Sheet", "Floor"}, 
                                                                                           {"Name", floor.Name},
                                                                                           {"CreatedBy", floor.CreatedBy},
                                                                                           {"CreatedOn", floor.CreatedOn},
                                                                                           {"ExtSystem", floor.ExtSystem}
-                                                                                          };
+                                                                                          };//required property date <PropertySetName, PropertyName>
+                /*...go for all properties with exclude list
+                List<KeyValuePair<string, string>> ReqdProps = new List<KeyValuePair<string, string>>(); //get over the unique key with dictionary
+                ReqdProps.Add(new KeyValuePair<string, string>("PSet_Revit_Type_Graphics", "Line Weight"));
+                ReqdProps.Add(new KeyValuePair<string, string>("PSet_Revit_Type_Graphics", "Symbol at End 1 Default"));
+                ReqdProps.Add(new KeyValuePair<string, string>("PSet_Revit_Type_Graphics", "Symbol at End 2 Default"));
+                ReqdProps.Add(new KeyValuePair<string, string>("PSet_Revit_Type_Graphics", "Color"));
+                ReqdProps.Add(new KeyValuePair<string, string>("PSet_Revit_Type_Constraints", "Elevation Base"));
+                
                 //add the attributes to the passed attributes sheet
                 SetAttributeSheet(bs, passedValues, ReqdProps, ref attributes);
+                */
+                //add *ALL* the attributes to the passed attributes sheet except property names that match the passed List<string>
+                //Exclude property list
+                List<string> AttNames = new List<string> { "Elevation"
+                                                            };
+                SetAttributeSheet(bs, passedValues, AttNames, new List<string>(), ref attributes);
             }
 
             return floors;

@@ -11,6 +11,7 @@ using Xbim.Ifc.PropertyResource;
 using Xbim.Ifc.Kernel;
 using Xbim.Ifc.Extensions;
 using Xbim.Ifc.ExternalReferenceResource;
+using Xbim.Ifc.SelectTypes;
 
 namespace Xbim.COBie.Data
 {
@@ -153,85 +154,226 @@ namespace Xbim.COBie.Data
             }
             return COBieData.DEFAULT_STRING;
         }
-
         /// <summary>
-        /// Retrieve Attribute data from other sheets
+        /// Get Category method for property sets
+        /// </summary>
+        /// <param name="PropSet">IfcPropertySet</param>
+        /// <returns>Category as string </returns>
+        private static string GetCategory(IfcPropertySet PropSet)
+        {
+            IEnumerable<IfcClassificationReference> Cats = from IRAC in PropSet.HasAssociations
+                                                           where IRAC is IfcRelAssociatesClassification
+                                                           && ((IfcRelAssociatesClassification)IRAC).RelatingClassification is IfcClassificationReference
+                                                           select ((IfcRelAssociatesClassification)IRAC).RelatingClassification as IfcClassificationReference;
+            IfcClassificationReference Cat = Cats.FirstOrDefault();
+            if (Cat != null)
+            {
+                return Cat.Name.ToString();
+            }
+            //Try by PropertySet as fallback
+            var query = from Props in PropSet.HasProperties
+                        where Props.Name.ToString() == "OmniClass Table 13 Category" || Props.Name.ToString() == "Category Code"
+                        select Props.ToString().TrimEnd();
+            string val = query.FirstOrDefault();
+
+            if (!String.IsNullOrEmpty(val))
+            {
+                return val;
+            }
+            return COBieData.DEFAULT_STRING;
+        }
+
+        
+        /// <summary>
+        /// Retrieve Attribute data from other sheets filtered via reqdProps
         /// </summary>
         /// <param name="obj">Object holding the additional properties(Attributes)</param>
         /// <param name="passedValues">Holder to pass values form calling sheet function</param>
         /// <param name="reqdProps">List of PropertySet names / Property Name pairs to extract</param>
         /// <param name="attributes">The attribute Sheet to add the properties to its rows</param>
-        protected void SetAttributeSheet(IfcObject obj, Dictionary<string, string> passedValues, List<KeyValuePair<string, string>> reqdProps, ref COBieSheet<COBieAttributeRow> attributes)
-        {
-           
-            foreach (KeyValuePair<string, string> item in reqdProps)
-            {
-                //IfcPropertySingleValue PropValue = sp.GetPropertySingleValue(item.Key.ToString(), item.Value.ToString());
+        //protected void SetAttributeSheet(Object obj, Dictionary<string, string> passedValues, List<KeyValuePair<string, string>> reqdProps, ref COBieSheet<COBieAttributeRow> attributes)
+        //{
+            
+        //    foreach (KeyValuePair<string, string> item in reqdProps)
+        //    {
+        //        IfcPropertySingleValue PropValue = null;
+        //        IfcPropertySet PropSet = null;
+        //        if (obj is IfcObject)
+        //            PropSet = ((IfcObject)obj).GetPropertySet(item.Key.ToString());
+        //        else if (obj is IfcTypeObject)
+        //            PropSet = ((IfcTypeObject)obj).GetPropertySet(item.Key.ToString());
+        //        else
+        //            throw new ArgumentException("Incorrect type passed to COBieData:SetAttributeSheet method");
 
-                IfcPropertySingleValue PropValue = null;
-                IfcPropertySet PropSet = obj.GetPropertySet(item.Key.ToString());
-                if (PropSet != null)
-                {
+        //        if (PropSet != null)
+        //        {
 
-                    COBieAttributeRow attribute = new COBieAttributeRow(attributes);
-                    PropValue = PropSet.HasProperties.Where<IfcPropertySingleValue>(p => p.Name == item.Value.ToString()).FirstOrDefault();
+        //            COBieAttributeRow attribute = new COBieAttributeRow(attributes);
+        //            PropValue = PropSet.HasProperties.Where<IfcPropertySingleValue>(p => p.Name == item.Value.ToString()).FirstOrDefault();
 
-                    attribute.Name = item.Value.ToString();
+        //            attribute.Name = item.Value.ToString();
                     
 
-                    //Get category
-                    //(((PropSet.HasAssociations.ToArray()[0] as IfcRelAssociatesClassification).RelatingClassification)as IfcClassificationReference).Name
-                    IEnumerable<IfcClassificationReference> Cats = from IRAC in PropSet.HasAssociations
-                                                                   where IRAC is IfcRelAssociatesClassification
-                                                                   && ((IfcRelAssociatesClassification)IRAC).RelatingClassification is IfcClassificationReference
-                                                                   select ((IfcRelAssociatesClassification)IRAC).RelatingClassification as IfcClassificationReference;
-                    IfcClassificationReference Cat = Cats.FirstOrDefault();
-                    attribute.Category = (Cat != null) ? Cat.Name.ToString() : DEFAULT_STRING;
+        //            //Get category
+        //            string Cat = GetCategory(PropSet);
+        //            attribute.Category = (Cat == DEFAULT_STRING) ? "Requirement" : Cat;
+        //            attribute.ExtIdentifier = PropSet.GlobalId;
+        //            attribute.ExtObject = item.Key.ToString();
 
-                    //passed properties from the sheet
-                    attribute.SheetName = passedValues["Sheet"];
-                    attribute.RowName = passedValues["Name"];
-                    attribute.CreatedBy = passedValues["CreatedBy"];
-                    attribute.CreatedOn = passedValues["CreatedOn"];
-                    attribute.ExtSystem = passedValues["ExtSystem"];
+        //            GetAttributsCommon(passedValues, PropValue, ref attribute);
 
-                    attribute.Value = DEFAULT_STRING;                  //set initially to default, saves the else statements
-                    attribute.Unit = DEFAULT_STRING;
-                    attribute.ExtIdentifier = PropSet.GlobalId;
-                    attribute.ExtObject = item.Key.ToString();
-                    attribute.Description = DEFAULT_STRING;
-                    attribute.AllowedValues = DEFAULT_STRING;
+        //            attributes.Rows.Add(attribute);
+        //        }
+        //    }
+        //}
+
+        
+
+        
+
+        /// <summary>
+        /// Retrieve Attribute data from other sheets, retrieving all properties attached to object (obj)
+        /// </summary>
+        /// <param name="obj">IfcObject holding the additional properties(Attributes)</param>
+        /// <param name="passedValues">Holder to pass values form calling sheet function</param>
+        /// <param name="excProp">List of propertSinglalue names to exclude</param>
+        /// /// <param name="excPropSet">List of propertSinglalue names to exclude</param>
+        /// <param name="attributes">The attribute Sheet to add the properties to its rows</param>
+        protected void SetAttributeSheet(IfcObject obj, Dictionary<string, string> passedValues, List<string> excProp, List<string> excPropSet, ref COBieSheet<COBieAttributeRow> attributes)
+        {
+            IEnumerable<IfcPropertySet> PSets = obj.PropertySets;
+            //process the IfcPropertySet sets
+            if (PSets != null)
+            {
+                SetAttributsCommon(passedValues, excProp, ref attributes, PSets); 
+            }
+        }
 
 
-                    if (PropValue != null)
+        /// <summary>
+        /// Retrieve Attribute data from other sheets, retrieving all properties attached to object (obj)
+        /// </summary>
+        /// <param name="obj">IfcTypeObject holding the additional properties(Attributes)</param>
+        /// <param name="passedValues">Holder to pass values form calling sheet function</param>
+        /// <param name="excProp">List of propertSinglalue names to exclude</param>
+        /// <param name="attributes">The attribute Sheet to add the properties to its rows</param>
+        protected void SetAttributeSheet(IfcTypeObject obj, Dictionary<string, string> passedValues, List<string> excProp, List<string> excPropSet, ref COBieSheet<COBieAttributeRow> attributes)
+        {
+            var PSetsAll = obj.HasPropertySets;
+            if (PSetsAll != null)
+            {
+                IEnumerable<IfcPropertySet> PSets = PSetsAll.OfType<IfcPropertySet>();
+                //process the IfcPropertySet sets
+                SetAttributsCommon(passedValues, excProp, ref attributes, PSets);
+            }
+        }
+        
+
+        /// <summary>
+        /// Set Values to common attribute values
+        /// </summary>
+        /// <param name="passedValues">Holder to pass values form calling sheet function</param>
+        /// <param name="excProp">List of propertSinglalue names to exclude</param>
+        /// <param name="attributes">The attribute Sheet to add the properties to its rows</param>
+        /// <param name="PSets"></param>
+        private static void SetAttributsCommon(Dictionary<string, string> passedValues, List<string> excProp, ref COBieSheet<COBieAttributeRow> attributes, IEnumerable<IfcPropertySet> PSets)
+        {
+            foreach (IfcPropertySet PS in PSets)
+            {
+                excProp = excProp.ConvertAll(d => d.ToLower()); //lowercase the strings in the list
+
+                //get all property attached to the property set
+                IEnumerable<IfcPropertySingleValue> PSVs = PS.HasProperties.OfType<IfcPropertySingleValue>();
+                                                           
+                if ((excProp != null) && (excProp.Count() > 0))
+                {
+                    PSVs = from PVS in PSVs
+                           where !excProp.Contains(PVS.Name.ToString().ToLower())
+                           select PVS;
+                    //if we want a partial match, this should work
+                    //PSVs = from PVS in PSVs
+                    //       where ((from item in excProp
+                    //               where PVS.Name.ToString().ToLower().Contains(item)
+                    //              select item).Count() == 0)
+                    //       select PVS;
+                }
+                
+                
+
+                foreach (IfcPropertySingleValue PSV in PSVs)
+                {
+                    if (PSV != null)
                     {
-                        if (PropValue.NominalValue != null)
+                        string value = "";
+
+                        if (PSV.NominalValue != null)
                         {
-                            attribute.Value = PropValue.NominalValue.Value.ToString();
+                           
+                            value = PSV.NominalValue.Value.ToString();
                             double num;
-                            if (double.TryParse(attribute.Value, out num))
+                            if (double.TryParse(value, out num)) value = num.ToString("F3");
+                            if ((string.IsNullOrEmpty(value)) || (string.Compare(value,PSV.Name.ToString(), true) == 0))
                             {
-                                attribute.Value = num.ToString("F3");
+                                continue; //skip to next loop item
                             }
+                            
                         }
 
-                        if ((PropValue.Unit != null) && (PropValue.Unit is IfcContextDependentUnit))
+                        
+
+                        COBieAttributeRow attribute = new COBieAttributeRow(attributes);
+
+                        attribute.Name = PSV.Name;
+
+                        //Get category
+                        string Cat = GetCategory(PS);
+                        attribute.Category = (Cat == DEFAULT_STRING) ? "Requirement" : Cat;
+                        attribute.ExtIdentifier = PS.GlobalId;
+                        attribute.ExtObject = PS.Name;
+
+                        //GetAttributsCommon(passedValues, PSV, ref attribute);
+                        //passed properties from the sheet
+                        attribute.SheetName = passedValues["Sheet"];
+                        attribute.RowName = passedValues["Name"];
+                        attribute.CreatedBy = passedValues["CreatedBy"];
+                        attribute.CreatedOn = passedValues["CreatedOn"];
+                        attribute.ExtSystem = passedValues["ExtSystem"];
+
+                        attribute.Value = value;                 
+                        attribute.Unit = DEFAULT_STRING; //set initially to default, saves the else statements
+                        attribute.Description = DEFAULT_STRING;
+                        attribute.AllowedValues = DEFAULT_STRING;
+                        if ((PSV.Unit != null) && (PSV.Unit is IfcContextDependentUnit))
                         {
-                            attribute.Unit = ((IfcContextDependentUnit)PropValue.Unit).Name.ToString();
-                            attribute.AllowedValues = ((IfcContextDependentUnit)PropValue.Unit).UnitType.ToString();
+                            attribute.Unit = ((IfcContextDependentUnit)PSV.Unit).Name.ToString();
+                            attribute.AllowedValues = ((IfcContextDependentUnit)PSV.Unit).UnitType.ToString();
                         }
-
-                        attribute.Description = PropValue.Description.ToString();
+                        attribute.Description = PSV.Description.ToString();
                         if (string.IsNullOrEmpty(attribute.Description)) //if no description then just use name property
                         {
                             attribute.Description = attribute.Name;
                         }
-                    }
 
-                    attributes.Rows.Add(attribute);
+                        attributes.Rows.Add(attribute);
+
+                    }
                 }
             }
         }
+        
+        /// <summary>
+        /// Get the associated Type for a IfcObject, so a Door can be of type "Door Type A"
+        /// </summary>
+        /// <param name="obj">IfcObject to get associated type information from</param>
+        /// <returns>string holding the type information</returns>
+        protected string GetTypeName(IfcObject obj)
+        {
+            var QType = obj.IsDefinedBy.OfType<IfcRelDefinesByType>();
+                        
+            var ElType = QType.FirstOrDefault();
+            return (ElType != null) ? ElType.RelatingType.Name.ToString() : DEFAULT_STRING;
+        }
+
         #endregion
     }
 
