@@ -101,7 +101,7 @@ namespace Xbim.COBie.Data
                 if (!(string.IsNullOrEmpty(ifcP.GivenName))) emails = ifcP.GivenName;
                 if (!(string.IsNullOrEmpty(ifcP.GivenName) && string.IsNullOrEmpty(ifcP.FamilyName))) emails += ".";
                 if (!(string.IsNullOrEmpty(ifcP.FamilyName))) emails += ifcP.FamilyName;
-                emails += string.IsNullOrEmpty(emails) ? "unknown@bimunknown.com" : "@bimunknown.com";
+                emails += string.IsNullOrEmpty(emails) ? "unknown@unknown" : "@unknown";
             }
 
             return emails;
@@ -122,7 +122,7 @@ namespace Xbim.COBie.Data
             }
             else
             {
-                return "0"; //default
+                return DEFAULT_NUMERIC; 
             }
 
         }

@@ -21,19 +21,19 @@ namespace Xbim.COBie.Rows
         [COBieAttributes(2, COBieKeyType.None, COBieAttributeState.Required, "AssetType", 255, COBieAllowedType.AlphaNumeric)]
         public string AssetType { get; set; }
 
-        [COBieAttributes(3, COBieKeyType.PrimaryKey, COBieAttributeState.Required, "CategoryFacility", 255, COBieAllowedType.AlphaNumeric)]
+        [COBieAttributes(3, COBieKeyType.PrimaryKey, COBieAttributeState.Required, "Category-Facility", 255, COBieAllowedType.AlphaNumeric)]
         public string CategoryFacility { get; set; }
 
-        [COBieAttributes(4, COBieKeyType.PrimaryKey, COBieAttributeState.Required, "CategorySpace", 255, COBieAllowedType.AlphaNumeric)]
+        [COBieAttributes(4, COBieKeyType.PrimaryKey, COBieAttributeState.Required, "Category-Space", 255, COBieAllowedType.AlphaNumeric)]
         public string CategorySpace { get; set; }
 
-        [COBieAttributes(5, COBieKeyType.PrimaryKey, COBieAttributeState.Required, "CategoryElement", 255, COBieAllowedType.AlphaNumeric)]
+        [COBieAttributes(5, COBieKeyType.PrimaryKey, COBieAttributeState.Required, "Category-Element", 255, COBieAllowedType.AlphaNumeric)]
         public string CategoryElement { get; set; }
 
-        [COBieAttributes(6, COBieKeyType.PrimaryKey, COBieAttributeState.Required, "CategoryProduct", 255, COBieAllowedType.AlphaNumeric)]
+        [COBieAttributes(6, COBieKeyType.PrimaryKey, COBieAttributeState.Required, "Category-Product", 255, COBieAllowedType.AlphaNumeric)]
         public string CategoryProduct { get; set; }
 
-        [COBieAttributes(7, COBieKeyType.PrimaryKey, COBieAttributeState.Required, "CategoryRole", 255, COBieAllowedType.AlphaNumeric)]
+        [COBieAttributes(7, COBieKeyType.PrimaryKey, COBieAttributeState.Required, "Category-Role", 255, COBieAllowedType.AlphaNumeric)]
         public string CategoryRole { get; set; }
 
         [COBieAttributes(8, COBieKeyType.None, COBieAttributeState.Required, "CoordinateSheet", 255, COBieAllowedType.AlphaNumeric)]

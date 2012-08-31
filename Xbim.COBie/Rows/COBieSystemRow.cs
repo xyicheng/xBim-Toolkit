@@ -24,8 +24,8 @@ namespace Xbim.COBie.Rows
         [COBieAttributes(3, COBieKeyType.CompoundKey, COBieAttributeState.Required, "Category", 255, COBieAllowedType.Text)]
         public string Category { get; set; }
 
-        [COBieAttributes(4, COBieKeyType.CompoundKey, COBieAttributeState.Required, "ComponentName", 255, COBieAllowedType.Text)]
-        public string ComponentName { get; set; }
+        [COBieAttributes(4, COBieKeyType.CompoundKey, COBieAttributeState.Required, "ComponentNames", 255, COBieAllowedType.Text)]
+        public string ComponentNames { get; set; }
 
         [COBieAttributes(5, COBieKeyType.None, COBieAttributeState.System, "ExtSystem", 255, COBieAllowedType.AlphaNumeric)]
         public string ExtSystem { get; set; }

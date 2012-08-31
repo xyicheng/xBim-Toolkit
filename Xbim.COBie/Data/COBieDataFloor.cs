@@ -68,7 +68,7 @@ namespace Xbim.COBie.Data
                 floor.Description = GetFloorDescription(bs);
                 floor.Elevation = bs.Elevation.ToString();
                 IEnumerable<IfcQuantityLength> qLen = bs.IsDefinedByProperties.Select(p => p.RelatedObjects.OfType<IfcQuantityLength>()).FirstOrDefault();
-                floor.Height = (qLen.FirstOrDefault() == null) ? "0" : qLen.FirstOrDefault().LengthValue.ToString();
+                floor.Height = (qLen.FirstOrDefault() == null) ? COBieData.DEFAULT_NUMERIC : qLen.FirstOrDefault().LengthValue.ToString();
 
                 floors.Rows.Add(floor);
 

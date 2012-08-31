@@ -7,6 +7,8 @@ using System.Text.RegularExpressions;
 
 namespace Xbim.COBie.Rows
 {
+
+    // TODO: According to NN @ AEC3 AssemblyType should be Column D, not G (i.e. at Ordinal 3)
     [Serializable()]
     public class COBieAssemblyRow : COBieRow
     {

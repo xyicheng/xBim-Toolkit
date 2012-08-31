@@ -63,7 +63,7 @@ namespace Xbim.COBie.Data
                     else
                         sys.Category = "";
 
-                    sys.ComponentName = product.Name;
+                    sys.ComponentNames = product.Name;
                     sys.ExtSystem = GetIfcApplication().ApplicationFullName;
                     sys.ExtObject = "IfcSystem";
                     sys.ExtIdentifier = product.GlobalId;

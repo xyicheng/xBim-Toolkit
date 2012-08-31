@@ -112,9 +112,9 @@ namespace Xbim.COBie.Data
                 typ.ModelNumber = GetTypeObjAttribute(to, "Pset_ManufacturersTypeInformation", "ModelLabel", relAtts);
                 typ.WarrantyGuarantorParts = GetTypeObjAttribute(to, "Pset_Warranty", "WarrantyGuarantorParts", relAtts);
                 typ.WarrantyDurationParts = GetTypeObjAttribute(to, "Pset_Warranty", "WarrantyDurationParts", relAtts);
-                typ.WarrantyGuarantorLabour = GetTypeObjAttribute(to, "Pset_Warranty", "WarrantyGuarantorLabor", relAtts);
+                typ.WarrantyGuarantorLabor = GetTypeObjAttribute(to, "Pset_Warranty", "WarrantyGuarantorLabor", relAtts);
                 DurationAndValue = GetDurationUnitAndValue(to, "Pset_Warranty", "WarrantyDurationLabor", relAtts);
-                typ.WarrantyDurationLabour = DurationAndValue["VALUE"];  //GetTypeObjAttribute(to, "Pset_Warranty", "WarrantyDurationLabor", relAtts);
+                typ.WarrantyDurationLabor = DurationAndValue["VALUE"];  //GetTypeObjAttribute(to, "Pset_Warranty", "WarrantyDurationLabor", relAtts);
                 typ.WarrantyDurationUnit = DurationAndValue["UNIT"];  //GetWarrantyDurationUnit(to, relAtts); 
                 typ.ReplacementCost = GetTypeObjAttribute(to, "Pset_EconomicImpactValues", "ReplacementCost", relAtts);
                 DurationAndValue = GetDurationUnitAndValue(to, "Pset_ServiceLife", "ServiceLifeDuration", relAtts);
@@ -132,8 +132,8 @@ namespace Xbim.COBie.Data
                 typ.ModelReference = GetTypeObjAttribute(to, "Pset_Specification", "ModelReference", relAtts);
                 typ.Shape = GetTypeObjAttribute(to, "Pset_Specification", "Shape", relAtts);
                 typ.Size = GetTypeObjAttribute(to, "Pset_Specification", "Size", relAtts);
-                typ.Colour = GetTypeObjAttribute(to, "Pset_Specification", "Colour", relAtts);
-                if (typ.Colour == DEFAULT_STRING) typ.Colour = GetTypeObjAttribute(to, "Pset_Specification", "Color", relAtts); //try US 'color'
+                typ.Color = GetTypeObjAttribute(to, "Pset_Specification", "Colour", relAtts);
+                if (typ.Color == DEFAULT_STRING) typ.Color = GetTypeObjAttribute(to, "Pset_Specification", "Color", relAtts); 
                 typ.Finish = GetTypeObjAttribute(to, "Pset_Specification", "Finish", relAtts);
                 typ.Grade = GetTypeObjAttribute(to, "Pset_Specification", "Grade", relAtts);
                 typ.Material = GetTypeObjAttribute(to, "Pset_Specification", "Material", relAtts);
