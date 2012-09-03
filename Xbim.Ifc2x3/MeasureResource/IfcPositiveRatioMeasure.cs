@@ -63,12 +63,13 @@ namespace Xbim.Ifc2x3.MeasureResource
             //string str = _theValue.ToString();
             //if (str.IndexOfAny(new[] {'.', 'E', 'e'}) == -1) str += ".";
             //return str;
+            
         }
 
         public IfcPositiveRatioMeasure(double val)
         {
-            if (val <= 0)
-                throw new ArgumentOutOfRangeException("PositiveRatioMeasures canot be 0 or less");
+            //if (val <= 0)
+            //    throw new ArgumentOutOfRangeException("PositiveRatioMeasures canot be 0 or less");
             _theValue = val;
         }
 

@@ -57,6 +57,8 @@ namespace Xbim
 				return gcnew XbimFaceBoundEnumerator(*nativeHandle);
 			}
 
+			//calculates the topological normal of the face
+			static gp_Vec TopoNormal(const TopoDS_Face & face);
 			property XbimFaceOuterBound^ OuterBound
 			{
 				XbimFaceOuterBound^ get();

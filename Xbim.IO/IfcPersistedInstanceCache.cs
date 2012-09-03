@@ -18,11 +18,11 @@ using Xbim.Ifc2x3.Kernel;
 namespace Xbim.IO
 {
     
-    internal class IfcPersistedInstanceCache : Dictionary<long, IPersistIfcEntity>, IIfcInstanceCache, IDisposable
+    public class IfcPersistedInstanceCache : Dictionary<long, IPersistIfcEntity>, IDisposable
     {
         #region ESE Database fields
 
-        static private Instance _jetInstance;
+        private static Instance _jetInstance;
         private Session _jetSession;
         private JET_DBID _jetDatabaseId;
         //tables open read only
@@ -47,25 +47,29 @@ namespace Xbim.IO
         private string _databaseName;
         private XbimModel _model;
         private bool disposed = false;
-
-
+        private long _count=0;
+       
         public IfcPersistedInstanceCache(XbimModel model)
         {
             _model = model;
-        }
 
+        }
         static IfcPersistedInstanceCache()
         {
-            if (_jetInstance == null) //if we have never created an instance do it now
-            {
-                _jetInstance = new Instance("XbimInstance");
-               //_jetInstance.Parameters.Recovery = false; //By default its True, only set this if we plan to write
-                SystemParameters.CacheSizeMin = 16 * 1024;
-                _jetInstance.Parameters.LogFileSize = 16 * 1024;
-                _jetInstance.Parameters.LogBuffers = 8 * 1024;
-                _jetInstance.Init();
-            }
+            _jetInstance = new Instance("XbimDBInstance");
+            _jetInstance.Parameters.BaseName = "XBM";
+            // _jetInstance.Parameters.TempDirectory = Path.GetRandomFileName();
+            _jetInstance.Parameters.CreatePathIfNotExist = true;
+            _jetInstance.Parameters.CircularLog = true;
+            _jetInstance.Parameters.CleanupMismatchedLogFiles = true;
+            //_jetInstance.Parameters.Recovery = false; //By default its True, only set this if we plan to write
+            SystemParameters.CacheSizeMin = 16 * 1024;
+            _jetInstance.Parameters.LogFileSize = 16 * 1024;
+            _jetInstance.Parameters.LogBuffers = 8 * 1024;
+            _jetInstance.Parameters.MaxTemporaryTables = 0;
+            _jetInstance.Init();
         }
+       
         /// <summary>
         /// Creates an empty xbim file, overwrites any existing file of the same name
         /// </summary>
@@ -78,7 +82,9 @@ namespace Xbim.IO
             using (var session = new Session(_jetInstance))
             {
                 JET_DBID dbid;
+                
                 Api.JetCreateDatabase(session, fileName, null, out dbid, CreateDatabaseGrbit.OverwriteExisting);
+                
                 using (var transaction = new Microsoft.Isam.Esent.Interop.Transaction(session))
                 {
                     XbimEntityTable.CreateTable(session, dbid);
@@ -113,6 +119,7 @@ namespace Xbim.IO
                 //reset the instances cache to clear any previous loads
                 Clear();
                 _jetSession = new Session(_jetInstance);
+                
                 JET_wrn warning = Api.JetAttachDatabase(_jetSession, filename, AttachDatabaseGrbit.None);
                 warning = Api.JetOpenDatabase(_jetSession, filename, null, out _jetDatabaseId, OpenDatabaseGrbit.None);
 
@@ -125,6 +132,7 @@ namespace Xbim.IO
                 headerTable.Open(OpenTableGrbit.ReadOnly);
 
                 _model.Header = headerTable.IfcFileHeader;
+                _count = headerTable.EntityCount;
                 headerTable.Close();
                 //set up the geometry table
                
@@ -207,7 +215,9 @@ namespace Xbim.IO
                                 {
                                     if (progressHandler != null) part21Parser.ProgressStatus += progressHandler;
                                     part21Parser.Parse();
+                                    _count = part21Parser.EntityCount;
                                     _model.Header = part21Parser.Header;
+                                    
                                     WriteHeader(jetSession, dbid);
                                 }
                                 catch (Exception e)
@@ -227,14 +237,14 @@ namespace Xbim.IO
                 Api.JetCloseDatabase(jetSession, dbid, CloseDatabaseGrbit.None);
                 Api.JetDetachDatabase(jetSession, _databaseName);
             }
-
+           
         }
 
         private void WriteHeader(Session jetSession, JET_DBID dbid)
         {
             using (var table = new XbimHeaderTable(jetSession, dbid, OpenTableGrbit.None))
             {
-                table.UpdateHeader(_model.Header);
+                table.UpdateHeader(_model.Header, _count);
             }
         }
 
@@ -273,6 +283,7 @@ namespace Xbim.IO
                 Api.JetDetachDatabase(_jetSession, _databaseName);
             }
             _jetSession = null;
+           
         }
 
         private void SetDatabaseColumns(Session jetSession, Table jetEntityCursor)
@@ -326,7 +337,7 @@ namespace Xbim.IO
 
         public new long Count
         {
-            get { throw new NotImplementedException(); }
+            get { return _count; }
         }
 
         public long HighestLabel
@@ -397,8 +408,8 @@ namespace Xbim.IO
                         long label = (long)Api.RetrieveColumnAsInt64(_jetSession, _jetEntityCursor, _jetEntityCursor.ColIdEntityLabel);
                         if (!this.ContainsKey(label)) //we have already returned the entity from the cache
                         {
-                            short typeId = (short)Api.RetrieveColumnAsInt16(_jetSession, _jetEntityCursor, _jetEntityCursor.ColIdIfcType);
-                            entities.Add(new IfcInstanceHandle(label, IfcInstances.IfcIdIfcTypeLookup[typeId].Type));
+                            ushort? typeId = Api.RetrieveColumnAsUInt16(_jetSession, _jetEntityCursor, _jetEntityCursor.ColIdIfcType);
+                            entities.Add(new IfcInstanceHandle(label, IfcInstances.IfcIdIfcTypeLookup[typeId.Value].Type));
                         }
                     }
                     while (Api.TryMoveNext(_jetSession, _jetEntityCursor));
@@ -422,7 +433,7 @@ namespace Xbim.IO
             IfcType ifcType = IfcInstances.IfcEntities[reqType];
             foreach (Type t in ifcType.NonAbstractSubTypes)
             {
-                short typeId = IfcInstances.IfcEntities[t].TypeId;
+                ushort typeId = IfcInstances.IfcEntities[t].TypeId;
                 Api.JetSetCurrentIndex(_jetSession, _jetTypeCursor, _jetTypeCursor.TypeIndex);
                 Api.MakeKey(_jetSession, _jetTypeCursor, typeId, MakeKeyGrbit.NewKey);
                 if (Api.TrySeek(_jetSession, _jetTypeCursor, SeekGrbit.SeekGE))
@@ -477,7 +488,7 @@ namespace Xbim.IO
             Api.MakeKey(_jetSession, _jetEntityCursor, posLabel, MakeKeyGrbit.NewKey);
             if (Api.TrySeek(_jetSession, _jetEntityCursor, SeekGrbit.SeekEQ))
             {
-                short? typeId = Api.RetrieveColumnAsInt16(_jetSession, _jetEntityCursor, _jetEntityCursor.ColIdIfcType);
+                ushort? typeId = Api.RetrieveColumnAsUInt16(_jetSession, _jetEntityCursor, _jetEntityCursor.ColIdIfcType);
                 if (typeId.HasValue)
                 {
                     IfcType ifcType = IfcInstances.IfcIdIfcTypeLookup[typeId.Value];
@@ -536,7 +547,7 @@ namespace Xbim.IO
             if (_jetTypeCursor == null) yield return default(TIfcType);
             foreach (Type t in ifcType.NonAbstractSubTypes)
             {
-                short typeId = IfcInstances.IfcEntities[t].TypeId;
+                ushort typeId = IfcInstances.IfcEntities[t].TypeId;
                 Api.JetSetCurrentIndex(_jetSession, _jetTypeCursor, _jetTypeCursor.TypeIndex);
                 Api.MakeKey(_jetSession, _jetTypeCursor, typeId, MakeKeyGrbit.NewKey);
                 
@@ -587,11 +598,14 @@ namespace Xbim.IO
 
         public void ImportXbim(string importFrom, ReportProgressDelegate progressHandler = null)
         {
+            _count = _highestLabel;
             throw new NotImplementedException();
+           
         }
 
         public void ImportIfcZip(string importFrom, ReportProgressDelegate progressHandler = null)
         {
+            _count = _highestLabel;
             throw new NotImplementedException();
         }
 
@@ -631,6 +645,7 @@ namespace Xbim.IO
                     if (_jetTypeCursor != null) { _jetTypeCursor.Close(); _jetTypeCursor.Dispose(); };
                     if (_jetEntityCursor != null) { _jetEntityCursor.Close(); _jetEntityCursor.Dispose(); };
                     if (_jetSession != null) _jetSession.End();
+                    if (_jetInstance != null) _jetInstance.Term();
                 }
 
             }
@@ -866,6 +881,7 @@ namespace Xbim.IO
         {
             table.CommitTransaction();
             table.Close();
+            table.Dispose();
         }
 
 
@@ -879,12 +895,29 @@ namespace Xbim.IO
         }
 
 
-
+        /// <summary>
+        /// Iterates over all the shape geoemtry
+        /// This is a thread safe operation and can be accessed in background threads
+        /// </summary>
+        /// <param name="ofType"></param>
+        /// <returns></returns>
         public IEnumerable<XbimGeometryData> Shapes(XbimGeometryType ofType)
         {
-            if (_geometryTable == null)
-                _geometryTable = new XbimGeometryTable(_jetSession, _jetDatabaseId, OpenTableGrbit.ReadOnly);
-            return _geometryTable.Shapes(ofType);
+            using (var session = new Session(_jetInstance))
+            {
+                JET_DBID dbId;
+                JET_wrn warning = Api.JetOpenDatabase(session, _databaseName, null, out dbId, OpenDatabaseGrbit.ReadOnly);
+                //Open a new Table
+                using (var geometryTable = new XbimGeometryTable(session, dbId, OpenTableGrbit.ReadOnly))
+                {
+                    foreach (var shape in  geometryTable.Shapes(ofType))
+                    {
+                        yield return shape;
+                    }
+                }
+                Api.JetCloseDatabase(session, dbId, CloseDatabaseGrbit.None);
+            }
+
         }
     }
 }

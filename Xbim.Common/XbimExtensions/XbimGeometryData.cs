@@ -12,10 +12,11 @@ namespace Xbim.XbimExtensions
         readonly public byte[] ShapeData;
         readonly public byte[] TransformData;
         readonly public long IfcRepresentationLabel;
-
-        public XbimGeometryData(long productLabel, XbimGeometryType type, byte[] shape, byte[] transform, long representationLabel)
+        readonly public ushort IfcTypeId;
+        public XbimGeometryData(long productLabel, XbimGeometryType geomType, ushort ifcTypeId, byte[] shape, byte[] transform, long representationLabel)
         {
-            GeometryType = type;
+            GeometryType = geomType;
+            IfcTypeId = ifcTypeId;
             ShapeData = shape;
             TransformData = transform;
             IfcProductLabel = productLabel;

@@ -228,6 +228,7 @@
     <Compile Include="XbimExtensions\XbimRepresentationType.cs" />
     <Compile Include="XbimExtensions\XbimSet.cs" />
     <Compile Include="XbimExtensions\XbimGeometryType.cs" />
+    <Compile Include="XbimModelFactors.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

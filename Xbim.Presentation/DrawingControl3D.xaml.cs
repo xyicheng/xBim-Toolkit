@@ -42,13 +42,13 @@ namespace Xbim.Presentation
     public class DrawingControl3DItem
     {
         public ModelVisual3D ModelVisual { get; set; }
-        public IfcProduct Product { get; set; }
+        public long ProductLabel { get; set; }
         
        
 
-        public DrawingControl3DItem(IfcProduct product, ModelVisual3D modelVisual)
+        public DrawingControl3DItem(long product, ModelVisual3D modelVisual)
         {
-            Product = product;
+            ProductLabel = product;
             ModelVisual = modelVisual;
             
         }
@@ -116,7 +116,7 @@ namespace Xbim.Presentation
         #region Fields
 
         private BackgroundWorker _worker;
-        private Dictionary<IfcProduct, DrawingControl3DItem> _items = new Dictionary<IfcProduct, DrawingControl3DItem>();
+        private Dictionary<long, DrawingControl3DItem> _items = new Dictionary<long, DrawingControl3DItem>();
         private Dictionary<ModelVisual3D, ModelVisual3D> _hidden = new Dictionary<ModelVisual3D, ModelVisual3D>();
         private List<Type> _hiddenTypes = new List<Type>();
         private Rect3D _viewSize;
@@ -183,9 +183,9 @@ namespace Xbim.Presentation
 
         private void Canvas_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            IfcProduct prod = Canvas.GetProductAt(e);
-            IList remove = new IfcProduct[] {};
-            IList add = new IfcProduct[] {prod};
+            long prod = Canvas.GetProductAt(e);
+            IList remove = new long[] {};
+            IList add = new long[] {prod};
             SelectionChangedEventArgs selEv = new SelectionChangedEventArgs(SelectionChangedEvent, remove, add);
             RaiseEvent(selEv);
         }
@@ -238,22 +238,22 @@ namespace Xbim.Presentation
             DrawingControl3D d3d = d as DrawingControl3D;
             if (d3d != null)
             {
-                IfcProduct oldProd = e.OldValue as IfcProduct;
-                IfcProduct newProd = e.NewValue as IfcProduct;
-                if (oldProd != null) //unhighlight last one
+                long? oldProd = e.OldValue as long?;
+                long? newProd = e.NewValue as long?;
+                if (oldProd.HasValue) //unhighlight last one
                 {
                     DrawingControl3DItem item;
-                    if (d3d._items.TryGetValue(oldProd, out item))
+                    if (d3d._items.TryGetValue(oldProd.Value, out item))
                     {
                         Material oldMat = null;
                         d3d._selectedVisual = item.ModelVisual;
                         d3d.SwapMaterial(item.ModelVisual.Content, d3d._selectedVisualPreviousMaterial, ref oldMat);
                     }
                 }
-                if (newProd != null) //highlight new one
+                if (newProd.HasValue) //highlight new one
                 {
                     DrawingControl3DItem item;
-                    if (d3d._items.TryGetValue(newProd, out item))
+                    if (d3d._items.TryGetValue(newProd.Value, out item))
                     {
                         d3d._selectedVisual = item.ModelVisual;
                         d3d.SwapMaterial(item.ModelVisual.Content, d3d._selectedVisualMaterial,
@@ -318,7 +318,7 @@ namespace Xbim.Presentation
 
         #endregion
 
-        public IDictionary<IfcProduct, DrawingControl3DItem> Items
+        public IDictionary<long, DrawingControl3DItem> Items
         {
             get { return _items; }
         }
@@ -441,67 +441,64 @@ namespace Xbim.Presentation
 
             //reset all the visuals
             ClearGraphics();
-            foreach (var shape in model.Shapes(XbimGeometryType.TriangulatedMesh))
-            {
-                DrawShape(model, shape);
-            }
-            InitialiseView(model);
-            //_worker = new BackgroundWorker();
-            //_worker.DoWork += new DoWorkEventHandler(GenerateGeometry);
+           
+            _worker = new BackgroundWorker();
+            _worker.DoWork += new DoWorkEventHandler(GenerateGeometry);
 
-            //_worker.WorkerReportsProgress = true;
-            //_worker.WorkerSupportsCancellation = false;
-            //_worker.ProgressChanged += new ProgressChangedEventHandler(GenerateGeometry_ProgressChanged);
-            //_worker.RunWorkerCompleted += new RunWorkerCompletedEventHandler(GenerateGeometry_RunWorkerCompleted);
-            //_worker.RunWorkerAsync(scene);
+            _worker.WorkerReportsProgress = true;
+            _worker.WorkerSupportsCancellation = false;
+            _worker.ProgressChanged += new ProgressChangedEventHandler(GenerateGeometry_ProgressChanged);
+            _worker.RunWorkerCompleted += new RunWorkerCompletedEventHandler(GenerateGeometry_RunWorkerCompleted);
+            _worker.RunWorkerAsync(model);
 
            
         }
 
 
-        //private void GenerateGeometry_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
-        //{
-        //    _worker = null;
-
-        //    RoutedEventArgs ev = new RoutedEventArgs(LoadedEvent);
-        //    RaiseEvent(ev);
-        //}
-
-        //private void GenerateGeometry_ProgressChanged(object sender, ProgressChangedEventArgs e)
-        //{
-        //    TransformNode nodeToDraw = e.UserState as TransformNode;
-        //    if (nodeToDraw != null)
-        //    {
-        //        DrawNode(nodeToDraw);
-        //    }
-        //    ProgressChangedEventHandler handler = _progressChanged;
-        //    if (handler != null)
-        //    {
-        //        handler(this, e);
-        //    }
-           
-        //}
-
-        private void DrawShape(XbimModel model, XbimGeometryData geom)
+        private void GenerateGeometry_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            IfcProduct prod = model.GetInstance(geom.IfcProductLabel) as IfcProduct;
+            _worker = null;
+
+            RoutedEventArgs ev = new RoutedEventArgs(LoadedEvent);
+            RaiseEvent(ev);
+            InitialiseView(e.Result as XbimModel);
+        }
+
+        private void GenerateGeometry_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            XbimGeometryData shapeToDraw = e.UserState as XbimGeometryData;
+            if (shapeToDraw != null)
+            {
+                DrawShape(shapeToDraw);
+            }
+            ProgressChangedEventHandler handler = _progressChanged;
+            if (handler != null)
+            {
+                handler(this, e);
+            }
+
+        }
+
+        private void DrawShape( XbimGeometryData geom)
+        {
+            
             XbimMaterialProvider mat = null;
             DrawingControl3DItem d3D;
-            
-            if (!_items.TryGetValue(prod, out d3D))
+
+            if (!_items.TryGetValue(geom.IfcProductLabel, out d3D))
             {
-                _items.Add(prod, d3D = new DrawingControl3DItem(prod, new ModelVisual3D()));
+                _items.Add(geom.IfcProductLabel, d3D = new DrawingControl3DItem(geom.IfcProductLabel, new ModelVisual3D()));
                 Solids.Children.Add(d3D.ModelVisual);
                 Matrix3D matrix3d = new Matrix3D().FromArray(geom.TransformData);
                 d3D.ModelVisual.Transform = new MatrixTransform3D(matrix3d);
             }
            
             ModelVisual3D mv = d3D.ModelVisual;
-           
-           
-            bool transparent = (prod is IfcWindow);
-            if (_onSetMaterial != null)
-                mat = _onSetMaterial(prod);
+
+            IfcType ifcType = IfcInstances.IfcIdIfcTypeLookup[geom.IfcTypeId];
+            bool transparent = (ifcType.Type == typeof(IfcWindow));
+            //if (_onSetMaterial != null)
+            //    mat = _onSetMaterial(ifcType);
             if (mat == null) //set it just in case
             {
                 if (transparent)
@@ -509,8 +506,8 @@ namespace Xbim.Presentation
                 else
                     mat = _defaultMaterial;
             }
-           
-            mv.SetValue(TagProperty, prod);
+
+            mv.SetValue(TagProperty, geom.IfcProductLabel);
 
             XbimTriangulatedModelStream tMod = new XbimTriangulatedModelStream(geom.ShapeData);
             Binding bf = new Binding("FaceMaterial");
@@ -536,55 +533,7 @@ namespace Xbim.Presentation
                 child.Content = m3d;
                 mv.Children.Add(child);
             }
-            //if (transparent)
-            //    Transparents.Children.Add(mv);
-            //else
-            //    Solids.Children.Add(mv);
-            
-            //else //we have children as well
-            //{
-            //    Model3DGroup grp = new Model3DGroup();
-            //    if (!tMod.IsEmpty) // we have a mesh at the parent level
-            //    {
-            //        Model3D m3d = tMod.AsModel3D();
-
-            //        BindingOperations.SetBinding(m3d, GeometryModel3D.MaterialProperty, bf); // mat;
-            //        BindingOperations.SetBinding(m3d, GeometryModel3D.BackMaterialProperty, bb); // mat;
-            //        grp.Children.Add(m3d);
-            //    }
-            //    //now do the children
-            //    foreach (XbimTriangulatedModelStream cMod in tMod.Children)
-            //    {
-
-            //        Model3D m3d = cMod.AsModel3D();
-
-            //        BindingOperations.SetBinding(m3d, GeometryModel3D.MaterialProperty, bf); // mat;
-            //        BindingOperations.SetBinding(m3d, GeometryModel3D.BackMaterialProperty, bb); // mat;
-            //        grp.Children.Add(m3d);
-            //    }
-            //    mv.Content = grp;
-            //    if (transparent)
-            //        Transparents.Children.Add(mv);
-            //    else
-            //        Solids.Children.Add(mv);
-            //}
-
-
-            
-            //if (tg.ModelTransform.IsIdentity)
-            //    InitialiseView(tg);
-            //else
-            //{
-            //    BuildingModel.Transform = new MatrixTransform3D(tg.ModelTransform);
-            //    PerspectiveCamera pCam = Canvas.Camera as PerspectiveCamera;
-            //    if (pCam != null)
-            //    {
-            //        //TODO: put this back in
-            //        //pCam.LookDirection = tg.PerspectiveCameraLookDirection;
-            //        //pCam.Position = tg.PerspectiveCameraPosition;
-            //        //pCam.UpDirection = tg.PerspectiveCameraUpDirection;
-            //    }
-            //}
+           
         }
 
         //private void DrawNode(TransformNode node)
@@ -685,65 +634,19 @@ namespace Xbim.Presentation
         private void GenerateGeometry(object s, DoWorkEventArgs args)
         {
             BackgroundWorker worker = s as BackgroundWorker;
-            IXbimScene scene = args.Argument as IXbimScene;
+            XbimModel model = args.Argument as XbimModel;
             double processed = 0;
             int _percentageParsed = 0;
-            if (worker != null && scene != null)
+            if (worker != null && model != null)
             {
-                worker.ReportProgress(0, "Converting to Xbim");
-       
-               TransformGraph transformGraph = scene.Graph;
-                if (_onSetFilter != null)
+                worker.ReportProgress(0, "Reading Geometry");
+                foreach (var shape in model.Shapes(XbimGeometryType.TriangulatedMesh))
                 {
-                    List<List<TransformNode>> totalList = new List<List<TransformNode>>();
-                    int total = 0;
-                    for (int i = 1; i < 20; i++) //allow 20 call backs
-                    {
-                        Func<IfcProduct, bool> qry = _onSetFilter(i);
-                        if (qry == null) break;
-                        List<TransformNode> nodes = transformGraph.ProductNodes.Values.Where(n => qry(n.Product)).ToList();
-                        totalList.Add(nodes);
-                        total += nodes.Count();
-
-                    }
-                    foreach (var listNode in totalList)
-                    {
-                        foreach (var node in listNode)
-                        {
-                            XbimTriangulatedModelStream tm = node.TriangulatedModel; //load the triangulation in this thread
-                            processed++;
-                            int newPercentage = Convert.ToInt32(processed / total * 100.0);
-                            if (newPercentage > _percentageParsed)
-                            {
-                                _percentageParsed = newPercentage;
-                                worker.ReportProgress(_percentageParsed, node);
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    IEnumerable<TransformNode> nodes;
-                    if(scene.LOD==XbimLOD.LOD400)
-                        nodes = transformGraph.ProductNodes.Values.Where(n => !(n.Product is IfcSpace) && !(n.Product is IfcFeatureElement));
-                    else
-                        nodes = transformGraph.ProductNodes.Values.Where(n => !(n.Product is IfcSpace) && !(n.Product is IfcFeatureElement) && !(n.Product is IfcFastener) );
-                    int total = nodes.Count();
-                    foreach (var node in nodes)
-                    {
-                        XbimTriangulatedModelStream tm = node.TriangulatedModel; //load the triangulation in this thread
-                        processed++;
-                        int newPercentage = Convert.ToInt32(processed / total * 100.0);
-                        worker.ReportProgress(_percentageParsed, node);
-                        if (newPercentage > _percentageParsed)
-                        {
-                            _percentageParsed = newPercentage;
-
-                        }
-                    }
+                    worker.ReportProgress(0, shape);
                 }
             }
-            worker.ReportProgress(-1, "Conversion complete");
+            worker.ReportProgress(101, "Complete");
+            args.Result = model;
         }
 
 
@@ -844,7 +747,7 @@ namespace Xbim.Presentation
 
         #region Query methods
 
-        public IfcProduct GetProductAt(MouseButtonEventArgs e)
+        public long GetProductAt(MouseButtonEventArgs e)
         {
             return Canvas.GetProductAt(e);
         }
@@ -855,12 +758,14 @@ namespace Xbim.Presentation
         ///   Hides all instances of the specified type
         /// </summary>
         /// <param name = "type"></param>
-        public void Hide(Type type)
+        public void HideAllTypesOf(long product)
         {
+            Type typeToHide = Model.GetInstance(Math.Abs(product)).GetType();
             foreach (var placement in _items)
             {
-                IfcProduct prod = placement.Key;
-                if (prod.GetType() == type)
+                long prod = placement.Key;
+                Type type = Model.GetInstance(Math.Abs(prod)).GetType();
+                if (type == typeToHide)
                 {
                     ModelVisual3D parent = VisualTreeHelper.GetParent(placement.Value.ModelVisual) as ModelVisual3D;
                     if (parent != null)
@@ -870,10 +775,10 @@ namespace Xbim.Presentation
                     }
                 }
             }
-            _hiddenTypes.Add(type);
+            _hiddenTypes.Add(typeToHide);
         }
 
-        public void Hide(IfcProduct hideProduct)
+        public void Hide(long hideProduct)
         {
             DrawingControl3DItem item;
             if (_items.TryGetValue(hideProduct, out item))
@@ -917,6 +822,6 @@ namespace Xbim.Presentation
             _hidden.Clear();
         }
 
-       
+
     }
 }

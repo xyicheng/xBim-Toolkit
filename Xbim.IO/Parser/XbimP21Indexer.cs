@@ -147,6 +147,11 @@ namespace Xbim.IO.Parser
        
         const int _transactionBatchSize = 100;
         private int _entityCount = 0;
+
+        public int EntityCount
+        {
+            get { return _entityCount; }
+        }
         private long _primaryKeyValue = -1;
         public P21toIndexParser(Stream inputP21, Session session, XbimEntityTable table)
             : base(inputP21)

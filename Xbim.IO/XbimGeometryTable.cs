@@ -20,6 +20,7 @@ namespace Xbim.IO
         const string geometryTablePrimaryIndex = "GeomPrimaryIndex";
         const string colNameProductLabel = "GeomProductLabel";
         const string colNameGeomType = "GeomType";
+        const string colNameProductIfcTypeId = "GeomIfcType";
         const string colNameSubPart = "GeomSubPart";     
         const string colNameTransformMatrix = "GeomTransformMatrix";
         const string colNameShapeData = "GeomShapeData";
@@ -28,12 +29,14 @@ namespace Xbim.IO
         private Table _jetCursor;
         private JET_COLUMNID _colIdProductLabel;
         private JET_COLUMNID _colIdGeomType;
+        private JET_COLUMNID _colIdProductIfcTypeId;
         private JET_COLUMNID _colIdRepItem;
         private JET_COLUMNID _colIdShapeData;
         private JET_COLUMNID _colIdSubPart;
         private JET_COLUMNID _colIdTransformMatrix;
         UInt64ColumnValue _colValGeometryProductLabel;
         ByteColumnValue _colValGeomType;
+        UInt16ColumnValue _colValProductIfcTypeId;
         Int16ColumnValue _colValSubPart;
         BytesColumnValue _colValTransformMatrix;  
         BytesColumnValue _colValShapeData;
@@ -62,6 +65,7 @@ namespace Xbim.IO
                 Api.JetAddColumn(sesid, tableid, colNameGeomType, columndef, null, 0, out columnid);
                 
                 columndef.coltyp = JET_coltyp.Short;
+                Api.JetAddColumn(sesid, tableid, colNameProductIfcTypeId, columndef, null, 0, out columnid);
                 Api.JetAddColumn(sesid, tableid, colNameSubPart, columndef, null, 0, out columnid);
                 
                
@@ -87,21 +91,25 @@ namespace Xbim.IO
 
         private void InitColumns()
         {
-            IDictionary<string, JET_COLUMNID> columnids = Api.GetColumnDictionary(_jetSession, _jetCursor);
-            _colIdGeomType = columnids[colNameGeomType];
-            _colIdProductLabel = columnids[colNameProductLabel];
-            _colIdSubPart = columnids[colNameSubPart];
-            _colIdTransformMatrix = columnids[colNameTransformMatrix];
-            _colIdShapeData = columnids[colNameShapeData];
-            _colIdRepItem = columnids[colNameRepItem];
+            //this call causes temprary databases t be created
+           //IDictionary<string, JET_COLUMNID> columnids = Api.GetColumnDictionary(_jetSession, _jetCursor);
+            _colIdGeomType = Api.GetTableColumnid(_jetSession, _jetCursor, colNameGeomType);
+            _colIdProductIfcTypeId = Api.GetTableColumnid(_jetSession, _jetCursor, colNameProductIfcTypeId);
+            _colIdProductLabel = Api.GetTableColumnid(_jetSession, _jetCursor, colNameProductLabel);
+            _colIdSubPart = Api.GetTableColumnid(_jetSession, _jetCursor, colNameSubPart);
+            _colIdTransformMatrix = Api.GetTableColumnid(_jetSession, _jetCursor, colNameTransformMatrix);
+            _colIdShapeData = Api.GetTableColumnid(_jetSession, _jetCursor, colNameShapeData);
+            _colIdRepItem = Api.GetTableColumnid(_jetSession, _jetCursor, colNameRepItem);
+           
 
             _colValGeomType = new ByteColumnValue { Columnid = _colIdGeomType };
+            _colValProductIfcTypeId = new UInt16ColumnValue { Columnid = _colIdProductIfcTypeId };
             _colValGeometryProductLabel = new UInt64ColumnValue { Columnid = _colIdProductLabel };
             _colValSubPart = new Int16ColumnValue { Columnid = _colIdSubPart };
             _colValTransformMatrix = new BytesColumnValue { Columnid = _colIdTransformMatrix };
             _colValShapeData = new BytesColumnValue { Columnid = _colIdShapeData };
             _colValRepItem = new UInt64ColumnValue { Columnid = _colIdRepItem };
-            _colValues = new ColumnValue[] { _colValGeomType, _colValGeometryProductLabel, _colValSubPart, _colValTransformMatrix, _colValShapeData, _colValRepItem };
+            _colValues = new ColumnValue[] { _colValGeomType, _colValGeometryProductLabel, _colValProductIfcTypeId, _colValSubPart, _colValTransformMatrix, _colValShapeData, _colValRepItem };
 
         }
         public XbimGeometryTable(Session jetSession, JET_DBID jetDatabaseId, OpenTableGrbit openTableGrbit)
@@ -138,13 +146,14 @@ namespace Xbim.IO
             _transaction = new Transaction(_jetSession);
             _added = 0;
         }
-        public void AddGeometry(ulong prodLabel, XbimGeometryType type, byte[] transform, byte[] shapeData, ulong repItemLabel=0, short subPart = 0)
+        public void AddGeometry(ulong prodLabel, XbimGeometryType type, UInt16 ifcType, byte[] transform, byte[] shapeData, ulong repItemLabel=0, short subPart = 0)
         {
 
             using (var update = new Update(_jetSession, _jetCursor, JET_prep.Insert))
             {
                 _colValGeometryProductLabel.Value = prodLabel;
                 _colValGeomType.Value = (Byte)type;
+                _colValProductIfcTypeId.Value = ifcType;
                 _colValSubPart.Value = subPart;
                 _colValTransformMatrix.Value = transform;
                 _colValShapeData.Value = shapeData;
@@ -176,7 +185,7 @@ namespace Xbim.IO
             if (Api.TrySeek(_jetSession, _jetCursor, SeekGrbit.SeekEQ))
             {
                 Api.RetrieveColumns(_jetSession, _jetCursor, _colValues);
-                return new XbimGeometryData(posLabel, (XbimGeometryType) _colValGeomType.Value,_colValShapeData.Value,_colValTransformMatrix.Value, (long)_colValRepItem.Value);
+                return new XbimGeometryData(posLabel, (XbimGeometryType) _colValGeomType.Value, _colValProductIfcTypeId.Value.Value,_colValShapeData.Value,_colValTransformMatrix.Value, (long)_colValRepItem.Value);
             }
             else
                 return null;
@@ -184,23 +193,20 @@ namespace Xbim.IO
 
         internal IEnumerable<XbimGeometryData> Shapes(XbimGeometryType ofType)
         {
-            //use a temporary cursor to avoid overlapped acces to tables
-            using (Table tmpCursor = new Table(_jetSession, _jetDatabaseId, GeometryTableName, OpenTableGrbit.ReadOnly))
+
+            Api.JetSetCurrentIndex(_jetSession, _jetCursor, geometryTablePrimaryIndex);
+            Api.MakeKey(_jetSession, _jetCursor, (byte)ofType, MakeKeyGrbit.NewKey);
+
+            if (Api.TrySeek(_jetSession, _jetCursor, SeekGrbit.SeekGE))
             {
-                Api.JetSetCurrentIndex(_jetSession, tmpCursor, geometryTablePrimaryIndex);
-                Api.MakeKey(_jetSession, tmpCursor, (byte)ofType, MakeKeyGrbit.NewKey);
-
-
-                if (Api.TrySeek(_jetSession, tmpCursor, SeekGrbit.SeekGE))
+                do
                 {
-                    do
-                    {
-                        Api.RetrieveColumns(_jetSession, tmpCursor, _colValues);
-                        yield return new XbimGeometryData((long)_colValGeometryProductLabel.Value, (XbimGeometryType)_colValGeomType.Value, _colValShapeData.Value, _colValTransformMatrix.Value, (long) _colValRepItem.Value);
-                    } while (Api.TryMoveNext(_jetSession, tmpCursor));
-                    tmpCursor.Close();
-                }
+                    Api.RetrieveColumns(_jetSession, _jetCursor, _colValues);
+                    yield return new XbimGeometryData((long)_colValGeometryProductLabel.Value, (XbimGeometryType)_colValGeomType.Value, _colValProductIfcTypeId.Value.Value, _colValShapeData.Value, _colValTransformMatrix.Value, (long)_colValRepItem.Value);
+                } while (Api.TryMoveNext(_jetSession, _jetCursor));
+
             }
         }
+        
     }
 }

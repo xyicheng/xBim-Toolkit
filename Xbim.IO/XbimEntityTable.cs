@@ -35,7 +35,7 @@ namespace Xbim.IO
 
         Int64ColumnValue _colValEntityLabel;
         Int64ColumnValue _colValSecondaryKey;
-        Int16ColumnValue _colValTypeId;
+        UInt16ColumnValue _colValTypeId;
         BytesColumnValue _colValData;
         ColumnValue[] _colValues;
 
@@ -57,7 +57,7 @@ namespace Xbim.IO
         internal static void CreateTable(JET_SESID sesid, JET_DBID dbid)
         {
             JET_TABLEID tableid;
-            Api.JetCreateTable(sesid, dbid, ifcEntityTableName, 8, 80, out tableid);
+            Api.JetCreateTable(sesid, dbid, ifcEntityTableName, 8, 100, out tableid);
 
             using (var transaction = new Microsoft.Isam.Esent.Interop.Transaction(sesid))
             {
@@ -107,16 +107,19 @@ namespace Xbim.IO
                 transaction.Commit(CommitTransactionGrbit.LazyFlush);
             }
         }
+       
 
         private void InitColumns()
         {
-            IDictionary<string, JET_COLUMNID> columnids = Api.GetColumnDictionary(_jetSession, _jetCursor);
-            _colIdEntityLabel = columnids[colNameEntityLabel];
-            _colIdSecondaryKey = columnids[colNameSecondaryKey];
-            _colIdIfcType = columnids[colNameIfcType];
-            _colIdEntityData = columnids[colNameEntityData];
+
+           // IDictionary<string, JET_COLUMNID> columnids = Api.GetColumnDictionary(_jetSession, _jetCursor);
+            _colIdEntityLabel = Api.GetTableColumnid(_jetSession, _jetCursor, colNameEntityLabel);
+            _colIdSecondaryKey = Api.GetTableColumnid(_jetSession, _jetCursor, colNameSecondaryKey);
+            _colIdIfcType = Api.GetTableColumnid(_jetSession, _jetCursor, colNameIfcType);
+            _colIdEntityData = Api.GetTableColumnid(_jetSession, _jetCursor, colNameEntityData);
+            
             _colValEntityLabel = new Int64ColumnValue { Columnid = _colIdEntityLabel };
-            _colValTypeId = new Int16ColumnValue { Columnid = _colIdIfcType };
+            _colValTypeId = new UInt16ColumnValue { Columnid = _colIdIfcType };
             _colValSecondaryKey = new Int64ColumnValue { Columnid = _colIdSecondaryKey };
             _colValData = new BytesColumnValue { Columnid = _colIdEntityData };
             _colValues = new ColumnValue[] { _colValEntityLabel,_colValSecondaryKey, _colValTypeId, _colValData };
@@ -174,7 +177,7 @@ namespace Xbim.IO
         /// <param name="type">The index of the type of the entity</param>
         /// <param name="secondaryKey">specify a value less than 0 if no secondary key is required</param>
         /// <param name="data">The property data</param>
-        internal void SetColumnValues(long primaryKey, short type, long secondaryKey, byte[] data)
+        internal void SetColumnValues(long primaryKey, ushort type, long secondaryKey, byte[] data)
         {
             _colValEntityLabel.Value = primaryKey;
             _colValTypeId.Value = type;
@@ -190,7 +193,7 @@ namespace Xbim.IO
         /// <param name="primaryKey">The label of the entity</param>
         /// <param name="type">The index of the type of the entity</param>
         /// <param name="data">The property data</param>
-        internal void SetColumnValues(long primaryKey, short type, byte[] data)
+        internal void SetColumnValues(long primaryKey, ushort type, byte[] data)
         {
             SetColumnValues(primaryKey, type, -1, data);
         }

@@ -330,6 +330,8 @@ namespace Xbim
 									if(fe->Representation!=nullptr)
 									{
 										IXbimGeometryModel^ im = CreateFrom(fe,repContext, maps, true, lod);
+										if(dynamic_cast<XbimGeometryModelCollection^>(im))
+											im = ((XbimGeometryModelCollection^)im)->Solidify();
 										if(!dynamic_cast<XbimSolid^>(im))
 											throw gcnew XbimGeometryException("FeatureElementAdditions must be of type solid");
 
@@ -344,7 +346,7 @@ namespace Xbim
 									if(fe->Representation!=nullptr)
 									{
 										IXbimGeometryModel^ im = CreateFrom(fe, repContext, maps, true,lod);
-										if(im!=nullptr)
+										if(im!=nullptr && !im->Handle->IsNull())
 										{	
 											im = im->CopyTo(fe->ObjectPlacement);
 											//the rules say that 
@@ -369,17 +371,8 @@ namespace Xbim
 									
 								}
 								IXbimGeometryModel^ baseShape = CreateFrom(shape, maps, true,lod);	
-								try
-								{
-									IXbimGeometryModel^ fShape =  gcnew XbimFeaturedShape(baseShape, openingSolids, projectionSolids);
-									
-									return fShape;
-								}
-								catch (XbimGeometryException^ xbimE)
-								{
-									Logger->WarnFormat("Failed create accurate geometry for entity #{0}={1}\n{2}A simplified representation for the shape has been used",product->EntityLabel,product->GetType()->Name,xbimE->Message);
-									return baseShape;
-								}
+								return  gcnew XbimFeaturedShape(product, baseShape, openingSolids, projectionSolids);
+								
 							}
 							else //we have no openings or projections
 							{
@@ -526,10 +519,7 @@ namespace Xbim
 					geom->RepresentationLabel = repItem->EntityLabel;
 					if(!(dynamic_cast<XbimSolid^>(geom) && (*(geom->Handle)).IsNull())) gms->Add(geom); //don't add solids that are empty
 				}
-				if(forceSolid)
-					return gms->Solidify();
-				else
-					return gms;
+				return gms;
 			}
 		}
 
@@ -581,8 +571,9 @@ namespace Xbim
 			}
 			else if(dynamic_cast<IfcGeometricSet^>(repItem))
 			{
-				IfcGeometricSet^ gset = (IfcGeometricSet^) repItem;
-				Logger->Warn(String::Format("Support for IfcGeometricSet #{0} has not been implemented", Math::Abs(gset->EntityLabel)));
+				return nullptr; //this s not a solid object
+				//IfcGeometricSet^ gset = (IfcGeometricSet^) repItem;
+				//Logger->Warn(String::Format("Support for IfcGeometricSet #{0} has not been implemented", Math::Abs(gset->EntityLabel)));
 			}
 			else
 			{
@@ -612,10 +603,7 @@ namespace Xbim
 				XbimGeometryModelCollection^ toMap = (XbimGeometryModelCollection^) item;
 				for each(IXbimGeometryModel^ model in toMap)
 					mapColl->Add(CreateMap(model,origin,transform, maps, forceSolid));
-				if(forceSolid)
-					return mapColl->Solidify();
-				else
-					return mapColl;
+				return mapColl;
 			}
 			else
 				throw(gcnew ArgumentOutOfRangeException("XbimGeometryModel.CreateMap Unsupported IXbimGeometryModel type"));
@@ -648,9 +636,8 @@ namespace Xbim
 			{
 				if(forceSolid)
 				{
-					XbimShell^ shell = gcnew XbimShell(repItem->FbsmFaces->First);
-					return shell;
-				
+					XbimSolid^ solid = gcnew XbimSolid(repItem->FbsmFaces->First);
+					return solid;
 				}
 				else
 					return gcnew XbimFacetedShell(repItem->FbsmFaces->First);
@@ -687,10 +674,7 @@ namespace Xbim
 					return nullptr;
 				else
 				{
-					if(forceSolid)
-						return gms->Solidify();
-					else
-						return gms;
+					return gms;
 				}
 			}
 		}
@@ -735,10 +719,7 @@ namespace Xbim
 					return nullptr;
 				else
 				{
-					if(forceSolid)
-						return gms->Solidify();
-					else
-						return gms;
+					return gms;
 				}
 			}
 
@@ -936,6 +917,7 @@ namespace Xbim
 			//Build the Mesh
 			try
 			{
+				
 				bool hasCurvedEdges = shape->HasCurvedEdges;
 				if(hasCurvedEdges) BRepMesh_IncrementalMesh incrementalMesh(*(shape->Handle), deflection);
 				//size the job up

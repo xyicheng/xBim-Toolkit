@@ -109,7 +109,14 @@ namespace XbimConvert
 
             IEnumerable<IfcProduct> toDraw = GetProducts(model);
 
-            XbimScene.ConvertGeometry(model, toDraw);
+            XbimScene.ConvertGeometry(model, toDraw, delegate(int percentProgress, object userState)
+            {
+                if (!arguments.IsQuiet)
+                {
+                    Console.Write(string.Format("{0:D5} Converted", percentProgress));
+                    ResetCursor(Console.CursorTop);
+                }
+            });
             //XbimScene scene = new XbimScene(model, toDraw);
             //TransformGraph graph = new TransformGraph(model, scene);
             //add everything with a representation
@@ -160,6 +167,8 @@ namespace XbimConvert
             switch (Path.GetExtension(arguments.IfcFileName).ToLowerInvariant())
             {
                 case ".ifc":
+                case ".ifczip":
+                case ".ifcxml":
                     model.CreateFrom(arguments.IfcFileName,
                         xbimFileName,
                         delegate(int percentProgress, object userState)
@@ -175,10 +184,6 @@ namespace XbimConvert
                 case ".xbim":
                     // TODO: check this
                     model.Open(xbimFileName);
-                    break;
-
-                case ".ifcxml":
-                    model.CreateFrom(arguments.IfcFileName, xbimFileName);
                     break;
                 default:
                     throw new NotImplementedException(String.Format("XbimConvert does not support {0} file formats currently", Path.GetExtension(arguments.IfcFileName)));

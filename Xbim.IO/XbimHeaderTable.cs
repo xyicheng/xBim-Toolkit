@@ -13,18 +13,24 @@ namespace Xbim.IO
 
         Session _jetSession;
         JET_DBID _jetDatabaseId;
-
+        private const string XbimDatabaseVersion = "1.0.0";
         private const string ifcHeaderTableName = "IfcHeader";
 
         private const string _colNameHeaderData = "HeaderData";
+        private const string _colNameEntityCount = "EntityCount";
+        private const string _colNameFileVersion = "FileVersion";
         private const string _colNameHeaderId = "HeaderId";
 
         private Table _jetCursor;
 
         private JET_COLUMNID _colIdHeaderId;
+        private JET_COLUMNID _colIdEntityCount;
+        private JET_COLUMNID _colIdFileVersion;
         private JET_COLUMNID _colIdHeaderData;
 
         Int32ColumnValue _colValHeaderId;
+        Int64ColumnValue _colValEntityCount;
+        StringColumnValue _colValFileVersion;
         BytesColumnValue _colValHeaderData;
 
         /// <summary>
@@ -57,20 +63,26 @@ namespace Xbim.IO
             using (var transaction = new Microsoft.Isam.Esent.Interop.Transaction(session))
             {
                 JET_COLUMNID columnid;
+                
                 var columndef = new JET_COLUMNDEF
-                {
-                    coltyp = JET_coltyp.LongBinary,
-                    grbit = ColumndefGrbit.ColumnNotNULL
-                };
-
-                Api.JetAddColumn(session, tableid, _colNameHeaderData, columndef, null, 0, out columnid);
-                columndef = new JET_COLUMNDEF
                 {
                     coltyp = JET_coltyp.Long,
                     grbit = ColumndefGrbit.ColumnAutoincrement
                 };
                 Api.JetAddColumn(session, tableid, _colNameHeaderId, columndef, null, 0, out columnid);
+                columndef.coltyp = JET_coltyp.Currency;
+                columndef.grbit = ColumndefGrbit.ColumnNotNULL;
+                Api.JetAddColumn(session, tableid, _colNameEntityCount, columndef, null, 0, out columnid);
+                
+                columndef.coltyp = JET_coltyp.LongBinary;
+            
+                columndef.grbit = ColumndefGrbit.ColumnNotNULL;
+                Api.JetAddColumn(session, tableid, _colNameHeaderData, columndef, null, 0, out columnid);
+                columndef.coltyp = JET_coltyp.Text;
+                columndef.grbit = ColumndefGrbit.ColumnNotNULL;
+                columndef.cbMax = 32;
 
+                Api.JetAddColumn(session, tableid, _colNameFileVersion, columndef, null, 0, out columnid);
                 transaction.Commit(CommitTransactionGrbit.LazyFlush);
             }
         }
@@ -83,11 +95,15 @@ namespace Xbim.IO
 
         private void InitColumns()
         {
-            IDictionary<string, JET_COLUMNID> columnids = Api.GetColumnDictionary(_jetSession, _jetCursor);
-            _colIdHeaderId = columnids[_colNameHeaderId];
-            _colIdHeaderData = columnids[_colNameHeaderData];
-
+           // IDictionary<string, JET_COLUMNID> columnids = Api.GetColumnDictionary(_jetSession, _jetCursor);
+            _colIdHeaderId = Api.GetTableColumnid(_jetSession, _jetCursor, _colNameHeaderId);
+            _colIdEntityCount = Api.GetTableColumnid(_jetSession, _jetCursor, _colNameEntityCount);
+            _colIdFileVersion = Api.GetTableColumnid(_jetSession, _jetCursor, _colNameFileVersion);
+            _colIdHeaderData = Api.GetTableColumnid(_jetSession, _jetCursor, _colNameHeaderData);
+            
             _colValHeaderId = new Int32ColumnValue { Columnid = _colIdHeaderId };
+            _colValEntityCount = new Int64ColumnValue { Columnid = _colIdEntityCount };
+            _colValFileVersion = new StringColumnValue { Columnid = _colIdFileVersion };
             _colValHeaderData = new BytesColumnValue { Columnid = _colIdHeaderData };
            
 
@@ -117,7 +133,34 @@ namespace Xbim.IO
             }
         }
 
-        internal void UpdateHeader(IIfcFileHeader ifcFileHeader)
+        public long EntityCount
+        {
+            get
+            {
+                Api.JetSetCurrentIndex(_jetSession, _jetCursor, null);
+                Api.TryMoveFirst(_jetSession, _jetCursor); //this should never fail
+                long? cnt = Api.RetrieveColumnAsInt64(_jetSession, _jetCursor, _colIdEntityCount);
+                if (cnt.HasValue) 
+                    return cnt.Value;
+                else
+                    return -1;
+            }
+
+        }
+
+        public string DatabaseVersion
+        {
+            get
+            {
+                Api.JetSetCurrentIndex(_jetSession, _jetCursor, null);
+                Api.TryMoveFirst(_jetSession, _jetCursor); //this should never fail
+                return  Api.RetrieveColumnAsString(_jetSession, _jetCursor, _colIdFileVersion);
+                
+            }
+
+        }
+
+        internal void UpdateHeader(IIfcFileHeader ifcFileHeader, long entityCount)
         {
             MemoryStream ms = new MemoryStream(4096);
             BinaryWriter bw = new BinaryWriter(ms);
@@ -127,6 +170,8 @@ namespace Xbim.IO
                 using (var update = new Update(_jetSession, _jetCursor, JET_prep.Insert))
                 {
                     Api.SetColumn(_jetSession, _jetCursor, _colIdHeaderData, ms.ToArray());
+                    Api.SetColumn(_jetSession, _jetCursor, _colIdEntityCount, entityCount);
+                    Api.SetColumn(_jetSession, _jetCursor, _colIdFileVersion, XbimDatabaseVersion, Encoding.ASCII);
                     update.Save();
                 }
             }
@@ -135,6 +180,8 @@ namespace Xbim.IO
                 using (var update = new Update(_jetSession, _jetCursor, JET_prep.Replace))
                 {
                     Api.SetColumn(_jetSession, _jetCursor, _colIdHeaderData, ms.ToArray());
+                    Api.SetColumn(_jetSession, _jetCursor, _colIdEntityCount, entityCount);
+                    Api.SetColumn(_jetSession, _jetCursor, _colIdFileVersion, XbimDatabaseVersion, Encoding.ASCII);
                     update.Save();
                 }
             }

@@ -16,6 +16,7 @@ using System;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Windows.Markup;
+using System.Runtime.CompilerServices;
 
 #endregion
 
@@ -35,7 +36,7 @@ using System.Windows.Markup;
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 
 [assembly: Guid("53da0caf-5424-436d-b313-0a61d0ab4ff1")]
-
+[assembly: InternalsVisibleTo("Xbim.IO")]
 
 [assembly: CLSCompliant(true)]
 [assembly: XmlnsDefinition("http://schemas.Xbim.com/ifc", "Xbim.Ifc2x3.ActorResource")]

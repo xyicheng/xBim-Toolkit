@@ -52,10 +52,10 @@ namespace Xbim.IO
     {
         private readonly ILogger Logger = LoggerFactory.GetLogger();
         private readonly Dictionary<Type, ICollection<long>> _typeLookup = new Dictionary<Type, ICollection<long>>();
-        private static Dictionary<short, string> _IfcIdTypeStringLookup = new Dictionary<short, string>();
-        private static Dictionary<short, IfcType> _IfcIdIfcTypeLookup = new Dictionary<short, IfcType>();
+        private static Dictionary<ushort, string> _IfcIdTypeStringLookup = new Dictionary<ushort, string>();
+        private static Dictionary<ushort, IfcType> _IfcIdIfcTypeLookup = new Dictionary<ushort, IfcType>();
 
-        public static Dictionary<short, IfcType> IfcIdIfcTypeLookup
+        public static Dictionary<ushort, IfcType> IfcIdIfcTypeLookup
         {
             get { return IfcInstances._IfcIdIfcTypeLookup; }
         }
@@ -609,7 +609,7 @@ namespace Xbim.IO
             
         }
 
-        public static Dictionary<short, string> IfcIdTypeStringLookup
+        public static Dictionary<ushort, string> IfcIdTypeStringLookup
         {
             get { return _IfcIdTypeStringLookup; }
             

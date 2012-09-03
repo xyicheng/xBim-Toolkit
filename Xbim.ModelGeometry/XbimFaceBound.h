@@ -50,6 +50,10 @@ namespace Xbim
 				}
 
 			}
+
+			//returns the Newell's Normal for a wire
+			static gp_Vec NewellsNormal(const TopoDS_Wire & bound);
+
 			/*Interface*/
 			virtual property XbimEdgeLoop^ Bound
 			{

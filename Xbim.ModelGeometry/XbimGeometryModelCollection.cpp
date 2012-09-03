@@ -10,6 +10,8 @@
 #include <BRepOffsetAPI_Sewing.hxx>
 #include <BRepLib.hxx>
 #include <ShapeUpgrade_ShellSewing.hxx>
+#include <BRepAlgoAPI_Fuse.hxx>
+#include <BRepTools.hxx>
 using namespace System::Linq;
 using namespace Xbim::Common::Exceptions;
 
@@ -165,27 +167,29 @@ namespace Xbim
 
 		IXbimGeometryModel^ XbimGeometryModelCollection::CopyTo(IfcObjectPlacement^ placement)
 		{
-			throw gcnew XbimGeometryException("A copyto operation has been applied to a collection of model object this is illegal according to schema");
-			/*if(dynamic_cast<IfcLocalPlacement^>(placement))
+			XbimGeometryModelCollection^ newColl = gcnew XbimGeometryModelCollection();
+			for each(IXbimGeometryModel^ shape in shapes)
 			{
-				TopoDS_Compound movedShape = *pCompound;
-				IfcLocalPlacement^ lp = (IfcLocalPlacement^)placement;
-				movedShape.Move(XbimGeomPrim::ToLocation(lp->RelativePlacement));
-				return gcnew XbimGeometryModelCollection(movedShape, shapes, HasCurvedEdges);
+				newColl->Add(shape->CopyTo(placement));
 			}
-			else
-				throw(gcnew InvalidOperationException("XbimSolid::CopyTo only supports IfcLocalPlacement type"));*/
-
+			return newColl;
 		}
 		///Every element should be a solid bedore this is called. returns a compound solid
 		IXbimGeometryModel^ XbimGeometryModelCollection::Solidify()
 		{
-			BRep_Builder b;
-			TopoDS_Compound compound;
-			b.MakeCompound(compound);
-			for each(IXbimGeometryModel^ shape in shapes)
-				b.Add(compound, *(shape->Handle));
-			return gcnew XbimSolid(compound);
+			IXbimGeometryModel^ a;
+			for each(IXbimGeometryModel^ b in shapes)
+			{
+				if(a==nullptr) a=b;
+				else
+				{
+					BRepAlgoAPI_Fuse fuse(*(a->Handle),*(b->Handle));
+					if(fuse.IsDone() && !fuse.Shape().IsNull())
+						a=gcnew XbimSolid(fuse.Shape());
+				}
+			}
+			return a;
+			
 		}
 	}
 }

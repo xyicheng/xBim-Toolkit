@@ -47,7 +47,7 @@ namespace Xbim.Ifc2x3.Kernel
         /// <summary>
         ///   Reference to the objects (or single object) to which the property definition applies.
         /// </summary>
-        [IfcSecondaryIndex]
+        
         [IfcAttribute(5, IfcAttributeState.Mandatory, IfcAttributeType.Set, 1)]
         public IfcObjectSet RelatedObjects
         {

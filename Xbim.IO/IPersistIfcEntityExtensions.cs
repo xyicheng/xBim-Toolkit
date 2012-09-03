@@ -25,7 +25,7 @@ namespace Xbim.IO
         /// </summary>
         /// <param name="entity"></param>
         /// <returns></returns>
-        internal static short TypeId(this  IPersistIfcEntity entity)
+        public static ushort TypeId(this  IPersistIfcEntity entity)
         {
             return IfcInstances.IfcEntities[entity.GetType()].TypeId;
         }
@@ -582,7 +582,7 @@ namespace Xbim.IO
         /// <param name="cache"></param>
         /// <param name="br"></param>
         /// <param name="unCached">If true instances inside the propert are not added to the cache</param>
-        public static void ReadEntityProperties(this IPersistIfcEntity entity,IIfcInstanceCache cache,  BinaryReader br, bool unCached=false)
+        public static void ReadEntityProperties(this IPersistIfcEntity entity, IfcPersistedInstanceCache cache, BinaryReader br, bool unCached = false)
         {
             P21ParseAction action = (P21ParseAction)br.ReadByte();
 

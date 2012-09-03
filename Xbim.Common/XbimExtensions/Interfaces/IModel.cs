@@ -17,6 +17,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq.Expressions;
 using Xbim.XbimExtensions.Transactions;
+using Xbim.Common;
 
 
 #endregion
@@ -63,7 +64,7 @@ namespace Xbim.XbimExtensions.Interfaces
     {
 
 
-
+        XbimModelFactors GetModelFactors { get; }
         IEnumerable<TIfcType> InstancesOfType<TIfcType>(bool activate = false) where TIfcType : IPersistIfcEntity;
         IEnumerable<TIfcType> InstancesWhere<TIfcType>(Expression<Func<TIfcType, bool>> expression) where TIfcType : IPersistIfcEntity;
 

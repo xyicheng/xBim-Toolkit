@@ -220,8 +220,8 @@ namespace Xbim.IO
 
         private XmlNode _currentNode;
         private int _entitiesParsed = 0;
-        
-        private void StartElement(IIfcInstanceCache cache, XmlReader input)
+
+        private void StartElement(IfcPersistedInstanceCache cache, XmlReader input)
         {
             string elementName = input.Name;
             bool isRefType;
@@ -478,7 +478,7 @@ namespace Xbim.IO
             return IfcInstances.IfcTypeLookup.TryGetValue(elementName.ToUpper(), out ifcType);
         }
 
-        private void EndElement(IIfcInstanceCache cache, XmlReader input, XmlNodeType prevInputType, string prevInputName, out IPersistIfcEntity writeEntity)
+        private void EndElement(IfcPersistedInstanceCache cache, XmlReader input, XmlNodeType prevInputType, string prevInputName, out IPersistIfcEntity writeEntity)
         {
             try
             {
@@ -773,7 +773,7 @@ namespace Xbim.IO
 
 
 
-        internal IfcFileHeader Read(IIfcInstanceCache instanceCache,  XmlReader input)
+        internal IfcFileHeader Read(IfcPersistedInstanceCache instanceCache, XmlReader input)
         {
            
             // Read until end of file

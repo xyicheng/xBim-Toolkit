@@ -141,7 +141,6 @@
     <Compile Include="IfcFileHeader.cs" />
     <Compile Include="IfcFilter.cs" />
     <Compile Include="IfcFilterDictionary.cs" />
-    <Compile Include="IfcInMemoryInstanceCache.cs" />
     <Compile Include="IfcInstanceHandle.cs" />
     <Compile Include="IfcInstances.cs" />
     <Compile Include="IfcInstancesExtensions.cs" />
@@ -152,7 +151,6 @@
     <Compile Include="IfcXmlReader.cs" />
     <Compile Include="IfcXmlWriter.cs" />
     <Compile Include="IfcInstanceKeyedCollection.cs" />
-    <Compile Include="IIfcInstanceCache.cs" />
     <Compile Include="IPersistIfcEntityExtensions.cs" />
     <Compile Include="Parser\IndexPropertyValue.cs" />
     <Compile Include="Parser\IStepP21Parser.cs" />

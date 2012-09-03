@@ -10,6 +10,7 @@ using Xbim.Ifc2x3.Kernel;
 using Xbim.XbimExtensions.DataProviders;
 using System.IO;
 using Xbim.XbimExtensions;
+using Xbim.Ifc2x3.Extensions;
 using System.CodeDom.Compiler;
 using Xbim.XbimExtensions.SelectTypes;
 using System.Collections;
@@ -23,6 +24,7 @@ using System.Diagnostics;
 using Xbim.XbimExtensions.Transactions.Extensions;
 using Xbim.Common.Logging;
 using Xbim.IO.Parser;
+using Xbim.Common;
 namespace Xbim.IO
 {
     /// <summary>
@@ -64,7 +66,7 @@ namespace Xbim.IO
         
         #region Model state fields
         [NonSerialized]
-        protected IIfcInstanceCache Cached;
+        protected IfcPersistedInstanceCache Cached;
        
         [NonSerialized]
         protected UndoRedoSession undoRedoSession;
@@ -75,16 +77,78 @@ namespace Xbim.IO
         protected IfcInstances instances;
         protected IIfcFileHeader header;
         private string _storageFileName;
+
         private XbimStorageType _storageType;
         private bool disposed = false;
-       
+
+        public string FileName
+        {
+            get { return _storageFileName; }
+        }
         
 
         #endregion
         #region IModel implementation
         
         #endregion
+        private XbimModelFactors _modelFactors;
 
+        public XbimModelFactors GetModelFactors
+        {
+            get
+            {
+                if (_modelFactors == null)
+                {
+                    double angleToRadiansConversionFactor = 0.0174532925199433; //assume degrees
+                    double lengthToMetresConversionFactor = 1; //assume metres
+
+                    IfcUnitAssignment ua = InstancesOfType<IfcUnitAssignment>().FirstOrDefault();
+                    if (ua != null)
+                    {
+
+                        foreach (var unit in ua.Units)
+                        {
+                            double value = 1.0;
+                            IfcConversionBasedUnit cbUnit = unit as IfcConversionBasedUnit;
+                            IfcSIUnit siUnit = unit as IfcSIUnit;
+                            if (cbUnit != null)
+                            {
+                                IfcMeasureWithUnit mu = cbUnit.ConversionFactor;
+                                if (mu.UnitComponent is IfcSIUnit)
+                                    siUnit = (IfcSIUnit)mu.UnitComponent;
+                                ExpressType et = ((ExpressType)mu.ValueComponent);
+
+                                if (et.UnderlyingSystemType == typeof(double))
+                                    value *= (double)et.Value;
+                                else if (et.UnderlyingSystemType == typeof(int))
+                                    value *= (double)((int)et.Value);
+                                else if (et.UnderlyingSystemType == typeof(long))
+                                    value *= (double)((long)et.Value);
+                            }
+                            if (siUnit != null)
+                            {
+                                value *= siUnit.Power();
+                                switch (siUnit.UnitType)
+                                {
+                                    case IfcUnitEnum.LENGTHUNIT:
+
+                                        lengthToMetresConversionFactor = value;
+                                        break;
+                                    case IfcUnitEnum.PLANEANGLEUNIT:
+                                        angleToRadiansConversionFactor = value;
+                                        break;
+                                    default:
+                                        break;
+                                }
+                            }
+                        }
+                    }
+
+                    _modelFactors = new XbimModelFactors(angleToRadiansConversionFactor, lengthToMetresConversionFactor);
+                }
+                return _modelFactors;
+            }
+        }
         /// <summary>
         /// Starts a transaction to allow bulk updates on the geoemtry table
         /// </summary>
@@ -347,25 +411,17 @@ namespace Xbim.IO
         /// If null the contents are loaded into memory and are not persistent
         /// </param>
         /// <returns></returns>
-        public bool CreateFrom(string importFrom, string xbimDbName =  null, ReportProgressDelegate progDelegate = null)
+        public bool CreateFrom(string importFrom, string xbimDbName = null, ReportProgressDelegate progDelegate = null)
         {
-            XbimStorageType storageType = StorageType(xbimDbName);
-            if (storageType == XbimStorageType.XBIM) //set up a persistant cache to import data into
-            {
-                Cached = new IfcPersistedInstanceCache(this);
-                Init(xbimDbName);
-                if (!((IfcPersistedInstanceCache)Cached).CreateDatabase(xbimDbName)) //create the empty database
-                    return false;
-            }
-            else //use an in memory cache for all others
-            {
-                Cached = new IfcInMemoryInstanceCache(this);
-                Init(xbimDbName);
-            }
-           
+
+            Cached = new IfcPersistedInstanceCache(this);
+            Init(xbimDbName);
+            if (!Cached.CreateDatabase(xbimDbName)) //create the empty database
+                return false;
+
             XbimStorageType toImportStorageType = StorageType(importFrom);
             switch (toImportStorageType)
-            {                
+            {
                 case XbimStorageType.IFCXML:
                     Cached.ImportIfcXml(importFrom, progDelegate);
                     break;
@@ -395,7 +451,7 @@ namespace Xbim.IO
         public bool Create(string fileName = null)
         { 
             //we have nothing to store in so use an in memory cache
-            IfcInMemoryInstanceCache memCache = new IfcInMemoryInstanceCache(this);
+            
             Init(fileName);
             
             return true;
@@ -425,7 +481,7 @@ namespace Xbim.IO
         public byte[] GetEntityBinaryData(IPersistIfcEntity entity)
         {
            
-            if (entity.Activated || Cached is IfcInMemoryInstanceCache) //we have it in memory but not written to store yet
+            if (entity.Activated ) //we have it in memory but not written to store yet
             { 
                 MemoryStream entityStream = new MemoryStream(4096);
                 BinaryWriter entityWriter = new BinaryWriter(entityStream);
@@ -433,9 +489,8 @@ namespace Xbim.IO
                 return entityStream.ToArray();
             }
             else //it is in a persisted cache but hasn't been loaded yet
-            {
-                IfcPersistedInstanceCache pCache = Cached as IfcPersistedInstanceCache;
-                return pCache.GetEntityBinaryData(entity);
+            { 
+                return Cached.GetEntityBinaryData(entity);
             }
         }
 
@@ -774,16 +829,16 @@ namespace Xbim.IO
         /// <returns></returns>
         public bool Save(ReportProgressDelegate progDelegate = null)
         {
-            
-            if (Cached is IfcPersistedInstanceCache && _storageType==XbimStorageType.XBIM) // we are doing a Xbim database update
+            try
             {
-                ((IfcPersistedInstanceCache)Cached).Save();
+                Cached.Save();
+                return true;
             }
-            else //we are writing all contents out
+            catch (Exception) //handle errros maybe?
             {
-                Cached.SaveAs(_storageType, _storageFileName, progDelegate);
-            }
-            return true;
+                return false;
+            } 
+           
         }
 
         /// <summary>
@@ -848,37 +903,31 @@ namespace Xbim.IO
         {
             try
             {
-                XbimStorageType storageType = StorageType(fileName);
-                if (storageType == XbimStorageType.XBIM) //set up a persistant cache to import data into
-                {
+                if (Cached != null) 
+                    Close(); //if the model is already open close it and release all resources
+                else
                     Cached = new IfcPersistedInstanceCache(this);
-                    Init(fileName);
-                    ((IfcPersistedInstanceCache)Cached).Open(fileName); //opens the database
-                }
-                else //use an in memory cache for all others
+                XbimStorageType storageType = StorageType(fileName);
+                
+                XbimStorageType toImportStorageType = StorageType(fileName);
+                switch (toImportStorageType)
                 {
-                    Cached = new IfcInMemoryInstanceCache(this);
-                    Init(fileName);
-
-                    XbimStorageType toImportStorageType = StorageType(fileName);
-                    switch (toImportStorageType)
-                    {
-                        case XbimStorageType.IFCXML:
-                            Cached.ImportIfcXml(fileName);
-                            break;
-                        case XbimStorageType.IFC:
-                            Cached.ImportIfc(fileName);
-                            break;
-                        case XbimStorageType.IFCZIP:
-                            Cached.ImportIfcZip(fileName);
-                            break;
-                        case XbimStorageType.XBIM:
-                            Cached.ImportXbim(fileName);
-                            break;
-                        case XbimStorageType.INVALID:
-                        default:
-                            return false;
-                    }
+                    case XbimStorageType.IFCXML:
+                        Cached.ImportIfcXml(fileName);
+                        break;
+                    case XbimStorageType.IFC:
+                        Cached.ImportIfc(fileName);
+                        break;
+                    case XbimStorageType.IFCZIP:
+                        Cached.ImportIfcZip(fileName);
+                        break;
+                    case XbimStorageType.XBIM:
+                        Init(fileName);
+                        Cached.Open(fileName); //opens the database
+                        break;
+                    case XbimStorageType.INVALID:
+                    default:
+                        return false;
                 }
                 return true;
             }
@@ -1105,7 +1154,7 @@ namespace Xbim.IO
 
         public void Print()
         {
-           ((IfcPersistedInstanceCache) Cached).Print();
+            Cached.Print();
         }
 
 
@@ -1173,10 +1222,7 @@ namespace Xbim.IO
                 // If disposing equals true, dispose all managed 
                 // and unmanaged resources.
                 if (disposing)
-                {
-                    IfcPersistedInstanceCache pCache = Cached as IfcPersistedInstanceCache;
-                    if (pCache != null) pCache.Dispose();
-                }
+                  Cached.Dispose();
             }
             disposed = true;
         }
@@ -1199,7 +1245,13 @@ namespace Xbim.IO
 
         public IEnumerable<XbimGeometryData> Shapes(XbimGeometryType ofType)
         {
-           return Cached.Shapes(ofType);
+            foreach (var shape in Cached.Shapes(ofType))
+            {
+                yield return shape;
+            }
+          
         }
+
+       
     }
 }

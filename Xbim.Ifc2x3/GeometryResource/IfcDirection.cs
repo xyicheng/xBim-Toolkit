@@ -127,7 +127,12 @@ namespace Xbim.Ifc2x3.GeometryResource
         #endregion
 
         #region Constructors
-
+        public IfcDirection(IfcDirection dir)
+        {
+            _x = dir._x;
+            _y = dir._y;
+            _z = dir._z;
+        }
         /// <summary>
         ///   Constructs a 3D direction
         /// </summary>

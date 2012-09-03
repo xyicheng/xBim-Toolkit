@@ -138,6 +138,8 @@ namespace Xbim
 
 			XbimSolid(IfcClosedShell^ repItem);
 
+			XbimSolid(IfcConnectedFaceSet^ repItem);
+
 			XbimSolid(IfcCsgPrimitive3D^ repItem);
 			void Print();
 			~XbimSolid()
@@ -233,6 +235,7 @@ namespace Xbim
 			static TopoDS_Shape Build(IfcFacetedBrep^ repItem, bool% hasCurves);
 			static TopoDS_Solid Build(IfcBoxedHalfSpace^ bhs, bool% hasCurves);
 			static TopoDS_Shape Build(IfcClosedShell^ cShell, bool% hasCurves);
+			static TopoDS_Shape Build(IfcConnectedFaceSet^ cFaces, bool% hasCurves);
 			static TopoDS_Solid Build(IfcHalfSpaceSolid^ repItem, bool% hasCurves);
 			static TopoDS_Solid Build(IfcPolygonalBoundedHalfSpace^ pbhs, bool% hasCurves);
 			

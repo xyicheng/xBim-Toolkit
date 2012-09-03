@@ -47,7 +47,7 @@ namespace XbimXplorer
     {
         private BackgroundWorker _worker;
         private PropertiesWindow _propertyWindow;
-        private IfcProduct _currentProduct;
+        private long _currentProduct;
         private string _currentModelFileName;
         private Dictionary<string, XbimMaterialProvider> _materials;
 
@@ -231,14 +231,18 @@ namespace XbimXplorer
             BackgroundWorker worker = s as BackgroundWorker;
             string ifcFilename = args.Argument as string;
 
-            IModel model = new XbimModel();
+            XbimModel model = new XbimModel();
             try
             {
+                
                 ClosePreviousModel();
                 //attach it to the Ifc Stream Parser
-                model.CreateFrom(ifcFilename, "test.xbim" ,worker.ReportProgress);
-                model.Open("test.xbim");
-                XbimScene geomEngine = new XbimScene(model, model.IfcProducts.Cast<IfcProduct>());
+                string XbimFileName = Path.ChangeExtension(ifcFilename,"Xbim");
+                model.CreateFrom(ifcFilename, XbimFileName, worker.ReportProgress);
+                model.Open(XbimFileName);
+                XbimScene.ConvertGeometry(model, model.InstancesOfType<IfcProduct>(), worker.ReportProgress);
+               
+                ModelProvider.Model = model; //this Triggers the event to load the model into the views 
 
                // ModelProvider.Scene = geomEngine;
             }
@@ -503,9 +507,10 @@ namespace XbimXplorer
 
         private void HideAllTypesOf(object sender, RoutedEventArgs e)
         {
-            if (_currentProduct != null)
+            if (_currentProduct != 0)
             {
-                DrawingControl.Hide(_currentProduct.GetType());
+
+                DrawingControl.HideAllTypesOf(_currentProduct);
             }
         }
 

@@ -8,6 +8,7 @@ using namespace Xbim::IO;
 using namespace Xbim::ModelGeometry::Scene;
 using namespace Xbim::Common::Exceptions;
 using namespace Xbim::XbimExtensions;
+using namespace Xbim::Common;
 namespace Xbim
 {
 	namespace ModelGeometry
@@ -35,44 +36,55 @@ namespace Xbim
 		{
 			Initialise();
 			Logger->Debug("Creating Geometry from IModel..."); 
-			 _graph = gcnew TransformGraph(model, this);
-			 _maps = gcnew Dictionary<IfcRepresentation^, IXbimGeometryModel^>();
-			 _graph->AddProducts(toDraw);
-			
+			_graph = gcnew TransformGraph(model, this);
+			_maps = gcnew Dictionary<IfcRepresentation^, IXbimGeometryModel^>();
+			_graph->AddProducts(toDraw);
+
 		}
-		
-		void XbimScene::ConvertGeometry(XbimModel^ model, IEnumerable<IfcProduct^>^ toConvert)
+
+		void XbimScene::ConvertGeometry(XbimModel^ model, IEnumerable<IfcProduct^>^ toConvert, ReportProgressDelegate^ progDelegate)
 		{
-		TransformGraph^ graph = gcnew TransformGraph(model);
-		//create a new dictionary to hold maps
-		Dictionary<IfcRepresentation^, IXbimGeometryModel^>^ maps = gcnew Dictionary<IfcRepresentation^, IXbimGeometryModel^>();
-		//add everything that may have a representation
-		graph->AddProducts(toConvert); //load the products as we will be accessing their geometry
-		XbimGeometryTable^ geomTable = model->BeginGeometryUpdate();
-		
-		
-		for each(TransformNode^ node in graph->ProductNodes->Values) //go over every node that represents a product
-		{
-			IfcProduct^ product = node->Product;
+			TransformGraph^ graph = gcnew TransformGraph(model);
+			//create a new dictionary to hold maps
+			Dictionary<IfcRepresentation^, IXbimGeometryModel^>^ maps = gcnew Dictionary<IfcRepresentation^, IXbimGeometryModel^>();
+			//add everything that may have a representation
+			graph->AddProducts(toConvert); //load the products as we will be accessing their geometry
+			XbimGeometryTable^ geomTable = model->BeginGeometryUpdate();
+			double tally = 0;
+			int percentageParsed=0;
+			int total = Enumerable::Count(toConvert);
+			for each(TransformNode^ node in graph->ProductNodes->Values) //go over every node that represents a product
+			{
+				IfcProduct^ product = node->Product;
 				try
 				{
 					XbimLOD lod = XbimLOD::LOD_Unspecified;
 					IXbimGeometryModel^ geomModel = XbimGeometryModel::CreateFrom(product, maps, false, lod);
 					if (geomModel != nullptr)  //it has no geometry
 					{
-						
+
 						XbimTriangulatedModelCollection^ tm = geomModel->Mesh(true);
 						XbimBoundingBox^ bb = geomModel->GetBoundingBox(true);
 						node->BoundingBox = bb->GetRect3D();
 						array<Byte>^ matrix = Matrix3DExtensions::ToArray(node->WorldMatrix(), true);
-						geomTable->AddGeometry(product->EntityLabel, XbimGeometryType::BoundingBox, matrix, bb->ToArray(), 0, 0 ) ;
+						UInt16 typeId = IPersistIfcEntityExtensions::TypeId(product);
+						geomTable->AddGeometry(product->EntityLabel, XbimGeometryType::BoundingBox, typeId, matrix, bb->ToArray(), 0, 0 ) ;
 						int subPart = 0;
 						for each(array<Byte>^ b in tm)
 						{
-							geomTable->AddGeometry(product->EntityLabel, XbimGeometryType::TriangulatedMesh, matrix, b , geomModel->RepresentationLabel, subPart) ;
+							geomTable->AddGeometry(product->EntityLabel, XbimGeometryType::TriangulatedMesh, typeId, matrix, b , geomModel->RepresentationLabel, subPart) ;
 							subPart++;
 						}
-					   
+						tally++;
+						if(progDelegate!=nullptr)
+						{
+							int newPercentage = Convert::ToInt32(tally / total * 100.0);
+							if (newPercentage > percentageParsed)
+							{
+								percentageParsed = newPercentage;
+								progDelegate(percentageParsed, "Converted");
+							}
+						}
 					}
 				}
 				catch(Exception^ e)
@@ -82,32 +94,10 @@ namespace Xbim
 						product->ToString());
 					Logger->Warn(message, e);
 				}
-		}
-		model->EndGeometryUpdate(geomTable);
+			}
+			model->EndGeometryUpdate(geomTable);
 
-			//find the body context
-			/*IEnumerable<IfcGeometricRepresentationContext^>^ contexts = model->InstancesOfType<IfcGeometricRepresentationContext^>();
-			for each (IfcGeometricRepresentationContext^ context in contexts)
-			{
 
-			}*/
-			//store all the bounding boxes
-			//IEnumerable<IfcShapeRepresentation^>^ shapes = model->InstancesOfType<IfcShapeRepresentation^>();
-			//for each(IfcShapeRepresentation^ shape in shapes)
-			//{
-			//	if(shape->RepresentationType.HasValue &&
-			//		String::Compare(shape->RepresentationType,"BoundingBox",CompareOptions::IgnoreCase)==0) //add a body box
-			//	{
-			//		model->AddBoundingBox(IfcBoundingBox);
-			//	} 
-			//	//have a look for bodies or shells
-			//	if( shape->RepresentationIdentifier.HasValue &&
-			//													((String::Compare(shape->RepresentationIdentifier.Value, "body" , CompareOptions::IgnoreCase)==0)||
-			//													String::Compare(shape->RepresentationIdentifier.Value, "facetation" , CompareOptions::IgnoreCase)==0))
-			//	{
-
-			//	}
-			//}
 		}
 
 
@@ -183,8 +173,9 @@ namespace Xbim
 
 		XbimTriangulatedModelStream^ XbimScene::Triangulate(TransformNode^ node)
 		{
-
+			
 			IfcProduct^ product = node->Product;
+			XbimModelFactors^ mf = ((IPersistIfcEntity^)product)->ModelOf->GetModelFactors;
 			if(product!=nullptr) //there is no product at this node
 			{
 				try
