@@ -114,6 +114,8 @@ namespace Xbim.COBie.Data
                 COBieComponentRow component = new COBieComponentRow(components);
 
                 IfcElement el = obj as IfcElement;
+                if (el == null)
+                    continue;
                 //IfcOwnerHistory ifcOwnerHistory = el.OwnerHistory;
                 component.Name = el.Name;
                 component.CreatedBy = GetTelecomEmailAddress(el.OwnerHistory);

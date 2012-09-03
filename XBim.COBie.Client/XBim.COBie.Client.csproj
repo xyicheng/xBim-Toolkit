@@ -148,6 +148,9 @@
     <None Include="2012-03-23-Duplex-Design.ifc">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="2012-09-03-Clinic-Handover.ifc">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="App.config" />
     <None Include="Clinic_A_20110906.ifc">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

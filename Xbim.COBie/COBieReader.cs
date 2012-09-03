@@ -211,7 +211,7 @@ namespace Xbim.COBie
             return err;
         }
         
-		private void Intialise()
+		private void Initialise()
         {
 			if (Context == null) { throw new InvalidOperationException("COBieReader can't initialise without a valid Context."); }
 			if (Context.Models == null || Context.Models.Count == 0) { throw new ArgumentException("COBieReader context must contain one or more models."); }
@@ -225,9 +225,10 @@ namespace Xbim.COBie
             //CobiePickLists = cq.GetCOBiePickListsSheet("PickLists.xml");
 
             // populate all sheets from model
-            CobieSpaces = cq.GetCOBieSpaceSheet();
+            
             CobieComponents = cq.GetCOBieComponentSheet();
-            CobieAssemblies = cq.GetCOBieAssemblySheet();
+            CobieSpaces = cq.GetCOBieSpaceSheet();
+            //CobieAssemblies = cq.GetCOBieAssemblySheet();
             CobieConnections = cq.GetCOBieConnectionSheet();
             CobieContacts = cq.GetCOBieContactSheet();
             CobieCoordinates = cq.GetCOBieCoordinateSheet();
@@ -296,7 +297,7 @@ namespace Xbim.COBie
 
         public void GenerateCOBieData()
         {
-            Intialise();
+            Initialise();
 
             PopulateErrors();			
         }

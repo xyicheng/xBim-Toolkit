@@ -95,6 +95,7 @@
             this.txtPath.FormattingEnabled = true;
             this.txtPath.Items.AddRange(new object[] {
             "2012-03-23-Duplex-Design.ifc",
+            "2012-09-03-Clinic-Handover.ifc",
             "Clinic_A_20110906.ifc"});
             this.txtPath.Location = new System.Drawing.Point(68, 20);
             this.txtPath.Name = "txtPath";

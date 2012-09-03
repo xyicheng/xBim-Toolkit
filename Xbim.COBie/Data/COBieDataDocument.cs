@@ -65,7 +65,7 @@ namespace Xbim.COBie.Data
                 doc.Directory = di.DocumentId.ToString();
                 doc.File = di.DocumentId.ToString();
                 doc.ExtSystem = GetIfcApplication().ApplicationFullName;
-                doc.ExtObject = di.GetType().Name.ToString();
+                doc.ExtObject = di.GetType().Name;
                 doc.ExtIdentifier = di.DocumentId.ToString();
                 doc.Description = di.Description.ToString();
                 doc.Reference = di.Name.ToString();

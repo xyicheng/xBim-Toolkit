@@ -93,7 +93,7 @@ namespace XBim.COBie.Client
             }
             catch (Exception ex)
             {
-                Log(String.Format("ERROR: {0}", ex.Message));
+                Log(String.Format("ERROR: {0}", ex));
             }
         }
 

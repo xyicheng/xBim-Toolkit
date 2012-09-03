@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using Xbim.COBie.Rows;
+using Xbim.Ifc.ElectricalDomain;
 using Xbim.Ifc.Extensions;
 using Xbim.Ifc.ExternalReferenceResource;
 using Xbim.Ifc.HVACDomain;
@@ -12,6 +12,7 @@ using Xbim.Ifc.MeasureResource;
 using Xbim.Ifc.ProductExtension;
 using Xbim.Ifc.PropertyResource;
 using Xbim.Ifc.SharedBldgElements;
+using Xbim.Ifc.SharedComponentElements;
 using Xbim.XbimExtensions;
 
 namespace Xbim.COBie.Data
@@ -38,7 +39,7 @@ namespace Xbim.COBie.Data
         /// <returns>COBieSheet<COBieTypeRow></returns>
         public COBieSheet<COBieTypeRow> Fill(ref COBieSheet<COBieAttributeRow> attributes)
         {
-            //Create new Sheet
+            // Create new Sheet
             COBieSheet<COBieTypeRow> types = new COBieSheet<COBieTypeRow>(Constants.WORKSHEET_TYPE);
             
             //TODO: after IfcRampType and IfcStairType are implemented then add to excludedTypes list
@@ -51,134 +52,136 @@ namespace Xbim.COBie.Data
                                                             typeof(IfcPlateType),
                                                             typeof(IfcRailingType),
                                                             typeof(IfcRampFlightType),
-                                                            //typeof(Xbim.Ifc.SharedBldgElements.IfcRampType), //IFC2x Edition 4.
                                                             typeof(IfcSlabType),
                                                             typeof(IfcStairFlightType),
-                                                            //typeof(IfcStairType), //IFC2x Edition 4.
                                                             typeof(IfcWallType),
                                                             typeof(IfcDuctFittingType ),
-                                                            typeof(Xbim.Ifc.ElectricalDomain.IfcJunctionBoxType ),
+                                                            typeof(IfcJunctionBoxType ),
                                                             typeof(IfcPipeFittingType),
-                                                            typeof(Xbim.Ifc.ElectricalDomain.IfcCableCarrierSegmentType),
-                                                            typeof(Xbim.Ifc.ElectricalDomain.IfcCableSegmentType),
+                                                            typeof(IfcCableCarrierSegmentType),
+                                                            typeof(IfcCableSegmentType),
                                                             typeof(IfcDuctSegmentType),
                                                             typeof(IfcPipeSegmentType),
-                                                            typeof(Xbim.Ifc.SharedComponentElements.IfcFastenerType),
+                                                            typeof(IfcFastenerType),
                                                             typeof(IfcSpaceType),
+                                                            //typeof(Xbim.Ifc.SharedBldgElements.IfcRampType), //IFC2x Edition 4.
+                                                            //typeof(IfcStairType), //IFC2x Edition 4.
                                                              };
             // get all IfcTypeObject objects from IFC file
-            IEnumerable<IfcTypeObject> ifcTypeObjects = Model.InstancesOfType<IfcTypeObject>().GroupBy(TypeObj => TypeObj.Name).Select(g => g.First()).Where(ty => !excludedTypes.Contains(ty.GetType()));
+            IEnumerable<IfcTypeObject> ifcTypeObjects = Model.InstancesOfType<IfcTypeObject>()
+                .Select(type => type)
+                .Where(type => !excludedTypes.Contains(type.GetType()));
 
-            //Stopwatch StopW = new Stopwatch();
-            //StopW.Start();
-            //list of required attributes
-            List<string> AttNames = new List<string> {  "AssetAccountingType", "Manufacturer", "ModelLabel", "WarrantyGuarantorParts", 
+            // Well known property names to seek out the data
+            List<string> candidateProperties = new List<string> {  "AssetAccountingType", "Manufacturer", "ModelLabel", "WarrantyGuarantorParts", 
                                                         "WarrantyDurationParts", "WarrantyGuarantorLabor", "WarrantyDurationLabor", 
                                                         "ReplacementCost", "ServiceLifeDuration", "WarrantyDescription", "WarrantyDurationUnit" , "NominalLength", "NominalWidth",
                                                         "NominalHeight", "ModelReference", "Shape", "Colour", "Color", "Finish", "Grade", 
                                                         "Material", "Constituents", "Features", "Size", "AccessibilityPerformance", "CodePerformance", 
                                                         "SustainabilityPerformance", "Warranty Information"};
-            //list of attributes to exclude form attribute sheet
-            List<string> ExcludeAtts = new List<string> {"WarrantyName","DurationUnit","ServiceLifeType","ExpectedLife","LifeCyclePhase",
+            
+            // Additional Type values to exclude from attribute sheet
+            List<string> excludedAttrs = new List<string> {"WarrantyName","DurationUnit","ServiceLifeType","ExpectedLife","LifeCyclePhase",
                                                          "Cost","ModelNumber","IsFixed","AssetType"
                                                         };
-            ExcludeAtts = ExcludeAtts.Concat(AttNames).ToList(); //add the attributes from the type sheet to exclude from the attribute sheet
+            excludedAttrs = excludedAttrs.Concat(candidateProperties).ToList(); //add the attributes from the type sheet to exclude from the attribute sheet
 
-            Dictionary<string, string> DurationAndValue;
-            foreach (IfcTypeObject to in ifcTypeObjects)
+
+            foreach (IfcTypeObject type in ifcTypeObjects)
             {
-                COBieTypeRow typ = new COBieTypeRow(types);
+                COBieTypeRow typeRow = new COBieTypeRow(types);
 
-                //IfcOwnerHistory ifcOwnerHistory = to.OwnerHistory;
+                // TODO: Investigate centralising this common code.
+                typeRow.Name = type.Name;
+                typeRow.CreatedBy = GetTelecomEmailAddress(type.OwnerHistory);
+                typeRow.CreatedOn = GetCreatedOnDateAsFmtString(type.OwnerHistory);
+                typeRow.Category = GetCategory(type);
+                typeRow.Description = GetTypeObjDescription(type);
 
-                typ.Name = to.Name;
+                typeRow.ExtSystem = GetIfcApplication().ApplicationFullName;
+                typeRow.ExtObject = type.GetType().Name;
+                typeRow.ExtIdentifier = type.GlobalId;
 
-                typ.CreatedBy = GetTelecomEmailAddress(to.OwnerHistory);
-                typ.CreatedOn = GetCreatedOnDateAsFmtString(to.OwnerHistory);
+                FillPropertySetsValues(candidateProperties, type, typeRow);
 
-                typ.Category = GetCategory(to);
-
-                typ.Description = GetTypeObjDescription(to);
-
-                typ.ExtSystem = GetIfcApplication().ApplicationFullName;
-                typ.ExtObject = to.GetType().ToString().Substring(to.GetType().ToString().LastIndexOf('.') + 1);
-                typ.ExtIdentifier = to.GlobalId;
-
-                //get related object properties to extract from if main way fails
-                IEnumerable<IfcPropertySingleValue> relAtts = GetTypeObjRelAttributes(to, AttNames);
-
-                typ.AssetType = GetTypeObjAttribute(to, "Pset_Asset", "AssetAccountingType", relAtts);
-                typ.Manufacturer = GetTypeObjAttribute(to, "Pset_ManufacturersTypeInformation", "Manufacturer", relAtts);
-                typ.ModelNumber = GetTypeObjAttribute(to, "Pset_ManufacturersTypeInformation", "ModelLabel", relAtts);
-                typ.WarrantyGuarantorParts = GetTypeObjAttribute(to, "Pset_Warranty", "WarrantyGuarantorParts", relAtts);
-                typ.WarrantyDurationParts = GetTypeObjAttribute(to, "Pset_Warranty", "WarrantyDurationParts", relAtts);
-                typ.WarrantyGuarantorLabor = GetTypeObjAttribute(to, "Pset_Warranty", "WarrantyGuarantorLabor", relAtts);
-                DurationAndValue = GetDurationUnitAndValue(to, "Pset_Warranty", "WarrantyDurationLabor", relAtts);
-                typ.WarrantyDurationLabor = DurationAndValue["VALUE"];  //GetTypeObjAttribute(to, "Pset_Warranty", "WarrantyDurationLabor", relAtts);
-                typ.WarrantyDurationUnit = DurationAndValue["UNIT"];  //GetWarrantyDurationUnit(to, relAtts); 
-                typ.ReplacementCost = GetTypeObjAttribute(to, "Pset_EconomicImpactValues", "ReplacementCost", relAtts);
-                DurationAndValue = GetDurationUnitAndValue(to, "Pset_ServiceLife", "ServiceLifeDuration", relAtts);
-                typ.ExpectedLife = DurationAndValue["VALUE"];// GetTypeObjAttribute(to, "Pset_ServiceLife", "ServiceLifeDuration", relAtts);
-                typ.DurationUnit = DurationAndValue["UNIT"];  //GetDurationUnit(to, relAtts);
-                typ.WarrantyDescription = GetTypeObjAttribute(to, "Pset_Warranty", "WarrantyDescription", relAtts);
-
-                typ.NominalLength = GetTypeObjAttribute(to, "Pset_Specification", "NominalLength", relAtts);
-                typ.NominalLength = ConvertNumberOrDefault(typ.NominalLength); //ensure we comply with a number value
-                typ.NominalWidth = GetTypeObjAttribute(to, "Pset_Specification", "NominalWidth", relAtts);
-                typ.NominalWidth = ConvertNumberOrDefault(typ.NominalWidth); //ensure we comply with a number value
-                typ.NominalHeight = GetTypeObjAttribute(to, "Pset_Specification", "NominalHeight", relAtts);
-                typ.NominalHeight = ConvertNumberOrDefault(typ.NominalHeight); //ensure we comply with a number value
-
-                typ.ModelReference = GetTypeObjAttribute(to, "Pset_Specification", "ModelReference", relAtts);
-                typ.Shape = GetTypeObjAttribute(to, "Pset_Specification", "Shape", relAtts);
-                typ.Size = GetTypeObjAttribute(to, "Pset_Specification", "Size", relAtts);
-                typ.Color = GetTypeObjAttribute(to, "Pset_Specification", "Colour", relAtts);
-                if (typ.Color == DEFAULT_STRING) typ.Color = GetTypeObjAttribute(to, "Pset_Specification", "Color", relAtts); 
-                typ.Finish = GetTypeObjAttribute(to, "Pset_Specification", "Finish", relAtts);
-                typ.Grade = GetTypeObjAttribute(to, "Pset_Specification", "Grade", relAtts);
-                typ.Material = GetTypeObjAttribute(to, "Pset_Specification", "Material", relAtts);
-                typ.Constituents = GetTypeObjAttribute(to, "Pset_Specification", "Constituents", relAtts);
-                typ.Features = GetTypeObjAttribute(to, "Pset_Specification", "Features", relAtts);
-                typ.AccessibilityPerformance = GetTypeObjAttribute(to, "Pset_Specification", "AccessibilityPerformance", relAtts);
-                typ.CodePerformance = GetTypeObjAttribute(to, "Pset_Specification", "CodePerformance", relAtts);
-                typ.SustainabilityPerformance = GetTypeObjAttribute(to, "Pset_Specification", "SustainabilityPerformance", relAtts);
-
-                types.Rows.Add(typ);
-                //----------fill in the attribute information for spaces-----------
-                //pass data from this sheet info as Dictionary
-                Dictionary<string, string> passedValues = new Dictionary<string, string>(){{"Sheet", "Type"}, 
-                                                                                          {"Name", typ.Name},
-                                                                                          {"CreatedBy", typ.CreatedBy},
-                                                                                          {"CreatedOn", typ.CreatedOn},
-                                                                                          {"ExtSystem", typ.ExtSystem}
-                                                                                          };//required property date <PropertySetName, PropertyName>
-                //add *ALL* the attributes to the passed attributes sheet except property names that match the passed List<string>
-                SetAttributeSheet(to, passedValues, ExcludeAtts, null, null, ref attributes);
+                types.Rows.Add(typeRow);
+                
+                // Provide Attribute sheet with our context
+                Dictionary<string, string> sourceData = new Dictionary<string, string>(){{"Sheet", "Type"}, 
+                                                                                          {"Name", typeRow.Name},
+                                                                                          {"CreatedBy", typeRow.CreatedBy},
+                                                                                          {"CreatedOn", typeRow.CreatedOn},
+                                                                                          {"ExtSystem", typeRow.ExtSystem}
+                                                                                          };
+                //add *ALL* the attributes to the passed attributes sheet except property names that we've handled, or are on the exclusion list
+                SetAttributeSheet(type, sourceData, excludedAttrs, null, null, ref attributes);
             }
-            //StopW.Stop();
-            //Debug.WriteLine(StopW.Elapsed.ToString());
+           
             return types;
         }
 
-        /// <summary>
-        /// return the Description for the passed IfcTypeObject object
-        /// </summary>
-        /// <param name="ds">IfcTypeObject</param>
-        /// <returns>Description for Type Object</returns>
-        private string GetTypeObjDescription(IfcTypeObject ds)
+        private void FillPropertySetsValues(List<string> candidateProperties, IfcTypeObject type, COBieTypeRow typeRow)
         {
-            if (ds != null)
+            //get related object properties to extract from if main way fails
+            IEnumerable<IfcPropertySingleValue> attributes = GetTypeObjRelAttributes(type, candidateProperties);
+
+            typeRow.AssetType = GetAttribute(type, "Pset_Asset", "AssetAccountingType", attributes);
+            typeRow.Manufacturer = GetAttribute(type, "Pset_ManufacturersTypeInformation", "Manufacturer", attributes);
+            typeRow.ModelNumber = GetAttribute(type, "Pset_ManufacturersTypeInformation", "ModelLabel", attributes);
+            // TODO: Get properties from PSets rather than one by one.
+            typeRow.WarrantyGuarantorParts = GetAttribute(type, "Pset_Warranty", "WarrantyGuarantorParts", attributes);
+            typeRow.WarrantyDurationParts = GetAttribute(type, "Pset_Warranty", "WarrantyDurationParts", attributes);
+            typeRow.WarrantyGuarantorLabor = GetAttribute(type, "Pset_Warranty", "WarrantyGuarantorLabor", attributes);
+            typeRow.WarrantyDescription = GetAttribute(type, "Pset_Warranty", "WarrantyDescription", attributes);
+            Interval warrantyDuration = GetDurationUnitAndValue(type, "Pset_Warranty", "WarrantyDurationLabor", attributes);
+            typeRow.WarrantyDurationLabor = warrantyDuration.Value;
+            typeRow.WarrantyDurationUnit = warrantyDuration.Unit;
+
+            typeRow.ReplacementCost = GetAttribute(type, "Pset_EconomicImpactValues", "ReplacementCost", attributes);
+            Interval serviceDuration = GetDurationUnitAndValue(type, "Pset_ServiceLife", "ServiceLifeDuration", attributes);
+            typeRow.ExpectedLife = serviceDuration.Value;
+            typeRow.DurationUnit = serviceDuration.Unit;
+            
+
+            typeRow.NominalLength = ConvertNumberOrDefault(GetAttribute(type, "Pset_Specification", "NominalLength", attributes));
+            typeRow.NominalWidth = ConvertNumberOrDefault(GetAttribute(type, "Pset_Specification", "NominalWidth", attributes));
+            typeRow.NominalHeight = ConvertNumberOrDefault(GetAttribute(type, "Pset_Specification", "NominalHeight", attributes));
+            typeRow.ModelReference = GetAttribute(type, "Pset_Specification", "ModelReference", attributes);
+            typeRow.Shape = GetAttribute(type, "Pset_Specification", "Shape", attributes);
+            typeRow.Size = GetAttribute(type, "Pset_Specification", "Size", attributes);
+            typeRow.Color = GetAttribute(type, "Pset_Specification", "Colour", attributes);
+            if (typeRow.Color == DEFAULT_STRING)
+                typeRow.Color = GetAttribute(type, "Pset_Specification", "Color", attributes);
+            typeRow.Finish = GetAttribute(type, "Pset_Specification", "Finish", attributes);
+            typeRow.Grade = GetAttribute(type, "Pset_Specification", "Grade", attributes);
+            typeRow.Material = GetAttribute(type, "Pset_Specification", "Material", attributes);
+            typeRow.Constituents = GetAttribute(type, "Pset_Specification", "Constituents", attributes);
+            typeRow.Features = GetAttribute(type, "Pset_Specification", "Features", attributes);
+            typeRow.AccessibilityPerformance = GetAttribute(type, "Pset_Specification", "AccessibilityPerformance", attributes);
+            typeRow.CodePerformance = GetAttribute(type, "Pset_Specification", "CodePerformance", attributes);
+            typeRow.SustainabilityPerformance = GetAttribute(type, "Pset_Specification", "SustainabilityPerformance", attributes);
+        }
+
+        /// <summary>
+        /// Return the Description for the passed IfcTypeObject object
+        /// </summary>
+        /// <param name="type">IfcTypeObject</param>
+        /// <returns>Description for Type Object</returns>
+        private string GetTypeObjDescription(IfcTypeObject type)
+        {
+            if (type != null)
             {
-                if (!string.IsNullOrEmpty(ds.Description)) return ds.Description;
-                else if (!string.IsNullOrEmpty(ds.Name)) return ds.Name;
+                if (!string.IsNullOrEmpty(type.Description)) return type.Description;
+                else if (!string.IsNullOrEmpty(type.Name)) return type.Name;
                 else
                 {
                     //if supports PredefinedType and no description or name then use the predefined type or ElementType if they exist
-                    IEnumerable<PropertyInfo> pInfo = ds.GetType().GetProperties(); //get properties
+                    IEnumerable<PropertyInfo> pInfo = type.GetType().GetProperties(); //get properties
 
                     if (pInfo.Where(p => p.Name == "PredefinedType").Count() == 1)
                     {
-                        string temp = pInfo.First().GetValue(ds, null).ToString(); //get predefindtype as description
+                        // TODO: Looks Wrong
+                        string temp = pInfo.First().GetValue(type, null).ToString(); //get predefindtype as description
 
                         if (!string.IsNullOrEmpty(temp))
                         {
@@ -187,7 +190,7 @@ namespace Xbim.COBie.Data
                                 //if used defined then the type description should be in ElementType, so see if property exists
                                 if (pInfo.Where(p => p.Name == "ElementType").Count() == 1)
                                 {
-                                    temp = pInfo.First().GetValue(ds, null).ToString(); //get ElementType
+                                    temp = pInfo.First().GetValue(type, null).ToString(); //get ElementType
                                     if (!string.IsNullOrEmpty(temp)) return temp;
                                 }
                             }
@@ -206,142 +209,131 @@ namespace Xbim.COBie.Data
         }
 
         /// <summary>
-        /// Get the IfcPropertySingleValue list for the passed in list of attribute names 
+        /// Get the list or properties matching the passed in list of attribute names 
         /// </summary>
-        /// <param name="TypeObj">IfcTypeObject </param>
-        /// <param name="AttNames">list of attribute names</param>
-        /// <returns>IEnumerable<IfcPropertySingleValue> list of IfcPropertySingleValue which are contained in AttNames</returns>
-        private IEnumerable<IfcPropertySingleValue> GetTypeObjRelAttributes(IfcTypeObject TypeObj, List<string> AttNames)
+        /// <param name="typeObj">IfcTypeObject </param>
+        /// <param name="attNames">list of attribute names</param>
+        /// <returns>List of IfcPropertySingleValue which are contained in AttNames</returns>
+        private IEnumerable<IfcPropertySingleValue> GetTypeObjRelAttributes(IfcTypeObject typeObj, List<string> attNames)
         {
-            IEnumerable<IfcPropertySingleValue> objProperties = Enumerable.Empty<IfcPropertySingleValue>();
-            var objTypeOf = TypeObj.ObjectTypeOf.FirstOrDefault(); //can hold zero or 1 ObjectTypeOf (IfcRelDefinesByType- holds list of objects of this type in RelatedObjects property) so test return
-            if (objTypeOf != null)
+            IEnumerable<IfcPropertySingleValue> properties = Enumerable.Empty<IfcPropertySingleValue>();
+            // can hold zero or 1 ObjectTypeOf (IfcRelDefinesByType- holds list of objects of this type in RelatedObjects property) so test return
+            var typeInstanceRel = typeObj.ObjectTypeOf.FirstOrDefault(); 
+            if (typeInstanceRel != null)
             {
-                foreach (IfcPropertySet pset in objTypeOf.RelatedObjects.First().GetAllPropertySets()) //has to have 1 or more object that are of this type, so get first and see what we get
+                // TODO: Check usage of GetAllProperties - duplicates Properties from Type?
+                foreach (IfcPropertySet pset in typeInstanceRel.RelatedObjects.First().GetAllPropertySets()) 
                 {
-                    objProperties = objProperties.Concat(pset.HasProperties.Where<IfcPropertySingleValue>(p => AttNames.Contains(p.Name.ToString())));
+                    //has to have 1 or more object that are of this type, so get first and see what we get
+                    properties = properties.Concat(pset.HasProperties.Where<IfcPropertySingleValue>(p => attNames.Contains(p.Name.ToString())));
                 }
             }
 
 
-            return objProperties;
+            return properties;
         }
 
         /// <summary>
         /// Get the Attribute for a IfcTypeObject
         /// </summary>
-        /// <param name="TypeObj">IfcTypeObject </param>
+        /// <param name="typeObj">IfcTypeObject </param>
         /// <param name="propSetName">Property Set Name to retrieve IfcPropertySet Object</param>
         /// <param name="propName">Property Name held in IfcPropertySingleValue object</param>
         /// <param name="relAtts">List of IfcPropertySingleValue filtered to attribute names we require</param>
         /// <returns>NominalValue of IfcPropertySingleValue as a string</returns>
-        private string GetTypeObjAttribute(IfcTypeObject TypeObj, string propSetName, string propName, IEnumerable<IfcPropertySingleValue> relAtts)
+        private string GetAttribute(IfcTypeObject typeObj, string propSetName, string propName, IEnumerable<IfcPropertySingleValue> relAtts)
         {
-            //try to get the property from the IfcTypeObject
-            IfcPropertySingleValue pSngValue = TypeObj.GetPropertySingleValue(propSetName, propName);
-            //if null then try and get from a first related object i.e. window type is associated with a window so look at window, should we do this or just return some default value here???
-            if (pSngValue == null) pSngValue = relAtts.Where(p => p.Name == propName).FirstOrDefault();
+            // try to get the property from the IfcTypeObject
+            IfcPropertySingleValue singleValue = typeObj.GetPropertySingleValue(propSetName, propName);
+            // if null then try and get from a first related object i.e. window type is associated with a window so look at window
+            // TODO: should we do this or just return some default value here???
+            if (singleValue == null) 
+                singleValue = relAtts.Where(p => p.Name == propName).FirstOrDefault();
             //if we have a value return the string for input to row field
-            if ((pSngValue != null) && (pSngValue.NominalValue != null)) return pSngValue.NominalValue.ToString();
-            else return DEFAULT_STRING; //nothing found return default
+            if ((singleValue != null) && (singleValue.NominalValue != null)) 
+                return singleValue.NominalValue.ToString();
+            else 
+                return DEFAULT_STRING; //nothing found return default
 
-            //if null then try and get from all related object i.e. 
-            //if (pSngValue == null)
-            //{
-            //    foreach (IfcPropertySingleValue pSV in relAtts.Where(p => p.Name == propName))
-            //    {
-            //        if (pSV != null)
-            //        {
-            //            pSngValue = pSV;
-            //            break; //we have a value so break
-            //        }
-            //    }
-            //}
+
         }
 
         /// <summary>
         /// Get the Time unit and value for the passed in property
         /// </summary>
-        /// <param name="TypeObj">IfcTypeObject </param>
-        /// <param name="propSetName">Property Set Name to retrieve IfcPropertySet Object</param>
-        /// <param name="propName">Property Name held in IfcPropertySingleValue object</param>
-        /// <param name="relAtts">List of IfcPropertySingleValue filtered to attribute names we require</param>
+        /// <param name="typeObject">IfcTypeObject </param>
+        /// <param name="psetName">Property Set Name to retrieve IfcPropertySet Object</param>
+        /// <param name="propertyName">Property Name held in IfcPropertySingleValue object</param>
+        /// <param name="psetValues">List of IfcPropertySingleValue filtered to attribute names we require</param>
         /// <returns>Dictionary holding unit and value e.g. Year, 2.0</returns>
-        private Dictionary<string, string> GetDurationUnitAndValue(IfcTypeObject TypeObj, string propSetName, string propName, IEnumerable<IfcPropertySingleValue> relAtts)
+        private Interval GetDurationUnitAndValue(IfcTypeObject typeObject, string psetName, string propertyName, IEnumerable<IfcPropertySingleValue> psetValues)
         {
-            const string Default = "Second"; //n/a is not acceptable, so lets how a value which is obviously incorrect
-            Dictionary<string, string> Ret = new Dictionary<string, string>() { { "UNIT", Default }, { "VALUE", Default } };
-            //try to get the property from the IfcTypeObject
-            IfcPropertySingleValue pSngValue = TypeObj.GetPropertySingleValue(propSetName, propName);
-            //if null then try and get from a first related object i.e. window type is associated with a window so look at window, should we do this or just return some default value here???
-            if (pSngValue == null) pSngValue = relAtts.Where(p => p.Name == propName).FirstOrDefault();
-            double convert = 0.0;
+            const string DefaultUnit = "Year"; // n/a is not acceptable, so create a valid default
+
+            Interval result = new Interval() { Value = DEFAULT_NUMERIC, Unit = DefaultUnit };
+            // try to get the property from the Type first
+            IfcPropertySingleValue typeValue = typeObject.GetPropertySingleValue(psetName, propertyName);
+
+            // TODO: Check this logic
+            // if null then try and get from first instance of this type
+            if (typeValue == null) 
+                typeValue = psetValues.Where(p => p.Name == propertyName).FirstOrDefault();
+
+            if (typeValue == null)
+                return result;
+
             //Get the unit type
-            if ((pSngValue != null) && (pSngValue.Unit is IfcConversionBasedUnit) && (pSngValue.Unit != null))
+            if ((typeValue.Unit != null) && (typeValue.Unit is IfcConversionBasedUnit))
             {
-                Ret["UNIT"] = ((IfcConversionBasedUnit)pSngValue.Unit).Name.ToString(); //get unit type name
-                convert = (double)((IfcConversionBasedUnit)pSngValue.Unit).ConversionFactor.ValueComponent.Value; //get the conversion factor value to work out time period
+                IfcConversionBasedUnit conversionBasedUnit = typeValue.Unit as IfcConversionBasedUnit;
+                result.Unit = conversionBasedUnit.Name.ToString(); 
             }
-            else if ((pSngValue != null) && (pSngValue.NominalValue != null))   //no IfcConversionBasedUnit so go for "Warranty Information" prop. then value for passed in propName
-            {
-                if ((pSngValue != null) && (propName.Contains("Warranty")))
-                {
-                    IfcPropertySingleValue pSngUnit = relAtts.Where(p => p.Name == "Warranty Information").FirstOrDefault(); //appears in clinic file so grab
-                    if (pSngUnit != null) Ret["UNIT"] = pSngUnit.NominalValue.Value.ToString();
-                }
-                else
-                    Ret["UNIT"] = pSngValue.NominalValue.Value.ToString(); // value for passed in propName
-
-            }
+            
             //Get the time period value
-            if ((pSngValue != null) && (pSngValue.NominalValue != null) && (pSngValue.NominalValue is IfcReal)) //if a number then we can calculate
+            if ((typeValue.NominalValue != null) && (typeValue.NominalValue is IfcReal)) //if a number then we can calculate
             {
-                double val = (double)pSngValue.NominalValue.Value; //get value
-                if (convert > 0.0) val = val / convert; //convert if we have a convert value
-                Ret["VALUE"] = val.ToString("F1");
+                double val = (double)typeValue.NominalValue.Value; 
+                result.Value = val.ToString("F1");
             }
-            else if ((pSngValue != null) && (pSngValue.NominalValue != null)) //no number value so just show value for passed in propName
-                Ret["VALUE"] = pSngValue.NominalValue.Value.ToString();
+            else if (typeValue.NominalValue != null) //no number value so just show value for passed in propName
+                result.Value = typeValue.NominalValue.Value.ToString();
 
-            return Ret;
+            return result;
         }
 
         /// <summary>
         /// Get the Category for the IfcTypeObject
         /// </summary>
-        /// <param name="obj">IfcTypeObject</param>
+        /// <param name="type">IfcTypeObject</param>
         /// <returns>string of the category</returns>
-        public string GetCategory(IfcTypeObject obj)
+        public string GetCategory(IfcTypeObject type)
         {
-            List<string> CatStr = new List<string> { "OmniClass Table 13 Category", "Category Code" };
+            List<string> categories = new List<string> { "OmniClass Table 13 Category", "Category Code" };
 
             //Try by relationship first
-            IfcRelAssociatesClassification ifcRAC = obj.HasAssociations.OfType<IfcRelAssociatesClassification>().FirstOrDefault();
-            if (ifcRAC != null)
+            IfcRelAssociatesClassification classification = type.HasAssociations.OfType<IfcRelAssociatesClassification>().FirstOrDefault();
+            if (classification != null)
             {
-                IfcClassificationReference ifcCR = (IfcClassificationReference)ifcRAC.RelatingClassification;
-                return ifcCR.Name;
+                IfcClassificationReference classificationRef = (IfcClassificationReference)classification.RelatingClassification;
+                return classificationRef.Name;
             }
 
             //Try by PropertySet as fallback
 
-            //var query = from PSet in obj.HasPropertySets
-            //            where PSet is IfcPropertySet //.GetAllPropertySets()  
-            //            from Props in ((IfcPropertySet)PSet).HasProperties
-
-            var query = from PSet in obj.GetAllPropertySets()  
-                        from Props in PSet.HasProperties
-                        where CatStr.Contains(Props.Name.ToString()) //== "OmniClass Table 13 Category" || Props.Name.ToString() == "Category Code"
-                        select Props.ToString().TrimEnd();
+            var query = from propSet in type.GetAllPropertySets()  
+                        from props in propSet.HasProperties
+                        where categories.Contains(props.Name.ToString()) 
+                        select props.ToString().TrimEnd();
             string val = query.FirstOrDefault();
 
             //second fall back on objects defined by this type, see if they hold a category on the first related object to this type
             if (string.IsNullOrEmpty(val))
             {
                 //get first object defined by this type and try and get category from this object 
-                IEnumerable<IfcPropertySingleValue> relAtts = GetTypeObjRelAttributes(obj, CatStr);
-                IfcPropertySingleValue pSngValue = relAtts.Where(p => CatStr.Contains(p.Name)).FirstOrDefault();
-                if ((pSngValue != null) && (pSngValue.NominalValue != null)) return pSngValue.NominalValue.ToString();
+                IEnumerable<IfcPropertySingleValue> relAtts = GetTypeObjRelAttributes(type, categories);
+                IfcPropertySingleValue singleValue = relAtts.Where(p => categories.Contains(p.Name)).FirstOrDefault();
+                if ((singleValue != null) && (singleValue.NominalValue != null)) 
+                    return singleValue.NominalValue.ToString();
             }
             else
             {
@@ -351,5 +343,11 @@ namespace Xbim.COBie.Data
             return DEFAULT_STRING;
         }
         #endregion
+    }
+
+    public struct Interval
+    {
+        public string Value { get; set; }
+        public string Unit { get; set; }
     }
 }
