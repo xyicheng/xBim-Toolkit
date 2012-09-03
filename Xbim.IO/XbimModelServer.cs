@@ -261,6 +261,7 @@ namespace Xbim.IO
 
             internal void SetStringValue(string value)
             {
+         
                 _propertyValue.Init(value, IfcParserType.String);
                 SetEntityParameter();
             }
@@ -348,112 +349,130 @@ namespace Xbim.IO
         {
             bool modified = false;
             derefencedStream = new byte[propertyStream.Length];
-            BinaryReader br = new BinaryReader(new MemoryStream(propertyStream));
-            P21ParseAction action = (P21ParseAction)br.ReadByte();
 
-            BinaryWriter bw = new BinaryWriter(new MemoryStream(derefencedStream));
-
-            while (action != P21ParseAction.EndEntity)
+            BinaryReader br = null;
+            MemoryStream sourceStream = null;
+            try
             {
-                switch (action)
+                sourceStream = new MemoryStream(propertyStream);
+                br = new BinaryReader(sourceStream);
+
+                P21ParseAction action = (P21ParseAction)br.ReadByte();
+
+                using (MemoryStream ms = new MemoryStream(derefencedStream))
                 {
-                    case P21ParseAction.BeginList:
-                        bw.Write((byte)P21ParseAction.BeginList);
-                        break;
-                    case P21ParseAction.EndList:
-                        bw.Write((byte)P21ParseAction.EndList);
-                        break;
-                    case P21ParseAction.BeginComplex:
-                        break;
-                    case P21ParseAction.EndComplex:
-                        break;
-                    case P21ParseAction.SetIntegerValue:
-                        bw.Write((byte)P21ParseAction.SetIntegerValue);
-                        bw.Write(br.ReadInt64());
-                        break;
-                    case P21ParseAction.SetHexValue:
-                        bw.Write((byte)P21ParseAction.SetHexValue);
-                        bw.Write(br.ReadInt64());
-                        break;
-                    case P21ParseAction.SetFloatValue:
-                        bw.Write((byte)P21ParseAction.SetFloatValue);
-                        bw.Write(br.ReadDouble());
-                        break;
-                    case P21ParseAction.SetStringValue:
-                        bw.Write((byte)P21ParseAction.SetStringValue);
-                        bw.Write(br.ReadString());
-                        break;
-                    case P21ParseAction.SetEnumValue:
-                        bw.Write((byte)P21ParseAction.SetEnumValue);
-                        bw.Write(br.ReadString());
-                        break;
-                    case P21ParseAction.SetBooleanValue:
-                        bw.Write((byte)P21ParseAction.SetBooleanValue);
-                        bw.Write(br.ReadBoolean());
-                        break;
-                    case P21ParseAction.SetNonDefinedValue:
-                        bw.Write((byte)P21ParseAction.SetNonDefinedValue);
-                        break;
-                    case P21ParseAction.SetOverrideValue:
-                        bw.Write((byte)P21ParseAction.SetOverrideValue);
-                        break;
-                    case P21ParseAction.SetObjectValueUInt16:
-                        ushort label16 = br.ReadUInt16();
-                        if (entityLabels.Contains(label16))
+                    using (BinaryWriter bw = new BinaryWriter(ms))
+                    {
+
+                        while (action != P21ParseAction.EndEntity)
                         {
-                            bw.Write((byte)P21ParseAction.SetNonDefinedValue);
-                            modified = true;
+                            switch (action)
+                            {
+                                case P21ParseAction.BeginList:
+                                    bw.Write((byte)P21ParseAction.BeginList);
+                                    break;
+                                case P21ParseAction.EndList:
+                                    bw.Write((byte)P21ParseAction.EndList);
+                                    break;
+                                case P21ParseAction.BeginComplex:
+                                    break;
+                                case P21ParseAction.EndComplex:
+                                    break;
+                                case P21ParseAction.SetIntegerValue:
+                                    bw.Write((byte)P21ParseAction.SetIntegerValue);
+                                    bw.Write(br.ReadInt64());
+                                    break;
+                                case P21ParseAction.SetHexValue:
+                                    bw.Write((byte)P21ParseAction.SetHexValue);
+                                    bw.Write(br.ReadInt64());
+                                    break;
+                                case P21ParseAction.SetFloatValue:
+                                    bw.Write((byte)P21ParseAction.SetFloatValue);
+                                    bw.Write(br.ReadDouble());
+                                    break;
+                                case P21ParseAction.SetStringValue:
+                                    bw.Write((byte)P21ParseAction.SetStringValue);
+                                    bw.Write(br.ReadString());
+                                    break;
+                                case P21ParseAction.SetEnumValue:
+                                    bw.Write((byte)P21ParseAction.SetEnumValue);
+                                    bw.Write(br.ReadString());
+                                    break;
+                                case P21ParseAction.SetBooleanValue:
+                                    bw.Write((byte)P21ParseAction.SetBooleanValue);
+                                    bw.Write(br.ReadBoolean());
+                                    break;
+                                case P21ParseAction.SetNonDefinedValue:
+                                    bw.Write((byte)P21ParseAction.SetNonDefinedValue);
+                                    break;
+                                case P21ParseAction.SetOverrideValue:
+                                    bw.Write((byte)P21ParseAction.SetOverrideValue);
+                                    break;
+                                case P21ParseAction.SetObjectValueUInt16:
+                                    ushort label16 = br.ReadUInt16();
+                                    if (entityLabels.Contains(label16))
+                                    {
+                                        bw.Write((byte)P21ParseAction.SetNonDefinedValue);
+                                        modified = true;
+                                    }
+                                    else
+                                    {
+                                        bw.Write((byte)P21ParseAction.SetObjectValueUInt16);
+                                        bw.Write(label16);
+                                    }
+                                    break;
+                                case P21ParseAction.SetObjectValueUInt32:
+                                    uint label32 = br.ReadUInt32();
+                                    if (entityLabels.Contains(label32))
+                                    {
+                                        bw.Write((byte)P21ParseAction.SetNonDefinedValue);
+                                        modified = true;
+                                    }
+                                    else
+                                    {
+                                        bw.Write((byte)P21ParseAction.SetObjectValueUInt32);
+                                        bw.Write(label32);
+                                    }
+                                    break;
+                                case P21ParseAction.SetObjectValueInt64:
+                                    ulong label64 = br.ReadUInt64();
+                                    if (entityLabels.Contains(label64))
+                                    {
+                                        bw.Write((byte)P21ParseAction.SetNonDefinedValue);
+                                        modified = true;
+                                    }
+                                    else
+                                    {
+                                        bw.Write((byte)P21ParseAction.SetObjectValueInt64);
+                                        bw.Write(label64);
+                                    }
+                                    break;
+                                case P21ParseAction.BeginNestedType:
+                                    bw.Write((byte)P21ParseAction.BeginNestedType);
+                                    bw.Write(br.ReadString());
+                                    break;
+                                case P21ParseAction.EndNestedType:
+                                    bw.Write((byte)P21ParseAction.EndNestedType);
+                                    break;
+                                case P21ParseAction.EndEntity:
+                                    bw.Write((byte)P21ParseAction.EndEntity);
+                                    break;
+                                case P21ParseAction.NewEntity:
+                                    bw.Write((byte)P21ParseAction.NewEntity);
+                                    break;
+                            }
+                            action = (P21ParseAction)br.ReadByte();
                         }
-                        else
-                        {
-                            bw.Write((byte)P21ParseAction.SetObjectValueUInt16);
-                            bw.Write(label16);
-                        }
-                        break;
-                    case P21ParseAction.SetObjectValueUInt32:
-                        uint label32 = br.ReadUInt32();
-                        if (entityLabels.Contains(label32))
-                        {
-                            bw.Write((byte)P21ParseAction.SetNonDefinedValue);
-                            modified = true;
-                        }
-                        else
-                        {
-                            bw.Write((byte)P21ParseAction.SetObjectValueUInt32);
-                            bw.Write(label32);
-                        }
-                        break;
-                    case P21ParseAction.SetObjectValueInt64:
-                        ulong label64 = br.ReadUInt64();
-                        if (entityLabels.Contains(label64))
-                        {
-                            bw.Write((byte)P21ParseAction.SetNonDefinedValue);
-                            modified = true;
-                        }
-                        else
-                        {
-                            bw.Write((byte)P21ParseAction.SetObjectValueInt64);
-                            bw.Write(label64);
-                        }
-                        break;
-                    case P21ParseAction.BeginNestedType:
-                        bw.Write((byte)P21ParseAction.BeginNestedType);
-                        bw.Write(br.ReadString());
-                        break;
-                    case P21ParseAction.EndNestedType:
-                        bw.Write((byte)P21ParseAction.EndNestedType);
-                        break;
-                    case P21ParseAction.EndEntity:
                         bw.Write((byte)P21ParseAction.EndEntity);
-                        break;
-                    case P21ParseAction.NewEntity:
-                        bw.Write((byte)P21ParseAction.NewEntity);
-                        break;
+                        bw.Flush();
+                    }
                 }
-                action = (P21ParseAction)br.ReadByte();
             }
-            bw.Write((byte)P21ParseAction.EndEntity);
-            bw.Flush();
+            finally
+            {
+                if (br != null) br.Dispose();
+                if (sourceStream != null) sourceStream.Dispose();
+            }
             return modified;
         }
 
@@ -1011,32 +1030,36 @@ namespace Xbim.IO
         {
             try
             {
-                using (ZipInputStream zis = new ZipInputStream(File.OpenRead(inputIfcFile)))
-                {
-                    ZipEntry zs = zis.GetNextEntry();
-                    while (zs != null)
-                    {
-                        String filePath = Path.GetDirectoryName(zs.Name);
-                        String fileName = Path.GetFileName(zs.Name);
-                        if (fileName.ToLower().EndsWith(".ifc"))
-                        {
-                            using (FileStream fs = File.Create(fileName))
-                            {
-                                int i = 2048;
-                                byte[] b = new byte[i];
-                                while (true)
-                                {
-                                    i = zis.Read(b, 0, b.Length);
-                                    if (i > 0)
-                                        fs.Write(b, 0, i);
-                                    else
-                                        break;
-                                }
-                            }
-                            return fileName;
-                        }
-                    }
 
+                using (FileStream stream = File.OpenRead(inputIfcFile))
+                {
+                    using (ZipInputStream zis = new ZipInputStream(stream))
+                    {
+                        ZipEntry zs = zis.GetNextEntry();
+                        while (zs != null)
+                        {
+                            String filePath = Path.GetDirectoryName(zs.Name);
+                            String fileName = Path.GetFileName(zs.Name);
+                            if (fileName.ToLower().EndsWith(".ifc"))
+                            {
+                                using (FileStream fs = File.Create(fileName))
+                                {
+                                    int i = 2048;
+                                    byte[] b = new byte[i];
+                                    while (true)
+                                    {
+                                        i = zis.Read(b, 0, b.Length);
+                                        if (i > 0)
+                                            fs.Write(b, 0, i);
+                                        else
+                                            break;
+                                    }
+                                }
+                                return fileName;
+                            }
+                        }
+
+                    }
                 }
             }
             catch (Exception e)
@@ -1068,7 +1091,7 @@ namespace Xbim.IO
                     else // if isGZip == false then use sharpziplib
                     {
                         string ext = "";
-                        if (fileName.ToLower().EndsWith(".zip") == false) ext = ".zip";
+                        if (fileName.ToLower().EndsWith(".zip") == false || fileName.ToLower().EndsWith(".ifczip") == false) ext = ".ifczip";
                         fs = new FileStream(fileName + ext, FileMode.Create, FileAccess.Write);
                         ZipOutputStream zipStream = new ZipOutputStream(fs);
                         zipStream.SetLevel(3); //0-9, 9 being the highest level of compression
@@ -1109,33 +1132,30 @@ namespace Xbim.IO
 
         public void ExportIfcXml(string ifcxmlFileName)
         {
-            FileStream xmlOutStream = null;
             try
             {
-                xmlOutStream = new FileStream(ifcxmlFileName, FileMode.Create, FileAccess.ReadWrite);
-                XmlWriterSettings settings = new XmlWriterSettings { Indent = true };
-                using (XmlWriter xmlWriter = XmlWriter.Create(xmlOutStream, settings))
+                using (FileStream xmlOutStream = new FileStream(ifcxmlFileName, FileMode.Create, FileAccess.ReadWrite))
                 {
-                    IfcXmlWriter writer = new IfcXmlWriter();
+                    XmlWriterSettings settings = new XmlWriterSettings { Indent = true };
+                    using (XmlWriter xmlWriter = XmlWriter.Create(xmlOutStream, settings))
+                    {
+                        IfcXmlWriter writer = new IfcXmlWriter();
 
-                    // when onverting ifc to xml, 
-                    // 1. you can specify perticular lines in fic file as below below 
-                    // 2. OR pass null to convert full ifc format to xml
-                    //List<IPersistIfcEntity> instances = new List<IPersistIfcEntity>();
-                    //instances.Add(this.GetInstance(79480));
-                    //instances.Add(this.GetInstance(2717770));
-                    //writer.Write(this, xmlWriter, instances);
+                        // when onverting ifc to xml, 
+                        // 1. you can specify perticular lines in fic file as below below 
+                        // 2. OR pass null to convert full ifc format to xml
+                        //List<IPersistIfcEntity> instances = new List<IPersistIfcEntity>();
+                        //instances.Add(this.GetInstance(79480));
+                        //instances.Add(this.GetInstance(2717770));
+                        //writer.Write(this, xmlWriter, instances);
 
-                    writer.Write(this, xmlWriter, null);
+                        writer.Write(this, xmlWriter, null);
+                    }
                 }
             }
             catch (Exception e)
             {
                 throw new Exception("Failed to write IfcXml file " + ifcxmlFileName, e);
-            }
-            finally
-            {
-                if (xmlOutStream != null) xmlOutStream.Close();
             }
         }
 
@@ -1365,7 +1385,7 @@ namespace Xbim.IO
                 else
                 {
                     entityWriter.Write('\'');
-                    entityWriter.Write((string)pVal);
+                    entityWriter.Write(IfcText.Escape((string)pVal));
                     entityWriter.Write('\'');
                 }
             }
@@ -1526,8 +1546,10 @@ namespace Xbim.IO
         public string Validate(ValidationFlags validateFlags)
         {
             StringBuilder sb = new StringBuilder();
-            TextWriter tw = new StringWriter(sb);
-            Validate(tw, null, validateFlags);
+            using (TextWriter tw = new StringWriter(sb))
+            {
+                Validate(tw, null, validateFlags);
+            }
             return sb.ToString();
         }
 
@@ -1554,7 +1576,7 @@ namespace Xbim.IO
         /// <summary>
         /// Saves incremental changes to the model
         /// </summary>
-        public abstract void WriteChanges(Stream dataStream);
+        public abstract void WriteChanges(BinaryWriter dataStream);
         public abstract void MergeChanges(Stream dataStream);
 
 
@@ -1583,7 +1605,7 @@ namespace Xbim.IO
                 // modelServer would have been created with xbim file and readwrite fileaccess
                 ExportIfc(outputFileName);
             }
-            else if (fileType.HasFlag(XbimStorageType.IFCX))
+            else if (fileType.HasFlag(XbimStorageType.IFCZIP))
             {
                 // modelServer would have been created with xbim file and readwrite fileaccess
                 ExportIfc(outputFileName, true, false);
@@ -1604,7 +1626,14 @@ namespace Xbim.IO
         }
 
         public abstract string Open(string inputFileName);
+        public abstract string Open(string inputFileName, ReportProgressDelegate progDelegate);
         public abstract void Import(string inputFileName);
+
+
+        public abstract bool ContainsInstance(long entityLabel);
+
+        public abstract Common.XbimModelFactors GetModelFactors { get; }
+        
     }
 }
 

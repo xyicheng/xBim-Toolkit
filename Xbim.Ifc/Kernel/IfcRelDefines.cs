@@ -47,7 +47,7 @@ namespace Xbim.Ifc.Kernel
         /// <summary>
         ///   Reference to the objects (or single object) to which the property definition applies.
         /// </summary>
-        [IfcSecondaryIndex]
+        
         [IfcAttribute(5, IfcAttributeState.Mandatory, IfcAttributeType.Set, 1)]
         public IfcObjectSet RelatedObjects
         {
@@ -75,8 +75,7 @@ namespace Xbim.Ifc.Kernel
                     _relatedObjects.Add((IfcObject) value.EntityVal);
                     break;
                 default:
-                    throw new Exception(string.Format("Attribute index {0} is out of range for {1}", propIndex + 1,
-                                                      this.GetType().Name.ToUpper()));
+                    this.HandleUnexpectedAttribute(propIndex, value); break;
             }
         }
 

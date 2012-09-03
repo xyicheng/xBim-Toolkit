@@ -19,10 +19,16 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Runtime.Serialization.Formatters;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
-using System.Windows.Markup;
+using System.Xml;
+using ICSharpCode.SharpZipLib.Zip;
+using Xbim.Common.Exceptions;
+using Xbim.Common.Logging;
 using Xbim.Ifc.ActorResource;
 using Xbim.Ifc.DateTimeResource;
 using Xbim.Ifc.Kernel;
@@ -31,32 +37,28 @@ using Xbim.Ifc.SelectTypes;
 using Xbim.Ifc.SharedBldgElements;
 using Xbim.Ifc.SharedBldgServiceElements;
 using Xbim.Ifc.UtilityResource;
+using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.DataProviders;
 using Xbim.XbimExtensions.Parser;
 using Xbim.XbimExtensions.Transactions;
 using Xbim.XbimExtensions.Transactions.Extensions;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Runtime.Serialization.Formatters;
-using System.Xml;
-using System.IO.Compression;
-using ICSharpCode.SharpZipLib.Zip;
-using Xbim.XbimExtensions;
-using ICSharpCode.SharpZipLib.Core;
-
+using Xbim.Common;
+using Xbim.Ifc.MeasureResource;
+using Xbim.Ifc.Extensions;
+using Xbim.Ifc.GeometryResource;
+using System.Reflection;
 
 #endregion
 
 namespace Xbim.IO
 
 {
-    //public delegate void InitProperties<TInit>(TInit initFunction);
-
 
     [Serializable]
     public class XbimMemoryModel : IModel, ISupportChangeNotification, INotifyPropertyChanged, INotifyPropertyChanging
     {
         #region Fields
-
+		private readonly ILogger Logger = LoggerFactory.GetLogger();
         private readonly IfcFileHeader _header = new IfcFileHeader();
         private IfcInstances _ifcInstances = new IfcInstances();
 
@@ -116,6 +118,11 @@ namespace Xbim.IO
         public bool ContainsInstance(IPersistIfcEntity instance)
         {
             return _ifcInstances.Contains(instance);
+        }
+
+        public bool ContainsInstance(long entityLabel)
+        {
+            return _ifcInstances.ContainsInstance(entityLabel);
         }
 
         /// <summary>
@@ -283,7 +290,7 @@ namespace Xbim.IO
         public IEnumerable<TIfcType> InstancesWhere<TIfcType>(Expression<Func<TIfcType, bool>> expression)
             where TIfcType : IPersistIfcEntity
         {
-            return _ifcInstances.Where(expression);
+            return _ifcInstances.Where < TIfcType>(expression);
         }
 
         //public IEnumerable<TIfcType> InstancesWhere<TIfcType>(Predicate<TIfcType> expr) where TIfcType : IPersistIfc
@@ -549,6 +556,65 @@ namespace Xbim.IO
         }
 
         #endregion
+        private XbimModelFactors _modelFactors;
+
+        public XbimModelFactors GetModelFactors
+        {
+            get
+            {
+                if (_modelFactors == null)
+                {
+                   
+                    double angleToRadiansConversionFactor = 0.0174532925199433; //assume degrees
+                    double lengthToMetresConversionFactor = 1; //assume metres
+
+                    IfcUnitAssignment ua = InstancesOfType<IfcUnitAssignment>().FirstOrDefault();
+                    if (ua != null)
+                    {
+
+                        foreach (var unit in ua.Units)
+                        {
+                            double value = 1.0;
+                            IfcConversionBasedUnit cbUnit = unit as IfcConversionBasedUnit;
+                            IfcSIUnit siUnit = unit as IfcSIUnit;
+                            if (cbUnit != null)
+                            {
+                                IfcMeasureWithUnit mu = cbUnit.ConversionFactor;
+                                if (mu.UnitComponent is IfcSIUnit)
+                                    siUnit = (IfcSIUnit)mu.UnitComponent;
+                                ExpressType et = ((ExpressType)mu.ValueComponent);
+
+                                if (et.UnderlyingSystemType == typeof(double))
+                                    value *= (double)et.Value;
+                                else if (et.UnderlyingSystemType == typeof(int))
+                                    value *= (double)((int)et.Value);
+                                else if (et.UnderlyingSystemType == typeof(long))
+                                    value *= (double)((long)et.Value);
+                            }
+                            if (siUnit != null)
+                            {
+                                value *= siUnit.Power();
+                                switch (siUnit.UnitType)
+                                {
+                                    case IfcUnitEnum.LENGTHUNIT:
+                                        lengthToMetresConversionFactor = value;
+                                        break;
+                                    case IfcUnitEnum.PLANEANGLEUNIT:
+                                        angleToRadiansConversionFactor = value;
+                                        break;
+                                    default:
+                                        break;
+                                }
+                            }
+                        }
+                    }
+
+                    _modelFactors = new XbimModelFactors(angleToRadiansConversionFactor, lengthToMetresConversionFactor);
+                }
+                return _modelFactors;
+            }
+        }
+
 
         private IPersistIfc _part21Parser_EntityCreate(string className, long? label, bool headerEntity,
                                                        out int[] reqParams)
@@ -1048,12 +1114,14 @@ namespace Xbim.IO
         public string Validate(ValidationFlags validateFlags)
         {
             StringBuilder sb = new StringBuilder();
-            TextWriter tw = new StringWriter(sb);
-            Validate(tw, null, validateFlags);
+            using (TextWriter tw = new StringWriter(sb))
+            {
+                Validate(tw, null, validateFlags);
+            }
             return sb.ToString();
         }
 
-
+        // TODO: Review why these properties are here on the model.
         public IEnumerable<IfcWall> Walls
         {
             get { return InstancesOfType<IfcWall>(); }
@@ -1097,7 +1165,7 @@ namespace Xbim.IO
                     else // if isGZip == false then use sharpziplib
                     {
                         string ext = "";
-                        if (fileName.ToLower().EndsWith(".zip") == false) ext = ".zip";
+                        if (fileName.ToLower().EndsWith(".zip") == false || fileName.ToLower().EndsWith(".ifczip") == false) ext = ".ifczip";
                         fs = new FileStream(fileName + ext, FileMode.Create, FileAccess.Write);
                         ZipOutputStream zipStream = new ZipOutputStream(fs);
                         zipStream.SetLevel(3); //0-9, 9 being the highest level of compression
@@ -1121,10 +1189,11 @@ namespace Xbim.IO
                     p21.Write(item);
                 }
                 p21.WriteFooter();
+                ifcFile.Flush();
                 p21.Close();
                 
                 
-                ifcFile.Flush();
+               
             }
             catch (Exception e)
             {
@@ -1146,10 +1215,12 @@ namespace Xbim.IO
                     BinaryFormatter formatter = new BinaryFormatter();
                     formatter.AssemblyFormat = FormatterAssemblyStyle.Simple;
                     this.Header.FileDescription.EntityCount = this.Instances.Count();
-                    Stream stream = new FileStream(outputFileName, FileMode.Create, FileAccess.Write, FileShare.None);
-                    formatter.Serialize(stream, this);
-                    formatter.Serialize(stream, this);
-                    stream.Close();
+                    using (Stream stream = new FileStream(outputFileName, FileMode.Create, FileAccess.Write, FileShare.None))
+                    {
+                        formatter.Serialize(stream, this);
+                        formatter.Serialize(stream, this);
+                        stream.Close();
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -1189,7 +1260,7 @@ namespace Xbim.IO
                     if (xmlOutStream != null) xmlOutStream.Close();
                 }
             }
-            else if (fileType.HasFlag(XbimStorageType.IFCX))
+            else if (fileType.HasFlag(XbimStorageType.IFCZIP))
             {
                 try
                 {
@@ -1211,74 +1282,62 @@ namespace Xbim.IO
             if (ext == ".xbim") fileType = XbimStorageType.XBIM;
             else if (ext == ".ifc") fileType = XbimStorageType.IFC;
             else if (ext == ".ifcxml") fileType = XbimStorageType.IFCXML;
-            else if (ext == ".zip") fileType = XbimStorageType.IFCX;
+            else if (ext == ".zip" || ext == ".ifczip") fileType = XbimStorageType.IFCZIP;
             else
                 throw new Exception("Invalid file type: " + ext);
             try
             {
-                if (fileType.HasFlag(XbimStorageType.IFCX))
+                if (fileType.HasFlag(XbimStorageType.IFCZIP))
                 {
-                    // get the ifc file from zip
-                    //using (Stream zipStream = new FileStream(inputFileName, FileMode.Open, FileAccess.Read))
-                    //{
-                    //    ZipInputStream zis = new ZipInputStream(zipStream);
-                    //}
-                    using (ZipInputStream zis = new ZipInputStream(File.OpenRead(inputFileName)))
+
+                    using (IfcZipInputStream zipstream = new IfcZipInputStream(inputFileName))
                     {
-                        ZipEntry zs = zis.GetNextEntry();
-                        while (zs != null)
+                        if (zipstream.FileExt == ".ifc")
                         {
-                            String fileName = Path.GetFileName(zs.Name);
-                            if (fileName.ToLower().EndsWith(".ifc") || fileName.ToLower().EndsWith(".ifcxml"))
+                            using (IfcInputStream input = new IfcInputStream(zipstream.InputFile))
                             {
-                                if (fileName.ToLower().EndsWith(".ifc"))
-                                {
-                                    ZipFile zf = new ZipFile(inputFileName);
-                                    Stream entryStream = zf.GetInputStream(zs);
-                                    using (IfcInputStream input = new IfcInputStream(entryStream))
-                                    {
-                                        if (input.Load(this) != 0)
-                                            throw new Exception("Ifc file parsing errors\n" + input.ErrorLog.ToString());
-                                    }                                    
-                                    break;
-                                }
-                                else if (fileName.ToLower().EndsWith(".ifcxml"))
-                                {
-                                    ZipFile zf = new ZipFile(inputFileName);
-                                    XmlReaderSettings settings = new XmlReaderSettings() { IgnoreComments = true, IgnoreWhitespace = true };
-                                    Stream entryStream = zf.GetInputStream(zs);
-                                    using (XmlReader xmlReader = XmlReader.Create(entryStream, settings))
-                                    {
-                                        IfcXmlReader reader = new IfcXmlReader();
-                                        reader.Read(this, xmlReader);
-                                    }
-                                    break;
-                                }                                                                
+                                if (input.Load(this) != 0)
+                                    throw new XbimException("Ifc file parsing errors\n" + input.ErrorLog.ToString());
                             }
                         }
-
+                        else if (zipstream.FileExt == ".ifcxml")
+                        {
+                            XmlReaderSettings settings = new XmlReaderSettings() { IgnoreComments = true, IgnoreWhitespace = false };
+                            using (XmlReader xmlReader = XmlReader.Create(zipstream.InputFile, settings))
+                            {
+                                IfcXmlReader reader = new IfcXmlReader();
+                                reader.Read(this, xmlReader);
+                            }
+                        }
                     }
                 }
 
                 else if (fileType.HasFlag(XbimStorageType.IFCXML))
                 {
                     // input to be xml file, output will be xbim file
-                    XmlReaderSettings settings = new XmlReaderSettings() { IgnoreComments = true, IgnoreWhitespace = true };
-                    Stream xmlInStream = new FileStream(inputFileName, FileMode.Open, FileAccess.Read);
-
-                    using (XmlReader xmlReader = XmlReader.Create(xmlInStream, settings))
+                    XmlReaderSettings settings = new XmlReaderSettings() { IgnoreComments = true, IgnoreWhitespace = false };
+                    using (Stream xmlInStream = new FileStream(inputFileName, FileMode.Open, FileAccess.Read))
                     {
-                        IfcXmlReader reader = new IfcXmlReader();
-                        reader.Read(this, xmlReader);
+                        using (XmlReader xmlReader = XmlReader.Create(xmlInStream, settings))
+                        {
+                            IfcXmlReader reader = new IfcXmlReader();
+                            reader.Read(this, xmlReader);
+                        }
                     }
                 }
                 else if (fileType.HasFlag(XbimStorageType.IFC))
                 {
                     //attach it to the Ifc Stream Parser
-                    using (IfcInputStream input = new IfcInputStream(new FileStream(inputFileName, FileMode.Open, FileAccess.Read)))
+                    using (FileStream stream = new FileStream(inputFileName, FileMode.Open, FileAccess.Read))
                     {
-                        if (input.Load(this) != 0)
-                            throw new Exception("Ifc file parsing errors\n" + input.ErrorLog.ToString());
+                        using (IfcInputStream input = new IfcInputStream(stream))
+                        {
+                            if (input.Load(this) != 0)
+                            {
+                                Logger.WarnFormat("IFC file {0} failed to load.", inputFileName);
+                                throw new Exception("Ifc file parsing errors\n" + input.ErrorLog.ToString());
+                            }
+                        }
                     }
 
                 }
@@ -1306,6 +1365,150 @@ namespace Xbim.IO
         public void Import(string inputFileName)
         {
             throw new NotImplementedException("Import functionality: not implemented yet");
+        }
+
+
+
+        #region IModel Members
+
+
+        public string Open(string inputFileName, ReportProgressDelegate progDelegate)
+        {
+            return Open(inputFileName, progDelegate);
+        }
+
+        /// <summary>
+        /// Inserts a deep copy of the toCopy object into this model
+        /// All property values are copied to the maximum depth
+        /// Objects are not duplicated, if repeated copies are to be performed use the version with the 
+        /// mapping argument to ensure objects are not duplicated
+        /// </summary>
+        /// <param name="toCopy"></param>
+        /// <returns></returns>
+        public T InsertCopy<T>(T toCopy, bool includeInverses = false) where T : IPersistIfcEntity
+        {
+            return InsertCopy(toCopy, new Dictionary<long, long>(), includeInverses);
+        }
+
+        /// <summary>
+        /// Inserts a deep copy of the toCopy object into this model
+        /// All property values are copied to the maximum depth
+        /// Inverse properties are not copied
+        /// </summary>
+        /// <param name="toCopy">Instance to copy</param>
+        /// <param name="mappings">Supply a dictionary of mappings if repeat copy insertions are to be made</param>
+        /// <returns></returns>
+        public T InsertCopy<T>(T toCopy, Dictionary<long, long> mappings, bool includeInverses = false) where T : IPersistIfcEntity
+        {
+            Transaction txn = Transaction.Current;
+            Debug.Assert(txn != null); //model must be in the active transaction to create new entities
+            long map;
+            if (mappings.TryGetValue(Math.Abs(toCopy.EntityLabel), out map))
+                return (T)this.GetInstance(map);
+            IfcType ifcType = IfcInstances.IfcEntities[toCopy.GetType()];
+            if (typeof(IfcCartesianPoint) == ifcType.Type || typeof(IfcDirection) == ifcType.Type)//special cases for cartesian point and direction for efficiency
+            {
+                IPersistIfcEntity v = (IPersistIfcEntity)Activator.CreateInstance(toCopy.GetType(), new object[] { toCopy });
+                v.Bind(this, NextLabel());
+                _ifcInstances.Add_Reversible(v);
+                mappings.Add(Math.Abs(toCopy.EntityLabel), v.EntityLabel);
+                return (T)v;
+            }
+            else
+            {
+                IPersistIfcEntity theCopy = (IPersistIfcEntity)Activator.CreateInstance(ifcType.Type);
+                IfcRoot rt = theCopy as IfcRoot;
+                theCopy.Bind(this, NextLabel());
+                _ifcInstances.Add_Reversible(theCopy);
+                mappings.Add(Math.Abs(toCopy.EntityLabel), theCopy.EntityLabel);
+                IEnumerable<IfcMetaProperty> props = ifcType.IfcProperties.Values.Where(p => !p.IfcAttribute.IsDerivedOverride);
+                if (includeInverses)
+                    props = props.Union(ifcType.IfcInverses);
+                foreach (IfcMetaProperty prop in props)
+                {
+                    if (rt != null && prop.PropertyInfo.Name == "OwnerHistory") //don't add the owner history in as this will be changed later
+                        continue;
+                    object value = prop.PropertyInfo.GetValue(toCopy, null);
+                    if (value != null)
+                    {
+                        bool isInverse = (prop.IfcAttribute.Order == -1); //don't try and set the values for inverses
+                        Type theType = value.GetType();
+                        //if it is an express type or a value type, set the value
+                        if (theType.IsValueType || typeof(ExpressType).IsAssignableFrom(theType))
+                        {
+                            prop.PropertyInfo.SetValue(theCopy, value, null);
+                        }
+                        //else 
+                        else if (!isInverse && typeof(IPersistIfcEntity).IsAssignableFrom(theType))
+                        {
+                            prop.PropertyInfo.SetValue(theCopy, InsertCopy((IPersistIfcEntity)value, mappings, includeInverses), null);
+                        }
+                        else if (!isInverse && typeof(ExpressEnumerable).IsAssignableFrom(theType))
+                        {
+                            Type itemType = GetItemTypeFromGenericType(theType);
+                            
+                            ExpressEnumerable copyColl;
+                            if (!theType.IsGenericType) //we have a class that inherits from a generic type
+                                copyColl = (ExpressEnumerable)Activator.CreateInstance(theType, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, new object[] { theCopy }, null);
+                            else
+                            {
+                                Type genericType = theType.GetGenericTypeDefinition();
+                                Type gt = genericType.MakeGenericType(new Type[] { itemType });
+                                copyColl = (ExpressEnumerable)Activator.CreateInstance(gt, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, new object[] { theCopy }, null);
+                            }
+                            prop.PropertyInfo.SetValue(theCopy, copyColl, null);
+                            foreach (var item in (ExpressEnumerable)value)
+                            {
+                                Type actualItemType = item.GetType();
+                                if (actualItemType.IsValueType || typeof(ExpressType).IsAssignableFrom(actualItemType))
+                                    copyColl.Add(item);
+                                else if (typeof(IPersistIfcEntity).IsAssignableFrom(actualItemType))
+                                    copyColl.Add(InsertCopy((IPersistIfcEntity)item, mappings, includeInverses));
+                                else
+                                    throw new XbimException(string.Format("Unexpected collection item type ({0}) found", itemType.Name));
+                            }
+                        }
+                        else if (isInverse && value is IEnumerable<IPersistIfcEntity>) //just an enumeration of IPersistIfcEntity
+                        {
+
+                            foreach (var ent in (IEnumerable<IPersistIfcEntity>)value)
+                                InsertCopy(ent, mappings, includeInverses);
+                        }
+                        else if(isInverse && value is IPersistIfcEntity) //it is an inverse and has a single value
+                            InsertCopy((IPersistIfcEntity)value, mappings, includeInverses);
+                        else
+                            throw new XbimException(string.Format("Unexpected item type ({0})  found", theType.Name));
+
+                    }
+                }
+               
+                if (rt != null) rt.OwnerHistory = this.OwnerHistoryAddObject;
+                return (T)theCopy;
+            }
+        }
+
+       
+
+        private  Type GetItemTypeFromGenericType(Type genericType)
+        {
+            if (genericType == typeof(ICoordinateList))
+                return typeof(IfcLengthMeasure); //special case for coordinates
+            if (genericType.IsGenericType || genericType.IsInterface)
+            {
+                Type[] genericTypes = genericType.GetGenericArguments();
+                if (genericTypes.GetUpperBound(0) >= 0)
+                    return genericTypes[genericTypes.GetUpperBound(0)];
+                return null;
+            }
+            if (genericType.BaseType != null)
+                return GetItemTypeFromGenericType(genericType.BaseType);
+            return null;
+        }
+        #endregion
+
+        public void Dispose()
+        {
+            Close();
         }
     }
 }

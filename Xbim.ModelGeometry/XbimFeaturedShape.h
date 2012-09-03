@@ -7,21 +7,26 @@
 using namespace Xbim::Ifc::ProductExtension;
 using namespace System::Collections::Generic;
 using namespace Xbim::ModelGeometry::Scene;
+using namespace Xbim::Common::Logging;
 namespace Xbim
 {
 	namespace ModelGeometry
 	{
 		public ref class XbimFeaturedShape :IXbimGeometryModel
 		{
+		private:
+			static ILogger^ Logger = LoggerFactory::GetLogger();
+
 		protected:
 			IXbimGeometryModel^ mResultShape;
 			IXbimGeometryModel^ mBaseShape;
 			List<IXbimGeometryModel^>^ mOpenings;
 			List<IXbimGeometryModel^>^ mProjections;
 			XbimFeaturedShape(XbimFeaturedShape^ copy, IfcObjectPlacement^ location);
-			
+			bool DoCut(const TopoDS_Shape& shape, bool tryRepair);
+			bool DoUnion(const TopoDS_Shape& shape);
 		public:
-			XbimFeaturedShape(IXbimGeometryModel^ baseShape, IEnumerable<IXbimGeometryModel^>^ openings, IEnumerable<IXbimGeometryModel^>^ projections);
+			XbimFeaturedShape(IfcProduct^ product, IXbimGeometryModel^ baseShape, IEnumerable<IXbimGeometryModel^>^ openings, IEnumerable<IXbimGeometryModel^>^ projections);
 			
 			virtual property TopoDS_Shape* Handle
 			{
@@ -75,7 +80,7 @@ namespace Xbim
 			}
 			virtual XbimBoundingBox^ GetBoundingBox(bool precise)
 			{
-				return XbimGeometryModel::GetBoundingBox(this, precise);
+				return XbimGeometryModel::GetBoundingBox(mBaseShape, precise);
 			};
 
 			virtual IXbimGeometryModel^ Cut(IXbimGeometryModel^ shape);

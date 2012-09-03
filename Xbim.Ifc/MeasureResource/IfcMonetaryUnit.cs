@@ -155,8 +155,7 @@ namespace Xbim.Ifc.MeasureResource
                     _currency = (IfcCurrencyEnum) Enum.Parse(typeof (IfcCurrencyEnum), value.EnumVal, true);
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException(string.Format("P21 index value out of range in {0}",
-                                                                        this.GetType().Name));
+                    this.HandleUnexpectedAttribute(propIndex, value); break;
             }
         }
 

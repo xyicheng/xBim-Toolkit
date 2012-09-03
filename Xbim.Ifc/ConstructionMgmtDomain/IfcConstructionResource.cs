@@ -128,14 +128,13 @@ namespace Xbim.Ifc.ConstructionMgmtDomain
                     break;
                 case 7:
                     _resourceConsumption =
-                        (IfcResourceConsumptionEnum) Enum.Parse(typeof (IfcResourceConsumptionEnum), value.StringVal);
+                        (IfcResourceConsumptionEnum) Enum.Parse(typeof (IfcResourceConsumptionEnum), value.EnumVal);
                     break;
                 case 8:
                     _baseQuantity = (IfcMeasureWithUnit) value.EntityVal;
                     break;
                 default:
-                    throw new Exception(string.Format("Attribute index {0} is out of range for {1}", propIndex + 1,
-                                                      this.GetType().Name.ToUpper()));
+                    this.HandleUnexpectedAttribute(propIndex, value); break;
             }
         }
 

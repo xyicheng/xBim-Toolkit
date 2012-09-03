@@ -13,6 +13,7 @@ using namespace Xbim::Ifc::SelectTypes;
 using namespace Xbim::XbimExtensions::Interfaces;
 using namespace System::Collections::Generic;
 using namespace System::IO;
+using namespace Xbim::Common::Logging;
 
 namespace Xbim
 {
@@ -21,15 +22,16 @@ namespace Xbim
 		public ref class XbimShell : IXbimGeometryModel,  IEnumerable<XbimFace^>
 		{
 		private:
-			TopoDS_Shell * pShell;
+			TopoDS_Shape * pShell;
 			bool _hasCurvedEdges;
+			static ILogger^ Logger = LoggerFactory::GetLogger();
 		public:
 			XbimShell(IfcConnectedFaceSet^ faceSet);
 			XbimShell(IfcClosedShell^ shell);
 			XbimShell(IfcOpenShell^ shell);
 		
-			XbimShell(const TopoDS_Shell & shell);
-			XbimShell(const TopoDS_Shell & shell, bool hasCurves );
+			XbimShell(const TopoDS_Shape & shell);
+			XbimShell(const TopoDS_Shape & shell, bool hasCurves );
 			XbimShell(XbimShell^ shell, IfcAxis2Placement^ origin, IfcCartesianTransformationOperator^ transform, bool hasCurves );
 
 			~XbimShell()
@@ -122,16 +124,15 @@ namespace Xbim
 
 		
 			//Builds a TopoDS_Shell from an ClosedShell
-			static TopoDS_Shell Build(IfcClosedShell^ shell, bool% hasCurves);
+			static TopoDS_Shape Build(IfcClosedShell^ shell, bool% hasCurves);
 			
 			//Builds a TopoDS_Shell from an Openshell
-			static TopoDS_Shell Build(IfcOpenShell^ shell, bool% hasCurves);
+			static TopoDS_Shape Build(IfcOpenShell^ shell, bool% hasCurves);
 
 			//Builds a TopoDS_Shell from an ConnectedFaceSet
-			static TopoDS_Shell Build(IfcConnectedFaceSet^ faceSet, bool% hasCurves);
+			static TopoDS_Shape Build(IfcConnectedFaceSet^ faceSet, bool% hasCurves);
 
-			static bool MakeEdges(IfcLoop^ bound,Dictionary<Point3D, int>^ points,  BinaryWriter^ pointWriter, BinaryWriter^ vertexWriter, bool sense );
-			
+		
 		};
 
 	}

@@ -1,9 +1,10 @@
 #pragma once
 #include "IXbimGeometryModel.h"
 #include "XbimGeometryModel.h"
-
+#include "XbimShell.h"
 using namespace Xbim::Ifc::GeometryResource;
 using namespace Xbim::Ifc::TopologyResource;
+using namespace Xbim::Common::Logging;
 namespace Xbim
 {
 	namespace ModelGeometry
@@ -12,8 +13,9 @@ namespace Xbim
 		{
 		private:
 			IfcConnectedFaceSet^ _faceSet;
+			XbimShell^ _occShell;
 			XbimBoundingBox^ _boundingBox;
-
+			static ILogger^ Logger = LoggerFactory::GetLogger();
 			
 		public:
 
@@ -66,7 +68,9 @@ namespace Xbim
 			{
 				TopoDS_Shape* get()
 				{
-					throw gcnew NotImplementedException("Handle needs to be implemented");	
+					if(_occShell==nullptr)
+						_occShell = gcnew XbimShell(_faceSet);
+					return _occShell->Handle;	
 				};		
 				
 			}

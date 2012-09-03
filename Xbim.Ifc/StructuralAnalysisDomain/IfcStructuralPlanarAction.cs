@@ -67,11 +67,10 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
                 case 11:
                     _projectedOrTrue =
                         (IfcProjectedOrTrueLengthEnum)
-                        Enum.Parse(typeof (IfcProjectedOrTrueLengthEnum), value.StringVal, true);
+                        Enum.Parse(typeof (IfcProjectedOrTrueLengthEnum), value.EnumVal, true);
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException(string.Format("P21 index value out of range in {0}",
-                                                                        this.GetType().Name));
+                    this.HandleUnexpectedAttribute(propIndex, value); break;
             }
         }
 

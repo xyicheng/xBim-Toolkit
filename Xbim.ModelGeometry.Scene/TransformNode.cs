@@ -36,7 +36,9 @@ namespace Xbim.ModelGeometry.Scene
         private long? _productId;
         private Rect3D _boundingBox;
         TransformGraph _transformGraph;
+        
 
+    
         //non stored data
         XbimTriangulatedModelStream _triangulatedModel;
         private bool _visible;

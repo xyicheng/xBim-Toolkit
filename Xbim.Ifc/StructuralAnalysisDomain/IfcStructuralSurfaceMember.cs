@@ -88,14 +88,13 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
                 case 7:
                     _predefinedType =
                         (IfcStructuralSurfaceTypeEnum)
-                        Enum.Parse(typeof (IfcStructuralSurfaceTypeEnum), value.StringVal, true);
+                        Enum.Parse(typeof (IfcStructuralSurfaceTypeEnum), value.EnumVal, true);
                     break;
                 case 8:
                     _thickness = value.RealVal;
                     break;
                 default:
-                    throw new Exception(string.Format("Attribute index {0} is out of range for {1}", propIndex + 1,
-                                                      this.GetType().Name.ToUpper()));
+                    this.HandleUnexpectedAttribute(propIndex, value); break;
             }
         }
     }

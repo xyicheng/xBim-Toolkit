@@ -218,7 +218,7 @@ namespace Xbim.Ifc.ProfilePropertyResource
                 case 3:
                     _reinforcementRole =
                         (IfcReinforcingBarRoleEnum)
-                        Enum.Parse(typeof (IfcReinforcingBarRoleEnum), value.StringVal, true);
+                        Enum.Parse(typeof (IfcReinforcingBarRoleEnum), value.EnumVal, true);
                     break;
                 case 4:
                     _crossSectionArea = (IfcSectionProperties) value.EntityVal;
@@ -227,8 +227,7 @@ namespace Xbim.Ifc.ProfilePropertyResource
                     _crossSectionReinforcementDefinitions.Add((IfcReinforcementBarProperties) value.EntityVal);
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException(string.Format("P21 index value out of range in {0}",
-                                                                        this.GetType().Name));
+                    this.HandleUnexpectedAttribute(propIndex, value); break;
             }
         }
 

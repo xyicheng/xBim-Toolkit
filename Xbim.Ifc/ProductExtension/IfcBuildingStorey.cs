@@ -99,7 +99,7 @@ namespace Xbim.Ifc.ProductExtension
 #endif
                 return _elevation;
             }
-            set { ModelManager.SetModelValue(this, ref _elevation, value, v => Elevation = v, "Elevation"); }
+            set { ModelManager.SetModelValue(this, ref _elevation, value, v => _elevation = v, "Elevation"); }
         }
 
 
@@ -122,8 +122,7 @@ namespace Xbim.Ifc.ProductExtension
                     _elevation = value.RealVal;
                     break;
                 default:
-                    throw new Exception(string.Format("Attribute index {0} is out of range for {1}", propIndex + 1,
-                                                      this.GetType().Name.ToUpper()));
+                    this.HandleUnexpectedAttribute(propIndex, value); break;
             }
         }
 

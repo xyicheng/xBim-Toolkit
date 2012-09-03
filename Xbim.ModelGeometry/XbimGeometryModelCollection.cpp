@@ -7,8 +7,13 @@
 #include <BRepAlgoAPI_Cut.hxx>
 #include <BRepAlgoAPI_Common.hxx>
 #include <BRepAlgoAPI_Fuse.hxx>
-
+#include <BRepOffsetAPI_Sewing.hxx>
+#include <BRepLib.hxx>
+#include <ShapeUpgrade_ShellSewing.hxx>
+#include <BRepAlgoAPI_Fuse.hxx>
+#include <BRepTools.hxx>
 using namespace System::Linq;
+using namespace Xbim::Common::Exceptions;
 
 namespace Xbim
 {
@@ -18,7 +23,7 @@ namespace Xbim
 
 		IXbimGeometryModel^ XbimGeometryModelCollection::Cut(IXbimGeometryModel^ shape)
 		{
-			throw gcnew Exception("A cut operation has been applied to a collection of model object this is illegal according to schema");
+			throw gcnew XbimGeometryException("A cut operation has been applied to a collection of model object this is illegal according to schema");
 			/*try
 			{
 				*/
@@ -64,7 +69,7 @@ namespace Xbim
 		}
 		IXbimGeometryModel^ XbimGeometryModelCollection::Union(IXbimGeometryModel^ shape)
 		{
-			throw gcnew Exception("A cut operation has been applied to a collection of model object this is illegal according to schema");
+			throw gcnew XbimGeometryException("A cut operation has been applied to a collection of model object this is illegal according to schema");
 			//BRepAlgoAPI_Fuse boolOp(*pCompound,*(shape->Handle));
 
 			//if(boolOp.ErrorStatus() == 0) //find the solid
@@ -98,7 +103,7 @@ namespace Xbim
 		}
 		IXbimGeometryModel^ XbimGeometryModelCollection::Intersection(IXbimGeometryModel^ shape)
 		{
-			throw gcnew Exception("A cut operation has been applied to a collection of model object this is illegal according to schema");
+			throw gcnew XbimGeometryException("A cut operation has been applied to a collection of model object this is illegal according to schema");
 			//BRepAlgoAPI_Common boolOp(*pCompound,*(shape->Handle));
 
 			//if(boolOp.ErrorStatus() == 0) //find the solid
@@ -162,24 +167,29 @@ namespace Xbim
 
 		IXbimGeometryModel^ XbimGeometryModelCollection::CopyTo(IfcObjectPlacement^ placement)
 		{
-			throw gcnew Exception("A copyto operation has been applied to a collection of model object this is illegal according to schema");
-			/*if(dynamic_cast<IfcLocalPlacement^>(placement))
+			XbimGeometryModelCollection^ newColl = gcnew XbimGeometryModelCollection();
+			for each(IXbimGeometryModel^ shape in shapes)
 			{
-				TopoDS_Compound movedShape = *pCompound;
-				IfcLocalPlacement^ lp = (IfcLocalPlacement^)placement;
-				movedShape.Move(XbimGeomPrim::ToLocation(lp->RelativePlacement));
-				return gcnew XbimGeometryModelCollection(movedShape, shapes, HasCurvedEdges);
+				newColl->Add(shape->CopyTo(placement));
 			}
-			else
-				throw(gcnew Exception("XbimSolid::CopyTo only supports IfcLocalPlacement type"));*/
-
+			return newColl;
 		}
-
+		///Every element should be a solid bedore this is called. returns a compound solid
 		IXbimGeometryModel^ XbimGeometryModelCollection::Solidify()
 		{
-
-			return XbimGeometryModel::Fix(this);
-
+			IXbimGeometryModel^ a;
+			for each(IXbimGeometryModel^ b in shapes)
+			{
+				if(a==nullptr) a=b;
+				else
+				{
+					BRepAlgoAPI_Fuse fuse(*(a->Handle),*(b->Handle));
+					if(fuse.IsDone() && !fuse.Shape().IsNull())
+						a=gcnew XbimSolid(fuse.Shape());
+				}
+			}
+			return a;
+			
 		}
 	}
 }

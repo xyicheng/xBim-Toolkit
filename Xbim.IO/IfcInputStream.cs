@@ -18,6 +18,7 @@ using System.IO;
 using System.Text;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Parser;
+using Xbim.Common.Exceptions;
 
 #endregion
 
@@ -136,12 +137,19 @@ namespace Xbim.IO
                 try
                 {
                     if (progressHandler != null) part21Parser.ProgressStatus += progressHandler;
+                    System.Threading.Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo("en-US");
                     part21Parser.Parse();
-                    
+
+                }
+                catch (XbimException ex)
+                {
+                    // Expected errors. We don't need the full exception stack.
+                    _errorLog.WriteLine(ex.Message);
+                    errorCount++;
                 }
                 catch (Exception ex)
                 {
-                    _errorLog.WriteLine("General Parser error.");
+                    _errorLog.WriteLine("Unexpected Parser error.");
                     int indent = tw.Indent;
                     while (ex != null)
                     {

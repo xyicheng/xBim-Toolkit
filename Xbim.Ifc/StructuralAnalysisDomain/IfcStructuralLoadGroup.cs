@@ -172,14 +172,14 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
                     break;
                 case 5:
                     _predefinedType =
-                        (IfcLoadGroupTypeEnum) Enum.Parse(typeof (IfcLoadGroupTypeEnum), value.StringVal, true);
+                        (IfcLoadGroupTypeEnum) Enum.Parse(typeof (IfcLoadGroupTypeEnum), value.EnumVal, true);
                     break;
                 case 6:
-                    _actionType = (IfcActionTypeEnum) Enum.Parse(typeof (IfcActionTypeEnum), value.StringVal, true);
+                    _actionType = (IfcActionTypeEnum) Enum.Parse(typeof (IfcActionTypeEnum), value.EnumVal, true);
                     break;
                 case 7:
                     _actionSource =
-                        (IfcActionSourceTypeEnum) Enum.Parse(typeof (IfcActionSourceTypeEnum), value.StringVal, true);
+                        (IfcActionSourceTypeEnum) Enum.Parse(typeof (IfcActionSourceTypeEnum), value.EnumVal, true);
                     break;
                 case 8:
                     _coefficient = value.RealVal;
@@ -188,8 +188,7 @@ namespace Xbim.Ifc.StructuralAnalysisDomain
                     _purpose = value.StringVal;
                     break;
                 default:
-                    throw new Exception(string.Format("Attribute index {0} is out of range for {1}", propIndex + 1,
-                                                      this.GetType().Name.ToUpper()));
+                    this.HandleUnexpectedAttribute(propIndex, value); break;
             }
         }
     }

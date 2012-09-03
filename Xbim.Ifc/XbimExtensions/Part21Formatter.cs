@@ -42,7 +42,7 @@ namespace Xbim.XbimExtensions
 
                 // if compiler flag, only then do the following 3 lines
                 string rDoubleStr = dArg.ToString("R", CultureInfo.CreateSpecificCulture("en-US"));
-                double fixedDbl = double.Parse(rDoubleStr);
+                double fixedDbl = double.Parse(rDoubleStr, CultureInfo.CreateSpecificCulture("en-US"));
                 result = fixedDbl.ToString("R", CultureInfo.CreateSpecificCulture("en-US"));
 
                 //decimal decArg = new Decimal(dArg);                                
@@ -75,7 +75,7 @@ namespace Xbim.XbimExtensions
             }
             // Return string representation of argument for any other formatting code
             else
-                return string.Format(@"'{0}'", arg.ToString().Replace("\'", "\'\'"));
+                return string.Format(@"'{0}'", IfcText.Escape(arg.ToString()));
         }
     }
 }

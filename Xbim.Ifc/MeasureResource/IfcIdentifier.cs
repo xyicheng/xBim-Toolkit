@@ -32,8 +32,7 @@ namespace Xbim.Ifc.MeasureResource
             if (propIndex == 0)
                 _theValue = value.StringVal;
             else
-                throw new Exception(string.Format("Attribute index {0} is out of range for {1}", propIndex + 1,
-                                                  this.GetType().Name.ToUpper()));
+                this.HandleUnexpectedAttribute(propIndex, value);
         }
 
         #endregion
@@ -57,7 +56,7 @@ namespace Xbim.Ifc.MeasureResource
 
         public string ToPart21
         {
-            get { return _theValue != null ? string.Format(@"'{0}'", _theValue) : "$"; }
+            get { return _theValue != null ? string.Format(@"'{0}'", IfcText.Escape(_theValue)) : "$"; }
         }
 
         /// <summary>

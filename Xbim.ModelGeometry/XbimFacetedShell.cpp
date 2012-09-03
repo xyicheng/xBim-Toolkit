@@ -5,6 +5,7 @@ using namespace System::Collections::Generic;
 using namespace Xbim::XbimExtensions;
 using namespace System::Windows::Media::Media3D;
 using namespace System::Linq;
+using namespace Xbim::Common::Exceptions;
 class GLUtesselator {};
 
 namespace Xbim
@@ -37,7 +38,7 @@ namespace Xbim
 			else
 			{
 				Type^ type = shell->GetType();
-				throw gcnew Exception("Error buiding shell from type " + type->Name);
+				throw gcnew XbimGeometryException("Error buiding shell from type " + type->Name);
 			}
 
 		}
@@ -118,7 +119,9 @@ namespace Xbim
 						}
 					}
 					else
-						System::Diagnostics::Debug::WriteLine(String::Format("XbimFacetedShell loops of type {0} are not implemented, Loop id = #{1}", faceBound->Bound->GetType()->ToString(), faceBound->Bound->EntityLabel));
+					{
+						Logger->WarnFormat(String::Format("XbimFacetedShell loops of type {0} are not implemented, Loop id = #{1}", faceBound->Bound->GetType()->ToString(), faceBound->Bound->EntityLabel));
+					}
 				}
 			}
 			unsigned int vertexCount=uniquePoints->Count;
@@ -147,7 +150,7 @@ namespace Xbim
 			memSize += faceCount * (sizeof(unsigned char)+(2*sizeof(unsigned short)) +sizeof(unsigned short)+ 3 * sizeof(double)); //allow space for the type of triangulation (1 byte plus number of indices - 2 bytes plus polygon count-2 bytes) + normal count + the normal
 			memSize += (totalIndices*indexSize*2) ; //assume worst case each face is made only of triangles, Max number of indices + Triangle Mode=1byte per triangle
 			
-			IntPtr vertexPtr = Marshal::AllocHGlobal(memSize);
+			IntPtr vertexPtr = Marshal::AllocHGlobal(memSize*2); //temporary fix add a amargin of error
 			try
 			{	
 				unsigned char* pointBuffer = (unsigned char*)vertexPtr.ToPointer();
@@ -189,7 +192,13 @@ namespace Xbim
 				{
 
 					IfcDirection^ normal = ((IFace^)fc)->Normal;
-					vertexData.BeginFace(gp_Dir(normal->X, normal->Y, normal->Z));
+					//srl if an invalid normal is returned the face is not valid (sometimes a line or a point is defined) skip the face
+					/*if(normal->IsInvalid()) 
+					{
+						(*pFaceCount)--;
+						break;
+					}*/
+					vertexData.BeginFace(normal->X, normal->Y, normal->Z);
 					gluTessBeginPolygon(tess, &vertexData);
 					// go over each bound
 					for each (IfcFaceBound^ bound in fc->Bounds)
@@ -198,7 +207,7 @@ namespace Xbim
 						IfcPolyLoop^ polyLoop=(IfcPolyLoop^)bound->Bound;
 						if(polyLoop->Polygon->Count < 3) 
 						{
-							System::Diagnostics::Debug::WriteLine(String::Format("XbimFacetedShell, illegal number of points in Bound {0}",bound->EntityLabel));
+							Logger->WarnFormat(String::Format("XbimFacetedShell, illegal number of points in Bound {0}",bound->EntityLabel));
 							continue;
 						}
 						//write a face
@@ -232,8 +241,9 @@ namespace Xbim
 			}
 			catch(Exception^ e)
 			{
-				System::Diagnostics::Debug::WriteLine(String::Format("XbimFacetedShell, General failure in Shell #{0}",_faceSet->EntityLabel));
-				System::Diagnostics::Debug::WriteLine(e->Message);
+				String^ message = String::Format("XbimFacetedShell, General failure in Shell #{0}",_faceSet->EntityLabel);
+				Logger->Error(message, e);
+
 				return XbimTriangulatedModelStream::Empty;		
 			}
 			finally

@@ -195,7 +195,7 @@ namespace Xbim.Ifc.ProfilePropertyResource
                 case 2:
                     _barSurface =
                         (IfcReinforcingBarSurfaceEnum)
-                        Enum.Parse(typeof (IfcReinforcingBarSurfaceEnum), value.StringVal, true);
+                        Enum.Parse(typeof (IfcReinforcingBarSurfaceEnum), value.EnumVal, true);
                     break;
                 case 3:
                     _effectiveDepth = value.RealVal;
@@ -207,8 +207,7 @@ namespace Xbim.Ifc.ProfilePropertyResource
                     _barCount = value.NumberVal;
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException(string.Format("P21 index value out of range in {0}",
-                                                                        this.GetType().Name));
+                    this.HandleUnexpectedAttribute(propIndex, value); break;
             }
         }
 

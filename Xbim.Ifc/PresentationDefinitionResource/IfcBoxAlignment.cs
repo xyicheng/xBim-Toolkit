@@ -19,6 +19,7 @@ using System.Runtime.Serialization;
 using Xbim.Ifc.SelectTypes;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Parser;
+using Xbim.Ifc.MeasureResource;
 
 #endregion
 
@@ -34,13 +35,12 @@ namespace Xbim.Ifc.PresentationDefinitionResource
             if (propIndex == 0)
                 _theValue = value.StringVal;
             else
-                throw new Exception(string.Format("Attribute index {0} is out of range for {1}", propIndex + 1,
-                                                  this.GetType().Name.ToUpper()));
+                this.HandleUnexpectedAttribute(propIndex, value);
         }
 
         #endregion
 
-        [DataMember(Order = 0, Name = "Value", EmitDefaultValue = false, IsRequired = true)] private string _theValue;
+        private string _theValue;
 
         Type ExpressType.UnderlyingSystemType
         {
@@ -70,7 +70,7 @@ namespace Xbim.Ifc.PresentationDefinitionResource
 
         public string ToPart21
         {
-            get { return _theValue != null ? string.Format(@"'{0}'", _theValue) : "$"; }
+            get { return _theValue != null ? string.Format(@"'{0}'", IfcText.Escape(_theValue)) : "$"; }
         }
 
         #endregion

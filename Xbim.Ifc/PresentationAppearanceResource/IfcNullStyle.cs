@@ -63,8 +63,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
         public void IfcParse(int propIndex, IPropertyValue value)
         {
             if (!(propIndex == 0 && value.StringVal == "NULL"))
-                throw new Exception(string.Format("Attribute index {0} is out of range for {1}", propIndex + 1,
-                                                  this.GetType().Name.ToUpper()));
+                this.HandleUnexpectedAttribute(propIndex, value);
         }
 
         public string WhereRule()

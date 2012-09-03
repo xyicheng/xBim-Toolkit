@@ -88,8 +88,7 @@ namespace Xbim.Ifc.TopologyResource
                     _orientation = value.BooleanVal;
                     break;
                 default:
-                    throw new Exception(string.Format("Attribute index {0} is out of range for {1}", propIndex + 1,
-                                                      this.GetType().Name.ToUpper()));
+                    this.HandleUnexpectedAttribute(propIndex, value); break;
             }
         }
 
@@ -157,11 +156,14 @@ namespace Xbim.Ifc.TopologyResource
                         return new IfcDirection(cp);
                     }
                 }
-                // should never come here
-                throw new Exception("IfcFaceBound:Normal has an Invalid face");
+                //srl removed the exception to stop invalid faces from causing a crash, an invalid normal is returned which can be checked for
+                return new IfcDirection(0, 0, 0); //return an invalid normal as the face is either a line or a point
+                //throw new Exception("IfcFaceBound:Normal has an Invalid face");
             }
             else
-                throw new Exception("IfcFaceBound:Normal has an undefined bound");
+                //srl removed the exception to stop invalid faces from causing a crash, an invalid normal is returned which can be checked for
+                return new IfcDirection(0, 0, 0); //return an invalid normal as the face is either a line or a point
+               // throw new Exception("IfcFaceBound:Normal has an undefined bound");
         }
     }
 }

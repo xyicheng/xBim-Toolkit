@@ -13,34 +13,46 @@ namespace Xbim.ModelGeometry.Scene
         private Stream _sceneStream;
         private string _sceneStreamFileName;
         private TransformGraph _graph;
-              
+        private XbimLOD _lod;
+
+        public XbimLOD LOD
+        {
+            get { return _lod; }
+            set { _lod = value; }
+        }      
 
         public XbimSceneStream(IModel model, string cacheFile)
         {
      
             _sceneStreamFileName = cacheFile;
             _sceneStream = new FileStream(cacheFile,FileMode.Open, FileAccess.Read);
-            _graph = new TransformGraph(model, this);
-            _graph.Read(new BinaryReader(_sceneStream));
+            lock (_sceneStream)
+            {
+                _graph = new TransformGraph(model, this);
+                _graph.Read(new BinaryReader(_sceneStream));
+            }
         }
 
         
 
         public XbimTriangulatedModelStream Triangulate(TransformNode node)
         {
-            _sceneStream.Seek(node.FilePosition, SeekOrigin.Begin);
-            BinaryReader br = new BinaryReader(_sceneStream);
-            int len = br.ReadInt32();
-
-            if (len > 0)
+            lock (_sceneStream)
             {
-                UInt16 numChildren = br.ReadUInt16();
-                Byte hasData = br.ReadByte();
-                byte [] data = br.ReadBytes(len);
-                return new XbimTriangulatedModelStream(data, numChildren, hasData);
+                _sceneStream.Seek(node.FilePosition, SeekOrigin.Begin);
+                BinaryReader br = new BinaryReader(_sceneStream);
+                int len = br.ReadInt32();
+
+                if (len > 0)
+                {
+                    UInt16 numChildren = br.ReadUInt16();
+                    Byte hasData = br.ReadByte();
+                    byte[] data = br.ReadBytes(len);
+                    return new XbimTriangulatedModelStream(data, numChildren, hasData);
+                }
+                else
+                    return XbimTriangulatedModelStream.Empty;
             }
-            else
-                return XbimTriangulatedModelStream.Empty;
         }
 
 

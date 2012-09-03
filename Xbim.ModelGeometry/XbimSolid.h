@@ -17,6 +17,8 @@ using namespace System::Collections::Generic;
 using namespace Xbim::Ifc::SelectTypes;
 using namespace Xbim::Ifc::GeometricModelResource;
 using namespace Xbim::Ifc::GeometricConstraintResource;
+using namespace Xbim::Common::Logging;
+
 namespace Xbim
 {
 	namespace ModelGeometry
@@ -25,6 +27,7 @@ namespace Xbim
 		{
 		private:
 			TopoDS_Shape* pSolid;
+			
 		public:
 			XbimMeshedFaceEnumerable(const TopoDS_Solid&  solid)
 			{
@@ -80,6 +83,7 @@ namespace Xbim
 		{
 		protected:
 			TopoDS_Shape* nativeHandle;
+			static ILogger^ Logger = LoggerFactory::GetLogger();
 		private:
 			
 			bool _hasCurvedEdges;
@@ -132,6 +136,8 @@ namespace Xbim
 			XbimSolid(IfcSolidModel^ repItem);
 
 			XbimSolid(IfcClosedShell^ repItem);
+
+			XbimSolid(IfcConnectedFaceSet^ repItem);
 
 			XbimSolid(IfcCsgPrimitive3D^ repItem);
 			void Print();
@@ -213,7 +219,7 @@ namespace Xbim
 			///static builders 
 
 			static TopoDS_Solid Build(IfcCsgSolid^ csgSolid, bool% hasCurves);
-			static TopoDS_Solid Build(IfcManifoldSolidBrep^ manifold, bool% hasCurves);
+			static TopoDS_Shape Build(IfcManifoldSolidBrep^ manifold, bool% hasCurves);
 			
 			static TopoDS_Solid Build(IfcSweptDiskSolid^ swdSolid, bool% hasCurves);
 
@@ -221,9 +227,10 @@ namespace Xbim
 			static TopoDS_Solid Build(IfcExtrudedAreaSolid^ repItem, bool% hasCurves);
 			static TopoDS_Solid Build(IfcRevolvedAreaSolid^ repItem, bool% hasCurves);
 			static TopoDS_Solid Build(IfcSurfaceCurveSweptAreaSolid^ repItem, bool% hasCurves);
-			static TopoDS_Solid Build(IfcFacetedBrep^ repItem, bool% hasCurves);
+			static TopoDS_Shape Build(IfcFacetedBrep^ repItem, bool% hasCurves);
 			static TopoDS_Solid Build(IfcBoxedHalfSpace^ bhs, bool% hasCurves);
-			static TopoDS_Solid Build(IfcClosedShell^ cShell, bool% hasCurves);
+			static TopoDS_Shape Build(IfcClosedShell^ cShell, bool% hasCurves);
+			static TopoDS_Shape Build(IfcConnectedFaceSet^ cFaces, bool% hasCurves);
 			static TopoDS_Solid Build(IfcHalfSpaceSolid^ repItem, bool% hasCurves);
 			static TopoDS_Solid Build(IfcPolygonalBoundedHalfSpace^ pbhs, bool% hasCurves);
 			
@@ -232,7 +239,7 @@ namespace Xbim
 			static TopoDS_Solid Build(const TopoDS_Face & face, IfcDirection^ dir, double depth, bool% hasCurves);
 			static TopoDS_Solid Build(const TopoDS_Wire & wire, gp_Dir dir, bool% hasCurves);
 			static TopoDS_Solid Build(const TopoDS_Face & face, IfcAxis1Placement^ revolaxis, double angle, bool% hasCurves);
-			
+			static TopoDS_Solid MakeHalfSpace(IfcHalfSpaceSolid^ hs, bool% hasCurves, bool shift);
 			//IXbimGeometryModel interface
 		
 

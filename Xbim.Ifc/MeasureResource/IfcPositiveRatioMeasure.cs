@@ -31,8 +31,7 @@ namespace Xbim.Ifc.MeasureResource
             if (propIndex == 0)
                 _theValue = value.RealVal;
             else
-                throw new Exception(string.Format("Attribute index {0} is out of range for {1}", propIndex + 1,
-                                                  this.GetType().Name.ToUpper()));
+                this.HandleUnexpectedAttribute(propIndex, value);
         }
 
         #endregion
@@ -64,12 +63,13 @@ namespace Xbim.Ifc.MeasureResource
             //string str = _theValue.ToString();
             //if (str.IndexOfAny(new[] {'.', 'E', 'e'}) == -1) str += ".";
             //return str;
+            
         }
 
         public IfcPositiveRatioMeasure(double val)
         {
-            if (val <= 0)
-                throw new ArgumentOutOfRangeException("PositiveRatioMeasures canot be 0 or less");
+            //if (val <= 0)
+            //    throw new ArgumentOutOfRangeException("PositiveRatioMeasures canot be 0 or less");
             _theValue = val;
         }
 

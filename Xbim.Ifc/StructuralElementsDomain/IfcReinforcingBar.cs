@@ -139,16 +139,15 @@ namespace Xbim.Ifc.StructuralElementsDomain
                 case 12:
                     _barRole =
                         (IfcReinforcingBarRoleEnum)
-                        Enum.Parse(typeof (IfcReinforcingBarRoleEnum), value.StringVal, true);
+                        Enum.Parse(typeof (IfcReinforcingBarRoleEnum), value.EnumVal, true);
                     break;
                 case 13:
                     _barSurface =
                         (IfcReinforcingBarSurfaceEnum)
-                        Enum.Parse(typeof (IfcReinforcingBarSurfaceEnum), value.StringVal, true);
+                        Enum.Parse(typeof (IfcReinforcingBarSurfaceEnum), value.EnumVal, true);
                     break;
                 default:
-                    throw new Exception(string.Format("Attribute index {0} is out of range for {1}", propIndex + 1,
-                                                      this.GetType().Name.ToUpper()));
+                    this.HandleUnexpectedAttribute(propIndex, value); break;
             }
         }
 

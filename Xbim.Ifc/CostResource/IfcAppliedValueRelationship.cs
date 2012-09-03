@@ -244,7 +244,7 @@ namespace Xbim.Ifc.CostResource
                 case 2:
                     _arithmeticOperator =
                         (IfcArithmeticOperatorEnum)
-                        Enum.Parse(typeof (IfcArithmeticOperatorEnum), value.StringVal, true);
+                        Enum.Parse(typeof (IfcArithmeticOperatorEnum), value.EnumVal, true);
                     break;
                 case 3:
                     _name = value.StringVal;
@@ -253,9 +253,7 @@ namespace Xbim.Ifc.CostResource
                     _description = value.StringVal;
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException("propIndex",
-                                                          string.Format("P21 index value out of range in {0}",
-                                                                        this.GetType().Name));
+                    this.HandleUnexpectedAttribute(propIndex, value); break;
             }
         }
 

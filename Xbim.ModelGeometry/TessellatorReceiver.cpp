@@ -30,6 +30,7 @@ namespace Xbim
 
 		void TessellatorReceiver::TessellateError(GLenum err)
 		{
+			Logger->WarnFormat("Error in TesselatorReceivor : errorcode {0}", err);
 		}
 
 		void TessellatorReceiver::Clear()

@@ -18,6 +18,7 @@ using System.Linq;
 using Xbim.Ifc.SelectTypes;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Parser;
+using Xbim.Ifc.MeasureResource;
 
 #endregion
 
@@ -33,8 +34,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
             if (propIndex == 0)
                 _theValue = value.StringVal;
             else
-                throw new ArgumentOutOfRangeException(string.Format("P21 index value out of range in {0}",
-                                                                    this.GetType().Name));
+                this.HandleUnexpectedAttribute(propIndex, value);
         }
 
         #endregion
@@ -54,7 +54,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
 
         public string ToPart21
         {
-            get { return _theValue != null ? string.Format(@"'{0}'", _theValue) : "$"; }
+            get { return _theValue != null ? string.Format(@"'{0}'", IfcText.Escape(_theValue)) : "$"; }
         }
 
         public static implicit operator IfcTextAlignment(string str)

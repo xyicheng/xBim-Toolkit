@@ -120,7 +120,7 @@ namespace Xbim.Ifc.ProfilePropertyResource
             switch (propIndex)
             {
                 case 0:
-                    _sectionType = (IfcSectionTypeEnum) Enum.Parse(typeof (IfcSectionTypeEnum), value.StringVal, true);
+                    _sectionType = (IfcSectionTypeEnum) Enum.Parse(typeof (IfcSectionTypeEnum), value.EnumVal, true);
                     break;
                 case 1:
                     _startProfile = (IfcProfileDef) value.EntityVal;
@@ -130,8 +130,7 @@ namespace Xbim.Ifc.ProfilePropertyResource
                     break;
 
                 default:
-                    throw new ArgumentOutOfRangeException(string.Format("P21 index value out of range in {0}",
-                                                                        this.GetType().Name));
+                    this.HandleUnexpectedAttribute(propIndex, value); break;
             }
         }
 

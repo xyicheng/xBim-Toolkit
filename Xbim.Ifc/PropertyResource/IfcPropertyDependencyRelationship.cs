@@ -240,9 +240,7 @@ namespace Xbim.Ifc.PropertyResource
                     _expression = value.StringVal;
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException("propIndex",
-                                                          string.Format("P21 index value out of range in {0}",
-                                                                        this.GetType().Name));
+                    this.HandleUnexpectedAttribute(propIndex, value); break;
             }
         }
 

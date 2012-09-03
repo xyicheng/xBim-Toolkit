@@ -17,7 +17,8 @@ using namespace Xbim::Ifc::Kernel;
 using namespace System;
 using namespace System::Collections::Generic;
 using namespace Xbim::ModelGeometry::Scene;
-
+using namespace Xbim::Common::Logging;
+using namespace Xbim::Ifc::SharedBldgElements;
 #pragma unmanaged
 
 		public class TesselateStream
@@ -28,6 +29,7 @@ using namespace Xbim::ModelGeometry::Scene;
 			TesselateStream( unsigned char* pDataStream, unsigned short faceCount, unsigned int nodeCount, int streamSize);
 			TesselateStream( unsigned char* pDataStream,  int streamSize, int position);
 			void BeginFace(const gp_Dir& normal);
+			void BeginFace(const double x, const double y, const double z);
 			void EndFace();
 			void BeginPolygon(GLenum type);
 			void WritePoint(double x, double y, double z);
@@ -65,9 +67,10 @@ namespace Xbim
 		
 		public ref class XbimGeometryModel abstract 
 		{
-			static private int _callStaticConstructor; //we need this to ensure the static constructor is called
-		private:
 			
+		private:
+			static int _callStaticConstructor; //we need this to ensure the static constructor is called
+			static ILogger^ Logger = LoggerFactory::GetLogger();
 			
 		public:
 			
@@ -75,16 +78,18 @@ namespace Xbim
 			static XbimGeometryModel(void)
 			{
 				Init();
+				
 			}
 			static public void Init()
 			{
 				Standard::SetReentrant(Standard_True);
+				
 			}
 			
 			virtual XbimTriangulatedModelStream^ Triangulate(IfcProduct^ product) abstract;
 
 			
-			XbimGeometryModel(void);
+			XbimGeometryModel(void){};
 			virtual XbimTriangulatedModelStream^ Mesh(bool withNormals, double deflection, Matrix3D transform) abstract;
 			virtual XbimTriangulatedModelStream^ Mesh(bool withNormals, double deflection) abstract;
 			virtual XbimTriangulatedModelStream^ Mesh(bool withNormals) abstract;
@@ -95,13 +100,13 @@ namespace Xbim
 			virtual IXbimGeometryModel^ Intersection(IXbimGeometryModel^ shape)abstract;
 			virtual IXbimGeometryModel^ CopyTo(IfcObjectPlacement^ placement) abstract;
 			property XbimLocation^ Location {virtual XbimLocation ^ get() abstract; virtual void set(XbimLocation ^ location) abstract;};
-			static IXbimGeometryModel^ CreateFrom(IfcRepresentationItem^ repItem, bool forceSolid);
-			static IXbimGeometryModel^ CreateFrom(IfcRepresentationItem^ repItem, Dictionary<IfcRepresentation^, IXbimGeometryModel^>^ maps, bool forceSolid);
-			static IXbimGeometryModel^ CreateFrom(IfcRepresentation^ shape, Dictionary<IfcRepresentation^, IXbimGeometryModel^>^ maps, bool forceSolid);
-			static IXbimGeometryModel^ CreateFrom(IfcRepresentation^ shape, bool forceSolid);
-			static IXbimGeometryModel^ CreateFrom(IfcProduct^ product, IfcGeometricRepresentationContext^ repContext, Dictionary<IfcRepresentation^, IXbimGeometryModel^>^ maps, bool forceSolid);
-			static IXbimGeometryModel^ CreateFrom(IfcProduct^ product, Dictionary<IfcRepresentation^, IXbimGeometryModel^>^ maps, bool forceSolid);
-			static IXbimGeometryModel^ CreateFrom(IfcProduct^ product, bool forceSolid);
+			static IXbimGeometryModel^ CreateFrom(IfcRepresentationItem^ repItem, bool forceSolid, XbimLOD lod);
+			static IXbimGeometryModel^ CreateFrom(IfcRepresentationItem^ repItem, Dictionary<IfcRepresentation^, IXbimGeometryModel^>^ maps, bool forceSolid, XbimLOD lod);
+			static IXbimGeometryModel^ CreateFrom(IfcRepresentation^ shape, Dictionary<IfcRepresentation^, IXbimGeometryModel^>^ maps, bool forceSolid, XbimLOD lod);
+			static IXbimGeometryModel^ CreateFrom(IfcRepresentation^ shape, bool forceSolid, XbimLOD lod);
+			static IXbimGeometryModel^ CreateFrom(IfcProduct^ product, IfcGeometricRepresentationContext^ repContext, Dictionary<IfcRepresentation^, IXbimGeometryModel^>^ maps, bool forceSolid, XbimLOD lod);
+			static IXbimGeometryModel^ CreateFrom(IfcProduct^ product, Dictionary<IfcRepresentation^, IXbimGeometryModel^>^ maps, bool forceSolid, XbimLOD lod);
+			static IXbimGeometryModel^ CreateFrom(IfcProduct^ product, bool forceSolid, XbimLOD lod);
 			static IXbimGeometryModel^ CreateMap(IXbimGeometryModel^ item, IfcAxis2Placement^ origin, IfcCartesianTransformationOperator^ transform, Dictionary<IfcRepresentation^, IXbimGeometryModel^>^ maps, bool forceSolid);
 			static IXbimGeometryModel^ CreateMap(IXbimGeometryModel^ item, IfcAxis2Placement^ origin, Dictionary<IfcRepresentation^, IXbimGeometryModel^>^ maps, bool forceSolid);
 			static IXbimGeometryModel^ CreateMap(IXbimGeometryModel^ item, Dictionary<IfcRepresentation^, IXbimGeometryModel^>^ maps, bool forceSolid);
@@ -112,7 +117,7 @@ namespace Xbim
 			property double Volume {virtual double get()abstract;};
 			property bool HasCurvedEdges{virtual bool get() abstract;};
 			
-			
+			static bool CutOpenings(IfcProduct^ product, XbimLOD lod);
 		public:
 			//Builds a TopoDS_Compound from a ShellBasedSurfaceModel
 			static IXbimGeometryModel^ Build(IfcShellBasedSurfaceModel^ repItem, bool forceSolid);

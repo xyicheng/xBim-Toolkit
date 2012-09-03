@@ -87,7 +87,7 @@ namespace Xbim.Ifc.MaterialResource
 
         private IfcMaterial _material;
         private IfcPositiveLengthMeasure _layerThickness;
-        private IfcBoolean? _isVentilated;
+        private IfcLogical? _isVentilated;
 
         #endregion
 
@@ -140,7 +140,7 @@ namespace Xbim.Ifc.MaterialResource
         ///   set to FALSE if the matsel layer is a solid matsel layer (the default).
         /// </remarks>
         [IfcAttribute(3, IfcAttributeState.Optional)]
-        public IfcBoolean? IsVentilated
+        public IfcLogical? IsVentilated
         {
             get
             {
@@ -167,8 +167,7 @@ namespace Xbim.Ifc.MaterialResource
                     _isVentilated = value.BooleanVal;
                     break;
                 default:
-                    throw new Exception(string.Format("Attribute index {0} is out of range for {1}", propIndex + 1,
-                                                      this.GetType().Name.ToUpper()));
+                    this.HandleUnexpectedAttribute(propIndex, value); break;
             }
         }
 
