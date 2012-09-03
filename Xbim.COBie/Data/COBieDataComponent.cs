@@ -93,6 +93,12 @@ namespace Xbim.COBie.Data
                                    .Select(g => g.First())
                                    .ToList();
 
+            //first try property single values only get ProertySingleValues for each element and add to Dictionary
+            //Dictionary<IfcElement, List<IfcPropertySingleValue>> propSetsVals = res.OfType<IfcElement>().ToDictionary(el => el, el => el.PropertySets.SelectMany(ps => ps.HasProperties.OfType<IfcPropertySingleValue>()).ToList<IfcPropertySingleValue>()); 
+            //get property sets and property single values
+            Dictionary<IfcElement, Dictionary<IfcPropertySet, List<IfcPropertySingleValue>>> propSetsVals2 = res.OfType<IfcElement>().ToDictionary(el => el, el => el.PropertySets.ToDictionary(ps => ps, ps => ps.HasProperties.OfType<IfcPropertySingleValue>().ToList())); 
+
+
             List<string> AttNames = new List<string> { "SerialNumber",
                                                        "InstallationDate",
                                                        "WarrantyStartDate",
@@ -121,18 +127,28 @@ namespace Xbim.COBie.Data
                 component.ExtObject = el.GetType().Name;
                 component.ExtIdentifier = el.GlobalId;
                 //get the PropertySingleValues for the required properties
-                IEnumerable<IfcPropertySingleValue> PSVs = from PSet in el.IsDefinedByProperties
-                                                                where PSet.RelatingPropertyDefinition is IfcPropertySet
-                                                           from PSV in ((IfcPropertySet)PSet.RelatingPropertyDefinition).HasProperties.OfType<IfcPropertySingleValue>()
-                                                                where AttNames.Contains(PSV.Name)
-                                                            select PSV;
-                
-                component.SerialNumber = SetProperty(PSVs, "SerialNumber");
-                component.InstallationDate = SetProperty(PSVs, "InstallationDate");
-                component.WarrantyStartDate = SetProperty(PSVs, "WarrantyStartDate");
-                component.TagNumber = SetProperty(PSVs, "TagNumber");
-                component.BarCode = SetProperty(PSVs, "BarCode");
-                component.AssetIdentifier = SetProperty(PSVs, "AssetIdentifier"); 
+                var pSVs = (from dic in propSetsVals2[el]
+                            from pset in dic.Value
+                            where AttNames.Contains(pset.Name)
+                            select new { Name = pset.Name, Value = ((pset != null) && (pset.NominalValue != null)) ? pset.NominalValue.Value.ToString() : DEFAULT_STRING }).ToList();
+                //var pSVs = (from pSet in el.IsDefinedByProperties
+                //                where pSet.RelatingPropertyDefinition is IfcPropertySet
+                //           from pSV in ((IfcPropertySet)pSet.RelatingPropertyDefinition).HasProperties.OfType<IfcPropertySingleValue>()
+                //                where AttNames.Contains(pSV.Name)
+                //                     select new { Name = pSV.Name, Value = ((pSV != null) && (pSV.NominalValue != null)) ? pSV.NominalValue.Value.ToString() : DEFAULT_STRING }).ToList();
+
+                var item = pSVs.Where(p => p.Name == "SerialNumber").FirstOrDefault();
+                component.SerialNumber = (item != null) ? item.Value : DEFAULT_STRING;//SetProperty(PSVs, "SerialNumber");
+                item = pSVs.Where(p => p.Name == "InstallationDate").FirstOrDefault();
+                component.InstallationDate = (item != null) ? item.Value : DEFAULT_STRING; //SetProperty(PSVs, "InstallationDate");
+                item = pSVs.Where(p => p.Name == "WarrantyStartDate").FirstOrDefault();
+                component.WarrantyStartDate = (item != null) ? item.Value : DEFAULT_STRING; //SetProperty(PSVs, "WarrantyStartDate");
+                item = pSVs.Where(p => p.Name == "TagNumber").FirstOrDefault();
+                component.TagNumber = (item != null) ? item.Value : DEFAULT_STRING; //SetProperty(PSVs, "TagNumber");
+                item = pSVs.Where(p => p.Name == "BarCode").FirstOrDefault();
+                component.BarCode = (item != null) ? item.Value : DEFAULT_STRING; //SetProperty(PSVs, "BarCode");
+                item = pSVs.Where(p => p.Name == "AssetIdentifier").FirstOrDefault();
+                component.AssetIdentifier = (item != null) ? item.Value : DEFAULT_STRING;
 
                 components.Rows.Add(component);
                 //----------fill in the attribute information for floor-----------
@@ -145,8 +161,8 @@ namespace Xbim.COBie.Data
                                                                                           };//required property date <PropertySetName, PropertyName>
                 
                 //add *ALL* the attributes to the passed attributes sheet except property names that match the passed List<string>
-                SetAttributeSheet(el, passedValues, ExcludeAtts, null, null, ref attributes);
-
+                //SetAttributeSheet(el, passedValues, ExcludeAtts, null, null, ref attributes);
+                SetAttribSheet(passedValues, ExcludeAtts, null, ref attributes, propSetsVals2[el]);
             }
 
             return components;

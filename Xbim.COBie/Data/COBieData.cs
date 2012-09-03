@@ -427,7 +427,104 @@ namespace Xbim.COBie.Data
                 }
             }
         }
+
         
+        /// <summary>
+        /// Set values for attribute sheet
+        /// </summary>
+        /// <param name="passedValues">Holder to pass values form calling sheet function</param>
+        /// <param name="excProp">List of propertSinglalue names to exclude</param>
+        /// <param name = "excPropWC">List of propertSinglalue part names to exclude, if name holds the part name</param>
+        /// <param name="attributes">The attribute Sheet to add the properties to its rows</param>
+        /// <param name="dictPSets">Dictionary of (IfcProperySet, List(IfcPropertySingleValue))  </IfcProperySet></param>
+        protected void SetAttribSheet(Dictionary<string, string> passedValues, List<string> excProp, List<string> excPropWC, ref COBieSheet<COBieAttributeRow> attributes, Dictionary<IfcPropertySet, List<IfcPropertySingleValue>> dictPSets)
+        {
+            if (excPropWC == null) excPropWC = new List<string>();     //if null create to place default string           
+            excPropWC = excPropWC.Concat(_commonAttExcludes).ToList(); //common exclude PropertySingleValue name containing this part string                
+
+            foreach (KeyValuePair<IfcPropertySet, List<IfcPropertySingleValue>> pairValues in dictPSets)
+            {
+                IfcPropertySet ps = pairValues.Key; //get Property Set
+
+                //get all property attached to the property set
+                IEnumerable<IfcPropertySingleValue> pSVs = pairValues.Value; //Get Property SetAttribSheet Property Single Values
+
+                //filter for excluded properties, full name
+                if ((excProp != null) && (excProp.Count() > 0))
+                {
+                    //excProp = excProp.ConvertAll(d => d.ToLower()); //lowercase the strings in the list
+                    pSVs = from pVS in pSVs
+                           where !excProp.Contains(pVS.Name.ToString())
+                           select pVS;
+                }
+                //filter out the Property names that contain a string from the list excPropWC
+                if ((excPropWC != null) && (excPropWC.Count() > 0))
+                {
+                    //excPropWC = excPropWC.ConvertAll(d => d.ToLower()); //lowercase the strings in the list
+                    pSVs = from pVS in pSVs
+                           where ((from item in excPropWC
+                                   where pVS.Name.ToString().Contains(item)
+                                   select item).Count() == 0)
+                           select pVS;
+                }
+
+                //construct the rows
+                foreach (IfcPropertySingleValue pSV in pSVs)
+                {
+                    if (pSV != null)
+                    {
+                        //test value and format or filter depending on value
+                        string PSVvalue = "";
+                        if (pSV.NominalValue != null)
+                        {
+
+                            PSVvalue = pSV.NominalValue.Value.ToString();
+                            double num;
+                            if (double.TryParse(PSVvalue, out num)) PSVvalue = num.ToString("F3");
+                            if ((string.IsNullOrEmpty(PSVvalue)) || (string.Compare(PSVvalue, pSV.Name.ToString(), true) == 0) || (string.Compare(PSVvalue, "default", true) == 0))
+                            {
+                                continue; //skip to next loop item
+                            }
+
+                        }
+                        COBieAttributeRow attribute = new COBieAttributeRow(attributes);
+
+                        attribute.Name = pSV.Name.ToString(); ;
+
+                        //Get category
+                        string cat = GetCategory(ps);
+                        attribute.Category = (cat == DEFAULT_STRING) ? "Requirement" : cat;
+                        attribute.ExtIdentifier = ps.GlobalId;
+                        attribute.ExtObject = ps.Name;
+
+                        //passed properties from the sheet
+                        attribute.SheetName = passedValues["Sheet"];
+                        attribute.RowName = passedValues["Name"];
+                        attribute.CreatedBy = passedValues["CreatedBy"];
+                        attribute.CreatedOn = passedValues["CreatedOn"];
+                        attribute.ExtSystem = passedValues["ExtSystem"];
+
+                        attribute.Value = PSVvalue;
+                        attribute.Unit = DEFAULT_STRING; //set initially to default, saves the else statements
+                        attribute.Description = DEFAULT_STRING;
+                        attribute.AllowedValues = DEFAULT_STRING;
+                        if ((pSV.Unit != null) && (pSV.Unit is IfcContextDependentUnit))
+                        {
+                            attribute.Unit = ((IfcContextDependentUnit)pSV.Unit).Name.ToString();
+                            attribute.AllowedValues = ((IfcContextDependentUnit)pSV.Unit).UnitType.ToString();
+                        }
+                        attribute.Description = pSV.Description.ToString();
+                        if (string.IsNullOrEmpty(attribute.Description)) //if no description then just use name property
+                        {
+                            attribute.Description = attribute.Name;
+                        }
+
+                        attributes.Rows.Add(attribute);
+
+                    }
+                }
+            }
+        }
         /// <summary>
         /// Get the associated Type for a IfcObject, so a Door can be of type "Door Type A"
         /// </summary>
