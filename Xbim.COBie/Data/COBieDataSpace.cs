@@ -43,8 +43,10 @@ namespace Xbim.COBie.Data
             // get all IfcBuildingStory objects from IFC file
             IEnumerable<IfcSpace> ifcSpaces = Model.InstancesOfType<IfcSpace>().OrderBy(ifcSpace => ifcSpace.Name, new CompareIfcLabel());
 
-            //list of attributes to exclude form attribute sheet
-            List<string> ExcludeAtts = new List<string> {"RoomTag" , "Area", "Number", "ZoneName"};
+            //list of attributes and propertysets to exclude form attribute sheet
+            List<string> ExcludeAtts = new List<string> { "RoomTag", "Area", "Number"};
+            List<string> ExcludeAttsWC = new List<string> {"ZoneName", "Category" }; //exclude part names
+            List<string> ExcludePropSet = new List<string>() { "BaseQuantities" };
 
             foreach (IfcSpace sp in ifcSpaces)
             {
@@ -95,7 +97,7 @@ namespace Xbim.COBie.Data
                                                                                           };//required property date <PropertySetName, PropertyName>
                 
                 //add *ALL* the attributes to the passed attributes sheet except property names that match the passed List<string>
-                SetAttributeSheet(sp, passedValues, ExcludeAtts, new List<string>(), ref attributes);
+                SetAttributeSheet(sp, passedValues, ExcludeAtts, ExcludeAttsWC, ExcludePropSet, ref attributes);
                             
                 
             }

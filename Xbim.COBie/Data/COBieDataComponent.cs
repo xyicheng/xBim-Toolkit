@@ -98,8 +98,10 @@ namespace Xbim.COBie.Data
                                                        "WarrantyStartDate",
                                                        "TagNumber",
                                                        "BarCode",
-                                                       "AssetIdentifier"
-                                                    };
+                                                       "AssetIdentifier"};
+            List<string> ExcludeAtts = AttNames;
+            ExcludeAtts.Add("Circuit NumberSystem Type");
+            ExcludeAtts.Add("System Name");
 
             foreach (var obj in res)
             {
@@ -143,7 +145,7 @@ namespace Xbim.COBie.Data
                                                                                           };//required property date <PropertySetName, PropertyName>
                 
                 //add *ALL* the attributes to the passed attributes sheet except property names that match the passed List<string>
-                SetAttributeSheet(el, passedValues, AttNames, new List<string>(), ref attributes);
+                SetAttributeSheet(el, passedValues, ExcludeAtts, null, null, ref attributes);
 
             }
 

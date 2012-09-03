@@ -153,7 +153,7 @@ namespace Xbim.COBie.Data
                                                                                           {"ExtSystem", typ.ExtSystem}
                                                                                           };//required property date <PropertySetName, PropertyName>
                 //add *ALL* the attributes to the passed attributes sheet except property names that match the passed List<string>
-                SetAttributeSheet(to, passedValues, ExcludeAtts, new List<string>(), ref attributes);
+                SetAttributeSheet(to, passedValues, ExcludeAtts, null, null, ref attributes);
             }
             //StopW.Stop();
             //Debug.WriteLine(StopW.Elapsed.ToString());

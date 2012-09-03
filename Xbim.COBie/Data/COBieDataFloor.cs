@@ -41,7 +41,11 @@ namespace Xbim.COBie.Data
 
             
             IfcClassification ifcClassification = Model.InstancesOfType<IfcClassification>().FirstOrDefault();
-
+            //list of attributes to exclude form attribute sheet
+            List<string> ExcludeAtts = new List<string> { "Name", "Line Weight", "Color", 
+                                                          "Colour",   "Symbol at End 1 Default", 
+                                                          "Symbol at End 2 Default", "Automatic Room Computation Height", "Elevation" };
+                
             foreach (IfcBuildingStorey bs in buildingStories)
             {
                 COBieFloorRow floor = new COBieFloorRow(floors);
@@ -80,22 +84,10 @@ namespace Xbim.COBie.Data
                                                                                           {"CreatedOn", floor.CreatedOn},
                                                                                           {"ExtSystem", floor.ExtSystem}
                                                                                           };//required property date <PropertySetName, PropertyName>
-                /*...go for all properties with exclude list
-                List<KeyValuePair<string, string>> ReqdProps = new List<KeyValuePair<string, string>>(); //get over the unique key with dictionary
-                ReqdProps.Add(new KeyValuePair<string, string>("PSet_Revit_Type_Graphics", "Line Weight"));
-                ReqdProps.Add(new KeyValuePair<string, string>("PSet_Revit_Type_Graphics", "Symbol at End 1 Default"));
-                ReqdProps.Add(new KeyValuePair<string, string>("PSet_Revit_Type_Graphics", "Symbol at End 2 Default"));
-                ReqdProps.Add(new KeyValuePair<string, string>("PSet_Revit_Type_Graphics", "Color"));
-                ReqdProps.Add(new KeyValuePair<string, string>("PSet_Revit_Type_Constraints", "Elevation Base"));
                 
-                //add the attributes to the passed attributes sheet
-                SetAttributeSheet(bs, passedValues, ReqdProps, ref attributes);
-                */
                 //add *ALL* the attributes to the passed attributes sheet except property names that match the passed List<string>
                 //Exclude property list
-                List<string> AttNames = new List<string> { "Elevation"
-                                                            };
-                SetAttributeSheet(bs, passedValues, AttNames, new List<string>(), ref attributes);
+                SetAttributeSheet(bs, passedValues, ExcludeAtts, null, new List<string>(), ref attributes);
             }
 
             return floors;

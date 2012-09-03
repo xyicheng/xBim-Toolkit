@@ -33,7 +33,8 @@ namespace Xbim.COBie.Data
             COBieSheet<COBieImpactRow> impacts = new COBieSheet<COBieImpactRow>(Constants.WORKSHEET_IMPACT);
 
             // get all IfcPropertySet objects from IFC file
-            IEnumerable<IfcPropertySet> ifcProperties = Model.InstancesOfType<IfcPropertySet>();
+
+            IEnumerable<IfcPropertySet> ifcProperties = Model.InstancesOfType<IfcPropertySet>().Where(ps => ps.Name.ToString() == "Pset_EnvironmentalImpactValues");
                         
             foreach (IfcPropertySet ppt in ifcProperties)
             {

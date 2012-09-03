@@ -18,12 +18,28 @@ namespace Xbim.COBie.Data
     /// <summary>
     /// Base class for the input of data into the Excel worksheets
     /// </summary>
-    public abstract class COBieData
+    public abstract  class COBieData
     {
         protected IModel Model { get; set; }
         
         public const string DEFAULT_STRING = "n/a";
         public const string DEFAULT_NUMERIC = "0";
+        /// <summary>
+        /// Common exclude PropertySingleValue name containing any of the strings 
+        /// </summary>
+        public List<string> _commonAttExcludes = new List<string>() {"Zone Base Offset", "Upper Limit", "Roomtag", 
+                            "Line Pattern", "Symbol", "Width","Window Inset", 
+                            "Radius", "Phase Created","Phase", "Outside Radius", 
+                            "Outside Diameter", "Omniclass", "Offset", "Mark",
+                            "Recepticles", "Limit Offset", "Lighting Calculation Workplan",
+                            "Size", "Level", "Host", "Hot Water Radius", "Length", "Height",
+                            "Half Oval", "GSA BIM Area", "AssetAccountingType", "Description",
+                            "Name", "Classification Description", "Classification Code",
+                            "Category Description","Category Code", "Uniclass Description",
+                            "Uniclass Code", "Assembly Description", "Assembly Code",
+                            "Omniclass Title", "Omniclass Number", "MethodOfMeasurement"};
+        
+         
         #region Methods
 
         /// <summary>
@@ -142,10 +158,10 @@ namespace Xbim.COBie.Data
                 return ifcCR.Name;
             }
             //Try by PropertySet as fallback
-            var query = from PSet in obj.PropertySets
-                        from Props in PSet.HasProperties
-                        where Props.Name.ToString() == "OmniClass Table 13 Category" || Props.Name.ToString() == "Category Code"
-                        select Props.ToString().TrimEnd();
+            var query = from pSet in obj.PropertySets
+                        from props in pSet.HasProperties
+                        where props.Name.ToString() == "OmniClass Table 13 Category" || props.Name.ToString() == "Category Code"
+                        select props.ToString().TrimEnd();
             string val = query.FirstOrDefault();
 
             if (!String.IsNullOrEmpty(val))
@@ -157,23 +173,23 @@ namespace Xbim.COBie.Data
         /// <summary>
         /// Get Category method for property sets
         /// </summary>
-        /// <param name="PropSet">IfcPropertySet</param>
+        /// <param name="propSet">IfcPropertySet</param>
         /// <returns>Category as string </returns>
-        private static string GetCategory(IfcPropertySet PropSet)
+        private static string GetCategory(IfcPropertySet propSet)
         {
-            IEnumerable<IfcClassificationReference> Cats = from IRAC in PropSet.HasAssociations
+            IEnumerable<IfcClassificationReference> cats = from IRAC in propSet.HasAssociations
                                                            where IRAC is IfcRelAssociatesClassification
                                                            && ((IfcRelAssociatesClassification)IRAC).RelatingClassification is IfcClassificationReference
                                                            select ((IfcRelAssociatesClassification)IRAC).RelatingClassification as IfcClassificationReference;
-            IfcClassificationReference Cat = Cats.FirstOrDefault();
-            if (Cat != null)
+            IfcClassificationReference cat = cats.FirstOrDefault();
+            if (cat != null)
             {
-                return Cat.Name.ToString();
+                return cat.Name.ToString();
             }
             //Try by PropertySet as fallback
-            var query = from Props in PropSet.HasProperties
-                        where Props.Name.ToString() == "OmniClass Table 13 Category" || Props.Name.ToString() == "Category Code"
-                        select Props.ToString().TrimEnd();
+            var query = from props in propSet.HasProperties
+                        where props.Name.ToString() == "OmniClass Table 13 Category" || props.Name.ToString() == "Category Code"
+                        select props.ToString().TrimEnd();
             string val = query.FirstOrDefault();
 
             if (!String.IsNullOrEmpty(val))
@@ -237,15 +253,25 @@ namespace Xbim.COBie.Data
         /// <param name="obj">IfcObject holding the additional properties(Attributes)</param>
         /// <param name="passedValues">Holder to pass values form calling sheet function</param>
         /// <param name="excProp">List of propertSinglalue names to exclude</param>
-        /// /// <param name="excPropSet">List of propertSinglalue names to exclude</param>
+        /// <param name = "excPropWC">List of propertSinglalue part names to exclude, name holds the part name to match</param>
+        /// <param name="excPropSet">List of PropertySet names to exclude</param>
         /// <param name="attributes">The attribute Sheet to add the properties to its rows</param>
-        protected void SetAttributeSheet(IfcObject obj, Dictionary<string, string> passedValues, List<string> excProp, List<string> excPropSet, ref COBieSheet<COBieAttributeRow> attributes)
+        protected void SetAttributeSheet(IfcObject obj, Dictionary<string, string> passedValues, List<string> excProp, List<string> excPropWC, List<string> excPropSet, ref COBieSheet<COBieAttributeRow> attributes)
         {
-            IEnumerable<IfcPropertySet> PSets = obj.PropertySets;
+            
+
+            IEnumerable<IfcPropertySet> pSets = obj.PropertySets; 
             //process the IfcPropertySet sets
-            if (PSets != null)
+            if (pSets != null)
             {
-                SetAttributsCommon(passedValues, excProp, ref attributes, PSets); 
+                if ((excPropSet != null) && (excPropSet.Count() > 0))
+                {
+                    //excPropSet = excPropSet.ConvertAll(d => d.ToLower()); //lowercase the strings in the list
+                    pSets = from ps in pSets
+                               where !excPropSet.Contains(ps.Name.ToString())
+                               select ps;
+                }
+                SetAttributsCommon(passedValues, excProp, excPropWC, ref attributes, pSets); 
             }
         }
 
@@ -256,80 +282,121 @@ namespace Xbim.COBie.Data
         /// <param name="obj">IfcTypeObject holding the additional properties(Attributes)</param>
         /// <param name="passedValues">Holder to pass values form calling sheet function</param>
         /// <param name="excProp">List of propertSinglalue names to exclude</param>
+        /// <param name = "excPropWC">List of propertSinglalue part names to exclude, name holds the part name to match</param>
+        /// <param name = "excPropSet">List of PropertySet names to exclude</param>
         /// <param name="attributes">The attribute Sheet to add the properties to its rows</param>
-        protected void SetAttributeSheet(IfcTypeObject obj, Dictionary<string, string> passedValues, List<string> excProp, List<string> excPropSet, ref COBieSheet<COBieAttributeRow> attributes)
+        protected void SetAttributeSheet(IfcTypeObject obj, Dictionary<string, string> passedValues, List<string> excProp, List<string> excPropWC, List<string> excPropSet, ref COBieSheet<COBieAttributeRow> attributes)
         {
-            var PSetsAll = obj.HasPropertySets;
-            if (PSetsAll != null)
+            
+
+            var pSetsAll = obj.HasPropertySets;
+            
+            if (pSetsAll != null)
             {
-                IEnumerable<IfcPropertySet> PSets = PSetsAll.OfType<IfcPropertySet>();
+                IEnumerable<IfcPropertySet> pSets = pSetsAll.OfType<IfcPropertySet>();
+                if ((excPropSet != null) && (excPropSet.Count() > 0))
+                {
+                   //excPropSet = excPropSet.ConvertAll(d => d.ToLower()); //lowercase the strings in the list
+                    pSets = from ps in pSets
+                               where !excPropSet.Contains(ps.Name.ToString())
+                               select ps;
+                }
                 //process the IfcPropertySet sets
-                SetAttributsCommon(passedValues, excProp, ref attributes, PSets);
+                SetAttributsCommon(passedValues, excProp, excPropWC, ref attributes, pSets);
             }
         }
         
+         
 
         /// <summary>
         /// Set Values to common attribute values
         /// </summary>
         /// <param name="passedValues">Holder to pass values form calling sheet function</param>
         /// <param name="excProp">List of propertSinglalue names to exclude</param>
+        /// <param name = "excPropWC">List of propertSinglalue part names to exclude, if name holds the part name</param>
         /// <param name="attributes">The attribute Sheet to add the properties to its rows</param>
-        /// <param name="PSets"></param>
-        private static void SetAttributsCommon(Dictionary<string, string> passedValues, List<string> excProp, ref COBieSheet<COBieAttributeRow> attributes, IEnumerable<IfcPropertySet> PSets)
-        {
-            foreach (IfcPropertySet PS in PSets)
-            {
-                excProp = excProp.ConvertAll(d => d.ToLower()); //lowercase the strings in the list
+        /// <param name="pSets"></param>
+        private void SetAttributsCommon(Dictionary<string, string> passedValues, List<string> excProp, List<string> excPropWC, ref COBieSheet<COBieAttributeRow> attributes, IEnumerable<IfcPropertySet> pSets)
+        { 
+            if (excPropWC == null) excPropWC = new List<string>();     //if null create to place default string           
+            excPropWC = excPropWC.Concat(_commonAttExcludes).ToList(); //common exclude PropertySingleValue name containing this part string                
 
+            foreach (IfcPropertySet ps in pSets)
+            {
+               
                 //get all property attached to the property set
-                IEnumerable<IfcPropertySingleValue> PSVs = PS.HasProperties.OfType<IfcPropertySingleValue>();
+                IEnumerable<IfcPropertySingleValue> pSVs = ps.HasProperties.OfType<IfcPropertySingleValue>();
                                                            
                 if ((excProp != null) && (excProp.Count() > 0))
                 {
-                    PSVs = from PVS in PSVs
-                           where !excProp.Contains(PVS.Name.ToString().ToLower())
-                           select PVS;
-                    //if we want a partial match, this should work
-                    //PSVs = from PVS in PSVs
-                    //       where ((from item in excProp
-                    //               where PVS.Name.ToString().ToLower().Contains(item)
-                    //              select item).Count() == 0)
-                    //       select PVS;
+                    //excProp = excProp.ConvertAll(d => d.ToLower()); //lowercase the strings in the list
+                    pSVs = from pVS in pSVs
+                               where !excProp.Contains(pVS.Name.ToString())
+                               select pVS;
                 }
-                
-                
-
-                foreach (IfcPropertySingleValue PSV in PSVs)
+                //filter out the Property names that contain a string from the list excPropWC
+                if ((excPropWC != null) && (excPropWC.Count() > 0))
                 {
-                    if (PSV != null)
-                    {
-                        string value = "";
+                    //excPropWC = excPropWC.ConvertAll(d => d.ToLower()); //lowercase the strings in the list
+                    pSVs = from pVS in pSVs
+                           where ((from item in excPropWC
+                                   where pVS.Name.ToString().Contains(item)
+                                   select item).Count() == 0)
+                           select pVS;
+                }
 
-                        if (PSV.NominalValue != null)
+                //bool skip = false;
+                foreach (IfcPropertySingleValue pSV in pSVs)
+                {
+                    if (pSV != null)
+                    {
+                        string PSVvalue = "";
+                        //string pSVKey = "";
+
+                        if (pSV.NominalValue != null)
                         {
                            
-                            value = PSV.NominalValue.Value.ToString();
+                            PSVvalue = pSV.NominalValue.Value.ToString();
                             double num;
-                            if (double.TryParse(value, out num)) value = num.ToString("F3");
-                            if ((string.IsNullOrEmpty(value)) || (string.Compare(value,PSV.Name.ToString(), true) == 0))
+                            if (double.TryParse(PSVvalue, out num)) PSVvalue = num.ToString("F3");
+                            if ((string.IsNullOrEmpty(PSVvalue)) || (string.Compare(PSVvalue,pSV.Name.ToString(), true) == 0) || (string.Compare(PSVvalue,"default", true) == 0))
                             {
                                 continue; //skip to next loop item
                             }
                             
                         }
 
+                        //pSVKey = pSV.Name.ToString();
+                        //if (string.IsNullOrEmpty(PSVKey)) //if property name is blank then skip
+                        //{
+                        //    continue; //skip to next loop item
+                        //}
+
+                        //foreach (string str in excPropWC)
+                        //{
+                        //    if (pSVKey.Contains(str))
+                        //    {
+                        //        skip = true;
+                        //        break; //found one so stop searching
+                        //    }
+
+                        //}
+                        //if (skip == true)
+                        //{
+                        //    skip = false;
+                        //    continue; //skip to next PVS
+                        //}
                         
 
                         COBieAttributeRow attribute = new COBieAttributeRow(attributes);
 
-                        attribute.Name = PSV.Name;
+                        attribute.Name = pSV.Name.ToString(); ;
 
                         //Get category
-                        string Cat = GetCategory(PS);
-                        attribute.Category = (Cat == DEFAULT_STRING) ? "Requirement" : Cat;
-                        attribute.ExtIdentifier = PS.GlobalId;
-                        attribute.ExtObject = PS.Name;
+                        string cat = GetCategory(ps);
+                        attribute.Category = (cat == DEFAULT_STRING) ? "Requirement" : cat;
+                        attribute.ExtIdentifier = ps.GlobalId;
+                        attribute.ExtObject = ps.Name;
 
                         //GetAttributsCommon(passedValues, PSV, ref attribute);
                         //passed properties from the sheet
@@ -339,16 +406,16 @@ namespace Xbim.COBie.Data
                         attribute.CreatedOn = passedValues["CreatedOn"];
                         attribute.ExtSystem = passedValues["ExtSystem"];
 
-                        attribute.Value = value;                 
+                        attribute.Value = PSVvalue;                 
                         attribute.Unit = DEFAULT_STRING; //set initially to default, saves the else statements
                         attribute.Description = DEFAULT_STRING;
                         attribute.AllowedValues = DEFAULT_STRING;
-                        if ((PSV.Unit != null) && (PSV.Unit is IfcContextDependentUnit))
+                        if ((pSV.Unit != null) && (pSV.Unit is IfcContextDependentUnit))
                         {
-                            attribute.Unit = ((IfcContextDependentUnit)PSV.Unit).Name.ToString();
-                            attribute.AllowedValues = ((IfcContextDependentUnit)PSV.Unit).UnitType.ToString();
+                            attribute.Unit = ((IfcContextDependentUnit)pSV.Unit).Name.ToString();
+                            attribute.AllowedValues = ((IfcContextDependentUnit)pSV.Unit).UnitType.ToString();
                         }
-                        attribute.Description = PSV.Description.ToString();
+                        attribute.Description = pSV.Description.ToString();
                         if (string.IsNullOrEmpty(attribute.Description)) //if no description then just use name property
                         {
                             attribute.Description = attribute.Name;
@@ -368,10 +435,8 @@ namespace Xbim.COBie.Data
         /// <returns>string holding the type information</returns>
         protected string GetTypeName(IfcObject obj)
         {
-            var QType = obj.IsDefinedBy.OfType<IfcRelDefinesByType>();
-                        
-            var ElType = QType.FirstOrDefault();
-            return (ElType != null) ? ElType.RelatingType.Name.ToString() : DEFAULT_STRING;
+            var elType = obj.IsDefinedBy.OfType<IfcRelDefinesByType>().FirstOrDefault();
+            return (elType != null) ? elType.RelatingType.Name.ToString() : DEFAULT_STRING;
         }
 
         #endregion

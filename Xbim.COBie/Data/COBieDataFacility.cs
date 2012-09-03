@@ -33,10 +33,12 @@ namespace Xbim.COBie.Data
         /// Fill sheet rows for Facility sheet
         /// </summary>
         /// <returns>COBieSheet<COBieFacilityRow></returns>
-        public COBieSheet<COBieFacilityRow> Fill()
+        public COBieSheet<COBieFacilityRow> Fill(ref COBieSheet<COBieAttributeRow> attributes)
         {
             //Create new sheet
             COBieSheet<COBieFacilityRow> facilities = new COBieSheet<COBieFacilityRow>(Constants.WORKSHEET_FACILITY);
+            //list of attributes to exclude form attribute sheet
+            List<string> ExcludeAtts = new List<string> { "Phase" };
 
             IfcProject ifcProject = Model.IfcProject;
             IfcSite ifcSite = Model.InstancesOfType<IfcSite>().FirstOrDefault();
@@ -60,15 +62,8 @@ namespace Xbim.COBie.Data
             //    if (plRow != null)
             //        facility.Category += plRow.CategoryFacility + ",";
             //facility.Category = facility.Category.TrimEnd(',');
-            IfcRelAssociatesClassification ifcRAC = ifcBuilding.HasAssociations.OfType<IfcRelAssociatesClassification>().FirstOrDefault();
-            if (ifcRAC != null)
-            {
-                IfcClassificationReference ifcCR = (IfcClassificationReference)ifcRAC.RelatingClassification;
-                facility.Category = ifcCR.Name;
-            }
-            else
-                facility.Category = "";
-
+            facility.Category = GetCategory(ifcBuilding);
+            
             facility.ProjectName = GetFacilityProjectName(ifcProject);
             facility.SiteName = GetFacilitySiteName(ifcSite);
             facility.LinearUnits = GetLinearUnits();
@@ -93,7 +88,22 @@ namespace Xbim.COBie.Data
             facility.Phase = Model.IfcProject.Phase;
 
             facilities.Rows.Add(facility);
+            //----------fill in the attribute information for spaces-----------
+            //pass data from this sheet info as Dictionary
+            Dictionary<string, string> passedValues = new Dictionary<string, string>(){{"Sheet", "Facility"}, 
+                                                                                          {"Name", facility.Name},
+                                                                                          {"CreatedBy", facility.CreatedBy},
+                                                                                          {"CreatedOn", facility.CreatedOn},
+                                                                                          {"ExtSystem", facility.ExtSystem}
+                                                                                          };//required property date <PropertySetName, PropertyName>
 
+            //add *ALL* the attributes to the passed attributes sheet except property names that match the passed List<string>
+
+
+            SetAttributeSheet(ifcProject, passedValues, ExcludeAtts, null, null, ref attributes);
+            SetAttributeSheet(ifcSite, passedValues, ExcludeAtts, null, null, ref attributes);
+            SetAttributeSheet(ifcBuilding, passedValues, ExcludeAtts, null, null, ref attributes); 
+            
             return facilities;
         }
 

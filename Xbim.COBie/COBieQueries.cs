@@ -122,7 +122,7 @@ namespace Xbim.COBie
         public COBieSheet<COBieFacilityRow> GetCOBieFacilitySheet()
         {
             COBieDataFacility facilities = new COBieDataFacility(_model);
-            return facilities.Fill();
+            return facilities.Fill(ref _attributes);
         }
         
         /// <summary>
@@ -145,7 +145,7 @@ namespace Xbim.COBie
         public COBieSheet<COBieZoneRow> GetCOBieZoneSheet()
         {
             COBieDataZone zones = new COBieDataZone(_model);
-            return zones.Fill();
+            return zones.Fill(ref _attributes);
         }
 
         
