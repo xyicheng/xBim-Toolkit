@@ -38,12 +38,13 @@ namespace Xbim.XbimExtensions
             if (!String.IsNullOrEmpty(fmt) && fmt.ToUpper() == "R" && arg.GetType() == typeof(double))
             {
                 double dArg = (double)arg;
-                string result = dArg.ToString("R", CultureInfo.CreateSpecificCulture("en-US"));
+                string result = dArg.ToString("R", CultureInfo.InvariantCulture);
 
+                // TODO: AW: Not clear why we're doing this parsing and re-parsing?
                 // if compiler flag, only then do the following 3 lines
-                string rDoubleStr = dArg.ToString("R", CultureInfo.CreateSpecificCulture("en-US"));
-                double fixedDbl = double.Parse(rDoubleStr);
-                result = fixedDbl.ToString("R", CultureInfo.CreateSpecificCulture("en-US"));
+                string rDoubleStr = dArg.ToString("R", CultureInfo.InvariantCulture);
+                double fixedDbl = double.Parse(rDoubleStr, CultureInfo.InvariantCulture);
+                result = fixedDbl.ToString("R", CultureInfo.InvariantCulture);
 
                 //decimal decArg = new Decimal(dArg);                                
                 // string result = decArg.ToString().ToUpper();

@@ -257,10 +257,22 @@ namespace Xbim.IO
                 Close();
                 throw;
             }
+            catch (DirectoryNotFoundException)
+            {
+                Close();
+                throw;
+            }
             catch (Exception e)
             {
                 Close();
-                throw new Xbim.Common.Exceptions.XbimException("Failed to import " + filename + "\n" + input.ErrorLog.ToString(), e);
+                if (input != null && input.ErrorLog != null)
+                {
+                    throw new Xbim.Common.Exceptions.XbimException("Failed to import " + filename + "\n" + input.ErrorLog.ToString(), e);
+                }
+                else
+                {
+                    throw new Xbim.Common.Exceptions.XbimException("Failed to import " + filename + "\n", e);
+                }
             }
             finally
             {

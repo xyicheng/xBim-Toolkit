@@ -272,7 +272,6 @@ namespace Xbim.XbimExtensions
                         EndElement(model, input, prevInputType, prevInputName);
                         break;
                     case XmlNodeType.Whitespace:
-                        Debug.WriteLine("WS" );
                         SetValue(model, input, prevInputType, prevInputName);
 
                         break;

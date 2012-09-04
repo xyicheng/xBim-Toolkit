@@ -12,6 +12,7 @@ using System.ComponentModel;
 using Xbim.Ifc.PropertyResource;
 using Xbim.XbimExtensions;
 using Xbim.Ifc.MaterialPropertyResource;
+using System.Globalization;
 
 namespace Xbim.DOM.PropertiesQuantities
 {
@@ -221,7 +222,7 @@ namespace Xbim.DOM.PropertiesQuantities
                 if (value is string)
                 {
                     if (_property.NominalValue is IfcInteger) value = int.Parse(value as string);
-                    if (_property.NominalValue is IfcReal) value = double.Parse(value as string);
+                    if (_property.NominalValue is IfcReal) value = double.Parse(value as string, CultureInfo.InvariantCulture);
                     if (_property.NominalValue is IfcBoolean) value = bool.Parse(value as string);
                     if (_property.NominalValue is IfcLogical) value = bool.Parse(value as string); 
                 }
