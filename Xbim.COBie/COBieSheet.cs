@@ -59,6 +59,7 @@ namespace Xbim.COBie
         public void Validate(out List<COBieError> errors)
         {
             errors = new List<COBieError>();
+            List<COBieCell> pkColumnValues = new List<COBieCell>();
 
             foreach (T row in Rows)
             {
@@ -77,30 +78,42 @@ namespace Xbim.COBie
                         cell.CobieCol = new COBieColumn(attr.ColumnName, attr.MaxLength, attr.AllowedType, attr.KeyType);
                         COBieError err = GetCobieError(cell, SheetName);
 
-                        // if this cell is set as primary key then check its value with other cells
+                        // if this cell is set as primary key then add its value to array for later checking for primary key voilation
                         if (cell.CobieCol.KeyType == COBieKeyType.PrimaryKey)
                         {
-                            if (HasDuplicateValues(cell))
-                            {
-                                err.ErrorDescription = cell.CellValue + " duplication";
-                                err.ErrorType = COBieError.ErrorTypes.PrimaryKey_Violation;
-                            }
+                            pkColumnValues.Add(cell);
+                        }
+                        else if (cell.CobieCol.KeyType == COBieKeyType.ForeignKey)
+                        {
+                            // check if the value does exist in the foreign column values
+
                         }
 
                         if (err.ErrorType != COBieError.ErrorTypes.None) errors.Add(err);
                     }
                 }
             }
+
+            // check for primary key errors (i.e. if cell value matches any other cell's value)
+            foreach (COBieCell cell in pkColumnValues)
+            {
+                if (HasDuplicateValues(cell.CellValue, pkColumnValues))
+                {
+                    COBieError err = new COBieError();
+                    err.ErrorDescription = cell.CellValue + " duplication";
+                    err.ErrorType = COBieError.ErrorTypes.PrimaryKey_Violation;
+                    errors.Add(err);
+                }
+            }
+
         }
 
-        private bool HasDuplicateValues(COBieCell cell)
+        private bool HasDuplicateValues(string cellValue, List<COBieCell> pkColumnValues)
         {
             int count = 0;
-            string val = cell.CellValue;
-            string colName = cell.CobieCol.ColumnName;
-            foreach (T row in Rows)
+            foreach (COBieCell cell in pkColumnValues)
             {
-                //if (row.Name == val) count++;
+                if (cellValue == cell.CellValue) count++;
             }
             if (count > 1) return true;           
 
@@ -128,15 +141,57 @@ namespace Xbim.COBie
                 err.ErrorType = COBieError.ErrorTypes.Email_Value_Expected;
             }
 
-            DateTime dt;
-            DateTime.TryParse(cell.CellValue, out dt);
-            if (allowedType == COBieAllowedType.ISODate && dt == DateTime.MinValue) err.ErrorDescription = "Value must be a valid iso date";
+            if (allowedType == COBieAllowedType.ISODate)
+            {
+                DateTime dt;
+                DateTime.TryParse(cell.CellValue, out dt);
+                if (dt == DateTime.MinValue) err.ErrorDescription = "Value must be a valid iso date";
+            }
 
-            double d;
-            double.TryParse(cell.CellValue, out d);
-            if (allowedType == COBieAllowedType.Numeric && d == 0) err.ErrorDescription = "Value must be a valid double";
-
+            if (allowedType == COBieAllowedType.Numeric)
+            {
+                double d;
+                double.TryParse(cell.CellValue, out d);
+                if (d == 0) err.ErrorDescription = "Value must be a valid double";
+            }
+            
             return err;
+        }
+
+        public void ValidateForeignKeys(out List<COBieError> errors)
+        {
+            errors = new List<COBieError>();
+            List<COBieCell> pkColumnValues = new List<COBieCell>();
+
+            foreach (T row in Rows)
+            {
+                // loop through each column, get its attributes and check if column value matches the attributes constraints
+                foreach (PropertyInfo propInfo in Properties)
+                {
+                    object[] attrs = Attributes[propInfo];
+                    if (attrs != null && attrs.Length > 0)
+                    {
+                        Type cobieType = row.GetType();
+                        string val = (propInfo.GetValue(row, null) == null) ? "" : propInfo.GetValue(row, null).ToString();
+
+                        COBieCell cell = new COBieCell(val);
+                        COBieAttributes attr = (COBieAttributes)attrs[0];
+                        cell.COBieState = attr.State;
+                        cell.CobieCol = new COBieColumn(attr.ColumnName, attr.MaxLength, attr.AllowedType, attr.KeyType);
+                        COBieError err = new COBieError();
+
+                        // if this cell is set as foreign key 
+                        // then check its value with the given source column in another (or same) sheet
+                        if (cell.CobieCol.KeyType == COBieKeyType.ForeignKey)
+                        {
+                            // get foreign column
+                        }
+
+                        if (err.ErrorType != COBieError.ErrorTypes.None) errors.Add(err);
+                    }
+                }
+            }
+
         }
     }  
 }
