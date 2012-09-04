@@ -5,7 +5,9 @@ using System.Web;
 using System.Web.Security;
 using System.Web.SessionState;
 using System.Web.Routing;
-using SignalR;
+using System.Net;
+using Alchemy;
+using Alchemy.Classes;
 
 namespace Xbim.SceneJSWebViewer
 {
@@ -15,13 +17,14 @@ namespace Xbim.SceneJSWebViewer
         void Application_Start(object sender, EventArgs e)
         {
             // Code that runs on application startup
-            RouteTable.Routes.MapConnection<ModelStreamer>("xbim", "xbim/{*operation}");
+            //RouteTable.Routes.MapConnection<ModelStreamer>("xbim", "xbim/{*operation}");
+            StartWebsocketServer();
         }
 
         void Application_End(object sender, EventArgs e)
         {
             //  Code that runs on application shutdown
-
+            socketServer.Stop();
         }
 
         void Application_Error(object sender, EventArgs e)
@@ -44,6 +47,42 @@ namespace Xbim.SceneJSWebViewer
             // or SQLServer, the event is not raised.
 
         }
+        private static Alchemy.WebSocketServer socketServer;
+        private static XBimWebSocketServer xbimserver;
+        private static void StartWebsocketServer()
+        {
+            xbimserver = new XBimWebSocketServer();
+            socketServer = new Alchemy.WebSocketServer(81, IPAddress.Any)
+            {
+                OnReceive = OnReceive,
+                OnSend = OnSend,
+                OnConnect = OnConnect,
+                OnConnected = OnConnected,
+                OnDisconnect = OnDisconnect,
+                TimeOut = new TimeSpan(0, 0, 30)
+            };
 
+            socketServer.Start();
+        }
+        static void OnConnected(UserContext context)
+        {
+            xbimserver.OnConnected(context);
+        }
+        static void OnConnect(UserContext context)
+        {
+            xbimserver.OnConnect(context);
+        }
+        static void OnDisconnect(UserContext context)
+        {
+            xbimserver.OnDisconnect(context);
+        }
+        static void OnSend(UserContext context)
+        {
+            xbimserver.OnSend(context);
+        }
+        static void OnReceive(UserContext context)
+        {
+            xbimserver.OnReceive(context);
+        }
     }
 }

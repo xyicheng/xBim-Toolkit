@@ -8,7 +8,6 @@
  <script type="text/javascript" src="Scripts/jquery-ui-1.8.20.min.js" ></script>
  <script type="text/javascript" src="Scripts/jquery.dynatree.min.js" ></script>
  <script type="text/javascript" src="Scripts/jquery.hotkeys.js" ></script>
- <script type="text/javascript" src="Scripts/jquery.signalR-0.5.0.min.js" ></script>
  <script type="text/javascript" src="Scripts/jquery.viewport.mini.js" ></script>
  <script type="text/javascript" src="Scripts/scenejs.js"></script>
  <script type="text/javascript" src="Scripts/basescenedefinition.js"></script>

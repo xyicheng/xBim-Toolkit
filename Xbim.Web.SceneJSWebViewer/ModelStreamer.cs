@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
-using SignalR;
-using SignalR.Hosting;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
 using System.Web.Script.Serialization;
@@ -12,83 +10,35 @@ using Xbim.Common.Logging;
 
 namespace Xbim.SceneJSWebViewer
 {
-    public class ModelStreamer : PersistentConnection
+    public class ModelStreamer
     {
         private static readonly ILogger Logger = LoggerFactory.GetLogger();
         private static ConcurrentDictionary<String, String> usermodels = new ConcurrentDictionary<String, String>();
-        
-        protected override Task OnReceivedAsync(IRequest request, string connectionId, string data)
+
+
+        public static void Disconnect(string connectionId)
         {
-            String modelId = String.Empty;
-            try
+            String modelid = String.Empty;
+            bool success = usermodels.TryRemove(connectionId, out modelid);
+            if (success && modelid != String.Empty)
             {
-                //Attempt to deserialise the string as a dynamic JSON object
-                var serializer = new JavaScriptSerializer();
-                serializer.RegisterConverters(new[] { new DynamicJsonConverter() });
-                dynamic obj = serializer.Deserialize(data, typeof(object));
-
-                modelId = System.Web.Hosting.HostingEnvironment.ApplicationPhysicalPath + "models\\" + obj.ModelID.ToString().Split(new char[] { '.' })[0];
-                if (modelId == String.Empty)
+                Int32 count = 0;
+                foreach (String key in usermodels.Keys) //go through users and work out how many are using this model
                 {
-                    return null;
-                } 
-                usermodels.AddOrUpdate(connectionId, (k) => modelId, (k, v) => modelId);
-
-                switch ((Command)obj.command)
+                    String modelName;
+                    if (usermodels.TryGetValue(key, out modelName))
+                    {
+                        if (modelid == modelName)
+                        {
+                            count++;
+                        }
+                    }
+                }
+                if (count == 0) //if no one is using the file then close it.
                 {
-                    case Command.ModelView: //Setup model stream and send Model View
-                        return Connection.Send(connectionId, ModelStreamer.SendModelView(connectionId, modelId));
-                    case Command.SharedMaterials: //Setup Shared Materials
-                        return Connection.Send(connectionId, ModelStreamer.SendSharedMaterials(connectionId, modelId));
-                    case Command.Types: //Setup Types
-                        return Connection.Send(connectionId, ModelStreamer.SendTypes(connectionId, modelId));
-                    case Command.SharedGeometry: //Setup Shared Geometry
-                        return Connection.Send(connectionId, ModelStreamer.SendSharedGeometry(connectionId, modelId));
-                    case Command.GeometryData: // Actual vertex locations
-                        String temp = obj.id;
-                        String[] temps = temp.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-                        return Connection.Send(connectionId, ModelStreamer.SendGeometryData(connectionId, modelId, temps));
-                    case Command.Data: //Setup Data
-                        return Connection.Send(connectionId, ModelStreamer.SendData(connectionId, modelId));
-                    case Command.QueryData:
-                        return Connection.Send(connectionId, ModelStreamer.SendQueryData(connectionId, modelId, obj.id.ToString(), obj.query));
+                    CloseModel(modelid);
                 }
             }
-            catch (Exception ex)
-            {
-                //Caller.exceptionMessage(ex.ToString());
-                Debug.WriteLine("Failed To convert or send - " + ex.Message);
-            }
-            return null;
-        }
-
-        protected override Task OnDisconnectAsync(string connectionId)
-        {
-            //TODO Deal with disconnect/reconnect gracefully - possibly start a timer and close model if we havent reset it by then?
-            //for now - we just persist the modelstream as long as the webapp is running :(
-
-            //String modelid = String.Empty;
-            //bool success = usermodels.TryRemove(connectionId, out modelid);
-            //if (success && modelid != String.Empty)
-            //{
-            //    Int32 count = 0;
-            //    foreach (String key in usermodels.Keys) //go through users and work out how many are using this model
-            //    {
-            //        String modelName;
-            //        if (usermodels.TryGetValue(key, out modelName))
-            //        {
-            //            if (modelid == modelName)
-            //            {
-            //                count++;
-            //            }
-            //        }
-            //    }
-            //    if (count == 0) //if no one is using the file then close it.
-            //    {
-            //        CloseModel(modelid);
-            //    }
-            //}
-            return base.OnDisconnectAsync(connectionId);
         }
 
         internal static IModelStream GetModelStream(String modelId)

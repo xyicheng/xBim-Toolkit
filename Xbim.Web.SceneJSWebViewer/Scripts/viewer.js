@@ -1,39 +1,38 @@
 ﻿
-var connection = $.connection('xbim');
+var connection = new WebSocket("ws://localhost:81/");
 
 $(window).load(function () {
     $(document).ready(function () {
 
-        //setup our received data handler
-        connection.received(function (buffer) {
-            // Write the bytes of the received string to an ArrayBuffer (as we need to convert from base64 to bytes)
-            var byteString = b64_to_utf8(buffer);
-            delete buffer;
+        connection.binaryType = "arraybuffer";
+        connection.onopen = function () {
+        };
+        connection.onmessage = function (e) {
+            var view;
+            if (e.data instanceof ArrayBuffer) { //if we have it in binary, then skip straight to the jDataView
+                view = new jDataView(e.data, 0, e.data.length, e.data[1] == 1)
+            } else { //otherwise we have to base64 decode it first
+                var byteString = b64_to_utf8(e.data);
 
-            var ab = new ArrayBuffer(byteString.length);
-            var ia = new Uint8Array(ab);
-            for (var i = 0; i < byteString.length; i++) {
-                ia[i] = byteString.charCodeAt(i);
+                var ab = new ArrayBuffer(byteString.length);
+                var ia = new Uint8Array(ab);
+                for (var i = 0; i < byteString.length; i++) {
+                    ia[i] = byteString.charCodeAt(i);
+                }
+                delete byteString;
+
+                //create a view of the buffer, allowing us to read bits, floats, strings etc from the array
+                view = new jDataView(ab, 0, ab.length, ia[1] == 1);
             }
-            delete byteString;
-
-
-            //create a view of the buffer, allowing us to read bits, floats, strings etc from the array
-            var view = new jDataView(ab, 0, ab.length, ia[1] == 1); //ia[1]==1 tells the view the endian flag of the messsage (true = littleendian)
             var command = view.getInt8();
             view.getInt8(); //endian flag. already have it, so just move pointer by uint8 size
 
             //handle our data received
             ModelDataReceived(command, view);
-
-            //cleanup
-            delete view;
-            delete ab;
-            delete ia;
-        });
-
-        //fire up the connection
-        connection.start(function () { $("#debuginfo").append('<p>connection started</p>'); });
+        };
+        connection.onclose = function () {
+            alert("closed");
+        };
 
         //setup bottom tab
         $("#help").accordion({
