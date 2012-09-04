@@ -23,6 +23,7 @@ using Xbim.XbimExtensions;
 using Xbim.ModelGeometry.Scene;
 using Xbim.XbimExtensions.Interfaces;
 using Xbim.IO;
+using System.Windows.Data;
 
 #endregion
 
@@ -35,10 +36,10 @@ namespace Xbim.Presentation
     }
 
 
-    public class ModelDataProvider : INotifyPropertyChanged 
+    public class ModelDataProvider : ObjectDataProvider 
     {
 
-        private XbimModel _model;
+        
         public ModelDataProvider()
         {
             _defaultMaterials = new MaterialDictionary();
@@ -116,12 +117,12 @@ namespace Xbim.Presentation
         {
             get 
             {
-                return _model;
+                return (XbimModel)this.ObjectInstance;
             }
             set
             {
-                _model = value;
-                NotifyPropertyChanged("Model");
+                this.ObjectInstance = value;
+                //NotifyPropertyChanged("Model");
             }
         }
 
@@ -159,26 +160,6 @@ namespace Xbim.Presentation
             }
         }
 
-        #region INotifyPropertyChanged Members
-
-        [field: NonSerialized] //don't serialize events
-            private event PropertyChangedEventHandler PropertyChanged;
-
-        event PropertyChangedEventHandler INotifyPropertyChanged.PropertyChanged
-        {
-            add { PropertyChanged += value; }
-            remove { PropertyChanged -= value; }
-        }
-
-        public void NotifyPropertyChanged(string propertyName)
-        {
-            PropertyChangedEventHandler handler = PropertyChanged;
-            if (handler != null)
-            {
-                handler(this, new PropertyChangedEventArgs(propertyName));
-            }
-        }
-
-        #endregion
+        
     }
 }

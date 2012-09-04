@@ -12,6 +12,7 @@ using Xbim.Ifc2x3.Kernel;
 using Xbim.Ifc2x3.SharedBldgElements;
 
 using Xbim.Common.Exceptions;
+using Xbim.Ifc2x3.ProductExtension;
 
 namespace XbimConvert
 {
@@ -137,7 +138,7 @@ namespace XbimConvert
             switch (arguments.FilterType)
             {
                 case FilterType.None:
-                    result = model.InstancesOfType<IfcProduct>();
+                    result = model.InstancesOfType<IfcProduct>().Where(t=>!(t is IfcFeatureElement)); //exclude openings and additions
                     Logger.Debug("All geometry items will be generated");
                     break;
 

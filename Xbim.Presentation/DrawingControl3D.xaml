@@ -8,17 +8,17 @@
     </UserControl.Resources>
 
     <local:TrackballDecorator x:Name="TrackBall" >
-            <local:DrawingViewport3D x:Name="Canvas"  Grid.Row="0" Grid.Column="0">
+            <local:DrawingViewport3D x:Name="Canvas"  Grid.Row="0" Grid.Column="0" Width="auto" Height="auto">
                 <!--Camera-->
                 <local:DrawingViewport3D.Camera>
-                    <PerspectiveCamera  FieldOfView="45" x:Name="Camera"/>
+                    <PerspectiveCamera  FieldOfView="45" x:Name="Camera" Position="-100,10,100" LookDirection="1,0,-1" UpDirection="0,1,0"/>
                 </local:DrawingViewport3D.Camera>
                 <local:DrawingViewport3D.Children>
                     <ModelVisual3D x:Name="Light">
                         <ModelVisual3D.Content>
                             <Model3DGroup>
                                 <DirectionalLight x:Name="Headlight" Color="White"  Transform="{Binding ElementName=Camera, Path=Transform}" Direction="{Binding ElementName=Camera, Path=LookDirection}" />
-                               
+                                <PointLight x:Name="Sun" Color="White" Position="-1000,1000, 0" >  </PointLight>
                         </Model3DGroup>
                         </ModelVisual3D.Content>
                     </ModelVisual3D>

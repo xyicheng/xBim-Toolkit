@@ -3,13 +3,13 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:ifc="http://schemas.Xbim.com/ifc"
     xmlns:xbim="http://schemas.Xbim.com/Presentation"
+    xmlns:xbimIO="clr-namespace:Xbim.IO;assembly=Xbim.IO"
     xmlns:local="clr-namespace:XbimXplorer"
     Title="Xbim Xplorer" Height="600" Width="800" Loaded="Window_Loaded">
     <Window.Resources>
-        <ObjectDataProvider x:Key="ModelProvider" ObjectType="{x:Type xbim:ModelDataProvider}"></ObjectDataProvider>
-
+        <ObjectDataProvider x:Key="ModelProvider"  IsInitialLoadEnabled="False" ></ObjectDataProvider>
     </Window.Resources>
-    <Grid DataContext="{StaticResource ModelProvider}">
+    <Grid Name="MainFrame" DataContext="{StaticResource ModelProvider}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" MinHeight="24" />
             <RowDefinition />
@@ -36,7 +36,7 @@
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition />
             </Grid.ColumnDefinitions>
-            <xbim:SpatialStructureControl Name="SpatialControl" FontSize="10" FontWeight="normal" Grid.Column="0" Project ="{Binding Path=Model.IfcProject}" Background="#114682D4" MouseDoubleClick="SpatialControl_MouseDoubleClick"/>
+            <xbim:SpatialStructureControl Name="SpatialControl" FontSize="10" FontWeight="normal" Grid.Column="0" Project ="{Binding Path=IfcProject}" Background="#114682D4" MouseDoubleClick="SpatialControl_MouseDoubleClick"/>
             <!--<ListBox  Name="Lister" MouseDoubleClick="Lister_MouseDoubleClick">
                
             </ListBox>-->
@@ -48,7 +48,7 @@
                 ShowsPreview="True"
                 Width="5"
                 />
-            <xbim:DrawingControl3D x:Name="DrawingControl" MouseRightButtonDown="DrawingControl_MouseRightButtonDown" Model ="{Binding Path=Model}" Grid.Column="2"  Focusable="True" Background="#FF7F7FA0" Width="Auto" Height="Auto" ProgressChanged="ProgressChanged" />
+            <xbim:DrawingControl3D x:Name="DrawingControl" MouseRightButtonDown="DrawingControl_MouseRightButtonDown" Model ="{Binding}" Grid.Column="2"  Focusable="True" Background="#FF7F7FA0" Width="Auto" Height="Auto" ProgressChanged="ProgressChanged" />
         
         </Grid>
         <StatusBar Grid.Row="2" Height="23"  Name="statusBar" VerticalAlignment="Top" >
@@ -64,7 +64,7 @@
             </StatusBarItem>
             <Slider x:Name="SliderColour" Minimum ="0"  Maximum="255" TickFrequency="2" Width="150" Value="127" ValueChanged="SliderColour_ValueChanged">
                 
-            </Slider>
+                </Slider>
             <StatusBarItem>
                 <Separator/>
             </StatusBarItem>

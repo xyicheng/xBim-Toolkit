@@ -1165,14 +1165,14 @@ namespace Xbim.IO
         public IPersistIfcEntity IfcProject
         {
             get 
-            { 
-                return Cached.OfType<IfcProject>().FirstOrDefault(); 
+            {
+                return Cached == null ? null : Cached.OfType<IfcProject>().FirstOrDefault(); 
             }
         }
 
         public IEnumerable<IPersistIfcEntity> IfcProducts
         {
-            get { return Cached.OfType<IfcProduct>(); }
+            get { return Cached == null ? null : Cached.OfType<IfcProduct>(); }
         }
 
         IPersistIfcEntity IModel.OwnerHistoryAddObject

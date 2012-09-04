@@ -22,6 +22,7 @@ using System.Windows.Data;
 using Xbim.Ifc2x3.Kernel;
 using Xbim.Ifc2x3.ProductExtension;
 using Xbim.XbimExtensions;
+using Xbim.IO;
 
 #endregion
 
@@ -75,7 +76,7 @@ namespace Xbim.Presentation
     /// </summary>
     public partial class SpatialStructureControl : UserControl, INotifyPropertyChanged
     {
-        private ModelDataProvider _modelProvider;
+        
 
         public IfcProject Project
         {
@@ -90,17 +91,12 @@ namespace Xbim.Presentation
                                         new UIPropertyMetadata(null, new PropertyChangedCallback(OnProjectChanged)));
 
 
-        internal ModelDataProvider ModelProvider
+        public XbimModel Model
         {
             get
             {
-                if (_modelProvider == null)
-                {
-                    ObjectDataProvider objDP = FindResource("ModelProvider") as ObjectDataProvider;
-                    if (objDP != null)
-                        _modelProvider = (ModelDataProvider) objDP.ObjectInstance;
-                }
-                return _modelProvider;
+                ObjectDataProvider op = DataContext as ObjectDataProvider;
+                return op == null ? null : op.ObjectInstance as XbimModel; 
             }
         }
 
@@ -110,16 +106,16 @@ namespace Xbim.Presentation
             SpatialStructureControl sc = d as SpatialStructureControl;
             if (sc != null && proj != null)
             {
-                ModelDataProvider mdp = sc.ModelProvider;
+                XbimModel model = sc.Model;
                 ObjectDataProvider spatialStructureProvider =
                     sc.FindResource("SpatialStructureProvider") as ObjectDataProvider;
-                if (mdp != null && spatialStructureProvider != null)
+                if (model != null && spatialStructureProvider != null)
                 {
                     Dictionary<IfcObjectDefinition, SpatialStructureTreeItem> created =
                         new Dictionary<IfcObjectDefinition, SpatialStructureTreeItem>(
-                            mdp.Model.InstancesOfType<IfcRelDecomposes>().Count());
+                            model.InstancesOfType<IfcRelDecomposes>().Count());
 
-                    foreach (IfcRelDecomposes rel in mdp.Model.InstancesOfType<IfcRelDecomposes>())
+                    foreach (IfcRelDecomposes rel in model.InstancesOfType<IfcRelDecomposes>())
                     {
                         if (rel.RelatingObject != null)
                         {
@@ -145,7 +141,7 @@ namespace Xbim.Presentation
                     //    treeItem.AddChild(new SpatialStructureTreeItem());
                     foreach (
                         IfcRelContainedInSpatialStructure scRel in
-                            mdp.Model.InstancesOfType<IfcRelContainedInSpatialStructure>())
+                            model.InstancesOfType<IfcRelContainedInSpatialStructure>())
                     {
                         if (scRel.RelatingStructure != null)
                         {
@@ -180,11 +176,12 @@ namespace Xbim.Presentation
         public SpatialStructureControl()
         {
             InitializeComponent();
-
+            //this.DataContextChanged += new DependencyPropertyChangedEventHandler(SpatialStructureControl_DataContextChanged);
             // SpatialTreeView.SelectedItemChanged += new RoutedPropertyChangedEventHandler<object>(SpatialTreeView_SelectedItemChanged);
             SpatialTreeView.SelectedItemChanged +=
                 new RoutedPropertyChangedEventHandler<object>(Tree_SelectedItemChanged);
         }
+
 
         #region Events
 

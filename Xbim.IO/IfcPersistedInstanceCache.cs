@@ -645,7 +645,6 @@ namespace Xbim.IO
                     if (_jetTypeCursor != null) { _jetTypeCursor.Close(); _jetTypeCursor.Dispose(); };
                     if (_jetEntityCursor != null) { _jetEntityCursor.Close(); _jetEntityCursor.Dispose(); };
                     if (_jetSession != null) _jetSession.End();
-                    if (_jetInstance != null) _jetInstance.Term();
                 }
 
             }

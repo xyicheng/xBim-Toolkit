@@ -53,7 +53,7 @@ namespace Xbim.Presentation
 
        
 
-        internal long GetProductAt(MouseButtonEventArgs e)
+        internal long? GetProductAt(MouseButtonEventArgs e)
         {
             Point location = e.GetPosition(this);
             HitTestResult result = VisualTreeHelper.HitTest(this, location);
@@ -69,21 +69,21 @@ namespace Xbim.Presentation
                     mv3D = VisualTreeHelper.GetParent(mv3D) as ModelVisual3D; //look up tree to find parent
                 }
             }
-            return 0;
+            return null;
         }
 
         private object PropertiesProvider(Point location)
         {
             HitTestResult result = VisualTreeHelper.HitTest(this, location);
-            
+            object dc = this.DataContext;
             if (result != null &&
                 result.VisualHit is ModelVisual3D)
             {
                 ModelVisual3D mv3D = (ModelVisual3D) result.VisualHit;
                 while (mv3D != null)
                 {
-                    IfcProduct prod = mv3D.GetValue(TagProperty) as IfcProduct;
-                    if (prod != null)
+                    long? prod = mv3D.GetValue(TagProperty) as long?;
+                    if (prod.HasValue)
                         return prod.ToString();
                     mv3D = VisualTreeHelper.GetParent(mv3D) as ModelVisual3D; //look up tree to find parent
                 }

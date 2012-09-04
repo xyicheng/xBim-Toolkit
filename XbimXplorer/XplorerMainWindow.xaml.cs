@@ -47,9 +47,9 @@ namespace XbimXplorer
     {
         private BackgroundWorker _worker;
         private PropertiesWindow _propertyWindow;
-        private long _currentProduct;
+        private long? _currentProduct;
         private string _currentModelFileName;
-        private Dictionary<string, XbimMaterialProvider> _materials;
+        
 
         public XplorerMainWindow()
         {
@@ -59,7 +59,7 @@ namespace XbimXplorer
             SpatialControl.SelectedItemChanged +=new RoutedPropertyChangedEventHandler<SpatialStructureTreeItem>(SpatialControl_SelectedItemChanged);
             DrawingControl.OnSetMaterial += new SetMaterialEventHandler(DrawingControl_OnSetMaterial);
             //DrawingControl.OnSetFilter += new SetFilterEventHandler(DrawingControl_OnSetFilter);
-           
+        
         }
 
         void DrawingControl_ProgressChanged(object sender, ProgressChangedEventArgs e)
@@ -102,72 +102,73 @@ namespace XbimXplorer
         private XbimMaterialProvider DrawingControl_OnSetMaterial(IfcProduct product)
         {
             //set up your material list
-            if (_materials == null)
-            {
-                _materials = new Dictionary<string, XbimMaterialProvider>();
-                _materials.Add("201",
-                               new XbimMaterialProvider(
-                                   new DiffuseMaterial(new SolidColorBrush(Colors.LightBlue) {Opacity = 0.7})));
-                _materials.Add("202",
-                               new XbimMaterialProvider(
-                                   new DiffuseMaterial(new SolidColorBrush(Colors.LightGreen) {Opacity = 0.7})));
-                _materials.Add("211",
-                               new XbimMaterialProvider(
-                                   new DiffuseMaterial(new SolidColorBrush(Colors.LightYellow) {Opacity = 0.7})));
-            }
-            XbimMaterialProvider mat;
-            //do what you need here to set materials, this is just a default behaviour
-            IfcSpace space = product as IfcSpace;
-            if (space != null)
-            {
-                switch (product.Name.ToString())
-                {
-                    case "201":
-                        mat = _materials["201"];
-                        break;
-                    case "202":
-                        mat = _materials["202"];
-                        break;
-                    case "211":
-                        mat = _materials["211"];
-                        break;
-                    default:
-                        ModelDataProvider modelProvider = ModelProvider;
-                        mat = new XbimMaterialProvider(modelProvider.GetDefaultMaterial(product));
-                        break;
-                }
-            }
-            else
-            {
-                ModelDataProvider modelProvider = ModelProvider;
-                mat = new XbimMaterialProvider(modelProvider.GetDefaultMaterial(product));
-            }
+            //////if (_materials == null)
+            //////{
+            //////    _materials = new Dictionary<string, XbimMaterialProvider>();
+            //////    _materials.Add("201",
+            //////                   new XbimMaterialProvider(
+            //////                       new DiffuseMaterial(new SolidColorBrush(Colors.LightBlue) {Opacity = 0.7})));
+            //////    _materials.Add("202",
+            //////                   new XbimMaterialProvider(
+            //////                       new DiffuseMaterial(new SolidColorBrush(Colors.LightGreen) {Opacity = 0.7})));
+            //////    _materials.Add("211",
+            //////                   new XbimMaterialProvider(
+            //////                       new DiffuseMaterial(new SolidColorBrush(Colors.LightYellow) {Opacity = 0.7})));
+            //////}
+            //////XbimMaterialProvider mat;
+            ////////do what you need here to set materials, this is just a default behaviour
+            //////IfcSpace space = product as IfcSpace;
+            //////if (space != null)
+            //////{
+            //////    switch (product.Name.ToString())
+            //////    {
+            //////        case "201":
+            //////            mat = _materials["201"];
+            //////            break;
+            //////        case "202":
+            //////            mat = _materials["202"];
+            //////            break;
+            //////        case "211":
+            //////            mat = _materials["211"];
+            //////            break;
+            //////        default:
+            //////            ModelDataProvider modelProvider = ModelProvider;
+            //////            mat = new XbimMaterialProvider(modelProvider.GetDefaultMaterial(product));
+            //////            break;
+            //////    }
+            //////}
+            //////else
+            //////{
+            //////    ModelDataProvider modelProvider = ModelProvider;
+            //////    mat = new XbimMaterialProvider(modelProvider.GetDefaultMaterial(product));
+            //////}
 
 
-            //create a list of materials and then reuse them, do not create a new material for each call
-            return mat;
+            ////////create a list of materials and then reuse them, do not create a new material for each call
+            //////return mat;
+            return null;
         }
 
         private void SliderColour_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            byte nv = Convert.ToByte(e.NewValue);
-            if (_materials != null) //change the value of the first material
-            {
-                XbimMaterialProvider firstMaterial = _materials.Values.FirstOrDefault();
-                if (firstMaterial != null)
-                {
-                    Color cl = Colors.LimeGreen;
+            //byte nv = Convert.ToByte(e.NewValue);
+            //if (_materials != null) //change the value of the first material
+            //{
+            //    XbimMaterialProvider firstMaterial = _materials.Values.FirstOrDefault();
+            //    if (firstMaterial != null)
+            //    {
+            //        Color cl = Colors.LimeGreen;
 
-                    cl.R = nv;
-                    cl.G = Convert.ToByte(255 - nv);
-                    //cl.B = nv;
-                    //cl.A = 100;
+            //        cl.R = nv;
+            //        cl.G = Convert.ToByte(255 - nv);
+            //        //cl.B = nv;
+            //        //cl.A = 100;
 
 
-                    firstMaterial.FaceMaterial = new DiffuseMaterial(new SolidColorBrush(cl) {Opacity = 0.7});
-                    firstMaterial.BackgroundMaterial = firstMaterial.FaceMaterial; //set them both the same
-                }
-            }
+            //        firstMaterial.FaceMaterial = new DiffuseMaterial(new SolidColorBrush(cl) {Opacity = 0.7});
+            //        firstMaterial.BackgroundMaterial = firstMaterial.FaceMaterial; //set them both the same
+            //    }
+            //}
             e.Handled = true;
         }
 
@@ -211,21 +212,24 @@ namespace XbimXplorer
             dlg.ShowDialog(this);
         }
 
-        private ModelDataProvider ModelProvider
+        private ObjectDataProvider ModelProvider
         {
             get
             {
-                ObjectDataProvider objProvider = FindResource("ModelProvider") as ObjectDataProvider;
-                if (objProvider != null) return objProvider.ObjectInstance as ModelDataProvider;
-                else return null;
+                return MainFrame.DataContext as ObjectDataProvider;
+               
             }
-            set
-            {
-                ObjectDataProvider objProvider = FindResource("ModelProvider") as ObjectDataProvider;
-                objProvider.ObjectInstance = value;
-            }
+            
         }
 
+        public XbimModel Model
+        {
+            get
+            {
+                ObjectDataProvider op = MainFrame.DataContext as ObjectDataProvider;
+                return op == null ? null : op.ObjectInstance as XbimModel;
+            }
+        }
         private void OpenIfcFile(object s, DoWorkEventArgs args)
         {
             BackgroundWorker worker = s as BackgroundWorker;
@@ -234,17 +238,12 @@ namespace XbimXplorer
             XbimModel model = new XbimModel();
             try
             {
-                
-                ClosePreviousModel();
-                //attach it to the Ifc Stream Parser
                 string XbimFileName = Path.ChangeExtension(ifcFilename,"Xbim");
                 model.CreateFrom(ifcFilename, XbimFileName, worker.ReportProgress);
                 model.Open(XbimFileName);
-                XbimScene.ConvertGeometry(model, model.InstancesOfType<IfcProduct>(), worker.ReportProgress);
-               
-                ModelProvider.Model = model; //this Triggers the event to load the model into the views 
-
-               // ModelProvider.Scene = geomEngine;
+                XbimScene.ConvertGeometry(model, model.InstancesOfType<IfcProduct>().Where(t=>!(t is IfcFeatureElement)), worker.ReportProgress);
+                args.Result = model;
+                
             }
             catch (Exception ex)
             {
@@ -263,27 +262,55 @@ namespace XbimXplorer
             }
         }
 
-        private void ClosePreviousModel()
-        {
-            if (ModelProvider.Model != null)
-            {
-                ModelProvider.Model.Dispose();
-            }
-        }
+       
 
         private void OpenIfcXmlFile(object s, DoWorkEventArgs args)
         {
-            BackgroundWorker worker = s as BackgroundWorker;
-            ModelDataProvider modelProvider = ModelProvider;
-            string fileName = args.Argument as string;
+            //BackgroundWorker worker = s as BackgroundWorker;
+            //ModelDataProvider modelProvider = ModelProvider;
+            //string fileName = args.Argument as string;
 
-            IModel m = new XbimModel();
+            //IModel m = new XbimModel();
+            //try
+            //{
+            //    ClosePreviousModel();
+            //    m.Open(fileName);
+            //    XbimScene geomEngine = new XbimScene(m);
+            //   // modelProvider.Scene = geomEngine;
+            //}
+            //catch (Exception ex)
+            //{
+            //    StringBuilder sb = new StringBuilder();
+            //    sb.AppendLine("Error reading " + fileName);
+            //    string indent = "\t";
+            //    while (ex != null)
+            //    {
+            //        sb.AppendLine(indent + ex.Message);
+            //        ex = ex.InnerException;
+            //        indent += "\t";
+            //    }
+            //    args.Result = new Exception(sb.ToString());
+            //}
+        }
+
+        /// <summary>
+        ///   This is called when we explcitly want to open an xBIM file
+        /// </summary>
+        /// <param name = "s"></param>
+        /// <param name = "args"></param>
+        private void OpenXbimFile(object s, DoWorkEventArgs args)
+        {
+            BackgroundWorker worker = s as BackgroundWorker;
+            string fileName = args.Argument as string;
+            XbimModel model = new XbimModel();
             try
             {
-                ClosePreviousModel();
-                m.Open(fileName);
-                XbimScene geomEngine = new XbimScene(m);
-               // modelProvider.Scene = geomEngine;
+                if (fileName.ToLower() == _currentModelFileName) //same file do nothing
+                    return;
+                else
+                    _currentModelFileName = fileName.ToLower();
+                model.Open(fileName); //load entities into the model
+                args.Result = model;
             }
             catch (Exception ex)
             {
@@ -296,54 +323,27 @@ namespace XbimXplorer
                     ex = ex.InnerException;
                     indent += "\t";
                 }
+
                 args.Result = new Exception(sb.ToString());
-            }
-        }
-
-        /// <summary>
-        ///   This is called when we explcitly want to open an xBIM file
-        /// </summary>
-        /// <param name = "s"></param>
-        /// <param name = "args"></param>
-        private void OpenXbimFile(string fileName)
-        {
-            
-            XbimModel m = new XbimModel();
-            ModelDataProvider modelProvider = ModelProvider;
-            
-            try
-            {
-                if (fileName.ToLower() == _currentModelFileName) //same file do nothing
-                    return;
-                else
-                    _currentModelFileName = fileName.ToLower();
-
-                m.Open(fileName); //load entities into the model
-                modelProvider.Model = m; //this Triggers the event to load the model into the views 
-            }
-            catch (Exception el)
-            {
-                MessageBox.Show(this, "Error opening Xbim File " + fileName + "\n"+el.Message,"File Open Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
         private void OpenZipFile(object s, DoWorkEventArgs args)
         {
-            BackgroundWorker worker = s as BackgroundWorker;
-            string zipFilename = args.Argument as string;
+            //BackgroundWorker worker = s as BackgroundWorker;
+            //string zipFilename = args.Argument as string;
 
-            IModel model = new XbimModel();
-            try
-            {
-                ClosePreviousModel();
-                model.Open(zipFilename);
-                XbimScene geomEngine = new XbimScene(model);
-               // ModelProvider.Scene = geomEngine;
-            }
-            catch (Exception ex)
-            {
-                args.Result = ex;
-            }
+            //XbimModel model = new XbimModel();
+            //try
+            //{
+            //    model.Open(zipFilename);
+            //    XbimScene geomEngine = new XbimScene(model);
+            //   // ModelProvider.Scene = geomEngine;
+            //}
+            //catch (Exception ex)
+            //{
+            //    args.Result = ex;
+            //}
         }
 
         private void dlg_OpenXbimFile(object sender, CancelEventArgs e)
@@ -355,6 +355,10 @@ namespace XbimXplorer
                 string ext = fInfo.Extension.ToLower();
                 StatusBar.Visibility = Visibility.Visible;
                 CreateWorker();
+
+                if (Model != null) Model.Dispose();
+                ModelProvider.DeferRefresh();
+                ModelProvider.ObjectInstance = null;
                 switch (ext)
                 {
                     case ".ifc": //it is an Ifc File
@@ -366,13 +370,11 @@ namespace XbimXplorer
                         _worker.RunWorkerAsync(dlg.FileName);
                         break;
                     case ".xbim": //it is an xbim File, just open it in the main thread
-                        OpenXbimFile(dlg.FileName);
-                        
+                        _worker.DoWork += OpenXbimFile;
+                        _worker.RunWorkerAsync(dlg.FileName);
+                       
                         break;
                     case ".ifczip": //it is a xip file containing xbim or ifc File
-                        _worker.DoWork += OpenZipFile;
-                        _worker.RunWorkerAsync(dlg.FileName);
-                        break;
                     case ".zip": //it is a xip file containing xbim or ifc File
                         _worker.DoWork += OpenZipFile;
                         _worker.RunWorkerAsync(dlg.FileName);
@@ -397,25 +399,33 @@ namespace XbimXplorer
 
             _worker.RunWorkerCompleted += delegate(object s, RunWorkerCompletedEventArgs args)
                                               {
-                                                  string errMsg = args.Result as String;
-                                                  if (!string.IsNullOrEmpty(errMsg))
-                                                      MessageBox.Show(this, errMsg, "Error Opening Ifc File",
-                                                                      MessageBoxButton.OK, MessageBoxImage.Error,
-                                                                      MessageBoxResult.None, MessageBoxOptions.None);
-                                                  if (args.Result is Exception)
+                                                  if (args.Result is XbimModel) //all ok
                                                   {
-                                                      StringBuilder sb = new StringBuilder();
-                                                      Exception ex = args.Result as Exception;
-                                                      String indent = "";
-                                                      while (ex != null)
+                                                      ModelProvider.ObjectInstance = (XbimModel)args.Result; //this Triggers the event to load the model into the views 
+                                                      ModelProvider.Refresh();
+                                                  }
+                                                  else //we have a problem
+                                                  {
+                                                      string errMsg = args.Result as String;
+                                                      if (!string.IsNullOrEmpty(errMsg))
+                                                          MessageBox.Show(this, errMsg, "Error Opening Ifc File",
+                                                                          MessageBoxButton.OK, MessageBoxImage.Error,
+                                                                          MessageBoxResult.None, MessageBoxOptions.None);
+                                                      if (args.Result is Exception)
                                                       {
-                                                          sb.AppendFormat("{0}{1}\n", indent, ex.Message);
-                                                          ex = ex.InnerException;
-                                                          indent += "\t";
+                                                          StringBuilder sb = new StringBuilder();
+                                                          Exception ex = args.Result as Exception;
+                                                          String indent = "";
+                                                          while (ex != null)
+                                                          {
+                                                              sb.AppendFormat("{0}{1}\n", indent, ex.Message);
+                                                              ex = ex.InnerException;
+                                                              indent += "\t";
+                                                          }
+                                                          MessageBox.Show(this, sb.ToString(), "Error Opening Ifc File",
+                                                                          MessageBoxButton.OK, MessageBoxImage.Error,
+                                                                          MessageBoxResult.None, MessageBoxOptions.None);
                                                       }
-                                                      MessageBox.Show(this, sb.ToString(), "Error Opening Ifc File",
-                                                                      MessageBoxButton.OK, MessageBoxImage.Error,
-                                                                      MessageBoxResult.None, MessageBoxOptions.None);
                                                   }
                                                   // StatusBar.Visibility = Visibility.Hidden;
                                               };
@@ -459,16 +469,17 @@ namespace XbimXplorer
         private void DrawingControl_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
         {
             _currentProduct = DrawingControl.GetProductAt(e);
-            if (_currentProduct != null)
+            if (_currentProduct.HasValue && Model !=null)
             {
+                IPersistIfcEntity product = Model.GetInstance(_currentProduct.Value);
                 ContextMenu = new ContextMenu();
-                MenuItem mi = new MenuItem() {Header = string.Format("Hide this {0}", _currentProduct.GetType().Name)};
+                MenuItem mi = new MenuItem() { Header = string.Format("Hide this {0}", product.GetType().Name) };
                 mi.Click += new RoutedEventHandler(HideProduct);
                 ContextMenu.Items.Add(mi);
-                mi = new MenuItem() {Header = string.Format("Hide all {0}s", _currentProduct.GetType().Name)};
+                mi = new MenuItem() { Header = string.Format("Hide all {0}s", product.GetType().Name) };
                 mi.Click += new RoutedEventHandler(HideAllTypesOf);
                 ContextMenu.Items.Add(mi);
-                mi = new MenuItem() {Header = string.Format("Show all {0}s", _currentProduct.GetType().Name)};
+                mi = new MenuItem() { Header = string.Format("Show all {0}s", product.GetType().Name) };
                 mi.Click += new RoutedEventHandler(ShowAllTypesOf);
                 ContextMenu.Items.Add(mi);
                 ContextMenu.Items.Add(new Separator());
@@ -491,26 +502,27 @@ namespace XbimXplorer
 
         private void ShowAllTypesOf(object sender, RoutedEventArgs e)
         {
-            if (_currentProduct != null)
+            if (_currentProduct.HasValue && Model !=null)
             {
-                DrawingControl.Show(_currentProduct.GetType());
+                IPersistIfcEntity product = Model.GetInstance(_currentProduct.Value);
+                DrawingControl.Show(product.GetType());
             }
         }
 
         private void HideProduct(object sender, RoutedEventArgs e)
         {
-            if (_currentProduct != null)
+            if (_currentProduct.HasValue)
             {
-                DrawingControl.Hide(_currentProduct);
+                DrawingControl.Hide(_currentProduct.Value);
             }
         }
 
         private void HideAllTypesOf(object sender, RoutedEventArgs e)
         {
-            if (_currentProduct != 0)
+            if (_currentProduct.HasValue)
             {
 
-                DrawingControl.HideAllTypesOf(_currentProduct);
+                DrawingControl.HideAllTypesOf(_currentProduct.Value);
             }
         }
 
@@ -658,9 +670,8 @@ namespace XbimXplorer
                 try
                 {
                     if (fInfo.Exists) fInfo.Delete();
-                    ModelDataProvider modelProvider = ModelProvider;
-                    XbimModel fs = modelProvider.Model as XbimModel;
-                    if (fs != null) fs.SaveAs(dlg.FileName,XbimStorageType.IFC);
+
+                    if (Model != null) Model.SaveAs(dlg.FileName, XbimStorageType.IFC);
                     else throw new Exception("Invalid Model Server");
                 }
                 catch (Exception except)
@@ -679,10 +690,8 @@ namespace XbimXplorer
                 FileInfo fInfo = new FileInfo(dlg.FileName);
                 try
                 {
-                    if (fInfo.Exists) fInfo.Delete();
-                    ModelDataProvider modelProvider = ModelProvider;
-                    XbimModel fs = modelProvider.Model as XbimModel;
-                    if (fs != null) fs.SaveAs(dlg.FileName, XbimStorageType.IFCXML);
+                    if (fInfo.Exists) fInfo.Delete();                  
+                    if (Model != null) Model.SaveAs(dlg.FileName, XbimStorageType.IFCXML);
                     else throw new Exception("Invalid Model Server");
                 }
                 catch (Exception except)
@@ -713,9 +722,7 @@ namespace XbimXplorer
                 try
                 {
                     if (fInfo.Exists) fInfo.Delete();
-                    ModelDataProvider modelProvider = ModelProvider;
-                    XbimModel fs = modelProvider.Model as XbimModel;
-                    if (fs != null) fs.SaveAs(dlg.FileName,XbimStorageType.IFCZIP);
+                    if (Model != null) Model.SaveAs(dlg.FileName,XbimStorageType.IFCZIP);
                     else throw new Exception("Invalid Model Server");
                 }
                 catch (Exception except)
