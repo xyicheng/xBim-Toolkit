@@ -170,6 +170,12 @@ namespace XBim.COBie.Client.Formatters
             // Enumerate rows
             for (int r = 0; r < sheet.Rows.Count; r++)
             {
+                if (r > UInt16.MaxValue)
+                {
+                    // TODO: Warn overflow of XLS 2003 worksheet
+                    break;
+                }
+
                 TCOBieRowType row = sheet.Rows[r];
 
                 // GET THE ROW + 1 - This stops us overwriting the headers of the worksheet
@@ -200,10 +206,10 @@ namespace XBim.COBie.Client.Formatters
             {
                 if (!columns[i].IsMatch(sheetHeaders[i]))
                 {
-                    Console.WriteLine(@"{2}
+                    Console.WriteLine(@"{2} column {3}
 Mismatch: {0}
           {1}",
-              columns[i].ColumnName, sheetHeaders[i], sheetName);
+              columns[i].ColumnName, sheetHeaders[i], sheetName, i);
                 }
             }
         }
@@ -239,19 +245,33 @@ Mismatch: {0}
 
         private void SetCellValue(ICell excelCell, COBieCell cell)
         {
+            if (SetCellTypedValue(excelCell, cell) == false)
+            {
+                excelCell.SetCellValue(cell.CellValue);
+            }
+        }
+
+        private bool SetCellTypedValue(ICell excelCell, COBieCell cell)
+        {
+            bool processed = false;
+
             try
             {
                 if (String.IsNullOrEmpty(cell.CellValue) || cell.CellValue == COBieData.DEFAULT_STRING)
                 {
-                    excelCell.SetCellValue(cell.CellValue);
-                    return;
+                    return false;
                 }
 
                 // We need to set the value in the most appropriate overload of SetCellValue, so the parsing/formatting is correct
                 switch (cell.CobieCol.AllowedType)
                 {
                     case COBieAllowedType.ISODate:
-                        excelCell.SetCellValue(DateTime.Parse(cell.CellValue, CultureInfo.InvariantCulture));
+                        DateTime date;
+                        if (DateTime.TryParse(cell.CellValue, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out date))
+                        {
+                            excelCell.SetCellValue(date);
+                            processed = true;
+                        }
                         break;
 
                     case COBieAllowedType.Numeric:
@@ -259,23 +279,20 @@ Mismatch: {0}
                         if (Double.TryParse(cell.CellValue, out val))
                         {
                             excelCell.SetCellValue(val);
-                        }
-                        else
-                        {
-                            excelCell.SetCellValue(cell.CellValue);
+                            processed = true;
                         }
                         break;
 
                     default:
-                        excelCell.SetCellValue(cell.CellValue);
                         break;
                 }
             }
             catch (SystemException)
-            {
-                excelCell.SetCellValue(cell.CellValue);
-            }
+            { /* Carry on */ }
+
+            return processed;
         }
+
 
         
         private static void RecalculateSheet(ISheet excelSheet)
