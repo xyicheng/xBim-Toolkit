@@ -195,7 +195,7 @@ namespace Xbim.Ifc.ProfilePropertyResource
                 case 2:
                     _barSurface =
                         (IfcReinforcingBarSurfaceEnum)
-                        Enum.Parse(typeof (IfcReinforcingBarSurfaceEnum), value.StringVal, true);
+                        Enum.Parse(typeof (IfcReinforcingBarSurfaceEnum), value.EnumVal, true);
                     break;
                 case 3:
                     _effectiveDepth = value.RealVal;

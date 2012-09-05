@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Xml;
 using Xbim.Ifc.GeometricConstraintResource;
 using Xbim.Ifc.GeometryResource;
 using Xbim.Ifc.Kernel;
@@ -32,8 +33,9 @@ using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Parser;
 using Xbim.XbimExtensions.Transactions;
 using Xbim.XbimExtensions.Transactions.Extensions;
-using System.Xml;
-using System.Windows.Markup;
+using Xbim.Common;
+using Xbim.Ifc.MeasureResource;
+using Xbim.Ifc.Extensions;
 
 #endregion
 
@@ -62,6 +64,64 @@ namespace Xbim.IO
             get { return _filename; }
         }
 
+        private XbimModelFactors _modelFactors;
+
+        public override XbimModelFactors GetModelFactors
+        {
+            get
+            {
+                if(_modelFactors==null)
+                {
+                double angleToRadiansConversionFactor = 0.0174532925199433; //assume degrees
+                double lengthToMetresConversionFactor = 1; //assume metres
+
+                IfcUnitAssignment ua = InstancesOfType<IfcUnitAssignment>().FirstOrDefault();
+                if (ua != null)
+                {
+
+                    foreach (var unit in ua.Units)
+                    {
+                        double value = 1.0;
+                        IfcConversionBasedUnit cbUnit = unit as IfcConversionBasedUnit;
+                        IfcSIUnit siUnit = unit as IfcSIUnit;
+                        if (cbUnit != null)
+                        {
+                            IfcMeasureWithUnit mu = cbUnit.ConversionFactor;
+                            if (mu.UnitComponent is IfcSIUnit)
+                                siUnit = (IfcSIUnit)mu.UnitComponent;
+                            ExpressType et = ((ExpressType)mu.ValueComponent);
+
+                            if (et.UnderlyingSystemType == typeof(double))
+                                value *= (double)et.Value;
+                            else if (et.UnderlyingSystemType == typeof(int))
+                                value *= (double)((int)et.Value);
+                            else if (et.UnderlyingSystemType == typeof(long))
+                                value *= (double)((long)et.Value);
+                        }
+                        if (siUnit != null)
+                        {
+                            value *= siUnit.Power();
+                            switch (siUnit.UnitType)
+                            {
+                                case IfcUnitEnum.LENGTHUNIT:
+
+                                    lengthToMetresConversionFactor = value;
+                                    break;
+                                case IfcUnitEnum.PLANEANGLEUNIT:
+                                    angleToRadiansConversionFactor = value;
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                    }
+                }
+
+                _modelFactors= new XbimModelFactors(angleToRadiansConversionFactor, lengthToMetresConversionFactor);
+                }
+                return _modelFactors;
+            }
+        }
 
 
         public XbimFileModelServer(Stream stream)
@@ -80,7 +140,7 @@ namespace Xbim.IO
         {
             Open(fileName, fileAccess);
         }
-                
+
         public XbimIndex EntityOffsets
         {
             get { return _entityOffsets; }
@@ -98,7 +158,7 @@ namespace Xbim.IO
                 Dispose();
                 // now we have streamReader and streamWriter, choose the right one to use
                 _stream = new FileStream(filename, FileMode.Open, fileAccess);
-                
+
                 Initialise();
                 _filename = filename;
 
@@ -113,7 +173,7 @@ namespace Xbim.IO
                 throw new Exception("Failed to open " + filename, e);
             }
         }
-                
+
         /// <summary>
         ///   Imports an Ifc file into the model server, throws exception if errors are encountered
         /// </summary>
@@ -143,15 +203,39 @@ namespace Xbim.IO
         /// <param name = "filename"></param>
         public string ImportIfc(string filename, string xbimFilename, ReportProgressDelegate progress)
         {
-            FileStream inputFile = null;
+            Stream inputFile = null;
             IfcInputStream input = null;
+
+            IfcZipInputStream zipstream = null;
+                                   
             try
             {
                 Dispose(); //clear up any issues from previous runs
-                inputFile = new FileStream(filename, FileMode.Open, FileAccess.Read);
+
+                string ext = Path.GetExtension(filename).ToLower();
+                if (ext == ".zip" || ext == ".ifczip")
+                {
+                   
+                    zipstream = new IfcZipInputStream(filename);
+                    if (zipstream.FileExt == ".ifc")
+                    {
+                        inputFile = zipstream.InputFile;
+                    }
+                    else if (zipstream.FileExt == ".ifcxml")
+                    {
+                        //TODO: Import from zip with .ifcxml file types to do, uses IModel
+                        throw new NotImplementedException("Import from zip with .ifcxml file type: not implemented yet");
+                    }
+                    
+                }
+                else
+                {
+                    inputFile = new FileStream(filename, FileMode.Open, FileAccess.Read);
+                }
                 //attach it to the Ifc Stream Parser
                 input = new IfcInputStream(inputFile);
-                using ( FileStream outputFile = new FileStream(xbimFilename, FileMode.Create, FileAccess.ReadWrite)                )
+                
+                using (FileStream outputFile = new FileStream(xbimFilename, FileMode.Create, FileAccess.ReadWrite))
                 {
                     int errors = input.Index(outputFile, progress);
                     if (errors == 0)
@@ -166,11 +250,21 @@ namespace Xbim.IO
                         throw new Xbim.Common.Exceptions.XbimException("Ifc file reading or initialisation errors\n" + input.ErrorLog.ToString());
                     }
                 }
-                
+
+            }
+            catch (FileNotFoundException)
+            {
+                Close();
+                throw;
+            }
+            catch (DirectoryNotFoundException)
+            {
+                Close();
+                throw;
             }
             catch (Exception e)
             {
-                Dispose();
+                Close();
                 
                 throw new Xbim.Common.Exceptions.XbimException(
                     String.Format("Failed to import {0}\n{1}", filename, (input!=null ? input.ErrorLog.ToString() : "<no error log captured>"))
@@ -179,7 +273,7 @@ namespace Xbim.IO
             finally
             {
                 if (inputFile != null) inputFile.Close();
-                
+                if (zipstream != null) zipstream.Close();
             }
         }
 
@@ -1031,14 +1125,14 @@ namespace Xbim.IO
                         entry.Offset = dataStream.BaseStream.Position;
                         dataStream.Write(entityStream.GetBuffer(), 0, len);
                     }
-                
+
                     long indexStart = dataStream.BaseStream.Position;
                     changesIndex.Write(dataStream);
                     dataStream.BaseStream.Seek(start, SeekOrigin.Begin);
                     dataStream.Write(BitConverter.GetBytes(indexStart), 0, sizeof(long));
                     dataStream.Seek(0, SeekOrigin.End);
                 }
-                
+
             }
 
         }
@@ -1126,7 +1220,7 @@ namespace Xbim.IO
                 _binaryWriter.Write(len); // write the len and move back to prev position
                 _stream.Seek(prevPos, SeekOrigin.Begin);
             }
-            
+
         }
         /// <summary>
         ///   Imports an Xml file memory model into the model server, throws exception if errors are encountered
@@ -1202,7 +1296,7 @@ namespace Xbim.IO
                 Dispose();
                 throw new Xbim.Common.Exceptions.XbimException("Failed to import " + xbimFilename, e);
             }
-            
+
         }
 
         public override string Open(string inputFileName)

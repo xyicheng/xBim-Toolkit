@@ -10,6 +10,9 @@ using System.IO;
 using System.Reflection;
 using Xbim.XbimExtensions;
 using System.Collections;
+using System.Globalization;
+using System.Threading;
+using Xbim.Ifc.GeometryResource;
 
 namespace Xbim.Tests
 {
@@ -241,6 +244,26 @@ namespace Xbim.Tests
             using(XbimFileModelServer modelServer = new XbimFileModelServer())
             {
                 modelServer.Open(nonGeomFileName);
+            }
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(FileNotFoundException))]
+        public void Importing_Missing_File_Throws_FileNotFoundException()
+        {
+            using (XbimFileModelServer modelServer = new XbimFileModelServer())
+            {
+                modelServer.ImportIfc("DoesNotExist.ifc");
+            }
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(DirectoryNotFoundException))]
+        public void Importing_From_Missing_Folder_Throws_DirectoryNotFoundException()
+        {
+            using (XbimFileModelServer modelServer = new XbimFileModelServer())
+            {
+                modelServer.ImportIfc("/BadPath/DoesNotExist.ifc");
             }
         }
 

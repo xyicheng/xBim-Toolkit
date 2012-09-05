@@ -200,6 +200,10 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Xbim.Common\Xbim.Common.csproj">
+      <Project>{6745F5AC-AF3C-4372-81AA-A75E7B1FA03B}</Project>
+      <Name>Xbim.Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Xbim.Ifc\Xbim.Ifc.csproj">
       <Project>{5D4C907D-1293-4E5F-9642-D0862AE4741C}</Project>
       <Name>Xbim.Ifc</Name>
