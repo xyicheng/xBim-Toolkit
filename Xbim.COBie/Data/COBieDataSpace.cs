@@ -41,63 +41,77 @@ namespace Xbim.COBie.Data
             COBieSheet<COBieSpaceRow> spaces = new COBieSheet<COBieSpaceRow>(Constants.WORKSHEET_SPACE);
 
             // get all IfcBuildingStory objects from IFC file
-            IEnumerable<IfcSpace> ifcSpaces = Model.InstancesOfType<IfcSpace>().OrderBy(ifcSpace => ifcSpace.Name, new CompareIfcLabel());
+            List<IfcSpace> ifcSpaces = Model.InstancesOfType<IfcSpace>().OrderBy(ifcSpace => ifcSpace.Name, new CompareIfcLabel()).ToList();
+            
+            COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(ifcSpaces.OfType<IfcObject>().ToList()); //properties helper class
+            
 
-            //list of attributes and propertysets to exclude form attribute sheet
-            List<string> ExcludeAtts = new List<string> { "RoomTag", "Area", "Number"};
-            List<string> ExcludeAttsWC = new List<string> {"ZoneName", "Category" }; //exclude part names
-            List<string> ExcludePropSet = new List<string>() { "BaseQuantities" };
-
-            foreach (IfcSpace sp in ifcSpaces)
+            //list of attributes and property sets to exclude form attribute sheet
+            List<string> excludeAttributes = new List<string> { "RoomTag", "Area", "Number"};
+            List<string> ExcludeAttributesWildCard = new List<string> {"ZoneName", "Category" }; //exclude part names
+            List<string> ExcludePropertSetNames = new List<string>() { "BaseQuantities" };
+            allPropertyValues.ExcludePropertyValueNames.AddRange(excludeAttributes);
+            //allPropertyValues.FilterPropertyValueNames.AddRange(candidateProperties);
+            allPropertyValues.ExcludePropertyValueNamesWildcard.AddRange(ExcludeAttributesWildCard);
+            allPropertyValues.ExcludePropertySetNames.AddRange(ExcludePropertSetNames);
+            allPropertyValues.RowParameters["Sheet"] = "Space";
+            
+            foreach (IfcSpace ifcSpace in ifcSpaces)
             {
                 COBieSpaceRow space = new COBieSpaceRow(spaces);
 
-                space.Name = sp.Name;
+                space.Name = ifcSpace.Name;
 
-                space.CreatedBy = GetTelecomEmailAddress(sp.OwnerHistory);
-                space.CreatedOn = GetCreatedOnDateAsFmtString(sp.OwnerHistory);
+                space.CreatedBy = GetTelecomEmailAddress(ifcSpace.OwnerHistory);
+                space.CreatedOn = GetCreatedOnDateAsFmtString(ifcSpace.OwnerHistory);
 
-                space.Category = GetCategory(sp);
+                space.Category = GetCategory(ifcSpace);
 
-                space.FloorName = sp.SpatialStructuralElementParent.Name.ToString();
-                space.Description = GetSpaceDescription(sp);
+                space.FloorName = ifcSpace.SpatialStructuralElementParent.Name.ToString();
+                space.Description = GetSpaceDescription(ifcSpace);
                 space.ExtSystem = GetIfcApplication().ApplicationFullName;
-                space.ExtObject = sp.GetType().Name;
-                space.ExtIdentifier = sp.GlobalId;
-                space.RoomTag = GetSpaceDescription(sp);
+                space.ExtObject = ifcSpace.GetType().Name;
+                space.ExtIdentifier = ifcSpace.GlobalId;
+                space.RoomTag = GetSpaceDescription(ifcSpace);
                 //Do Usable Height
-                IfcLengthMeasure usableHt = sp.GetHeight();
+                IfcLengthMeasure usableHt = ifcSpace.GetHeight();
                 if (usableHt != null) space.UsableHeight = ((double)usableHt).ToString("F3");
                 else space.UsableHeight = DEFAULT_NUMERIC;
 
                 //Do Gross Areas 
-                IfcAreaMeasure grossAreaValue = sp.GetGrossFloorArea();
+                IfcAreaMeasure grossAreaValue = ifcSpace.GetGrossFloorArea();
                 //if we fail on try GSA keys
                 IfcQuantityArea spArea = null;
-                if (grossAreaValue == null) spArea = sp.GetQuantity<IfcQuantityArea>("GSA Space Areas", "GSA BIM Area");
+                if (grossAreaValue == null) spArea = ifcSpace.GetQuantity<IfcQuantityArea>("GSA Space Areas", "GSA BIM Area");
 
                 if (grossAreaValue != null) space.GrossArea = ((double)grossAreaValue).ToString("F3");
                 else if ((spArea is IfcQuantityArea) && (spArea.AreaValue != null)) space.GrossArea = ((double)spArea.AreaValue).ToString("F3");
                 else space.GrossArea = DEFAULT_NUMERIC;
 
                 //Do Net Areas 
-                IfcAreaMeasure netAreaValue = sp.GetNetFloorArea();  //this extension has the GSA built in so no need to get again
+                IfcAreaMeasure netAreaValue = ifcSpace.GetNetFloorArea();  //this extension has the GSA built in so no need to get again
                 if (netAreaValue != null) space.NetArea = ((double)netAreaValue).ToString("F3");
                 else space.NetArea = DEFAULT_NUMERIC;
 
                 spaces.Rows.Add(space);
 
                 //----------fill in the attribute information for spaces-----------
-                //pass data from this sheet info as Dictionary
-                Dictionary<string, string> passedValues = new Dictionary<string, string>(){{"Sheet", "Space"}, 
-                                                                                          {"Name", space.Name},
-                                                                                          {"CreatedBy", space.CreatedBy},
-                                                                                          {"CreatedOn", space.CreatedOn},
-                                                                                          {"ExtSystem", space.ExtSystem}
-                                                                                          };//required property date <PropertySetName, PropertyName>
+
+                //fill in the attribute information
+                allPropertyValues.RowParameters["Name"] = space.Name;
+                allPropertyValues.RowParameters["CreatedBy"] = space.CreatedBy;
+                allPropertyValues.RowParameters["CreatedOn"] = space.CreatedOn;
+                allPropertyValues.RowParameters["ExtSystem"] = space.ExtSystem;
+                allPropertyValues.SetAttributesRows(ifcSpace, ref attributes); //fill attribute sheet rows//pass data from this sheet info as Dictionary
+                //Dictionary<string, string> passedValues = new Dictionary<string, string>(){{"Sheet", "Space"}, 
+                //                                                                          {"Name", space.Name},
+                //                                                                          {"CreatedBy", space.CreatedBy},
+                //                                                                          {"CreatedOn", space.CreatedOn},
+                //                                                                          {"ExtSystem", space.ExtSystem}
+                //                                                                          };//required property date <PropertySetName, PropertyName>
                 
                 //add *ALL* the attributes to the passed attributes sheet except property names that match the passed List<string>
-                SetAttributeSheet(sp, passedValues, ExcludeAtts, ExcludeAttsWC, ExcludePropSet, ref attributes);
+                //SetAttributeSheet(sp, passedValues, excludeAttributes, ExcludeAttributesWildCard, ExcludePropertSetNames, ref attributes);
                             
                 
             }

@@ -40,8 +40,6 @@ namespace Xbim.COBie.Data
 
             List<Type> excludedTypes = new List<Type>{  typeof(IfcWall),
                                                             typeof(IfcWallStandardCase),
-                                                            typeof(IfcWall),
-                                                            typeof(IfcWallStandardCase),
                                                             typeof(IfcSlab),
                                                             typeof(IfcBeam),
                                                             typeof(IfcSpace),
@@ -78,49 +76,41 @@ namespace Xbim.COBie.Data
          
             IEnumerable<IfcRelAggregates> relAggregates = Model.InstancesOfType<IfcRelAggregates>();
             IEnumerable<IfcRelContainedInSpatialStructure> relSpatial = Model.InstancesOfType<IfcRelContainedInSpatialStructure>();
-             
-            var q1 = from x in relAggregates
-                     from y in x.RelatedObjects
-                     where !excludedTypes.Contains(y.GetType())
-                     select y;
 
-            var q2 = from x in relSpatial
-                     from y in x.RelatedElements
-                     where !excludedTypes.Contains(y.GetType())
-                     select y;
-
-            var res = q1.Concat(q2).GroupBy(el => el.Name)
-                                   .Select(g => g.First())
-                                   .ToList();
-
-            //first try property single values only get ProertySingleValues for each element and add to Dictionary
-            //Dictionary<IfcElement, List<IfcPropertySingleValue>> propSetsVals = res.OfType<IfcElement>().ToDictionary(el => el, el => el.PropertySets.SelectMany(ps => ps.HasProperties.OfType<IfcPropertySingleValue>()).ToList<IfcPropertySingleValue>()); 
-            //get property sets and property single values
-            Dictionary<IfcElement, Dictionary<IfcPropertySet, List<IfcPropertySingleValue>>> propSetsVals2 = res.OfType<IfcElement>().ToDictionary(el => el, el => el.PropertySets.ToDictionary(ps => ps, ps => ps.HasProperties.OfType<IfcPropertySingleValue>().ToList())); 
-
-
-            List<string> AttNames = new List<string> { "SerialNumber",
-                                                       "InstallationDate",
-                                                       "WarrantyStartDate",
-                                                       "TagNumber",
-                                                       "BarCode",
-                                                       "AssetIdentifier"};
-            List<string> ExcludeAtts = AttNames;
-            ExcludeAtts.Add("Circuit NumberSystem Type");
-            ExcludeAtts.Add("System Name");
-
-            foreach (var obj in res)
+            List<IfcObject> ifcElements = ((from x in relAggregates
+                                            from y in x.RelatedObjects
+                                            where !excludedTypes.Contains(y.GetType())
+                                            select y).Union(from x in relSpatial
+                                                            from y in x.RelatedElements
+                                                            where !excludedTypes.Contains(y.GetType())
+                                                            select y)).GroupBy(el => el.Name).Select(g => g.First()).OfType<IfcObject>().ToList(); //.Distinct().ToList();
+            
+            COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(ifcElements); //properties helper class
+            
+            List<string> candidateProperties = new List<string> {  "SerialNumber",
+                                                                   "InstallationDate",
+                                                                   "WarrantyStartDate",
+                                                                   "TagNumber",
+                                                                   "BarCode",
+                                                                   "AssetIdentifier"};
+            List<string> excludeAttributes = candidateProperties;
+            excludeAttributes.Add("Circuit NumberSystem Type");
+            excludeAttributes.Add("System Name");
+            allPropertyValues.ExcludePropertyValueNames.AddRange(excludeAttributes);
+            allPropertyValues.FilterPropertyValueNames.AddRange(candidateProperties);
+            //allPropertyValues.ExcludePropertyValNamesWildcard.AddRange(excludedTypesPropertyValuesWildCard);
+            allPropertyValues.RowParameters["Sheet"] = "Component";
+            
+            foreach (var obj in ifcElements)
             {
                 COBieComponentRow component = new COBieComponentRow(components);
 
                 IfcElement el = obj as IfcElement;
                 if (el == null)
                     continue;
-                //IfcOwnerHistory ifcOwnerHistory = el.OwnerHistory;
                 component.Name = el.Name;
                 component.CreatedBy = GetTelecomEmailAddress(el.OwnerHistory);
                 component.CreatedOn = GetCreatedOnDateAsFmtString(el.OwnerHistory);
-                //el.IsDefinedBy.ToArray()[1] as IfcRelDefinesByType).RelatingType.Name
                 
                 component.TypeName = GetTypeName(el);
                 component.Space = GetComponentRelatedSpace(el);
@@ -128,61 +118,36 @@ namespace Xbim.COBie.Data
                 component.ExtSystem = GetIfcApplication().ApplicationFullName;
                 component.ExtObject = el.GetType().Name;
                 component.ExtIdentifier = el.GlobalId;
-                //get the PropertySingleValues for the required properties
-                var pSVs = (from dic in propSetsVals2[el]
-                            from pset in dic.Value
-                            where AttNames.Contains(pset.Name)
-                            select new { Name = pset.Name, Value = ((pset != null) && (pset.NominalValue != null)) ? pset.NominalValue.Value.ToString() : DEFAULT_STRING }).ToList();
-                //var pSVs = (from pSet in el.IsDefinedByProperties
-                //                where pSet.RelatingPropertyDefinition is IfcPropertySet
-                //           from pSV in ((IfcPropertySet)pSet.RelatingPropertyDefinition).HasProperties.OfType<IfcPropertySingleValue>()
-                //                where AttNames.Contains(pSV.Name)
-                //                     select new { Name = pSV.Name, Value = ((pSV != null) && (pSV.NominalValue != null)) ? pSV.NominalValue.Value.ToString() : DEFAULT_STRING }).ToList();
 
-                var item = pSVs.Where(p => p.Name == "SerialNumber").FirstOrDefault();
-                component.SerialNumber = (item != null) ? item.Value : DEFAULT_STRING;//SetProperty(PSVs, "SerialNumber");
-                item = pSVs.Where(p => p.Name == "InstallationDate").FirstOrDefault();
-                component.InstallationDate = (item != null) ? item.Value : DEFAULT_STRING; //SetProperty(PSVs, "InstallationDate");
-                item = pSVs.Where(p => p.Name == "WarrantyStartDate").FirstOrDefault();
-                component.WarrantyStartDate = (item != null) ? item.Value : DEFAULT_STRING; //SetProperty(PSVs, "WarrantyStartDate");
-                item = pSVs.Where(p => p.Name == "TagNumber").FirstOrDefault();
-                component.TagNumber = (item != null) ? item.Value : DEFAULT_STRING; //SetProperty(PSVs, "TagNumber");
-                item = pSVs.Where(p => p.Name == "BarCode").FirstOrDefault();
-                component.BarCode = (item != null) ? item.Value : DEFAULT_STRING; //SetProperty(PSVs, "BarCode");
-                item = pSVs.Where(p => p.Name == "AssetIdentifier").FirstOrDefault();
-                component.AssetIdentifier = (item != null) ? item.Value : DEFAULT_STRING;
+                //set from PropertySingleValues filtered via candidateProperties
+                allPropertyValues.SetFilteredPropertySingleValues(el); //set the internal filtered IfcPropertySingleValues List in allPropertyValues
+                component.SerialNumber = allPropertyValues.GetFilteredPropertySingleValues("SerialNumber");
+                component.InstallationDate = allPropertyValues.GetFilteredPropertySingleValues("InstallationDate");
+                component.WarrantyStartDate = allPropertyValues.GetFilteredPropertySingleValues("WarrantyStartDate");
+                component.TagNumber = allPropertyValues.GetFilteredPropertySingleValues("TagNumber");
+                component.BarCode = allPropertyValues.GetFilteredPropertySingleValues("BarCode");
+                component.AssetIdentifier = allPropertyValues.GetFilteredPropertySingleValues("AssetIdentifier");
 
                 components.Rows.Add(component);
-                //----------fill in the attribute information for floor-----------
-                //pass data from this sheet info as Dictionary
-                Dictionary<string, string> passedValues = new Dictionary<string, string>(){{"Sheet", "Component"}, 
-                                                                                          {"Name", component.Name},
-                                                                                          {"CreatedBy", component.CreatedBy},
-                                                                                          {"CreatedOn", component.CreatedOn},
-                                                                                          {"ExtSystem", component.ExtSystem}
-                                                                                          };//required property date <PropertySetName, PropertyName>
-                
-                //add *ALL* the attributes to the passed attributes sheet except property names that match the passed List<string>
-                //SetAttributeSheet(el, passedValues, ExcludeAtts, null, null, ref attributes);
-                SetAttribSheet(passedValues, ExcludeAtts, null, ref attributes, propSetsVals2[el]);
+
+                //fill in the attribute information
+                allPropertyValues.RowParameters["Name"] = component.Name;
+                allPropertyValues.RowParameters["CreatedBy"] = component.CreatedBy;
+                allPropertyValues.RowParameters["CreatedOn"] = component.CreatedOn;
+                allPropertyValues.RowParameters["ExtSystem"] = component.ExtSystem;
+                allPropertyValues.SetAttributesRows(el, ref attributes); //fill attribute sheet rows
             }
 
             return components;
         }
 
         
+        
         /// <summary>
-        /// Return the NominalValue of the property with the propName passed to method
+        /// Get Space name which holds the passed in IfcElement
         /// </summary>
-        /// <param name="PSVs">IEnumerable<IfcPropertySingleValue> List</param>
-        /// <param name="propName">Property name to extract value from PSVs list </param>
-        /// <returns>property value string</returns>
-        private static string SetProperty(IEnumerable<IfcPropertySingleValue> PSVs, string propName)
-        {
-            IfcPropertySingleValue Psv = PSVs.Where(p => p.Name == propName).FirstOrDefault();
-            return ((Psv != null) && (Psv.NominalValue != null)) ? Psv.NominalValue.Value.ToString() : DEFAULT_STRING;
-        }
-
+        /// <param name="el">Element to extract space name from</param>
+        /// <returns>string</returns>
         internal string GetComponentRelatedSpace(IfcElement el)
         {
             if (el != null && el.ContainedInStructure.Count() > 0)
@@ -194,6 +159,11 @@ namespace Xbim.COBie.Data
             return Constants.DEFAULT_VAL;
         }
 
+        /// <summary>
+        /// Get Description for passed in IfcElement
+        /// </summary>
+        /// <param name="el">Element holding description</param>
+        /// <returns>string</returns>
         internal string GetComponentDescription(IfcElement el)
         {
             if (el != null)

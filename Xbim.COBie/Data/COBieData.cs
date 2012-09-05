@@ -27,7 +27,7 @@ namespace Xbim.COBie.Data
         /// <summary>
         /// Common exclude PropertySingleValue name containing any of the strings 
         /// </summary>
-        public List<string> _commonAttExcludes = new List<string>() {"Zone Base Offset", "Upper Limit", "Roomtag", 
+        public  List<string> _commonAttExcludes = new List<string>() {"Zone Base Offset", "Upper Limit", "Roomtag", 
                             "Line Pattern", "Symbol", "Width","Window Inset", 
                             "Radius", "Phase Created","Phase", "Outside Radius", 
                             "Outside Diameter", "Omniclass", "Offset", "Mark",
@@ -175,7 +175,7 @@ namespace Xbim.COBie.Data
         /// </summary>
         /// <param name="propSet">IfcPropertySet</param>
         /// <returns>Category as string </returns>
-        private static string GetCategory(IfcPropertySet propSet)
+        protected string GetCategory(IfcPropertySet propSet)
         {
             IEnumerable<IfcClassificationReference> cats = from IRAC in propSet.HasAssociations
                                                            where IRAC is IfcRelAssociatesClassification
@@ -271,7 +271,7 @@ namespace Xbim.COBie.Data
                                where !excPropSet.Contains(ps.Name.ToString())
                                select ps;
                 }
-                SetAttributsCommon(passedValues, excProp, excPropWC, ref attributes, pSets); 
+                SetAttributesCommon(passedValues, excProp, excPropWC, ref attributes, pSets); 
             }
         }
 
@@ -302,7 +302,7 @@ namespace Xbim.COBie.Data
                                select ps;
                 }
                 //process the IfcPropertySet sets
-                SetAttributsCommon(passedValues, excProp, excPropWC, ref attributes, pSets);
+                SetAttributesCommon(passedValues, excProp, excPropWC, ref attributes, pSets);
             }
         }
         
@@ -316,7 +316,7 @@ namespace Xbim.COBie.Data
         /// <param name = "excPropWC">List of propertSinglalue part names to exclude, if name holds the part name</param>
         /// <param name="attributes">The attribute Sheet to add the properties to its rows</param>
         /// <param name="pSets"></param>
-        private void SetAttributsCommon(Dictionary<string, string> passedValues, List<string> excProp, List<string> excPropWC, ref COBieSheet<COBieAttributeRow> attributes, IEnumerable<IfcPropertySet> pSets)
+        private void SetAttributesCommon(Dictionary<string, string> passedValues, List<string> excProp, List<string> excPropWC, ref COBieSheet<COBieAttributeRow> attributes, IEnumerable<IfcPropertySet> pSets)
         { 
             if (excPropWC == null) excPropWC = new List<string>();     //if null create to place default string           
             excPropWC = excPropWC.Concat(_commonAttExcludes).ToList(); //common exclude PropertySingleValue name containing this part string                
@@ -390,7 +390,7 @@ namespace Xbim.COBie.Data
 
                         COBieAttributeRow attribute = new COBieAttributeRow(attributes);
 
-                        attribute.Name = pSV.Name.ToString(); ;
+                        attribute.Name = pSV.Name.ToString(); 
 
                         //Get category
                         string cat = GetCategory(ps);
@@ -489,7 +489,7 @@ namespace Xbim.COBie.Data
                         }
                         COBieAttributeRow attribute = new COBieAttributeRow(attributes);
 
-                        attribute.Name = pSV.Name.ToString(); ;
+                        attribute.Name = pSV.Name.ToString(); 
 
                         //Get category
                         string cat = GetCategory(ps);
@@ -525,6 +525,8 @@ namespace Xbim.COBie.Data
                 }
             }
         }
+
+       
         /// <summary>
         /// Get the associated Type for a IfcObject, so a Door can be of type "Door Type A"
         /// </summary>
