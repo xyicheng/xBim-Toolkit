@@ -8,6 +8,8 @@
 #include <BRepLib_FindSurface.hxx>
 #include <BRepBuilderAPI_FindPlane.hxx>
 #include <ShapeFix_Wireframe.hxx>
+#include <BRepGProp_Face.hxx>
+#include <ShapeFix_ShapeTolerance.hxx>
 namespace Xbim
 {
 	namespace ModelGeometry
@@ -29,6 +31,17 @@ namespace Xbim
 		XbimFaceOuterBound^ XbimFace::OuterBound::get()
 		{
 			return gcnew XbimFaceOuterBound(BRepTools::OuterWire(*nativeHandle), *nativeHandle);
+		}
+
+		gp_Vec XbimFace::TopoNormal(const TopoDS_Face & face)
+		{
+			BRepGProp_Face prop(face);
+			gp_Pnt centre;
+			gp_Vec normalDir;
+			double u1,u2,v1,v2;
+			prop.Bounds(u1,u2,v1,v2);
+			prop.Normal((u1+u2)/2.0,(v1+v2)/2.0,centre,normalDir);						
+			return normalDir;
 		}
 
 		//static builders
@@ -142,9 +155,22 @@ namespace Xbim
 				return Build((IfcArbitraryProfileDefWithVoids^)profile, hasCurves);
 			else
 			{
-				BRepBuilderAPI_MakeFace faceBlder(XbimFaceBound::Build(profile, hasCurves));
+				TopoDS_Wire wire = XbimFaceBound::Build(profile, hasCurves);
+				BRepBuilderAPI_MakeFace faceMaker(wire, false);
+				BRepBuilderAPI_FaceError er = faceMaker.Error();
+				if ( er == BRepBuilderAPI_NotPlanar ) {
+					ShapeFix_ShapeTolerance FTol;
+					FTol.SetTolerance(wire, 0.001, TopAbs_WIRE);
+					BRepBuilderAPI_MakeFace faceMaker2(wire, false);
+					er = faceMaker2.Error();
+					if ( er != BRepBuilderAPI_FaceDone )
+						return TopoDS_Face();
+					else
+						return faceMaker2.Face();
+				}
+				else
+					return faceMaker.Face();
 				
-				return faceBlder.Face();
 			}
 
 		}
@@ -160,12 +186,37 @@ namespace Xbim
 		//Builds a face from a ArbitraryProfileDefWithVoids
 		TopoDS_Face XbimFace::Build(IfcArbitraryProfileDefWithVoids ^ profile, bool% hasCurves)
 		{
-			BRepBuilderAPI_MakeFace faceBlder(XbimFaceBound::Build(profile->OuterCurve, hasCurves));
+			TopoDS_Wire wire = XbimFaceBound::Build(profile->OuterCurve, hasCurves);
+			TopoDS_Face face;
+				BRepBuilderAPI_MakeFace faceMaker(wire, false);
+				BRepBuilderAPI_FaceError er = faceMaker.Error();
+				if ( er == BRepBuilderAPI_NotPlanar ) {
+					ShapeFix_ShapeTolerance FTol;
+					FTol.SetTolerance(wire, 0.001, TopAbs_WIRE);
+					BRepBuilderAPI_MakeFace faceMaker2(wire, false);
+					er = faceMaker2.Error();
+					if ( er != BRepBuilderAPI_FaceDone )
+						return TopoDS_Face();
+					else
+						face= faceMaker2.Face();
+				}
+				else
+					face= faceMaker.Face();
+			gp_Vec nn =   XbimFaceBound::NewellsNormal(wire);
+			BRepBuilderAPI_MakeFace faceMaker3(face);
 			for each( IfcCurve^ curve in profile->InnerCurves)
 			{
-				faceBlder.Add(XbimFaceBound::Build(curve, hasCurves));
+				TopoDS_Wire innerWire = XbimFaceBound::Build(curve, hasCurves);
+
+				gp_Vec inorm =  XbimFaceBound::NewellsNormal(innerWire);
+				if ( inorm.Dot(nn) >= 0 ) //inner wire should be reverse of outer wire
+				{
+					TopAbs_Orientation o = innerWire.Orientation();
+					innerWire.Orientation(o == TopAbs_FORWARD ? TopAbs_REVERSED : TopAbs_FORWARD);
+				}
+				faceMaker3.Add(innerWire);
 			}
-			return faceBlder.Face();
+			return faceMaker3.Face();;
 		}
 
 		//Builds a face from a CircleProfileDef

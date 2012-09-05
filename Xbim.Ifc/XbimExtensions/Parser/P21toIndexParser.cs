@@ -21,6 +21,7 @@ using Xbim.XbimExtensions.Transactions.Extensions;
 using Xbim.XbimExtensions.Transactions;
 using Xbim.Common.Logging;
 using Xbim.Common.Exceptions;
+using System.Globalization;
 #endregion
 
 namespace Xbim.XbimExtensions.Parser
@@ -484,7 +485,7 @@ namespace Xbim.XbimExtensions.Parser
 
         internal override void NewEntity(string entityLabel)
         {
-            _currentLabel = Convert.ToInt64(entityLabel.TrimStart('#'));
+            _currentLabel = Convert.ToInt64(entityLabel.TrimStart('#'), CultureInfo.InvariantCulture);
             _startOffset = _indexStrm.Position;
             _binaryWriter.Write((int)0);
             _binaryWriter.Write((byte)P21ParseAction.NewEntity);
@@ -557,7 +558,7 @@ namespace Xbim.XbimExtensions.Parser
             else
             {
                 _binaryWriter.Write((byte)P21ParseAction.SetIntegerValue);
-                _binaryWriter.Write(Convert.ToInt64(value));
+                _binaryWriter.Write(Convert.ToInt64(value, CultureInfo.InvariantCulture));
             }
         }
 
@@ -589,7 +590,7 @@ namespace Xbim.XbimExtensions.Parser
             else
             {
                 _binaryWriter.Write((byte)P21ParseAction.SetFloatValue);
-                _binaryWriter.Write(Convert.ToDouble(value));
+                _binaryWriter.Write(Convert.ToDouble(value, CultureInfo.InvariantCulture));
             }
         }
 

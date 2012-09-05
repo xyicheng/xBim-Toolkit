@@ -19,6 +19,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using QUT.Gppg;
+using System.Globalization;
 
 #endregion
 
@@ -159,7 +160,7 @@ namespace Xbim.XbimExtensions.Parser
         {
             get
             {
-                if (_ifcParserType == IfcParserType.Integer) return Convert.ToInt64(_strVal);
+                if (_ifcParserType == IfcParserType.Integer) return Convert.ToInt64(_strVal, CultureInfo.InvariantCulture);
                 else
                     throw new Exception(string.Format("Wrong parameter type, found {0}, expected {1}",
                                                       _ifcParserType.ToString(), "Integer"));
@@ -174,7 +175,7 @@ namespace Xbim.XbimExtensions.Parser
             get
             {
                 if (_ifcParserType == IfcParserType.Integer
-                    || _ifcParserType == IfcParserType.Real) return Convert.ToDouble(_strVal);
+                    || _ifcParserType == IfcParserType.Real) return Convert.ToDouble(_strVal, CultureInfo.InvariantCulture);
                 else if (_ifcParserType == IfcParserType.HexaDecimal)
                     return Convert.ToDouble(Convert.ToInt64(_strVal, 16));
                 else
@@ -192,7 +193,7 @@ namespace Xbim.XbimExtensions.Parser
                     if (_ifcParserType != IfcParserType.Real)
                         Debug.WriteLine(
                             "A Real parameter has been illegally written into the Ifc File as an Integer, it has been converted to a Real without loss of data");
-                    return Convert.ToDouble(_strVal);
+                    return Convert.ToDouble(_strVal, CultureInfo.InvariantCulture);
                 }
                 else
                     throw new Exception(string.Format("Wrong parameter type, found {0}, expected {1}",

@@ -125,6 +125,7 @@
     <Compile Include="Logging\Providers\Log4NetLogger.cs" />
     <Compile Include="Logging\Providers\Log4NetProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="XbimModelFactors.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

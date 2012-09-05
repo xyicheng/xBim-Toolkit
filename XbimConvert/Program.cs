@@ -176,6 +176,9 @@ namespace XbimConvert
                 case ".ifcxml":
                     model.ImportXml(arguments.IfcFileName, xbimFileName);
                     break;
+                case ".ifczip":
+                    model.ImportIfc(arguments.IfcFileName, xbimFileName);
+                    break;
                 default:
                     throw new NotImplementedException(String.Format("XbimConvert does not support {0} file formats currently", Path.GetExtension(arguments.IfcFileName)));
             }
