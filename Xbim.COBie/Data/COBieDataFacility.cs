@@ -72,16 +72,16 @@ namespace Xbim.COBie.Data
             facility.VolumeUnits = GetVolumeUnits();
             facility.CurrencyUnit = (ifcMonetaryUnit == null) ? DEFAULT_STRING : ifcMonetaryUnit.Currency.ToString();
             facility.AreaMeasurement = (ifcElementQuantity == null) ? "" : ifcElementQuantity.MethodOfMeasurement.ToString();
-            facility.ExtSystem = GetIfcApplication().ApplicationFullName;
+            facility.ExternalSystem = GetIfcApplication().ApplicationFullName;
 
-            facility.ExtProjectObject = "IfcProject";
-            facility.ExtProjectIdentifier = ifcProject.GlobalId;
+            facility.ExternalProjectObject = "IfcProject";
+            facility.ExternalProjectIdentifier = ifcProject.GlobalId;
 
-            facility.ExtSiteObject = "IfcSite";
-            facility.ExtSiteIdentifier = ifcSite.GlobalId;
+            facility.ExternalSiteObject = "IfcSite";
+            facility.ExternalSiteIdentifier = ifcSite.GlobalId;
 
-            facility.ExtFacilityObject = "IfcBuilding";
-            facility.ExtFacilityIdentifier = ifcBuilding.GlobalId;
+            facility.ExternalFacilityObject = "IfcBuilding";
+            facility.ExternalFacilityIdentifier = ifcBuilding.GlobalId;
 
             facility.Description = GetFacilityDescription(ifcBuilding);
             facility.ProjectDescription = GetFacilityProjectDescription(ifcProject);
@@ -95,7 +95,7 @@ namespace Xbim.COBie.Data
                                                                                           {"Name", facility.Name},
                                                                                           {"CreatedBy", facility.CreatedBy},
                                                                                           {"CreatedOn", facility.CreatedOn},
-                                                                                          {"ExtSystem", facility.ExtSystem}
+                                                                                          {"ExtSystem", facility.ExternalSystem}
                                                                                           };//required property date <PropertySetName, PropertyName>
 
             //add *ALL* the attributes to the passed attributes sheet except property names that match the passed List<string>

@@ -35,13 +35,13 @@ namespace Xbim.COBie.Rows
         [COBieAttributes(5, COBieKeyType.None, COBieAttributeState.Required, "Phone", 255, COBieAllowedType.AlphaNumeric)]
         public string Phone { get; set; }
 
-        [COBieAttributes(6, COBieKeyType.None, COBieAttributeState.System, "ExternalSystem", 255, COBieAllowedType.AlphaNumeric)]
+        [COBieAttributes(6, COBieKeyType.None, COBieAttributeState.System, "ExtSystem", 255, COBieAllowedType.AlphaNumeric)]
         public string ExtSystem { get; set; }
 
-        [COBieAttributes(7, COBieKeyType.None, COBieAttributeState.System, "ExternalObject", 255, COBieAllowedType.AlphaNumeric)]
+        [COBieAttributes(7, COBieKeyType.None, COBieAttributeState.System, "ExtObject", 255, COBieAllowedType.AlphaNumeric)]
         public string ExtObject { get; set; }
 
-        [COBieAttributes(8, COBieKeyType.None, COBieAttributeState.System, "ExternalIdentifier", 255, COBieAllowedType.AlphaNumeric)]
+        [COBieAttributes(8, COBieKeyType.None, COBieAttributeState.System, "ExtIdentifier", 255, COBieAllowedType.AlphaNumeric)]
         public string ExtIdentifier { get; set; }
 
         [COBieAttributes(9, COBieKeyType.None, COBieAttributeState.As_Specified, "Department", 255, COBieAllowedType.AlphaNumeric)]

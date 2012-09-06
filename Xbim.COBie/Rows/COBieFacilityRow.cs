@@ -52,25 +52,25 @@ namespace Xbim.COBie.Rows
         public string AreaMeasurement { get; set; }
 
         [COBieAttributes(11, COBieKeyType.None, COBieAttributeState.System, "ExternalSystem", 255, COBieAllowedType.AlphaNumeric)]
-        public string ExtSystem { get; set; }
+        public string ExternalSystem { get; set; }
 
         [COBieAttributes(12, COBieKeyType.None, COBieAttributeState.System, "ExternalProjectObject", 255, COBieAllowedType.AlphaNumeric)]
-        public string ExtProjectObject { get; set; }
+        public string ExternalProjectObject { get; set; }
 
         [COBieAttributes(13, COBieKeyType.None, COBieAttributeState.System, "ExternalProjectIdentifier", 255, COBieAllowedType.AlphaNumeric)]
-        public string ExtProjectIdentifier { get; set; }
+        public string ExternalProjectIdentifier { get; set; }
 
         [COBieAttributes(14, COBieKeyType.None, COBieAttributeState.System, "ExternalSiteObject", 255, COBieAllowedType.AlphaNumeric)]
-        public string ExtSiteObject { get; set; }
+        public string ExternalSiteObject { get; set; }
 
         [COBieAttributes(15, COBieKeyType.None, COBieAttributeState.System, "ExternalSiteIdentifier", 255, COBieAllowedType.AlphaNumeric)]
-        public string ExtSiteIdentifier { get; set; }
+        public string ExternalSiteIdentifier { get; set; }
 
         [COBieAttributes(16, COBieKeyType.None, COBieAttributeState.System, "ExternalFacilityObject", 255, COBieAllowedType.AlphaNumeric)]
-        public string ExtFacilityObject { get; set; }
+        public string ExternalFacilityObject { get; set; }
 
         [COBieAttributes(17, COBieKeyType.None, COBieAttributeState.System, "ExternalFacilityIdentifier", 255, COBieAllowedType.AlphaNumeric)]
-        public string ExtFacilityIdentifier { get; set; }
+        public string ExternalFacilityIdentifier { get; set; }
 
         [COBieAttributes(18, COBieKeyType.None, COBieAttributeState.As_Specified, "Description", 255, COBieAllowedType.AlphaNumeric)]
         public string Description { get; set; }

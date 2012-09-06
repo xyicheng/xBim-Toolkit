@@ -7,6 +7,7 @@ using System.Xml.Serialization;
 using Xbim.COBie.Rows;
 using Xbim.XbimExtensions;
 using System.Linq;
+using System.Data.SQLite;
 
 namespace Xbim.COBie
 { 
@@ -211,7 +212,7 @@ namespace Xbim.COBie
             return err;
         }
         
-		private void Initialise()
+		private void Intialise()
         {
 			if (Context == null) { throw new InvalidOperationException("COBieReader can't initialise without a valid Context."); }
 			if (Context.Models == null || Context.Models.Count == 0) { throw new ArgumentException("COBieReader context must contain one or more models."); }
@@ -225,10 +226,9 @@ namespace Xbim.COBie
             //CobiePickLists = cq.GetCOBiePickListsSheet("PickLists.xml");
 
             // populate all sheets from model
-            
-            CobieComponents = cq.GetCOBieComponentSheet();
             CobieSpaces = cq.GetCOBieSpaceSheet();
-            //CobieAssemblies = cq.GetCOBieAssemblySheet();
+            CobieComponents = cq.GetCOBieComponentSheet();
+            CobieAssemblies = cq.GetCOBieAssemblySheet();
             CobieConnections = cq.GetCOBieConnectionSheet();
             CobieContacts = cq.GetCOBieContactSheet();
             CobieCoordinates = cq.GetCOBieCoordinateSheet();
@@ -246,7 +246,9 @@ namespace Xbim.COBie
             CobieZones = cq.GetCOBieZoneSheet();
             //we need to fill this one last as the calls to the above sheet add data for the AttributeSheet
             CobieAttributes = cq.GetCOBieAttributeSheet();
-            
+
+
+            CreateCOBieDB();
         }
 
         private void PopulateErrors()
@@ -297,7 +299,7 @@ namespace Xbim.COBie
 
         public void GenerateCOBieData()
         {
-            Initialise();
+            Intialise();
 
             PopulateErrors();			
         }
@@ -367,5 +369,74 @@ namespace Xbim.COBie
 
        
         #endregion
+
+        // create SQLite DB with all data
+        private void CreateCOBieDB()
+        {
+            string dbName = "COBieDB.db";
+            string connectionString = "Data Source=" + dbName + ";Version=3;New=False;Compress=True;";
+
+            // cretae database
+            SQLiteConnection.CreateFile(dbName);
+                        
+            // create tables
+            CobieContacts.CreateEmptyTable(dbName, "CobieContacts", connectionString);
+            CobieAssemblies.CreateEmptyTable(dbName, "CobieAssemblies", connectionString);
+            CobieComponents.CreateEmptyTable(dbName, "CobieComponents", connectionString);
+            CobieConnections.CreateEmptyTable(dbName, "CobieConnections", connectionString);
+            CobieCoordinates.CreateEmptyTable(dbName, "CobieCoordinates", connectionString);
+            CobieDocuments.CreateEmptyTable(dbName, "CobieDocuments", connectionString);
+            CobieFacilities.CreateEmptyTable(dbName, "CobieFacilities", connectionString);
+            CobieFloors.CreateEmptyTable(dbName, "CobieFloors", connectionString);
+            CobieImpacts.CreateEmptyTable(dbName, "CobieImpacts", connectionString);
+            CobieIssues.CreateEmptyTable(dbName, "CobieIssues", connectionString);
+            CobieJobs.CreateEmptyTable(dbName, "CobieJobs", connectionString);
+            CobiePickLists.CreateEmptyTable(dbName, "CobiePickLists", connectionString);
+            CobieResources.CreateEmptyTable(dbName, "CobieResources", connectionString);
+            CobieSpaces.CreateEmptyTable(dbName, "CobieSpaces", connectionString);
+            CobieSpares.CreateEmptyTable(dbName, "CobieSpares", connectionString);
+            CobieSystems.CreateEmptyTable(dbName, "CobieSystems", connectionString);
+            CobieTypes.CreateEmptyTable(dbName, "CobieTypes", connectionString);
+            CobieZones.CreateEmptyTable(dbName, "CobieZones", connectionString);
+            CobieAttributes.CreateEmptyTable(dbName, "CobieAttributes", connectionString);
+
+            // insert values
+            CobieContacts.InsertValuesInDB(dbName, "CobieContacts", connectionString);
+            CobieAssemblies.InsertValuesInDB(dbName, "CobieAssemblies", connectionString);
+            CobieComponents.InsertValuesInDB(dbName, "CobieComponents", connectionString);
+            CobieConnections.InsertValuesInDB(dbName, "CobieConnections", connectionString);
+            CobieCoordinates.InsertValuesInDB(dbName, "CobieCoordinates", connectionString);
+            CobieDocuments.InsertValuesInDB(dbName, "CobieDocuments", connectionString);
+            CobieFacilities.InsertValuesInDB(dbName, "CobieFacilities", connectionString);
+            CobieFloors.InsertValuesInDB(dbName, "CobieFloors", connectionString);
+            CobieImpacts.InsertValuesInDB(dbName, "CobieImpacts", connectionString);
+            CobieIssues.InsertValuesInDB(dbName, "CobieIssues", connectionString);
+            CobieJobs.InsertValuesInDB(dbName, "CobieJobs", connectionString);
+            CobiePickLists.InsertValuesInDB(dbName, "CobiePickLists", connectionString);
+            CobieResources.InsertValuesInDB(dbName, "CobieResources", connectionString);
+            CobieSpaces.InsertValuesInDB(dbName, "CobieSpaces", connectionString);
+            CobieSpares.InsertValuesInDB(dbName, "CobieSpares", connectionString);
+            CobieSystems.InsertValuesInDB(dbName, "CobieSystems", connectionString);
+            CobieTypes.InsertValuesInDB(dbName, "CobieTypes", connectionString);
+            CobieZones.InsertValuesInDB(dbName, "CobieZones", connectionString);
+            CobieAttributes.InsertValuesInDB(dbName, "CobieAttributes", connectionString);
+            
+        }
+
+        private void ExecuteQuery(string txtQuery, string connectionString)
+        {
+            SQLiteConnection cn;
+            using (cn = new SQLiteConnection(connectionString))
+            {
+                using (SQLiteCommand cmd = cn.CreateCommand())
+                {
+                    cmd.CommandText = txtQuery;
+                    cmd.CommandType = CommandType.Text;
+                    cn.Open();
+                    cmd.ExecuteNonQuery();
+                    cn.Close();
+                }
+            }
+        }
     }
 }

@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Reflection; 
+using System.Reflection;
+using System.Data.SQLite;
+using System.Data;
 
 namespace Xbim.COBie
 {
@@ -158,40 +160,104 @@ namespace Xbim.COBie
             return err;
         }
 
-        public void ValidateForeignKeys(out List<COBieError> errors)
+        public void CreateEmptyTable(string dbName, string tableName, string connectionString)
         {
-            errors = new List<COBieError>();
-            List<COBieCell> pkColumnValues = new List<COBieCell>();
+            // delete table if exist first
+            ExecuteQuery("DROP TABLE IF EXISTS '" + tableName + "';", connectionString);
 
-            foreach (T row in Rows)
+            string createStatement = "";
+            string colNames = "";
+            foreach (PropertyInfo propInfo in Properties)
+                colNames = colNames + propInfo.Name + " VARCHAR(256),";                
+            
+            colNames = colNames.TrimEnd(',');
+                        
+            if (!string.IsNullOrEmpty(colNames))
             {
-                // loop through each column, get its attributes and check if column value matches the attributes constraints
-                foreach (PropertyInfo propInfo in Properties)
+                createStatement = "create table " + tableName + " (" + colNames + ");";
+                ExecuteQuery(createStatement, connectionString);
+            }
+            
+        }
+
+        public void InsertValuesInDB(string dbName, string tableName, string connectionString)
+        {
+            if (IsTableExist(dbName, tableName, connectionString))
+            {
+                foreach (T row in Rows)
                 {
-                    object[] attrs = Attributes[propInfo];
-                    if (attrs != null && attrs.Length > 0)
+                    // loop through each column, get its attributes and check if column value matches the attributes constraints
+                    string insertStatement = "INSERT INTO " + tableName;
+                    string insertColumns = "(";
+                    string insertColumnValues = "(";
+
+                    foreach (PropertyInfo propInfo in Properties)
                     {
-                        Type cobieType = row.GetType();
-                        string val = (propInfo.GetValue(row, null) == null) ? "" : propInfo.GetValue(row, null).ToString();
-
-                        COBieCell cell = new COBieCell(val);
-                        COBieAttributes attr = (COBieAttributes)attrs[0];
-                        cell.COBieState = attr.State;
-                        cell.CobieCol = new COBieColumn(attr.ColumnName, attr.MaxLength, attr.AllowedType, attr.KeyType);
-                        COBieError err = new COBieError();
-
-                        // if this cell is set as foreign key 
-                        // then check its value with the given source column in another (or same) sheet
-                        if (cell.CobieCol.KeyType == COBieKeyType.ForeignKey)
+                        object[] attrs = Attributes[propInfo];
+                        if (attrs != null && attrs.Length > 0)
                         {
-                            // get foreign column
-                        }
+                            COBieAttributes attr = (COBieAttributes)attrs[0];
 
-                        if (err.ErrorType != COBieError.ErrorTypes.None) errors.Add(err);
+                            string val = (propInfo.GetValue(row, null) == null) ? "" : propInfo.GetValue(row, null).ToString();
+                            val = val.Replace("'", "''");
+                            insertColumns = insertColumns + attr.ColumnName + ",";
+                            insertColumnValues = insertColumnValues + "'" + val + "',";
+                        }
                     }
+
+                    insertColumns = insertColumns.TrimEnd(',');
+                    insertColumns = insertColumns + ")";
+                    insertColumnValues = insertColumnValues.TrimEnd(',');
+                    insertColumnValues = insertColumnValues + ")";                    
+
+                    insertStatement = insertStatement + insertColumns + " VALUES " + insertColumnValues + ";";
+
+                    ExecuteQuery(insertStatement, connectionString);
+                }
+            }
+            
+        }
+
+        private void ExecuteQuery(string txtQuery, string connectionString)
+        {
+            SQLiteConnection cn;
+            using (cn = new SQLiteConnection(connectionString))
+            {
+                using (SQLiteCommand cmd = cn.CreateCommand())
+                {
+                    cmd.CommandText = txtQuery;
+                    //cmd.CommandType = CommandType.Text;
+                    cn.Open();
+                    cmd.ExecuteNonQuery();
+                    cn.Close();
+                }
+            }
+        }
+
+        private bool IsTableExist(string dbName, string tableName, string connectionString)
+        {
+            string query = "SELECT name FROM sqlite_master WHERE type='table' AND name='" + tableName + "';";
+            SQLiteConnection cn;
+            bool blnResult = false;
+            using (cn = new SQLiteConnection(connectionString))
+            {
+                using (SQLiteCommand cmd = cn.CreateCommand())
+                {
+                    cmd.CommandText = query;
+                    cmd.CommandType = CommandType.Text;
+                    cn.Open();
+                    SQLiteDataReader dr = cmd.ExecuteReader();
+                    
+                    if (dr != null)
+                    {
+                        blnResult = dr.HasRows;
+                    }
+                    dr.Close();
+                    cn.Close();
                 }
             }
 
+            return blnResult;
         }
     }  
 }
