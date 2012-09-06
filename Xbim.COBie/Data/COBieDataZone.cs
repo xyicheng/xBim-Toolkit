@@ -39,7 +39,9 @@ namespace Xbim.COBie.Data
 
             // get all IfcBuildingStory objects from IFC file
             IEnumerable<IfcZone> ifcZones = Model.InstancesOfType<IfcZone>();
-
+            
+            //list of attributes to exclude form attribute sheet
+            List<string> excludePropertyValueNamesWildcard = new List<string> {  "Roomtag", "RoomTag", "Tag", "GSA BIM Area", "Length", "Width", "Height"};
             
             foreach (IfcZone zn in ifcZones)
             {
@@ -75,7 +77,7 @@ namespace Xbim.COBie.Data
                                                                                           };//required property date <PropertySetName, PropertyName>
 
                     //add *ALL* the attributes to the passed attributes sheet except property names that match the passed List<string>
-                    SetAttributeSheet(zn, passedValues, null, null, null, ref attributes);
+                    SetAttributeSheet(zn, passedValues, null, excludePropertyValueNamesWildcard, null, ref attributes);
                     
                 }
 

@@ -93,12 +93,14 @@ namespace Xbim.COBie.Data
                                                                    "TagNumber",
                                                                    "BarCode",
                                                                    "AssetIdentifier"};
-            List<string> excludeAttributes = candidateProperties;
-            excludeAttributes.Add("Circuit NumberSystem Type");
-            excludeAttributes.Add("System Name");
-            allPropertyValues.ExcludePropertyValueNames.AddRange(excludeAttributes);
+            List<string> excludePropertyValueNames = candidateProperties;
+            excludePropertyValueNames.Add("Circuit NumberSystem Type");
+            excludePropertyValueNames.Add("System Name");
+            List<string> excludePropertyValueNamesWildcard = new List<string> {"Roomtag", "RoomTag", "Tag", "GSA BIM Area", "Length", "Width", "Height"};
+            //set up filters on COBieDataPropertySetValues
+            allPropertyValues.ExcludePropertyValueNames.AddRange(excludePropertyValueNames);
             allPropertyValues.FilterPropertyValueNames.AddRange(candidateProperties);
-            //allPropertyValues.ExcludePropertyValNamesWildcard.AddRange(excludedTypesPropertyValuesWildCard);
+            allPropertyValues.ExcludePropertyValueNamesWildcard.AddRange(excludePropertyValueNamesWildcard);
             allPropertyValues.RowParameters["Sheet"] = "Component";
             
             foreach (var obj in ifcElements)

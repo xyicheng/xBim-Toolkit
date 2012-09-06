@@ -9,13 +9,23 @@ using Xbim.COBie.Rows;
 using Xbim.Ifc.MeasureResource;
 using Xbim.XbimExtensions.DataProviders;
 
+
+
 namespace Xbim.COBie.Data
 {
+    //public class ObjectPropertySetValues : Dictionary<IfcObject, Dictionary<IfcPropertySet, List<IfcPropertySingleValue>>>
+    //{
+
+    //}
+
     public class COBieDataPropertySetValues : COBieData
     {
         #region Fields
         Dictionary<IfcObject, Dictionary<IfcPropertySet, List<IfcPropertySingleValue>>> _propSetsValuesObjects = null;
         Dictionary<IfcTypeObject, Dictionary<IfcPropertySet, List<IfcPropertySingleValue>>> _propSetsValuesTypeObjects= null;
+        Dictionary<IfcTypeObject, Dictionary<IfcPropertySet, List<IfcPropertySingleValue>>> _propSetsValuesTypeObjectsFirstRelatedObject = null;
+        Dictionary<IfcTypeObject, Dictionary<IfcObject,  Dictionary<IfcPropertySet, List<IfcPropertySingleValue>>>> _propSetsValuesTypeObjectsAllRelatedObject = null;
+
         List<IfcPropertySingleValue> _ifcPropertySingleValues = null;
         #endregion
 
@@ -75,10 +85,41 @@ namespace Xbim.COBie.Data
         {
             _propSetsValuesTypeObjects = sourceRows.Where(tObj => (tObj.HasPropertySets != null)).ToDictionary(tObj => tObj, tObj => tObj.HasPropertySets.OfType<IfcPropertySet>()
                 .ToDictionary(ps => ps, ps => ps.HasProperties.OfType<IfcPropertySingleValue>().ToList()));
-                                  
+            //===========get related properties==================
+            //List<IfcPropertySingleValue> RelObjValues = (from relatedObjects in (from ifcTypeObject in sourceRows
+            //                                             from objectTypeOf in ifcTypeObject.ObjectTypeOf
+            //                                             where (objectTypeOf != null)
+            //                                             select objectTypeOf.RelatedObjects.First())
+            //                                             from isDefinedByProperties in relatedObjects.IsDefinedByProperties
+            //                                             from ifcPropertySingleValue in (isDefinedByProperties.RelatingPropertyDefinition as IfcPropertySet).HasProperties.OfType<IfcPropertySingleValue>()
+            //                                             select ifcPropertySingleValue).ToList();
+
+
+            _propSetsValuesTypeObjectsFirstRelatedObject = sourceRows.ToDictionary(tObj => tObj, tObj => tObj.ObjectTypeOf.First().RelatedObjects.First().IsDefinedByProperties.Select(ps => ps.RelatingPropertyDefinition).OfType<IfcPropertySet>()
+                                                                                                                       .ToDictionary(ps => ps, ps => ps.HasProperties.OfType<IfcPropertySingleValue>().ToList()));
+
+
+            //List<IfcPropertySingleValue> RelObjValues = (from ifcTypeObject in sourceRows
+            //                                             from objectTypeOf in ifcTypeObject.ObjectTypeOf
+            //                                             where (objectTypeOf != null)
+            //                                             from relatedObjects in objectTypeOf.RelatedObjects
+            //                                             from isDefinedByProperties in relatedObjects.IsDefinedByProperties
+            //                                             from ifcPropertySingleValue in (isDefinedByProperties.RelatingPropertyDefinition as IfcPropertySet).HasProperties.OfType<IfcPropertySingleValue>()
+            //                                             //where ifcPropertySingleValue.Name == "Application"
+            //                                             select ifcPropertySingleValue).ToList();
+
+            //var xxx = sourceRows.ToDictionary(tObj => tObj, tObj => tObj.ObjectTypeOf.SelectMany(s => s.RelatedObjects)
+            //                                                                         .SelectMany(r => r.IsDefinedByProperties)
+            //                                                                         .Select(ps => ps.RelatingPropertyDefinition).OfType<IfcPropertySet>()
+            //                                                                         .ToDictionary(ps => ps, ps => ps.HasProperties.OfType<IfcPropertySingleValue>().ToList()));
+
+             _propSetsValuesTypeObjectsAllRelatedObject = sourceRows.ToDictionary(tObj => tObj, tObj => tObj.ObjectTypeOf.SelectMany(s => s.RelatedObjects).ToDictionary(x => x, x => x.IsDefinedByProperties.Select(ps => ps.RelatingPropertyDefinition).OfType<IfcPropertySet>()
+                                                                                     .ToDictionary(ps => ps, ps => ps.HasProperties.OfType<IfcPropertySingleValue>().ToList())));
             //set up lists
            SetListsUp();           
         }
+
+
 
         /// <summary>
         /// Set the property lists up 

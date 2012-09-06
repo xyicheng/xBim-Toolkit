@@ -38,7 +38,8 @@ namespace Xbim.COBie.Data
             //Create new sheet
             COBieSheet<COBieFacilityRow> facilities = new COBieSheet<COBieFacilityRow>(Constants.WORKSHEET_FACILITY);
             //list of attributes to exclude form attribute sheet
-            List<string> ExcludeAtts = new List<string> { "Phase" };
+            List<string> excludePropertyValueNames = new List<string> { "Phase", "Height" };
+            List<string> excludePropertyValueNamesWildcard = new List<string> {  "Roomtag", "RoomTag", "Tag", "GSA BIM Area", "Length", "Width", "Height" };
 
             IfcProject ifcProject = Model.IfcProject;
             IfcSite ifcSite = Model.InstancesOfType<IfcSite>().FirstOrDefault();
@@ -100,9 +101,9 @@ namespace Xbim.COBie.Data
             //add *ALL* the attributes to the passed attributes sheet except property names that match the passed List<string>
 
 
-            SetAttributeSheet(ifcProject, passedValues, ExcludeAtts, null, null, ref attributes);
-            SetAttributeSheet(ifcSite, passedValues, ExcludeAtts, null, null, ref attributes);
-            SetAttributeSheet(ifcBuilding, passedValues, ExcludeAtts, null, null, ref attributes); 
+            SetAttributeSheet(ifcProject, passedValues, excludePropertyValueNames, excludePropertyValueNamesWildcard, null, ref attributes);
+            SetAttributeSheet(ifcSite, passedValues, excludePropertyValueNames, excludePropertyValueNamesWildcard, null, ref attributes);
+            SetAttributeSheet(ifcBuilding, passedValues, excludePropertyValueNames, excludePropertyValueNamesWildcard, null, ref attributes); 
             
             return facilities;
         }

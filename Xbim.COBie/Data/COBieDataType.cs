@@ -72,6 +72,7 @@ namespace Xbim.COBie.Data
                 .Select(type => type)
                 .Where(type => !excludedTypes.Contains(type.GetType()));
 
+            COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(ifcTypeObjects.ToList()); //properties helper class
             // Well known property names to seek out the data
             List<string> candidateProperties = new List<string> {  "AssetAccountingType", "Manufacturer", "ModelLabel", "WarrantyGuarantorParts", 
                                                         "WarrantyDurationParts", "WarrantyGuarantorLabor", "WarrantyDurationLabor", 
@@ -79,13 +80,14 @@ namespace Xbim.COBie.Data
                                                         "NominalHeight", "ModelReference", "Shape", "Colour", "Color", "Finish", "Grade", 
                                                         "Material", "Constituents", "Features", "Size", "AccessibilityPerformance", "CodePerformance", 
                                                         "SustainabilityPerformance", "Warranty Information"};
-            
-            // Additional Type values to exclude from attribute sheet
-            List<string> excludedAttrs = new List<string> {"WarrantyName","DurationUnit","ServiceLifeType","ExpectedLife","LifeCyclePhase",
+
+            // Additional Type values to exclude from attribute sheetWarrantyGuarantorParts
+            List<string> excludePropertyValueNames = new List<string> {"WarrantyName","DurationUnit","ServiceLifeType","LifeCyclePhase",
                                                          "Cost","ModelNumber","IsFixed","AssetType"
                                                         };
-            excludedAttrs = excludedAttrs.Concat(candidateProperties).ToList(); //add the attributes from the type sheet to exclude from the attribute sheet
-
+            excludePropertyValueNames.AddRange(candidateProperties); //add the attributes from the type sheet to exclude from the attribute sheet
+            //list of attributes to exclude form attribute sheet
+            List<string> excludePropertyValueNamesWildcard = new List<string> { "Roomtag", "RoomTag", "Tag", "GSA BIM Area" };
 
             foreach (IfcTypeObject type in ifcTypeObjects)
             {
@@ -114,7 +116,7 @@ namespace Xbim.COBie.Data
                                                                                           {"ExtSystem", typeRow.ExtSystem}
                                                                                           };
                 //add *ALL* the attributes to the passed attributes sheet except property names that we've handled, or are on the exclusion list
-                SetAttributeSheet(type, sourceData, excludedAttrs, null, null, ref attributes);
+                SetAttributeSheet(type, sourceData, excludePropertyValueNames, excludePropertyValueNamesWildcard, null, ref attributes);
             }
            
             return types;

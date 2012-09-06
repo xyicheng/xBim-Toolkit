@@ -27,13 +27,13 @@ namespace Xbim.COBie.Data
         /// <summary>
         /// Common exclude PropertySingleValue name containing any of the strings 
         /// </summary>
-        public  List<string> _commonAttExcludes = new List<string>() {"Zone Base Offset", "Upper Limit", "Roomtag", 
-                            "Line Pattern", "Symbol", "Width","Window Inset", 
+        public  List<string> _commonAttExcludes = new List<string>() {"Zone Base Offset", "Upper Limit",  
+                            "Line Pattern", "Symbol","Window Inset", 
                             "Radius", "Phase Created","Phase", "Outside Radius", 
                             "Outside Diameter", "Omniclass", "Offset", "Mark",
                             "Recepticles", "Limit Offset", "Lighting Calculation Workplan",
-                            "Size", "Level", "Host", "Hot Water Radius", "Length", "Height",
-                            "Half Oval", "GSA BIM Area", "AssetAccountingType", "Description",
+                            "Size", "Level", "Host", "Hot Water Radius", 
+                            "Half Oval", "AssetAccountingType", "Description",
                             "Name", "Classification Description", "Classification Code",
                             "Category Description","Category Code", "Uniclass Description",
                             "Uniclass Code", "Assembly Description", "Assembly Code",

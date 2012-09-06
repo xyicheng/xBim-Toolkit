@@ -42,10 +42,10 @@ namespace Xbim.COBie.Data
             
             IfcClassification ifcClassification = Model.InstancesOfType<IfcClassification>().FirstOrDefault();
             //list of attributes to exclude form attribute sheet
-            List<string> ExcludeAtts = new List<string> { "Name", "Line Weight", "Color", 
+            List<string> excludePropertyValueNames = new List<string> { "Name", "Line Weight", "Color", 
                                                           "Colour",   "Symbol at End 1 Default", 
                                                           "Symbol at End 2 Default", "Automatic Room Computation Height", "Elevation" };
-                
+            List<string> excludePropertyValueNamesWildcard = new List<string> { "Roomtag", "RoomTag", "Tag", "GSA BIM Area", "Length", "Width" };    
             foreach (IfcBuildingStorey bs in buildingStories)
             {
                 COBieFloorRow floor = new COBieFloorRow(floors);
@@ -87,7 +87,7 @@ namespace Xbim.COBie.Data
                 
                 //add *ALL* the attributes to the passed attributes sheet except property names that match the passed List<string>
                 //Exclude property list
-                SetAttributeSheet(bs, passedValues, ExcludeAtts, null, new List<string>(), ref attributes);
+                SetAttributeSheet(bs, passedValues, excludePropertyValueNames, excludePropertyValueNamesWildcard, null, ref attributes);
             }
 
             return floors;

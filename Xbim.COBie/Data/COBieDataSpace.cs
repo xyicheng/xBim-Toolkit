@@ -47,13 +47,13 @@ namespace Xbim.COBie.Data
             
 
             //list of attributes and property sets to exclude form attribute sheet
-            List<string> excludeAttributes = new List<string> { "RoomTag", "Area", "Number"};
-            List<string> ExcludeAttributesWildCard = new List<string> {"ZoneName", "Category" }; //exclude part names
-            List<string> ExcludePropertSetNames = new List<string>() { "BaseQuantities" };
-            allPropertyValues.ExcludePropertyValueNames.AddRange(excludeAttributes);
-            //allPropertyValues.FilterPropertyValueNames.AddRange(candidateProperties);
-            allPropertyValues.ExcludePropertyValueNamesWildcard.AddRange(ExcludeAttributesWildCard);
-            allPropertyValues.ExcludePropertySetNames.AddRange(ExcludePropertSetNames);
+            List<string> excludePropertyValueNames = new List<string> { "Area", "Number", "UsableHeight" };
+            List<string> excludePropertyValueNamesWildcard = new List<string> { "ZoneName", "Category", "Length", "Width" }; //exclude part names
+            List<string> excludePropertSetNames = new List<string>() { "BaseQuantities" };
+            //set up filters on COBieDataPropertySetValues
+            allPropertyValues.ExcludePropertyValueNames.AddRange(excludePropertyValueNames);
+            allPropertyValues.ExcludePropertyValueNamesWildcard.AddRange(excludePropertyValueNamesWildcard);
+            allPropertyValues.ExcludePropertySetNames.AddRange(excludePropertSetNames);
             allPropertyValues.RowParameters["Sheet"] = "Space";
             
             foreach (IfcSpace ifcSpace in ifcSpaces)
