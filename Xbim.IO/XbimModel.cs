@@ -73,8 +73,6 @@ namespace Xbim.IO
 
         #endregion
 
-        private IfcFilterDictionary _parseFilter;
-        protected IfcInstances instances;
         protected IIfcFileHeader header;
         private string _storageFileName;
 
@@ -150,19 +148,24 @@ namespace Xbim.IO
             }
         }
         /// <summary>
-        /// Starts a transaction to allow bulk updates on the geoemtry table
+        /// Starts a transaction to allow bulk updates on the geometry table, FreeGeometry Table should be called when no longer required
         /// </summary>
         /// <returns></returns>
-        public XbimGeometryTable BeginGeometryUpdate()
+        internal XbimGeometryTable GetGeometryTable()
         {
-            return Cached.BeginGeometryUpdate();
-        }
-        public void EndGeometryUpdate(XbimGeometryTable table)
-        {
-            Cached.EndGeometryUpdate(table);
+            return Cached.GetGeometryTable();
         }
 
-       
+        /// <summary>
+        /// Returns the table to the cache for reuse
+        /// </summary>
+        /// <param name="table"></param>
+        internal void FreeGeometryTable(XbimGeometryTable table)
+        {
+            Cached.FreeTable(table);
+        }
+
+ 
 
         //Loads the property data of an entity, if it is not already loaded
         public virtual long Activate(IPersistIfcEntity entity, bool write)
@@ -413,7 +416,8 @@ namespace Xbim.IO
         /// <returns></returns>
         public bool CreateFrom(string importFrom, string xbimDbName = null, ReportProgressDelegate progDelegate = null)
         {
-
+            if (Cached != null)
+                Cached.Dispose(); //if the model is already open close it and release all resources
             Cached = new IfcPersistedInstanceCache(this);
             Init(xbimDbName);
             if (!Cached.CreateDatabase(xbimDbName)) //create the empty database
@@ -448,13 +452,15 @@ namespace Xbim.IO
         /// All instances and changes are stored in memory
         /// </summary>
         /// <param name="fileName">Name of the file that changes will be saved to, Ifc, IfcXML, IfcZip and Xbim.</param>
-        public bool Create(string fileName = null)
+        public bool Create(string fileName)
         { 
             //we have nothing to store in so use an in memory cache
+            if (Cached != null)
+                Cached.Dispose(); //if the model is already open close it and release all resources
             
             Init(fileName);
+            throw new NotImplementedException("Need to create this function");
             
-            return true;
         }
 
         /// <summary>
@@ -463,8 +469,7 @@ namespace Xbim.IO
         /// </summary>
         private void Init(string fileName)
         {
-           
-            
+
             undoRedoSession = null;
             header = null;
             _storageType = StorageType(fileName);
@@ -744,54 +749,7 @@ namespace Xbim.IO
                 return CreateInstance(className, label);
         }
 
-        private IPersistIfc _part21Parser_EntityCreateWithFilter(string className, long? label, bool headerEntity,
-                                                                 out int[] reqParams)
-        {
-            if (headerEntity)
-            {
-                reqParams = null;
-                switch (className)
-                {
-                    case "FILE_DESCRIPTION":
-                        return new FileDescription();
-                    case "FILE_NAME":
-                        return new FileName();
-                    case "FILE_SCHEMA":
-                        return new FileSchema();
-                    default:
-                        throw new ArgumentException(string.Format("Invalid Header entity type {0}", className));
-                }
-            }
-            else
-            {
-                reqParams = null;
-                try
-                {
-                    IfcType ifcInstancesIfcTypeLookup = IfcInstances.IfcTypeLookup[className];
-
-                    if (_parseFilter.Contains(ifcInstancesIfcTypeLookup))
-                    {
-                        IfcFilter filter = _parseFilter[ifcInstancesIfcTypeLookup];
-                        if (filter.PropertyIndices != null && filter.PropertyIndices.Length > 0)
-                            reqParams = _parseFilter[ifcInstancesIfcTypeLookup].PropertyIndices;
-                        return CreateInstance(ifcInstancesIfcTypeLookup.Type, label);
-                    }
-                    else if (ifcInstancesIfcTypeLookup.Type.IsValueType)
-                    {
-                        return CreateInstance(ifcInstancesIfcTypeLookup.Type, label);
-                    }
-                    else
-                    {
-                        return null;
-                    }
-                }
-                catch (Exception)
-                {
-                    Logger.ErrorFormat(string.Format("Parse Error, Entity {0} could not be created", className));
-                    return null;
-                }
-            }
-        }
+        
         #endregion
 
 
@@ -824,14 +782,14 @@ namespace Xbim.IO
         }
 
         /// <summary>
-        /// If the filename has been set, saves the current model to the specified filename in the format of the filename's extension
+        /// Commits any changes to the models database and clears the object cache
         /// </summary>
         /// <returns></returns>
-        public bool Save(ReportProgressDelegate progDelegate = null)
+        public bool Commit()
         {
             try
             {
-                Cached.Save();
+                Cached.Commit();
                 return true;
             }
             catch (Exception) //handle errros maybe?
@@ -903,10 +861,9 @@ namespace Xbim.IO
         {
             try
             {
-                if (Cached != null) 
-                    Close(); //if the model is already open close it and release all resources
-                else
-                    Cached = new IfcPersistedInstanceCache(this);
+                if (Cached != null)
+                    Cached.Dispose(); //if the model is already open close it and release all resources
+                Cached = new IfcPersistedInstanceCache(this);
                 XbimStorageType storageType = StorageType(fileName);
                 
                 XbimStorageType toImportStorageType = StorageType(fileName);
@@ -1145,8 +1102,9 @@ namespace Xbim.IO
         /// <returns></returns>
         internal IPersistIfc CreateInstance(Type ifcType, long ?label)
         {
-          
-             return instances.AddNew(this,ifcType,label.Value);
+
+            throw new NotImplementedException("To do");
+             //return instances.AddNew(this,ifcType,label.Value);
 
         }
 

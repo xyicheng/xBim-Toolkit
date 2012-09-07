@@ -94,7 +94,7 @@ namespace Xbim.XbimExtensions.Interfaces
         bool CreateFrom(string importFrom, string xbimDbName = null, ReportProgressDelegate progDelegate = null);
         bool Create(string fileName = null);
 
-        bool Save(ReportProgressDelegate progDelegate = null);
+  
         bool SaveAs(string saveFileName, XbimStorageType storageType, ReportProgressDelegate progDelegate = null);
         bool CanSave { get; }
         bool Saved{ get; }

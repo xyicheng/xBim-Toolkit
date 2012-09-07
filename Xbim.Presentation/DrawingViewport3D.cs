@@ -43,12 +43,12 @@ namespace Xbim.Presentation
             //SkyBox sb = new SkyBox();
             //sb.Size = 10000000; // or whatever you'd like. This sets the bounds of the box.
             //this.Children.Add(sb);
-            SkySphere ball = new SkySphere();
+            //SkySphere ball = new SkySphere();
 
-            ball.ImageSource = "pack://application:,,,/Xbim.Presentation;component/SkyBoxImages/SphericalOvercast.jpg";
-            ball.Scale = 100000;
+            //ball.ImageSource = "pack://application:,,,/Xbim.Presentation;component/SkyBoxImages/SphericalOvercast.jpg";
+            //ball.Scale = 100000;
             
-            this.Children.Add(ball);
+            //this.Children.Add(ball);
         }
 
        

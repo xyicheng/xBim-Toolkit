@@ -167,15 +167,18 @@
     <Compile Include="Part21FileWriter.cs" />
     <Compile Include="Part21Formatter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="XbimDBTable.cs" />
     <Compile Include="XbimEntityTable.cs" />
     <Compile Include="XbimGeometryTable.cs" />
     <Compile Include="XbimHeaderTable.cs" />
+    <Compile Include="XbimLazyDBTransaction.cs" />
     <Compile Include="XbimModel.cs" />
-    <Compile Include="XbimModelServer.cs" />
     <Compile Include="XbimInputStream.cs" />
     <Compile Include="XbimOutputStream.cs" />
     <Compile Include="XbimPackage.cs" />
     <Compile Include="XbimParserState.cs" />
+    <Compile Include="XbimReadOnlyDBTransaction.cs" />
+    <Compile Include="XbimTransaction.cs" />
     <Compile Include="XbimViewDefinition.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -39,7 +39,7 @@ namespace Xbim.IO
     public class IfcXmlReader
     {
         private static readonly Dictionary<string, IfcParserType> primitives;
-        
+        private readonly int _transactionBatchSize = 100;
         static IfcXmlReader()
         {
             primitives = new Dictionary<string, IfcParserType>();
@@ -221,7 +221,7 @@ namespace Xbim.IO
         private XmlNode _currentNode;
         private int _entitiesParsed = 0;
 
-        private void StartElement(IfcPersistedInstanceCache cache, XmlReader input)
+        private void StartElement(IfcPersistedInstanceCache cache, XmlReader input, XbimEntityTable entityTable, XbimLazyDBTransaction transaction)
         {
             string elementName = input.Name;
             bool isRefType;
@@ -255,7 +255,15 @@ namespace Xbim.IO
                 if (input.IsEmptyElement && !isRefType)
                 {
                     _entitiesParsed++;
-                    cache.UpdateEntity(xmlEnt.Entity, _entitiesParsed);
+                    //now write the entity to the database
+                    entityTable.AddEntity(xmlEnt.Entity);
+                    if (_entitiesParsed % _transactionBatchSize == (_transactionBatchSize - 1))
+                    {
+                        transaction.Commit();
+                        transaction.Begin();
+                    }
+                    
+
                 }
                 
 
@@ -834,37 +842,58 @@ namespace Xbim.IO
 
             // set counter for start of every element that is not empty, and reduce it on every end of that element
 
-            // this will create id of each element
-            Dictionary<string, int> ids = new Dictionary<string, int>();
-            while (input.Read())
+
+            //set up the tables for update
+            var entityTable = instanceCache.GetEntityTable();
+            try
             {
-                switch (input.NodeType)
+                using (var transaction = entityTable.BeginLazyTransaction())
                 {
-                    case XmlNodeType.Element:
-                        StartElement(instanceCache, input);
-                        break;
-                    case XmlNodeType.EndElement:
-                        IPersistIfcEntity toWrite;
-                        //if toWrite has a value we have completed an Ifc Entity
-                        EndElement(instanceCache, input, prevInputType, prevInputName, out toWrite);
-                        if (toWrite != null)
+
+
+                    // this will create id of each element
+                    Dictionary<string, int> ids = new Dictionary<string, int>();
+                    while (input.Read())
+                    {
+                        switch (input.NodeType)
                         {
-                            _entitiesParsed++;
-                            //now write the entity to the database
-                            instanceCache.UpdateEntity(toWrite, _entitiesParsed);
+                            case XmlNodeType.Element:
+                                StartElement(instanceCache, input, entityTable, transaction);
+                                break;
+                            case XmlNodeType.EndElement:
+                                IPersistIfcEntity toWrite;
+                                //if toWrite has a value we have completed an Ifc Entity
+                                EndElement(instanceCache, input, prevInputType, prevInputName, out toWrite);
+                                if (toWrite != null)
+                                {
+                                    _entitiesParsed++;
+                                    //now write the entity to the database
+                                    entityTable.AddEntity(toWrite);
+                                    if (_entitiesParsed % _transactionBatchSize == (_transactionBatchSize - 1))
+                                    {
+                                        transaction.Commit();
+                                        transaction.Begin();
+                                    }
+                                }
+                                break;
+                            case XmlNodeType.Whitespace:
+                                SetValue(input, prevInputType, prevInputName);
+                                break;
+                            case XmlNodeType.Text:
+                                SetValue(input, prevInputType, prevInputName);
+                                break;
+                            default:
+                                break;
                         }
-                        break;
-                    case XmlNodeType.Whitespace:
-                        SetValue(input, prevInputType, prevInputName);
-                        break;
-                    case XmlNodeType.Text:
-                        SetValue(input, prevInputType, prevInputName);
-                        break;
-                    default:
-                        break;
+                        prevInputType = input.NodeType;
+                        prevInputName = input.Name;
+                    }
+                    transaction.Commit();
                 }
-                prevInputType = input.NodeType;
-                prevInputName = input.Name;
+            }
+            finally
+            {
+                instanceCache.FreeTable(entityTable);
             }
             return header;
         }

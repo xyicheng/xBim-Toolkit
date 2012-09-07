@@ -48,7 +48,7 @@
                 ShowsPreview="True"
                 Width="5"
                 />
-            <xbim:DrawingControl3D x:Name="DrawingControl" MouseRightButtonDown="DrawingControl_MouseRightButtonDown" Model ="{Binding}" Grid.Column="2"  Focusable="True" Background="#FF7F7FA0" Width="Auto" Height="Auto" ProgressChanged="ProgressChanged" />
+            <xbim:DrawingControl3D x:Name="DrawingControl" MouseRightButtonDown="DrawingControl_MouseRightButtonDown" Model ="{Binding}" Grid.Column="2"  Focusable="True" Background="#3A758DB2" Width="Auto" Height="Auto" ProgressChanged="ProgressChanged" />
         
         </Grid>
         <StatusBar Grid.Row="2" Height="23"  Name="statusBar" VerticalAlignment="Top" >

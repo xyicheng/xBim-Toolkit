@@ -71,7 +71,10 @@ namespace Xbim.Presentation
             _selectedVisualMaterial = new DiffuseMaterial(Brushes.LightGreen);
             SolidColorBrush transparentBrush = new SolidColorBrush(Colors.LightBlue);
             transparentBrush.Opacity = 0.5;
-            _defaultTransparentMaterial = new XbimMaterialProvider(new SpecularMaterial(transparentBrush, 1.0));
+            MaterialGroup window = new MaterialGroup();
+            window.Children.Add(new DiffuseMaterial(transparentBrush));
+            window.Children.Add(new SpecularMaterial(transparentBrush, 40));
+            _defaultTransparentMaterial = new XbimMaterialProvider(window);
 
             //this.DataContextChanged += new DependencyPropertyChangedEventHandler(DrawingControl3D_DataContextChanged);
            
@@ -501,10 +504,9 @@ namespace Xbim.Presentation
            
             ModelVisual3D mv = d3D.ModelVisual;
 
-            
-           
             //if (_onSetMaterial != null)
             //    mat = _onSetMaterial(ifcType);
+            mat = ModelDataProvider.GetDefaultMaterial(ifcType);
             if (mat == null) //set it just in case
             {
                 if (transparent)
@@ -604,20 +606,18 @@ namespace Xbim.Presentation
                 //calculate how far to move the canvas to be centred on 0,0
                 double xOffset = b.X + (b.SizeX/2);
                 double yOffset = b.Y + (b.SizeY/2);
-                double zOffset;
+               
                 
                 _viewSize = b;
                 Transform3DGroup t3d = new Transform3DGroup();
 
                 //map model to a 100 unit space
-                double maxPlanSize = Math.Max(b.SizeX, b.SizeZ);
-                double scaleFactor = 100 / maxPlanSize;
-                
-               //adjust Z if the terrain is badly defined
-                if ( b.SizeZ * scaleFactor > 50) //if we have a building more than above the half way viewpoint, moved it down
-                    zOffset = (50 / scaleFactor) - b.Z ;
-                else
-                    zOffset = b.Z; //move Z to accom for terrain
+               
+                double planScaleFactor = 100 / Math.Max(b.SizeX, b.SizeY);
+                double heightScaleFactor = 100 / (b.SizeZ-terrainHeight);
+                double scaleFactor = Math.Min(planScaleFactor, heightScaleFactor);
+                double zOffset = b.Z - scaleFactor*100; //shove it up a bit to stop render clash
+               
 
                 t3d.Children.Add(new TranslateTransform3D(-xOffset, -yOffset, -zOffset));
                 t3d.Children.Add(new ScaleTransform3D(scaleFactor, scaleFactor, scaleFactor));

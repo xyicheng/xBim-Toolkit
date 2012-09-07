@@ -142,9 +142,9 @@ namespace Xbim.IO.Parser
         } 
 
    
-        private Session session;
-        private XbimEntityTable table;
        
+        private XbimEntityTable table;
+        private XbimLazyDBTransaction transaction;
         const int _transactionBatchSize = 100;
         private int _entityCount = 0;
 
@@ -153,12 +153,12 @@ namespace Xbim.IO.Parser
             get { return _entityCount; }
         }
         private long _primaryKeyValue = -1;
-        public P21toIndexParser(Stream inputP21, Session session, XbimEntityTable table)
+        internal P21toIndexParser(Stream inputP21,  XbimEntityTable table, XbimLazyDBTransaction transaction)
             : base(inputP21)
         {
-            this.session = session;
+           
             this.table = table;
-            
+            this.transaction = transaction;
             _entityCount = 0;
             if (inputP21.CanSeek)
                 _streamSize = inputP21.Length;
@@ -303,21 +303,16 @@ namespace Xbim.IO.Parser
             if (_currentType != null)
             {
                 _binaryWriter.Write((byte)P21ParseAction.EndEntity);
-                using (var update = new Update(session, table, JET_prep.Insert))
+                IfcType ifcType = IfcInstances.IfcTypeLookup[_currentType];
+                MemoryStream data = _binaryWriter.BaseStream as MemoryStream;
+                table.AddEntity(_currentLabel, ifcType.TypeId, _primaryKeyValue, data.ToArray());
+                if (_entityCount % _transactionBatchSize == (_transactionBatchSize - 1))
                 {
-                    MemoryStream data = _binaryWriter.BaseStream as MemoryStream;
-                    IfcType ifcType = IfcInstances.IfcTypeLookup[_currentType];
-                    table.SetColumnValues(_currentLabel, ifcType.TypeId, _primaryKeyValue, data.ToArray());
-                    Api.SetColumns(session, table, table.ColumnValues);
-                    update.Save();
-                    if (_entityCount % _transactionBatchSize == (_transactionBatchSize - 1))
-                    {
-                        Api.JetCommitTransaction(session, CommitTransactionGrbit.LazyFlush);
-                        Api.JetBeginTransaction(session);
-                    }
+                    transaction.Commit();
+                    transaction.Begin();
                 }
             }
-           
+
         }
 
         internal override void EndHeaderEntity()

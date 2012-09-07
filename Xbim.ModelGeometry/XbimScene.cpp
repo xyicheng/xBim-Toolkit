@@ -4,11 +4,12 @@
 #include "XbimGeometryModel.h"
 using namespace System::IO;
 using namespace System::Linq;
-using namespace Xbim::IO;
+
 using namespace Xbim::ModelGeometry::Scene;
 using namespace Xbim::Common::Exceptions;
 using namespace Xbim::XbimExtensions;
 using namespace Xbim::Common;
+
 namespace Xbim
 {
 	namespace ModelGeometry
@@ -49,53 +50,71 @@ namespace Xbim
 			Dictionary<IfcRepresentation^, IXbimGeometryModel^>^ maps = gcnew Dictionary<IfcRepresentation^, IXbimGeometryModel^>();
 			//add everything that may have a representation
 			graph->AddProducts(toConvert); //load the products as we will be accessing their geometry
-			XbimGeometryTable^ geomTable = model->BeginGeometryUpdate();
-			double tally = 0;
+
+			XbimGeometryTable^ geomTable = model->GetGeometryTable();
+
+
+			int tally = 0;
 			int percentageParsed=0;
 			int total = Enumerable::Count(toConvert);
-			for each(TransformNode^ node in graph->ProductNodes->Values) //go over every node that represents a product
+			XbimLazyDBTransaction transaction = geomTable->BeginLazyTransaction();
+			try
 			{
-				IfcProduct^ product = node->Product;
-				try
+				for each(TransformNode^ node in graph->ProductNodes->Values) //go over every node that represents a product
 				{
-					XbimLOD lod = XbimLOD::LOD_Unspecified;
-					IXbimGeometryModel^ geomModel = XbimGeometryModel::CreateFrom(product, maps, false, lod);
-					if (geomModel != nullptr)  //it has no geometry
+					IfcProduct^ product = node->Product;
+					try
 					{
+						XbimLOD lod = XbimLOD::LOD_Unspecified;
+						IXbimGeometryModel^ geomModel = XbimGeometryModel::CreateFrom(product, maps, false, lod);
+						if (geomModel != nullptr)  //it has no geometry
+						{
 
-						XbimTriangulatedModelCollection^ tm = geomModel->Mesh(true);
-						XbimBoundingBox^ bb = geomModel->GetBoundingBox(true);
-						node->BoundingBox = bb->GetRect3D();
-						array<Byte>^ matrix = Matrix3DExtensions::ToArray(node->WorldMatrix(), true);
-						UInt16 typeId = IPersistIfcEntityExtensions::TypeId(product);
-						geomTable->AddGeometry(product->EntityLabel, XbimGeometryType::BoundingBox, typeId, matrix, bb->ToArray(), 0, 0 ) ;
-						int subPart = 0;
-						for each(array<Byte>^ b in tm)
-						{
-							geomTable->AddGeometry(product->EntityLabel, XbimGeometryType::TriangulatedMesh, typeId, matrix, b , geomModel->RepresentationLabel, subPart) ;
-							subPart++;
-						}
-						tally++;
-						if(progDelegate!=nullptr)
-						{
-							int newPercentage = Convert::ToInt32(tally / total * 100.0);
-							if (newPercentage > percentageParsed)
+							XbimTriangulatedModelCollection^ tm = geomModel->Mesh(true);
+							XbimBoundingBox^ bb = geomModel->GetBoundingBox(true);
+							node->BoundingBox = bb->GetRect3D();
+							array<Byte>^ matrix = Matrix3DExtensions::ToArray(node->WorldMatrix(), true);
+							UInt16 typeId = IPersistIfcEntityExtensions::TypeId(product);
+							geomTable->AddGeometry(product->EntityLabel, XbimGeometryType::BoundingBox, typeId, matrix, bb->ToArray(), 0, 0 ) ;
+							int subPart = 0;
+							for each(array<Byte>^ b in tm)
 							{
-								percentageParsed = newPercentage;
-								progDelegate(percentageParsed, "Converted");
+								geomTable->AddGeometry(product->EntityLabel, XbimGeometryType::TriangulatedMesh, typeId, matrix, b , geomModel->RepresentationLabel, subPart) ;
+								subPart++;
+							}
+							tally++;
+							if(progDelegate!=nullptr)
+							{
+								int newPercentage = Convert::ToInt32((double)tally / total * 100.0);
+								if (newPercentage > percentageParsed)
+								{
+									percentageParsed = newPercentage;
+									progDelegate(percentageParsed, "Converted");
+								}
+							}
+
+							if (tally % 100 == (100 - 1))
+							{
+								transaction.Commit();
+								transaction.Begin();
 							}
 						}
 					}
+					catch(Exception^ e)
+					{
+						String^ message = String::Format("Error Triangulating product geometry of entity {0} - {1}", 
+							product->EntityLabel,
+							product->ToString());
+						Logger->Warn(message, e);
+					}
 				}
-				catch(Exception^ e)
-				{
-					String^ message = String::Format("Error Triangulating product geometry of entity {0} - {1}", 
-						product->EntityLabel,
-						product->ToString());
-					Logger->Warn(message, e);
-				}
+				transaction.Commit();
 			}
-			model->EndGeometryUpdate(geomTable);
+			finally
+			{
+				model->FreeGeometryTable(geomTable);
+			}
+
 
 
 		}

@@ -39,18 +39,25 @@ namespace Xbim.Presentation
     public class ModelDataProvider : ObjectDataProvider 
     {
 
-        
-        public ModelDataProvider()
+        private static readonly MaterialDictionary _defaultMaterials;
+        static ModelDataProvider()
         {
+            SolidColorBrush transparentBrush = new SolidColorBrush(Colors.LightBlue);
+            transparentBrush.Opacity = 0.5;
+            MaterialGroup windowMaterial = new MaterialGroup();
+            windowMaterial.Children.Add(new DiffuseMaterial(transparentBrush));
+            windowMaterial.Children.Add(new SpecularMaterial(transparentBrush, 40));
+
+
             _defaultMaterials = new MaterialDictionary();
             _defaultMaterials.Add("IfcProduct", new DiffuseMaterial(new SolidColorBrush(Colors.Wheat)));
             _defaultMaterials.Add("IfcBuildingElementProxy", new DiffuseMaterial(new SolidColorBrush(Colors.Snow)));
             _defaultMaterials.Add("IfcWall", new DiffuseMaterial(new SolidColorBrush(Colors.White)));
             _defaultMaterials.Add("IfcRoof", new DiffuseMaterial(new SolidColorBrush(Colors.LightSteelBlue)));
             _defaultMaterials.Add("IfcSlab", new DiffuseMaterial(new SolidColorBrush(Colors.LightSteelBlue) { }));
-            _defaultMaterials.Add("IfcWindow",
-                                  new DiffuseMaterial(new SolidColorBrush(Colors.LightBlue) {Opacity = 0.4}));
-            _defaultMaterials.Add("IfcDoor", new DiffuseMaterial(new SolidColorBrush(Colors.CadetBlue) {}));
+            _defaultMaterials.Add("IfcWindow", windowMaterial);
+            _defaultMaterials.Add("IfcPlate", windowMaterial); 
+            _defaultMaterials.Add("IfcDoor", new DiffuseMaterial(new SolidColorBrush(Colors.CadetBlue) { }));
             _defaultMaterials.Add("IfcStair",
                                   new DiffuseMaterial(new SolidColorBrush(Colors.Wheat)));
             _defaultMaterials.Add("IfcBeam", new DiffuseMaterial(new SolidColorBrush(Colors.LightSlateGray) { }));
@@ -60,14 +67,14 @@ namespace Xbim.Presentation
             _defaultMaterials.Add("IfcDistributionFlowElement",
                                   new DiffuseMaterial(new SolidColorBrush(Colors.AntiqueWhite) {Opacity = 1.0}));
             _defaultMaterials.Add("IfcSpace", new DiffuseMaterial(new SolidColorBrush(Colors.Red) {Opacity = 0.4}));
-            _defaultMaterials.Add("IfcPlate", new DiffuseMaterial(new SolidColorBrush(Colors.LightBlue) {Opacity = 0.4}));
+    
             _defaultMaterials.Add("IfcRailing", new DiffuseMaterial(new SolidColorBrush(Colors.Goldenrod) {  }));
             _defaultMaterials.Add("IfcOpeningElement", new DiffuseMaterial(new SolidColorBrush(Colors.Red) { Opacity = 0.4 }));
         }
 
         #region Fields
 
-        private readonly MaterialDictionary _defaultMaterials;
+        
         private readonly MaterialDictionary _materials = new MaterialDictionary();
         private double _transparency = 0.5;
 
@@ -77,20 +84,20 @@ namespace Xbim.Presentation
         #endregion
 
 
-        public Material GetDefaultMaterial(string typeName)
+        public static XbimMaterialProvider GetDefaultMaterial(string typeName)
         {
             Material mat;
             IfcType elemType = IfcInstances.IfcTypeLookup[typeName.ToUpper()];
             while (elemType != null)
             {
                 if (_defaultMaterials.TryGetValue(elemType.Type.Name, out mat))
-                    return mat;
+                    return new XbimMaterialProvider(mat);
                 elemType = elemType.IfcSuperType;
             }
             return null;
         }
 
-        public Material GetDefaultMaterial(IPersistIfcEntity obj)
+        public static XbimMaterialProvider GetDefaultMaterial(IPersistIfcEntity obj)
         {
             if (obj != null)
                 return GetDefaultMaterial(obj.GetType().Name);
@@ -98,6 +105,21 @@ namespace Xbim.Presentation
                 return null;
         }
 
+        public static XbimMaterialProvider GetDefaultMaterial(Type entityType)
+        {
+            return GetDefaultMaterial(entityType.Name);  
+        }
+
+        public static XbimMaterialProvider GetDefaultMaterial(ushort entityTypeId)
+        {
+            IfcType ifcType = IfcInstances.IfcIdIfcTypeLookup[entityTypeId];
+            return GetDefaultMaterial(ifcType.Type.Name);
+        }
+
+        public static XbimMaterialProvider GetDefaultMaterial(IfcType ifcType)
+        {
+            return GetDefaultMaterial(ifcType.Type.Name);
+        }
 
         /// <summary>
         ///   Dictionary of shared materials, key is normally an Ifc object that the material represents
@@ -107,7 +129,7 @@ namespace Xbim.Presentation
             get { return _materials; }
         }
 
-        public MaterialDictionary DefaultMaterials
+        public static MaterialDictionary DefaultMaterials
         {
             get { return _defaultMaterials; }
         }

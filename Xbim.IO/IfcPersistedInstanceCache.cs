@@ -14,6 +14,7 @@ using Xbim.XbimExtensions.SelectTypes;
 using System.Linq.Expressions;
 using System.Reflection;
 using Xbim.Ifc2x3.Kernel;
+using System.Diagnostics;
 
 namespace Xbim.IO
 {
@@ -22,13 +23,18 @@ namespace Xbim.IO
     {
         #region ESE Database fields
 
-        private static Instance _jetInstance;
-        private Session _jetSession;
-        private JET_DBID _jetDatabaseId;
-        //tables open read only
-        private XbimEntityTable _jetTypeCursor;
-        private XbimEntityTable _jetEntityCursor;
-        private XbimGeometryTable _geometryTable;
+        internal static Instance JetInstance;
+
+        /// <summary>
+        /// Holds the session and transaction state
+        /// </summary>
+        private readonly object lockObject;
+        private readonly XbimEntityTable[] _entityTables;
+        private readonly XbimGeometryTable[] _geometryTables;
+        private const int MaxCachedEntityTables = 32;
+        private const int MaxCachedGeometryTables = 32;
+
+
         const int _transactionBatchSize = 100;
 
 
@@ -51,23 +57,25 @@ namespace Xbim.IO
        
         public IfcPersistedInstanceCache(XbimModel model)
         {
+            this.lockObject = new Object();
             _model = model;
-
+            _entityTables = new XbimEntityTable[MaxCachedEntityTables];
+            _geometryTables = new XbimGeometryTable[MaxCachedGeometryTables];
         }
         static IfcPersistedInstanceCache()
         {
-            _jetInstance = new Instance("XbimDBInstance");
-            _jetInstance.Parameters.BaseName = "XBM";
+            JetInstance = new Instance("XbimDBInstance");
+            JetInstance.Parameters.BaseName = "XBM";
             // _jetInstance.Parameters.TempDirectory = Path.GetRandomFileName();
-            _jetInstance.Parameters.CreatePathIfNotExist = true;
-            _jetInstance.Parameters.CircularLog = true;
-            _jetInstance.Parameters.CleanupMismatchedLogFiles = true;
+            JetInstance.Parameters.CreatePathIfNotExist = true;
+            JetInstance.Parameters.CircularLog = true;
+            JetInstance.Parameters.CleanupMismatchedLogFiles = true;
             //_jetInstance.Parameters.Recovery = false; //By default its True, only set this if we plan to write
             SystemParameters.CacheSizeMin = 16 * 1024;
-            _jetInstance.Parameters.LogFileSize = 16 * 1024;
-            _jetInstance.Parameters.LogBuffers = 8 * 1024;
-            _jetInstance.Parameters.MaxTemporaryTables = 0;
-            _jetInstance.Init();
+            JetInstance.Parameters.LogFileSize = 16 * 1024;
+            JetInstance.Parameters.LogBuffers = 8 * 1024;
+            JetInstance.Parameters.MaxTemporaryTables = 0;
+            JetInstance.Init();
         }
        
         /// <summary>
@@ -79,7 +87,7 @@ namespace Xbim.IO
 
             // _filename = Path.ChangeExtension(fileName, "xBIM");
 
-            using (var session = new Session(_jetInstance))
+            using (var session = new Session(JetInstance))
             {
                 JET_DBID dbid;
                 
@@ -104,10 +112,105 @@ namespace Xbim.IO
             }
         }
 
-       
 
-       
-        
+        #region Table functions
+
+        /// <summary>
+        /// Returns a cached or new entity table, assumes the database filename has been specified
+        /// </summary>
+        /// <returns></returns>
+        internal XbimEntityTable GetEntityTable()
+        {
+            Debug.Assert(!string.IsNullOrEmpty(_databaseName));
+            lock (this.lockObject)
+            {
+                for (int i = 0; i < this._entityTables.Length; ++i)
+                {
+                    if (null != this._entityTables[i])
+                    {
+                        var table = this._entityTables[i];
+                        this._entityTables[i] = null;
+                        return table;
+                    }
+                }
+            }
+            return new XbimEntityTable(JetInstance, _databaseName); ;
+        }
+
+        /// <summary>
+        /// Returns a cached or new Geometry Table, assumes the database filename has been specified
+        /// </summary>
+        /// <returns></returns>
+        internal XbimGeometryTable GetGeometryTable()
+        {
+            Debug.Assert(!string.IsNullOrEmpty(_databaseName));
+            lock (this.lockObject)
+            {
+                for (int i = 0; i < this._geometryTables.Length; ++i)
+                {
+                    if (null != this._geometryTables[i])
+                    {
+                        var table = this._geometryTables[i];
+                        this._geometryTables[i] = null;
+                        return table;
+                    }
+                }
+            }
+            return new XbimGeometryTable(JetInstance, _databaseName); ;
+        }
+
+        /// <summary>
+        /// Free a table. This will cache the table if the cache isn't full
+        /// and dispose of it otherwise.
+        /// </summary>
+        /// <param name="table">The cursor to free.</param>
+        internal void FreeTable(XbimEntityTable table)
+        {
+            Debug.Assert(null != table, "Freeing a null table");
+
+            lock (this.lockObject)
+            {
+                for (int i = 0; i < this._entityTables.Length; ++i)
+                {
+                    if (null == this._entityTables[i])
+                    {
+                        this._entityTables[i] = table;
+                        return;
+                    }
+                }
+            }
+
+            // Didn't find a slot to cache the cursor in, throw it away
+            table.Dispose();
+        }
+
+        /// <summary>
+        /// Free a table. This will cache the table if the cache isn't full
+        /// and dispose of it otherwise.
+        /// </summary>
+        /// <param name="table">The cursor to free.</param>
+        public void FreeTable(XbimGeometryTable table)
+        {
+            Debug.Assert(null != table, "Freeing a null table");
+
+            lock (this.lockObject)
+            {
+                for (int i = 0; i < this._geometryTables.Length; ++i)
+                {
+                    if (null == this._geometryTables[i])
+                    {
+                        this._geometryTables[i] = table;
+                        return;
+                    }
+                }
+            }
+
+            // Didn't find a slot to cache the cursor in, throw it away
+            table.Dispose();
+        }
+        #endregion
+
+
         /// <summary>
         ///  Opens an xbim model server file, exception is thrown if errors are encountered
         /// </summary>
@@ -116,27 +219,15 @@ namespace Xbim.IO
         {
             try
             {
-                //reset the instances cache to clear any previous loads
-                Clear();
-                _jetSession = new Session(_jetInstance);
-                
-                JET_wrn warning = Api.JetAttachDatabase(_jetSession, filename, AttachDatabaseGrbit.None);
-                warning = Api.JetOpenDatabase(_jetSession, filename, null, out _jetDatabaseId, OpenDatabaseGrbit.None);
-
-                _jetEntityCursor = new XbimEntityTable(_jetSession, _jetDatabaseId);
-                _jetEntityCursor.Open(OpenTableGrbit.ReadOnly);
-                _jetTypeCursor = new XbimEntityTable(_jetSession, _jetDatabaseId);
-                _jetTypeCursor.Open(OpenTableGrbit.ReadOnly);
-
-                XbimHeaderTable headerTable = new XbimHeaderTable(_jetSession, _jetDatabaseId);
-                headerTable.Open(OpenTableGrbit.ReadOnly);
-
-                _model.Header = headerTable.IfcFileHeader;
-                _count = headerTable.EntityCount;
-                headerTable.Close();
-                //set up the geometry table
-               
+                Close();
                 _databaseName = filename; //success store the name of the DB file
+                XbimEntityTable entTable = GetEntityTable();
+                using (var transaction = entTable.BeginReadOnlyTransaction())
+                {
+                     _model.Header = entTable.ReadHeader();
+                }
+               
+                
 
             }
             catch (Exception e)
@@ -151,42 +242,27 @@ namespace Xbim.IO
         /// </summary>
         public void Close()
         {
-
-            CloseDatabase();
-
+            for (int i = 0; i < this._entityTables.Length; ++i)
+            {
+                if (null != this._entityTables[i])
+                {
+                    this._entityTables[i].Dispose();
+                    this._entityTables[i] = null;
+                }
+            }
+            for (int i = 0; i < this._geometryTables.Length; ++i)
+            {
+                if (null != this._geometryTables[i])
+                {
+                    this._geometryTables[i].Dispose();
+                    this._geometryTables[i] = null;
+                }
+            }
             base.Clear();
             _highestLabel = -1;
         }
 
-        /// <summary>
-        /// Closes and nulls any ables that are open
-        /// </summary>
-        private void CloseDatabase()
-        {
-            if (_jetEntityCursor != null)
-            {
-                _jetEntityCursor.Close();
-                _jetEntityCursor = null;
-            }
-           
-            if (_jetTypeCursor != null)
-            {
-                _jetTypeCursor.Close();
-                _jetTypeCursor = null;
-            }
-
-            if (_jetSession != null)
-            {
-                if (!string.IsNullOrEmpty(_databaseName))
-                {
-                    Api.JetCloseDatabase(_jetSession, _jetDatabaseId, CloseDatabaseGrbit.None);
-                    Api.JetDetachDatabase(_jetSession, _databaseName);
-                    _databaseName = null;
-                }
-                _jetSession.End();
-                _jetSession = null;
-            }
-        }
+      
 
         /// <summary>
         /// Imports the contents of the ifc file into the named database
@@ -196,48 +272,37 @@ namespace Xbim.IO
         public void ImportIfc(string toImportIfcFilename, ReportProgressDelegate progressHandler = null)
         {
 
-            using (var jetSession = new Session(_jetInstance))
+            var table = GetEntityTable();
+
+            using (var transaction = table.BeginLazyTransaction())
             {
-                JET_DBID dbid;
-
-                Api.JetAttachDatabase(jetSession, _databaseName, AttachDatabaseGrbit.None);
-                Api.JetOpenDatabase(jetSession, _databaseName, null, out dbid, OpenDatabaseGrbit.None);
-
-                using (var table = new XbimEntityTable(jetSession, dbid, OpenTableGrbit.None))
+                using (FileStream reader = new FileStream(toImportIfcFilename, FileMode.Open, FileAccess.Read))
                 {
-                    using (var transaction = new Transaction(jetSession))
+                    using (P21toIndexParser part21Parser = new P21toIndexParser(reader, table, transaction))
                     {
-                        using (FileStream reader = new FileStream(toImportIfcFilename, FileMode.Open, FileAccess.Read))
+                        try
                         {
-                            using (P21toIndexParser part21Parser = new P21toIndexParser(reader, jetSession, table))
-                            {
-                                try
-                                {
-                                    if (progressHandler != null) part21Parser.ProgressStatus += progressHandler;
-                                    part21Parser.Parse();
-                                    _count = part21Parser.EntityCount;
-                                    _model.Header = part21Parser.Header;
-                                    
-                                    WriteHeader(jetSession, dbid);
-                                }
-                                catch (Exception e)
-                                {
-                                    transaction.Rollback();
-                                    throw new XbimException("Error importing Ifc File " + toImportIfcFilename, e);
-                                }
-                                finally
-                                {
-                                    if (progressHandler != null) part21Parser.ProgressStatus -= progressHandler;
-                                }
-                            }
+                            if (progressHandler != null) part21Parser.ProgressStatus += progressHandler;
+                            part21Parser.Parse();
+                            _count = part21Parser.EntityCount;
+                            _model.Header = part21Parser.Header;
+                            table.WriteHeader(part21Parser.Header, _count);
+                          
                         }
-                        transaction.Commit(CommitTransactionGrbit.None);
+                        catch (Exception e)
+                        {
+                            throw new XbimException("Error importing Ifc File " + toImportIfcFilename, e);
+                        }
+                        finally
+                        {
+                            if (progressHandler != null) part21Parser.ProgressStatus -= progressHandler;
+                            this.FreeTable(table); 
+                        }
                     }
+                    
                 }
-                Api.JetCloseDatabase(jetSession, dbid, CloseDatabaseGrbit.None);
-                Api.JetDetachDatabase(jetSession, _databaseName);
+               transaction.Commit();
             }
-           
         }
 
         private void WriteHeader(Session jetSession, JET_DBID dbid)
@@ -254,36 +319,29 @@ namespace Xbim.IO
 
         public void ImportIfcXml(string xmlFilename, ReportProgressDelegate progressHandler = null)
         {
-
-            using (_jetSession = new Session(_jetInstance))
+            var entityTable = GetEntityTable();
+            try
             {
-                JET_DBID dbid;
-                Api.JetAttachDatabase(_jetSession, _databaseName, AttachDatabaseGrbit.None);
-                Api.JetOpenDatabase(_jetSession, _databaseName, null, out dbid, OpenDatabaseGrbit.None);
-                using (_jetEntityCursor = new XbimEntityTable(_jetSession, dbid, OpenTableGrbit.None))
+                using (var transaction = entityTable.BeginLazyTransaction())
                 {
-                    
-                    using (var transaction = new Transaction(_jetSession))
+                    XmlReaderSettings settings = new XmlReaderSettings() { IgnoreComments = true, IgnoreWhitespace = false };
+                    using (Stream xmlInStream = new FileStream(xmlFilename, FileMode.Open, FileAccess.Read))
                     {
-                        XmlReaderSettings settings = new XmlReaderSettings() { IgnoreComments = true, IgnoreWhitespace = false };
-                        using (Stream xmlInStream = new FileStream(xmlFilename, FileMode.Open, FileAccess.Read))
+                        using (XmlReader xmlReader = XmlReader.Create(xmlInStream, settings))
                         {
-                            using (XmlReader xmlReader = XmlReader.Create(xmlInStream, settings))
-                            {
-                                IfcXmlReader reader = new IfcXmlReader();
-                                _model.Header = reader.Read(this, xmlReader);
-                                WriteHeader(_jetSession, dbid);
-                            }
+                            IfcXmlReader reader = new IfcXmlReader();
+                            _model.Header = reader.Read(this, xmlReader);
+                            entityTable.WriteHeader(_model.Header, _count);
                         }
-                        transaction.Commit(CommitTransactionGrbit.None);
                     }
+
+                    transaction.Commit();
                 }
-                _jetEntityCursor = null;
-                Api.JetCloseDatabase(_jetSession, dbid, CloseDatabaseGrbit.None);
-                Api.JetDetachDatabase(_jetSession, _databaseName);
             }
-            _jetSession = null;
-           
+            finally
+            {
+                FreeTable(entityTable);
+            }
         }
 
         private void SetDatabaseColumns(Session jetSession, Table jetEntityCursor)
@@ -293,29 +351,6 @@ namespace Xbim.IO
 
        
 
-        /// <summary>
-        /// Writes the properties of the entity to the database and calls commit in batch mode
-        /// </summary>
-        /// <param name="toWrite"></param>
-        /// <param name="entitiesParsed"></param>
-        public void UpdateEntity(IPersistIfcEntity toWrite, int entitiesParsed = 0)
-        {
-
-            using (var update = new Update(_jetSession, _jetEntityCursor, JET_prep.Insert))
-            {
-
-                
-                _jetEntityCursor.SetColumnValues(toWrite);
-
-                Api.SetColumns(_jetSession, _jetEntityCursor, _jetEntityCursor.ColumnValues);
-                update.Save();
-                if (entitiesParsed % _transactionBatchSize == (_transactionBatchSize - 1))
-                {
-                    Api.JetCommitTransaction(_jetSession, CommitTransactionGrbit.LazyFlush);
-                    Api.JetBeginTransaction(_jetSession);
-                }
-            }
-        }
 
         public bool Contains(IPersistIfcEntity instance)
         {
@@ -328,10 +363,18 @@ namespace Xbim.IO
                 return true;
             else //look in the database
             {
-
-                Api.JetSetCurrentIndex(_jetSession, _jetEntityCursor, _jetEntityCursor.PrimaryIndex);
-                Api.MakeKey(_jetSession, _jetEntityCursor, posLabel, MakeKeyGrbit.NewKey);
-                return Api.TrySeek(_jetSession, _jetEntityCursor, SeekGrbit.SeekEQ);
+                var entityTable = GetEntityTable();
+                try
+                {
+                    using (var trans = entityTable.BeginReadOnlyTransaction())
+                    {
+                        return entityTable.TrySeekEntityLabel(posLabel);
+                    }
+                }
+                finally
+                {
+                    FreeTable(entityTable);
+                }
             }
         }
 
@@ -395,26 +438,24 @@ namespace Xbim.IO
         {
             get
             {
-                foreach (var ent in this.Values)
+                var entityTable = GetEntityTable();
+                try
                 {
-                    yield return new IfcInstanceHandle(ent.EntityLabel, ent.GetType());
-                }
-                Api.JetSetCurrentIndex(_jetSession, _jetEntityCursor, _jetEntityCursor.PrimaryIndex);
-                if (Api.TryMoveFirst(_jetSession, _jetEntityCursor))
-                {
-                    List<IfcInstanceHandle> entities = new List<IfcInstanceHandle>();
-                    do
+                    entityTable.SetPrimaryIndex();
+                    if (entityTable.TryMoveFirst()) // we have something
                     {
-                        long label = (long)Api.RetrieveColumnAsInt64(_jetSession, _jetEntityCursor, _jetEntityCursor.ColIdEntityLabel);
-                        if (!this.ContainsKey(label)) //we have already returned the entity from the cache
+                        do
                         {
-                            ushort? typeId = Api.RetrieveColumnAsUInt16(_jetSession, _jetEntityCursor, _jetEntityCursor.ColIdIfcType);
-                            entities.Add(new IfcInstanceHandle(label, IfcInstances.IfcIdIfcTypeLookup[typeId.Value].Type));
+                            IfcInstanceHandle ih = entityTable.GetCurrentInstanceHandle();
+                            if (!this.ContainsKey(ih.EntityLabel)) //we have already returned the entity from the cache
+                                yield return ih;
                         }
+                        while (entityTable.TryMoveNext());
                     }
-                    while (Api.TryMoveNext(_jetSession, _jetEntityCursor));
-                    foreach (var item in entities)
-                        yield return item;
+                }
+                finally
+                {
+                    FreeTable(entityTable);
                 }
             }
         }
@@ -425,34 +466,35 @@ namespace Xbim.IO
         public IEnumerable<IfcInstanceHandle> InstanceHandlesOfType<TIfcType>()
         {
             Type reqType = typeof(TIfcType);
-            foreach (var ent in this.Values)
-            {
-                if (ent is TIfcType)
-                    yield return new IfcInstanceHandle(ent.EntityLabel, ent.GetType());
-            }
             IfcType ifcType = IfcInstances.IfcEntities[reqType];
-            foreach (Type t in ifcType.NonAbstractSubTypes)
+            var entityTable = GetEntityTable();
+            try
             {
-                ushort typeId = IfcInstances.IfcEntities[t].TypeId;
-                Api.JetSetCurrentIndex(_jetSession, _jetTypeCursor, _jetTypeCursor.TypeIndex);
-                Api.MakeKey(_jetSession, _jetTypeCursor, typeId, MakeKeyGrbit.NewKey);
-                if (Api.TrySeek(_jetSession, _jetTypeCursor, SeekGrbit.SeekGE))
+               
+                using (var transaction = entityTable.BeginReadOnlyTransaction())
                 {
-                    Api.MakeKey(_jetSession, _jetTypeCursor, typeId, MakeKeyGrbit.NewKey);
-                    if (Api.TrySetIndexRange(_jetSession, _jetTypeCursor, SetIndexRangeGrbit.RangeUpperLimit | SetIndexRangeGrbit.RangeInclusive))
+                    entityTable.SetOrderByType();
+                    foreach (Type t in ifcType.NonAbstractSubTypes)
                     {
-                        List<IfcInstanceHandle> entities = new List<IfcInstanceHandle>();
-                        do
+                        ushort typeId = IfcInstances.IfcEntities[t].TypeId;
+                        
+                        if (entityTable.TrySeekEntityType(typeId))
                         {
-                            Int64 posLabel = (Int64)Api.RetrieveColumnAsInt64(_jetSession, _jetTypeCursor, _jetTypeCursor.ColIdEntityLabel); //it is a non null db value so just cast
-                            if (!this.ContainsKey(posLabel)) //we have already returned the entity from the cache
-                                entities.Add( new IfcInstanceHandle(posLabel, t));
+                            do
+                            {
+                                IfcInstanceHandle ih = entityTable.GetCurrentInstanceHandle();
+                                if (!this.ContainsKey(ih.EntityLabel)) //we have already returned the entity from the cache
+                                    yield return ih;
+                            }
+                            while (entityTable.TryMoveNext());
                         }
-                        while (Api.TryMoveNext(_jetSession, _jetTypeCursor));
-                        foreach (var item in entities)
-                             yield return item;
+
                     }
                 }
+            }
+            finally
+            {
+                FreeTable(entityTable);
             }
         }
 
@@ -484,29 +526,36 @@ namespace Xbim.IO
         /// <returns></returns>
         private IPersistIfcEntity GetInstanceFromStore(long posLabel, bool loadProperties = false, bool unCached = false)
         {
-            Api.JetSetCurrentIndex(_jetSession, _jetEntityCursor, _jetEntityCursor.PrimaryIndex);
-            Api.MakeKey(_jetSession, _jetEntityCursor, posLabel, MakeKeyGrbit.NewKey);
-            if (Api.TrySeek(_jetSession, _jetEntityCursor, SeekGrbit.SeekEQ))
+            var entityTable = GetEntityTable();
+            try
             {
-                ushort? typeId = Api.RetrieveColumnAsUInt16(_jetSession, _jetEntityCursor, _jetEntityCursor.ColIdIfcType);
-                if (typeId.HasValue)
+                using (var transaction = entityTable.BeginReadOnlyTransaction())
                 {
-                    IfcType ifcType = IfcInstances.IfcIdIfcTypeLookup[typeId.Value];
-                    IPersistIfcEntity entity = (IPersistIfcEntity)Activator.CreateInstance(ifcType.Type);
-
-                    if (loadProperties)
+                    entityTable.SetPrimaryIndex();
+                    if (entityTable.TrySeekEntityLabel(posLabel))
                     {
-                        byte[] properties = Api.RetrieveColumn(_jetSession, _jetEntityCursor, _jetEntityCursor.ColIdEntityData);
-                        entity.ReadEntityProperties(this, new BinaryReader(new MemoryStream(properties)), unCached);
-                        entity.Bind(_model, posLabel); //a positive handle determines that the attributes of this entity have been loaded yet
+                        IfcInstanceHandle ih = entityTable.GetCurrentInstanceHandle();
+                        IPersistIfcEntity entity = (IPersistIfcEntity)Activator.CreateInstance(ih.EntityType);
+                        if (loadProperties)
+                        {
+                            byte[] properties = entityTable.GetProperties();
+                            entity.ReadEntityProperties(this, new BinaryReader(new MemoryStream(properties)), unCached);
+                            entity.Bind(_model, posLabel); //a positive handle determines that the attributes of this entity have been loaded yet
+                        }
+                        else
+                            entity.Bind(_model, -posLabel); //a negative handle determines that the attributes of this entity have not been loaded yet
+                        if (!unCached) 
+                            this.Add(posLabel, entity);
+                        return entity;
                     }
-                    else
-                        entity.Bind(_model, -posLabel); //a negative handle determines that the attributes of this entity have not been loaded yet
-                    if (!unCached) this.Add(posLabel, entity);
-                    return entity;
                 }
             }
+            finally
+            {
+                FreeTable(entityTable);
+            }
             return null;
+            
         }
 
         public void Print()
@@ -544,55 +593,42 @@ namespace Xbim.IO
         public IEnumerable<TIfcType> OfType<TIfcType>(bool activate = false, long secondaryKey = -1)
         {
             IfcType ifcType = IfcInstances.IfcEntities[typeof(TIfcType)];
-            if (_jetTypeCursor == null) yield return default(TIfcType);
-            foreach (Type t in ifcType.NonAbstractSubTypes)
+            var entityTable = GetEntityTable();
+            try
             {
-                ushort typeId = IfcInstances.IfcEntities[t].TypeId;
-                Api.JetSetCurrentIndex(_jetSession, _jetTypeCursor, _jetTypeCursor.TypeIndex);
-                Api.MakeKey(_jetSession, _jetTypeCursor, typeId, MakeKeyGrbit.NewKey);
-                
-                if (secondaryKey > -1)
-                    Api.MakeKey(_jetSession, _jetTypeCursor, secondaryKey, MakeKeyGrbit.None);
-
-                if (Api.TrySeek(_jetSession, _jetTypeCursor, SeekGrbit.SeekGE))
+                using (var transaction = entityTable.BeginReadOnlyTransaction())
                 {
-
-                    if (secondaryKey > -1)
+                    entityTable.SetOrderByType();
+                    foreach (Type t in ifcType.NonAbstractSubTypes)
                     {
-                        Api.MakeKey(_jetSession, _jetTypeCursor, typeId, MakeKeyGrbit.NewKey);
-                        Api.MakeKey(_jetSession, _jetTypeCursor, secondaryKey, MakeKeyGrbit.None);
-                    }
-                    else
-                        Api.MakeKey(_jetSession, _jetTypeCursor, typeId, MakeKeyGrbit.NewKey | MakeKeyGrbit.FullColumnEndLimit);
-                    if (Api.TrySetIndexRange(_jetSession, _jetTypeCursor, SetIndexRangeGrbit.RangeUpperLimit | SetIndexRangeGrbit.RangeInclusive))
-                    {
-                        List<TIfcType> entities = new List<TIfcType>(); //get them all in one go to avoid problems with cursor scope when yield is called
-                        do
+                        ushort typeId = IfcInstances.IfcEntities[t].TypeId;
+                        if ((secondaryKey > 0 && entityTable.TrySeekEntityType(typeId, secondaryKey)) || entityTable.TrySeekEntityType(typeId))
                         {
-                            Int64 posLabel = (Int64)Api.RetrieveColumnAsInt64(_jetSession, _jetTypeCursor, _jetTypeCursor.ColIdEntityLabel); //it is a non null db value so just cast
-                            IPersistIfcEntity entity;
-                            if (!this.TryGetValue(posLabel, out entity))//if already in the cache just return it, else create a blank
+                            do
                             {
-                                entity = (IPersistIfcEntity)Activator.CreateInstance(t);
+                                IfcInstanceHandle ih = entityTable.GetCurrentInstanceHandle();
+                                IPersistIfcEntity entity = (IPersistIfcEntity)Activator.CreateInstance(ih.EntityType);
+                                long posLabel = Math.Abs(ih.EntityLabel);
                                 if (activate)
                                 {
-                                    byte[] properties = Api.RetrieveColumn(_jetSession, _jetTypeCursor, _jetTypeCursor.ColIdEntityData);
+                                    byte[] properties = entityTable.GetProperties();
                                     entity.ReadEntityProperties(this, new BinaryReader(new MemoryStream(properties)), false);
                                     entity.Bind(_model, posLabel); //a positive handle determines that the attributes of this entity have been loaded yet
                                 }
                                 else
                                     entity.Bind(_model, -posLabel); //a negative handle determines that the attributes of this entity have not been loaded yet
+
                                 base.Add(posLabel, entity);
-                            }
-                            entities.Add( (TIfcType)entity);
+                                yield return (TIfcType)entity;
+                            } while (entityTable.TryMoveNext());
                         }
-                        while (Api.TryMoveNext(_jetSession, _jetTypeCursor));
-                        foreach (var item in entities)
-                            yield return item;
                     }
                 }
             }
-            
+            finally
+            {
+                FreeTable(entityTable);
+            }
         }
 
 
@@ -640,11 +676,8 @@ namespace Xbim.IO
                 // and unmanaged resources.
                 if (disposing)
                 {
-                    // Dispose managed resources.
-                    
-                    if (_jetTypeCursor != null) { _jetTypeCursor.Close(); _jetTypeCursor.Dispose(); };
-                    if (_jetEntityCursor != null) { _jetEntityCursor.Close(); _jetEntityCursor.Dispose(); };
-                    if (_jetSession != null) _jetSession.End();
+                    Close();
+                    GC.SuppressFinalize(this);
                 }
 
             }
@@ -659,13 +692,22 @@ namespace Xbim.IO
         /// <returns></returns>
         internal byte[] GetEntityBinaryData(IPersistIfcEntity entity)
         {
-            long posLabel = Math.Abs(entity.EntityLabel);
-            Api.JetSetCurrentIndex(_jetSession, _jetEntityCursor, _jetEntityCursor.PrimaryIndex);
-            Api.MakeKey(_jetSession, _jetEntityCursor, posLabel, MakeKeyGrbit.NewKey);
-            if (Api.TrySeek(_jetSession, _jetEntityCursor, SeekGrbit.SeekEQ))
-                return Api.RetrieveColumn(_jetSession, _jetEntityCursor, _jetEntityCursor.ColIdEntityData);
-            else
-                return null;
+            var entityTable = GetEntityTable();
+            try
+            {
+                using (var transaction = entityTable.BeginReadOnlyTransaction())
+                {
+                    entityTable.SetPrimaryIndex();
+                    long posLabel = Math.Abs(entity.EntityLabel);
+                    if (entityTable.TrySeekEntityLabel(posLabel))
+                        return entityTable.GetProperties();
+                }
+            }
+            finally
+            {
+                FreeTable(entityTable);
+            }
+            return null;
         }
 
 
@@ -699,9 +741,13 @@ namespace Xbim.IO
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Creates a copy of the current model, the storage of the new version is compressed to remove unused space in the model file
+        /// </summary>
+        /// <param name="storageFileName"></param>
         private void SaveAsXbim(string storageFileName)
         {
-            throw new NotImplementedException();
+            
         }
 
         private void SaveAsIfc(string storageFileName)
@@ -747,7 +793,7 @@ namespace Xbim.IO
 
 
 
-        internal void Save()
+        internal void Commit()
         {
             throw new NotImplementedException();
         }
@@ -869,28 +915,20 @@ namespace Xbim.IO
         }
         #endregion
 
-        public XbimGeometryTable BeginGeometryUpdate()
-        {
-            XbimGeometryTable table = new XbimGeometryTable(_jetSession,_jetDatabaseId,OpenTableGrbit.Updatable);
-            table.BeginTransaction();
-            return table;
-        }
+      
 
-        public void EndGeometryUpdate(XbimGeometryTable table)
-        {
-            table.CommitTransaction();
-            table.Close();
-            table.Dispose();
-        }
-
+        
 
 
 
         public XbimGeometryData GetGeometry(IfcProduct product, XbimGeometryType geomType)
         {
-            if (_geometryTable == null)
-                _geometryTable = new XbimGeometryTable(_jetSession, _jetDatabaseId,OpenTableGrbit.ReadOnly);
-            return _geometryTable.GeometryData(product,geomType);
+           
+            XbimGeometryTable geomTable = GetGeometryTable();
+            using (var transaction = geomTable.BeginReadOnlyTransaction())
+            {
+                return geomTable.GeometryData(product, geomType);
+            }
         }
 
 
@@ -902,21 +940,11 @@ namespace Xbim.IO
         /// <returns></returns>
         public IEnumerable<XbimGeometryData> Shapes(XbimGeometryType ofType)
         {
-            using (var session = new Session(_jetInstance))
-            {
-                JET_DBID dbId;
-                JET_wrn warning = Api.JetOpenDatabase(session, _databaseName, null, out dbId, OpenDatabaseGrbit.ReadOnly);
-                //Open a new Table
-                using (var geometryTable = new XbimGeometryTable(session, dbId, OpenTableGrbit.ReadOnly))
-                {
-                    foreach (var shape in  geometryTable.Shapes(ofType))
-                    {
-                        yield return shape;
-                    }
-                }
-                Api.JetCloseDatabase(session, dbId, CloseDatabaseGrbit.None);
-            }
-
+            //Get a cached or open a new Table
+            XbimGeometryTable geometryTable = GetGeometryTable();
+            foreach (var shape in geometryTable.Shapes(ofType))
+                yield return shape;
+            FreeTable(geometryTable);
         }
     }
 }

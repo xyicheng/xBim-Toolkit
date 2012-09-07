@@ -14,6 +14,19 @@ namespace Xbim.IO
     {
         public long EntityLabel;
         public Type EntityType;
+        public readonly static IfcInstanceHandle Empty;
+        static IfcInstanceHandle()
+        {
+            Empty = new IfcInstanceHandle(-1, null);
+        }
+        public bool IsEmpty
+        {
+            get
+            {
+                return (EntityLabel == Empty.EntityLabel && EntityType==Empty.EntityType);
+            }
+        }
+       
         public IfcInstanceHandle(long entityLabel, Type type)
         {
             EntityLabel = Math.Abs(entityLabel);

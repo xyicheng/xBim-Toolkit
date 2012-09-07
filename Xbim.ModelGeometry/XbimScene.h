@@ -8,6 +8,7 @@ using namespace Xbim::ModelGeometry::Scene;
 using namespace Xbim::Ifc2x3::Kernel;
 using namespace Xbim::XbimExtensions;
 using namespace Xbim::Common::Logging;
+#using  <Xbim.IO.dll> as_friend
 using namespace Xbim::IO;
 namespace Xbim
 {
@@ -17,7 +18,7 @@ namespace Xbim
 
 		public ref class XbimScene :  IXbimScene
 		{
-	
+
 		public:
 			static void ConvertGeometry(XbimModel^ model, IEnumerable<IfcProduct^>^ toConvert, ReportProgressDelegate^ progDelegate);
 		private:
@@ -41,7 +42,7 @@ namespace Xbim
 			!XbimScene();
 			~XbimScene();
 			virtual void Close();
-			
+
 			XbimSceneStream^ AsSceneStream();
 			virtual XbimTriangulatedModelStream^ Triangulate(TransformNode^ node);
 			virtual property TransformGraph^ Graph
