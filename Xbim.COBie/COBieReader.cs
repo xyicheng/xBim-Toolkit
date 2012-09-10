@@ -423,20 +423,6 @@ namespace Xbim.COBie
             
         }
 
-        private void ExecuteQuery(string txtQuery, string connectionString)
-        {
-            SQLiteConnection cn;
-            using (cn = new SQLiteConnection(connectionString))
-            {
-                using (SQLiteCommand cmd = cn.CreateCommand())
-                {
-                    cmd.CommandText = txtQuery;
-                    cmd.CommandType = CommandType.Text;
-                    cn.Open();
-                    cmd.ExecuteNonQuery();
-                    cn.Close();
-                }
-            }
-        }
+        
     }
 }

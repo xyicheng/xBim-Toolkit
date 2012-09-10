@@ -259,5 +259,54 @@ namespace Xbim.COBie
 
             return blnResult;
         }
+
+        public List<COBieCell> GetPrimaryKeyErrorCells(string connectionString, string tableName)
+        {
+            List<COBieCell> errorCells = new List<COBieCell>();
+
+            string primaryColumnName = "";
+            foreach (PropertyInfo propInfo in Properties)
+            {
+                object[] attrs = Attributes[propInfo];
+                if (attrs != null && attrs.Length > 0)
+                {
+                    COBieAttributes attr = (COBieAttributes)attrs[0];
+                    if (attr.KeyType == COBieKeyType.PrimaryKey)
+                    {
+                        primaryColumnName = propInfo.Name;
+                        break;
+                    }
+                    
+                }
+            }
+
+            string query = "SELECT " + primaryColumnName + ", Count(" + primaryColumnName + ") as Total FROM " + tableName + " Group By " + primaryColumnName + ";";
+            SQLiteConnection cn;
+            
+            using (cn = new SQLiteConnection(connectionString))
+            {
+                using (SQLiteCommand cmd = cn.CreateCommand())
+                {
+                    cmd.CommandText = query;
+                    cmd.CommandType = CommandType.Text;
+                    cn.Open();
+                    SQLiteDataReader dr = cmd.ExecuteReader();
+
+                    if (dr != null)
+                    {
+                        // find out if any of the count columns has more than 1 value, if yes then that value is duplicate
+                        
+                    }
+                    dr.Close();
+                    cn.Close();
+                }
+            }
+
+            return errorCells;
+        }
     }  
+
+    
+
+
 }
