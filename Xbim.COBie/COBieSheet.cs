@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Reflection;
+#if SQLite
 using System.Data.SQLite;
+#endif
 using System.Data;
 
 namespace Xbim.COBie
@@ -160,6 +161,7 @@ namespace Xbim.COBie
             return err;
         }
 
+#if SQLite
         public void CreateEmptyTable(string dbName, string tableName, string connectionString)
         {
             // delete table if exist first
@@ -374,6 +376,7 @@ namespace Xbim.COBie
 
             return errors;
         }
+#endif
     }  
 
     

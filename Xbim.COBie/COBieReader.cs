@@ -7,7 +7,10 @@ using System.Xml.Serialization;
 using Xbim.COBie.Rows;
 using Xbim.XbimExtensions;
 using System.Linq;
+
+#if SQLite
 using System.Data.SQLite;
+#endif
 
 namespace Xbim.COBie
 { 
@@ -250,6 +253,7 @@ namespace Xbim.COBie
 
             string dbName = "COBieDB.db";
             string connectionString = "Data Source=" + dbName + ";Version=3;New=False;Compress=True;";
+#if SQLite
             CreateCOBieDB(dbName, connectionString);
 
             // get primary key errors
@@ -294,6 +298,7 @@ namespace Xbim.COBie
             List<COBieError> errorsFKCobieTypes = CobieFacilities.GetForeignKeyErrors(connectionString, "Type");
             List<COBieError> errorsFKCobieZones = CobieFacilities.GetForeignKeyErrors(connectionString, "Zone");
 
+#endif
         }
 
         private void PopulateErrors()
@@ -415,6 +420,8 @@ namespace Xbim.COBie
        
         #endregion
 
+
+#if SQLite
         // create SQLite DB with all data
         private void CreateCOBieDB(string dbName, string connectionString)
         {
@@ -467,6 +474,7 @@ namespace Xbim.COBie
             
         }
 
+#endif
         
     }
 }
