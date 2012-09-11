@@ -260,10 +260,8 @@ namespace Xbim.COBie
             return blnResult;
         }
 
-        public List<COBieCell> GetPrimaryKeyErrorCells(string connectionString, string tableName)
-        {
-            List<COBieCell> errorCells = new List<COBieCell>();
-
+        public List<COBieError> GetPrimaryKeyErrors(string connectionString, string tableName)
+        {            
             string primaryColumnName = "";
             foreach (PropertyInfo propInfo in Properties)
             {
@@ -279,30 +277,102 @@ namespace Xbim.COBie
                     
                 }
             }
+            List<COBieError> errors = new List<COBieError>();
 
-            string query = "SELECT " + primaryColumnName + ", Count(" + primaryColumnName + ") as Total FROM " + tableName + " Group By " + primaryColumnName + ";";
-            SQLiteConnection cn;
-            
-            using (cn = new SQLiteConnection(connectionString))
+            if (!string.IsNullOrEmpty(primaryColumnName))
             {
-                using (SQLiteCommand cmd = cn.CreateCommand())
-                {
-                    cmd.CommandText = query;
-                    cmd.CommandType = CommandType.Text;
-                    cn.Open();
-                    SQLiteDataReader dr = cmd.ExecuteReader();
+                string query = "SELECT " + primaryColumnName + ", Count(" + primaryColumnName + ") as Total FROM " + tableName + " Group By " + primaryColumnName + ";";
+                SQLiteConnection cn;
 
-                    if (dr != null)
+                using (cn = new SQLiteConnection(connectionString))
+                {
+                    using (SQLiteCommand cmd = cn.CreateCommand())
                     {
-                        // find out if any of the count columns has more than 1 value, if yes then that value is duplicate
-                        
+                        cmd.CommandText = query;
+                        cmd.CommandType = CommandType.Text;
+                        cn.Open();
+                        SQLiteDataReader dr = cmd.ExecuteReader();
+
+
+                        if (dr != null)
+                        {
+                            // find out if any of the count columns has more than 1 value, if yes then that value is duplicate
+                            while (dr.Read())
+                            {
+                                int Total = Convert.ToInt32(dr["Total"]);
+                                if (Total > 1)
+                                {
+                                    COBieError err = new COBieError();
+                                    err.ErrorDescription = dr[primaryColumnName].ToString() + " duplication";
+                                    err.ErrorType = COBieError.ErrorTypes.PrimaryKey_Violation;
+                                    errors.Add(err);
+                                }
+                            }
+                        }
+                        dr.Close();
+                        cn.Close();
                     }
-                    dr.Close();
-                    cn.Close();
                 }
             }
+            
 
-            return errorCells;
+            return errors;
+        }
+
+        public List<COBieError> GetForeignKeyErrors(string connectionString, string tableName)
+        {
+            string foreignColumnName = "";
+            string referenceColumn = "";
+            List<COBieError> errors = new List<COBieError>();
+
+            foreach (PropertyInfo propInfo in Properties)
+            {
+                object[] attrs = Attributes[propInfo];
+                if (attrs != null && attrs.Length > 0)
+                {
+                    COBieAttributes attr = (COBieAttributes)attrs[0];
+                    if (attr.KeyType == COBieKeyType.ForeignKey)
+                    {
+                        foreignColumnName = tableName + "." + propInfo.Name;
+                        referenceColumn = attr.ReferenceColumnName; // e.g. Contact.Email
+
+                        // E.g.
+                        // SELECT Facility.CreatedBy, Contact.Email FROM Contact
+                        // Left Outer Join Facility On Contact.Email = Facility.CreatedBy 
+                        // WHERE Facility.CreatedBy = null
+
+                        // check if the values of this table foreign key column exist in referenced tableColumn
+                        string refTableName = referenceColumn.Substring(0, referenceColumn.IndexOf('.'));
+                        string query = "SELECT " + foreignColumnName + ", " + referenceColumn + " FROM " + refTableName + " Left Outer Join " + tableName + " On " + referenceColumn + " = " + foreignColumnName + " WHERE " + foreignColumnName + " = null";
+                        SQLiteConnection cn;
+
+                        using (cn = new SQLiteConnection(connectionString))
+                        {
+                            using (SQLiteCommand cmd = cn.CreateCommand())
+                            {
+                                cmd.CommandText = query;
+                                cmd.CommandType = CommandType.Text;
+                                cn.Open();
+                                SQLiteDataReader dr = cmd.ExecuteReader();
+
+                                while (dr.Read())  
+                                {
+                                    // we shouldnt have any rows, as we queried any rows in given table that dosent exist in foreign column table
+                                    COBieError err = new COBieError();
+                                    err.ErrorDescription = dr[foreignColumnName].ToString() + " null value";
+                                    err.ErrorType = COBieError.ErrorTypes.Null_ForeignKey_Value;
+                                    errors.Add(err);
+                                }
+                                dr.Close();
+                                cn.Close();
+                            }
+                        }
+                    }
+
+                }
+            }                                  
+
+            return errors;
         }
     }  
 

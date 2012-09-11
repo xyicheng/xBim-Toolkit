@@ -248,7 +248,52 @@ namespace Xbim.COBie
             CobieAttributes = cq.GetCOBieAttributeSheet();
 
 
-            CreateCOBieDB();
+            string dbName = "COBieDB.db";
+            string connectionString = "Data Source=" + dbName + ";Version=3;New=False;Compress=True;";
+            CreateCOBieDB(dbName, connectionString);
+
+            // get primary key errors
+            List<COBieError> errorsCobieAssemblies = CobieAssemblies.GetPrimaryKeyErrors(connectionString, "Assembly");
+            List<COBieError> errorsCobieAttributes = CobieAttributes.GetPrimaryKeyErrors(connectionString, "Attribute");
+            List<COBieError> errorsCobieComponents = CobieComponents.GetPrimaryKeyErrors(connectionString, "Component");
+            List<COBieError> errorsCobieConnections = CobieConnections.GetPrimaryKeyErrors(connectionString, "Connection");
+            List<COBieError> errorsCobieContacts = CobieContacts.GetPrimaryKeyErrors(connectionString, "Contact");
+            List<COBieError> errorsCobieCoordinates = CobieCoordinates.GetPrimaryKeyErrors(connectionString, "Coordinate");
+            List<COBieError> errorsCobieDocuments = CobieDocuments.GetPrimaryKeyErrors(connectionString, "Document");
+            List<COBieError> errorsCobieFacilities = CobieFacilities.GetPrimaryKeyErrors(connectionString, "Facility");
+            List<COBieError> errorsCobieFloors = CobieFloors.GetPrimaryKeyErrors(connectionString, "Floor");
+            List<COBieError> errorsCobieImpacts = CobieImpacts.GetPrimaryKeyErrors(connectionString, "Impact");
+            List<COBieError> errorsCobieIssues = CobieIssues.GetPrimaryKeyErrors(connectionString, "Issue");
+            List<COBieError> errorsCobieJobs = CobieJobs.GetPrimaryKeyErrors(connectionString, "Jobs");
+            List<COBieError> errorsCobiePickLists = CobiePickLists.GetPrimaryKeyErrors(connectionString, "PickLists");
+            List<COBieError> errorsCobieResources = CobieResources.GetPrimaryKeyErrors(connectionString, "Resource");
+            List<COBieError> errorsCobieSpaces = CobieSpaces.GetPrimaryKeyErrors(connectionString, "Space");
+            List<COBieError> errorsCobieSpares = CobieSpares.GetPrimaryKeyErrors(connectionString, "Spare");
+            List<COBieError> errorsCobieSystems = CobieSystems.GetPrimaryKeyErrors(connectionString, "System");
+            List<COBieError> errorsCobieTypes = CobieTypes.GetPrimaryKeyErrors(connectionString, "Type");
+            List<COBieError> errorsCobieZones = CobieZones.GetPrimaryKeyErrors(connectionString, "Zone");
+
+            // get foreign key errors
+            List<COBieError> errorsFKCobieAssemblies = CobieFacilities.GetForeignKeyErrors(connectionString, "Assembly");
+            List<COBieError> errorsFKCobieAttributes = CobieFacilities.GetForeignKeyErrors(connectionString, "Attribute");
+            List<COBieError> errorsFKCobieComponents = CobieFacilities.GetForeignKeyErrors(connectionString, "Component");
+            List<COBieError> errorsFKCobieConnections = CobieFacilities.GetForeignKeyErrors(connectionString, "Connection");
+            List<COBieError> errorsFKCobieContacts = CobieFacilities.GetForeignKeyErrors(connectionString, "Contact");
+            List<COBieError> errorsFKCobieCoordinates = CobieFacilities.GetForeignKeyErrors(connectionString, "Coordinate");
+            List<COBieError> errorsFKCobieDocuments = CobieFacilities.GetForeignKeyErrors(connectionString, "Document");
+            List<COBieError> errorsFKFKCobieFacilities = CobieFacilities.GetForeignKeyErrors(connectionString, "Facility");
+            List<COBieError> errorsFKCobieFloors = CobieFacilities.GetForeignKeyErrors(connectionString, "Floor");
+            List<COBieError> errorsFKCobieImpacts = CobieFacilities.GetForeignKeyErrors(connectionString, "Impact");
+            List<COBieError> errorsFKCobieIssues = CobieFacilities.GetForeignKeyErrors(connectionString, "Issue");
+            List<COBieError> errorsFKCobieJobs = CobieFacilities.GetForeignKeyErrors(connectionString, "Jobs");
+            List<COBieError> errorsFKCobiePickLists = CobieFacilities.GetForeignKeyErrors(connectionString, "PickLists");
+            List<COBieError> errorsFKCobieResources = CobieFacilities.GetForeignKeyErrors(connectionString, "Resource");
+            List<COBieError> errorsFKCobieSpaces = CobieFacilities.GetForeignKeyErrors(connectionString, "Space");
+            List<COBieError> errorsFKCobieSpares = CobieFacilities.GetForeignKeyErrors(connectionString, "Spare");
+            List<COBieError> errorsFKCobieSystems = CobieFacilities.GetForeignKeyErrors(connectionString, "System");
+            List<COBieError> errorsFKCobieTypes = CobieFacilities.GetForeignKeyErrors(connectionString, "Type");
+            List<COBieError> errorsFKCobieZones = CobieFacilities.GetForeignKeyErrors(connectionString, "Zone");
+
         }
 
         private void PopulateErrors()
@@ -371,55 +416,54 @@ namespace Xbim.COBie
         #endregion
 
         // create SQLite DB with all data
-        private void CreateCOBieDB()
+        private void CreateCOBieDB(string dbName, string connectionString)
         {
-            string dbName = "COBieDB.db";
-            string connectionString = "Data Source=" + dbName + ";Version=3;New=False;Compress=True;";
+            
 
             // cretae database
             SQLiteConnection.CreateFile(dbName);
                         
             // create tables
-            CobieContacts.CreateEmptyTable(dbName, "CobieContacts", connectionString);
-            CobieAssemblies.CreateEmptyTable(dbName, "CobieAssemblies", connectionString);
-            CobieComponents.CreateEmptyTable(dbName, "CobieComponents", connectionString);
-            CobieConnections.CreateEmptyTable(dbName, "CobieConnections", connectionString);
-            CobieCoordinates.CreateEmptyTable(dbName, "CobieCoordinates", connectionString);
-            CobieDocuments.CreateEmptyTable(dbName, "CobieDocuments", connectionString);
-            CobieFacilities.CreateEmptyTable(dbName, "CobieFacilities", connectionString);
-            CobieFloors.CreateEmptyTable(dbName, "CobieFloors", connectionString);
-            CobieImpacts.CreateEmptyTable(dbName, "CobieImpacts", connectionString);
-            CobieIssues.CreateEmptyTable(dbName, "CobieIssues", connectionString);
-            CobieJobs.CreateEmptyTable(dbName, "CobieJobs", connectionString);
-            CobiePickLists.CreateEmptyTable(dbName, "CobiePickLists", connectionString);
-            CobieResources.CreateEmptyTable(dbName, "CobieResources", connectionString);
-            CobieSpaces.CreateEmptyTable(dbName, "CobieSpaces", connectionString);
-            CobieSpares.CreateEmptyTable(dbName, "CobieSpares", connectionString);
-            CobieSystems.CreateEmptyTable(dbName, "CobieSystems", connectionString);
-            CobieTypes.CreateEmptyTable(dbName, "CobieTypes", connectionString);
-            CobieZones.CreateEmptyTable(dbName, "CobieZones", connectionString);
-            CobieAttributes.CreateEmptyTable(dbName, "CobieAttributes", connectionString);
+            CobieContacts.CreateEmptyTable(dbName, "Contact", connectionString);
+            CobieAssemblies.CreateEmptyTable(dbName, "Assembly", connectionString);
+            CobieComponents.CreateEmptyTable(dbName, "Component", connectionString);
+            CobieConnections.CreateEmptyTable(dbName, "Connection", connectionString);
+            CobieCoordinates.CreateEmptyTable(dbName, "Coordinate", connectionString);
+            CobieDocuments.CreateEmptyTable(dbName, "Document", connectionString);
+            CobieFacilities.CreateEmptyTable(dbName, "Facility", connectionString);
+            CobieFloors.CreateEmptyTable(dbName, "Floor", connectionString);
+            CobieImpacts.CreateEmptyTable(dbName, "Impact", connectionString);
+            CobieIssues.CreateEmptyTable(dbName, "Issue", connectionString);
+            CobieJobs.CreateEmptyTable(dbName, "Job", connectionString);
+            CobiePickLists.CreateEmptyTable(dbName, "PickLists", connectionString);
+            CobieResources.CreateEmptyTable(dbName, "Resource", connectionString);
+            CobieSpaces.CreateEmptyTable(dbName, "Space", connectionString);
+            CobieSpares.CreateEmptyTable(dbName, "Spare", connectionString);
+            CobieSystems.CreateEmptyTable(dbName, "System", connectionString);
+            CobieTypes.CreateEmptyTable(dbName, "Type", connectionString);
+            CobieZones.CreateEmptyTable(dbName, "Zone", connectionString);
+            CobieAttributes.CreateEmptyTable(dbName, "Attribute", connectionString);
 
             // insert values
-            CobieContacts.InsertValuesInDB(dbName, "CobieContacts", connectionString);
-            CobieAssemblies.InsertValuesInDB(dbName, "CobieAssemblies", connectionString);
-            CobieComponents.InsertValuesInDB(dbName, "CobieComponents", connectionString);
-            CobieConnections.InsertValuesInDB(dbName, "CobieConnections", connectionString);
-            CobieCoordinates.InsertValuesInDB(dbName, "CobieCoordinates", connectionString);
-            CobieDocuments.InsertValuesInDB(dbName, "CobieDocuments", connectionString);
-            CobieFacilities.InsertValuesInDB(dbName, "CobieFacilities", connectionString);
-            CobieFloors.InsertValuesInDB(dbName, "CobieFloors", connectionString);
-            CobieImpacts.InsertValuesInDB(dbName, "CobieImpacts", connectionString);
-            CobieIssues.InsertValuesInDB(dbName, "CobieIssues", connectionString);
-            CobieJobs.InsertValuesInDB(dbName, "CobieJobs", connectionString);
-            CobiePickLists.InsertValuesInDB(dbName, "CobiePickLists", connectionString);
-            CobieResources.InsertValuesInDB(dbName, "CobieResources", connectionString);
-            CobieSpaces.InsertValuesInDB(dbName, "CobieSpaces", connectionString);
-            CobieSpares.InsertValuesInDB(dbName, "CobieSpares", connectionString);
-            CobieSystems.InsertValuesInDB(dbName, "CobieSystems", connectionString);
-            CobieTypes.InsertValuesInDB(dbName, "CobieTypes", connectionString);
-            CobieZones.InsertValuesInDB(dbName, "CobieZones", connectionString);
-            CobieAttributes.InsertValuesInDB(dbName, "CobieAttributes", connectionString);
+            CobieContacts.InsertValuesInDB(dbName, "Contact", connectionString);
+            CobieAssemblies.InsertValuesInDB(dbName, "Assembly", connectionString);
+            CobieComponents.InsertValuesInDB(dbName, "Component", connectionString);
+            CobieConnections.InsertValuesInDB(dbName, "Connection", connectionString);
+            CobieCoordinates.InsertValuesInDB(dbName, "Coordinate", connectionString);
+            CobieDocuments.InsertValuesInDB(dbName, "Document", connectionString);
+            CobieFacilities.InsertValuesInDB(dbName, "Facility", connectionString);
+            CobieFloors.InsertValuesInDB(dbName, "Floor", connectionString);
+            CobieImpacts.InsertValuesInDB(dbName, "Impacs", connectionString);
+            CobieIssues.InsertValuesInDB(dbName, "Issue", connectionString);
+            CobieJobs.InsertValuesInDB(dbName, "Job", connectionString);
+            CobiePickLists.InsertValuesInDB(dbName, "PickLists", connectionString);
+            CobieResources.InsertValuesInDB(dbName, "Resource", connectionString);
+            CobieSpaces.InsertValuesInDB(dbName, "Space", connectionString);
+            CobieSpares.InsertValuesInDB(dbName, "Spare", connectionString);
+            CobieSystems.InsertValuesInDB(dbName, "System", connectionString);
+            CobieTypes.InsertValuesInDB(dbName, "Type", connectionString);
+            CobieZones.InsertValuesInDB(dbName, "Zone", connectionString);
+            CobieAttributes.InsertValuesInDB(dbName, "Attribute", connectionString);
             
         }
 

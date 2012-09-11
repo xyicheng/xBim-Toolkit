@@ -12,6 +12,7 @@ namespace Xbim.COBie
         private readonly int _order;
         private string _columnName;
         private COBieKeyType _keyType;
+        private string _referenceColumnName;
 
         public COBieAttributeState State
         {
@@ -70,7 +71,12 @@ namespace Xbim.COBie
             _state = state;
         }
 
-        public COBieAttributes(int order, COBieKeyType keyType, COBieAttributeState state, string columnName, int maxLength, COBieAllowedType allowedType)
+        public string ReferenceColumnName
+        {
+            get { return _referenceColumnName; }
+        }
+
+        public COBieAttributes(int order, COBieKeyType keyType, string referenceColumnName, COBieAttributeState state, string columnName, int maxLength, COBieAllowedType allowedType)
         {
             _state = state;
             _maxLength = maxLength;
@@ -78,6 +84,7 @@ namespace Xbim.COBie
             _order = order;
             _columnName = columnName;
             _keyType = keyType;
+            _referenceColumnName = referenceColumnName;
         }
     }
 }

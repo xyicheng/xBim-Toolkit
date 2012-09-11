@@ -49,6 +49,7 @@ namespace Xbim.COBie
             Numeric_Value_Expected,
             Text_Value_Expected,
             PrimaryKey_Violation,
+            Null_ForeignKey_Value,
             None
         }
     }

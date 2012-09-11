@@ -10,57 +10,57 @@ namespace Xbim.COBie.Rows
     public class COBieIssueRow : COBieRow
     {
         public COBieIssueRow(ICOBieSheet<COBieIssueRow> parentSheet)
-            : base(parentSheet) { } 
+            : base(parentSheet) { }
 
-        [COBieAttributes(0, COBieKeyType.CompoundKey, COBieAttributeState.Required, "Name", 255, COBieAllowedType.AlphaNumeric)]
+        [COBieAttributes(0, COBieKeyType.CompoundKey, "", COBieAttributeState.Required, "Name", 255, COBieAllowedType.AlphaNumeric)]
         public string Name { get; set; }
 
-        [COBieAttributes(1, COBieKeyType.None, COBieAttributeState.Required, "CreatedBy", 255, COBieAllowedType.Email)]
+        [COBieAttributes(1, COBieKeyType.None, "", COBieAttributeState.Required, "CreatedBy", 255, COBieAllowedType.Email)]
         public string CreatedBy { get; set; }
 
-        [COBieAttributes(2, COBieKeyType.None, COBieAttributeState.Required, "CreatedOn", 19, COBieAllowedType.ISODate)]
+        [COBieAttributes(2, COBieKeyType.None, "", COBieAttributeState.Required, "CreatedOn", 19, COBieAllowedType.ISODate)]
         public string CreatedOn { get; set; }
 
-        [COBieAttributes(3, COBieKeyType.None, COBieAttributeState.Required, "Type", 255, COBieAllowedType.Text)]
+        [COBieAttributes(3, COBieKeyType.None, "", COBieAttributeState.Required, "Type", 255, COBieAllowedType.Text)]
         public string Type { get; set; }
 
-        [COBieAttributes(4, COBieKeyType.None, COBieAttributeState.Required, "Risk", 255, COBieAllowedType.Text)]
+        [COBieAttributes(4, COBieKeyType.None, "", COBieAttributeState.Required, "Risk", 255, COBieAllowedType.Text)]
         public string Risk { get; set; }
 
-        [COBieAttributes(5, COBieKeyType.None, COBieAttributeState.Required, "Chance", 255, COBieAllowedType.Text)]
+        [COBieAttributes(5, COBieKeyType.None, "", COBieAttributeState.Required, "Chance", 255, COBieAllowedType.Text)]
         public string Chance { get; set; }
 
-        [COBieAttributes(6, COBieKeyType.None, COBieAttributeState.Required, "Impact", 255, COBieAllowedType.Text)]
+        [COBieAttributes(6, COBieKeyType.None, "", COBieAttributeState.Required, "Impact", 255, COBieAllowedType.Text)]
         public string Impact { get; set; }
 
-        [COBieAttributes(7, COBieKeyType.CompoundKey, COBieAttributeState.Required, "SheetName1", 255, COBieAllowedType.Text)]
+        [COBieAttributes(7, COBieKeyType.CompoundKey, "", COBieAttributeState.Required, "SheetName1", 255, COBieAllowedType.Text)]
         public string SheetName1 { get; set; }
 
-        [COBieAttributes(8, COBieKeyType.CompoundKey, COBieAttributeState.Required, "RowName1", 255, COBieAllowedType.AlphaNumeric)]
+        [COBieAttributes(8, COBieKeyType.CompoundKey, "", COBieAttributeState.Required, "RowName1", 255, COBieAllowedType.AlphaNumeric)]
         public string RowName1 { get; set; }
 
-        [COBieAttributes(9, COBieKeyType.CompoundKey, COBieAttributeState.Required, "SheetName2", 255, COBieAllowedType.Text)]
+        [COBieAttributes(9, COBieKeyType.CompoundKey, "", COBieAttributeState.Required, "SheetName2", 255, COBieAllowedType.Text)]
         public string SheetName2 { get; set; }
 
-        [COBieAttributes(10, COBieKeyType.CompoundKey, COBieAttributeState.Required, "RowName2", 255, COBieAllowedType.AlphaNumeric)]
+        [COBieAttributes(10, COBieKeyType.CompoundKey, "", COBieAttributeState.Required, "RowName2", 255, COBieAllowedType.AlphaNumeric)]
         public string RowName2 { get; set; }
 
-        [COBieAttributes(11, COBieKeyType.None, COBieAttributeState.Required, "Description", 255, COBieAllowedType.AlphaNumeric)]
+        [COBieAttributes(11, COBieKeyType.None, "", COBieAttributeState.Required, "Description", 255, COBieAllowedType.AlphaNumeric)]
         public string Description { get; set; }
 
-        [COBieAttributes(12, COBieKeyType.None, COBieAttributeState.Required, "Owner", 255, COBieAllowedType.Email)]
+        [COBieAttributes(12, COBieKeyType.None, "", COBieAttributeState.Required, "Owner", 255, COBieAllowedType.Email)]
         public string Owner { get; set; }
 
-        [COBieAttributes(13, COBieKeyType.None, COBieAttributeState.Required, "Mitigation", 255, COBieAllowedType.AlphaNumeric)]
+        [COBieAttributes(13, COBieKeyType.None, "", COBieAttributeState.Required, "Mitigation", 255, COBieAllowedType.AlphaNumeric)]
         public string Mitigation { get; set; }
 
-        [COBieAttributes(14, COBieKeyType.None, COBieAttributeState.System, "ExtSystem", 255, COBieAllowedType.AlphaNumeric)]
+        [COBieAttributes(14, COBieKeyType.None, "", COBieAttributeState.System, "ExtSystem", 255, COBieAllowedType.AlphaNumeric)]
         public string ExtSystem { get; set; }
 
-        [COBieAttributes(15, COBieKeyType.None, COBieAttributeState.System, "ExtObject", 255, COBieAllowedType.AlphaNumeric)]
+        [COBieAttributes(15, COBieKeyType.None, "", COBieAttributeState.System, "ExtObject", 255, COBieAllowedType.AlphaNumeric)]
         public string ExtObject { get; set; }
 
-        [COBieAttributes(16, COBieKeyType.None, COBieAttributeState.System, "ExtIdentifier", 255, COBieAllowedType.AlphaNumeric)]
+        [COBieAttributes(16, COBieKeyType.None, "", COBieAttributeState.System, "ExtIdentifier", 255, COBieAllowedType.AlphaNumeric)]
         public string ExtIdentifier { get; set; }
     }
 }
