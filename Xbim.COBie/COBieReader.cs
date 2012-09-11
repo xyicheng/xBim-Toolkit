@@ -177,45 +177,8 @@ namespace Xbim.COBie
 			CobieErrors = new List<COBieError>();
 		}
 
-		/// <summary>
-		/// Gets errors found for the cell on the sheet
-		/// </summary>
-		/// <param name="cell"></param>
-		/// <param name="sheetName"></param>
-		/// <returns></returns>
-        public COBieError GetCobieError(COBieCell cell, string sheetName)
-        {
-            int maxLength = cell.CobieCol.ColumnLength;
-            COBieAllowedType allowedType = cell.CobieCol.AllowedType;
-            COBieError err = new COBieError(sheetName, cell.CobieCol.ColumnName, "", COBieError.ErrorTypes.None);
-            if (cell.CellValue.Length > maxLength)
-            {
-                err.ErrorDescription = "Value must be under " + maxLength + " characters";
-                err.ErrorType = COBieError.ErrorTypes.Value_Out_of_Bounds;
-            }
-            if (allowedType == COBieAllowedType.AlphaNumeric && !COBieCell.RegExAlphaNumeric.IsMatch(cell.CellValue))
-            {
-                err.ErrorDescription = "Value must be alpha-numeric";
-                err.ErrorType = COBieError.ErrorTypes.AlphaNumeric_Value_Expected;
-            }
-            if (allowedType == COBieAllowedType.Email && !COBieCell.RegExEmail.IsMatch(cell.CellValue))
-            {
-                err.ErrorDescription = "Value must be a valid email address";
-                err.ErrorType = COBieError.ErrorTypes.Email_Value_Expected;
-            }
-            
-            DateTime dt;
-            DateTime.TryParse(cell.CellValue, out dt);
-            if (allowedType == COBieAllowedType.ISODate && dt == DateTime.MinValue) err.ErrorDescription = "Value must be a valid iso date";
-
-            double d;
-            double.TryParse(cell.CellValue, out d);
-            if (allowedType == COBieAllowedType.Numeric && d == 0) err.ErrorDescription = "Value must be a valid double";
-
-            return err;
-        }
         
-		private void Intialise()
+		private void Initialise()
         {
 			if (Context == null) { throw new InvalidOperationException("COBieReader can't initialise without a valid Context."); }
 			if (Context.Models == null || Context.Models.Count == 0) { throw new ArgumentException("COBieReader context must contain one or more models."); }
@@ -226,6 +189,7 @@ namespace Xbim.COBie
             COBieQueries cq = new COBieQueries(model);
 
             // create pick lists from xml
+            // TODO: Need to populate somehow.
             //CobiePickLists = cq.GetCOBiePickListsSheet("PickLists.xml");
 
             // populate all sheets from model
@@ -251,9 +215,10 @@ namespace Xbim.COBie
             CobieAttributes = cq.GetCOBieAttributeSheet();
 
 
+            
+#if SQLite
             string dbName = "COBieDB.db";
             string connectionString = "Data Source=" + dbName + ";Version=3;New=False;Compress=True;";
-#if SQLite
             CreateCOBieDB(dbName, connectionString);
 
             // get primary key errors
@@ -335,21 +300,9 @@ namespace Xbim.COBie
             }
         }
 
-        private bool HasDuplicateFloorValues(COBieSheet<COBieFloorRow> sheet, string val)
-        {
-            int count = 0;
-            foreach (COBieFloorRow row in CobieFloors.Rows)
-            {
-                if (row.Name == val) count++; 
-            }
-            if (count > 1) return true;
-
-            return false;
-        }
-
         public void GenerateCOBieData()
         {
-            Intialise();
+            Initialise();
 
             PopulateErrors();			
         }
@@ -365,61 +318,6 @@ namespace Xbim.COBie
 			// Passes this 
 			formatter.Format(this);
 		}
-
-        public DataTable ToDataTable(object[] objectArray, string tableName)
-        {
-            if (objectArray == null || objectArray.Length <= 0) return null;
-
-            // we are here means we have data to convert to dataset
-            DataSet ds = new DataSet();
-            
-            XmlSerializer xmlSerializer = new XmlSerializer(objectArray.GetType());
-            StringWriter writer = new StringWriter();
-            xmlSerializer.Serialize(writer, objectArray);
-            StringReader reader = new StringReader(writer.ToString());
-            writer.Close();
-
-            ds.ReadXml(reader);
-            ds.Tables[0].TableName = tableName;
-            
-            return ds.Tables[0];
-        }
-
-        //public string ToXML(object[] objectArray, string tableName, XmlTextWriter textWriter)
-        //{
-        //    string str = "";
-                                 
-        //    textWriter.WriteStartDocument();
-
-        //    // start of sheet
-        //    textWriter.WriteStartElement(tableName); // start node for sheet name
-            
-        //    // write atributes and nodes
-        //    foreach (COBieAssemblyRow ca in objectArray) // each array item is a row
-        //    {                
-        //        textWriter.WriteAttributeString("pk", ca.Name.IsPrimaryKey.ToString());
-        //        //textWriter.WriteAttributeString("attr", ca.);
-        //        textWriter.WriteAttributeString("maxLen", "255");
-        //        textWriter.WriteAttributeString("attrType", "AlphaNumeric");
-        //        textWriter.WriteString(ca.Name.CellValue);
-        //    }            
-            
-        //    // end of sheet
-        //    textWriter.WriteEndElement();
-
-        //    textWriter.WriteEndDocument();
-        //    textWriter.Close();  
-
-            
-
-        //    return str;
-        //}
-
-        #region Extract data form IModel
-
-       
-        #endregion
-
 
 #if SQLite
         // create SQLite DB with all data

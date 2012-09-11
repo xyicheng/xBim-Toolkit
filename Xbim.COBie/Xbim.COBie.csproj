@@ -99,7 +99,6 @@
     <Compile Include="COBieContext.cs" />
     <Compile Include="Data\COBieData.cs" />
     <Compile Include="Data\COBieDataAssembly.cs" />
-    <Compile Include="Data\COBieDataAttribute.cs" />
     <Compile Include="Data\COBieDataComponent.cs" />
     <Compile Include="Data\COBieDataConnection.cs" />
     <Compile Include="Data\COBieDataContact.cs" />
@@ -120,7 +119,6 @@
     <Compile Include="Data\COBieDataType.cs" />
     <Compile Include="Data\COBieDataZone.cs" />
     <Compile Include="Enums.cs" />
-    <Compile Include="Formatters\DataSetFormatter.cs" />
     <Compile Include="ICOBieSheet.cs" />
     <Compile Include="Rows\COBieAssemblyRow.cs" />
     <Compile Include="Rows\COBieAttributeRow.cs" />
@@ -176,7 +174,7 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="COBieExtensions\" />
+    <Folder Include="Formatters\" />
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Service References\" />

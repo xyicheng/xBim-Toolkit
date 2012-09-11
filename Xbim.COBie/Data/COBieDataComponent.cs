@@ -158,7 +158,7 @@ namespace Xbim.COBie.Data
                 if (owningSpace.GetType() == typeof(IfcSpace))
                     return owningSpace.Name.ToString();
             }
-            return Constants.DEFAULT_VAL;
+            return COBieData.DEFAULT_STRING;
         }
 
         /// <summary>
@@ -173,7 +173,7 @@ namespace Xbim.COBie.Data
                 if (!string.IsNullOrEmpty(el.Description)) return el.Description;
                 else if (!string.IsNullOrEmpty(el.Name)) return el.Name;
             }
-            return Constants.DEFAULT_VAL;
+            return COBieData.DEFAULT_STRING;
         }
         #endregion
     }

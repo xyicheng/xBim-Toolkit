@@ -133,12 +133,12 @@ namespace Xbim.COBie
                 err.ErrorDescription = "Value must be under 255 characters";
                 err.ErrorType = COBieError.ErrorTypes.Value_Out_of_Bounds;
             }
-            if (allowedType == COBieAllowedType.AlphaNumeric && !COBieCell.RegExAlphaNumeric.IsMatch(cell.CellValue))
+            if (allowedType == COBieAllowedType.AlphaNumeric && !cell.IsAlphaNumeric())
             {
                 err.ErrorDescription = "Value must be alpha-numeric";
                 err.ErrorType = COBieError.ErrorTypes.AlphaNumeric_Value_Expected;
             }
-            if (allowedType == COBieAllowedType.Email && !COBieCell.RegExEmail.IsMatch(cell.CellValue))
+            if (allowedType == COBieAllowedType.Email && !cell.IsEmailAddress())
             {
                 err.ErrorDescription = "Value must be a valid email address";
                 err.ErrorType = COBieError.ErrorTypes.Email_Value_Expected;

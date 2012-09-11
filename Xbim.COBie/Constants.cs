@@ -26,10 +26,7 @@ namespace Xbim.COBie
 		public const string WORKSHEET_COORDINATE = "Coordinate";
 		public const string WORKSHEET_ISSUE = "Issue";
 		public const string WORKSHEET_PICKLISTS = "PickLists";
-        public const string DEFAULT_VAL = "n\a";
 
-		private Constants ()
-		{		
-		}
+
 	}
 }

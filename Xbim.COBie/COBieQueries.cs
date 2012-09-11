@@ -227,8 +227,6 @@ namespace Xbim.COBie
         /// <returns>COBieSheet<COBieAttributeRow></returns>
         public COBieSheet<COBieAttributeRow> GetCOBieAttributeSheet()
         {
-            //COBieDataAttribute attributes = new COBieDataAttribute(_model);
-            //return attributes.Fill();
             return _attributes;
         }
 

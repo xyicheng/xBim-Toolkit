@@ -197,55 +197,7 @@ namespace Xbim.COBie.Data
                 return val;
             }
             return COBieData.DEFAULT_STRING;
-        }
-
-        
-        /// <summary>
-        /// Retrieve Attribute data from other sheets filtered via reqdProps
-        /// </summary>
-        /// <param name="obj">Object holding the additional properties(Attributes)</param>
-        /// <param name="passedValues">Holder to pass values form calling sheet function</param>
-        /// <param name="reqdProps">List of PropertySet names / Property Name pairs to extract</param>
-        /// <param name="attributes">The attribute Sheet to add the properties to its rows</param>
-        //protected void SetAttributeSheet(Object obj, Dictionary<string, string> passedValues, List<KeyValuePair<string, string>> reqdProps, ref COBieSheet<COBieAttributeRow> attributes)
-        //{
-            
-        //    foreach (KeyValuePair<string, string> item in reqdProps)
-        //    {
-        //        IfcPropertySingleValue PropValue = null;
-        //        IfcPropertySet PropSet = null;
-        //        if (obj is IfcObject)
-        //            PropSet = ((IfcObject)obj).GetPropertySet(item.Key.ToString());
-        //        else if (obj is IfcTypeObject)
-        //            PropSet = ((IfcTypeObject)obj).GetPropertySet(item.Key.ToString());
-        //        else
-        //            throw new ArgumentException("Incorrect type passed to COBieData:SetAttributeSheet method");
-
-        //        if (PropSet != null)
-        //        {
-
-        //            COBieAttributeRow attribute = new COBieAttributeRow(attributes);
-        //            PropValue = PropSet.HasProperties.Where<IfcPropertySingleValue>(p => p.Name == item.Value.ToString()).FirstOrDefault();
-
-        //            attribute.Name = item.Value.ToString();
-                    
-
-        //            //Get category
-        //            string Cat = GetCategory(PropSet);
-        //            attribute.Category = (Cat == DEFAULT_STRING) ? "Requirement" : Cat;
-        //            attribute.ExtIdentifier = PropSet.GlobalId;
-        //            attribute.ExtObject = item.Key.ToString();
-
-        //            GetAttributsCommon(passedValues, PropValue, ref attribute);
-
-        //            attributes.Rows.Add(attribute);
-        //        }
-        //    }
-        //}
-
-        
-
-        
+        }   
 
         /// <summary>
         /// Retrieve Attribute data from other sheets, retrieving all properties attached to object (obj)
@@ -365,27 +317,6 @@ namespace Xbim.COBie.Data
                             }
                             
                         }
-
-                        //pSVKey = pSV.Name.ToString();
-                        //if (string.IsNullOrEmpty(PSVKey)) //if property name is blank then skip
-                        //{
-                        //    continue; //skip to next loop item
-                        //}
-
-                        //foreach (string str in excPropWC)
-                        //{
-                        //    if (pSVKey.Contains(str))
-                        //    {
-                        //        skip = true;
-                        //        break; //found one so stop searching
-                        //    }
-
-                        //}
-                        //if (skip == true)
-                        //{
-                        //    skip = false;
-                        //    continue; //skip to next PVS
-                        //}
                         
 
                         COBieAttributeRow attribute = new COBieAttributeRow(attributes);

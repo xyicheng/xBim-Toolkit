@@ -21,7 +21,6 @@ namespace Xbim.Tests.COBie
         private const string PickListFile = Root + @"\" + PickListLeaf;
 
         static IModel _model;
-        static COBieSheet<COBiePickListsRow> _picklists;
 
         [ClassInitialize]
         public static void LoadModel(TestContext context)
@@ -30,7 +29,6 @@ namespace Xbim.Tests.COBie
             _model.Open(SourceFile);
             COBieQueries cobieEngine = new COBieQueries(_model);
 
-            _picklists = cobieEngine.GetCOBiePickListsSheet(PickListFile);
         }
 
         [ClassCleanup]
@@ -116,12 +114,6 @@ namespace Xbim.Tests.COBie
             }
         }
 
-        private COBieSheet<COBiePickListsRow> PickList
-        {
-            get
-            {
-                return _picklists;
-            }
-        }
+   
     }
 }
