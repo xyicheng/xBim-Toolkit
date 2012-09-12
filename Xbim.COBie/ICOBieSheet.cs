@@ -11,5 +11,6 @@ namespace Xbim.COBie
         PropertyInfo[] Properties { get; }
         Dictionary<int, COBieColumn> Columns { get; }
         Dictionary<PropertyInfo, object[]> Attributes{ get; }
+        List<PropertyInfo> KeyColumns { get; }
     }
 }

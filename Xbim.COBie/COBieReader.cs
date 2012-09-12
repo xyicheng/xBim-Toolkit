@@ -139,6 +139,7 @@ namespace Xbim.COBie
 		/// </summary>
 		public COBieSheet<COBieAttributeRow> CobieAttributes { get; set; }
 
+       
 		/// <summary>
 		/// Errors
 		/// </summary>
@@ -213,7 +214,7 @@ namespace Xbim.COBie
             CobieZones = cq.GetCOBieZoneSheet();
             //we need to fill this one last as the calls to the above sheet add data for the AttributeSheet
             CobieAttributes = cq.GetCOBieAttributeSheet();
-
+            CobieContacts.ValidatePrimaryKey();
 
             
 #if SQLite
@@ -303,8 +304,8 @@ namespace Xbim.COBie
         public void GenerateCOBieData()
         {
             Initialise();
-
-            PopulateErrors();			
+           
+           // PopulateErrors();			
         }
 
 		/// <summary>

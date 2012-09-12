@@ -16,12 +16,31 @@ namespace Xbim.COBie
     {
         public ICOBieSheet<COBieRow> ParentSheet;
 
+
         public COBieRow(ICOBieSheet<COBieRow> parentSheet)
         {
             ParentSheet = parentSheet;
         }
 
-       
+        public string GetPrimaryKeyValue
+        {
+            get
+            {
+                int c = ParentSheet.KeyColumns.Count;
+                if (c == 1)
+                    return ParentSheet.KeyColumns[0].GetValue(this, null).ToString();
+                else if (c > 1)
+                {
+                    List<string> keyValues = new List<string>(c);
+                    foreach (var keyProp in ParentSheet.KeyColumns)
+                    {
+                        keyValues.Add(keyProp.GetValue(this, null).ToString());
+                    }
+                    return string.Join(";", keyValues);
+                }
+                return null;
+            }
+        }
 
         public COBieCell this[int i]
         {

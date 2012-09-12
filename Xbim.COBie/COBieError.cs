@@ -35,8 +35,8 @@ namespace Xbim.COBie
             ErrorDescription = errorDescription;
         }
 
-        public string SheetName { get; set; }
-        public string FieldName { get; set; }
+        public string SheetName { get; private set; }
+        public string FieldName { get; private set; }
         public string ErrorDescription { get; set; }
         public ErrorTypes ErrorType { get; set; }
 

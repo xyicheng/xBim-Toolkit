@@ -97,6 +97,7 @@
     <Compile Include="COBieAliasAttribute.cs" />
     <Compile Include="COBieCell.cs" />
     <Compile Include="COBieContext.cs" />
+    <Compile Include="COBieErrorCollection.cs" />
     <Compile Include="Data\COBieData.cs" />
     <Compile Include="Data\COBieDataAssembly.cs" />
     <Compile Include="Data\COBieDataComponent.cs" />

@@ -21,6 +21,13 @@ namespace Xbim.COBie
         private Dictionary<int, COBieColumn> _columns;
         private PropertyInfo[] _properties;
         private Dictionary<PropertyInfo, object[]> _attributes;
+        private List<PropertyInfo> _keyColumns = new List<PropertyInfo>();
+
+        public List<PropertyInfo> KeyColumns
+        {
+            get { return _keyColumns; }
+            
+        }
 
         public COBieSheet(string sheetName)
         {
@@ -40,9 +47,31 @@ namespace Xbim.COBie
                     List<string> aliases = GetAliases(propInfo);
                     _columns.Add(attr.Order, new COBieColumn(attr.ColumnName, attr.MaxLength, attr.AllowedType, attr.KeyType, aliases));
                     _attributes.Add(propInfo, attrs);
+                    if (attr.KeyType == COBieKeyType.CompoundKey || attr.KeyType == COBieKeyType.PrimaryKey)
+                        _keyColumns.Add(propInfo);
                 }
             }
         }
+
+        public bool HasPrimaryKey
+        {
+            get
+            {
+                return _keyColumns.Any();
+            }
+        }
+
+        
+
+        public COBieErrorCollection ValidatePrimaryKey()
+        {
+            var dup = Rows
+         .GroupBy(r => new { r.GetPrimaryKeyValue })
+         .Select(group => new { Result = group.Key, Count = group.Count() })
+         .OrderByDescending(x => x.Count);
+            return null;
+        }
+       
 
         private List<string> GetAliases(PropertyInfo propInfo)
         {
@@ -377,6 +406,9 @@ namespace Xbim.COBie
             return errors;
         }
 #endif
+
+
+       
     }  
 
     
