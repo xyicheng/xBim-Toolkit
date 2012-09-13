@@ -99,7 +99,8 @@
             "Clinic_A_20110906.ifc",
             "Clinic_A_20110906.xbim",
             "2012-09-03-Clinic-Handover.ifc",
-            "2012-09-03-Clinic-Handover.xbim"});
+            "2012-09-03-Clinic-Handover.xbim",
+            "BCU-XX-XX-A-VCUK-M3-00-0001.Xbim"});
             this.txtPath.Location = new System.Drawing.Point(68, 20);
             this.txtPath.Name = "txtPath";
             this.txtPath.Size = new System.Drawing.Size(337, 21);

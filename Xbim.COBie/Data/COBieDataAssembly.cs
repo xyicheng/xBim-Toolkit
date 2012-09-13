@@ -80,13 +80,13 @@ namespace Xbim.COBie.Data
 
                 assembly.SheetName = "SheetName:";
                 assembly.ParentName = ra.RelatingObject.Name;
-                string childNames = "";
-                foreach (var item in ra.RelatedObjects)
-	            {
-                    childNames += item.Name + ", ";
-	            }
-                assembly.ChildNames = childNames.TrimEnd(',');
-
+                //string childNames = "";
+                //foreach (var item in ra.RelatedObjects)
+                //{
+                //    childNames += item.Name + ", ";
+                //}
+                //assembly.ChildNames = childNames.TrimEnd(',');
+                assembly.ChildNames = DEFAULT_STRING;
                 assembly.AssemblyType = (ifcClassification == null) ? "" : ifcClassification.Name.ToString();
                 assembly.ExtSystem = applicationFullName;
                 assembly.ExtObject = "IfcRelAggregates";

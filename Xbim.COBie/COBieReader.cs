@@ -191,20 +191,20 @@ namespace Xbim.COBie
             // TODO: Need to populate somehow.
             //CobiePickLists = cq.GetCOBiePickListsSheet("PickLists.xml");
 
-            // populate all sheets from model
+            //contact sheet first as it will fill contact information lookups for other sheets
+            CobieContacts = cq.GetCOBieContactSheet();
+
             CobieSpaces = cq.GetCOBieSpaceSheet();
             CobieComponents = cq.GetCOBieComponentSheet();
             CobieAssemblies = cq.GetCOBieAssemblySheet();
             CobieConnections = cq.GetCOBieConnectionSheet();
-            CobieContacts = cq.GetCOBieContactSheet();
             CobieCoordinates = cq.GetCOBieCoordinateSheet();
             CobieDocuments = cq.GetCOBieDocumentSheet();
             CobieFacilities = cq.GetCOBieFacilitySheet();
             CobieFloors = cq.GetCOBieFloorSheet();
             CobieImpacts = cq.GetCOBieImpactSheet();
             CobieIssues = cq.GetCOBieIssueSheet();
-            CobieJobs = cq.GetCOBieJobSheet();
-            
+            CobieJobs = cq.GetCOBieJobSheet();            
             CobieResources = cq.GetCOBieResourceSheet();
             CobieSpares = cq.GetCOBieSpareSheet();
             CobieSystems = cq.GetCOBieSystemSheet();

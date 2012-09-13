@@ -170,7 +170,7 @@ namespace XBim.COBie.Client.Formatters
             // Enumerate rows
             for (int r = 0; r < sheet.Rows.Count; r++)
             {
-                if (r > UInt16.MaxValue)
+                if (r >= UInt16.MaxValue)
                 {
                     // TODO: Warn overflow of XLS 2003 worksheet
                     break;

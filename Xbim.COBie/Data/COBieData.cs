@@ -24,6 +24,7 @@ namespace Xbim.COBie.Data
         
         public const string DEFAULT_STRING = "n/a";
         public const string DEFAULT_NUMERIC = "0";
+        private static Dictionary<long, string> _eMails = new Dictionary<long, string>();
         /// <summary>
         /// Common exclude PropertySingleValue name containing any of the strings 
         /// </summary>
@@ -55,7 +56,8 @@ namespace Xbim.COBie.Data
             int createdOnTStamp = (int)ownerHistory.CreationDate;
             if (createdOnTStamp <= 0)
             {
-                return DateTime.Now.ToString(strFormat); //we have to return a date to comply. so now is used
+                DateTime defaultDate = new DateTime(1900, 12, 31, 23, 59, 59);//1900-12-31T23:59:59
+                return defaultDate.ToString(strFormat); //we have to return a date to comply. so now is used
             }
             else
             {
@@ -80,49 +82,7 @@ namespace Xbim.COBie.Data
             return app;
         }
 
-        /// <summary>
-        /// Extract the email address lists for the owner of the IfcOwnerHistory passed
-        /// </summary>
-        /// <param name="ifcOwnerHistory">Entity to extract the email addresses for</param>
-        /// <returns>string of comma delimited addresses</returns>
-        protected string GetTelecomEmailAddress(IfcOwnerHistory ifcOwnerHistory)
-        {
-            string emails = "";
-
-            IfcPerson ifcP = ifcOwnerHistory.OwningUser.ThePerson;
-            IEnumerable<IfcTelecomAddress> ifcTelecomAddresses = (ifcP.Addresses == null) ? null : ifcP.Addresses.TelecomAddresses;
-            if (ifcTelecomAddresses == null) ifcTelecomAddresses = Enumerable.Empty<IfcTelecomAddress>();
-            foreach (IfcTelecomAddress address in ifcTelecomAddresses)
-            {
-                if ((address != null) && (address.ElectronicMailAddresses != null))
-                    emails += address.ElectronicMailAddresses[0].ToString() + ",";
-            }
-            emails = emails.TrimEnd(',');
-
-            if (emails == "")
-            {
-                IfcOrganization ifcO = ifcOwnerHistory.OwningUser.TheOrganization;
-                ifcTelecomAddresses = (ifcP.Addresses == null) ? null : ifcO.Addresses.TelecomAddresses;
-                if (ifcTelecomAddresses == null) ifcTelecomAddresses = Enumerable.Empty<IfcTelecomAddress>();
-
-                foreach (IfcTelecomAddress address in ifcTelecomAddresses)
-                {
-                    if ((address != null) && (address.ElectronicMailAddresses != null))
-                        emails += address.ElectronicMailAddresses[0].ToString() + ",";
-                }
-                emails = emails.TrimEnd(',');
-            }
-            //if still no email lets make one up
-            if (string.IsNullOrEmpty(emails))
-            {
-                if (!(string.IsNullOrEmpty(ifcP.GivenName))) emails = ifcP.GivenName;
-                if (!(string.IsNullOrEmpty(ifcP.GivenName) && string.IsNullOrEmpty(ifcP.FamilyName))) emails += ".";
-                if (!(string.IsNullOrEmpty(ifcP.FamilyName))) emails += ifcP.FamilyName;
-                emails += string.IsNullOrEmpty(emails) ? "unknown@unknown" : "@unknown";
-            }
-
-            return emails;
-        }
+        
 
         /// <summary>
         /// Extract the email address lists for the owner of the IfcOwnerHistory passed
@@ -162,12 +122,47 @@ namespace Xbim.COBie.Data
         /// </summary>
         /// <param name="ifcOwnerHistory">Entity to extract the email addresses for</param>
         /// <returns>string of comma delimited addresses</returns>
+        protected string GetTelecomEmailAddress(IfcOwnerHistory ifcOwnerHistory)
+        {
+            IfcPerson ifcPerson = ifcOwnerHistory.OwningUser.ThePerson;
+            if (_eMails.ContainsKey(ifcPerson.EntityLabel))
+            {
+                return _eMails[ifcPerson.EntityLabel];
+            }
+            else
+            {
+                IfcOrganization ifcOrganization = ifcOwnerHistory.OwningUser.TheOrganization;
+                return GetEmail(ifcOrganization, ifcPerson);
+            }
+        }
+        /// <summary>
+        /// Extract the email address lists for the owner of the IfcOwnerHistory passed
+        /// </summary>
+        /// <param name="ifcOwnerHistory">Entity to extract the email addresses for</param>
+        /// <returns>string of comma delimited addresses</returns>
         protected string GetTelecomEmailAddress(IfcPersonAndOrganization ifcPersonAndOrganization)
         {
-            string email = "";
-            IfcOrganization ifcOrganization = ifcPersonAndOrganization.TheOrganization;
             IfcPerson ifcPerson = ifcPersonAndOrganization.ThePerson;
+            if (_eMails.ContainsKey(ifcPerson.EntityLabel))
+            {
+                return _eMails[ifcPerson.EntityLabel];
+            }
+            else
+            {
+                IfcOrganization ifcOrganization = ifcPersonAndOrganization.TheOrganization;
+                return GetEmail(ifcOrganization, ifcPerson);
+            }
+        }
 
+        /// <summary>
+        /// Get email address from IfcPerson 
+        /// </summary>
+        /// <param name="ifcOrganization"></param>
+        /// <param name="ifcPerson"></param>
+        /// <returns></returns>
+        private static string GetEmail( IfcOrganization ifcOrganization, IfcPerson ifcPerson)
+        {
+            string email = "";
             if (ifcPerson.Addresses != null)
             {
                 email = ifcPerson.Addresses.TelecomAddresses.Select(address => address.ElectronicMailAddresses.FirstOrDefault()).Where(em => !string.IsNullOrEmpty(em)).FirstOrDefault();
@@ -189,6 +184,8 @@ namespace Xbim.COBie.Data
                 email += "@";
                 email += (string.IsNullOrEmpty(ifcOrganization.Name.ToString())) ? "unknown" : ifcOrganization.Name.ToString();
             }
+            //save to the email directory for quick retrieval
+            _eMails.Add(ifcPerson.EntityLabel, email);
 
             return email;
         }
