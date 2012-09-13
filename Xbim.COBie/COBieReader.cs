@@ -7,6 +7,7 @@ using System.Xml.Serialization;
 using Xbim.COBie.Rows;
 using Xbim.XbimExtensions;
 using System.Linq;
+using System.Reflection;
 
 
 
@@ -34,6 +35,8 @@ namespace Xbim.COBie
 			Context = context;
 			GenerateCOBieData();
 		}
+
+        public COBieWorkbook Workbook { get; set; }
 
 		/// <summary>
 		/// The context
@@ -173,7 +176,10 @@ namespace Xbim.COBie
 			CobieTypes = new COBieSheet<COBieTypeRow>(Constants.WORKSHEET_TYPE);
 			CobieZones = new COBieSheet<COBieZoneRow>(Constants.WORKSHEET_ZONE);
 			CobieAttributes = new COBieSheet<COBieAttributeRow>(Constants.WORKSHEET_ATTRIBUTE);
+
 			CobieErrors = new List<COBieError>();
+
+            
 		}
 
         
@@ -212,7 +218,29 @@ namespace Xbim.COBie
             CobieZones = cq.GetCOBieZoneSheet();
             //we need to fill this one last as the calls to the above sheet add data for the AttributeSheet
             CobieAttributes = cq.GetCOBieAttributeSheet();
-            CobieContacts.ValidatePrimaryKey();
+
+
+            // add to workbook and use workbook for error checking later
+            Workbook = new COBieWorkbook();
+            Workbook.Add(CobieContacts);
+            Workbook.Add(CobieAssemblies);
+            Workbook.Add(CobieComponents);
+            Workbook.Add(CobieConnections);
+            Workbook.Add(CobieCoordinates);
+            Workbook.Add(CobieDocuments);
+            Workbook.Add(CobieFacilities);
+            Workbook.Add(CobieFloors);
+            Workbook.Add(CobieImpacts);
+            Workbook.Add(CobieIssues);
+            Workbook.Add(CobieJobs);
+            Workbook.Add(CobiePickLists);
+            Workbook.Add(CobieResources);
+            Workbook.Add(CobieSpaces);
+            Workbook.Add(CobieSpares);
+            Workbook.Add(CobieSystems);
+            Workbook.Add(CobieTypes);
+            Workbook.Add(CobieZones);
+            Workbook.Add(CobieAttributes);
 
             
 
@@ -221,29 +249,54 @@ namespace Xbim.COBie
         private void PopulateErrors()
         {
             try
-            {
-                CobieErrors = new List<COBieError>();
+            {                  
+                // populate general errors
+                COBieErrorCollection errorCollection = new COBieErrorCollection();
+                for (int i = 0; i < Workbook.Count; i++)
+                {
+                    Type type = Workbook[i].GetType();
+                    MethodInfo methodInfo = type.GetMethod("Validate");
+                    var result = methodInfo.Invoke(Workbook[i], null);
 
-                List<COBieError> errors;
-                CobieAssemblies.Validate(out errors);
-                CobieAttributes.Validate(out errors);
-                CobieComponents.Validate(out errors);
-                CobieConnections.Validate(out errors);
-                CobieContacts.Validate(out errors);
-                CobieCoordinates.Validate(out errors);
-                CobieDocuments.Validate(out errors);
-                CobieFacilities.Validate(out errors);
-                CobieFloors.Validate( out errors);
-                CobieImpacts.Validate(out errors);
-                CobieIssues.Validate(out errors);
-                CobieJobs.Validate(out errors);
-                CobiePickLists.Validate(out errors);
-                CobieResources.Validate(out errors);
-                CobieSpaces.Validate(out errors);
-                CobieSpares.Validate(out errors);
-                CobieSystems.Validate(out errors);
-                CobieTypes.Validate(out errors);
-                CobieZones.Validate(out errors);                
+                    if (result != null)
+                    {
+                        COBieErrorCollection errorCol = (COBieErrorCollection)result;
+                        foreach (COBieError err in errorCol)
+                            errorCollection.Add(err);
+                    }
+                }
+
+                // populate primary key errors
+                COBieErrorCollection errorPKCollection = new COBieErrorCollection();
+                for (int i = 0; i < Workbook.Count; i++)
+                {
+                    Type type = Workbook[i].GetType();
+                    MethodInfo methodInfo = type.GetMethod("ValidatePrimaryKey");
+                    var result = methodInfo.Invoke(Workbook[i], null);
+
+                    if (result != null)
+                    {
+                        COBieErrorCollection errorCol = (COBieErrorCollection)result;
+                        foreach (COBieError err in errorCol)
+                            errorPKCollection.Add(err);
+                    }
+                }
+
+                // populate foreign key errors
+                COBieErrorCollection errorFKCollection = new COBieErrorCollection();
+                for (int i = 0; i < Workbook.Count; i++)
+                {
+                    Type type = Workbook[i].GetType();
+                    MethodInfo methodInfo = type.GetMethod("ValidateForeignKey");
+                    var result = methodInfo.Invoke(Workbook[i], null);
+
+                    if (result != null)
+                    {
+                        COBieErrorCollection errorCol = (COBieErrorCollection)result;
+                        foreach (COBieError err in errorCol)
+                            errorFKCollection.Add(err);
+                    }
+                }             
             }
             catch (Exception)
             {
@@ -256,7 +309,7 @@ namespace Xbim.COBie
         {
             Initialise();
            
-           // PopulateErrors();			
+            PopulateErrors();			
         }
 
 		/// <summary>
