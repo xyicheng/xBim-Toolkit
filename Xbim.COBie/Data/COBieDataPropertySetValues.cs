@@ -24,22 +24,22 @@ namespace Xbim.COBie.Data
         Dictionary<IfcObject, Dictionary<IfcPropertySet, List<IfcPropertySingleValue>>> _propSetsValuesObjects = null;
         Dictionary<IfcTypeObject, Dictionary<IfcPropertySet, List<IfcPropertySingleValue>>> _propSetsValuesTypeObjects= null;
         Dictionary<IfcTypeObject, Dictionary<IfcPropertySet, List<IfcPropertySingleValue>>> _propSetsValuesTypeObjectsFirstRelatedObject = null;
-        Dictionary<IfcTypeObject, Dictionary<IfcObject,  Dictionary<IfcPropertySet, List<IfcPropertySingleValue>>>> _propSetsValuesTypeObjectsAllRelatedObject = null;
+        //Dictionary<IfcTypeObject, Dictionary<IfcObject,  Dictionary<IfcPropertySet, List<IfcPropertySingleValue>>>> _propSetsValuesTypeObjectsAllRelatedObject = null;
 
         List<IfcPropertySingleValue> _ifcPropertySingleValues = null;
         #endregion
 
         #region Properties
         /// <summary>
-        /// Exclude property single value names from selection
+        /// Exclude property single value names from selection in SetAttributes functions
         /// </summary>
         public List<string>  ExcludePropertyValueNames { get; private set; }
         /// <summary>
-        /// Exclude property single value names from selection which contain the strings held in this list
+        /// Exclude property single value names from selection in SetAttributes functions which contain the strings held in this list
         /// </summary>
         public List<string> ExcludePropertyValueNamesWildcard { get; private set; }
         /// <summary>
-        /// Exclude property set names from selection
+        /// Exclude property set names from selection in SetAttributes functions
         /// </summary>
         public List<string> ExcludePropertySetNames { get; private set; }
 
@@ -86,35 +86,14 @@ namespace Xbim.COBie.Data
             _propSetsValuesTypeObjects = sourceRows.Where(tObj => (tObj.HasPropertySets != null)).ToDictionary(tObj => tObj, tObj => tObj.HasPropertySets.OfType<IfcPropertySet>()
                 .ToDictionary(ps => ps, ps => ps.HasProperties.OfType<IfcPropertySingleValue>().ToList()));
             //===========get related properties==================
-            //List<IfcPropertySingleValue> RelObjValues = (from relatedObjects in (from ifcTypeObject in sourceRows
-            //                                             from objectTypeOf in ifcTypeObject.ObjectTypeOf
-            //                                             where (objectTypeOf != null)
-            //                                             select objectTypeOf.RelatedObjects.First())
-            //                                             from isDefinedByProperties in relatedObjects.IsDefinedByProperties
-            //                                             from ifcPropertySingleValue in (isDefinedByProperties.RelatingPropertyDefinition as IfcPropertySet).HasProperties.OfType<IfcPropertySingleValue>()
-            //                                             select ifcPropertySingleValue).ToList();
 
-
+            //Get the first related object and property sets and property single values for the IfcTypeObject
             _propSetsValuesTypeObjectsFirstRelatedObject = sourceRows.ToDictionary(tObj => tObj, tObj => tObj.ObjectTypeOf.First().RelatedObjects.First().IsDefinedByProperties.Select(ps => ps.RelatingPropertyDefinition).OfType<IfcPropertySet>()
                                                                                                                        .ToDictionary(ps => ps, ps => ps.HasProperties.OfType<IfcPropertySingleValue>().ToList()));
 
-
-            //List<IfcPropertySingleValue> RelObjValues = (from ifcTypeObject in sourceRows
-            //                                             from objectTypeOf in ifcTypeObject.ObjectTypeOf
-            //                                             where (objectTypeOf != null)
-            //                                             from relatedObjects in objectTypeOf.RelatedObjects
-            //                                             from isDefinedByProperties in relatedObjects.IsDefinedByProperties
-            //                                             from ifcPropertySingleValue in (isDefinedByProperties.RelatingPropertyDefinition as IfcPropertySet).HasProperties.OfType<IfcPropertySingleValue>()
-            //                                             //where ifcPropertySingleValue.Name == "Application"
-            //                                             select ifcPropertySingleValue).ToList();
-
-            //var xxx = sourceRows.ToDictionary(tObj => tObj, tObj => tObj.ObjectTypeOf.SelectMany(s => s.RelatedObjects)
-            //                                                                         .SelectMany(r => r.IsDefinedByProperties)
-            //                                                                         .Select(ps => ps.RelatingPropertyDefinition).OfType<IfcPropertySet>()
-            //                                                                         .ToDictionary(ps => ps, ps => ps.HasProperties.OfType<IfcPropertySingleValue>().ToList()));
-
-             _propSetsValuesTypeObjectsAllRelatedObject = sourceRows.ToDictionary(tObj => tObj, tObj => tObj.ObjectTypeOf.SelectMany(s => s.RelatedObjects).ToDictionary(x => x, x => x.IsDefinedByProperties.Select(ps => ps.RelatingPropertyDefinition).OfType<IfcPropertySet>()
-                                                                                     .ToDictionary(ps => ps, ps => ps.HasProperties.OfType<IfcPropertySingleValue>().ToList())));
+            //Get all related objects and property sets and property single values for the IfcTypeObject
+            //_propSetsValuesTypeObjectsAllRelatedObject = sourceRows.ToDictionary(tObj => tObj, tObj => tObj.ObjectTypeOf.SelectMany(s => s.RelatedObjects).ToDictionary(x => x, x => x.IsDefinedByProperties.Select(ps => ps.RelatingPropertyDefinition).OfType<IfcPropertySet>()
+            //                                                                         .ToDictionary(ps => ps, ps => ps.HasProperties.OfType<IfcPropertySingleValue>().ToList())));
             //set up lists
            SetListsUp();           
         }
@@ -139,7 +118,6 @@ namespace Xbim.COBie.Data
             FilterPropertyValueNames = new List<string>();
             ExcludePropertyValueNamesWildcard = new List<string>();
             ExcludePropertySetNames = new List<string>();
-            FilterPropertyValueNames = new List<string>();
             ExcludePropertyValueNamesWildcard.AddRange(_commonAttExcludes);
         }
 
@@ -264,52 +242,47 @@ namespace Xbim.COBie.Data
         /// <param name="ifcTypeObject">Object to get related object from</param>
         private void GetRelatedObjectProperties(IfcTypeObject ifcTypeObject)
         {
-            var RelatedProperties = (from DefProp in
-                                         (from RelObj in ifcTypeObject.ObjectTypeOf
-                                          where (RelObj != null)
-                                          select RelObj.RelatedObjects.First())
-                                     from IsDef in DefProp.IsDefinedByProperties
-                                     select IsDef.RelatingPropertyDefinition).OfType<IfcPropertySet>();
+            List<IfcPropertySingleValue> RelObjValues = new List<IfcPropertySingleValue>(); ;
 
-            if ((FilterPropertyValueNames != null) || (FilterPropertyValueNames.Count() > 0))
+            
+            if (FilterPropertyValueNames.Count() > 0)
             {
-                List<IfcPropertySingleValue> RelObjValues = (from Pset in RelatedProperties
-                                                             from psetval in Pset.HasProperties.OfType<IfcPropertySingleValue>()
-                                                             where FilterPropertyValueNames.Contains(psetval.Name)
-                                                             select psetval).ToList();
-                _ifcPropertySingleValues.AddRange(RelObjValues);
+                RelObjValues = (from dic in _propSetsValuesTypeObjectsFirstRelatedObject[ifcTypeObject]
+                                                         from psetval in dic.Value //list of IfcPropertySingleValue
+                                                            where FilterPropertyValueNames.Contains(psetval.Name)
+                                                         select psetval).ToList();
 
             }
             else
             {
-                List<IfcPropertySingleValue> RelObjValues = (from Pset in RelatedProperties
-                                                             from psetval in Pset.HasProperties.OfType<IfcPropertySingleValue>()
-                                                             select psetval).ToList();
-
-                _ifcPropertySingleValues.AddRange(RelObjValues);
+                RelObjValues = (from dic in _propSetsValuesTypeObjectsFirstRelatedObject[ifcTypeObject]
+                                from psetval in dic.Value //list of IfcPropertySingleValue
+                                select psetval).ToList();
             }
+
+            _ifcPropertySingleValues.AddRange(RelObjValues);
         }
 
         /// <summary>
         /// Set the single property values held for the IfcObject into _ifcPropertySingleValues field 
         /// filtered by a IfcPropertySet name
         /// </summary>
-        /// <param name="ifcObject">IfcObject holding the single property values</param>
+        /// <param name="ifcTypeObject">IfcObject holding the single property values</param>
         /// <param name="propertySetName">IfcPropertySetName</param>
-        public void SetFilteredPropertySingleValues(IfcTypeObject ifcObject, string propertySetName)
+        public void SetFilteredPropertySingleValues(IfcTypeObject ifcTypeObject, string propertySetName)
         {
             _ifcPropertySingleValues.Clear(); //reset
 
-            if (_propSetsValuesTypeObjects.ContainsKey(ifcObject))
+            if (_propSetsValuesTypeObjects.ContainsKey(ifcTypeObject))
             {
                 if (FilterPropertyValueNames.Count() > 0)
-                    _ifcPropertySingleValues = (from dic in _propSetsValuesTypeObjects[ifcObject]
+                    _ifcPropertySingleValues = (from dic in _propSetsValuesTypeObjects[ifcTypeObject]
                                                 where (dic.Key.Name == propertySetName)
                                                 from psetval in dic.Value //list of IfcPropertySingleValue
                                                 where FilterPropertyValueNames.Contains(psetval.Name)
                                                 select psetval).ToList();
                 else
-                    _ifcPropertySingleValues = (from dic in _propSetsValuesTypeObjects[ifcObject]
+                    _ifcPropertySingleValues = (from dic in _propSetsValuesTypeObjects[ifcTypeObject]
                                                 where (dic.Key.Name == propertySetName)
                                                 from psetval in dic.Value //list of IfcPropertySingleValue
                                                 select psetval).ToList();
@@ -318,7 +291,7 @@ namespace Xbim.COBie.Data
             if (_ifcPropertySingleValues.Count() == 0)
             {
                 //get first related object properties of the passed in object
-                GetRelatedObjectProperties(ifcObject, propertySetName);
+                GetRelatedObjectProperties(ifcTypeObject); //we do not filter on property set name here, just go for all of them
             }
         }
 
@@ -330,43 +303,56 @@ namespace Xbim.COBie.Data
         /// <param name="propertySetName">IfcPropertySetName</param>
         private void GetRelatedObjectProperties(IfcTypeObject ifcTypeObject, string propertySetName)
         {
-            var RelatedPropertieSets = (from DefProp in
-                                         (from RelObj in ifcTypeObject.ObjectTypeOf
-                                          where (RelObj != null)
-                                          select RelObj.RelatedObjects.First())
-                                     from IsDef in DefProp.IsDefinedByProperties
-                                     select IsDef.RelatingPropertyDefinition).OfType<IfcPropertySet>();
+            List<IfcPropertySingleValue> RelObjValues = new List<IfcPropertySingleValue>(); ;
 
-            if ((FilterPropertyValueNames != null) || (FilterPropertyValueNames.Count() > 0))
+
+            if (FilterPropertyValueNames.Count() > 0)
             {
-                List<IfcPropertySingleValue> RelObjValues = (from Pset in RelatedPropertieSets
-                                                             where (Pset.Name == propertySetName)
-                                                             from psetval in Pset.HasProperties.OfType<IfcPropertySingleValue>()
-                                                             where FilterPropertyValueNames.Contains(psetval.Name)
-                                                             select psetval).ToList();
-                _ifcPropertySingleValues.AddRange(RelObjValues);
+                RelObjValues = (from dic in _propSetsValuesTypeObjectsFirstRelatedObject[ifcTypeObject]
+                                where (dic.Key.Name == propertySetName)
+                                from psetval in dic.Value //list of IfcPropertySingleValue
+                                where FilterPropertyValueNames.Contains(psetval.Name)
+                                select psetval).ToList();
 
             }
             else
             {
-                List<IfcPropertySingleValue> RelObjValues = (from Pset in RelatedPropertieSets
-                                                             where (Pset.Name == propertySetName)
-                                                             from psetval in Pset.HasProperties.OfType<IfcPropertySingleValue>()
-                                                             select psetval).ToList();
-
-                _ifcPropertySingleValues.AddRange(RelObjValues);
+                RelObjValues = (from dic in _propSetsValuesTypeObjectsFirstRelatedObject[ifcTypeObject]
+                                where (dic.Key.Name == propertySetName)
+                                from psetval in dic.Value //list of IfcPropertySingleValue
+                                select psetval).ToList();
             }
+
+            _ifcPropertySingleValues.AddRange(RelObjValues);
+
         }
+        
+        /// <summary>
+        /// Get the property value where the property name equals the passed in value 
+        /// </summary>
+        /// <param name="PropertyValueName">IfcPropertySingleValue name</param>
+        /// <param name="containsString">Do Contains text match on PropertyValueName if true, exact match if false</param>
+        /// <returns></returns>
+        public string GetFilteredPropertySingleValueValue(string PropertyValueName, bool containsString)
+        {
+            IfcPropertySingleValue ifcPropertySingleValue = null;
+            if (containsString)
+                ifcPropertySingleValue = _ifcPropertySingleValues.Where(p => p.Name.ToString().Contains(PropertyValueName)).FirstOrDefault();
+            else
+                ifcPropertySingleValue = _ifcPropertySingleValues.Where(p => p.Name == PropertyValueName).FirstOrDefault();
+            
+            return ((ifcPropertySingleValue != null) && (ifcPropertySingleValue.NominalValue != null)) ? ifcPropertySingleValue.NominalValue.Value.ToString() : DEFAULT_STRING;
+
+        }
+
         /// <summary>
         /// Get the property value where the property name equals the passed in value 
         /// </summary>
         /// <param name="PropertyValueName"></param>
         /// <returns></returns>
-        public string GetFilteredPropertySingleValues(string PropertyValueName )
+        public IfcPropertySingleValue GetFilteredPropertySingleValue(string PropertyValueName)
         {
-            IfcPropertySingleValue ifcPropertySingleValue = _ifcPropertySingleValues.Where(p => p.Name == PropertyValueName).FirstOrDefault();
-            return ((ifcPropertySingleValue != null) && (ifcPropertySingleValue.NominalValue != null)) ? ifcPropertySingleValue.NominalValue.Value.ToString() : DEFAULT_STRING;
-            
+            return _ifcPropertySingleValues.Where(p => p.Name == PropertyValueName).FirstOrDefault();
         }
 
         /// <summary>
@@ -393,10 +379,11 @@ namespace Xbim.COBie.Data
                     }
                 }
 
-                IEnumerable<IfcPropertySingleValue> pSVs = pairValues.Value; //Get Property SetAttribSheet Property Single Values
-
+                //Get Property SetAttribSheet Property Single Values
+                IEnumerable<IfcPropertySingleValue> pSVs = pairValues.Value; 
+                //filter on ExcludePropertyValueNames and ExcludePropertyValueNamesWildcard
                 pSVs = FilterRows(pSVs);
-
+                //fill in the data to the attribute rows
                 ProcessAttributeRow(attributes, ps, pSVs);
             }
             
@@ -405,32 +392,34 @@ namespace Xbim.COBie.Data
         /// <summary>
         /// Set values for attribute sheet
         /// </summary>
-        /// <param name="ifcObject">ifcObject to extract properties from</param>
+        /// <param name="ifcTypeObject">ifcObject to extract properties from</param>
         /// <param name="attributes">The attribute Sheet to add the properties to its rows</param>
-        public void SetAttributesRows(IfcTypeObject ifcObject, ref COBieSheet<COBieAttributeRow> attributes)
+        public void SetAttributesRows(IfcTypeObject ifcTypeObject, ref COBieSheet<COBieAttributeRow> attributes)
         {
-
-            foreach (KeyValuePair<IfcPropertySet, List<IfcPropertySingleValue>> pairValues in _propSetsValuesTypeObjects[ifcObject])
+            if (_propSetsValuesTypeObjects.ContainsKey(ifcTypeObject))
             {
-                IfcPropertySet ps = pairValues.Key; //get Property Set
-                //get all property attached to the property set
-                //check property set exclude list
-                if (!string.IsNullOrEmpty(ps.Name))
+                foreach (KeyValuePair<IfcPropertySet, List<IfcPropertySingleValue>> pairValues in _propSetsValuesTypeObjects[ifcTypeObject])
                 {
-                    if (ExcludePropertySetNames.Count() > 0)
+                    IfcPropertySet ps = pairValues.Key; //get Property Set
+                    //get all property attached to the property set
+                    //check property set exclude list
+                    if (!string.IsNullOrEmpty(ps.Name))
                     {
-                        if (ExcludePropertySetNames.Contains(ps.Name))
+                        if (ExcludePropertySetNames.Count() > 0)
                         {
-                            continue; //skip this loop iteration if property set name matches exclude list item
+                            if (ExcludePropertySetNames.Contains(ps.Name))
+                            {
+                                continue; //skip this loop iteration if property set name matches exclude list item
+                            }
                         }
                     }
+
+                    IEnumerable<IfcPropertySingleValue> pSVs = pairValues.Value; //Get Property SetAttribSheet Property Single Values
+                    //filter on ExcludePropertyValueNames and ExcludePropertyValueNamesWildcard
+                    pSVs = FilterRows(pSVs);
+                    //fill in the data to the attribute rows
+                    ProcessAttributeRow(attributes, ps, pSVs);
                 }
-
-                IEnumerable<IfcPropertySingleValue> pSVs = pairValues.Value; //Get Property SetAttribSheet Property Single Values
-
-                pSVs = FilterRows(pSVs);
-
-                ProcessAttributeRow(attributes, ps, pSVs);
             }
 
         }

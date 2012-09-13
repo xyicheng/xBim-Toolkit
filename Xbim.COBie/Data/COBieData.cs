@@ -40,6 +40,7 @@ namespace Xbim.COBie.Data
                             "Omniclass Title", "Omniclass Number", "MethodOfMeasurement"};
         
          
+
         #region Methods
 
         /// <summary>
@@ -121,6 +122,75 @@ namespace Xbim.COBie.Data
             }
 
             return emails;
+        }
+
+        /// <summary>
+        /// Extract the email address lists for the owner of the IfcOwnerHistory passed
+        /// </summary>
+        /// <param name="ifcOwnerHistory">Entity to extract the email addresses for</param>
+        /// <returns>string of comma delimited addresses</returns>
+        protected string GetTelecomTelephoneNumber(IfcPersonAndOrganization ifcPersonAndOrganization)
+        {
+            string telephoneNo = "";
+            IfcOrganization ifcOrganization = ifcPersonAndOrganization.TheOrganization;
+            IfcPerson ifcPerson = ifcPersonAndOrganization.ThePerson;
+                
+            if (ifcPerson.Addresses != null)
+            {
+                telephoneNo = ifcPerson.Addresses.TelecomAddresses.Select(address => address.TelephoneNumbers.FirstOrDefault()).Where(tel => !string.IsNullOrEmpty(tel)).FirstOrDefault();
+
+                if (string.IsNullOrEmpty(telephoneNo))
+                {
+                    if (ifcOrganization.Addresses != null)
+                    {
+                        telephoneNo = ifcOrganization.Addresses.TelecomAddresses.Select(address => address.TelephoneNumbers.FirstOrDefault()).Where(tel => !string.IsNullOrEmpty(tel)).FirstOrDefault();
+                    }
+                } 
+            }
+            
+            //if still no email lets make one up
+            if (string.IsNullOrEmpty(telephoneNo))
+            {
+                telephoneNo = DEFAULT_STRING;
+            }
+
+            return telephoneNo;
+        }
+
+        /// <summary>
+        /// Extract the email address lists for the owner of the IfcOwnerHistory passed
+        /// </summary>
+        /// <param name="ifcOwnerHistory">Entity to extract the email addresses for</param>
+        /// <returns>string of comma delimited addresses</returns>
+        protected string GetTelecomEmailAddress(IfcPersonAndOrganization ifcPersonAndOrganization)
+        {
+            string email = "";
+            IfcOrganization ifcOrganization = ifcPersonAndOrganization.TheOrganization;
+            IfcPerson ifcPerson = ifcPersonAndOrganization.ThePerson;
+
+            if (ifcPerson.Addresses != null)
+            {
+                email = ifcPerson.Addresses.TelecomAddresses.Select(address => address.ElectronicMailAddresses.FirstOrDefault()).Where(em => !string.IsNullOrEmpty(em)).FirstOrDefault();
+
+                if (string.IsNullOrEmpty(email))
+                {
+                    if (ifcOrganization.Addresses != null)
+                    {
+                        email = ifcOrganization.Addresses.TelecomAddresses.Select(address => address.ElectronicMailAddresses.FirstOrDefault()).Where(em => !string.IsNullOrEmpty(em)).FirstOrDefault();
+                    }
+                }
+            }
+
+            //if still no email lets make one up
+            if (string.IsNullOrEmpty(email))
+            {
+                email += (string.IsNullOrEmpty(ifcPerson.GivenName.ToString())) ? "unknown" : ifcPerson.GivenName.ToString();
+                email += (string.IsNullOrEmpty(ifcPerson.FamilyName.ToString())) ? "unknown" : ifcPerson.FamilyName.ToString();
+                email += "@";
+                email += (string.IsNullOrEmpty(ifcOrganization.Name.ToString())) ? "unknown" : ifcOrganization.Name.ToString();
+            }
+
+            return email;
         }
 
         /// <summary>

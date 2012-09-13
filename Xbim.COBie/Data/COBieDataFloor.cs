@@ -8,6 +8,8 @@ using Xbim.Ifc.Kernel;
 using Xbim.Ifc.ProductExtension;
 using Xbim.Ifc.QuantityResource;
 using Xbim.XbimExtensions;
+using Xbim.Ifc.Extensions;
+using Xbim.Ifc.PropertyResource;
 
 namespace Xbim.COBie.Data
 {
@@ -39,13 +41,19 @@ namespace Xbim.COBie.Data
             // get all IfcBuildingStory objects from IFC file
             IEnumerable<IfcBuildingStorey> buildingStories = Model.InstancesOfType<IfcBuildingStorey>();
 
+            COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(buildingStories.OfType<IfcObject>().ToList()); //properties helper class
+            
             
             IfcClassification ifcClassification = Model.InstancesOfType<IfcClassification>().FirstOrDefault();
             //list of attributes to exclude form attribute sheet
             List<string> excludePropertyValueNames = new List<string> { "Name", "Line Weight", "Color", 
                                                           "Colour",   "Symbol at End 1 Default", 
                                                           "Symbol at End 2 Default", "Automatic Room Computation Height", "Elevation" };
-            List<string> excludePropertyValueNamesWildcard = new List<string> { "Roomtag", "RoomTag", "Tag", "GSA BIM Area", "Length", "Width" };    
+            List<string> excludePropertyValueNamesWildcard = new List<string> { "Roomtag", "RoomTag", "Tag", "GSA BIM Area", "Length", "Width" };
+            allPropertyValues.ExcludePropertyValueNames.AddRange(excludePropertyValueNames);
+            allPropertyValues.ExcludePropertyValueNamesWildcard.AddRange(excludePropertyValueNamesWildcard);
+            allPropertyValues.RowParameters["Sheet"] = "Floor";
+            
             foreach (IfcBuildingStorey bs in buildingStories)
             {
                 COBieFloorRow floor = new COBieFloorRow(floors);
@@ -71,26 +79,53 @@ namespace Xbim.COBie.Data
                 floor.ExtIdentifier = bs.GlobalId;
                 floor.Description = GetFloorDescription(bs);
                 floor.Elevation = bs.Elevation.ToString();
-                IEnumerable<IfcQuantityLength> qLen = bs.IsDefinedByProperties.Select(p => p.RelatedObjects.OfType<IfcQuantityLength>()).FirstOrDefault();
-                floor.Height = (qLen.FirstOrDefault() == null) ? COBieData.DEFAULT_NUMERIC : qLen.FirstOrDefault().LengthValue.ToString();
+
+                floor.Height = GetFloorHeight(bs, allPropertyValues);
 
                 floors.Rows.Add(floor);
 
-                //----------fill in the attribute information for floor-----------
-                //pass data from this sheet info as Dictionary
-                Dictionary<string, string> passedValues = new Dictionary<string, string>(){{"Sheet", "Floor"}, 
-                                                                                          {"Name", floor.Name},
-                                                                                          {"CreatedBy", floor.CreatedBy},
-                                                                                          {"CreatedOn", floor.CreatedOn},
-                                                                                          {"ExtSystem", floor.ExtSystem}
-                                                                                          };//required property date <PropertySetName, PropertyName>
+                //fill in the attribute information
+                allPropertyValues.RowParameters["Name"] = floor.Name;
+                allPropertyValues.RowParameters["CreatedBy"] = floor.CreatedBy;
+                allPropertyValues.RowParameters["CreatedOn"] = floor.CreatedOn;
+                allPropertyValues.RowParameters["ExtSystem"] = floor.ExtSystem;
+                allPropertyValues.SetAttributesRows(bs, ref attributes); //fill attribute sheet rows//pass data from this sheet info as Dictionary
                 
-                //add *ALL* the attributes to the passed attributes sheet except property names that match the passed List<string>
-                //Exclude property list
-                SetAttributeSheet(bs, passedValues, excludePropertyValueNames, excludePropertyValueNamesWildcard, null, ref attributes);
             }
 
             return floors;
+        }
+        /// <summary>
+        /// Get the floor height
+        /// </summary>
+        /// <param name="ifcBuildingStorey">IfcBuildingStory object</param>
+        /// <param name="allPropertyValues">COBieDataPropertySetValues object holds all the properties for all the IfcBuildingStory </param>
+        /// <returns></returns>
+        private string GetFloorHeight (IfcBuildingStorey ifcBuildingStorey, COBieDataPropertySetValues allPropertyValues)
+        {
+            //try for a IfcQuantityLength related property to this building story
+            IEnumerable<IfcQuantityLength> qLen = ifcBuildingStorey.IsDefinedByProperties.Select(p => p.RelatedObjects.OfType<IfcQuantityLength>()).FirstOrDefault();
+            if (qLen.FirstOrDefault() != null) 
+                return qLen.FirstOrDefault().LengthValue.ToString();
+            
+            //Fall back properties
+            //get the property single values for this building story
+            allPropertyValues.SetFilteredPropertySingleValues(ifcBuildingStorey);
+
+            //try and find it in the attached properties of the building story
+            string value = allPropertyValues.GetFilteredPropertySingleValueValue("StoreyHeight", true);
+            if (value == DEFAULT_STRING)
+                value = allPropertyValues.GetFilteredPropertySingleValueValue("Storey Height", true);
+            if (value == DEFAULT_STRING)
+                value = allPropertyValues.GetFilteredPropertySingleValueValue("FloorHeight", true);
+            if (value == DEFAULT_STRING)
+                value = allPropertyValues.GetFilteredPropertySingleValueValue("Floor Height", true);
+            
+            if (value == DEFAULT_STRING)
+                return DEFAULT_NUMERIC;
+            else
+                return value;
+
         }
 
         private string GetFloorDescription(IfcBuildingStorey bs)

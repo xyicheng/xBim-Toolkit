@@ -8,6 +8,7 @@ using Xbim.Ifc.ExternalReferenceResource;
 using Xbim.Ifc.ProductExtension;
 using Xbim.Ifc.UtilityResource;
 using Xbim.XbimExtensions;
+using Xbim.Ifc.Kernel;
 
 namespace Xbim.COBie.Data
 {
@@ -44,6 +45,8 @@ namespace Xbim.COBie.Data
             foreach (IfcDocumentInformation di in docInfos)
             {
                 COBieDocumentRow doc = new COBieDocumentRow(documents);
+                
+                
                 doc.Name = (di == null) ? "" : di.Name.ToString();
 
                 doc.CreatedBy = GetTelecomEmailAddress(ifcOwnerHistory);
@@ -51,22 +54,26 @@ namespace Xbim.COBie.Data
                 
                 //IfcRelAssociatesClassification ifcRAC = di.HasAssociations.OfType<IfcRelAssociatesClassification>().FirstOrDefault();
                 //IfcClassificationReference ifcCR = (IfcClassificationReference)ifcRAC.RelatingClassification;
-                doc.Category = "";
+                doc.Category = di.Purpose.ToString();
 
                 doc.ApprovalBy = di.IntendedUse.ToString();
                 doc.Stage = di.Scope.ToString();
 
-                doc.SheetName = "";
-                //foreach (COBiePickListsRow plRow in pickLists.Rows)
-                //    doc.SheetName = (plRow == null) ? "" : plRow.SheetType + ",";
-                //doc.SheetName = doc.SheetName.TrimEnd(',');
+                //get the first associated document to extract the objects the document refers to
+                IfcRelAssociatesDocument ifcRelAssociatesDocument = DocumentInformationForObjects(di).FirstOrDefault();
+                
+                RelatedObjectInformation relatedObjectInfo = GetRelatedObjectInformation(ifcRelAssociatesDocument);
+                doc.SheetName = relatedObjectInfo.SheetName;
+                doc.RowName = relatedObjectInfo.Name;
+                doc.ExtObject = relatedObjectInfo.ExtObject;
+                doc.ExtIdentifier = relatedObjectInfo.ExtIdentifier;
 
-                doc.RowName = DEFAULT_STRING;
-                doc.Directory = di.DocumentId.ToString();
-                doc.File = di.DocumentId.ToString();
+                FileInformation fileInfo = GetFileInformation(ifcRelAssociatesDocument);
+                doc.File = fileInfo.Name;
+                doc.Directory = fileInfo.Location;
+
                 doc.ExtSystem = GetIfcApplication().ApplicationFullName;
-                doc.ExtObject = di.GetType().Name;
-                doc.ExtIdentifier = di.DocumentId.ToString();
+                
                 doc.Description = di.Description.ToString();
                 doc.Reference = di.Name.ToString();
 
@@ -75,6 +82,96 @@ namespace Xbim.COBie.Data
 
             return documents;
         }
+
+        /// <summary>
+        /// Get the file information for the document attached to the ifcRelAssociatesDocument
+        /// </summary>
+        /// <param name="ifcRelAssociatesDocument">IfcRelAssociatesDocument object</param>
+        /// <returns>FileInformation structure </returns>
+        private FileInformation GetFileInformation(IfcRelAssociatesDocument ifcRelAssociatesDocument)
+        {
+            FileInformation DocInfo = new FileInformation() { Name = DEFAULT_STRING, Location = DEFAULT_STRING };
+            string value = "";
+                
+            if (ifcRelAssociatesDocument != null)
+            {
+                //test for single document
+                IfcDocumentReference ifcDocumentReference = ifcRelAssociatesDocument.RelatingDocument as IfcDocumentReference;
+                if (ifcDocumentReference != null)
+                {
+                    value = ifcDocumentReference.ItemReference.ToString();
+                    if (!string.IsNullOrEmpty(value)) DocInfo.Name = value;
+                    value = ifcDocumentReference.Location.ToString();
+                    if (!string.IsNullOrEmpty(value)) DocInfo.Location = value;
+                }
+                else //test for a document list
+                {
+                    IfcDocumentInformation ifcDocumentInformation = ifcRelAssociatesDocument.RelatingDocument as IfcDocumentInformation;
+                    if (ifcDocumentInformation != null)
+                    {
+                        IEnumerable<IfcDocumentReference> ifcDocumentReferences = ifcDocumentInformation.DocumentReferences;
+                        List<string> strNameValues = new List<string>();
+                        List<string> strLocationValues = new List<string>();
+                        foreach (IfcDocumentReference docRef in ifcDocumentReferences)
+                        {
+                            //get file name
+                            value = docRef.ItemReference.ToString();
+                            if (!string.IsNullOrEmpty(value)) strNameValues.Add(value);
+                            //get file location
+                            value = docRef.Location.ToString();
+                            if ((!string.IsNullOrEmpty(value)) && (!strNameValues.Contains(value))) strLocationValues.Add(value);
+                        }
+                        //set values to return
+                        if (strNameValues.Count > 0) DocInfo.Name = string.Join(" : ", strNameValues);
+                        if (strLocationValues.Count > 0) DocInfo.Location = string.Join(" : ", strLocationValues);
+                        
+                       
+                    }
+                }
+            }
+            return DocInfo;
+        }
+       
+        /// <summary>
+        /// Get the related object information for the document
+        /// </summary>
+        /// <param name="ifcRelAssociatesDocument">IfcRelAssociatesDocument object</param>
+        /// <returns>RelatedObjectInformation structure</returns>
+        private RelatedObjectInformation GetRelatedObjectInformation(IfcRelAssociatesDocument ifcRelAssociatesDocument)
+        {
+            string value = DEFAULT_STRING;
+            RelatedObjectInformation objectInfo = new RelatedObjectInformation { SheetName = DEFAULT_STRING, Name = DEFAULT_STRING, ExtIdentifier = DEFAULT_STRING, ExtObject = DEFAULT_STRING  };
+            if (ifcRelAssociatesDocument != null)
+            {
+                IfcRoot relatedObject = ifcRelAssociatesDocument.RelatedObjects.FirstOrDefault();
+                if (relatedObject != null)
+                {
+                    if (relatedObject is IfcTypeObject) value = "Type";
+                    else if (relatedObject is IfcRelAggregates) value = "Component";
+                    else if (relatedObject is IfcRelContainedInSpatialStructure) value = "Component";
+                    //more sheets as tests date becomes available
+                    if (!string.IsNullOrEmpty(value)) objectInfo.SheetName = value;
+                    value = relatedObject.Name.ToString();
+                    if (!string.IsNullOrEmpty(value)) objectInfo.Name = value;
+                    objectInfo.ExtObject = relatedObject.GetType().Name;
+                    objectInfo.ExtIdentifier = relatedObject.GlobalId;
+                }
+            }
+            return objectInfo;
+        }
+
+        
+
+        /// <summary>
+        /// Missing Inverse method on  IfcDocumentInformation, need to be implemented on IfcDocumentInformation class
+        /// </summary>
+        /// <param name="ifcDocumentInformation">IfcDocumentInformation object</param>
+        /// <returns>IEnumerable of IfcRelAssociatesDocument objects</returns>
+        public  IEnumerable<IfcRelAssociatesDocument> DocumentInformationForObjects (IfcDocumentInformation ifcDocumentInformation )
+        {
+            return Model.InstancesWhere<IfcRelAssociatesDocument>(irad => irad.RelatingDocument == ifcDocumentInformation);
+        }
+
 
         //private string GetDocumentCategory(IfcBuildingStorey bs)
         //{
@@ -92,7 +189,21 @@ namespace Xbim.COBie.Data
         //    return DEFAULT_VAL;
         //}
 
+        
         #endregion
 
+        public struct FileInformation
+        {
+            public string Name { get; set; }
+            public string Location { get; set; }
+        }
+
+        public struct RelatedObjectInformation
+        {
+            public string SheetName { get; set; }
+            public string Name { get; set; }
+            public string ExtObject { get; set; }
+            public string ExtIdentifier { get; set; }
+        }
     }
 }

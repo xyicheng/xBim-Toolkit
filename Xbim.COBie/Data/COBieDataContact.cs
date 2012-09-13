@@ -7,6 +7,8 @@ using Xbim.Ifc.ActorResource;
 using Xbim.Ifc.MeasureResource;
 using Xbim.Ifc.UtilityResource;
 using Xbim.XbimExtensions;
+using Xbim.Ifc.Kernel;
+using Xbim.Ifc.SelectTypes;
 
 namespace Xbim.COBie.Data
 {
@@ -36,74 +38,85 @@ namespace Xbim.COBie.Data
             COBieSheet<COBieContactRow> contacts = new COBieSheet<COBieContactRow>(Constants.WORKSHEET_CONTACT);
 
             IEnumerable<IfcOwnerHistory> ifcOwnerHistories = Model.InstancesOfType<IfcOwnerHistory>();
+            IEnumerable<IfcPersonAndOrganization> ifcPersonAndOrganizations = Model.InstancesOfType<IfcPersonAndOrganization>();
 
-            foreach (IfcOwnerHistory oh in ifcOwnerHistories)
+            foreach (IfcPersonAndOrganization ifcPersonAndOrganization in ifcPersonAndOrganizations)
             {
                 COBieContactRow contact = new COBieContactRow(contacts);
-
                 // get person and organization
-                IfcOrganization organization = oh.OwningUser.TheOrganization;
-                IfcPerson person = oh.OwningUser.ThePerson;
+                IfcOrganization ifcOrganization = ifcPersonAndOrganization.TheOrganization;
+                IfcPerson ifcPerson = ifcPersonAndOrganization.ThePerson;
+                contact.Email = GetTelecomEmailAddress(ifcPersonAndOrganization);
 
-                contact.Email = GetTelecomEmailAddress(oh);
-                // check if this email is already in the contacts (as it only needs to exist once)
-                bool emailExists = false;
-                foreach (COBieContactRow c in contacts.Rows)
+                //lets default the creator to that user who created the project for now, no direct link to OwnerHistory on IfcPersonAndOrganization, IfcPerson or IfcOrganization
+                if (Model.IfcProject.OwnerHistory != null)
                 {
-                    if (c.Email == contact.Email)
-                        emailExists = true;
+                    contact.CreatedBy = GetTelecomEmailAddress(Model.IfcProject.OwnerHistory);
+                    contact.CreatedOn = GetCreatedOnDateAsFmtString(Model.IfcProject.OwnerHistory);
                 }
-
-                // check if it belongs to ActorRole, if yes then add to contacts
-                IEnumerable<IfcActorRole> ifcRoles = organization.Roles;
-                if (emailExists == false)
+                IfcActorRole ifcActorRole = null;
+                if (ifcPerson.Roles != null)
+                    ifcActorRole = ifcPerson.Roles.FirstOrDefault();
+                if (ifcOrganization.Roles != null)
+                    ifcActorRole = ifcOrganization.Roles.FirstOrDefault();
+                if ((ifcActorRole != null) && (!string.IsNullOrEmpty(ifcActorRole.UserDefinedRole)))
                 {
-                    if (ifcRoles != null)
-                    {
-                        IfcActorRole ifcAR = ifcRoles.FirstOrDefault();
-                        contact.Category = ifcAR.UserDefinedRole.ToString();
-
-                        contact.CreatedBy = GetTelecomEmailAddress(oh);
-                        contact.CreatedOn = GetCreatedOnDateAsFmtString(oh);
-
-                        contact.Company = (string.IsNullOrEmpty(oh.OwningUser.TheOrganization.Name)) ? DEFAULT_STRING : oh.OwningUser.TheOrganization.Name.ToString();
-
-                        IEnumerable<IfcTelecomAddress> telAddresses = Enumerable.Empty<IfcTelecomAddress>();
-                        if (organization.Addresses != null)
-                            telAddresses = organization.Addresses.TelecomAddresses;
-
-                        contact.Phone = "";
-                        foreach (IfcTelecomAddress ta in telAddresses)
-                        {
-                            foreach (IfcLabel phone in ta.TelephoneNumbers)
-                                contact.Phone = (phone == null) ? "" : phone.ToString() + ",";
-                        }
-                        contact.Phone = contact.Phone.TrimEnd(',');
-
-                        contact.ExtSystem = GetIfcApplication().ApplicationFullName;
-                        contact.ExtObject = "IfcPersonAndOrganization";
-                        contact.ExtIdentifier = person.Id;
-                        contact.Department = (organization.Addresses == null || organization.Addresses.PostalAddresses == null || organization.Addresses.PostalAddresses.Count() == 0) ? DEFAULT_STRING : organization.Addresses.PostalAddresses.FirstOrDefault().InternalLocation.ToString();
-                        if ((contact.Department == DEFAULT_STRING || contact.Department == "") && organization.Description != null) contact.Department = organization.Description;
-
-                        // guideline say it should be organization.Name but example spreadsheet uses organization.Id
-                        contact.OrganizationCode = (string.IsNullOrEmpty(organization.Id)) ? DEFAULT_STRING : organization.Id.ToString();
-
-                        contact.GivenName = (string.IsNullOrEmpty(person.GivenName)) ? DEFAULT_STRING : person.GivenName.ToString();
-                        contact.FamilyName = (string.IsNullOrEmpty(person.FamilyName)) ? DEFAULT_STRING : person.FamilyName.ToString();
-                        contact.Street = (person.Addresses == null) ? "" : person.Addresses.PostalAddresses.FirstOrDefault().AddressLines.FirstOrDefault().Value.ToString();
-                        contact.PostalBox = (person.Addresses == null) ? "" : person.Addresses.PostalAddresses.FirstOrDefault().PostalBox.ToString();
-                        contact.Town = (person.Addresses == null) ? "" : person.Addresses.PostalAddresses.FirstOrDefault().Town.ToString();
-                        contact.StateRegion = (person.Addresses == null) ? "" : person.Addresses.PostalAddresses.FirstOrDefault().Region.ToString();
-                        contact.PostalCode = (person.Addresses == null) ? "" : person.Addresses.PostalAddresses.FirstOrDefault().PostalCode.ToString();
-                        contact.Country = (person.Addresses == null) ? "" : person.Addresses.PostalAddresses.FirstOrDefault().Country.ToString();
-
-                        contacts.Rows.Add(contact);
-                    }
+                    contact.Category = ifcActorRole.UserDefinedRole.ToString();
                 }
+                else
+                    contact.Category = DEFAULT_STRING;
+                
+                contact.Company = (string.IsNullOrEmpty(ifcOrganization.Name)) ? DEFAULT_STRING : ifcOrganization.Name.ToString();
+                contact.Phone = GetTelecomTelephoneNumber(ifcPersonAndOrganization);
+                contact.ExtSystem = GetIfcApplication().ApplicationFullName;
+                
+                contact.ExtObject = "IfcPersonAndOrganization";
+                contact.ExtIdentifier = ifcPerson.Id;
+                if (ifcPerson.Addresses != null)
+                {
+                    string department = ifcPerson.Addresses.PostalAddresses.Select(dept => dept.InternalLocation).Where(dept => !string.IsNullOrEmpty(dept)).FirstOrDefault();
+                    department = (string.IsNullOrEmpty(department)) ? ifcOrganization.Description.ToString() : ""; //only place to match example files
+                    contact.Department = (string.IsNullOrEmpty(department)) ? contact.Company : department;
+                }
+                else
+                    contact.Department = contact.Company;
+
+                contact.OrganizationCode = (string.IsNullOrEmpty(ifcOrganization.Name)) ? DEFAULT_STRING : ifcOrganization.Name.ToString();
+                contact.GivenName = (string.IsNullOrEmpty(ifcPerson.GivenName)) ? DEFAULT_STRING : ifcPerson.GivenName.ToString();
+                contact.FamilyName = (string.IsNullOrEmpty(ifcPerson.FamilyName)) ? DEFAULT_STRING : ifcPerson.FamilyName.ToString();
+                if (ifcPerson.Addresses != null)
+                    GetContactAddress(contact, ifcPerson.Addresses);
+                else
+                    GetContactAddress(contact, ifcOrganization.Addresses); 
+                
+                contacts.Rows.Add(contact);
+                
             }
 
             return contacts;
+        }
+
+        private static void GetContactAddress(COBieContactRow contact, AddressCollection addresses)
+        {
+            if ((addresses != null) && (addresses.PostalAddresses  != null))
+            {
+                IfcPostalAddress ifcPostalAddress = addresses.PostalAddresses.FirstOrDefault();
+                contact.Street = (ifcPostalAddress.AddressLines != null) ? ifcPostalAddress.AddressLines.FirstOrDefault().Value.ToString() : DEFAULT_STRING;
+                contact.PostalBox = (string.IsNullOrEmpty(ifcPostalAddress.PostalBox)) ? DEFAULT_STRING : ifcPostalAddress.PostalBox.ToString();
+                contact.Town = (string.IsNullOrEmpty(ifcPostalAddress.Town)) ? DEFAULT_STRING : ifcPostalAddress.Town.ToString();
+                contact.StateRegion = (string.IsNullOrEmpty(ifcPostalAddress.Region)) ? DEFAULT_STRING : ifcPostalAddress.Region.ToString();
+                contact.PostalCode = (string.IsNullOrEmpty(ifcPostalAddress.PostalCode)) ? DEFAULT_STRING : ifcPostalAddress.PostalCode.ToString();
+                contact.Country = (string.IsNullOrEmpty(ifcPostalAddress.Country)) ? DEFAULT_STRING : ifcPostalAddress.Country.ToString();
+            }
+            else
+            {
+                contact.Street = DEFAULT_STRING;
+                contact.PostalBox = DEFAULT_STRING;
+                contact.Town = DEFAULT_STRING;
+                contact.StateRegion = DEFAULT_STRING;
+                contact.PostalCode = DEFAULT_STRING;
+                contact.Country = DEFAULT_STRING;
+            }
         }
 
         #endregion

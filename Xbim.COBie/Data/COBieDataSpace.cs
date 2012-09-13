@@ -72,26 +72,12 @@ namespace Xbim.COBie.Data
                 space.ExtSystem = GetIfcApplication().ApplicationFullName;
                 space.ExtObject = ifcSpace.GetType().Name;
                 space.ExtIdentifier = ifcSpace.GlobalId;
-                space.RoomTag = GetSpaceDescription(ifcSpace);
-                //Do Usable Height
-                IfcLengthMeasure usableHt = ifcSpace.GetHeight();
-                if (usableHt != null) space.UsableHeight = ((double)usableHt).ToString("F3");
-                else space.UsableHeight = DEFAULT_NUMERIC;
-
-                //Do Gross Areas 
-                IfcAreaMeasure grossAreaValue = ifcSpace.GetGrossFloorArea();
-                //if we fail on try GSA keys
-                IfcQuantityArea spArea = null;
-                if (grossAreaValue == null) spArea = ifcSpace.GetQuantity<IfcQuantityArea>("GSA Space Areas", "GSA BIM Area");
-
-                if (grossAreaValue != null) space.GrossArea = ((double)grossAreaValue).ToString("F3");
-                else if ((spArea is IfcQuantityArea) && (spArea.AreaValue != null)) space.GrossArea = ((double)spArea.AreaValue).ToString("F3");
-                else space.GrossArea = DEFAULT_NUMERIC;
-
-                //Do Net Areas 
-                IfcAreaMeasure netAreaValue = ifcSpace.GetNetFloorArea();  //this extension has the GSA built in so no need to get again
-                if (netAreaValue != null) space.NetArea = ((double)netAreaValue).ToString("F3");
-                else space.NetArea = DEFAULT_NUMERIC;
+                space.RoomTag = GetRoomTag(ifcSpace, allPropertyValues);
+                
+                //Do Unit Values
+                space.UsableHeight = GetUsableHeight(ifcSpace, allPropertyValues);
+                space.GrossArea = GetGrossFloorArea(ifcSpace, allPropertyValues);
+                space.NetArea = GetNetArea(ifcSpace, allPropertyValues);
 
                 spaces.Rows.Add(space);
 
@@ -103,36 +89,141 @@ namespace Xbim.COBie.Data
                 allPropertyValues.RowParameters["CreatedOn"] = space.CreatedOn;
                 allPropertyValues.RowParameters["ExtSystem"] = space.ExtSystem;
                 allPropertyValues.SetAttributesRows(ifcSpace, ref attributes); //fill attribute sheet rows//pass data from this sheet info as Dictionary
-                //Dictionary<string, string> passedValues = new Dictionary<string, string>(){{"Sheet", "Space"}, 
-                //                                                                          {"Name", space.Name},
-                //                                                                          {"CreatedBy", space.CreatedBy},
-                //                                                                          {"CreatedOn", space.CreatedOn},
-                //                                                                          {"ExtSystem", space.ExtSystem}
-                //                                                                          };//required property date <PropertySetName, PropertyName>
-                
-                //add *ALL* the attributes to the passed attributes sheet except property names that match the passed List<string>
-                //SetAttributeSheet(sp, passedValues, excludeAttributes, ExcludeAttributesWildCard, ExcludePropertSetNames, ref attributes);
-                            
                 
             }
 
             return spaces;
         }
 
-        //private string GetSpaceCategory(IfcSpace sp)
-        //{
-        //    return sp.LongName;
-        //}
-
-        private string GetSpaceDescription(IfcSpace sp)
+        /// <summary>
+        /// Get Net Area value
+        /// </summary>
+        /// <param name="ifcSpace">IfcSpace object</param>
+        /// <param name="allPropertyValues">COBieDataPropertySetValues object holds all the properties for all the IfcSpace</param>
+        /// <returns>property value as string or default value</returns>
+        private string GetNetArea(IfcSpace ifcSpace, COBieDataPropertySetValues allPropertyValues)
         {
-            if (sp != null)
+            IfcAreaMeasure netAreaValue = ifcSpace.GetNetFloorArea();  //this extension has the GSA built in so no need to get again
+            if (netAreaValue != null) 
+                return ((double)netAreaValue).ToString("F3");
+
+            //Fall back to properties
+            //get the property single values for this ifcSpace
+            allPropertyValues.SetFilteredPropertySingleValues(ifcSpace);
+
+            //try and find it in the attached properties of the ifcSpace
+            string value = allPropertyValues.GetFilteredPropertySingleValueValue("NetFloorArea", true);
+            if (value == DEFAULT_STRING)
+                value = allPropertyValues.GetFilteredPropertySingleValueValue("GSA", true);
+
+            if (value == DEFAULT_STRING)
+                return DEFAULT_NUMERIC;
+            else
+                return value; 
+        }
+        /// <summary>
+        /// Get space gross floor area
+        /// </summary>
+        /// <param name="ifcSpace">IfcSpace object</param>
+        /// <param name="allPropertyValues">COBieDataPropertySetValues object holds all the properties for all the IfcSpace</param>
+        /// <returns>property value as string or default value</returns>
+        private string GetGrossFloorArea(IfcSpace ifcSpace, COBieDataPropertySetValues allPropertyValues)
+        {
+            //Do Gross Areas 
+            IfcAreaMeasure grossAreaValue = ifcSpace.GetGrossFloorArea();
+            //if we fail on try GSA keys
+            IfcQuantityArea spArea = null;
+            if (grossAreaValue == null) spArea = ifcSpace.GetQuantity<IfcQuantityArea>("GSA Space Areas", "GSA BIM Area");
+
+            if (grossAreaValue != null) 
+                return ((double)grossAreaValue).ToString("F3");
+            else if ((spArea is IfcQuantityArea) && (spArea.AreaValue != null))
+                return ((double)spArea.AreaValue).ToString("F3");
+            else
             {
-                if (!string.IsNullOrEmpty(sp.LongName)) return sp.LongName;
-                else if (!string.IsNullOrEmpty(sp.Description)) return sp.Description;
-                else if (!string.IsNullOrEmpty(sp.Name)) return sp.Name;
+                //Fall back to properties
+                //get the property single values for this ifcSpace
+                allPropertyValues.SetFilteredPropertySingleValues(ifcSpace);
+
+                //try and find it in the attached properties of the ifcSpace
+                string value = allPropertyValues.GetFilteredPropertySingleValueValue("GrossFloorArea", true);
+                if (value == DEFAULT_STRING)
+                    value = allPropertyValues.GetFilteredPropertySingleValueValue("GSA", true);
+                
+                if (value == DEFAULT_STRING)
+                    return DEFAULT_NUMERIC;
+                else
+                    return value; 
+            }
+        }
+        /// <summary>
+        /// Get space usable height
+        /// </summary>
+        /// <param name="ifcSpace">IfcSpace object</param>
+        /// <param name="allPropertyValues">COBieDataPropertySetValues object holds all the properties for all the IfcSpace</param>
+        /// <returns>property value as string or default value</returns>
+        private string GetUsableHeight(IfcSpace ifcSpace, COBieDataPropertySetValues allPropertyValues)
+        {
+            IfcLengthMeasure usableHt = ifcSpace.GetHeight();
+            if (usableHt != null)
+            return ((double)usableHt).ToString("F3");
+            
+            //Fall back to properties
+            //get the property single values for this ifcSpace
+            allPropertyValues.SetFilteredPropertySingleValues(ifcSpace);
+
+            //try and find it in the attached properties of the ifcSpace
+            string value = allPropertyValues.GetFilteredPropertySingleValueValue("UsableHeight", true);
+            if (value == DEFAULT_STRING)
+                value = allPropertyValues.GetFilteredPropertySingleValueValue("FinishCeiling", true);
+            if (value == DEFAULT_STRING)
+                value = allPropertyValues.GetFilteredPropertySingleValueValue("Height", true);
+            
+            if (value == DEFAULT_STRING)
+                return DEFAULT_NUMERIC;
+            else
+                return value; 
+        }
+        /// <summary>
+        /// Get space description 
+        /// </summary>
+        /// <param name="ifcSpace">IfcSpace object</param>
+        /// <returns>property value as string or default value</returns>
+        private string GetSpaceDescription(IfcSpace ifcSpace)
+        {
+            if (ifcSpace != null)
+            {
+                if (!string.IsNullOrEmpty(ifcSpace.LongName)) return ifcSpace.LongName;
+                else if (!string.IsNullOrEmpty(ifcSpace.Description)) return ifcSpace.Description;
+                else if (!string.IsNullOrEmpty(ifcSpace.Name)) return ifcSpace.Name;
             }
             return DEFAULT_STRING;
+        }
+        /// <summary>
+        /// Get space room tag 
+        /// </summary>
+        /// <param name="ifcSpace">IfcSpace object</param>
+        /// <param name="allPropertyValues">COBieDataPropertySetValues object holds all the properties for all the IfcSpace</param>
+        /// <returns>property value as string or default value</returns>
+        private string GetRoomTag(IfcSpace ifcSpace, COBieDataPropertySetValues allPropertyValues)
+        {
+            string value = GetSpaceDescription(ifcSpace);
+            if (value == DEFAULT_STRING)
+            {
+                //Fall back to properties
+                //get the property single values for this ifcSpace
+                allPropertyValues.SetFilteredPropertySingleValues(ifcSpace);
+
+                //try and find it in the attached properties of the ifcSpace
+                value = allPropertyValues.GetFilteredPropertySingleValueValue("RoomTag", true);
+                if (value == DEFAULT_STRING)
+                    value = allPropertyValues.GetFilteredPropertySingleValueValue("Tag", true);
+                if (value == DEFAULT_STRING)
+                    value = allPropertyValues.GetFilteredPropertySingleValueValue("Room_Tag", true);
+
+            }
+
+            return value;
         }
         #endregion
     }

@@ -123,12 +123,12 @@ namespace Xbim.COBie.Data
 
                 //set from PropertySingleValues filtered via candidateProperties
                 allPropertyValues.SetFilteredPropertySingleValues(el); //set the internal filtered IfcPropertySingleValues List in allPropertyValues
-                component.SerialNumber = allPropertyValues.GetFilteredPropertySingleValues("SerialNumber");
-                component.InstallationDate = allPropertyValues.GetFilteredPropertySingleValues("InstallationDate");
-                component.WarrantyStartDate = allPropertyValues.GetFilteredPropertySingleValues("WarrantyStartDate");
-                component.TagNumber = allPropertyValues.GetFilteredPropertySingleValues("TagNumber");
-                component.BarCode = allPropertyValues.GetFilteredPropertySingleValues("BarCode");
-                component.AssetIdentifier = allPropertyValues.GetFilteredPropertySingleValues("AssetIdentifier");
+                component.SerialNumber = allPropertyValues.GetFilteredPropertySingleValueValue("SerialNumber", false);
+                component.InstallationDate = allPropertyValues.GetFilteredPropertySingleValueValue("InstallationDate", false);
+                component.WarrantyStartDate = allPropertyValues.GetFilteredPropertySingleValueValue("WarrantyStartDate", false);
+                component.TagNumber = allPropertyValues.GetFilteredPropertySingleValueValue("TagNumber", false);
+                component.BarCode = allPropertyValues.GetFilteredPropertySingleValueValue("BarCode", false);
+                component.AssetIdentifier = allPropertyValues.GetFilteredPropertySingleValueValue("AssetIdentifier", false);
 
                 components.Rows.Add(component);
 
@@ -158,7 +158,7 @@ namespace Xbim.COBie.Data
                 if (owningSpace.GetType() == typeof(IfcSpace))
                     return owningSpace.Name.ToString();
             }
-            return COBieData.DEFAULT_STRING;
+            return DEFAULT_STRING;
         }
 
         /// <summary>
@@ -173,7 +173,7 @@ namespace Xbim.COBie.Data
                 if (!string.IsNullOrEmpty(el.Description)) return el.Description;
                 else if (!string.IsNullOrEmpty(el.Name)) return el.Name;
             }
-            return COBieData.DEFAULT_STRING;
+            return DEFAULT_STRING;
         }
         #endregion
     }

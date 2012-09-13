@@ -72,7 +72,7 @@ namespace Xbim.COBie.Data
                 .Select(type => type)
                 .Where(type => !excludedTypes.Contains(type.GetType()));
 
-            COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(ifcTypeObjects.ToList()); //properties helper class
+            
             // Well known property names to seek out the data
             List<string> candidateProperties = new List<string> {  "AssetAccountingType", "Manufacturer", "ModelLabel", "WarrantyGuarantorParts", 
                                                         "WarrantyDurationParts", "WarrantyGuarantorLabor", "WarrantyDurationLabor", 
@@ -89,6 +89,15 @@ namespace Xbim.COBie.Data
             //list of attributes to exclude form attribute sheet
             List<string> excludePropertyValueNamesWildcard = new List<string> { "Roomtag", "RoomTag", "Tag", "GSA BIM Area" };
 
+            //set up property set helper class
+            COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(ifcTypeObjects.ToList()); //properties helper class
+            allPropertyValues.ExcludePropertyValueNames.AddRange(excludePropertyValueNames);
+            allPropertyValues.FilterPropertyValueNames.AddRange(candidateProperties);
+            allPropertyValues.ExcludePropertyValueNamesWildcard.AddRange(excludePropertyValueNamesWildcard);
+            allPropertyValues.ExcludePropertySetNames.Add(" BaseQuantities");
+            allPropertyValues.RowParameters["Sheet"] = "Type";           
+
+            
             foreach (IfcTypeObject type in ifcTypeObjects)
             {
                 COBieTypeRow typeRow = new COBieTypeRow(types);
@@ -104,64 +113,448 @@ namespace Xbim.COBie.Data
                 typeRow.ExtObject = type.GetType().Name;
                 typeRow.ExtIdentifier = type.GlobalId;
 
-                FillPropertySetsValues(candidateProperties, type, typeRow);
+                FillPropertySetsValues(allPropertyValues, type, typeRow);
 
                 types.Rows.Add(typeRow);
                 
                 // Provide Attribute sheet with our context
-                Dictionary<string, string> sourceData = new Dictionary<string, string>(){{"Sheet", "Type"}, 
-                                                                                          {"Name", typeRow.Name},
-                                                                                          {"CreatedBy", typeRow.CreatedBy},
-                                                                                          {"CreatedOn", typeRow.CreatedOn},
-                                                                                          {"ExtSystem", typeRow.ExtSystem}
-                                                                                          };
-                //add *ALL* the attributes to the passed attributes sheet except property names that we've handled, or are on the exclusion list
-                SetAttributeSheet(type, sourceData, excludePropertyValueNames, excludePropertyValueNamesWildcard, null, ref attributes);
+                //fill in the attribute information
+                allPropertyValues.RowParameters["Name"] = typeRow.Name;
+                allPropertyValues.RowParameters["CreatedBy"] = typeRow.CreatedBy;
+                allPropertyValues.RowParameters["CreatedOn"] = typeRow.CreatedOn;
+                allPropertyValues.RowParameters["ExtSystem"] = typeRow.ExtSystem;
+                allPropertyValues.SetAttributesRows(type, ref attributes); //fill attribute sheet rows
             }
            
             return types;
         }
 
-        private void FillPropertySetsValues(List<string> candidateProperties, IfcTypeObject type, COBieTypeRow typeRow)
+        private void FillPropertySetsValues(COBieDataPropertySetValues allPropertyValues, IfcTypeObject type, COBieTypeRow typeRow)
         {
+               
             //get related object properties to extract from if main way fails
-            IEnumerable<IfcPropertySingleValue> attributes = GetTypeObjRelAttributes(type, candidateProperties);
-
-            typeRow.AssetType = GetAttribute(type, "Pset_Asset", "AssetAccountingType", attributes);
-            typeRow.Manufacturer = GetAttribute(type, "Pset_ManufacturersTypeInformation", "Manufacturer", attributes);
-            typeRow.ModelNumber = GetAttribute(type, "Pset_ManufacturersTypeInformation", "ModelLabel", attributes);
-            // TODO: Get properties from PSets rather than one by one.
-            typeRow.WarrantyGuarantorParts = GetAttribute(type, "Pset_Warranty", "WarrantyGuarantorParts", attributes);
-            typeRow.WarrantyDurationParts = GetAttribute(type, "Pset_Warranty", "WarrantyDurationParts", attributes);
-            typeRow.WarrantyGuarantorLabor = GetAttribute(type, "Pset_Warranty", "WarrantyGuarantorLabor", attributes);
-            typeRow.WarrantyDescription = GetAttribute(type, "Pset_Warranty", "WarrantyDescription", attributes);
-            Interval warrantyDuration = GetDurationUnitAndValue(type, "Pset_Warranty", "WarrantyDurationLabor", attributes);
-            typeRow.WarrantyDurationLabor = warrantyDuration.Value;
-            typeRow.WarrantyDurationUnit = warrantyDuration.Unit;
-
-            typeRow.ReplacementCost = GetAttribute(type, "Pset_EconomicImpactValues", "ReplacementCost", attributes);
-            Interval serviceDuration = GetDurationUnitAndValue(type, "Pset_ServiceLife", "ServiceLifeDuration", attributes);
-            typeRow.ExpectedLife = serviceDuration.Value;
-            typeRow.DurationUnit = serviceDuration.Unit;
+            allPropertyValues.SetFilteredPropertySingleValues(type, "Pset_Asset");
+            typeRow.AssetType =     allPropertyValues.GetFilteredPropertySingleValueValue("AssetAccountingType", false); 
+            allPropertyValues.SetFilteredPropertySingleValues(type, "Pset_ManufacturersTypeInformation");
+            typeRow.Manufacturer =  allPropertyValues.GetFilteredPropertySingleValueValue("Manufacturer", false);
+            typeRow.ModelNumber =   GetModelNumber(type, allPropertyValues);
             
+            
+            allPropertyValues.SetFilteredPropertySingleValues(type, "Pset_Warranty");
+            typeRow.WarrantyGuarantorParts =    GetWarrantyGuarantorParts(type, allPropertyValues);
+            typeRow.WarrantyDurationParts =     allPropertyValues.GetFilteredPropertySingleValueValue("WarrantyDurationParts", false);
+            typeRow.WarrantyGuarantorLabor =    GetWarrantyGuarantorLabor(type, allPropertyValues);
+            typeRow.WarrantyDescription =       GetWarrantyDescription(type, allPropertyValues);
+            Interval warrantyDuration =         GetDurationUnitAndValue(allPropertyValues.GetFilteredPropertySingleValue("WarrantyDurationLabor")); 
+            typeRow.WarrantyDurationLabor =     warrantyDuration.Value;
+            typeRow.WarrantyDurationUnit =      warrantyDuration.Unit;
+            typeRow.ReplacementCost =           GetReplacementCost(type, allPropertyValues); 
 
-            typeRow.NominalLength = ConvertNumberOrDefault(GetAttribute(type, "Pset_Specification", "NominalLength", attributes));
-            typeRow.NominalWidth = ConvertNumberOrDefault(GetAttribute(type, "Pset_Specification", "NominalWidth", attributes));
-            typeRow.NominalHeight = ConvertNumberOrDefault(GetAttribute(type, "Pset_Specification", "NominalHeight", attributes));
-            typeRow.ModelReference = GetAttribute(type, "Pset_Specification", "ModelReference", attributes);
-            typeRow.Shape = GetAttribute(type, "Pset_Specification", "Shape", attributes);
-            typeRow.Size = GetAttribute(type, "Pset_Specification", "Size", attributes);
-            typeRow.Color = GetAttribute(type, "Pset_Specification", "Colour", attributes);
-            if (typeRow.Color == DEFAULT_STRING)
-                typeRow.Color = GetAttribute(type, "Pset_Specification", "Color", attributes);
-            typeRow.Finish = GetAttribute(type, "Pset_Specification", "Finish", attributes);
-            typeRow.Grade = GetAttribute(type, "Pset_Specification", "Grade", attributes);
-            typeRow.Material = GetAttribute(type, "Pset_Specification", "Material", attributes);
-            typeRow.Constituents = GetAttribute(type, "Pset_Specification", "Constituents", attributes);
-            typeRow.Features = GetAttribute(type, "Pset_Specification", "Features", attributes);
-            typeRow.AccessibilityPerformance = GetAttribute(type, "Pset_Specification", "AccessibilityPerformance", attributes);
-            typeRow.CodePerformance = GetAttribute(type, "Pset_Specification", "CodePerformance", attributes);
-            typeRow.SustainabilityPerformance = GetAttribute(type, "Pset_Specification", "SustainabilityPerformance", attributes);
+            allPropertyValues.SetFilteredPropertySingleValues(type, "Pset_ServiceLife");
+            Interval serviceDuration =  GetDurationUnitAndValue(allPropertyValues.GetFilteredPropertySingleValue("ServiceLifeDuration"));
+            typeRow.ExpectedLife =      GetExpectedLife(type, serviceDuration, allPropertyValues);
+            typeRow.DurationUnit =      serviceDuration.Unit;
+
+            allPropertyValues.SetFilteredPropertySingleValues(type, "Pset_Specification");
+            typeRow.NominalLength =                 GetNominalLength(type, allPropertyValues);
+            typeRow.NominalWidth =                  GetNominalWidth(type, allPropertyValues);
+            typeRow.NominalHeight =                 GetNominalHeight(type, allPropertyValues);
+            typeRow.ModelReference =                GetModelReference(type, allPropertyValues);
+            typeRow.Shape =                         allPropertyValues.GetFilteredPropertySingleValueValue("Shape", false);
+            typeRow.Size =                          allPropertyValues.GetFilteredPropertySingleValueValue("Size", false);
+            typeRow.Color =                         GetColour(type, allPropertyValues);
+            typeRow.Finish =                        allPropertyValues.GetFilteredPropertySingleValueValue("Finish", false);
+            typeRow.Grade =                         allPropertyValues.GetFilteredPropertySingleValueValue("Grade", false);
+            typeRow.Material =                      allPropertyValues.GetFilteredPropertySingleValueValue("Material", false);
+            typeRow.Constituents =                  GetConstituents(type, allPropertyValues);
+            typeRow.Features =                      allPropertyValues.GetFilteredPropertySingleValueValue("Features", false);
+            typeRow.AccessibilityPerformance =      GetAccessibilityPerformance(type, allPropertyValues);
+            typeRow.CodePerformance =               GetCodePerformance(type, allPropertyValues);
+            typeRow.SustainabilityPerformance =     GetSustainabilityPerformance(type, allPropertyValues); 
+        }
+
+        /// <summary>
+        /// Get the Sustainability Performance for the IfcTypeObject
+        /// </summary>
+        /// <param name="ifcTypeObject">IfcTypeObject object</param>
+        /// <param name="allPropertyValues">COBieDataPropertySetValues object holds all the properties for all the IfcSpace</param>
+        /// <returns>property value as string or default value</returns>
+        private string GetSustainabilityPerformance(IfcTypeObject ifcTypeObject, COBieDataPropertySetValues allPropertyValues)
+        {
+            string value = allPropertyValues.GetFilteredPropertySingleValueValue("SustainabilityPerformance", false);
+            //Fall back to wild card properties
+            //get the property single values for this ifcTypeObject
+            if (value == DEFAULT_STRING)
+            {
+                allPropertyValues.SetFilteredPropertySingleValues(ifcTypeObject);
+                if (value == DEFAULT_STRING)
+                    value = allPropertyValues.GetFilteredPropertySingleValueValue("SustainabilityPerformance", true);
+                if (value == DEFAULT_STRING)
+                    value = allPropertyValues.GetFilteredPropertySingleValueValue("Environmental", true);
+
+                //reset back to property set "Pset_Specification"
+                allPropertyValues.SetFilteredPropertySingleValues(ifcTypeObject, "Pset_Specification");
+            }
+            return value;
+        }
+
+        /// <summary>
+        /// Get the Code Performance for the IfcTypeObject
+        /// </summary>
+        /// <param name="ifcTypeObject">IfcTypeObject object</param>
+        /// <param name="allPropertyValues">COBieDataPropertySetValues object holds all the properties for all the IfcSpace</param>
+        /// <returns>property value as string or default value</returns>
+        private string GetCodePerformance(IfcTypeObject ifcTypeObject, COBieDataPropertySetValues allPropertyValues)
+        {
+            string value = allPropertyValues.GetFilteredPropertySingleValueValue("CodePerformance", false);
+            //Fall back to wild card properties
+            //get the property single values for this ifcTypeObject
+            if (value == DEFAULT_STRING)
+            {
+                allPropertyValues.SetFilteredPropertySingleValues(ifcTypeObject);
+                if (value == DEFAULT_STRING)
+                    value = allPropertyValues.GetFilteredPropertySingleValueValue("CodePerformance", true);
+                if (value == DEFAULT_STRING)
+                    value = allPropertyValues.GetFilteredPropertySingleValueValue("Regulation", true);
+
+                //reset back to property set "Pset_Specification"
+                allPropertyValues.SetFilteredPropertySingleValues(ifcTypeObject, "Pset_Specification");
+            }
+            return value;
+        }
+
+
+        /// <summary>
+        /// Get the Accessibility Performance for the IfcTypeObject
+        /// </summary>
+        /// <param name="ifcTypeObject">IfcTypeObject object</param>
+        /// <param name="allPropertyValues">COBieDataPropertySetValues object holds all the properties for all the IfcSpace</param>
+        /// <returns>property value as string or default value</returns>
+        private string GetAccessibilityPerformance(IfcTypeObject ifcTypeObject, COBieDataPropertySetValues allPropertyValues)
+        {
+            string value = allPropertyValues.GetFilteredPropertySingleValueValue("AccessibilityPerformance", false);
+            //Fall back to wild card properties
+            //get the property single values for this ifcTypeObject
+            if (value == DEFAULT_STRING)
+            {
+                allPropertyValues.SetFilteredPropertySingleValues(ifcTypeObject);
+                if (value == DEFAULT_STRING)
+                    value = allPropertyValues.GetFilteredPropertySingleValueValue("AccessibilityPerformance", true);
+                if (value == DEFAULT_STRING)
+                    value = allPropertyValues.GetFilteredPropertySingleValueValue("Access", true);
+
+                //reset back to property set "Pset_Specification"
+                allPropertyValues.SetFilteredPropertySingleValues(ifcTypeObject, "Pset_Specification");
+            }
+            return value;
+        }
+
+        /// <summary>
+        /// Get the Constituents for the IfcTypeObject
+        /// </summary>
+        /// <param name="ifcTypeObject">IfcTypeObject object</param>
+        /// <param name="allPropertyValues">COBieDataPropertySetValues object holds all the properties for all the IfcSpace</param>
+        /// <returns>property value as string or default value</returns>
+        private string GetConstituents(IfcTypeObject ifcTypeObject, COBieDataPropertySetValues allPropertyValues)
+        {
+            string value = allPropertyValues.GetFilteredPropertySingleValueValue("Constituents", false);
+            //Fall back to wild card properties
+            //get the property single values for this ifcTypeObject
+            if (value == DEFAULT_STRING)
+            {
+                allPropertyValues.SetFilteredPropertySingleValues(ifcTypeObject);
+                if (value == DEFAULT_STRING)
+                    value = allPropertyValues.GetFilteredPropertySingleValueValue("constituents", true);
+                if (value == DEFAULT_STRING)
+                    value = allPropertyValues.GetFilteredPropertySingleValueValue("parts", true);
+
+                //reset back to property set "Pset_Specification"
+                allPropertyValues.SetFilteredPropertySingleValues(ifcTypeObject, "Pset_Specification");
+            }
+            return value;
+        }
+
+        /// <summary>
+        /// Get the Colour for the IfcTypeObject
+        /// </summary>
+        /// <param name="ifcTypeObject">IfcTypeObject object</param>
+        /// <param name="allPropertyValues">COBieDataPropertySetValues object holds all the properties for all the IfcSpace</param>
+        /// <returns>property value as string or default value</returns>
+        private string GetColour(IfcTypeObject ifcTypeObject, COBieDataPropertySetValues allPropertyValues)
+        {
+            string value = allPropertyValues.GetFilteredPropertySingleValueValue("Colour", false);
+            if (value == DEFAULT_STRING)
+                value = allPropertyValues.GetFilteredPropertySingleValueValue("Color", false);
+            //Fall back to wild card properties
+            //get the property single values for this ifcTypeObject
+            if (value == DEFAULT_STRING)
+            {
+                allPropertyValues.SetFilteredPropertySingleValues(ifcTypeObject);
+                if (value == DEFAULT_STRING)
+                    value = allPropertyValues.GetFilteredPropertySingleValueValue("Colour", true);
+                if (value == DEFAULT_STRING)
+                    value = allPropertyValues.GetFilteredPropertySingleValueValue("Color", true);
+
+                //reset back to property set "Pset_Specification"
+                allPropertyValues.SetFilteredPropertySingleValues(ifcTypeObject, "Pset_Specification");
+            }
+            return value;
+        }
+
+        /// <summary>
+        /// Get the Model Reference for the IfcTypeObject
+        /// </summary>
+        /// <param name="ifcTypeObject">IfcTypeObject object</param>
+        /// <param name="allPropertyValues">COBieDataPropertySetValues object holds all the properties for all the IfcSpace</param>
+        /// <returns>property value as string or default value</returns>
+        private string GetModelReference(IfcTypeObject ifcTypeObject, COBieDataPropertySetValues allPropertyValues)
+        {
+            string value = allPropertyValues.GetFilteredPropertySingleValueValue("ModelReference", false);
+            //Fall back to wild card properties
+            //get the property single values for this ifcTypeObject
+            if (value == DEFAULT_STRING)
+            {
+                allPropertyValues.SetFilteredPropertySingleValues(ifcTypeObject);
+                if (value == DEFAULT_STRING)
+                    value = allPropertyValues.GetFilteredPropertySingleValueValue("ModelReference", true);
+                if (value == DEFAULT_STRING)
+                    value = allPropertyValues.GetFilteredPropertySingleValueValue("Reference", true);
+
+                //reset back to property set "Pset_Specification"
+                allPropertyValues.SetFilteredPropertySingleValues(ifcTypeObject, "Pset_Specification");
+            }
+            return value;
+        }
+
+        /// <summary>
+        /// Get the Nominal Height for the IfcTypeObject
+        /// </summary>
+        /// <param name="ifcTypeObject">IfcTypeObject object</param>
+        /// <param name="allPropertyValues">COBieDataPropertySetValues object holds all the properties for all the IfcSpace</param>
+        /// <returns>property value as string or default value</returns>
+        private string GetNominalHeight(IfcTypeObject ifcTypeObject, COBieDataPropertySetValues allPropertyValues)
+        {
+            string value = allPropertyValues.GetFilteredPropertySingleValueValue("NominalHeight", false);
+            //Fall back to wild card properties
+            //get the property single values for this ifcTypeObject
+            if (value == DEFAULT_STRING)
+            {
+                allPropertyValues.SetFilteredPropertySingleValues(ifcTypeObject);
+                if (value == DEFAULT_STRING)
+                    value = allPropertyValues.GetFilteredPropertySingleValueValue("NominalHeight", true);
+                if (value == DEFAULT_STRING)
+                    value = allPropertyValues.GetFilteredPropertySingleValueValue("Height", true);
+
+                //reset back to property set "Pset_Specification"
+                allPropertyValues.SetFilteredPropertySingleValues(ifcTypeObject, "Pset_Specification");
+            }
+            return ConvertNumberOrDefault(value);
+        }
+
+
+        /// <summary>
+        /// Get the Nominal Width for the IfcTypeObject
+        /// </summary>
+        /// <param name="ifcTypeObject">IfcTypeObject object</param>
+        /// <param name="allPropertyValues">COBieDataPropertySetValues object holds all the properties for all the IfcSpace</param>
+        /// <returns>property value as string or default value</returns>
+        private string GetNominalWidth(IfcTypeObject ifcTypeObject, COBieDataPropertySetValues allPropertyValues)
+        {
+            string value = allPropertyValues.GetFilteredPropertySingleValueValue("NominalWidth", false);
+            //Fall back to wild card properties
+            //get the property single values for this ifcTypeObject
+            if (value == DEFAULT_STRING)
+            {
+                allPropertyValues.SetFilteredPropertySingleValues(ifcTypeObject);
+                if (value == DEFAULT_STRING)
+                    value = allPropertyValues.GetFilteredPropertySingleValueValue("NominalWidth", true);
+                if (value == DEFAULT_STRING)
+                    value = allPropertyValues.GetFilteredPropertySingleValueValue("Width", true);
+
+                //reset back to property set "Pset_Specification"
+                allPropertyValues.SetFilteredPropertySingleValues(ifcTypeObject, "Pset_Specification");
+            }
+            return ConvertNumberOrDefault(value);
+        }
+
+        /// <summary>
+        /// Get the Nominal Length for the IfcTypeObject
+        /// </summary>
+        /// <param name="ifcTypeObject">IfcTypeObject object</param>
+        /// <param name="allPropertyValues">COBieDataPropertySetValues object holds all the properties for all the IfcSpace</param>
+        /// <returns>property value as string or default value</returns>
+        private string GetNominalLength(IfcTypeObject ifcTypeObject, COBieDataPropertySetValues allPropertyValues)
+        {
+            string value = allPropertyValues.GetFilteredPropertySingleValueValue("NominalLength", false);
+            //Fall back to wild card properties
+            //get the property single values for this ifcTypeObject
+            if (value == DEFAULT_STRING)
+            {
+                allPropertyValues.SetFilteredPropertySingleValues(ifcTypeObject);
+                if (value == DEFAULT_STRING)
+                    value = allPropertyValues.GetFilteredPropertySingleValueValue("NominalLength", true);
+                if (value == DEFAULT_STRING)
+                    value = allPropertyValues.GetFilteredPropertySingleValueValue("OverallLength", true);
+
+                //reset back to property set "Pset_Specification"
+                allPropertyValues.SetFilteredPropertySingleValues(ifcTypeObject, "Pset_Specification");
+            }
+            return ConvertNumberOrDefault(value);
+        }
+
+
+
+        /// <summary>
+        /// Get the Expected Life for the IfcTypeObject
+        /// </summary>
+        /// <param name="ifcTypeObject">IfcTypeObject object</param>
+        /// <param name="allPropertyValues">COBieDataPropertySetValues object holds all the properties for all the IfcSpace</param>
+        /// <returns>property value as string or default value</returns>
+        private string GetExpectedLife(IfcTypeObject ifcTypeObject, Interval serviceDuration, COBieDataPropertySetValues allPropertyValues)
+        {
+            string value = serviceDuration.Value;
+
+            //Fall back to wild card properties
+            //get the property single values for this ifcTypeObject
+            allPropertyValues.SetFilteredPropertySingleValues(ifcTypeObject);
+            if (value == DEFAULT_STRING)
+                value = allPropertyValues.GetFilteredPropertySingleValueValue("ServiceLifeDuration", true);
+            if (value == DEFAULT_STRING)
+                value = allPropertyValues.GetFilteredPropertySingleValueValue(" Expected", true);
+            return value;
+        }
+
+
+        /// <summary>
+        /// Get the Replacement Cost for the IfcTypeObject
+        /// </summary>
+        /// <param name="ifcTypeObject">IfcTypeObject object</param>
+        /// <param name="allPropertyValues">COBieDataPropertySetValues object holds all the properties for all the IfcSpace</param>
+        /// <returns>property value as string or default value</returns>
+        private string GetReplacementCost(IfcTypeObject ifcTypeObject, COBieDataPropertySetValues allPropertyValues)
+        {
+            allPropertyValues.SetFilteredPropertySingleValues(ifcTypeObject, "Pset_EconomicImpactValues");
+            string value = allPropertyValues.GetFilteredPropertySingleValueValue("ReplacementCost", false);
+
+            //Fall back to wild card properties
+            //get the property single values for this ifcTypeObject
+            if (value == DEFAULT_STRING)
+            {
+                allPropertyValues.SetFilteredPropertySingleValues(ifcTypeObject);
+                if (value == DEFAULT_STRING)
+                    value = allPropertyValues.GetFilteredPropertySingleValueValue("ReplacementCost", true);
+                if (value == DEFAULT_STRING)
+                    value = allPropertyValues.GetFilteredPropertySingleValueValue("Replacement Cost", true);
+                if (value == DEFAULT_STRING)
+                    value = allPropertyValues.GetFilteredPropertySingleValueValue("Cost", true);
+                if (value == DEFAULT_STRING)
+                    value = allPropertyValues.GetFilteredPropertySingleValueValue("Replacement", true);
+                //reset back to property set "Pset_Warranty"
+                allPropertyValues.SetFilteredPropertySingleValues(ifcTypeObject, "Pset_Warranty");
+            }
+            return value;
+
+        }
+
+        /// <summary>
+        /// Get the Warranty Description for the IfcTypeObject
+        /// </summary>
+        /// <param name="ifcTypeObject">IfcTypeObject object</param>
+        /// <param name="allPropertyValues">COBieDataPropertySetValues object holds all the properties for all the IfcSpace</param>
+        /// <returns>property value as string or default value</returns>
+        private string GetWarrantyDescription(IfcTypeObject ifcTypeObject, COBieDataPropertySetValues allPropertyValues)
+        {
+            string value = allPropertyValues.GetFilteredPropertySingleValueValue("WarrantyDescription", false);
+
+            //Fall back to wild card properties
+            //get the property single values for this ifcTypeObject
+            if (value == DEFAULT_STRING)
+            {
+                allPropertyValues.SetFilteredPropertySingleValues(ifcTypeObject);
+                if (value == DEFAULT_STRING)
+                    value = allPropertyValues.GetFilteredPropertySingleValueValue("WarrantyDescription", true);
+                if (value == DEFAULT_STRING)
+                    value = allPropertyValues.GetFilteredPropertySingleValueValue("WarrantyIdentifier", true);
+
+                //reset back to property set "Pset_Warranty"
+                allPropertyValues.SetFilteredPropertySingleValues(ifcTypeObject, "Pset_Warranty"); 
+            }
+            return value; 
+        }
+
+        /// <summary>
+        /// Get the Warranty Guarantor Labor for the IfcTypeObject
+        /// </summary>
+        /// <param name="ifcTypeObject">IfcTypeObject object</param>
+        /// <param name="allPropertyValues">COBieDataPropertySetValues object holds all the properties for all the IfcSpace</param>
+        /// <returns>property value as string or default value</returns>
+        private string GetWarrantyGuarantorLabor(IfcTypeObject ifcTypeObject, COBieDataPropertySetValues allPropertyValues)
+        {
+            string value = allPropertyValues.GetFilteredPropertySingleValueValue("WarrantyGuarantorLabor", false);
+            //Fall back to wild card properties
+            //get the property single values for this ifcTypeObject
+            if (value == DEFAULT_STRING)
+            {
+                allPropertyValues.SetFilteredPropertySingleValues(ifcTypeObject);
+                if (value == DEFAULT_STRING)
+                    value = allPropertyValues.GetFilteredPropertySingleValueValue("WarrantyGuarantorParts", true);
+                if (value == DEFAULT_STRING)
+                    value = allPropertyValues.GetFilteredPropertySingleValueValue("PointOfContact", true);
+
+                //reset back to property set "Pset_Warranty"
+                allPropertyValues.SetFilteredPropertySingleValues(ifcTypeObject, "Pset_Warranty"); 
+            }
+            return value; 
+        }
+
+        /// <summary>
+        /// Get the Warranty Guarantor Parts for the IfcTypeObject
+        /// </summary>
+        /// <param name="ifcTypeObject">IfcTypeObject object</param>
+        /// <param name="allPropertyValues">COBieDataPropertySetValues object holds all the properties for all the IfcSpace</param>
+        /// <returns>property value as string or default value</returns>
+        private string GetWarrantyGuarantorParts(IfcTypeObject ifcTypeObject, COBieDataPropertySetValues allPropertyValues)
+        {
+            string value = allPropertyValues.GetFilteredPropertySingleValueValue("WarrantyGuarantorParts", false);
+            //Fall back to wild card properties
+            //get the property single values for this ifcTypeObject
+            if (value == DEFAULT_STRING)
+            {
+                allPropertyValues.SetFilteredPropertySingleValues(ifcTypeObject);
+                if (value == DEFAULT_STRING)
+                    value = allPropertyValues.GetFilteredPropertySingleValueValue("WarrantyGuarantorParts", true);
+                if (value == DEFAULT_STRING)
+                    value = allPropertyValues.GetFilteredPropertySingleValueValue("PointOfContact", true);
+
+                //reset back to property set "Pset_Warranty"
+                allPropertyValues.SetFilteredPropertySingleValues(ifcTypeObject, "Pset_Warranty"); 
+            }
+            return value; 
+        }
+
+        /// <summary>
+        /// Get the Model Number for the IfcTypeObject
+        /// </summary>
+        /// <param name="ifcTypeObject">IfcTypeObject object</param>
+        /// <param name="allPropertyValues">COBieDataPropertySetValues object holds all the properties for all the IfcSpace</param>
+        /// <returns>property value as string or default value</returns>
+        private string GetModelNumber(IfcTypeObject ifcTypeObject, COBieDataPropertySetValues allPropertyValues)
+        {
+            string value = allPropertyValues.GetFilteredPropertySingleValueValue("ModelLabel", false);
+            //Fall back to wild card properties
+            //get the property single values for this ifcTypeObject
+            if (value == DEFAULT_STRING)
+            {
+                allPropertyValues.SetFilteredPropertySingleValues(ifcTypeObject);
+                if (value == DEFAULT_STRING)
+                    value = allPropertyValues.GetFilteredPropertySingleValueValue("ArticleNumber", true);
+                if (value == DEFAULT_STRING)
+                    value = allPropertyValues.GetFilteredPropertySingleValueValue("ModelLabel", true);
+
+                //reset back to property set "Pset_Asset"
+                allPropertyValues.SetFilteredPropertySingleValues(ifcTypeObject, "Pset_Asset"); 
+            }
+            return value; 
         }
 
         /// <summary>
@@ -235,30 +628,7 @@ namespace Xbim.COBie.Data
             return properties;
         }
 
-        /// <summary>
-        /// Get the Attribute for a IfcTypeObject
-        /// </summary>
-        /// <param name="typeObj">IfcTypeObject </param>
-        /// <param name="propSetName">Property Set Name to retrieve IfcPropertySet Object</param>
-        /// <param name="propName">Property Name held in IfcPropertySingleValue object</param>
-        /// <param name="relAtts">List of IfcPropertySingleValue filtered to attribute names we require</param>
-        /// <returns>NominalValue of IfcPropertySingleValue as a string</returns>
-        private string GetAttribute(IfcTypeObject typeObj, string propSetName, string propName, IEnumerable<IfcPropertySingleValue> relAtts)
-        {
-            // try to get the property from the IfcTypeObject
-            IfcPropertySingleValue singleValue = typeObj.GetPropertySingleValue(propSetName, propName);
-            // if null then try and get from a first related object i.e. window type is associated with a window so look at window
-            // TODO: should we do this or just return some default value here???
-            if (singleValue == null) 
-                singleValue = relAtts.Where(p => p.Name == propName).FirstOrDefault();
-            //if we have a value return the string for input to row field
-            if ((singleValue != null) && (singleValue.NominalValue != null)) 
-                return singleValue.NominalValue.ToString();
-            else 
-                return DEFAULT_STRING; //nothing found return default
-
-
-        }
+        
 
         /// <summary>
         /// Get the Time unit and value for the passed in property
@@ -268,18 +638,18 @@ namespace Xbim.COBie.Data
         /// <param name="propertyName">Property Name held in IfcPropertySingleValue object</param>
         /// <param name="psetValues">List of IfcPropertySingleValue filtered to attribute names we require</param>
         /// <returns>Dictionary holding unit and value e.g. Year, 2.0</returns>
-        private Interval GetDurationUnitAndValue(IfcTypeObject typeObject, string psetName, string propertyName, IEnumerable<IfcPropertySingleValue> psetValues)
+        private Interval GetDurationUnitAndValue( IfcPropertySingleValue typeValue)
         {
             const string DefaultUnit = "Year"; // n/a is not acceptable, so create a valid default
 
             Interval result = new Interval() { Value = DEFAULT_NUMERIC, Unit = DefaultUnit };
             // try to get the property from the Type first
-            IfcPropertySingleValue typeValue = typeObject.GetPropertySingleValue(psetName, propertyName);
+            //IfcPropertySingleValue typeValue = typeObject.GetPropertySingleValue(psetName, propertyName);
 
-            // TODO: Check this logic
-            // if null then try and get from first instance of this type
-            if (typeValue == null) 
-                typeValue = psetValues.Where(p => p.Name == propertyName).FirstOrDefault();
+            //// TODO: Check this logic
+            //// if null then try and get from first instance of this type
+            //if (typeValue == null) 
+            //    typeValue = psetValues.Where(p => p.Name == propertyName).FirstOrDefault();
 
             if (typeValue == null)
                 return result;

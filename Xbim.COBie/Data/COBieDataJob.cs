@@ -44,26 +44,20 @@ namespace Xbim.COBie.Data
 
             foreach (IfcTask task in ifcTasks)
             {
+                if (task == null) continue;
+
                 COBieJobRow job = new COBieJobRow(jobs);
 
-                job.Name = (task == null) ? "" : task.Name.ToString();
+                job.Name =  task.Name.ToString();
 
                 job.CreatedBy = GetTelecomEmailAddress(task.OwnerHistory);
                 job.CreatedOn = GetCreatedOnDateAsFmtString(task.OwnerHistory);
 
-                //job.Category = (task == null) ? "" : task.ObjectType.ToString();
-                IfcRelAssociatesClassification ifcRAC = task.HasAssociations.OfType<IfcRelAssociatesClassification>().FirstOrDefault();
-                if (ifcRAC != null)
-                {
-                    IfcClassificationReference ifcCR = (IfcClassificationReference)ifcRAC.RelatingClassification;
-                    job.Category = ifcCR.Name;
-                }
-                else
-                    job.Category = "";
+                job.Category = (task.ObjectType == null) ? DEFAULT_STRING : task.ObjectType.ToString(); ;
 
                 job.Status = (task == null) ? "" : task.Status.ToString();
 
-                job.TypeName = (task.ObjectType == null) ? "" : task.ObjectType.ToString();
+                job.TypeName = "";
                 job.Description = (task == null) ? "" : task.Description.ToString();
                 job.Duration = "";
 
