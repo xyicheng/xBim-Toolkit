@@ -47,7 +47,7 @@ namespace Xbim.IO
 
         internal void BeginNestedType(string typeName)
         {
-            IfcType ifcType = IfcInstances.IfcTypeLookup[typeName];
+            IfcType ifcType = IfcMetaData.IfcType(typeName);
             _currentInstance = new Part21Entity((IPersistIfc)Activator.CreateInstance(ifcType.Type));
             _processStack.Push(_currentInstance);
         }

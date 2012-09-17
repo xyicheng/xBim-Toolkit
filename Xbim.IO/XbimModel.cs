@@ -74,14 +74,14 @@ namespace Xbim.IO
         #endregion
 
         protected IIfcFileHeader header;
-        private string _storageFileName;
+        private string _databaseName;
 
         private XbimStorageType _storageType;
         private bool disposed = false;
 
-        public string FileName
+        public string DatabaseName
         {
-            get { return _storageFileName; }
+            get { return _databaseName; }
         }
         
 
@@ -160,21 +160,28 @@ namespace Xbim.IO
         /// Returns the table to the cache for reuse
         /// </summary>
         /// <param name="table"></param>
-        internal void FreeGeometryTable(XbimGeometryTable table)
+        internal void FreeTable(XbimGeometryTable table)
         {
             Cached.FreeTable(table);
         }
 
- 
+        /// <summary>
+        /// Returns the table to the cache for reuse
+        /// </summary>
+        /// <param name="table"></param>
+        internal void FreeTable(XbimEntityTable table)
+        {
+            Cached.FreeTable(table);
+        }
 
         //Loads the property data of an entity, if it is not already loaded
-        public virtual long Activate(IPersistIfcEntity entity, bool write)
+        public virtual int Activate(IPersistIfcEntity entity, bool write)
         {
           
             if (write) //we want to activate for reading
             {
                 if (!Transaction.IsRollingBack)
-                   Cached.Update_Reversible(entity);
+                   Cached.AddModified(entity);
             }
             else //we want to read so load from db if necessary
             {
@@ -338,7 +345,7 @@ namespace Xbim.IO
         /// </summary>
         /// <param name="entityLabel"></param>
         /// <returns></returns>
-        public virtual bool ContainsEntityLabel(long entityLabel)
+        public virtual bool ContainsEntityLabel(int entityLabel)
         {
             return Cached.Contains(entityLabel);
         }
@@ -348,7 +355,7 @@ namespace Xbim.IO
         /// </summary>
         /// <param name="label"></param>
         /// <returns></returns>
-        public virtual IPersistIfcEntity GetInstance(long label)
+        public virtual IPersistIfcEntity GetInstance(int label)
         {
             return Cached.GetInstance(label);
         }
@@ -362,14 +369,14 @@ namespace Xbim.IO
         /// </summary>
         /// <param name="label"></param>
         /// <returns></returns>
-        internal IPersistIfcEntity GetInstanceVolatile(long label)
+        internal IPersistIfcEntity GetInstanceVolatile(int label)
         {
             return Cached.GetInstance(label, true, true);
         }
 
 
         /// <summary>
-        /// Retruns the total number of Ifc Instances in the model
+        /// Returns the total number of Ifc Instances in the model
         /// </summary>
         public virtual long InstancesCount
         {
@@ -378,7 +385,16 @@ namespace Xbim.IO
                 return Cached.Count;
             }
         }
-
+        /// <summary>
+        /// Returns the total number of Geometry objects in the model
+        /// </summary>
+        public virtual long GeometriesCount
+        {
+            get
+            {
+                return Cached.GeometriesCount();
+            }
+        }
 
         /// <summary>
         ///   Creates a new Ifc Persistent Instance, this is an undoable operation
@@ -387,7 +403,7 @@ namespace Xbim.IO
         public TIfcType New<TIfcType>() where TIfcType : IPersistIfcEntity, new()
         {
             Type t = typeof(TIfcType);
-            long nextLabel = Cached.HighestLabel + 1;
+            int nextLabel = Cached.HighestLabel + 1;
             return (TIfcType)New(t, nextLabel);
         }
         /// <summary>
@@ -464,6 +480,14 @@ namespace Xbim.IO
         }
 
         /// <summary>
+        /// Compacts an Xbim file to reduce size, database must be closed before this is called
+        /// </summary>
+        /// <returns></returns>
+        public static  bool Compact(string sourceFileName, string targetFileName, out string errMsg)
+        {
+            return IfcPersistedInstanceCache.Compact(sourceFileName, targetFileName, out errMsg);
+        }
+        /// <summary>
         /// Initialises the model state, all instances, cached, written or to delete are dropped, the model is clean and empty.
         /// This operation is not reversable. If persisted is true an output file
         /// </summary>
@@ -474,9 +498,9 @@ namespace Xbim.IO
             header = null;
             _storageType = StorageType(fileName);
             if (_storageType == XbimStorageType.INVALID)
-                _storageFileName = null;
+                _databaseName = null;
             else
-                _storageFileName = fileName;
+                _databaseName = fileName;
             
         }
 
@@ -509,9 +533,9 @@ namespace Xbim.IO
         /// <param name="t"></param>
         /// <param name="label"></param>
         /// <returns></returns>
-        internal IPersistIfcEntity New(Type t, long label)
+        internal IPersistIfcEntity New(Type t, int label)
         {
-            long nextLabel = Math.Abs(label);
+            int nextLabel = Math.Abs(label);
 
             IPersistIfcEntity entity = Cached.CreateNew_Reversable(t, nextLabel);
             //Cached.SetHighestLabel_Reversable(nextLabel);
@@ -564,7 +588,7 @@ namespace Xbim.IO
             int errors = 0;
             int percentage = -1;
 
-            foreach (IfcInstanceHandle handle in InstanceHandles)
+            foreach (XbimInstanceHandle handle in InstanceHandles)
             {
                 idx++;
                 IPersistIfcEntity ent = GetInstanceVolatile(handle.EntityLabel);
@@ -604,7 +628,7 @@ namespace Xbim.IO
         public static int Validate(IPersistIfcEntity ent, IndentedTextWriter tw, ValidationFlags validateLevel)
         {
             if (validateLevel == ValidationFlags.None) return 0; //nothing to do
-            IfcType ifcType = IfcInstances.IfcEntities[ent];
+            IfcType ifcType = IfcMetaData.IfcType(ent);
             bool notIndented = true;
             int errors = 0;
             if (validateLevel == ValidationFlags.Properties || validateLevel == ValidationFlags.All)
@@ -778,7 +802,7 @@ namespace Xbim.IO
             undoRedoSession = null;
             header = null;
             _storageType = XbimStorageType.INVALID;
-            _storageFileName = null;
+            _databaseName = null;
         }
 
         /// <summary>
@@ -807,8 +831,8 @@ namespace Xbim.IO
             get
             {
                 
-                if(string.IsNullOrEmpty(_storageFileName)) return false; //no file name specified
-                string fullPath = Path.GetFullPath(_storageFileName);
+                if(string.IsNullOrEmpty(_databaseName)) return false; //no file name specified
+                string fullPath = Path.GetFullPath(_databaseName);
                 string backupName = Path.ChangeExtension(fullPath, Path.GetExtension(fullPath) + "Bak");
 
                 try
@@ -886,6 +910,7 @@ namespace Xbim.IO
                     default:
                         return false;
                 }
+                _databaseName = fileName;
                 return true;
             }
             catch (Exception e)
@@ -903,7 +928,7 @@ namespace Xbim.IO
             try
             {
                 Cached.SaveAs(storageType, outputFileName, progress);
-                _storageFileName = outputFileName;
+                _databaseName = outputFileName;
                 _storageType = storageType;
                 return true;
             }
@@ -930,7 +955,7 @@ namespace Xbim.IO
            return Cached.InstancesOfTypeCount(t);
         }
 
-        public IEnumerable<IfcInstanceHandle> InstanceHandles
+        public IEnumerable<XbimInstanceHandle> InstanceHandles
         {
             get
             {
@@ -938,7 +963,7 @@ namespace Xbim.IO
             }
         }
 
-        internal IEnumerable<IfcInstanceHandle> InstanceHandlesOfType<T>()
+        internal IEnumerable<XbimInstanceHandle> InstanceHandlesOfType<T>()
         {
             return Cached.InstanceHandlesOfType<T>();
         }
@@ -1085,7 +1110,7 @@ namespace Xbim.IO
         {
             try
             {
-                IfcType ifcType = IfcInstances.IfcTypeLookup[ifcEntityName];
+                IfcType ifcType = IfcMetaData.IfcType(ifcEntityName);
                 return CreateInstance(ifcType.Type, label);
             }
             catch (Exception e)
@@ -1210,6 +1235,48 @@ namespace Xbim.IO
           
         }
 
+
+
+        internal XbimEntityTable GetEntityTable()
+        {
+            return Cached.GetEntityTable();
+        }
+
+        internal void Compact(XbimModel targetModel)
+        {
+            foreach (var prod in InstancesOfType<IfcProduct>())
+            {
+                targetModel.InsertCopy(prod);
+            }
+        }
+
+        /// <summary>
+        /// Inserts a deep copy of the toCopy object into this model
+        /// All property values are copied to the maximum depth
+        /// Objects are not duplicated, if repeated copies are to be performed use the version with the 
+        /// mapping argument to ensure objects are not duplicated
+        /// </summary>
+        /// <param name="toCopy"></param>
+        /// <returns></returns>
+        public T InsertCopy<T>(T toCopy, bool includeInverses = false) where T : IPersistIfcEntity
+        {
+            return InsertCopy(toCopy, new XbimInstanceHandleMap(toCopy.ModelOf, this), includeInverses);
+        }
+
+        /// <summary>
+        /// Inserts a deep copy of the toCopy object into this model
+        /// All property values are copied to the maximum depth
+        /// Inverse properties are not copied
+        /// </summary>
+        /// <param name="toCopy">Instance to copy</param>
+        /// <param name="mappings">Supply a dictionary of mappings if repeat copy insertions are to be made</param>
+        /// <returns></returns>
+        public T InsertCopy<T>(T toCopy, XbimInstanceHandleMap mappings, bool includeInverses = false) where T : IPersistIfcEntity
+        {
+            return Cached.InsertCopy<T>(toCopy, mappings, includeInverses);
+        }
+
        
+
     }
 }

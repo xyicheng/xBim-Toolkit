@@ -34,7 +34,7 @@ namespace Xbim.ModelGeometry.Scene
         private Matrix3D _localMatrix;
         private HashSet<TransformNode> _children;
         private long _filePosition = -2;
-        private long? _productId;
+        private int? _productId;
         private Rect3D _boundingBox;
         TransformGraph _transformGraph;
         
@@ -84,7 +84,7 @@ namespace Xbim.ModelGeometry.Scene
             set { _filePosition = value; }
         }
 
-        public long ProductId
+        public int ProductId
         {
             get { return _productId ?? 0; }
             set { _productId = value; }
@@ -118,7 +118,7 @@ namespace Xbim.ModelGeometry.Scene
         internal void Read(BinaryReader strm, TransformGraph graph)
         {
             _transformGraph = graph;
-            _productId = strm.ReadInt64();
+            _productId = strm.ReadInt32();
             if (_productId == 0) 
                 _productId = null;
             else

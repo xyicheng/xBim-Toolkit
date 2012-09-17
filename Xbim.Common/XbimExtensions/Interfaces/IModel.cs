@@ -71,11 +71,11 @@ namespace Xbim.XbimExtensions.Interfaces
        
         TIfcType New<TIfcType>(InitProperties<TIfcType> initPropertiesFunc = null) where TIfcType : IPersistIfcEntity, new();
 
-        long Activate(IPersistIfcEntity owningEntity, bool write);
+        int Activate(IPersistIfcEntity owningEntity, bool write);
         void Delete(IPersistIfcEntity instance);
         bool ContainsInstance(IPersistIfcEntity instance);
-        bool ContainsEntityLabel(long entityLabel);
-        IPersistIfcEntity GetInstance(long label);
+        bool ContainsEntityLabel(int entityLabel);
+        IPersistIfcEntity GetInstance(int label);
 
         long InstancesCount { get; }
         

@@ -10,7 +10,7 @@ namespace Xbim.IO
     public class IfcType
     {
         public Type Type;
-        public ushort TypeId = 0;
+        public short? TypeId;
         public SortedList<int, IfcMetaProperty> IfcProperties = new SortedList<int, IfcMetaProperty>();
         public List<IfcMetaProperty> IfcInverses = new List<IfcMetaProperty>();
         public IfcType IfcSuperType;

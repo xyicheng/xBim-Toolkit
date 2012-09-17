@@ -34,7 +34,7 @@ namespace Xbim.IO
         {
             _written = new HashSet<long>();
             output.Write(HeaderAsString(model.Header));
-            foreach (IfcInstanceHandle item in model.InstanceHandles /*.Types.OrderBy(t=>t.Name)*/)
+            foreach (XbimInstanceHandle item in model.InstanceHandles /*.Types.OrderBy(t=>t.Name)*/)
             {
                 IPersistIfcEntity entity = model.GetInstanceVolatile(item.EntityLabel);
                 entity.WriteEntity(output);

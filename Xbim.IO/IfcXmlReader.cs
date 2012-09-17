@@ -225,7 +225,7 @@ namespace Xbim.IO
         {
             string elementName = input.Name;
             bool isRefType;
-            long id = GetId(input, out isRefType);
+            int id = GetId(input, out isRefType);
 
             IfcType ifcType;
             
@@ -410,9 +410,9 @@ namespace Xbim.IO
         {
             IfcType ifcType;
             XmlEntity xmlEntity = _currentNode as XmlEntity;
-            if (xmlEntity != null && !IfcInstances.IfcTypeLookup.TryGetValue(elementName.ToUpper(), out ifcType))
+            if (xmlEntity != null && !IfcMetaData.TryGetIfcType(elementName.ToUpper(), out ifcType))
             {
-                IfcType t = IfcInstances.IfcEntities[xmlEntity.Entity];
+                IfcType t = IfcMetaData.IfcType(xmlEntity.Entity);
 
                 foreach (KeyValuePair<int, IfcMetaProperty> p in t.IfcProperties)
                 {
@@ -444,20 +444,20 @@ namespace Xbim.IO
 
         private bool IsIfcType(string elementName, out IfcType ifcType)
         {
-            bool ok = IfcInstances.IfcTypeLookup.TryGetValue(elementName.ToUpper(), out ifcType);
+            bool ok = IfcMetaData.TryGetIfcType(elementName.ToUpper(), out ifcType);
             if (!ok)
             {
 
                 if (elementName.Contains("-wrapper") && elementName.StartsWith("ex:") == false) // we have an inline type definition
                 {
                     string inputName = elementName.Substring(0, elementName.LastIndexOf("-"));
-                    ok = IfcInstances.IfcTypeLookup.TryGetValue(inputName.ToUpper(), out ifcType);
+                    ok = IfcMetaData.TryGetIfcType(inputName.ToUpper(), out ifcType);
                 }
             }
             return ok && typeof(ExpressType).IsAssignableFrom(ifcType.Type);
         }
 
-        private long GetId(XmlReader input, out bool isRefType)
+        private int GetId(XmlReader input, out bool isRefType)
         {
             isRefType = false;
             string strId = input.GetAttribute("id");
@@ -473,7 +473,7 @@ namespace Xbim.IO
 
                 if (!match.Success)
                     throw new Exception(String.Format("Illegal entity id: {0}", strId));
-                return Convert.ToInt64(match.Value);
+                return Convert.ToInt32(match.Value);
             }
             else
                 return -1;
@@ -483,7 +483,7 @@ namespace Xbim.IO
         private bool IsIfcEntity(string elementName, out IfcType ifcType)
         {
 
-            return IfcInstances.IfcTypeLookup.TryGetValue(elementName.ToUpper(), out ifcType);
+            return IfcMetaData.TryGetIfcType(elementName.ToUpper(), out ifcType);
         }
 
         private void EndElement(IfcPersistedInstanceCache cache, XmlReader input, XmlNodeType prevInputType, string prevInputName, out IPersistIfcEntity writeEntity)

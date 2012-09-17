@@ -35,7 +35,7 @@ namespace Xbim.Ifc2x3.MaterialResource
 
         #region IPersistIfcEntity Members
 
-        private long _entityLabel;
+        private int _entityLabel;
         private IModel _model;
 
         public IModel ModelOf
@@ -43,7 +43,7 @@ namespace Xbim.Ifc2x3.MaterialResource
             get { return _model; }
         }
 
-        void IPersistIfcEntity.Bind(IModel model, long entityLabel)
+        void IPersistIfcEntity.Bind(IModel model, int entityLabel)
         {
             _model = model;
             _entityLabel = entityLabel;
@@ -54,7 +54,7 @@ namespace Xbim.Ifc2x3.MaterialResource
             get { return _entityLabel > 0; }
         }
 
-        public long EntityLabel
+        public int EntityLabel
         {
             get { return _entityLabel; }
         }

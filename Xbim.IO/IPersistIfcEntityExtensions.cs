@@ -25,9 +25,9 @@ namespace Xbim.IO
         /// </summary>
         /// <param name="entity"></param>
         /// <returns></returns>
-        public static ushort TypeId(this  IPersistIfcEntity entity)
+        public static short? IfcTypeId(this  IPersistIfcEntity entity)
         {
-            return IfcInstances.IfcEntities[entity.GetType()].TypeId;
+            return entity.IfcTypeId();
         }
 
         /// <summary>
@@ -35,9 +35,9 @@ namespace Xbim.IO
         /// </summary>
         /// <param name="entity"></param>
         /// <returns></returns>
-        internal static IfcType IfcType(this  IPersistIfcEntity entity)
+        public static IfcType IfcType(this  IPersistIfcEntity entity)
         {
-            return IfcInstances.IfcEntities[entity.GetType()];
+            return IfcMetaData.IfcType(entity);
         }
 
         public static object SecondaryKeyValue(this  IPersistIfcEntity entity)
@@ -118,15 +118,15 @@ namespace Xbim.IO
                         comma = true;
                         tw.Write("#"+ br.ReadUInt16().ToString());
                         break;
-                    case P21ParseAction.SetObjectValueUInt32:
+                    case P21ParseAction.SetObjectValueInt32:
                         if (comma) tw.Write(",");
                         comma = true;
-                        tw.Write("#" + br.ReadUInt32().ToString());
+                        tw.Write("#" + br.ReadInt32().ToString());
                         break;
                     case P21ParseAction.SetObjectValueInt64:
                         if (comma) tw.Write(",");
                         comma = true;
-                        tw.Write("#" + br.ReadUInt64().ToString());
+                        tw.Write("#" + br.ReadInt64().ToString());
                         break;
                     case P21ParseAction.BeginNestedType:
                         if (comma) tw.Write(",");
@@ -160,7 +160,7 @@ namespace Xbim.IO
         {
 
             entityWriter.Write(string.Format("#{0}={1}(", Math.Abs(entity.EntityLabel), entity.GetType().Name.ToUpper()));
-            IfcType ifcType = IfcInstances.IfcEntities[entity.GetType()];
+            IfcType ifcType = IfcMetaData.IfcType(entity);
             bool first = true;
             
             foreach (IfcMetaProperty ifcProperty in ifcType.IfcProperties.Values)
@@ -258,7 +258,7 @@ namespace Xbim.IO
                 }
             }
             else if (typeof(ExpressEnumerable).IsAssignableFrom(propType) &&
-                     (itemType = GetItemTypeFromGenericType(propType)) != null)
+                     (itemType = propType.GetItemTypeFromGenericType()) != null)
             //only process lists that are real lists, see cartesianpoint
             {
                 entityWriter.Write('(');
@@ -350,11 +350,16 @@ namespace Xbim.IO
                 throw new ArgumentException(string.Format("Invalid Value Type {0}", pInfoType.Name), "pInfoType");
         }
 
+        public static XbimInstanceHandle GetHandle(this IPersistIfcEntity entity)
+        {
+            return new XbimInstanceHandle(Math.Abs(entity.EntityLabel), IfcMetaData.IfcTypeId(entity));
+        }
+
         internal static void WriteEntity(this IPersistIfcEntity entity, BinaryWriter entityWriter)
         {
            
-            IfcType ifcType = IfcInstances.IfcEntities[entity.GetType()];
-            entityWriter.Write(Convert.ToByte(P21ParseAction.NewEntity));
+            IfcType ifcType = IfcMetaData.IfcType(entity);
+          //  entityWriter.Write(Convert.ToByte(P21ParseAction.NewEntity));
             entityWriter.Write(Convert.ToByte(P21ParseAction.BeginList));
             foreach (IfcMetaProperty ifcProperty in ifcType.IfcProperties.Values)
             //only write out persistent attributes, ignore inverses
@@ -369,7 +374,7 @@ namespace Xbim.IO
                 }
             }
             entityWriter.Write(Convert.ToByte(P21ParseAction.EndList));
-            entityWriter.Write(Convert.ToByte(P21ParseAction.EndEntity));
+        //    entityWriter.Write(Convert.ToByte(P21ParseAction.EndEntity));
         }
 
         private static  void WriteProperty(Type propType, object propVal, BinaryWriter entityWriter)
@@ -425,7 +430,7 @@ namespace Xbim.IO
                 }
             }
             else if (typeof(ExpressEnumerable).IsAssignableFrom(propType) &&
-                     (itemType = GetItemTypeFromGenericType(propType)) != null)
+                     (itemType = propType.GetItemTypeFromGenericType()) != null)
             //only process lists that are real lists, see cartesianpoint
             {
                 entityWriter.Write(Convert.ToByte(P21ParseAction.BeginList));
@@ -436,24 +441,28 @@ namespace Xbim.IO
             else if (typeof(IPersistIfcEntity).IsAssignableFrom(propType))
             //all writable entities must support this interface and ExpressType have been handled so only entities left
             {
-                long val = Math.Abs(((IPersistIfcEntity)propVal).EntityLabel);
+                int val = Math.Abs(((IPersistIfcEntity)propVal).EntityLabel);
                 if (val <= UInt16.MaxValue)
                 {
                     entityWriter.Write((byte)P21ParseAction.SetObjectValueUInt16);
                     entityWriter.Write(Convert.ToUInt16(val));
                 }
-                else if (val <= UInt32.MaxValue)
+                else if (val <= Int32.MaxValue)
                 {
-                    entityWriter.Write((byte)P21ParseAction.SetObjectValueUInt32);
-                    entityWriter.Write(Convert.ToUInt32(val));
+                    entityWriter.Write((byte)P21ParseAction.SetObjectValueInt32);
+                    entityWriter.Write(Convert.ToInt32(val));
                 }
-                else if (val <= Int64.MaxValue)
-                {
-                    entityWriter.Write((byte)P21ParseAction.SetObjectValueInt64);
-                    entityWriter.Write(val);
-                }
+                //else if (val <= Int64.MaxValue)
+                //{
+                //    //This is a very large model and it is unlikely we will be able to handle this number of entities,
+                //    //it is possible they have just created big labels and it needs to be renumbered
+                //    //Entity Label could be redfined as a long bu this is a large overhead if never required, let's see...
+                //    throw new XbimException("Entity Label is Init64, this is not currently supported");
+                //    //entityWriter.Write((byte)P21ParseAction.SetObjectValueInt64);
+                //    //entityWriter.Write(val);
+                //}
                 else
-                    throw new Exception("Entity Label exceeds maximim value for a long number");
+                    throw new Exception("Entity Label exceeds maximim value for a an int32 long number");
             }
             else if (propType.IsValueType) //it might be an in-built value type double, string etc
             {
@@ -628,12 +637,13 @@ namespace Xbim.IO
                     case P21ParseAction.SetObjectValueUInt16:
                         parserState.SetObjectValue(cache.GetInstance(br.ReadUInt16(), false, unCached));
                         break;
-                    case P21ParseAction.SetObjectValueUInt32:
-                        parserState.SetObjectValue(cache.GetInstance(br.ReadUInt32(), false, unCached));
+                    case P21ParseAction.SetObjectValueInt32:
+                        parserState.SetObjectValue(cache.GetInstance(br.ReadInt32(), false, unCached));
                         break;
                     case P21ParseAction.SetObjectValueInt64:
-                        parserState.SetObjectValue(cache.GetInstance(br.ReadInt64(), false, unCached));
-                        break;
+                        throw new XbimException("Entity Label is int64, this is not currently supported");
+                        //parserState.SetObjectValue(cache.GetInstance(br.ReadInt64(), false, unCached));
+                        //break;
                     case P21ParseAction.BeginNestedType:
                         parserState.BeginNestedType(br.ReadString());
                         break;
@@ -655,24 +665,6 @@ namespace Xbim.IO
 
         #endregion
 
-        #region Helper Functions
-
-        internal static Type GetItemTypeFromGenericType(Type genericType)
-        {
-            if (genericType == typeof(ICoordinateList))
-                return typeof(IfcLengthMeasure); //special case for coordinates
-            if (genericType.IsGenericType || genericType.IsInterface)
-            {
-                Type[] genericTypes = genericType.GetGenericArguments();
-                if (genericTypes.GetUpperBound(0) >= 0)
-                    return genericTypes[genericTypes.GetUpperBound(0)];
-                return null;
-            }
-            if (genericType.BaseType != null)
-                return GetItemTypeFromGenericType(genericType.BaseType);
-            return null;
-        }
-
-        #endregion
+        
     }
 }

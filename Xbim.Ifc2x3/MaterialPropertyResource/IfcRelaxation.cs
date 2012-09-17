@@ -35,9 +35,9 @@ namespace Xbim.Ifc2x3.MaterialPropertyResource
         {
             get
             {
-#if SupportActivation
+
                 ((IPersistIfcEntity)this).Activate(false);
-#endif
+
                 return _relaxationValue;
             }
             set
@@ -54,9 +54,7 @@ namespace Xbim.Ifc2x3.MaterialPropertyResource
         {
             get
             {
-#if SupportActivation
                 ((IPersistIfcEntity)this).Activate(false);
-#endif
                 return _initialStress;
             }
             set
@@ -87,11 +85,11 @@ namespace Xbim.Ifc2x3.MaterialPropertyResource
             return ""; 
         }
 
-#if SupportActivation
+
 
         #region IPersistIfcEntity Members
 
-        private long _entityLabel;
+        private int _entityLabel;
         private IModel _model;
 
         IModel IPersistIfcEntity.ModelOf
@@ -99,7 +97,7 @@ namespace Xbim.Ifc2x3.MaterialPropertyResource
             get { return _model; }
         }
 
-        void IPersistIfcEntity.Bind(IModel model, long entityLabel)
+        void IPersistIfcEntity.Bind(IModel model, int entityLabel)
         {
             _model = model;
             _entityLabel = entityLabel;
@@ -110,7 +108,7 @@ namespace Xbim.Ifc2x3.MaterialPropertyResource
             get { return _entityLabel > 0; }
         }
 
-        public long EntityLabel
+        public int EntityLabel
         {
             get { return _entityLabel; }
         }
@@ -123,7 +121,7 @@ namespace Xbim.Ifc2x3.MaterialPropertyResource
 
         #endregion
 
-#endif
+
 
         #region INotifyPropertyChanged Members
 

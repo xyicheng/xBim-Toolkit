@@ -278,7 +278,7 @@ namespace Xbim.IO.Parser
                 Part21Entity mainEntity = _processStack.Last();
                 if (mainEntity != null)
                 {
-                    IfcType ifcType = IfcInstances.IfcEntities[mainEntity.Entity.GetType()];
+                    IfcType ifcType = IfcMetaData.IfcType(mainEntity.Entity);
                     Logger.ErrorFormat("Entity #{0,-5} {1}, error at parameter {2}-{3} value = {4}",
                                                mainEntity.EntityLabel, mainEntity.Entity.GetType().Name.ToUpper(),
                                                mainEntity.CurrentParamIndex + 1,
@@ -320,7 +320,7 @@ namespace Xbim.IO.Parser
                 Part21Entity mainEntity = _processStack.Last();
                 if (mainEntity != null)
                 {
-                    IfcType ifcType = IfcInstances.IfcEntities[mainEntity.Entity.GetType()];
+                    IfcType ifcType = IfcMetaData.IfcType(mainEntity.Entity);
 
                     string propertyName = mainEntity.CurrentParamIndex + 1 > ifcType.IfcProperties.Count ? "[UnknownProperty]" :
                         ifcType.IfcProperties[mainEntity.CurrentParamIndex + 1].PropertyInfo.Name;
@@ -368,7 +368,7 @@ namespace Xbim.IO.Parser
                 if (_errorCount > MaxErrorCount)
                     throw new Exception("Too many errors in file, parser execution terminated");
                 _errorCount++;
-                IfcType ifcType = IfcInstances.IfcEntities[host];
+                IfcType ifcType = IfcMetaData.IfcType(host);
                 string propertyName = paramIndex+1 > ifcType.IfcProperties.Count ? "[UnknownProperty]" :
                         ifcType.IfcProperties[paramIndex+1].PropertyInfo.Name;
                 Logger.ErrorFormat("Entity #{0,-5} {1}, error at parameter {2}-{3}",

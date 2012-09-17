@@ -172,6 +172,7 @@ namespace Xbim
 						//increase the tolerances and try again
 						ShapeFix_ShapeTolerance fTol;
 						double prec = Math::Max(1e-5,BRepLib::Precision()*1000 );
+						//double prec = BRepLib::Precision();
 						fTol.SetTolerance(*(mResultShape->Handle), prec);
 						fTol.SetTolerance(c,prec);
 						if(!DoCut(c,false) )

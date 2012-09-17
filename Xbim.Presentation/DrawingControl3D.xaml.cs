@@ -116,7 +116,7 @@ namespace Xbim.Presentation
         #region Fields
 
         private BackgroundWorker _worker;
-        private Dictionary<long, DrawingControl3DItem> _items = new Dictionary<long, DrawingControl3DItem>();
+        private Dictionary<int, DrawingControl3DItem> _items = new Dictionary<int, DrawingControl3DItem>();
         private Dictionary<ModelVisual3D, ModelVisual3D> _hidden = new Dictionary<ModelVisual3D, ModelVisual3D>();
         private List<Type> _hiddenTypes = new List<Type>();
         private Rect3D _viewSize;
@@ -241,8 +241,8 @@ namespace Xbim.Presentation
             DrawingControl3D d3d = d as DrawingControl3D;
             if (d3d != null)
             {
-                long? oldProd = e.OldValue as long?;
-                long? newProd = e.NewValue as long?;
+                int? oldProd = e.OldValue as int?;
+                int? newProd = e.NewValue as int?;
                 if (oldProd.HasValue) //unhighlight last one
                 {
                     DrawingControl3DItem item;
@@ -321,7 +321,7 @@ namespace Xbim.Presentation
 
         #endregion
 
-        public IDictionary<long, DrawingControl3DItem> Items
+        public IDictionary<int, DrawingControl3DItem> Items
         {
             get { return _items; }
         }
@@ -489,7 +489,7 @@ namespace Xbim.Presentation
             
             XbimMaterialProvider mat = null;
             DrawingControl3DItem d3D;
-            IfcType ifcType = IfcInstances.IfcIdIfcTypeLookup[geom.IfcTypeId];
+            IfcType ifcType = IfcMetaData.IfcType(geom.IfcTypeId);
             bool transparent = (ifcType.Type == typeof(IfcWindow)) || (ifcType.Type == typeof(IfcPlate));
             if (!_items.TryGetValue(geom.IfcProductLabel, out d3D))
             {
@@ -554,7 +554,7 @@ namespace Xbim.Presentation
             if (worker != null && model != null)
             {
                 worker.ReportProgress(0, "Reading Geometry");
-                foreach (var shape in model.Shapes(XbimGeometryType.TriangulatedMesh).Where(sh=>{IfcType t = IfcInstances.IfcIdIfcTypeLookup[sh.IfcTypeId]; return t.Type!=typeof(IfcSpace);}))
+                foreach (var shape in model.Shapes(XbimGeometryType.TriangulatedMesh).Where(sh =>  IfcMetaData.GetType(sh.IfcTypeId) != typeof(IfcSpace)))
                 {
                     processed++;
                     worker.ReportProgress(processed, shape);
@@ -632,7 +632,7 @@ namespace Xbim.Presentation
 
         #region Query methods
 
-        public long? GetProductAt(MouseButtonEventArgs e)
+        public int? GetProductAt(MouseButtonEventArgs e)
         {
             return Canvas.GetProductAt(e);
         }
@@ -642,13 +642,12 @@ namespace Xbim.Presentation
         /// <summary>
         ///   Hides all instances of the specified type
         /// </summary>
-        /// <param name = "type"></param>
-        public void HideAllTypesOf(long product)
+        public void HideAllTypesOf(int product)
         {
             Type typeToHide = Model.GetInstance(Math.Abs(product)).GetType();
             foreach (var placement in _items)
             {
-                long prod = placement.Key;
+                int prod = placement.Key;
                 Type type = Model.GetInstance(Math.Abs(prod)).GetType();
                 if (type == typeToHide)
                 {
@@ -663,7 +662,7 @@ namespace Xbim.Presentation
             _hiddenTypes.Add(typeToHide);
         }
 
-        public void Hide(long hideProduct)
+        public void Hide(int hideProduct)
         {
             DrawingControl3DItem item;
             if (_items.TryGetValue(hideProduct, out item))

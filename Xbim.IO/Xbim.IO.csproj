@@ -134,23 +134,18 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="FilterViewDefinition.cs" />
     <Compile Include="GeometryCache\GeometryCacheFile.cs" />
     <Compile Include="GeometryCache\MeshGeometry.cs" />
     <Compile Include="GeometryCache\SpaceTriangulatedModel.cs" />
     <Compile Include="IfcFileHeader.cs" />
-    <Compile Include="IfcFilter.cs" />
-    <Compile Include="IfcFilterDictionary.cs" />
-    <Compile Include="IfcInstanceHandle.cs" />
-    <Compile Include="IfcInstances.cs" />
-    <Compile Include="IfcInstancesExtensions.cs" />
+    <Compile Include="XbimInstanceHandle.cs" />
+    <Compile Include="IfcMetaData.cs" />
     <Compile Include="IfcPersistedInstanceCache.cs" />
     <Compile Include="IfcProductExtensions.cs" />
     <Compile Include="IfcType.cs" />
     <Compile Include="IfcTypeDictionary.cs" />
     <Compile Include="IfcXmlReader.cs" />
     <Compile Include="IfcXmlWriter.cs" />
-    <Compile Include="IfcInstanceKeyedCollection.cs" />
     <Compile Include="IPersistIfcEntityExtensions.cs" />
     <Compile Include="Parser\IndexPropertyValue.cs" />
     <Compile Include="Parser\IStepP21Parser.cs" />
@@ -162,15 +157,14 @@
     <Compile Include="Parser\StepP21Entity.cs" />
     <Compile Include="Parser\StepP21Lex.cs" />
     <Compile Include="Parser\StepP21Parser.cs" />
-    <Compile Include="Parser\XbimIndex.cs" />
-    <Compile Include="Parser\XbimIndexEntry.cs" />
     <Compile Include="Part21FileWriter.cs" />
     <Compile Include="Part21Formatter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TypeExtensions.cs" />
     <Compile Include="XbimDBTable.cs" />
     <Compile Include="XbimEntityTable.cs" />
     <Compile Include="XbimGeometryTable.cs" />
-    <Compile Include="XbimHeaderTable.cs" />
+    <Compile Include="XbimInstanceHandleMap.cs" />
     <Compile Include="XbimLazyDBTransaction.cs" />
     <Compile Include="XbimModel.cs" />
     <Compile Include="XbimInputStream.cs" />

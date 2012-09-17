@@ -132,7 +132,7 @@ namespace Xbim.Presentation
 
         private void LoadMetaData(IPersistIfcEntity item)
         {
-            IfcType ifcType = IfcInstances.IfcEntities[item];
+            IfcType ifcType = item.IfcType();
 
             List<PropertyItem> pis = new List<PropertyItem>(ifcType.IfcProperties.Count());
             PropertyItem plabel = new PropertyItem()

@@ -45,6 +45,8 @@ namespace Xbim
 
 		void XbimScene::ConvertGeometry(XbimModel^ model, IEnumerable<IfcProduct^>^ toConvert, ReportProgressDelegate^ progDelegate)
 		{
+			//delete anything we have
+			
 			TransformGraph^ graph = gcnew TransformGraph(model);
 			//create a new dictionary to hold maps
 			Dictionary<IfcRepresentation^, IXbimGeometryModel^>^ maps = gcnew Dictionary<IfcRepresentation^, IXbimGeometryModel^>();
@@ -74,12 +76,12 @@ namespace Xbim
 							XbimBoundingBox^ bb = geomModel->GetBoundingBox(true);
 							node->BoundingBox = bb->GetRect3D();
 							array<Byte>^ matrix = Matrix3DExtensions::ToArray(node->WorldMatrix(), true);
-							UInt16 typeId = IPersistIfcEntityExtensions::TypeId(product);
-							geomTable->AddGeometry(product->EntityLabel, XbimGeometryType::BoundingBox, typeId, matrix, bb->ToArray(), 0, 0 ) ;
+							Nullable<short> typeId = IfcMetaData::IfcTypeId(product);
+							geomTable->AddGeometry(product->EntityLabel, XbimGeometryType::BoundingBox, typeId.Value, matrix, bb->ToArray(), 0, 0 ) ;
 							int subPart = 0;
 							for each(array<Byte>^ b in tm)
 							{
-								geomTable->AddGeometry(product->EntityLabel, XbimGeometryType::TriangulatedMesh, typeId, matrix, b , geomModel->RepresentationLabel, subPart) ;
+								geomTable->AddGeometry(product->EntityLabel, XbimGeometryType::TriangulatedMesh, typeId.Value, matrix, b , geomModel->RepresentationLabel, subPart) ;
 								subPart++;
 							}
 							tally++;
@@ -100,19 +102,23 @@ namespace Xbim
 							}
 						}
 					}
-					catch(Exception^ e)
+					catch(Exception^ e1)
 					{
 						String^ message = String::Format("Error Triangulating product geometry of entity {0} - {1}", 
 							product->EntityLabel,
 							product->ToString());
-						Logger->Warn(message, e);
+						Logger->Warn(message, e1);
 					}
 				}
 				transaction.Commit();
 			}
+			catch(Exception^ e2)
+			{
+				Logger->Warn("General Error Triangulating geometry", e2);
+			}
 			finally
 			{
-				model->FreeGeometryTable(geomTable);
+				model->FreeTable(geomTable);
 			}
 
 

@@ -44,15 +44,20 @@ namespace XbimConvert
                     System.Diagnostics.Stopwatch watch = new System.Diagnostics.Stopwatch();
 
                     watch.Start();
-
+                    string errMsg;
+                   // XbimModel.Compact(xbimFileName, xbimFileName + ".xbim", out errMsg);
                     using(XbimModel model = ParseModelFile(xbimFileName))
                     {
                         
                         model.Open(xbimFileName);
+                       // model.Print();
                        
-                        GenerateGeometry(xbimGeometryFileName, model);
+                        //GenerateGeometry(xbimGeometryFileName, model);
                         
                         model.Close();
+                        
+
+                        
                     }
                     watch.Stop();
 
@@ -183,8 +188,8 @@ namespace XbimConvert
                         );
                     break;
                 case ".xbim":
-                    // TODO: check this
-                    model.Open(xbimFileName);
+                    
+                    model = new XbimModel();
                     break;
                 default:
                     throw new NotImplementedException(String.Format("XbimConvert does not support {0} file formats currently", Path.GetExtension(arguments.IfcFileName)));

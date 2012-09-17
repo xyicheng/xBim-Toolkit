@@ -47,7 +47,7 @@ namespace XbimXplorer
     {
         private BackgroundWorker _worker;
         private PropertiesWindow _propertyWindow;
-        private long? _currentProduct;
+        private int? _currentProduct;
         private string _currentModelFileName;
         
 

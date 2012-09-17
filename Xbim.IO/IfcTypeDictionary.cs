@@ -21,14 +21,9 @@ namespace Xbim.IO
 
         public IfcType this[string ifcTypeName]
         {
-            get { return IfcInstances.IfcTypeLookup[ifcTypeName]; }
+            get { return IfcMetaData.IfcType(ifcTypeName); }
         }
 
-        public IfcType Add(string ifcTypeName)
-        {
-            IfcType ret = IfcInstances.IfcTypeLookup[ifcTypeName];
-            this.Add(ret);
-            return ret;
-        }
+        
     }
 }

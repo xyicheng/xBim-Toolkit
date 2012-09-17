@@ -98,7 +98,7 @@ namespace Xbim.IO
                 output.WriteAttributeString("xmlns", "ifc", null, _namespace);
                 output.WriteAttributeString("xsi", "schemaLocation", null, string.Format("{0} {1}", _namespace, _ifcXSD));
 
-                foreach (IfcInstanceHandle item in model.InstanceHandles)
+                foreach (XbimInstanceHandle item in model.InstanceHandles)
                 {
                     Write(model, item, output);
                 }
@@ -148,7 +148,7 @@ namespace Xbim.IO
             output.WriteEndElement(); //end iso_10303_28_header
         }
 
-        private void Write(XbimModel model, IfcInstanceHandle handle, XmlWriter output, int pos = -1)
+        private void Write(XbimModel model, XbimInstanceHandle handle, XmlWriter output, int pos = -1)
         {
             long lbl = Math.Abs(handle.EntityLabel);
             if (_written.Contains(lbl)) //we have already done it
@@ -156,7 +156,7 @@ namespace Xbim.IO
             //int nextId = _written.Count + 1;
             _written.Add(lbl);
 
-            IfcType ifcType = IfcInstances.IfcEntities[handle.EntityType];
+            IfcType ifcType = handle.IfcType();
 
             output.WriteStartElement(ifcType.Type.Name);
             
@@ -303,7 +303,7 @@ namespace Xbim.IO
                 }
                 else
                 {
-                    Write(model, new IfcInstanceHandle(Math.Abs(persistVal.EntityLabel), propVal.GetType()), output, pos);
+                    Write(model, new XbimInstanceHandle(Math.Abs(persistVal.EntityLabel), propVal.GetType()), output, pos);
                 }
                 if (pos == -1) output.WriteEndElement();
             }

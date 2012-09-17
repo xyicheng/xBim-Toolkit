@@ -33,8 +33,8 @@ namespace Xbim.XbimExtensions.Interfaces
     {
         bool Activated { get; }
         void Activate(bool write);
-        void Bind(IModel model, long entityLabel);
+        void Bind(IModel model, int entityLabel);
         IModel ModelOf { get; }
-        long EntityLabel { get; }
+        int EntityLabel { get; }
     }
 }

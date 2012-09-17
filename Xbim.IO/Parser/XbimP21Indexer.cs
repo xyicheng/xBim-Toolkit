@@ -27,73 +27,6 @@ using Microsoft.Isam.Esent.Interop;
 namespace Xbim.IO.Parser
 {
    
-   
-    public class XbimP21Indexer
-    {
-        private readonly XbimIndex _entityOffsets = new XbimIndex();
-        private readonly Dictionary<Type, List<long>> _entityTypes = new Dictionary<Type, List<long>>();
-
-        public XbimIndex EntityOffsets
-        {
-            get { return _entityOffsets; }
-        }
-
-        public Dictionary<Type, List<long>> EntityTypes
-        {
-            get { return _entityTypes; }
-        }
-
-        public void Add(long entityLabel, string entityType, long fileOffset)
-        {
-            try
-            {
-                Type t = IfcInstances.IfcTypeLookup[entityType].Type;
-                _entityOffsets.Add(new XbimIndexEntry(entityLabel, fileOffset, t));
-                List<long> offsets;
-                if (!_entityTypes.TryGetValue(t, out offsets))
-                {
-                    offsets = new List<long>();
-                    _entityTypes.Add(t, offsets);
-                }
-                offsets.Add(fileOffset);
-            }
-            catch (Exception e)
-            {
-                throw new Exception("Unsupported Ifc Type found " + entityType + "in entity #" + entityLabel, e);
-            }
-        }
-
-
-        internal void Write(BinaryWriter binaryWriter)
-        {
-            long start = binaryWriter.BaseStream.Position;
-            binaryWriter.Write((long)_entityOffsets.Count);
-            binaryWriter.Write(_entityOffsets.HighestLabel);
-            Dictionary<Type, short> classNames = new Dictionary<Type, short>(_entityTypes.Count);
-            binaryWriter.Write(_entityTypes.Count);
-            short i = 0;
-            foreach (KeyValuePair<Type, List<long>> eType in _entityTypes)
-            {
-                classNames.Add(eType.Key, i);
-                binaryWriter.Write(eType.Key.Name.ToUpper());
-                binaryWriter.Write(i);
-                i++;
-            }
-
-            foreach (XbimIndexEntry item in _entityOffsets)
-            {
-                binaryWriter.Write(item.EntityLabel);
-                binaryWriter.Write(item.Offset);
-                binaryWriter.Write(classNames[item.Type]);
-            }
-
-            binaryWriter.Write(0L); //no changes following
-
-
-            binaryWriter.Seek(0, SeekOrigin.Begin);
-            binaryWriter.Write(start);
-        }
-    }
 
     public enum P21ParseAction
     {
@@ -114,7 +47,7 @@ namespace Xbim.IO.Parser
         EndEntity, //0x0E
         NewEntity, //0x0F
         SetObjectValueUInt16,
-        SetObjectValueUInt32,
+        SetObjectValueInt32,
         SetObjectValueInt64
     }
 
@@ -123,10 +56,10 @@ namespace Xbim.IO.Parser
         public event ReportProgressDelegate ProgressStatus;
         private int _percentageParsed;
         private long _streamSize = -1;
-        private readonly XbimP21Indexer _index = new XbimP21Indexer();
+        
         private BinaryWriter _binaryWriter;
         
-        private long _currentLabel;
+        private int _currentLabel;
         private string _currentType;
         private int _ifcKeyIdx = -1;
 
@@ -152,7 +85,7 @@ namespace Xbim.IO.Parser
         {
             get { return _entityCount; }
         }
-        private long _primaryKeyValue = -1;
+        private int _primaryKeyValue = -1;
         internal P21toIndexParser(Stream inputP21,  XbimEntityTable table, XbimLazyDBTransaction transaction)
             : base(inputP21)
         {
@@ -181,7 +114,7 @@ namespace Xbim.IO.Parser
 
         internal override void EndParse()
         {
-            _index.Write(_binaryWriter);
+           
             Dispose();
         }
 
@@ -246,7 +179,7 @@ namespace Xbim.IO.Parser
             _processStack.Push(_currentInstance);
             _entityCount++;
             _primaryKeyValue = -1;
-            _currentLabel = Convert.ToInt64(entityLabel.TrimStart('#'));
+            _currentLabel = Convert.ToInt32(entityLabel.TrimStart('#'));
             MemoryStream data = _binaryWriter.BaseStream as MemoryStream;
             data.SetLength(0);
 
@@ -290,7 +223,7 @@ namespace Xbim.IO.Parser
             {
 
                 _currentType = entityTypeName;
-                IfcType ifcType = IfcInstances.IfcTypeLookup[_currentType];
+                IfcType ifcType = IfcMetaData.IfcType(_currentType);
                 _ifcKeyIdx = ifcType.PrimaryKeyIndex;
             }
         }
@@ -303,7 +236,7 @@ namespace Xbim.IO.Parser
             if (_currentType != null)
             {
                 _binaryWriter.Write((byte)P21ParseAction.EndEntity);
-                IfcType ifcType = IfcInstances.IfcTypeLookup[_currentType];
+                IfcType ifcType = IfcMetaData.IfcType(_currentType);
                 MemoryStream data = _binaryWriter.BaseStream as MemoryStream;
                 table.AddEntity(_currentLabel, ifcType.TypeId, _primaryKeyValue, data.ToArray());
                 if (_entityCount % _transactionBatchSize == (_transactionBatchSize - 1))
@@ -442,30 +375,31 @@ namespace Xbim.IO.Parser
 
         internal override void SetObjectValue(string value)
         {
-            long val = Convert.ToInt64(value.TrimStart('#'));
+            int val = Convert.ToInt32(value.TrimStart('#'));
 
             if (_currentInstance.CurrentParamIndex  == (_ifcKeyIdx -1)) //current param index is 0 based and ifcKey is 1 based
                 _primaryKeyValue = val;
 
             if (_listNestLevel == 0) _currentInstance.CurrentParamIndex++;
            
-            if (val <= UInt16.MaxValue)
+            if (val <= Int16.MaxValue)
             {
                 _binaryWriter.Write((byte)P21ParseAction.SetObjectValueUInt16);
                 _binaryWriter.Write(Convert.ToUInt16(val));
             }
-            else if (val <= UInt32.MaxValue)
+            else if (val <= Int32.MaxValue)
             {
-                _binaryWriter.Write((byte)P21ParseAction.SetObjectValueUInt32);
-                _binaryWriter.Write(Convert.ToUInt32(val));
+                _binaryWriter.Write((byte)P21ParseAction.SetObjectValueInt32);
+                _binaryWriter.Write(Convert.ToInt32(val));
             }
-            else if (val <= Int64.MaxValue)
-            {
-                _binaryWriter.Write((byte)P21ParseAction.SetObjectValueInt64);
-                _binaryWriter.Write(val);
-            }
+            //else if (val <= Int64.MaxValue)
+            //{
+            //    throw new Exception("Entity Label exceeds maximim value for a long number, it is greater than an int32");
+            //    //_binaryWriter.Write((byte)P21ParseAction.SetObjectValueInt64);
+            //    //_binaryWriter.Write(val);
+            //}
             else
-                throw new Exception("Entity Label exceeds maximim value for a long number");
+                throw new Exception("Entity Label exceeds maximim value for a long number, it is greater than an int32");
 
 
         }

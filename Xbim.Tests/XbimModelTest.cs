@@ -107,10 +107,10 @@ namespace Xbim.Tests
 
             // check the created xbim file is same as reference xbim file
             // get any labels in xbimFile1 that are not in xbimFile2
-            List<long> badLabels1 = GetFileBadLabels(xbimFileName, m_TestSourceFileXbim);
+            List<int> badLabels1 = GetFileBadLabels(xbimFileName, m_TestSourceFileXbim);
 
             // get any labels in xbimFile2 that are not in xbimFile1
-            List<long> badLabels2 = GetFileBadLabels(m_TestSourceFileXbim, xbimFileName);
+            List<int> badLabels2 = GetFileBadLabels(m_TestSourceFileXbim, xbimFileName);
 
             // both files are created using different procedures from same ifc, so should be same and have 0 badlabels
             Assert.AreEqual(badLabels1.Count, 0);
@@ -136,10 +136,10 @@ namespace Xbim.Tests
 
             // check the created xbim file is same as reference xbim file
             // get any labels in xbimFile1 that are not in xbimFile2
-            List<long> badLabels1 = GetFileBadLabels(xbimFileName, m_TestSourceFileXbim);
+            List<int> badLabels1 = GetFileBadLabels(xbimFileName, m_TestSourceFileXbim);
 
             // get any labels in xbimFile2 that are not in xbimFile1
-            List<long> badLabels2 = GetFileBadLabels(m_TestSourceFileXbim, xbimFileName);
+            List<int> badLabels2 = GetFileBadLabels(m_TestSourceFileXbim, xbimFileName);
 
             // both files are created using different procedures from same ifc, so should be same and have 0 badlabels
             Assert.AreEqual(badLabels1.Count, 0);
@@ -296,9 +296,9 @@ namespace Xbim.Tests
 
             private void CompareXbimFiles(string source, string target)
             {
-                List<long> badLabels1_3 = GetFileBadLabels(source, target);
+                List<int> badLabels1_3 = GetFileBadLabels(source, target);
                 // get any labels in xbimFile2 that are not in xbimFile1
-                List<long> badLabels2_3 = GetFileBadLabels(target, source);
+                List<int> badLabels2_3 = GetFileBadLabels(target, source);
                 // both files are created using different procedures from same ifc, so should be same and have 0 badlabels
                 Assert.AreEqual(badLabels1_3.Count, 0);
                 Assert.AreEqual(badLabels2_3.Count, 0);
@@ -453,9 +453,9 @@ namespace Xbim.Tests
                 return "";
             }
 
-            private List<long> GetFileBadLabels(string fileName1, string fileName2)
+            private List<int> GetFileBadLabels(string fileName1, string fileName2)
             {
-                List<long> badLabels = new List<long>();
+                List<int> badLabels = new List<int>();
                 using (XbimModel modelServer = new XbimModel())
                 {
                     modelServer.Open(fileName1);
@@ -464,12 +464,12 @@ namespace Xbim.Tests
                         modelServer2.Open(fileName2);
                         foreach (var handle in modelServer.InstanceHandles)
                         {
-                            long xi = handle.EntityLabel;
+                            int xi = handle.EntityLabel;
                             IPersistIfcEntity entity = modelServer.GetInstance(xi);
-                            long entityLabel = entity.EntityLabel;
+                            int entityLabel = entity.EntityLabel;
                             byte[] b1 = modelServer.GetEntityBinaryData(entity);
 
-                            long posLabel = Math.Abs(entityLabel);
+                            int posLabel = Math.Abs(entityLabel);
 
                             // we have entityLabel from 1st file, this should be in second file as well
                             IPersistIfcEntity entity2 = null;

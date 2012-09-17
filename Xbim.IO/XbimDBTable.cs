@@ -6,7 +6,7 @@ using Microsoft.Isam.Esent.Interop;
 
 namespace Xbim.IO
 {
-    public class XbimDBTable
+    public abstract class XbimDBTable
     {
         protected const int transactionBatchSize = 100;
         /// <summary>
@@ -27,36 +27,171 @@ namespace Xbim.IO
         /// </summary>
         protected JET_TABLEID table;
 
+        /// <summary>
+        /// Global Table
+        /// </summary>
+        protected JET_TABLEID globalsTable;
+        protected static string globalsTableName = "MetaData";
+        protected static string entityCountColumnName = "EntityCount";
+        protected static string geometryCountColumnName = "GeometryCount";
+        protected static string flushColumnName = "FlushColumn";
+        protected JET_COLUMNID entityCountColumn;
+        protected JET_COLUMNID geometryCountColumn;
+        protected JET_COLUMNID flushColumn;
+        protected JET_COLUMNID ifcHeaderColumn;
+        protected static string versionColumnName = "Version";
+        protected static string version = "2.3.0";
+
+
+
         protected readonly object lockObject;
 
         private string database;
+        private static string ifcHeaderColumnName = "IfcHeader";
 
         public XbimDBTable(Instance instance, string database)
         {
             this.lockObject = new Object();
             this.instance = instance;
+            this.database = database;
             Api.JetBeginSession(this.instance, out this.sesid, String.Empty, String.Empty);
             Api.JetAttachDatabase(this.sesid, database, AttachDatabaseGrbit.None);
             Api.JetOpenDatabase(this.sesid, database, String.Empty, out this.dbId, OpenDatabaseGrbit.None);
-            
+            Api.JetOpenTable(this.sesid, this.dbId, globalsTableName, null, 0, OpenTableGrbit.None, out this.globalsTable);
+            this.entityCountColumn = Api.GetTableColumnid(this.sesid, this.globalsTable, entityCountColumnName);
+            this.geometryCountColumn = Api.GetTableColumnid(this.sesid, this.globalsTable, geometryCountColumnName);
+            this.flushColumn = Api.GetTableColumnid(this.sesid, this.globalsTable, flushColumnName);
+            this.ifcHeaderColumn = Api.GetTableColumnid(this.sesid, this.globalsTable, ifcHeaderColumnName);
         }
 
-        public bool TryMoveNext()
+        internal abstract int RetrieveCount();
+
+       
+       
+        protected abstract void UpdateCount(int delta);
+
+        /// <summary>
+        /// Create the globals table.
+        /// </summary>
+        /// <param name="sesid">The session to use.</param>
+        /// <param name="dbid">The database to create the table in.</param>
+        public static void CreateGlobalsTable(JET_SESID sesid, JET_DBID dbid)
+        {
+            JET_TABLEID tableid;
+            JET_COLUMNID versionColumnid;
+            JET_COLUMNID countColumnid;
+
+            Api.JetCreateTable(sesid, dbid, globalsTableName, 1, 100, out tableid);
+            Api.JetAddColumn(
+                sesid,
+                tableid,
+                versionColumnName,
+                new JET_COLUMNDEF { coltyp = JET_coltyp.LongText },
+                null,
+                0,
+                out versionColumnid);
+
+            byte[] defaultValue = BitConverter.GetBytes(0);
+
+            Api.JetAddColumn(
+                sesid,
+                tableid,
+                entityCountColumnName,
+                new JET_COLUMNDEF { coltyp = JET_coltyp.Long, grbit = ColumndefGrbit.ColumnEscrowUpdate },
+                defaultValue,
+                defaultValue.Length,
+                out countColumnid);
+
+            Api.JetAddColumn(
+                sesid,
+                tableid,
+                geometryCountColumnName,
+                new JET_COLUMNDEF { coltyp = JET_coltyp.Long, grbit = ColumndefGrbit.ColumnEscrowUpdate },
+                defaultValue,
+                defaultValue.Length,
+                out countColumnid);
+
+            Api.JetAddColumn(
+                sesid,
+                tableid,
+                flushColumnName,
+                new JET_COLUMNDEF { coltyp = JET_coltyp.Long, grbit = ColumndefGrbit.ColumnEscrowUpdate },
+                defaultValue,
+                defaultValue.Length,
+                out countColumnid);
+            
+            Api.JetAddColumn(
+               sesid,
+               tableid,
+               ifcHeaderColumnName,
+               new JET_COLUMNDEF { coltyp = JET_coltyp.LongBinary },
+               null,
+               0,
+               out countColumnid);
+
+            using (var update = new Update(sesid, tableid, JET_prep.Insert))
+            {
+                Api.SetColumn(sesid, tableid, versionColumnid, version, Encoding.Unicode);
+                update.Save();
+            }
+
+            Api.JetCloseTable(sesid, tableid);
+        }
+
+       
+
+        internal XbimLazyDBTransaction BeginLazyTransaction()
+        {
+            return new XbimLazyDBTransaction(this.sesid);
+        }
+
+        /// <summary>
+        /// Begin a new transaction for this cursor.
+        /// </summary>
+        /// <returns>The new transaction.</returns>
+        internal Transaction BeginTransaction()
+        {
+            return new Transaction(this.sesid);
+        }
+        /// <summary>
+        /// Begin a new transaction for this cursor. This is the cheapest
+        /// transaction type because it returns a struct and no separate
+        /// commit call has to be made.
+        /// </summary>
+        /// <returns>The new transaction.</returns>
+        internal XbimReadOnlyDBTransaction BeginReadOnlyTransaction()
+        {
+            return new XbimReadOnlyDBTransaction(this.sesid);
+        }
+
+        /// <summary>
+        /// Generate a null database update that we can wrap in a non-lazy transaction.
+        /// </summary>
+        internal void Flush()
+        {
+            using (var transaction = this.BeginTransaction())
+            {
+                Api.EscrowUpdate(this.sesid, this.globalsTable, this.flushColumn, 1);
+                transaction.Commit(CommitTransactionGrbit.None);
+            }
+        }
+
+        internal bool TryMoveNext()
         {
             return Api.TryMoveNext(this.sesid, this.table);
         }
 
-        public bool TryMoveFirst()
+        internal virtual bool TryMoveFirst()
         {
             return Api.TryMoveFirst(this.sesid, this.table);
         }
 
-        public bool TryMoveLast()
+        internal bool TryMoveLast()
         {
             return Api.TryMoveLast(this.sesid, this.table);
         }
 
-        public void SetCurrentIndex(string indexName)
+        internal void SetCurrentIndex(string indexName)
         {
             Api.JetSetCurrentIndex(this.sesid, this.table, indexName);
         }

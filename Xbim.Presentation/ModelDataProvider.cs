@@ -87,7 +87,7 @@ namespace Xbim.Presentation
         public static XbimMaterialProvider GetDefaultMaterial(string typeName)
         {
             Material mat;
-            IfcType elemType = IfcInstances.IfcTypeLookup[typeName.ToUpper()];
+            IfcType elemType = IfcMetaData.IfcType(typeName);
             while (elemType != null)
             {
                 if (_defaultMaterials.TryGetValue(elemType.Type.Name, out mat))
@@ -110,9 +110,9 @@ namespace Xbim.Presentation
             return GetDefaultMaterial(entityType.Name);  
         }
 
-        public static XbimMaterialProvider GetDefaultMaterial(ushort entityTypeId)
+        public static XbimMaterialProvider GetDefaultMaterial(short entityTypeId)
         {
-            IfcType ifcType = IfcInstances.IfcIdIfcTypeLookup[entityTypeId];
+            IfcType ifcType = IfcMetaData.IfcType(entityTypeId);
             return GetDefaultMaterial(ifcType.Type.Name);
         }
 

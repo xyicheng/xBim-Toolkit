@@ -15,13 +15,15 @@ using System.Linq.Expressions;
 using System.Reflection;
 using Xbim.Ifc2x3.Kernel;
 using System.Diagnostics;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.Ifc2x3.GeometryResource;
 
 namespace Xbim.IO
 {
     
-    public class IfcPersistedInstanceCache : Dictionary<long, IPersistIfcEntity>, IDisposable
+    public class IfcPersistedInstanceCache : IDisposable
     {
-        #region ESE Database fields
+        #region ESE Database 
 
         internal static Instance JetInstance;
 
@@ -41,19 +43,17 @@ namespace Xbim.IO
        
         #endregion
         #region Cached data
-
-        protected HashSet<IPersistIfcEntity> ToUpdate = new HashSet<IPersistIfcEntity>();
-        protected HashSet<IPersistIfcEntity> ToDelete = new HashSet<IPersistIfcEntity>();
-        protected HashSet<IPersistIfcEntity> ToCreate = new HashSet<IPersistIfcEntity>();
+        protected Dictionary<int, IPersistIfcEntity> read = new Dictionary<int, IPersistIfcEntity>();
+        protected HashSet<IPersistIfcEntity> modified = new HashSet<IPersistIfcEntity>();
+        //protected HashSet<IPersistIfcEntity> ToDelete = new HashSet<IPersistIfcEntity>();
+        //protected HashSet<IPersistIfcEntity> ToCreate = new HashSet<IPersistIfcEntity>();
         protected int CacheDefaultSize = 5000;
 
         #endregion
 
-        private long _highestLabel = -1;
         private string _databaseName;
         private XbimModel _model;
         private bool disposed = false;
-        private long _count=0;
        
         public IfcPersistedInstanceCache(XbimModel model)
         {
@@ -70,11 +70,11 @@ namespace Xbim.IO
             JetInstance.Parameters.CreatePathIfNotExist = true;
             JetInstance.Parameters.CircularLog = true;
             JetInstance.Parameters.CleanupMismatchedLogFiles = true;
-            //_jetInstance.Parameters.Recovery = false; //By default its True, only set this if we plan to write
+            //JetInstance.Parameters.Recovery = false; //By default its True, only set this if we plan to write
             SystemParameters.CacheSizeMin = 16 * 1024;
             JetInstance.Parameters.LogFileSize = 16 * 1024;
             JetInstance.Parameters.LogBuffers = 8 * 1024;
-            JetInstance.Parameters.MaxTemporaryTables = 0;
+           // JetInstance.Parameters.MaxTemporaryTables = 0;
             JetInstance.Init();
         }
        
@@ -84,30 +84,34 @@ namespace Xbim.IO
         /// <returns></returns>
         public bool CreateDatabase(string fileName)
         {
+            _databaseName = fileName;
+            return IfcPersistedInstanceCache.CreateDB(fileName);
+        }
 
-            // _filename = Path.ChangeExtension(fileName, "xBIM");
-
+        private static bool CreateDB(string fileName)
+        {
             using (var session = new Session(JetInstance))
             {
                 JET_DBID dbid;
-                
+
                 Api.JetCreateDatabase(session, fileName, null, out dbid, CreateDatabaseGrbit.OverwriteExisting);
-                
-                using (var transaction = new Microsoft.Isam.Esent.Interop.Transaction(session))
+                try
                 {
-                    XbimEntityTable.CreateTable(session, dbid);
-                    XbimGeometryTable.CreateTable(session, dbid);
-                    XbimHeaderTable.CreateTable(session, dbid);
-                    transaction.Commit(CommitTransactionGrbit.LazyFlush);
-                }
-                if (dbid == JET_DBID.Nil)
-                {
-                    return false;
-                }
-                else
-                {
-                    _databaseName = fileName;
+                    using (var transaction = new Microsoft.Isam.Esent.Interop.Transaction(session))
+                    {
+                        XbimDBTable.CreateGlobalsTable(session, dbid); //create the gobals table
+                        XbimEntityTable.CreateTable(session, dbid);
+                        XbimGeometryTable.CreateTable(session, dbid);
+                        transaction.Commit(CommitTransactionGrbit.LazyFlush);
+                    }
                     return true;
+                }
+                catch
+                {
+                    Api.JetCloseDatabase(session, dbid, CloseDatabaseGrbit.None);
+                    Api.JetDetachDatabase(session, fileName);
+                    File.Delete(fileName);
+                    throw;
                 }
             }
         }
@@ -217,23 +221,24 @@ namespace Xbim.IO
         /// <param name="filename"></param>
         internal void Open(string filename)
         {
+            Close();
+            _databaseName = filename; //success store the name of the DB file
+            XbimEntityTable entTable = GetEntityTable();
             try
             {
-                Close();
-                _databaseName = filename; //success store the name of the DB file
-                XbimEntityTable entTable = GetEntityTable();
                 using (var transaction = entTable.BeginReadOnlyTransaction())
                 {
-                     _model.Header = entTable.ReadHeader();
+                    _model.Header = entTable.ReadHeader();
                 }
-               
-                
-
             }
             catch (Exception e)
             {
-                Clear();
+                Close();
                 throw new XbimException("Failed to open " + filename, e);
+            }
+            finally
+            {
+                FreeTable(entTable);
             }
         }
 
@@ -258,11 +263,12 @@ namespace Xbim.IO
                     this._geometryTables[i] = null;
                 }
             }
-            base.Clear();
-            _highestLabel = -1;
+            this.read.Clear();
+
         }
 
-      
+
+        
 
         /// <summary>
         /// Imports the contents of the ifc file into the named database
@@ -273,44 +279,34 @@ namespace Xbim.IO
         {
 
             var table = GetEntityTable();
-
-            using (var transaction = table.BeginLazyTransaction())
+            try
             {
-                using (FileStream reader = new FileStream(toImportIfcFilename, FileMode.Open, FileAccess.Read))
+                using (var transaction = table.BeginLazyTransaction())
                 {
-                    using (P21toIndexParser part21Parser = new P21toIndexParser(reader, table, transaction))
+                    using (FileStream reader = new FileStream(toImportIfcFilename, FileMode.Open, FileAccess.Read))
                     {
-                        try
+                        using (P21toIndexParser part21Parser = new P21toIndexParser(reader, table, transaction))
                         {
                             if (progressHandler != null) part21Parser.ProgressStatus += progressHandler;
                             part21Parser.Parse();
-                            _count = part21Parser.EntityCount;
                             _model.Header = part21Parser.Header;
-                            table.WriteHeader(part21Parser.Header, _count);
-                          
-                        }
-                        catch (Exception e)
-                        {
-                            throw new XbimException("Error importing Ifc File " + toImportIfcFilename, e);
-                        }
-                        finally
-                        {
+                            table.WriteHeader(part21Parser.Header);
                             if (progressHandler != null) part21Parser.ProgressStatus -= progressHandler;
-                            this.FreeTable(table); 
                         }
-                    }
+                    } 
+                    transaction.Commit();
                     
                 }
-               transaction.Commit();
             }
-        }
-
-        private void WriteHeader(Session jetSession, JET_DBID dbid)
-        {
-            using (var table = new XbimHeaderTable(jetSession, dbid, OpenTableGrbit.None))
+            catch (Exception e)
             {
-                table.UpdateHeader(_model.Header, _count);
+                throw new XbimException("Error importing Ifc File " + toImportIfcFilename, e);
             }
+            finally
+            { 
+                this.FreeTable(table);
+            }
+           
         }
 
         /// <summary>
@@ -331,7 +327,7 @@ namespace Xbim.IO
                         {
                             IfcXmlReader reader = new IfcXmlReader();
                             _model.Header = reader.Read(this, xmlReader);
-                            entityTable.WriteHeader(_model.Header, _count);
+                            entityTable.WriteHeader(_model.Header);
                         }
                     }
 
@@ -344,32 +340,22 @@ namespace Xbim.IO
             }
         }
 
-        private void SetDatabaseColumns(Session jetSession, Table jetEntityCursor)
-        {
-           
-        }
-
-       
-
 
         public bool Contains(IPersistIfcEntity instance)
         {
             return Contains(Math.Abs(instance.EntityLabel));
         }
 
-        public bool Contains(long posLabel)
+        public bool Contains(int posLabel)
         {
-            if (base.ContainsKey(posLabel)) //check if it is cached
+            if (this.read.ContainsKey(posLabel)) //check if it is cached
                 return true;
             else //look in the database
             {
                 var entityTable = GetEntityTable();
                 try
                 {
-                    using (var trans = entityTable.BeginReadOnlyTransaction())
-                    {
-                        return entityTable.TrySeekEntityLabel(posLabel);
-                    }
+                    return entityTable.TrySeekEntityLabel(posLabel);
                 }
                 finally
                 {
@@ -378,22 +364,109 @@ namespace Xbim.IO
             }
         }
 
-        public new long Count
+       
+       /// <summary>
+        /// returns the number of instances of the specified type and its sub types
+       /// </summary>
+       /// <typeparam name="TIfcType"></typeparam>
+       /// <returns></returns>
+        public long CountOf<TIfcType>() where TIfcType : IPersistIfcEntity
         {
-            get { return _count; }
+            return CountOf(typeof(TIfcType));
+           
+        }
+        /// <summary>
+        /// returns the number of instances of the specified type and its sub types
+        /// </summary>
+        /// <param name="theType"></param>
+        /// <returns></returns>
+        private long CountOf(Type theType)
+        {
+            long count = 0;
+            IfcType ifcType = IfcMetaData.IfcType(theType);
+            var entityTable = GetEntityTable();
+            try
+            {
+                entityTable.SetOrderByType();
+                foreach (Type t in ifcType.NonAbstractSubTypes)
+                {
+                    short? typeId = IfcMetaData.IfcTypeId(t);
+                    if (typeId.HasValue && entityTable.TrySeekEntityType(typeId.Value))
+                    {
+                        do
+                        {
+                            count++;
+                        } while (entityTable.TryMoveNext());
+                    }
+                }
+            }
+            finally
+            {
+                FreeTable(entityTable);
+            }
+            return count;
         }
 
-        public long HighestLabel
+        public bool Any<TIfcType>() where TIfcType : IPersistIfcEntity
         {
-            get { throw new NotImplementedException(); }
+            IfcType ifcType = IfcMetaData.IfcType(typeof(TIfcType));
+            var entityTable = GetEntityTable();
+            try
+            {
+                entityTable.SetOrderByType();
+                foreach (Type t in ifcType.NonAbstractSubTypes)
+                {
+                    short? typeId = IfcMetaData.IfcTypeId(t);
+                    if (typeId.HasValue && entityTable.TrySeekEntityType(typeId.Value))
+                        return true;
+                }
+            }
+            finally
+            {
+                FreeTable(entityTable);
+            }
+            return false;
+        }
+        /// <summary>
+        /// returns the number of instances in the model
+        /// </summary>
+        /// <returns></returns>
+        public long Count 
+        {
+            get
+            {
+                var entityTable = GetEntityTable();
+                try
+                {
+                    return entityTable.RetrieveCount();
+                }
+                finally
+                {
+                    FreeTable(entityTable);
+                }
+            }
         }
 
-
-
-        public void SetHighestLabel_Reversable(long nextLabel)
+        /// <summary>
+        /// returns the value of the highest current entity label
+        /// </summary>
+        public int HighestLabel
         {
-            throw new NotImplementedException();
+            get
+            {
+                var entityTable = GetEntityTable();
+                try
+                {
+                    return entityTable.RetrieveHighestLabel();
+                }
+                finally
+                {
+                    FreeTable(entityTable);
+                }
+                
+            }
         }
+
 
         /// <summary>
         /// Creates a new instance this is a reversable action and should be used typically
@@ -401,13 +474,13 @@ namespace Xbim.IO
         /// <param name="t"></param>
         /// <param name="label"></param>
         /// <returns></returns>
-        public IPersistIfcEntity CreateNew_Reversable(Type t, long label)
+        public IPersistIfcEntity CreateNew_Reversable(Type t, int label)
         {
-            long posLabel = Math.Abs(label);
+            int posLabel = Math.Abs(label);
             IPersistIfcEntity entity = (IPersistIfcEntity)Activator.CreateInstance(t);
             entity.Bind(_model, posLabel); //bind it, the object is new and empty so the label is positive
-            this.Add_Reversible(new KeyValuePair<long, IPersistIfcEntity>(posLabel, entity));
-            ToCreate.Add_Reversible(entity);
+            this.read.Add_Reversible(new KeyValuePair<int, IPersistIfcEntity>(posLabel, entity));
+           // ToCreate.Add_Reversible(entity);
             return entity;
         }
 
@@ -417,9 +490,9 @@ namespace Xbim.IO
         /// </summary>
         /// <param name="type"></param>
         /// <returns></returns>
-        public IPersistIfcEntity CreateNew(Type type, long label)
+        internal IPersistIfcEntity CreateNew(Type type, int label)
         {
-            long posLabel = Math.Abs(label);
+            int posLabel = Math.Abs(label);
             IPersistIfcEntity entity = (IPersistIfcEntity)Activator.CreateInstance(type);
             entity.Bind(_model, posLabel); //bind it, the object is new and empty so the label is positive
             //this.Add(posLabel, entity);
@@ -427,28 +500,33 @@ namespace Xbim.IO
             return entity;
         }
 
+        /// <summary>
+        /// Deprecated. Use CountOf, returns the number of instances of the specified type
+        /// </summary>
+        /// <param name="t"></param>
+        /// <returns></returns>
         public long InstancesOfTypeCount(Type t)
         {
-            throw new NotImplementedException();
+            return CountOf(t);
         }
+
+       
         /// <summary>
         /// Returns an enumeration of handles to all instances in the database and in the cache
         /// </summary>
-        public IEnumerable<IfcInstanceHandle> InstanceHandles
+        public IEnumerable<XbimInstanceHandle> InstanceHandles
         {
             get
             {
                 var entityTable = GetEntityTable();
                 try
                 {
-                    entityTable.SetPrimaryIndex();
+                    entityTable.SetOrderByType();
                     if (entityTable.TryMoveFirst()) // we have something
                     {
                         do
                         {
-                            IfcInstanceHandle ih = entityTable.GetCurrentInstanceHandle();
-                            if (!this.ContainsKey(ih.EntityLabel)) //we have already returned the entity from the cache
-                                yield return ih;
+                            yield return entityTable.GetInstanceHandle();
                         }
                         while (entityTable.TryMoveNext());
                     }
@@ -463,32 +541,28 @@ namespace Xbim.IO
         /// Returns an enumeration of handles to all instances in the database or the cache of specified type
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<IfcInstanceHandle> InstanceHandlesOfType<TIfcType>()
+        public IEnumerable<XbimInstanceHandle> InstanceHandlesOfType<TIfcType>()
         {
             Type reqType = typeof(TIfcType);
-            IfcType ifcType = IfcInstances.IfcEntities[reqType];
+            IfcType ifcType = IfcMetaData.IfcType(reqType);
             var entityTable = GetEntityTable();
             try
             {
-               
-                using (var transaction = entityTable.BeginReadOnlyTransaction())
-                {
-                    entityTable.SetOrderByType();
-                    foreach (Type t in ifcType.NonAbstractSubTypes)
-                    {
-                        ushort typeId = IfcInstances.IfcEntities[t].TypeId;
-                        
-                        if (entityTable.TrySeekEntityType(typeId))
-                        {
-                            do
-                            {
-                                IfcInstanceHandle ih = entityTable.GetCurrentInstanceHandle();
-                                if (!this.ContainsKey(ih.EntityLabel)) //we have already returned the entity from the cache
-                                    yield return ih;
-                            }
-                            while (entityTable.TryMoveNext());
-                        }
 
+                entityTable.SetOrderByType();
+                foreach (Type t in ifcType.NonAbstractSubTypes)
+                {
+                    short? typeId = IfcMetaData.IfcTypeId(t);
+
+                    if (typeId.HasValue && entityTable.TrySeekEntityType(typeId.Value))
+                    {
+                        do
+                        {
+                            XbimInstanceHandle ih = entityTable.GetInstanceHandle();
+                            if (!this.read.ContainsKey(ih.EntityLabel)) //we have already returned the entity from the cache
+                                yield return ih;
+                        }
+                        while (entityTable.TryMoveNext());
                     }
                 }
             }
@@ -505,11 +579,11 @@ namespace Xbim.IO
         /// </summary>
         /// <param name="label"></param>
         /// <returns></returns>
-        public IPersistIfcEntity GetInstance(long label, bool loadProperties = false, bool unCached = false)
+        public IPersistIfcEntity GetInstance(int label, bool loadProperties = false, bool unCached = false)
         {
-            long posLabel = Math.Abs(label);
+            int posLabel = Math.Abs(label);
             IPersistIfcEntity entity;
-            if (this.TryGetValue(posLabel, out entity))
+            if (this.read.TryGetValue(posLabel, out entity))
                 return entity;
             else
                 return GetInstanceFromStore(posLabel, loadProperties, unCached);
@@ -524,18 +598,18 @@ namespace Xbim.IO
         /// <param name="loadProperties">if true the properties of the object are loaded  at the same time</param>
         /// <param name="unCached">if true the object is not cached, this is dangerous and can lead to object duplicates</param>
         /// <returns></returns>
-        private IPersistIfcEntity GetInstanceFromStore(long posLabel, bool loadProperties = false, bool unCached = false)
+        private IPersistIfcEntity GetInstanceFromStore(int posLabel, bool loadProperties = false, bool unCached = false)
         {
             var entityTable = GetEntityTable();
             try
             {
                 using (var transaction = entityTable.BeginReadOnlyTransaction())
                 {
-                    entityTable.SetPrimaryIndex();
+                    entityTable.SetOrderByLabel();
                     if (entityTable.TrySeekEntityLabel(posLabel))
                     {
-                        IfcInstanceHandle ih = entityTable.GetCurrentInstanceHandle();
-                        IPersistIfcEntity entity = (IPersistIfcEntity)Activator.CreateInstance(ih.EntityType);
+                        short currentIfcTypeId = entityTable.GetIfcType();
+                        IPersistIfcEntity entity = (IPersistIfcEntity)Activator.CreateInstance(IfcMetaData.GetType(currentIfcTypeId));
                         if (loadProperties)
                         {
                             byte[] properties = entityTable.GetProperties();
@@ -544,8 +618,8 @@ namespace Xbim.IO
                         }
                         else
                             entity.Bind(_model, -posLabel); //a negative handle determines that the attributes of this entity have not been loaded yet
-                        if (!unCached) 
-                            this.Add(posLabel, entity);
+                        if (!unCached)
+                            this.read.Add(posLabel, entity);
                         return entity;
                     }
                 }
@@ -560,24 +634,24 @@ namespace Xbim.IO
 
         public void Print()
         {
-            //Api.JetSetCurrentIndex(_jetSession, _jetTypeCursor, _jetTypeCursor.TypeIndex);
-            //Api.MakeKey(_jetSession, _jetTypeCursor, (short)17200, MakeKeyGrbit.NewKey);
-            //Api.MakeKey(_jetSession, _jetTypeCursor, (long)48790, MakeKeyGrbit.None);
-            //if (Api.TrySeek(_jetSession, _jetTypeCursor, SeekGrbit.SeekGE))
+            Debug.WriteLine(InstanceHandles.Count());
+                
+            Debug.WriteLine(HighestLabel);
+            Debug.WriteLine(Count);
+            Debug.WriteLine(GeometriesCount());
+           // Debug.WriteLine(Any<Xbim.Ifc2x3.SharedBldgElements.IfcWall>());
+            //Debug.WriteLine(Count<Xbim.Ifc2x3.SharedBldgElements.IfcWall>());
+            //IEnumerable<IfcElement> elems = OfType<IfcElement>();
+            //foreach (var elem in elems)
             //{
-            //    Api.MakeKey(_jetSession, _jetTypeCursor, (short)17200, MakeKeyGrbit.NewKey );
-            //    Api.MakeKey(_jetSession, _jetTypeCursor, (long)48790, MakeKeyGrbit.None);
-            //    if (Api.TrySetIndexRange(_jetSession, _jetTypeCursor,  SetIndexRangeGrbit.RangeInclusive|SetIndexRangeGrbit.RangeUpperLimit))
+            //    IEnumerable<IfcRelVoidsElement> rels = elem.HasOpenings;
+            //    bool written = false;
+            //    foreach (var rel in rels)
             //    {
-            //        do
-            //        {
-            //            Int64 firLabel = (Int64)Api.RetrieveColumnAsInt64(_jetSession, _jetTypeCursor, _jetTypeCursor.ColIdEntityLabel); //it is a non null db value so just cast
-            //            Int64? secLabel = Api.RetrieveColumnAsInt64(_jetSession, _jetTypeCursor, _colIdSecondaryKey); //it is a non null db value so just cast
-            //            Int16 typeId = (Int16)Api.RetrieveColumnAsInt16(_jetSession, _jetTypeCursor, _colIdIfcType); //it is a non null db value so just cast
-            //            System.Diagnostics.Debug.WriteLine("#{0}={1}, Key = {2}", firLabel, IfcInstances.IfcIdIfcTypeLookup[typeId].Type.Name, secLabel.HasValue ? secLabel.Value : -1);
-            //        }
-            //        while (Api.TryMoveNext(_jetSession, _jetTypeCursor));
+            //        if (!written) { Debug.Write(elem.EntityLabel + " = "); written = true; }
+            //        Debug.Write(rel.EntityLabel +", ");
             //    }
+            //    if (written) Debug.WriteLine(";");
             //}
         }
 
@@ -592,34 +666,61 @@ namespace Xbim.IO
         /// <returns></returns>
         public IEnumerable<TIfcType> OfType<TIfcType>(bool activate = false, long secondaryKey = -1)
         {
-            IfcType ifcType = IfcInstances.IfcEntities[typeof(TIfcType)];
+            IfcType ifcType = IfcMetaData.IfcType(typeof(TIfcType));
             var entityTable = GetEntityTable();
             try
             {
                 using (var transaction = entityTable.BeginReadOnlyTransaction())
                 {
-                    entityTable.SetOrderByType();
+                    if (activate)
+                        entityTable.SetOrderByType(); //use the lookup order if we plan to load the objects properties, slower than just reading the index but we need to go to the cursor for the properties
+                    else
+                        entityTable.SetOrderByType(); //use the primary order if we only want empty object, these can be read from the index which is faster
                     foreach (Type t in ifcType.NonAbstractSubTypes)
                     {
-                        ushort typeId = IfcInstances.IfcEntities[t].TypeId;
-                        if ((secondaryKey > 0 && entityTable.TrySeekEntityType(typeId, secondaryKey)) || entityTable.TrySeekEntityType(typeId))
+                        short? typeId = IfcMetaData.IfcTypeId(t);
+                        if (typeId.HasValue && entityTable.TrySeekEntityType(typeId.Value, secondaryKey))
                         {
                             do
                             {
-                                IfcInstanceHandle ih = entityTable.GetCurrentInstanceHandle();
-                                IPersistIfcEntity entity = (IPersistIfcEntity)Activator.CreateInstance(ih.EntityType);
-                                long posLabel = Math.Abs(ih.EntityLabel);
-                                if (activate)
+                                
+                                IPersistIfcEntity entity;
+                                
+                                XbimInstanceHandle ih;
+                                if (activate) 
+                                    ih= new XbimInstanceHandle(entityTable.GetLabel(),entityTable.GetIfcType());             
+                                else
                                 {
-                                    byte[] properties = entityTable.GetProperties();
-                                    entity.ReadEntityProperties(this, new BinaryReader(new MemoryStream(properties)), false);
-                                    entity.Bind(_model, posLabel); //a positive handle determines that the attributes of this entity have been loaded yet
+                                    ih = entityTable.GetInstanceHandle(); //use handles for faster lighter return
+                                   
+                                }
+
+                                if (this.read.TryGetValue(ih.EntityLabel, out entity))
+                                {
+                                    if (activate && !entity.Activated) //activate if required and not already done
+                                    {
+                                        byte[] properties = entityTable.GetProperties();
+                                        entity.ReadEntityProperties(this, new BinaryReader(new MemoryStream(properties)), false);
+                                        entity.Bind(_model, ih.EntityLabel); //a positive handle determines that the attributes of this entity have been loaded yet
+                                    }
+                                    yield return (TIfcType)entity;
                                 }
                                 else
-                                    entity.Bind(_model, -posLabel); //a negative handle determines that the attributes of this entity have not been loaded yet
+                                {
 
-                                base.Add(posLabel, entity);
-                                yield return (TIfcType)entity;
+                                    entity = (IPersistIfcEntity)Activator.CreateInstance(ih.EntityType);
+                                    if (activate)
+                                    {
+                                        byte[] properties = entityTable.GetProperties();
+                                        entity.ReadEntityProperties(this, new BinaryReader(new MemoryStream(properties)), false);
+                                        entity.Bind(_model, ih.EntityLabel); //a positive handle determines that the attributes of this entity have been loaded yet
+                                    }
+                                    else
+                                        entity.Bind(_model, -ih.EntityLabel); //a negative handle determines that the attributes of this entity have not been loaded yet
+
+                                    this.read.Add(ih.EntityLabel, entity);
+                                    yield return (TIfcType)entity;
+                                }
                             } while (entityTable.TryMoveNext());
                         }
                     }
@@ -634,14 +735,14 @@ namespace Xbim.IO
 
         public void ImportXbim(string importFrom, ReportProgressDelegate progressHandler = null)
         {
-            _count = _highestLabel;
+            
             throw new NotImplementedException();
            
         }
 
         public void ImportIfcZip(string importFrom, ReportProgressDelegate progressHandler = null)
         {
-            _count = _highestLabel;
+           
             throw new NotImplementedException();
         }
 
@@ -697,8 +798,8 @@ namespace Xbim.IO
             {
                 using (var transaction = entityTable.BeginReadOnlyTransaction())
                 {
-                    entityTable.SetPrimaryIndex();
-                    long posLabel = Math.Abs(entity.EntityLabel);
+                    entityTable.SetOrderByLabel();
+                    int posLabel = Math.Abs(entity.EntityLabel);
                     if (entityTable.TrySeekEntityLabel(posLabel))
                         return entityTable.GetProperties();
                 }
@@ -804,14 +905,6 @@ namespace Xbim.IO
             throw new NotImplementedException();
         }
 
-        public void Update_Reversible(IPersistIfcEntity entity)
-        {
-            throw new NotImplementedException();
-        }
-
-
-
-
         public bool Saved
         {
             get
@@ -871,9 +964,11 @@ namespace Xbim.IO
 
         public IEnumerable<T> Where<T>(Expression<Func<T, bool>> expr)
         {
+            bool indexFound = false;
             Type type = typeof(T);
-            IfcType ifcType = IfcInstances.IfcEntities[type];
+            IfcType ifcType = IfcMetaData.IfcType(type);
             PropertyInfo pKey = ifcType.PrimaryIndex;
+            Func<T, bool> predicate = expr.Compile();
             if (pKey != null) //we can use a secondary index to look up
             {
                 //our indexes work from the hash values of that which is indexed, regardless of type
@@ -903,15 +998,26 @@ namespace Xbim.IO
                         {
                             IPersistIfcEntity entity = hashRight as IPersistIfcEntity;
                             if (entity != null)
-                                return OfType<T>(true, Math.Abs(entity.EntityLabel));
+                            {
+                                indexFound=true;
+                                foreach (var item in OfType<T>(true, Math.Abs(entity.EntityLabel)))
+                                {
+                                    if(predicate(item)) yield return item;
+                                }
+                            }
                         }
                     }
                 }
             }
 
             //we cannot optimise so just do it
-            return OfType<T>(true).Where<T>(expr.Compile());
-
+            if (!indexFound)
+            {
+                foreach (var item in OfType<T>(true))
+                {
+                    if (predicate(item)) yield return item;
+                }
+            }
         }
         #endregion
 
@@ -945,6 +1051,172 @@ namespace Xbim.IO
             foreach (var shape in geometryTable.Shapes(ofType))
                 yield return shape;
             FreeTable(geometryTable);
+        }
+
+        internal long GeometriesCount()
+        {
+            var geomTable = GetGeometryTable();
+            try
+            {
+                return geomTable.RetrieveCount();
+            }
+            finally
+            {
+                FreeTable(geomTable);
+            }
+        }
+
+        internal static bool Compact(string source, string target, out string error)
+        {
+            error = "";
+            XbimModel sourceModel = new XbimModel();
+            sourceModel.Open(source);
+            if (CreateDB(target))
+            {
+                XbimModel targetModel = new XbimModel();
+                targetModel.Open(target);
+                sourceModel.Compact(targetModel);
+            }
+            return false;
+            //try
+            //{
+            //    if(File.Exists(target)) File.Delete(target);
+            //    Api.JetCompact(new Session(JetInstance), source,target, null, null, CompactGrbit.Stats);
+            //    error = "";
+            //    return true;
+            //}
+            //catch (Exception e)
+            //{
+            //    error = e.Message;
+            //    return false;
+            //} 
+        }
+
+        internal T InsertCopy<T>(T toCopy, XbimInstanceHandleMap mappings, bool includeInverses) where T : IPersistIfcEntity
+        {
+            XbimInstanceHandle toCopyHandle;
+            if (mappings.TryGetValue(toCopy.GetHandle(), out toCopyHandle))
+                return (T)this.GetInstance(toCopyHandle);
+           
+            IfcType ifcType = IfcMetaData.IfcType(toCopy);
+            int copyLabel = Math.Abs(toCopy.EntityLabel);
+            XbimInstanceHandle copyHandle = InsertNew(ifcType.Type);
+            mappings.Add(toCopyHandle, copyHandle);
+            if (typeof(IfcCartesianPoint) == ifcType.Type || typeof(IfcDirection) == ifcType.Type)//special cases for cartesian point and direction for efficiency
+            {
+                IPersistIfcEntity v = (IPersistIfcEntity)Activator.CreateInstance(ifcType.Type, new object[] { toCopy });  
+                return (T)v;
+            }
+            else
+            {
+                
+                IPersistIfcEntity theCopy = (IPersistIfcEntity)Activator.CreateInstance(copyHandle.EntityType);
+                theCopy.Bind(_model, copyHandle.EntityLabel);
+                IfcRoot rt = theCopy as IfcRoot;
+                IEnumerable<IfcMetaProperty> props = ifcType.IfcProperties.Values.Where(p => !p.IfcAttribute.IsDerivedOverride);
+                if (includeInverses)
+                    props = props.Union(ifcType.IfcInverses);
+                foreach (IfcMetaProperty prop in props)
+                {
+                    if (rt != null && prop.PropertyInfo.Name == "OwnerHistory") //don't add the owner history in as this will be changed later
+                        continue;
+                    object value = prop.PropertyInfo.GetValue(toCopy, null);
+                    if (value != null)
+                    {
+                        bool isInverse = (prop.IfcAttribute.Order == -1); //don't try and set the values for inverses
+                        Type theType = value.GetType();
+                        //if it is an express type or a value type, set the value
+                        if (theType.IsValueType || typeof(ExpressType).IsAssignableFrom(theType))
+                        {
+                            prop.PropertyInfo.SetValue(theCopy, value, null);
+                        }
+                        //else 
+                        else if (!isInverse && typeof(IPersistIfcEntity).IsAssignableFrom(theType))
+                        {
+                            prop.PropertyInfo.SetValue(theCopy, InsertCopy((IPersistIfcEntity)value, mappings, includeInverses), null);
+                        }
+                        else if (!isInverse && typeof(ExpressEnumerable).IsAssignableFrom(theType))
+                        {
+                            Type itemType = theType.GetItemTypeFromGenericType();
+
+                            ExpressEnumerable copyColl;
+                            if (!theType.IsGenericType) //we have a class that inherits from a generic type
+                                copyColl = (ExpressEnumerable)Activator.CreateInstance(theType, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, new object[] { theCopy }, null);
+                            else
+                            {
+                                Type genericType = theType.GetGenericTypeDefinition();
+                                Type gt = genericType.MakeGenericType(new Type[] { itemType });
+                                copyColl = (ExpressEnumerable)Activator.CreateInstance(gt, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, new object[] { theCopy }, null);
+                            }
+                            prop.PropertyInfo.SetValue(theCopy, copyColl, null);
+                            foreach (var item in (ExpressEnumerable)value)
+                            {
+                                Type actualItemType = item.GetType();
+                                if (actualItemType.IsValueType || typeof(ExpressType).IsAssignableFrom(actualItemType))
+                                    copyColl.Add(item);
+                                else if (typeof(IPersistIfcEntity).IsAssignableFrom(actualItemType))
+                                    copyColl.Add(InsertCopy((IPersistIfcEntity)item, mappings, includeInverses));
+                                else
+                                    throw new XbimException(string.Format("Unexpected collection item type ({0}) found", itemType.Name));
+                            }
+                        }
+                        else if (isInverse && value is IEnumerable<IPersistIfcEntity>) //just an enumeration of IPersistIfcEntity
+                        {
+                            foreach (var ent in (IEnumerable<IPersistIfcEntity>)value)
+                                InsertCopy(ent, mappings, includeInverses);
+                        }
+                        else if (isInverse && value is IPersistIfcEntity) //it is an inverse and has a single value
+                            InsertCopy((IPersistIfcEntity)value, mappings, includeInverses);
+                        else
+                            throw new XbimException(string.Format("Unexpected item type ({0})  found", theType.Name));
+                    }
+                }
+              //  if (rt != null) rt.OwnerHistory = this.OwnerHistoryAddObject;
+                return (T)theCopy;
+            }
+        }
+
+        private IPersistIfcEntity GetInstance(XbimInstanceHandle map)
+        {
+            return GetInstance(map.EntityLabel);
+        }
+
+
+        private XbimInstanceHandle InsertNew(Type type)
+        {
+
+            XbimEntityTable table = GetEntityTable();
+
+            try
+            {
+                using (var txn = table.BeginLazyTransaction())
+                {
+                    XbimInstanceHandle handle = table.AddEntity(type);
+                    txn.Commit();
+                    return handle;
+                }
+
+            }
+            catch (Exception e)
+            {
+                throw;
+            }
+            finally
+            {
+
+                FreeTable(table);
+            }
+            
+        }
+
+        private int NextLabel()
+        {
+            return HighestLabel + 1;
+        }
+
+        internal void AddModified(IPersistIfcEntity entity)
+        {
+            modified.Add(entity);
         }
     }
 }

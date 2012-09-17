@@ -74,7 +74,7 @@ namespace XbimConvert
                         // next arg will be either ID or Type
 
                         IfcType t;
-                        if (IfcInstances.IfcTypeLookup.TryGetValue(arg.ToUpperInvariant(), out t) == true)
+                        if (IfcMetaData.TryGetIfcType(arg.ToUpperInvariant(), out t) == true)
                         {
                             ElementTypeFilter = t;
                             FilterType = FilterType.ElementType;
@@ -82,8 +82,8 @@ namespace XbimConvert
                         else
                         {
                             // try looking for an instance by ID.
-                            long elementId;
-                            if (long.TryParse(arg, out elementId) == true)
+                            int elementId;
+                            if (int.TryParse(arg, out elementId) == true)
                             {
                                 ElementIdFilter = elementId;
                                 FilterType = FilterType.ElementID;
@@ -110,7 +110,7 @@ namespace XbimConvert
         public bool KeepFileExtension { get; set; }
         public bool IsValid { get; set; }
         public FilterType FilterType { get; set; }
-        public long ElementIdFilter {get;set;}
+        public int ElementIdFilter {get;set;}
         public IfcType ElementTypeFilter { get; set; }
         /// <summary>
         /// Indicates that logs should not contain sensitive path information.

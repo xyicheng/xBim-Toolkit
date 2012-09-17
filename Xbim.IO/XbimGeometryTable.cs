@@ -33,13 +33,13 @@ namespace Xbim.IO
         private JET_COLUMNID _colIdShapeData;
         private JET_COLUMNID _colIdSubPart;
         private JET_COLUMNID _colIdTransformMatrix;
-        UInt64ColumnValue _colValGeometryProductLabel;
+        Int32ColumnValue _colValGeometryProductLabel;
         ByteColumnValue _colValGeomType;
-        UInt16ColumnValue _colValProductIfcTypeId;
+        Int16ColumnValue _colValProductIfcTypeId;
         Int16ColumnValue _colValSubPart;
         BytesColumnValue _colValTransformMatrix;  
         BytesColumnValue _colValShapeData;
-        UInt64ColumnValue _colValRepItem;
+        Int32ColumnValue _colValRepItem;
 
         ColumnValue[] _colValues;
         
@@ -56,7 +56,7 @@ namespace Xbim.IO
 
                 var columndef = new JET_COLUMNDEF
                 {
-                    coltyp = JET_coltyp.Currency,
+                    coltyp = JET_coltyp.Long,
                     grbit = ColumndefGrbit.ColumnNotNULL
                 };
                 Api.JetAddColumn(sesid, tableid, colNameProductLabel, columndef, null, 0, out columnid);
@@ -75,7 +75,7 @@ namespace Xbim.IO
                 columndef.coltyp = JET_coltyp.LongBinary;
                 Api.JetAddColumn(sesid, tableid, colNameShapeData, columndef, null, 0, out columnid);
 
-                columndef.coltyp = JET_coltyp.Currency;
+                columndef.coltyp = JET_coltyp.Long;
                 columndef.grbit = ColumndefGrbit.ColumnMaybeNull;
                 Api.JetAddColumn(sesid, tableid, colNameRepItem, columndef, null, 0, out columnid);
 
@@ -102,12 +102,12 @@ namespace Xbim.IO
            
 
             _colValGeomType = new ByteColumnValue { Columnid = _colIdGeomType };
-            _colValProductIfcTypeId = new UInt16ColumnValue { Columnid = _colIdProductIfcTypeId };
-            _colValGeometryProductLabel = new UInt64ColumnValue { Columnid = _colIdProductLabel };
+            _colValProductIfcTypeId = new Int16ColumnValue { Columnid = _colIdProductIfcTypeId };
+            _colValGeometryProductLabel = new Int32ColumnValue { Columnid = _colIdProductLabel };
             _colValSubPart = new Int16ColumnValue { Columnid = _colIdSubPart };
             _colValTransformMatrix = new BytesColumnValue { Columnid = _colIdTransformMatrix };
             _colValShapeData = new BytesColumnValue { Columnid = _colIdShapeData };
-            _colValRepItem = new UInt64ColumnValue { Columnid = _colIdRepItem };
+            _colValRepItem = new Int32ColumnValue { Columnid = _colIdRepItem };
             _colValues = new ColumnValue[] { _colValGeomType, _colValGeometryProductLabel, _colValProductIfcTypeId, _colValSubPart, _colValTransformMatrix, _colValShapeData, _colValRepItem };
 
         }
@@ -127,7 +127,7 @@ namespace Xbim.IO
         }
 
 
-        public void AddGeometry(ulong prodLabel, XbimGeometryType type, UInt16 ifcType, byte[] transform, byte[] shapeData, ulong repItemLabel=0, short subPart = 0)
+        public void AddGeometry(int prodLabel, XbimGeometryType type, short ifcType, byte[] transform, byte[] shapeData, int repItemLabel=0, short subPart = 0)
         {
 
             using (var update = new Update(sesid, table, JET_prep.Insert))
@@ -140,38 +140,22 @@ namespace Xbim.IO
                 _colValShapeData.Value = shapeData;
                 _colValRepItem.Value = repItemLabel;
                 Api.SetColumns(sesid, table, _colValues);
+                UpdateCount(1);
                 update.Save();
                 
             }
         }
 
-        internal XbimLazyDBTransaction BeginLazyTransaction()
-        {
-            return new XbimLazyDBTransaction(this.sesid);
-        }
-
-        /// <summary>
-        /// Begin a new transaction for this cursor. This is the cheapest
-        /// transaction type because it returns a struct and no separate
-        /// commit call has to be made.
-        /// </summary>
-        /// <returns>The new transaction.</returns>
-        internal XbimReadOnlyDBTransaction BeginReadOnlyTransaction()
-        {
-            return new XbimReadOnlyDBTransaction(this.sesid);
-        }
-
-
         internal XbimGeometryData GeometryData(IfcProduct product, XbimGeometryType geomType)
         {
-            long posLabel = Math.Abs(product.EntityLabel);
+            int posLabel = Math.Abs(product.EntityLabel);
             Api.JetSetCurrentIndex(sesid, table, geometryTablePrimaryIndex);
             Api.MakeKey(sesid, table, (byte)geomType, MakeKeyGrbit.NewKey);
             Api.MakeKey(sesid, table, posLabel, MakeKeyGrbit.None);
             if (Api.TrySeek(sesid, table, SeekGrbit.SeekEQ))
             {
                 Api.RetrieveColumns(sesid, table, _colValues);
-                return new XbimGeometryData(posLabel, (XbimGeometryType) _colValGeomType.Value, _colValProductIfcTypeId.Value.Value,_colValShapeData.Value,_colValTransformMatrix.Value, (long)_colValRepItem.Value);
+                return new XbimGeometryData(posLabel, (XbimGeometryType) _colValGeomType.Value, _colValProductIfcTypeId.Value.Value,_colValShapeData.Value,_colValTransformMatrix.Value, _colValRepItem.Value.Value);
             }
             else
                 return null;
@@ -188,11 +172,29 @@ namespace Xbim.IO
                 do
                 {
                     Api.RetrieveColumns(sesid, table, _colValues);
-                    yield return new XbimGeometryData((long)_colValGeometryProductLabel.Value, (XbimGeometryType)_colValGeomType.Value, _colValProductIfcTypeId.Value.Value, _colValShapeData.Value, _colValTransformMatrix.Value, (long)_colValRepItem.Value);
+                    yield return new XbimGeometryData(_colValGeometryProductLabel.Value.Value, (XbimGeometryType)_colValGeomType.Value, _colValProductIfcTypeId.Value.Value, _colValShapeData.Value, _colValTransformMatrix.Value, _colValRepItem.Value.Value);
                 } while (Api.TryMoveNext(sesid, table));
 
             }
         }
-        
+
+        /// <summary>
+        /// Retrieve the count of geometry items in the database from the globals table.
+        /// </summary>
+        /// <returns>The number of items in the database.</returns>
+        override internal int RetrieveCount()
+        {
+            return (int)Api.RetrieveColumnAsInt32(this.sesid, this.globalsTable, this.geometryCountColumn);
+        }
+
+        /// <summary>
+        /// Update the count of geometry entities in the globals table. This is done with EscrowUpdate
+        /// so that there won't be any write conflicts.
+        /// </summary>
+        /// <param name="delta">The delta to apply to the count.</param>
+        override protected void UpdateCount(int delta)
+        {
+            Api.EscrowUpdate(this.sesid, this.globalsTable, this.geometryCountColumn, delta);
+        }
     }
 }
