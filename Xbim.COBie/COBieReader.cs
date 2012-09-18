@@ -283,26 +283,117 @@ namespace Xbim.COBie
                 }
 
                 // populate foreign key errors
+                //COBieErrorCollection errorFKCollection = new COBieErrorCollection();
+                //for (int i = 0; i < Workbook.Count; i++)
+                //{
+                //    Type type = Workbook[i].GetType();
+                //    MethodInfo methodInfo = type.GetMethod("ValidateForeignKey");
+                //    var result = methodInfo.Invoke(Workbook[i], null);
+                                        
+                //    // result will have all the rows for a sheet
+                //    if (result != null)
+                //    {
+                //        COBieErrorCollection errorCol = (COBieErrorCollection)result;
+                //        foreach (COBieError err in errorCol)
+                //            errorFKCollection.Add(err);
+
+                //        // pass all the rows and check the column with atribute type foreignkey
+                //        ValidateForeignKey((List<COBieRow>)result);
+
+                //    }
+                //}          
+
                 COBieErrorCollection errorFKCollection = new COBieErrorCollection();
                 for (int i = 0; i < Workbook.Count; i++)
                 {
-                    Type type = Workbook[i].GetType();
-                    MethodInfo methodInfo = type.GetMethod("ValidateForeignKey");
-                    var result = methodInfo.Invoke(Workbook[i], null);
+                    List<PropertyInfo> foreignKeyColumns = Workbook[i].ForeignKeyColumns;
 
-                    if (result != null)
+                    if (foreignKeyColumns != null && foreignKeyColumns.Count > 0)
                     {
-                        COBieErrorCollection errorCol = (COBieErrorCollection)result;
-                        foreach (COBieError err in errorCol)
-                            errorFKCollection.Add(err);
+                        foreach (PropertyInfo propInfo in foreignKeyColumns)
+                        {
+                            object[] attrs = propInfo.GetCustomAttributes(typeof(COBieAttributes), true);
+                            if (attrs != null && attrs.Length > 0)
+                            {
+                                COBieAttributes attr = (COBieAttributes)attrs[0];
+                                // we know its a foreign key column, get what sheet and column it is refering to
+                                string sheetCol = attr.ReferenceColumnName;
+                                int index = sheetCol.IndexOf('.');
+                                string foreignSheetName = sheetCol.Substring(0, index);
+                                string foreignColName = sheetCol.Substring(index + 1, sheetCol.Length - (index + 1));
+
+                                int foreignSheetIndex = GetCOBieSheetIndexBySheetName(foreignSheetName);
+
+                                // now we have the foreignKey Column, get that workbook sheet  
+                                // Workbook[i] = the one we are checking now
+                                // Workbook[foreignSheetIndex] = sheet with foreign key column
+
+                                // get foreignkey column values from one worksheet and check if they exist in other worksheet
+                                Type type = Workbook[i].GetType();
+                                MethodInfo methodInfo = type.GetMethod("GetForeignKeyValues");
+                                object[] param = {attr.ColumnName};
+                                var result = methodInfo.Invoke(Workbook[i], param);
+
+                                List<string> colMain = new List<string>();
+                                if (result != null)
+                                    colMain = (List<string>)result;
+
+
+                                Type typeF = Workbook[foreignSheetIndex].GetType();
+                                MethodInfo methodInfoF = typeF.GetMethod("GetForeignKeyValues");
+                                object[] paramF = { foreignColName };
+                                var resultF = methodInfoF.Invoke(Workbook[foreignSheetIndex], paramF);
+
+                                List<string> colForeign = new List<string>();
+                                if (resultF != null)
+                                    colForeign = (List<string>)resultF;
+
+                                // send the 2 lists to check foreign key constraint
+                                MethodInfo methodInfo3 = type.GetMethod("ValidateForeignKey");
+                                object[] param3 = { colMain, colForeign };
+                                var result3 = methodInfo3.Invoke(Workbook[i], param3);
+
+                                if (result3 != null)
+                                {
+                                    COBieErrorCollection errorCol = (COBieErrorCollection)result3;
+                                    foreach (COBieError err in errorCol)
+                                        errorFKCollection.Add(err);
+                                }
+                            }
+                        }
                     }
-                }             
+                    
+                    
+                }
+                
             }
             catch (Exception)
             {
                 // TODO: Handle
                 throw;
             }
+        }
+
+        private int GetCOBieSheetIndexBySheetName(string sheetName)
+        {
+            for (int i = 0; i < Workbook.Count; i++)
+            {
+                if (sheetName == Workbook[i].SheetName)
+                    return i;
+            }
+            return -1;
+        }
+
+        public COBieErrorCollection ValidateForeignKey(List<COBieRow> Rows)
+        {
+            // E.g.
+            // SELECT Facility.CreatedBy, Contact.Email FROM Contact
+            // Left Outer Join Facility On Contact.Email = Facility.CreatedBy 
+            // WHERE Facility.CreatedBy = null 
+
+            
+
+            return null;
         }
 
         public void GenerateCOBieData()

@@ -15,16 +15,16 @@ namespace Xbim.COBie.Rows
         [COBieAttributes(0, COBieKeyType.CompoundKey, "", COBieAttributeState.Required, "Name", 255, COBieAllowedType.AlphaNumeric)]
         public string Name { get; set; }
 
-        [COBieAttributes(1, COBieKeyType.None, "", COBieAttributeState.Required, "CreatedBy", 255, COBieAllowedType.Email)]
+        [COBieAttributes(1, COBieKeyType.ForeignKey, "Contact.Email", COBieAttributeState.Required, "CreatedBy", 255, COBieAllowedType.Email)]
         public string CreatedBy { get; set; }
 
         [COBieAttributes(2, COBieKeyType.None, "", COBieAttributeState.Required, "CreatedOn", 19, COBieAllowedType.ISODate)]
         public string CreatedOn { get; set; }
 
-        [COBieAttributes(3, COBieKeyType.CompoundKey, "", COBieAttributeState.Required, "Category", 255, COBieAllowedType.Text)]
+        [COBieAttributes(3, COBieKeyType.CompoundKey_ForeignKey, "PickLists.CategoryElement", COBieAttributeState.Required, "Category", 255, COBieAllowedType.Text)]
         public string Category { get; set; }
 
-        [COBieAttributes(4, COBieKeyType.CompoundKey, "", COBieAttributeState.Required, "ComponentNames", 255, COBieAllowedType.Text)]
+        [COBieAttributes(4, COBieKeyType.CompoundKey_ForeignKey, "Component.Name", COBieAttributeState.Required, "ComponentNames", 255, COBieAllowedType.Text)]
         public string ComponentNames { get; set; }
 
         [COBieAttributes(5, COBieKeyType.None, "", COBieAttributeState.System, "ExtSystem", 255, COBieAllowedType.AlphaNumeric)]

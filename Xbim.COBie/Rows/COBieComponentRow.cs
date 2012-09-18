@@ -20,16 +20,16 @@ namespace Xbim.COBie.Rows
         [COBieAttributes(0, COBieKeyType.PrimaryKey, "", COBieAttributeState.Required, "Name", 255, COBieAllowedType.AlphaNumeric)]
         public string Name { get; set; }
 
-        [COBieAttributes(1, COBieKeyType.None, "", COBieAttributeState.Required, "CreatedBy", 255, COBieAllowedType.Email)]
+        [COBieAttributes(1, COBieKeyType.ForeignKey, "Contact.Email", COBieAttributeState.Required, "CreatedBy", 255, COBieAllowedType.Email)]
         public string CreatedBy { get; set; }
 
         [COBieAttributes(2, COBieKeyType.None, "", COBieAttributeState.Required, "CreatedOn", 19, COBieAllowedType.ISODate)]
         public string CreatedOn { get; set; }
 
-        [COBieAttributes(3, COBieKeyType.None, "", COBieAttributeState.Required, "TypeName", 255, COBieAllowedType.AlphaNumeric)]
+        [COBieAttributes(3, COBieKeyType.ForeignKey, "Type.Name", COBieAttributeState.Required, "TypeName", 255, COBieAllowedType.AlphaNumeric)]
         public string TypeName { get; set; }
 
-        [COBieAttributes(4, COBieKeyType.None, "", COBieAttributeState.Required, "Space", 255, COBieAllowedType.AlphaNumeric)]
+        [COBieAttributes(4, COBieKeyType.ForeignKey, "Space.Name", COBieAttributeState.Required, "Space", 255, COBieAllowedType.AlphaNumeric)]
         public string Space { get; set; }
 
         [COBieAttributes(5, COBieKeyType.None, "", COBieAttributeState.Required, "Description", 255, COBieAllowedType.AlphaNumeric)]

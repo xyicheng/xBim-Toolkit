@@ -15,22 +15,22 @@ namespace Xbim.COBie.Rows
         [COBieAttributes(0, COBieKeyType.CompoundKey, "", COBieAttributeState.Required, "Name", 255, COBieAllowedType.AlphaNumeric)]
         public string Name { get; set; }
 
-        [COBieAttributes(1, COBieKeyType.None, "", COBieAttributeState.Required, "CreatedBy", 255, COBieAllowedType.Email)]
+        [COBieAttributes(1, COBieKeyType.ForeignKey, "Contact.Email", COBieAttributeState.Required, "CreatedBy", 255, COBieAllowedType.Email)]
         public string CreatedBy { get; set; }
 
         [COBieAttributes(2, COBieKeyType.None, "", COBieAttributeState.Required, "CreatedOn", 19, COBieAllowedType.ISODate)]
         public string CreatedOn { get; set; }
 
-        [COBieAttributes(3, COBieKeyType.CompoundKey, "", COBieAttributeState.Required, "ConnectionType", 255, COBieAllowedType.Text)]
+        [COBieAttributes(3, COBieKeyType.CompoundKey_ForeignKey, "PickLists.ConnectionType", COBieAttributeState.Required, "ConnectionType", 255, COBieAllowedType.Text)]
         public string ConnectionType { get; set; }
 
         [COBieAttributes(4, COBieKeyType.None, "", COBieAttributeState.None, "SheetName", 255, COBieAllowedType.Text)]
         public string SheetName { get; set; }
 
-        [COBieAttributes(5, COBieKeyType.CompoundKey, "", COBieAttributeState.Required, "RowName1", 255, COBieAllowedType.Text)]
+        [COBieAttributes(5, COBieKeyType.CompoundKey_ForeignKey, "Component.Name", COBieAttributeState.Required, "RowName1", 255, COBieAllowedType.Text)]
         public string RowName1 { get; set; }
 
-        [COBieAttributes(6, COBieKeyType.CompoundKey, "", COBieAttributeState.Required, "RowName2", 255, COBieAllowedType.Text)]
+        [COBieAttributes(6, COBieKeyType.CompoundKey_ForeignKey, "Component.Name", COBieAttributeState.Required, "RowName2", 255, COBieAllowedType.Text)]
         public string RowName2 { get; set; }
 
         [COBieAttributes(7, COBieKeyType.None, "", COBieAttributeState.None, "RealizingElement", 255, COBieAllowedType.Text)]

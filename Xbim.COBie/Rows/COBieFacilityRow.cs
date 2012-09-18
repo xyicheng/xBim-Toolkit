@@ -27,7 +27,7 @@ namespace Xbim.COBie.Rows
         [COBieAttributes(2, COBieKeyType.None, "", COBieAttributeState.Required, "CreatedOn", 19, COBieAllowedType.ISODate)]
         public string CreatedOn { get; set; }
 
-        [COBieAttributes(3, COBieKeyType.None, "", COBieAttributeState.Required, "Category", 255, COBieAllowedType.Text)]
+        [COBieAttributes(3, COBieKeyType.ForeignKey, "PickLists.CategoryFacility", COBieAttributeState.Required, "Category", 255, COBieAllowedType.Text)]
         public string Category { get; set; }
 
         [COBieAttributes(4, COBieKeyType.None, "", COBieAttributeState.Required, "ProjectName", 255, COBieAllowedType.AlphaNumeric)]
@@ -36,16 +36,16 @@ namespace Xbim.COBie.Rows
         [COBieAttributes(5, COBieKeyType.None, "", COBieAttributeState.Required, "SiteName", 255, COBieAllowedType.AlphaNumeric)]
         public string SiteName { get; set; }
 
-        [COBieAttributes(6, COBieKeyType.None, "", COBieAttributeState.Required, "LinearUnits", 255, COBieAllowedType.Text)]
+        [COBieAttributes(6, COBieKeyType.ForeignKey, "PickLists.LinearUnit", COBieAttributeState.Required, "LinearUnits", 255, COBieAllowedType.Text)]
         public string LinearUnits { get; set; }
 
-        [COBieAttributes(7, COBieKeyType.None, "", COBieAttributeState.Required, "AreaUnits", 255, COBieAllowedType.Text)]
+        [COBieAttributes(7, COBieKeyType.ForeignKey, "PickLists.AreaUnit", COBieAttributeState.Required, "AreaUnits", 255, COBieAllowedType.Text)]
         public string AreaUnits { get; set; }
 
-        [COBieAttributes(8, COBieKeyType.None, "", COBieAttributeState.Required, "VolumeUnits", 255, COBieAllowedType.Text)]
+        [COBieAttributes(8, COBieKeyType.ForeignKey, "PickLists.VolumeUnit", COBieAttributeState.Required, "VolumeUnits", 255, COBieAllowedType.Text)]
         public string VolumeUnits { get; set; }
 
-        [COBieAttributes(9, COBieKeyType.None, "", COBieAttributeState.Required, "CurrencyUnit", 255, COBieAllowedType.Text)]
+        [COBieAttributes(9, COBieKeyType.ForeignKey, "PickLists.CostUnit", COBieAttributeState.Required, "CurrencyUnit", 255, COBieAllowedType.Text)]
         public string CurrencyUnit { get; set; }
 
         [COBieAttributes(10, COBieKeyType.None, "", COBieAttributeState.Required, "AreaMeasurement", 255, COBieAllowedType.AlphaNumeric)]

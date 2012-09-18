@@ -15,13 +15,13 @@ namespace Xbim.COBie.Rows
         [COBieAttributes(0, COBieKeyType.PrimaryKey, "", COBieAttributeState.Required, "Name", 255, COBieAllowedType.AlphaNumeric)]
         public string Name { get; set; }
 
-        [COBieAttributes(1, COBieKeyType.None, "", COBieAttributeState.Required, "CreatedBy", 255, COBieAllowedType.Email)]
+        [COBieAttributes(1, COBieKeyType.ForeignKey, "Contact.Email", COBieAttributeState.Required, "CreatedBy", 255, COBieAllowedType.Email)]
         public string CreatedBy { get; set; }
 
         [COBieAttributes(2, COBieKeyType.None, "", COBieAttributeState.Required, "CreatedOn", 19, COBieAllowedType.ISODate)]
         public string CreatedOn { get; set; }
 
-        [COBieAttributes(3, COBieKeyType.None, "", COBieAttributeState.Required, "Category", 255, COBieAllowedType.Text)]
+        [COBieAttributes(3, COBieKeyType.ForeignKey, "PickLists.ResourceType", COBieAttributeState.Required, "Category", 255, COBieAllowedType.Text)]
         public string Category { get; set; }
 
         [COBieAttributes(4, COBieKeyType.None, "", COBieAttributeState.System, "ExtSystem", 255, COBieAllowedType.AlphaNumeric)]

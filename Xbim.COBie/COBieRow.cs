@@ -42,6 +42,11 @@ namespace Xbim.COBie
             }
         }
 
+        public string GetForeignKeyValue(int colIndex)
+        {
+            return ParentSheet.ForeignKeyColumns[colIndex].GetValue(this, null).ToString();
+        }
+
         public COBieCell this[int i]
         {
             get

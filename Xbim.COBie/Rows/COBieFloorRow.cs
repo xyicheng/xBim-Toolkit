@@ -17,23 +17,23 @@ namespace Xbim.COBie.Rows
         [COBieAttributes(0, COBieKeyType.PrimaryKey, "", COBieAttributeState.Required, "Name", 255, COBieAllowedType.AlphaNumeric)]
         public string Name { get; set; }
 
-        [COBieAttributes(1, COBieKeyType.ForeignKey, "", COBieAttributeState.Required, "CreatedBy", 255, COBieAllowedType.Email)]
+        [COBieAttributes(1, COBieKeyType.ForeignKey, "Contact.Email", COBieAttributeState.Required, "CreatedBy", 255, COBieAllowedType.Email)]
         public string CreatedBy { get; set; }
 
         [COBieAttributes(2, COBieKeyType.None, "", COBieAttributeState.Required, "CreatedOn", 19, COBieAllowedType.ISODate)]
         public string CreatedOn { get; set; }
 
 
-        [COBieAttributes(3, COBieKeyType.ForeignKey, "", COBieAttributeState.Required, "Category", 255, COBieAllowedType.AlphaNumeric)]
+        [COBieAttributes(3, COBieKeyType.ForeignKey, "PickLists.FloorType", COBieAttributeState.Required, "Category", 255, COBieAllowedType.AlphaNumeric)]
         public string Category { get; set; }
 
-        [COBieAttributes(4, COBieKeyType.ForeignKey, "", COBieAttributeState.Required, "ExtSystem", 255, COBieAllowedType.AlphaNumeric)]
+        [COBieAttributes(4, COBieKeyType.None, "", COBieAttributeState.Required, "ExtSystem", 255, COBieAllowedType.AlphaNumeric)]
         public string ExtSystem { get; set; }
 
-        [COBieAttributes(5, COBieKeyType.ForeignKey, "", COBieAttributeState.Required, "ExtObject", 255, COBieAllowedType.AlphaNumeric)]
+        [COBieAttributes(5, COBieKeyType.None, "", COBieAttributeState.Required, "ExtObject", 255, COBieAllowedType.AlphaNumeric)]
         public string ExtObject { get; set; }
 
-        [COBieAttributes(6, COBieKeyType.ForeignKey, "", COBieAttributeState.Required, "ExtIdentifier", 255, COBieAllowedType.AlphaNumeric)]
+        [COBieAttributes(6, COBieKeyType.None, "", COBieAttributeState.Required, "ExtIdentifier", 255, COBieAllowedType.AlphaNumeric)]
         public string ExtIdentifier { get; set; }
 
         [COBieAttributes(7, COBieKeyType.None, "", COBieAttributeState.As_Specified, "Description", 255, COBieAllowedType.AlphaNumeric)]

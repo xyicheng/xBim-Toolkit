@@ -15,34 +15,34 @@ namespace Xbim.COBie.Rows
         [COBieAttributes(0, COBieKeyType.PrimaryKey, "", COBieAttributeState.Required, "Name", 255, COBieAllowedType.AlphaNumeric)]
         public string Name { get; set; }
 
-        [COBieAttributes(1, COBieKeyType.None, "", COBieAttributeState.Required, "CreatedBy", 255, COBieAllowedType.Email)]
+        [COBieAttributes(1, COBieKeyType.ForeignKey, "Contact.Email", COBieAttributeState.Required, "CreatedBy", 255, COBieAllowedType.Email)]
         public string CreatedBy { get; set; }
 
         [COBieAttributes(2, COBieKeyType.None, "", COBieAttributeState.Required, "CreatedOn", 19, COBieAllowedType.ISODate)]
         public string CreatedOn { get; set; }
 
-        [COBieAttributes(3, COBieKeyType.None, "", COBieAttributeState.Required, "Category", 255, COBieAllowedType.Text)]
+        [COBieAttributes(3, COBieKeyType.ForeignKey, "PickLists.CategoryProduct", COBieAttributeState.Required, "Category", 255, COBieAllowedType.Text)]
         public string Category { get; set; }
 
         [COBieAttributes(4, COBieKeyType.None, "", COBieAttributeState.Required, "Description", 255, COBieAllowedType.AlphaNumeric)]
         public string Description { get; set; }
 
-        [COBieAttributes(5, COBieKeyType.None, "", COBieAttributeState.Required, "AssetType", 255, COBieAllowedType.Text)]
+        [COBieAttributes(5, COBieKeyType.ForeignKey, "PickLists.AssetType", COBieAttributeState.Required, "AssetType", 255, COBieAllowedType.Text)]
         public string AssetType { get; set; }
 
-        [COBieAttributes(6, COBieKeyType.None, "", COBieAttributeState.Required, "Manufacturer", 255, COBieAllowedType.Email)]
+        [COBieAttributes(6, COBieKeyType.ForeignKey, "Contact.Email", COBieAttributeState.Required, "Manufacturer", 255, COBieAllowedType.Email)]
         public string Manufacturer { get; set; }
 
         [COBieAttributes(7, COBieKeyType.None, "", COBieAttributeState.Required, "ModelNumber", 255, COBieAllowedType.AlphaNumeric)]
         public string ModelNumber { get; set; }
 
-        [COBieAttributes(8, COBieKeyType.None, "", COBieAttributeState.Required, "WarrantyGuarantorParts", 255, COBieAllowedType.Email)]
+        [COBieAttributes(8, COBieKeyType.ForeignKey, "Contact.Email", COBieAttributeState.Required, "WarrantyGuarantorParts", 255, COBieAllowedType.Email)]
         public string WarrantyGuarantorParts { get; set; }
 
         [COBieAttributes(9, COBieKeyType.None, "", COBieAttributeState.Required, "WarrantyDurationParts", sizeof(double), COBieAllowedType.Numeric)]
         public string WarrantyDurationParts { get; set; }
 
-        [COBieAttributes(10, COBieKeyType.None, "", COBieAttributeState.Required, "WarrantyGuarantorLabor", 255, COBieAllowedType.Email)]
+        [COBieAttributes(10, COBieKeyType.ForeignKey, "Contact.Email", COBieAttributeState.Required, "WarrantyGuarantorLabor", 255, COBieAllowedType.Email)]
         [COBieAlias("WarrantyGuarantorLabour")]
         public string WarrantyGuarantorLabor { get; set; }
 
@@ -50,7 +50,7 @@ namespace Xbim.COBie.Rows
         [COBieAlias("WarrantyDurationLabour")]
         public string WarrantyDurationLabor { get; set; }
 
-        [COBieAttributes(12, COBieKeyType.None, "", COBieAttributeState.Required, "WarrantyDurationUnit", 255, COBieAllowedType.Text)]
+        [COBieAttributes(12, COBieKeyType.ForeignKey, "PickLists.DurationUnit", COBieAttributeState.Required, "WarrantyDurationUnit", 255, COBieAllowedType.Text)]
         public string WarrantyDurationUnit { get; set; }
 
         [COBieAttributes(13, COBieKeyType.None, "", COBieAttributeState.System, "ExtSystem", 255, COBieAllowedType.Text)]

@@ -20,6 +20,7 @@ namespace Xbim.COBie
         private PropertyInfo[] _properties;
         private Dictionary<PropertyInfo, object[]> _attributes;
         private List<PropertyInfo> _keyColumns = new List<PropertyInfo>();
+        private List<PropertyInfo> _foreignKeyColumns = new List<PropertyInfo>();
 
         public List<PropertyInfo> KeyColumns
         {
@@ -27,6 +28,12 @@ namespace Xbim.COBie
             
         }
 
+        public List<PropertyInfo> ForeignKeyColumns
+        {
+            get { return _foreignKeyColumns; }
+
+        }
+                
         public COBieSheet(string sheetName)
         {
             Rows = new List<T>();
@@ -45,8 +52,12 @@ namespace Xbim.COBie
                     List<string> aliases = GetAliases(propInfo);
                     _columns.Add(attr.Order, new COBieColumn(attr.ColumnName, attr.MaxLength, attr.AllowedType, attr.KeyType, aliases));
                     _attributes.Add(propInfo, attrs);
-                    if (attr.KeyType == COBieKeyType.CompoundKey || attr.KeyType == COBieKeyType.PrimaryKey)
+                    
+                    if (attr.KeyType == COBieKeyType.CompoundKey || attr.KeyType == COBieKeyType.CompoundKey_ForeignKey || attr.KeyType == COBieKeyType.PrimaryKey)
                         _keyColumns.Add(propInfo);
+
+                    if (attr.KeyType == COBieKeyType.ForeignKey || attr.KeyType == COBieKeyType.CompoundKey_ForeignKey)
+                        _foreignKeyColumns.Add(propInfo);
                 }
             }
         }
@@ -85,15 +96,64 @@ namespace Xbim.COBie
             else return null;
         }
 
-        public COBieErrorCollection ValidateForeignKey()
+        public COBieErrorCollection ValidateForeignKey(List<string> colMain, List<string> colForeign)
         {
             // E.g.
             // SELECT Facility.CreatedBy, Contact.Email FROM Contact
             // Left Outer Join Facility On Contact.Email = Facility.CreatedBy 
             // WHERE Facility.CreatedBy = null 
-            
 
-            return null;
+            var query = from cm in colMain
+                        join cf in colForeign on cm equals cf into gj
+                        from subpet in gj.DefaultIfEmpty()
+                        select new { cm, ColForeign = (subpet == null ? String.Empty : subpet) };
+
+            COBieErrorCollection errorColl = new COBieErrorCollection();
+            foreach (var r in query)
+            {
+                if (string.IsNullOrEmpty(r.ColForeign))
+                {
+                    COBieError error = new COBieError(SheetName, "", r.cm.ToString() + " duplication", COBieError.ErrorTypes.Null_ForeignKey_Value);
+                    errorColl.Add(error);
+                }
+            }
+
+            if (errorColl.Count > 0) return errorColl;
+            else return null;
+        }
+
+        public List<string> GetForeignKeyValues(string foreignColName)
+        {
+            List<string> colValues = new List<string>();
+            foreach (T row in Rows)
+            {
+                // loop through each column, get its attributes and check if column value matches the attributes constraints
+                foreach (PropertyInfo propInfo in Properties)
+                {
+                    object[] attrs = Attributes[propInfo];
+                    if (attrs != null && attrs.Length > 0)
+                    {                        
+                        COBieAttributes attr = (COBieAttributes)attrs[0];
+                        if (attr.ColumnName == foreignColName)
+                        {
+                            Type cobieType = row.GetType();
+                            string val = (propInfo.GetValue(row, null) == null) ? "" : propInfo.GetValue(row, null).ToString();
+
+                            colValues.Add(val);
+                        }
+                        
+                    }
+                }
+            }
+            if (colValues.Count > 0)
+                return colValues;
+            else
+                return null;
+        }
+
+        public List<T> GetRows()
+        {
+            return Rows;
         }
 
         private List<string> GetAliases(PropertyInfo propInfo)
