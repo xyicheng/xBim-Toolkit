@@ -277,18 +277,18 @@ namespace Xbim.COBie
                 DateTime.TryParse(cell.CellValue, out dt);
                 if (dt == DateTime.MinValue)
                 {
-                    rm.GetString(COBieError.ErrorTypes.ISODate_Value_Expected.ToString());
+                    err.ErrorDescription = rm.GetString(COBieError.ErrorTypes.ISODate_Value_Expected.ToString());
                     err.ErrorType = COBieError.ErrorTypes.ISODate_Value_Expected;
                 }
             }
 
             if (allowedType == COBieAllowedType.Numeric)
-            {
+            { 
                 double d;
                 double.TryParse(cell.CellValue, out d);
                 if (d == 0)
                 {
-                    rm.GetString(COBieError.ErrorTypes.Numeric_Value_Expected.ToString());
+                    err.ErrorDescription = rm.GetString(COBieError.ErrorTypes.Numeric_Value_Expected.ToString());
                     err.ErrorType = COBieError.ErrorTypes.Numeric_Value_Expected;
                 }
             }
