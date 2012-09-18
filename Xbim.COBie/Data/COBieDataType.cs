@@ -42,35 +42,11 @@ namespace Xbim.COBie.Data
             // Create new Sheet
             COBieSheet<COBieTypeRow> types = new COBieSheet<COBieTypeRow>(Constants.WORKSHEET_TYPE);
             
-            //TODO: after IfcRampType and IfcStairType are implemented then add to excludedTypes list
-            List<Type> excludedTypes = new List<Type>{  typeof(IfcTypeProduct),
-                                                            typeof(IfcElementType),
-                                                            typeof(IfcBeamType),
-                                                            typeof(IfcColumnType),
-                                                            typeof(IfcCurtainWallType),
-                                                            typeof(IfcMemberType),
-                                                            typeof(IfcPlateType),
-                                                            typeof(IfcRailingType),
-                                                            typeof(IfcRampFlightType),
-                                                            typeof(IfcSlabType),
-                                                            typeof(IfcStairFlightType),
-                                                            typeof(IfcWallType),
-                                                            typeof(IfcDuctFittingType ),
-                                                            typeof(IfcJunctionBoxType ),
-                                                            typeof(IfcPipeFittingType),
-                                                            typeof(IfcCableCarrierSegmentType),
-                                                            typeof(IfcCableSegmentType),
-                                                            typeof(IfcDuctSegmentType),
-                                                            typeof(IfcPipeSegmentType),
-                                                            typeof(IfcFastenerType),
-                                                            typeof(IfcSpaceType),
-                                                            //typeof(Xbim.Ifc.SharedBldgElements.IfcRampType), //IFC2x Edition 4.
-                                                            //typeof(IfcStairType), //IFC2x Edition 4.
-                                                             };
+            
             // get all IfcTypeObject objects from IFC file
             IEnumerable<IfcTypeObject> ifcTypeObjects = Model.InstancesOfType<IfcTypeObject>()
                 .Select(type => type)
-                .Where(type => !excludedTypes.Contains(type.GetType()));
+                .Where(type => !TypeObjectExcludeTypes.Contains(type.GetType()));
 
             
             // Well known property names to seek out the data
@@ -109,7 +85,7 @@ namespace Xbim.COBie.Data
                 typeRow.Category = GetCategory(type);
                 typeRow.Description = GetTypeObjDescription(type);
 
-                typeRow.ExtSystem = GetIfcApplication().ApplicationFullName;
+                typeRow.ExtSystem = ifcApplication.ApplicationFullName;
                 typeRow.ExtObject = type.GetType().Name;
                 typeRow.ExtIdentifier = type.GlobalId;
 

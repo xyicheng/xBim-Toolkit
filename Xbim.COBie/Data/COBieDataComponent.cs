@@ -10,6 +10,8 @@ using Xbim.Ifc.SharedBldgServiceElements;
 using Xbim.Ifc.Extensions;
 using Xbim.XbimExtensions;
 using Xbim.Ifc.PropertyResource;
+using Xbim.Ifc.StructuralElementsDomain;
+using Xbim.Ifc.SharedComponentElements;
 
 namespace Xbim.COBie.Data
 {
@@ -38,40 +40,7 @@ namespace Xbim.COBie.Data
             //Create new sheet
            COBieSheet<COBieComponentRow> components = new COBieSheet<COBieComponentRow>(Constants.WORKSHEET_COMPONENT);
 
-            List<Type> excludedTypes = new List<Type>{  typeof(IfcWall),
-                                                            typeof(IfcWallStandardCase),
-                                                            typeof(IfcSlab),
-                                                            typeof(IfcBeam),
-                                                            typeof(IfcSpace),
-                                                            typeof(IfcBuildingStorey),
-                                                            typeof(IfcBuilding),
-                                                            typeof(IfcSite),
-                                                            typeof(IfcProject),
-                                                            typeof(IfcColumn),
-                                                            typeof(IfcMember),
-                                                            typeof(IfcPlate),
-                                                            typeof(IfcRailing),
-                                                            typeof(IfcStairFlight),
-                                                            typeof(IfcCurtainWall),
-                                                            typeof(IfcRampFlight),
-                                                            typeof(IfcVirtualElement),
-                                                            typeof(IfcFeatureElement),
-                                                            typeof(Xbim.Ifc.SharedComponentElements.IfcFastener),
-                                                            typeof(Xbim.Ifc.SharedComponentElements.IfcMechanicalFastener),
-                                                            typeof(IfcElementAssembly),
-                                                            typeof(Xbim.Ifc.StructuralElementsDomain.IfcBuildingElementPart),
-                                                            typeof(Xbim.Ifc.StructuralElementsDomain.IfcReinforcingBar),
-                                                            typeof(Xbim.Ifc.StructuralElementsDomain.IfcReinforcingMesh),
-                                                            typeof(Xbim.Ifc.StructuralElementsDomain.IfcTendon),
-                                                            typeof(Xbim.Ifc.StructuralElementsDomain.IfcTendonAnchor),
-                                                            typeof(Xbim.Ifc.StructuralElementsDomain.IfcFooting),
-                                                            typeof(Xbim.Ifc.StructuralElementsDomain.IfcPile),
-                                                            typeof(IfcRamp),
-                                                            typeof(IfcRoof),
-                                                            typeof(IfcStair),
-                                                            typeof(IfcFlowFitting),
-                                                            typeof(IfcFlowSegment),
-                                                            typeof(IfcDistributionPort) };
+            
 
          
             IEnumerable<IfcRelAggregates> relAggregates = Model.InstancesOfType<IfcRelAggregates>();
@@ -79,10 +48,10 @@ namespace Xbim.COBie.Data
 
             List<IfcObject> ifcElements = ((from x in relAggregates
                                             from y in x.RelatedObjects
-                                            where !excludedTypes.Contains(y.GetType())
+                                            where !ComponentExcludeTypes.Contains(y.GetType())
                                             select y).Union(from x in relSpatial
                                                             from y in x.RelatedElements
-                                                            where !excludedTypes.Contains(y.GetType())
+                                                            where !ComponentExcludeTypes.Contains(y.GetType())
                                                             select y)).GroupBy(el => el.Name).Select(g => g.First()).OfType<IfcObject>().ToList(); //.Distinct().ToList();
             
             COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(ifcElements); //properties helper class
@@ -117,7 +86,7 @@ namespace Xbim.COBie.Data
                 component.TypeName = GetTypeName(el);
                 component.Space = GetComponentRelatedSpace(el);
                 component.Description = GetComponentDescription(el);
-                component.ExtSystem = GetIfcApplication().ApplicationFullName;
+                component.ExtSystem = ifcApplication.ApplicationFullName;
                 component.ExtObject = el.GetType().Name;
                 component.ExtIdentifier = el.GlobalId;
 

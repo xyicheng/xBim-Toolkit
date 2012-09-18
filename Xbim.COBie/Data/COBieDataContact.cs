@@ -34,6 +34,8 @@ namespace Xbim.COBie.Data
         /// <returns>COBieSheet<COBieContactRow></returns>
         public COBieSheet<COBieContactRow> Fill()
         {
+            ClearEMails(); //clear the email dictionary for a new file conversion
+
             //create new sheet
             COBieSheet<COBieContactRow> contacts = new COBieSheet<COBieContactRow>(Constants.WORKSHEET_CONTACT);
 
@@ -68,7 +70,7 @@ namespace Xbim.COBie.Data
                 
                 contact.Company = (string.IsNullOrEmpty(ifcOrganization.Name)) ? DEFAULT_STRING : ifcOrganization.Name.ToString();
                 contact.Phone = GetTelecomTelephoneNumber(ifcPersonAndOrganization);
-                contact.ExtSystem = GetIfcApplication().ApplicationFullName;
+                contact.ExtSystem = ifcApplication.ApplicationFullName;
                 
                 contact.ExtObject = "IfcPersonAndOrganization";
                 contact.ExtIdentifier = ifcPerson.Id;

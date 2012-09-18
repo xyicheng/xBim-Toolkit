@@ -34,7 +34,11 @@ namespace Xbim.COBie
                     List<string> keyValues = new List<string>(c);
                     foreach (var keyProp in ParentSheet.KeyColumns)
                     {
-                        keyValues.Add(keyProp.GetValue(this, null).ToString());
+                        if (keyProp.GetValue(this, null) != null)
+                            keyValues.Add(keyProp.GetValue(this, null).ToString());
+                        else
+                            keyValues.Add("");
+                        
                     }
                     return string.Join(";", keyValues);
                 }
@@ -90,7 +94,18 @@ namespace Xbim.COBie
                     {
                         if (((COBieAttributes)attrs[0]).ColumnName == name)
                         {
-                            COBieCell cell = new COBieCell(propInfo.GetValue(this, null).ToString());
+                            object pVal = propInfo.GetValue(this, null);
+                            COBieCell cell;
+
+                            if (pVal != null)
+                            {
+                                cell = new COBieCell(pVal.ToString());
+                            }
+                            else
+                            {
+                                cell = new COBieCell(COBieData.DEFAULT_STRING);
+                            }
+                            //COBieCell cell = new COBieCell(propInfo.GetValue(this, null).ToString());
                             cell.COBieState = ((COBieAttributes)attrs[0]).State;
                             cell.CobieCol = ParentSheet.Columns[((COBieAttributes)attrs[0]).Order];
 

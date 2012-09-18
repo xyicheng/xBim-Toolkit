@@ -7,6 +7,7 @@ using Xbim.COBie.Rows;
 using Xbim.Ifc.Kernel;
 using Xbim.Ifc.ExternalReferenceResource;
 using Xbim.Ifc.ProductExtension;
+using Xbim.Ifc.MaterialResource;
 
 namespace Xbim.COBie.Data
 {
@@ -35,67 +36,107 @@ namespace Xbim.COBie.Data
             //Create new sheet
             COBieSheet<COBieAssemblyRow> assemblies = new COBieSheet<COBieAssemblyRow>(Constants.WORKSHEET_ASSEMBLY);
 
-            //list or classes to exclude if the related object of the IfcRelAggregates is one of these types
-            List<Type> excludedTypes = new List<Type>{  typeof(IfcSite),
-                                                        typeof(IfcProject),
-                                                        typeof(IfcBuilding),
-                                                        typeof(IfcBuildingStorey)
-                                                        };
-
             // get ifcRelAggregates objects from IFC file what are not in the excludedTypes type list
-            IEnumerable<IfcRelAggregates> ifcRelAggregates = Model.InstancesOfType<IfcRelAggregates>();//.Where(ra => (ra.RelatingObject is IfcProduct) && !excludedTypes.Contains(ra.RelatingObject.GetType()));
-            IEnumerable<IfcRelNests> ifcRelNests = Model.InstancesOfType<IfcRelNests>(); //.Where(ra => (ra.RelatingObject is IfcProduct) && !excludedTypes.Contains(ra.RelatingObject.GetType()));
+            IEnumerable<IfcRelAggregates> ifcRelAggregates = Model.InstancesOfType<IfcRelAggregates>();
+            IEnumerable<IfcRelNests> ifcRelNests = Model.InstancesOfType<IfcRelNests>(); 
+            IEnumerable<IfcRelAssociatesMaterial> ifcRelAssociatesMaterials = Model.InstancesOfType<IfcRelAssociatesMaterial>(); 
 
-            IEnumerable<IfcRelDecomposes> RelAll = (from ra in ifcRelAggregates
-                                                      where ((ra.RelatingObject is IfcProduct) || (ra.RelatingObject is IfcTypeObject)) && !excludedTypes.Contains(ra.RelatingObject.GetType())
+            IEnumerable<IfcRelDecomposes> relAll = (from ra in ifcRelAggregates
+                                                      where ((ra.RelatingObject is IfcProduct) || (ra.RelatingObject is IfcTypeObject)) && !AssemblyExcludeTypes.Contains(ra.RelatingObject.GetType())
                                                       select ra as IfcRelDecomposes).Union
                                                       (from rn in ifcRelNests
-                                                      where ((rn.RelatingObject is IfcProduct) || (rn.RelatingObject is IfcTypeObject)) && !excludedTypes.Contains(rn.RelatingObject.GetType())
+                                                      where ((rn.RelatingObject is IfcProduct) || (rn.RelatingObject is IfcTypeObject)) && !AssemblyExcludeTypes.Contains(rn.RelatingObject.GetType())
                                                       select rn as IfcRelDecomposes);
 
+            //filter ifcRelAssociatesMaterials list to relating objects held in relAll
+            ifcRelAssociatesMaterials = from ifcram in ifcRelAssociatesMaterials
+                      from ifcrs in relAll
+                      where ifcram.RelatedObjects.Contains(ifcrs.RelatingObject) && ifcram.RelatingMaterial is IfcMaterialLayerSet
+                      select ifcram;
 
-            IfcClassification ifcClassification = Model.InstancesOfType<IfcClassification>().FirstOrDefault();
-            string applicationFullName = GetIfcApplication().ApplicationFullName;
-            //TODO: Assembly sheet part done.
-            foreach (IfcRelDecomposes ra in RelAll)
+
+            //IfcClassification ifcClassification = Model.InstancesOfType<IfcClassification>().FirstOrDefault();
+            string applicationFullName = ifcApplication.ApplicationFullName;
+            int childColumnLength = 0;
+            foreach (IfcRelDecomposes ra in relAll)
             {
                 COBieAssemblyRow assembly = new COBieAssemblyRow(assemblies);
                 
-                //assembly.Name = (string.IsNullOrEmpty(ra.Name)) ? "AssemblyName" : ra.Name.ToString();
+                                           
                 if (string.IsNullOrEmpty(ra.Name))
                 {
-                    if ((ra.RelatingObject is IfcProduct) || (ra.RelatingObject is IfcTypeObject))
+                    if (!string.IsNullOrEmpty(ra.RelatingObject.Name))
                     {
                         assembly.Name = ra.RelatingObject.Name.ToString();
+                        // try and get name from material layer set
+                        if (string.IsNullOrEmpty(assembly.Name))
+                        {
+                            //get the IfcMaterialLayerSet associated with the relating object attached to the IfcRelDecomposes
+                            IEnumerable<IfcMaterialLayerSet> ifcMaterialLayerSets = (from ifcram in ifcRelAssociatesMaterials
+                                                                        where ifcram.RelatedObjects.Contains(ra.RelatingObject)
+                                                                        select ifcram.RelatingMaterial).OfType<IfcMaterialLayerSet>();
+                            string name = ifcMaterialLayerSets.FirstOrDefault().LayerSetName;
+                            assembly.Name = (string.IsNullOrEmpty(name)) ? DEFAULT_STRING : name;
+                        }
                     }
                     else
-                        assembly.Name = "AssemblyName";
+                        assembly.Name = DEFAULT_STRING;
                 }
-                else
+                else 
                     assembly.Name = ra.Name.ToString();
 
                 
                 assembly.CreatedBy = GetTelecomEmailAddress(ra.OwnerHistory);
                 assembly.CreatedOn = GetCreatedOnDateAsFmtString(ra.OwnerHistory);
 
-                assembly.SheetName = "SheetName:";
+                assembly.SheetName = GetSheetByObjectType(ra.RelatingObject);
                 assembly.ParentName = ra.RelatingObject.Name;
-                //string childNames = "";
-                //foreach (var item in ra.RelatedObjects)
-                //{
-                //    childNames += item.Name + ", ";
-                //}
-                //assembly.ChildNames = childNames.TrimEnd(',');
-                assembly.ChildNames = DEFAULT_STRING;
-                assembly.AssemblyType = (ifcClassification == null) ? "" : ifcClassification.Name.ToString();
+               
+                
+                assembly.AssemblyType = "Fixed"; //as Responsibility matrix instruction
                 assembly.ExtSystem = applicationFullName;
-                assembly.ExtObject = "IfcRelAggregates";
+                assembly.ExtObject = ra.RelatingObject.GetType().Name;
                 assembly.ExtIdentifier = string.IsNullOrEmpty(ra.GlobalId) ? DEFAULT_STRING : ra.GlobalId.ToString();
+                
                 assembly.Description = GetAssemblyDescription(ra);
 
-                assemblies.Rows.Add(assembly);
+                //get the assembly child names of objects that make up assembly
+                if (childColumnLength == 0)  childColumnLength = assembly["ChildNames"].CobieCol.ColumnLength;                
+                ChildNamesList childNames = GetChildNamesList(ra, childColumnLength);
+                if (childNames.Count > 0)
+                {
+                    COBieAssemblyRow assemblyCont = null;
+                    int index = 0;
+                    foreach (string childStr in childNames)
+	                {
+                        if (index == 0)
+                        {
+                            assembly.ChildNames = childStr;
+                            assemblies.Rows.Add(assembly);
+                        }
+                        else
+                        {
+                            assemblyCont = new COBieAssemblyRow(assemblies);
+                            assemblyCont.Name = assembly.Name + " : continued " + index.ToString();
+                            assemblyCont.CreatedBy = assembly.CreatedBy;
+                            assemblyCont.CreatedOn = assembly.CreatedOn;
+                            assemblyCont.SheetName = assembly.SheetName;
+                            assemblyCont.ParentName = assembly.ParentName;
+                            assemblyCont.AssemblyType = assembly.AssemblyType;
+                            assemblyCont.ExtSystem = assembly.ExtSystem;
+                            assemblyCont.ExtObject = assembly.ExtObject;
+                            assemblyCont.ExtIdentifier = assembly.ExtIdentifier;
+                            assemblyCont.Description = assembly.Description;
+                            assemblyCont.ChildNames = childStr;
+                            assemblies.Rows.Add(assemblyCont);
+                        }
+                        index = ++index;
+	                }
+                }
+                else 
+                    assemblies.Rows.Add(assembly);
 
-                COBieCell testCell = assembly[7];
+                
             }
 
             return assemblies;
@@ -107,10 +148,57 @@ namespace Xbim.COBie.Data
             {
                 if (!string.IsNullOrEmpty(ra.Description)) return ra.Description;
                 else if (!string.IsNullOrEmpty(ra.Name)) return ra.Name;
+                else if (!string.IsNullOrEmpty(ra.RelatingObject.Name)) return ra.RelatingObject.Name;
             }
             return DEFAULT_STRING;
+        }
+        /// <summary>
+        /// Get list of child object names from relatedObjects property of a ifcProduct asset
+        /// </summary>
+        /// <param name="ra">IfcRelDecomposes relationship object</param>
+        /// <returns>List of strings fixed to a string limit per string entry</returns>
+        private ChildNamesList GetChildNamesList(IfcRelDecomposes ra, int fieldLength)
+        {
+            ChildNamesList childNamesFilter = new ChildNamesList();
+            ChildNamesList childNames = new ChildNamesList();
+            int strCount = 0;
+            string fieldValue = "";
+            //remove duplicates
+            foreach (IfcObjectDefinition obj in ra.RelatedObjects)
+            {
+               
+                if (!string.IsNullOrEmpty(obj.Name))
+                {
+                    if (!childNamesFilter.Contains(obj.Name))
+                    {
+                        childNamesFilter.Add(obj.Name);
+                    }
+                }
+            }
+            //build field length strings
+            foreach (string str in childNamesFilter)
+            {
+                if (fieldValue == "")
+                        strCount += str.Length;
+                    else
+                        strCount += str.Length + 3; //add 3 fro the " : "
+
+                    if (strCount <= fieldLength)
+                    {
+                        fieldValue += " : " + str;
+                    }
+                    else
+                    {
+                        childNames.Add(fieldValue);
+                        fieldValue = str; //start field value again with current value of the object name
+                        strCount = str.Length; //reset strCount to the current value length
+                    }
+            }
+            return childNames;
         }
 
         #endregion
     }
+
+    public class ChildNamesList : List<string>{}
 }

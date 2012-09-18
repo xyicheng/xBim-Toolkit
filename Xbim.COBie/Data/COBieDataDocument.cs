@@ -49,8 +49,12 @@ namespace Xbim.COBie.Data
                 
                 doc.Name = (di == null) ? "" : di.Name.ToString();
 
-                doc.CreatedBy = GetTelecomEmailAddress(ifcOwnerHistory);
-                doc.CreatedOn = GetCreatedOnDateAsFmtString(ifcOwnerHistory);
+                //no IfcOwnerHistory so take the project OwnerHistory as default
+                if (Model.IfcProject.OwnerHistory != null)
+                {
+                    doc.CreatedBy = GetTelecomEmailAddress(Model.IfcProject.OwnerHistory);
+                    doc.CreatedOn = GetCreatedOnDateAsFmtString(Model.IfcProject.OwnerHistory);
+                }
                 
                 //IfcRelAssociatesClassification ifcRAC = di.HasAssociations.OfType<IfcRelAssociatesClassification>().FirstOrDefault();
                 //IfcClassificationReference ifcCR = (IfcClassificationReference)ifcRAC.RelatingClassification;
@@ -72,7 +76,7 @@ namespace Xbim.COBie.Data
                 doc.File = fileInfo.Name;
                 doc.Directory = fileInfo.Location;
 
-                doc.ExtSystem = GetIfcApplication().ApplicationFullName;
+                doc.ExtSystem = ifcApplication.ApplicationFullName;
                 
                 doc.Description = di.Description.ToString();
                 doc.Reference = di.Name.ToString();
@@ -139,17 +143,14 @@ namespace Xbim.COBie.Data
         /// <returns>RelatedObjectInformation structure</returns>
         private RelatedObjectInformation GetRelatedObjectInformation(IfcRelAssociatesDocument ifcRelAssociatesDocument)
         {
-            string value = DEFAULT_STRING;
             RelatedObjectInformation objectInfo = new RelatedObjectInformation { SheetName = DEFAULT_STRING, Name = DEFAULT_STRING, ExtIdentifier = DEFAULT_STRING, ExtObject = DEFAULT_STRING  };
             if (ifcRelAssociatesDocument != null)
             {
                 IfcRoot relatedObject = ifcRelAssociatesDocument.RelatedObjects.FirstOrDefault();
                 if (relatedObject != null)
                 {
-                    if (relatedObject is IfcTypeObject) value = "Type";
-                    else if (relatedObject is IfcRelAggregates) value = "Component";
-                    else if (relatedObject is IfcRelContainedInSpatialStructure) value = "Component";
-                    //more sheets as tests date becomes available
+                    string value = GetSheetByObjectType(relatedObject);
+                    
                     if (!string.IsNullOrEmpty(value)) objectInfo.SheetName = value;
                     value = relatedObject.Name.ToString();
                     if (!string.IsNullOrEmpty(value)) objectInfo.Name = value;
@@ -159,6 +160,7 @@ namespace Xbim.COBie.Data
             }
             return objectInfo;
         }
+
 
         
 

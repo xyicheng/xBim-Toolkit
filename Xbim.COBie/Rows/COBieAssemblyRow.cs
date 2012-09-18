@@ -23,19 +23,19 @@ namespace Xbim.COBie.Rows
 
         [COBieAttributes(2, COBieKeyType.None, "", COBieAttributeState.Required, "CreatedOn", 19, COBieAllowedType.ISODate)]
         public string CreatedOn { get; set; }
-
-        [COBieAttributes(3, COBieKeyType.CompoundKey_ForeignKey, "Component.Name", COBieAttributeState.Required, "SheetName", 255, COBieAllowedType.AlphaNumeric)]
-        public string SheetName { get; set; }
-
-        [COBieAttributes(4, COBieKeyType.CompoundKey_ForeignKey, "Component.Name", COBieAttributeState.Required, "ParentName", 255, COBieAllowedType.AlphaNumeric)]
-        public string ParentName { get; set; }
-
-        [COBieAttributes(5, COBieKeyType.None, "", COBieAttributeState.Required, "ChildNames", 255, COBieAllowedType.AlphaNumeric)]
-        public string ChildNames { get; set; }
-
-        [COBieAttributes(6, COBieKeyType.None, "", COBieAttributeState.System, "AssemblyType", 255, COBieAllowedType.AlphaNumeric)]
+ 
+        [COBieAttributes(3, COBieKeyType.None, "", COBieAttributeState.System, "AssemblyType", 255, COBieAllowedType.AlphaNumeric)]
         public string AssemblyType { get; set; }
 
+        [COBieAttributes(4, COBieKeyType.CompoundKey_ForeignKey, "Component.Name", COBieAttributeState.Required, "SheetName", 255, COBieAllowedType.AlphaNumeric)]
+        public string SheetName { get; set; }
+
+        [COBieAttributes(5, COBieKeyType.CompoundKey_ForeignKey, "Component.Name", COBieAttributeState.Required, "ParentName", 255, COBieAllowedType.AlphaNumeric)]
+        public string ParentName { get; set; }
+
+        [COBieAttributes(6, COBieKeyType.None, "", COBieAttributeState.Required, "ChildNames", 255, COBieAllowedType.AlphaNumeric)]
+        public string ChildNames { get; set; }
+       
         [COBieAttributes(7, COBieKeyType.None, "", COBieAttributeState.System, "ExtSystem", 255, COBieAllowedType.AlphaNumeric)]
         public string ExtSystem { get; set; }
 
