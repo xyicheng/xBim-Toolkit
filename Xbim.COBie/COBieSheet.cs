@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-
+using System.Resources;
 using System.Data;
 
 namespace Xbim.COBie
@@ -82,12 +82,14 @@ namespace Xbim.COBie
                         .OrderByDescending(x => x.Count);
 
             // check if we have count of any of the results > 1, if yes then that is an error as each result should be unique
+            ResourceManager rm = new ResourceManager("Xbim.COBie.Resources.ErrorDescription", Assembly.GetExecutingAssembly());
             COBieErrorCollection errorColl = new COBieErrorCollection();
             foreach (var r in dup)
             {
                 if (r.Count > 1)
                 {
-                    COBieError error = new COBieError(SheetName, string.Join(";", _keyColumns), r.Result.ToString() + " duplication", COBieError.ErrorTypes.PrimaryKey_Violation);
+                    string desc = rm.GetString(COBieError.ErrorTypes.PrimaryKey_Violation.ToString()) + ": " + r.Result.ToString();
+                    COBieError error = new COBieError(SheetName, string.Join(";", _keyColumns), desc, COBieError.ErrorTypes.PrimaryKey_Violation);
                     errorColl.Add(error);
                 }
             }
@@ -108,12 +110,14 @@ namespace Xbim.COBie
                         from subpet in gj.DefaultIfEmpty()
                         select new { cm, ColForeign = (subpet == null ? String.Empty : subpet) };
 
+            ResourceManager rm = new ResourceManager("Xbim.COBie.Resources.ErrorDescription", Assembly.GetExecutingAssembly());
             COBieErrorCollection errorColl = new COBieErrorCollection();
             foreach (var r in query)
             {
                 if (string.IsNullOrEmpty(r.ColForeign))
                 {
-                    COBieError error = new COBieError(SheetName, "", r.cm.ToString() + " duplication", COBieError.ErrorTypes.Null_ForeignKey_Value);
+                    string desc = rm.GetString(COBieError.ErrorTypes.Null_ForeignKey_Value.ToString()) + ": " + r.cm.ToString();
+                    COBieError error = new COBieError(SheetName, "", desc, COBieError.ErrorTypes.Null_ForeignKey_Value);
                     errorColl.Add(error);
                 }
             }
@@ -175,7 +179,7 @@ namespace Xbim.COBie
         {
             COBieErrorCollection errorColl = new COBieErrorCollection();
 
-            List<COBieCell> pkColumnValues = new List<COBieCell>();
+            //List<COBieCell> pkColumnValues = new List<COBieCell>();
 
             foreach (T row in Rows)
             {
@@ -192,18 +196,20 @@ namespace Xbim.COBie
                         COBieAttributes attr = (COBieAttributes)attrs[0];
                         cell.COBieState = attr.State;
                         cell.CobieCol = new COBieColumn(attr.ColumnName, attr.MaxLength, attr.AllowedType, attr.KeyType);
-                        COBieError err = GetCobieError(cell, SheetName);
+
+                        ResourceManager rm = new ResourceManager("Xbim.COBie.Resources.ErrorDescription", Assembly.GetExecutingAssembly());
+                        COBieError err = GetCobieError(cell, SheetName, rm);
 
                         // if this cell is set as primary key then add its value to array for later checking for primary key voilation
-                        if (cell.CobieCol.KeyType == COBieKeyType.PrimaryKey)
-                        {
-                            pkColumnValues.Add(cell);
-                        }
-                        else if (cell.CobieCol.KeyType == COBieKeyType.ForeignKey)
-                        {
-                            // check if the value does exist in the foreign column values
+                        //if (cell.CobieCol.KeyType == COBieKeyType.PrimaryKey)
+                        //{
+                        //    pkColumnValues.Add(cell);
+                        //}
+                        //else if (cell.CobieCol.KeyType == COBieKeyType.ForeignKey)
+                        //{
+                        //    // check if the value does exist in the foreign column values
 
-                        }
+                        //}
 
                         if (err.ErrorType != COBieError.ErrorTypes.None) errorColl.Add(err);
                     }
@@ -211,65 +217,80 @@ namespace Xbim.COBie
             }
 
             // check for primary key errors (i.e. if cell value matches any other cell's value)
-            foreach (COBieCell cell in pkColumnValues)
-            {
-                if (HasDuplicateValues(cell.CellValue, pkColumnValues))
-                {
-                    COBieError err = new COBieError();
-                    err.ErrorDescription = cell.CellValue + " duplication";
-                    err.ErrorType = COBieError.ErrorTypes.PrimaryKey_Violation;
-                    errorColl.Add(err);
-                }
-            }
+            //foreach (COBieCell cell in pkColumnValues)
+            //{
+            //    if (HasDuplicateValues(cell.CellValue, pkColumnValues))
+            //    {
+            //        COBieError err = new COBieError();
+            //        err.ErrorDescription = cell.CellValue + " duplication";
+            //        err.ErrorType = COBieError.ErrorTypes.PrimaryKey_Violation;
+            //        errorColl.Add(err);
+            //    }
+            //}
 
             return errorColl;
         }
 
-        private bool HasDuplicateValues(string cellValue, List<COBieCell> pkColumnValues)
-        {
-            int count = 0;
-            foreach (COBieCell cell in pkColumnValues)
-            {
-                if (cellValue == cell.CellValue) count++;
-            }
-            if (count > 1) return true;           
+        //private bool HasDuplicateValues(string cellValue, List<COBieCell> pkColumnValues)
+        //{
+        //    int count = 0;
+        //    foreach (COBieCell cell in pkColumnValues)
+        //    {
+        //        if (cellValue == cell.CellValue) count++;
+        //    }
+        //    if (count > 1) return true;           
 
-            return false;
-        }
+        //    return false;
+        //}
 
-        public COBieError GetCobieError(COBieCell cell, string sheetName)
+        public COBieError GetCobieError(COBieCell cell, string sheetName, ResourceManager rm)
         {
             int maxLength = cell.CobieCol.ColumnLength;
             COBieAllowedType allowedType = cell.CobieCol.AllowedType;
+            COBieAttributeState state = cell.COBieState;
             COBieError err = new COBieError(sheetName, cell.CobieCol.ColumnName, "", COBieError.ErrorTypes.None);
-            if (cell.CellValue.Length > maxLength)
+
+            if (state == COBieAttributeState.Required && string.IsNullOrEmpty(cell.CellValue))
             {
-                err.ErrorDescription = "Value must be under 255 characters";
+                err.ErrorDescription = rm.GetString(COBieError.ErrorTypes.Text_Value_Expected.ToString());
+                err.ErrorType = COBieError.ErrorTypes.Text_Value_Expected;
+            }
+            else if (cell.CellValue.Length > maxLength)
+            {
+                err.ErrorDescription = rm.GetString(COBieError.ErrorTypes.Value_Out_of_Bounds.ToString());
                 err.ErrorType = COBieError.ErrorTypes.Value_Out_of_Bounds;
             }
-            if (allowedType == COBieAllowedType.AlphaNumeric && !cell.IsAlphaNumeric())
+            else if (allowedType == COBieAllowedType.AlphaNumeric && !cell.IsAlphaNumeric())
             {
-                err.ErrorDescription = "Value must be alpha-numeric";
+                err.ErrorDescription = rm.GetString(COBieError.ErrorTypes.AlphaNumeric_Value_Expected.ToString());
                 err.ErrorType = COBieError.ErrorTypes.AlphaNumeric_Value_Expected;
             }
-            if (allowedType == COBieAllowedType.Email && !cell.IsEmailAddress())
+            else if (allowedType == COBieAllowedType.Email && !cell.IsEmailAddress())
             {
-                err.ErrorDescription = "Value must be a valid email address";
+                err.ErrorDescription = rm.GetString(COBieError.ErrorTypes.Email_Value_Expected.ToString());
                 err.ErrorType = COBieError.ErrorTypes.Email_Value_Expected;
             }
 
-            if (allowedType == COBieAllowedType.ISODate)
+            else if (allowedType == COBieAllowedType.ISODate)
             {
                 DateTime dt;
                 DateTime.TryParse(cell.CellValue, out dt);
-                if (dt == DateTime.MinValue) err.ErrorDescription = "Value must be a valid iso date";
+                if (dt == DateTime.MinValue)
+                {
+                    rm.GetString(COBieError.ErrorTypes.ISODate_Value_Expected.ToString());
+                    err.ErrorType = COBieError.ErrorTypes.ISODate_Value_Expected;
+                }
             }
 
             if (allowedType == COBieAllowedType.Numeric)
             {
                 double d;
                 double.TryParse(cell.CellValue, out d);
-                if (d == 0) err.ErrorDescription = "Value must be a valid double";
+                if (d == 0)
+                {
+                    rm.GetString(COBieError.ErrorTypes.Numeric_Value_Expected.ToString());
+                    err.ErrorType = COBieError.ErrorTypes.Numeric_Value_Expected;
+                }
             }
             
             return err;

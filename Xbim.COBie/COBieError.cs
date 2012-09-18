@@ -40,6 +40,8 @@ namespace Xbim.COBie
         public string ErrorDescription { get; set; }
         public ErrorTypes ErrorType { get; set; }
 
+        // Following enum values are in ErrorDescription.resx resource file as well
+        // Change both places if any change in the following text is required or any new one is added
         public enum ErrorTypes
         {
             Value_Out_of_Bounds,

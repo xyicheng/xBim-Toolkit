@@ -121,6 +121,16 @@
     <Compile Include="Data\COBieDataType.cs" />
     <Compile Include="Data\COBieDataZone.cs" />
     <Compile Include="Enums.cs" />
+    <Compile Include="Resources\ErrorDescription.zh-TW.Designer.cs">
+      <DependentUpon>ErrorDescription.zh-TW.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Resources\ErrorDescription.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ErrorDescription.resx</DependentUpon>
+    </Compile>
     <Compile Include="ICOBieSheet.cs" />
     <Compile Include="Rows\COBieAssemblyRow.cs" />
     <Compile Include="Rows\COBieAttributeRow.cs" />
@@ -175,6 +185,16 @@
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Service References\" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\ErrorDescription.zh-TW.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>ErrorDescription.zh-TW.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\ErrorDescription.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>ErrorDescription.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
