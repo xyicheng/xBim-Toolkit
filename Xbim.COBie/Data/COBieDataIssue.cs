@@ -75,7 +75,7 @@ namespace Xbim.COBie.Data
                 issue.Description = (approval == null) ? DEFAULT_STRING : approval.Description.ToString();
                 issue.Owner = issue.CreatedBy;
                 issue.Mitigation = "";
-                issue.ExtSystem = GetIfcApplication().ApplicationFullName;
+                issue.ExtSystem = ifcApplication.ApplicationFullName;
                 issue.ExtObject = app.GetType().Name;
                 issue.ExtIdentifier = app.Identifier.ToString();
 

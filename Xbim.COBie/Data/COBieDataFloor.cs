@@ -74,7 +74,7 @@ namespace Xbim.COBie.Data
                 else
                     floor.Category = "";
 
-                floor.ExtSystem = GetIfcApplication().ApplicationFullName;
+                floor.ExtSystem = ifcApplication.ApplicationFullName;
                 floor.ExtObject = bs.GetType().Name;
                 floor.ExtIdentifier = bs.GlobalId;
                 floor.Description = GetFloorDescription(bs);

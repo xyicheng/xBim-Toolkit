@@ -46,7 +46,7 @@ namespace Xbim.COBie.Data
             IfcOwnerHistory ifcOwnerHistory = Model.InstancesOfType<IfcOwnerHistory>().FirstOrDefault();
             IfcProduct ifcProduct = Model.InstancesOfType<IfcProduct>().FirstOrDefault();
             IfcClassification ifcClassification = Model.InstancesOfType<IfcClassification>().FirstOrDefault();
-            string applicationFullName = GetIfcApplication().ApplicationFullName;
+            string applicationFullName = ifcApplication.ApplicationFullName;
 
             foreach (IfcRelAggregates ra in ifcRelAggregates)
             {

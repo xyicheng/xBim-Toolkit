@@ -57,7 +57,7 @@ namespace Xbim.COBie.Data
                 conn.RealizingElement = (relCP == null) ? "" : relCP.RealizingElement.Description.ToString();
                 conn.PortName1 = (relCP == null) ? "" : relCP.RelatingPort.Description.ToString();
                 conn.PortName2 = (relCP == null) ? "" : relCP.RelatedPort.Description.ToString();
-                conn.ExtSystem = GetIfcApplication().ApplicationFullName;
+                conn.ExtSystem = ifcApplication.ApplicationFullName;
                 conn.ExtObject = "";
                 conn.ExtIdentifier = c.GlobalId;
                 conn.Description = (string.IsNullOrEmpty(c.Description)) ? DEFAULT_STRING : c.Description.ToString();

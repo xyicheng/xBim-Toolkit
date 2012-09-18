@@ -8,6 +8,8 @@ using Xbim.Ifc.ExternalReferenceResource;
 using Xbim.Ifc.Kernel;
 using Xbim.Ifc.ProcessExtensions;
 using Xbim.XbimExtensions;
+using Xbim.Ifc.PropertyResource;
+using Xbim.Ifc.MeasureResource;
 
 namespace Xbim.COBie.Data
 {
@@ -39,56 +41,154 @@ namespace Xbim.COBie.Data
             // get all IfcTask objects from IFC file
             IEnumerable<IfcTask> ifcTasks = Model.InstancesOfType<IfcTask>();
 
+            COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(ifcTasks.OfType<IfcObject>().ToList()); //properties helper class
+            
             //IfcTypeObject typObj = Model.InstancesOfType<IfcTypeObject>().FirstOrDefault();
             IfcConstructionEquipmentResource cer = Model.InstancesOfType<IfcConstructionEquipmentResource>().FirstOrDefault();
 
-            foreach (IfcTask task in ifcTasks)
+            foreach (IfcTask ifcTask in ifcTasks)
             {
-                if (task == null) continue;
+                if (ifcTask == null) continue;
 
                 COBieJobRow job = new COBieJobRow(jobs);
 
-                job.Name =  task.Name.ToString();
+                job.Name =  (string.IsNullOrEmpty(ifcTask.Name.ToString())) ? DEFAULT_STRING : ifcTask.Name.ToString();
+                job.CreatedBy = GetTelecomEmailAddress(ifcTask.OwnerHistory);
+                job.CreatedOn = GetCreatedOnDateAsFmtString(ifcTask.OwnerHistory);
+                job.Category =  ifcTask.ObjectType.ToString(); 
+                job.Status = (string.IsNullOrEmpty(ifcTask.Status.ToString())) ? DEFAULT_STRING : ifcTask.Status.ToString();
 
-                job.CreatedBy = GetTelecomEmailAddress(task.OwnerHistory);
-                job.CreatedOn = GetCreatedOnDateAsFmtString(task.OwnerHistory);
+                job.TypeName = GetObjectType(ifcTask);
+                job.Description = (string.IsNullOrEmpty(ifcTask.Description.ToString())) ? DEFAULT_STRING : ifcTask.Description.ToString();
 
-                job.Category = (task.ObjectType == null) ? DEFAULT_STRING : task.ObjectType.ToString(); ;
+                allPropertyValues.SetFilteredPropertySingleValues(ifcTask); //set properties values to this task
+                IfcPropertySingleValue ifcPropertySingleValue = allPropertyValues.GetFilteredPropertySingleValue("TaskDuration");
+                job.Duration = ((ifcPropertySingleValue != null) && (ifcPropertySingleValue.NominalValue != null)) ? ConvertNumberOrDefault(ifcPropertySingleValue.NominalValue.ToString()) : DEFAULT_NUMERIC;
+                IfcConversionBasedUnit ifcConversionBasedUnit = ifcPropertySingleValue.Unit as IfcConversionBasedUnit;
+                job.DurationUnit = (ifcConversionBasedUnit != null) ? ifcConversionBasedUnit.Name.ToString() : DEFAULT_STRING;
 
-                job.Status = (task == null) ? "" : task.Status.ToString();
+                ifcPropertySingleValue = allPropertyValues.GetFilteredPropertySingleValue("TaskStartDate");
+                job.Start = ((ifcPropertySingleValue != null) && (ifcPropertySingleValue.NominalValue != null)) ? ifcPropertySingleValue.NominalValue.ToString() : new DateTime(1900, 12, 31, 23, 59, 59).ToString("yyyy-MM-dd HH:mm:ss");//default is 1900-12-31T23:59:59;
+                ifcConversionBasedUnit = ifcPropertySingleValue.Unit as IfcConversionBasedUnit;
+                job.TaskStartUnit = (ifcConversionBasedUnit != null) ? ifcConversionBasedUnit.Name.ToString() : DEFAULT_STRING;
 
-                job.TypeName = "";
-                job.Description = (task == null) ? "" : task.Description.ToString();
-                job.Duration = "";
+                ifcPropertySingleValue = allPropertyValues.GetFilteredPropertySingleValue("TaskInterval");
+                job.Frequency = ((ifcPropertySingleValue != null) && (ifcPropertySingleValue.NominalValue != null)) ? ConvertNumberOrDefault(ifcPropertySingleValue.NominalValue.ToString()) : DEFAULT_NUMERIC;
+                ifcConversionBasedUnit = ifcPropertySingleValue.Unit as IfcConversionBasedUnit;
+                job.FrequencyUnit = (ifcConversionBasedUnit != null) ? ifcConversionBasedUnit.Name.ToString() : DEFAULT_STRING;
+                
+                job.ExtSystem = ifcApplication.ApplicationFullName;
+                job.ExtObject = ifcTask.GetType().Name;
+                job.ExtIdentifier = ifcTask.GlobalId;
 
-                job.DurationUnit = "";
-                job.TaskStartUnit = "";
-                job.FrequencyUnit = "";
-                //foreach (COBiePickListsRow plRow in pickLists.Rows)
-                //{
-                //    job.DurationUnit = (plRow == null) ? "" : plRow.DurationUnit + ",";
-                //    job.TaskStartUnit = (plRow == null) ? "" : plRow.DurationUnit + ",";
-                //    job.FrequencyUnit = (plRow == null) ? "" : plRow.DurationUnit + ",";
-                //}
-                //job.DurationUnit = job.DurationUnit.TrimEnd(',');
-                //job.TaskStartUnit = job.TaskStartUnit.TrimEnd(',');
-                //job.FrequencyUnit = job.FrequencyUnit.TrimEnd(',');
-
-                job.Start = "";
-                job.Frequency = "";
-
-                job.ExtSystem = GetIfcApplication().ApplicationFullName;
-                job.ExtObject = task.GetType().Name;
-                job.ExtIdentifier = task.GlobalId;
-                job.TaskNumber = (task == null) ? "" : task.GlobalId.ToString();
-                job.Priors = (task == null) ? "" : task.Name.ToString();
-                job.ResourceNames = (cer == null) ? "" : cer.Name.ToString();
+                job.TaskNumber = (string.IsNullOrEmpty(ifcTask.TaskId.ToString())) ? DEFAULT_STRING : ifcTask.TaskId.ToString();
+                job.Priors =  GetPriors(ifcTask);
+                job.ResourceNames = GetResources(ifcTask);
 
                 jobs.Rows.Add(job);
             }
 
             return jobs;
         }
+
+        /// <summary>
+        /// Get the number of tasks before this task
+        /// </summary>
+        /// <param name="ifcTask">IfcTask object</param>
+        /// <returns>string holding number of tasks that are before this task</returns>
+        private string GetPriors(IfcTask ifcTask)
+        {
+            IEnumerable<IfcRelSequence> isSuccessorFrom = ifcTask.IsSuccessorFrom;
+            int count = 0;
+            //assume that the isSuccessorFrom list can only hold one IfcRelSequence.
+            while (isSuccessorFrom.Count() == 1) //have a successor task so count one
+            {
+                count++;
+                isSuccessorFrom = isSuccessorFrom.First().RelatingProcess.IsSuccessorFrom; //move up linked tasks to see if a successor to the successor
+            }
+
+            return count.ToString();
+        }
+
+        /// <summary>
+        /// Get required resources for the task
+        /// </summary>
+        /// <param name="ifcTask">IfcTask object to get resources for</param>
+        /// <returns>delimited string of the resources</returns>
+        private string GetResources(IfcTask ifcTask)
+        {
+            IEnumerable<IfcConstructionEquipmentResource> ifcConstructionEquipmentResources = ifcTask.OperatesOn.SelectMany(ratp => ratp.RelatedObjects.OfType<IfcConstructionEquipmentResource>());
+            List<string> strList = new List<string>();
+            foreach (IfcConstructionEquipmentResource ifcConstructionEquipmentResource in ifcConstructionEquipmentResources)
+            {
+                if ((ifcConstructionEquipmentResource != null) && (!string.IsNullOrEmpty(ifcConstructionEquipmentResource.Name.ToString())))
+                {
+                    if (!strList.Contains(ifcConstructionEquipmentResource.Name.ToString()))
+                        strList.Add(ifcConstructionEquipmentResource.Name.ToString());
+                }
+            }
+            return (strList.Count > 0) ? string.Join(" : ", strList) : DEFAULT_STRING;
+        }
+        /// <summary>
+        /// Get the object IfcTypeObject name from the IfcTask object
+        /// </summary>
+        /// <param name="ifcTask">IfcTask object</param>
+        /// <returns>string holding IfcTypeObject name</returns>
+        private string GetObjectType(IfcTask ifcTask)
+        {
+            //first try
+            IEnumerable<IfcTypeObject> ifcTypeObjects = ifcTask.OperatesOn.SelectMany(ratp => ratp.RelatedObjects.OfType<IfcTypeObject>());
+            //second try on IsDefinedBy.OfType<IfcRelDefinesByType>
+            if ((ifcTypeObjects == null) || (ifcTypeObjects.Count() == 0)) 
+                ifcTypeObjects = ifcTask.IsDefinedBy.OfType<IfcRelDefinesByType>().Select(idb => (idb as IfcRelDefinesByType).RelatingType);
+
+            //third try on IsDefinedBy.OfType<IfcRelDefinesByProperties> for DefinesType
+            if ((ifcTypeObjects == null) || (ifcTypeObjects.Count() == 0))
+                ifcTypeObjects = ifcTask.IsDefinedBy.OfType<IfcRelDefinesByProperties>().SelectMany(idb => (idb as IfcRelDefinesByProperties).RelatingPropertyDefinition.DefinesType);
+
+            //convert to string and return if all ok
+            if ((ifcTypeObjects != null) || (ifcTypeObjects.Count() > 0))
+            {
+                List<string> strList = new List<string>();
+                foreach (IfcTypeObject ifcTypeItem in ifcTypeObjects)
+                {
+                    if ((ifcTypeItem != null) && (!string.IsNullOrEmpty(ifcTypeItem.Name.ToString())))
+                    {
+                        if (!strList.Contains(ifcTypeItem.Name.ToString()))
+                            strList.Add(ifcTypeItem.Name.ToString());
+                    }
+                }
+                return (strList.Count > 0) ? string.Join(" : ", strList) : DEFAULT_STRING;
+            }
+
+
+            //last try on IsDefinedBy.OfType<IfcRelDefinesByProperties> for IfcObject
+            if ((ifcTypeObjects == null) || (ifcTypeObjects.Count() == 0))
+            {
+                IEnumerable<IfcObject> ifcObjects = ifcTask.IsDefinedBy.OfType<IfcRelDefinesByProperties>().SelectMany(idb => idb.RelatedObjects);
+                List<string> strList = new List<string>();
+                foreach (IfcObject ifcObject in ifcObjects)
+                {
+                    IEnumerable<IfcRelDefinesByType> ifcRelDefinesByTypes = ifcObject.IsDefinedBy.OfType<IfcRelDefinesByType>();
+                    foreach (IfcRelDefinesByType ifcRelDefinesByType in ifcRelDefinesByTypes)
+                    {
+                        if ((ifcRelDefinesByType != null) &&
+                            (ifcRelDefinesByType.RelatingType != null) &&
+                            (!string.IsNullOrEmpty(ifcRelDefinesByType.RelatingType.Name.ToString()))
+                            )
+                        {
+                            if (!strList.Contains(ifcRelDefinesByType.RelatingType.Name.ToString()))
+                                strList.Add(ifcRelDefinesByType.RelatingType.Name.ToString());
+                        }
+                    }
+                    return (strList.Count > 0) ? string.Join(" : ", strList) : DEFAULT_STRING;
+                }
+                return (strList.Count > 0) ? string.Join(" : ", strList) : DEFAULT_STRING;
+            }
+
+            return DEFAULT_STRING; //fail to get any types
+        }
+
         #endregion
     }
 }

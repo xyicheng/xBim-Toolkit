@@ -37,24 +37,20 @@ namespace Xbim.COBie.Data
             // get all IfcConstructionEquipmentResource objects from IFC file
             IEnumerable<IfcConstructionEquipmentResource> ifcCer = Model.InstancesOfType<IfcConstructionEquipmentResource>();
                         
-            foreach (IfcConstructionEquipmentResource cer in ifcCer)
-            {
+            foreach (IfcConstructionEquipmentResource ifcConstructionEquipmentResource in ifcCer)
+            { 
+                //if (ifcConstructionEquipmentResource == null) continue;
+
                 COBieResourceRow resource = new COBieResourceRow(resources);
-                
-                resource.Name = (cer == null) ? "" : cer.Name.ToString();
-
-                resource.CreatedBy = GetTelecomEmailAddress(cer.OwnerHistory);
-                resource.CreatedOn = GetCreatedOnDateAsFmtString(cer.OwnerHistory);
-
-                resource.Category = (cer == null) ? "" : cer.ObjectType.ToString();
-                //IfcRelAssociatesClassification ifcRAC = to.HasAssociations.OfType<IfcRelAssociatesClassification>().FirstOrDefault();
-                //IfcClassificationReference ifcCR = (IfcClassificationReference)ifcRAC.RelatingClassification;
-                //resource.Category = ifcCR.Name;
-
-                resource.ExtSystem = GetIfcApplication().ApplicationFullName;
-                resource.ExtObject = cer.GetType().Name;
-                resource.ExtIdentifier = cer.GlobalId;
-                resource.Description = (cer == null) ? "" : cer.Description.ToString();
+               
+                resource.Name = (string.IsNullOrEmpty(ifcConstructionEquipmentResource.Name.ToString())) ? DEFAULT_STRING : ifcConstructionEquipmentResource.Name.ToString();
+                resource.CreatedBy = GetTelecomEmailAddress(ifcConstructionEquipmentResource.OwnerHistory);
+                resource.CreatedOn = GetCreatedOnDateAsFmtString(ifcConstructionEquipmentResource.OwnerHistory);
+                resource.Category = (string.IsNullOrEmpty(ifcConstructionEquipmentResource.ObjectType.ToString())) ? DEFAULT_STRING : ifcConstructionEquipmentResource.ObjectType.ToString();
+                resource.ExtSystem = ifcApplication.ApplicationFullName;
+                resource.ExtObject = (ifcConstructionEquipmentResource == null) ? DEFAULT_STRING : ifcConstructionEquipmentResource.GetType().Name;
+                resource.ExtIdentifier = ifcConstructionEquipmentResource.GlobalId;
+                resource.Description = (string.IsNullOrEmpty(ifcConstructionEquipmentResource.Description)) ? DEFAULT_STRING : ifcConstructionEquipmentResource.Description.ToString();
 
                 resources.Rows.Add(resource);
             }

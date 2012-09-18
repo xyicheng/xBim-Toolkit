@@ -7,6 +7,8 @@ using Xbim.COBie.Rows;
 using Xbim.Ifc.ConstructionMgmtDomain;
 using Xbim.Ifc.Kernel;
 using Xbim.Ifc.ExternalReferenceResource;
+using Xbim.Ifc.Extensions;
+using Xbim.Ifc.PropertyResource;
 
 namespace Xbim.COBie.Data
 {
@@ -39,47 +41,103 @@ namespace Xbim.COBie.Data
                         // get all IfcBuildingStory objects from IFC file
             IEnumerable<IfcConstructionProductResource> ifcConstructionProductResources = Model.InstancesOfType<IfcConstructionProductResource>();
 
-            IfcTypeObject typeObject = Model.InstancesOfType<IfcTypeObject>().FirstOrDefault();
+            //IfcTypeObject typeObject = Model.InstancesOfType<IfcTypeObject>().FirstOrDefault();
 
             
-            foreach (IfcConstructionProductResource cpr in ifcConstructionProductResources)
+            foreach (IfcConstructionProductResource ifcConstructionProductResource in ifcConstructionProductResources)
             {
                 COBieSpareRow spare = new COBieSpareRow(spares);
 
-                //IfcOwnerHistory ifcOwnerHistory = cpr.OwnerHistory;
+                spare.Name = (string.IsNullOrEmpty(ifcConstructionProductResource.Name)) ? "" : ifcConstructionProductResource.Name.ToString();
 
-                spare.Name = (string.IsNullOrEmpty(cpr.Name)) ? "" : cpr.Name.ToString();
+                spare.CreatedBy = GetTelecomEmailAddress(ifcConstructionProductResource.OwnerHistory);
+                spare.CreatedOn = GetCreatedOnDateAsFmtString(ifcConstructionProductResource.OwnerHistory);
 
-                spare.CreatedBy = GetTelecomEmailAddress(cpr.OwnerHistory);
-                spare.CreatedOn = GetCreatedOnDateAsFmtString(cpr.OwnerHistory);
+                spare.Category = GetCategory(ifcConstructionProductResource);
 
-                IfcRelAssociatesClassification ifcRAC = cpr.HasAssociations.OfType<IfcRelAssociatesClassification>().FirstOrDefault();
-                if (ifcRAC != null)
-                {
-                    IfcClassificationReference ifcCR = (IfcClassificationReference)ifcRAC.RelatingClassification;
-                    spare.Category = ifcCR.Name;
-                }
-                else
-                    spare.Category = "";
+                spare.TypeName = GetObjectType(ifcConstructionProductResource);
+               
+                spare.ExtSystem = ifcApplication.ApplicationFullName;
+                spare.ExtObject = ifcConstructionProductResource.GetType().Name;
+                spare.ExtIdentifier = ifcConstructionProductResource.GlobalId;
+                spare.Description = (ifcConstructionProductResource == null) ? "" : ifcConstructionProductResource.Description.ToString();
 
-                spare.TypeName = (typeObject == null) ? "" : typeObject.Name.ToString();
-                spare.Suppliers = "";
-                spare.ExtSystem = GetIfcApplication().ApplicationFullName;
-
-                spare.ExtObject = "";
-                //foreach (COBiePickListsRow plRow in pickLists.Rows)
-                //    spare.ExtObject = (plRow == null) ? "" : plRow.ObjType + ",";
-                //spare.ExtObject = spare.ExtObject.TrimEnd(',');
-
-                spare.ExtIdentifier = cpr.GlobalId;
-                spare.Description = (cpr == null) ? "" : cpr.Description.ToString();
-                spare.SetNumber = "";
-                spare.PartNumber = "";
+                //get information from Pset_Spare_COBie property set 
+                IfcPropertySet ifcPropertySet =  ifcConstructionProductResource.GetPropertySet("Pset_Spare_COBie");
+                IfcPropertySingleValue ifcPropertySingleValue = ifcPropertySet.HasProperties.Where<IfcPropertySingleValue>(p => p.Name == "Suppliers").FirstOrDefault();
+                spare.Suppliers = ((ifcPropertySingleValue != null) && (!string.IsNullOrEmpty(ifcPropertySingleValue.NominalValue.ToString()))) ? ifcPropertySingleValue.NominalValue.ToString() : DEFAULT_STRING;
+                
+                ifcPropertySingleValue = ifcPropertySet.HasProperties.Where<IfcPropertySingleValue>(p => p.Name == "SetNumber").FirstOrDefault(); 
+                spare.SetNumber = ((ifcPropertySingleValue != null) && (!string.IsNullOrEmpty(ifcPropertySingleValue.NominalValue.ToString()))) ? ifcPropertySingleValue.NominalValue.ToString() : DEFAULT_STRING; ;
+                
+                ifcPropertySingleValue = ifcPropertySet.HasProperties.Where<IfcPropertySingleValue>(p => p.Name == "PartNumber").FirstOrDefault();
+                spare.PartNumber = ((ifcPropertySingleValue != null) && (!string.IsNullOrEmpty(ifcPropertySingleValue.NominalValue.ToString()))) ? ifcPropertySingleValue.NominalValue.ToString() : DEFAULT_STRING; ;
 
                 spares.Rows.Add(spare);
             }
 
             return spares;
+        }
+
+        /// <summary>
+        /// Get the object IfcTypeObject name from the IfcConstructionProductResource object
+        /// </summary>
+        /// <param name="ifcConstructionProductResource">IfcConstructionProductResource object</param>
+        /// <returns>string holding IfcTypeObject name</returns>
+        private string GetObjectType(IfcConstructionProductResource ifcConstructionProductResource)
+        {
+            //first try on ResourceOf.RelatedObjects
+            IEnumerable<IfcTypeObject> ifcTypeObjects = ifcConstructionProductResource.ResourceOf.SelectMany(ro => ro.RelatedObjects).OfType<IfcTypeObject>();
+            
+            //second try on IsDefinedBy.OfType<IfcRelDefinesByType>
+            if ((ifcTypeObjects == null) || (ifcTypeObjects.Count() == 0))
+                ifcTypeObjects  = ifcConstructionProductResource.IsDefinedBy.OfType<IfcRelDefinesByType>().Select(idb => (idb as IfcRelDefinesByType).RelatingType);
+            
+            //third try on IsDefinedBy.OfType<IfcRelDefinesByProperties> for DefinesType
+            if ((ifcTypeObjects == null) || (ifcTypeObjects.Count() == 0))
+                ifcTypeObjects = ifcConstructionProductResource.IsDefinedBy.OfType<IfcRelDefinesByProperties>().SelectMany(idb => (idb as IfcRelDefinesByProperties).RelatingPropertyDefinition.DefinesType);
+            
+            //convert to string and return if all ok
+            if ((ifcTypeObjects != null) || (ifcTypeObjects.Count() > 0))
+            {
+                List<string> strList = new List<string>();
+                foreach (IfcTypeObject ifcTypeItem in ifcTypeObjects)
+                {
+                    if ((ifcTypeItem != null) && (!string.IsNullOrEmpty(ifcTypeItem.Name.ToString())))
+                    {
+                        if (!strList.Contains(ifcTypeItem.Name.ToString()))
+                            strList.Add(ifcTypeItem.Name.ToString());
+                    }
+                }
+                return (strList.Count > 0) ? string.Join(" : ", strList) : DEFAULT_STRING;
+            }
+
+
+            //last try on IsDefinedBy.OfType<IfcRelDefinesByProperties> for IfcObject
+            if ((ifcTypeObjects == null) || (ifcTypeObjects.Count() == 0))
+            {
+                IEnumerable<IfcObject> ifcObjects = ifcConstructionProductResource.IsDefinedBy.OfType<IfcRelDefinesByProperties>().SelectMany(idb => idb.RelatedObjects);
+                List<string> strList = new List<string>();
+                foreach (IfcObject ifcObject in ifcObjects)
+                {
+                    IEnumerable<IfcRelDefinesByType> ifcRelDefinesByTypes = ifcObject.IsDefinedBy.OfType<IfcRelDefinesByType>();
+                    foreach (IfcRelDefinesByType ifcRelDefinesByType in ifcRelDefinesByTypes)
+                    {
+                        if ((ifcRelDefinesByType != null) &&
+                            (ifcRelDefinesByType.RelatingType != null) &&
+                            (!string.IsNullOrEmpty(ifcRelDefinesByType.RelatingType.Name.ToString()))
+                            )
+                        {
+                            if (!strList.Contains(ifcRelDefinesByType.RelatingType.Name.ToString()))
+                                strList.Add(ifcRelDefinesByType.RelatingType.Name.ToString());
+                        }
+                    }
+                    return (strList.Count > 0) ? string.Join(" : ", strList) : DEFAULT_STRING;
+                }
+                return (strList.Count > 0) ? string.Join(" : ", strList) : DEFAULT_STRING;
+            }
+
+            return DEFAULT_STRING; //fail to get any types
         }
         #endregion
     }
