@@ -14,16 +14,14 @@ namespace Xbim.COBie.Data
     /// <summary>
     /// Class to input data into excel worksheets for the the Assembly tab.
     /// </summary>
-    public class COBieDataAssembly : COBieData
+    public class COBieDataAssembly : COBieData<COBieAssemblyRow>
     {
         /// <summary>
         /// Data Assembly constructor
         /// </summary>
-        /// <param name="model">IModel to read data from</param>
-        public COBieDataAssembly(IModel model)
-        {
-            Model = model;
-        }
+        /// <param name="model">The context of the model being generated</param>
+        public COBieDataAssembly(COBieContext context) : base(context)
+        { }
 
         #region Methods
 
@@ -31,8 +29,9 @@ namespace Xbim.COBie.Data
         /// Fill sheet rows for Assembly sheet
         /// </summary>
         /// <returns>COBieSheet<COBieAssemblyRow></returns>
-        public COBieSheet<COBieAssemblyRow> Fill()
+        public override COBieSheet<COBieAssemblyRow> Fill()
         {
+            ProgressIndicator.ReportMessage("Starting Assemblies...");
             //Create new sheet
             COBieSheet<COBieAssemblyRow> assemblies = new COBieSheet<COBieAssemblyRow>(Constants.WORKSHEET_ASSEMBLY);
 
@@ -55,11 +54,12 @@ namespace Xbim.COBie.Data
                       select ifcram;
 
 
-            //IfcClassification ifcClassification = Model.InstancesOfType<IfcClassification>().FirstOrDefault();
+            ProgressIndicator.Initialise("Creating Assemblies", relAll.Count());
             string applicationFullName = ifcApplication.ApplicationFullName;
             int childColumnLength = 0;
             foreach (IfcRelDecomposes ra in relAll)
             {
+                ProgressIndicator.IncrementAndUpdate();
                 COBieAssemblyRow assembly = new COBieAssemblyRow(assemblies);
                 
                                            
@@ -138,7 +138,7 @@ namespace Xbim.COBie.Data
 
                 
             }
-
+            ProgressIndicator.Finalise();
             return assemblies;
         }
 
@@ -150,7 +150,7 @@ namespace Xbim.COBie.Data
                 else if (!string.IsNullOrEmpty(ra.Name)) return ra.Name;
                 else if (!string.IsNullOrEmpty(ra.RelatingObject.Name)) return ra.RelatingObject.Name;
             }
-            return DEFAULT_STRING;
+            return Constants.DEFAULT_STRING;
         }
         /// <summary>
         /// Get list of child object names from relatedObjects property of a ifcProduct asset

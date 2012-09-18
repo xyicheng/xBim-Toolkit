@@ -18,7 +18,7 @@ namespace Xbim.COBie.Data
 
     //}
 
-    public class COBieDataPropertySetValues : COBieData
+    public class COBieDataPropertySetValues : COBieData<COBieRow>
     {
         #region Fields
         Dictionary<IfcObject, Dictionary<IfcPropertySet, List<IfcPropertySingleValue>>> _propSetsValuesObjects = null;
@@ -64,6 +64,11 @@ namespace Xbim.COBie.Data
         #endregion
 
         #region Methods
+
+        public override COBieSheet<COBieRow> Fill()
+        {
+            throw new NotImplementedException();
+        }
         
         /// <summary>
         /// constructor for IfcObject types

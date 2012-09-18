@@ -15,16 +15,14 @@ namespace Xbim.COBie.Data
     /// <summary>
     /// Class to input data into excel worksheets for the the Zone tab.
     /// </summary>
-    public class COBieDataZone : COBieData
+    public class COBieDataZone : COBieData<COBieZoneRow>, IAttributeProvider
     {
         /// <summary>
         /// Data Zone constructor
         /// </summary>
-        /// <param name="model">IModel to read data from</param>
-        public COBieDataZone(IModel model)
-        {
-            Model = model;
-        }
+        /// <param name="model">The context of the model being generated</param>
+        public COBieDataZone(COBieContext context) : base(context)
+        { }
 
         #region methods
 
@@ -32,8 +30,10 @@ namespace Xbim.COBie.Data
         /// Fill sheet rows for Zone sheet
         /// </summary>
         /// <returns>COBieSheet<COBieZoneRow></returns>
-        public COBieSheet<COBieZoneRow> Fill(ref COBieSheet<COBieAttributeRow> attributes)
+        public override COBieSheet<COBieZoneRow> Fill()
         {
+            ProgressIndicator.ReportMessage("Starting Zones...");
+
             //Create new sheet
             COBieSheet<COBieZoneRow> zones = new COBieSheet<COBieZoneRow>(Constants.WORKSHEET_ZONE);
 
@@ -42,13 +42,21 @@ namespace Xbim.COBie.Data
             
             //list of attributes to exclude form attribute sheet
             List<string> excludePropertyValueNamesWildcard = new List<string> {  "Roomtag", "RoomTag", "Tag", "GSA BIM Area", "Length", "Width", "Height"};
-            
+
+            //Also check to see if we have any zones within the spaces
+            IEnumerable<IfcSpace> ifcSpaces = Model.InstancesOfType<IfcSpace>();//.OrderBy(ifcSpace => ifcSpace.Name, new CompareIfcLabel());
+
+            ProgressIndicator.Initialise("Creating Zones", ifcZones.Count() + ifcSpaces.Count());
+
             foreach (IfcZone zn in ifcZones)
             {
+                ProgressIndicator.IncrementAndUpdate();
                 // create zone for each space found
                 IEnumerable<IfcSpace> spaces = (zn.IsGroupedBy == null) ? Enumerable.Empty<IfcSpace>() : zn.IsGroupedBy.RelatedObjects.OfType<IfcSpace>();
                 foreach (IfcSpace sp in spaces)
                 {
+                    
+
                     COBieZoneRow zone = new COBieZoneRow(zones);
 
                     //IfcOwnerHistory ifcOwnerHistory = zn.OwnerHistory;
@@ -77,15 +85,16 @@ namespace Xbim.COBie.Data
                                                                                           };//required property date <PropertySetName, PropertyName>
 
                     //add *ALL* the attributes to the passed attributes sheet except property names that match the passed List<string>
-                    SetAttributeSheet(zn, passedValues, null, excludePropertyValueNamesWildcard, null, ref attributes);
+                    SetAttributeSheet(zn, passedValues, null, excludePropertyValueNamesWildcard, null, ref _attributes);
                     
                 }
 
             }
-            //Check to see if we have any zones within the spaces
-            IEnumerable<IfcSpace> ifcSpaces = Model.InstancesOfType<IfcSpace>();//.OrderBy(ifcSpace => ifcSpace.Name, new CompareIfcLabel());
+            
             foreach (IfcSpace sp in ifcSpaces)
             {
+                ProgressIndicator.IncrementAndUpdate();
+
                 IEnumerable<IfcPropertySingleValue> spProperties = Enumerable.Empty<IfcPropertySingleValue>();
                 foreach (IfcPropertySet pset in sp.GetAllPropertySets()) //was just looking at sp.GetPropertySet("PSet_Revit_Other") but 2012-08-07-COBieResponsibilityMatrix-v07.xlsx appears to want all
                 {
@@ -117,8 +126,17 @@ namespace Xbim.COBie.Data
                 
             }
 
+            ProgressIndicator.Finalise();
+
             return zones;
         }
         #endregion
+
+        COBieSheet<COBieAttributeRow> _attributes;
+
+        public void InitialiseAttributes(ref COBieSheet<COBieAttributeRow> attributeSheet)
+        {
+            _attributes = attributeSheet;
+        }
     }
 }

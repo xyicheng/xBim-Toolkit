@@ -16,16 +16,14 @@ namespace Xbim.COBie.Data
     /// <summary>
     /// Class to input data into excel worksheets for the the Job tab.
     /// </summary>
-    public class COBieDataJob : COBieData
+    public class COBieDataJob : COBieData<COBieJobRow>
     {
         /// <summary>
         /// Data Job constructor
         /// </summary>
-        /// <param name="model">IModel to read data from</param>
-        public COBieDataJob(IModel model)
-        {
-            Model = model;
-        }
+        /// <param name="model">The context of the model being generated</param>
+        public COBieDataJob(COBieContext context) : base(context)
+        { }
 
         #region Methods
 
@@ -33,8 +31,10 @@ namespace Xbim.COBie.Data
         /// Fill sheet rows for Job sheet
         /// </summary>
         /// <returns>COBieSheet<COBieJobRow></returns>
-        public COBieSheet<COBieJobRow> Fill()
+        public override COBieSheet<COBieJobRow> Fill()
         {
+            ProgressIndicator.ReportMessage("Starting Jobs...");
+
             //create new sheet
             COBieSheet<COBieJobRow> jobs = new COBieSheet<COBieJobRow>(Constants.WORKSHEET_JOB);
 
@@ -46,8 +46,12 @@ namespace Xbim.COBie.Data
             //IfcTypeObject typObj = Model.InstancesOfType<IfcTypeObject>().FirstOrDefault();
             IfcConstructionEquipmentResource cer = Model.InstancesOfType<IfcConstructionEquipmentResource>().FirstOrDefault();
 
+            ProgressIndicator.Initialise("Creating Jobs", ifcTasks.Count());
+
             foreach (IfcTask ifcTask in ifcTasks)
             {
+                ProgressIndicator.IncrementAndUpdate();
+
                 if (ifcTask == null) continue;
 
                 COBieJobRow job = new COBieJobRow(jobs);
@@ -88,6 +92,7 @@ namespace Xbim.COBie.Data
                 jobs.Rows.Add(job);
             }
 
+            ProgressIndicator.Finalise();
             return jobs;
         }
 

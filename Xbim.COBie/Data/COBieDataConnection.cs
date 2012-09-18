@@ -14,16 +14,14 @@ namespace Xbim.COBie.Data
     /// <summary>
     /// Class to input data into excel worksheets for the the Connection tab.
     /// </summary>
-    public class COBieDataConnection : COBieData
+    public class COBieDataConnection : COBieData<COBieConnectionRow>
     {
         /// <summary>
         /// Data Connection constructor
         /// </summary>
-        /// <param name="model">IModel to read data from</param>
-        public COBieDataConnection(IModel model)
-        {
-            Model = model;
-        }
+        /// <param name="model">The context of the model being generated</param>
+        public COBieDataConnection(COBieContext context) : base(context)
+        { }
 
         #region Methods
 
@@ -31,8 +29,9 @@ namespace Xbim.COBie.Data
         /// Fill sheet rows for Connection sheet
         /// </summary>
         /// <returns>COBieSheet<COBieConnectionRow></returns>
-        public COBieSheet<COBieConnectionRow> Fill()
+        public override COBieSheet<COBieConnectionRow> Fill()
         {
+            ProgressIndicator.ReportMessage("Starting Connections...");
             //Create new sheet
            COBieSheet<COBieConnectionRow> connections = new COBieSheet<COBieConnectionRow>(Constants.WORKSHEET_CONNECTION);
 
@@ -43,9 +42,13 @@ namespace Xbim.COBie.Data
 
             IfcProduct product = Model.InstancesOfType<IfcProduct>().FirstOrDefault();
 
+            ProgressIndicator.Initialise("Creating Connections", ifcConnections.Count());
+
             int ids = 0;
             foreach (IfcRelConnectsElements c in ifcConnections)
             {
+                ProgressIndicator.IncrementAndUpdate();
+
                 COBieConnectionRow conn = new COBieConnectionRow(connections);
                 conn.Name = (string.IsNullOrEmpty(c.Name)) ? ids.ToString() : c.Name.ToString();
                 conn.CreatedBy = GetTelecomEmailAddress(c.OwnerHistory);
@@ -66,6 +69,7 @@ namespace Xbim.COBie.Data
 
                 ids++;
             }
+            ProgressIndicator.Finalise();
 
             return connections;
         }

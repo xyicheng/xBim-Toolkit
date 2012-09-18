@@ -15,17 +15,15 @@ namespace Xbim.COBie.Data
     /// <summary>
     /// Class to input data into excel worksheets for the the Spare tab.
     /// </summary>
-    public class COBieDataSpare : COBieData
+    public class COBieDataSpare : COBieData<COBieSpareRow>
     {
 
         /// <summary>
         /// Data Spare constructor
         /// </summary>
-        /// <param name="model">IModel to read data from</param>
-        public COBieDataSpare(IModel model)
-        {
-            Model = model;
-        }
+        /// <param name="model">The context of the model being generated</param>
+        public COBieDataSpare(COBieContext context) : base(context)
+        { }
 
         #region Methods
 
@@ -33,9 +31,9 @@ namespace Xbim.COBie.Data
         /// Fill sheet rows for Spare sheet
         /// </summary>
         /// <returns>COBieSheet<COBieSpareRow></returns>
-        public COBieSheet<COBieSpareRow> Fill()
+        public override COBieSheet<COBieSpareRow> Fill()
         {
-          
+            ProgressIndicator.ReportMessage("Starting Spares...");
             //Create new sheet
             COBieSheet<COBieSpareRow> spares = new COBieSheet<COBieSpareRow>(Constants.WORKSHEET_SPARE);
                         // get all IfcBuildingStory objects from IFC file
@@ -43,9 +41,12 @@ namespace Xbim.COBie.Data
 
             //IfcTypeObject typeObject = Model.InstancesOfType<IfcTypeObject>().FirstOrDefault();
 
-            
+            ProgressIndicator.Initialise("Creating Spares", ifcConstructionProductResources.Count());
+
             foreach (IfcConstructionProductResource ifcConstructionProductResource in ifcConstructionProductResources)
             {
+                ProgressIndicator.IncrementAndUpdate();
+
                 COBieSpareRow spare = new COBieSpareRow(spares);
 
                 spare.Name = (string.IsNullOrEmpty(ifcConstructionProductResource.Name)) ? "" : ifcConstructionProductResource.Name.ToString();
@@ -75,7 +76,7 @@ namespace Xbim.COBie.Data
 
                 spares.Rows.Add(spare);
             }
-
+            ProgressIndicator.Finalise();
             return spares;
         }
 

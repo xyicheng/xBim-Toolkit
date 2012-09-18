@@ -14,6 +14,6 @@ namespace Xbim.COBie
 		/// Exports the COBie data into a specialised format.
 		/// </summary>
 		/// <param name="data"></param>
-		void Format(COBieReader data);
+		void Format(COBieBuilder data);
 	}
 }

@@ -3,6 +3,7 @@ using Xbim.Ifc.ProductExtension;
 using System.Xml;
 using Xbim.COBie.Rows;
 using Xbim.COBie.Data;
+using System;
 
 namespace Xbim.COBie
 {
@@ -10,16 +11,27 @@ namespace Xbim.COBie
 
     public class COBieQueries
     {
-        private IModel _model;
+       
+        private COBieContext _context;
+
         private COBieSheet<COBieAttributeRow> _attributes;
         /// <summary>
         /// Constructor 
         /// </summary>
         /// <param name="model">IModel to read data from</param>
-        public COBieQueries(IModel model)
+        public COBieQueries(COBieContext context)
         {
-            _model = model;
+            _context = context;
+
             _attributes = new COBieSheet<COBieAttributeRow>(Constants.WORKSHEET_ATTRIBUTE); //create the attribute sheet
+        }
+
+        public COBieContext Context
+        {
+            get
+            {
+                return _context;
+            }
         }
 
         /// <summary>
@@ -29,7 +41,7 @@ namespace Xbim.COBie
         /// <returns>COBieSheet<COBieContactRow></returns>
         public COBieSheet<COBieContactRow> GetCOBieContactSheet()
         {
-            COBieDataContact contacts = new COBieDataContact(_model);
+            COBieDataContact contacts = new COBieDataContact(Context);
             return contacts.Fill();
         }
         
@@ -40,7 +52,7 @@ namespace Xbim.COBie
         /// <returns>COBieSheet<COBieDocumentRow></returns>
         public COBieSheet<COBieDocumentRow> GetCOBieDocumentSheet()
         {
-            COBieDataDocument documents = new COBieDataDocument(_model);
+            COBieDataDocument documents = new COBieDataDocument(Context);
             return documents.Fill();
         }
         
@@ -51,7 +63,7 @@ namespace Xbim.COBie
         /// <returns>COBieSheet<COBieImpactRow></returns>
         public COBieSheet<COBieImpactRow> GetCOBieImpactSheet()
         {
-            COBieDataImpact impacts = new COBieDataImpact(_model);
+            COBieDataImpact impacts = new COBieDataImpact(Context);
             return impacts.Fill();
         }
 
@@ -63,7 +75,7 @@ namespace Xbim.COBie
         /// <returns>COBieSheet<COBieIssueRow></returns>
         public COBieSheet<COBieIssueRow> GetCOBieIssueSheet()
         {
-            COBieDataIssue issues = new COBieDataIssue(_model);
+            COBieDataIssue issues = new COBieDataIssue(Context);
             return issues.Fill();
         }
 
@@ -74,7 +86,7 @@ namespace Xbim.COBie
         /// <returns>COBieSheet<COBieJobRow></returns>
         public COBieSheet<COBieJobRow> GetCOBieJobSheet()
         {
-            COBieDataJob jobs = new COBieDataJob(_model);
+            COBieDataJob jobs = new COBieDataJob(Context);
             return jobs.Fill();
         }
         
@@ -86,7 +98,7 @@ namespace Xbim.COBie
         /// <returns>COBieSheet<COBieResourceRow></returns>
         public COBieSheet<COBieResourceRow> GetCOBieResourceSheet()
         {
-            COBieDataResource resources = new COBieDataResource(_model);
+            COBieDataResource resources = new COBieDataResource(Context);
             return resources.Fill();
         }
 
@@ -98,10 +110,10 @@ namespace Xbim.COBie
         /// <returns>COBieSheet<COBieFloorRow></returns>
         public COBieSheet<COBieFloorRow> GetCOBieFloorSheet()
         {
-            COBieDataFloor floors = new COBieDataFloor(_model);
-            return floors.Fill(ref _attributes);
+            COBieDataFloor floors = new COBieDataFloor(Context);
+            (floors as IAttributeProvider).InitialiseAttributes(ref _attributes);
+            return floors.Fill();
         }
-            
         
         /// <summary>
         /// Creates Space COBieSheet Data
@@ -110,8 +122,9 @@ namespace Xbim.COBie
         /// <returns>COBieSheet<COBieSpaceRow></returns>
         public COBieSheet<COBieSpaceRow> GetCOBieSpaceSheet()
         {
-            COBieDataSpace spaces = new COBieDataSpace(_model);
-            return spaces.Fill(ref _attributes);
+            COBieDataSpace spaces = new COBieDataSpace(Context);
+            (spaces as IAttributeProvider).InitialiseAttributes(ref _attributes);
+            return spaces.Fill();
         }
 
         /// <summary>
@@ -121,8 +134,9 @@ namespace Xbim.COBie
         /// <returns>COBieSheet<COBieFacilityRow></returns>
         public COBieSheet<COBieFacilityRow> GetCOBieFacilitySheet()
         {
-            COBieDataFacility facilities = new COBieDataFacility(_model);
-            return facilities.Fill(ref _attributes);
+            COBieDataFacility facilities = new COBieDataFacility(Context);
+            (facilities as IAttributeProvider).InitialiseAttributes(ref _attributes);
+            return facilities.Fill();
         }
         
         /// <summary>
@@ -132,7 +146,7 @@ namespace Xbim.COBie
         /// <returns>COBieSheet<COBieSpareRow></returns>
         public COBieSheet<COBieSpareRow> GetCOBieSpareSheet()
         {
-            COBieDataSpare spares = new COBieDataSpare(_model);
+            COBieDataSpare spares = new COBieDataSpare(Context);
             return spares.Fill();
         }
 
@@ -144,8 +158,9 @@ namespace Xbim.COBie
         /// <returns>COBieSheet<COBieZoneRow></returns>
         public COBieSheet<COBieZoneRow> GetCOBieZoneSheet()
         {
-            COBieDataZone zones = new COBieDataZone(_model);
-            return zones.Fill(ref _attributes);
+            COBieDataZone zones = new COBieDataZone(Context);
+            (zones as IAttributeProvider).InitialiseAttributes(ref _attributes);
+            return zones.Fill();
         }
 
         
@@ -156,8 +171,9 @@ namespace Xbim.COBie
         /// <returns>COBieSheet<COBieTypeRow></returns>
         public COBieSheet<COBieTypeRow> GetCOBieTypeSheet()
         {
-            COBieDataType types = new COBieDataType(_model);
-            return types.Fill(ref _attributes);
+            COBieDataType types = new COBieDataType(Context);
+            (types as IAttributeProvider).InitialiseAttributes(ref _attributes);
+            return types.Fill();
         }
         
         /// <summary>
@@ -167,8 +183,9 @@ namespace Xbim.COBie
         /// <returns>COBieSheet<COBieComponentRow></returns>
         public COBieSheet<COBieComponentRow> GetCOBieComponentSheet()
         {
-            COBieDataComponent components = new COBieDataComponent(_model);
-            return components.Fill(ref _attributes);
+            COBieDataComponent components = new COBieDataComponent(Context);
+            (components as IAttributeProvider).InitialiseAttributes(ref _attributes);
+            return components.Fill();
         }
 
         
@@ -179,7 +196,7 @@ namespace Xbim.COBie
         /// <returns>COBieSheet<COBieSystemRow></returns>
         public COBieSheet<COBieSystemRow> GetCOBieSystemSheet()
         {
-            COBieDataSystem systems = new COBieDataSystem(_model);
+            COBieDataSystem systems = new COBieDataSystem(Context);
             return systems.Fill();
         }
 
@@ -191,7 +208,7 @@ namespace Xbim.COBie
         /// <returns>COBieSheet<COBieAssemblyRow></returns>
         public COBieSheet<COBieAssemblyRow> GetCOBieAssemblySheet()
         {
-            COBieDataAssembly assemblies = new COBieDataAssembly(_model);
+            COBieDataAssembly assemblies = new COBieDataAssembly(Context);
             return assemblies.Fill();
         }
 
@@ -203,7 +220,7 @@ namespace Xbim.COBie
         /// <returns>COBieSheet<COBieConnectionRow></returns>
         public COBieSheet<COBieConnectionRow> GetCOBieConnectionSheet()
         {
-            COBieDataConnection connections = new COBieDataConnection(_model);
+            COBieDataConnection connections = new COBieDataConnection(Context);
             return connections.Fill();
         }
 
@@ -215,7 +232,7 @@ namespace Xbim.COBie
         /// <returns>COBieSheet<COBieCoordinateRow></returns>
         public COBieSheet<COBieCoordinateRow> GetCOBieCoordinateSheet()
         {
-            COBieDataCoordinate coordinates = new COBieDataCoordinate(_model);
+            COBieDataCoordinate coordinates = new COBieDataCoordinate(Context);
             return coordinates.Fill();
         }
 
@@ -315,6 +332,5 @@ namespace Xbim.COBie
 
         #endregion
 
-      
     }
 }

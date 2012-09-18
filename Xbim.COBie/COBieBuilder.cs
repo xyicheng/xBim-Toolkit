@@ -16,12 +16,10 @@ namespace Xbim.COBie
 	/// <summary>
 	/// Interrogates IFC models and builds COBie-format objects from the models
 	/// </summary>
-    public class COBieReader
+    public class COBieBuilder
     {
-		/// <summary>
-		/// Default constructor
-		/// </summary>
-		public COBieReader()
+
+		private COBieBuilder()
 		{
 			ResetWorksheets();
 		}
@@ -30,10 +28,10 @@ namespace Xbim.COBie
 		/// Constructor which also sets the Context
 		/// </summary>
 		/// <param name="context"></param>
-		public COBieReader(COBieContext context) : this()
+		public COBieBuilder(COBieContext context) : this()
 		{
-			Context = context;
-			GenerateCOBieData();
+            Context = context;
+            GenerateCOBieData();
 		}
 
         public COBieWorkbook Workbook { get; set; }
@@ -42,6 +40,8 @@ namespace Xbim.COBie
 		/// The context
 		/// </summary>
 		public COBieContext Context { get; set; }
+
+        
 
 		// Worksheets
 
@@ -146,15 +146,6 @@ namespace Xbim.COBie
 		/// </summary>
 		public List<COBieError> CobieErrors { get; set; }
 
-		/// <summary>
-		/// Adds an error to the errors collection
-		/// </summary>
-		/// <param name="cobieError"></param>
-        public void AddCOBieError(COBieError cobieError)
-        {
-            CobieErrors.Add(cobieError);
-        }
-
 		private void ResetWorksheets()
 		{
 			CobieContacts = new COBieSheet<COBieContactRow>(Constants.WORKSHEET_CONTACT);
@@ -188,10 +179,9 @@ namespace Xbim.COBie
 			if (Context == null) { throw new InvalidOperationException("COBieReader can't initialise without a valid Context."); }
 			if (Context.Models == null || Context.Models.Count == 0) { throw new ArgumentException("COBieReader context must contain one or more models."); }
 
-			IModel model = Context.Models.First();
 
             // set all the properties
-            COBieQueries cq = new COBieQueries(model);
+            COBieQueries cq = new COBieQueries(Context);
 
             // create pick lists from xml
             // TODO: Need to populate somehow.
@@ -199,7 +189,6 @@ namespace Xbim.COBie
 
             //contact sheet first as it will fill contact information lookups for other sheets
             CobieContacts = cq.GetCOBieContactSheet();
-
             CobieSpaces = cq.GetCOBieSpaceSheet();
             CobieComponents = cq.GetCOBieComponentSheet();
             CobieAssemblies = cq.GetCOBieAssemblySheet();
@@ -216,6 +205,7 @@ namespace Xbim.COBie
             CobieSystems = cq.GetCOBieSystemSheet();
             CobieTypes = cq.GetCOBieTypeSheet();
             CobieZones = cq.GetCOBieZoneSheet();
+
             //we need to fill this one last as the calls to the above sheet add data for the AttributeSheet
             CobieAttributes = cq.GetCOBieAttributeSheet();
 
@@ -252,8 +242,12 @@ namespace Xbim.COBie
             {                  
                 // populate general errors
                 COBieErrorCollection errorCollection = new COBieErrorCollection();
+
+                COBieProgress progress = new COBieProgress(Context);
+                progress.Initialise("Validating Workbooks", Workbook.Count, 0);
                 for (int i = 0; i < Workbook.Count; i++)
                 {
+                    progress.IncrementAndUpdate();
                     Type type = Workbook[i].GetType();
                     MethodInfo methodInfo = type.GetMethod("Validate");
                     var result = methodInfo.Invoke(Workbook[i], null);
@@ -266,10 +260,13 @@ namespace Xbim.COBie
                     }
                 }
 
+                progress.Initialise("Validating Primary Keys", Workbook.Count, 0);
                 // populate primary key errors
                 COBieErrorCollection errorPKCollection = new COBieErrorCollection();
                 for (int i = 0; i < Workbook.Count; i++)
                 {
+                    progress.IncrementAndUpdate();
+
                     Type type = Workbook[i].GetType();
                     MethodInfo methodInfo = type.GetMethod("ValidatePrimaryKey");
                     var result = methodInfo.Invoke(Workbook[i], null);
@@ -303,9 +300,13 @@ namespace Xbim.COBie
                 //    }
                 //}          
 
+                progress.Initialise("Validating Foreign Keys", Workbook.Count, 0);
+
                 COBieErrorCollection errorFKCollection = new COBieErrorCollection();
                 for (int i = 0; i < Workbook.Count; i++)
                 {
+                    progress.IncrementAndUpdate();
+
                     List<PropertyInfo> foreignKeyColumns = Workbook[i].ForeignKeyColumns;
 
                     if (foreignKeyColumns != null && foreignKeyColumns.Count > 0)
@@ -362,6 +363,7 @@ namespace Xbim.COBie
                             }
                         }
                     }
+                    progress.Finalise();
                     
                     
                 }
@@ -396,7 +398,7 @@ namespace Xbim.COBie
             return null;
         }
 
-        public void GenerateCOBieData()
+        private void GenerateCOBieData()
         {
             Initialise();
            

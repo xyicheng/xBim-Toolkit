@@ -15,16 +15,14 @@ namespace Xbim.COBie.Data
     /// <summary>
     /// Class to input data into excel worksheets for the the Coordinate tab.
     /// </summary>
-    public class COBieDataCoordinate : COBieData
+    public class COBieDataCoordinate : COBieData<COBieCoordinateRow>
     {
         /// <summary>
         /// Data Coordinate constructor
         /// </summary>
-        /// <param name="model">IModel to read data from</param>
-        public COBieDataCoordinate(IModel model)
-        {
-            Model = model;
-        }
+        /// <param name="model">The context of the model being generated</param>
+        public COBieDataCoordinate(COBieContext context) : base(context)
+        { }
 
         #region Methods
 
@@ -32,8 +30,10 @@ namespace Xbim.COBie.Data
         /// Fill sheet rows for Coordinate sheet
         /// </summary>
         /// <returns>COBieSheet<COBieCoordinateRow></returns>
-        public COBieSheet<COBieCoordinateRow> Fill()
+        public override COBieSheet<COBieCoordinateRow> Fill()
         {
+            ProgressIndicator.ReportMessage("Starting Coordinates...");
+
             //Create new sheet
             COBieSheet<COBieCoordinateRow> coordinates = new COBieSheet<COBieCoordinateRow>(Constants.WORKSHEET_COORDINATE);
 
@@ -48,8 +48,12 @@ namespace Xbim.COBie.Data
             IfcClassification ifcClassification = Model.InstancesOfType<IfcClassification>().FirstOrDefault();
             string applicationFullName = ifcApplication.ApplicationFullName;
 
+            ProgressIndicator.Initialise("Creating Coordinates", ifcRelAggregates.Count());
+
             foreach (IfcRelAggregates ra in ifcRelAggregates)
             {
+                ProgressIndicator.IncrementAndUpdate();
+
                 COBieCoordinateRow coordinate = new COBieCoordinateRow(coordinates);
                 coordinate.Name = (ifcBuildingStorey == null || ifcBuildingStorey.Name.ToString() == "") ? "CoordinateName" : ifcBuildingStorey.Name.ToString();
 
@@ -74,7 +78,7 @@ namespace Xbim.COBie.Data
 
                 coordinates.Rows.Add(coordinate);
             }
-
+            ProgressIndicator.Finalise();
             return coordinates;
         }
 
@@ -88,7 +92,7 @@ namespace Xbim.COBie.Data
             else if (string.IsNullOrEmpty(ifcSpace.GlobalId)) return ifcSpace.GlobalId.ToString();
             else if (string.IsNullOrEmpty(ifcProduct.GlobalId)) return ifcProduct.GlobalId.ToString();
 
-            return DEFAULT_STRING;
+            return Constants.DEFAULT_STRING;
         }
         #endregion
     }

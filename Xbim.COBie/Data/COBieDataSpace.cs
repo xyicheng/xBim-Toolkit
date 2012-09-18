@@ -18,16 +18,14 @@ namespace Xbim.COBie.Data
     /// <summary>
     /// Class to input data into excel worksheets for the the Space tab.
     /// </summary>
-    public class COBieDataSpace : COBieData
+    public class COBieDataSpace : COBieData<COBieSpaceRow>, IAttributeProvider
     {
         /// <summary>
         /// Data Space constructor
         /// </summary>
-        /// <param name="model">IModel to read data from</param>
-        public COBieDataSpace(IModel model)
-        {
-            Model = model;
-        }
+        /// <param name="model">The context of the model being generated</param>
+        public COBieDataSpace(COBieContext context) : base(context)
+        { }
 
         #region Methods
 
@@ -35,8 +33,10 @@ namespace Xbim.COBie.Data
         /// Fill sheet rows for Space sheet
         /// </summary>
         /// <returns>COBieSheet<COBieSpaceRow></returns>
-        public COBieSheet<COBieSpaceRow> Fill(ref COBieSheet<COBieAttributeRow> attributes)
+        public override COBieSheet<COBieSpaceRow> Fill()
         {
+            ProgressIndicator.ReportMessage("Starting Spaces...");
+
             //create new sheet 
             COBieSheet<COBieSpaceRow> spaces = new COBieSheet<COBieSpaceRow>(Constants.WORKSHEET_SPACE);
 
@@ -55,9 +55,13 @@ namespace Xbim.COBie.Data
             allPropertyValues.ExcludePropertyValueNamesWildcard.AddRange(excludePropertyValueNamesWildcard);
             allPropertyValues.ExcludePropertySetNames.AddRange(excludePropertSetNames);
             allPropertyValues.RowParameters["Sheet"] = "Space";
-            
+
+            ProgressIndicator.Initialise("Creating Spaces", ifcSpaces.Count());
+
             foreach (IfcSpace ifcSpace in ifcSpaces)
             {
+                ProgressIndicator.IncrementAndUpdate();
+
                 COBieSpaceRow space = new COBieSpaceRow(spaces);
 
                 space.Name = ifcSpace.Name;
@@ -88,10 +92,10 @@ namespace Xbim.COBie.Data
                 allPropertyValues.RowParameters["CreatedBy"] = space.CreatedBy;
                 allPropertyValues.RowParameters["CreatedOn"] = space.CreatedOn;
                 allPropertyValues.RowParameters["ExtSystem"] = space.ExtSystem;
-                allPropertyValues.SetAttributesRows(ifcSpace, ref attributes); //fill attribute sheet rows//pass data from this sheet info as Dictionary
+                allPropertyValues.SetAttributesRows(ifcSpace, ref _attributes); //fill attribute sheet rows//pass data from this sheet info as Dictionary
                 
             }
-
+            ProgressIndicator.Finalise();
             return spaces;
         }
 
@@ -226,5 +230,12 @@ namespace Xbim.COBie.Data
             return value;
         }
         #endregion
+
+        COBieSheet<COBieAttributeRow> _attributes;
+
+        public void InitialiseAttributes(ref COBieSheet<COBieAttributeRow> attributeSheet)
+        {
+            _attributes = attributeSheet;
+        }
     }
 }

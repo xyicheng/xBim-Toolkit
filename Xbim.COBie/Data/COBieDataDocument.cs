@@ -15,16 +15,14 @@ namespace Xbim.COBie.Data
     /// <summary>
     /// Class to input data into excel worksheets for the the Document tab.
     /// </summary>
-    public class COBieDataDocument : COBieData
+    public class COBieDataDocument : COBieData<COBieDocumentRow>
     {
         /// <summary>
         /// Data Document constructor
         /// </summary>
-        /// <param name="model">IModel to read data from</param>
-        public COBieDataDocument(IModel model)
-        {
-            Model = model;
-        }
+        /// <param name="model">The context of the model being generated</param>
+        public COBieDataDocument(COBieContext context) : base(context)
+        { }
 
         #region Methods
 
@@ -32,8 +30,10 @@ namespace Xbim.COBie.Data
         /// Fill sheet rows for Document sheet
         /// </summary>
         /// <returns>COBieSheet<COBieDocumentRow></returns>
-        public COBieSheet<COBieDocumentRow> Fill()
+        public override COBieSheet<COBieDocumentRow> Fill()
         {
+            ProgressIndicator.ReportMessage("Starting Documents...");
+
             //create new sheet
             COBieSheet<COBieDocumentRow> documents = new COBieSheet<COBieDocumentRow>(Constants.WORKSHEET_DOCUMENT);
 
@@ -41,9 +41,13 @@ namespace Xbim.COBie.Data
             IEnumerable<IfcDocumentInformation> docInfos = Model.InstancesOfType<IfcDocumentInformation>();
             //get the owner history
             IfcOwnerHistory ifcOwnerHistory = Model.InstancesOfType<IfcOwnerHistory>().FirstOrDefault();
-            
+
+            ProgressIndicator.Initialise("Creating Documents", docInfos.Count());
+
             foreach (IfcDocumentInformation di in docInfos)
             {
+                ProgressIndicator.IncrementAndUpdate();
+
                 COBieDocumentRow doc = new COBieDocumentRow(documents);
                 
                 
@@ -84,6 +88,7 @@ namespace Xbim.COBie.Data
                 documents.Rows.Add(doc);
             }
 
+            ProgressIndicator.Finalise();
             return documents;
         }
 

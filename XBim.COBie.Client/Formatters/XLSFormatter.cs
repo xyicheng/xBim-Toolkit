@@ -1,16 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Xbim.COBie;
-using System.IO;
-using NPOI.HSSF.UserModel;
-using Xbim.COBie.Rows;
-using NPOI.SS.Format;
 using System.Globalization;
-using Xbim.COBie.Data;
-using NPOI.SS.UserModel;
+using System.IO;
+using System.Linq;
+using NPOI.HSSF.UserModel;
 using NPOI.HSSF.Util;
+using NPOI.SS.UserModel;
+using Xbim.COBie;
+using Xbim.COBie.Rows;
+
 
 namespace XBim.COBie.Client.Formatters
 {
@@ -48,7 +46,7 @@ namespace XBim.COBie.Client.Formatters
         /// Formats the COBie data into an Excel XLS file
         /// </summary>
         /// <param name="cobie"></param>
-        public void Format(COBieReader cobie)
+        public void Format(COBieBuilder cobie)
         {
             if (cobie == null) { throw new ArgumentNullException("cobie", "XLSFormatter.Format does not accept null as the COBie data parameter."); }
 
@@ -257,7 +255,7 @@ Mismatch: {0}
 
             try
             {
-                if (String.IsNullOrEmpty(cell.CellValue) || cell.CellValue == COBieData.DEFAULT_STRING)
+                if (String.IsNullOrEmpty(cell.CellValue) || cell.CellValue == Constants.DEFAULT_STRING)
                 {
                     return false;
                 }

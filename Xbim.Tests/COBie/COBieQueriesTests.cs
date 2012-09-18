@@ -20,14 +20,19 @@ namespace Xbim.Tests.COBie
         private const string SourceFile = Root + @"\" + SourceModelLeaf;
         private const string PickListFile = Root + @"\" + PickListLeaf;
 
+
+        static COBieContext _cobieContext = new COBieContext();
         static IModel _model;
 
         [ClassInitialize]
         public static void LoadModel(TestContext context)
         {
+
             _model = new XbimFileModelServer();
             _model.Open(SourceFile);
-            COBieQueries cobieEngine = new COBieQueries(_model);
+            _cobieContext = new COBieContext();
+            _cobieContext.Models.Add(_model);
+            COBieQueries cobieEngine = new COBieQueries(_cobieContext);
 
         }
 
@@ -37,12 +42,13 @@ namespace Xbim.Tests.COBie
             if(_model != null)
                 _model.Dispose();
             _model = null;
+            _cobieContext = null;
         }
 
         [TestMethod]
         public void Should_Return_Floors()
         {
-            COBieQueries cobieEngine = new COBieQueries(Model);
+            COBieQueries cobieEngine = new COBieQueries(_cobieContext);
 
             var floors = cobieEngine.GetCOBieFloorSheet();
 
@@ -54,7 +60,7 @@ namespace Xbim.Tests.COBie
         [TestMethod]
         public void Should_Return_Spaces()
         {
-            COBieQueries cobieEngine = new COBieQueries(Model);
+            COBieQueries cobieEngine = new COBieQueries(_cobieContext);
 
             var spaces = cobieEngine.GetCOBieSpaceSheet();
 

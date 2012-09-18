@@ -20,16 +20,14 @@ namespace Xbim.COBie.Data
     /// <summary>
     /// Class to input data into excel worksheets for the the Type tab.
     /// </summary>
-    public class COBieDataType : COBieData
+    public class COBieDataType : COBieData<COBieTypeRow>, IAttributeProvider
     {
         /// <summary>
         /// Data Type constructor
         /// </summary>
-        /// <param name="model">IModel to read data from</param>
-        public COBieDataType(IModel model)
-        {
-            Model = model;
-        }
+        /// <param name="model">The context of the model being generated</param>
+        public COBieDataType(COBieContext context) : base(context)
+        { }
 
         #region Methods
 
@@ -37,8 +35,10 @@ namespace Xbim.COBie.Data
         /// Fill sheet rows for Type sheet
         /// </summary>
         /// <returns>COBieSheet<COBieTypeRow></returns>
-        public COBieSheet<COBieTypeRow> Fill(ref COBieSheet<COBieAttributeRow> attributes)
+        public override COBieSheet<COBieTypeRow> Fill()
         {
+            ProgressIndicator.ReportMessage("Starting Types...");
+
             // Create new Sheet
             COBieSheet<COBieTypeRow> types = new COBieSheet<COBieTypeRow>(Constants.WORKSHEET_TYPE);
             
@@ -71,11 +71,14 @@ namespace Xbim.COBie.Data
             allPropertyValues.FilterPropertyValueNames.AddRange(candidateProperties);
             allPropertyValues.ExcludePropertyValueNamesWildcard.AddRange(excludePropertyValueNamesWildcard);
             allPropertyValues.ExcludePropertySetNames.Add(" BaseQuantities");
-            allPropertyValues.RowParameters["Sheet"] = "Type";           
+            allPropertyValues.RowParameters["Sheet"] = "Type";
 
-            
+            ProgressIndicator.Initialise("Creating Types", ifcTypeObjects.Count());
+
             foreach (IfcTypeObject type in ifcTypeObjects)
             {
+                ProgressIndicator.IncrementAndUpdate();
+
                 COBieTypeRow typeRow = new COBieTypeRow(types);
 
                 // TODO: Investigate centralising this common code.
@@ -99,9 +102,9 @@ namespace Xbim.COBie.Data
                 allPropertyValues.RowParameters["CreatedBy"] = typeRow.CreatedBy;
                 allPropertyValues.RowParameters["CreatedOn"] = typeRow.CreatedOn;
                 allPropertyValues.RowParameters["ExtSystem"] = typeRow.ExtSystem;
-                allPropertyValues.SetAttributesRows(type, ref attributes); //fill attribute sheet rows
+                allPropertyValues.SetAttributesRows(type, ref _attributes); //fill attribute sheet rows
             }
-           
+            ProgressIndicator.Finalise();
             return types;
         }
 
@@ -688,9 +691,16 @@ namespace Xbim.COBie.Data
                 return val;
             }
 
-            return DEFAULT_STRING;
+            return Constants.DEFAULT_STRING;
         }
         #endregion
+
+        COBieSheet<COBieAttributeRow> _attributes;
+
+        public void InitialiseAttributes(ref COBieSheet<COBieAttributeRow> attributeSheet)
+        {
+            _attributes = attributeSheet;
+        }
     }
 
     public struct Interval

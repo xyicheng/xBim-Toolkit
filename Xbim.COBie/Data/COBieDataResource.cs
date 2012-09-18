@@ -11,17 +11,15 @@ namespace Xbim.COBie.Data
     /// <summary>
     /// Class to input data into excel worksheets for the the Resource tab.
     /// </summary>
-    public class COBieDataResource : COBieData
+    public class COBieDataResource : COBieData<COBieResourceRow>
     {
 
         /// <summary>
         /// Data Resource constructor
         /// </summary>
-        /// <param name="model">IModel to read data from</param>
-        public COBieDataResource(IModel model)
-        {
-            Model = model;
-        }
+        /// <param name="model">The context of the model being generated</param>
+        public COBieDataResource(COBieContext context) : base(context)
+        { }
 
         #region Methods
 
@@ -29,16 +27,21 @@ namespace Xbim.COBie.Data
         /// Fill sheet rows for Resource sheet
         /// </summary>
         /// <returns>COBieSheet<COBieResourceRow></returns>
-        public COBieSheet<COBieResourceRow> Fill()
+        public override COBieSheet<COBieResourceRow> Fill()
         {
+            ProgressIndicator.ReportMessage("Starting Resources...");
+
             //create new sheet 
             COBieSheet<COBieResourceRow> resources = new COBieSheet<COBieResourceRow>(Constants.WORKSHEET_RESOURCE);
 
             // get all IfcConstructionEquipmentResource objects from IFC file
             IEnumerable<IfcConstructionEquipmentResource> ifcCer = Model.InstancesOfType<IfcConstructionEquipmentResource>();
-                        
+
+            ProgressIndicator.Initialise("Creating Resources", ifcCer.Count());
+
             foreach (IfcConstructionEquipmentResource ifcConstructionEquipmentResource in ifcCer)
-            { 
+            {
+                ProgressIndicator.IncrementAndUpdate();
                 //if (ifcConstructionEquipmentResource == null) continue;
 
                 COBieResourceRow resource = new COBieResourceRow(resources);
@@ -54,7 +57,7 @@ namespace Xbim.COBie.Data
 
                 resources.Rows.Add(resource);
             }
-
+            ProgressIndicator.Finalise();
             return resources;
         }
         #endregion

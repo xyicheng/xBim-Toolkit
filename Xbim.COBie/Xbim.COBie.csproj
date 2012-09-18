@@ -120,6 +120,8 @@
     <Compile Include="Data\COBieDataSystem.cs" />
     <Compile Include="Data\COBieDataType.cs" />
     <Compile Include="Data\COBieDataZone.cs" />
+    <Compile Include="Data\IAttributeProvider.cs" />
+    <Compile Include="COBieProgress.cs" />
     <Compile Include="Enums.cs" />
     <Compile Include="Resources\ErrorDescription.zh-TW.Designer.cs">
       <DependentUpon>ErrorDescription.zh-TW.resx</DependentUpon>
@@ -144,7 +146,7 @@
     <Compile Include="COBieAttributes.cs" />
     <Compile Include="COBieError.cs" />
     <Compile Include="COBieQueries.cs" />
-    <Compile Include="COBieReader.cs" />
+    <Compile Include="COBieBuilder.cs" />
     <Compile Include="Rows\COBieFacilityRow.cs" />
     <Compile Include="Rows\COBieFloorRow.cs" />
     <Compile Include="Rows\COBieImpactRow.cs" />
@@ -180,8 +182,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Formatters\" />
-    <Folder Include="x64\" />
-    <Folder Include="x86\" />
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Service References\" />

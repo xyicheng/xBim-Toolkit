@@ -15,16 +15,14 @@ namespace Xbim.COBie.Data
     /// <summary>
     /// Class to input data into excel worksheets for the the System tab.
     /// </summary>
-    public class COBieDataSystem : COBieData
+    public class COBieDataSystem : COBieData<COBieSystemRow>
     {
         /// <summary>
         /// Data System constructor
         /// </summary>
-        /// <param name="model">IModel to read data from</param>
-        public COBieDataSystem(IModel model)
-        {
-            Model = model;
-        }
+        /// <param name="model">The context of the model being generated</param>
+        public COBieDataSystem(COBieContext context) : base(context)
+        { }
 
         #region Methods
 
@@ -32,8 +30,10 @@ namespace Xbim.COBie.Data
         /// Fill sheet rows for System sheet
         /// </summary>
         /// <returns>COBieSheet<COBieSystemRow></returns>
-        public COBieSheet<COBieSystemRow> Fill()
+        public override COBieSheet<COBieSystemRow> Fill()
         {
+            ProgressIndicator.ReportMessage("Starting Systems...");
+
             //Create new sheet
             COBieSheet<COBieSystemRow> systems = new COBieSheet<COBieSystemRow>(Constants.WORKSHEET_SYSTEM);
 
@@ -44,10 +44,20 @@ namespace Xbim.COBie.Data
             //ifcGroups = ifcGroups.Union(ifcSystems);
             //ifcGroups = ifcGroups.Union(ifcElectricalCircuits);
 
+            //Alternative method of extraction
+            List<string> PropertyNames = new List<string> { "Circuit Number", "System Name" };
+
+            IEnumerable<IfcPropertySet> ifcPropertySets = from ps in Model.InstancesOfType<IfcPropertySet>()
+                                                          from psv in ps.HasProperties.OfType<IfcPropertySingleValue>()
+                                                          where PropertyNames.Contains(psv.Name)
+                                                          select ps;
+
+            ProgressIndicator.Initialise("Creating Systems", ifcGroups.Count() + ifcPropertySets.Count());
 
             foreach (IfcGroup ifcGroup in ifcGroups)
             {
-               
+                ProgressIndicator.IncrementAndUpdate();
+
                 IEnumerable<IfcProduct> ifcProducts = (ifcGroup.IsGroupedBy == null) ? Enumerable.Empty<IfcProduct>() : ifcGroup.IsGroupedBy.RelatedObjects.OfType<IfcProduct>();
 
                 foreach (IfcProduct product in ifcProducts)
@@ -71,15 +81,11 @@ namespace Xbim.COBie.Data
 
             }
 
-            //Alternative method of extraction
-            List<string> PropertyNames = new List<string> { "Circuit Number", "System Name" };
-
-            IEnumerable<IfcPropertySet> ifcPropertySets = from ps in Model.InstancesOfType<IfcPropertySet>()
-                                                          from psv in ps.HasProperties.OfType<IfcPropertySingleValue>()
-                                                          where PropertyNames.Contains(psv.Name)
-                                                          select ps;
+            
             foreach (IfcPropertySet ifcPropertySet in ifcPropertySets)
             {
+                ProgressIndicator.IncrementAndUpdate();
+
                 IfcRelDefinesByProperties ifcRelDefinesByProperties = ifcPropertySet.PropertyDefinitionOf.FirstOrDefault(); //one or zero 
                 IfcPropertySingleValue ifcPropertySingleValue = ifcPropertySet.HasProperties.OfType<IfcPropertySingleValue>().Where(psv => PropertyNames.Contains(psv.Name)).FirstOrDefault();
                 foreach (IfcObject ifcObject in ifcRelDefinesByProperties.RelatedObjects)
@@ -103,8 +109,8 @@ namespace Xbim.COBie.Data
                     systems.Rows.Add(sys);
                     }
                 }
-            }   
-
+            }
+            ProgressIndicator.Finalise();
             return systems;
         }
 
@@ -115,7 +121,7 @@ namespace Xbim.COBie.Data
                 if (!string.IsNullOrEmpty(ifcGroup.Description)) return ifcGroup.Description;
                 else if (!string.IsNullOrEmpty(ifcGroup.Name)) return ifcGroup.Name;
             }
-            return DEFAULT_STRING;
+            return Constants.DEFAULT_STRING;
         }
         #endregion
     }

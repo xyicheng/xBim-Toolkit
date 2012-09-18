@@ -20,18 +20,50 @@ using Xbim.Ifc.SharedComponentElements;
 using Xbim.Ifc.StructuralElementsDomain;
 using Xbim.Ifc.SharedBldgServiceElements;
 
+
 namespace Xbim.COBie.Data
 {
     /// <summary>
     /// Base class for the input of data into the Excel worksheets
     /// </summary>
-    public abstract  class COBieData
+    public abstract class COBieData<T> where T : COBieRow
     {
-        protected IModel Model { get; set; }
-        
-        public const string DEFAULT_STRING = "n/a";
-        public const string DEFAULT_NUMERIC = "0";
+
+        protected const string DEFAULT_STRING = Constants.DEFAULT_STRING;
+        protected const string DEFAULT_NUMERIC = Constants.DEFAULT_NUMERIC;
+
+        protected COBieContext Context { get; set; }
+        private COBieProgress _progressStatus;
         private static Dictionary<long, string> _eMails = new Dictionary<long, string>();
+
+        protected COBieData()
+        { }
+
+        
+        public COBieData(COBieContext context)
+        {
+            Context = context;
+            _progressStatus = new COBieProgress(context);
+        }
+
+        protected IModel Model
+        {
+            get
+            {
+                return Context.Model;
+            }
+        }
+
+        protected COBieProgress ProgressIndicator
+        {
+            get
+            {
+                return _progressStatus;
+            }
+        }
+        
+        
+
         /// <summary>
         /// Common exclude PropertySingleValue name containing any of the strings 
         /// </summary>
@@ -181,7 +213,8 @@ namespace Xbim.COBie.Data
 
         #region Methods
 
-        
+        public abstract COBieSheet<T> Fill();
+
         /// <summary>
         /// Extract the Created On date from the passed entity
         /// </summary>
@@ -396,7 +429,7 @@ namespace Xbim.COBie.Data
             {
                 return val;
             }
-            return COBieData.DEFAULT_STRING;
+            return Constants.DEFAULT_STRING;
         }
         /// <summary>
         /// Get Category method for property sets
@@ -424,8 +457,8 @@ namespace Xbim.COBie.Data
             {
                 return val;
             }
-            return COBieData.DEFAULT_STRING;
-        }
+            return Constants.DEFAULT_STRING;
+        }   
 
         /// <summary>
         /// Determined the sheet the IfcRoot will have come from using the object type
@@ -441,6 +474,7 @@ namespace Xbim.COBie.Data
             //more sheets as tests date becomes available
             return value;
         }
+            
 
         /// <summary>
         /// Retrieve Attribute data from other sheets, retrieving all properties attached to object (obj)
@@ -713,6 +747,7 @@ namespace Xbim.COBie.Data
         }
 
         #endregion
+
     }
 
     #region IComparer Classes
@@ -737,6 +772,8 @@ namespace Xbim.COBie.Data
             return string.Compare(x, y, true); //ignore case set to true
         }
     }
+
+ 
 
     #endregion
 }

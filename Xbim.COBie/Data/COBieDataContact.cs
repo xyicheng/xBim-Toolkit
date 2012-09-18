@@ -15,16 +15,15 @@ namespace Xbim.COBie.Data
     /// <summary>
     /// Class to input data into excel worksheets for the the Contact tab.
     /// </summary>
-    public class COBieDataContact : COBieData
+    public class COBieDataContact : COBieData<COBieContactRow>
     {
         /// <summary>
         /// Data Contact constructor
         /// </summary>
-        /// <param name="model">IModel to read data from</param>
-        public COBieDataContact(IModel model)
-        {
-            Model = model;
-        }
+        /// <param name="model">The context of the model being generated</param>
+        public COBieDataContact(COBieContext context) : base(context)
+        { }
+
 
         #region Methods
 
@@ -32,8 +31,10 @@ namespace Xbim.COBie.Data
         /// Fill sheet rows for Contact sheet
         /// </summary>
         /// <returns>COBieSheet<COBieContactRow></returns>
-        public COBieSheet<COBieContactRow> Fill()
+        public override COBieSheet<COBieContactRow> Fill()
         {
+            ProgressIndicator.ReportMessage("Starting Contacts...");
+
             ClearEMails(); //clear the email dictionary for a new file conversion
 
             //create new sheet
@@ -42,8 +43,11 @@ namespace Xbim.COBie.Data
             IEnumerable<IfcOwnerHistory> ifcOwnerHistories = Model.InstancesOfType<IfcOwnerHistory>();
             IEnumerable<IfcPersonAndOrganization> ifcPersonAndOrganizations = Model.InstancesOfType<IfcPersonAndOrganization>();
 
+            ProgressIndicator.Initialise("Creating Contacts", ifcPersonAndOrganizations.Count());
+
             foreach (IfcPersonAndOrganization ifcPersonAndOrganization in ifcPersonAndOrganizations)
             {
+                ProgressIndicator.IncrementAndUpdate();
                 COBieContactRow contact = new COBieContactRow(contacts);
                 // get person and organization
                 IfcOrganization ifcOrganization = ifcPersonAndOrganization.TheOrganization;
@@ -94,7 +98,7 @@ namespace Xbim.COBie.Data
                 contacts.Rows.Add(contact);
                 
             }
-
+            ProgressIndicator.Finalise();
             return contacts;
         }
 

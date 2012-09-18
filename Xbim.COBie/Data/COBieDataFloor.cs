@@ -16,16 +16,14 @@ namespace Xbim.COBie.Data
     /// <summary>
     /// Class to input data into excel worksheets for the the Floor tab.
     /// </summary>
-    public class COBieDataFloor : COBieData
+    public class COBieDataFloor : COBieData<COBieFloorRow>, IAttributeProvider
     {
         /// <summary>
         /// Data Floor constructor
         /// </summary>
-        /// <param name="model">IModel to read data from</param>
-        public COBieDataFloor(IModel model)
-        {
-            Model = model;
-        }
+        /// <param name="model">The context of the model being generated</param>
+        public COBieDataFloor(COBieContext context) : base(context)
+        { }
 
         #region Methods
 
@@ -33,8 +31,10 @@ namespace Xbim.COBie.Data
         /// Fill sheet rows for Floor sheet
         /// </summary>
         /// <returns>COBieSheet<COBieFloorRow></returns>
-        public COBieSheet<COBieFloorRow> Fill(ref COBieSheet<COBieAttributeRow> attributes)
+        public override COBieSheet<COBieFloorRow> Fill()
         {
+            ProgressIndicator.ReportMessage("Starting Floors...");
+
             //create new sheet 
             COBieSheet<COBieFloorRow> floors = new COBieSheet<COBieFloorRow>(Constants.WORKSHEET_FLOOR);
 
@@ -53,9 +53,13 @@ namespace Xbim.COBie.Data
             allPropertyValues.ExcludePropertyValueNames.AddRange(excludePropertyValueNames);
             allPropertyValues.ExcludePropertyValueNamesWildcard.AddRange(excludePropertyValueNamesWildcard);
             allPropertyValues.RowParameters["Sheet"] = "Floor";
-            
+
+            ProgressIndicator.Initialise("Creating Components", buildingStories.Count());
+
             foreach (IfcBuildingStorey bs in buildingStories)
             {
+                ProgressIndicator.IncrementAndUpdate();
+
                 COBieFloorRow floor = new COBieFloorRow(floors);
 
                 //IfcOwnerHistory ifcOwnerHistory = bs.OwnerHistory;
@@ -89,9 +93,10 @@ namespace Xbim.COBie.Data
                 allPropertyValues.RowParameters["CreatedBy"] = floor.CreatedBy;
                 allPropertyValues.RowParameters["CreatedOn"] = floor.CreatedOn;
                 allPropertyValues.RowParameters["ExtSystem"] = floor.ExtSystem;
-                allPropertyValues.SetAttributesRows(bs, ref attributes); //fill attribute sheet rows//pass data from this sheet info as Dictionary
+                allPropertyValues.SetAttributesRows(bs, ref _attributes); //fill attribute sheet rows//pass data from this sheet info as Dictionary
                 
             }
+            ProgressIndicator.Finalise();
 
             return floors;
         }
@@ -140,5 +145,12 @@ namespace Xbim.COBie.Data
         }
 
         #endregion
+
+        COBieSheet<COBieAttributeRow> _attributes;
+
+        public void InitialiseAttributes(ref COBieSheet<COBieAttributeRow> attributeSheet)
+        {
+            _attributes = attributeSheet;
+        }
     }
 }

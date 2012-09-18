@@ -12,24 +12,24 @@ namespace Xbim.COBie.Data
     /// <summary>
     /// Class to input data into excel worksheets for the the Issue tab.
     /// </summary>
-    public class COBieDataIssue : COBieData
+    public class COBieDataIssue : COBieData<COBieIssueRow>
     {
         /// <summary>
         /// Data Issue constructor
         /// </summary>
-        /// <param name="model">IModel to read data from</param>
-        public COBieDataIssue(IModel model)
-        {
-            Model = model;
-        }
+        /// <param name="model">The context of the model being generated</param>
+        public COBieDataIssue(COBieContext context) : base(context)
+        { }
 
         #region Methods
         /// <summary>
         /// Fill sheet rows for Issue sheet
         /// </summary>
         /// <returns>COBieSheet<COBieIssueRow></returns>
-        public COBieSheet<COBieIssueRow> Fill()
+        public override COBieSheet<COBieIssueRow> Fill()
         {
+            ProgressIndicator.ReportMessage("Starting Issues...");
+
             //create new sheet
             COBieSheet<COBieIssueRow> issues = new COBieSheet<COBieIssueRow>(Constants.WORKSHEET_ISSUE);
             
@@ -41,9 +41,13 @@ namespace Xbim.COBie.Data
 
             IfcOwnerHistory ifcOwnerHistory = Model.InstancesOfType<IfcOwnerHistory>().FirstOrDefault();
             IfcApproval approval = Model.InstancesOfType<IfcApproval>().FirstOrDefault();
-            
+
+            ProgressIndicator.Initialise("Creating Issues", ifcApprovals.Count());
+
             foreach (IfcApproval app in ifcApprovals)
             {
+                ProgressIndicator.IncrementAndUpdate();
+
                 COBieIssueRow issue = new COBieIssueRow(issues);
                 issue.Name = (approval == null) ? "" : approval.Name.ToString();
                                 
@@ -82,6 +86,7 @@ namespace Xbim.COBie.Data
                 issues.Rows.Add(issue);
             }
 
+            ProgressIndicator.Finalise();
             return issues;
         }
         #endregion

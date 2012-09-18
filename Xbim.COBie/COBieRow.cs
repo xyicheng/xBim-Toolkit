@@ -71,7 +71,7 @@ namespace Xbim.COBie
                             }
                             else
                             {
-                                cell = new COBieCell(COBieData.DEFAULT_STRING);
+                                cell = new COBieCell(Constants.DEFAULT_STRING);
                             }
                             cell.COBieState = ((COBieAttributes)attrs[0]).State;
                             cell.CobieCol = ParentSheet.Columns[((COBieAttributes)attrs[0]).Order];
@@ -103,7 +103,7 @@ namespace Xbim.COBie
                             }
                             else
                             {
-                                cell = new COBieCell(COBieData.DEFAULT_STRING);
+                                cell = new COBieCell(Constants.DEFAULT_STRING);
                             }
                             //COBieCell cell = new COBieCell(propInfo.GetValue(this, null).ToString());
                             cell.COBieState = ((COBieAttributes)attrs[0]).State;

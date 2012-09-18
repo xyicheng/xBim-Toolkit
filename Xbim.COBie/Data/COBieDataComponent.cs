@@ -18,16 +18,15 @@ namespace Xbim.COBie.Data
     /// <summary>
     /// Class to input data into excel worksheets for the the Component tab.
     /// </summary>
-    public class COBieDataComponent : COBieData
+    public class COBieDataComponent : COBieData<COBieComponentRow>, IAttributeProvider
     {
         /// <summary>
         /// Data Component constructor
         /// </summary>
-        /// <param name="model">IModel to read data from</param>
-        public COBieDataComponent(IModel model)
-        {
-            Model = model;
-        }
+        /// <param name="model">The context of the model being generated</param>
+        public COBieDataComponent(COBieContext context)
+            : base(context)
+        { }
 
         #region Methods
 
@@ -35,13 +34,11 @@ namespace Xbim.COBie.Data
         /// Fill sheet rows for Component sheet
         /// </summary>
         /// <returns>COBieSheet<COBieComponentRow></returns>
-        public COBieSheet<COBieComponentRow> Fill(ref COBieSheet<COBieAttributeRow> attributes)
+        public override COBieSheet<COBieComponentRow> Fill()
         {
+            ProgressIndicator.ReportMessage("Starting Components...");
             //Create new sheet
-           COBieSheet<COBieComponentRow> components = new COBieSheet<COBieComponentRow>(Constants.WORKSHEET_COMPONENT);
-
-            
-
+            COBieSheet<COBieComponentRow> components = new COBieSheet<COBieComponentRow>(Constants.WORKSHEET_COMPONENT);
          
             IEnumerable<IfcRelAggregates> relAggregates = Model.InstancesOfType<IfcRelAggregates>();
             IEnumerable<IfcRelContainedInSpatialStructure> relSpatial = Model.InstancesOfType<IfcRelContainedInSpatialStructure>();
@@ -71,9 +68,14 @@ namespace Xbim.COBie.Data
             allPropertyValues.FilterPropertyValueNames.AddRange(candidateProperties);
             allPropertyValues.ExcludePropertyValueNamesWildcard.AddRange(excludePropertyValueNamesWildcard);
             allPropertyValues.RowParameters["Sheet"] = "Component";
-            
+
+
+            ProgressIndicator.Initialise("Creating Components", ifcElements.Count());
+
             foreach (var obj in ifcElements)
             {
+                ProgressIndicator.IncrementAndUpdate();
+
                 COBieComponentRow component = new COBieComponentRow(components);
 
                 IfcElement el = obj as IfcElement;
@@ -106,9 +108,10 @@ namespace Xbim.COBie.Data
                 allPropertyValues.RowParameters["CreatedBy"] = component.CreatedBy;
                 allPropertyValues.RowParameters["CreatedOn"] = component.CreatedOn;
                 allPropertyValues.RowParameters["ExtSystem"] = component.ExtSystem;
-                allPropertyValues.SetAttributesRows(el, ref attributes); //fill attribute sheet rows
+                allPropertyValues.SetAttributesRows(el, ref _attributes); //fill attribute sheet rows
             }
 
+            ProgressIndicator.Finalise();
             return components;
         }
 
@@ -127,7 +130,7 @@ namespace Xbim.COBie.Data
                 if (owningSpace.GetType() == typeof(IfcSpace))
                     return owningSpace.Name.ToString();
             }
-            return DEFAULT_STRING;
+            return Constants.DEFAULT_STRING;
         }
 
         /// <summary>
@@ -142,8 +145,15 @@ namespace Xbim.COBie.Data
                 if (!string.IsNullOrEmpty(el.Description)) return el.Description;
                 else if (!string.IsNullOrEmpty(el.Name)) return el.Name;
             }
-            return DEFAULT_STRING;
+            return Constants.DEFAULT_STRING;
         }
         #endregion
+
+        COBieSheet<COBieAttributeRow> _attributes;
+
+        public void InitialiseAttributes(ref COBieSheet<COBieAttributeRow> attributeSheet)
+        {
+            _attributes = attributeSheet;
+        }
     }
 }

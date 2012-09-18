@@ -15,16 +15,14 @@ namespace Xbim.COBie.Data
     /// <summary>
     /// Class to input data into excel worksheets for the the Facility tab.
     /// </summary>
-    public class COBieDataFacility : COBieData
+    public class COBieDataFacility : COBieData<COBieFacilityRow>, IAttributeProvider
     {
         /// <summary>
         /// Data Facility constructor
         /// </summary>
-        /// <param name="model">IModel to read data from</param>
-        public COBieDataFacility(IModel model)
-        {
-            Model = model;
-        }
+        /// <param name="model">The context of the model being generated</param>
+        public COBieDataFacility(COBieContext context) : base(context)
+        { }
 
       
         #region Methods
@@ -33,8 +31,10 @@ namespace Xbim.COBie.Data
         /// Fill sheet rows for Facility sheet
         /// </summary>
         /// <returns>COBieSheet<COBieFacilityRow></returns>
-        public COBieSheet<COBieFacilityRow> Fill(ref COBieSheet<COBieAttributeRow> attributes)
+        public override COBieSheet<COBieFacilityRow> Fill()
         {
+            ProgressIndicator.ReportMessage("Starting Facilities...");
+
             //Create new sheet
             COBieSheet<COBieFacilityRow> facilities = new COBieSheet<COBieFacilityRow>(Constants.WORKSHEET_FACILITY);
             //list of attributes to exclude form attribute sheet
@@ -101,10 +101,11 @@ namespace Xbim.COBie.Data
             //add *ALL* the attributes to the passed attributes sheet except property names that match the passed List<string>
 
 
-            SetAttributeSheet(ifcProject, passedValues, excludePropertyValueNames, excludePropertyValueNamesWildcard, null, ref attributes);
-            SetAttributeSheet(ifcSite, passedValues, excludePropertyValueNames, excludePropertyValueNamesWildcard, null, ref attributes);
-            SetAttributeSheet(ifcBuilding, passedValues, excludePropertyValueNames, excludePropertyValueNamesWildcard, null, ref attributes); 
-            
+            SetAttributeSheet(ifcProject, passedValues, excludePropertyValueNames, excludePropertyValueNamesWildcard, null, ref _attributes);
+            SetAttributeSheet(ifcSite, passedValues, excludePropertyValueNames, excludePropertyValueNamesWildcard, null, ref _attributes);
+            SetAttributeSheet(ifcBuilding, passedValues, excludePropertyValueNames, excludePropertyValueNamesWildcard, null, ref _attributes);
+
+            ProgressIndicator.Finalise();
             return facilities;
         }
 
@@ -117,7 +118,7 @@ namespace Xbim.COBie.Data
                 else if (!string.IsNullOrEmpty(ifcBuilding.Description)) return ifcBuilding.Description;
                 else if (!string.IsNullOrEmpty(ifcBuilding.Name)) return ifcBuilding.Name;
             }
-            return DEFAULT_STRING;
+            return Constants.DEFAULT_STRING;
         }
 
         private string GetFacilityProjectDescription(IfcProject ifcProject)
@@ -233,5 +234,12 @@ namespace Xbim.COBie.Data
             return "cubicfeet";
         }
         #endregion
+
+        COBieSheet<COBieAttributeRow> _attributes;
+
+        public void InitialiseAttributes(ref COBieSheet<COBieAttributeRow> attributeSheet)
+        {
+            _attributes = attributeSheet;
+        }
     }
 }

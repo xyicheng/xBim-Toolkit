@@ -52,55 +52,76 @@ namespace XBim.COBie.Client
 
         private void Generate()
         {
+            CreateWorker();
+            _worker.DoWork += COBieWorker;
+            _worker.RunWorkerAsync(new Params() { ModelFile = ModelFile, TemplateFile = TemplateFile } );
+        }
+
+        private void COBieWorker(object s, DoWorkEventArgs args)
+        {
+
             try
             {
-                string outputFile = Path.ChangeExtension(ModelFile, ".xls");
+                Params parameters = args.Argument as Params;
+                
+                
+                string outputFile = Path.ChangeExtension(parameters.ModelFile, ".xls");
 
-                if (!File.Exists(txtPath.Text))
+                if (!File.Exists(parameters.ModelFile))
                 {
-                    Log(String.Format("That file doesn't exist in {0}.", Directory.GetCurrentDirectory()));
+                    LogBackground(String.Format("That file doesn't exist in {0}.", Directory.GetCurrentDirectory()));
                     return;
                 }
 
-                Log(String.Format("Loading model {0}...", Path.GetFileName(ModelFile)));
+                LogBackground(String.Format("Loading model {0}...", Path.GetFileName(parameters.ModelFile)));
                 using(IModel model = new XbimFileModelServer())
                 {
 
-                    model.Open(ModelFile);
+                    model.Open(parameters.ModelFile, _worker.ReportProgress);
 
                     // Build context
-                    COBieContext context = new COBieContext();
+                    COBieContext context = new COBieContext(_worker.ReportProgress);
+
                     context.Models.Add(model);
 
                     // Create COBieReader
-                    Log("Generating COBie data...");
-                    Stopwatch StopW = new Stopwatch();
-                    StopW.Start();
-                    COBieReader reader = new COBieReader(context);
-                    StopW.Stop();
-                    Log(String.Format("Time to generate COBie data = {0}",StopW.Elapsed.ToString()));
+                    LogBackground("Generating COBie data...");
+                    
+                    Stopwatch timer = new Stopwatch();
+                    timer.Start();
+                    COBieBuilder builder = new COBieBuilder(context);
+                    timer.Stop();
+                    LogBackground(String.Format("Time to generate COBie data = {0}", timer.Elapsed.ToString()));
                     
                     // Export
-                    Log(String.Format("Formatting as XLS using {0} template...", Path.GetFileName(TemplateFile)));
+                    LogBackground(String.Format("Formatting as XLS using {0} template...", Path.GetFileName(parameters.TemplateFile)));
                     
-                    ICOBieFormatter formatter = new XLSFormatter(outputFile, TemplateFile );
-                    reader.Export(formatter);
+                    ICOBieFormatter formatter = new XLSFormatter(outputFile, parameters.TemplateFile );
+                    builder.Export(formatter);
                 }
                 
-                Log(String.Format("Export Complete: {0}", outputFile));
+                LogBackground(String.Format("Export Complete: {0}", outputFile));
 
                 Process.Start(outputFile);
+
+                LogBackground("Finished COBie Generation");
             }
             catch (Exception ex)
             {
-                Log(String.Format("ERROR: {0}", ex));
+                args.Result = ex;
+                return;
             }
         }
 
         private void Log(string text)
         {
             txtOutput.AppendText(text + Environment.NewLine);
-            Application.DoEvents();
+            txtOutput.ScrollToCaret();
+        }
+
+        private void LogBackground(string text)
+        {
+            _worker.ReportProgress(0, text);
         }
 
         private void btnBrowse_Click(object sender, EventArgs e)
@@ -149,5 +170,56 @@ namespace XBim.COBie.Client
                 txtTemplate.Text = dlg.FileName;
             }
         }
+
+        BackgroundWorker _worker;
+
+        private void CreateWorker()
+        {
+            _worker = new BackgroundWorker();
+            _worker.WorkerReportsProgress = true;
+            _worker.WorkerSupportsCancellation = false;
+            _worker.ProgressChanged += (object s, ProgressChangedEventArgs args) => 
+            {
+                StatusMsg.Text = (string)args.UserState;
+                if (args.ProgressPercentage == 0)
+                {
+                    Log(args.UserState.ToString());
+                }
+                else
+                {
+                    ProgressBar.Value = args.ProgressPercentage;
+                }
+            };
+
+            _worker.RunWorkerCompleted += (object s, RunWorkerCompletedEventArgs args) =>
+            {
+                string errMsg = args.Result as String;
+                if (!string.IsNullOrEmpty(errMsg))
+                    Log(errMsg);
+
+                if (args.Result is Exception)
+                {
+                    
+                    StringBuilder sb = new StringBuilder();
+                    Exception ex = args.Result as Exception;
+                    String indent = "";
+                    while (ex != null)
+                    {
+                        sb.AppendFormat("{0}{1}\n", indent, ex.Message);
+                        ex = ex.InnerException;
+                        indent += "\t";
+                    }
+                    Log(sb.ToString());
+                }
+
+            };
+        }
+
+        private class Params
+        {
+            public string ModelFile { get; set; }
+            public string TemplateFile { get; set; }
+        }
     }
+
 }

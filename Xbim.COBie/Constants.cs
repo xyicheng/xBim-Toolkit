@@ -28,5 +28,8 @@ namespace Xbim.COBie
 		public const string WORKSHEET_PICKLISTS = "PickLists";
 
 
+        public const string DEFAULT_STRING = "n/a";
+        public const string DEFAULT_NUMERIC = "0";
+
 	}
 }
