@@ -6,6 +6,7 @@ using Xbim.COBie.Rows;
 using Xbim.Ifc.ApprovalResource;
 using Xbim.Ifc.UtilityResource;
 using Xbim.XbimExtensions;
+using Xbim.Ifc.Kernel;
 
 namespace Xbim.COBie.Data
 {
@@ -33,55 +34,40 @@ namespace Xbim.COBie.Data
             //create new sheet
             COBieSheet<COBieIssueRow> issues = new COBieSheet<COBieIssueRow>(Constants.WORKSHEET_ISSUE);
             
-            // get all IfcBuildingStory objects from IFC file
+            //IEnumerable<IfcPropertySet> ifcProperties = Model.InstancesOfType<IfcPropertySet>().Where(ps => ps.Name.ToString() == "Pset_Risk");
+            
+
+            // get all IfcApproval objects from IFC file
             IEnumerable<IfcApproval> ifcApprovals = Model.InstancesOfType<IfcApproval>();
-
-            //IEnumerable<IfcTelecomAddress> ifcTelecomAddresses = Model.InstancesOfType<IfcTelecomAddress>();
-            //if (ifcTelecomAddresses == null) ifcTelecomAddresses = Enumerable.Empty<IfcTelecomAddress>();
-
-            IfcOwnerHistory ifcOwnerHistory = Model.InstancesOfType<IfcOwnerHistory>().FirstOrDefault();
-            IfcApproval approval = Model.InstancesOfType<IfcApproval>().FirstOrDefault();
-
             ProgressIndicator.Initialise("Creating Issues", ifcApprovals.Count());
-
-            foreach (IfcApproval app in ifcApprovals)
+            foreach (IfcApproval ifcApproval in ifcApprovals)
             {
+                
+
                 ProgressIndicator.IncrementAndUpdate();
+                if (ifcApproval == null) continue; //skip if null
 
                 COBieIssueRow issue = new COBieIssueRow(issues);
-                issue.Name = (approval == null) ? "" : approval.Name.ToString();
-                                
-                issue.CreatedBy = GetTelecomEmailAddress(ifcOwnerHistory);
-                issue.CreatedOn = GetCreatedOnDateAsFmtString(ifcOwnerHistory);
+                issue.Name = (string.IsNullOrEmpty(ifcApproval.Name.ToString())) ? DEFAULT_STRING : ifcApproval.Name.ToString();
 
-                issue.Type = "";
-                issue.Risk = "";
-                issue.Chance = "";
-                issue.Impact = "";
-                issue.SheetName1 = "";
-                //foreach (COBiePickListsRow plRow in pickLists.Rows)
-                //{
-                //    issue.Type = plRow.IssueCategory + ",";
-                //    issue.Risk = plRow.IssueRisk + ",";
-                //    issue.Chance = plRow.IssueChance + ",";
-                //    issue.Impact = plRow.IssueImpact + ",";
-                //    issue.SheetName1 = plRow.SheetType + ",";
-                //}
-                //issue.Type = issue.Type.TrimEnd(',');
-                //issue.Risk = issue.Risk.TrimEnd(',');
-                //issue.Chance = issue.Chance.TrimEnd(',');
-                //issue.Impact = issue.Impact.TrimEnd(',');
-                //issue.SheetName1 = issue.SheetName1.TrimEnd(',');
-
+                //lets default the creator to that user who created the project for now, no direct link to OwnerHistory on IfcApproval
+                issue.CreatedBy = GetTelecomEmailAddress(Model.IfcProject.OwnerHistory);
+                issue.CreatedOn = GetCreatedOnDateAsFmtString(Model.IfcProject.OwnerHistory);
+               
+                issue.Type = DEFAULT_STRING;
+                issue.Risk = DEFAULT_STRING;
+                issue.Chance = DEFAULT_STRING;
+                issue.Impact = DEFAULT_STRING;
+                issue.SheetName1 = DEFAULT_STRING;
                 issue.RowName1 = DEFAULT_STRING;
-                issue.SheetName2 = "";
+                issue.SheetName2 = DEFAULT_STRING;
                 issue.RowName2 = DEFAULT_STRING;
-                issue.Description = (approval == null) ? DEFAULT_STRING : approval.Description.ToString();
+                issue.Description = (string.IsNullOrEmpty(ifcApproval.Description.ToString())) ? DEFAULT_STRING : ifcApproval.Description.ToString();
                 issue.Owner = issue.CreatedBy;
-                issue.Mitigation = "";
+                issue.Mitigation = DEFAULT_STRING;
                 issue.ExtSystem = ifcApplication.ApplicationFullName;
-                issue.ExtObject = app.GetType().Name;
-                issue.ExtIdentifier = app.Identifier.ToString();
+                issue.ExtObject = ifcApproval.GetType().Name;
+                issue.ExtIdentifier = ifcApproval.Identifier.ToString();
 
                 issues.Rows.Add(issue);
             }

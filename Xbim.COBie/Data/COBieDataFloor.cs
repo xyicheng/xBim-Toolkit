@@ -44,7 +44,7 @@ namespace Xbim.COBie.Data
             COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(buildingStories.OfType<IfcObject>().ToList()); //properties helper class
             
             
-            IfcClassification ifcClassification = Model.InstancesOfType<IfcClassification>().FirstOrDefault();
+            //IfcClassification ifcClassification = Model.InstancesOfType<IfcClassification>().FirstOrDefault();
             //list of attributes to exclude form attribute sheet
             List<string> excludePropertyValueNames = new List<string> { "Name", "Line Weight", "Color", 
                                                           "Colour",   "Symbol at End 1 Default", 
@@ -53,38 +53,31 @@ namespace Xbim.COBie.Data
             allPropertyValues.ExcludePropertyValueNames.AddRange(excludePropertyValueNames);
             allPropertyValues.ExcludePropertyValueNamesWildcard.AddRange(excludePropertyValueNamesWildcard);
             allPropertyValues.RowParameters["Sheet"] = "Floor";
+            
+           
 
             ProgressIndicator.Initialise("Creating Components", buildingStories.Count());
 
-            foreach (IfcBuildingStorey bs in buildingStories)
+            foreach (IfcBuildingStorey ifcBuildingStorey in buildingStories)
             {
                 ProgressIndicator.IncrementAndUpdate();
 
                 COBieFloorRow floor = new COBieFloorRow(floors);
 
-                //IfcOwnerHistory ifcOwnerHistory = bs.OwnerHistory;
+                floor.Name = ifcBuildingStorey.Name.ToString();
 
-                floor.Name = bs.Name.ToString();
+                floor.CreatedBy = GetTelecomEmailAddress(ifcBuildingStorey.OwnerHistory);
+                floor.CreatedOn = GetCreatedOnDateAsFmtString(ifcBuildingStorey.OwnerHistory);
 
-                floor.CreatedBy = GetTelecomEmailAddress(bs.OwnerHistory);
-                floor.CreatedOn = GetCreatedOnDateAsFmtString(bs.OwnerHistory);
-
-                IfcRelAssociatesClassification ifcRAC = bs.HasAssociations.OfType<IfcRelAssociatesClassification>().FirstOrDefault();
-                if (ifcRAC != null)
-                {
-                    IfcClassificationReference ifcCR = (IfcClassificationReference)ifcRAC.RelatingClassification;
-                    floor.Category = ifcCR.Name;
-                }
-                else
-                    floor.Category = "";
+                floor.Category = GetCategory(ifcBuildingStorey);
 
                 floor.ExtSystem = ifcApplication.ApplicationFullName;
-                floor.ExtObject = bs.GetType().Name;
-                floor.ExtIdentifier = bs.GlobalId;
-                floor.Description = GetFloorDescription(bs);
-                floor.Elevation = bs.Elevation.ToString();
+                floor.ExtObject = ifcBuildingStorey.GetType().Name;
+                floor.ExtIdentifier = ifcBuildingStorey.GlobalId;
+                floor.Description = GetFloorDescription(ifcBuildingStorey);
+                floor.Elevation = ifcBuildingStorey.Elevation.ToString();
 
-                floor.Height = GetFloorHeight(bs, allPropertyValues);
+                floor.Height = GetFloorHeight(ifcBuildingStorey, allPropertyValues);
 
                 floors.Rows.Add(floor);
 
@@ -93,7 +86,7 @@ namespace Xbim.COBie.Data
                 allPropertyValues.RowParameters["CreatedBy"] = floor.CreatedBy;
                 allPropertyValues.RowParameters["CreatedOn"] = floor.CreatedOn;
                 allPropertyValues.RowParameters["ExtSystem"] = floor.ExtSystem;
-                allPropertyValues.SetAttributesRows(bs, ref _attributes); //fill attribute sheet rows//pass data from this sheet info as Dictionary
+                allPropertyValues.SetAttributesRows(ifcBuildingStorey, ref _attributes); //fill attribute sheet rows//pass data from this sheet info as Dictionary
                 
             }
             ProgressIndicator.Finalise();

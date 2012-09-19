@@ -39,10 +39,14 @@ namespace Xbim.COBie.Data
 
             // get all IfcBuildingStory objects from IFC file
             IEnumerable<IfcZone> ifcZones = Model.InstancesOfType<IfcZone>();
+
+            COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(ifcZones.OfType<IfcObject>().ToList()); //properties helper class
             
             //list of attributes to exclude form attribute sheet
             List<string> excludePropertyValueNamesWildcard = new List<string> {  "Roomtag", "RoomTag", "Tag", "GSA BIM Area", "Length", "Width", "Height"};
-
+            allPropertyValues.ExcludePropertyValueNamesWildcard.AddRange(excludePropertyValueNamesWildcard);
+            allPropertyValues.RowParameters["Sheet"] = "Zone";
+            
             //Also check to see if we have any zones within the spaces
             IEnumerable<IfcSpace> ifcSpaces = Model.InstancesOfType<IfcSpace>();//.OrderBy(ifcSpace => ifcSpace.Name, new CompareIfcLabel());
 
@@ -75,18 +79,14 @@ namespace Xbim.COBie.Data
                     zone.ExtIdentifier = zn.GlobalId;
                     zone.Description = (string.IsNullOrEmpty(zn.Description)) ? zn.Name.ToString() : zn.Description.ToString(); //if IsNullOrEmpty on Description then output Name
                     zones.Rows.Add(zone);
-                    //----------fill in the attribute information for spaces-----------
-                    //pass data from this sheet info as Dictionary
-                    Dictionary<string, string> passedValues = new Dictionary<string, string>(){{"Sheet", "Zone"}, 
-                                                                                          {"Name", zone.Name},
-                                                                                          {"CreatedBy", zone.CreatedBy},
-                                                                                          {"CreatedOn", zone.CreatedOn},
-                                                                                          {"ExtSystem", zone.ExtSystem}
-                                                                                          };//required property date <PropertySetName, PropertyName>
 
-                    //add *ALL* the attributes to the passed attributes sheet except property names that match the passed List<string>
-                    SetAttributeSheet(zn, passedValues, null, excludePropertyValueNamesWildcard, null, ref _attributes);
-                    
+                    //fill in the attribute information
+                    allPropertyValues.RowParameters["Name"] = zone.Name;
+                    allPropertyValues.RowParameters["CreatedBy"] = zone.CreatedBy;
+                    allPropertyValues.RowParameters["CreatedOn"] = zone.CreatedOn;
+                    allPropertyValues.RowParameters["ExtSystem"] = zone.ExtSystem;
+                    allPropertyValues.SetAttributesRows(zn, ref _attributes); //fill attribute sheet rows//pass data from this sheet info as Dictionary
+                
                 }
 
             }

@@ -104,6 +104,9 @@ namespace Xbim.COBie.Data
         private string GetPriors(IfcTask ifcTask)
         {
             IEnumerable<IfcRelSequence> isSuccessorFrom = ifcTask.IsSuccessorFrom;
+            //skip the first link to match example sheets count
+            if (isSuccessorFrom.Count() == 1) isSuccessorFrom = isSuccessorFrom.First().RelatingProcess.IsSuccessorFrom; 
+
             int count = 0;
             //assume that the isSuccessorFrom list can only hold one IfcRelSequence.
             while (isSuccessorFrom.Count() == 1) //have a successor task so count one

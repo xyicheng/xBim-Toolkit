@@ -37,19 +37,23 @@ namespace Xbim.COBie.Data
 
             //Create new sheet
             COBieSheet<COBieFacilityRow> facilities = new COBieSheet<COBieFacilityRow>(Constants.WORKSHEET_FACILITY);
-            //list of attributes to exclude form attribute sheet
-            List<string> excludePropertyValueNames = new List<string> { "Phase", "Height" };
-            List<string> excludePropertyValueNamesWildcard = new List<string> {  "Roomtag", "RoomTag", "Tag", "GSA BIM Area", "Length", "Width", "Height" };
 
             IfcProject ifcProject = Model.IfcProject;
             IfcSite ifcSite = Model.InstancesOfType<IfcSite>().FirstOrDefault();
             IfcBuilding ifcBuilding = Model.InstancesOfType<IfcBuilding>().FirstOrDefault();
             IfcMonetaryUnit ifcMonetaryUnit = Model.InstancesOfType<IfcMonetaryUnit>().FirstOrDefault();
             IfcElementQuantity ifcElementQuantity = Model.InstancesOfType<IfcElementQuantity>().FirstOrDefault();
+            
 
-            //IEnumerable<IfcTelecomAddress> ifcTelecomAddresses = model.InstancesOfType<IfcTelecomAddress>();
-            //if (ifcTelecomAddresses == null) ifcTelecomAddresses = Enumerable.Empty<IfcTelecomAddress>();
+            List<IfcObject> ifcObjects = new List<IfcObject> { ifcProject, ifcSite, ifcBuilding };
+            COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(ifcObjects); //properties helper class
 
+            //list of attributes to exclude form attribute sheet
+            List<string> excludePropertyValueNames = new List<string> { "Phase", "Height" };
+            List<string> excludePropertyValueNamesWildcard = new List<string> { "Roomtag", "RoomTag", "Tag", "GSA BIM Area", "Length", "Width", "Height" };
+            allPropertyValues.ExcludePropertyValueNames.AddRange(excludePropertyValueNames);
+            allPropertyValues.ExcludePropertyValueNamesWildcard.AddRange(excludePropertyValueNamesWildcard);
+            allPropertyValues.RowParameters["Sheet"] = "Facility";
             
             COBieFacilityRow facility = new COBieFacilityRow(facilities);
 
@@ -58,11 +62,6 @@ namespace Xbim.COBie.Data
             facility.CreatedBy = GetTelecomEmailAddress(ifcBuilding.OwnerHistory);
             facility.CreatedOn = GetCreatedOnDateAsFmtString(ifcBuilding.OwnerHistory);
 
-            //facility.Category = "";
-            //foreach (COBiePickListsRow plRow in pickLists.Rows)
-            //    if (plRow != null)
-            //        facility.Category += plRow.CategoryFacility + ",";
-            //facility.Category = facility.Category.TrimEnd(',');
             facility.Category = GetCategory(ifcBuilding);
             
             facility.ProjectName = GetFacilityProjectName(ifcProject);
@@ -89,21 +88,17 @@ namespace Xbim.COBie.Data
             facility.Phase = Model.IfcProject.Phase;
 
             facilities.Rows.Add(facility);
-            //----------fill in the attribute information for spaces-----------
-            //pass data from this sheet info as Dictionary
-            Dictionary<string, string> passedValues = new Dictionary<string, string>(){{"Sheet", "Facility"}, 
-                                                                                          {"Name", facility.Name},
-                                                                                          {"CreatedBy", facility.CreatedBy},
-                                                                                          {"CreatedOn", facility.CreatedOn},
-                                                                                          {"ExtSystem", facility.ExternalSystem}
-                                                                                          };//required property date <PropertySetName, PropertyName>
 
-            //add *ALL* the attributes to the passed attributes sheet except property names that match the passed List<string>
-
-
-            SetAttributeSheet(ifcProject, passedValues, excludePropertyValueNames, excludePropertyValueNamesWildcard, null, ref _attributes);
-            SetAttributeSheet(ifcSite, passedValues, excludePropertyValueNames, excludePropertyValueNamesWildcard, null, ref _attributes);
-            SetAttributeSheet(ifcBuilding, passedValues, excludePropertyValueNames, excludePropertyValueNamesWildcard, null, ref _attributes);
+            
+            //fill in the attribute information
+            foreach (IfcObject ifcObject in ifcObjects) 
+            {
+                allPropertyValues.RowParameters["Name"] = facility.Name;
+                allPropertyValues.RowParameters["CreatedBy"] = facility.CreatedBy;
+                allPropertyValues.RowParameters["CreatedOn"] = facility.CreatedOn;
+                allPropertyValues.RowParameters["ExtSystem"] = facility.ExternalSystem;
+                allPropertyValues.SetAttributesRows(ifcObject, ref _attributes); //fill attribute sheet rows//pass data from this sheet info as Dictionary
+            }
 
             ProgressIndicator.Finalise();
             return facilities;

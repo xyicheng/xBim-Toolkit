@@ -40,7 +40,7 @@ namespace Xbim.COBie.Data
             //create new sheet
             COBieSheet<COBieContactRow> contacts = new COBieSheet<COBieContactRow>(Constants.WORKSHEET_CONTACT);
 
-            IEnumerable<IfcOwnerHistory> ifcOwnerHistories = Model.InstancesOfType<IfcOwnerHistory>();
+            //IEnumerable<IfcOwnerHistory> ifcOwnerHistories = Model.InstancesOfType<IfcOwnerHistory>();
             IEnumerable<IfcPersonAndOrganization> ifcPersonAndOrganizations = Model.InstancesOfType<IfcPersonAndOrganization>();
 
             ProgressIndicator.Initialise("Creating Contacts", ifcPersonAndOrganizations.Count());
@@ -55,11 +55,9 @@ namespace Xbim.COBie.Data
                 contact.Email = GetTelecomEmailAddress(ifcPersonAndOrganization);
 
                 //lets default the creator to that user who created the project for now, no direct link to OwnerHistory on IfcPersonAndOrganization, IfcPerson or IfcOrganization
-                if (Model.IfcProject.OwnerHistory != null)
-                {
-                    contact.CreatedBy = GetTelecomEmailAddress(Model.IfcProject.OwnerHistory);
-                    contact.CreatedOn = GetCreatedOnDateAsFmtString(Model.IfcProject.OwnerHistory);
-                }
+                contact.CreatedBy = GetTelecomEmailAddress(Model.IfcProject.OwnerHistory);
+                contact.CreatedOn = GetCreatedOnDateAsFmtString(Model.IfcProject.OwnerHistory);
+                
                 IfcActorRole ifcActorRole = null;
                 if (ifcPerson.Roles != null)
                     ifcActorRole = ifcPerson.Roles.FirstOrDefault();

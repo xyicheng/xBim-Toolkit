@@ -51,25 +51,16 @@ namespace Xbim.COBie.Data
                 impact.CreatedBy = GetTelecomEmailAddress(ppt.OwnerHistory);
                 impact.CreatedOn = GetCreatedOnDateAsFmtString(ppt.OwnerHistory);
 
-                impact.ImpactType = "";
-                impact.ImpactStage = "";
-                impact.SheetName = "";
-                //foreach (COBiePickListsRow plRow in pickLists.Rows)
-                //{
-                //    impact.ImpactType = (plRow == null) ? "" : plRow.ImpactType + ",";
-                //    impact.ImpactStage = (plRow == null) ? "" : plRow.ImpactStage + ",";
-                //    impact.SheetName = (plRow == null) ? "" : plRow.SheetType + ",";
-                //}
-                //impact.ImpactType = impact.ImpactType.TrimEnd(',');
-                //impact.ImpactStage = impact.ImpactStage.TrimEnd(',');
-                //impact.SheetName = impact.SheetName.TrimEnd(',');
-
+                impact.ImpactType = DEFAULT_STRING;
+                impact.ImpactStage = DEFAULT_STRING;
+                impact.SheetName = DEFAULT_STRING;
+                
                 impact.RowName = DEFAULT_STRING;
-                impact.Value = "";
-                impact.ImpactUnit = "";
-                impact.LeadInTime = "";
-                impact.Duration = "";
-                impact.LeadOutTime = "";
+                impact.Value = DEFAULT_STRING;
+                impact.ImpactUnit = DEFAULT_STRING;
+                impact.LeadInTime = DEFAULT_STRING;
+                impact.Duration = DEFAULT_STRING;
+                impact.LeadOutTime = DEFAULT_STRING;
                 impact.ExtSystem = ifcApplication.ApplicationFullName;
                 impact.ExtObject = impact.GetType().Name;
                 impact.ExtIdentifier = ppt.GlobalId;
