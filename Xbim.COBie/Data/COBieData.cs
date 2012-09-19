@@ -256,32 +256,23 @@ namespace Xbim.COBie.Data
             string telephoneNo = "";
             IfcOrganization ifcOrganization = ifcPersonAndOrganization.TheOrganization;
             IfcPerson ifcPerson = ifcPersonAndOrganization.ThePerson;
-
-            IEnumerable<IfcLabel> telephoneNoS = null;
+                
             if (ifcPerson.Addresses != null)
             {
-                telephoneNoS = ifcPerson.Addresses.TelecomAddresses.Select(address => address.TelephoneNumbers.FirstOrDefault()).Where(tel => !string.IsNullOrEmpty(tel));
+                telephoneNo = ifcPerson.Addresses.TelecomAddresses.Select(address => address.TelephoneNumbers).Where(item => item != null).SelectMany(em => em).Where(em => !string.IsNullOrEmpty(em)).FirstOrDefault();
 
-                var enumerator = telephoneNoS.GetEnumerator();
-                if ((telephoneNoS == null) || (enumerator.Current.Value == null))
+                if (string.IsNullOrEmpty(telephoneNo))
                 {
                     if (ifcOrganization.Addresses != null)
                     {
-                        telephoneNoS = ifcOrganization.Addresses.TelecomAddresses.Select(address => address.TelephoneNumbers.FirstOrDefault()).Where(tel => !string.IsNullOrEmpty(tel));
+                        telephoneNo = ifcOrganization.Addresses.TelecomAddresses.Select(address => address.TelephoneNumbers).Where(item => item != null).SelectMany(em => em).Where(em => !string.IsNullOrEmpty(em)).FirstOrDefault();
                     }
-                }
-                else
-                    telephoneNo = telephoneNoS.FirstOrDefault();
+                } 
             }
             
             //if still no email lets make one up
-            var enumerator2 = telephoneNoS.GetEnumerator();
-            if ((telephoneNoS == null) || (enumerator2.Current.Value == null))
-            {
-                telephoneNo = DEFAULT_STRING;
-            }
-            else
-                telephoneNo = telephoneNoS.FirstOrDefault();
+            if (string.IsNullOrEmpty(telephoneNo)) telephoneNo = DEFAULT_STRING;
+            
 
             return telephoneNo;
         }
@@ -350,33 +341,22 @@ namespace Xbim.COBie.Data
         private static string GetEmail( IfcOrganization ifcOrganization, IfcPerson ifcPerson)
         {
             string email = "";
-            IEnumerable<IfcLabel> emails = null;
+            IEnumerable<IfcLabel> emails = Enumerable.Empty<IfcLabel>();
             if (ifcPerson.Addresses != null)
             {
-                emails = ifcPerson.Addresses.TelecomAddresses.Select(address => address.ElectronicMailAddresses).SelectMany(em => em).Where(em => !string.IsNullOrEmpty(em));
-                var enumerator = emails.GetEnumerator();
-                if ((emails == null) || (enumerator.Current.Value == null))
+                emails = ifcPerson.Addresses.TelecomAddresses.Select(address => address.ElectronicMailAddresses).Where(item => item != null).SelectMany(em => em).Where(em => !string.IsNullOrEmpty(em));
+                if ((emails == null) || (emails.Count() == 0))
                 {
                     if (ifcOrganization.Addresses != null)
                     {
-                        emails = ifcOrganization.Addresses.TelecomAddresses.Select(address => address.ElectronicMailAddresses).SelectMany(em => em).Where(em => !string.IsNullOrEmpty(em));
+                        emails = ifcOrganization.Addresses.TelecomAddresses.Select(address => address.ElectronicMailAddresses).Where(item => item != null).SelectMany(em => em).Where(em => !string.IsNullOrEmpty(em));
                     }
                 }
-
-                //email = ifcPerson.Addresses.TelecomAddresses.Select(address => address.ElectronicMailAddresses.FirstOrDefault()).Where(em => !string.IsNullOrEmpty(em)).FirstOrDefault();
-
-                //if (string.IsNullOrEmpty(email))
-                //{
-                //    if (ifcOrganization.Addresses != null)
-                //    {
-                //        email = ifcOrganization.Addresses.TelecomAddresses.Select(address => address.ElectronicMailAddresses.FirstOrDefault()).Where(em => !string.IsNullOrEmpty(em)).FirstOrDefault();
-                //    }
-                //}
+                
             }
 
             //if still no email lets make one up
-            var enumerator2 = emails.GetEnumerator();
-            if ((emails != null) && (enumerator2.Current.Value != null))
+            if ((emails != null) && (emails.Count() > 0))
             {
                 email = string.Join(" : ", emails);
             }
