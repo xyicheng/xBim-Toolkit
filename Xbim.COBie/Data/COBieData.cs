@@ -347,7 +347,8 @@ namespace Xbim.COBie.Data
             if (ifcPerson.Addresses != null)
             {
                 emails = ifcPerson.Addresses.TelecomAddresses.Select(address => address.ElectronicMailAddresses).SelectMany(em => em).Where(em => !string.IsNullOrEmpty(em));
-                if ((emails == null) || (emails.Count() == 0))
+                var enumerator = emails.GetEnumerator();
+                if ((emails == null) || (enumerator.Current.Value == null))
                 {
                     if (ifcOrganization.Addresses != null)
                     {
@@ -367,7 +368,8 @@ namespace Xbim.COBie.Data
             }
 
             //if still no email lets make one up
-            if ((emails != null) && (emails.Count() > 0))
+            var enumerator2 = emails.GetEnumerator();
+            if ((emails != null) && (enumerator2.Current.Value != null))
             {
                 email = string.Join(" : ", emails);
             }
