@@ -114,7 +114,7 @@ namespace Xbim.Ifc.Extensions
         }
 
         public static void SetOrChangeSIUnit(this IfcUnitAssignment ua, IfcUnitEnum unitType, IfcSIUnitName siUnitName,
-                                             IfcSIPrefix siUnitPrefix)
+                                             IfcSIPrefix? siUnitPrefix)
         {
             IModel model = ModelManager.ModelOf(ua);
             IfcSIUnit si = ua.Units.OfType<IfcSIUnit>().FirstOrDefault(u => u.UnitType == unitType);
