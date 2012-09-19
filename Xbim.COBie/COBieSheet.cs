@@ -4,13 +4,14 @@ using System.Linq;
 using System.Reflection;
 using System.Resources;
 using System.Data;
+using Xbim.COBie.Resources;
 
 namespace Xbim.COBie
 {
     public class COBieSheet<T> : ICOBieSheet<T> where T : COBieRow
     {
-		public string SheetName { get; set; }
-        public List<T> Rows { get; set; }
+		public string SheetName { get; private set; }
+        public List<T> Rows { get; private set; }
 
         public Dictionary<int, COBieColumn> Columns { get { return _columns; } }
         public PropertyInfo[] Properties { get { return _properties; } }
@@ -22,16 +23,24 @@ namespace Xbim.COBie
         private List<PropertyInfo> _keyColumns = new List<PropertyInfo>();
         private List<PropertyInfo> _foreignKeyColumns = new List<PropertyInfo>();
 
+        private COBieErrorCollection _errors = new COBieErrorCollection();
+
+        public COBieErrorCollection Errors
+        {
+            get
+            {
+                return _errors;
+            }
+        }
+
         public List<PropertyInfo> KeyColumns
         {
             get { return _keyColumns; }
-            
         }
 
         public List<PropertyInfo> ForeignKeyColumns
         {
             get { return _foreignKeyColumns; }
-
         }
                 
         public COBieSheet(string sheetName)
@@ -62,6 +71,22 @@ namespace Xbim.COBie
             }
         }
 
+        public T this[int index]
+        {
+            get
+            {
+                return Rows[index];
+            }
+        }
+
+        public int RowCount
+        {
+            get
+            {
+                return Rows.Count;
+            }
+        }
+
         public bool HasPrimaryKey
         {
             get
@@ -72,88 +97,7 @@ namespace Xbim.COBie
 
         
 
-        public COBieErrorCollection ValidatePrimaryKey()
-        {
-            // E.g.
-            // string query = "SELECT primaryColumnName, Count(primaryColumnName) as Total FROM tableName Group By primaryColumnName ;"; 
-            var dup = Rows
-                        .GroupBy(r => new { r.GetPrimaryKeyValue })
-                        .Select(group => new { Result = group.Key, Count = group.Count() })
-                        .OrderByDescending(x => x.Count);
-
-            // check if we have count of any of the results > 1, if yes then that is an error as each result should be unique
-            ResourceManager rm = new ResourceManager("Xbim.COBie.Resources.ErrorDescription", Assembly.GetExecutingAssembly());
-            COBieErrorCollection errorColl = new COBieErrorCollection();
-            foreach (var r in dup)
-            {
-                if (r.Count > 1)
-                {
-                    string desc = rm.GetString(COBieError.ErrorTypes.PrimaryKey_Violation.ToString()) + ": " + r.Result.ToString();
-                    COBieError error = new COBieError(SheetName, string.Join(";", _keyColumns), desc, COBieError.ErrorTypes.PrimaryKey_Violation);
-                    errorColl.Add(error);
-                }
-            }
-
-            if (errorColl.Count > 0) return errorColl;
-            else return null;
-        }
-
-        public COBieErrorCollection ValidateForeignKey(List<string> colMain, List<string> colForeign)
-        {
-            // E.g.
-            // SELECT Facility.CreatedBy, Contact.Email FROM Contact
-            // Left Outer Join Facility On Contact.Email = Facility.CreatedBy 
-            // WHERE Facility.CreatedBy = null 
-
-            var query = from cm in colMain
-                        join cf in colForeign on cm equals cf into gj
-                        from subpet in gj.DefaultIfEmpty()
-                        select new { cm, ColForeign = (subpet == null ? String.Empty : subpet) };
-
-            ResourceManager rm = new ResourceManager("Xbim.COBie.Resources.ErrorDescription", Assembly.GetExecutingAssembly());
-            COBieErrorCollection errorColl = new COBieErrorCollection();
-            foreach (var r in query)
-            {
-                if (string.IsNullOrEmpty(r.ColForeign))
-                {
-                    string desc = rm.GetString(COBieError.ErrorTypes.Null_ForeignKey_Value.ToString()) + ": " + r.cm.ToString();
-                    COBieError error = new COBieError(SheetName, "", desc, COBieError.ErrorTypes.Null_ForeignKey_Value);
-                    errorColl.Add(error);
-                }
-            }
-
-            if (errorColl.Count > 0) return errorColl;
-            else return null;
-        }
-
-        public List<string> GetForeignKeyValues(string foreignColName)
-        {
-            List<string> colValues = new List<string>();
-            foreach (T row in Rows)
-            {
-                // loop through each column, get its attributes and check if column value matches the attributes constraints
-                foreach (PropertyInfo propInfo in Properties)
-                {
-                    object[] attrs = Attributes[propInfo];
-                    if (attrs != null && attrs.Length > 0)
-                    {                        
-                        COBieAttributes attr = (COBieAttributes)attrs[0];
-                        if (attr.ColumnName == foreignColName)
-                        {
-                            Type cobieType = row.GetType();
-                            string val = (propInfo.GetValue(row, null) == null) ? "" : propInfo.GetValue(row, null).ToString();
-
-                            colValues.Add(val);
-                        }
-                        
-                    }
-                }
-            }
-            if (colValues.Count > 0)
-                return colValues;
-            else
-                return null;
-        }
+       
 
         public List<T> GetRows()
         {
@@ -175,109 +119,139 @@ namespace Xbim.COBie
             
         }
 
-        public COBieErrorCollection Validate()
+        public void Validate()
         {
-            COBieErrorCollection errorColl = new COBieErrorCollection();
+            ValidateFields();
+            ValidatePrimaryKeys();
+            //ValidateForeignKeys();
 
-            //List<COBieCell> pkColumnValues = new List<COBieCell>();
+        }
 
-            foreach (T row in Rows)
+        public void ValidateFields()
+        {
+            int r = 0;
+            foreach(T row in Rows)
             {
-                // loop through each column, get its attributes and check if column value matches the attributes constraints
-                foreach (PropertyInfo propInfo in Properties)
+                r++;
+                for(int col = 0 ; col < row.RowCount ; col++)
                 {
-                    object[] attrs = Attributes[propInfo];
-                    if (attrs != null && attrs.Length > 0)
-                    {
-                        Type cobieType = row.GetType();
-                        string val = (propInfo.GetValue(row, null) == null) ? "" : propInfo.GetValue(row, null).ToString();
+                    COBieError err = GetCobieError(row[col], SheetName, r, col);
+                    if (err != null)
+                        _errors.Add(err);
+                }
+            }
+        }
 
-                        COBieCell cell = new COBieCell(val);
-                        COBieAttributes attr = (COBieAttributes)attrs[0];
-                        cell.COBieState = attr.State;
-                        cell.CobieCol = new COBieColumn(attr.ColumnName, attr.MaxLength, attr.AllowedType, attr.KeyType);
+        private void ValidatePrimaryKeys()
+        {
+            var dupes = Rows
+                        .GroupBy(r => r.GetPrimaryKeyValue)
+                        .Where(grp => grp.Count() > 1)
+                        .SelectMany(grp => grp);
 
-                        ResourceManager rm = new ResourceManager("Xbim.COBie.Resources.ErrorDescription", Assembly.GetExecutingAssembly());
-                        COBieError err = GetCobieError(cell, SheetName, rm);
+            foreach (var dupe in dupes)
+            {
+                // TODO: need to identify the row number so we can assign error message
+                string description = ErrorDescription.PrimaryKey_Violation + ": " + dupe.GetPrimaryKeyValue;
+                    COBieError error = new COBieError(SheetName, string.Join(";", _keyColumns.Select(s=>s.Name)), description, COBieError.ErrorTypes.PrimaryKey_Violation);
+                    _errors.Add(error);
+            }
 
-                        // if this cell is set as primary key then add its value to array for later checking for primary key voilation
-                        //if (cell.CobieCol.KeyType == COBieKeyType.PrimaryKey)
-                        //{
-                        //    pkColumnValues.Add(cell);
-                        //}
-                        //else if (cell.CobieCol.KeyType == COBieKeyType.ForeignKey)
-                        //{
-                        //    // check if the value does exist in the foreign column values
+        }
 
-                        //}
+        private void ValidateForeignKey(List<string> colMain, List<string> colForeign)
+        {
+            // E.g.
+            // SELECT Facility.CreatedBy, Contact.Email FROM Contact
+            // Left Outer Join Facility On Contact.Email = Facility.CreatedBy 
+            // WHERE Facility.CreatedBy = null 
 
-                        if (err.ErrorType != COBieError.ErrorTypes.None) errorColl.Add(err);
-                    }
+            var query = from cm in colMain
+                        join cf in colForeign on cm equals cf into gj
+                        from subpet in gj.DefaultIfEmpty()
+                        select new { cm, ColForeign = (subpet == null ? String.Empty : subpet) };
+
+
+            
+            foreach (var r in query)
+            {
+                if (string.IsNullOrEmpty(r.ColForeign))
+                {
+                    string description = ErrorDescription.Null_ForeignKey_Value + ": " + r.cm.ToString();
+                    COBieError error = new COBieError(SheetName, "", description, COBieError.ErrorTypes.Null_ForeignKey_Value);
+                    _errors.Add(error);
                 }
             }
 
-            // check for primary key errors (i.e. if cell value matches any other cell's value)
-            //foreach (COBieCell cell in pkColumnValues)
-            //{
-            //    if (HasDuplicateValues(cell.CellValue, pkColumnValues))
-            //    {
-            //        COBieError err = new COBieError();
-            //        err.ErrorDescription = cell.CellValue + " duplication";
-            //        err.ErrorType = COBieError.ErrorTypes.PrimaryKey_Violation;
-            //        errorColl.Add(err);
-            //    }
-            //}
-
-            return errorColl;
         }
 
-        //private bool HasDuplicateValues(string cellValue, List<COBieCell> pkColumnValues)
+        //public List<string> GetForeignKeyValues(string foreignColName)
         //{
-        //    int count = 0;
-        //    foreach (COBieCell cell in pkColumnValues)
+        //    List<string> colValues = new List<string>();
+        //    foreach (T row in Rows)
         //    {
-        //        if (cellValue == cell.CellValue) count++;
+        //        // loop through each column, get its attributes and check if column value matches the attributes constraints
+        //        foreach (PropertyInfo propInfo in Properties)
+        //        {
+        //            object[] attrs = Attributes[propInfo];
+        //            if (attrs != null && attrs.Length > 0)
+        //            {
+        //                COBieAttributes attr = (COBieAttributes)attrs[0];
+        //                if (attr.ColumnName == foreignColName)
+        //                {
+        //                    Type cobieType = row.GetType();
+        //                    string val = (propInfo.GetValue(row, null) == null) ? "" : propInfo.GetValue(row, null).ToString();
+
+        //                    colValues.Add(val);
+        //                }
+
+        //            }
+        //        }
         //    }
-        //    if (count > 1) return true;           
-
-        //    return false;
+        //    if (colValues.Count > 0)
+        //        return colValues;
+        //    else
+        //        return null;
         //}
+            
 
-        public COBieError GetCobieError(COBieCell cell, string sheetName, ResourceManager rm)
+
+        private COBieError GetCobieError(COBieCell cell, string sheetName, int row, int col)
         {
             int maxLength = cell.CobieCol.ColumnLength;
             COBieAllowedType allowedType = cell.CobieCol.AllowedType;
             COBieAttributeState state = cell.COBieState;
-            COBieError err = new COBieError(sheetName, cell.CobieCol.ColumnName, "", COBieError.ErrorTypes.None);
+            COBieError err = new COBieError(sheetName, cell.CobieCol.ColumnName, "", COBieError.ErrorTypes.None, col, row);
+      
 
             if (state == COBieAttributeState.Required && string.IsNullOrEmpty(cell.CellValue))
             {
-                err.ErrorDescription = rm.GetString(COBieError.ErrorTypes.Text_Value_Expected.ToString());
+                err.ErrorDescription = ErrorDescription.Text_Value_Expected;
                 err.ErrorType = COBieError.ErrorTypes.Text_Value_Expected;
             }
             else if (cell.CellValue.Length > maxLength)
             {
-                err.ErrorDescription = rm.GetString(COBieError.ErrorTypes.Value_Out_of_Bounds.ToString());
+                err.ErrorDescription = String.Format(ErrorDescription.Value_Out_of_Bounds, maxLength);
                 err.ErrorType = COBieError.ErrorTypes.Value_Out_of_Bounds;
             }
             else if (allowedType == COBieAllowedType.AlphaNumeric && !cell.IsAlphaNumeric())
             {
-                err.ErrorDescription = rm.GetString(COBieError.ErrorTypes.AlphaNumeric_Value_Expected.ToString());
+                err.ErrorDescription = ErrorDescription.AlphaNumeric_Value_Expected;
                 err.ErrorType = COBieError.ErrorTypes.AlphaNumeric_Value_Expected;
             }
             else if (allowedType == COBieAllowedType.Email && !cell.IsEmailAddress())
             {
-                err.ErrorDescription = rm.GetString(COBieError.ErrorTypes.Email_Value_Expected.ToString());
+                err.ErrorDescription = ErrorDescription.Email_Value_Expected;
                 err.ErrorType = COBieError.ErrorTypes.Email_Value_Expected;
             }
 
             else if (allowedType == COBieAllowedType.ISODate)
             {
                 DateTime dt;
-                DateTime.TryParse(cell.CellValue, out dt);
-                if (dt == DateTime.MinValue)
+                
+                if (DateTime.TryParse(cell.CellValue, out dt) == false)
                 {
-                    err.ErrorDescription = rm.GetString(COBieError.ErrorTypes.ISODate_Value_Expected.ToString());
+                    err.ErrorDescription = ErrorDescription.ISODate_Value_Expected;
                     err.ErrorType = COBieError.ErrorTypes.ISODate_Value_Expected;
                 }
             }
@@ -285,24 +259,27 @@ namespace Xbim.COBie
             if (allowedType == COBieAllowedType.Numeric)
             { 
                 double d;
-                double.TryParse(cell.CellValue, out d);
-                if (d == 0)
+                
+                if (double.TryParse(cell.CellValue, out d) == false)
                 {
-                    err.ErrorDescription = rm.GetString(COBieError.ErrorTypes.Numeric_Value_Expected.ToString());
+                    err.ErrorDescription = ErrorDescription.Numeric_Value_Expected;
                     err.ErrorType = COBieError.ErrorTypes.Numeric_Value_Expected;
                 }
             }
-            
-            return err;
+
+            if (err.ErrorType != COBieError.ErrorTypes.None)
+            {
+                err.FieldValue = cell.CellValue;
+                return err;
+            }
+            else
+            {
+                return null;
+            }
         }
-
-
 
 
        
     }  
-
-    
-
 
 }

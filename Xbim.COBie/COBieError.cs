@@ -2,9 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Diagnostics;
 
 namespace Xbim.COBie
 {
+
+    [DebuggerDisplay("{SheetName}.{FieldName} : {ErrorDescription} - '{FieldValue}' [{Row},{Column}]")]
     public class COBieError
     {
         // this will contain all the cells that are mandatory but not supplied and user needs to fill in
@@ -21,12 +24,14 @@ namespace Xbim.COBie
             ErrorDescription = errorDescription;
         }
 
-        public COBieError(string sheetName, string fieldName, string errorDescription, ErrorTypes errorType)
+        public COBieError(string sheetName, string fieldName, string errorDescription, ErrorTypes errorType, int column = 0, int row = 0)
         {
             SheetName = sheetName;
             FieldName = fieldName;
             ErrorDescription = errorDescription;
             ErrorType = errorType;
+            Column = column;
+            Row = row;
         }
 
         public COBieError(string fieldName, string errorDescription)
@@ -40,8 +45,11 @@ namespace Xbim.COBie
         public string ErrorDescription { get; set; }
         public ErrorTypes ErrorType { get; set; }
 
-        // Following enum values are in ErrorDescription.resx resource file as well
-        // Change both places if any change in the following text is required or any new one is added
+        public string FieldValue { get; set; }
+        public int Column { get; set;}
+        public int Row { get; set ;}
+
+
         public enum ErrorTypes
         {
             Value_Out_of_Bounds,

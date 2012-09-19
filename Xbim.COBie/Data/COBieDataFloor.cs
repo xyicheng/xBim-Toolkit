@@ -103,7 +103,7 @@ namespace Xbim.COBie.Data
         {
             //try for a IfcQuantityLength related property to this building story
             IEnumerable<IfcQuantityLength> qLen = ifcBuildingStorey.IsDefinedByProperties.Select(p => p.RelatedObjects.OfType<IfcQuantityLength>()).FirstOrDefault();
-            if (qLen.FirstOrDefault() != null) 
+            if (qLen != null && qLen.FirstOrDefault() != null) 
                 return qLen.FirstOrDefault().LengthValue.ToString();
             
             //Fall back properties

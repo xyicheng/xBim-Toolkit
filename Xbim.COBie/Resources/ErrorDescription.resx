@@ -124,13 +124,13 @@
     <value>Value must be a valid email address</value>
   </data>
   <data name="ISODate_Value_Expected" xml:space="preserve">
-    <value>Value must be a valid iso date</value>
+    <value>Value must be a valid date</value>
   </data>
   <data name="Null_ForeignKey_Value" xml:space="preserve">
     <value>Invalid value</value>
   </data>
   <data name="Numeric_Value_Expected" xml:space="preserve">
-    <value>Value must be a valid double</value>
+    <value>Value must be a valid number</value>
   </data>
   <data name="PrimaryKey_Violation" xml:space="preserve">
     <value>Value must be unique</value>
@@ -139,6 +139,6 @@
     <value>Required value is empty</value>
   </data>
   <data name="Value_Out_of_Bounds" xml:space="preserve">
-    <value>Value must be under 255 characters</value>
+    <value>Value must be under {0} characters</value>
   </data>
 </root>

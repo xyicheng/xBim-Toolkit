@@ -1,4 +1,5 @@
 ﻿using System.Text.RegularExpressions;
+using System;
 
 namespace Xbim.COBie
 {
@@ -21,10 +22,20 @@ namespace Xbim.COBie
 
         public bool IsEmailAddress()
         {
-            return RegExEmail.IsMatch(this.CellValue);
+            bool isEmail = false;
+            try
+            {
+                System.Net.Mail.MailAddress address = new System.Net.Mail.MailAddress(this.CellValue);
+                isEmail = true;
+            }
+            catch (FormatException)
+            {
+                // Do nothing
+            }
+            return isEmail;
         }
 
-        static Regex RegExAlphaNumeric = new Regex("^[a-zA-Z0-9]*$");
-        static Regex RegExEmail = new Regex("[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?");
+        static Regex RegExAlphaNumeric = new Regex(@"\w");
+        
     }
 }

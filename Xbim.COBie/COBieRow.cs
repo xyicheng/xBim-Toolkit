@@ -28,7 +28,7 @@ namespace Xbim.COBie
             {
                 int c = ParentSheet.KeyColumns.Count;
                 if (c == 1)
-                    return ParentSheet.KeyColumns[0].GetValue(this, null).ToString();
+                    return ParentSheet.KeyColumns[0].GetValue(this, null) as String;
                 else if (c > 1)
                 {
                     List<string> keyValues = new List<string>(c);
@@ -117,5 +117,14 @@ namespace Xbim.COBie
                 return null;
             }
         }
+
+        public int RowCount
+        {
+            get
+            {
+                return ParentSheet.Columns.Count;
+            }
+        }
+
     }
 }

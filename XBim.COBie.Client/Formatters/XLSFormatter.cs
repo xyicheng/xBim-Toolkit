@@ -21,6 +21,7 @@ namespace XBim.COBie.Client.Formatters
         const string DefaultFileName = "Cobie.xls";
         const string DefaultTemplateFileName = @"Templates\COBie-UK-2012-template.xls";
         const string InstructionsSheet = "Instruction";
+        const string ErrorsSheet = "Errors";
 
         Dictionary<COBieAllowedType, HSSFCellStyle> _cellStyles = new Dictionary<COBieAllowedType, HSSFCellStyle>();
         Dictionary<string, HSSFColor> _colours = new Dictionary<string, HSSFColor>();
@@ -40,7 +41,7 @@ namespace XBim.COBie.Client.Formatters
 
         public string FileName { get; set; }
         public string TemplateFileName { get; set; }
-        public HSSFWorkbook Workbook { get; private set; }
+        public HSSFWorkbook XlsWorkbook { get; private set; }
 
         /// <summary>
         /// Formats the COBie data into an Excel XLS file
@@ -53,36 +54,92 @@ namespace XBim.COBie.Client.Formatters
             // Load template file
             FileStream excelFile = File.Open(TemplateFileName, FileMode.Open, FileAccess.Read);
 
-            Workbook = new HSSFWorkbook(excelFile, true);
+            XlsWorkbook = new HSSFWorkbook(excelFile, true);
 
             CreateFormats();
 
-            // Generically write the sheet
-            WriteSheet<COBieContactRow>(cobie.CobieContacts);
-            WriteSheet<COBieFacilityRow>(cobie.CobieFacilities);
-            WriteSheet<COBieFloorRow>(cobie.CobieFloors);
-            WriteSheet<COBieSpaceRow>(cobie.CobieSpaces);
-            WriteSheet<COBieZoneRow>(cobie.CobieZones);
-            WriteSheet<COBieTypeRow>(cobie.CobieTypes);
-            WriteSheet<COBieComponentRow>(cobie.CobieComponents);
-            WriteSheet<COBieSystemRow>(cobie.CobieSystems);
-            WriteSheet<COBieAssemblyRow>(cobie.CobieAssemblies);
-            WriteSheet<COBieConnectionRow>(cobie.CobieConnections);
-            WriteSheet<COBieSpareRow>(cobie.CobieSpares);
-            WriteSheet<COBieResourceRow>(cobie.CobieResources);
-            WriteSheet<COBieJobRow>(cobie.CobieJobs);
-            WriteSheet<COBieImpactRow>(cobie.CobieImpacts);
-            WriteSheet<COBieDocumentRow>(cobie.CobieDocuments);
-            WriteSheet<COBieAttributeRow>(cobie.CobieAttributes);
-            WriteSheet<COBieCoordinateRow>(cobie.CobieCoordinates);
-            WriteSheet<COBieIssueRow>(cobie.CobieIssues);
-            WriteSheet<COBiePickListsRow>(cobie.CobiePickLists);
+            foreach (var sheet in cobie.Workbook)
+            {
+                WriteSheet(sheet);
+            }
 
             UpdateInstructions();
 
+            ReportErrors(cobie.Workbook);
+
             using (FileStream exportFile = File.Open(FileName, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None))
             {
-                Workbook.Write(exportFile);
+                XlsWorkbook.Write(exportFile);
+            }
+        }
+
+        /// <summary>
+        /// Writes the Excel worksheet for this COBie sheet
+        /// </summary>
+        /// <param name="sheet"></param>
+        private void WriteSheet(ICOBieSheet<COBieRow> sheet)
+        {
+
+            ISheet excelSheet = XlsWorkbook.GetSheet(sheet.SheetName) ?? XlsWorkbook.CreateSheet(sheet.SheetName);
+
+            var datasetHeaders = sheet.Columns.Values.ToList();
+            var sheetHeaders = GetTargetHeaders(excelSheet);
+            ValidateHeaders(datasetHeaders, sheetHeaders, sheet.SheetName);
+
+
+            // Enumerate rows
+            for (int r = 0; r < sheet.RowCount; r++)
+            {
+                if (r >= UInt16.MaxValue)
+                {
+                    // TODO: Warn overflow of XLS 2003 worksheet
+                    break;
+                }
+
+                COBieRow row = sheet[r];
+
+                // GET THE ROW + 1 - This stops us overwriting the headers of the worksheet
+                IRow excelRow = excelSheet.GetRow(r + 1) ?? excelSheet.CreateRow(r + 1);
+
+                for (int c = 0; c < sheet.Columns.Count; c++)
+                {
+                    COBieCell cell = row[c];
+
+                    ICell excelCell = excelRow.GetCell(c) ?? excelRow.CreateCell(c);
+
+                    SetCellValue(excelCell, cell);
+                    FormatCell(excelCell, cell);
+                }
+            }
+
+            HighlightErrors(excelSheet, sheet);
+
+            RecalculateSheet(excelSheet);
+        }
+
+        /// <summary>
+        /// Creates an excel comment in each cell with an associated error
+        /// </summary>
+        /// <param name="excelSheet"></param>
+        /// <param name="sheet"></param>
+        private void HighlightErrors(ISheet excelSheet, ICOBieSheet<COBieRow> sheet)
+        {
+            // The patriarch is a container for comments on a sheet
+            HSSFPatriarch patr = (HSSFPatriarch)excelSheet.CreateDrawingPatriarch();
+
+            foreach (var error in sheet.Errors)
+            {
+                if (error.Row > 0 && error.Column > 0)
+                {
+                    ICell excelCell = excelSheet.GetRow(error.Row).GetCell(error.Column);
+                    
+                    // A client anchor is attached to an excel worksheet. It anchors against a top-left and bottom-right cell.
+                    // Create a comment 3 columns wide and 3 rows height
+                    IComment comment = patr.CreateCellComment(new HSSFClientAnchor(0, 0, 0, 0, error.Column, error.Row, error.Column + 3, error.Row + 3));
+                    comment.String = new HSSFRichTextString(error.ErrorDescription);
+                    comment.Author = "XBim";
+                    excelCell.CellComment = comment;
+                }
             }
         }
 
@@ -104,7 +161,7 @@ namespace XBim.COBie.Client.Formatters
 
         private void CreateColours(string colourName, byte red, byte green, byte blue)
         {
-            HSSFPalette palette = Workbook.GetCustomPalette();
+            HSSFPalette palette = XlsWorkbook.GetCustomPalette();
             HSSFColor colour = palette.FindSimilarColor(red, green, blue);
             if (colour == null)
             {
@@ -122,9 +179,9 @@ namespace XBim.COBie.Client.Formatters
         private void CreateFormat(COBieAllowedType type, string formatString, string colourName)
         {
             HSSFCellStyle cellStyle;
-            cellStyle = Workbook.CreateCellStyle() as HSSFCellStyle;
+            cellStyle = XlsWorkbook.CreateCellStyle() as HSSFCellStyle;
  
-            HSSFDataFormat dataFormat = Workbook.CreateDataFormat() as HSSFDataFormat;
+            HSSFDataFormat dataFormat = XlsWorkbook.CreateDataFormat() as HSSFDataFormat;
             cellStyle.DataFormat = dataFormat.GetFormat(formatString);
             
             cellStyle.FillForegroundColor = _colours[colourName].GetIndex();
@@ -141,7 +198,7 @@ namespace XBim.COBie.Client.Formatters
 
         private void UpdateInstructions()
         {
-            ISheet instructionsSheet = Workbook.GetSheet(InstructionsSheet);
+            ISheet instructionsSheet = XlsWorkbook.GetSheet(InstructionsSheet);
 
             if (instructionsSheet != null)
             {
@@ -149,48 +206,58 @@ namespace XBim.COBie.Client.Formatters
             }
         }
 
-        /// <summary>
-        /// Writes the Excel worksheet for this COBie sheet
-        /// </summary>
-        /// <typeparam name="TCOBieRowType">The type of the row that this COBie sheet contains</typeparam>
-        /// <param name="sheet">The COBie sheet which contains the data to be written to the Excel worksheet</param>
-        /// <param name="workbook">The Excel workbook</param>
-        private void WriteSheet<TCOBieRowType>(COBieSheet<TCOBieRowType> sheet) where TCOBieRowType : COBieRow
+        private void ReportErrors(COBieWorkbook workbook)
         {
-            
-            ISheet excelSheet = Workbook.GetSheet(sheet.SheetName) ?? Workbook.CreateSheet(sheet.SheetName);
+            ISheet errorsSheet = XlsWorkbook.GetSheet(ErrorsSheet) ?? XlsWorkbook.CreateSheet(ErrorsSheet); 
 
-            var datasetHeaders = sheet.Columns.Values.ToList();
-            var sheetHeaders = GetTargetHeaders(excelSheet);
-            ValidateHeaders(datasetHeaders, sheetHeaders, sheet.SheetName);
-
-
-            // Enumerate rows
-            for (int r = 0; r < sheet.Rows.Count; r++)
+            foreach(var sheet in workbook.OrderBy(w=>w.SheetName))
             {
-                if (r >= UInt16.MaxValue)
-                {
-                    // TODO: Warn overflow of XLS 2003 worksheet
-                    break;
-                }
+                WriteErrors(errorsSheet, sheet.Errors);  
+            }
+            
+        }
 
-                TCOBieRowType row = sheet.Rows[r];
 
-                // GET THE ROW + 1 - This stops us overwriting the headers of the worksheet
-                IRow excelRow = excelSheet.GetRow(r + 1) ?? excelSheet.CreateRow(r + 1);
+        int _row = 0;
+        private void WriteErrors(ISheet errorsSheet, COBieErrorCollection errorCollection)
+        {
+            // Write Header
 
-                for (int c = 0; c < sheet.Columns.Count; c++)
-                {
-                    COBieCell cell = row[c];
+            var summary = errorCollection
+                          .GroupBy(row => new {row.SheetName, row.FieldName, row.ErrorType} )
+                          .Select(grp => new { grp.Key.SheetName, grp.Key.ErrorType, grp.Key.FieldName, Count = grp.Count() })
+                          .OrderBy(r => r.SheetName);
 
-                    ICell excelCell = excelRow.GetCell(c) ?? excelRow.CreateCell(c);
-                 
-                    SetCellValue(excelCell, cell);
-                    FormatCell(excelCell, cell);
-                }
+
+            foreach(var error in summary)
+            {
+                
+                IRow excelRow = errorsSheet.GetRow(_row + 1) ?? errorsSheet.CreateRow(_row + 1);
+                int col = 0;
+
+                ICell excelCell = excelRow.GetCell(col) ?? excelRow.CreateCell(col);
+                excelCell.SetCellValue(error.SheetName);
+                col++;
+
+                excelCell = excelRow.GetCell(col) ?? excelRow.CreateCell(col);
+                excelCell.SetCellValue(error.FieldName);
+                col++;
+
+                excelCell = excelRow.GetCell(col) ?? excelRow.CreateCell(col);
+                excelCell.SetCellValue(error.ErrorType.ToString());
+                col++;
+
+                excelCell = excelRow.GetCell(col) ?? excelRow.CreateCell(col);
+                excelCell.SetCellValue(error.Count);
+                col++;
+                
+                _row++;
+            }
+            for (int c = 0 ; c < 3 ; c++)
+            {
+                errorsSheet.AutoSizeColumn(c);
             }
 
-            RecalculateSheet(excelSheet);
         }
 
         private void ValidateHeaders(List<COBieColumn> columns, List<string> sheetHeaders, string sheetName)
