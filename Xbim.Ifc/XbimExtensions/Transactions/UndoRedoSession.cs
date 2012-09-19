@@ -82,8 +82,8 @@ namespace Xbim.XbimExtensions.Transactions
         public override void AddEdit(Edit edit)
         {
 #if DEBUG
-            if (!(edit is Transaction))
-                throw new InvalidOperationException("Only transaction edits can be added to an UndoRedoSession");
+            //if (!(edit is Transaction))
+            //    throw new InvalidOperationException("Only transaction edits can be added to an UndoRedoSession");
 #endif
             base.AddEdit(edit);
             RaiseHistoryChanged();
