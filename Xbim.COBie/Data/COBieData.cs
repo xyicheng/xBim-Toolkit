@@ -256,25 +256,32 @@ namespace Xbim.COBie.Data
             string telephoneNo = "";
             IfcOrganization ifcOrganization = ifcPersonAndOrganization.TheOrganization;
             IfcPerson ifcPerson = ifcPersonAndOrganization.ThePerson;
-                
+
+            IEnumerable<IfcLabel> telephoneNoS = null;
             if (ifcPerson.Addresses != null)
             {
-                telephoneNo = ifcPerson.Addresses.TelecomAddresses.Select(address => address.TelephoneNumbers.FirstOrDefault()).Where(tel => !string.IsNullOrEmpty(tel)).FirstOrDefault();
+                telephoneNoS = ifcPerson.Addresses.TelecomAddresses.Select(address => address.TelephoneNumbers.FirstOrDefault()).Where(tel => !string.IsNullOrEmpty(tel));
 
-                if (string.IsNullOrEmpty(telephoneNo))
+                var enumerator = telephoneNoS.GetEnumerator();
+                if ((telephoneNoS == null) || (enumerator.Current.Value == null))
                 {
                     if (ifcOrganization.Addresses != null)
                     {
-                        telephoneNo = ifcOrganization.Addresses.TelecomAddresses.Select(address => address.TelephoneNumbers.FirstOrDefault()).Where(tel => !string.IsNullOrEmpty(tel)).FirstOrDefault();
+                        telephoneNoS = ifcOrganization.Addresses.TelecomAddresses.Select(address => address.TelephoneNumbers.FirstOrDefault()).Where(tel => !string.IsNullOrEmpty(tel));
                     }
-                } 
+                }
+                else
+                    telephoneNo = telephoneNoS.FirstOrDefault();
             }
             
             //if still no email lets make one up
-            if (string.IsNullOrEmpty(telephoneNo))
+            var enumerator2 = telephoneNoS.GetEnumerator();
+            if ((telephoneNoS == null) || (enumerator2.Current.Value == null))
             {
                 telephoneNo = DEFAULT_STRING;
             }
+            else
+                telephoneNo = telephoneNoS.FirstOrDefault();
 
             return telephoneNo;
         }
