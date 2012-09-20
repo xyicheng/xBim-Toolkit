@@ -31,13 +31,13 @@ namespace Xbim.COBie.Rows
         [COBieAttributes(5, COBieKeyType.CompoundKey, "", COBieAttributeState.Required, "RowName", 255, COBieAllowedType.AlphaNumeric)]
         public string RowName { get; set; }
 
-        [COBieAttributes(6, COBieKeyType.None, "", COBieAttributeState.Required, "CoordinateXAxis", sizeof(double), COBieAllowedType.AlphaNumeric)]
+        [COBieAttributes(6, COBieKeyType.None, "", COBieAttributeState.Required, "CoordinateXAxis", Constants.DOUBLE_MAXSIZE, COBieAllowedType.AlphaNumeric)]
         public string CoordinateXAxis { get; set; }
 
-        [COBieAttributes(7, COBieKeyType.None, "", COBieAttributeState.Required, "CoordinateYAxis", sizeof(double), COBieAllowedType.AlphaNumeric)]
+        [COBieAttributes(7, COBieKeyType.None, "", COBieAttributeState.Required, "CoordinateYAxis", Constants.DOUBLE_MAXSIZE, COBieAllowedType.AlphaNumeric)]
         public string CoordinateYAxis { get; set; }
 
-        [COBieAttributes(8, COBieKeyType.None, "", COBieAttributeState.Required, "CoordinateZAxis", sizeof(double), COBieAllowedType.AlphaNumeric)]
+        [COBieAttributes(8, COBieKeyType.None, "", COBieAttributeState.Required, "CoordinateZAxis", Constants.DOUBLE_MAXSIZE, COBieAllowedType.AlphaNumeric)]
         public string CoordinateZAxis { get; set; }
 
         [COBieAttributes(9, COBieKeyType.None, "", COBieAttributeState.System, "ExtSystem", 255, COBieAllowedType.AlphaNumeric)]

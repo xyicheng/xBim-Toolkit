@@ -39,10 +39,10 @@ namespace Xbim.COBie.Rows
         [COBieAttributes(7, COBieKeyType.None, "", COBieAttributeState.As_Specified, "Description", 255, COBieAllowedType.AlphaNumeric)]
         public string Description { get; set; }
 
-        [COBieAttributes(8, COBieKeyType.None, "", COBieAttributeState.As_Specified, "Elevation", sizeof(double), COBieAllowedType.Numeric)]
+        [COBieAttributes(8, COBieKeyType.None, "", COBieAttributeState.As_Specified, "Elevation", Constants.DOUBLE_MAXSIZE, COBieAllowedType.Numeric)]
         public string Elevation { get; set; }
 
-        [COBieAttributes(9, COBieKeyType.None, "", COBieAttributeState.As_Specified, "Height", sizeof(double), COBieAllowedType.Numeric)]
+        [COBieAttributes(9, COBieKeyType.None, "", COBieAttributeState.As_Specified, "Height", Constants.DOUBLE_MAXSIZE, COBieAllowedType.Numeric)]
         public string Height { get; set; }
     }
 }

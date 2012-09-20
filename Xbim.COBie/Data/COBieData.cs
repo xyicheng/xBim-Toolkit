@@ -460,6 +460,7 @@ namespace Xbim.COBie.Data
             if (ifcRoot is IfcTypeObject) value = "Type";
             else if (ifcRoot is IfcRelAggregates) value = "Component";
             else if (ifcRoot is IfcRelContainedInSpatialStructure) value = "Component";
+            else if (ifcRoot is IfcElement) value = "Component";
             //more sheets as tests date becomes available
             return value;
         }

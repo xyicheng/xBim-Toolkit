@@ -33,19 +33,19 @@ namespace Xbim.COBie.Rows
         [COBieAttributes(6, COBieKeyType.None, "", COBieAttributeState.Required, "Description", 255, COBieAllowedType.AlphaNumeric)]
         public string Description { get; set; }
 
-        [COBieAttributes(7, COBieKeyType.None, "", COBieAttributeState.Required, "Duration", sizeof(double), COBieAllowedType.Numeric)]
+        [COBieAttributes(7, COBieKeyType.None, "", COBieAttributeState.Required, "Duration", Constants.DOUBLE_MAXSIZE, COBieAllowedType.Numeric)]
         public string Duration { get; set; }
 
         [COBieAttributes(8, COBieKeyType.ForeignKey, "PickLists.DurationUnit", COBieAttributeState.Required, "DurationUnit", 255, COBieAllowedType.Text)]
         public string DurationUnit { get; set; }
 
-        [COBieAttributes(9, COBieKeyType.None, "", COBieAttributeState.Required, "Start", sizeof(double), COBieAllowedType.Numeric)]
+        [COBieAttributes(9, COBieKeyType.None, "", COBieAttributeState.Required, "Start", Constants.DOUBLE_MAXSIZE, COBieAllowedType.Numeric)]
         public string Start { get; set; }
 
         [COBieAttributes(10, COBieKeyType.ForeignKey, "PickLists.DurationUnit", COBieAttributeState.Required, "TaskStartUnit", 255, COBieAllowedType.Text)]
         public string TaskStartUnit { get; set; }
 
-        [COBieAttributes(11, COBieKeyType.None, "", COBieAttributeState.Required, "Frequency", sizeof(double), COBieAllowedType.Numeric)]
+        [COBieAttributes(11, COBieKeyType.None, "", COBieAttributeState.Required, "Frequency", Constants.DOUBLE_MAXSIZE, COBieAllowedType.Numeric)]
         public string Frequency { get; set; }
 
         [COBieAttributes(12, COBieKeyType.ForeignKey, "PickLists.DurationUnit", COBieAttributeState.Required, "FrequencyUnit", 255, COBieAllowedType.Text)]

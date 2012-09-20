@@ -39,14 +39,14 @@ namespace Xbim.COBie.Rows
         [COBieAttributes(8, COBieKeyType.ForeignKey, "Contact.Email", COBieAttributeState.Required, "WarrantyGuarantorParts", 255, COBieAllowedType.Email)]
         public string WarrantyGuarantorParts { get; set; }
 
-        [COBieAttributes(9, COBieKeyType.None, "", COBieAttributeState.Required, "WarrantyDurationParts", sizeof(double), COBieAllowedType.Numeric)]
+        [COBieAttributes(9, COBieKeyType.None, "", COBieAttributeState.Required, "WarrantyDurationParts", Constants.DOUBLE_MAXSIZE, COBieAllowedType.Numeric)]
         public string WarrantyDurationParts { get; set; }
 
         [COBieAttributes(10, COBieKeyType.ForeignKey, "Contact.Email", COBieAttributeState.Required, "WarrantyGuarantorLabor", 255, COBieAllowedType.Email)]
         [COBieAlias("WarrantyGuarantorLabour")]
         public string WarrantyGuarantorLabor { get; set; }
 
-        [COBieAttributes(11, COBieKeyType.None, "", COBieAttributeState.Required, "WarrantyDurationLabor", sizeof(double), COBieAllowedType.Numeric)]
+        [COBieAttributes(11, COBieKeyType.None, "", COBieAttributeState.Required, "WarrantyDurationLabor", Constants.DOUBLE_MAXSIZE, COBieAllowedType.Numeric)]
         [COBieAlias("WarrantyDurationLabour")]
         public string WarrantyDurationLabor { get; set; }
 
@@ -62,10 +62,10 @@ namespace Xbim.COBie.Rows
         [COBieAttributes(15, COBieKeyType.None, "", COBieAttributeState.System, "ExtIdentifier", 255, COBieAllowedType.Text)]
         public string ExtIdentifier { get; set; }
 
-        [COBieAttributes(16, COBieKeyType.None, "", COBieAttributeState.As_Specified, "ReplacementCost", sizeof(double), COBieAllowedType.Numeric)]
+        [COBieAttributes(16, COBieKeyType.None, "", COBieAttributeState.As_Specified, "ReplacementCost", Constants.DOUBLE_MAXSIZE, COBieAllowedType.Numeric)]
         public string ReplacementCost { get; set; }
 
-        [COBieAttributes(17, COBieKeyType.None, "", COBieAttributeState.As_Specified, "ExpectedLife", sizeof(double), COBieAllowedType.Numeric)]
+        [COBieAttributes(17, COBieKeyType.None, "", COBieAttributeState.As_Specified, "ExpectedLife", Constants.DOUBLE_MAXSIZE, COBieAllowedType.Numeric)]
         public string ExpectedLife { get; set; }
 
         [COBieAttributes(18, COBieKeyType.None, "", COBieAttributeState.As_Specified, "DurationUnit", 255, COBieAllowedType.Text)]
@@ -74,13 +74,13 @@ namespace Xbim.COBie.Rows
         [COBieAttributes(19, COBieKeyType.None, "", COBieAttributeState.As_Specified, "WarrantyDescription", 255, COBieAllowedType.AlphaNumeric)]
         public string WarrantyDescription { get; set; }
 
-        [COBieAttributes(20, COBieKeyType.None, "", COBieAttributeState.Required, "NominalLength", sizeof(double), COBieAllowedType.Numeric)]
+        [COBieAttributes(20, COBieKeyType.None, "", COBieAttributeState.Required, "NominalLength", Constants.DOUBLE_MAXSIZE, COBieAllowedType.Numeric)]
         public string NominalLength { get; set; }
 
-        [COBieAttributes(21, COBieKeyType.None, "", COBieAttributeState.Required, "NominalWidth", sizeof(double), COBieAllowedType.Numeric)]
+        [COBieAttributes(21, COBieKeyType.None, "", COBieAttributeState.Required, "NominalWidth", Constants.DOUBLE_MAXSIZE, COBieAllowedType.Numeric)]
         public string NominalWidth { get; set; }
 
-        [COBieAttributes(22, COBieKeyType.None, "", COBieAttributeState.Required, "NominalHeight", sizeof(double), COBieAllowedType.Numeric)]
+        [COBieAttributes(22, COBieKeyType.None, "", COBieAttributeState.Required, "NominalHeight", Constants.DOUBLE_MAXSIZE, COBieAllowedType.Numeric)]
         public string NominalHeight { get; set; }
 
         [COBieAttributes(23, COBieKeyType.None, "", COBieAttributeState.As_Specified, "ModelReference", 255, COBieAllowedType.AlphaNumeric)]

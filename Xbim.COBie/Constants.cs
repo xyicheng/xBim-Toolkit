@@ -30,6 +30,7 @@ namespace Xbim.COBie
 
         public const string DEFAULT_STRING = "n/a";
         public const string DEFAULT_NUMERIC = "0";
+        public const int DOUBLE_MAXSIZE = 16;
 
 	}
 }

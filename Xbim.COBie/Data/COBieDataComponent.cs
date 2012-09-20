@@ -145,7 +145,7 @@ namespace Xbim.COBie.Data
                 if (!string.IsNullOrEmpty(el.Description)) return el.Description;
                 else if (!string.IsNullOrEmpty(el.Name)) return el.Name;
             }
-            return Constants.DEFAULT_STRING;
+            return DEFAULT_STRING;
         }
         #endregion
 

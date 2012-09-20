@@ -39,13 +39,13 @@ namespace Xbim.COBie.Rows
         [COBieAttributes(8, COBieKeyType.ForeignKey, "PickLists.ImpactUnit", COBieAttributeState.Required, "ImpactUnit", 255, COBieAllowedType.Text)]
         public string ImpactUnit { get; set; }
 
-        [COBieAttributes(9, COBieKeyType.None, "", COBieAttributeState.As_Specified, "LeadInTime", sizeof(double), COBieAllowedType.Numeric)]
+        [COBieAttributes(9, COBieKeyType.None, "", COBieAttributeState.As_Specified, "LeadInTime", Constants.DOUBLE_MAXSIZE, COBieAllowedType.Numeric)]
         public string LeadInTime { get; set; }
 
-        [COBieAttributes(10, COBieKeyType.None, "", COBieAttributeState.As_Specified, "Duration", sizeof(double), COBieAllowedType.Numeric)]
+        [COBieAttributes(10, COBieKeyType.None, "", COBieAttributeState.As_Specified, "Duration", Constants.DOUBLE_MAXSIZE, COBieAllowedType.Numeric)]
         public string Duration { get; set; }
 
-        [COBieAttributes(11, COBieKeyType.None, "", COBieAttributeState.As_Specified, "LeadOutTime", sizeof(double), COBieAllowedType.Numeric)]
+        [COBieAttributes(11, COBieKeyType.None, "", COBieAttributeState.As_Specified, "LeadOutTime", Constants.DOUBLE_MAXSIZE, COBieAllowedType.Numeric)]
         public string LeadOutTime { get; set; }
 
         [COBieAttributes(12, COBieKeyType.None, "", COBieAttributeState.System, "ExtSystem", 255, COBieAllowedType.AlphaNumeric)]

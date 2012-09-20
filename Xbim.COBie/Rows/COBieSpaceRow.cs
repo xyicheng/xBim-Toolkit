@@ -43,13 +43,13 @@ namespace Xbim.COBie.Rows
         [COBieAttributes(9, COBieKeyType.None, "", COBieAttributeState.As_Specified, "RoomTag", 255, COBieAllowedType.AlphaNumeric)]
         public string RoomTag { get; set; }
 
-        [COBieAttributes(10, COBieKeyType.None, "", COBieAttributeState.As_Specified, "UsableHeight", sizeof(double), COBieAllowedType.Numeric)]
+        [COBieAttributes(10, COBieKeyType.None, "", COBieAttributeState.As_Specified, "UsableHeight", Constants.DOUBLE_MAXSIZE, COBieAllowedType.Numeric)]
         public string UsableHeight { get; set; }
 
-        [COBieAttributes(11, COBieKeyType.None, "", COBieAttributeState.As_Specified, "GrossArea", sizeof(double), COBieAllowedType.Numeric)]
+        [COBieAttributes(11, COBieKeyType.None, "", COBieAttributeState.As_Specified, "GrossArea", Constants.DOUBLE_MAXSIZE, COBieAllowedType.Numeric)]
         public string GrossArea { get; set; }
 
-        [COBieAttributes(12, COBieKeyType.None, "", COBieAttributeState.As_Specified, "NetArea", sizeof(double), COBieAllowedType.Numeric)]
+        [COBieAttributes(12, COBieKeyType.None, "", COBieAttributeState.As_Specified, "NetArea", Constants.DOUBLE_MAXSIZE, COBieAllowedType.Numeric)]
         public string NetArea { get; set; }
     }
 }
