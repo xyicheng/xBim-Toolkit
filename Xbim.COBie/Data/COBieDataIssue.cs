@@ -65,7 +65,7 @@ namespace Xbim.COBie.Data
                 issue.Description = (string.IsNullOrEmpty(ifcApproval.Description.ToString())) ? DEFAULT_STRING : ifcApproval.Description.ToString();
                 issue.Owner = issue.CreatedBy;
                 issue.Mitigation = DEFAULT_STRING;
-                issue.ExtSystem = ifcApplication.ApplicationFullName;
+                issue.ExtSystem = DEFAULT_STRING;   // TODO: IfcApprocval is not a Root object so has no Owner. What should this be?
                 issue.ExtObject = ifcApproval.GetType().Name;
                 issue.ExtIdentifier = ifcApproval.Identifier.ToString();
 

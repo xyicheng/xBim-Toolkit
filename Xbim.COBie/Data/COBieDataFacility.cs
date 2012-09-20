@@ -71,7 +71,7 @@ namespace Xbim.COBie.Data
             facility.VolumeUnits = GetVolumeUnits();
             facility.CurrencyUnit = (ifcMonetaryUnit == null) ? DEFAULT_STRING : ifcMonetaryUnit.Currency.ToString();
             facility.AreaMeasurement = (ifcElementQuantity == null) ? "" : ifcElementQuantity.MethodOfMeasurement.ToString();
-            facility.ExternalSystem = ifcApplication.ApplicationFullName;
+            facility.ExternalSystem = GetExternalSystem(ifcBuilding);
 
             facility.ExternalProjectObject = "IfcProject";
             facility.ExternalProjectIdentifier = ifcProject.GlobalId;

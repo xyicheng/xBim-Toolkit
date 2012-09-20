@@ -75,12 +75,12 @@ namespace Xbim.COBie.Data
                 doc.RowName = relatedObjectInfo.Name;
                 doc.ExtObject = relatedObjectInfo.ExtObject;
                 doc.ExtIdentifier = relatedObjectInfo.ExtIdentifier;
+                doc.ExtSystem = relatedObjectInfo.ExtSystem;
 
                 FileInformation fileInfo = GetFileInformation(ifcRelAssociatesDocument);
                 doc.File = fileInfo.Name;
                 doc.Directory = fileInfo.Location;
 
-                doc.ExtSystem = ifcApplication.ApplicationFullName;
                 
                 doc.Description = di.Description.ToString();
                 doc.Reference = di.Name.ToString();
@@ -161,6 +161,7 @@ namespace Xbim.COBie.Data
                     if (!string.IsNullOrEmpty(value)) objectInfo.Name = value;
                     objectInfo.ExtObject = relatedObject.GetType().Name;
                     objectInfo.ExtIdentifier = relatedObject.GlobalId;
+                    objectInfo.ExtSystem = GetExternalSystem(relatedObject);
                 }
             }
             return objectInfo;
@@ -211,6 +212,7 @@ namespace Xbim.COBie.Data
             public string Name { get; set; }
             public string ExtObject { get; set; }
             public string ExtIdentifier { get; set; }
+            public string ExtSystem { get; set; }
         }
     }
 }

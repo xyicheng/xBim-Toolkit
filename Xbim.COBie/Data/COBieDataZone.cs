@@ -74,7 +74,7 @@ namespace Xbim.COBie.Data
 
                     zone.SpaceNames = sp.Name;
 
-                    zone.ExtSystem = ifcApplication.ApplicationFullName;
+                    zone.ExtSystem = GetExternalSystem(sp);
                     zone.ExtObject = zn.GetType().Name;
                     zone.ExtIdentifier = zn.GlobalId;
                     zone.Description = (string.IsNullOrEmpty(zn.Description)) ? zn.Name.ToString() : zn.Description.ToString(); //if IsNullOrEmpty on Description then output Name
@@ -110,7 +110,7 @@ namespace Xbim.COBie.Data
                         zone.Category = spProp.Name;
                         zone.SpaceNames = sp.Name;
 
-                        zone.ExtSystem = ifcApplication.ApplicationFullName;
+                        zone.ExtSystem = GetExternalSystem(pset);
                         zone.ExtObject = spProp.GetType().Name;
                         zone.ExtIdentifier = pset.GlobalId.ToString();
                             

@@ -61,7 +61,7 @@ namespace Xbim.COBie.Data
                 impact.LeadInTime = DEFAULT_STRING;
                 impact.Duration = DEFAULT_STRING;
                 impact.LeadOutTime = DEFAULT_STRING;
-                impact.ExtSystem = ifcApplication.ApplicationFullName;
+                impact.ExtSystem = GetExternalSystem(ppt);
                 impact.ExtObject = impact.GetType().Name;
                 impact.ExtIdentifier = ppt.GlobalId;
                 impact.Description = (ppt.Description == null) ? DEFAULT_STRING : ppt.Description.ToString();

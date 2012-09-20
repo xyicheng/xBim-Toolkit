@@ -50,7 +50,7 @@ namespace Xbim.COBie.Data
                 resource.CreatedBy = GetTelecomEmailAddress(ifcConstructionEquipmentResource.OwnerHistory);
                 resource.CreatedOn = GetCreatedOnDateAsFmtString(ifcConstructionEquipmentResource.OwnerHistory);
                 resource.Category = (string.IsNullOrEmpty(ifcConstructionEquipmentResource.ObjectType.ToString())) ? DEFAULT_STRING : ifcConstructionEquipmentResource.ObjectType.ToString();
-                resource.ExtSystem = ifcApplication.ApplicationFullName;
+                resource.ExtSystem = GetExternalSystem(ifcConstructionEquipmentResource);
                 resource.ExtObject = (ifcConstructionEquipmentResource == null) ? DEFAULT_STRING : ifcConstructionEquipmentResource.GetType().Name;
                 resource.ExtIdentifier = ifcConstructionEquipmentResource.GlobalId;
                 resource.Description = (string.IsNullOrEmpty(ifcConstructionEquipmentResource.Description)) ? DEFAULT_STRING : ifcConstructionEquipmentResource.Description.ToString();

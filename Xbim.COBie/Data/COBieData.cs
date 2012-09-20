@@ -170,19 +170,13 @@ namespace Xbim.COBie.Data
         }
 
         /// <summary>
-        /// field to hold the application name
+        /// Gets the name of the application that is linked with the supplied item
         /// </summary>
-        private  IfcApplication app = null;
-        /// <summary>
-        /// The application name
-        /// </summary>
-        public IfcApplication ifcApplication
+        /// <param name="item"></param>
+        /// <returns></returns>
+        public string GetExternalSystem(IfcRoot item)
         {
-            get
-            {
-                if (app == null)  app = Model.InstancesOfType<IfcApplication>().FirstOrDefault(); 
-                return app; 
-            }
+            return item.OwnerHistory.OwningApplication.ApplicationFullName;
         }
         
 

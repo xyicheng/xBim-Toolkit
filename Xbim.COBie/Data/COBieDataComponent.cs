@@ -88,7 +88,7 @@ namespace Xbim.COBie.Data
                 component.TypeName = GetTypeName(el);
                 component.Space = GetComponentRelatedSpace(el);
                 component.Description = GetComponentDescription(el);
-                component.ExtSystem = ifcApplication.ApplicationFullName;
+                component.ExtSystem = GetExternalSystem(el);
                 component.ExtObject = el.GetType().Name;
                 component.ExtIdentifier = el.GlobalId;
 

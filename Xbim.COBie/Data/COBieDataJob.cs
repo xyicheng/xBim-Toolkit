@@ -80,8 +80,8 @@ namespace Xbim.COBie.Data
                 job.Frequency = ((ifcPropertySingleValue != null) && (ifcPropertySingleValue.NominalValue != null)) ? ConvertNumberOrDefault(ifcPropertySingleValue.NominalValue.ToString()) : DEFAULT_NUMERIC;
                 ifcConversionBasedUnit = ifcPropertySingleValue.Unit as IfcConversionBasedUnit;
                 job.FrequencyUnit = (ifcConversionBasedUnit != null) ? ifcConversionBasedUnit.Name.ToString() : DEFAULT_STRING;
-                
-                job.ExtSystem = ifcApplication.ApplicationFullName;
+
+                job.ExtSystem = GetExternalSystem(ifcTask);
                 job.ExtObject = ifcTask.GetType().Name;
                 job.ExtIdentifier = ifcTask.GlobalId;
 

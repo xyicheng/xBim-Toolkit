@@ -102,7 +102,7 @@ namespace Xbim.COBie.Data
                 coordinate.CoordinateXAxis = (ifcCartesianPoint != null) ? string.Format("{0:F4}", (double)ifcCartesianPoint[0]) : "0.0";
                 coordinate.CoordinateYAxis = (ifcCartesianPoint != null) ? string.Format("{0:F4}", (double)ifcCartesianPoint[1]) : "0.0";
                 coordinate.CoordinateZAxis = (ifcCartesianPoint != null) ? string.Format("{0:F4}", (double)ifcCartesianPoint[2]) : "0.0";
-                coordinate.ExtSystem = ifcApplication.ApplicationFullName;
+                coordinate.ExtSystem = GetExternalSystem(ifcSpatialStructureElement);
                 coordinate.ExtObject = ifcSpatialStructureElement.GetType().Name;
                 coordinate.ExtIdentifier = ifcSpatialStructureElement.GlobalId.ToString();
                 coordinate.ClockwiseRotation = DEFAULT_NUMERIC;

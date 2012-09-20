@@ -73,7 +73,7 @@ namespace Xbim.COBie.Data
 
                 space.FloorName = ifcSpace.SpatialStructuralElementParent.Name.ToString();
                 space.Description = GetSpaceDescription(ifcSpace);
-                space.ExtSystem = ifcApplication.ApplicationFullName;
+                space.ExtSystem = GetExternalSystem(ifcSpace);
                 space.ExtObject = ifcSpace.GetType().Name;
                 space.ExtIdentifier = ifcSpace.GlobalId;
                 space.RoomTag = GetRoomTag(ifcSpace, allPropertyValues);

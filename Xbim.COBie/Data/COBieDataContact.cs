@@ -72,7 +72,7 @@ namespace Xbim.COBie.Data
                 
                 contact.Company = (string.IsNullOrEmpty(ifcOrganization.Name)) ? DEFAULT_STRING : ifcOrganization.Name.ToString();
                 contact.Phone = GetTelecomTelephoneNumber(ifcPersonAndOrganization);
-                contact.ExtSystem = ifcApplication.ApplicationFullName;
+                contact.ExtSystem = DEFAULT_STRING;   // TODO: Person is not a Root object so has no Owner. What should this be?
                 
                 contact.ExtObject = "IfcPersonAndOrganization";
                 contact.ExtIdentifier = ifcPerson.Id;

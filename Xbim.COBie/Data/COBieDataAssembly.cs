@@ -55,7 +55,7 @@ namespace Xbim.COBie.Data
 
 
             ProgressIndicator.Initialise("Creating Assemblies", relAll.Count());
-            string applicationFullName = ifcApplication.ApplicationFullName;
+            
             int childColumnLength = 0;
             foreach (IfcRelDecomposes ra in relAll)
             {
@@ -94,7 +94,7 @@ namespace Xbim.COBie.Data
                
                 
                 assembly.AssemblyType = "Fixed"; //as Responsibility matrix instruction
-                assembly.ExtSystem = applicationFullName;
+                assembly.ExtSystem = GetExternalSystem(ra);
                 assembly.ExtObject = ra.RelatingObject.GetType().Name;
                 assembly.ExtIdentifier = string.IsNullOrEmpty(ra.GlobalId) ? DEFAULT_STRING : ra.GlobalId.ToString();
                 

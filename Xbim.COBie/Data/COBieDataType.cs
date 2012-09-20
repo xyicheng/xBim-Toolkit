@@ -88,7 +88,7 @@ namespace Xbim.COBie.Data
                 typeRow.Category = GetCategory(type);
                 typeRow.Description = GetTypeObjDescription(type);
 
-                typeRow.ExtSystem = ifcApplication.ApplicationFullName;
+                typeRow.ExtSystem = GetExternalSystem(type);
                 typeRow.ExtObject = type.GetType().Name;
                 typeRow.ExtIdentifier = type.GlobalId;
 

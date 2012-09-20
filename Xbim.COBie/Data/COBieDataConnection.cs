@@ -131,7 +131,7 @@ namespace Xbim.COBie.Data
                 conn.PortName1 = (relatedPort.Count > 0) ? string.Join(" : ", relatedPort) : DEFAULT_STRING;
                 conn.PortName2 = (relatingPort.Count > 0) ? string.Join(" : ", relatingPort) : DEFAULT_STRING;
 
-                conn.ExtSystem = ifcApplication.ApplicationFullName;
+                conn.ExtSystem = GetExternalSystem(ifcRelConnectsElement);
                 conn.ExtObject = ifcRelConnectsElement.GetType().Name;
                 conn.ExtIdentifier = ifcRelConnectsElement.GlobalId;
                 

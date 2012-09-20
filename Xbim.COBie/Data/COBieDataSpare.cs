@@ -57,8 +57,8 @@ namespace Xbim.COBie.Data
                 spare.Category = GetCategory(ifcConstructionProductResource);
 
                 spare.TypeName = GetObjectType(ifcConstructionProductResource);
-               
-                spare.ExtSystem = ifcApplication.ApplicationFullName;
+
+                spare.ExtSystem = GetExternalSystem(ifcConstructionProductResource);
                 spare.ExtObject = ifcConstructionProductResource.GetType().Name;
                 spare.ExtIdentifier = ifcConstructionProductResource.GlobalId;
                 spare.Description = (ifcConstructionProductResource == null) ? "" : ifcConstructionProductResource.Description.ToString();

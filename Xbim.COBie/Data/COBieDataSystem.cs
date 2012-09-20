@@ -71,7 +71,7 @@ namespace Xbim.COBie.Data
 
                     sys.Category = GetCategory(ifcGroup);
                     sys.ComponentNames = product.Name;
-                    sys.ExtSystem = ifcApplication.ApplicationFullName;
+                    sys.ExtSystem = GetExternalSystem(product);
                     sys.ExtObject = ifcGroup.GetType().Name;
                     sys.ExtIdentifier = product.GlobalId;
                     sys.Description = GetSystemDescription(ifcGroup);
@@ -101,7 +101,7 @@ namespace Xbim.COBie.Data
                         
                         sys.Category = (ifcPropertySingleValue.Name == "Circuit Number") ? "circuit" : GetCategory(ifcObject); //per matrix v9
                         sys.ComponentNames = ifcObject.Name;
-                        sys.ExtSystem = ifcApplication.ApplicationFullName;
+                        sys.ExtSystem = GetExternalSystem(ifcPropertySet);
                         sys.ExtObject = ifcPropertySingleValue.GetType().Name;
                         sys.ExtIdentifier = DEFAULT_STRING; //used IfcPropertySingleValue, has no GlobalId
                         sys.Description = string.IsNullOrEmpty(name) ? DEFAULT_STRING : name; ;
