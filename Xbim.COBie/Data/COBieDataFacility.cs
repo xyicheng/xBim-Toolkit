@@ -57,7 +57,7 @@ namespace Xbim.COBie.Data
             
             COBieFacilityRow facility = new COBieFacilityRow(facilities);
 
-            facility.Name = ifcBuilding.Name.ToString();
+            facility.Name = (string.IsNullOrEmpty(ifcBuilding.Name.ToString())) ? "TheBuildingNameHere" : ifcBuilding.Name.ToString();
 
             facility.CreatedBy = GetTelecomEmailAddress(ifcBuilding.OwnerHistory);
             facility.CreatedOn = GetCreatedOnDateAsFmtString(ifcBuilding.OwnerHistory);
@@ -85,7 +85,7 @@ namespace Xbim.COBie.Data
             facility.Description = GetFacilityDescription(ifcBuilding);
             facility.ProjectDescription = GetFacilityProjectDescription(ifcProject);
             facility.SiteDescription = GetFacilitySiteDescription(ifcSite);
-            facility.Phase = Model.IfcProject.Phase;
+            facility.Phase = (string.IsNullOrEmpty(Model.IfcProject.Phase.ToString())) ? DEFAULT_STRING : Model.IfcProject.Phase.ToString();
 
             facilities.Rows.Add(facility);
 

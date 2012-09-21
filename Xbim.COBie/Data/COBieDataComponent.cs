@@ -62,7 +62,7 @@ namespace Xbim.COBie.Data
             List<string> excludePropertyValueNames = candidateProperties;
             excludePropertyValueNames.Add("Circuit NumberSystem Type");
             excludePropertyValueNames.Add("System Name");
-            List<string> excludePropertyValueNamesWildcard = new List<string> {"Roomtag", "RoomTag", "Tag", "GSA BIM Area", "Length", "Width", "Height"};
+            List<string> excludePropertyValueNamesWildcard = new List<string> { "Roomtag", "RoomTag", "Tag", "GSA BIM Area", "Length", "Width", "Height", "Render Appearance", "Arrow at End"};
             //set up filters on COBieDataPropertySetValues
             allPropertyValues.ExcludePropertyValueNames.AddRange(excludePropertyValueNames);
             allPropertyValues.FilterPropertyValueNames.AddRange(candidateProperties);
@@ -95,12 +95,14 @@ namespace Xbim.COBie.Data
                 //set from PropertySingleValues filtered via candidateProperties
                 allPropertyValues.SetFilteredPropertySingleValues(el); //set the internal filtered IfcPropertySingleValues List in allPropertyValues
                 component.SerialNumber = allPropertyValues.GetFilteredPropertySingleValueValue("SerialNumber", false);
-                component.InstallationDate = allPropertyValues.GetFilteredPropertySingleValueValue("InstallationDate", false);
-                component.WarrantyStartDate = allPropertyValues.GetFilteredPropertySingleValueValue("WarrantyStartDate", false);
+                string installationDate = allPropertyValues.GetFilteredPropertySingleValueValue("InstallationDate", false);
+                component.InstallationDate = (installationDate == DEFAULT_STRING) ? GetCreatedOnDateAsFmtString(null) : installationDate;
+                string warrantyStartDate = allPropertyValues.GetFilteredPropertySingleValueValue("WarrantyStartDate", false);
+                component.WarrantyStartDate = (warrantyStartDate == DEFAULT_STRING) ? GetCreatedOnDateAsFmtString(null) : warrantyStartDate;
                 component.TagNumber = allPropertyValues.GetFilteredPropertySingleValueValue("TagNumber", false);
                 component.BarCode = allPropertyValues.GetFilteredPropertySingleValueValue("BarCode", false);
                 component.AssetIdentifier = allPropertyValues.GetFilteredPropertySingleValueValue("AssetIdentifier", false);
-
+                
                 components.Rows.Add(component);
 
                 //fill in the attribute information
@@ -126,9 +128,12 @@ namespace Xbim.COBie.Data
         {
             if (el != null && el.ContainedInStructure.Count() > 0)
             {
-                var owningSpace = el.ContainedInStructure.First().RelatingStructure;
-                if (owningSpace.GetType() == typeof(IfcSpace))
-                    return owningSpace.Name.ToString();
+                var owningSpace = el.ContainedInStructure.Select(cis => cis.RelatingStructure).OfType<IfcSpace>().FirstOrDefault(); //only one or zero held in ContainedInStructure
+                if (owningSpace != null) return owningSpace.Name.ToString();
+                
+                //var owningSpace = el.ContainedInStructure.First().RelatingStructure;
+                //if (owningSpace.GetType() == typeof(IfcSpace))
+                //    return owningSpace.Name.ToString();
             }
             return Constants.DEFAULT_STRING;
         }

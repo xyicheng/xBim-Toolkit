@@ -345,8 +345,8 @@ namespace Xbim.COBie.Data
                 ifcPropertySingleValue = _ifcPropertySingleValues.Where(p => p.Name.ToString().Contains(PropertyValueName)).FirstOrDefault();
             else
                 ifcPropertySingleValue = _ifcPropertySingleValues.Where(p => p.Name == PropertyValueName).FirstOrDefault();
-            
-            return ((ifcPropertySingleValue != null) && (ifcPropertySingleValue.NominalValue != null)) ? ifcPropertySingleValue.NominalValue.Value.ToString() : DEFAULT_STRING;
+
+            return ((ifcPropertySingleValue != null) && (ifcPropertySingleValue.NominalValue != null) && (!string.IsNullOrEmpty(ifcPropertySingleValue.NominalValue.Value.ToString()))) ? ifcPropertySingleValue.NominalValue.Value.ToString() : DEFAULT_STRING;
 
         }
 
@@ -486,10 +486,13 @@ namespace Xbim.COBie.Data
                         {
                             continue; //skip to next loop item
                         }
-
                     }
-                    COBieAttributeRow attribute = new COBieAttributeRow(attributes);
 
+                    IEnumerable<COBieAttributeRow> TestRow =  attributes.Rows.Where(r => r.Name == propertySetSingleValue.Name.ToString() && r.SheetName == RowParameters["Sheet"] && r.RowName == RowParameters["Name"]);
+                    if (TestRow.Any()) continue; //skip to next loop item
+                                       
+                            
+                    COBieAttributeRow attribute = new COBieAttributeRow(attributes);
                     attribute.Name = propertySetSingleValue.Name.ToString();
 
                     //Get category
@@ -519,7 +522,7 @@ namespace Xbim.COBie.Data
                     {
                         attribute.Description = attribute.Name;
                     }
-
+                    
                     attributes.Rows.Add(attribute);
                 }
             }

@@ -75,7 +75,7 @@ namespace Xbim.COBie.Data
                 floor.ExtObject = ifcBuildingStorey.GetType().Name;
                 floor.ExtIdentifier = ifcBuildingStorey.GlobalId;
                 floor.Description = GetFloorDescription(ifcBuildingStorey);
-                floor.Elevation = ifcBuildingStorey.Elevation.ToString();
+                floor.Elevation = (string.IsNullOrEmpty(ifcBuildingStorey.Elevation.ToString())) ? DEFAULT_NUMERIC : string.Format("{0:F4}", (double)ifcBuildingStorey.Elevation);
 
                 floor.Height = GetFloorHeight(ifcBuildingStorey, allPropertyValues);
 
@@ -118,11 +118,20 @@ namespace Xbim.COBie.Data
                 value = allPropertyValues.GetFilteredPropertySingleValueValue("FloorHeight", true);
             if (value == DEFAULT_STRING)
                 value = allPropertyValues.GetFilteredPropertySingleValueValue("Floor Height", true);
-            
+
             if (value == DEFAULT_STRING)
                 return DEFAULT_NUMERIC;
             else
-                return value;
+            {
+                //check it is a number and then format it
+                double dblvalue = 0;
+                if (double.TryParse(value, out dblvalue))
+                    return string.Format("{0:F4}", dblvalue); 
+            }
+                
+            return DEFAULT_NUMERIC;
+	
+                
 
         }
 

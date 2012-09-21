@@ -116,6 +116,7 @@ namespace Xbim.COBie.Data
                                                         typeof(IfcDistributionPort), 
                                                         typeof(IfcFeatureElementAddition), 
                                                         typeof(IfcProjectionElement), 
+                                                        typeof(IfcCovering)
                                                         //typeof(IfcColumnStandardCase), //IFC2x Edition 4.
                                                         //typeof(IfcMemberStandardCase), //IFC2x Edition 4.
                                                         //typeof(IfcPlateStandardCase), //IFC2x Edition 4.
@@ -217,24 +218,23 @@ namespace Xbim.COBie.Data
         protected string GetCreatedOnDateAsFmtString(IfcOwnerHistory ownerHistory)
         {
             const string strFormat = "yyyy-MM-dd HH:mm:ss";
-
-            int createdOnTStamp = (int)ownerHistory.CreationDate;
-            if (createdOnTStamp <= 0)
+            if (ownerHistory != null)
             {
-                DateTime defaultDate = new DateTime(1900, 12, 31, 23, 59, 59);//1900-12-31T23:59:59
-                return defaultDate.ToString(strFormat); //we have to return a date to comply. so now is used
+                int createdOnTStamp = (int)ownerHistory.CreationDate;
+                if (createdOnTStamp != 0) //assume not set, but could it be 1970/1/1 00:00:00!!!
+                {
+                    //to remove trailing decimal seconds use a set format string as "o" option is to long.
+
+                    //We have a day light saving problem with the comparison with other COBie Export Programs. if we convert to local time we get a match
+                    //but if the time stamp is Coordinated Universal Time (UTC), then daylight time should be ignored. see http://msdn.microsoft.com/en-us/library/bb546099.aspx
+                    //IfcTimeStamp.ToDateTime(CreatedOnTStamp).ToLocalTime()...; //test to see if corrects 1 hour difference, and yes it did, but should we?
+
+                    return IfcTimeStamp.ToDateTime(createdOnTStamp).ToString(strFormat);
+                }
+                
             }
-            else
-            {
-                //to remove trailing decimal seconds use a set format string as "o" option is to long.
-
-                //We have a day light saving problem with the comparison with other COBie Export Programs. if we convert to local time we get a match
-                //but if the time stamp is Coordinated Universal Time (UTC), then daylight time should be ignored. see http://msdn.microsoft.com/en-us/library/bb546099.aspx
-                //IfcTimeStamp.ToDateTime(CreatedOnTStamp).ToLocalTime()...; //test to see if corrects 1 hour difference, and yes it did, but should we?
-
-                return IfcTimeStamp.ToDateTime(createdOnTStamp).ToString(strFormat);
-            }
-
+            //return default date of 1900-12-31:23:59:59
+            return new DateTime(1900, 12, 31, 23, 59, 59).ToString(strFormat);
         }
 
         
@@ -300,7 +300,7 @@ namespace Xbim.COBie.Data
                 }
             }
             else
-                return DEFAULT_STRING;
+                return Constants.DEFAULT_EMAIL;
         }
         /// <summary>
         /// Extract the email address lists for the owner of the IfcOwnerHistory passed
@@ -323,7 +323,7 @@ namespace Xbim.COBie.Data
                 }
             }
             else
-                return DEFAULT_STRING;
+                return Constants.DEFAULT_EMAIL;
         }
 
         /// <summary>
@@ -357,9 +357,11 @@ namespace Xbim.COBie.Data
             else
             {
                 email += (string.IsNullOrEmpty(ifcPerson.GivenName.ToString())) ? "unknown" : ifcPerson.GivenName.ToString();
+                email += ".";
                 email += (string.IsNullOrEmpty(ifcPerson.FamilyName.ToString())) ? "unknown" : ifcPerson.FamilyName.ToString();
                 email += "@";
                 email += (string.IsNullOrEmpty(ifcOrganization.Name.ToString())) ? "unknown" : ifcOrganization.Name.ToString();
+                email += ".com";
             }
             //save to the email directory for quick retrieval
             _eMails.Add(ifcPerson.EntityLabel, email);

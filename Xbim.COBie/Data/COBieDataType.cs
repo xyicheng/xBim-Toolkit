@@ -44,11 +44,16 @@ namespace Xbim.COBie.Data
             
             
             // get all IfcTypeObject objects from IFC file
+            //IEnumerable<IfcTypeObject> ifcTypeObjects = Model.InstancesOfType<IfcTypeObject>()
+            //    .Select(type => type)
+            //    .Where(type => !TypeObjectExcludeTypes.Contains(type.GetType()));
+
+            //group the types by name as we need to filter duplicate items in foreach loop
             IEnumerable<IfcTypeObject> ifcTypeObjects = Model.InstancesOfType<IfcTypeObject>()
                 .Select(type => type)
-                .Where(type => !TypeObjectExcludeTypes.Contains(type.GetType()));
+                .Where(type => !TypeObjectExcludeTypes.Contains(type.GetType()))
+                .GroupBy(type => type.Name).SelectMany(g => g);
 
-            
             // Well known property names to seek out the data
             List<string> candidateProperties = new List<string> {  "AssetAccountingType", "Manufacturer", "ModelLabel", "WarrantyGuarantorParts", 
                                                         "WarrantyDurationParts", "WarrantyGuarantorLabor", "WarrantyDurationLabor", 
@@ -74,13 +79,36 @@ namespace Xbim.COBie.Data
             allPropertyValues.RowParameters["Sheet"] = "Type";
 
             ProgressIndicator.Initialise("Creating Types", ifcTypeObjects.Count());
-
+            COBieTypeRow lastRow = null;
             foreach (IfcTypeObject type in ifcTypeObjects)
             {
                 ProgressIndicator.IncrementAndUpdate();
-
+                //set the sizing values from the property set
+                allPropertyValues.SetFilteredPropertySingleValues(type, "Pset_Specification");
+                string nominalLength = GetNominalLength(type, allPropertyValues);
+                string nominalWidth = GetNominalWidth(type, allPropertyValues);
+                string nominalHeight = GetNominalHeight(type, allPropertyValues);
+                
+                if (lastRow != null) //filter out first loop
+                {
+                    string lastName = lastRow.Name;
+                    string lastNominalLength = lastRow.NominalLength;
+                    string lastNominalWidth = lastRow.NominalWidth;
+                    string lastNominalHeight = lastRow.NominalHeight;
+                    if (string.Equals(lastName, type.Name)) //only test sizing if names the same
+                    {
+                        if (string.Equals(lastNominalLength, nominalLength) &&
+                            string.Equals(lastNominalWidth, nominalWidth) &&
+                            string.Equals(lastNominalHeight, nominalHeight) 
+                            )
+                        {
+                            continue; //all equal so skip
+                        }
+                    } 
+                }
+                
                 COBieTypeRow typeRow = new COBieTypeRow(types);
-
+                
                 // TODO: Investigate centralising this common code.
                 typeRow.Name = type.Name;
                 typeRow.CreatedBy = GetTelecomEmailAddress(type.OwnerHistory);
@@ -92,9 +120,14 @@ namespace Xbim.COBie.Data
                 typeRow.ExtObject = type.GetType().Name;
                 typeRow.ExtIdentifier = type.GlobalId;
 
+                typeRow.NominalLength = nominalLength;
+                typeRow.NominalWidth = nominalWidth;
+                typeRow.NominalHeight = nominalHeight;
+            
                 FillPropertySetsValues(allPropertyValues, type, typeRow);
 
                 types.Rows.Add(typeRow);
+                lastRow = typeRow; //save this row to test on next loop
                 
                 // Provide Attribute sheet with our context
                 //fill in the attribute information
@@ -103,6 +136,7 @@ namespace Xbim.COBie.Data
                 allPropertyValues.RowParameters["CreatedOn"] = typeRow.CreatedOn;
                 allPropertyValues.RowParameters["ExtSystem"] = typeRow.ExtSystem;
                 allPropertyValues.SetAttributesRows(type, ref _attributes); //fill attribute sheet rows
+                
             }
             ProgressIndicator.Finalise();
             return types;
@@ -115,13 +149,15 @@ namespace Xbim.COBie.Data
             allPropertyValues.SetFilteredPropertySingleValues(type, "Pset_Asset");
             typeRow.AssetType =     allPropertyValues.GetFilteredPropertySingleValueValue("AssetAccountingType", false); 
             allPropertyValues.SetFilteredPropertySingleValues(type, "Pset_ManufacturersTypeInformation");
-            typeRow.Manufacturer =  allPropertyValues.GetFilteredPropertySingleValueValue("Manufacturer", false);
+            string manufacturer = allPropertyValues.GetFilteredPropertySingleValueValue("Manufacturer", false);
+            typeRow.Manufacturer = (manufacturer == DEFAULT_STRING) ? Constants.DEFAULT_EMAIL : manufacturer;
             typeRow.ModelNumber =   GetModelNumber(type, allPropertyValues);
-            
+
             
             allPropertyValues.SetFilteredPropertySingleValues(type, "Pset_Warranty");
             typeRow.WarrantyGuarantorParts =    GetWarrantyGuarantorParts(type, allPropertyValues);
-            typeRow.WarrantyDurationParts =     allPropertyValues.GetFilteredPropertySingleValueValue("WarrantyDurationParts", false);
+            string warrantyDurationPart =       allPropertyValues.GetFilteredPropertySingleValueValue("WarrantyDurationParts", false);
+            typeRow.WarrantyDurationParts =     (warrantyDurationPart == DEFAULT_STRING) ? DEFAULT_NUMERIC : warrantyDurationPart;
             typeRow.WarrantyGuarantorLabor =    GetWarrantyGuarantorLabor(type, allPropertyValues);
             typeRow.WarrantyDescription =       GetWarrantyDescription(type, allPropertyValues);
             Interval warrantyDuration =         GetDurationUnitAndValue(allPropertyValues.GetFilteredPropertySingleValue("WarrantyDurationLabor")); 
@@ -135,9 +171,6 @@ namespace Xbim.COBie.Data
             typeRow.DurationUnit =      serviceDuration.Unit;
 
             allPropertyValues.SetFilteredPropertySingleValues(type, "Pset_Specification");
-            typeRow.NominalLength =                 GetNominalLength(type, allPropertyValues);
-            typeRow.NominalWidth =                  GetNominalWidth(type, allPropertyValues);
-            typeRow.NominalHeight =                 GetNominalHeight(type, allPropertyValues);
             typeRow.ModelReference =                GetModelReference(type, allPropertyValues);
             typeRow.Shape =                         allPropertyValues.GetFilteredPropertySingleValueValue("Shape", false);
             typeRow.Size =                          allPropertyValues.GetFilteredPropertySingleValueValue("Size", false);
@@ -174,7 +207,7 @@ namespace Xbim.COBie.Data
                 //reset back to property set "Pset_Specification"
                 allPropertyValues.SetFilteredPropertySingleValues(ifcTypeObject, "Pset_Specification");
             }
-            return value;
+            return (string.IsNullOrEmpty(value)) ? DEFAULT_STRING : value;
         }
 
         /// <summary>
@@ -199,7 +232,7 @@ namespace Xbim.COBie.Data
                 //reset back to property set "Pset_Specification"
                 allPropertyValues.SetFilteredPropertySingleValues(ifcTypeObject, "Pset_Specification");
             }
-            return value;
+            return (string.IsNullOrEmpty(value)) ? DEFAULT_STRING : value;
         }
 
 
@@ -225,7 +258,7 @@ namespace Xbim.COBie.Data
                 //reset back to property set "Pset_Specification"
                 allPropertyValues.SetFilteredPropertySingleValues(ifcTypeObject, "Pset_Specification");
             }
-            return value;
+            return (string.IsNullOrEmpty(value)) ? DEFAULT_STRING : value;
         }
 
         /// <summary>
@@ -250,7 +283,7 @@ namespace Xbim.COBie.Data
                 //reset back to property set "Pset_Specification"
                 allPropertyValues.SetFilteredPropertySingleValues(ifcTypeObject, "Pset_Specification");
             }
-            return value;
+            return (string.IsNullOrEmpty(value)) ? DEFAULT_STRING : value;
         }
 
         /// <summary>
@@ -277,7 +310,7 @@ namespace Xbim.COBie.Data
                 //reset back to property set "Pset_Specification"
                 allPropertyValues.SetFilteredPropertySingleValues(ifcTypeObject, "Pset_Specification");
             }
-            return value;
+            return (string.IsNullOrEmpty(value)) ? DEFAULT_STRING : value;
         }
 
         /// <summary>
@@ -302,7 +335,7 @@ namespace Xbim.COBie.Data
                 //reset back to property set "Pset_Specification"
                 allPropertyValues.SetFilteredPropertySingleValues(ifcTypeObject, "Pset_Specification");
             }
-            return value;
+            return (string.IsNullOrEmpty(value)) ? DEFAULT_STRING : value;
         }
 
         /// <summary>
@@ -400,7 +433,7 @@ namespace Xbim.COBie.Data
                 value = allPropertyValues.GetFilteredPropertySingleValueValue("ServiceLifeDuration", true);
             if (value == DEFAULT_STRING)
                 value = allPropertyValues.GetFilteredPropertySingleValueValue(" Expected", true);
-            return value;
+            return ((string.IsNullOrEmpty(value)) || (value == DEFAULT_STRING)) ? DEFAULT_NUMERIC : value;
         }
 
 
@@ -431,7 +464,7 @@ namespace Xbim.COBie.Data
                 //reset back to property set "Pset_Warranty"
                 allPropertyValues.SetFilteredPropertySingleValues(ifcTypeObject, "Pset_Warranty");
             }
-            return value;
+            return ((string.IsNullOrEmpty(value)) || value == DEFAULT_STRING) ? DEFAULT_NUMERIC : value;
 
         }
 
@@ -458,7 +491,7 @@ namespace Xbim.COBie.Data
                 //reset back to property set "Pset_Warranty"
                 allPropertyValues.SetFilteredPropertySingleValues(ifcTypeObject, "Pset_Warranty"); 
             }
-            return value; 
+            return (string.IsNullOrEmpty(value)) ? DEFAULT_STRING : value;
         }
 
         /// <summary>
@@ -483,7 +516,7 @@ namespace Xbim.COBie.Data
                 //reset back to property set "Pset_Warranty"
                 allPropertyValues.SetFilteredPropertySingleValues(ifcTypeObject, "Pset_Warranty"); 
             }
-            return value; 
+            return ((string.IsNullOrEmpty(value)) || (value == DEFAULT_STRING)) ? Constants.DEFAULT_EMAIL : value;
         }
 
         /// <summary>
@@ -508,7 +541,7 @@ namespace Xbim.COBie.Data
                 //reset back to property set "Pset_Warranty"
                 allPropertyValues.SetFilteredPropertySingleValues(ifcTypeObject, "Pset_Warranty"); 
             }
-            return value; 
+            return ((string.IsNullOrEmpty(value)) || (value == DEFAULT_STRING)) ? Constants.DEFAULT_EMAIL : value;
         }
 
         /// <summary>
@@ -533,7 +566,7 @@ namespace Xbim.COBie.Data
                 //reset back to property set "Pset_Asset"
                 allPropertyValues.SetFilteredPropertySingleValues(ifcTypeObject, "Pset_Asset"); 
             }
-            return value; 
+            return (string.IsNullOrEmpty(value)) ? DEFAULT_STRING : value;
         }
 
         /// <summary>
