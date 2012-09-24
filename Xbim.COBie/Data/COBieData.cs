@@ -61,24 +61,11 @@ namespace Xbim.COBie.Data
                 return _progressStatus;
             }
         }
-        
-        
+
 
         /// <summary>
-        /// Common exclude PropertySingleValue name containing any of the strings 
+        /// List of component class types to exclude from selection
         /// </summary>
-        public  List<string> _commonAttExcludes = new List<string>() {"Zone Base Offset", "Upper Limit",  
-                            "Line Pattern", "Symbol","Window Inset", 
-                            "Radius", "Phase Created","Phase", "Outside Radius", 
-                            "Outside Diameter", "Omniclass", "Offset", "Mark",
-                            "Recepticles", "Limit Offset", "Lighting Calculation Workplan",
-                            "Size", "Level", "Host", "Hot Water Radius", 
-                            "Half Oval", "AssetAccountingType", "Description",
-                            "Name", "Classification Description", "Classification Code",
-                            "Category Description","Category Code", "Uniclass Description",
-                            "Uniclass Code", "Assembly Description", "Assembly Code",
-                            "Omniclass Title", "Omniclass Number", "MethodOfMeasurement"};
-
         private List<Type> _componentExcludedTypes = new List<Type>{  typeof(IfcWall),
                                                         typeof(IfcAnnotation),
                                                         typeof(IfcWallStandardCase),
@@ -204,8 +191,6 @@ namespace Xbim.COBie.Data
             }
         }
 
-        
-
         #region Methods
 
         public abstract COBieSheet<T> Fill();
@@ -278,6 +263,8 @@ namespace Xbim.COBie.Data
         {
             _eMails.Clear();
         }
+
+
 
         /// <summary>
         /// Extract the email address lists for the owner of the IfcOwnerHistory passed
@@ -416,34 +403,7 @@ namespace Xbim.COBie.Data
             }
             return Constants.DEFAULT_STRING;
         }
-        /// <summary>
-        /// Get Category method for property sets
-        /// </summary>
-        /// <param name="propSet">IfcPropertySet</param>
-        /// <returns>Category as string </returns>
-        protected string GetCategory(IfcPropertySet propSet)
-        {
-            IEnumerable<IfcClassificationReference> cats = from IRAC in propSet.HasAssociations
-                                                           where IRAC is IfcRelAssociatesClassification
-                                                           && ((IfcRelAssociatesClassification)IRAC).RelatingClassification is IfcClassificationReference
-                                                           select ((IfcRelAssociatesClassification)IRAC).RelatingClassification as IfcClassificationReference;
-            IfcClassificationReference cat = cats.FirstOrDefault();
-            if (cat != null)
-            {
-                return cat.Name.ToString();
-            }
-            //Try by PropertySet as fallback
-            var query = from props in propSet.HasProperties
-                        where props.Name.ToString() == "OmniClass Table 13 Category" || props.Name.ToString() == "Category Code"
-                        select props.ToString().TrimEnd();
-            string val = query.FirstOrDefault();
-
-            if (!String.IsNullOrEmpty(val))
-            {
-                return val;
-            }
-            return Constants.DEFAULT_STRING;
-        }   
+        
 
         /// <summary>
         /// Determined the sheet the IfcRoot will have come from using the object type
@@ -473,6 +433,41 @@ namespace Xbim.COBie.Data
             return (elType != null) ? elType.RelatingType.Name.ToString() : DEFAULT_STRING;
         }
 
+        /// <summary>
+        /// Check if a string represents a date time
+        /// </summary>
+        /// <param name="date">string holding date</param>
+        /// <returns>bool</returns>
+        public bool IsDate (string date)
+        {
+            DateTime test;
+            return DateTime.TryParse(date, out test);
+        }
+
+        /// <summary>
+        /// Test string for email address format
+        /// </summary>
+        /// <param name="email">string holding email address</param>
+        /// <returns>bool</returns>
+        public bool IsEmailAddress(string email)
+        {
+            try
+            {
+                System.Net.Mail.MailAddress address = new System.Net.Mail.MailAddress(email);
+                return true;
+            }
+            catch (FormatException)
+            {
+                // Do nothing
+            }
+            return false;
+        }
+
+        public bool IsNumeric(string num)
+        {
+            double test;
+            return double.TryParse(num, out test);
+        }
         #endregion
 
     }

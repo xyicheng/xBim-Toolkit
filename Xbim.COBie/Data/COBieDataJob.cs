@@ -41,7 +41,7 @@ namespace Xbim.COBie.Data
             // get all IfcTask objects from IFC file
             IEnumerable<IfcTask> ifcTasks = Model.InstancesOfType<IfcTask>();
 
-            COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(ifcTasks.OfType<IfcObject>().ToList()); //properties helper class
+            COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(ifcTasks.OfType<IfcObject>()); //properties helper class
             
             //IfcTypeObject typObj = Model.InstancesOfType<IfcTypeObject>().FirstOrDefault();
             IfcConstructionEquipmentResource cer = Model.InstancesOfType<IfcConstructionEquipmentResource>().FirstOrDefault();
@@ -135,7 +135,7 @@ namespace Xbim.COBie.Data
                         strList.Add(ifcConstructionEquipmentResource.Name.ToString());
                 }
             }
-            return (strList.Count > 0) ? string.Join(" : ", strList) : DEFAULT_STRING;
+            return (strList.Count > 0) ? string.Join(", ", strList) : DEFAULT_STRING;
         }
         /// <summary>
         /// Get the object IfcTypeObject name from the IfcTask object

@@ -22,6 +22,49 @@ namespace Xbim.COBie.Data
     /// </summary>
     public class COBieDataType : COBieData<COBieTypeRow>, IAttributeProvider
     {
+
+        #region Fields
+
+        /// <summary>
+        /// List of property names that are to be excluded from the Attributes generated from the Type sheet with equal compare
+        /// </summary>
+        private List<string> _typeAttExcludesEq = new List<string>() 
+        {   "SustainabilityPerformanceCodePerformance",     "AccessibilityPerformance",     "Features",     "Constituents",     "Material",     "Grade", 
+            "Finish",   "Color",    "Size",     "Shape",    "ModelReference",   "NominalHeight",    "NominalWidth", "NominalLength",    "WarrantyName",
+            "WarrantyDescription",  "DurationUnit",         "ServiceLifeType",  "ServiceLifeDuration",  "ExpectedLife",     "LifeCyclePhase",   "Cost",
+            "ReplacementCost",  "WarrantyDurationUnit", "WarrantyDurationLabor",    "WarrantyGuarantorLabor",   "WarrantyDurationParts",    
+            "WarrantyGuarantorParts",   "ModelLabel",   "ModelNumber",  "Manufacturer", "IsFixed",  "AssetType", "CodePerformance", "SustainabilityPerformance"
+        
+        };
+ 
+        /// <summary>
+        /// List of property names that are to be excluded from the Attributes generated from the Type sheet with contains compare
+        /// </summary>
+        private List<string> _typeAttExcludesContains = new List<string>() { "Roomtag", "RoomTag", "Tag", "GSA BIM Area" };
+        
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// List of property names that are to be excluded from the Attributes generated from the Type sheet with equal compare
+        /// </summary>
+        public List<string> TypeAttExcludesEq
+        {
+            get { return _typeAttExcludesEq; }
+        }
+
+       
+        /// <summary>
+        /// List of property names that are to be excluded from the Attributes generated from the Type sheet with contains compare
+        /// </summary>
+        public List<string> TypeAttExcludesContains
+        {
+            get { return _typeAttExcludesContains; }
+        }
+        
+        #endregion
+        
         /// <summary>
         /// Data Type constructor
         /// </summary>
@@ -54,28 +97,13 @@ namespace Xbim.COBie.Data
                 .Where(type => !TypeObjectExcludeTypes.Contains(type.GetType()))
                 .GroupBy(type => type.Name).SelectMany(g => g);
 
-            // Well known property names to seek out the data
-            List<string> candidateProperties = new List<string> {  "AssetAccountingType", "Manufacturer", "ModelLabel", "WarrantyGuarantorParts", 
-                                                        "WarrantyDurationParts", "WarrantyGuarantorLabor", "WarrantyDurationLabor", 
-                                                        "ReplacementCost", "ServiceLifeDuration", "WarrantyDescription", "WarrantyDurationUnit" , "NominalLength", "NominalWidth",
-                                                        "NominalHeight", "ModelReference", "Shape", "Colour", "Color", "Finish", "Grade", 
-                                                        "Material", "Constituents", "Features", "Size", "AccessibilityPerformance", "CodePerformance", 
-                                                        "SustainabilityPerformance", "Warranty Information"};
-
-            // Additional Type values to exclude from attribute sheetWarrantyGuarantorParts
-            List<string> excludePropertyValueNames = new List<string> {"WarrantyName","DurationUnit","ServiceLifeType","LifeCyclePhase",
-                                                         "Cost","ModelNumber","IsFixed","AssetType"
-                                                        };
-            excludePropertyValueNames.AddRange(candidateProperties); //add the attributes from the type sheet to exclude from the attribute sheet
-            //list of attributes to exclude form attribute sheet
-            List<string> excludePropertyValueNamesWildcard = new List<string> { "Roomtag", "RoomTag", "Tag", "GSA BIM Area" };
-
+            
+            
             //set up property set helper class
-            COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(ifcTypeObjects.ToList()); //properties helper class
-            allPropertyValues.ExcludePropertyValueNames.AddRange(excludePropertyValueNames);
-            allPropertyValues.FilterPropertyValueNames.AddRange(candidateProperties);
-            allPropertyValues.ExcludePropertyValueNamesWildcard.AddRange(excludePropertyValueNamesWildcard);
-            allPropertyValues.ExcludePropertySetNames.Add(" BaseQuantities");
+            COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(ifcTypeObjects); //properties helper class
+            allPropertyValues.ExcludePropertyValueNames.AddRange(TypeAttExcludesEq);//we do not want for the attribute sheet so filter them out
+            allPropertyValues.ExcludePropertyValueNamesWildcard.AddRange(TypeAttExcludesContains);//we do not want for the attribute sheet so filter them out
+            allPropertyValues.ExcludePropertySetNames.Add(" BaseQuantities"); //exclude the property set from selection of values
             allPropertyValues.RowParameters["Sheet"] = "Type";
 
             ProgressIndicator.Initialise("Creating Types", ifcTypeObjects.Count());
@@ -83,29 +111,7 @@ namespace Xbim.COBie.Data
             foreach (IfcTypeObject type in ifcTypeObjects)
             {
                 ProgressIndicator.IncrementAndUpdate();
-                //set the sizing values from the property set
-                allPropertyValues.SetFilteredPropertySingleValues(type, "Pset_Specification");
-                string nominalLength = GetNominalLength(type, allPropertyValues);
-                string nominalWidth = GetNominalWidth(type, allPropertyValues);
-                string nominalHeight = GetNominalHeight(type, allPropertyValues);
                 
-                if (lastRow != null) //filter out first loop
-                {
-                    string lastName = lastRow.Name;
-                    string lastNominalLength = lastRow.NominalLength;
-                    string lastNominalWidth = lastRow.NominalWidth;
-                    string lastNominalHeight = lastRow.NominalHeight;
-                    if (string.Equals(lastName, type.Name)) //only test sizing if names the same
-                    {
-                        if (string.Equals(lastNominalLength, nominalLength) &&
-                            string.Equals(lastNominalWidth, nominalWidth) &&
-                            string.Equals(lastNominalHeight, nominalHeight) 
-                            )
-                        {
-                            continue; //all equal so skip
-                        }
-                    } 
-                }
                 
                 COBieTypeRow typeRow = new COBieTypeRow(types);
                 
@@ -113,33 +119,57 @@ namespace Xbim.COBie.Data
                 typeRow.Name = type.Name;
                 typeRow.CreatedBy = GetTelecomEmailAddress(type.OwnerHistory);
                 typeRow.CreatedOn = GetCreatedOnDateAsFmtString(type.OwnerHistory);
-                typeRow.Category = GetCategory(type);
+                typeRow.Category = GetCategory(type, allPropertyValues);
                 typeRow.Description = GetTypeObjDescription(type);
 
                 typeRow.ExtSystem = GetExternalSystem(type);
                 typeRow.ExtObject = type.GetType().Name;
                 typeRow.ExtIdentifier = type.GlobalId;
 
-                typeRow.NominalLength = nominalLength;
-                typeRow.NominalWidth = nominalWidth;
-                typeRow.NominalHeight = nominalHeight;
+                
             
                 FillPropertySetsValues(allPropertyValues, type, typeRow);
-
-                types.Rows.Add(typeRow);
-                lastRow = typeRow; //save this row to test on next loop
-                
+                //not duplicate so add to sheet
+                if (CheckForDuplicateRow(lastRow, typeRow)) 
+                {
+                    types.Rows.Add(typeRow);
+                    lastRow = typeRow; //save this row to test on next loop
+                }
                 // Provide Attribute sheet with our context
                 //fill in the attribute information
                 allPropertyValues.RowParameters["Name"] = typeRow.Name;
                 allPropertyValues.RowParameters["CreatedBy"] = typeRow.CreatedBy;
                 allPropertyValues.RowParameters["CreatedOn"] = typeRow.CreatedOn;
                 allPropertyValues.RowParameters["ExtSystem"] = typeRow.ExtSystem;
-                allPropertyValues.SetAttributesRows(type, ref _attributes); //fill attribute sheet rows
+                allPropertyValues.PopulateAttributesRows(type, ref _attributes); //fill attribute sheet rows
                 
             }
             ProgressIndicator.Finalise();
             return types;
+        }
+
+        private static bool CheckForDuplicateRow(COBieTypeRow lastRow, COBieTypeRow typeRow)
+        {
+            bool AddRecord = true;
+            //test to see if we have a duplicate
+            if (lastRow != null) //filter out first loop
+            {
+                if (string.Equals(lastRow.Name, typeRow.Name)) //only test sizing if names the same
+                {
+                    if ((!string.Equals(lastRow.NominalLength, typeRow.NominalLength)) || //use or's to skip further tests on a true not equal
+                        (!string.Equals(lastRow.NominalWidth, typeRow.NominalWidth)) ||
+                        (!string.Equals(lastRow.NominalHeight, typeRow.NominalHeight)) ||
+                        (!string.Equals(lastRow.ModelNumber, typeRow.ModelNumber)) ||
+                        (!string.Equals(lastRow.ModelReference, typeRow.ModelReference)) ||
+                        (!string.Equals(lastRow.Size, typeRow.Size)) ||
+                        (!string.Equals(lastRow.Manufacturer, typeRow.Manufacturer))
+                         )
+                        AddRecord = true; //one of the values do not match so record OK
+                    else
+                        AddRecord = false;//skip this record
+                }
+            }
+            return AddRecord;
         }
 
         private void FillPropertySetsValues(COBieDataPropertySetValues allPropertyValues, IfcTypeObject type, COBieTypeRow typeRow)
@@ -150,19 +180,19 @@ namespace Xbim.COBie.Data
             typeRow.AssetType =     allPropertyValues.GetFilteredPropertySingleValueValue("AssetAccountingType", false); 
             allPropertyValues.SetFilteredPropertySingleValues(type, "Pset_ManufacturersTypeInformation");
             string manufacturer = allPropertyValues.GetFilteredPropertySingleValueValue("Manufacturer", false);
-            typeRow.Manufacturer = (manufacturer == DEFAULT_STRING) ? Constants.DEFAULT_EMAIL : manufacturer;
+            typeRow.Manufacturer = ((manufacturer == DEFAULT_STRING) || (!IsEmailAddress(manufacturer))) ? Constants.DEFAULT_EMAIL : manufacturer;
             typeRow.ModelNumber =   GetModelNumber(type, allPropertyValues);
 
             
             allPropertyValues.SetFilteredPropertySingleValues(type, "Pset_Warranty");
             typeRow.WarrantyGuarantorParts =    GetWarrantyGuarantorParts(type, allPropertyValues);
             string warrantyDurationPart =       allPropertyValues.GetFilteredPropertySingleValueValue("WarrantyDurationParts", false);
-            typeRow.WarrantyDurationParts =     (warrantyDurationPart == DEFAULT_STRING) ? DEFAULT_NUMERIC : warrantyDurationPart;
+            typeRow.WarrantyDurationParts =     ((warrantyDurationPart == DEFAULT_STRING) || (!IsNumeric(warrantyDurationPart)) ) ? DEFAULT_NUMERIC : warrantyDurationPart;
             typeRow.WarrantyGuarantorLabor =    GetWarrantyGuarantorLabor(type, allPropertyValues);
             typeRow.WarrantyDescription =       GetWarrantyDescription(type, allPropertyValues);
             Interval warrantyDuration =         GetDurationUnitAndValue(allPropertyValues.GetFilteredPropertySingleValue("WarrantyDurationLabor")); 
-            typeRow.WarrantyDurationLabor =     warrantyDuration.Value;
-            typeRow.WarrantyDurationUnit =      warrantyDuration.Unit;
+            typeRow.WarrantyDurationLabor =     (!IsNumeric(warrantyDuration.Value)) ? DEFAULT_NUMERIC : warrantyDuration.Value;
+            typeRow.WarrantyDurationUnit =      (!IsNumeric(warrantyDuration.Unit)) ? DEFAULT_NUMERIC : warrantyDuration.Unit;
             typeRow.ReplacementCost =           GetReplacementCost(type, allPropertyValues); 
 
             allPropertyValues.SetFilteredPropertySingleValues(type, "Pset_ServiceLife");
@@ -171,7 +201,10 @@ namespace Xbim.COBie.Data
             typeRow.DurationUnit =      serviceDuration.Unit;
 
             allPropertyValues.SetFilteredPropertySingleValues(type, "Pset_Specification");
-            typeRow.ModelReference =                GetModelReference(type, allPropertyValues);
+            typeRow.NominalLength = GetNominalLength(type, allPropertyValues);
+            typeRow.NominalWidth = GetNominalWidth(type, allPropertyValues);
+            typeRow.NominalHeight =  GetNominalHeight(type, allPropertyValues);
+            typeRow.ModelReference = GetModelReference(type, allPropertyValues);
             typeRow.Shape =                         allPropertyValues.GetFilteredPropertySingleValueValue("Shape", false);
             typeRow.Size =                          allPropertyValues.GetFilteredPropertySingleValueValue("Size", false);
             typeRow.Color =                         GetColour(type, allPropertyValues);
@@ -433,7 +466,7 @@ namespace Xbim.COBie.Data
                 value = allPropertyValues.GetFilteredPropertySingleValueValue("ServiceLifeDuration", true);
             if (value == DEFAULT_STRING)
                 value = allPropertyValues.GetFilteredPropertySingleValueValue(" Expected", true);
-            return ((string.IsNullOrEmpty(value)) || (value == DEFAULT_STRING)) ? DEFAULT_NUMERIC : value;
+            return ((string.IsNullOrEmpty(value)) || (value == DEFAULT_STRING) || (!IsNumeric(value))) ? DEFAULT_NUMERIC : value;
         }
 
 
@@ -464,7 +497,7 @@ namespace Xbim.COBie.Data
                 //reset back to property set "Pset_Warranty"
                 allPropertyValues.SetFilteredPropertySingleValues(ifcTypeObject, "Pset_Warranty");
             }
-            return ((string.IsNullOrEmpty(value)) || value == DEFAULT_STRING) ? DEFAULT_NUMERIC : value;
+            return ((string.IsNullOrEmpty(value)) || (value == DEFAULT_STRING) || (!IsNumeric(value))) ? DEFAULT_NUMERIC : value;
 
         }
 
@@ -516,7 +549,7 @@ namespace Xbim.COBie.Data
                 //reset back to property set "Pset_Warranty"
                 allPropertyValues.SetFilteredPropertySingleValues(ifcTypeObject, "Pset_Warranty"); 
             }
-            return ((string.IsNullOrEmpty(value)) || (value == DEFAULT_STRING)) ? Constants.DEFAULT_EMAIL : value;
+            return (((string.IsNullOrEmpty(value)) || (value == DEFAULT_STRING)) || (!IsEmailAddress(value))) ? Constants.DEFAULT_EMAIL : value;
         }
 
         /// <summary>
@@ -541,7 +574,7 @@ namespace Xbim.COBie.Data
                 //reset back to property set "Pset_Warranty"
                 allPropertyValues.SetFilteredPropertySingleValues(ifcTypeObject, "Pset_Warranty"); 
             }
-            return ((string.IsNullOrEmpty(value)) || (value == DEFAULT_STRING)) ? Constants.DEFAULT_EMAIL : value;
+            return (((string.IsNullOrEmpty(value)) || (value == DEFAULT_STRING)) || (!IsEmailAddress(value))) ? Constants.DEFAULT_EMAIL : value;
         }
 
         /// <summary>
@@ -690,41 +723,74 @@ namespace Xbim.COBie.Data
         /// </summary>
         /// <param name="type">IfcTypeObject</param>
         /// <returns>string of the category</returns>
-        public string GetCategory(IfcTypeObject type)
+        public string GetCategory(IfcTypeObject type, COBieDataPropertySetValues allPropertyValues)
         {
-            List<string> categories = new List<string> { "OmniClass Table 13 Category", "Category Code" };
-
+            
             //Try by relationship first
             IfcRelAssociatesClassification classification = type.HasAssociations.OfType<IfcRelAssociatesClassification>().FirstOrDefault();
             if (classification != null)
             {
                 IfcClassificationReference classificationRef = (IfcClassificationReference)classification.RelatingClassification;
-                return classificationRef.Name;
+                
+                if (!string.IsNullOrEmpty(classificationRef.Name))
+                {
+                    return classificationRef.Name;
+                }
+                if (!string.IsNullOrEmpty(classificationRef.ItemReference))
+                {
+                    return classificationRef.ItemReference;
+                }
+                if ((classificationRef.ReferencedSource != null) && (!string.IsNullOrEmpty(classificationRef.ReferencedSource.Name)))
+                {
+                    return classificationRef.ReferencedSource.Name;
+                }
             }
-
+  
             //Try by PropertySet as fallback
+            //filter list for front end category
+            List<string> categoriesCode = new List<string>() { "OmniClass Table 13 Category",  "OmniClass Number", "OmniClass_Number", "Assembly_Code",  "Assembly Code", 
+                                                             "Uniclass Code", "Uniclass_Code",  "Category_Code" ,"Category Code",  "Classification Code", "Classification_Code" };
+            //filter list for back end category
+            List<string> categoriesDesc = new List<string>() { "OmniClass Title", "OmniClass_Title","Assembly_Description","Assembly Description","UniclassDescription", 
+                                                             "Uniclass_Description","Category Description", "Category_Description", "Classification Description", "Classification_Description" };
+            List<string> categoriesTest = new List<string>();
+            categoriesCode.AddRange(categoriesDesc);
+            
+            IEnumerable<IfcPropertySingleValue> properties = Enumerable.Empty<IfcPropertySingleValue>();
 
-            var query = from propSet in type.GetAllPropertySets()  
-                        from props in propSet.HasProperties
-                        where categories.Contains(props.Name.ToString()) 
-                        select props.ToString().TrimEnd();
-            string val = query.FirstOrDefault();
-
+            Dictionary<IfcPropertySet, List<IfcPropertySingleValue>> propertysets = allPropertyValues[type];
+            if (propertysets != null)
+            {
+                 properties = from dic in propertysets
+                             from psetval in dic.Value
+                              where categoriesTest.Contains(psetval.Name.ToString()) 
+                             select psetval;
+            }
             //second fall back on objects defined by this type, see if they hold a category on the first related object to this type
-            if (string.IsNullOrEmpty(val))
+            if (!properties.Any())
             {
-                //get first object defined by this type and try and get category from this object 
-                IEnumerable<IfcPropertySingleValue> relAtts = GetTypeObjRelAttributes(type, categories);
-                IfcPropertySingleValue singleValue = relAtts.Where(p => categories.Contains(p.Name)).FirstOrDefault();
-                if ((singleValue != null) && (singleValue.NominalValue != null)) 
-                    return singleValue.NominalValue.ToString();
+                propertysets = allPropertyValues.GetRelatedProperties(type);
+                if (propertysets != null)
+                {
+                    properties = from dic in propertysets
+                             from psetval in dic.Value
+                                 where categoriesTest.Contains(psetval.Name.ToString())
+                             select psetval;
+                }
             }
-            else
+            string value = "";
+            if (properties.Any())
             {
-                return val;
+                string code = properties.Where(p => p.NominalValue != null && categoriesCode.Contains(p.Name)).Select(p => p.NominalValue.ToString()).FirstOrDefault();
+                string description = properties.Where(p => p.NominalValue != null && categoriesDesc.Contains(p.Name)).Select(p => p.NominalValue.ToString()).FirstOrDefault();
+                if (!string.IsNullOrEmpty(code)) value += code;
+                if (!string.IsNullOrEmpty(description)) value += ": " +  description;
             }
 
-            return Constants.DEFAULT_STRING;
+            if (string.IsNullOrEmpty(value))
+                return Constants.DEFAULT_STRING;
+            else
+                return value;
         }
         #endregion
 

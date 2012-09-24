@@ -43,12 +43,12 @@ namespace Xbim.COBie.Data
             // get all IfcBuildingStory objects from IFC file
             List<IfcSpace> ifcSpaces = Model.InstancesOfType<IfcSpace>().OrderBy(ifcSpace => ifcSpace.Name, new CompareIfcLabel()).ToList();
             
-            COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(ifcSpaces.OfType<IfcObject>().ToList()); //properties helper class
+            COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(ifcSpaces.OfType<IfcObject>()); //properties helper class
             
 
             //list of attributes and property sets to exclude form attribute sheet
-            List<string> excludePropertyValueNames = new List<string> { "Area", "Number", "UsableHeight" };
-            List<string> excludePropertyValueNamesWildcard = new List<string> { "ZoneName", "Category", "Length", "Width" }; //exclude part names
+            List<string> excludePropertyValueNames = new List<string> { "Area", "Number", "UsableHeight", "RoomTag", "Room Tag" };
+            List<string> excludePropertyValueNamesWildcard = new List<string> { "ZoneName", "Category", "Length", "Width"}; //exclude part names
             List<string> excludePropertSetNames = new List<string>() { "BaseQuantities" };
             //set up filters on COBieDataPropertySetValues
             allPropertyValues.ExcludePropertyValueNames.AddRange(excludePropertyValueNames);
@@ -92,7 +92,7 @@ namespace Xbim.COBie.Data
                 allPropertyValues.RowParameters["CreatedBy"] = space.CreatedBy;
                 allPropertyValues.RowParameters["CreatedOn"] = space.CreatedOn;
                 allPropertyValues.RowParameters["ExtSystem"] = space.ExtSystem;
-                allPropertyValues.SetAttributesRows(ifcSpace, ref _attributes); //fill attribute sheet rows//pass data from this sheet info as Dictionary
+                allPropertyValues.PopulateAttributesRows(ifcSpace, ref _attributes); //fill attribute sheet rows//pass data from this sheet info as Dictionary
                 
             }
             ProgressIndicator.Finalise();

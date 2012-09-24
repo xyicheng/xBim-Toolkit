@@ -40,7 +40,7 @@ namespace Xbim.COBie.Data
             // get all IfcBuildingStory objects from IFC file
             IEnumerable<IfcZone> ifcZones = Model.InstancesOfType<IfcZone>();
 
-            COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(ifcZones.OfType<IfcObject>().ToList()); //properties helper class
+            COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(ifcZones.OfType<IfcObject>()); //properties helper class
             
             //list of attributes to exclude form attribute sheet
             List<string> excludePropertyValueNamesWildcard = new List<string> {  "Roomtag", "RoomTag", "Tag", "GSA BIM Area", "Length", "Width", "Height"};
@@ -85,7 +85,7 @@ namespace Xbim.COBie.Data
                     allPropertyValues.RowParameters["CreatedBy"] = zone.CreatedBy;
                     allPropertyValues.RowParameters["CreatedOn"] = zone.CreatedOn;
                     allPropertyValues.RowParameters["ExtSystem"] = zone.ExtSystem;
-                    allPropertyValues.SetAttributesRows(zn, ref _attributes); //fill attribute sheet rows//pass data from this sheet info as Dictionary
+                    allPropertyValues.PopulateAttributesRows(zn, ref _attributes); //fill attribute sheet rows//pass data from this sheet info as Dictionary
                 
                 }
 

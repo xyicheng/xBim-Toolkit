@@ -28,6 +28,44 @@ namespace Xbim.COBie.Data
             : base(context)
         { }
 
+        #region Fields
+
+       /// <summary>
+        /// List of property names that are to be excluded from the Attributes generated from the Component sheet with equal compare
+        /// </summary>
+        protected List<string> _componentAttExcludesEq = new List<string>() 
+        {   "Circuit NumberSystem Type", "System Name",  "AssetIdentifier", "BarCode", "TagNumber", "WarrantyStartDate", "InstallationDate", "SerialNumber"
+        };
+
+        /// <summary>
+        /// List of property names that are to be excluded from the Attributes generated from the Component sheet with contains compare
+        /// </summary>
+        protected List<string> _componentAttExcludesContains = new List<string>() { "Roomtag", "RoomTag", "Tag", "GSA BIM Area", "Length", "Height", "Render Appearance", "Arrow at End" };
+        
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// List of property names that are to be excluded from the Attributes generated from the Component sheet with equal compare
+        /// </summary>
+        public List<string> ComponentAttExcludesEq
+        {
+            get { return _componentAttExcludesEq; }
+        }
+
+        /// <summary>
+        /// List of property names that are to be excluded from the Attributes generated from the Component sheet with contains compare
+        /// </summary>
+        public List<string> ComponentAttExcludesContains
+        {
+            get { return _componentAttExcludesContains; }
+        }
+ 
+        #endregion
+       
+        
+
         #region Methods
 
         /// <summary>
@@ -43,30 +81,18 @@ namespace Xbim.COBie.Data
             IEnumerable<IfcRelAggregates> relAggregates = Model.InstancesOfType<IfcRelAggregates>();
             IEnumerable<IfcRelContainedInSpatialStructure> relSpatial = Model.InstancesOfType<IfcRelContainedInSpatialStructure>();
 
-            List<IfcObject> ifcElements = ((from x in relAggregates
+            IEnumerable<IfcObject> ifcElements = ((from x in relAggregates
                                             from y in x.RelatedObjects
                                             where !ComponentExcludeTypes.Contains(y.GetType())
                                             select y).Union(from x in relSpatial
                                                             from y in x.RelatedElements
                                                             where !ComponentExcludeTypes.Contains(y.GetType())
-                                                            select y)).GroupBy(el => el.Name).Select(g => g.First()).OfType<IfcObject>().ToList(); //.Distinct().ToList();
+                                                            select y)).GroupBy(el => el.Name).Select(g => g.First()).OfType<IfcObject>(); //.Distinct().ToList();
             
             COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(ifcElements); //properties helper class
-            
-            List<string> candidateProperties = new List<string> {  "SerialNumber",
-                                                                   "InstallationDate",
-                                                                   "WarrantyStartDate",
-                                                                   "TagNumber",
-                                                                   "BarCode",
-                                                                   "AssetIdentifier"};
-            List<string> excludePropertyValueNames = candidateProperties;
-            excludePropertyValueNames.Add("Circuit NumberSystem Type");
-            excludePropertyValueNames.Add("System Name");
-            List<string> excludePropertyValueNamesWildcard = new List<string> { "Roomtag", "RoomTag", "Tag", "GSA BIM Area", "Length", "Width", "Height", "Render Appearance", "Arrow at End"};
             //set up filters on COBieDataPropertySetValues
-            allPropertyValues.ExcludePropertyValueNames.AddRange(excludePropertyValueNames);
-            allPropertyValues.FilterPropertyValueNames.AddRange(candidateProperties);
-            allPropertyValues.ExcludePropertyValueNamesWildcard.AddRange(excludePropertyValueNamesWildcard);
+            allPropertyValues.ExcludePropertyValueNames.AddRange(ComponentAttExcludesEq); //we do not want listed properties for the attribute sheet so filter them out
+            allPropertyValues.ExcludePropertyValueNamesWildcard.AddRange(ComponentAttExcludesContains);//we do not want listed properties for the attribute sheet so filter them out
             allPropertyValues.RowParameters["Sheet"] = "Component";
 
 
@@ -96,9 +122,9 @@ namespace Xbim.COBie.Data
                 allPropertyValues.SetFilteredPropertySingleValues(el); //set the internal filtered IfcPropertySingleValues List in allPropertyValues
                 component.SerialNumber = allPropertyValues.GetFilteredPropertySingleValueValue("SerialNumber", false);
                 string installationDate = allPropertyValues.GetFilteredPropertySingleValueValue("InstallationDate", false);
-                component.InstallationDate = (installationDate == DEFAULT_STRING) ? GetCreatedOnDateAsFmtString(null) : installationDate;
+                component.InstallationDate = ((installationDate == DEFAULT_STRING) || (!IsDate(installationDate))) ? GetCreatedOnDateAsFmtString(null) : installationDate;
                 string warrantyStartDate = allPropertyValues.GetFilteredPropertySingleValueValue("WarrantyStartDate", false);
-                component.WarrantyStartDate = (warrantyStartDate == DEFAULT_STRING) ? GetCreatedOnDateAsFmtString(null) : warrantyStartDate;
+                component.WarrantyStartDate = ((warrantyStartDate == DEFAULT_STRING) || (!IsDate(warrantyStartDate))) ? GetCreatedOnDateAsFmtString(null) : warrantyStartDate;
                 component.TagNumber = allPropertyValues.GetFilteredPropertySingleValueValue("TagNumber", false);
                 component.BarCode = allPropertyValues.GetFilteredPropertySingleValueValue("BarCode", false);
                 component.AssetIdentifier = allPropertyValues.GetFilteredPropertySingleValueValue("AssetIdentifier", false);
@@ -110,7 +136,7 @@ namespace Xbim.COBie.Data
                 allPropertyValues.RowParameters["CreatedBy"] = component.CreatedBy;
                 allPropertyValues.RowParameters["CreatedOn"] = component.CreatedOn;
                 allPropertyValues.RowParameters["ExtSystem"] = component.ExtSystem;
-                allPropertyValues.SetAttributesRows(el, ref _attributes); //fill attribute sheet rows
+                allPropertyValues.PopulateAttributesRows(el, ref _attributes); //fill attribute sheet rows
             }
 
             ProgressIndicator.Finalise();

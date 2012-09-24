@@ -9,6 +9,7 @@ using Xbim.Ifc.MeasureResource;
 using Xbim.Ifc.ProductExtension;
 using Xbim.Ifc.SelectTypes;
 using Xbim.XbimExtensions;
+using System.Globalization;
 
 namespace Xbim.COBie.Data
 {
@@ -41,15 +42,15 @@ namespace Xbim.COBie.Data
             IfcProject ifcProject = Model.IfcProject;
             IfcSite ifcSite = Model.InstancesOfType<IfcSite>().FirstOrDefault();
             IfcBuilding ifcBuilding = Model.InstancesOfType<IfcBuilding>().FirstOrDefault();
-            IfcMonetaryUnit ifcMonetaryUnit = Model.InstancesOfType<IfcMonetaryUnit>().FirstOrDefault();
-            IfcElementQuantity ifcElementQuantity = Model.InstancesOfType<IfcElementQuantity>().FirstOrDefault();
             
+            IfcElementQuantity ifcElementQuantity = Model.InstancesOfType<IfcElementQuantity>().FirstOrDefault();
 
-            List<IfcObject> ifcObjects = new List<IfcObject> { ifcProject, ifcSite, ifcBuilding };
+
+            IEnumerable<IfcObject> ifcObjects = new List<IfcObject> { ifcProject, ifcSite, ifcBuilding }.AsEnumerable(); ;
             COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(ifcObjects); //properties helper class
 
             //list of attributes to exclude form attribute sheet
-            List<string> excludePropertyValueNames = new List<string> { "Phase", "Height" };
+            List<string> excludePropertyValueNames = new List<string> { "Phase" };
             List<string> excludePropertyValueNamesWildcard = new List<string> { "Roomtag", "RoomTag", "Tag", "GSA BIM Area", "Length", "Width", "Height" };
             allPropertyValues.ExcludePropertyValueNames.AddRange(excludePropertyValueNames);
             allPropertyValues.ExcludePropertyValueNamesWildcard.AddRange(excludePropertyValueNamesWildcard);
@@ -69,7 +70,7 @@ namespace Xbim.COBie.Data
             facility.LinearUnits = GetLinearUnits();
             facility.AreaUnits = GetAreaUnits();
             facility.VolumeUnits = GetVolumeUnits();
-            facility.CurrencyUnit = (ifcMonetaryUnit == null) ? DEFAULT_STRING : ifcMonetaryUnit.Currency.ToString();
+            facility.CurrencyUnit = MonetaryUnit();
             facility.AreaMeasurement = (ifcElementQuantity == null) ? "" : ifcElementQuantity.MethodOfMeasurement.ToString();
             facility.ExternalSystem = GetExternalSystem(ifcBuilding);
 
@@ -97,7 +98,7 @@ namespace Xbim.COBie.Data
                 allPropertyValues.RowParameters["CreatedBy"] = facility.CreatedBy;
                 allPropertyValues.RowParameters["CreatedOn"] = facility.CreatedOn;
                 allPropertyValues.RowParameters["ExtSystem"] = facility.ExternalSystem;
-                allPropertyValues.SetAttributesRows(ifcObject, ref _attributes); //fill attribute sheet rows//pass data from this sheet info as Dictionary
+                allPropertyValues.PopulateAttributesRows(ifcObject, ref _attributes); //fill attribute sheet rows//pass data from this sheet info as Dictionary
             }
 
             ProgressIndicator.Finalise();
@@ -180,6 +181,19 @@ namespace Xbim.COBie.Data
                 }
             }
             return "feet";
+        }
+
+        private string MonetaryUnit()
+        {
+            IfcMonetaryUnit ifcMonetaryUnit = Model.InstancesOfType<IfcMonetaryUnit>().FirstOrDefault();
+
+            //string currencyName = CultureInfo.GetCultures(CultureTypes.SpecificCultures)
+            //   .Where(c => new RegionInfo(c.LCID).ISOCurrencySymbol == ifcMonetaryUnit.Currency.ToString())
+            //   .Select(c => new RegionInfo(c.LCID).CurrencyEnglishName)
+            //   .FirstOrDefault();
+            
+            
+            return (ifcMonetaryUnit == null) ? DEFAULT_STRING : ifcMonetaryUnit.Currency.ToString(); ;
         }
 
         private string GetAreaUnits()

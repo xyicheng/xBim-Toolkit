@@ -41,14 +41,14 @@ namespace Xbim.COBie.Data
             // get all IfcBuildingStory objects from IFC file
             IEnumerable<IfcBuildingStorey> buildingStories = Model.InstancesOfType<IfcBuildingStorey>();
 
-            COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(buildingStories.OfType<IfcObject>().ToList()); //properties helper class
+            COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(buildingStories.OfType<IfcObject>()); //properties helper class
             
             
             //IfcClassification ifcClassification = Model.InstancesOfType<IfcClassification>().FirstOrDefault();
             //list of attributes to exclude form attribute sheet
             List<string> excludePropertyValueNames = new List<string> { "Name", "Line Weight", "Color", 
                                                           "Colour",   "Symbol at End 1 Default", 
-                                                          "Symbol at End 2 Default", "Automatic Room Computation Height", "Elevation" };
+                                                          "Symbol at End 2 Default", "Automatic Room Computation Height", "Elevation", "Storey Height" };
             List<string> excludePropertyValueNamesWildcard = new List<string> { "Roomtag", "RoomTag", "Tag", "GSA BIM Area", "Length", "Width" };
             allPropertyValues.ExcludePropertyValueNames.AddRange(excludePropertyValueNames);
             allPropertyValues.ExcludePropertyValueNamesWildcard.AddRange(excludePropertyValueNamesWildcard);
@@ -86,7 +86,7 @@ namespace Xbim.COBie.Data
                 allPropertyValues.RowParameters["CreatedBy"] = floor.CreatedBy;
                 allPropertyValues.RowParameters["CreatedOn"] = floor.CreatedOn;
                 allPropertyValues.RowParameters["ExtSystem"] = floor.ExtSystem;
-                allPropertyValues.SetAttributesRows(ifcBuildingStorey, ref _attributes); //fill attribute sheet rows//pass data from this sheet info as Dictionary
+                allPropertyValues.PopulateAttributesRows(ifcBuildingStorey, ref _attributes); //fill attribute sheet rows//pass data from this sheet info as Dictionary
                 
             }
             ProgressIndicator.Finalise();
