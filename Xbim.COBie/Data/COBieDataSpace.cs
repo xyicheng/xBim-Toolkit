@@ -181,6 +181,8 @@ namespace Xbim.COBie.Data
             if (value == DEFAULT_STRING)
                 value = allPropertyValues.GetFilteredPropertySingleValueValue("FinishCeiling", true);
             if (value == DEFAULT_STRING)
+                value = allPropertyValues.GetFilteredPropertySingleValueValue("FinishCeilingHeight", true);
+            if (value == DEFAULT_STRING)
                 value = allPropertyValues.GetFilteredPropertySingleValueValue("Height", true);
             
             if (value == DEFAULT_STRING)

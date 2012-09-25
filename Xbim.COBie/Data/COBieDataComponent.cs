@@ -40,7 +40,7 @@ namespace Xbim.COBie.Data
         /// <summary>
         /// List of property names that are to be excluded from the Attributes generated from the Component sheet with contains compare
         /// </summary>
-        protected List<string> _componentAttExcludesContains = new List<string>() { "Roomtag", "RoomTag", "Tag", "GSA BIM Area", "Length", "Height", "Render Appearance", "Arrow at End" };
+        protected List<string> _componentAttExcludesContains = new List<string>() { "Roomtag", "RoomTag", "GSA BIM Area", "Length", "Height", "Render Appearance", "Arrow at End" }; //"Tag",
         
         #endregion
 

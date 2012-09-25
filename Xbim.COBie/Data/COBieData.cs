@@ -403,6 +403,52 @@ namespace Xbim.COBie.Data
             }
             return Constants.DEFAULT_STRING;
         }
+
+        /// <summary>
+        /// Return the unit name
+        /// </summary>
+        /// <param name="ifcUnit">IfcUnit object to extract name from</param>
+        /// <returns>string of the unit name</returns>
+        public static string GetUnit(IfcUnit ifcUnit)
+        {
+            string value = "";
+
+            if (ifcUnit is IfcConversionBasedUnit)
+            {
+                IfcConversionBasedUnit ifcConversionBasedUnit = ifcUnit as IfcConversionBasedUnit;
+                value = ifcConversionBasedUnit.Name;
+                if (string.IsNullOrEmpty(value)) //fall back to UnitType enumeration
+                    value = ifcConversionBasedUnit.UnitType.ToString();
+            }
+            else if (ifcUnit is IfcSIUnit)
+            {
+                IfcSIUnit ifcSIUnit = ifcUnit as IfcSIUnit;
+                value = ifcSIUnit.Name.ToString();
+                if (string.IsNullOrEmpty(value)) //fall back to UnitType enumeration
+                    value = ifcSIUnit.UnitType.ToString();
+            }
+            else if (ifcUnit is IfcContextDependentUnit)
+            {
+                IfcContextDependentUnit ifcContextDependentUnit = ifcUnit as IfcContextDependentUnit;
+                value = ifcContextDependentUnit.Name;
+                if (string.IsNullOrEmpty(value)) //fall back to UnitType enumeration
+                    value = ifcContextDependentUnit.UnitType.ToString();
+            }
+            else if (ifcUnit is IfcDerivedUnit)
+            {
+                IfcDerivedUnit ifcDerivedUnit = ifcUnit as IfcDerivedUnit;
+                value = ifcDerivedUnit.UnitType.ToString();
+                if ((string.IsNullOrEmpty(value)) && (ifcDerivedUnit.UserDefinedType != null)) //fall back to user defined
+                    value = ifcDerivedUnit.UserDefinedType;
+            }
+            else if (ifcUnit is IfcMonetaryUnit)
+            {
+                IfcMonetaryUnit ifcMonetaryUnit = ifcUnit as IfcMonetaryUnit;
+                value = ifcMonetaryUnit.Currency.ToString();
+            }
+
+            return (string.IsNullOrEmpty(value)) ? DEFAULT_STRING : value;
+        }
         
 
         /// <summary>

@@ -14,6 +14,7 @@ using Xbim.Ifc.PropertyResource;
 using Xbim.Ifc.SharedBldgElements;
 using Xbim.Ifc.SharedComponentElements;
 using Xbim.XbimExtensions;
+using Xbim.Ifc.SelectTypes;
 
 namespace Xbim.COBie.Data
 {
@@ -40,7 +41,7 @@ namespace Xbim.COBie.Data
         /// <summary>
         /// List of property names that are to be excluded from the Attributes generated from the Type sheet with contains compare
         /// </summary>
-        private List<string> _typeAttExcludesContains = new List<string>() { "Roomtag", "RoomTag", "Tag", "GSA BIM Area" };
+        private List<string> _typeAttExcludesContains = new List<string>() { "Roomtag", "RoomTag", "GSA BIM Area" }; //"Tag",
         
         #endregion
 
@@ -192,7 +193,7 @@ namespace Xbim.COBie.Data
             typeRow.WarrantyDescription =       GetWarrantyDescription(type, allPropertyValues);
             Interval warrantyDuration =         GetDurationUnitAndValue(allPropertyValues.GetFilteredPropertySingleValue("WarrantyDurationLabor")); 
             typeRow.WarrantyDurationLabor =     (!IsNumeric(warrantyDuration.Value)) ? DEFAULT_NUMERIC : warrantyDuration.Value;
-            typeRow.WarrantyDurationUnit =      (!IsNumeric(warrantyDuration.Unit)) ? DEFAULT_NUMERIC : warrantyDuration.Unit;
+            typeRow.WarrantyDurationUnit =      (string.IsNullOrEmpty(warrantyDuration.Unit)) ? "Year" : warrantyDuration.Unit; //redundant column via matrix sheet states set as year
             typeRow.ReplacementCost =           GetReplacementCost(type, allPropertyValues); 
 
             allPropertyValues.SetFilteredPropertySingleValues(type, "Pset_ServiceLife");
@@ -700,11 +701,8 @@ namespace Xbim.COBie.Data
                 return result;
 
             //Get the unit type
-            if ((typeValue.Unit != null) && (typeValue.Unit is IfcConversionBasedUnit))
-            {
-                IfcConversionBasedUnit conversionBasedUnit = typeValue.Unit as IfcConversionBasedUnit;
-                result.Unit = conversionBasedUnit.Name.ToString(); 
-            }
+            if (typeValue.Unit != null) 
+                result.Unit = GetUnit(typeValue.Unit);            
             
             //Get the time period value
             if ((typeValue.NominalValue != null) && (typeValue.NominalValue is IfcReal)) //if a number then we can calculate
@@ -717,6 +715,8 @@ namespace Xbim.COBie.Data
 
             return result;
         }
+
+        
 
         /// <summary>
         /// Get the Category for the IfcTypeObject
@@ -758,13 +758,13 @@ namespace Xbim.COBie.Data
             
             IEnumerable<IfcPropertySingleValue> properties = Enumerable.Empty<IfcPropertySingleValue>();
 
-            Dictionary<IfcPropertySet, List<IfcPropertySingleValue>> propertysets = allPropertyValues[type];
+            Dictionary<IfcPropertySet, List<IfcSimpleProperty>> propertysets = allPropertyValues[type];
             if (propertysets != null)
             {
-                 properties = from dic in propertysets
+                 properties = (from dic in propertysets
                              from psetval in dic.Value
-                              where categoriesTest.Contains(psetval.Name.ToString()) 
-                             select psetval;
+                              where categoriesTest.Contains(psetval.Name.ToString())
+                               select psetval).OfType<IfcPropertySingleValue>();
             }
             //second fall back on objects defined by this type, see if they hold a category on the first related object to this type
             if (!properties.Any())
@@ -772,10 +772,10 @@ namespace Xbim.COBie.Data
                 propertysets = allPropertyValues.GetRelatedProperties(type);
                 if (propertysets != null)
                 {
-                    properties = from dic in propertysets
+                    properties = (from dic in propertysets
                              from psetval in dic.Value
                                  where categoriesTest.Contains(psetval.Name.ToString())
-                             select psetval;
+                                  select psetval).OfType<IfcPropertySingleValue>();
                 }
             }
             string value = "";

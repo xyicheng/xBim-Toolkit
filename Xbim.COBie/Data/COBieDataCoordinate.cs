@@ -71,13 +71,14 @@ namespace Xbim.COBie.Data
                 
                 coordinate.CreatedBy = GetTelecomEmailAddress(ifcSpatialStructureElement.OwnerHistory);
                 coordinate.CreatedOn = GetCreatedOnDateAsFmtString(ifcSpatialStructureElement.OwnerHistory);
-                coordinate.Category = GetCategory(ifcSpatialStructureElement);
+               
                 
                 coordinate.RowName = coordinate.Name;
                 IfcCartesianPoint ifcCartesianPoint = null;
                 if (ifcSpatialStructureElement is IfcBuildingStorey)
                 {
-                    coordinate.SheetName = "Floor";
+                    coordinate.SheetName = "Floor"; 
+                    coordinate.Category = "point";
                     ifcCartesianPoint = (ifcSpatialStructureElement.ObjectPlacement as IfcLocalPlacement).RelativePlacement.Location;
                 }
                 else //is IfcSpace
@@ -87,7 +88,7 @@ namespace Xbim.COBie.Data
 
                     //ifcSpace.ElevationWithFlooring;
                     coordinate.SheetName = "Space";
-
+                    coordinate.Category = "box-lowerleft"; //and box-upperright, so two values required when we do this
                     //temp point fill for now
                     IfcProductDefinitionShape ifcProductDefinitionShape = ifcSpace.Representation as IfcProductDefinitionShape;
                     if (ifcProductDefinitionShape != null)

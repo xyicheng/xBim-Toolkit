@@ -9,6 +9,7 @@ using Xbim.COBie.Rows;
 using Xbim.Ifc.MeasureResource;
 using Xbim.XbimExtensions.DataProviders;
 using Xbim.Ifc.ExternalReferenceResource;
+using Xbim.Ifc.SelectTypes;
 
 
 
@@ -18,11 +19,10 @@ namespace Xbim.COBie.Data
     public class COBieDataPropertySetValues 
     {
         #region Fields
-        Dictionary<IfcObject, Dictionary<IfcPropertySet, List<IfcPropertySingleValue>>> _propSetsValuesObjects = null;
-        Dictionary<IfcTypeObject, Dictionary<IfcPropertySet, List<IfcPropertySingleValue>>> _propSetsValuesTypeObjects= null;
-        Dictionary<IfcTypeObject, Dictionary<IfcPropertySet, List<IfcPropertySingleValue>>> _propSetsValuesTypeObjectsFirstRelatedObject = null;
-        //Dictionary<IfcTypeObject, Dictionary<IfcObject,  Dictionary<IfcPropertySet, List<IfcPropertySingleValue>>>> _propSetsValuesTypeObjectsAllRelatedObject = null;
-        List<IfcPropertySingleValue> _ifcPropertySingleValues = null;
+        Dictionary<IfcObject, Dictionary<IfcPropertySet, List<IfcSimpleProperty>>> _propSetsValuesObjects = null;
+        Dictionary<IfcTypeObject, Dictionary<IfcPropertySet, List<IfcSimpleProperty>>> _propSetsValuesTypeObjects = null;
+        Dictionary<IfcTypeObject, Dictionary<IfcPropertySet, List<IfcSimpleProperty>>> _propSetsValuesTypeObjectsFirstRelatedObject = null;
+        List<IfcSimpleProperty> _ifcPropertySingleValues = null;
 
         /// <summary>
         /// List of property names that are to be excluded from Attributes sheet with equal compare
@@ -30,7 +30,7 @@ namespace Xbim.COBie.Data
         protected List<string> _commonAttExcludesEq = new List<string>()
         {   "MethodOfMeasurement",  "Omniclass Number",     "Assembly Code",                "Assembly Description",     "Uniclass Description",     "Uniclass Code", 
             "Category Code",    "Category Description",     "Classification Description",   "Classification Code",      "Name",                     "Description", 
-            "Hot Water Radius", "Host",                     "Limit Offset",                 "Recepticles", "Mark"
+            "Hot Water Radius", "Host",                     "Limit Offset",                 "Recepticles",              "Mark"
             
             //"Zone Base Offset", "Upper Limit",   "Line Pattern", "Symbol","Window Inset", "Radius", "Phase Created","Phase", //old ones might need to put back in
         };
@@ -57,22 +57,7 @@ namespace Xbim.COBie.Data
         #endregion
 
         #region Properties
-        
-        /// <summary>
-        /// List of property names that are to be excluded from Attributes sheet with equal compare
-        /// </summary>
-        public List<string> CommonAttExcludesEq { get { return _commonAttExcludesEq; } }
 
-        /// <summary>
-        /// List of property names that are to be excluded from Attributes sheet with start with compare
-        /// </summary>
-        public List<string> CommonAttExcludesStartWith { get { return _commonAttExcludesStartWith; } }
-        
-        /// <summary>
-        /// List of property names that are to be excluded from Attributes sheet with contains with compare
-        /// </summary>
-        public List<string> CommonAttExcludesContains { get { return _commonAttExcludesContains; } }
-        
         /// <summary>
         /// Exclude property single value names from selection in SetAttributes functions where the Name property equals an item in this list
         /// </summary>
@@ -83,6 +68,10 @@ namespace Xbim.COBie.Data
         /// </summary>
         public List<string> ExcludePropertyValueNamesWildcard { get; private set; }
 
+        /// <summary>
+        /// Exclude property single value names from selection in SetAttributes functions which contain the strings held in this list
+        /// </summary>
+        public List<string> ExcludePropertyValueNamesStartingWith { get; private set; }
         /// <summary>
         /// Exclude property set names from selection in SetAttributes functions
         /// </summary>
@@ -97,7 +86,7 @@ namespace Xbim.COBie.Data
         /// <summary>
         /// Filtered property single value list
         /// </summary>
-        public List<IfcPropertySingleValue> FilteredPropertySingleValues
+        public List<IfcSimpleProperty> FilteredPropertySingleValues
         {
             get { return _ifcPropertySingleValues; }
         }
@@ -114,7 +103,7 @@ namespace Xbim.COBie.Data
         public COBieDataPropertySetValues(IEnumerable<IfcObject> sourceRows)
         {
             _propSetsValuesObjects = sourceRows.ToDictionary(el => el, el => el.PropertySets
-                .ToDictionary(ps => ps, ps => ps.HasProperties.OfType<IfcPropertySingleValue>().ToList()));
+                .ToDictionary(ps => ps, ps => ps.HasProperties.OfType<IfcSimpleProperty>().ToList()));
             //set up lists
             SetListsUp();
         }
@@ -126,12 +115,12 @@ namespace Xbim.COBie.Data
         public COBieDataPropertySetValues(IEnumerable<IfcTypeObject> sourceRows)
         {
             _propSetsValuesTypeObjects = sourceRows.Where(tObj => (tObj.HasPropertySets != null)).ToDictionary(tObj => tObj, tObj => tObj.HasPropertySets.OfType<IfcPropertySet>()
-                .ToDictionary(ps => ps, ps => ps.HasProperties.OfType<IfcPropertySingleValue>().ToList()));
+                .ToDictionary(ps => ps, ps => ps.HasProperties.OfType<IfcSimpleProperty>().ToList()));
             //===========get related properties==================
 
             //Get the first related object and property sets and property single values for the IfcTypeObject
             _propSetsValuesTypeObjectsFirstRelatedObject = sourceRows.ToDictionary(tObj => tObj, tObj => tObj.ObjectTypeOf.First().RelatedObjects.First().IsDefinedByProperties.Select(ps => ps.RelatingPropertyDefinition).OfType<IfcPropertySet>()
-                                                                                                                       .ToDictionary(ps => ps, ps => ps.HasProperties.OfType<IfcPropertySingleValue>().ToList()));
+                                                                                                                       .ToDictionary(ps => ps, ps => ps.HasProperties.OfType<IfcSimpleProperty>().ToList()));
 
             //set up lists
             SetListsUp();           
@@ -144,7 +133,7 @@ namespace Xbim.COBie.Data
         /// </summary>
         private void SetListsUp()
         {
-            _ifcPropertySingleValues = new List<IfcPropertySingleValue>();
+            _ifcPropertySingleValues = new List<IfcSimpleProperty>();
             //Set up passed values dictionary
             RowParameters = new Dictionary<string, string>();
             RowParameters.Add("Sheet", Constants.DEFAULT_STRING);
@@ -154,10 +143,11 @@ namespace Xbim.COBie.Data
             RowParameters.Add("ExtSystem", Constants.DEFAULT_STRING);
             //set up lists
             ExcludePropertyValueNames = new List<string>();
-            ExcludePropertyValueNames.AddRange(CommonAttExcludesEq);
+            ExcludePropertyValueNames.AddRange(_commonAttExcludesEq);
             ExcludePropertyValueNamesWildcard = new List<string>();
-            ExcludePropertyValueNamesWildcard.AddRange(CommonAttExcludesContains);
-            ExcludePropertyValueNamesWildcard.AddRange(CommonAttExcludesStartWith);
+            ExcludePropertyValueNamesWildcard.AddRange(_commonAttExcludesContains);
+            ExcludePropertyValueNamesStartingWith = new List<string>();
+            ExcludePropertyValueNamesStartingWith.AddRange(_commonAttExcludesStartWith);
             ExcludePropertySetNames = new List<string>();
             
         }
@@ -167,7 +157,7 @@ namespace Xbim.COBie.Data
         /// </summary>
         /// <param name="ifcObject"> IfcObject key for indexer</param>
         /// <returns></returns>
-        public Dictionary<IfcPropertySet, List<IfcPropertySingleValue>> this[IfcObject ifcObject]
+        public Dictionary<IfcPropertySet, List<IfcSimpleProperty>> this[IfcObject ifcObject]
         {
             get
             {
@@ -183,7 +173,7 @@ namespace Xbim.COBie.Data
         /// </summary>
         /// <param name="ifcTypeObject"> IfcTypeObject key for indexer</param>
         /// <returns></returns>
-        public Dictionary<IfcPropertySet, List<IfcPropertySingleValue>> this[IfcTypeObject ifcTypeObject]
+        public Dictionary<IfcPropertySet, List<IfcSimpleProperty>> this[IfcTypeObject ifcTypeObject]
         {
             get
             {
@@ -199,7 +189,7 @@ namespace Xbim.COBie.Data
         /// </summary>
         /// <param name="ifcTypeObject"> IfcTypeObject </param>
         /// <returns>Dictionary of IfcPropertySet keyed to List of IfcPropertySingleValue</returns>
-        public Dictionary<IfcPropertySet, List<IfcPropertySingleValue>> GetRelatedProperties(IfcTypeObject ifcTypeObject)
+        public Dictionary<IfcPropertySet, List<IfcSimpleProperty>> GetRelatedProperties(IfcTypeObject ifcTypeObject)
         {
             if (_propSetsValuesTypeObjectsFirstRelatedObject.ContainsKey(ifcTypeObject))
              return _propSetsValuesTypeObjectsFirstRelatedObject[ifcTypeObject];
@@ -269,7 +259,7 @@ namespace Xbim.COBie.Data
 
                
         /// <summary>
-        /// Get the property value where the property name equals the passed in value 
+        /// Get the property value where the property name equals the passed in value  
         /// </summary>
         /// <param name="PropertyValueName">IfcPropertySingleValue name</param>
         /// <param name="containsString">Do Contains text match on PropertyValueName if true, exact match if false</param>
@@ -278,9 +268,9 @@ namespace Xbim.COBie.Data
         {
             IfcPropertySingleValue ifcPropertySingleValue = null;
             if (containsString)
-                ifcPropertySingleValue = _ifcPropertySingleValues.Where(p => p.Name.ToString().Contains(PropertyValueName)).FirstOrDefault();
+                ifcPropertySingleValue = _ifcPropertySingleValues.Where(p => p.Name.ToString().Contains(PropertyValueName)).OfType<IfcPropertySingleValue>().FirstOrDefault();
             else
-                ifcPropertySingleValue = _ifcPropertySingleValues.Where(p => p.Name == PropertyValueName).FirstOrDefault();
+                ifcPropertySingleValue = _ifcPropertySingleValues.Where(p => p.Name == PropertyValueName).OfType<IfcPropertySingleValue>().FirstOrDefault();
 
             //return a string value
             if ((ifcPropertySingleValue != null) && 
@@ -302,7 +292,7 @@ namespace Xbim.COBie.Data
         /// <returns></returns>
         public IfcPropertySingleValue GetFilteredPropertySingleValue(string PropertyValueName)
         {
-            return _ifcPropertySingleValues.Where(p => p.Name == PropertyValueName).FirstOrDefault();
+            return _ifcPropertySingleValues.Where(p => p.Name == PropertyValueName).OfType<IfcPropertySingleValue>().FirstOrDefault();
         }
 
         /// <summary>
@@ -313,7 +303,7 @@ namespace Xbim.COBie.Data
         public void PopulateAttributesRows(IfcObject ifcObject, ref COBieSheet<COBieAttributeRow> attributes)
         {
 
-            foreach (KeyValuePair<IfcPropertySet, List<IfcPropertySingleValue>> pairValues in _propSetsValuesObjects[ifcObject])
+            foreach (KeyValuePair<IfcPropertySet, List<IfcSimpleProperty>> pairValues in _propSetsValuesObjects[ifcObject])
             {
                 IfcPropertySet ps = pairValues.Key; //get Property Set
                 //get all property attached to the property set
@@ -330,7 +320,7 @@ namespace Xbim.COBie.Data
                 }
 
                 //Get Property SetAttribSheet Property Single Values
-                IEnumerable<IfcPropertySingleValue> pSVs = pairValues.Value; 
+                IEnumerable<IfcSimpleProperty> pSVs = pairValues.Value; 
                 //filter on ExcludePropertyValueNames and ExcludePropertyValueNamesWildcard
                 pSVs = FilterRows(pSVs);
                 //fill in the data to the attribute rows
@@ -348,7 +338,7 @@ namespace Xbim.COBie.Data
         {
             if (_propSetsValuesTypeObjects.ContainsKey(ifcTypeObject))
             {
-                foreach (KeyValuePair<IfcPropertySet, List<IfcPropertySingleValue>> pairValues in _propSetsValuesTypeObjects[ifcTypeObject])
+                foreach (KeyValuePair<IfcPropertySet, List<IfcSimpleProperty>> pairValues in _propSetsValuesTypeObjects[ifcTypeObject])
                 {
                     IfcPropertySet ps = pairValues.Key; //get Property Set
                     //get all property attached to the property set
@@ -364,7 +354,7 @@ namespace Xbim.COBie.Data
                         }
                     }
 
-                    IEnumerable<IfcPropertySingleValue> pSVs = pairValues.Value; //Get Property SetAttribSheet Property Single Values
+                    IEnumerable<IfcSimpleProperty> pSVs = pairValues.Value; //Get Property SetAttribSheet Property Single Values
                     //filter on ExcludePropertyValueNames and ExcludePropertyValueNamesWildcard
                     pSVs = FilterRows(pSVs);
                     //fill in the data to the attribute rows
@@ -378,7 +368,7 @@ namespace Xbim.COBie.Data
         /// </summary>
         /// <param name="pSVs">IEnumerable of IfcPropertySingleValue</param>
         /// <returns>IEnumerable of IfcPropertySingleValue</returns>
-        private IEnumerable<IfcPropertySingleValue> FilterRows(IEnumerable<IfcPropertySingleValue> pSVs)
+        private IEnumerable<IfcSimpleProperty> FilterRows(IEnumerable<IfcSimpleProperty> pSVs)
         {
             //filter for excluded properties, full name
             if (ExcludePropertyValueNames.Count() > 0)
@@ -398,6 +388,20 @@ namespace Xbim.COBie.Data
                                select item).Count() == 0)
                        select pVS;
             }
+            //filter out the Property names that contain a string from the list excPropWC
+            if (ExcludePropertyValueNamesStartingWith.Count() > 0)
+            {
+                //excPropWC = excPropWC.ConvertAll(d => d.ToLower()); //lowercase the strings in the list
+                pSVs = from pVS in pSVs
+                       where ((from item in ExcludePropertyValueNamesStartingWith
+                               where ((pVS.Name != null) && 
+                                       (pVS.Name.ToString().Length >= item.Length) &&  
+                                       (pVS.Name.ToString().Substring(0, item.Length) == item )
+                                       ) //starts with the string
+                               select item).Count() == 0)
+                       select pVS;
+            }
+            
             return pSVs;
         }
 
@@ -407,38 +411,143 @@ namespace Xbim.COBie.Data
         /// <param name="attributes">The attribute Sheet to add the properties to its rows</param>
         /// <param name="propertySet">IfcPropertySet which is holding the IfcPropertySingleValue</param>
         /// <param name="propertySetValues">IEnumerable list of IfcPropertySingleValue to extract to the attribute sheet</param>
-        private void ProcessAttributeRow(COBieSheet<COBieAttributeRow> attributes, IfcPropertySet propertySet, IEnumerable<IfcPropertySingleValue> propertySetValues)
+        private void ProcessAttributeRow(COBieSheet<COBieAttributeRow> attributes, IfcPropertySet propertySet, IEnumerable<IfcSimpleProperty> propertySetValues)
         {
             //construct the rows
-            foreach (IfcPropertySingleValue propertySetSingleValue in propertySetValues)
+            foreach (IfcSimpleProperty propertySetSimpleProperty in propertySetValues)
             {
-                if (propertySetSingleValue != null)
+                if (propertySetSimpleProperty != null)
                 {
                     string value = "";
-                    string name = propertySetSingleValue.Name.ToString();
+                    string name = propertySetSimpleProperty.Name.ToString();
 
+
+                      
                     if (string.IsNullOrEmpty(name))
                     {
                         continue; //skip to next loop item
                     }
 
-                    if (propertySetSingleValue.NominalValue != null)
+                    IEnumerable<COBieAttributeRow> TestRow = attributes.Rows.Where(r => r.Name == name && r.SheetName == RowParameters["Sheet"] && r.RowName == RowParameters["Name"]);
+                    if (TestRow.Any()) continue; //skip to next loop item
+                    
+                    //check what type we of property we have
+                    IfcPropertySingleValue ifcPropertySingleValue = propertySetSimpleProperty as IfcPropertySingleValue;
+                    //get value
+                    if (ifcPropertySingleValue != null)
                     {
-                        value = propertySetSingleValue.NominalValue.Value.ToString();
-                        double num;
-                        if (double.TryParse(value, out num)) value = num.ToString("F3");
-                        if ((string.IsNullOrEmpty(value)) || (string.Compare(value, propertySetSingleValue.Name.ToString(), true) == 0) || (string.Compare(value, "default", true) == 0))
+                        if (ifcPropertySingleValue.NominalValue != null)
                         {
-                            continue; //skip to next loop item
+                            value = ifcPropertySingleValue.NominalValue.Value.ToString();
+                            double num;
+                            if (double.TryParse(value, out num)) value = num.ToString("F3");
+                            if ((string.IsNullOrEmpty(value)) || (string.Compare(value, ifcPropertySingleValue.Name.ToString(), true) == 0) || (string.Compare(value, "default", true) == 0))
+                            {
+                                continue; //skip to next loop item
+                            }
+                            
+                        }
+                       
+                    }
+
+                    COBieAttributeRow attribute = new COBieAttributeRow(attributes);
+                    attribute.Unit = Constants.DEFAULT_STRING; //set initially to default, saves the else statements
+                    attribute.AllowedValues = Constants.DEFAULT_STRING;
+                    attribute.Description = Constants.DEFAULT_STRING;
+                    
+                    if (ifcPropertySingleValue != null) //as we can skip on ifcPropertySingleValue we need to split ifcPropertySingleValue testing
+                    {
+                        if ((ifcPropertySingleValue.Unit != null))
+                        {
+                            attribute.Unit = COBieData<COBieAttributeRow>.GetUnit(ifcPropertySingleValue.Unit);
+                            if (ifcPropertySingleValue.Unit is IfcNamedUnit)
+                                attribute.AllowedValues = ((IfcNamedUnit)ifcPropertySingleValue.Unit).UnitType.ToString();
+                            
                         }
                     }
 
-                    IEnumerable<COBieAttributeRow> TestRow =  attributes.Rows.Where(r => r.Name == propertySetSingleValue.Name.ToString() && r.SheetName == RowParameters["Sheet"] && r.RowName == RowParameters["Name"]);
-                    if (TestRow.Any()) continue; //skip to next loop item
-                                       
+                    //Process properties that are not IfcPropertySingleValue
+                    IfcPropertyEnumeratedValue ifcPropertyEnumeratedValue = propertySetSimpleProperty as IfcPropertyEnumeratedValue;
+                    if (ifcPropertyEnumeratedValue != null)
+                    {
+                        string EnumValuesHeld = "";
+                        if (ifcPropertyEnumeratedValue.EnumerationValues != null)
+                        {
+                           value = GetEnumerationValues(ifcPropertyEnumeratedValue.EnumerationValues);
+                        }
+                        
+                        //get  the unit and all possible values held in the Enumeration
+                        if (ifcPropertyEnumeratedValue.EnumerationReference != null)
+                        {
+                            if (ifcPropertyEnumeratedValue.EnumerationReference.Unit != null)
+                            {
+                                attribute.Unit = COBieData<COBieAttributeRow>.GetUnit(ifcPropertyEnumeratedValue.EnumerationReference.Unit);
+                            }
+                            EnumValuesHeld = GetEnumerationValues(ifcPropertyEnumeratedValue.EnumerationReference.EnumerationValues);
+                            if (!string.IsNullOrEmpty(EnumValuesHeld)) attribute.AllowedValues = EnumValuesHeld;
+                        }
+                    }
+
+                    IfcPropertyBoundedValue ifcPropertyBoundedValue = propertySetSimpleProperty as IfcPropertyBoundedValue;
+                    if (ifcPropertyBoundedValue != null)
+                    {
+                        //combine upper and lower into the value field
+                        if (ifcPropertyBoundedValue.UpperBoundValue != null)
+                            value = ifcPropertyBoundedValue.UpperBoundValue.ToString();
+                        if (ifcPropertyBoundedValue.LowerBoundValue != null)
+                        {
+                            if (!string.IsNullOrEmpty(value))
+                                value += " : " + ifcPropertyBoundedValue.LowerBoundValue.ToString();
+                            else
+                                value = ifcPropertyBoundedValue.LowerBoundValue.ToString();
+                        }
+                        
+                        if ((ifcPropertyBoundedValue.Unit != null))
+                        {
+                            attribute.Unit = COBieData<COBieAttributeRow>.GetUnit(ifcPropertyBoundedValue.Unit);
+                            if (ifcPropertySingleValue.Unit is IfcNamedUnit)
+                                attribute.AllowedValues = ((IfcNamedUnit)ifcPropertySingleValue.Unit).UnitType.ToString();
                             
-                    COBieAttributeRow attribute = new COBieAttributeRow(attributes);
-                    attribute.Name = propertySetSingleValue.Name.ToString();
+                        }
+                        
+                    }
+
+                    IfcPropertyTableValue ifcPropertyTableValue = propertySetSimpleProperty as IfcPropertyTableValue;
+                    if (ifcPropertyTableValue != null)
+                    {
+                        throw new NotImplementedException("ProcessAttributeRow: IfcPropertyTableValue not implemented");
+                    }
+
+                    IfcPropertyReferenceValue ifcPropertyReferenceValue = propertySetSimpleProperty as IfcPropertyReferenceValue;
+                    if (ifcPropertyReferenceValue != null)
+                    {
+                        if (ifcPropertyReferenceValue.UsageName != null)
+                            attribute.Description = (string.IsNullOrEmpty(ifcPropertyReferenceValue.UsageName.ToString())) ? Constants.DEFAULT_STRING : ifcPropertyReferenceValue.UsageName.ToString();
+
+                        if (ifcPropertyReferenceValue.PropertyReference != null)
+                        {
+                            value = ifcPropertyReferenceValue.PropertyReference.ToString();
+                            attribute.Unit = ifcPropertyReferenceValue.PropertyReference.GetType().Name;
+                        }
+                        
+                    }
+                    IfcPropertyListValue ifcPropertyListValue = propertySetSimpleProperty as IfcPropertyListValue;
+                    if (ifcPropertyListValue != null)
+                    {
+                        if (ifcPropertyListValue.ListValues != null)
+                        {
+                            value = GetEnumerationValues(ifcPropertyListValue.ListValues);
+                        }
+                        
+                        //get  the unit and all possible values held in the Enumeration
+                        if (ifcPropertyListValue.Unit != null)
+                            attribute.Unit = COBieData<COBieAttributeRow>.GetUnit(ifcPropertyListValue.Unit);
+                        
+
+                    }
+                 
+                            
+                    attribute.Name = propertySetSimpleProperty.Name.ToString();
 
                     //Get category
                     string cat = GetCategory(propertySet);
@@ -452,17 +561,28 @@ namespace Xbim.COBie.Data
                     attribute.CreatedBy = RowParameters["CreatedBy"];
                     attribute.CreatedOn = RowParameters["CreatedOn"];
                     attribute.ExtSystem = RowParameters["ExtSystem"];
-
-                    attribute.Value = value;
-                    attribute.Unit = Constants.DEFAULT_STRING; //set initially to default, saves the else statements
-                    attribute.Description = Constants.DEFAULT_STRING;
-                    attribute.AllowedValues = Constants.DEFAULT_STRING;
-                    if ((propertySetSingleValue.Unit != null) && (propertySetSingleValue.Unit is IfcContextDependentUnit))
+                    
+                    double test;
+                    if (double.TryParse(value, out test))
                     {
-                        attribute.Unit = ((IfcContextDependentUnit)propertySetSingleValue.Unit).Name.ToString();
-                        attribute.AllowedValues = ((IfcContextDependentUnit)propertySetSingleValue.Unit).UnitType.ToString();
+                        if ((attribute.Unit.ToLower().Contains("millimeters") || (attribute.Unit.ToLower().Contains("millimetres")) &&
+                            (test > 1000000) //if size is large
+                            )
+                        {
+                            test = test / 1000000.0;
+                            attribute.Unit = "squaremetres";
+                        }
+                       
+                        value = string.Format("{0:F4}", test); //format the number
                     }
-                    attribute.Description = propertySetSingleValue.Description.ToString();
+                    
+                    attribute.Value = string.IsNullOrEmpty(value) ? Constants.DEFAULT_STRING : value;
+                    
+
+                    
+
+
+                    attribute.Description = propertySetSimpleProperty.Description.ToString();
                     if (string.IsNullOrEmpty(attribute.Description)) //if no description then just use name property
                     {
                         attribute.Description = attribute.Name;
@@ -473,13 +593,23 @@ namespace Xbim.COBie.Data
             }
         }
 
+        private string GetEnumerationValues(IEnumerable<IfcValue> ifcValues )
+        {
+            List<string> EnumValues = new List<string>();
+            foreach (var item in ifcValues)
+            {
+                EnumValues.Add(item.Value.ToString());
+            }
+            return string.Join(" : ", EnumValues);
+        }
+
         /// <summary>
         /// Get the first related object properties, fall back to where the IfcTypeObject has no properties
         /// </summary>
         /// <param name="ifcTypeObject">Object to get related object from</param>
         private void GetRelatedObjectProperties(IfcTypeObject ifcTypeObject)
         {
-            List<IfcPropertySingleValue> RelObjValues = new List<IfcPropertySingleValue>(); 
+            List<IfcSimpleProperty> RelObjValues = new List<IfcSimpleProperty>(); 
 
             RelObjValues = (from dic in _propSetsValuesTypeObjectsFirstRelatedObject[ifcTypeObject]
                                 from psetval in dic.Value //list of IfcPropertySingleValue
