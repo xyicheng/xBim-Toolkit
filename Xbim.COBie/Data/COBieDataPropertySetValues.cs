@@ -561,35 +561,11 @@ namespace Xbim.COBie.Data
                     attribute.CreatedBy = RowParameters["CreatedBy"];
                     attribute.CreatedOn = RowParameters["CreatedOn"];
                     attribute.ExtSystem = RowParameters["ExtSystem"];
-                    
-                    double test;
-                    if (double.TryParse(value, out test))
-                    {
-                        //if we have a large number and the nits is millimetres then lets change to metres
-                        bool USmeters = attribute.Unit.ToLower().Contains("millimeters") ;
-                        bool UKMetres = (attribute.Unit.ToLower().Contains("millimetres"));
 
-                        if ((USmeters || UKMetres) &&
-                            (test > 1000000) //if size is large
-                            )
-                        {
-                            test = test / 1000000.0;
-                            if (UKMetres)
-                                attribute.Unit = "squaremetres";
-                            else
-                                attribute.Unit = "squaremeters";
-
-                        }
-                       
-                        value = string.Format("{0:F4}", test); //format the number
-                    }
+                    value = NumberValueCheck(value, attribute);
                     
                     attribute.Value = string.IsNullOrEmpty(value) ? Constants.DEFAULT_STRING : value;
                     
-
-                    
-
-
                     attribute.Description = propertySetSimpleProperty.Description.ToString();
                     if (string.IsNullOrEmpty(attribute.Description)) //if no description then just use name property
                     {
@@ -599,6 +575,47 @@ namespace Xbim.COBie.Data
                     attributes.Rows.Add(attribute);
                 }
             }
+        }
+
+        private string NumberValueCheck(string value, COBieAttributeRow attribute)
+        {
+            double test;
+            if (double.TryParse(value, out test))
+            {
+                //if we have a large number and the units is millimetres then lets change to metres
+                //SquareMillemetres
+                bool uSSqmeters = attribute.Unit.ToLower().Contains("squaremillimeters");
+                bool uKSqMetres = (attribute.Unit.ToLower().Contains("squaremillimetres"));
+                if ((uSSqmeters || uKSqMetres) &&
+                    (test > 1000000) //if size is large
+                    )
+                {
+                    test = test / 1000000.0;
+                    if (uKSqMetres)
+                        attribute.Unit = "squaremetres";
+                    else
+                        attribute.Unit = "squaremeters";
+
+                }
+
+                //Millemetres
+                bool uSmeters = attribute.Unit.ToLower().Contains("millimeters");
+                bool uKMetres = (attribute.Unit.ToLower().Contains("millimetres"));
+                if ((uSmeters || uKMetres) &&
+                    (test > 100000) //if size is large
+                    )
+                {
+                    test = test / 1000.0;
+                    if (uKMetres)
+                        attribute.Unit = "metres";
+                    else
+                        attribute.Unit = "meters";
+
+                }
+
+                value = string.Format("{0:F4}", test); //format the number
+            }
+            return value;
         }
 
         private string GetEnumerationValues(IEnumerable<IfcValue> ifcValues )
