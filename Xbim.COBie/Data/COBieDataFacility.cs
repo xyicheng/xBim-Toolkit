@@ -58,7 +58,15 @@ namespace Xbim.COBie.Data
             
             COBieFacilityRow facility = new COBieFacilityRow(facilities);
 
-            facility.Name = (string.IsNullOrEmpty(ifcBuilding.Name.ToString())) ? "TheBuildingNameHere" : ifcBuilding.Name.ToString();
+            string name = "";
+            if (!string.IsNullOrEmpty(ifcProject.Name))
+                name = ifcProject.Name;
+            else if (!string.IsNullOrEmpty(ifcSite.Name))
+                name = ifcSite.Name;
+            else if (!string.IsNullOrEmpty(ifcBuilding.Name))
+                name = ifcBuilding.Name;
+
+            facility.Name = (string.IsNullOrEmpty(name)) ? "The Facility Name Here" : name;
 
             facility.CreatedBy = GetTelecomEmailAddress(ifcBuilding.OwnerHistory);
             facility.CreatedOn = GetCreatedOnDateAsFmtString(ifcBuilding.OwnerHistory);
@@ -67,10 +75,17 @@ namespace Xbim.COBie.Data
             
             facility.ProjectName = GetFacilityProjectName(ifcProject);
             facility.SiteName = GetFacilitySiteName(ifcSite);
-            facility.LinearUnits = GetLinearUnits();
-            facility.AreaUnits = GetAreaUnits();
-            facility.VolumeUnits = GetVolumeUnits();
-            facility.CurrencyUnit = MonetaryUnit();
+
+            string linearUnit = "";
+            string areaUnit = "";
+            string volumeUnit = "";
+            string moneyUnit = "";
+            GetGlobalUnits(out linearUnit, out areaUnit, out volumeUnit, out moneyUnit);
+            facility.LinearUnits = linearUnit;
+            facility.AreaUnits = areaUnit;
+            facility.VolumeUnits = volumeUnit;
+            facility.CurrencyUnit = moneyUnit;
+
             facility.AreaMeasurement = (ifcElementQuantity == null) ? "" : ifcElementQuantity.MethodOfMeasurement.ToString();
             facility.ExternalSystem = GetExternalSystem(ifcBuilding);
 
@@ -105,6 +120,7 @@ namespace Xbim.COBie.Data
             return facilities;
         }
 
+       
 
         private string GetFacilityDescription(IfcBuilding ifcBuilding)
         {
@@ -161,87 +177,130 @@ namespace Xbim.COBie.Data
             return "Site Name";
         }
 
-        private string GetLinearUnits()
+        private void GetGlobalUnits(out string linearUnit, out string areaUnit, out string volumeUnit, out string moneyUnit)
         {
-            IEnumerable<IfcUnitAssignment> unitAssignments = Model.InstancesOfType<IfcUnitAssignment>();
-            foreach (IfcUnitAssignment ua in unitAssignments)
+            linearUnit = "";
+            areaUnit = "";
+            volumeUnit = "";
+            moneyUnit = "";
+            foreach (IfcUnitAssignment ifcUnitAssignment in Model.InstancesOfType<IfcUnitAssignment>()) //loop all IfcUnitAssignment
             {
-                UnitSet us = ua.Units;
-                foreach (IfcUnit u in us)
+                foreach (IfcUnit ifcUnit in ifcUnitAssignment.Units) //loop the UnitSet
                 {
-                    if (u is IfcSIUnit)
+                    IfcNamedUnit ifcNamedUnit = ifcUnit as IfcNamedUnit;
+                    if (ifcNamedUnit != null)
                     {
-                        if (((IfcSIUnit)u).UnitType == IfcUnitEnum.LENGTHUNIT)
-                        {
-                            if (((IfcSIUnit)u).Name.ToString().ToLower() == "milli") return "millimetres";
-                            if (((IfcSIUnit)u).Name.ToString().ToLower() == "metre") return "metres";
-                            if (((IfcSIUnit)u).Name.ToString().ToLower() == "inch") return "inches";
-                        }
+                        if ((ifcNamedUnit.UnitType == IfcUnitEnum.LENGTHUNIT) && string.IsNullOrEmpty(linearUnit)) //we want length units until we have value
+                            linearUnit = GetLinearLengthUnit(ifcUnit);
+
+                        if ((ifcNamedUnit.UnitType == IfcUnitEnum.AREAUNIT) && string.IsNullOrEmpty(areaUnit)) //we want area units until we have value
+                            areaUnit = GetUnderScoredUnit(ifcUnit);
+
+                        if ((ifcNamedUnit.UnitType == IfcUnitEnum.VOLUMEUNIT) && string.IsNullOrEmpty(volumeUnit)) //we want volume units until we have value
+                            volumeUnit = GetUnderScoredUnit(ifcUnit); 
                     }
+                    //get the money unit
+                    IfcMonetaryUnit ifcMonetaryUnit = ifcUnit as IfcMonetaryUnit;
+                    if ((ifcMonetaryUnit != null) && string.IsNullOrEmpty(moneyUnit))
+                        moneyUnit = MonetaryUnit(ifcMonetaryUnit);
+                    else
+                        moneyUnit = DEFAULT_STRING;
                 }
             }
-            return "feet";
-        }
-
-        private string MonetaryUnit()
-        {
-            IfcMonetaryUnit ifcMonetaryUnit = Model.InstancesOfType<IfcMonetaryUnit>().FirstOrDefault();
-
-            //string currencyName = CultureInfo.GetCultures(CultureTypes.SpecificCultures)
-            //   .Where(c => new RegionInfo(c.LCID).ISOCurrencySymbol == ifcMonetaryUnit.Currency.ToString())
-            //   .Select(c => new RegionInfo(c.LCID).CurrencyEnglishName)
-            //   .FirstOrDefault();
             
+        }
+
+        /// <summary>
+        /// Extract the Linear Length unit
+        /// </summary>
+        /// <param name="ifcUnit">ifcUnit object to get unit name from</param>
+        /// <returns>string holding length unit name</returns>
+        private string GetLinearLengthUnit( IfcUnit ifcUnit)
+        {
+            string value = "";
+            if (ifcUnit is IfcSIUnit)
+            {
+                IfcSIUnit ifcSIUnit = ifcUnit as IfcSIUnit;
+
+                string prefixUnit = (ifcSIUnit.Prefix != null) ? ifcSIUnit.Prefix.ToString() : "";  //see IfcSIPrefix
+                value = ifcSIUnit.Name.ToString();                                             //see IfcSIUnitName
+                if (!string.IsNullOrEmpty(value)) value = prefixUnit + value; //combine to give length name
+
+                if (!string.IsNullOrEmpty(value)) return value.ToLower();
+            }
+            if (ifcUnit is IfcConversionBasedUnit)
+            {
+                IfcConversionBasedUnit IfcConversionBasedUnit = ifcUnit as IfcConversionBasedUnit;
+                value = (IfcConversionBasedUnit.Name != null) ? IfcConversionBasedUnit.Name.ToString() : "";
+                if (!string.IsNullOrEmpty(value)) return value.ToLower();
+            }
+
+            return DEFAULT_STRING;
+        }
+
+        /// <summary>
+        /// Extract the Area unit
+        /// </summary>
+        /// <param name="ifcUnit">ifcUnit object to get unit name from</param>
+        /// <returns>string holding area unit name</returns>
+        private string GetUnderScoredUnit(IfcUnit ifcUnit)
+        {
+            string value = "";
+            string sqText = "";
+            string prefixUnit = "";
+                    
+            if (ifcUnit is IfcSIUnit)
+            {
+                IfcSIUnit ifcSIUnit = ifcUnit as IfcSIUnit;
+
+                prefixUnit = (ifcSIUnit.Prefix != null) ? ifcSIUnit.Prefix.ToString() : "";  //see IfcSIPrefix
+                value = ifcSIUnit.Name.ToString();                                             //see IfcSIUnitName
+                
+                if (!string.IsNullOrEmpty(value))
+                {
+                    string[] split = value.Split('_');
+                    if (split.Length > 1) sqText = split.First(); //see if _ delimited value such as SQUARE_METRE
+                    value = sqText + prefixUnit + split.Last(); //combine to give full unit name
+                }
+                if (!string.IsNullOrEmpty(value)) return value.ToLower();
+            }
+            if (ifcUnit is IfcConversionBasedUnit)
+            {
+                IfcConversionBasedUnit IfcConversionBasedUnit = ifcUnit as IfcConversionBasedUnit;
+                value = (IfcConversionBasedUnit.Name != null) ? IfcConversionBasedUnit.Name.ToString() : "";
+
+                if (!string.IsNullOrEmpty(value))
+                {
+                    string[] split = value.Split('_');
+                    if (split.Length > 1) sqText = split.First(); //see if _ delimited value such as SQUARE_METRE
+                    value = sqText + split.Last(); //combine to give full unit name
+                }
+                if (!string.IsNullOrEmpty(value)) return value.ToLower();
+            }
+
+            return DEFAULT_STRING;
+        }
+
+        /// <summary>
+        /// Get Monetary Unit
+        /// </summary>
+        /// <param name="ifcMonetaryUnit">IfcMonetaryUnit object</param>
+        /// <returns>string holding the Monetary Unit</returns>
+        private string MonetaryUnit(IfcMonetaryUnit ifcMonetaryUnit)
+        {
+            //IfcMonetaryUnit ifcMonetaryUnit = Model.InstancesOfType<IfcMonetaryUnit>().FirstOrDefault();
+
+            string value = CultureInfo.GetCultures(CultureTypes.SpecificCultures)
+               .Where(c => new RegionInfo(c.LCID).ISOCurrencySymbol == ifcMonetaryUnit.Currency.ToString())
+               .Select(c => new RegionInfo(c.LCID).CurrencyEnglishName)
+               .FirstOrDefault();
+            //string value = ifcMonetaryUnit.Currency.ToString();
             
-            return (ifcMonetaryUnit == null) ? DEFAULT_STRING : ifcMonetaryUnit.Currency.ToString(); ;
+            return  string.IsNullOrEmpty(value) ? DEFAULT_STRING : value;
         }
 
-        private string GetAreaUnits()
-        {
-            IEnumerable<IfcUnitAssignment> unitAssignments = Model.InstancesOfType<IfcUnitAssignment>();
-            foreach (IfcUnitAssignment ua in unitAssignments)
-            {
-                UnitSet us = ua.Units;
-                foreach (IfcUnit u in us)
-                {
-                    if (u is IfcSIUnit)
-                    {
-                        if (((IfcSIUnit)u).UnitType == IfcUnitEnum.AREAUNIT)
-                            if (((IfcSIUnit)u).Name.ToString().ToLower() == "square_metre") return "squaremetres";
-                    }
-                    else if (u is IfcConversionBasedUnit)
-                    {
-                        if (((IfcConversionBasedUnit)u).UnitType == IfcUnitEnum.AREAUNIT)
-                            if (((IfcConversionBasedUnit)u).Name.ToString().ToLower() == "square_metre") return "squaremetres";
-                    }
-                }
-            }
-
-            return "squarefeet";
-        }
-
-        private string GetVolumeUnits()
-        {
-            IEnumerable<IfcUnitAssignment> unitAssignments = Model.InstancesOfType<IfcUnitAssignment>();
-            foreach (IfcUnitAssignment ua in unitAssignments)
-            {
-                UnitSet us = ua.Units;
-                foreach (IfcUnit u in us)
-                {
-                    if (u is IfcSIUnit)
-                    {
-                        if (((IfcSIUnit)u).UnitType == IfcUnitEnum.VOLUMEUNIT)
-                            if (((IfcSIUnit)u).Name.ToString().ToLower() == "cubic_metre") return "cubicmetres";
-                    }
-                    else if (u is IfcConversionBasedUnit)
-                    {
-                        if (((IfcConversionBasedUnit)u).UnitType == IfcUnitEnum.VOLUMEUNIT)
-                            if (((IfcConversionBasedUnit)u).Name.ToString().ToLower() == "cubic_metre") return "cubicmetres";
-                    }
-                }
-            }
-            return "cubicfeet";
-        }
+        
+        
         #endregion
 
         COBieSheet<COBieAttributeRow> _attributes;
