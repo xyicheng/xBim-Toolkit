@@ -565,12 +565,20 @@ namespace Xbim.COBie.Data
                     double test;
                     if (double.TryParse(value, out test))
                     {
-                        if ((attribute.Unit.ToLower().Contains("millimeters") || (attribute.Unit.ToLower().Contains("millimetres")) &&
+                        //if we have a large number and the nits is millimetres then lets change to metres
+                        bool USmeters = attribute.Unit.ToLower().Contains("millimeters") ;
+                        bool UKMetres = (attribute.Unit.ToLower().Contains("millimetres"));
+
+                        if ((USmeters || UKMetres) &&
                             (test > 1000000) //if size is large
                             )
                         {
                             test = test / 1000000.0;
-                            attribute.Unit = "squaremetres";
+                            if (UKMetres)
+                                attribute.Unit = "squaremetres";
+                            else
+                                attribute.Unit = "squaremeters";
+
                         }
                        
                         value = string.Format("{0:F4}", test); //format the number

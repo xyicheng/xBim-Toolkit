@@ -343,12 +343,46 @@ namespace Xbim.COBie.Data
             }
             else
             {
-                email += (string.IsNullOrEmpty(ifcPerson.GivenName.ToString())) ? "unknown" : ifcPerson.GivenName.ToString();
+                string first = ifcPerson.GivenName.ToString();
+                string lastName = ifcPerson.FamilyName.ToString();
+                string organization = ifcOrganization.Name.ToString();
+                string domType = "";
+                if (!string.IsNullOrEmpty(first))
+                {
+                    string[] split = first.Split('.');
+                    if (split.Length > 1) first = split[0]; //assume first
+                }
+
+                if (!string.IsNullOrEmpty(lastName))
+                {
+                    string[] split = lastName.Split('.');
+                    if (split.Length > 1) lastName = split.Last(); //assume last
+                }
+                
+
+                if (!string.IsNullOrEmpty(organization))
+                {
+                    string[] split = organization.Split('.');
+                    int index = 1;
+                    foreach (string item in split)
+                    {
+                        if (index == 1) 
+                            organization = item; //first item always
+                        else if (index < split.Length) //all the way up to the last item
+                            organization += "." + item;
+                        else
+                            domType = "." + item; //last item assume domain type
+                        index++;
+                    }
+                    
+                }
+                
+                email += (string.IsNullOrEmpty(first)) ? "unknown" : first;
                 email += ".";
-                email += (string.IsNullOrEmpty(ifcPerson.FamilyName.ToString())) ? "unknown" : ifcPerson.FamilyName.ToString();
+                email += (string.IsNullOrEmpty(lastName)) ? "unknown" : lastName;
                 email += "@";
-                email += (string.IsNullOrEmpty(ifcOrganization.Name.ToString())) ? "unknown" : ifcOrganization.Name.ToString();
-                email += ".com";
+                email += (string.IsNullOrEmpty(organization)) ? "unknown" : organization;
+                email += (string.IsNullOrEmpty(domType)) ? ".com" : domType; 
             }
             //save to the email directory for quick retrieval
             _eMails.Add(ifcPerson.EntityLabel, email);

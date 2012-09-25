@@ -40,9 +40,7 @@ namespace Xbim.COBie.Data
             //create new sheet
             COBieSheet<COBieContactRow> contacts = new COBieSheet<COBieContactRow>(Constants.WORKSHEET_CONTACT);
 
-            //IEnumerable<IfcOwnerHistory> ifcOwnerHistories = Model.InstancesOfType<IfcOwnerHistory>();
             IEnumerable<IfcPersonAndOrganization> ifcPersonAndOrganizations = Model.InstancesOfType<IfcPersonAndOrganization>();
-
             ProgressIndicator.Initialise("Creating Contacts", ifcPersonAndOrganizations.Count());
 
             foreach (IfcPersonAndOrganization ifcPersonAndOrganization in ifcPersonAndOrganizations)
