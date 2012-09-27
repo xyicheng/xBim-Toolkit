@@ -44,6 +44,8 @@ namespace Xbim.COBie.Data
             List<IfcSpace> ifcSpaces = Model.InstancesOfType<IfcSpace>().OrderBy(ifcSpace => ifcSpace.Name, new CompareIfcLabel()).ToList();
             
             COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(ifcSpaces.OfType<IfcObject>()); //properties helper class
+            COBieDataAttributeBuilder attributeBuilder = new COBieDataAttributeBuilder(allPropertyValues);
+            attributeBuilder.InitialiseAttributes(ref _attributes);
             
 
             //list of attributes and property sets to exclude form attribute sheet
@@ -51,10 +53,10 @@ namespace Xbim.COBie.Data
             List<string> excludePropertyValueNamesWildcard = new List<string> { "ZoneName", "Category", "Length", "Width"}; //exclude part names
             List<string> excludePropertSetNames = new List<string>() { "BaseQuantities" };
             //set up filters on COBieDataPropertySetValues
-            allPropertyValues.ExcludePropertyValueNames.AddRange(excludePropertyValueNames);
-            allPropertyValues.ExcludePropertyValueNamesWildcard.AddRange(excludePropertyValueNamesWildcard);
-            allPropertyValues.ExcludePropertySetNames.AddRange(excludePropertSetNames);
-            allPropertyValues.RowParameters["Sheet"] = "Space";
+            attributeBuilder.ExcludeAttributePropertyNames.AddRange(excludePropertyValueNames);
+            attributeBuilder.ExcludeAttributePropertyNamesWildcard.AddRange(excludePropertyValueNamesWildcard);
+            attributeBuilder.ExcludeAttributePropertySetNames.AddRange(excludePropertSetNames);
+            attributeBuilder.RowParameters["Sheet"] = "Space";
 
             ProgressIndicator.Initialise("Creating Spaces", ifcSpaces.Count());
 
@@ -88,11 +90,11 @@ namespace Xbim.COBie.Data
                 //----------fill in the attribute information for spaces-----------
 
                 //fill in the attribute information
-                allPropertyValues.RowParameters["Name"] = space.Name;
-                allPropertyValues.RowParameters["CreatedBy"] = space.CreatedBy;
-                allPropertyValues.RowParameters["CreatedOn"] = space.CreatedOn;
-                allPropertyValues.RowParameters["ExtSystem"] = space.ExtSystem;
-                allPropertyValues.PopulateAttributesRows(ifcSpace, ref _attributes); //fill attribute sheet rows//pass data from this sheet info as Dictionary
+                attributeBuilder.RowParameters["Name"] = space.Name;
+                attributeBuilder.RowParameters["CreatedBy"] = space.CreatedBy;
+                attributeBuilder.RowParameters["CreatedOn"] = space.CreatedOn;
+                attributeBuilder.RowParameters["ExtSystem"] = space.ExtSystem;
+                attributeBuilder.PopulateAttributesRows(ifcSpace); //fill attribute sheet rows//pass data from this sheet info as Dictionary
                 
             }
             ProgressIndicator.Finalise();
@@ -107,23 +109,43 @@ namespace Xbim.COBie.Data
         /// <returns>property value as string or default value</returns>
         private string GetNetArea(IfcSpace ifcSpace, COBieDataPropertySetValues allPropertyValues)
         {
+            string areaUnit = Context.COBieGlobalValues["AREAUNIT"];//see what the global area unit is
+            double areavalue = 0.0;
+
             IfcAreaMeasure netAreaValue = ifcSpace.GetNetFloorArea();  //this extension has the GSA built in so no need to get again
-            if (netAreaValue != null) 
-                return ((double)netAreaValue).ToString("F3");
+            if (netAreaValue != null)
+            {
+                areavalue = ((double)netAreaValue);
+                if (areavalue > 0.0)
+                {
+                    if (areaUnit.ToLower().Contains("milli")) //we are using millimetres
+                        areavalue = areavalue / 1000000.0;
+
+                    return areavalue.ToString("F4");
+                }
+            }
 
             //Fall back to properties
             //get the property single values for this ifcSpace
-            allPropertyValues.SetFilteredPropertySingleValues(ifcSpace);
+            allPropertyValues.SetAllPropertySingleValues(ifcSpace);
 
             //try and find it in the attached properties of the ifcSpace
-            string value = allPropertyValues.GetFilteredPropertySingleValueValue("NetFloorArea", true);
+            string value = allPropertyValues.GetPropertySingleValueValue("NetFloorArea", true);
             if (value == DEFAULT_STRING)
-                value = allPropertyValues.GetFilteredPropertySingleValueValue("GSA", true);
+                value = allPropertyValues.GetPropertySingleValueValue("GSA", true);
 
             if (value == DEFAULT_STRING)
                 return DEFAULT_NUMERIC;
             else
-                return value; 
+            {
+                if (double.TryParse(value, out areavalue))
+                {
+                    if (areaUnit.ToLower().Contains("milli"))//we are using millimetres
+                        areavalue = areavalue / 1000000.0;
+                    return areavalue.ToString("F4");
+                }
+                return value;
+            }
         }
         /// <summary>
         /// Get space gross floor area
@@ -133,32 +155,50 @@ namespace Xbim.COBie.Data
         /// <returns>property value as string or default value</returns>
         private string GetGrossFloorArea(IfcSpace ifcSpace, COBieDataPropertySetValues allPropertyValues)
         {
+            string areaUnit = Context.COBieGlobalValues["AREAUNIT"];//see what the global area unit is
+            
             //Do Gross Areas 
             IfcAreaMeasure grossAreaValue = ifcSpace.GetGrossFloorArea();
-            //if we fail on try GSA keys
-            IfcQuantityArea spArea = null;
-            if (grossAreaValue == null) spArea = ifcSpace.GetQuantity<IfcQuantityArea>("GSA Space Areas", "GSA BIM Area");
+            double areavalue = 0.0;
+            if (grossAreaValue != null)
+                areavalue = ((double)grossAreaValue);
+            else//if we fail on IfcAreaMeasure try GSA keys
+            {
+                IfcQuantityArea spArea = ifcSpace.GetQuantity<IfcQuantityArea>("GSA Space Areas", "GSA BIM Area");
+                if ((spArea is IfcQuantityArea) && (spArea.AreaValue != null))
+                    areavalue = ((double)spArea.AreaValue);
+            }
+            if (areavalue > 0.0)
+	        {
+                if (areaUnit.ToLower().Contains("milli")) //we are using millimetres
+                    areavalue = areavalue / 1000000.0;
+                
+		         return areavalue.ToString("F4");
+	        }
+            
+            //Fall back to properties
+            //get the property single values for this ifcSpace
+            allPropertyValues.SetAllPropertySingleValues(ifcSpace);
 
-            if (grossAreaValue != null) 
-                return ((double)grossAreaValue).ToString("F3");
-            else if ((spArea is IfcQuantityArea) && (spArea.AreaValue != null))
-                return ((double)spArea.AreaValue).ToString("F3");
+            //try and find it in the attached properties of the ifcSpace
+            string value = allPropertyValues.GetPropertySingleValueValue("GrossFloorArea", true);
+            if (value == DEFAULT_STRING)
+                value = allPropertyValues.GetPropertySingleValueValue("GSA", true);
+
+            if (value == DEFAULT_STRING)
+                return DEFAULT_NUMERIC;
             else
             {
-                //Fall back to properties
-                //get the property single values for this ifcSpace
-                allPropertyValues.SetFilteredPropertySingleValues(ifcSpace);
-
-                //try and find it in the attached properties of the ifcSpace
-                string value = allPropertyValues.GetFilteredPropertySingleValueValue("GrossFloorArea", true);
-                if (value == DEFAULT_STRING)
-                    value = allPropertyValues.GetFilteredPropertySingleValueValue("GSA", true);
-                
-                if (value == DEFAULT_STRING)
-                    return DEFAULT_NUMERIC;
-                else
-                    return value; 
+                if (double.TryParse(value, out areavalue))
+                {
+                    if (areaUnit.ToLower().Contains("milli"))//we are using millimetres
+                        areavalue = areavalue / 1000000.0;
+                    return areavalue.ToString("F4");
+                }
+                return value; 
             }
+                
+            
         }
         /// <summary>
         /// Get space usable height
@@ -174,16 +214,16 @@ namespace Xbim.COBie.Data
             
             //Fall back to properties
             //get the property single values for this ifcSpace
-            allPropertyValues.SetFilteredPropertySingleValues(ifcSpace);
+            allPropertyValues.SetAllPropertySingleValues(ifcSpace);
 
             //try and find it in the attached properties of the ifcSpace
-            string value = allPropertyValues.GetFilteredPropertySingleValueValue("UsableHeight", true);
+            string value = allPropertyValues.GetPropertySingleValueValue("UsableHeight", true);
             if (value == DEFAULT_STRING)
-                value = allPropertyValues.GetFilteredPropertySingleValueValue("FinishCeiling", true);
+                value = allPropertyValues.GetPropertySingleValueValue("FinishCeiling", true);
             if (value == DEFAULT_STRING)
-                value = allPropertyValues.GetFilteredPropertySingleValueValue("FinishCeilingHeight", true);
+                value = allPropertyValues.GetPropertySingleValueValue("FinishCeilingHeight", true);
             if (value == DEFAULT_STRING)
-                value = allPropertyValues.GetFilteredPropertySingleValueValue("Height", true);
+                value = allPropertyValues.GetPropertySingleValueValue("Height", true);
             
             if (value == DEFAULT_STRING)
                 return DEFAULT_NUMERIC;
@@ -218,14 +258,14 @@ namespace Xbim.COBie.Data
             {
                 //Fall back to properties
                 //get the property single values for this ifcSpace
-                allPropertyValues.SetFilteredPropertySingleValues(ifcSpace);
+                allPropertyValues.SetAllPropertySingleValues(ifcSpace);
 
                 //try and find it in the attached properties of the ifcSpace
-                value = allPropertyValues.GetFilteredPropertySingleValueValue("RoomTag", true);
+                value = allPropertyValues.GetPropertySingleValueValue("RoomTag", true);
                 if (value == DEFAULT_STRING)
-                    value = allPropertyValues.GetFilteredPropertySingleValueValue("Tag", true);
+                    value = allPropertyValues.GetPropertySingleValueValue("Tag", true);
                 if (value == DEFAULT_STRING)
-                    value = allPropertyValues.GetFilteredPropertySingleValueValue("Room_Tag", true);
+                    value = allPropertyValues.GetPropertySingleValueValue("Room_Tag", true);
 
             }
 

@@ -19,6 +19,7 @@ using Xbim.Ifc.ElectricalDomain;
 using Xbim.Ifc.SharedComponentElements;
 using Xbim.Ifc.StructuralElementsDomain;
 using Xbim.Ifc.SharedBldgServiceElements;
+using System.Globalization;
 
 
 namespace Xbim.COBie.Data
@@ -34,7 +35,7 @@ namespace Xbim.COBie.Data
 
         protected COBieContext Context { get; set; }
         private COBieProgress _progressStatus;
-        private static Dictionary<long, string> _eMails = new Dictionary<long, string>();
+        //private static Dictionary<long, string> _eMails = new Dictionary<long, string>();
 
         protected COBieData()
         { }
@@ -261,7 +262,7 @@ namespace Xbim.COBie.Data
         /// </summary>
         public void ClearEMails()
         {
-            _eMails.Clear();
+            Context.EMails.Clear();
         }
 
 
@@ -276,9 +277,9 @@ namespace Xbim.COBie.Data
             if (ifcOwnerHistory != null)
             {
                 IfcPerson ifcPerson = ifcOwnerHistory.OwningUser.ThePerson;
-                if (_eMails.ContainsKey(ifcPerson.EntityLabel))
+                if (Context.EMails.ContainsKey(ifcPerson.EntityLabel))
                 {
-                    return _eMails[ifcPerson.EntityLabel];
+                    return Context.EMails[ifcPerson.EntityLabel];
                 }
                 else
                 {
@@ -299,9 +300,9 @@ namespace Xbim.COBie.Data
             if (ifcPersonAndOrganization != null)
             {
                 IfcPerson ifcPerson = ifcPersonAndOrganization.ThePerson;
-                if (_eMails.ContainsKey(ifcPerson.EntityLabel))
+                if (Context.EMails.ContainsKey(ifcPerson.EntityLabel))
                 {
-                    return _eMails[ifcPerson.EntityLabel];
+                    return Context.EMails[ifcPerson.EntityLabel];
                 }
                 else
                 {
@@ -319,7 +320,7 @@ namespace Xbim.COBie.Data
         /// <param name="ifcOrganization"></param>
         /// <param name="ifcPerson"></param>
         /// <returns></returns>
-        private static string GetEmail( IfcOrganization ifcOrganization, IfcPerson ifcPerson)
+        private string GetEmail( IfcOrganization ifcOrganization, IfcPerson ifcPerson)
         {
             string email = "";
             IEnumerable<IfcLabel> emails = Enumerable.Empty<IfcLabel>();
@@ -385,7 +386,7 @@ namespace Xbim.COBie.Data
                 email += (string.IsNullOrEmpty(domType)) ? ".com" : domType; 
             }
             //save to the email directory for quick retrieval
-            _eMails.Add(ifcPerson.EntityLabel, email);
+            Context.EMails.Add(ifcPerson.EntityLabel, email);
 
             return email;
         }
@@ -427,7 +428,7 @@ namespace Xbim.COBie.Data
             //Try by PropertySet as fallback
             var query = from pSet in obj.PropertySets
                         from props in pSet.HasProperties
-                        where props.Name.ToString() == "OmniClass Table 13 Category" || props.Name.ToString() == "Category Code"
+                        where props.Name.ToString() == "OmniClass Table 13 Category" || props.Name.ToString() == "Category Code" || props.Name.ToString() == "Omniclass Title"
                         select props.ToString().TrimEnd();
             string val = query.FirstOrDefault();
 
@@ -438,28 +439,54 @@ namespace Xbim.COBie.Data
             return Constants.DEFAULT_STRING;
         }
 
+        
+
         /// <summary>
-        /// Return the unit name
+        /// Extract the unit name
         /// </summary>
-        /// <param name="ifcUnit">IfcUnit object to extract name from</param>
-        /// <returns>string of the unit name</returns>
-        public static string GetUnit(IfcUnit ifcUnit)
+        /// <param name="ifcUnit">ifcUnit object to get unit name from</param>
+        /// <returns>string holding unit name</returns>
+        public static string GetUnitName(IfcUnit ifcUnit)
         {
             string value = "";
+            string sqText = "";
+            string prefixUnit = "";
 
-            if (ifcUnit is IfcConversionBasedUnit)
-            {
-                IfcConversionBasedUnit ifcConversionBasedUnit = ifcUnit as IfcConversionBasedUnit;
-                value = ifcConversionBasedUnit.Name;
-                if (string.IsNullOrEmpty(value)) //fall back to UnitType enumeration
-                    value = ifcConversionBasedUnit.UnitType.ToString();
-            }
-            else if (ifcUnit is IfcSIUnit)
+            if (ifcUnit is IfcSIUnit)
             {
                 IfcSIUnit ifcSIUnit = ifcUnit as IfcSIUnit;
-                value = ifcSIUnit.Name.ToString();
-                if (string.IsNullOrEmpty(value)) //fall back to UnitType enumeration
-                    value = ifcSIUnit.UnitType.ToString();
+
+                prefixUnit = (ifcSIUnit.Prefix != null) ? ifcSIUnit.Prefix.ToString() : "";  //see IfcSIPrefix
+                value = ifcSIUnit.Name.ToString();                                             //see IfcSIUnitName
+
+                if (!string.IsNullOrEmpty(value))
+                {
+                    if (value.Contains("_"))
+                    {
+                        string[] split = value.Split('_');
+                        if (split.Length > 1) sqText = split.First(); //see if _ delimited value such as SQUARE_METRE
+                        value = sqText + prefixUnit + split.Last(); //combine to give full unit name 
+                    }
+                    else
+                        value = prefixUnit + value; //combine to give length name
+                }
+
+                if (!string.IsNullOrEmpty(value)) return value.ToLower();
+            }
+            else if (ifcUnit is IfcConversionBasedUnit)
+            {
+                IfcConversionBasedUnit IfcConversionBasedUnit = ifcUnit as IfcConversionBasedUnit;
+                value = (IfcConversionBasedUnit.Name != null) ? IfcConversionBasedUnit.Name.ToString() : "";
+
+                if (!string.IsNullOrEmpty(value))
+                {
+                    if (value.Contains("_"))
+                    {
+                        string[] split = value.Split('_');
+                        if (split.Length > 1) sqText = split.First(); //see if _ delimited value such as SQUARE_METRE
+                        value = sqText + split.Last(); //combine to give full unit name 
+                    }
+                }
             }
             else if (ifcUnit is IfcContextDependentUnit)
             {
@@ -477,13 +504,40 @@ namespace Xbim.COBie.Data
             }
             else if (ifcUnit is IfcMonetaryUnit)
             {
-                IfcMonetaryUnit ifcMonetaryUnit = ifcUnit as IfcMonetaryUnit;
-                value = ifcMonetaryUnit.Currency.ToString();
+                value = GetMonetaryUnitName(ifcUnit as IfcMonetaryUnit);
             }
 
-            return (string.IsNullOrEmpty(value)) ? DEFAULT_STRING : value;
+            return (string.IsNullOrEmpty(value)) ? DEFAULT_STRING : value.ToLower();
         }
-        
+
+        /// <summary>
+        /// Get Monetary Unit
+        /// </summary>
+        /// <param name="ifcMonetaryUnit">IfcMonetaryUnit object</param>
+        /// <returns>string holding the Monetary Unit</returns>
+        private static string GetMonetaryUnitName(IfcMonetaryUnit ifcMonetaryUnit)
+        {
+            string value = CultureInfo.GetCultures(CultureTypes.SpecificCultures)
+               .Where(c => new RegionInfo(c.LCID).ISOCurrencySymbol == ifcMonetaryUnit.Currency.ToString())
+               .Select(c => new RegionInfo(c.LCID).CurrencyEnglishName)
+               .FirstOrDefault();
+            //TODO: Convert currency to match pick list
+            //convert to pick list hard coded for now
+            if (!string.IsNullOrEmpty(value))
+            {
+                if (value.Contains("Dollar"))
+                    value = "Dollars";
+                else if (value.Contains("Euro"))
+                    value = "Euros";
+                else if (value.Contains("Pound"))
+                    value = "Pounds";
+                else
+                    value = DEFAULT_STRING;
+            }
+            else
+                value = DEFAULT_STRING;
+            return value;
+        }
 
         /// <summary>
         /// Determined the sheet the IfcRoot will have come from using the object type

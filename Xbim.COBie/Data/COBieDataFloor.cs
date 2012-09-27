@@ -42,6 +42,8 @@ namespace Xbim.COBie.Data
             IEnumerable<IfcBuildingStorey> buildingStories = Model.InstancesOfType<IfcBuildingStorey>();
 
             COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(buildingStories.OfType<IfcObject>()); //properties helper class
+            COBieDataAttributeBuilder attributeBuilder = new COBieDataAttributeBuilder(allPropertyValues);
+            attributeBuilder.InitialiseAttributes(ref _attributes);
             
             
             //IfcClassification ifcClassification = Model.InstancesOfType<IfcClassification>().FirstOrDefault();
@@ -50,9 +52,10 @@ namespace Xbim.COBie.Data
                                                           "Colour",   "Symbol at End 1 Default", 
                                                           "Symbol at End 2 Default", "Automatic Room Computation Height", "Elevation", "Storey Height" };
             List<string> excludePropertyValueNamesWildcard = new List<string> { "Roomtag", "RoomTag", "Tag", "GSA BIM Area", "Length", "Width" };
-            allPropertyValues.ExcludePropertyValueNames.AddRange(excludePropertyValueNames);
-            allPropertyValues.ExcludePropertyValueNamesWildcard.AddRange(excludePropertyValueNamesWildcard);
-            allPropertyValues.RowParameters["Sheet"] = "Floor";
+            //set up filters on COBieDataPropertySetValues for the SetAttributes only
+            attributeBuilder.ExcludeAttributePropertyNames.AddRange(excludePropertyValueNames);
+            attributeBuilder.ExcludeAttributePropertyNamesWildcard.AddRange(excludePropertyValueNamesWildcard);
+            attributeBuilder.RowParameters["Sheet"] = "Floor";
             
            
 
@@ -82,11 +85,11 @@ namespace Xbim.COBie.Data
                 floors.Rows.Add(floor);
 
                 //fill in the attribute information
-                allPropertyValues.RowParameters["Name"] = floor.Name;
-                allPropertyValues.RowParameters["CreatedBy"] = floor.CreatedBy;
-                allPropertyValues.RowParameters["CreatedOn"] = floor.CreatedOn;
-                allPropertyValues.RowParameters["ExtSystem"] = floor.ExtSystem;
-                allPropertyValues.PopulateAttributesRows(ifcBuildingStorey, ref _attributes); //fill attribute sheet rows//pass data from this sheet info as Dictionary
+                attributeBuilder.RowParameters["Name"] = floor.Name;
+                attributeBuilder.RowParameters["CreatedBy"] = floor.CreatedBy;
+                attributeBuilder.RowParameters["CreatedOn"] = floor.CreatedOn;
+                attributeBuilder.RowParameters["ExtSystem"] = floor.ExtSystem;
+                attributeBuilder.PopulateAttributesRows(ifcBuildingStorey); //fill attribute sheet rows//pass data from this sheet info as Dictionary
                 
             }
             ProgressIndicator.Finalise();
@@ -108,16 +111,16 @@ namespace Xbim.COBie.Data
             
             //Fall back properties
             //get the property single values for this building story
-            allPropertyValues.SetFilteredPropertySingleValues(ifcBuildingStorey);
+            allPropertyValues.SetAllPropertySingleValues(ifcBuildingStorey);
 
             //try and find it in the attached properties of the building story
-            string value = allPropertyValues.GetFilteredPropertySingleValueValue("StoreyHeight", true);
+            string value = allPropertyValues.GetPropertySingleValueValue("StoreyHeight", true);
             if (value == DEFAULT_STRING)
-                value = allPropertyValues.GetFilteredPropertySingleValueValue("Storey Height", true);
+                value = allPropertyValues.GetPropertySingleValueValue("Storey Height", true);
             if (value == DEFAULT_STRING)
-                value = allPropertyValues.GetFilteredPropertySingleValueValue("FloorHeight", true);
+                value = allPropertyValues.GetPropertySingleValueValue("FloorHeight", true);
             if (value == DEFAULT_STRING)
-                value = allPropertyValues.GetFilteredPropertySingleValueValue("Floor Height", true);
+                value = allPropertyValues.GetPropertySingleValueValue("Floor Height", true);
 
             if (value == DEFAULT_STRING)
                 return DEFAULT_NUMERIC;

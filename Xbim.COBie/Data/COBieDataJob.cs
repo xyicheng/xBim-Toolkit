@@ -66,20 +66,20 @@ namespace Xbim.COBie.Data
                 job.TypeName = GetObjectType(ifcTask);
                 job.Description = (string.IsNullOrEmpty(ifcTask.Description.ToString())) ? DEFAULT_STRING : ifcTask.Description.ToString();
 
-                allPropertyValues.SetFilteredPropertySingleValues(ifcTask); //set properties values to this task
-                IfcPropertySingleValue ifcPropertySingleValue = allPropertyValues.GetFilteredPropertySingleValue("TaskDuration");
+                allPropertyValues.SetAllPropertySingleValues(ifcTask); //set properties values to this task
+                IfcPropertySingleValue ifcPropertySingleValue = allPropertyValues.GetPropertySingleValue("TaskDuration");
                 job.Duration = ((ifcPropertySingleValue != null) && (ifcPropertySingleValue.NominalValue != null)) ? ConvertNumberOrDefault(ifcPropertySingleValue.NominalValue.ToString()) : DEFAULT_NUMERIC;
-                string unitName = GetUnit(ifcPropertySingleValue.Unit);
+                string unitName = GetUnitName(ifcPropertySingleValue.Unit);
                 job.DurationUnit = (string.IsNullOrEmpty(unitName)) ?  DEFAULT_STRING : unitName;
 
-                ifcPropertySingleValue = allPropertyValues.GetFilteredPropertySingleValue("TaskStartDate");
+                ifcPropertySingleValue = allPropertyValues.GetPropertySingleValue("TaskStartDate");
                 job.Start = ((ifcPropertySingleValue != null) && (ifcPropertySingleValue.NominalValue != null)) ? ifcPropertySingleValue.NominalValue.ToString() : new DateTime(1900, 12, 31, 23, 59, 59).ToString("yyyy-MM-dd HH:mm:ss");//default is 1900-12-31T23:59:59;
-                unitName =  GetUnit(ifcPropertySingleValue.Unit);
+                unitName = GetUnitName(ifcPropertySingleValue.Unit);
                 job.TaskStartUnit = (string.IsNullOrEmpty(unitName)) ? DEFAULT_STRING : unitName;
 
-                ifcPropertySingleValue = allPropertyValues.GetFilteredPropertySingleValue("TaskInterval");
+                ifcPropertySingleValue = allPropertyValues.GetPropertySingleValue("TaskInterval");
                 job.Frequency = ((ifcPropertySingleValue != null) && (ifcPropertySingleValue.NominalValue != null)) ? ConvertNumberOrDefault(ifcPropertySingleValue.NominalValue.ToString()) : DEFAULT_NUMERIC;
-                unitName = GetUnit(ifcPropertySingleValue.Unit);
+                unitName = GetUnitName(ifcPropertySingleValue.Unit);
                 job.FrequencyUnit = (string.IsNullOrEmpty(unitName)) ? DEFAULT_STRING : unitName;
 
                 job.ExtSystem = GetExternalSystem(ifcTask);

@@ -102,6 +102,7 @@
     <Compile Include="COBieWorkbook.cs" />
     <Compile Include="Data\COBieData.cs" />
     <Compile Include="Data\COBieDataAssembly.cs" />
+    <Compile Include="Data\COBieDataAttributeBuilder.cs" />
     <Compile Include="Data\COBieDataComponent.cs" />
     <Compile Include="Data\COBieDataConnection.cs" />
     <Compile Include="Data\COBieDataContact.cs" />

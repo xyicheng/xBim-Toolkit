@@ -41,11 +41,13 @@ namespace Xbim.COBie.Data
             IEnumerable<IfcZone> ifcZones = Model.InstancesOfType<IfcZone>();
 
             COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(ifcZones.OfType<IfcObject>()); //properties helper class
+            COBieDataAttributeBuilder attributeBuilder = new COBieDataAttributeBuilder(allPropertyValues);
+            attributeBuilder.InitialiseAttributes(ref _attributes);
             
             //list of attributes to exclude form attribute sheet
             List<string> excludePropertyValueNamesWildcard = new List<string> {  "Roomtag", "RoomTag", "Tag", "GSA BIM Area", "Length", "Width", "Height"};
-            allPropertyValues.ExcludePropertyValueNamesWildcard.AddRange(excludePropertyValueNamesWildcard);
-            allPropertyValues.RowParameters["Sheet"] = "Zone";
+            attributeBuilder.ExcludeAttributePropertyNamesWildcard.AddRange(excludePropertyValueNamesWildcard);
+            attributeBuilder.RowParameters["Sheet"] = "Zone";
             
             //Also check to see if we have any zones within the spaces
             IEnumerable<IfcSpace> ifcSpaces = Model.InstancesOfType<IfcSpace>();//.OrderBy(ifcSpace => ifcSpace.Name, new CompareIfcLabel());
@@ -81,11 +83,11 @@ namespace Xbim.COBie.Data
                     zones.Rows.Add(zone);
 
                     //fill in the attribute information
-                    allPropertyValues.RowParameters["Name"] = zone.Name;
-                    allPropertyValues.RowParameters["CreatedBy"] = zone.CreatedBy;
-                    allPropertyValues.RowParameters["CreatedOn"] = zone.CreatedOn;
-                    allPropertyValues.RowParameters["ExtSystem"] = zone.ExtSystem;
-                    allPropertyValues.PopulateAttributesRows(zn, ref _attributes); //fill attribute sheet rows//pass data from this sheet info as Dictionary
+                    attributeBuilder.RowParameters["Name"] = zone.Name;
+                    attributeBuilder.RowParameters["CreatedBy"] = zone.CreatedBy;
+                    attributeBuilder.RowParameters["CreatedOn"] = zone.CreatedOn;
+                    attributeBuilder.RowParameters["ExtSystem"] = zone.ExtSystem;
+                    attributeBuilder.PopulateAttributesRows(zn); //fill attribute sheet rows//pass data from this sheet info as Dictionary
                 
                 }
 

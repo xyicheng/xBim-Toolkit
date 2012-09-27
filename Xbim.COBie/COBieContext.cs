@@ -12,6 +12,11 @@ namespace Xbim.COBie
 	/// </summary>
 	public class COBieContext : IDisposable
 	{
+
+
+        public Dictionary<long, string> EMails { get; private set; }
+        public Dictionary<string, string> COBieGlobalValues { get; private set; }
+
         public COBieContext(ReportProgressDelegate progressHandler = null)
 		{
             if (progressHandler != null)
@@ -20,6 +25,9 @@ namespace Xbim.COBie
                 this.ProgressStatus += progressHandler;
             }
 			Models = new List<IModel>();
+
+            EMails = new Dictionary<long, string>();
+            COBieGlobalValues = new Dictionary<string, string>();
 		}
 
 		/// <summary>
@@ -81,5 +89,8 @@ namespace Xbim.COBie
                 _progress = null;
             }
         }
+
+       
+        
     }
 }

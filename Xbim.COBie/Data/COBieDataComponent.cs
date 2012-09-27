@@ -90,10 +90,12 @@ namespace Xbim.COBie.Data
                                                             select y)).GroupBy(el => el.Name).Select(g => g.First()).OfType<IfcObject>(); //.Distinct().ToList();
             
             COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(ifcElements); //properties helper class
-            //set up filters on COBieDataPropertySetValues
-            allPropertyValues.ExcludePropertyValueNames.AddRange(ComponentAttExcludesEq); //we do not want listed properties for the attribute sheet so filter them out
-            allPropertyValues.ExcludePropertyValueNamesWildcard.AddRange(ComponentAttExcludesContains);//we do not want listed properties for the attribute sheet so filter them out
-            allPropertyValues.RowParameters["Sheet"] = "Component";
+            COBieDataAttributeBuilder attributeBuilder = new COBieDataAttributeBuilder(allPropertyValues);
+            attributeBuilder.InitialiseAttributes(ref _attributes);
+            //set up filters on COBieDataPropertySetValues for the SetAttributes only
+            attributeBuilder.ExcludeAttributePropertyNames.AddRange(ComponentAttExcludesEq); //we do not want listed properties for the attribute sheet so filter them out
+            attributeBuilder.ExcludeAttributePropertyNamesWildcard.AddRange(ComponentAttExcludesContains);//we do not want listed properties for the attribute sheet so filter them out
+            attributeBuilder.RowParameters["Sheet"] = "Component";
 
 
             ProgressIndicator.Initialise("Creating Components", ifcElements.Count());
@@ -101,6 +103,9 @@ namespace Xbim.COBie.Data
             foreach (var obj in ifcElements)
             {
                 ProgressIndicator.IncrementAndUpdate();
+                var xxx = obj.Decomposes.OfType<IfcRelAggregates>().Where(ra => ComponentExcludeTypes.Contains(ra.RelatingObject.GetType()));
+                if (xxx.Count() > 0) 
+                    continue;
 
                 COBieComponentRow component = new COBieComponentRow(components);
 
@@ -119,24 +124,24 @@ namespace Xbim.COBie.Data
                 component.ExtIdentifier = el.GlobalId;
 
                 //set from PropertySingleValues filtered via candidateProperties
-                allPropertyValues.SetFilteredPropertySingleValues(el); //set the internal filtered IfcPropertySingleValues List in allPropertyValues
-                component.SerialNumber = allPropertyValues.GetFilteredPropertySingleValueValue("SerialNumber", false);
-                string installationDate = allPropertyValues.GetFilteredPropertySingleValueValue("InstallationDate", false);
+                allPropertyValues.SetAllPropertySingleValues(el); //set the internal filtered IfcPropertySingleValues List in allPropertyValues
+                component.SerialNumber = allPropertyValues.GetPropertySingleValueValue("SerialNumber", false);
+                string installationDate = allPropertyValues.GetPropertySingleValueValue("InstallationDate", false);
                 component.InstallationDate = ((installationDate == DEFAULT_STRING) || (!IsDate(installationDate))) ? GetCreatedOnDateAsFmtString(null) : installationDate;
-                string warrantyStartDate = allPropertyValues.GetFilteredPropertySingleValueValue("WarrantyStartDate", false);
+                string warrantyStartDate = allPropertyValues.GetPropertySingleValueValue("WarrantyStartDate", false);
                 component.WarrantyStartDate = ((warrantyStartDate == DEFAULT_STRING) || (!IsDate(warrantyStartDate))) ? GetCreatedOnDateAsFmtString(null) : warrantyStartDate;
-                component.TagNumber = allPropertyValues.GetFilteredPropertySingleValueValue("TagNumber", false);
-                component.BarCode = allPropertyValues.GetFilteredPropertySingleValueValue("BarCode", false);
-                component.AssetIdentifier = allPropertyValues.GetFilteredPropertySingleValueValue("AssetIdentifier", false);
+                component.TagNumber = allPropertyValues.GetPropertySingleValueValue("TagNumber", false);
+                component.BarCode = allPropertyValues.GetPropertySingleValueValue("BarCode", false);
+                component.AssetIdentifier = allPropertyValues.GetPropertySingleValueValue("AssetIdentifier", false);
                 
                 components.Rows.Add(component);
 
                 //fill in the attribute information
-                allPropertyValues.RowParameters["Name"] = component.Name;
-                allPropertyValues.RowParameters["CreatedBy"] = component.CreatedBy;
-                allPropertyValues.RowParameters["CreatedOn"] = component.CreatedOn;
-                allPropertyValues.RowParameters["ExtSystem"] = component.ExtSystem;
-                allPropertyValues.PopulateAttributesRows(el, ref _attributes); //fill attribute sheet rows
+                attributeBuilder.RowParameters["Name"] = component.Name;
+                attributeBuilder.RowParameters["CreatedBy"] = component.CreatedBy;
+                attributeBuilder.RowParameters["CreatedOn"] = component.CreatedOn;
+                attributeBuilder.RowParameters["ExtSystem"] = component.ExtSystem;
+                attributeBuilder.PopulateAttributesRows(el); //fill attribute sheet rows
             }
 
             ProgressIndicator.Finalise();
@@ -152,16 +157,13 @@ namespace Xbim.COBie.Data
         /// <returns>string</returns>
         internal string GetComponentRelatedSpace(IfcElement el)
         {
+            string value = "";
             if (el != null && el.ContainedInStructure.Count() > 0)
             {
                 var owningSpace = el.ContainedInStructure.Select(cis => cis.RelatingStructure).OfType<IfcSpace>().FirstOrDefault(); //only one or zero held in ContainedInStructure
-                if (owningSpace != null) return owningSpace.Name.ToString();
-                
-                //var owningSpace = el.ContainedInStructure.First().RelatingStructure;
-                //if (owningSpace.GetType() == typeof(IfcSpace))
-                //    return owningSpace.Name.ToString();
+                if (owningSpace != null) value =  owningSpace.Name.ToString();  
             }
-            return Constants.DEFAULT_STRING;
+            return string.IsNullOrEmpty(value) ? Constants.DEFAULT_STRING : value;
         }
 
         /// <summary>

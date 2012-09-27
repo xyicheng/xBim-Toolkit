@@ -69,14 +69,14 @@ namespace Xbim.COBie
 
             //contact sheet first as it will fill contact information lookups for other sheets
             Workbook.Add(cq.GetCOBieContactSheet());
+            Workbook.Add(cq.GetCOBieFacilitySheet()); //moved so it is called earlier as it now sets some global unit values used by other sheets
             Workbook.Add(cq.GetCOBieSpaceSheet());
             Workbook.Add(cq.GetCOBieComponentSheet());
             Workbook.Add(cq.GetCOBieAssemblySheet());
             Workbook.Add(cq.GetCOBieConnectionSheet());
             Workbook.Add(cq.GetCOBieCoordinateSheet());
             Workbook.Add(cq.GetCOBieDocumentSheet());
-            Workbook.Add(cq.GetCOBieFacilitySheet());
-            Workbook.Add(cq.GetCOBieFloorSheet());
+             Workbook.Add(cq.GetCOBieFloorSheet());
             Workbook.Add(cq.GetCOBieImpactSheet());
             Workbook.Add(cq.GetCOBieIssueSheet());
             Workbook.Add(cq.GetCOBieJobSheet());            

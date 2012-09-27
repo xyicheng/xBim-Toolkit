@@ -9,6 +9,7 @@ using Xbim.Ifc.Kernel;
 using Xbim.Ifc.ExternalReferenceResource;
 using Xbim.Ifc.ElectricalDomain;
 using Xbim.Ifc.PropertyResource;
+using Xbim.Ifc.MeasureResource;
 
 namespace Xbim.COBie.Data
 {
@@ -38,7 +39,7 @@ namespace Xbim.COBie.Data
             COBieSheet<COBieSystemRow> systems = new COBieSheet<COBieSystemRow>(Constants.WORKSHEET_SYSTEM);
 
             // get all IfcSystem, IfcGroup and IfcElectricalCircuit objects from IFC file
-            IEnumerable<IfcGroup> ifcGroups = Model.InstancesOfType<IfcGroup>().Where(ifcg => ifcg is IfcSystem); //get anything that is IfcSystem or derived from it
+            IEnumerable<IfcGroup> ifcGroups = Model.InstancesOfType<IfcGroup>().Where(ifcg => ifcg is IfcSystem); //get anything that is IfcSystem or derived from it eg IfcElectricalCircuit
             //IEnumerable<IfcSystem> ifcSystems = Model.InstancesOfType<IfcSystem>();
             //IEnumerable<IfcElectricalCircuit> ifcElectricalCircuits = Model.InstancesOfType<IfcElectricalCircuit>();
             //ifcGroups = ifcGroups.Union(ifcSystems);
@@ -85,15 +86,40 @@ namespace Xbim.COBie.Data
             foreach (IfcPropertySet ifcPropertySet in ifcPropertySets)
             {
                 ProgressIndicator.IncrementAndUpdate();
-
+                string name =  "";
                 IfcRelDefinesByProperties ifcRelDefinesByProperties = ifcPropertySet.PropertyDefinitionOf.FirstOrDefault(); //one or zero 
                 IfcPropertySingleValue ifcPropertySingleValue = ifcPropertySet.HasProperties.OfType<IfcPropertySingleValue>().Where(psv => PropertyNames.Contains(psv.Name)).FirstOrDefault();
+                if ((ifcPropertySingleValue != null) && (ifcPropertySingleValue.NominalValue != null) && (!string.IsNullOrEmpty(ifcPropertySingleValue.NominalValue.ToString())))
+                    name = ifcPropertySingleValue.NominalValue.ToString();
+                else //try for "System Classification" Not in matrix but looks a good candidate
+                {
+                    IfcPropertySingleValue ifcPropertySVClassification = ifcPropertySet.HasProperties.OfType<IfcPropertySingleValue>().Where(psv => psv.Name == "System Classification").FirstOrDefault(); 
+                    if ((ifcPropertySVClassification != null) && (ifcPropertySVClassification.NominalValue != null) && (!string.IsNullOrEmpty(ifcPropertySVClassification.NominalValue.ToString())))
+                        name = ifcPropertySVClassification.NominalValue.ToString();
+                }
+                
                 foreach (IfcObject ifcObject in ifcRelDefinesByProperties.RelatedObjects)
                 {
                     if (ifcObject != null)
                     {
                         COBieSystemRow sys = new COBieSystemRow(systems);
-                        string name = ifcPropertySingleValue.NominalValue.ToString();
+                        //OK if we have no name lets just guess at the first value as we need a value
+                        if (string.IsNullOrEmpty(name))
+                        {
+                            //get first text value held in NominalValue
+                            var names = ifcPropertySet.HasProperties.OfType<IfcPropertySingleValue>().Where(psv => (psv.NominalValue != null) && (!string.IsNullOrEmpty(psv.NominalValue.ToString()))).Select(psv => psv.NominalValue).FirstOrDefault();
+                            if (names != null)
+                            {
+                                name = names.ToString();
+                            }
+                            else
+                            {
+                                //OK last chance, lets take the property name that is not in the filter list of strings, ie. != "Circuit Number", "System Name" or "System Classification" from above 
+                                IfcPropertySingleValue propname = ifcPropertySet.HasProperties.OfType<IfcPropertySingleValue>().Where(psv => !PropertyNames.Contains(psv.Name)).FirstOrDefault();
+                                name = propname.Name.ToString();
+                            }
+                            
+                        }
                         sys.Name = string.IsNullOrEmpty(name) ? DEFAULT_STRING : name;
 
                         sys.CreatedBy = GetTelecomEmailAddress(ifcObject.OwnerHistory);
