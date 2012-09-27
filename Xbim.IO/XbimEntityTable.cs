@@ -54,13 +54,12 @@ namespace Xbim.IO
         internal static void CreateTable(JET_SESID sesid, JET_DBID dbid)
         {
             JET_TABLEID tableid;
-            Api.JetCreateTable(sesid, dbid, ifcEntityTableName, 8, 100, out tableid);
+           
 
             using (var transaction = new Microsoft.Isam.Esent.Interop.Transaction(sesid))
             {
+                Api.JetCreateTable(sesid, dbid, ifcEntityTableName, 8, 100, out tableid);
                 JET_COLUMNID columnid;
-                
-               
                 var columndef = new JET_COLUMNDEF
                 {
                     coltyp = JET_coltyp.Long,
@@ -86,25 +85,38 @@ namespace Xbim.IO
                     grbit = ColumndefGrbit.ColumnMaybeNull
                 };
                 Api.JetAddColumn(sesid, tableid, colNameEntityData, columndef, null, 0, out columnid);
-
-                
-                // The primary index is the type and the entity label.
-                string indexDef = string.Format("+{0}\0{1}\0{2}\0\0", colNameIfcType, colNameSecondaryKey, colNameEntityLabel);
-                //Api.JetCreateIndex(sesid, tableid, entityTableTypeLabelIndex, CreateIndexGrbit.IndexUnique | CreateIndexGrbit.IndexDisallowNull, indexDef, indexDef.Length, 100);
-             //   Api.JetCreateIndex(sesid, tableid, entityTableTypeLabelIndex, CreateIndexGrbit.IndexIgnoreFirstNull, indexDef, indexDef.Length, 100);
-
-                
-                // The primary index is the type and the entity label.
-                indexDef = string.Format("+{0}\0\0", colNameEntityLabel);
-                Api.JetCreateIndex(sesid, tableid, entityTableLabelIndex, CreateIndexGrbit.IndexPrimary, indexDef, indexDef.Length, 100);
-
-
-                // An index on the type and secondary key. For quick access to IfcRelation entities and the like
-               // indexDef = string.Format("+{0}\0{1}\0\0", colNameIfcType, colNameSecondaryKey);
-               // Api.JetCreateIndex(sesid, tableid, entityTableTypeIndex, CreateIndexGrbit.IndexIgnoreFirstNull, indexDef, indexDef.Length, 100);
-
+                string labelIndexDef = string.Format("+{0}\0\0", colNameEntityLabel);
+                Api.JetCreateIndex(sesid, tableid, entityTableLabelIndex, CreateIndexGrbit.IndexPrimary, labelIndexDef, labelIndexDef.Length,100);
+                Api.JetCloseTable(sesid, tableid);
                 transaction.Commit(CommitTransactionGrbit.LazyFlush);
             }
+            Api.JetOpenTable(sesid, dbid, ifcEntityTableName, null, 0, OpenTableGrbit.DenyRead, out tableid);
+
+            string typeIndexDef = string.Format("+{0}\0{1}\0{2}\0\0", colNameIfcType, colNameSecondaryKey, colNameEntityLabel);
+           
+            JET_INDEXCREATE[] indexes = new[]
+                {
+                    new JET_INDEXCREATE
+                    {
+                        szIndexName = entityTableTypeLabelIndex,
+                        szKey = typeIndexDef,
+                        cbKey = typeIndexDef.Length,
+                        rgconditionalcolumn = new[]
+                        {
+                            new JET_CONDITIONALCOLUMN
+                            {
+                                szColumnName = colNameIfcType,
+                                grbit = ConditionalColumnGrbit.ColumnMustBeNonNull
+                            }
+                        },
+                        cConditionalColumn = 1,
+                        ulDensity=100,
+                        grbit = CreateIndexGrbit.IndexUnique
+                    }
+                };
+
+            Api.JetCreateIndex2(sesid, tableid, indexes, indexes.Length);
+            Api.JetCloseTable(sesid, tableid);
         }
         
         private void InitColumns()

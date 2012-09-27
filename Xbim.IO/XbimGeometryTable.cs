@@ -82,9 +82,10 @@ namespace Xbim.IO
                 // The primary index is the type and the entity label.
                 string indexDef = string.Format("+{0}\0{1}\0{2}\0\0", colNameGeomType, colNameProductLabel, colNameSubPart);
                 Api.JetCreateIndex(sesid, tableid, geometryTablePrimaryIndex, CreateIndexGrbit.IndexPrimary, indexDef, indexDef.Length, 100);
+                Api.JetCloseTable(sesid, tableid);
                 transaction.Commit(CommitTransactionGrbit.LazyFlush);
             }
-            Api.JetCloseTable(sesid, tableid);
+           
         }
         public string PrimaryIndex { get { return geometryTablePrimaryIndex; } }
 

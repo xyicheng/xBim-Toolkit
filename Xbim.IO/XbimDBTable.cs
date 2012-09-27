@@ -80,62 +80,65 @@ namespace Xbim.IO
             JET_TABLEID tableid;
             JET_COLUMNID versionColumnid;
             JET_COLUMNID countColumnid;
-
-            Api.JetCreateTable(sesid, dbid, globalsTableName, 1, 100, out tableid);
-            Api.JetAddColumn(
-                sesid,
-                tableid,
-                versionColumnName,
-                new JET_COLUMNDEF { coltyp = JET_coltyp.LongText },
-                null,
-                0,
-                out versionColumnid);
-
-            byte[] defaultValue = BitConverter.GetBytes(0);
-
-            Api.JetAddColumn(
-                sesid,
-                tableid,
-                entityCountColumnName,
-                new JET_COLUMNDEF { coltyp = JET_coltyp.Long, grbit = ColumndefGrbit.ColumnEscrowUpdate },
-                defaultValue,
-                defaultValue.Length,
-                out countColumnid);
-
-            Api.JetAddColumn(
-                sesid,
-                tableid,
-                geometryCountColumnName,
-                new JET_COLUMNDEF { coltyp = JET_coltyp.Long, grbit = ColumndefGrbit.ColumnEscrowUpdate },
-                defaultValue,
-                defaultValue.Length,
-                out countColumnid);
-
-            Api.JetAddColumn(
-                sesid,
-                tableid,
-                flushColumnName,
-                new JET_COLUMNDEF { coltyp = JET_coltyp.Long, grbit = ColumndefGrbit.ColumnEscrowUpdate },
-                defaultValue,
-                defaultValue.Length,
-                out countColumnid);
-            
-            Api.JetAddColumn(
-               sesid,
-               tableid,
-               ifcHeaderColumnName,
-               new JET_COLUMNDEF { coltyp = JET_coltyp.LongBinary },
-               null,
-               0,
-               out countColumnid);
-
-            using (var update = new Update(sesid, tableid, JET_prep.Insert))
+            using (var transaction = new Microsoft.Isam.Esent.Interop.Transaction(sesid))
             {
-                Api.SetColumn(sesid, tableid, versionColumnid, version, Encoding.Unicode);
-                update.Save();
-            }
+                Api.JetCreateTable(sesid, dbid, globalsTableName, 1, 100, out tableid);
+                Api.JetAddColumn(
+                    sesid,
+                    tableid,
+                    versionColumnName,
+                    new JET_COLUMNDEF { coltyp = JET_coltyp.LongText },
+                    null,
+                    0,
+                    out versionColumnid);
 
-            Api.JetCloseTable(sesid, tableid);
+                byte[] defaultValue = BitConverter.GetBytes(0);
+
+                Api.JetAddColumn(
+                    sesid,
+                    tableid,
+                    entityCountColumnName,
+                    new JET_COLUMNDEF { coltyp = JET_coltyp.Long, grbit = ColumndefGrbit.ColumnEscrowUpdate },
+                    defaultValue,
+                    defaultValue.Length,
+                    out countColumnid);
+
+                Api.JetAddColumn(
+                    sesid,
+                    tableid,
+                    geometryCountColumnName,
+                    new JET_COLUMNDEF { coltyp = JET_coltyp.Long, grbit = ColumndefGrbit.ColumnEscrowUpdate },
+                    defaultValue,
+                    defaultValue.Length,
+                    out countColumnid);
+
+                Api.JetAddColumn(
+                    sesid,
+                    tableid,
+                    flushColumnName,
+                    new JET_COLUMNDEF { coltyp = JET_coltyp.Long, grbit = ColumndefGrbit.ColumnEscrowUpdate },
+                    defaultValue,
+                    defaultValue.Length,
+                    out countColumnid);
+
+                Api.JetAddColumn(
+                   sesid,
+                   tableid,
+                   ifcHeaderColumnName,
+                   new JET_COLUMNDEF { coltyp = JET_coltyp.LongBinary },
+                   null,
+                   0,
+                   out countColumnid);
+
+                using (var update = new Update(sesid, tableid, JET_prep.Insert))
+                {
+                    Api.SetColumn(sesid, tableid, versionColumnid, version, Encoding.Unicode);
+                    update.Save();
+                }
+
+                Api.JetCloseTable(sesid, tableid);
+                transaction.Commit(CommitTransactionGrbit.LazyFlush);
+            }
         }
 
        

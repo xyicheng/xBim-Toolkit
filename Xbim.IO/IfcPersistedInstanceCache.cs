@@ -97,13 +97,9 @@ namespace Xbim.IO
                 Api.JetCreateDatabase(session, fileName, null, out dbid, CreateDatabaseGrbit.OverwriteExisting);
                 try
                 {
-                    using (var transaction = new Microsoft.Isam.Esent.Interop.Transaction(session))
-                    {
-                        XbimDBTable.CreateGlobalsTable(session, dbid); //create the gobals table
-                        XbimEntityTable.CreateTable(session, dbid);
-                        XbimGeometryTable.CreateTable(session, dbid);
-                        transaction.Commit(CommitTransactionGrbit.LazyFlush);
-                    }
+                    XbimEntityTable.CreateTable(session, dbid);
+                    XbimDBTable.CreateGlobalsTable(session, dbid); //create the gobals table
+                    XbimGeometryTable.CreateTable(session, dbid);
                     return true;
                 }
                 catch
