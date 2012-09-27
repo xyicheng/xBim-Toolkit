@@ -43,7 +43,7 @@ namespace Xbim.COBie.Data
             // get all IfcBuildingStory objects from IFC file
             List<IfcSpace> ifcSpaces = Model.InstancesOfType<IfcSpace>().OrderBy(ifcSpace => ifcSpace.Name, new CompareIfcLabel()).ToList();
             
-            COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(ifcSpaces.OfType<IfcObject>()); //properties helper class
+            COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(ifcSpaces); //properties helper class
             COBieDataAttributeBuilder attributeBuilder = new COBieDataAttributeBuilder(allPropertyValues);
             attributeBuilder.InitialiseAttributes(ref _attributes);
             
@@ -52,6 +52,11 @@ namespace Xbim.COBie.Data
             List<string> excludePropertyValueNames = new List<string> { "Area", "Number", "UsableHeight", "RoomTag", "Room Tag" };
             List<string> excludePropertyValueNamesWildcard = new List<string> { "ZoneName", "Category", "Length", "Width"}; //exclude part names
             List<string> excludePropertSetNames = new List<string>() { "BaseQuantities" };
+            if ((Context.COBieGlobalValues.ContainsKey("DEPATMENTUSEDASZONE")) &&
+                (Context.COBieGlobalValues["DEPATMENTUSEDASZONE"] == "T")
+                )
+                excludePropertyValueNames.Add("Department"); //remove the department property from selection
+            
             //set up filters on COBieDataPropertySetValues
             attributeBuilder.ExcludeAttributePropertyNames.AddRange(excludePropertyValueNames);
             attributeBuilder.ExcludeAttributePropertyNamesWildcard.AddRange(excludePropertyValueNamesWildcard);

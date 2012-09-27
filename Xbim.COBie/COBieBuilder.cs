@@ -70,6 +70,7 @@ namespace Xbim.COBie
             //contact sheet first as it will fill contact information lookups for other sheets
             Workbook.Add(cq.GetCOBieContactSheet());
             Workbook.Add(cq.GetCOBieFacilitySheet()); //moved so it is called earlier as it now sets some global unit values used by other sheets
+            Workbook.Add(cq.GetCOBieZoneSheet()); //we need zone before sheet as it sets a flag on departments property
             Workbook.Add(cq.GetCOBieSpaceSheet());
             Workbook.Add(cq.GetCOBieComponentSheet());
             Workbook.Add(cq.GetCOBieAssemblySheet());
@@ -84,7 +85,6 @@ namespace Xbim.COBie
             Workbook.Add(cq.GetCOBieSpareSheet());
             Workbook.Add(cq.GetCOBieSystemSheet());
             Workbook.Add(cq.GetCOBieTypeSheet());
-            Workbook.Add(cq.GetCOBieZoneSheet());
             //we need to fill attributes last as it is populated by Components, Types etc
             Workbook.Add(cq.GetCOBieAttributeSheet());
 

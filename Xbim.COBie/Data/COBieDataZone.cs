@@ -40,7 +40,7 @@ namespace Xbim.COBie.Data
             // get all IfcBuildingStory objects from IFC file
             IEnumerable<IfcZone> ifcZones = Model.InstancesOfType<IfcZone>();
 
-            COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(ifcZones.OfType<IfcObject>()); //properties helper class
+            COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(ifcZones); //properties helper class
             COBieDataAttributeBuilder attributeBuilder = new COBieDataAttributeBuilder(allPropertyValues);
             attributeBuilder.InitialiseAttributes(ref _attributes);
             
@@ -92,15 +92,28 @@ namespace Xbim.COBie.Data
                 }
 
             }
-            
+
+            COBieDataPropertySetValues allSpacePropertyValues = new COBieDataPropertySetValues(ifcSpaces); //get all property sets and associated properties in one go
             foreach (IfcSpace sp in ifcSpaces)
             {
+                Dictionary<IfcPropertySet, List<IfcSimpleProperty>> thisSpaceProperties = allSpacePropertyValues[sp];
                 ProgressIndicator.IncrementAndUpdate();
 
                 IEnumerable<IfcPropertySingleValue> spProperties = Enumerable.Empty<IfcPropertySingleValue>();
-                foreach (IfcPropertySet pset in sp.GetAllPropertySets()) //was just looking at sp.GetPropertySet("PSet_Revit_Other") but 2012-08-07-COBieResponsibilityMatrix-v07.xlsx appears to want all
+                foreach (KeyValuePair<IfcPropertySet, List<IfcSimpleProperty>> item in thisSpaceProperties)
                 {
-                    spProperties = pset.HasProperties.Where<IfcPropertySingleValue>(p => p.Name.ToString().Contains("ZoneName"));
+                    IfcPropertySet pset = item.Key;
+                    spProperties = item.Value.Where(p => p.Name.ToString().Contains("ZoneName")).OfType<IfcPropertySingleValue>();
+                
+                
+                    //if we have no ifcZones or "ZoneName" properties, lets make a guess that departments will be close to zones and list them
+                    if ((!spProperties.Any()) && (!ifcZones.Any()))
+                    {
+                        spProperties = item.Value.Where(p => p.Name == "Department").OfType<IfcPropertySingleValue>();
+                        if ((spProperties.Any()) && (!Context.COBieGlobalValues.ContainsKey("DEPATMENTUSEDASZONE"))) 
+                            Context.COBieGlobalValues.Add("DEPATMENTUSEDASZONE", "T"); //we need to filter departments out of attribute sheet so set values to pass to Attribute Builder
+                    }
+
                     foreach (IfcPropertySingleValue spProp in spProperties)
                     {
                         COBieZoneRow zone = new COBieZoneRow(zones);
@@ -114,7 +127,7 @@ namespace Xbim.COBie.Data
 
                         zone.ExtSystem = GetExternalSystem(pset);
                         zone.ExtObject = spProp.GetType().Name;
-                        zone.ExtIdentifier = pset.GlobalId.ToString();
+                        zone.ExtIdentifier = pset.GlobalId.ToString(); //IfcPropertySingleValue has no GlobalId so set to the holding IfcPropertySet
                             
                         zone.Description = (string.IsNullOrEmpty(spProp.NominalValue.ToString())) ? DEFAULT_STRING : spProp.NominalValue.ToString(); ;
 

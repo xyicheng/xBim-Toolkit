@@ -563,8 +563,15 @@ namespace Xbim.COBie.Data
         /// <returns>string holding the type information</returns>
         protected string GetTypeName(IfcObject obj)
         {
+            string value = "";
             var elType = obj.IsDefinedBy.OfType<IfcRelDefinesByType>().FirstOrDefault();
-            return (elType != null) ? elType.RelatingType.Name.ToString() : DEFAULT_STRING;
+            if ((elType != null) && (elType.RelatingType.Name != null))
+                value = elType.RelatingType.Name.ToString();
+            if ((string.IsNullOrEmpty(value)) && (obj.ObjectType != null))
+                value = obj.ObjectType.ToString();
+            return (string.IsNullOrEmpty(value)) ?  DEFAULT_STRING : value;
+            //var elType = obj.IsDefinedBy.OfType<IfcRelDefinesByType>().FirstOrDefault();
+            //return (elType != null) ? elType.RelatingType.Name.ToString() : DEFAULT_STRING;
         }
 
         /// <summary>

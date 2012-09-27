@@ -42,7 +42,7 @@ namespace Xbim.COBie.Data
             // get all IfcTask objects from IFC file
             IEnumerable<IfcTask> ifcTasks = Model.InstancesOfType<IfcTask>();
 
-            COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(ifcTasks.OfType<IfcObject>()); //properties helper class
+            COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(ifcTasks); //properties helper class
             
             //IfcTypeObject typObj = Model.InstancesOfType<IfcTypeObject>().FirstOrDefault();
             IfcConstructionEquipmentResource cer = Model.InstancesOfType<IfcConstructionEquipmentResource>().FirstOrDefault();

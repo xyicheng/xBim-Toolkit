@@ -94,8 +94,10 @@ namespace Xbim.COBie.Data
                     if (ifcProductDefinitionShape != null)
                     {
                         IfcExtrudedAreaSolid ifcExtrudedAreaSolid = ifcProductDefinitionShape.Representations.OfType<IfcShapeRepresentation>().SelectMany(eas => eas.Items).OfType<IfcExtrudedAreaSolid>().FirstOrDefault();
-                    
-                        ifcCartesianPoint = ifcExtrudedAreaSolid.Position.Location;
+
+                        if (ifcExtrudedAreaSolid != null) ifcCartesianPoint = ifcExtrudedAreaSolid.Position.Location;
+                        
+
                     }
                 }
 

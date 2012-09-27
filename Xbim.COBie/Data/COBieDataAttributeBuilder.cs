@@ -118,6 +118,7 @@ namespace Xbim.COBie.Data
             ExcludeAttributePropertyNamesStartingWith = new List<string>();
             ExcludeAttributePropertyNamesStartingWith.AddRange(_commonAttExcludesStartWith);
             ExcludeAttributePropertySetNames = new List<string>();
+           
 
         }
 

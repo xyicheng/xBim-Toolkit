@@ -161,7 +161,7 @@ namespace Xbim.COBie.Data
             if (el != null && el.ContainedInStructure.Count() > 0)
             {
                 var owningSpace = el.ContainedInStructure.Select(cis => cis.RelatingStructure).OfType<IfcSpace>().FirstOrDefault(); //only one or zero held in ContainedInStructure
-                if (owningSpace != null) value =  owningSpace.Name.ToString();  
+                if ((owningSpace != null) && (owningSpace.Name != null)) value =  owningSpace.Name.ToString();  
             }
             return string.IsNullOrEmpty(value) ? Constants.DEFAULT_STRING : value;
         }

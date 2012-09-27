@@ -41,7 +41,7 @@ namespace Xbim.COBie.Data
             // get all IfcBuildingStory objects from IFC file
             IEnumerable<IfcBuildingStorey> buildingStories = Model.InstancesOfType<IfcBuildingStorey>();
 
-            COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(buildingStories.OfType<IfcObject>()); //properties helper class
+            COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(buildingStories); //properties helper class
             COBieDataAttributeBuilder attributeBuilder = new COBieDataAttributeBuilder(allPropertyValues);
             attributeBuilder.InitialiseAttributes(ref _attributes);
             

@@ -198,7 +198,8 @@ namespace Xbim.COBie.Data
 
                
         /// <summary>
-        /// Get the property value where the property name equals the passed in value  
+        /// Get the property value where the property name equals the passed in value. 
+        /// Always use  SetAllPropertySingleValues before calling this method
         /// </summary>
         /// <param name="PropertyValueName">IfcPropertySingleValue name</param>
         /// <param name="containsString">Do Contains text match on PropertyValueName if true, exact match if false</param>
@@ -226,6 +227,7 @@ namespace Xbim.COBie.Data
 
         /// <summary>
         /// Get the property value where the property name equals the passed in value 
+        /// Always use  SetAllPropertySingleValues before calling this method
         /// </summary>
         /// <param name="PropertyValueName"></param>
         /// <returns></returns>
