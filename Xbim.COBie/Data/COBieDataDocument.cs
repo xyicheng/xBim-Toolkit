@@ -125,7 +125,14 @@ namespace Xbim.COBie.Data
                         {
                             //get file name
                             value = docRef.ItemReference.ToString();
-                            if (!string.IsNullOrEmpty(value)) strNameValues.Add(value);
+                            if (!string.IsNullOrEmpty(value))
+                                strNameValues.Add(value);
+                            else
+                            {
+                                value = docRef.Name.ToString();
+                                if (!string.IsNullOrEmpty(value)) 
+                                    strNameValues.Add(value);
+                            }
                             //get file location
                             value = docRef.Location.ToString();
                             if ((!string.IsNullOrEmpty(value)) && (!strNameValues.Contains(value))) strLocationValues.Add(value);

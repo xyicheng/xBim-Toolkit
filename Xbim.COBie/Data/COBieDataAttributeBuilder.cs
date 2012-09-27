@@ -31,7 +31,8 @@ namespace Xbim.COBie.Data
         protected List<string> _commonAttExcludesEq = new List<string>()
         {   "MethodOfMeasurement",  "Omniclass Number",     "Assembly Code",                "Assembly Description",     "Uniclass Description",     "Uniclass Code", 
             "Category Code",    "Category Description",     "Classification Description",   "Classification Code",      "Name",                     "Description", 
-            "Hot Water Radius", "Host",                     "Limit Offset",                 "Recepticles",              "Mark"
+            "Hot Water Radius", "Host",                     "Limit Offset",                 "Recepticles",              "Mark",     "Workset",  "Keynote",  "VisibleOnPlan",
+            "Edited by", "Elevation Base"
             
             //"Zone Base Offset", "Upper Limit",   "Line Pattern", "Symbol","Window Inset", "Radius", "Phase Created","Phase", //old ones might need to put back in
         };
@@ -42,7 +43,7 @@ namespace Xbim.COBie.Data
         /// List of property names that are to be excluded from Attributes sheet with start with compare
         /// </summary>
         protected List<string> _commonAttExcludesStartWith = new List<string>()
-        {   "Omniclass Title",  "Half Oval",    "Level",    "Outside Diameter", "Outside Radius"
+        {   "Omniclass Title",  "Half Oval",    "Level",    "Outside Diameter", "Outside Radius", "Moves With"
         };
 
 
