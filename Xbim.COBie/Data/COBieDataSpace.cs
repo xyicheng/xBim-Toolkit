@@ -44,23 +44,20 @@ namespace Xbim.COBie.Data
             List<IfcSpace> ifcSpaces = Model.InstancesOfType<IfcSpace>().OrderBy(ifcSpace => ifcSpace.Name, new CompareIfcLabel()).ToList();
             
             COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(ifcSpaces); //properties helper class
-            COBieDataAttributeBuilder attributeBuilder = new COBieDataAttributeBuilder(allPropertyValues);
+            COBieDataAttributeBuilder attributeBuilder = new COBieDataAttributeBuilder(Context, allPropertyValues);
             attributeBuilder.InitialiseAttributes(ref _attributes);
             
 
-            //list of attributes and property sets to exclude form attribute sheet
-            List<string> excludePropertyValueNames = new List<string> { "Area", "Number", "UsableHeight", "RoomTag", "Room Tag" };
-            List<string> excludePropertyValueNamesWildcard = new List<string> { "ZoneName", "Category", "Length", "Width"}; //exclude part names
-            List<string> excludePropertSetNames = new List<string>() { "BaseQuantities" };
+            
             if ((Context.COBieGlobalValues.ContainsKey("DEPATMENTUSEDASZONE")) &&
                 (Context.COBieGlobalValues["DEPATMENTUSEDASZONE"] == "T")
                 )
-                excludePropertyValueNames.Add("Department"); //remove the department property from selection
+                attributeBuilder.ExcludeAttributePropertyNames.Add("Department"); //remove the department property from selection
             
             //set up filters on COBieDataPropertySetValues
-            attributeBuilder.ExcludeAttributePropertyNames.AddRange(excludePropertyValueNames);
-            attributeBuilder.ExcludeAttributePropertyNamesWildcard.AddRange(excludePropertyValueNamesWildcard);
-            attributeBuilder.ExcludeAttributePropertySetNames.AddRange(excludePropertSetNames);
+            attributeBuilder.ExcludeAttributePropertyNames.AddRange(Context.SpaceAttExcludesEq);
+            attributeBuilder.ExcludeAttributePropertyNamesWildcard.AddRange(Context.SpaceAttExcludesContains);
+            attributeBuilder.ExcludeAttributePropertySetNames.AddRange(Context.SpaceAttExcludesPropertSetEq);
             attributeBuilder.RowParameters["Sheet"] = "Space";
 
             ProgressIndicator.Initialise("Creating Spaces", ifcSpaces.Count());

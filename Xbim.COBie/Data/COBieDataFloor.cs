@@ -42,19 +42,16 @@ namespace Xbim.COBie.Data
             IEnumerable<IfcBuildingStorey> buildingStories = Model.InstancesOfType<IfcBuildingStorey>();
 
             COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(buildingStories); //properties helper class
-            COBieDataAttributeBuilder attributeBuilder = new COBieDataAttributeBuilder(allPropertyValues);
+            COBieDataAttributeBuilder attributeBuilder = new COBieDataAttributeBuilder(Context, allPropertyValues);
             attributeBuilder.InitialiseAttributes(ref _attributes);
             
             
             //IfcClassification ifcClassification = Model.InstancesOfType<IfcClassification>().FirstOrDefault();
             //list of attributes to exclude form attribute sheet
-            List<string> excludePropertyValueNames = new List<string> { "Name", "Line Weight", "Color", 
-                                                          "Colour",   "Symbol at End 1 Default", 
-                                                          "Symbol at End 2 Default", "Automatic Room Computation Height", "Elevation", "Storey Height" };
-            List<string> excludePropertyValueNamesWildcard = new List<string> { "Roomtag", "RoomTag", "Tag", "GSA BIM Area", "Length", "Width" };
+            
             //set up filters on COBieDataPropertySetValues for the SetAttributes only
-            attributeBuilder.ExcludeAttributePropertyNames.AddRange(excludePropertyValueNames);
-            attributeBuilder.ExcludeAttributePropertyNamesWildcard.AddRange(excludePropertyValueNamesWildcard);
+            attributeBuilder.ExcludeAttributePropertyNames.AddRange(Context.FloorAttExcludesEq);
+            attributeBuilder.ExcludeAttributePropertyNamesWildcard.AddRange(Context.FloorAttExcludesContains);
             attributeBuilder.RowParameters["Sheet"] = "Floor";
             
            

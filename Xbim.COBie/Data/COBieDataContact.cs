@@ -77,7 +77,8 @@ namespace Xbim.COBie.Data
                 if (ifcPerson.Addresses != null)
                 {
                     string department = ifcPerson.Addresses.PostalAddresses.Select(dept => dept.InternalLocation).Where(dept => !string.IsNullOrEmpty(dept)).FirstOrDefault();
-                    department = (string.IsNullOrEmpty(department)) ? ifcOrganization.Description.ToString() : ""; //only place to match example files
+                    if (string.IsNullOrEmpty(department))
+                        department = ifcOrganization.Description.ToString(); //only place to match example files
                     contact.Department = (string.IsNullOrEmpty(department)) ? contact.Company : department;
                 }
                 else

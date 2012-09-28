@@ -73,7 +73,10 @@ namespace Xbim.COBie.Data
                 
                 ifcPropertySingleValue = ifcPropertySet.HasProperties.Where<IfcPropertySingleValue>(p => p.Name == "PartNumber").FirstOrDefault();
                 spare.PartNumber = ((ifcPropertySingleValue != null) && (!string.IsNullOrEmpty(ifcPropertySingleValue.NominalValue.ToString()))) ? ifcPropertySingleValue.NominalValue.ToString() : DEFAULT_STRING; ;
-
+                if ((spare.Name == DEFAULT_STRING) && (spare.TypeName == DEFAULT_STRING) && (spare.Description == DEFAULT_STRING))
+                {
+                    continue;
+                }
                 spares.Rows.Add(spare);
             }
             ProgressIndicator.Finalise();

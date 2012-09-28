@@ -48,15 +48,13 @@ namespace Xbim.COBie.Data
 
             IEnumerable<IfcObject> ifcObjects = new List<IfcObject> { ifcProject, ifcSite, ifcBuilding }.AsEnumerable(); ;
             COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(ifcObjects); //properties helper class
-            COBieDataAttributeBuilder attributeBuilder = new COBieDataAttributeBuilder(allPropertyValues);
+            COBieDataAttributeBuilder attributeBuilder = new COBieDataAttributeBuilder(Context, allPropertyValues);
             attributeBuilder.InitialiseAttributes(ref _attributes);
             
             //list of attributes to exclude form attribute sheet
-            List<string> excludePropertyValueNames = new List<string> { "Phase" };
-            List<string> excludePropertyValueNamesWildcard = new List<string> { "Roomtag", "RoomTag", "Tag", "GSA BIM Area", "Length", "Width", "Height" };
             //set up filters on COBieDataPropertySetValues for the SetAttributes only
-            attributeBuilder.ExcludeAttributePropertyNames.AddRange(excludePropertyValueNames);
-            attributeBuilder.ExcludeAttributePropertyNamesWildcard.AddRange(excludePropertyValueNamesWildcard);
+            attributeBuilder.ExcludeAttributePropertyNames.AddRange(Context.FacilityAttExcludesEq);
+            attributeBuilder.ExcludeAttributePropertyNamesWildcard.AddRange(Context.FacilityAttExcludesContains);
             attributeBuilder.RowParameters["Sheet"] = "Facility";
             
             COBieFacilityRow facility = new COBieFacilityRow(facilities);

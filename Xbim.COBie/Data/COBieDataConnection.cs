@@ -39,9 +39,9 @@ namespace Xbim.COBie.Data
             // get all IfcRelConnectsElements objects from IFC file
             IEnumerable<IfcRelConnectsElements> ifcRelConnectsElements = Model.InstancesOfType<IfcRelConnectsElements>()
                                                                         .Where(rce => rce.RelatedElement != null && 
-                                                                                      !ComponentExcludeTypes.Contains(rce.RelatedElement.GetType()) &&
+                                                                                      !Context.ComponentExcludeTypes.Contains(rce.RelatedElement.GetType()) &&
                                                                                       rce.RelatingElement != null &&
-                                                                                      !ComponentExcludeTypes.Contains(rce.RelatingElement.GetType())
+                                                                                      !Context.ComponentExcludeTypes.Contains(rce.RelatingElement.GetType())
                                                                                       );
             //get ifcRelConnectsPorts only if we have ifcRelConnectsElements
             IEnumerable<IfcRelConnectsPorts> ifcRelConnectsPorts = Enumerable.Empty<IfcRelConnectsPorts>();

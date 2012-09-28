@@ -13,6 +13,8 @@ namespace Xbim.COBie.Data
 {
     public class COBieDataAttributeBuilder :   IAttributeProvider
     {
+
+        
         #region IAttributeProvider Implementation
         
         COBieSheet<COBieAttributeRow> _attributes;
@@ -24,40 +26,11 @@ namespace Xbim.COBie.Data
 
         #endregion
 
-        #region Fields
-        /// <summary>
-        /// List of property names that are to be excluded from Attributes sheet with equal compare
-        /// </summary>
-        protected List<string> _commonAttExcludesEq = new List<string>()
-        {   "MethodOfMeasurement",  "Omniclass Number",     "Assembly Code",                "Assembly Description",     "Uniclass Description",     "Uniclass Code", 
-            "Category Code",    "Category Description",     "Classification Description",   "Classification Code",      "Name",                     "Description", 
-            "Hot Water Radius", "Host",                     "Limit Offset",                 "Recepticles",              "Mark",     "Workset",  "Keynote",  "VisibleOnPlan",
-            "Edited by", "Elevation Base"
-            
-            //"Zone Base Offset", "Upper Limit",   "Line Pattern", "Symbol","Window Inset", "Radius", "Phase Created","Phase", //old ones might need to put back in
-        };
-
-
-
-        /// <summary>
-        /// List of property names that are to be excluded from Attributes sheet with start with compare
-        /// </summary>
-        protected List<string> _commonAttExcludesStartWith = new List<string>()
-        {   "Omniclass Title",  "Half Oval",    "Level",    "Outside Diameter", "Outside Radius", "Moves With"
-        };
-
-
-
-        /// <summary>
-        /// List of property names that are to be excluded from Attributes sheet with contains with compare
-        /// </summary>
-        protected List<string> _commonAttExcludesContains = new List<string>()
-        {   "AssetAccountingType",  "GSA BIM Area",     "Height",   "Length",   "Size",     "Lighting Calculation Workplan",    "Offset",   "Omniclass"
-        };
-        #endregion
-
         #region Properties
 
+        /// <summary>
+        /// The property sets to use to create the attributes from
+        /// </summary>
         public COBieDataPropertySetValues  PropertSetValues { get; private set; }
 
         /// <summary>
@@ -85,10 +58,14 @@ namespace Xbim.COBie.Data
         public Dictionary<string, string> RowParameters
         { get; private set; }
 
+        protected COBieContext Context { get; set; }
+        
         #endregion
-
-        public COBieDataAttributeBuilder(COBieDataPropertySetValues propertSetValues)
+        
+        public COBieDataAttributeBuilder(COBieContext context, COBieDataPropertySetValues propertSetValues)
         {
+        
+            Context = context;
             PropertSetValues = propertSetValues;
 
 
@@ -112,11 +89,11 @@ namespace Xbim.COBie.Data
             RowParameters.Add("ExtSystem", Constants.DEFAULT_STRING);
             //set up lists
             ExcludeAttributePropertyNames = new List<string>();
-            ExcludeAttributePropertyNames.AddRange(_commonAttExcludesEq);
+            ExcludeAttributePropertyNames.AddRange(Context.CommonAttExcludesEq);
             ExcludeAttributePropertyNamesWildcard = new List<string>();
-            ExcludeAttributePropertyNamesWildcard.AddRange(_commonAttExcludesContains);
+            ExcludeAttributePropertyNamesWildcard.AddRange(Context.CommonAttExcludesContains);
             ExcludeAttributePropertyNamesStartingWith = new List<string>();
-            ExcludeAttributePropertyNamesStartingWith.AddRange(_commonAttExcludesStartWith);
+            ExcludeAttributePropertyNamesStartingWith.AddRange(Context.CommonAttExcludesStartWith);
             ExcludeAttributePropertySetNames = new List<string>();
            
 
@@ -387,7 +364,7 @@ namespace Xbim.COBie.Data
                     attribute.RowName = RowParameters["Name"];
                     attribute.CreatedBy = RowParameters["CreatedBy"];
                     attribute.CreatedOn = RowParameters["CreatedOn"];
-                    attribute.ExtSystem = RowParameters["ExtSystem"];
+                    attribute.ExtSystem = propertySet.OwnerHistory.OwningApplication.ApplicationFullName; //RowParameters["ExtSystem"];
 
                     value = NumberValueCheck(value, attribute);
 

@@ -64,133 +64,7 @@ namespace Xbim.COBie.Data
         }
 
 
-        /// <summary>
-        /// List of component class types to exclude from selection
-        /// </summary>
-        private List<Type> _componentExcludedTypes = new List<Type>{  typeof(IfcWall),
-                                                        typeof(IfcAnnotation),
-                                                        typeof(IfcWallStandardCase),
-                                                        typeof(IfcSlab),
-                                                        typeof(IfcBeam),
-                                                        typeof(IfcSpace),
-                                                        typeof(IfcBuildingStorey),
-                                                        typeof(IfcBuilding),
-                                                        typeof(IfcSite),
-                                                        typeof(IfcProject),
-                                                        typeof(IfcColumn),
-                                                        typeof(IfcMember),
-                                                        typeof(IfcPlate),
-                                                        typeof(IfcRailing),
-                                                        typeof(IfcStairFlight),
-                                                        typeof(IfcCurtainWall),
-                                                        typeof(IfcRampFlight),
-                                                        typeof(IfcVirtualElement),
-                                                        typeof(IfcFeatureElement),
-                                                        typeof(IfcFastener),
-                                                        typeof(IfcMechanicalFastener),
-                                                        typeof(IfcElementAssembly),
-                                                        typeof(IfcBuildingElementPart),
-                                                        typeof(IfcReinforcingBar),
-                                                        typeof(IfcReinforcingMesh),
-                                                        typeof(IfcTendon),
-                                                        typeof(IfcTendonAnchor),
-                                                        typeof(IfcFooting),
-                                                        typeof(IfcPile),
-                                                        typeof(IfcRamp),
-                                                        typeof(IfcRoof),
-                                                        typeof(IfcStair),
-                                                        typeof(IfcFlowFitting),
-                                                        typeof(IfcFlowSegment),
-                                                        typeof(IfcDistributionPort), 
-                                                        typeof(IfcFeatureElementAddition), 
-                                                        typeof(IfcProjectionElement), 
-                                                        typeof(IfcCovering)
-                                                        //typeof(IfcColumnStandardCase), //IFC2x Edition 4.
-                                                        //typeof(IfcMemberStandardCase), //IFC2x Edition 4.
-                                                        //typeof(IfcPlateStandardCase), //IFC2x Edition 4.
-                                                        //typeof(IfcSlabElementedCase), //IFC2x Edition 4.
-                                                        //typeof(IfcSlabElementedCase), //IFC2x Edition 4.
-                                                        //typeof(IfcWallElementedCase), //IFC2x Edition 4.
-                                                        //typeof(IfcCableCarrierSegment), //IFC2x Edition 4.
-                                                        //typeof(IfcCableSegment), //IFC2x Edition 4.
-                                                        //typeof(IfcDuctSegment), //IFC2x Edition 4.
-                                                        //typeof(IfcPipeSegment), //IFC2x Edition 4.
-                                                        };
-
-        /// <summary>
-        /// List of component class types to exclude from selection
-        /// </summary>
-        public List<Type> ComponentExcludeTypes
-        {
-            get { return _componentExcludedTypes; }
-        }
-
-        //TODO: after IfcRampType and IfcStairType are implemented then add to excludedTypes list
-        private List<Type> _typeObjectExcludedTypes = new List<Type>{  typeof(IfcTypeProduct),
-                                                            typeof(IfcElementType),
-                                                            typeof(IfcBeamType),
-                                                            typeof(IfcColumnType),
-                                                            typeof(IfcCurtainWallType),
-                                                            typeof(IfcMemberType),
-                                                            typeof(IfcPlateType),
-                                                            typeof(IfcRailingType),
-                                                            typeof(IfcRampFlightType),
-                                                            typeof(IfcSlabType),
-                                                            typeof(IfcStairFlightType),
-                                                            typeof(IfcWallType),
-                                                            typeof(IfcDuctFittingType ),
-                                                            typeof(IfcJunctionBoxType ),
-                                                            typeof(IfcPipeFittingType),
-                                                            typeof(IfcCableCarrierSegmentType),
-                                                            typeof(IfcCableSegmentType),
-                                                            typeof(IfcDuctSegmentType),
-                                                            typeof(IfcPipeSegmentType),
-                                                            typeof(IfcFastenerType),
-                                                            typeof(IfcSpaceType),
-                                                            //typeof(Xbim.Ifc.SharedBldgElements.IfcRampType), //IFC2x Edition 4.
-                                                            //typeof(IfcStairType), //IFC2x Edition 4.
-                                                             };
-        /// <summary>
-        /// List of type object class types to exclude from selection
-        /// </summary>
-        public List<Type> TypeObjectExcludeTypes
-        {
-            get { return _typeObjectExcludedTypes; }
-        }
-
-        /// <summary>
-        /// Gets the name of the application that is linked with the supplied item
-        /// </summary>
-        /// <param name="item"></param>
-        /// <returns></returns>
-        public string GetExternalSystem(IfcRoot item)
-        {
-            return item.OwnerHistory.OwningApplication.ApplicationFullName;
-        }
         
-
-        //list or classes to exclude if the related object of the IfcRelAggregates is one of these types
-        private List<Type> _assemblyExcludeTypes = new List<Type>{  typeof(IfcSite),
-                                                        typeof(IfcProject),
-                                                        typeof(IfcBuilding),
-                                                        typeof(IfcBuildingStorey)
-                                                        };
-
-        /// <summary>
-        /// List of type object class types to exclude from selection
-        /// </summary>
-        public List<Type> AssemblyExcludeTypes
-        {
-            get 
-            {
-                List<Type> temp = new List<Type>();
-                temp.AddRange(_assemblyExcludeTypes);
-                //Assemblies should only be shown from the components and type sheets so add there exclusions 
-                temp.AddRange(_typeObjectExcludedTypes); 
-                temp.AddRange(_componentExcludedTypes);
-                return temp;
-            }
-        }
 
         #region Methods
 
@@ -203,7 +77,6 @@ namespace Xbim.COBie.Data
         /// <returns></returns>
         protected string GetCreatedOnDateAsFmtString(IfcOwnerHistory ownerHistory)
         {
-            const string strFormat = "yyyy-MM-dd HH:mm:ss";
             if (ownerHistory != null)
             {
                 int createdOnTStamp = (int)ownerHistory.CreationDate;
@@ -215,16 +88,24 @@ namespace Xbim.COBie.Data
                     //but if the time stamp is Coordinated Universal Time (UTC), then daylight time should be ignored. see http://msdn.microsoft.com/en-us/library/bb546099.aspx
                     //IfcTimeStamp.ToDateTime(CreatedOnTStamp).ToLocalTime()...; //test to see if corrects 1 hour difference, and yes it did, but should we?
 
-                    return IfcTimeStamp.ToDateTime(createdOnTStamp).ToString(strFormat);
+                    return IfcTimeStamp.ToDateTime(createdOnTStamp).ToString(Constants.DATE_FORMAT); 
                 }
                 
             }
             //return default date of 1900-12-31:23:59:59
-            return new DateTime(1900, 12, 31, 23, 59, 59).ToString(strFormat);
+            return new DateTime(1900, 12, 31, 23, 59, 59).ToString(Constants.DATE_FORMAT);
         }
 
-        
-        
+
+        /// <summary>
+        /// Gets the name of the application that is linked with the supplied item
+        /// </summary>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        public string GetExternalSystem(IfcRoot item)
+        {
+            return item.OwnerHistory.OwningApplication.ApplicationFullName;
+        }
 
         /// <summary>
         /// Extract the email address lists for the owner of the IfcOwnerHistory passed
@@ -314,28 +195,31 @@ namespace Xbim.COBie.Data
                 return Constants.DEFAULT_EMAIL;
         }
 
+
+
         /// <summary>
         /// Get email address from IfcPerson 
         /// </summary>
         /// <param name="ifcOrganization"></param>
         /// <param name="ifcPerson"></param>
         /// <returns></returns>
-        private string GetEmail( IfcOrganization ifcOrganization, IfcPerson ifcPerson)
+        protected string GetEmail( IfcOrganization ifcOrganization, IfcPerson ifcPerson)
         {
             string email = "";
             IEnumerable<IfcLabel> emails = Enumerable.Empty<IfcLabel>();
-            if (ifcPerson.Addresses != null)
+            if ((ifcPerson != null) && (ifcPerson.Addresses != null))
             {
                 emails = ifcPerson.Addresses.TelecomAddresses.Select(address => address.ElectronicMailAddresses).Where(item => item != null).SelectMany(em => em).Where(em => !string.IsNullOrEmpty(em));
-                if ((emails == null) || (emails.Count() == 0))
-                {
-                    if (ifcOrganization.Addresses != null)
-                    {
-                        emails = ifcOrganization.Addresses.TelecomAddresses.Select(address => address.ElectronicMailAddresses).Where(item => item != null).SelectMany(em => em).Where(em => !string.IsNullOrEmpty(em));
-                    }
-                }
                 
             }
+            if ((emails == null) || (emails.Count() == 0))
+            {
+                if ((ifcOrganization != null) && (ifcOrganization.Addresses != null))
+                {
+                    emails = ifcOrganization.Addresses.TelecomAddresses.Select(address => address.ElectronicMailAddresses).Where(item => item != null).SelectMany(em => em).Where(em => !string.IsNullOrEmpty(em));
+                }
+            }
+
 
             //if still no email lets make one up
             if ((emails != null) && (emails.Count() > 0))
@@ -344,9 +228,16 @@ namespace Xbim.COBie.Data
             }
             else
             {
-                string first = ifcPerson.GivenName.ToString();
-                string lastName = ifcPerson.FamilyName.ToString();
-                string organization = ifcOrganization.Name.ToString();
+                string first = "";
+                string lastName = "";
+                string organization = "";
+                if (ifcPerson != null)
+                {
+                    first = ifcPerson.GivenName.ToString();
+                    lastName = ifcPerson.FamilyName.ToString();
+                }
+                if (ifcOrganization != null)
+                    organization = ifcOrganization.Name.ToString();
                 string domType = "";
                 if (!string.IsNullOrEmpty(first))
                 {
@@ -419,11 +310,18 @@ namespace Xbim.COBie.Data
         public string GetCategory(IfcObject obj)
         {
             //Try by relationship first
+           
             IfcRelAssociatesClassification ifcRAC = obj.HasAssociations.OfType<IfcRelAssociatesClassification>().FirstOrDefault();
+                            
             if (ifcRAC != null)
             {
                 IfcClassificationReference ifcCR = (IfcClassificationReference)ifcRAC.RelatingClassification;
-                return ifcCR.Name;
+                if (!string.IsNullOrEmpty(ifcCR.Location))
+                    return ifcCR.Location;
+                else
+                    return ifcCR.Name;
+                
+                
             }
             //Try by PropertySet as fallback
             var query = from pSet in obj.PropertySets

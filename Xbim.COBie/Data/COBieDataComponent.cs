@@ -28,43 +28,6 @@ namespace Xbim.COBie.Data
             : base(context)
         { }
 
-        #region Fields
-
-       /// <summary>
-        /// List of property names that are to be excluded from the Attributes generated from the Component sheet with equal compare
-        /// </summary>
-        protected List<string> _componentAttExcludesEq = new List<string>() 
-        {   "Circuit NumberSystem Type", "System Name",  "AssetIdentifier", "BarCode", "TagNumber", "WarrantyStartDate", "InstallationDate", "SerialNumber"
-        };
-
-        /// <summary>
-        /// List of property names that are to be excluded from the Attributes generated from the Component sheet with contains compare
-        /// </summary>
-        protected List<string> _componentAttExcludesContains = new List<string>() { "Roomtag", "RoomTag", "GSA BIM Area", "Length", "Height", "Render Appearance", "Arrow at End" }; //"Tag",
-        
-        #endregion
-
-        #region Properties
-
-        /// <summary>
-        /// List of property names that are to be excluded from the Attributes generated from the Component sheet with equal compare
-        /// </summary>
-        public List<string> ComponentAttExcludesEq
-        {
-            get { return _componentAttExcludesEq; }
-        }
-
-        /// <summary>
-        /// List of property names that are to be excluded from the Attributes generated from the Component sheet with contains compare
-        /// </summary>
-        public List<string> ComponentAttExcludesContains
-        {
-            get { return _componentAttExcludesContains; }
-        }
- 
-        #endregion
-       
-        
 
         #region Methods
 
@@ -83,18 +46,18 @@ namespace Xbim.COBie.Data
 
             IEnumerable<IfcObject> ifcElements = ((from x in relAggregates
                                             from y in x.RelatedObjects
-                                            where !ComponentExcludeTypes.Contains(y.GetType())
+                                                   where !Context.ComponentExcludeTypes.Contains(y.GetType())
                                             select y).Union(from x in relSpatial
                                                             from y in x.RelatedElements
-                                                            where !ComponentExcludeTypes.Contains(y.GetType())
+                                                            where !Context.ComponentExcludeTypes.Contains(y.GetType())
                                                             select y)).GroupBy(el => el.Name).Select(g => g.First()).OfType<IfcObject>(); //.Distinct().ToList();
             
             COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(ifcElements); //properties helper class
-            COBieDataAttributeBuilder attributeBuilder = new COBieDataAttributeBuilder(allPropertyValues);
+            COBieDataAttributeBuilder attributeBuilder = new COBieDataAttributeBuilder(Context, allPropertyValues);
             attributeBuilder.InitialiseAttributes(ref _attributes);
             //set up filters on COBieDataPropertySetValues for the SetAttributes only
-            attributeBuilder.ExcludeAttributePropertyNames.AddRange(ComponentAttExcludesEq); //we do not want listed properties for the attribute sheet so filter them out
-            attributeBuilder.ExcludeAttributePropertyNamesWildcard.AddRange(ComponentAttExcludesContains);//we do not want listed properties for the attribute sheet so filter them out
+            attributeBuilder.ExcludeAttributePropertyNames.AddRange(Context.ComponentAttExcludesEq); //we do not want listed properties for the attribute sheet so filter them out
+            attributeBuilder.ExcludeAttributePropertyNamesWildcard.AddRange(Context.ComponentAttExcludesContains);//we do not want listed properties for the attribute sheet so filter them out
             attributeBuilder.RowParameters["Sheet"] = "Component";
 
 
@@ -103,7 +66,7 @@ namespace Xbim.COBie.Data
             foreach (var obj in ifcElements)
             {
                 ProgressIndicator.IncrementAndUpdate();
-                var xxx = obj.Decomposes.OfType<IfcRelAggregates>().Where(ra => ComponentExcludeTypes.Contains(ra.RelatingObject.GetType()));
+                var xxx = obj.Decomposes.OfType<IfcRelAggregates>().Where(ra => Context.ComponentExcludeTypes.Contains(ra.RelatingObject.GetType()));
                 if (xxx.Count() > 0) 
                     continue;
 

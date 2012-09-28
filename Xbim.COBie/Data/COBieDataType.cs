@@ -19,43 +19,7 @@ namespace Xbim.COBie.Data
 
         #region Fields
 
-        /// <summary>
-        /// List of property names that are to be excluded from the Attributes generated from the Type sheet with equal compare
-        /// </summary>
-        private List<string> _typeAttExcludesEq = new List<string>() 
-        {   "SustainabilityPerformanceCodePerformance",     "AccessibilityPerformance",     "Features",     "Constituents",     "Material",     "Grade", 
-            "Finish",   "Color",    "Size",     "Shape",    "ModelReference",   "NominalHeight",    "NominalWidth", "NominalLength",    "WarrantyName",
-            "WarrantyDescription",  "DurationUnit",         "ServiceLifeType",  "ServiceLifeDuration",  "ExpectedLife",     "LifeCyclePhase",   "Cost",
-            "ReplacementCost",  "WarrantyDurationUnit", "WarrantyDurationLabor",    "WarrantyGuarantorLabor",   "WarrantyDurationParts",    
-            "WarrantyGuarantorParts",   "ModelLabel",   "ModelNumber",  "Manufacturer", "IsFixed",  "AssetType", "CodePerformance", "SustainabilityPerformance"
         
-        };
- 
-        /// <summary>
-        /// List of property names that are to be excluded from the Attributes generated from the Type sheet with contains compare
-        /// </summary>
-        private List<string> _typeAttExcludesContains = new List<string>() { "Roomtag", "RoomTag", "GSA BIM Area" }; //"Tag",
-        
-        #endregion
-
-        #region Properties
-
-        /// <summary>
-        /// List of property names that are to be excluded from the Attributes generated from the Type sheet with equal compare
-        /// </summary>
-        public List<string> TypeAttExcludesEq
-        {
-            get { return _typeAttExcludesEq; }
-        }
-
-       
-        /// <summary>
-        /// List of property names that are to be excluded from the Attributes generated from the Type sheet with contains compare
-        /// </summary>
-        public List<string> TypeAttExcludesContains
-        {
-            get { return _typeAttExcludesContains; }
-        }
         
         #endregion
         
@@ -88,18 +52,18 @@ namespace Xbim.COBie.Data
             //group the types by name as we need to filter duplicate items in for each loop
             IEnumerable<IfcTypeObject> ifcTypeObjects = Model.InstancesOfType<IfcTypeObject>()
                 .Select(type => type)
-                .Where(type => !TypeObjectExcludeTypes.Contains(type.GetType()))
+                .Where(type => !Context.TypeObjectExcludeTypes.Contains(type.GetType()))
                 .GroupBy(type => type.Name).Distinct().SelectMany(g => g);
 
             
             
             //set up property set helper class
             COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(ifcTypeObjects); //properties helper class
-            COBieDataAttributeBuilder attributeBuilder = new COBieDataAttributeBuilder(allPropertyValues);
+            COBieDataAttributeBuilder attributeBuilder = new COBieDataAttributeBuilder(Context, allPropertyValues);
             attributeBuilder.InitialiseAttributes(ref _attributes);
-            attributeBuilder.ExcludeAttributePropertyNames.AddRange(TypeAttExcludesEq);//we do not want for the attribute sheet so filter them out
-            attributeBuilder.ExcludeAttributePropertyNamesWildcard.AddRange(TypeAttExcludesContains);//we do not want for the attribute sheet so filter them out
-            attributeBuilder.ExcludeAttributePropertySetNames.Add(" BaseQuantities"); //exclude the property set from selection of values
+            attributeBuilder.ExcludeAttributePropertyNames.AddRange(Context.TypeAttExcludesEq);//we do not want for the attribute sheet so filter them out
+            attributeBuilder.ExcludeAttributePropertyNamesWildcard.AddRange(Context.TypeAttExcludesContains);//we do not want for the attribute sheet so filter them out
+            attributeBuilder.ExcludeAttributePropertySetNames.AddRange(Context.TypeAttExcludesPropertSetEq); //exclude the property set from selection of values
             attributeBuilder.RowParameters["Sheet"] = "Type";
 
             ProgressIndicator.Initialise("Creating Types", ifcTypeObjects.Count());
@@ -744,7 +708,11 @@ namespace Xbim.COBie.Data
             if (classification != null)
             {
                 IfcClassificationReference classificationRef = (IfcClassificationReference)classification.RelatingClassification;
-                
+
+                if (!string.IsNullOrEmpty(classificationRef.Location))
+                {
+                    return classificationRef.Location;
+                }
                 if (!string.IsNullOrEmpty(classificationRef.Name))
                 {
                     return classificationRef.Name;

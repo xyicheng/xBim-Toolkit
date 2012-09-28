@@ -9,6 +9,7 @@ using Xbim.Ifc.ProductExtension;
 using Xbim.Ifc.UtilityResource;
 using Xbim.XbimExtensions;
 using Xbim.Ifc.Kernel;
+using Xbim.Ifc.MeasureResource;
 
 namespace Xbim.COBie.Data
 {
@@ -54,11 +55,23 @@ namespace Xbim.COBie.Data
                 doc.Name = (di == null) ? "" : di.Name.ToString();
 
                 //no IfcOwnerHistory so take the project OwnerHistory as default
-                if (Model.IfcProject.OwnerHistory != null)
+                if (di.DocumentOwner != null)
                 {
-                    doc.CreatedBy = GetTelecomEmailAddress(Model.IfcProject.OwnerHistory);
-                    doc.CreatedOn = GetCreatedOnDateAsFmtString(Model.IfcProject.OwnerHistory);
+                    if (di.DocumentOwner is IfcPersonAndOrganization)
+                        doc.CreatedBy = GetTelecomEmailAddress(di.DocumentOwner as IfcPersonAndOrganization);
+                    else if (di.DocumentOwner is IfcPerson)
+                        GetEmail(null, di.DocumentOwner as IfcPerson);
+                    else if (di.DocumentOwner is IfcOrganization)
+                        GetEmail(di.DocumentOwner as IfcOrganization, null);
                 }
+                else if (Model.IfcProject.OwnerHistory != null)
+                    doc.CreatedBy = GetTelecomEmailAddress(Model.IfcProject.OwnerHistory);
+
+                if (di.CreationTime != null)
+                    doc.CreatedOn = di.CreationTime.ToString();
+                else if (Model.IfcProject.OwnerHistory != null)
+                    doc.CreatedOn = Context.COBieGlobalValues["DEFAULTDATE"];
+
                 
                 //IfcRelAssociatesClassification ifcRAC = di.HasAssociations.OfType<IfcRelAssociatesClassification>().FirstOrDefault();
                 //IfcClassificationReference ifcCR = (IfcClassificationReference)ifcRAC.RelatingClassification;
@@ -76,7 +89,8 @@ namespace Xbim.COBie.Data
                 doc.ExtObject = relatedObjectInfo.ExtObject;
                 doc.ExtIdentifier = relatedObjectInfo.ExtIdentifier;
                 doc.ExtSystem = relatedObjectInfo.ExtSystem;
-
+                //doc.CreatedBy = relatedObjectInfo.CreatedBy;
+                //doc.CreatedOn = relatedObjectInfo.CreatedOn;
                 FileInformation fileInfo = GetFileInformation(ifcRelAssociatesDocument);
                 doc.File = fileInfo.Name;
                 doc.Directory = fileInfo.Location;
@@ -155,7 +169,7 @@ namespace Xbim.COBie.Data
         /// <returns>RelatedObjectInformation structure</returns>
         private RelatedObjectInformation GetRelatedObjectInformation(IfcRelAssociatesDocument ifcRelAssociatesDocument)
         {
-            RelatedObjectInformation objectInfo = new RelatedObjectInformation { SheetName = DEFAULT_STRING, Name = DEFAULT_STRING, ExtIdentifier = DEFAULT_STRING, ExtObject = DEFAULT_STRING  };
+            RelatedObjectInformation objectInfo = new RelatedObjectInformation { SheetName = DEFAULT_STRING, Name = DEFAULT_STRING, ExtIdentifier = DEFAULT_STRING, ExtObject = DEFAULT_STRING, CreatedBy = DEFAULT_STRING, CreatedOn = DEFAULT_STRING, ExtSystem = DEFAULT_STRING };
             if (ifcRelAssociatesDocument != null)
             {
                 IfcRoot relatedObject = ifcRelAssociatesDocument.RelatedObjects.FirstOrDefault();
@@ -169,6 +183,9 @@ namespace Xbim.COBie.Data
                     objectInfo.ExtObject = relatedObject.GetType().Name;
                     objectInfo.ExtIdentifier = relatedObject.GlobalId;
                     objectInfo.ExtSystem = GetExternalSystem(relatedObject);
+
+                    objectInfo.CreatedBy = GetTelecomEmailAddress(relatedObject.OwnerHistory);
+                    objectInfo.CreatedOn = GetCreatedOnDateAsFmtString(relatedObject.OwnerHistory);
                 }
             }
             return objectInfo;
@@ -220,6 +237,8 @@ namespace Xbim.COBie.Data
             public string ExtObject { get; set; }
             public string ExtIdentifier { get; set; }
             public string ExtSystem { get; set; }
+            public string CreatedBy { get; set; }
+            public string CreatedOn { get; set; }
         }
     }
 }
