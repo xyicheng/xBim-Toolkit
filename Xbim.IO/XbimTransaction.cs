@@ -13,14 +13,14 @@ namespace Xbim.IO
         private Microsoft.Isam.Esent.Interop.Transaction _dbTransaction;
         private Session _session;
         private object lockObject;
-        private XbimEntityTable[] _entityTables;
+        private XbimEntityCursor[] _entityTables;
         private const int MaxCachedEntityTables = 32;
 
         public XbimTransaction()
         {
             _session = new Session(IfcPersistedInstanceCache.JetInstance);
             _dbTransaction = new Microsoft.Isam.Esent.Interop.Transaction(_session);
-            _entityTables = new XbimEntityTable[MaxCachedEntityTables];
+            _entityTables = new XbimEntityCursor[MaxCachedEntityTables];
         }
         
         public void Dispose()

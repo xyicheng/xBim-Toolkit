@@ -40,15 +40,7 @@ namespace Xbim.IO
             return IfcMetaData.IfcType(entity);
         }
 
-        public static object SecondaryKeyValue(this  IPersistIfcEntity entity)
-        {
-
-            PropertyInfo pInfo = entity.IfcType().PrimaryIndex;
-            if (pInfo != null)
-                return pInfo.GetValue(entity, null);
-            else
-                return null;
-        }
+       
 
         internal static void WriteEntity(this IPersistIfcEntity entity, TextWriter tw, byte[] propertyData)
         {

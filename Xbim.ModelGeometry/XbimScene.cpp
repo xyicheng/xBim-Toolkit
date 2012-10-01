@@ -53,7 +53,7 @@ namespace Xbim
 			//add everything that may have a representation
 			graph->AddProducts(toConvert); //load the products as we will be accessing their geometry
 
-			XbimGeometryTable^ geomTable = model->GetGeometryTable();
+			XbimGeometryCursor^ geomTable = model->GetGeometryTable();
 
 
 			int tally = 0;

@@ -98,7 +98,7 @@ namespace Xbim.XbimExtensions.Interfaces
         bool SaveAs(string saveFileName, XbimStorageType storageType, ReportProgressDelegate progDelegate = null);
         bool CanSave { get; }
         bool Saved{ get; }
-        bool Open(string fileName, ReportProgressDelegate progDelegate = null);
+        bool Open(string fileName, bool readOnly = false, ReportProgressDelegate progDelegate = null);
         
         void Close();
 

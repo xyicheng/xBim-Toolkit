@@ -221,7 +221,7 @@ namespace Xbim.IO
         private XmlNode _currentNode;
         private int _entitiesParsed = 0;
 
-        private void StartElement(IfcPersistedInstanceCache cache, XmlReader input, XbimEntityTable entityTable, XbimLazyDBTransaction transaction)
+        private void StartElement(IfcPersistedInstanceCache cache, XmlReader input, XbimEntityCursor entityTable, XbimLazyDBTransaction transaction)
         {
             string elementName = input.Name;
             bool isRefType;

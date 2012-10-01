@@ -61,8 +61,8 @@ namespace Xbim.IO.Parser
         
         private int _currentLabel;
         private string _currentType;
-        private int _ifcKeyIdx = -1;
-
+        private List<int> _indexKeys = null;
+        private List<int> _indexKeyValues = new List<int>();
         private Part21Entity _currentInstance;
         private readonly Stack<Part21Entity> _processStack = new Stack<Part21Entity>();
         private PropertyValue _propertyValue;
@@ -76,7 +76,7 @@ namespace Xbim.IO.Parser
 
    
        
-        private XbimEntityTable table;
+        private XbimEntityCursor table;
         private XbimLazyDBTransaction transaction;
         const int _transactionBatchSize = 100;
         private int _entityCount = 0;
@@ -85,8 +85,8 @@ namespace Xbim.IO.Parser
         {
             get { return _entityCount; }
         }
-        private int _primaryKeyValue = -1;
-        internal P21toIndexParser(Stream inputP21,  XbimEntityTable table, XbimLazyDBTransaction transaction)
+        
+        internal P21toIndexParser(Stream inputP21,  XbimEntityCursor table, XbimLazyDBTransaction transaction)
             : base(inputP21)
         {
            
@@ -178,7 +178,7 @@ namespace Xbim.IO.Parser
             _currentInstance = new Part21Entity(entityLabel);
             _processStack.Push(_currentInstance);
             _entityCount++;
-            _primaryKeyValue = -1;
+            _indexKeyValues.Clear();
             _currentLabel = Convert.ToInt32(entityLabel.TrimStart('#'));
             MemoryStream data = _binaryWriter.BaseStream as MemoryStream;
             data.SetLength(0);
@@ -224,7 +224,7 @@ namespace Xbim.IO.Parser
 
                 _currentType = entityTypeName;
                 IfcType ifcType = IfcMetaData.IfcType(_currentType);
-                _ifcKeyIdx = ifcType.PrimaryKeyIndex;
+                _indexKeys = ifcType.IndexedValues;
             }
         }
 
@@ -238,7 +238,7 @@ namespace Xbim.IO.Parser
                 _binaryWriter.Write((byte)P21ParseAction.EndEntity);
                 IfcType ifcType = IfcMetaData.IfcType(_currentType);
                 MemoryStream data = _binaryWriter.BaseStream as MemoryStream;
-                table.AddEntity(_currentLabel, ifcType.TypeId, _primaryKeyValue, data.ToArray());
+                table.AddEntity(_currentLabel, ifcType.TypeId, _indexKeyValues, data.ToArray(),ifcType.IndexedClass);
                 if (_entityCount % _transactionBatchSize == (_transactionBatchSize - 1))
                 {
                     transaction.Commit();
@@ -377,8 +377,8 @@ namespace Xbim.IO.Parser
         {
             int val = Convert.ToInt32(value.TrimStart('#'));
 
-            if (_currentInstance.CurrentParamIndex  == (_ifcKeyIdx -1)) //current param index is 0 based and ifcKey is 1 based
-                _primaryKeyValue = val;
+            if (_indexKeys != null && _indexKeys.Contains(_currentInstance.CurrentParamIndex + 1)) //current param index is 0 based and ifcKey is 1 based
+                _indexKeyValues.Add(val);
 
             if (_listNestLevel == 0) _currentInstance.CurrentParamIndex++;
            

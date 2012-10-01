@@ -11,7 +11,7 @@ using Xbim.Common.Exceptions;
 
 namespace Xbim.IO
 {
-    public class XbimEntityTable : XbimDBTable, IDisposable
+    public class XbimEntityCursor : XbimCursor, IDisposable
     {
 
         private  const string ifcEntityTableName = "IfcEntities";
@@ -22,16 +22,17 @@ namespace Xbim.IO
         private const string colNameSecondaryKey = "SecondaryKey";
         private const string colNameIfcType = "IfcType";
         private const string colNameEntityData = "EntityData";
-
+        private const string colNameIsIndexedClass = "IsIndexedClass";
         private JET_COLUMNID _colIdEntityLabel;
         private JET_COLUMNID _colIdSecondaryKey;
         private JET_COLUMNID _colIdIfcType;
         private JET_COLUMNID _colIdEntityData;
-
+        private JET_COLUMNID _colIdIsIndexedClass;
         Int32ColumnValue _colValEntityLabel;
         Int32ColumnValue _colValSecondaryKey;
         Int16ColumnValue _colValTypeId;
         BytesColumnValue _colValData;
+        BoolColumnValue _colValIsIndexedClass;
         ColumnValue[] _colValues;
        
 
@@ -44,7 +45,7 @@ namespace Xbim.IO
             }
         }
 
-        public static implicit operator JET_TABLEID (XbimEntityTable table)
+        public static implicit operator JET_TABLEID (XbimEntityCursor table)
         {
             return table;
         }
@@ -85,6 +86,13 @@ namespace Xbim.IO
                     grbit = ColumndefGrbit.ColumnMaybeNull
                 };
                 Api.JetAddColumn(sesid, tableid, colNameEntityData, columndef, null, 0, out columnid);
+                columndef = new JET_COLUMNDEF
+                {
+                    coltyp = JET_coltyp.Bit,
+                    grbit = ColumndefGrbit.None
+                };
+                Api.JetAddColumn(sesid, tableid, colNameIsIndexedClass, columndef, null, 0, out columnid);
+
                 string labelIndexDef = string.Format("+{0}\0\0", colNameEntityLabel);
                 Api.JetCreateIndex(sesid, tableid, entityTableLabelIndex, CreateIndexGrbit.IndexPrimary, labelIndexDef, labelIndexDef.Length,100);
                 Api.JetCloseTable(sesid, tableid);
@@ -105,13 +113,13 @@ namespace Xbim.IO
                         {
                             new JET_CONDITIONALCOLUMN
                             {
-                                szColumnName = colNameIfcType,
+                                szColumnName = colNameIsIndexedClass,
                                 grbit = ConditionalColumnGrbit.ColumnMustBeNonNull
                             }
                         },
                         cConditionalColumn = 1,
                         ulDensity=100,
-                        grbit = CreateIndexGrbit.IndexUnique
+                        grbit = CreateIndexGrbit.None
                     }
                 };
 
@@ -127,23 +135,30 @@ namespace Xbim.IO
             _colIdSecondaryKey = Api.GetTableColumnid(sesid, table, colNameSecondaryKey);
             _colIdIfcType = Api.GetTableColumnid(sesid, table, colNameIfcType);
             _colIdEntityData = Api.GetTableColumnid(sesid, table, colNameEntityData);
-            
+            _colIdIsIndexedClass = Api.GetTableColumnid(sesid, table, colNameIsIndexedClass);
             _colValEntityLabel = new Int32ColumnValue { Columnid = _colIdEntityLabel };
             _colValTypeId = new Int16ColumnValue { Columnid = _colIdIfcType };
             _colValSecondaryKey = new Int32ColumnValue { Columnid = _colIdSecondaryKey };
             _colValData = new BytesColumnValue { Columnid = _colIdEntityData };
-            _colValues = new ColumnValue[] { _colValEntityLabel,_colValSecondaryKey, _colValTypeId, _colValData };
+            _colValIsIndexedClass = new BoolColumnValue { Columnid = _colIdIsIndexedClass };
+            _colValues = new ColumnValue[] { _colValEntityLabel, _colValSecondaryKey, _colValTypeId, _colValData, _colValIsIndexedClass };
 
+        }
+
+        public XbimEntityCursor(Instance instance, string database):this(instance,database,OpenDatabaseGrbit.None)
+        {
         }
         /// <summary>
         /// Constructs a table and opens it
         /// </summary>
         /// <param name="instance"></param>
         /// <param name="database"></param>
-        public XbimEntityTable(Instance instance, string database)
-            : base(instance, database)
+        public XbimEntityCursor(Instance instance, string database, OpenDatabaseGrbit mode)
+            : base(instance, database, mode)
         {
-            Api.JetOpenTable(this.sesid, this.dbId, ifcEntityTableName, null, 0, OpenTableGrbit.None, out this.table);         
+            Api.JetOpenTable(this.sesid, this.dbId, ifcEntityTableName, null, 0, 
+                mode == OpenDatabaseGrbit.ReadOnly ? OpenTableGrbit.ReadOnly :
+                mode == OpenDatabaseGrbit.Exclusive ? OpenTableGrbit.DenyWrite : OpenTableGrbit.None, out this.table);         
             InitColumns();
         }
 
@@ -159,38 +174,18 @@ namespace Xbim.IO
         /// </summary>
         /// <param name="primaryKey">The label of the entity</param>
         /// <param name="type">The index of the type of the entity</param>
-        /// <param name="secondaryKey">specify a value less than 0 if no secondary key is required</param>
+        /// <param name="indexKey">specify null if no secondary key is required</param>
         /// <param name="data">The property data</param>
-        internal void SetColumnValues(int primaryKey, short? type, int secondaryKey, byte[] data)
+        internal void SetColumnValues(int primaryKey, short type, int? indexKey, byte[] data, bool? index)
         {
             _colValEntityLabel.Value = primaryKey;
             _colValTypeId.Value = type;
-            if (secondaryKey > -1)
-                _colValSecondaryKey.Value = secondaryKey;
-            else
-                _colValSecondaryKey.Value = null;
+            _colValSecondaryKey.Value=indexKey;
             _colValData.Value = data;
-        }
-        /// <summary>
-        /// Sets the values of the fields, no update is performed
-        /// </summary>
-        /// <param name="primaryKey">The label of the entity</param>
-        /// <param name="type">The index of the type of the entity</param>
-        /// <param name="data">The property data</param>
-        internal void SetColumnValues(Int32 primaryKey, short type, byte[] data)
-        {
-            SetColumnValues(primaryKey, type, -1, data);
+            _colValIsIndexedClass.Value = index;
         }
 
-        internal void SetColumnValues(IPersistIfcEntity toWrite)
-        {
-            MemoryStream ms = new MemoryStream(4096);
-            toWrite.WriteEntity(new BinaryWriter(ms));
 
-            IfcType ifcType = toWrite.IfcType();
-            int secKeyIdx = ifcType.PrimaryKeyIndex;
-            SetColumnValues((Int32)toWrite.EntityLabel, toWrite.IfcTypeId(), -1, ms.ToArray());
-        }
 
         public string PrimaryIndex { get { return entityTableTypeLabelIndex; } }
 
@@ -239,19 +234,11 @@ namespace Xbim.IO
         /// <param name="toWrite"></param>
         internal void AddEntity(IPersistIfcEntity toWrite)
         {
-            using (var update = new Update(sesid, table, JET_prep.Insert))
-            {
-                _colValTypeId.Value = toWrite.IfcTypeId();
-                _colValEntityLabel.Value = (Int32)toWrite.EntityLabel;
-                MemoryStream ms = new MemoryStream();
-                BinaryWriter bw = new BinaryWriter(ms);
-                toWrite.WriteEntity(bw);
-                _colValData.Value = ms.ToArray();
-                Api.SetColumns(sesid, table, _colValues);
-                update.Save();
-                UpdateCount(1);
-                
-            }
+            MemoryStream ms = new MemoryStream();
+            BinaryWriter bw = new BinaryWriter(ms);
+            toWrite.WriteEntity(bw);
+            IfcType ifcType = IfcMetaData.IfcType(toWrite);
+            AddEntity(toWrite.EntityLabel, ifcType.TypeId, ifcType.GetIndexedValues(toWrite), ms.ToArray(), ifcType.IndexedClass);
         }
 
         /// <summary>
@@ -259,15 +246,40 @@ namespace Xbim.IO
         /// </summary>
         /// <param name="currentLabel">Primary key/label</param>
         /// <param name="typeId">Type identifer</param>
-        /// <param name="secondaryKeyValue">Secondary key</param>
+        /// <param name="indexKeys">Search keys to use specifiy null if no indices</param>
         /// <param name="data">property data</param>
-        internal void AddEntity(int currentLabel, short? typeId, int secondaryKeyValue, byte[] data)
+        internal void AddEntity(int currentLabel, short typeId, List<int> indexKeys, byte[] data, bool? indexed)
         {
-
+            if (indexed.HasValue && indexed.Value == false) indexed = null;
             using (var update = new Update(sesid, table, JET_prep.Insert))
             {
-                SetColumnValues(currentLabel, typeId, secondaryKeyValue, data.ToArray());
-                Api.SetColumns(sesid, table, _colValues);
+
+                if (indexKeys != null && indexKeys.Count > 0)
+                {
+                    IEnumerable<int> uniqueKeys = indexKeys.Distinct();
+                    int i = 1;
+                    JET_SETINFO setinfo = new JET_SETINFO();
+                    foreach (var item in uniqueKeys)
+                    {
+                        if (i == 1)
+                        {
+                            SetColumnValues(currentLabel, typeId, item, data.ToArray(), indexed.Value);
+                            Api.SetColumns(sesid, table, _colValues);
+                        }
+                        else
+                        {
+                            byte[] bytes = BitConverter.GetBytes(item);
+                            setinfo.itagSequence = i + 1;
+                            Api.JetSetColumn(sesid, table, _colIdSecondaryKey, bytes, bytes.Length, SetColumnGrbit.None, setinfo);
+                        }
+                        i++;
+                    }
+                }
+                else
+                {
+                    SetColumnValues(currentLabel, typeId, null, data.ToArray(), indexed);
+                    Api.SetColumns(sesid, table, _colValues);
+                }
                 update.Save();
                 UpdateCount(1);
             }
@@ -283,20 +295,10 @@ namespace Xbim.IO
         {
             System.Diagnostics.Debug.Assert(typeof(IPersistIfcEntity).IsAssignableFrom(type));
             int highest = RetrieveHighestLabel();
-            using (var update = new Update(sesid, table, JET_prep.Insert))
-            {
-                //lock (lockObject)
-                //{
-
-                XbimInstanceHandle h = new XbimInstanceHandle(highest + 1, type.IfcTypeId());
-                    Api.SetColumn(sesid, table, _colIdEntityLabel, h.EntityLabel);
-                    if(h.EntityTypeId.HasValue) Api.SetColumn(sesid, table, _colIdIfcType, h.EntityTypeId.Value);
-                    update.Save();
-                    UpdateCount(1);
-                    return h;
-                //}
-            }
-            
+            IfcType ifcType = IfcMetaData.IfcType(type);
+            XbimInstanceHandle h = new XbimInstanceHandle(highest + 1, ifcType.TypeId);
+            AddEntity(h.EntityLabel, h.EntityTypeId.Value, null, null, ifcType.IndexedClass);
+            return h;
         }
 
         /// <summary>
@@ -452,6 +454,5 @@ namespace Xbim.IO
         }
 
 
-       
     }
 }

@@ -49,14 +49,12 @@ namespace XbimConvert
                     using(XbimModel model = ParseModelFile(xbimFileName))
                     {
                         
-                        model.Open(xbimFileName);
+                        model.Open(xbimFileName,true);
                        // model.Print();
                        
                         //GenerateGeometry(xbimGeometryFileName, model);
                         
                         model.Close();
-                        
-
                         
                     }
                     watch.Stop();

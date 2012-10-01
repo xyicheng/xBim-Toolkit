@@ -28,6 +28,8 @@ using Xbim.XbimExtensions.Interfaces;
 using Xbim.XbimExtensions;
 using Xbim.Common.Logging;
 using Xbim.XbimExtensions.Transactions;
+using Xbim.Ifc2x3;
+using System.Diagnostics;
 
 #endregion
 
@@ -37,6 +39,7 @@ namespace Xbim.IO
     {
         public PropertyInfo PropertyInfo;
         public IfcAttribute IfcAttribute;
+        
     }
 
 
@@ -76,22 +79,21 @@ namespace Xbim.IO
             TypeToIfcTypeLookup = new IfcTypeDictionary();
             try
             {
-                short typeId = 0;
+                
                 foreach (Type type in types)
                 {
                     IfcType ifcType;
-
                     if (TypeToIfcTypeLookup.Contains(type))
                         ifcType = TypeToIfcTypeLookup[type];
                     else
-                        ifcType = new IfcType {Type = type};
-
-                    string typeLookup = type.Name.ToUpper();
-                    if (!TypeNameToIfcTypeLookup.ContainsKey(typeLookup))
                     {
-                        TypeNameToIfcTypeLookup.Add(typeLookup, ifcType);
-                       
+                        IndexedClass[] ifcTypeIndex = (IndexedClass[])type.GetCustomAttributes(typeof(IndexedClass), true);
+                        ifcType = new IfcType { Type = type, IndexedClass = (ifcTypeIndex.GetLength(0) > 0) };
                     }
+
+                    string typeLookup = type.Name.ToUpperInvariant();
+                    if (!TypeNameToIfcTypeLookup.ContainsKey(typeLookup))
+                        TypeNameToIfcTypeLookup.Add(typeLookup, ifcType);
                     
                     if (!TypeToIfcTypeLookup.Contains(ifcType))
                     {
@@ -101,20 +103,16 @@ namespace Xbim.IO
                     }
                 }
 
-                foreach (var item in TypeNameToIfcTypeLookup)
-                {
-                   
-                        TypeIdToTypeNameLookup.Add(++typeId, item.Key);
-                }
+                
+                foreach (var entityValue in Enum.GetValues(typeof(IfcEntityNameEnum)))
+                    TypeIdToTypeNameLookup.Add((short)entityValue, entityValue.ToString());
 
                 //add the Type Ids to each of the IfcTypes
                 foreach (var item in TypeIdToTypeNameLookup)
-                {
-                     
+                {     
                     IfcType ifcType = TypeNameToIfcTypeLookup[item.Value];
-                    if(item.Value!="IFCCARTESIANPOINT")
-                        ifcType.TypeId = item.Key;
                     TypeIdToIfcTypeLookup.Add(item.Key, ifcType);
+                    ifcType.TypeId = item.Key;
                 }
             }
             catch (Exception e)
@@ -144,19 +142,12 @@ namespace Xbim.IO
                     else
                         ifcType.IfcInverses.Add(new IfcMetaProperty { PropertyInfo = propInfo, IfcAttribute = ifcAttributes[0] });
                 }
-                IfcIndex[] ifcPrimaryIndices =
-                    (IfcIndex[]) propInfo.GetCustomAttributes(typeof (IfcIndex), false);
-                if (ifcPrimaryIndices.GetLength(0) > 0) //we have an ifc primary index
+                IndexedProperty[] ifcIndexes =
+                    (IndexedProperty[]) propInfo.GetCustomAttributes(typeof (IndexedProperty), false);
+                if (ifcIndexes.GetLength(0) > 0) //we have an index
                 {
-                    ifcType.PrimaryIndex = propInfo;
-                    ifcType.PrimaryKeyIndex = attributeIdx;
-                }
-                IfcSecondaryIndex[] ifcSecondaryIndices =
-                    (IfcSecondaryIndex[]) propInfo.GetCustomAttributes(typeof (IfcSecondaryIndex), false);
-                if (ifcSecondaryIndices.GetLength(0) > 0) //we have an ifc primary index
-                {
-                    if (ifcType.SecondaryIndices == null) ifcType.SecondaryIndices = new List<PropertyInfo>();
-                    ifcType.SecondaryIndices.Add(propInfo);
+                    Debug.Assert(typeof(IPersistIfcEntity).IsAssignableFrom(propInfo.PropertyType)); //only handles to persisted entities are indexable
+                    ifcType.AddIndexedAttribute(propInfo, attributeIdx);
                 }
             }
         }
@@ -205,7 +196,7 @@ namespace Xbim.IO
         /// <returns></returns>
         public static IfcType IfcType(short typeId)
         {
-            return TypeIdToIfcTypeLookup[typeId];
+           return TypeIdToIfcTypeLookup[typeId];
         }
 
         /// <summary>
@@ -213,7 +204,7 @@ namespace Xbim.IO
         /// </summary>
         /// <param name="type"></param>
         /// <returns></returns>
-        public static short? IfcTypeId(Type type)
+        public static short IfcTypeId(Type type)
         {
             return TypeToIfcTypeLookup[type].TypeId;
         }
@@ -222,12 +213,12 @@ namespace Xbim.IO
         /// </summary>
         /// <param name="typeName">the name of the type, this is in uppercase</param>
         /// <returns></returns>
-        public static short? IfcTypeId(string typeName)
+        public static short IfcTypeId(string typeName)
         {
             return TypeNameToIfcTypeLookup[typeName].TypeId;
         }
 
-        public static short? IfcTypeId(IPersistIfc entity)
+        public static short IfcTypeId(IPersistIfc entity)
         {
             return TypeToIfcTypeLookup[entity.GetType()].TypeId;
         }
@@ -270,6 +261,18 @@ namespace Xbim.IO
         public static bool TryGetIfcType(string typeName, out IfcType ifcType)
         {
             return TypeNameToIfcTypeLookup.TryGetValue(typeName,out ifcType);
+        }
+
+        /// <summary>
+        /// Returns true if the named entities attribute is indexed
+        /// </summary>
+        /// <param name="entityTypeName">the name of the Ifc Entity</param>
+        /// <param name="attributeIndex">the index offset of the attribute to check, nb this is a 1 based index</param>
+        /// <returns></returns>
+        public static bool IsIndexedIfcAttribute(string entityTypeName, int attributeIndex)
+        {
+            IfcType ifcType = IfcType(entityTypeName);
+            return ifcType.IsIndexedIfcAttribute(attributeIndex);
         }
     }
 }

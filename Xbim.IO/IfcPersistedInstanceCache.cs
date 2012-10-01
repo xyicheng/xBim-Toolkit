@@ -17,6 +17,7 @@ using Xbim.Ifc2x3.Kernel;
 using System.Diagnostics;
 using Xbim.Ifc2x3.ProductExtension;
 using Xbim.Ifc2x3.GeometryResource;
+using Microsoft.Isam.Esent.Interop.Windows7;
 
 namespace Xbim.IO
 {
@@ -26,13 +27,13 @@ namespace Xbim.IO
         #region ESE Database 
 
         internal static Instance JetInstance;
-
+        internal static Instance CreateDBInstance;
         /// <summary>
         /// Holds the session and transaction state
         /// </summary>
         private readonly object lockObject;
-        private readonly XbimEntityTable[] _entityTables;
-        private readonly XbimGeometryTable[] _geometryTables;
+        private readonly XbimEntityCursor[] _entityTables;
+        private readonly XbimGeometryCursor[] _geometryTables;
         private const int MaxCachedEntityTables = 32;
         private const int MaxCachedGeometryTables = 32;
 
@@ -59,18 +60,19 @@ namespace Xbim.IO
         {
             this.lockObject = new Object();
             _model = model;
-            _entityTables = new XbimEntityTable[MaxCachedEntityTables];
-            _geometryTables = new XbimGeometryTable[MaxCachedGeometryTables];
+            _entityTables = new XbimEntityCursor[MaxCachedEntityTables];
+            _geometryTables = new XbimGeometryCursor[MaxCachedGeometryTables];
         }
         static IfcPersistedInstanceCache()
         {
+           
             JetInstance = new Instance("XbimDBInstance");
             JetInstance.Parameters.BaseName = "XBM";
             // _jetInstance.Parameters.TempDirectory = Path.GetRandomFileName();
             JetInstance.Parameters.CreatePathIfNotExist = true;
             JetInstance.Parameters.CircularLog = true;
             JetInstance.Parameters.CleanupMismatchedLogFiles = true;
-            //JetInstance.Parameters.Recovery = false; //By default its True, only set this if we plan to write
+            JetInstance.Parameters.Recovery = false; //By default its True, only set this if we plan to write
             SystemParameters.CacheSizeMin = 16 * 1024;
             JetInstance.Parameters.LogFileSize = 16 * 1024;
             JetInstance.Parameters.LogBuffers = 8 * 1024;
@@ -85,21 +87,23 @@ namespace Xbim.IO
         public bool CreateDatabase(string fileName)
         {
             _databaseName = fileName;
-            return IfcPersistedInstanceCache.CreateDB(fileName);
+            string directory = Path.ChangeExtension(fileName, "XbimLog");
+            Instance createInstance = CreateInstance(directory);
+            return IfcPersistedInstanceCache.CreateDB(createInstance, fileName);
         }
 
-        private static bool CreateDB(string fileName)
+        private static bool CreateDB(Instance instance, string fileName)
         {
-            using (var session = new Session(JetInstance))
+            using (var session = new Session(instance))
             {
                 JET_DBID dbid;
 
                 Api.JetCreateDatabase(session, fileName, null, out dbid, CreateDatabaseGrbit.OverwriteExisting);
                 try
                 {
-                    XbimEntityTable.CreateTable(session, dbid);
-                    XbimDBTable.CreateGlobalsTable(session, dbid); //create the gobals table
-                    XbimGeometryTable.CreateTable(session, dbid);
+                    XbimEntityCursor.CreateTable(session, dbid);
+                    XbimCursor.CreateGlobalsTable(session, dbid); //create the gobals table
+                    XbimGeometryCursor.CreateTable(session, dbid);
                     return true;
                 }
                 catch
@@ -119,14 +123,14 @@ namespace Xbim.IO
         /// Returns a cached or new entity table, assumes the database filename has been specified
         /// </summary>
         /// <returns></returns>
-        internal XbimEntityTable GetEntityTable()
+        internal XbimEntityCursor GetEntityTable(bool readOnly = false)
         {
             Debug.Assert(!string.IsNullOrEmpty(_databaseName));
             lock (this.lockObject)
             {
                 for (int i = 0; i < this._entityTables.Length; ++i)
                 {
-                    if (null != this._entityTables[i])
+                    if (null != this._entityTables[i] && this._entityTables[i].ReadOnly == readOnly )
                     {
                         var table = this._entityTables[i];
                         this._entityTables[i] = null;
@@ -134,14 +138,14 @@ namespace Xbim.IO
                     }
                 }
             }
-            return new XbimEntityTable(JetInstance, _databaseName); ;
+            return new XbimEntityCursor(JetInstance, _databaseName, readOnly ? OpenDatabaseGrbit.ReadOnly : OpenDatabaseGrbit.None);
         }
 
         /// <summary>
         /// Returns a cached or new Geometry Table, assumes the database filename has been specified
         /// </summary>
         /// <returns></returns>
-        internal XbimGeometryTable GetGeometryTable()
+        internal XbimGeometryCursor GetGeometryTable()
         {
             Debug.Assert(!string.IsNullOrEmpty(_databaseName));
             lock (this.lockObject)
@@ -156,7 +160,7 @@ namespace Xbim.IO
                     }
                 }
             }
-            return new XbimGeometryTable(JetInstance, _databaseName); ;
+            return new XbimGeometryCursor(JetInstance, _databaseName); ;
         }
 
         /// <summary>
@@ -164,7 +168,7 @@ namespace Xbim.IO
         /// and dispose of it otherwise.
         /// </summary>
         /// <param name="table">The cursor to free.</param>
-        internal void FreeTable(XbimEntityTable table)
+        internal void FreeTable(XbimEntityCursor table)
         {
             Debug.Assert(null != table, "Freeing a null table");
 
@@ -189,7 +193,7 @@ namespace Xbim.IO
         /// and dispose of it otherwise.
         /// </summary>
         /// <param name="table">The cursor to free.</param>
-        public void FreeTable(XbimGeometryTable table)
+        public void FreeTable(XbimGeometryCursor table)
         {
             Debug.Assert(null != table, "Freeing a null table");
 
@@ -215,11 +219,11 @@ namespace Xbim.IO
         ///  Opens an xbim model server file, exception is thrown if errors are encountered
         /// </summary>
         /// <param name="filename"></param>
-        internal void Open(string filename)
+        internal void Open(string filename, bool readOnly = false)
         {
             Close();
             _databaseName = filename; //success store the name of the DB file
-            XbimEntityTable entTable = GetEntityTable();
+            XbimEntityCursor entTable = GetEntityTable(readOnly);
             try
             {
                 using (var transaction = entTable.BeginReadOnlyTransaction())
@@ -271,38 +275,79 @@ namespace Xbim.IO
         /// </summary>
         /// <param name="progressHandler"></param>
         /// <returns></returns>
-        public void ImportIfc(string toImportIfcFilename, ReportProgressDelegate progressHandler = null)
+        public void ImportIfc(string xbimDbName, string toImportIfcFilename, ReportProgressDelegate progressHandler = null)
         {
+            string directory = Path.ChangeExtension(xbimDbName, "XbimLog");
 
-            var table = GetEntityTable();
-            try
+            using (Instance createInstance = CreateInstance(directory))
             {
-                using (var transaction = table.BeginLazyTransaction())
+                try
                 {
-                    using (FileStream reader = new FileStream(toImportIfcFilename, FileMode.Open, FileAccess.Read))
+                    CreateDB(createInstance, xbimDbName);
+                    using (var table = new XbimEntityCursor(createInstance, xbimDbName, OpenDatabaseGrbit.Exclusive))
                     {
-                        using (P21toIndexParser part21Parser = new P21toIndexParser(reader, table, transaction))
+                        using (var transaction = table.BeginLazyTransaction())
                         {
-                            if (progressHandler != null) part21Parser.ProgressStatus += progressHandler;
-                            part21Parser.Parse();
-                            _model.Header = part21Parser.Header;
-                            table.WriteHeader(part21Parser.Header);
-                            if (progressHandler != null) part21Parser.ProgressStatus -= progressHandler;
+                            using (FileStream reader = new FileStream(toImportIfcFilename, FileMode.Open, FileAccess.Read))
+                            {
+                                using (P21toIndexParser part21Parser = new P21toIndexParser(reader, table, transaction))
+                                {
+                                    if (progressHandler != null) part21Parser.ProgressStatus += progressHandler;
+                                    part21Parser.Parse();
+                                    _model.Header = part21Parser.Header;
+                                    table.WriteHeader(part21Parser.Header);
+                                    if (progressHandler != null) part21Parser.ProgressStatus -= progressHandler;
+                                }
+                            }
+                            transaction.Commit();
                         }
-                    } 
-                    transaction.Commit();
-                    
+                    }
+                }
+
+                catch (Exception e)
+                {
+
+                    throw new XbimException("Error importing Ifc File " + toImportIfcFilename, e);
+                }
+                finally
+                {
+                    createInstance.Term();
+                    Directory.Delete(directory,true);
                 }
             }
-            catch (Exception e)
-            {
-                throw new XbimException("Error importing Ifc File " + toImportIfcFilename, e);
-            }
-            finally
-            { 
-                this.FreeTable(table);
-            }
+        }
+
+      
+
+        private static Instance CreateInstance(string directory, bool recovery = false)
+        {
+            string fullPath = Path.GetFullPath(directory);
            
+            var jetInstance = new Instance(Guid.NewGuid().ToString());
+            jetInstance.Parameters.BaseName = "XBM";
+            jetInstance.Parameters.SystemDirectory = fullPath;
+            jetInstance.Parameters.LogFileDirectory = fullPath;
+            jetInstance.Parameters.TempDirectory = fullPath;
+            jetInstance.Parameters.AlternateDatabaseRecoveryDirectory = directory;
+            jetInstance.Parameters.CreatePathIfNotExist = true;
+            jetInstance.Parameters.EnableIndexChecking = false;       // TODO: fix unicode indexes
+            jetInstance.Parameters.CircularLog = true;
+            jetInstance.Parameters.CheckpointDepthMax = 64 * 1024 * 1024;
+            jetInstance.Parameters.LogFileSize = 1024;    // 1MB logs
+            jetInstance.Parameters.LogBuffers = 1024;     // buffers = 1/2 of logfile
+            jetInstance.Parameters.MaxTemporaryTables = 0;
+            jetInstance.Parameters.MaxVerPages = 1024;
+            jetInstance.Parameters.NoInformationEvent = true;
+            jetInstance.Parameters.WaypointLatency = 1;
+            jetInstance.Parameters.MaxSessions = 256;
+            jetInstance.Parameters.MaxOpenTables = 256;
+
+            InitGrbit grbit = EsentVersion.SupportsWindows7Features
+                                  ? Windows7Grbits.ReplayIgnoreLostLogs
+                                  : InitGrbit.None;
+            jetInstance.Parameters.Recovery = recovery; 
+            jetInstance.Init(grbit);
+            return jetInstance;
         }
 
         /// <summary>
@@ -963,9 +1008,9 @@ namespace Xbim.IO
             bool indexFound = false;
             Type type = typeof(T);
             IfcType ifcType = IfcMetaData.IfcType(type);
-            PropertyInfo pKey = ifcType.PrimaryIndex;
+           
             Func<T, bool> predicate = expr.Compile();
-            if (pKey != null) //we can use a secondary index to look up
+            if (ifcType.HasIndexedAttribute) //we can use a secondary index to look up
             {
                 //our indexes work from the hash values of that which is indexed, regardless of type
                 object hashRight = null;
@@ -988,9 +1033,8 @@ namespace Xbim.IO
                     {
                         //cast to MemberExpression - it allows us to get the property
                         MemberExpression propExp = returnedEx;
-                        string property = propExp.Member.Name;
-
-                        if (pKey.Name == property) //we have a primary key match
+                        
+                        if (ifcType.IndexedProperties.Contains(propExp.Member)) //we have a primary key match
                         {
                             IPersistIfcEntity entity = hashRight as IPersistIfcEntity;
                             if (entity != null)
@@ -1026,7 +1070,7 @@ namespace Xbim.IO
         public XbimGeometryData GetGeometry(IfcProduct product, XbimGeometryType geomType)
         {
            
-            XbimGeometryTable geomTable = GetGeometryTable();
+            XbimGeometryCursor geomTable = GetGeometryTable();
             using (var transaction = geomTable.BeginReadOnlyTransaction())
             {
                 return geomTable.GeometryData(product, geomType);
@@ -1043,7 +1087,7 @@ namespace Xbim.IO
         public IEnumerable<XbimGeometryData> Shapes(XbimGeometryType ofType)
         {
             //Get a cached or open a new Table
-            XbimGeometryTable geometryTable = GetGeometryTable();
+            XbimGeometryCursor geometryTable = GetGeometryTable();
             foreach (var shape in geometryTable.Shapes(ofType))
                 yield return shape;
             FreeTable(geometryTable);
@@ -1067,11 +1111,15 @@ namespace Xbim.IO
             error = "";
             XbimModel sourceModel = new XbimModel();
             sourceModel.Open(source);
-            if (CreateDB(target))
+            using (Instance instance = CreateInstance(target))
             {
-                XbimModel targetModel = new XbimModel();
-                targetModel.Open(target);
-                sourceModel.Compact(targetModel);
+
+                if (CreateDB(instance, target))
+                {
+                    XbimModel targetModel = new XbimModel();
+                    targetModel.Open(target);
+                    sourceModel.Compact(targetModel);
+                }
             }
             return false;
             //try
@@ -1181,7 +1229,7 @@ namespace Xbim.IO
         private XbimInstanceHandle InsertNew(Type type)
         {
 
-            XbimEntityTable table = GetEntityTable();
+            XbimEntityCursor table = GetEntityTable();
 
             try
             {

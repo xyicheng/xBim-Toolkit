@@ -9,7 +9,7 @@ using Xbim.XbimExtensions;
 
 namespace Xbim.IO
 {
-    public class XbimGeometryTable : XbimDBTable, IDisposable
+    public class XbimGeometryCursor : XbimCursor, IDisposable
     {
        
     
@@ -112,11 +112,16 @@ namespace Xbim.IO
             _colValues = new ColumnValue[] { _colValGeomType, _colValGeometryProductLabel, _colValProductIfcTypeId, _colValSubPart, _colValTransformMatrix, _colValShapeData, _colValRepItem };
 
         }
-
-        public XbimGeometryTable(Instance instance, string database)
-            : base(instance, database)
+        public XbimGeometryCursor(Instance instance, string database)
+            : this(instance, database, OpenDatabaseGrbit.None)
         {
-            Api.JetOpenTable(this.sesid, this.dbId, GeometryTableName, null, 0, OpenTableGrbit.None, out this.table);
+        }
+        public XbimGeometryCursor(Instance instance, string database, OpenDatabaseGrbit mode)
+            : base(instance, database, mode)
+        {
+            Api.JetOpenTable(this.sesid, this.dbId, GeometryTableName, null, 0, mode == OpenDatabaseGrbit.ReadOnly ? OpenTableGrbit.ReadOnly :
+                                                                                mode == OpenDatabaseGrbit.Exclusive ? OpenTableGrbit.DenyWrite : OpenTableGrbit.None,
+                                                                                out this.table);
             InitColumns();
         }
        

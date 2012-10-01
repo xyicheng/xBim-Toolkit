@@ -57,7 +57,7 @@ namespace Xbim.Ifc2x3.PresentationAppearanceResource
         /// <summary>
         ///   Optional.   A geometric representation item to which the style is assigned.
         /// </summary>
-        [IfcSecondaryIndex]
+        [IndexedProperty]
         [IfcAttribute(1, IfcAttributeState.Optional)]
         public IfcRepresentationItem Item
         {

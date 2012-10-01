@@ -151,7 +151,7 @@ namespace Xbim.IO
         /// Starts a transaction to allow bulk updates on the geometry table, FreeGeometry Table should be called when no longer required
         /// </summary>
         /// <returns></returns>
-        internal XbimGeometryTable GetGeometryTable()
+        internal XbimGeometryCursor GetGeometryTable()
         {
             return Cached.GetGeometryTable();
         }
@@ -160,7 +160,7 @@ namespace Xbim.IO
         /// Returns the table to the cache for reuse
         /// </summary>
         /// <param name="table"></param>
-        internal void FreeTable(XbimGeometryTable table)
+        internal void FreeTable(XbimGeometryCursor table)
         {
             Cached.FreeTable(table);
         }
@@ -169,7 +169,7 @@ namespace Xbim.IO
         /// Returns the table to the cache for reuse
         /// </summary>
         /// <param name="table"></param>
-        internal void FreeTable(XbimEntityTable table)
+        internal void FreeTable(XbimEntityCursor table)
         {
             Cached.FreeTable(table);
         }
@@ -436,8 +436,8 @@ namespace Xbim.IO
                 Cached.Dispose(); //if the model is already open close it and release all resources
             Cached = new IfcPersistedInstanceCache(this);
             Init(xbimDbName);
-            if (!Cached.CreateDatabase(xbimDbName)) //create the empty database
-                return false;
+            //if (!Cached.CreateDatabase(xbimDbName)) //create the empty database
+            //    return false;
 
             XbimStorageType toImportStorageType = StorageType(importFrom);
             switch (toImportStorageType)
@@ -446,12 +446,14 @@ namespace Xbim.IO
                     Cached.ImportIfcXml(importFrom, progDelegate);
                     break;
                 case XbimStorageType.IFC:
-                    Cached.ImportIfc(importFrom, progDelegate);
+                    Cached.ImportIfc(xbimDbName, importFrom, progDelegate);
                     break;
                 case XbimStorageType.IFCZIP:
+                    Cached.CreateDatabase(xbimDbName);
                     Cached.ImportIfcZip(importFrom, progDelegate);
                     break;
                 case XbimStorageType.XBIM:
+                    Cached.CreateDatabase(xbimDbName);
                     Cached.ImportXbim(importFrom, progDelegate);
                     break;
                 case XbimStorageType.INVALID:
@@ -881,8 +883,9 @@ namespace Xbim.IO
        
 
 
-        public bool Open(string fileName, ReportProgressDelegate progDelegate = null)
+        public bool Open(string fileName, bool readOnly = false, ReportProgressDelegate progDelegate = null)
         {
+            
             try
             {
                 if (Cached != null)
@@ -893,18 +896,18 @@ namespace Xbim.IO
                 XbimStorageType toImportStorageType = StorageType(fileName);
                 switch (toImportStorageType)
                 {
-                    case XbimStorageType.IFCXML:
-                        Cached.ImportIfcXml(fileName);
-                        break;
-                    case XbimStorageType.IFC:
-                        Cached.ImportIfc(fileName);
-                        break;
-                    case XbimStorageType.IFCZIP:
-                        Cached.ImportIfcZip(fileName);
-                        break;
+                    //case XbimStorageType.IFCXML:
+                    //    Cached.ImportIfcXml(fileName);
+                    //    break;
+                    //case XbimStorageType.IFC:
+                    //    Cached.ImportIfc(fileName);
+                    //    break;
+                    //case XbimStorageType.IFCZIP:
+                    //    Cached.ImportIfcZip(fileName);
+                    //    break;
                     case XbimStorageType.XBIM:
                         Init(fileName);
-                        Cached.Open(fileName); //opens the database
+                        Cached.Open(fileName, readOnly); //opens the database
                         break;
                     case XbimStorageType.INVALID:
                     default:
@@ -1237,7 +1240,7 @@ namespace Xbim.IO
 
 
 
-        internal XbimEntityTable GetEntityTable()
+        internal XbimEntityCursor GetEntityTable()
         {
             return Cached.GetEntityTable();
         }

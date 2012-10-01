@@ -4,23 +4,23 @@ using System.Linq;
 using System.Text;
 using System.Reflection;
 using Xbim.XbimExtensions.SelectTypes;
+using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.IO
 {
     public class IfcType
     {
         public Type Type;
-        public short? TypeId;
+        public short TypeId;
         public SortedList<int, IfcMetaProperty> IfcProperties = new SortedList<int, IfcMetaProperty>();
         public List<IfcMetaProperty> IfcInverses = new List<IfcMetaProperty>();
         public IfcType IfcSuperType;
         public List<IfcType> IfcSubTypes = new List<IfcType>();
         private List<Type> _nonAbstractSubTypes;
-        private PropertyInfo _primaryIndex;
-        private List<PropertyInfo> _secondaryIndices;
+        private List<PropertyInfo> _indexedProperties;
         private List<IfcMetaProperty> _expressEnumerableProperties;
-        internal int PrimaryKeyIndex = -1; 
-        
+        private List<int> _indexedValues;
+        internal bool IndexedClass = false;
         public List<IfcMetaProperty> ExpressEnumerableProperties
         {
             get
@@ -55,27 +55,38 @@ namespace Xbim.IO
                 return _nonAbstractSubTypes;
             }
         }
-
-        public List<PropertyInfo> SecondaryIndices
-        {
-            get { return _secondaryIndices; }
-            internal set { _secondaryIndices = value; }
-        }
-
-        public PropertyInfo PrimaryIndex
-        {
-            get { return _primaryIndex; }
-            internal set { _primaryIndex = value; }
-        }
-
         /// <summary>
-        ///   Returns true if there is a primary or secondar index on this class
+        /// If the type has indexed attributes, this returns a set of unique values for the specified IPersistIfcEntity
         /// </summary>
-        public bool HasIndex
+        /// <param name="ent"></param>
+        /// <returns></returns>
+        internal List<int> GetIndexedValues(IPersistIfcEntity ent)
         {
-            get { return _primaryIndex != null || (_secondaryIndices != null && _secondaryIndices.Count > 0); }
+            List<int> keys = new List<int>();
+            foreach (var prop in IndexedProperties)
+            {
+                int h = (int)prop.GetValue(ent, null);
+                if (!keys.Contains(h)) keys.Add(h); //normally there are only one or two keys so don't worry about performance of contains on a list
+            }
+            return keys;
         }
 
+        internal List<PropertyInfo> IndexedProperties
+        {
+            get
+            {
+                return _indexedProperties;
+            }
+
+        }
+
+        internal List<int> IndexedValues
+        {
+            get
+            {
+                return _indexedValues;
+            }
+        }
 
         private void AddNonAbstractTypes(IfcType ifcType, List<Type> nonAbstractTypes)
         {
@@ -85,7 +96,36 @@ namespace Xbim.IO
                 AddNonAbstractTypes(subType, nonAbstractTypes);
         }
 
-      
+
+        /// <summary>
+        /// returns true if the attribute is indexed
+        /// </summary>
+        /// <param name="attributeIndex"></param>
+        /// <returns></returns>
+        public bool IsIndexedIfcAttribute(int attributeIndex)
+        {
+            return _indexedValues != null && _indexedValues.Contains(attributeIndex);
+        }
+
+        internal void AddIndexedAttribute(PropertyInfo pInfo, int attributeIdx)
+        {
+            if (_indexedProperties == null) _indexedProperties = new List<PropertyInfo>();
+            if (_indexedValues == null) _indexedValues = new List<int>();
+            _indexedProperties.Add(pInfo);
+            _indexedValues.Add(attributeIdx);
+            IndexedClass = true; //if it has keys it must be an indexed class
+        }
+        /// <summary>
+        /// Returns true if the type has an indexed attribute
+        /// </summary>
+        /// <returns></returns>
+        public bool HasIndexedAttribute
+        {
+            get
+            {
+                return _indexedValues != null && _indexedValues.Count > 0;
+            }
+        }
     }
 
 }

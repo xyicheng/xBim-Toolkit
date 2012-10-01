@@ -6,7 +6,7 @@ using Microsoft.Isam.Esent.Interop;
 
 namespace Xbim.IO
 {
-    public abstract class XbimDBTable
+    public abstract class XbimCursor
     {
         protected const int transactionBatchSize = 100;
         /// <summary>
@@ -49,19 +49,25 @@ namespace Xbim.IO
         private string database;
         private static string ifcHeaderColumnName = "IfcHeader";
 
-        public XbimDBTable(Instance instance, string database)
+
+
+        public bool ReadOnly { get; set; }
+        public XbimCursor(Instance instance, string database, OpenDatabaseGrbit mode)
         {
             this.lockObject = new Object();
             this.instance = instance;
             this.database = database;
             Api.JetBeginSession(this.instance, out this.sesid, String.Empty, String.Empty);
-            Api.JetAttachDatabase(this.sesid, database, AttachDatabaseGrbit.None);
-            Api.JetOpenDatabase(this.sesid, database, String.Empty, out this.dbId, OpenDatabaseGrbit.None);
-            Api.JetOpenTable(this.sesid, this.dbId, globalsTableName, null, 0, OpenTableGrbit.None, out this.globalsTable);
+            Api.JetAttachDatabase(this.sesid, database, mode == OpenDatabaseGrbit.ReadOnly ? AttachDatabaseGrbit.ReadOnly : AttachDatabaseGrbit.None);
+            Api.JetOpenDatabase(this.sesid, database, String.Empty, out this.dbId, mode);
+            Api.JetOpenTable(this.sesid, this.dbId, globalsTableName, null, 0,  mode == OpenDatabaseGrbit.ReadOnly ? OpenTableGrbit.ReadOnly : 
+                                                                                mode == OpenDatabaseGrbit.Exclusive ? OpenTableGrbit.DenyWrite : OpenTableGrbit.None, 
+                                                                                out this.globalsTable);
             this.entityCountColumn = Api.GetTableColumnid(this.sesid, this.globalsTable, entityCountColumnName);
             this.geometryCountColumn = Api.GetTableColumnid(this.sesid, this.globalsTable, geometryCountColumnName);
             this.flushColumn = Api.GetTableColumnid(this.sesid, this.globalsTable, flushColumnName);
             this.ifcHeaderColumn = Api.GetTableColumnid(this.sesid, this.globalsTable, ifcHeaderColumnName);
+            ReadOnly = (mode == OpenDatabaseGrbit.ReadOnly);
         }
 
         internal abstract int RetrieveCount();

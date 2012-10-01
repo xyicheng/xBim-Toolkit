@@ -64,6 +64,7 @@ namespace Xbim.Ifc2x3.Kernel
         /// <summary>
         ///   The object that represents the nest or aggregation.
         /// </summary>
+        [IndexedProperty]
         [IfcAttribute(5, IfcAttributeState.Mandatory)]
         public IfcObjectDefinition RelatingObject
         {

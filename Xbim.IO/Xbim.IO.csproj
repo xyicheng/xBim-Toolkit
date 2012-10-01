@@ -69,6 +69,7 @@
     <ErrorReport>prompt</ErrorReport>
     <DocumentationFile>..\bin\x86\Debug\Xbim.IO.XML</DocumentationFile>
     <NoWarn>1591,1573</NoWarn>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <OutputPath>..\bin\x86\Release\</OutputPath>
@@ -161,9 +162,9 @@
     <Compile Include="Part21Formatter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TypeExtensions.cs" />
-    <Compile Include="XbimDBTable.cs" />
-    <Compile Include="XbimEntityTable.cs" />
-    <Compile Include="XbimGeometryTable.cs" />
+    <Compile Include="XbimCursor.cs" />
+    <Compile Include="XbimEntityCursor.cs" />
+    <Compile Include="XbimGeometryCursor.cs" />
     <Compile Include="XbimInstanceHandleMap.cs" />
     <Compile Include="XbimLazyDBTransaction.cs" />
     <Compile Include="XbimModel.cs" />
