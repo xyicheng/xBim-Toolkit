@@ -174,7 +174,7 @@
       <OutputFile>$(OutDir)$(TargetName).xml</OutputFile>
     </Xdcmake>
     <PostBuildEvent>
-      <Command>xcopy .\OpenCascade\win32\bin $(OutDir) /D /Y /R</Command>
+      <Command>xcopy .\OpenCascade\win32\bin "$(OutDir)" /D /Y /R</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -228,7 +228,7 @@
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy .\OpenCascade\win32\bin $(OutDir) /D /Y /R</Command>
+      <Command>xcopy .\OpenCascade\win32\bin "$(OutDir)" /D /Y /R</Command>
     </PostBuildEvent>
     <ClCompile>
       <AdditionalUsingDirectories>$(SolutionDir)bin\$(PlatformShortName)\$(Configuration)\;%(AdditionalUsingDirectories)</AdditionalUsingDirectories>
