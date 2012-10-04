@@ -60,11 +60,21 @@ namespace Xbim.COBie
                     thiscell.CobieCol = cobieColumn;
                     return thiscell;
                 }
-
+                
                 
                 return null;
             }
+            set
+            {
+                COBieColumn cobieColumn = ParentSheet.Columns.Where(idxcol => idxcol.Key == i).Select(idxcol => idxcol.Value).FirstOrDefault();
+                if (cobieColumn != null)
+                    cobieColumn.PropertyInfo.SetValue(this, value.CellValue, null);
+
+            }
+            
         }
+
+        
 
         public COBieCell this[string name]
         {

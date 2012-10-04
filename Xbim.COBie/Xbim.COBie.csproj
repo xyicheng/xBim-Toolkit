@@ -82,6 +82,9 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="NPOI, Version=1.2.5.0, Culture=neutral, PublicKeyToken=0df73ec7942b34e1, processorArchitecture=MSIL">
+      <HintPath>..\packages\NPOI.1.2.5\lib\net40\NPOI.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -111,7 +114,7 @@
     <Compile Include="Data\COBieDataFacility.cs" />
     <Compile Include="Data\COBieDataFloor.cs" />
     <Compile Include="Data\COBieDataImpact.cs" />
-    <Compile Include="COBiePickList.cs" />
+    <Compile Include="COBiePickListReader.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="Data\COBieDataIssue.cs" />
     <Compile Include="Data\COBieDataJob.cs" />

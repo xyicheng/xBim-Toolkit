@@ -123,9 +123,6 @@
   <data name="Email_Value_Expected" xml:space="preserve">
     <value>錯誤</value>
   </data>
-  <data name="ForeignKey_Violation" xml:space="preserve">
-    <value>Value must exist in column {1} of the {0} sheet</value>
-  </data>
   <data name="ISODate_Value_Expected" xml:space="preserve">
     <value>錯誤</value>
   </data>
@@ -134,9 +131,6 @@
   </data>
   <data name="Numeric_Value_Expected" xml:space="preserve">
     <value>錯誤</value>
-  </data>
-  <data name="PickList_Violation" xml:space="preserve">
-    <value>Value must exist in column {1} of the {0} sheet</value>
   </data>
   <data name="PrimaryKey_Violation" xml:space="preserve">
     <value>錯誤</value>

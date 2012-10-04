@@ -22,7 +22,7 @@ namespace Xbim.COBie.Rows
         [COBieAttributes(2, COBieKeyType.None, "", COBieAttributeState.Required, "CreatedOn", 19, COBieAllowedType.ISODate)]
         public string CreatedOn { get; set; }
 
-        [COBieAttributes(3, COBieKeyType.ForeignKey, "PickLists.CategorySpace", COBieAttributeState.Required, "Category", 255, COBieAllowedType.AlphaNumeric)]
+        [COBieAttributes(3, COBieKeyType.ForeignKey, "PickLists.Category-Space", COBieAttributeState.Required, "Category", 255, COBieAllowedType.AlphaNumeric)]
         public string Category { get; set; }
 
         [COBieAttributes(4, COBieKeyType.ForeignKey, "Floor.Name", COBieAttributeState.Required, "FloorName", 255, COBieAllowedType.AlphaNumeric)]

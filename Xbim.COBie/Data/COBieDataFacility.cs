@@ -192,18 +192,36 @@ namespace Xbim.COBie.Data
                     if (ifcNamedUnit != null)
                     {
                         if ((ifcNamedUnit.UnitType == IfcUnitEnum.LENGTHUNIT) && string.IsNullOrEmpty(linearUnit)) //we want length units until we have value
+                        {
                             linearUnit = GetUnitName(ifcUnit);
-                        
+                            if ((!linearUnit.Contains("feet")) && (linearUnit.Last() != 's'))
+                                linearUnit = linearUnit + "s";
+                        }
+
 
                         if ((ifcNamedUnit.UnitType == IfcUnitEnum.AREAUNIT) && string.IsNullOrEmpty(areaUnit)) //we want area units until we have value
+                        {
                             areaUnit = GetUnitName(ifcUnit);
+                            if ((!areaUnit.Contains("feet")) && (areaUnit.Last() != 's'))
+                                areaUnit = areaUnit + "s";
+                            
+                        }
+
 
                         if ((ifcNamedUnit.UnitType == IfcUnitEnum.VOLUMEUNIT) && string.IsNullOrEmpty(volumeUnit)) //we want volume units until we have value
-                            volumeUnit = GetUnitName(ifcUnit); 
+                        {
+                            volumeUnit = GetUnitName(ifcUnit);
+                            if ((!volumeUnit.Contains("feet")) && (volumeUnit.Last() != 's'))
+                                volumeUnit = volumeUnit + "s";
+                        }
                     }
                     //get the money unit
                     if ((ifcUnit is IfcMonetaryUnit) && string.IsNullOrEmpty(moneyUnit))
+                    {
                         moneyUnit = GetUnitName(ifcUnit);
+                        if (moneyUnit.Last() != 's')
+                            moneyUnit = moneyUnit + "s";
+                    }
                     
                 }
             }

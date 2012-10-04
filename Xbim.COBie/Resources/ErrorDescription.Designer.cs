@@ -70,51 +70,6 @@ namespace Xbim.COBie.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Category-Element.
-        /// </summary>
-        internal static string CategoryElement {
-            get {
-                return ResourceManager.GetString("CategoryElement", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Category-Facility.
-        /// </summary>
-        internal static string CategoryFacility {
-            get {
-                return ResourceManager.GetString("CategoryFacility", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Category-Product.
-        /// </summary>
-        internal static string CategoryProduct {
-            get {
-                return ResourceManager.GetString("CategoryProduct", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Category-Role.
-        /// </summary>
-        internal static string CategoryRole {
-            get {
-                return ResourceManager.GetString("CategoryRole", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Category-Space.
-        /// </summary>
-        internal static string CategorySpace {
-            get {
-                return ResourceManager.GetString("CategorySpace", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Value must be a valid email address.
         /// </summary>
         internal static string Email_Value_Expected {

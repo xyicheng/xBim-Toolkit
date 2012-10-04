@@ -27,7 +27,7 @@ namespace Xbim.COBie.Rows
         [COBieAttributes(2, COBieKeyType.None, "", COBieAttributeState.Required, "CreatedOn", 19, COBieAllowedType.ISODate)]
         public string CreatedOn { get; set; }
 
-        [COBieAttributes(3, COBieKeyType.ForeignKey, "PickLists.CategoryFacility", COBieAttributeState.Required, "Category", 255, COBieAllowedType.Text)]
+        [COBieAttributes(3, COBieKeyType.ForeignKey, "PickLists.Category-Facility", COBieAttributeState.Required, "Category", 255, COBieAllowedType.Text)]
         public string Category { get; set; }
 
         [COBieAttributes(4, COBieKeyType.None, "", COBieAttributeState.Required, "ProjectName", 255, COBieAllowedType.AlphaNumeric)]

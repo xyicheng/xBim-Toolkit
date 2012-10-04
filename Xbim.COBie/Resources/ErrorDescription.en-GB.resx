@@ -118,16 +118,13 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="CategoryElement" xml:space="preserve">
-    <value>5</value>
-    <comment>use column/array index as name is duplicated in picklist columns</comment>
+    <value>Uniclass G or RICS SFCA 2008</value>
   </data>
   <data name="CategoryFacility" xml:space="preserve">
-    <value>3</value>
-    <comment>use column/array index as name is duplicated in picklist columns</comment>
+    <value>Uniclass D</value>
   </data>
   <data name="CategorySpace" xml:space="preserve">
-    <value>4</value>
-    <comment>use column/array index as name  can be duplicated in picklist columns</comment>
+    <value>Uniclass D</value>
   </data>
   <data name="meter" xml:space="preserve">
     <value>metre</value>

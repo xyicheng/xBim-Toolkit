@@ -60,11 +60,15 @@ namespace Xbim.COBie
             // set all the properties
             COBieQueries cq = new COBieQueries(Context);
 
-            // create pick lists from xml
-            // TODO: Need to populate somehow.
-            COBieSheet<COBiePickListsRow>  CobiePickLists = cq.GetCOBiePickListsSheet("PickLists.xml");
+            
+            //create pick list from the template sheet
+            COBiePickListReader pickListReader = new COBiePickListReader(Context.COBieGlobalValues["TEMPLATEFILENAME"]);
+            COBieSheet<COBiePickListsRow>  CobiePickLists = pickListReader.Read();
 
-
+            //fall back to xml file if not in template
+            if (CobiePickLists.RowCount == 0)
+                CobiePickLists = cq.GetCOBiePickListsSheet("PickLists.xml");// create pick lists from xml
+           
             // add to workbook and use workbook for error checking later
 
             //contact sheet first as it will fill contact information lookups for other sheets

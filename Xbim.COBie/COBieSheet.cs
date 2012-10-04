@@ -151,42 +151,31 @@ namespace Xbim.COBie
                         string fieldName = sheetRefInfo.Last();
                         string foreignKeyValue = column.PropertyInfo.GetValue(row, null).ToString(); //value in this sheets row foreign key column
 
-                        //get the correct Pick list column name depending on template for the category columns only, for now
-                        if ((fieldName.Contains("Category")) && (sheetName == "PickLists")) 
-                            fieldName = ErrorDescription.ResourceManager.GetString(fieldName);
-                        
-                        //see if we have a index as the pick list column identifier
-                        int index;
-                        bool isIndex = (int.TryParse(fieldName, out index)); //column located by index number
-
-
                         if ((!string.IsNullOrEmpty(foreignKeyValue))  //will be reported by the Foreign Key null value check, so just skip here if null or empty here
-                            && ((workbook[sheetName].Indices.ContainsKey(fieldName)) || //check via fieldname
-                                (isIndex && (workbook[sheetName].Indices.Count > index)) //check via column index
-                                )
+                            && (workbook[sheetName].Indices.ContainsKey(fieldName))
                             )
                         {
-                            string errorDescription = "";
-                            bool NoMatch = false;
-                                
+                            bool isPickList ;
                             if (sheetName == Constants.WORKSHEET_PICKLISTS)
-                            {
-                                if (isIndex)
-                                    NoMatch = (!PickListMatch(workbook[sheetName].Indices.ElementAt(index).Value, foreignKeyValue)); //get hash set via index
-                                else
-                                    NoMatch = (!PickListMatch(workbook[sheetName].Indices[fieldName], foreignKeyValue));//get hash set via key name
-                            }
-                            else 
-                            {
-                                if (isIndex)
-                                    NoMatch = !workbook[sheetName].Indices.ElementAt(index).Value.Contains(foreignKeyValue); //get hash set via index
-                                else
-                                    NoMatch = !workbook[sheetName].Indices[fieldName].Contains(foreignKeyValue);//get hash set via key name
-                            }
+                                isPickList = true;
+                            else
+                                isPickList = false;
+
                             //report no match
-                            if (NoMatch)
+                            if ((isPickList//(sheetName == Constants.WORKSHEET_PICKLISTS)
+                                  && (!PickListMatch(workbook[sheetName].Indices[fieldName], foreignKeyValue))) 
+                                || (!workbook[sheetName].Indices[fieldName].Contains(foreignKeyValue))
+                                )
                             {
-                                errorDescription = String.Format(ErrorDescription.PickList_Violation, sheetName, fieldName);
+                                //get the correct Pick list column name depending on template for the category columns only, for now
+                                string errFieldName = fieldName;
+                                if ((fieldName.Contains("Category")) && (sheetName == "PickLists"))
+                                    errFieldName = ErrorDescription.ResourceManager.GetString(fieldName.Replace("-", "")); //strip out the "-" to get the resource, (resource did not like the '-' in the name)
+                                if (string.IsNullOrEmpty(errFieldName)) //if resource not found then reset back to field name
+                                    errFieldName = fieldName;
+                               
+                                string errorDescription = "";
+                                errorDescription = String.Format(ErrorDescription.PickList_Violation, sheetName, errFieldName);
                                 COBieError error = new COBieError(SheetName, column.ColumnName, errorDescription, COBieError.ErrorTypes.PickList_Violation, column.ColumnOrder, rowIndex);
                                 _errors.Add(error);
                             }

@@ -120,26 +120,6 @@
   <data name="AlphaNumeric_Value_Expected" xml:space="preserve">
     <value>Value must be alpha-numeric</value>
   </data>
-  <data name="CategoryElement" xml:space="preserve">
-    <value>Category-Element</value>
-    <comment>Pick List Column/array key names</comment>
-  </data>
-  <data name="CategoryFacility" xml:space="preserve">
-    <value>Category-Facility</value>
-    <comment>Pick List Column/array key names</comment>
-  </data>
-  <data name="CategoryProduct" xml:space="preserve">
-    <value>Category-Product</value>
-    <comment>Pick List Column/array key names</comment>
-  </data>
-  <data name="CategoryRole" xml:space="preserve">
-    <value>Category-Role</value>
-    <comment>Pick List Column/array key names</comment>
-  </data>
-  <data name="CategorySpace" xml:space="preserve">
-    <value>Category-Space</value>
-    <comment>Pick List Column/array key names</comment>
-  </data>
   <data name="Email_Value_Expected" xml:space="preserve">
     <value>Value must be a valid email address</value>
   </data>

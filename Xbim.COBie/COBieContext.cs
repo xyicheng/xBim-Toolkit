@@ -67,7 +67,7 @@ namespace Xbim.COBie
 		/// <summary>
 		/// The pick list to use to cross-reference fields in the COBie worksheets
 		/// </summary>
-		public COBiePickList PickList { get; set; }
+		//public COBiePickList PickList { get; set; }
 
         private ReportProgressDelegate _progress = null;
 
