@@ -125,6 +125,11 @@
     <Compile Include="Data\IAttributeProvider.cs" />
     <Compile Include="COBieProgress.cs" />
     <Compile Include="Enums.cs" />
+    <Compile Include="Resources\ErrorDescription.en-GB.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ErrorDescription.en-GB.resx</DependentUpon>
+    </Compile>
     <Compile Include="Resources\ErrorDescription.zh-TW.Designer.cs">
       <DependentUpon>ErrorDescription.zh-TW.resx</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -189,6 +194,10 @@
     <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Resources\ErrorDescription.en-GB.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>ErrorDescription.en-GB.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
     <EmbeddedResource Include="Resources\ErrorDescription.zh-TW.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>ErrorDescription.zh-TW.Designer.cs</LastGenOutput>

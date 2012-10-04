@@ -20,6 +20,7 @@ using Xbim.Ifc.SharedComponentElements;
 using Xbim.Ifc.StructuralElementsDomain;
 using Xbim.Ifc.SharedBldgServiceElements;
 using System.Globalization;
+using Xbim.COBie.Resources;
 
 
 namespace Xbim.COBie.Data
@@ -369,7 +370,6 @@ namespace Xbim.COBie.Data
                         value = prefixUnit + value; //combine to give length name
                 }
 
-                if (!string.IsNullOrEmpty(value)) return value.ToLower();
             }
             else if (ifcUnit is IfcConversionBasedUnit)
             {
@@ -403,9 +403,22 @@ namespace Xbim.COBie.Data
             else if (ifcUnit is IfcMonetaryUnit)
             {
                 value = GetMonetaryUnitName(ifcUnit as IfcMonetaryUnit);
+                return (string.IsNullOrEmpty(value)) ? DEFAULT_STRING : value; //don't want to lower case so return here
             }
+            value = (string.IsNullOrEmpty(value)) ? DEFAULT_STRING : value.ToLower();
 
-            return (string.IsNullOrEmpty(value)) ? DEFAULT_STRING : value.ToLower();
+            //check for unit spelling on meter/metre
+            if (value.Contains("metre") || value.Contains("meter"))
+            {
+                string culturemetre = ErrorDescription.meter;
+                if (!string.IsNullOrEmpty(culturemetre))
+                    if (value.Contains("metre"))
+                        value = value.Replace("metre", culturemetre);
+                    else
+                        value = value.Replace("meter", culturemetre);
+                    
+            }
+            return value;
         }
 
         /// <summary>

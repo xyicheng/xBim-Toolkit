@@ -62,7 +62,7 @@ namespace Xbim.COBie
 
             // create pick lists from xml
             // TODO: Need to populate somehow.
-            //CobiePickLists = cq.GetCOBiePickListsSheet("PickLists.xml");
+            COBieSheet<COBiePickListsRow>  CobiePickLists = cq.GetCOBiePickListsSheet("PickLists.xml");
 
 
             // add to workbook and use workbook for error checking later
@@ -88,7 +88,8 @@ namespace Xbim.COBie
             //we need to fill attributes last as it is populated by Components, Types etc
             Workbook.Add(cq.GetCOBieAttributeSheet());
 
-            Workbook.Add(new COBieSheet<COBiePickListsRow>(Constants.WORKSHEET_PICKLISTS));
+            Workbook.Add(CobiePickLists); //Workbook.Add(new COBieSheet<COBiePickListsRow>(Constants.WORKSHEET_PICKLISTS));
+           
 
         }
 
@@ -99,13 +100,21 @@ namespace Xbim.COBie
                 
                 COBieProgress progress = new COBieProgress(Context);
                 progress.Initialise("Validating Workbooks", Workbook.Count, 0);
+
+                Workbook.CreateIndices();
+               
                 for (int i = 0; i < Workbook.Count; i++)
                 {
 
                     progress.IncrementAndUpdate();
 
                     var sheet = Workbook[i];
-                    sheet.Validate();
+                    if (sheet.SheetName != Constants.WORKSHEET_PICKLISTS) //skip validation on picklist
+                    {
+                        sheet.Validate(Workbook);
+                    }
+                    
+                    
                     
                 }
 
@@ -119,77 +128,6 @@ namespace Xbim.COBie
             }
         }
 
-        private void ValidateForeignKeys(COBieProgress progress)
-        {
-            progress.Initialise("Validating Foreign Keys", Workbook.Count, 0);
-
-            COBieErrorCollection errorFKCollection = new COBieErrorCollection();
-            for (int i = 0; i < Workbook.Count; i++)
-            {
-                progress.IncrementAndUpdate();
-
-                List<PropertyInfo> foreignKeyColumns = Workbook[i].ForeignKeyColumns;
-
-                if (foreignKeyColumns != null && foreignKeyColumns.Count > 0)
-                {
-                    foreach (PropertyInfo propInfo in foreignKeyColumns)
-                    {
-                        object[] attrs = propInfo.GetCustomAttributes(typeof(COBieAttributes), true);
-                        if (attrs != null && attrs.Length > 0)
-                        {
-                            COBieAttributes attr = (COBieAttributes)attrs[0];
-                            // we know its a foreign key column, get what sheet and column it is refering to
-                            string sheetCol = attr.ReferenceColumnName;
-                            int index = sheetCol.IndexOf('.');
-                            string foreignSheetName = sheetCol.Substring(0, index);
-                            string foreignColName = sheetCol.Substring(index + 1, sheetCol.Length - (index + 1));
-
-                            int foreignSheetIndex = GetCOBieSheetIndexBySheetName(foreignSheetName);
-
-                            // now we have the foreignKey Column, get that workbook sheet  
-                            // Workbook[i] = the one we are checking now
-                            // Workbook[foreignSheetIndex] = sheet with foreign key column
-
-                            // get foreignkey column values from one worksheet and check if they exist in other worksheet
-                            Type type = Workbook[i].GetType();
-                            MethodInfo methodInfo = type.GetMethod("GetForeignKeyValues");
-                            object[] param = { attr.ColumnName };
-                            var result = methodInfo.Invoke(Workbook[i], param);
-
-                            List<string> colMain = new List<string>();
-                            if (result != null)
-                                colMain = (List<string>)result;
-
-
-                            Type typeF = Workbook[foreignSheetIndex].GetType();
-                            MethodInfo methodInfoF = typeF.GetMethod("GetForeignKeyValues");
-                            object[] paramF = { foreignColName };
-                            var resultF = methodInfoF.Invoke(Workbook[foreignSheetIndex], paramF);
-
-                            List<string> colForeign = new List<string>();
-                            if (resultF != null)
-                                colForeign = (List<string>)resultF;
-
-                            // send the 2 lists to check foreign key constraint
-                            MethodInfo methodInfo3 = type.GetMethod("ValidateForeignKey");
-                            object[] param3 = { colMain, colForeign };
-                            var result3 = methodInfo3.Invoke(Workbook[i], param3);
-
-                            if (result3 != null)
-                            {
-                                COBieErrorCollection errorCol = (COBieErrorCollection)result3;
-                                foreach (COBieError err in errorCol)
-                                    errorFKCollection.Add(err);
-                            }
-                        }
-                    }
-                }
-
-
-
-            }
-        }
-
         private int GetCOBieSheetIndexBySheetName(string sheetName)
         {
             for (int i = 0; i < Workbook.Count; i++)
@@ -200,18 +138,7 @@ namespace Xbim.COBie
             return -1;
         }
 
-        public COBieErrorCollection ValidateForeignKey(List<COBieRow> Rows)
-        {
-            // E.g.
-            // SELECT Facility.CreatedBy, Contact.Email FROM Contact
-            // Left Outer Join Facility On Contact.Email = Facility.CreatedBy 
-            // WHERE Facility.CreatedBy = null 
-
-            
-
-            return null;
-        }
-
+        
         private void GenerateCOBieData()
         {
             Initialise();
@@ -226,8 +153,13 @@ namespace Xbim.COBie
 		public void Export(ICOBieFormatter formatter)
 		{
 			if (formatter == null) { throw new ArgumentNullException("formatter", "Parameter passed to COBieReader.Export(ICOBieFormatter) must not be null."); }
+            
+            //remove the pick list sheet
+            ICOBieSheet<COBieRow> PickList = Workbook.Where(wb => wb.SheetName == "PickLists").FirstOrDefault();
+            if (PickList != null)
+                Workbook.Remove(PickList);
 
-			// Passes this 
+            // Passes this 
 			formatter.Format(this);
 		}
 

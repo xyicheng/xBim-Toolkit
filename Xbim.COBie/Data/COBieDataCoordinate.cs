@@ -43,21 +43,8 @@ namespace Xbim.COBie.Data
             COBieSheet<COBieCoordinateRow> coordinates = new COBieSheet<COBieCoordinateRow>(Constants.WORKSHEET_COORDINATE);
             
             IEnumerable<IfcBuildingStorey> ifcBuildingStoreys = Model.InstancesOfType<IfcBuildingStorey>();
-
             IEnumerable<IfcSpace> ifcSpaces = Model.InstancesOfType<IfcSpace>().OrderBy(ifcSpace => ifcSpace.Name, new CompareIfcLabel());
-
-            IEnumerable<IfcSpatialStructureElement> ifcSpatialStructureElements = ifcBuildingStoreys.Union<IfcSpatialStructureElement>(ifcSpaces);
-
-            // get all IfcRelAggregates objects from IFC file
-            //IEnumerable<IfcRelAggregates> ifcRelAggregates = Model.InstancesOfType<IfcRelAggregates>();
-            //IfcTelecomAddress ifcTelecomAddres = Model.InstancesOfType<IfcTelecomAddress>().FirstOrDefault();
-            //IfcCartesianPoint ifcCartesianPoint = Model.InstancesOfType<IfcCartesianPoint>().FirstOrDefault();
-            
-            //IfcOwnerHistory ifcOwnerHistory = Model.InstancesOfType<IfcOwnerHistory>().FirstOrDefault();
-            //IfcProduct ifcProduct = Model.InstancesOfType<IfcProduct>().FirstOrDefault();
-            //IfcClassification ifcClassification = Model.InstancesOfType<IfcClassification>().FirstOrDefault();
-            //string applicationFullName = ifcApplication.ApplicationFullName;
-
+            IEnumerable<IfcSpatialStructureElement> ifcSpatialStructureElements = ifcBuildingStoreys.Union<IfcSpatialStructureElement>(ifcSpaces); //add spaces
 
             ProgressIndicator.Initialise("Creating Coordinates", ifcSpatialStructureElements.Count());
 

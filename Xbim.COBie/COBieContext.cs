@@ -24,6 +24,7 @@ namespace Xbim.COBie
 
         public Dictionary<long, string> EMails { get; private set; }
         public Dictionary<string, string> COBieGlobalValues { get; private set; }
+        
 
         public COBieContext(ReportProgressDelegate progressHandler = null)
 		{
@@ -37,6 +38,7 @@ namespace Xbim.COBie
             EMails = new Dictionary<long, string>();
             COBieGlobalValues = new Dictionary<string, string>();
             COBieGlobalValues.Add("DEFAULTDATE", DateTime.Now.ToString(Constants.DATE_FORMAT));
+           
 		}
 
 		/// <summary>
@@ -160,54 +162,58 @@ namespace Xbim.COBie
         /// <summary>
         /// List of component class types to exclude from selection
         /// </summary>
-        private List<Type> _componentExcludedTypes = new List<Type>{  typeof(IfcWall),
+        private List<Type> _componentExcludedTypes = new List<Type>{  
                                                         typeof(IfcAnnotation),
-                                                        typeof(IfcWallStandardCase),
-                                                        typeof(IfcSlab),
                                                         typeof(IfcBeam),
-                                                        typeof(IfcSpace),
-                                                        typeof(IfcBuildingStorey),
-                                                        typeof(IfcBuilding),
-                                                        typeof(IfcSite),
-                                                        typeof(IfcProject),
                                                         typeof(IfcColumn),
+                                                        typeof(IfcCurtainWall),
                                                         typeof(IfcMember),
+                                                        typeof(IfcPile),
                                                         typeof(IfcPlate),
                                                         typeof(IfcRailing),
-                                                        typeof(IfcStairFlight),
-                                                        typeof(IfcCurtainWall),
+                                                        typeof(IfcRamp),
                                                         typeof(IfcRampFlight),
-                                                        typeof(IfcVirtualElement),
-                                                        typeof(IfcFeatureElement),
-                                                        typeof(IfcFastener),
-                                                        typeof(IfcMechanicalFastener),
+                                                        typeof(IfcRoof),
+                                                        typeof(IfcSlab),
+                                                        typeof(IfcStair),
+                                                        typeof(IfcStairFlight),
+                                                        typeof(IfcWall),
+                                                        typeof(IfcWallStandardCase),
+                                                        typeof(IfcFlowFitting),
+                                                        typeof(IfcFlowSegment),
                                                         typeof(IfcElementAssembly),
                                                         typeof(IfcBuildingElementPart),
+                                                        typeof(IfcFastener),
+                                                        typeof(IfcMechanicalFastener),
                                                         typeof(IfcReinforcingBar),
                                                         typeof(IfcReinforcingMesh),
+                                                        typeof(IfcFeatureElement),
+                                                        typeof(IfcFeatureElementAddition), 
+                                                        typeof(IfcProjectionElement), 
+                                                        typeof(IfcVirtualElement),
+                                                        typeof(IfcDistributionPort), 
+                                                        typeof(IfcBuilding),
+                                                        typeof(IfcBuildingStorey),
+                                                        typeof(IfcSite),
+                                                        typeof(IfcSpace),
+                                                        typeof(IfcProject),
                                                         typeof(IfcTendon),
                                                         typeof(IfcTendonAnchor),
                                                         typeof(IfcFooting),
-                                                        typeof(IfcPile),
-                                                        typeof(IfcRamp),
-                                                        typeof(IfcRoof),
-                                                        typeof(IfcStair),
-                                                        typeof(IfcFlowFitting),
-                                                        typeof(IfcFlowSegment),
-                                                        typeof(IfcDistributionPort), 
-                                                        typeof(IfcFeatureElementAddition), 
-                                                        typeof(IfcProjectionElement), 
                                                         typeof(IfcCovering)
                                                         //typeof(IfcColumnStandardCase), //IFC2x Edition 4.
                                                         //typeof(IfcMemberStandardCase), //IFC2x Edition 4.
                                                         //typeof(IfcPlateStandardCase), //IFC2x Edition 4.
                                                         //typeof(IfcSlabElementedCase), //IFC2x Edition 4.
-                                                        //typeof(IfcSlabElementedCase), //IFC2x Edition 4.
+                                                        //typeof(IfcSlabStandardCase), //IFC2x Edition 4.
                                                         //typeof(IfcWallElementedCase), //IFC2x Edition 4.
                                                         //typeof(IfcCableCarrierSegment), //IFC2x Edition 4.
                                                         //typeof(IfcCableSegment), //IFC2x Edition 4.
+                                                        //typeof(IfcCableCarrierFitting),
                                                         //typeof(IfcDuctSegment), //IFC2x Edition 4.
                                                         //typeof(IfcPipeSegment), //IFC2x Edition 4.
+                                                        //typeof(IfcPipeFitting), //IFC2x Edition 4.
+                                                        //typeof(IfcJunctionBox)
                                                         };
 
         /// <summary>

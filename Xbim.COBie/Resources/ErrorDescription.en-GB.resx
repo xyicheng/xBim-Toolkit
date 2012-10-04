@@ -117,60 +117,20 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="AlphaNumeric_Value_Expected" xml:space="preserve">
-    <value>Value must be alpha-numeric</value>
-  </data>
   <data name="CategoryElement" xml:space="preserve">
-    <value>Category-Element</value>
-    <comment>Pick List Column/array key names</comment>
+    <value>5</value>
+    <comment>use column/array index as name is duplicated in picklist columns</comment>
   </data>
   <data name="CategoryFacility" xml:space="preserve">
-    <value>Category-Facility</value>
-    <comment>Pick List Column/array key names</comment>
-  </data>
-  <data name="CategoryProduct" xml:space="preserve">
-    <value>Category-Product</value>
-    <comment>Pick List Column/array key names</comment>
-  </data>
-  <data name="CategoryRole" xml:space="preserve">
-    <value>Category-Role</value>
-    <comment>Pick List Column/array key names</comment>
+    <value>3</value>
+    <comment>use column/array index as name is duplicated in picklist columns</comment>
   </data>
   <data name="CategorySpace" xml:space="preserve">
-    <value>Category-Space</value>
-    <comment>Pick List Column/array key names</comment>
-  </data>
-  <data name="Email_Value_Expected" xml:space="preserve">
-    <value>Value must be a valid email address</value>
-  </data>
-  <data name="ForeignKey_Violation" xml:space="preserve">
-    <value>Value must exist in column {1} of the {0} sheet</value>
-    <comment>{0} = Sheet name, {1} = column name</comment>
-  </data>
-  <data name="ISODate_Value_Expected" xml:space="preserve">
-    <value>Value must be a valid date</value>
+    <value>4</value>
+    <comment>use column/array index as name  can be duplicated in picklist columns</comment>
   </data>
   <data name="meter" xml:space="preserve">
-    <value>meter</value>
-    <comment>US to US spelling as default</comment>
-  </data>
-  <data name="Null_ForeignKey_Value" xml:space="preserve">
-    <value>Invalid value</value>
-  </data>
-  <data name="Numeric_Value_Expected" xml:space="preserve">
-    <value>Value must be a valid number</value>
-  </data>
-  <data name="PickList_Violation" xml:space="preserve">
-    <value>Value must exist in column {1} of the {0} sheet</value>
-    <comment>{0} = Sheet name, {1} = column name</comment>
-  </data>
-  <data name="PrimaryKey_Violation" xml:space="preserve">
-    <value>Value must be unique</value>
-  </data>
-  <data name="Text_Value_Expected" xml:space="preserve">
-    <value>Required value is empty</value>
-  </data>
-  <data name="Value_Out_of_Bounds" xml:space="preserve">
-    <value>Value must be under {0} characters</value>
+    <value>metre</value>
+    <comment>US to UK spelling</comment>
   </data>
 </root>

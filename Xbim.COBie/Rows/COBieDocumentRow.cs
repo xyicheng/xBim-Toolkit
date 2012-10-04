@@ -30,7 +30,7 @@ namespace Xbim.COBie.Rows
         [COBieAttributes(5, COBieKeyType.CompoundKey_ForeignKey, "PickLists.StageType", COBieAttributeState.Required, "Stage", 255, COBieAllowedType.Text)]
         public string Stage { get; set; }
 
-        [COBieAttributes(6, COBieKeyType.CompoundKey_ForeignKey, "PickLists.StageType", COBieAttributeState.Required, "SheetName", 255, COBieAllowedType.Text)]
+        [COBieAttributes(6, COBieKeyType.CompoundKey_ForeignKey, "PickLists.SheetType", COBieAttributeState.Required, "SheetName", 255, COBieAllowedType.Text)]
         public string SheetName { get; set; }
 
         [COBieAttributes(7, COBieKeyType.CompoundKey, "", COBieAttributeState.Required, "RowName", 255, COBieAllowedType.AlphaNumeric)]

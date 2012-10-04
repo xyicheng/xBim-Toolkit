@@ -73,6 +73,10 @@ namespace XBim.COBie.Client
                     return;
                 }
 
+                //set the UI language to get correct resource file for template
+                if (Path.GetFileName(parameters.TemplateFile).Contains("-UK-"))
+                    ChangeUILanguage("en-GB"); //have to set as default is from install language which is en-US
+                
                 LogBackground(String.Format("Loading model {0}...", Path.GetFileName(parameters.ModelFile)));
                 using(IModel model = new XbimFileModelServer())
                 {
@@ -110,6 +114,24 @@ namespace XBim.COBie.Client
             {
                 args.Result = ex;
                 return;
+            }
+        }
+
+        /// <summary>
+        /// set resource file culture via CurrentUICulture
+        /// </summary>
+        /// <param name="languageKey"></param>
+        public void ChangeUILanguage(string languageKey)
+        {
+            try
+            {
+                System.Globalization.CultureInfo ci = new System.Globalization.CultureInfo(languageKey);
+                System.Threading.Thread.CurrentThread.CurrentUICulture = ci;
+            }
+            catch (Exception)
+            {
+                //to nothing Default culture will still be used
+                Log("Default User Interface Culture used");
             }
         }
 
@@ -219,6 +241,16 @@ namespace XBim.COBie.Client
         {
             public string ModelFile { get; set; }
             public string TemplateFile { get; set; }
+        }
+
+        private void txtTemplate_TextChanged(object sender, EventArgs e)
+        {
+            
+            //set the UI language to get correct resource file for template
+            if (txtTemplate.Text.Contains("-UK-"))
+                ChangeUILanguage("en-GB"); //have to set as default is from install language which is en-US
+            else if (txtTemplate.Text.Contains("-US-"))
+                ChangeUILanguage("en-US"); //have to set as default is from install language which is en-US
         }
     }
 

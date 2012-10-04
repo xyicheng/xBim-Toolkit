@@ -37,6 +37,7 @@ namespace Xbim.COBie.Data
             //Create new sheet
             COBieSheet<COBieZoneRow> zones = new COBieSheet<COBieZoneRow>(Constants.WORKSHEET_ZONE);
 
+           
             // get all IfcBuildingStory objects from IFC file
             IEnumerable<IfcZone> ifcZones = Model.InstancesOfType<IfcZone>();
 
@@ -80,7 +81,7 @@ namespace Xbim.COBie.Data
                     zone.ExtIdentifier = zn.GlobalId;
                     zone.Description = (string.IsNullOrEmpty(zn.Description)) ? zn.Name.ToString() : zn.Description.ToString(); //if IsNullOrEmpty on Description then output Name
                     zones.Rows.Add(zone);
-
+                    
                     //fill in the attribute information
                     attributeBuilder.RowParameters["Name"] = zone.Name;
                     attributeBuilder.RowParameters["CreatedBy"] = zone.CreatedBy;
@@ -131,6 +132,7 @@ namespace Xbim.COBie.Data
                         zone.Description = (string.IsNullOrEmpty(spProp.NominalValue.ToString())) ? DEFAULT_STRING : spProp.NominalValue.ToString(); ;
 
                         zones.Rows.Add(zone);
+                        
                     }
                 }
 

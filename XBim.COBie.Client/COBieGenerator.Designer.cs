@@ -84,6 +84,7 @@
             this.txtTemplate.Size = new System.Drawing.Size(337, 21);
             this.txtTemplate.TabIndex = 3;
             this.txtTemplate.Text = "COBie-UK-2012-template.xls";
+            this.txtTemplate.TextChanged += new System.EventHandler(this.txtTemplate_TextChanged);
             // 
             // label2
             // 

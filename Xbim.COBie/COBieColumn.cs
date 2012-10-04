@@ -3,35 +3,46 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Collections.ObjectModel;
+using System.Reflection;
 
 namespace Xbim.COBie
 {
     
-    public class COBieColumn 
+    public class COBieColumn
     {
+        #region Properties
         public bool IsPrimaryKey { get; set; }
         public bool IsForeignKey { get; set; }
         public string ColumnName { get; set; }
         public int ColumnLength { get; set; }
+        public int ColumnOrder { get; set; }
         public COBieAllowedType AllowedType { get; set; }
+        public COBieAttributeState AttributeState { get; set; }
         public COBieKeyType KeyType { get; set; }
+        public string ReferenceColumnName { get; private set; }
         public List<string> Aliases { get; set; }
-
-
-        public COBieColumn(string columnName, int columnLength, COBieAllowedType allowedType, COBieKeyType keyType)
-            : this(columnName, columnLength, allowedType, keyType, new List<string>())
+        public PropertyInfo PropertyInfo { get; private set;}
+        #endregion
+        /// <summary>
+        /// Constructor for COBieColumn
+        /// </summary>
+        /// <param name="propInfo">PropertyInfo</param>
+        /// <param name="attr">COBieAttributes</param>
+        /// <param name="aliases">List of strings</param>
+        public COBieColumn(PropertyInfo propInfo, COBieAttributes attr, List<string> aliases)
         {
-        }
-
-        public COBieColumn(string columnName, int columnLength, COBieAllowedType allowedType, COBieKeyType keyType, List<string> aliases)
-        {
-            ColumnName = columnName;
-            ColumnLength = columnLength;
-            AllowedType = allowedType;
-            KeyType = keyType;
+            PropertyInfo = propInfo;
+            ColumnName = attr.ColumnName;
+            ColumnLength = attr.MaxLength;
+            AllowedType = attr.AllowedType;
+            AttributeState = attr.State;
+            ColumnOrder = attr.Order;
+            KeyType = attr.KeyType;
             Aliases = aliases;
+            ReferenceColumnName = attr.ReferenceColumnName;
         }
 
+        #region Methods
         /// <summary>
         /// Determines if this COBieColumn is a match for the supplied column name, using a basic heuristic match
         /// </summary>
@@ -48,7 +59,7 @@ namespace Xbim.COBie
             string singular = MakeSingular(columnName);
             if (singular != columnName)
             {
-                // call back into ourself if we are an obvious plural
+                // call back into our self if we are an obvious plural
                 return IsMatch(singular);
             }
 
@@ -101,6 +112,8 @@ namespace Xbim.COBie
             else
                 return columnName;
         }
+        #endregion
+        
 
     }
 }

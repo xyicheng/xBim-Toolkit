@@ -39,7 +39,7 @@ namespace Xbim.COBie.Data
 
             //create new sheet 
             COBieSheet<COBieSpaceRow> spaces = new COBieSheet<COBieSpaceRow>(Constants.WORKSHEET_SPACE);
-
+            
             // get all IfcBuildingStory objects from IFC file
             List<IfcSpace> ifcSpaces = Model.InstancesOfType<IfcSpace>().OrderBy(ifcSpace => ifcSpace.Name, new CompareIfcLabel()).ToList();
             
@@ -88,7 +88,7 @@ namespace Xbim.COBie.Data
                 space.NetArea = GetNetArea(ifcSpace, allPropertyValues);
 
                 spaces.Rows.Add(space);
-
+                
                 //----------fill in the attribute information for spaces-----------
 
                 //fill in the attribute information
@@ -99,6 +99,7 @@ namespace Xbim.COBie.Data
                 attributeBuilder.PopulateAttributesRows(ifcSpace); //fill attribute sheet rows//pass data from this sheet info as Dictionary
                 
             }
+            
             ProgressIndicator.Finalise();
             return spaces;
         }

@@ -15,5 +15,15 @@ namespace Xbim.COBie
             }
         }
 
+
+        internal void CreateIndices()
+        {
+            foreach (ICOBieSheet<COBieRow> item in this)
+            {
+                item.BuildIndices();
+            }
+        }
+
+        
     }
 }

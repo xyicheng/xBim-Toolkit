@@ -60,6 +60,8 @@ namespace Xbim.COBie
             Text_Value_Expected,
             PrimaryKey_Violation,
             Null_ForeignKey_Value,
+            ForeignKey_Violation,
+            PickList_Violation,
             None
         }
     }

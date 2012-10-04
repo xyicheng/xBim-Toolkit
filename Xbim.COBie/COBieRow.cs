@@ -26,16 +26,16 @@ namespace Xbim.COBie
         {
             get
             {
-                int c = ParentSheet.KeyColumns.Count;
+                int c = ParentSheet.KeyColumns.Count();
                 if (c == 1)
-                    return ParentSheet.KeyColumns[0].GetValue(this, null) as String;
+                    return ParentSheet.KeyColumns.First().PropertyInfo.GetValue(this, null) as String;
                 else if (c > 1)
                 {
                     List<string> keyValues = new List<string>(c);
                     foreach (var keyProp in ParentSheet.KeyColumns)
                     {
-                        if (keyProp.GetValue(this, null) != null)
-                            keyValues.Add(keyProp.GetValue(this, null).ToString());
+                        if (keyProp.PropertyInfo.GetValue(this, null) != null)
+                            keyValues.Add(keyProp.PropertyInfo.GetValue(this, null).ToString());
                         else
                             keyValues.Add("");
                         
@@ -46,39 +46,22 @@ namespace Xbim.COBie
             }
         }
 
-        public string GetForeignKeyValue(int colIndex)
-        {
-            return ParentSheet.ForeignKeyColumns[colIndex].GetValue(this, null).ToString();
-        }
-
         public COBieCell this[int i]
         {
             get
             {
-                foreach (PropertyInfo propInfo in ParentSheet.Properties)
+                COBieColumn cobieColumn = ParentSheet.Columns.Where(idxcol => idxcol.Key == i).Select(idxcol => idxcol.Value).FirstOrDefault();
+                if (cobieColumn != null)
                 {
-                    object[] attrs = ParentSheet.Attributes[propInfo];
-                    if (attrs != null && attrs.Length > 0)
-                    {
-                        if (((COBieAttributes)attrs[0]).Order == i)
-                        {
-                            object pVal = propInfo.GetValue(this, null);
-                            COBieCell cell;
-
-                            if (pVal != null)
-                            {
-                                cell = new COBieCell(pVal.ToString());
-                            }
-                            else
-                            {
-                                cell = new COBieCell(Constants.DEFAULT_STRING);
-                            }
-                            cell.COBieState = ((COBieAttributes)attrs[0]).State;
-                            cell.CobieCol = ParentSheet.Columns[((COBieAttributes)attrs[0]).Order];
-                            return cell;
-                        }
-                    }
+                    object pVal = cobieColumn.PropertyInfo.GetValue(this, null);
+                    COBieCell thiscell = new COBieCell();
+                    thiscell.CellValue = (pVal != null) ? pVal.ToString() : Constants.DEFAULT_STRING;
+                    thiscell.COBieState = cobieColumn.AttributeState;
+                    thiscell.CobieCol = cobieColumn;
+                    return thiscell;
                 }
+
+                
                 return null;
             }
         }
@@ -86,33 +69,16 @@ namespace Xbim.COBie
         public COBieCell this[string name]
         {
             get
-            {
-                foreach (PropertyInfo propInfo in ParentSheet.Properties)
+            {   
+                COBieColumn cobieColumn = ParentSheet.Columns.Where(idxcol => idxcol.Value.ColumnName == name).Select(idxcol => idxcol.Value).FirstOrDefault();
+                if (cobieColumn != null)
                 {
-                    object[] attrs = ParentSheet.Attributes[propInfo];
-                    if (attrs != null && attrs.Length > 0)
-                    {
-                        if (((COBieAttributes)attrs[0]).ColumnName == name)
-                        {
-                            object pVal = propInfo.GetValue(this, null);
-                            COBieCell cell;
-
-                            if (pVal != null)
-                            {
-                                cell = new COBieCell(pVal.ToString());
-                            }
-                            else
-                            {
-                                cell = new COBieCell(Constants.DEFAULT_STRING);
-                            }
-                            //COBieCell cell = new COBieCell(propInfo.GetValue(this, null).ToString());
-                            cell.COBieState = ((COBieAttributes)attrs[0]).State;
-                            cell.CobieCol = ParentSheet.Columns[((COBieAttributes)attrs[0]).Order];
-
-                            return cell;
-                        }
-                    }
-
+                    object pVal = cobieColumn.PropertyInfo.GetValue(this, null);
+                    COBieCell thiscell = new COBieCell();
+                    thiscell.CellValue = (pVal != null) ? pVal.ToString() : Constants.DEFAULT_STRING ;
+                    thiscell.COBieState = cobieColumn.AttributeState;
+                    thiscell.CobieCol = cobieColumn;
+                    return thiscell;
                 }
                 return null;
             }

@@ -44,28 +44,7 @@ namespace Xbim.COBie
             get { return _order; }
         }
 
-        public COBieAttributeState COBieAttributeState
-        {
-            get
-            {
-                throw new System.NotImplementedException();
-            }
-            set
-            {
-            }
-        }
-
-        public COBieAllowedType COBieAllowedType
-        {
-            get
-            {
-                throw new System.NotImplementedException();
-            }
-            set
-            {
-            }
-        }
-
+        
         public COBieAttributes(COBieAttributeState state)
         {
             _state = state;

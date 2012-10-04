@@ -17,11 +17,7 @@ namespace Xbim.COBie.Data
     public class COBieDataType : COBieData<COBieTypeRow>, IAttributeProvider
     {
 
-        #region Fields
-
         
-        
-        #endregion
         
         /// <summary>
         /// Data Type constructor
@@ -43,12 +39,6 @@ namespace Xbim.COBie.Data
             // Create new Sheet
             COBieSheet<COBieTypeRow> types = new COBieSheet<COBieTypeRow>(Constants.WORKSHEET_TYPE);
             
-            
-            // get all IfcTypeObject objects from IFC file
-            //IEnumerable<IfcTypeObject> ifcTypeObjects = Model.InstancesOfType<IfcTypeObject>()
-            //    .Select(type => type)
-            //    .Where(type => !TypeObjectExcludeTypes.Contains(type.GetType()));
-
             //group the types by name as we need to filter duplicate items in for each loop
             IEnumerable<IfcTypeObject> ifcTypeObjects = Model.InstancesOfType<IfcTypeObject>()
                 .Select(type => type)
@@ -137,10 +127,10 @@ namespace Xbim.COBie.Data
                
             //get related object properties to extract from if main way fails
             allPropertyValues.SetAllPropertySingleValues(type, "Pset_Asset");
-            typeRow.AssetType = GetAssetType(type, allPropertyValues); 
+            typeRow.AssetType =     GetAssetType(type, allPropertyValues); 
             allPropertyValues.SetAllPropertySingleValues(type, "Pset_ManufacturersTypeInformation");
-            string manufacturer = allPropertyValues.GetPropertySingleValueValue("Manufacturer", false);
-            typeRow.Manufacturer = ((manufacturer == DEFAULT_STRING) || (!IsEmailAddress(manufacturer))) ? Constants.DEFAULT_EMAIL : manufacturer;
+            string manufacturer =   allPropertyValues.GetPropertySingleValueValue("Manufacturer", false);
+            typeRow.Manufacturer =  ((manufacturer == DEFAULT_STRING) || (!IsEmailAddress(manufacturer))) ? Constants.DEFAULT_EMAIL : manufacturer;
             typeRow.ModelNumber =   GetModelNumber(type, allPropertyValues);
 
             
@@ -161,10 +151,10 @@ namespace Xbim.COBie.Data
             typeRow.DurationUnit =      serviceDuration.Unit;
 
             allPropertyValues.SetAllPropertySingleValues(type, "Pset_Specification");
-            typeRow.NominalLength = GetNominalLength(type, allPropertyValues);
-            typeRow.NominalWidth = GetNominalWidth(type, allPropertyValues);
-            typeRow.NominalHeight =  GetNominalHeight(type, allPropertyValues);
-            typeRow.ModelReference = GetModelReference(type, allPropertyValues);
+            typeRow.NominalLength =                 GetNominalLength(type, allPropertyValues);
+            typeRow.NominalWidth =                  GetNominalWidth(type, allPropertyValues);
+            typeRow.NominalHeight =                 GetNominalHeight(type, allPropertyValues);
+            typeRow.ModelReference =                GetModelReference(type, allPropertyValues);
             typeRow.Shape =                         allPropertyValues.GetPropertySingleValueValue("Shape", false);
             typeRow.Size =                          allPropertyValues.GetPropertySingleValueValue("Size", false);
             typeRow.Color =                         GetColour(type, allPropertyValues);
@@ -178,6 +168,12 @@ namespace Xbim.COBie.Data
             typeRow.SustainabilityPerformance =     GetSustainabilityPerformance(type, allPropertyValues); 
         }
 
+        /// <summary>
+        /// Get the Asset Type from the property set property if nothing found then default to Moveable/Fixed decided on object type
+        /// </summary>
+        /// <param name="ifcTypeObject">IfcTypeObject Object</param>
+        /// <param name="allPropertyValues">COBieDataPropertySetValues object holding the property sets</param>
+        /// <returns>String holding Asset Type</returns>
         private string GetAssetType(IfcTypeObject ifcTypeObject, COBieDataPropertySetValues allPropertyValues)
         {
             string value = allPropertyValues.GetPropertySingleValueValue("AssetAccountingType", false);

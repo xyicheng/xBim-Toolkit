@@ -5,7 +5,12 @@ namespace Xbim.COBie
 {
     public class COBieCell
     {
-       
+
+        public COBieCell()
+        {
+            
+        }
+
         public COBieCell(string cellValue)
         {
             CellValue = cellValue;
