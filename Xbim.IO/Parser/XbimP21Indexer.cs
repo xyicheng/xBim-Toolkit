@@ -22,6 +22,7 @@ using Xbim.XbimExtensions.Transactions;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 using Microsoft.Isam.Esent.Interop;
+using System.Globalization;
 #endregion
 
 namespace Xbim.IO.Parser
@@ -183,7 +184,7 @@ namespace Xbim.IO.Parser
             MemoryStream data = _binaryWriter.BaseStream as MemoryStream;
             data.SetLength(0);
 
-            _binaryWriter.Write((byte)P21ParseAction.NewEntity);
+           // _binaryWriter.Write((byte)P21ParseAction.NewEntity);
             if (_streamSize != -1 && ProgressStatus != null)
             {
                 Scanner sc = (Scanner)this.Scanner;
@@ -301,7 +302,7 @@ namespace Xbim.IO.Parser
             else
             {
                 _binaryWriter.Write((byte)P21ParseAction.SetFloatValue);
-                _binaryWriter.Write(Convert.ToDouble(value));
+                _binaryWriter.Write(Convert.ToDouble(value, CultureInfo.InvariantCulture));
             }
             if (_listNestLevel == 0) _currentInstance.CurrentParamIndex++;
         }

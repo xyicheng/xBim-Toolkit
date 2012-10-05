@@ -43,9 +43,13 @@ namespace Xbim
 
 		}
 
-		void XbimScene::ConvertGeometry(XbimModel^ model, IEnumerable<IfcProduct^>^ toConvert, ReportProgressDelegate^ progDelegate)
+		void XbimScene::ConvertGeometry( IEnumerable<IfcProduct^>^ toConvert, ReportProgressDelegate^ progDelegate)
 		{
-			//delete anything we have
+
+			IfcProduct^ p = Enumerable::FirstOrDefault(toConvert);
+			if(p == nullptr) //nothing to do
+				return;
+			XbimModel^ model = (XbimModel^)p->ModelOf;
 			
 			TransformGraph^ graph = gcnew TransformGraph(model);
 			//create a new dictionary to hold maps

@@ -11,7 +11,7 @@ using Xbim.Common.Exceptions;
 
 namespace Xbim.IO
 {
-    public class XbimEntityCursor : XbimCursor, IDisposable
+    public class XbimEntityCursor : XbimCursor
     {
 
         private  const string ifcEntityTableName = "IfcEntities";
@@ -80,11 +80,17 @@ namespace Xbim.IO
                     grbit = ColumndefGrbit.ColumnMaybeNull
                 };
                 Api.JetAddColumn(sesid, tableid, colNameIfcType, columndef, null, 0, out columnid);
+
+                
                 columndef = new JET_COLUMNDEF
                 {
                     coltyp = JET_coltyp.LongBinary,
                     grbit = ColumndefGrbit.ColumnMaybeNull
                 };
+              
+                if(EsentVersion.SupportsWindows7Features)
+                    columndef.grbit |= Windows7Grbits.ColumnCompressed;
+                
                 Api.JetAddColumn(sesid, tableid, colNameEntityData, columndef, null, 0, out columnid);
                 columndef = new JET_COLUMNDEF
                 {
@@ -93,6 +99,8 @@ namespace Xbim.IO
                 };
                 Api.JetAddColumn(sesid, tableid, colNameIsIndexedClass, columndef, null, 0, out columnid);
 
+                //write an initial header record
+                
                 string labelIndexDef = string.Format("+{0}\0\0", colNameEntityLabel);
                 Api.JetCreateIndex(sesid, tableid, entityTableLabelIndex, CreateIndexGrbit.IndexPrimary, labelIndexDef, labelIndexDef.Length,100);
                 Api.JetCloseTable(sesid, tableid);
@@ -119,7 +127,7 @@ namespace Xbim.IO
                         },
                         cConditionalColumn = 1,
                         ulDensity=100,
-                        grbit = CreateIndexGrbit.None
+                        grbit = CreateIndexGrbit.IndexUnique
                     }
                 };
 
@@ -162,12 +170,6 @@ namespace Xbim.IO
             InitColumns();
         }
 
-
-        public void Dispose()
-        {
-            Api.JetEndSession(this.sesid, EndSessionGrbit.None);
-            GC.SuppressFinalize(this);
-        }
 
         /// <summary>
         /// Sets the values of the fields, no update is performed
@@ -216,9 +218,10 @@ namespace Xbim.IO
         internal IIfcFileHeader ReadHeader()
         {
             
-            if (Api.TryMoveFirst(sesid, globalsTable)) //there is nothing in at the moment
+            if (Api.TryMoveFirst(sesid, globalsTable)) 
             {
                 byte[] hd = Api.RetrieveColumn(sesid, globalsTable, ifcHeaderColumn);
+                if (hd == null) return null;//there is nothing in at the moment
                 BinaryReader br = new BinaryReader(new MemoryStream(hd));
                 IfcFileHeader hdr = new IfcFileHeader();
                 hdr.Read(br);
@@ -297,7 +300,7 @@ namespace Xbim.IO
             int highest = RetrieveHighestLabel();
             IfcType ifcType = IfcMetaData.IfcType(type);
             XbimInstanceHandle h = new XbimInstanceHandle(highest + 1, ifcType.TypeId);
-            AddEntity(h.EntityLabel, h.EntityTypeId.Value, null, null, ifcType.IndexedClass);
+            AddEntity(h.EntityLabel, h.EntityTypeId, null, null, ifcType.IndexedClass);
             return h;
         }
 
@@ -317,16 +320,20 @@ namespace Xbim.IO
         /// </summary>
         /// <param name="typeId"></param>
         /// <returns></returns>
-        public bool TrySeekEntityType(short typeId)
+        public bool TrySeekEntityType(short typeId, out XbimInstanceHandle ih)
         {
             Api.MakeKey(sesid, table, typeId, MakeKeyGrbit.NewKey);
             if(Api.TrySeek(sesid, table, SeekGrbit.SeekGE))
             {
                 Api.MakeKey(sesid, table, typeId, MakeKeyGrbit.NewKey | MakeKeyGrbit.FullColumnEndLimit);
-                return Api.TrySetIndexRange(sesid, table, SetIndexRangeGrbit.RangeUpperLimit | SetIndexRangeGrbit.RangeInclusive);
+                if( Api.TrySetIndexRange(sesid, table, SetIndexRangeGrbit.RangeUpperLimit | SetIndexRangeGrbit.RangeInclusive))
+                {
+                    ih = new XbimInstanceHandle(Api.RetrieveColumnAsInt32(sesid, table, _colIdEntityLabel, RetrieveColumnGrbit.RetrieveFromIndex), Api.RetrieveColumnAsInt16(sesid, table, _colIdIfcType, RetrieveColumnGrbit.RetrieveFromIndex));
+                    return true;
+                }
             }
-            else
-                return false;
+            ih = new XbimInstanceHandle();
+            return false;
 
         }
 
@@ -336,24 +343,28 @@ namespace Xbim.IO
         /// </summary>
         /// <param name="typeId">the type of entity to look up</param>
         /// <param name="lookupKey">Secondary indexes on the search</param>
-        /// <returns></returns>
-        public bool TrySeekEntityType(short typeId, long lookupKey)
+        /// <returns>Returns an instance handle to the first or an empty handle if not found</returns>
+        public  bool TrySeekEntityType(short typeId, out XbimInstanceHandle ih, long lookupKey = -1 )
         {
-            if (lookupKey <= 0) 
-                return TrySeekEntityType(typeId);
-            else
+            if (lookupKey > 0) 
             {
                 Api.MakeKey(sesid, table, typeId, MakeKeyGrbit.NewKey);
                 Api.MakeKey(sesid, table, lookupKey, MakeKeyGrbit.None);
-                if (Api.TrySeek(sesid, table, SeekGrbit.SeekEQ))
-                {
+                if (Api.TrySeek(sesid, table, SeekGrbit.SeekGE))
+                {                    
                     Api.MakeKey(sesid, table, typeId, MakeKeyGrbit.NewKey);
-                    Api.MakeKey(sesid, table, lookupKey, MakeKeyGrbit.None);
-                    return Api.TrySetIndexRange(sesid, table, SetIndexRangeGrbit.RangeUpperLimit | SetIndexRangeGrbit.RangeInclusive);
+                    Api.MakeKey(sesid, table, lookupKey, MakeKeyGrbit.FullColumnEndLimit);
+                    if (Api.TrySetIndexRange(sesid, table, SetIndexRangeGrbit.RangeUpperLimit | SetIndexRangeGrbit.RangeInclusive))
+                    {
+                        ih = new XbimInstanceHandle(Api.RetrieveColumnAsInt32(sesid, table, _colIdEntityLabel, RetrieveColumnGrbit.RetrieveFromIndex), Api.RetrieveColumnAsInt16(sesid, table, _colIdIfcType, RetrieveColumnGrbit.RetrieveFromIndex));
+                        return true;
+                    }
                 }
-                else
-                    return false;
+                ih = new XbimInstanceHandle();
+                return false;
             }
+            else
+                return TrySeekEntityType(typeId, out ih);
         }
         /// <summary>
         /// Sets the order to be by entity type and then label 
@@ -454,5 +465,47 @@ namespace Xbim.IO
         }
 
 
+
+        public bool TryMoveNextEntityType(out XbimInstanceHandle ih)
+        {
+            if (TryMoveNext())
+            {
+                ih = new XbimInstanceHandle(Api.RetrieveColumnAsInt32(sesid, table, _colIdEntityLabel, RetrieveColumnGrbit.RetrieveFromIndex), Api.RetrieveColumnAsInt16(sesid, table, _colIdIfcType, RetrieveColumnGrbit.RetrieveFromIndex));
+                return true;
+            }
+            else
+            {
+                ih = new XbimInstanceHandle();
+                return false;
+            }
+        }
+
+        internal bool TryMoveFirstLabel(out int label)
+        {
+            if (TryMoveFirst())
+            {
+                label = Api.RetrieveColumnAsInt32(sesid, table, _colIdEntityLabel, RetrieveColumnGrbit.RetrieveFromIndex).Value;
+                return true;
+            }
+            else
+            {
+                label = 0;
+                return false;
+            }
+        }
+
+        internal bool TryMoveNextLabel(out int label)
+        {
+            if (TryMoveNext())
+            {
+                label = Api.RetrieveColumnAsInt32(sesid, table, _colIdEntityLabel, RetrieveColumnGrbit.RetrieveFromIndex).Value;
+                return true;
+            }
+            else
+            {
+                label = 0;
+                return false;
+            }
+        }
     }
 }

@@ -219,6 +219,7 @@
     <Compile Include="XbimExtensions\Transactions\UndoRedoSession.cs" />
     <Compile Include="XbimExtensions\ValidationFlags.cs" />
     <Compile Include="XbimExtensions\XbimArray.cs" />
+    <Compile Include="XbimExtensions\XbimDBAccess.cs" />
     <Compile Include="XbimExtensions\XbimGeometryData.cs" />
     <Compile Include="XbimExtensions\XbimIndexedCollection.cs" />
     <Compile Include="XbimExtensions\XbimIndexedCollectionExtensions.cs" />

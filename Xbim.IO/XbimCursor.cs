@@ -6,7 +6,7 @@ using Microsoft.Isam.Esent.Interop;
 
 namespace Xbim.IO
 {
-    public abstract class XbimCursor
+    public abstract class XbimCursor : IDisposable
     {
         protected const int transactionBatchSize = 100;
         /// <summary>
@@ -16,7 +16,7 @@ namespace Xbim.IO
         /// <summary> 
         /// The ESENT session the cursor is using.
         /// </summary>
-        protected readonly JET_SESID sesid;
+        protected readonly Session sesid;
         /// <summary>
         /// ID of the opened database.
         /// </summary>
@@ -57,7 +57,7 @@ namespace Xbim.IO
             this.lockObject = new Object();
             this.instance = instance;
             this.database = database;
-            Api.JetBeginSession(this.instance, out this.sesid, String.Empty, String.Empty);
+            sesid = new Session(this.instance);
             Api.JetAttachDatabase(this.sesid, database, mode == OpenDatabaseGrbit.ReadOnly ? AttachDatabaseGrbit.ReadOnly : AttachDatabaseGrbit.None);
             Api.JetOpenDatabase(this.sesid, database, String.Empty, out this.dbId, mode);
             Api.JetOpenTable(this.sesid, this.dbId, globalsTableName, null, 0,  mode == OpenDatabaseGrbit.ReadOnly ? OpenTableGrbit.ReadOnly : 
@@ -203,6 +203,11 @@ namespace Xbim.IO
         internal void SetCurrentIndex(string indexName)
         {
             Api.JetSetCurrentIndex(this.sesid, this.table, indexName);
+        }
+
+        public void Dispose()
+        {
+            sesid.Dispose();
         }
     }
 }

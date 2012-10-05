@@ -92,13 +92,12 @@ namespace Xbim.XbimExtensions.Interfaces
         Transaction BeginTransaction(string operationName = null);
 
         bool CreateFrom(string importFrom, string xbimDbName = null, ReportProgressDelegate progDelegate = null);
-        bool Create(string fileName = null);
+        bool Create(string fileName);
 
   
         bool SaveAs(string saveFileName, XbimStorageType storageType, ReportProgressDelegate progDelegate = null);
-        bool CanSave { get; }
-        bool Saved{ get; }
-        bool Open(string fileName, bool readOnly = false, ReportProgressDelegate progDelegate = null);
+
+        bool Open(string fileName, XbimDBAccess accessMode = XbimDBAccess.Read, ReportProgressDelegate progDelegate = null);
         
         void Close();
 

@@ -320,7 +320,7 @@ namespace Xbim
 							IEnumerable<IfcRelProjectsElement^>^ projections = element->HasProjections;
 							IEnumerable<IfcRelVoidsElement^>^ openings = element->HasOpenings;
 							
-							if(( Enumerable::FirstOrDefault(openings) !=nullptr || Enumerable::FirstOrDefault(projections) !=nullptr ))
+							if(( Enumerable::Any(openings) || Enumerable::Any(projections)))
 							{
 								List<IXbimGeometryModel^>^ projectionSolids = gcnew List<IXbimGeometryModel^>();
 								List<IXbimGeometryModel^>^ openingSolids = gcnew List<IXbimGeometryModel^>();
@@ -978,7 +978,7 @@ namespace Xbim
 					memSize += triangleIndexCount * indexSize; //write out each indices
 				else
 					memSize += (maxVertexCount*indexSize) + (maxVertexCount); //assume worst case each face is made only of triangles, Max number of indices + Triangle Mode=1byte per triangle
-				memSize*=1.5; //add a bit of capacity
+				memSize*=2; //add a bit of capacity
 				IntPtr vertexPtr = Marshal::AllocHGlobal(memSize);
 				unsigned char* pointBuffer = (unsigned char*)vertexPtr.ToPointer();
 				//decide which meshing algorithm to use, Opencascade is slow but necessary to resolve curved edges

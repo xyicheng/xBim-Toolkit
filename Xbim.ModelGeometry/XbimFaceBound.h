@@ -108,6 +108,9 @@ namespace Xbim
 			//Builds a wire segment from a  curve
 			static TopoDS_Wire Build(IfcCurve ^ curve, bool% hasCurves);
 
+			//Builds a wire segment from a  circle
+			static TopoDS_Wire Build(IfcCircle ^ circle, bool% hasCurves);
+			
 			//Builds a wire  from a  BoundedCurve
 			static TopoDS_Wire Build(IfcBoundedCurve ^ bCurve, bool% hasCurves);
 

@@ -173,7 +173,6 @@
     <Compile Include="XbimPackage.cs" />
     <Compile Include="XbimParserState.cs" />
     <Compile Include="XbimReadOnlyDBTransaction.cs" />
-    <Compile Include="XbimTransaction.cs" />
     <Compile Include="XbimViewDefinition.cs" />
   </ItemGroup>
   <ItemGroup>

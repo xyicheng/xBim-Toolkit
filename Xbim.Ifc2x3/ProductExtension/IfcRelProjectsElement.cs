@@ -43,6 +43,7 @@ namespace Xbim.Ifc2x3.ProductExtension
         ///   Element at which a projection is created by the associated IfcProjectionElement.
         /// </summary>
         [IfcAttribute(5, IfcAttributeState.Mandatory)]
+        [IndexedProperty]
         public IfcElement RelatingElement
         {
             get

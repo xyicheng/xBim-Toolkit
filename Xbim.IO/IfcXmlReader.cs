@@ -486,7 +486,7 @@ namespace Xbim.IO
             return IfcMetaData.TryGetIfcType(elementName.ToUpper(), out ifcType);
         }
 
-        private void EndElement(IfcPersistedInstanceCache cache, XmlReader input, XmlNodeType prevInputType, string prevInputName, out IPersistIfcEntity writeEntity)
+        private void EndElement(XmlReader input, XmlNodeType prevInputType, string prevInputName, out IPersistIfcEntity writeEntity)
         {
             try
             {
@@ -781,7 +781,7 @@ namespace Xbim.IO
 
 
 
-        internal IfcFileHeader Read(IfcPersistedInstanceCache instanceCache, XmlReader input)
+        internal IfcFileHeader Read(IfcPersistedInstanceCache instanceCache, XbimEntityCursor entityTable,  XmlReader input)
         {
            
             // Read until end of file
@@ -843,8 +843,7 @@ namespace Xbim.IO
             // set counter for start of every element that is not empty, and reduce it on every end of that element
 
 
-            //set up the tables for update
-            var entityTable = instanceCache.GetEntityTable();
+           
             try
             {
                 using (var transaction = entityTable.BeginLazyTransaction())
@@ -863,7 +862,7 @@ namespace Xbim.IO
                             case XmlNodeType.EndElement:
                                 IPersistIfcEntity toWrite;
                                 //if toWrite has a value we have completed an Ifc Entity
-                                EndElement(instanceCache, input, prevInputType, prevInputName, out toWrite);
+                                EndElement(input, prevInputType, prevInputName, out toWrite);
                                 if (toWrite != null)
                                 {
                                     _entitiesParsed++;

@@ -6,10 +6,11 @@ using Microsoft.Isam.Esent.Interop;
 using Xbim.Common.Exceptions;
 using Xbim.Ifc2x3.Kernel;
 using Xbim.XbimExtensions;
+using Microsoft.Isam.Esent.Interop.Windows7;
 
 namespace Xbim.IO
 {
-    public class XbimGeometryCursor : XbimCursor, IDisposable
+    public class XbimGeometryCursor : XbimCursor
     {
        
     
@@ -73,6 +74,8 @@ namespace Xbim.IO
                 Api.JetAddColumn(sesid, tableid, colNameTransformMatrix, columndef, null, 0, out columnid);
                
                 columndef.coltyp = JET_coltyp.LongBinary;
+                if (EsentVersion.SupportsWindows7Features)
+                    columndef.grbit |= Windows7Grbits.ColumnCompressed;
                 Api.JetAddColumn(sesid, tableid, colNameShapeData, columndef, null, 0, out columnid);
 
                 columndef.coltyp = JET_coltyp.Long;
@@ -125,14 +128,6 @@ namespace Xbim.IO
             InitColumns();
         }
        
-
-        public void Dispose()
-        {
-            Api.JetEndSession(this.sesid, EndSessionGrbit.None);
-            GC.SuppressFinalize(this);
-        }
-
-
         public void AddGeometry(int prodLabel, XbimGeometryType type, short ifcType, byte[] transform, byte[] shapeData, int repItemLabel=0, short subPart = 0)
         {
 

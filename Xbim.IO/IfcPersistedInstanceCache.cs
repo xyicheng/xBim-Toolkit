@@ -26,8 +26,8 @@ namespace Xbim.IO
     {
         #region ESE Database 
 
-        internal static Instance JetInstance;
-        internal static Instance CreateDBInstance;
+        private Instance _jetInstance;
+        
         /// <summary>
         /// Holds the session and transaction state
         /// </summary>
@@ -36,7 +36,7 @@ namespace Xbim.IO
         private readonly XbimGeometryCursor[] _geometryTables;
         private const int MaxCachedEntityTables = 32;
         private const int MaxCachedGeometryTables = 32;
-
+        private XbimDBAccess _accessMode;
 
         const int _transactionBatchSize = 100;
 
@@ -53,6 +53,7 @@ namespace Xbim.IO
         #endregion
 
         private string _databaseName;
+        private string _logDirectory;
         private XbimModel _model;
         private bool disposed = false;
        
@@ -63,22 +64,7 @@ namespace Xbim.IO
             _entityTables = new XbimEntityCursor[MaxCachedEntityTables];
             _geometryTables = new XbimGeometryCursor[MaxCachedGeometryTables];
         }
-        static IfcPersistedInstanceCache()
-        {
-           
-            JetInstance = new Instance("XbimDBInstance");
-            JetInstance.Parameters.BaseName = "XBM";
-            // _jetInstance.Parameters.TempDirectory = Path.GetRandomFileName();
-            JetInstance.Parameters.CreatePathIfNotExist = true;
-            JetInstance.Parameters.CircularLog = true;
-            JetInstance.Parameters.CleanupMismatchedLogFiles = true;
-            JetInstance.Parameters.Recovery = false; //By default its True, only set this if we plan to write
-            SystemParameters.CacheSizeMin = 16 * 1024;
-            JetInstance.Parameters.LogFileSize = 16 * 1024;
-            JetInstance.Parameters.LogBuffers = 8 * 1024;
-           // JetInstance.Parameters.MaxTemporaryTables = 0;
-            JetInstance.Init();
-        }
+        
        
         /// <summary>
         /// Creates an empty xbim file, overwrites any existing file of the same name
@@ -86,35 +72,40 @@ namespace Xbim.IO
         /// <returns></returns>
         public bool CreateDatabase(string fileName)
         {
-            _databaseName = fileName;
-            string directory = Path.ChangeExtension(fileName, "XbimLog");
-            Instance createInstance = CreateInstance(directory);
-            return IfcPersistedInstanceCache.CreateDB(createInstance, fileName);
-        }
-
-        private static bool CreateDB(Instance instance, string fileName)
-        {
-            using (var session = new Session(instance))
+            
+            try
             {
-                JET_DBID dbid;
-
-                Api.JetCreateDatabase(session, fileName, null, out dbid, CreateDatabaseGrbit.OverwriteExisting);
-                try
+                Close();
+                using (Instance createInstance = CreateInstance(fileName, false))
                 {
-                    XbimEntityCursor.CreateTable(session, dbid);
-                    XbimCursor.CreateGlobalsTable(session, dbid); //create the gobals table
-                    XbimGeometryCursor.CreateTable(session, dbid);
-                    return true;
-                }
-                catch
-                {
-                    Api.JetCloseDatabase(session, dbid, CloseDatabaseGrbit.None);
-                    Api.JetDetachDatabase(session, fileName);
-                    File.Delete(fileName);
-                    throw;
+                    using (var session = new Session(createInstance))
+                    {
+                        JET_DBID dbid;
+                        Api.JetCreateDatabase(session, fileName, null, out dbid, CreateDatabaseGrbit.OverwriteExisting);
+                        try
+                        {
+                            XbimEntityCursor.CreateTable(session, dbid);
+                            XbimCursor.CreateGlobalsTable(session, dbid); //create the gobals table
+                            XbimGeometryCursor.CreateTable(session, dbid);
+                            return true;
+                        }
+                        catch
+                        {
+                            Api.JetCloseDatabase(session, dbid, CloseDatabaseGrbit.None);
+                            Api.JetDetachDatabase(session, fileName);
+                            File.Delete(fileName);
+                            throw;
+                        }
+                    }
                 }
             }
+            finally
+            {
+                Directory.Delete(_logDirectory, true);
+            }
         }
+
+     
 
 
         #region Table functions
@@ -123,14 +114,14 @@ namespace Xbim.IO
         /// Returns a cached or new entity table, assumes the database filename has been specified
         /// </summary>
         /// <returns></returns>
-        internal XbimEntityCursor GetEntityTable(bool readOnly = false)
+        internal XbimEntityCursor GetEntityTable()
         {
             Debug.Assert(!string.IsNullOrEmpty(_databaseName));
             lock (this.lockObject)
             {
                 for (int i = 0; i < this._entityTables.Length; ++i)
                 {
-                    if (null != this._entityTables[i] && this._entityTables[i].ReadOnly == readOnly )
+                    if (null != this._entityTables[i] )
                     {
                         var table = this._entityTables[i];
                         this._entityTables[i] = null;
@@ -138,7 +129,10 @@ namespace Xbim.IO
                     }
                 }
             }
-            return new XbimEntityCursor(JetInstance, _databaseName, readOnly ? OpenDatabaseGrbit.ReadOnly : OpenDatabaseGrbit.None);
+            OpenDatabaseGrbit openMode = OpenDatabaseGrbit.None;
+            if (_accessMode == XbimDBAccess.Read)
+                openMode = OpenDatabaseGrbit.ReadOnly;
+            return new XbimEntityCursor(_jetInstance, _databaseName, openMode);
         }
 
         /// <summary>
@@ -160,7 +154,7 @@ namespace Xbim.IO
                     }
                 }
             }
-            return new XbimGeometryCursor(JetInstance, _databaseName); ;
+            return new XbimGeometryCursor(_jetInstance, _databaseName); ;
         }
 
         /// <summary>
@@ -219,11 +213,13 @@ namespace Xbim.IO
         ///  Opens an xbim model server file, exception is thrown if errors are encountered
         /// </summary>
         /// <param name="filename"></param>
-        internal void Open(string filename, bool readOnly = false)
+        internal void Open(string filename, XbimDBAccess accessMode = XbimDBAccess.Read)
         {
             Close();
             _databaseName = filename; //success store the name of the DB file
-            XbimEntityCursor entTable = GetEntityTable(readOnly);
+            _accessMode = accessMode;
+            _jetInstance = CreateInstance(_databaseName, accessMode == XbimDBAccess.ReadWrite); //only need recovery if we are reading and writing, exclusive is disposable as it is only used to create initial databases
+            XbimEntityCursor entTable = GetEntityTable();
             try
             {
                 using (var transaction = entTable.BeginReadOnlyTransaction())
@@ -243,27 +239,42 @@ namespace Xbim.IO
         }
 
         /// <summary>
-        /// Clears all contents fromthe cache and closes any connections
+        /// Clears all contents from the cache and closes any connections
         /// </summary>
         public void Close()
         {
-            for (int i = 0; i < this._entityTables.Length; ++i)
+            try
             {
-                if (null != this._entityTables[i])
+                for (int i = 0; i < this._entityTables.Length; ++i)
                 {
-                    this._entityTables[i].Dispose();
-                    this._entityTables[i] = null;
+                    if (null != this._entityTables[i])
+                    {
+                        this._entityTables[i].Dispose();
+                        this._entityTables[i] = null;
+                    }
+                }
+                for (int i = 0; i < this._geometryTables.Length; ++i)
+                {
+                    if (null != this._geometryTables[i])
+                    {
+                        this._geometryTables[i].Dispose();
+                        this._geometryTables[i] = null;
+                    }
+                }
+                this.read.Clear();
+                this._databaseName = null;
+                
+                
+            }
+            finally
+            {
+                if (_jetInstance != null)
+                {
+                    _jetInstance.Dispose();
+                    _jetInstance = null;
+                    Directory.Delete(_logDirectory, true);
                 }
             }
-            for (int i = 0; i < this._geometryTables.Length; ++i)
-            {
-                if (null != this._geometryTables[i])
-                {
-                    this._geometryTables[i].Dispose();
-                    this._geometryTables[i] = null;
-                }
-            }
-            this.read.Clear();
 
         }
 
@@ -271,64 +282,56 @@ namespace Xbim.IO
         
 
         /// <summary>
-        /// Imports the contents of the ifc file into the named database
+        /// Imports the contents of the ifc file into the named database, the resulting database is closed after success, use Open to access
         /// </summary>
         /// <param name="progressHandler"></param>
         /// <returns></returns>
         public void ImportIfc(string xbimDbName, string toImportIfcFilename, ReportProgressDelegate progressHandler = null)
         {
-            string directory = Path.ChangeExtension(xbimDbName, "XbimLog");
-
-            using (Instance createInstance = CreateInstance(directory))
+            CreateDatabase(xbimDbName);
+            Open(xbimDbName, XbimDBAccess.Exclusive);
+            var table = GetEntityTable();
+            try
             {
-                try
+                using (var transaction = table.BeginLazyTransaction())
                 {
-                    CreateDB(createInstance, xbimDbName);
-                    using (var table = new XbimEntityCursor(createInstance, xbimDbName, OpenDatabaseGrbit.Exclusive))
+                    using (FileStream reader = new FileStream(toImportIfcFilename, FileMode.Open, FileAccess.Read))
                     {
-                        using (var transaction = table.BeginLazyTransaction())
+                        using (P21toIndexParser part21Parser = new P21toIndexParser(reader, table, transaction))
                         {
-                            using (FileStream reader = new FileStream(toImportIfcFilename, FileMode.Open, FileAccess.Read))
-                            {
-                                using (P21toIndexParser part21Parser = new P21toIndexParser(reader, table, transaction))
-                                {
-                                    if (progressHandler != null) part21Parser.ProgressStatus += progressHandler;
-                                    part21Parser.Parse();
-                                    _model.Header = part21Parser.Header;
-                                    table.WriteHeader(part21Parser.Header);
-                                    if (progressHandler != null) part21Parser.ProgressStatus -= progressHandler;
-                                }
-                            }
-                            transaction.Commit();
+                            if (progressHandler != null) part21Parser.ProgressStatus += progressHandler;
+                            part21Parser.Parse();
+                            _model.Header = part21Parser.Header;
+                            table.WriteHeader(part21Parser.Header);
+                            if (progressHandler != null) part21Parser.ProgressStatus -= progressHandler;
                         }
                     }
+                    transaction.Commit();
                 }
-
-                catch (Exception e)
-                {
-
-                    throw new XbimException("Error importing Ifc File " + toImportIfcFilename, e);
-                }
-                finally
-                {
-                    createInstance.Term();
-                    Directory.Delete(directory,true);
-                }
+                FreeTable(table);
+                Close();
+            }
+            catch (Exception e)
+            {
+                FreeTable(table);
+                Close();
+                File.Delete(xbimDbName);
+                throw e;
             }
         }
 
-      
 
-        private static Instance CreateInstance(string directory, bool recovery = false)
+
+        private Instance CreateInstance(string xbimDbPath, bool recovery = false)
         {
-            string fullPath = Path.GetFullPath(directory);
-           
+            _logDirectory = Path.GetFullPath(xbimDbPath);
+            _logDirectory = Path.ChangeExtension(_logDirectory, Guid.NewGuid().ToString());
             var jetInstance = new Instance(Guid.NewGuid().ToString());
             jetInstance.Parameters.BaseName = "XBM";
-            jetInstance.Parameters.SystemDirectory = fullPath;
-            jetInstance.Parameters.LogFileDirectory = fullPath;
-            jetInstance.Parameters.TempDirectory = fullPath;
-            jetInstance.Parameters.AlternateDatabaseRecoveryDirectory = directory;
+            jetInstance.Parameters.SystemDirectory = _logDirectory;
+            jetInstance.Parameters.LogFileDirectory = _logDirectory;
+            jetInstance.Parameters.TempDirectory = _logDirectory;
+            jetInstance.Parameters.AlternateDatabaseRecoveryDirectory = _logDirectory;
             jetInstance.Parameters.CreatePathIfNotExist = true;
             jetInstance.Parameters.EnableIndexChecking = false;       // TODO: fix unicode indexes
             jetInstance.Parameters.CircularLog = true;
@@ -353,13 +356,14 @@ namespace Xbim.IO
         /// <summary>
         ///   Imports an Xml file memory model into the model server, only call when the database instances table is empty
         /// </summary>
-
-        public void ImportIfcXml(string xmlFilename, ReportProgressDelegate progressHandler = null)
+        public void ImportIfcXml(string xbimDbName, string xmlFilename, ReportProgressDelegate progressHandler = null)
         {
-            var entityTable = GetEntityTable();
+            CreateDatabase(xbimDbName);
+            Open(xbimDbName, XbimDBAccess.Exclusive);
+            var table = GetEntityTable();
             try
             {
-                using (var transaction = entityTable.BeginLazyTransaction())
+                using (var transaction = table.BeginLazyTransaction())
                 {
                     XmlReaderSettings settings = new XmlReaderSettings() { IgnoreComments = true, IgnoreWhitespace = false };
                     using (Stream xmlInStream = new FileStream(xmlFilename, FileMode.Open, FileAccess.Read))
@@ -367,17 +371,21 @@ namespace Xbim.IO
                         using (XmlReader xmlReader = XmlReader.Create(xmlInStream, settings))
                         {
                             IfcXmlReader reader = new IfcXmlReader();
-                            _model.Header = reader.Read(this, xmlReader);
-                            entityTable.WriteHeader(_model.Header);
+                            _model.Header = reader.Read(this, table, xmlReader);
+                            table.WriteHeader(_model.Header);
                         }
                     }
-
                     transaction.Commit();
                 }
+                FreeTable(table);
+                Close();
             }
-            finally
+            catch (Exception e)
             {
-                FreeTable(entityTable);
+                FreeTable(table);
+                Close();
+                File.Delete(xbimDbName);
+                throw new XbimException("Error importing IfcXml File " + xmlFilename, e);
             }
         }
 
@@ -429,10 +437,11 @@ namespace Xbim.IO
             try
             {
                 entityTable.SetOrderByType();
+                XbimInstanceHandle ih;
                 foreach (Type t in ifcType.NonAbstractSubTypes)
                 {
-                    short? typeId = IfcMetaData.IfcTypeId(t);
-                    if (typeId.HasValue && entityTable.TrySeekEntityType(typeId.Value))
+                    short typeId = IfcMetaData.IfcTypeId(t);
+                    if (entityTable.TrySeekEntityType(typeId, out ih))
                     {
                         do
                         {
@@ -457,8 +466,9 @@ namespace Xbim.IO
                 entityTable.SetOrderByType();
                 foreach (Type t in ifcType.NonAbstractSubTypes)
                 {
-                    short? typeId = IfcMetaData.IfcTypeId(t);
-                    if (typeId.HasValue && entityTable.TrySeekEntityType(typeId.Value))
+                    short typeId = IfcMetaData.IfcTypeId(t);
+                    XbimInstanceHandle ih;
+                    if (!entityTable.TrySeekEntityType(typeId,out ih))
                         return true;
                 }
             }
@@ -593,17 +603,16 @@ namespace Xbim.IO
                 entityTable.SetOrderByType();
                 foreach (Type t in ifcType.NonAbstractSubTypes)
                 {
-                    short? typeId = IfcMetaData.IfcTypeId(t);
-
-                    if (typeId.HasValue && entityTable.TrySeekEntityType(typeId.Value))
+                    short typeId = IfcMetaData.IfcTypeId(t);
+                    XbimInstanceHandle ih;
+                    if (entityTable.TrySeekEntityType(typeId, out ih))
                     {
-                        do
+                        yield return ih;
+                        while (entityTable.TryMoveNext())
                         {
-                            XbimInstanceHandle ih = entityTable.GetInstanceHandle();
-                            if (!this.read.ContainsKey(ih.EntityLabel)) //we have already returned the entity from the cache
-                                yield return ih;
+                            ih = entityTable.GetInstanceHandle();
+                            yield return ih;
                         }
-                        while (entityTable.TryMoveNext());
                     }
                 }
             }
@@ -615,7 +624,7 @@ namespace Xbim.IO
 
         /// <summary>
         /// Returns an instance of the entity with the specified label,
-        /// if the instance has alrady been loaded it is returned from the caache
+        /// if the instance has already been loaded it is returned from the cache
         /// if it has not been loaded a blank instance is loaded, i.e. will not have been activated
         /// </summary>
         /// <param name="label"></param>
@@ -703,9 +712,9 @@ namespace Xbim.IO
         /// </summary>
         /// <typeparam name="TIfcType"></typeparam>
         /// <param name="activate">if true loads the properties of the entity</param>
-        /// <param name="secondaryKey">if the entity has a key object, optimises to search for this handle</param>
+        /// <param name="indexKey">if the entity has a key object, optimises to search for this handle</param>
         /// <returns></returns>
-        public IEnumerable<TIfcType> OfType<TIfcType>(bool activate = false, long secondaryKey = -1)
+        public IEnumerable<TIfcType> OfType<TIfcType>(bool activate = false, long indexKey = -1)
         {
             IfcType ifcType = IfcMetaData.IfcType(typeof(TIfcType));
             var entityTable = GetEntityTable();
@@ -713,29 +722,16 @@ namespace Xbim.IO
             {
                 using (var transaction = entityTable.BeginReadOnlyTransaction())
                 {
-                    if (activate)
-                        entityTable.SetOrderByType(); //use the lookup order if we plan to load the objects properties, slower than just reading the index but we need to go to the cursor for the properties
-                    else
-                        entityTable.SetOrderByType(); //use the primary order if we only want empty object, these can be read from the index which is faster
+                    entityTable.SetOrderByType(); //use the lookup order if we plan to load the objects properties, slower than just reading the index but we need to go to the cursor for the properties
                     foreach (Type t in ifcType.NonAbstractSubTypes)
                     {
-                        short? typeId = IfcMetaData.IfcTypeId(t);
-                        if (typeId.HasValue && entityTable.TrySeekEntityType(typeId.Value, secondaryKey))
+                        short typeId = IfcMetaData.IfcTypeId(t);
+                        XbimInstanceHandle ih;
+                        if (entityTable.TrySeekEntityType(typeId, out ih, indexKey )) //we have the first instance
                         {
                             do
-                            {
-                                
-                                IPersistIfcEntity entity;
-                                
-                                XbimInstanceHandle ih;
-                                if (activate) 
-                                    ih= new XbimInstanceHandle(entityTable.GetLabel(),entityTable.GetIfcType());             
-                                else
-                                {
-                                    ih = entityTable.GetInstanceHandle(); //use handles for faster lighter return
-                                   
-                                }
-
+                            {            
+                                IPersistIfcEntity entity;     
                                 if (this.read.TryGetValue(ih.EntityLabel, out entity))
                                 {
                                     if (activate && !entity.Activated) //activate if required and not already done
@@ -748,7 +744,6 @@ namespace Xbim.IO
                                 }
                                 else
                                 {
-
                                     entity = (IPersistIfcEntity)Activator.CreateInstance(ih.EntityType);
                                     if (activate)
                                     {
@@ -762,7 +757,7 @@ namespace Xbim.IO
                                     this.read.Add(ih.EntityLabel, entity);
                                     yield return (TIfcType)entity;
                                 }
-                            } while (entityTable.TryMoveNext());
+                            } while (entityTable.TryMoveNextEntityType(out ih));
                         }
                     }
                 }
@@ -1039,10 +1034,11 @@ namespace Xbim.IO
                             IPersistIfcEntity entity = hashRight as IPersistIfcEntity;
                             if (entity != null)
                             {
-                                indexFound=true;
+                                indexFound = true;
                                 foreach (var item in OfType<T>(true, Math.Abs(entity.EntityLabel)))
                                 {
-                                    if(predicate(item)) yield return item;
+                                    if (predicate(item))
+                                        yield return item;
                                 }
                             }
                         }
@@ -1106,35 +1102,7 @@ namespace Xbim.IO
             }
         }
 
-        internal static bool Compact(string source, string target, out string error)
-        {
-            error = "";
-            XbimModel sourceModel = new XbimModel();
-            sourceModel.Open(source);
-            using (Instance instance = CreateInstance(target))
-            {
-
-                if (CreateDB(instance, target))
-                {
-                    XbimModel targetModel = new XbimModel();
-                    targetModel.Open(target);
-                    sourceModel.Compact(targetModel);
-                }
-            }
-            return false;
-            //try
-            //{
-            //    if(File.Exists(target)) File.Delete(target);
-            //    Api.JetCompact(new Session(JetInstance), source,target, null, null, CompactGrbit.Stats);
-            //    error = "";
-            //    return true;
-            //}
-            //catch (Exception e)
-            //{
-            //    error = e.Message;
-            //    return false;
-            //} 
-        }
+      
 
         internal T InsertCopy<T>(T toCopy, XbimInstanceHandleMap mappings, bool includeInverses) where T : IPersistIfcEntity
         {
@@ -1241,7 +1209,7 @@ namespace Xbim.IO
                 }
 
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 throw;
             }
@@ -1261,6 +1229,42 @@ namespace Xbim.IO
         internal void AddModified(IPersistIfcEntity entity)
         {
             modified.Add(entity);
+        }
+
+        public string DatabaseName 
+        {
+            get
+            {
+                return _databaseName;
+            }
+        }
+
+        /// <summary>
+        /// Returns an enumeration of all the instance labels in the model
+        /// </summary>
+        public IEnumerable<int> InstanceLabels 
+        {
+            get
+            {
+                var entityTable = GetEntityTable();
+                try
+                {
+                    entityTable.SetOrderByLabel();
+                    int label;
+                    if (entityTable.TryMoveFirstLabel(out label)) // we have something
+                    {
+                        do
+                        {
+                            yield return label;
+                        }
+                        while (entityTable.TryMoveNextLabel(out label));
+                    }
+                }
+                finally
+                {
+                    FreeTable(entityTable);
+                }
+            }
         }
     }
 }

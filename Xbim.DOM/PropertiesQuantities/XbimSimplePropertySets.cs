@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Xbim.Ifc2x3.Kernel;
 using System.Diagnostics;
-using Xbim.XbimExtensions.SelectTypes;
+
 using Xbim.Ifc2x3.MeasureResource;
 using Xbim.Ifc2x3.Extensions;
 using Xbim.Ifc2x3.MaterialResource;
@@ -12,7 +12,9 @@ using System.ComponentModel;
 using Xbim.Ifc2x3.PropertyResource;
 using Xbim.XbimExtensions;
 using Xbim.Ifc2x3.MaterialPropertyResource;
+using System.Globalization;
 using Xbim.XbimExtensions.Interfaces;
+using Xbim.XbimExtensions.SelectTypes;
 
 namespace Xbim.DOM.PropertiesQuantities
 {
@@ -222,7 +224,7 @@ namespace Xbim.DOM.PropertiesQuantities
                 if (value is string)
                 {
                     if (_property.NominalValue is IfcInteger) value = int.Parse(value as string);
-                    if (_property.NominalValue is IfcReal) value = double.Parse(value as string);
+                    if (_property.NominalValue is IfcReal) value = double.Parse(value as string, CultureInfo.InvariantCulture);
                     if (_property.NominalValue is IfcBoolean) value = bool.Parse(value as string);
                     if (_property.NominalValue is IfcLogical) value = bool.Parse(value as string); 
                 }

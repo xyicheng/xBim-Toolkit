@@ -25,6 +25,7 @@ using Xbim.XbimExtensions.Transactions.Extensions;
 using Xbim.Common.Logging;
 using Xbim.IO.Parser;
 using Xbim.Common;
+using Xbim.Common.Exceptions;
 namespace Xbim.IO
 {
     /// <summary>
@@ -33,12 +34,8 @@ namespace Xbim.IO
     public class XbimModel : IModel, IDisposable
     {
 
-        #region Fields  
+        #region Fields
 
-        #region Static fields
-
-        #endregion
-        
         #region OwnerHistory Fields
 
 
@@ -59,38 +56,31 @@ namespace Xbim.IO
         #endregion
 
         #region Logging Fields
-        
+
         protected readonly static ILogger Logger = LoggerFactory.GetLogger();
 
         #endregion
-        
+
         #region Model state fields
-        [NonSerialized]
+
         protected IfcPersistedInstanceCache Cached;
-       
-        [NonSerialized]
         protected UndoRedoSession undoRedoSession;
-
-        #endregion
-
         protected IIfcFileHeader header;
-        private string _databaseName;
-
-        private XbimStorageType _storageType;
         private bool disposed = false;
-
-        public string DatabaseName
-        {
-            get { return _databaseName; }
-        }
-        
-
-        #endregion
-        #region IModel implementation
-        
-        #endregion
         private XbimModelFactors _modelFactors;
 
+        #endregion
+        
+        #endregion
+
+        public XbimModel()
+        {
+            Cached = new IfcPersistedInstanceCache(this);
+        }
+        public string DatabaseName
+        {
+            get { return Cached.DatabaseName; }
+        }
         public XbimModelFactors GetModelFactors
         {
             get
@@ -362,8 +352,8 @@ namespace Xbim.IO
 
         /// <summary>
         /// Returns an instance from the Model with the corresponding label but does not keep a cache of it
-        /// This is a dangerous call as duplicate instances of the sam eobject could happen
-        /// Ony use when interating over the whole database dor export etc
+        /// This is a dangerous call as duplicate instances of the same object could happen
+        /// Ony use when interating over the whole database for export etc
         /// The properties of the object are also loaded to improve performance
         /// If the instance is in the cache it is returned
         /// </summary>
@@ -422,8 +412,6 @@ namespace Xbim.IO
 
         /// <summary>
         /// Creates a new Model and populates with instances from the specified file, Ifc, IfcXML, IfcZip and Xbim are all supported.
-        ///  All instances and changes are stored in memory, unless the storage file is Xbim, then a model server database is created
-        ///  Typically use Xbim for medium to large files (Ifc files over 10MB) or where changes will be made
         /// </summary>
         /// <param name="importFrom">Name of the file containing the instances to import</param>
         /// /// <param name="xbimDbName">Name of the xbim file that will be created. 
@@ -432,28 +420,28 @@ namespace Xbim.IO
         /// <returns></returns>
         public bool CreateFrom(string importFrom, string xbimDbName = null, ReportProgressDelegate progDelegate = null)
         {
-            if (Cached != null)
-                Cached.Dispose(); //if the model is already open close it and release all resources
-            Cached = new IfcPersistedInstanceCache(this);
-            Init(xbimDbName);
-            //if (!Cached.CreateDatabase(xbimDbName)) //create the empty database
-            //    return false;
-
+            Close();
+            string fullPath = Path.GetFullPath(importFrom);
+            if (!Directory.Exists(Path.GetDirectoryName(fullPath)))
+                throw new DirectoryNotFoundException(Path.GetDirectoryName(importFrom) + " directory was not found");
+            if (!File.Exists(fullPath))
+                throw new FileNotFoundException(fullPath + " file was not found");
+            if (string.IsNullOrWhiteSpace(xbimDbName))
+                xbimDbName = Path.ChangeExtension(importFrom, "xBIM");
+            
             XbimStorageType toImportStorageType = StorageType(importFrom);
             switch (toImportStorageType)
             {
                 case XbimStorageType.IFCXML:
-                    Cached.ImportIfcXml(importFrom, progDelegate);
+                    Cached.ImportIfcXml(xbimDbName, importFrom, progDelegate);
                     break;
                 case XbimStorageType.IFC:
                     Cached.ImportIfc(xbimDbName, importFrom, progDelegate);
                     break;
                 case XbimStorageType.IFCZIP:
-                    Cached.CreateDatabase(xbimDbName);
                     Cached.ImportIfcZip(importFrom, progDelegate);
                     break;
                 case XbimStorageType.XBIM:
-                    Cached.CreateDatabase(xbimDbName);
                     Cached.ImportXbim(importFrom, progDelegate);
                     break;
                 case XbimStorageType.INVALID:
@@ -463,48 +451,56 @@ namespace Xbim.IO
             return true;
         }
         
-        /// <summary>
-        /// Creates a new empty model and sets the name of the file for changes to be saved to. 
-        /// This file will not be created unless Save is called and the filename has been specified
-        /// If the filename is nulll use SaveAs to save the file
-        /// All instances and changes are stored in memory
-        /// </summary>
-        /// <param name="fileName">Name of the file that changes will be saved to, Ifc, IfcXML, IfcZip and Xbim.</param>
-        public bool Create(string fileName)
-        { 
-            //we have nothing to store in so use an in memory cache
-            if (Cached != null)
-                Cached.Dispose(); //if the model is already open close it and release all resources
-            
-            Init(fileName);
-            throw new NotImplementedException("Need to create this function");
-            
-        }
+
 
         /// <summary>
         /// Compacts an Xbim file to reduce size, database must be closed before this is called
         /// </summary>
         /// <returns></returns>
-        public static  bool Compact(string sourceFileName, string targetFileName, out string errMsg)
-        {
-            return IfcPersistedInstanceCache.Compact(sourceFileName, targetFileName, out errMsg);
-        }
-        /// <summary>
-        /// Initialises the model state, all instances, cached, written or to delete are dropped, the model is clean and empty.
-        /// This operation is not reversable. If persisted is true an output file
-        /// </summary>
-        private void Init(string fileName)
+        public static bool Compact(string sourceFileName, string targetFileName, out string errMsg)
         {
 
-            undoRedoSession = null;
-            header = null;
-            _storageType = StorageType(fileName);
-            if (_storageType == XbimStorageType.INVALID)
-                _databaseName = null;
-            else
-                _databaseName = fileName;
-            
+            errMsg = "";
+            try
+            {
+                XbimModel sourceModel = new XbimModel();
+                sourceModel.Open(sourceFileName, XbimDBAccess.Exclusive);
+                XbimModel targetModel = new XbimModel();
+                if (!targetModel.Create(targetFileName))
+                    throw new XbimException("Error Creating database " + targetFileName);
+                targetModel.Open(sourceFileName, XbimDBAccess.Exclusive);
+                sourceModel.Compact(targetModel);
+                return false;
+            }
+            catch (Exception e)
+            {
+                errMsg = e.Message;
+                File.Delete(targetFileName);
+                return false;
+            }
+
         }
+
+       /// <summary>
+        ///  Creates a new Xbim Database 
+       /// </summary>
+       /// <param name="dbFileName">Name of the Xbim file</param>
+       /// <returns></returns>
+        public bool Create(string dbFileName)
+        {
+            try
+            {
+                Close();
+                Cached.CreateDatabase(dbFileName);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+
+        }
+
 
         #endregion
 
@@ -800,11 +796,10 @@ namespace Xbim.IO
         /// </summary>
         public void Close()
         {
+            this._modelFactors = null;
+            this.undoRedoSession = null;
+            this.header = null;
             Cached.Close();
-            undoRedoSession = null;
-            header = null;
-            _storageType = XbimStorageType.INVALID;
-            _databaseName = null;
         }
 
         /// <summary>
@@ -825,95 +820,24 @@ namespace Xbim.IO
            
         }
 
-        /// <summary>
-        /// Returns true if the model can be saved to the specified filename
-        /// </summary>
-        public bool CanSave
-        {
-            get
-            {
-                
-                if(string.IsNullOrEmpty(_databaseName)) return false; //no file name specified
-                string fullPath = Path.GetFullPath(_databaseName);
-                string backupName = Path.ChangeExtension(fullPath, Path.GetExtension(fullPath) + "Bak");
-
-                try
-                {
-             
-                switch (_storageType)
-                {
-                    case XbimStorageType.INVALID:
-                        return false;
-                    case XbimStorageType.IFCXML:
-                    case XbimStorageType.IFC:
-                    case XbimStorageType.IFCZIP: // we are going to create a new file regardless but take a backup
-                        File.Delete(backupName);
-                        if (File.Exists(backupName)) return false;
-                        if (File.Exists(fullPath)) File.Copy(fullPath, backupName, true);
-                        File.Create(fullPath);
-                        return true;
-                    case XbimStorageType.XBIM: //assume we can always update or create xbim files, no back up is provided
-                        return true;
-                    default:
-                        return false;
-                }
-                }
-                catch (Exception e)
-                {
-                    Logger.WarnFormat("Could not save file {0}\n{1}", fullPath, e.Message);
-                    return false;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Returns true if there are no changes to save in the model.
-        /// </summary>
-        public bool Saved
-        {
-            get
-            {
-                return Cached.Saved;
-            }
-        }
-
         #endregion
 
 
-       
 
 
-        public bool Open(string fileName, bool readOnly = false, ReportProgressDelegate progDelegate = null)
+        /// <summary>
+        /// Opens an Xbim model only, to open Ifc, IfcZip and IfcXML files use the CreatFrom method
+        /// </summary>
+        /// <param name="fileName"></param>
+        /// <param name="accessMode"></param>
+        /// <param name="progDelegate"></param>
+        /// <returns>True if successful</returns>
+        public bool Open(string fileName, XbimDBAccess accessMode = XbimDBAccess.Read, ReportProgressDelegate progDelegate = null)
         {
-            
             try
             {
-                if (Cached != null)
-                    Cached.Dispose(); //if the model is already open close it and release all resources
-                Cached = new IfcPersistedInstanceCache(this);
-                XbimStorageType storageType = StorageType(fileName);
-                
-                XbimStorageType toImportStorageType = StorageType(fileName);
-                switch (toImportStorageType)
-                {
-                    //case XbimStorageType.IFCXML:
-                    //    Cached.ImportIfcXml(fileName);
-                    //    break;
-                    //case XbimStorageType.IFC:
-                    //    Cached.ImportIfc(fileName);
-                    //    break;
-                    //case XbimStorageType.IFCZIP:
-                    //    Cached.ImportIfcZip(fileName);
-                    //    break;
-                    case XbimStorageType.XBIM:
-                        Init(fileName);
-                        Cached.Open(fileName, readOnly); //opens the database
-                        break;
-                    case XbimStorageType.INVALID:
-                    default:
-                        return false;
-                }
-                _databaseName = fileName;
+                Close();
+                Cached.Open(fileName, accessMode); //opens the database
                 return true;
             }
             catch (Exception e)
@@ -923,7 +847,6 @@ namespace Xbim.IO
             }
         }
 
-       
 
         public bool SaveAs(string outputFileName, XbimStorageType storageType, ReportProgressDelegate progress = null)
         {
@@ -931,8 +854,6 @@ namespace Xbim.IO
             try
             {
                 Cached.SaveAs(storageType, outputFileName, progress);
-                _databaseName = outputFileName;
-                _storageType = storageType;
                 return true;
             }
             catch (Exception e )
@@ -1181,18 +1102,16 @@ namespace Xbim.IO
             get { throw new NotImplementedException(); }
         }
 
-  
-
         public int Validate(TextWriter errStream, ReportProgressDelegate progressDelegate, ValidationFlags? validateFlags = null)
         {
             throw new NotImplementedException();
         }
 
-
         ~XbimModel()
         {
             Dispose(false);
         }
+        
         public void Dispose()
         {
             Dispose(true);
@@ -1201,6 +1120,7 @@ namespace Xbim.IO
             // from executing a second time.
             GC.SuppressFinalize(this);
         }
+        
         protected void Dispose(bool disposing)
         {
             if (!this.disposed)
@@ -1208,7 +1128,7 @@ namespace Xbim.IO
                 // If disposing equals true, dispose all managed 
                 // and unmanaged resources.
                 if (disposing)
-                  Cached.Dispose();
+                  Close();
             }
             disposed = true;
         }
@@ -1279,7 +1199,15 @@ namespace Xbim.IO
             return Cached.InsertCopy<T>(toCopy, mappings, includeInverses);
         }
 
-       
-
+        /// <summary>
+        /// Returns an enumeration of all the entity labels in the model
+        /// </summary>
+        public IEnumerable<int> InstanceLabels 
+        {
+            get 
+            {
+                return Cached.InstanceLabels; 
+            }
+        }
     }
 }

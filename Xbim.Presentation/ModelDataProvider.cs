@@ -87,7 +87,7 @@ namespace Xbim.Presentation
         public static XbimMaterialProvider GetDefaultMaterial(string typeName)
         {
             Material mat;
-            IfcType elemType = IfcMetaData.IfcType(typeName);
+            IfcType elemType = IfcMetaData.IfcType(typeName.ToUpperInvariant());
             while (elemType != null)
             {
                 if (_defaultMaterials.TryGetValue(elemType.Type.Name, out mat))

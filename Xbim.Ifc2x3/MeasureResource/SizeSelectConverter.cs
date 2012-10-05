@@ -59,7 +59,7 @@ namespace Xbim.Ifc2x3.MeasureResource
                 if (str.Contains('%') && !char.IsLetter(str, 0)) //it is a ratio measure
                 {
                     str = str.TrimEnd(new[] {'%'});
-                    double val = double.Parse(str);
+                    double val = double.Parse(str, CultureInfo.InvariantCulture);
                     if (val > 0)
                         return new IfcPositiveRatioMeasure(val/100);
                     else
@@ -68,7 +68,7 @@ namespace Xbim.Ifc2x3.MeasureResource
                 else if (str.Contains('*') && !char.IsLetter(str, 0)) //it is a normalized ratio measure
                 {
                     str = str.TrimEnd(new[] {'*'});
-                    double val = double.Parse(str);
+                    double val = double.Parse(str, CultureInfo.InvariantCulture);
                     if (val >= 0 || val <= 1.0)
                         return new IfcNormalisedRatioMeasure(val);
                 }
@@ -78,7 +78,7 @@ namespace Xbim.Ifc2x3.MeasureResource
                 }
                 else //it should be a length measure
                 {
-                    double val = double.Parse(str);
+                    double val = double.Parse(str, CultureInfo.InvariantCulture);
                     if (val > 0)
                         return new IfcPositiveLengthMeasure(val);
                     else

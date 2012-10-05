@@ -13,6 +13,7 @@ using Xbim.Ifc2x3.SharedBldgElements;
 
 using Xbim.Common.Exceptions;
 using Xbim.Ifc2x3.ProductExtension;
+using Xbim.XbimExtensions;
 
 namespace XbimConvert
 {
@@ -44,15 +45,15 @@ namespace XbimConvert
                     System.Diagnostics.Stopwatch watch = new System.Diagnostics.Stopwatch();
 
                     watch.Start();
-                    string errMsg;
-                   // XbimModel.Compact(xbimFileName, xbimFileName + ".xbim", out errMsg);
+                   
+                   
                     using(XbimModel model = ParseModelFile(xbimFileName))
                     {
-                        
-                        model.Open(xbimFileName,true);
-                       // model.Print();
+
+                        model.Open(xbimFileName, XbimDBAccess.ReadWrite);
                        
-                        //GenerateGeometry(xbimGeometryFileName, model);
+                       
+                        GenerateGeometry(xbimGeometryFileName, model);
                         
                         model.Close();
                         
@@ -113,7 +114,7 @@ namespace XbimConvert
 
             IEnumerable<IfcProduct> toDraw = GetProducts(model);
 
-            XbimScene.ConvertGeometry(model, toDraw, delegate(int percentProgress, object userState)
+            XbimScene.ConvertGeometry(toDraw, delegate(int percentProgress, object userState)
             {
                 if (!arguments.IsQuiet)
                 {

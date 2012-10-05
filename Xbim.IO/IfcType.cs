@@ -62,11 +62,17 @@ namespace Xbim.IO
         /// <returns></returns>
         internal List<int> GetIndexedValues(IPersistIfcEntity ent)
         {
+            if (IndexedProperties == null) 
+                return null;
             List<int> keys = new List<int>();
             foreach (var prop in IndexedProperties)
             {
-                int h = (int)prop.GetValue(ent, null);
-                if (!keys.Contains(h)) keys.Add(h); //normally there are only one or two keys so don't worry about performance of contains on a list
+                object o = prop.GetValue(ent, null);
+                if (null!=o && typeof(IPersistIfcEntity).IsAssignableFrom(o.GetType()))
+                {
+                    int h = ((IPersistIfcEntity)o).EntityLabel;
+                    if (!keys.Contains(h)) keys.Add(h); //normally there are only one or two keys so don't worry about performance of contains on a list
+                }
             }
             return keys;
         }

@@ -98,7 +98,7 @@ namespace Xbim.IO
                 output.WriteAttributeString("xmlns", "ifc", null, _namespace);
                 output.WriteAttributeString("xsi", "schemaLocation", null, string.Format("{0} {1}", _namespace, _ifcXSD));
 
-                foreach (XbimInstanceHandle item in model.InstanceHandles)
+                foreach (int item in model.InstanceLabels)
                 {
                     Write(model, item, output);
                 }
@@ -148,15 +148,16 @@ namespace Xbim.IO
             output.WriteEndElement(); //end iso_10303_28_header
         }
 
-        private void Write(XbimModel model, XbimInstanceHandle handle, XmlWriter output, int pos = -1)
+        private void Write(XbimModel model, int handle, XmlWriter output, int pos = -1)
         {
-            long lbl = Math.Abs(handle.EntityLabel);
+            long lbl = Math.Abs(handle);
             if (_written.Contains(lbl)) //we have already done it
                 return;
             //int nextId = _written.Count + 1;
             _written.Add(lbl);
 
-            IfcType ifcType = handle.IfcType();
+            IPersistIfcEntity entity = model.GetInstanceVolatile(handle); //load either the cache or a volatile version of the entity
+            IfcType ifcType = IfcMetaData.IfcType(entity);
 
             output.WriteStartElement(ifcType.Type.Name);
             
@@ -175,7 +176,7 @@ namespace Xbim.IO
             {
                 toWrite = ifcType.IfcProperties.Values;
             }
-            IPersistIfcEntity entity = model.GetInstanceVolatile(handle.EntityLabel); //load either the cache or a volatile version of the entity
+            
             foreach (IfcMetaProperty ifcProperty in toWrite) //only write out persistent attributes, ignore inverses
             {
                 if (ifcProperty.IfcAttribute.State != IfcAttributeState.DerivedOverride)
@@ -303,7 +304,7 @@ namespace Xbim.IO
                 }
                 else
                 {
-                    Write(model, new XbimInstanceHandle(Math.Abs(persistVal.EntityLabel), propVal.GetType()), output, pos);
+                    Write(model, persistVal.EntityLabel, output, pos);
                 }
                 if (pos == -1) output.WriteEndElement();
             }

@@ -13,13 +13,14 @@ namespace Xbim.IO
     public struct XbimInstanceHandle
     {
         public int EntityLabel;
-        public short? EntityTypeId;
+        public short EntityTypeId;
+        
 
         public Type EntityType
         {
             get
             {
-                return EntityTypeId.HasValue ? IfcMetaData.GetType(EntityTypeId.Value) : null;
+                return IfcMetaData.GetType(EntityTypeId);
             }
         }
 
@@ -27,7 +28,7 @@ namespace Xbim.IO
         {
             get
             {
-                return EntityTypeId.HasValue ? IfcMetaData.IfcType(EntityTypeId.Value) : null;
+                return  IfcMetaData.IfcType(EntityTypeId);
             }
         }
         
@@ -35,12 +36,12 @@ namespace Xbim.IO
         {
             get
             {
-                return (EntityLabel == 0 && EntityTypeId==0);
+                return (EntityLabel == 0);
             }
         }
 
         
-        public XbimInstanceHandle(int entityLabel, short? type)
+        public XbimInstanceHandle(int entityLabel, short type = 0)
         {
             EntityLabel = Math.Abs(entityLabel);
             EntityTypeId= type;
@@ -52,6 +53,12 @@ namespace Xbim.IO
             EntityTypeId = IfcMetaData.IfcTypeId(type);
         }
 
+        public XbimInstanceHandle(int? label, short? type)
+        {
+            this.EntityLabel = label ?? 0;
+            this.EntityTypeId = type ?? 0;  
+        }
+
         public IPersistIfcEntity GetInstance(XbimModel model)
         {
             return model.GetInstance(EntityLabel);
@@ -59,7 +66,8 @@ namespace Xbim.IO
 
         internal IfcType IfcType()
         {
-            return EntityTypeId.HasValue ? IfcMetaData.IfcType(EntityTypeId.Value) : null;
+            return IfcMetaData.IfcType(EntityTypeId);
         }
+       
     }
 }

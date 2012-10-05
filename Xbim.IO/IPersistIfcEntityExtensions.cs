@@ -351,7 +351,7 @@ namespace Xbim.IO
         {
            
             IfcType ifcType = IfcMetaData.IfcType(entity);
-          //  entityWriter.Write(Convert.ToByte(P21ParseAction.NewEntity));
+           // entityWriter.Write(Convert.ToByte(P21ParseAction.NewEntity));
             entityWriter.Write(Convert.ToByte(P21ParseAction.BeginList));
             foreach (IfcMetaProperty ifcProperty in ifcType.IfcProperties.Values)
             //only write out persistent attributes, ignore inverses
@@ -366,7 +366,7 @@ namespace Xbim.IO
                 }
             }
             entityWriter.Write(Convert.ToByte(P21ParseAction.EndList));
-        //    entityWriter.Write(Convert.ToByte(P21ParseAction.EndEntity));
+            entityWriter.Write(Convert.ToByte(P21ParseAction.EndEntity));
         }
 
         private static  void WriteProperty(Type propType, object propVal, BinaryWriter entityWriter)

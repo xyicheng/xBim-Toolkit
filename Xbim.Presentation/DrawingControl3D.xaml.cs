@@ -550,7 +550,7 @@ namespace Xbim.Presentation
             BackgroundWorker worker = s as BackgroundWorker;
             XbimModel model = args.Argument as XbimModel;
             int processed = 0;
-            int _percentageParsed = 0;
+            
             if (worker != null && model != null)
             {
                 worker.ReportProgress(0, "Reading Geometry");

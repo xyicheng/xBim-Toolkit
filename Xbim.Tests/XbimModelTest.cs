@@ -9,8 +9,13 @@ using System.IO;
 using System.Reflection;
 using Xbim.XbimExtensions;
 using System.Collections;
+using System.Globalization;
+using System.Threading;
+using Xbim.Ifc2x3.GeometryResource;
 using Xbim.XbimExtensions.Interfaces;
 using Xbim.IO.Parser;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.ModelGeometry;
 
 namespace Xbim.Tests
 {
@@ -205,7 +210,7 @@ namespace Xbim.Tests
         [TestMethod]
         public void Test_ConvertXbimToGeometryCache()
         {
-            string geomFileName = CreateGeometryCache(m_TestSourceFileXbim);
+            string geomFileName = CreateGeometry(m_TestSourceFileXbim);
 
             // check if file is created 
             bool fileExist = File.Exists(geomFileName);
@@ -219,23 +224,24 @@ namespace Xbim.Tests
 
         }
 
+
         [TestMethod]
-        public void Test_ConvertXbimToSemanticContent()
+        [ExpectedException(typeof(FileNotFoundException))]
+        public void Importing_Missing_File_Throws_FileNotFoundException()
         {
-            string nonGeomFileName = CreateSemanticContent(m_TestSourceFileXbim);
-
-            // check if file is created 
-            bool fileExist = File.Exists(nonGeomFileName);
-            Assert.IsTrue(fileExist);
-
-            // check file created is not blank
-            byte[] data = File.ReadAllBytes(nonGeomFileName);
-            bool isValidFile = (data.Length > 0);
-            Assert.IsTrue(isValidFile);
             using (XbimModel modelServer = new XbimModel())
             {
-                modelServer.Open(nonGeomFileName);
-                modelServer.Close();
+                modelServer.CreateFrom("DoesNotExist.ifc");
+            }
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(DirectoryNotFoundException))]
+        public void Importing_From_Missing_Folder_Throws_DirectoryNotFoundException()
+        {
+            using (XbimModel modelServer = new XbimModel())
+            {
+                modelServer.CreateFrom("/BadPath/DoesNotExist.ifc");
             }
         }
 
@@ -304,11 +310,12 @@ namespace Xbim.Tests
                 Assert.AreEqual(badLabels2_3.Count, 0);
             }
 
-            private static string GetSourceFilesPath()
+            public static string GetSourceFilesPath()
             {
                 string assemblyFile = (new System.Uri(Assembly.GetExecutingAssembly().CodeBase)).AbsolutePath;
                 string folderPath = assemblyFile.Substring(0, assemblyFile.LastIndexOf("/bin"));
-                return folderPath + "/TestSourceFiles";
+                return folderPath + "/Xbim.Tests/TestSourceFiles";
+                
             }
 
             private string CreateSemanticContent(string xbimSourceFile)
@@ -327,19 +334,16 @@ namespace Xbim.Tests
                 return nonGeomXbimFileName;
             }
 
-            private string CreateGeometryCache(string xbimSourceFile)
+            private string CreateGeometry(string xbimSourceFile)
             {
-                string xbimFilePath = Path.GetDirectoryName(xbimSourceFile);
-                string geomXbimFileName = xbimFilePath + "\\Temp\\" + Path.GetRandomFileName() + ".xbimGC";
-
                 // create xbim geometry file
                 XbimModel modelServer = new XbimModel();
-                modelServer.Open(xbimSourceFile);
-                //srl need to resolve throw new Exception("To Fix");
-               // modelServer.ExtractSemantic(geomXbimFileName, XbimStorageType.XBIM, null);
+                modelServer.Open(xbimSourceFile,XbimDBAccess.ReadWrite);
+                IEnumerable<IfcProduct> toDraw = modelServer.IfcProducts.Cast<IfcProduct>();
+                XbimScene.ConvertGeometry(toDraw, null);
                 modelServer.Close();
-                
-                return geomXbimFileName;
+
+                return xbimSourceFile;
             }
 
             private string CreateXbimFile(string sourceFilePath, string targetPath = null)
@@ -431,6 +435,7 @@ namespace Xbim.Tests
                     using (XbimModel modelServer = new XbimModel())
                     {
                         modelServer.CreateFrom(sourceFilePath, xbimFileName);
+                        modelServer.Open(xbimFileName);
                         modelServer.SaveAs(ifcFileName,XbimStorageType.IFC);
                         modelServer.Close();
                     }
