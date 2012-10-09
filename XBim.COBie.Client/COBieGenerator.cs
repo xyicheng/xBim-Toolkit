@@ -86,6 +86,7 @@ namespace XBim.COBie.Client
                     // Build context
                     COBieContext context = new COBieContext(_worker.ReportProgress);
                     context.COBieGlobalValues.Add("TEMPLATEFILENAME", parameters.TemplateFile); //pass over template file name
+                    context.COBieGlobalValues.Add("FILENAME", parameters.ModelFile); //pass over template file name
 
                     context.Models.Add(model);
 

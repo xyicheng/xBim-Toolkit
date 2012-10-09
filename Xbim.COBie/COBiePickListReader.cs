@@ -41,7 +41,7 @@ namespace Xbim.COBie
                     int columnCount = 0;
                     foreach (IRow row in excelSheet)
                     {
-                        if (rownumber == 0) //this will be the headers co get how many we have
+                        if (rownumber == 0) //this will be the headers so get how many we have
                         {
                             foreach (ICell cell in row)
                             {
