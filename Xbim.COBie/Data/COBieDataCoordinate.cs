@@ -143,9 +143,9 @@ namespace Xbim.COBie.Data
                     coordinateUpper.RowName = coordinate.RowName;
                     coordinateUpper.SheetName = coordinate.SheetName;
                     coordinateUpper.Category = "box-upperright";
-                    coordinateUpper.CoordinateXAxis = (ifcCartesianPointUpper != null) ? string.Format("{0:F4}", (double)ifcCartesianPointLower[0]) : "0.0";
-                    coordinateUpper.CoordinateYAxis = (ifcCartesianPointUpper != null) ? string.Format("{0:F4}", (double)ifcCartesianPointLower[1]) : "0.0";
-                    coordinateUpper.CoordinateZAxis = (ifcCartesianPointUpper != null) ? string.Format("{0:F4}", (double)ifcCartesianPointLower[2]) : "0.0";
+                    coordinateUpper.CoordinateXAxis = (ifcCartesianPointUpper != null) ? string.Format("{0:F4}", (double)ifcCartesianPointUpper[0]) : "0.0";
+                    coordinateUpper.CoordinateYAxis = (ifcCartesianPointUpper != null) ? string.Format("{0:F4}", (double)ifcCartesianPointUpper[1]) : "0.0";
+                    coordinateUpper.CoordinateZAxis = (ifcCartesianPointUpper != null) ? string.Format("{0:F4}", (double)ifcCartesianPointUpper[2]) : "0.0";
                     coordinateUpper.ExtSystem = coordinate.ExtSystem;
                     coordinateUpper.ExtObject = coordinate.ExtObject;
                     coordinateUpper.ExtIdentifier = coordinate.ExtIdentifier;
