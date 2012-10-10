@@ -16,14 +16,28 @@ using Xbim.Ifc.GeometryResource;
 
 namespace Xbim.Tests
 {
+    // Deploy our sample files to the correct TestResults folder, so we can access under the Test Runner
+    [DeploymentItem(TestSourceFileIfc, Root)]
+    [DeploymentItem(TestSourceFileIfcXml, Root)]
+    [DeploymentItem(TestSourceFileXbim, Root)]
     [TestClass]
     public class XbimFileModelServerTest
     {
-        string m_TestSourceFileIfc = GetSourceFilesPath() + "/Ref.ifc";
-        string m_TestSourceFileIfcXml = GetSourceFilesPath() + "/Ref_Xbim_IfcXml.ifcxml";
-        string m_TestSourceFileXbim = GetSourceFilesPath() + "/Ref_Xbim.xbim";
+        const string Root = "TestSourceFiles";
+        const string Temp = "Temp";
+
+        // 3 reference files, under version control
+        const string TestSourceFileIfc = Root + "/Ref.ifc";
+        const string TestSourceFileIfcXml = Root + "/Ref_Xbim_IfcXml.ifcxml";
+        const string TestSourceFileXbim = Root + "/Ref_Xbim.xbim";
 
         #region "Init and Cleanup"
+
+        [ClassInitialize]
+        public static void LoadModel(TestContext context)
+        {
+            Directory.CreateDirectory(Path.Combine(Root, Temp));
+        }
 
         [TestInitialize]
         public void TestInit()
@@ -37,14 +51,6 @@ namespace Xbim.Tests
         {
             // this method runs after finishes every test
 
-            // delete all files created in temp directory of the Test Project
-            string tempFolderPath = GetSourceFilesPath() + "/Temp";
-            DirectoryInfo di = new DirectoryInfo(tempFolderPath);
-            
-            foreach (FileInfo fi in di.GetFiles())
-            {
-                File.Delete(fi.FullName);
-            }
         }
 
         #endregion
@@ -61,12 +67,12 @@ namespace Xbim.Tests
             // By the end of all conversion we will have 3 xbim files. Compare each file with other 2 and they all
             // should have same binary data for each entity.
 
-            string Ref = GetSourceFilesPath() + "/Ref.ifc";
-            string Ref_Xbim = GetSourceFilesPath() + "/Ref_Xbim.xbim";
-            string Ref_Xbim_IfcXml = GetSourceFilesPath() + "/Ref_Xbim_IfcXml.ifcxml";
-            string Ref_Xbim_IfcXml_Xbim = GetSourceFilesPath() + "/Ref_Xbim_IfcXml_Xbim.xbim";
-            string Ref_Xbim_IfcXml_Xbim_Ifc = GetSourceFilesPath() + "/Ref_Xbim_IfcXml_Xbim_Ifc.ifc";
-            string Ref_Xbim_IfcXml_Xbim_ifc_Xbim = GetSourceFilesPath() + "/Ref_Xbim_IfcXml_Xbim_ifc_Xbim.xbim";
+            string Ref = Root + "/Ref.ifc";
+            string Ref_Xbim = Root + "/Ref_Xbim.xbim";
+            string Ref_Xbim_IfcXml = Root + "/Ref_Xbim_IfcXml.ifcxml";
+            string Ref_Xbim_IfcXml_Xbim = Root + "/Ref_Xbim_IfcXml_Xbim.xbim";
+            string Ref_Xbim_IfcXml_Xbim_Ifc = Root + "/Ref_Xbim_IfcXml_Xbim_Ifc.ifc";
+            string Ref_Xbim_IfcXml_Xbim_ifc_Xbim = Root + "/Ref_Xbim_IfcXml_Xbim_ifc_Xbim.xbim";
 
             // create reference xbim file from original ifc
             CreateXbimFile(Ref, Ref_Xbim);
@@ -95,7 +101,7 @@ namespace Xbim.Tests
         [TestMethod]
         public void Test_ConvertIfcToXbim()
         {
-            string ifcFileName = m_TestSourceFileIfc;
+            string ifcFileName = TestSourceFileIfc;
             string xbimFileName = CreateXbimFile(ifcFileName);
 
             // check if file is created 
@@ -109,10 +115,10 @@ namespace Xbim.Tests
 
             // check the created xbim file is same as reference xbim file
             // get any labels in xbimFile1 that are not in xbimFile2
-            List<long> badLabels1 = GetFileBadLabels(xbimFileName, m_TestSourceFileXbim);
+            List<long> badLabels1 = GetFileBadLabels(xbimFileName, TestSourceFileXbim);
 
             // get any labels in xbimFile2 that are not in xbimFile1
-            List<long> badLabels2 = GetFileBadLabels(m_TestSourceFileXbim, xbimFileName);
+            List<long> badLabels2 = GetFileBadLabels(TestSourceFileXbim, xbimFileName);
 
             // both files are created using different procedures from same ifc, so should be same and have 0 badlabels
             Assert.AreEqual(badLabels1.Count, 0);
@@ -124,7 +130,7 @@ namespace Xbim.Tests
         [TestMethod]
         public void Test_ConvertIfcXmlToXbim()
         {
-            string ifcXmlFileName = m_TestSourceFileIfcXml;
+            string ifcXmlFileName = TestSourceFileIfcXml;
             string xbimFileName = CreateXbimFile(ifcXmlFileName);
 
             // check if file is created 
@@ -138,10 +144,10 @@ namespace Xbim.Tests
 
             // check the created xbim file is same as reference xbim file
             // get any labels in xbimFile1 that are not in xbimFile2
-            List<long> badLabels1 = GetFileBadLabels(xbimFileName, m_TestSourceFileXbim);
+            List<long> badLabels1 = GetFileBadLabels(xbimFileName, TestSourceFileXbim);
 
             // get any labels in xbimFile2 that are not in xbimFile1
-            List<long> badLabels2 = GetFileBadLabels(m_TestSourceFileXbim, xbimFileName);
+            List<long> badLabels2 = GetFileBadLabels(TestSourceFileXbim, xbimFileName);
 
             // both files are created using different procedures from same ifc, so should be same and have 0 badlabels
             Assert.AreEqual(badLabels1.Count, 0);
@@ -153,7 +159,7 @@ namespace Xbim.Tests
         [TestMethod]
         public void Test_ConvertXbimToIfcXml()
         {
-            string xbimFileName = m_TestSourceFileXbim;
+            string xbimFileName = TestSourceFileXbim;
             string ifcXmlFileName = CreateIfcXmlFile(xbimFileName);
 
             // check if file is created 
@@ -171,7 +177,7 @@ namespace Xbim.Tests
         [TestMethod]
         public void Test_ConvertXbimToIfc()
         {
-            string xbimFileName = m_TestSourceFileXbim;
+            string xbimFileName = TestSourceFileXbim;
             string ifcFileName = CreateIfcFile(xbimFileName);
 
             // check if file is created 
@@ -189,7 +195,7 @@ namespace Xbim.Tests
         [TestMethod]
         public void Test_ConvertIfcxmlToIfc()
         {
-            string ifcXmlFileName = m_TestSourceFileIfcXml;
+            string ifcXmlFileName = TestSourceFileIfcXml;
             string ifcFileName = CreateIfcFile(ifcXmlFileName);
 
             // check if file is created 
@@ -207,7 +213,7 @@ namespace Xbim.Tests
         [TestMethod]
         public void Test_ConvertXbimToGeometryCache()
         {
-            string geomFileName = CreateGeometryCache(m_TestSourceFileXbim);
+            string geomFileName = CreateGeometryCache(TestSourceFileXbim);
 
             // check if file is created 
             bool fileExist = File.Exists(geomFileName);
@@ -224,7 +230,7 @@ namespace Xbim.Tests
         [TestMethod]
         public void Test_ConvertXbimToSemanticContent()
         {
-            string nonGeomFileName = CreateSemanticContent(m_TestSourceFileXbim);
+            string nonGeomFileName = CreateSemanticContent(TestSourceFileXbim);
 
             // check if file is created 
             bool fileExist = File.Exists(nonGeomFileName);
@@ -270,7 +276,7 @@ namespace Xbim.Tests
         {
             using (IModel model = new XbimFileModelServer())
             {
-                model.Open(m_TestSourceFileIfcXml);
+                model.Open(TestSourceFileIfcXml);
             }
         }
 
@@ -279,7 +285,7 @@ namespace Xbim.Tests
         {
             using (IModel model = new XbimFileModelServer())
             {
-                model.Open(m_TestSourceFileIfc);
+                model.Open(TestSourceFileIfc);
             }
         }
 
@@ -288,7 +294,7 @@ namespace Xbim.Tests
         {
             using (IModel model = new XbimFileModelServer())
             {
-                model.Open(m_TestSourceFileXbim);
+                model.Open(TestSourceFileXbim);
             }
         }
 
@@ -297,7 +303,7 @@ namespace Xbim.Tests
         {
             using (IModel model = new XbimMemoryModel())
             {
-                model.Open(m_TestSourceFileIfcXml);
+                model.Open(TestSourceFileIfcXml);
             }
         }
 
@@ -305,7 +311,7 @@ namespace Xbim.Tests
         public void Test_OpenIfc_MemoryModel()
         {
             IModel model = new XbimMemoryModel();
-            model.Open(m_TestSourceFileIfc);
+            model.Open(TestSourceFileIfc);
             model.Close();
         }
 
@@ -314,7 +320,7 @@ namespace Xbim.Tests
         {
             using (IModel model = new XbimMemoryModel())
             {
-                model.Open(m_TestSourceFileXbim);
+                model.Open(TestSourceFileXbim);
             }
         }
 #endregion
@@ -331,17 +337,19 @@ namespace Xbim.Tests
                 Assert.AreEqual(badLabels2_3.Count, 0);
             }
 
-            private static string GetSourceFilesPath()
+        
+
+            private static string CreateTempFile(string baseDir, string ext)
             {
-                string assemblyFile = (new System.Uri(Assembly.GetExecutingAssembly().CodeBase)).AbsolutePath;
-                string folderPath = assemblyFile.Substring(0, assemblyFile.LastIndexOf("/bin"));
-                return folderPath + "/TestSourceFiles";
+                return Path.Combine(Path.Combine(baseDir, Temp), (Path.GetRandomFileName() + ext));
+
             }
 
             private string CreateSemanticContent(string xbimSourceFile)
             {
                 string xbimFilePath = Path.GetDirectoryName(xbimSourceFile);
-                string nonGeomXbimFileName = xbimFilePath + "\\Temp\\" + Path.GetRandomFileName() + ".xbim";
+
+                string nonGeomXbimFileName = CreateTempFile(xbimFilePath, ".xbim");
 
                 // create xbim semantic file without geometry
                 using (XbimFileModelServer modelServer = new XbimFileModelServer())
@@ -352,10 +360,11 @@ namespace Xbim.Tests
                 return nonGeomXbimFileName;
             }
 
+
             private string CreateGeometryCache(string xbimSourceFile)
             {
                 string xbimFilePath = Path.GetDirectoryName(xbimSourceFile);
-                string geomXbimFileName = xbimFilePath + "\\Temp\\" + Path.GetRandomFileName() + ".xbimGC";
+                string geomXbimFileName = CreateTempFile(xbimFilePath, ".xbimGC");
 
                 // create xbim geometry file
                 using (XbimFileModelServer modelServer = new XbimFileModelServer())
@@ -367,14 +376,14 @@ namespace Xbim.Tests
                 return geomXbimFileName;
             }
 
-            private string CreateXbimFile(string sourceFilePath, string targetPath = null)
+            private static string CreateXbimFile(string sourceFilePath, string targetPath = null)
             {
                 string ext = Path.GetExtension(sourceFilePath);
 
                 if (ext.ToLower() == ".ifc")
                 {
                     string ifcFilePath = Path.GetDirectoryName(sourceFilePath);
-                    string xbimFileName = ifcFilePath + "\\Temp\\" + Path.GetRandomFileName() + ".xbim";
+                    string xbimFileName = CreateTempFile(ifcFilePath, ".xbim");
                     if (targetPath != null)
                         xbimFileName = targetPath;
                     using (XbimFileModelServer modelServer = new XbimFileModelServer())
@@ -386,7 +395,7 @@ namespace Xbim.Tests
                 else if (ext.ToLower() == ".ifcxml" || ext.ToLower() == ".xml")
                 {
                     string ifcxmlFilePath = Path.GetDirectoryName(sourceFilePath);
-                    string xbimFileName = ifcxmlFilePath + "\\Temp\\" + Path.GetRandomFileName() + ".xbim";
+                    string xbimFileName = CreateTempFile(ifcxmlFilePath, ".xbim"); 
                     if (targetPath != null)
                         xbimFileName = targetPath;
                     using (XbimFileModelServer modelServer = new XbimFileModelServer())
@@ -398,7 +407,7 @@ namespace Xbim.Tests
                 return "";
             }
 
-            private string CreateIfcXmlFile(string sourceFilePath, string targetPath = null)
+            private static string CreateIfcXmlFile(string sourceFilePath, string targetPath = null)
             {
                 string ext = Path.GetExtension(sourceFilePath);
 
@@ -423,7 +432,7 @@ namespace Xbim.Tests
                 else if (ext.ToLower() == ".xbim")
                 {
                     string xbimFilePath = Path.GetDirectoryName(sourceFilePath);
-                    string ifcXmlFileName = xbimFilePath + "\\Temp\\" + Path.GetRandomFileName() + ".ifcxml";
+                    string ifcXmlFileName = CreateTempFile(xbimFilePath, ".ifcxml"); 
                     if (targetPath != null)
                         ifcXmlFileName = targetPath;
                     using (XbimFileModelServer modelServer = new XbimFileModelServer(sourceFilePath, FileAccess.ReadWrite))
@@ -435,15 +444,15 @@ namespace Xbim.Tests
                 return "";
             }
 
-            private string CreateIfcFile(string sourceFilePath, string targetPath = null)
+            private static string CreateIfcFile(string sourceFilePath, string targetPath = null)
             {
                 string ext = Path.GetExtension(sourceFilePath);
 
                 if (ext.ToLower() == ".ifcxml" || ext.ToLower() == ".xml")
                 {
                     string ifcFilePath = Path.GetDirectoryName(sourceFilePath);
-                    string ifcFileName = ifcFilePath + "\\Temp\\" + Path.GetRandomFileName() + ".ifc";
-                    string xbimFileName = ifcFilePath + "\\Temp\\" + Path.GetRandomFileName() + ".xbim";
+                    string ifcFileName = CreateTempFile(ifcFilePath, ".ifc"); 
+                    string xbimFileName = CreateTempFile(ifcFilePath, ".xbim");
 
                     // convert xml to xbim first
                     using (XbimFileModelServer modelServer = new XbimFileModelServer())
@@ -460,7 +469,7 @@ namespace Xbim.Tests
                 else if (ext.ToLower() == ".xbim")
                 {
                     string xbimFilePath = Path.GetDirectoryName(sourceFilePath);
-                    string ifcFileName = xbimFilePath + "\\Temp\\" + Path.GetRandomFileName() + ".ifc";
+                    string ifcFileName = CreateTempFile(xbimFilePath, ".ifc"); 
                     if (targetPath != null)
                         ifcFileName = targetPath;
                     using (XbimFileModelServer modelServer = new XbimFileModelServer(sourceFilePath, FileAccess.ReadWrite))

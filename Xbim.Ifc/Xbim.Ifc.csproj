@@ -217,17 +217,8 @@
     <Compile Include="ElectricalDomain\IfcSwitchingDeviceTypeEnum.cs" />
     <Compile Include="ElectricalDomain\IfcTransformerType.cs" />
     <Compile Include="ElectricalDomain\IfcTransformerTypeEnum.cs" />
-    <Compile Include="FacilitiesMgmtDomain\IfcActionRequest.cs" />
-    <Compile Include="FacilitiesMgmtDomain\IfcCondition.cs" />
-    <Compile Include="FacilitiesMgmtDomain\IfcConditionCriterion.cs" />
-    <Compile Include="FacilitiesMgmtDomain\IfcEquipmentStandard.cs" />
-    <Compile Include="FacilitiesMgmtDomain\IfcFurnitureStandard.cs" />
-    <Compile Include="FacilitiesMgmtDomain\IfcMove.cs" />
-    <Compile Include="FacilitiesMgmtDomain\IfcOrderAction.cs" />
-    <Compile Include="FacilitiesMgmtDomain\IfcPermit.cs" />
     <Compile Include="GeometricConstraintResource\IfcConnectionCurveGeometry.cs" />
     <Compile Include="GeometricConstraintResource\IfcConnectionGeometry.cs" />
-    <Compile Include="GeometricConstraintResource\IfcConnectionPointEccentricity.cs" />
     <Compile Include="GeometricConstraintResource\IfcConnectionPointGeometry.cs" />
     <Compile Include="GeometricConstraintResource\IfcConnectionSurfaceGeometry.cs" />
     <Compile Include="GeometricConstraintResource\IfcGridAxis.cs" />
@@ -340,9 +331,6 @@
     <Compile Include="HVACDomain\IfcVibrationIsolatorTypeEnum.cs" />
     <Compile Include="MaterialPropertyResource\IfcExtendedMaterialProperties.cs" />
     <Compile Include="MaterialPropertyResource\IfcMaterialProperties.cs" />
-    <Compile Include="MaterialPropertyResource\IfcMechanicalMaterialProperties.cs" />
-    <Compile Include="MaterialPropertyResource\IfcMechanicalSteelMaterialProperties.cs" />
-    <Compile Include="MaterialPropertyResource\IfcRelaxation.cs" />
     <Compile Include="MeasureResource\IfcComplexNumber.cs" />
     <Compile Include="MeasureResource\IfcElectricChargeMeasure.cs" />
     <Compile Include="MeasureResource\IfcElectricConductanceMeasure.cs" />
@@ -382,7 +370,6 @@
     <Compile Include="ProcessExtensions\IfcWorkPlan.cs" />
     <Compile Include="ProcessExtensions\IfcWorkSchedule.cs" />
     <Compile Include="ProductExtension\IfcElementType.cs" />
-    <Compile Include="ProductExtension\IfcTransportElementType.cs" />
     <Compile Include="ProfilePropertyResource\IfcGeneralProfileProperties.cs" />
     <Compile Include="ProfilePropertyResource\IfcProfileProperties.cs" />
     <Compile Include="ProfilePropertyResource\IfcReinforcementBarProperties.cs" />
@@ -400,7 +387,6 @@
     <Compile Include="SelectTypes\IfcClassificationNotationSelect.cs" />
     <Compile Include="SelectTypes\IfcColour.cs" />
     <Compile Include="SelectTypes\IfcColourOrFactor.cs" />
-    <Compile Include="SelectTypes\IfcConditionCriterionSelect.cs" />
     <Compile Include="SelectTypes\IfcCsgSelect.cs" />
     <Compile Include="SelectTypes\IfcCurveFontOrScaledCurveFontSelect.cs" />
     <Compile Include="SelectTypes\IfcCurveOrEdgeCurve.cs" />
@@ -579,9 +565,6 @@
     <Compile Include="SharedComponentElements\IfcMechanicalFastener.cs" />
     <Compile Include="SharedComponentElements\IfcMechanicalFastenerType.cs" />
     <Compile Include="SharedFacilitiesElements\IfcFurnitureType.cs" />
-    <Compile Include="SharedFacilitiesElements\IfcOccupant.cs" />
-    <Compile Include="SharedFacilitiesElements\IfcOccupantTypeEnum.cs" />
-    <Compile Include="SharedFacilitiesElements\IfcRelOccupiesSpaces.cs" />
     <Compile Include="SharedFacilitiesElements\IfcSystemFurnitureElementType.cs" />
     <Compile Include="StructuralAnalysisDomain\IfcActionSourceTypeEnum.cs" />
     <Compile Include="StructuralAnalysisDomain\IfcActionTypeEnum.cs" />

@@ -113,11 +113,16 @@
     </CodeAnalysisDependentAssemblyPaths>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="COBie\COBieQueriesTests.cs" />
     <Compile Include="InternationalisationTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="XbimFileModelServerTest.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Xbim.COBie\Xbim.COBie.csproj">
+      <Project>{7DA8C61A-ACCA-45CB-B688-93A4982FA44C}</Project>
+      <Name>Xbim.COBie</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Xbim.Common\Xbim.Common.csproj">
       <Project>{6745F5AC-AF3C-4372-81AA-A75E7B1FA03B}</Project>
       <Name>Xbim.Common</Name>
@@ -140,9 +145,26 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="TestSourceFiles\Test.ifc">
+    <Content Include="..\Xbim.COBie\PickLists.xml">
+      <Link>TestSourceFiles\PickLists.xml</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    </Content>
+    <None Include="TestSourceFiles\2012-03-23-Duplex-Handover.ifc" />
+    <Content Include="TestSourceFiles\Ref.ifc">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestSourceFiles\2012-03-23-Duplex-Handover.xbim">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestSourceFiles\Ref_Xbim.xbim">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestSourceFiles\Ref_Xbim_IfcXml.ifcxml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestSourceFiles\Test.ifc">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
