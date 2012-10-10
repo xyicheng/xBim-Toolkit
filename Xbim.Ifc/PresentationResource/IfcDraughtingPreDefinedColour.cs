@@ -19,6 +19,7 @@ using System.Linq;
 using System.Windows.Media;
 using Xbim.Ifc.MeasureResource;
 using Xbim.XbimExtensions;
+using Xbim.XbimExtensions.Parser;
 
 #endregion
 
@@ -57,6 +58,7 @@ namespace Xbim.Ifc.PresentationResource
         /// <summary>
         ///   Valid names for draughting colours are "black","red","green","blue","yellow", "magenta","cyan","white","by layer"
         /// </summary>
+        [IfcAttribute(1, IfcAttributeState.Mandatory)]
         public override IfcLabel Name
         {
             get { return base.Name; }
@@ -117,6 +119,18 @@ namespace Xbim.Ifc.PresentationResource
         }
 
         #endregion
+
+        public override void IfcParse(int propIndex, IPropertyValue value)
+        {
+            switch (propIndex)
+            {
+                case 0:
+                    base.IfcParse(propIndex, value);
+                    break;
+                default:
+                    this.HandleUnexpectedAttribute(propIndex, value); break;
+            }
+        }
     }
 
     #region Converter
