@@ -1,0 +1,235 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{7DA8C61A-ACCA-45CB-B688-93A4982FA44C}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Xbim.COBie</RootNamespace>
+    <AssemblyName>Xbim.COBie</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>..\bin\x86\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <OutputPath>..\bin\x86\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <DocumentationFile>
+    </DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x64\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>bin\x64\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="NPOI, Version=1.2.5.0, Culture=neutral, PublicKeyToken=0df73ec7942b34e1, processorArchitecture=MSIL">
+      <HintPath>..\packages\NPOI.1.2.5\lib\net40\NPOI.dll</HintPath>
+    </Reference>
+    <Reference Include="PresentationCore" />
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\SharedAssemblyInfo.cs">
+      <Link>Properties\SharedAssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="COBieAliasAttribute.cs" />
+    <Compile Include="COBieCell.cs" />
+    <Compile Include="COBieContext.cs" />
+    <Compile Include="COBieErrorCollection.cs" />
+    <Compile Include="COBieWorkbook.cs" />
+    <Compile Include="Data\COBieData.cs" />
+    <Compile Include="Data\COBieDataAssembly.cs" />
+    <Compile Include="Data\COBieDataAttributeBuilder.cs" />
+    <Compile Include="Data\COBieDataComponent.cs" />
+    <Compile Include="Data\COBieDataConnection.cs" />
+    <Compile Include="Data\COBieDataContact.cs" />
+    <Compile Include="Data\COBieDataCoordinate.cs" />
+    <Compile Include="Data\COBieDataDocument.cs" />
+    <Compile Include="Data\COBieDataFacility.cs" />
+    <Compile Include="Data\COBieDataFloor.cs" />
+    <Compile Include="Data\COBieDataImpact.cs" />
+    <Compile Include="COBiePickListReader.cs" />
+    <Compile Include="Constants.cs" />
+    <Compile Include="Data\COBieDataIssue.cs" />
+    <Compile Include="Data\COBieDataJob.cs" />
+    <Compile Include="Data\COBieDataPropertySetValues.cs" />
+    <Compile Include="Data\COBieDataResource.cs" />
+    <Compile Include="Data\COBieDataSpace.cs" />
+    <Compile Include="Data\COBieDataSpare.cs" />
+    <Compile Include="Data\COBieDataSystem.cs" />
+    <Compile Include="Data\COBieDataType.cs" />
+    <Compile Include="Data\COBieDataZone.cs" />
+    <Compile Include="Data\IAttributeProvider.cs" />
+    <Compile Include="COBieProgress.cs" />
+    <Compile Include="Enums.cs" />
+    <Compile Include="Resources\ErrorDescription.en-GB.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ErrorDescription.en-GB.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Resources\ErrorDescription.zh-TW.Designer.cs">
+      <DependentUpon>ErrorDescription.zh-TW.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Resources\ErrorDescription.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ErrorDescription.resx</DependentUpon>
+    </Compile>
+    <Compile Include="ICOBieSheet.cs" />
+    <Compile Include="Rows\COBieAssemblyRow.cs" />
+    <Compile Include="Rows\COBieAttributeRow.cs" />
+    <Compile Include="COBieColumn.cs" />
+    <Compile Include="COBieColumnCollection.cs" />
+    <Compile Include="Rows\COBieComponentRow.cs" />
+    <Compile Include="Rows\COBieConnectionRow.cs" />
+    <Compile Include="Rows\COBieContactRow.cs" />
+    <Compile Include="Rows\COBieCoordinateRow.cs" />
+    <Compile Include="Rows\COBieDocumentRow.cs" />
+    <Compile Include="COBieAttributes.cs" />
+    <Compile Include="COBieError.cs" />
+    <Compile Include="COBieQueries.cs" />
+    <Compile Include="COBieBuilder.cs" />
+    <Compile Include="Rows\COBieFacilityRow.cs" />
+    <Compile Include="Rows\COBieFloorRow.cs" />
+    <Compile Include="Rows\COBieImpactRow.cs" />
+    <Compile Include="Rows\COBieIssueRow.cs" />
+    <Compile Include="Rows\COBieJobRow.cs" />
+    <Compile Include="Rows\COBiePickListsRow.cs" />
+    <Compile Include="Rows\COBieResourceRow.cs" />
+    <Compile Include="COBieRow.cs" />
+    <Compile Include="COBieSheet.cs" />
+    <Compile Include="Rows\COBieSpaceRow.cs" />
+    <Compile Include="Rows\COBieSpareRow.cs" />
+    <Compile Include="Rows\COBieSystemRow.cs" />
+    <Compile Include="Rows\COBieTypeRow.cs" />
+    <Compile Include="Rows\COBieZoneRow.cs" />
+    <Compile Include="Contracts\ICOBieFormatter.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ClassDiagram1.cd" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Xbim.Ifc.Extensions\Xbim.Ifc.Extensions.csproj">
+      <Project>{09870F18-1796-4A3E-A66D-68DB3DA60B24}</Project>
+      <Name>Xbim.Ifc.Extensions</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Xbim.Ifc\Xbim.Ifc.csproj">
+      <Project>{5D4C907D-1293-4E5F-9642-D0862AE4741C}</Project>
+      <Name>Xbim.Ifc</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Xbim.IO\Xbim.IO.csproj">
+      <Project>{85856DF2-C8AB-4120-8A8D-AE05D2696B51}</Project>
+      <Name>Xbim.IO</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Xbim.ModelGeometry.Scene\Xbim.ModelGeometry.Scene.csproj">
+      <Project>{3D9D37DE-A254-4433-B172-7590CBD84C69}</Project>
+      <Name>Xbim.ModelGeometry.Scene</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Xbim.ModelGeometry\Xbim.ModelGeometry.vcxproj">
+      <Project>{CBCA1EFC-7459-4A0E-A42D-55D4F58051BF}</Project>
+      <Name>Xbim.ModelGeometry</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="PickLists.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Formatters\" />
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Service References\" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\ErrorDescription.en-GB.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>ErrorDescription.en-GB.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\ErrorDescription.zh-TW.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>ErrorDescription.zh-TW.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\ErrorDescription.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>ErrorDescription.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

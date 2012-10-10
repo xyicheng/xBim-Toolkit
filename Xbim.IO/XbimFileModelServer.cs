@@ -265,14 +265,10 @@ namespace Xbim.IO
             catch (Exception e)
             {
                 Close();
-                if (input != null && input.ErrorLog != null)
-                {
-                    throw new Xbim.Common.Exceptions.XbimException("Failed to import " + filename + "\n" + input.ErrorLog.ToString(), e);
-                }
-                else
-                {
-                    throw new Xbim.Common.Exceptions.XbimException("Failed to import " + filename + "\n", e);
-                }
+                
+                throw new Xbim.Common.Exceptions.XbimException(
+                    String.Format("Failed to import {0}\n{1}", filename, (input!=null ? input.ErrorLog.ToString() : "<no error log captured>"))
+                    , e);
             }
             finally
             {
