@@ -18,10 +18,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.ModelGeometry.Scene", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.DOM", "Xbim.DOM\Xbim.DOM.csproj", "{B0E3E6A5-119C-4EFE-9796-EE131B2E278A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.Web.Xplorer", "Xbim.Web.Xplorer\Xbim.Web.Xplorer.csproj", "{922A9121-A5B4-431E-BCB8-743421A5689B}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.Web.Viewer3D", "Xbim.Web.Viewer3D\Xbim.Web.Viewer3D.csproj", "{06A77A58-A0BA-4B14-AC99-1AB56848C98C}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.Common", "Xbim.Common\Xbim.Common.csproj", "{6745F5AC-AF3C-4372-81AA-A75E7B1FA03B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{B5EDEE8A-69B9-47E5-8455-E1A9A7ED8969}"
@@ -48,6 +44,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XbimRegression", "XbimRegre
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.Ifc2x3", "Xbim.Ifc2x3\Xbim.Ifc2x3.csproj", "{5D4C907D-1293-4E5F-9642-D0862AE4741C}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{FF17695F-D898-4F9C-94E9-36ADB9F3005C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{9F10CD6B-BE01-4450-A741-C8404DC3E012}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.COBie", "Xbim.COBie\Xbim.COBie.csproj", "{7DA8C61A-ACCA-45CB-B688-93A4982FA44C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XBim.COBie.Client", "XBim.COBie.Client\XBim.COBie.Client.csproj", "{FB5A1829-7B34-4DE9-94A9-AF3AD36320BB}"
+EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
 		SccNumberOfProjects = 16
@@ -70,35 +74,41 @@ Global
 		SccProjectName5 = Xbim.Presentation
 		SccLocalPath5 = Xbim.Presentation
 		SccProjectUniqueName6 = XbimXplorer\\XbimXplorer.csproj
+		SccProjectTopLevelParentUniqueName6 = XbimComplete.sln
 		SccProjectName6 = XbimXplorer
 		SccLocalPath6 = XbimXplorer
 		SccProjectUniqueName7 = Xbim.DOM\\Xbim.DOM.csproj
 		SccProjectName7 = Xbim.DOM
 		SccLocalPath7 = Xbim.DOM
-		SccProjectUniqueName8 = Xbim.Web.Xplorer\\Xbim.Web.Xplorer.csproj
-		SccProjectName8 = Xbim.Web.Xplorer
-		SccLocalPath8 = Xbim.Web.Xplorer
-		SccProjectUniqueName9 = Xbim.Web.Viewer3D\\Xbim.Web.Viewer3D.csproj
-		SccProjectName9 = Xbim.Web.Viewer3D
-		SccLocalPath9 = Xbim.Web.Viewer3D
-		SccProjectUniqueName10 = Xbim.Common\\Xbim.Common.csproj
-		SccProjectName10 = Xbim.Common
-		SccLocalPath10 = Xbim.Common
-		SccProjectUniqueName11 = Xbim.Web.SceneJSWebViewer\\Xbim.SceneJSWebViewer.csproj
-		SccProjectName11 = Xbim.Web.SceneJSWebViewer
-		SccLocalPath11 = Xbim.Web.SceneJSWebViewer
-		SccProjectUniqueName12 = XbimConvert\\XbimConvert.csproj
-		SccProjectName12 = XbimConvert
-		SccLocalPath12 = XbimConvert
-		SccProjectUniqueName13 = Xbim.Tests\\Xbim.Tests.csproj
-		SccProjectName13 = Xbim.Tests
-		SccLocalPath13 = Xbim.Tests
-		SccProjectUniqueName14 = XbimRegression\\XbimRegression.csproj
-		SccProjectName14 = XbimRegression
-		SccLocalPath14 = XbimRegression
-		SccProjectUniqueName15 = Xbim.Ifc2x3\\Xbim.Ifc2x3.csproj
-		SccProjectName15 = Xbim.Ifc2x3
-		SccLocalPath15 = Xbim.Ifc2x3
+		SccProjectUniqueName8 = Xbim.Common\\Xbim.Common.csproj
+		SccProjectName8 = Xbim.Common
+		SccLocalPath8 = Xbim.Common
+		SccProjectUniqueName9 = Xbim.Web.SceneJSWebViewer\\Xbim.SceneJSWebViewer.csproj
+		SccProjectTopLevelParentUniqueName9 = XbimComplete.sln
+		SccProjectName9 = Xbim.Web.SceneJSWebViewer
+		SccLocalPath9 = Xbim.Web.SceneJSWebViewer
+		SccProjectUniqueName10 = XbimConvert\\XbimConvert.csproj
+		SccProjectTopLevelParentUniqueName10 = XbimComplete.sln
+		SccProjectName10 = XbimConvert
+		SccLocalPath10 = XbimConvert
+		SccProjectUniqueName11 = Xbim.Tests\\Xbim.Tests.csproj
+		SccProjectTopLevelParentUniqueName11 = XbimComplete.sln
+		SccProjectName11 = Xbim.Tests
+		SccLocalPath11 = Xbim.Tests
+		SccProjectUniqueName12 = XbimRegression\\XbimRegression.csproj
+		SccProjectTopLevelParentUniqueName12 = XbimComplete.sln
+		SccProjectName12 = XbimRegression
+		SccLocalPath12 = XbimRegression
+		SccProjectUniqueName13 = Xbim.Ifc2x3\\Xbim.Ifc2x3.csproj
+		SccProjectName13 = Xbim.Ifc2x3
+		SccLocalPath13 = Xbim.Ifc2x3
+		SccProjectUniqueName14 = Xbim.COBie\\Xbim.COBie.csproj
+		SccProjectName14 = Xbim.COBie
+		SccLocalPath14 = Xbim.COBie
+		SccProjectUniqueName15 = XBim.COBie.Client\\XBim.COBie.Client.csproj
+		SccProjectTopLevelParentUniqueName15 = XbimComplete.sln
+		SccProjectName15 = XBim.COBie.Client
+		SccLocalPath15 = XBim.COBie.Client
 	EndGlobalSection
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = XbimComplete.vsmdi
@@ -192,28 +202,6 @@ Global
 		{B0E3E6A5-119C-4EFE-9796-EE131B2E278A}.Release|x64.Build.0 = Release|x64
 		{B0E3E6A5-119C-4EFE-9796-EE131B2E278A}.Release|x86.ActiveCfg = Release|x86
 		{B0E3E6A5-119C-4EFE-9796-EE131B2E278A}.Release|x86.Build.0 = Release|x86
-		{922A9121-A5B4-431E-BCB8-743421A5689B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{922A9121-A5B4-431E-BCB8-743421A5689B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{922A9121-A5B4-431E-BCB8-743421A5689B}.Debug|x64.ActiveCfg = Debug|x64
-		{922A9121-A5B4-431E-BCB8-743421A5689B}.Debug|x64.Build.0 = Debug|x64
-		{922A9121-A5B4-431E-BCB8-743421A5689B}.Debug|x86.ActiveCfg = Debug|x86
-		{922A9121-A5B4-431E-BCB8-743421A5689B}.Debug|x86.Build.0 = Debug|x86
-		{922A9121-A5B4-431E-BCB8-743421A5689B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{922A9121-A5B4-431E-BCB8-743421A5689B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{922A9121-A5B4-431E-BCB8-743421A5689B}.Release|x64.ActiveCfg = Release|x64
-		{922A9121-A5B4-431E-BCB8-743421A5689B}.Release|x86.ActiveCfg = Release|x86
-		{922A9121-A5B4-431E-BCB8-743421A5689B}.Release|x86.Build.0 = Release|x86
-		{06A77A58-A0BA-4B14-AC99-1AB56848C98C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{06A77A58-A0BA-4B14-AC99-1AB56848C98C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{06A77A58-A0BA-4B14-AC99-1AB56848C98C}.Debug|x64.ActiveCfg = Debug|x64
-		{06A77A58-A0BA-4B14-AC99-1AB56848C98C}.Debug|x64.Build.0 = Debug|x64
-		{06A77A58-A0BA-4B14-AC99-1AB56848C98C}.Debug|x86.ActiveCfg = Debug|x86
-		{06A77A58-A0BA-4B14-AC99-1AB56848C98C}.Debug|x86.Build.0 = Debug|x86
-		{06A77A58-A0BA-4B14-AC99-1AB56848C98C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{06A77A58-A0BA-4B14-AC99-1AB56848C98C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{06A77A58-A0BA-4B14-AC99-1AB56848C98C}.Release|x64.ActiveCfg = Release|x64
-		{06A77A58-A0BA-4B14-AC99-1AB56848C98C}.Release|x86.ActiveCfg = Release|x86
-		{06A77A58-A0BA-4B14-AC99-1AB56848C98C}.Release|x86.Build.0 = Release|x86
 		{6745F5AC-AF3C-4372-81AA-A75E7B1FA03B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6745F5AC-AF3C-4372-81AA-A75E7B1FA03B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6745F5AC-AF3C-4372-81AA-A75E7B1FA03B}.Debug|x64.ActiveCfg = Debug|x64
@@ -284,8 +272,40 @@ Global
 		{5D4C907D-1293-4E5F-9642-D0862AE4741C}.Release|x64.Build.0 = Release|x64
 		{5D4C907D-1293-4E5F-9642-D0862AE4741C}.Release|x86.ActiveCfg = Release|x86
 		{5D4C907D-1293-4E5F-9642-D0862AE4741C}.Release|x86.Build.0 = Release|x86
+		{7DA8C61A-ACCA-45CB-B688-93A4982FA44C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7DA8C61A-ACCA-45CB-B688-93A4982FA44C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7DA8C61A-ACCA-45CB-B688-93A4982FA44C}.Debug|x64.ActiveCfg = Debug|x64
+		{7DA8C61A-ACCA-45CB-B688-93A4982FA44C}.Debug|x64.Build.0 = Debug|x64
+		{7DA8C61A-ACCA-45CB-B688-93A4982FA44C}.Debug|x86.ActiveCfg = Debug|x86
+		{7DA8C61A-ACCA-45CB-B688-93A4982FA44C}.Debug|x86.Build.0 = Debug|x86
+		{7DA8C61A-ACCA-45CB-B688-93A4982FA44C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7DA8C61A-ACCA-45CB-B688-93A4982FA44C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7DA8C61A-ACCA-45CB-B688-93A4982FA44C}.Release|x64.ActiveCfg = Release|x64
+		{7DA8C61A-ACCA-45CB-B688-93A4982FA44C}.Release|x64.Build.0 = Release|x64
+		{7DA8C61A-ACCA-45CB-B688-93A4982FA44C}.Release|x86.ActiveCfg = Release|x86
+		{7DA8C61A-ACCA-45CB-B688-93A4982FA44C}.Release|x86.Build.0 = Release|x86
+		{FB5A1829-7B34-4DE9-94A9-AF3AD36320BB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FB5A1829-7B34-4DE9-94A9-AF3AD36320BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FB5A1829-7B34-4DE9-94A9-AF3AD36320BB}.Debug|x64.ActiveCfg = Debug|x64
+		{FB5A1829-7B34-4DE9-94A9-AF3AD36320BB}.Debug|x64.Build.0 = Debug|x64
+		{FB5A1829-7B34-4DE9-94A9-AF3AD36320BB}.Debug|x86.ActiveCfg = Debug|x86
+		{FB5A1829-7B34-4DE9-94A9-AF3AD36320BB}.Debug|x86.Build.0 = Debug|x86
+		{FB5A1829-7B34-4DE9-94A9-AF3AD36320BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FB5A1829-7B34-4DE9-94A9-AF3AD36320BB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FB5A1829-7B34-4DE9-94A9-AF3AD36320BB}.Release|x64.ActiveCfg = Release|x64
+		{FB5A1829-7B34-4DE9-94A9-AF3AD36320BB}.Release|x64.Build.0 = Release|x64
+		{FB5A1829-7B34-4DE9-94A9-AF3AD36320BB}.Release|x86.ActiveCfg = Release|x86
+		{FB5A1829-7B34-4DE9-94A9-AF3AD36320BB}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{D6CED5D7-BE37-4A32-90A5-1444C9FFDD91} = {FF17695F-D898-4F9C-94E9-36ADB9F3005C}
+		{5B6AC153-AC56-4B01-8734-88EAB805A6DB} = {FF17695F-D898-4F9C-94E9-36ADB9F3005C}
+		{219A127E-82B8-43A1-8959-7102E4724F8F} = {FF17695F-D898-4F9C-94E9-36ADB9F3005C}
+		{FB5A1829-7B34-4DE9-94A9-AF3AD36320BB} = {FF17695F-D898-4F9C-94E9-36ADB9F3005C}
+		{8729CDD1-B493-48EC-A867-61ABAF3E93D2} = {9F10CD6B-BE01-4450-A741-C8404DC3E012}
+		{6EF22FB8-7048-4E6A-9B2F-AC2570A998A9} = {9F10CD6B-BE01-4450-A741-C8404DC3E012}
 	EndGlobalSection
 EndGlobal

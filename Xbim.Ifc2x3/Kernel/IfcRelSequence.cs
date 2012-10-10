@@ -119,7 +119,7 @@ namespace Xbim.Ifc2x3.Kernel
                     _timeLag = value.RealVal;
                     break;
                 case 7:
-                    SequenceType = (IfcSequenceEnum) Enum.Parse(typeof (IfcSequenceEnum), value.EnumVal, true);
+                    _sequenceType = (IfcSequenceEnum)Enum.Parse(typeof(IfcSequenceEnum), value.EnumVal, true);
                     break;
                 default:
                     this.HandleUnexpectedAttribute(propIndex, value); break;

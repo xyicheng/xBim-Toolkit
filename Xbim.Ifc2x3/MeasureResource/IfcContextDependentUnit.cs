@@ -62,7 +62,7 @@ namespace Xbim.Ifc2x3.MeasureResource
                     base.IfcParse(propIndex, value);
                     break;
                 case 2:
-                    Name = value.StringVal;
+                    _name = value.StringVal;
                     break;
                 default:
                     this.HandleUnexpectedAttribute(propIndex, value); break;
