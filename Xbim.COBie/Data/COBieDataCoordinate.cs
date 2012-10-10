@@ -70,7 +70,6 @@ namespace Xbim.COBie.Data
             ifcProducts = ifcProducts.Union(ifcElements);
 
             ProgressIndicator.Initialise("Creating Coordinates", ifcProducts.Count());
-            //Test();
             TransformGraph transGraph = GetTransformGraph();
 
             foreach (IfcProduct ifcProduct in ifcProducts)
@@ -227,32 +226,34 @@ namespace Xbim.COBie.Data
         /// </summary>
         //public void Test() //please keep for now as may use Vector calculations over matrix 
         //{
-        //    Quaternion planangle = new Quaternion(new Vector3D(0.0, 0.0, 1.0),45); // degree rotation on z axis
+        //    Quaternion planangle = new Quaternion(new Vector3D(0.0, 0.0, 1.0), 45); // degree rotation on z axis
         //    Quaternion Yawangle = new Quaternion(new Vector3D(1.0, 0.0, 0.0), -35.005); // degree rotation on x axis
-        //    Quaternion Pitchangle = new Quaternion(new Vector3D(0.0, 1.0, 0.0),25.0); // degree rotation on y axis
+        //    Quaternion Pitchangle = new Quaternion(new Vector3D(0.0, 1.0, 0.0), 25.0); // degree rotation on y axis
 
-        //    Matrix3D mat = new Matrix3D(); // Get Identity matrix
-        //    //mat.RotateAt(Yawangle, new Point3D(0.0, 0.0, 0.0)); //rotate  on x axis
-        //    //mat.RotateAt(Pitchangle, new Point3D(0.0, 0.0, 0.0)); //rotate  on y axis
-        //    mat.RotateAt(planangle, new Point3D(0.0, 0.0, 0.0)); //rotate  on z axis
+        //    Matrix3D matrix = new Matrix3D(); // Get Identity matrix
+        //    //matrix.RotateAt(Yawangle, new Point3D(0.0, 0.0, 0.0)); //rotate  on x axis
+        //    matrix.RotateAt(Pitchangle, new Point3D(0.0, 0.0, 0.0)); //rotate  on y axis
+        //    //matrix.RotateAt(planangle, new Point3D(0.0, 0.0, 0.0)); //rotate  on z axis
         //    Rect3D boundBox = new Rect3D(0.0, 0.0, 0.0, 20, 10, 5.0);
 
         //    Vector3D WorldX = new Vector3D(1.0, 0.0, 0.0);
         //    Vector3D WorldY = new Vector3D(0.0, 1.0, 0.0);
         //    Vector3D WorldZ = new Vector3D(0.0, 0.0, 1.0);
-        //    TransformedBoundingBox tranBox = new TransformedBoundingBox(boundBox, mat);
+        //    TransformedBoundingBox tranBox = new TransformedBoundingBox(boundBox, matrix);
         //    Console.WriteLine("MinPt = {0}", tranBox.MinPt);
         //    Console.WriteLine("MaxPt = {0}", tranBox.MaxPt);
         //    Console.WriteLine("Rotation Clockwise on Plan (Z)  = {0}", tranBox.ClockwiseRotation);
-        //    Console.WriteLine("Rotation Elevation (Y)  = {0}", tranBox.ElevationalRotation );
+        //    Console.WriteLine("Rotation Elevation (Y)  = {0}", tranBox.ElevationalRotation);
         //    Console.WriteLine("Rotation Yaw (X)  = {0}", tranBox.YawRotation);
         //    Console.WriteLine("-------------------------------");
-
+        //    //double xxx = -Math.Asin(matrix.M31);
+        //    //double rotationY = Math.Atan2(-matrix.M31, (Math.Sqrt(Math.Pow(matrix.M32, 2) + Math.Pow(matrix.M33, 2)))); //Math.Asin(matrix.M31); 
+            
         //    //----------angle calculations via vector----------
         //    Vector3D RotationVector = new Vector3D(1.0, 0.0, 0.0);
         //    Vector3D YawRotationVector = new Vector3D(0.0, 1.0, 0.0);
-        //    RotationVector = mat.Transform(RotationVector);
-        //    YawRotationVector = mat.Transform(YawRotationVector);
+        //    RotationVector = matrix.Transform(RotationVector);
+        //    YawRotationVector = matrix.Transform(YawRotationVector);
         //    //ensure they are 1 unit in length
         //    RotationVector.Normalize();
         //    YawRotationVector.Normalize();
@@ -269,7 +270,7 @@ namespace Xbim.COBie.Data
 
         //    rot = rot * (180 / Math.PI);
         //    if (RotProduct < 0) rot = 360.0 - rot; //if dot product is negative then in 180 to 360 range
-            
+
         //    yaw = 90.0 - (yaw * (180 / Math.PI));
         //    pitch = 90.0 - (pitch * (180 / Math.PI));
 
@@ -312,7 +313,7 @@ namespace Xbim.COBie.Data
             //zero anything out of range
             if (!((rotationZ > 0.0) && (rotationZ < 360.0))) rotationZ = 0.0;
 
-            double rotationY = Math.Asin(matrix.M31);  //Math.Atan((mat.M31 * -1) / (Math.Sqrt(Math.Exp(mat.M32) + Math.Exp(mat.M33))));
+            double rotationY = -Math.Asin(matrix.M31);  //Math.Atan2(-matrix.M31, (Math.Sqrt(Math.Pow(matrix.M32, 2) + Math.Pow(matrix.M33, 2))))
             double rotationX = Math.Atan2(matrix.M32, matrix.M33);
             
             ClockwiseRotation = rotationZ;
