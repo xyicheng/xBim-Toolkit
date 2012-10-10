@@ -96,7 +96,6 @@ namespace Xbim.Ifc.UtilityResource
 #endif
                 return _applicationDeveloper;
             }
-            //set {ModelManager.SetModelValue(this, ref _applicationDeveloper, value, v => ApplicationDeveloper = v, "ApplicationDeveloper");}
             set {_applicationDeveloper = value;}
         }
 

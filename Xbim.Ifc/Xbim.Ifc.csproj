@@ -1198,7 +1198,6 @@
     <Compile Include="XbimExtensions\Parser\P21toModelParser.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="XbimExtensions\Parser\StringConverter.cs" />
     <Compile Include="XbimExtensions\ValidationFlags.cs" />
     <Compile Include="XbimExtensions\FramedGeometryModel3D.cs" />
     <Compile Include="XbimExtensions\IfcInstances.cs" />
