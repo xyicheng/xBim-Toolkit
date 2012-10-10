@@ -131,14 +131,18 @@ namespace XBim.COBie.Client.Formatters
             {
                 if (error.Row > 0 && error.Column > 0)
                 {
-                    ICell excelCell = excelSheet.GetRow(error.Row).GetCell(error.Column);
-                    
-                    // A client anchor is attached to an excel worksheet. It anchors against a top-left and bottom-right cell.
-                    // Create a comment 3 columns wide and 3 rows height
-                    IComment comment = patr.CreateCellComment(new HSSFClientAnchor(0, 0, 0, 0, error.Column, error.Row, error.Column + 3, error.Row + 3));
-                    comment.String = new HSSFRichTextString(error.ErrorDescription);
-                    comment.Author = "XBim";
-                    excelCell.CellComment = comment;
+                    IRow excelRow = excelSheet.GetRow(error.Row);
+                    if (excelRow != null)
+                    {
+                        ICell excelCell = excelRow.GetCell(error.Column);
+
+                        // A client anchor is attached to an excel worksheet. It anchors against a top-left and bottom-right cell.
+                        // Create a comment 3 columns wide and 3 rows height
+                        IComment comment = patr.CreateCellComment(new HSSFClientAnchor(0, 0, 0, 0, error.Column, error.Row, error.Column + 3, error.Row + 3));
+                        comment.String = new HSSFRichTextString(error.ErrorDescription);
+                        comment.Author = "XBim";
+                        excelCell.CellComment = comment;
+                    }
                 }
             }
         }
