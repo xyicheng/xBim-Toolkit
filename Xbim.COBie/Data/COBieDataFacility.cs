@@ -9,6 +9,7 @@ using Xbim.Ifc.MeasureResource;
 using Xbim.Ifc.ProductExtension;
 using Xbim.Ifc.SelectTypes;
 using Xbim.XbimExtensions;
+using Xbim.Ifc.QuantityResource;
 
 
 namespace Xbim.COBie.Data
@@ -42,10 +43,10 @@ namespace Xbim.COBie.Data
             IfcProject ifcProject = Model.IfcProject;
             IfcSite ifcSite = Model.InstancesOfType<IfcSite>().FirstOrDefault();
             IfcBuilding ifcBuilding = Model.InstancesOfType<IfcBuilding>().FirstOrDefault();
-            
-            IfcElementQuantity ifcElementQuantity = Model.InstancesOfType<IfcElementQuantity>().FirstOrDefault();
 
-
+            //get Element Quantity holding area values as used for AreaMeasurement below
+            IfcElementQuantity ifcElementQuantityAreas = Model.InstancesOfType<IfcElementQuantity>().Where(eq => eq.Quantities.OfType<IfcQuantityArea>().Count() > 0).FirstOrDefault();
+           
             IEnumerable<IfcObject> ifcObjects = new List<IfcObject> { ifcProject, ifcSite, ifcBuilding }.AsEnumerable(); ;
             COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(ifcObjects); //properties helper class
             COBieDataAttributeBuilder attributeBuilder = new COBieDataAttributeBuilder(Context, allPropertyValues);
@@ -87,7 +88,7 @@ namespace Xbim.COBie.Data
             facility.VolumeUnits = volumeUnit;
             facility.CurrencyUnit = moneyUnit;
 
-            facility.AreaMeasurement = (ifcElementQuantity == null) ? "" : ifcElementQuantity.MethodOfMeasurement.ToString();
+            facility.AreaMeasurement = (ifcElementQuantityAreas == null) ? "" : ifcElementQuantityAreas.MethodOfMeasurement.ToString() + " BIM Area";
             facility.ExternalSystem = GetExternalSystem(ifcBuilding);
 
             facility.ExternalProjectObject = "IfcProject";

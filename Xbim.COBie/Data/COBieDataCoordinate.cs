@@ -295,7 +295,7 @@ namespace Xbim.COBie.Data
             MaxPt = new Point3D(boundBox.X + boundBox.SizeX, boundBox.Y + boundBox.SizeY, boundBox.Z + boundBox.SizeZ);
             //make assumption that the X direction will be the longer length hence the orientation will be along the x axis
            
-            //transformed values, no longer a valid bounding box in the new space
+            //transformed values, no longer a valid bounding box in the new space if any Pitch or Yaw
             MinPt = matrix.Transform(MinPt);
             MaxPt = matrix.Transform(MaxPt);
            
