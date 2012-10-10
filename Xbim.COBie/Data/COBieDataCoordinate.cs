@@ -301,7 +301,7 @@ namespace Xbim.COBie.Data
             MaxPt = matrix.Transform(MaxPt);
            
             //--------Calculate rotations from matrix-------
-            //calculations from http://forums.codeguru.com/archive/index.php/t-329530.html and http://planning.cs.uiuc.edu/node103.html#eqn:angfrommat
+            //calculations from http://forums.codeguru.com/archive/index.php/t-329530.html and http://planning.cs.uiuc.edu/node103.html#eqn:angfrommat and http://nghiaho.com/?page_id=846
             //rotation around Z axis
             double rotationZ = Math.Atan2(matrix.M21, matrix.M11);
             rotationZ = RTD(rotationZ);
