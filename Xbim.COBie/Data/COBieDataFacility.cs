@@ -87,8 +87,8 @@ namespace Xbim.COBie.Data
             facility.AreaUnits = areaUnit;
             facility.VolumeUnits = volumeUnit;
             facility.CurrencyUnit = moneyUnit;
-
-            facility.AreaMeasurement = (ifcElementQuantityAreas == null) ? "" : ifcElementQuantityAreas.MethodOfMeasurement.ToString() + " BIM Area";
+            string AreaMeasurement = (ifcElementQuantityAreas == null) ? DEFAULT_STRING : ifcElementQuantityAreas.MethodOfMeasurement.ToString();
+            facility.AreaMeasurement = (AreaMeasurement.ToLower().Contains("bim area")) ? AreaMeasurement : AreaMeasurement + " BIM Area";
             facility.ExternalSystem = GetExternalSystem(ifcBuilding);
 
             facility.ExternalProjectObject = "IfcProject";
