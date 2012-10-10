@@ -88,8 +88,8 @@ namespace Xbim.COBie
                 message = string.Format("{0} [{1}/{2}]", message, current, total);
                 percent = (decimal)current / total * 100;
             }
-
-            ProgressStatus((int)percent, message);
+            if(ProgressStatus != null)
+                ProgressStatus((int)percent, message);
         }
 
         public void Dispose()
