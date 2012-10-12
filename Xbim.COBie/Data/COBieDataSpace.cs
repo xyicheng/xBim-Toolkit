@@ -46,11 +46,11 @@ namespace Xbim.COBie.Data
             COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(ifcSpaces); //properties helper class
             COBieDataAttributeBuilder attributeBuilder = new COBieDataAttributeBuilder(Context, allPropertyValues);
             attributeBuilder.InitialiseAttributes(ref _attributes);
-            
 
-            
-            if ((Context.COBieGlobalValues.ContainsKey("DEPATMENTUSEDASZONE")) &&
-                (Context.COBieGlobalValues["DEPATMENTUSEDASZONE"] == "T")
+
+
+            if ((Context.COBieGlobalValues.ContainsKey("DEPARTMENTUSEDASZONE")) &&
+                (Context.COBieGlobalValues["DEPARTMENTUSEDASZONE"] == "T")
                 )
                 attributeBuilder.ExcludeAttributePropertyNames.Add("Department"); //remove the department property from selection
             
@@ -146,7 +146,7 @@ namespace Xbim.COBie.Data
             {
                 if (double.TryParse(value, out areavalue))
                 {
-                    if (areaUnit.ToLower().Contains("milli"))//we are using millimetres
+                    if ((!string.IsNullOrEmpty(areaUnit)) && (areaUnit.ToLower().Contains("milli")))//we are using millimetres
                         areavalue = areavalue / 1000000.0;
                     return areavalue.ToString("F4");
                 }
@@ -200,7 +200,7 @@ namespace Xbim.COBie.Data
             {
                 if (double.TryParse(value, out areavalue))
                 {
-                    if (areaUnit.ToLower().Contains("milli"))//we are using millimetres
+                    if ((!string.IsNullOrEmpty(areaUnit)) && (areaUnit.ToLower().Contains("milli")))//we are using millimetres
                         areavalue = areavalue / 1000000.0;
                     return areavalue.ToString("F4");
                 }
