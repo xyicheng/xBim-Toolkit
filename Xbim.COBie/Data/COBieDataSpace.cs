@@ -49,8 +49,8 @@ namespace Xbim.COBie.Data
             
 
             
-            if ((Context.COBieGlobalValues.ContainsKey("DEPATMENTUSEDASZONE")) &&
-                (Context.COBieGlobalValues["DEPATMENTUSEDASZONE"] == "T")
+            if ((Context.COBieGlobalValues.ContainsKey("DEPARTMENTUSEDASZONE")) &&
+                (Context.COBieGlobalValues["DEPARTMENTUSEDASZONE"] == "T")
                 )
                 attributeBuilder.ExcludeAttributePropertyNames.Add("Department"); //remove the department property from selection
             
