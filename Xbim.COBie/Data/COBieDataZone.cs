@@ -110,8 +110,8 @@ namespace Xbim.COBie.Data
                     if ((!spProperties.Any()) && (!ifcZones.Any()))
                     {
                         spProperties = item.Value.Where(p => p.Name == "Department").OfType<IfcPropertySingleValue>();
-                        if ((spProperties.Any()) && (!Context.COBieGlobalValues.ContainsKey("DEPATMENTUSEDASZONE"))) 
-                            Context.COBieGlobalValues.Add("DEPATMENTUSEDASZONE", "T"); //we need to filter departments out of attribute sheet so set values to pass to Attribute Builder
+                        if ((spProperties.Any()) && (!Context.COBieGlobalValues.ContainsKey("DEPARTMENTUSEDASZONE")))
+                            Context.COBieGlobalValues.Add("DEPARTMENTUSEDASZONE", "T"); //we need to filter departments out of attribute sheet so set values to pass to Attribute Builder
                     }
 
                     foreach (IfcPropertySingleValue spProp in spProperties)
