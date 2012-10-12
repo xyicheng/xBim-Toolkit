@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?><?mso-infoPathSolution PIVersion="1.0.0.0" name="urn:schemas-microsoft-com:office:infopath:Rules:" solutionVersion="1.0.0.24" href="file:///C:\Users\mxfm2\Desktop\Rules.xsn" productVersion="12.0.0" ?><?mso-application progid="InfoPath.Document" versionProgid="InfoPath.Document.2"?><groups xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:my="http://schemas.microsoft.com/office/infopath/2003/myXSD/2011-12-06T14:54:52" xmlns:xd="http://schemas.microsoft.com/office/infopath/2003" xml:lang="en-gb">
+	<group name="External Walls">
+		<element name="IfcCurtainWall">
+			<attributes select="none">
+				
+			</attributes>
+			<properties select="all">
+				
+			</properties>
+			<elementType>
+				<name>IfcCurtainWallType</name>
+			</elementType>
+			
+			<typeProperties select="none">
+				
+			</typeProperties>
+		</element>
+	<element name="IfcWall">
+									<attributes select="any">
+										
+									</attributes>
+									<properties select="any">
+										<propertySet name="PSet_Revit_Type_Construction" type="is">
+											<property name="Function" type="is">
+												<value type="is">1</value>
+											</property>
+										</propertySet>
+									<propertySet name="Pset_WallCommon" type="is">
+									<property name="IsExternal" type="is">
+										<value type="is">TRUE</value>
+									</property>
+								</propertySet></properties>
+									<elementType>
+										<name>IfcWallType</name>
+									</elementType>
+									<typeAttributes select="any">
+										<attribute>
+											<name>Name</name>
+											<value type="contains">ext</value>
+										</attribute>
+									<attribute>
+									<name>Name</name>
+									<value type="contains">Ext</value>
+								</attribute></typeAttributes>
+									<typeProperties select="any">
+										
+									<propertySet name="PSet_Revit_Type_Construction" type="is">
+									<property name="Function" type="is">
+										<value type="is">1</value>
+									</property>
+								</propertySet><propertySet name="Pset_WallCommon" type="is">
+									<property name="IsExternal" type="is">
+										<value type="is">true</value>
+									</property>
+								</propertySet></typeProperties>
+								</element><element name="IfcCovering">
+									<attributes select="any">
+										<attribute>
+											<name>PredefinedType</name>
+											<value type="is">CLADDING</value>
+										</attribute>
+									<attribute>
+									<name>PredefinedType</name>
+									<value type="is">INSULATION</value>
+								</attribute></attributes>
+									<properties select="none">
+										
+									</properties>
+									<elementType>
+										<name>IfcCoveringType</name>
+									</elementType>
+									<typeAttributes select="any">
+										<attribute>
+											<name>PredefinedType</name>
+											<value type="is">CLADDING</value>
+										</attribute>
+									</typeAttributes>
+									<typeProperties select="all">
+										
+									</typeProperties>
+								</element><element name="IfcMember">
+									<attributes select="all">
+										
+									</attributes>
+									<properties select="all">
+										
+									</properties>
+									<elementType>
+										<name>IfcMemberType</name>
+									</elementType>
+									<typeAttributes select="any">
+										<attribute>
+											<name>PredefinedType</name>
+											<value type="is">STUD</value>
+										</attribute>
+									</typeAttributes>
+									<typeProperties select="all">
+										
+									</typeProperties>
+								</element><element name="IfcPlate">
+									<attributes select="none">
+										
+									</attributes>
+									<properties select="all">
+										
+									</properties>
+									<elementType>
+										<name>IfcPlateType</name>
+									</elementType>
+									<typeAttributes select="any">
+										<attribute>
+											<name>PredefinedType</name>
+											<value type="is">CURTAIN_PANEL</value>
+										</attribute>
+									</typeAttributes>
+									<typeProperties select="all">
+										
+									</typeProperties>
+								</element></group>
+</groups>

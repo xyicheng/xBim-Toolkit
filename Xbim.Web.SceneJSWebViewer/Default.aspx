@@ -57,6 +57,19 @@
         </div>
     </div>
 
+    <%--<div id="classification" class="dragmenu unselectable ui-draggable ui-resizable" style="height: 250px; width: 300px; display: block; opacity: 1; left: 0px;">
+        <span class="resetBoundary"></span>
+        <div class="menuHeader">
+            Classification
+        </div>
+
+        <div class="menuContent">
+            <div id="navTreeContainerClassification">
+                <div id="navtreeClassification"></div>
+            </div>
+        </div>
+    </div>--%>
+
     <div id="properties" class="dragmenu unselectable">
         <span class="resetBoundary"></span>
         <div class="menuHeader">

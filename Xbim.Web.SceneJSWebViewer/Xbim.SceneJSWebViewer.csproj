@@ -236,6 +236,8 @@
     <Content Include="Web.Release.config">
       <DependentUpon>Web.config</DependentUpon>
     </Content>
+    <Content Include="XML\NRM clssification.xml" />
+    <Content Include="XML\NRM2IFC.xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\SharedAssemblyInfo.cs">
@@ -287,6 +289,10 @@
       <DependentUpon>Default.aspx</DependentUpon>
     </Compile>
     <Compile Include="DefaultMaterials.cs" />
+    <Compile Include="DynamicGrouping\GroupingByXml.cs" />
+    <Compile Include="DynamicGrouping\GroupsFromXml.cs" />
+    <Compile Include="DynamicGrouping\XbimQueryBuilder.cs" />
+    <Compile Include="DynamicGrouping\XbimQueryFactory.cs" />
     <Compile Include="DynamicJsonConverter.cs" />
     <Compile Include="GeometryData.cs" />
     <Compile Include="GeometryLabel.cs" />
@@ -296,6 +302,9 @@
     <Compile Include="IModelStream.cs" />
     <Compile Include="Material.cs" />
     <Compile Include="ModelStreamer.cs" />
+    <Compile Include="ObjectDataProviders\SimpleBuildingElementType.cs" />
+    <Compile Include="ObjectDataProviders\SimpleGroup.cs" />
+    <Compile Include="ObjectDataProviders\SimpleGroupHierarchyEnumerable.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Site.Master.cs">
       <DependentUpon>Site.Master</DependentUpon>
@@ -305,6 +314,7 @@
       <DependentUpon>Site.Master</DependentUpon>
     </Compile>
     <Compile Include="XBimModelStream.cs" />
+    <Compile Include="XML\Grouping.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
@@ -320,6 +330,10 @@
     <ProjectReference Include="..\Xbim.Common\Xbim.Common.csproj">
       <Project>{6745F5AC-AF3C-4372-81AA-A75E7B1FA03B}</Project>
       <Name>Xbim.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Xbim.Ifc.Extensions\Xbim.Ifc.Extensions.csproj">
+      <Project>{09870F18-1796-4A3E-A66D-68DB3DA60B24}</Project>
+      <Name>Xbim.Ifc.Extensions</Name>
     </ProjectReference>
     <ProjectReference Include="..\Xbim.Ifc\Xbim.Ifc.csproj">
       <Project>{5D4C907D-1293-4E5F-9642-D0862AE4741C}</Project>
