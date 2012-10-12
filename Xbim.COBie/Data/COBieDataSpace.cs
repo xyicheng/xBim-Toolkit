@@ -112,16 +112,19 @@ namespace Xbim.COBie.Data
         /// <returns>property value as string or default value</returns>
         private string GetNetArea(IfcSpace ifcSpace, COBieDataPropertySetValues allPropertyValues)
         {
-            string areaUnit = Context.COBieGlobalValues["AREAUNIT"];//see what the global area unit is
+            string areaUnit = null;
             double areavalue = 0.0;
 
+            if (Context.COBieGlobalValues.ContainsKey("AREAUNIT"))
+                areaUnit = Context.COBieGlobalValues["AREAUNIT"];//see what the global area unit is
+            
             IfcAreaMeasure netAreaValue = ifcSpace.GetNetFloorArea();  //this extension has the GSA built in so no need to get again
             if (netAreaValue != null)
             {
                 areavalue = ((double)netAreaValue);
                 if (areavalue > 0.0)
                 {
-                    if (areaUnit.ToLower().Contains("milli")) //we are using millimetres
+                    if ((!string.IsNullOrEmpty(areaUnit)) && (areaUnit.ToLower().Contains("milli")) ) //we are using millimetres
                         areavalue = areavalue / 1000000.0;
 
                     return areavalue.ToString("F4");
@@ -158,11 +161,14 @@ namespace Xbim.COBie.Data
         /// <returns>property value as string or default value</returns>
         private string GetGrossFloorArea(IfcSpace ifcSpace, COBieDataPropertySetValues allPropertyValues)
         {
-            string areaUnit = Context.COBieGlobalValues["AREAUNIT"];//see what the global area unit is
+            string areaUnit = null;
+            double areavalue = 0.0;
+
+            if (Context.COBieGlobalValues.ContainsKey("AREAUNIT"))
+                areaUnit = Context.COBieGlobalValues["AREAUNIT"];//see what the global area unit is
             
             //Do Gross Areas 
             IfcAreaMeasure grossAreaValue = ifcSpace.GetGrossFloorArea();
-            double areavalue = 0.0;
             if (grossAreaValue != null)
                 areavalue = ((double)grossAreaValue);
             else//if we fail on IfcAreaMeasure try GSA keys
@@ -173,7 +179,7 @@ namespace Xbim.COBie.Data
             }
             if (areavalue > 0.0)
 	        {
-                if (areaUnit.ToLower().Contains("milli")) //we are using millimetres
+                if ((!string.IsNullOrEmpty(areaUnit)) && (areaUnit.ToLower().Contains("milli"))) //we are using millimetres
                     areavalue = areavalue / 1000000.0;
                 
 		         return areavalue.ToString("F4");
