@@ -136,7 +136,7 @@ namespace Xbim.Ifc2x3.Extensions
             {
                 IPersistIfcEntity ent = obj as IPersistIfcEntity;
                 model = ent != null ? ent.ModelOf : obj.ModelOf;
-                pset = model.New<IfcPropertySet>();
+                pset = model.Instances.New<IfcPropertySet>();
                 pset.Name = pSetName;
                 obj.AddPropertySet(pset);
             }
@@ -145,7 +145,7 @@ namespace Xbim.Ifc2x3.Extensions
             {
                 IPersistIfcEntity ent = obj as IPersistIfcEntity;
                 model = ent != null ? ent.ModelOf : obj.ModelOf;
-                table = model.New<IfcPropertyTableValue>(tb => { tb.Name = propertyTableName; });
+                table = model.Instances.New<IfcPropertyTableValue>(tb => { tb.Name = propertyTableName; });
                 pset.HasProperties.Add_Reversible(table);
                 table.DefinedUnit = definedUnit;
                 table.DefiningUnit = definingUnit;
@@ -179,7 +179,7 @@ namespace Xbim.Ifc2x3.Extensions
                 //if (value == null) return;
                 IPersistIfcEntity ent = obj as IPersistIfcEntity;
                 model = ent!= null? ent.ModelOf : obj.ModelOf;
-                pset = model.New<IfcPropertySet>();
+                pset = model.Instances.New<IfcPropertySet>();
                 pset.Name = pSetName;
                 obj.AddPropertySet(pset);
             }
@@ -196,7 +196,7 @@ namespace Xbim.Ifc2x3.Extensions
                 //if (value == null) return;
                 IPersistIfcEntity ent = obj as IPersistIfcEntity;
                 model = ent != null ? ent.ModelOf : obj.ModelOf;
-                property = model.New<IfcPropertySingleValue>(psv => { psv.Name = propertyName; psv.NominalValue = value; });
+                property = model.Instances.New<IfcPropertySingleValue>(psv => { psv.Name = propertyName; psv.NominalValue = value; });
                 pset.HasProperties.Add_Reversible(property);
             }
             return property;
@@ -245,7 +245,7 @@ namespace Xbim.Ifc2x3.Extensions
             IfcElementQuantity qset = GetElementQuantity(elem, qSetName);
             if (qset == null)
             {
-                qset = model.New<IfcElementQuantity>();
+                qset = model.Instances.New<IfcElementQuantity>();
                 qset.Name = qSetName;
                 if (elem.HasPropertySets == null) elem.CreateHasPropertySets();
                 elem.HasPropertySets.Add_Reversible(qset);
@@ -263,22 +263,22 @@ namespace Xbim.Ifc2x3.Extensions
             switch (quantityType)
             {
                 case XbimQuantityTypeEnum.AREA:
-                    simpleQuality = model.New<IfcQuantityArea>(sq => sq.AreaValue = value);
+                    simpleQuality = model.Instances.New<IfcQuantityArea>(sq => sq.AreaValue = value);
                     break;
                 case XbimQuantityTypeEnum.COUNT:
-                    simpleQuality = model.New<IfcQuantityCount>(sq => sq.CountValue = value);
+                    simpleQuality = model.Instances.New<IfcQuantityCount>(sq => sq.CountValue = value);
                     break;
                 case XbimQuantityTypeEnum.LENGTH:
-                    simpleQuality = model.New<IfcQuantityLength>(sq => sq.LengthValue = value);
+                    simpleQuality = model.Instances.New<IfcQuantityLength>(sq => sq.LengthValue = value);
                     break;
                 case XbimQuantityTypeEnum.TIME:
-                    simpleQuality = model.New<IfcQuantityTime>(sq => sq.TimeValue = value);
+                    simpleQuality = model.Instances.New<IfcQuantityTime>(sq => sq.TimeValue = value);
                     break;
                 case XbimQuantityTypeEnum.VOLUME:
-                    simpleQuality = model.New<IfcQuantityVolume>(sq => sq.VolumeValue = value);
+                    simpleQuality = model.Instances.New<IfcQuantityVolume>(sq => sq.VolumeValue = value);
                     break;
                 case XbimQuantityTypeEnum.WEIGHT:
-                    simpleQuality = model.New<IfcQuantityWeight>(sq => sq.WeightValue = value);
+                    simpleQuality = model.Instances.New<IfcQuantityWeight>(sq => sq.WeightValue = value);
                     break;
                 default:
                     return;

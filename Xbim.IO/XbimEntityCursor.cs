@@ -8,10 +8,11 @@ using Xbim.XbimExtensions.Interfaces;
 using System.IO;
 using Microsoft.Isam.Esent.Interop.Windows7;
 using Xbim.Common.Exceptions;
+using System.Collections;
 
 namespace Xbim.IO
 {
-    public class XbimEntityCursor : XbimCursor
+    public class XbimEntityCursor : XbimCursor, IEnumerator<int>, IEnumerator
     {
 
         private  const string ifcEntityTableName = "IfcEntities";
@@ -34,7 +35,7 @@ namespace Xbim.IO
         BytesColumnValue _colValData;
         BoolColumnValue _colValIsIndexedClass;
         ColumnValue[] _colValues;
-       
+        int current;
 
 
         public ColumnValue[] ColumnValues
@@ -161,7 +162,7 @@ namespace Xbim.IO
         /// </summary>
         /// <param name="instance"></param>
         /// <param name="database"></param>
-        public XbimEntityCursor(Instance instance, string database, OpenDatabaseGrbit mode)
+        public XbimEntityCursor(JET_INSTANCE instance, string database, OpenDatabaseGrbit mode)
             : base(instance, database, mode)
         {
             Api.JetOpenTable(this.sesid, this.dbId, ifcEntityTableName, null, 0, 
@@ -507,5 +508,36 @@ namespace Xbim.IO
                 return false;
             }
         }
+
+        public int Current
+        {
+            get { return current; }
+        }
+
+        object System.Collections.IEnumerator.Current
+        {
+            get { return current; }
+        }
+
+        public bool MoveNext()
+        {
+            int label;
+            if (TryMoveNextLabel(out label))
+            {
+                current = label;
+                return true;
+            }
+            else
+                return false;
+        }
+
+        public void Reset()
+        {
+            this.SetOrderByLabel();
+            Api.MoveBeforeFirst(sesid, table);
+            current = 0;
+        }
+
+      
     }
 }

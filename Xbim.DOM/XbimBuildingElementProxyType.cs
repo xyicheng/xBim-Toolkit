@@ -26,7 +26,7 @@ namespace Xbim.DOM
 
         private void BaseInit(string name)
         {
-            IfcBuildingElementProxyType = _document.Model.New<IfcBuildingElementProxyType>();
+            IfcBuildingElementProxyType = _document.Model.Instances.New<IfcBuildingElementProxyType>();
             IfcBuildingElementProxyType.Name = name;
             _document.BuildingElementProxyTypes.Add(this);
         }

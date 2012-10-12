@@ -168,7 +168,7 @@ namespace Xbim.DOM
         public bool AddContainedBuildingElement(Guid guid)
         {
             IfcGloballyUniqueId globID = new IfcGloballyUniqueId(guid);
-            IfcProduct product = _document.Model.InstancesWhere<IfcProduct>(prod => prod.GlobalId == guid).FirstOrDefault();
+            IfcProduct product = _document.Model.Instances.Where<IfcProduct>(prod => prod.GlobalId == guid).FirstOrDefault();
             if (product != null)
             {
                 _spatialElement.AddElement(product);

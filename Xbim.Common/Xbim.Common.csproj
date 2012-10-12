@@ -203,6 +203,7 @@
     <Compile Include="XbimExtensions\Interfaces\ISupportChangeNotification.cs" />
     <Compile Include="XbimExtensions\Interfaces\IVector3D.cs" />
     <Compile Include="XbimExtensions\Interfaces\IVertex3D.cs" />
+    <Compile Include="XbimExtensions\Interfaces\IXbimInstanceCollection.cs" />
     <Compile Include="XbimExtensions\StepP21Token.cs" />
     <Compile Include="XbimExtensions\Transactions\Edit.cs" />
     <Compile Include="XbimExtensions\Transactions\ICollectionReversibleExtension.cs" />

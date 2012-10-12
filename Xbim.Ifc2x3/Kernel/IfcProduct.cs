@@ -138,7 +138,7 @@ namespace Xbim.Ifc2x3.Kernel
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class)]
         public IEnumerable<IfcRelAssignsToProduct> ReferencedBy
         {
-            get { return ModelOf.InstancesWhere<IfcRelAssignsToProduct>(a => a.RelatingProduct == this); }
+            get { return ModelOf.Instances.Where<IfcRelAssignsToProduct>(a => a.RelatingProduct == this); }
         }
 
         #endregion

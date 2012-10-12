@@ -38,7 +38,7 @@ namespace Xbim.DOM
         private void BaseInit(XbimSlabType xbimSlabType)
         {
             _document.Slabs.Add(this);
-            _ifcBuildingElement = _document.Model.New<IfcSlab>();
+            _ifcBuildingElement = _document.Model.Instances.New<IfcSlab>();
             _ifcBuildingElement.SetDefiningType(xbimSlabType.IfcTypeProduct, _document.Model);
         }
         #endregion

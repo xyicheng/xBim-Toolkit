@@ -39,7 +39,7 @@ namespace Xbim.DOM
 
         private void BaseInit(string name)
         {
-            IfcDoorStyle = _document.Model.New<IfcDoorStyle>();
+            IfcDoorStyle = _document.Model.Instances.New<IfcDoorStyle>();
             IfcDoorStyle.Name = name;
             _document.DoorStyles.Add(this);
         }
@@ -66,7 +66,7 @@ namespace Xbim.DOM
                 if (IfcDoorStyle.HasPropertySets == null)
                 {
                     IfcDoorStyle.CreateHasPropertySets();
-                    IfcDoorLiningProperties prop = Document.Model.New<IfcDoorLiningProperties>();
+                    IfcDoorLiningProperties prop = Document.Model.Instances.New<IfcDoorLiningProperties>();
                     IfcDoorStyle.HasPropertySets.Add_Reversible(prop);
                     return prop;
                 }
@@ -76,7 +76,7 @@ namespace Xbim.DOM
                     {
                         if (pSetDef is IfcDoorLiningProperties) return pSetDef as IfcDoorLiningProperties;
                     }
-                    IfcDoorLiningProperties prop = Document.Model.New<IfcDoorLiningProperties>();
+                    IfcDoorLiningProperties prop = Document.Model.Instances.New<IfcDoorLiningProperties>();
                     IfcDoorStyle.HasPropertySets.Add_Reversible(prop);
                     return prop;
                 }
@@ -96,7 +96,7 @@ namespace Xbim.DOM
                 if (IfcDoorStyle.HasPropertySets == null)
                 {
                     IfcDoorStyle.CreateHasPropertySets();
-                    IfcDoorPanelProperties prop = Document.Model.New<IfcDoorPanelProperties>();
+                    IfcDoorPanelProperties prop = Document.Model.Instances.New<IfcDoorPanelProperties>();
                     IfcDoorStyle.HasPropertySets.Add_Reversible(prop);
                     return prop;
                 }
@@ -106,7 +106,7 @@ namespace Xbim.DOM
                     {
                         if (pSetDef is IfcDoorPanelProperties) return pSetDef as IfcDoorPanelProperties;
                     }
-                    IfcDoorPanelProperties prop = Document.Model.New<IfcDoorPanelProperties>();
+                    IfcDoorPanelProperties prop = Document.Model.Instances.New<IfcDoorPanelProperties>();
                     IfcDoorStyle.HasPropertySets.Add_Reversible(prop);
                     return prop;
                 }

@@ -218,36 +218,7 @@ namespace Xbim.Ifc2x3.ActorResource
 
         #region Collection initialisation routines
 
-        ///<summary>
-        ///  Sets the ActorRoleCollection to the array of Role, deletes any previous values, Passing the  role = Undefined raises an exception, use the SetRoles method with the ActorRole argument list, initialises collection.
-        ///</summary>
-        public void SetRoles(params IfcRole[] roles)
-        {
-            if (_roles == null) _roles = new ActorRoleCollection(this);
-            else
-                _roles.Clear_Reversible();
-            foreach (IfcRole item in roles)
-            {
-                IfcActorRole actorRole = ModelOf.New<IfcActorRole>();
-                actorRole.Role = item;
-                _roles.Add_Reversible(actorRole);
-            }
-        }
-
-
-        ///<summary>
-        ///  Sets the ActorRoleCollection to the array of ActorRole, deletes any previous values, initialises collection.
-        ///</summary>
-        public void SetRoles(params IfcActorRole[] actorRoles)
-        {
-            if (_roles == null) _roles = new ActorRoleCollection(this);
-            else
-                _roles.Clear_Reversible();
-            foreach (IfcActorRole item in actorRoles)
-            {
-                _roles.Add_Reversible(item);
-            }
-        }
+      
 
         #endregion
 

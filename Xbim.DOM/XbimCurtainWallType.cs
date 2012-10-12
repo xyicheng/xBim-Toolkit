@@ -14,7 +14,7 @@ namespace Xbim.DOM
         internal XbimCurtainWallType(XbimDocument document, string name) 
             : base(document)
         {
-            IfcCurtainWallType = _document.Model.New<IfcCurtainWallType>();
+            IfcCurtainWallType = _document.Model.Instances.New<IfcCurtainWallType>();
             IfcCurtainWallType.Name = name;
             _document.CurtainWallTypes.Add(this);
             IfcCurtainWallType.PredefinedType = IfcCurtainWallTypeEnum.NOTDEFINED;

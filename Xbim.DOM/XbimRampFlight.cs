@@ -27,7 +27,7 @@ namespace Xbim.DOM
         private void BaseInit(XbimRampFlightType type)
         {
             _document.RampFlights.Add(this);
-            _ifcBuildingElement = _document.Model.New<IfcRampFlight>();
+            _ifcBuildingElement = _document.Model.Instances.New<IfcRampFlight>();
             _ifcBuildingElement.SetDefiningType(type.IfcTypeProduct, _document.Model);
         }
         #endregion

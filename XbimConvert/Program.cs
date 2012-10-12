@@ -44,17 +44,35 @@ namespace XbimConvert
                     string xbimGeometryFileName = BuildFileName(arguments.IfcFileName, ".xbimGC");
                     System.Diagnostics.Stopwatch watch = new System.Diagnostics.Stopwatch();
 
-                    watch.Start();
-                   
-                   
-                    using(XbimModel model = ParseModelFile(xbimFileName))
-                    {
+                    
 
-                        model.Open(xbimFileName, XbimDBAccess.ReadWrite);
-                       
-                       
-                        GenerateGeometry(xbimGeometryFileName, model);
-                        
+
+                    using (XbimModel model = ParseModelFile(xbimFileName))
+                    {
+                        watch.Start();
+
+                        model.Open(xbimFileName, XbimDBAccess.Read);
+                        XbimModel model2 = ParseModelFile(xbimFileName);
+                         model2.Open(xbimFileName, XbimDBAccess.Read);
+
+                    //    using (var txn = model.BeginTransaction())
+                        {
+                            foreach (var item in model.Instances)
+                            {
+                               // Console.WriteLine(item);
+                            }
+                        }
+                     //               using (var txn = model2.BeginTransaction())
+                        {
+                            foreach (var item in model2.Instances)
+                            {
+                               // Console.WriteLine(item);
+                            }
+                        }
+
+
+                       //GenerateGeometry(xbimGeometryFileName, model);
+                        model2.Close();
                         model.Close();
                         
                     }
@@ -142,20 +160,20 @@ namespace XbimConvert
             switch (arguments.FilterType)
             {
                 case FilterType.None:
-                    result = model.InstancesOfType<IfcProduct>().Where(t=>!(t is IfcFeatureElement)); //exclude openings and additions
+                    result = model.Instances.OfType<IfcProduct>().Where(t=>!(t is IfcFeatureElement)); //exclude openings and additions
                     Logger.Debug("All geometry items will be generated");
                     break;
 
                 case FilterType.ElementID:
                     List<IfcProduct> list = new List<IfcProduct>();
-                    list.Add(model.GetInstance(arguments.ElementIdFilter) as IfcProduct);
+                    list.Add(model.Instances[arguments.ElementIdFilter] as IfcProduct);
                     result = list;
                     Logger.DebugFormat("Only generating product element ID {0}", arguments.ElementIdFilter);
                     break;
 
                 case FilterType.ElementType:
                     Type theType = arguments.ElementTypeFilter.Type;
-                    result = model.InstancesWhere<IfcProduct>(i=> i.GetType() == theType);
+                    result = model.Instances.Where<IfcProduct>(i=> i.GetType() == theType);
                     Logger.DebugFormat("Only generating product elements of type '{0}'", arguments.ElementTypeFilter);
                     break;
 

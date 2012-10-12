@@ -26,7 +26,7 @@ namespace Xbim.DOM
             : base(document)
         {
             _document.Roofs.Add(this);
-            _ifcBuildingElement = _document.Model.New<IfcRoof>();
+            _ifcBuildingElement = _document.Model.Instances.New<IfcRoof>();
             IfcRoof.ShapeType = GetIfcRoofTypeEnum(roofType);
         }
 
@@ -70,13 +70,13 @@ namespace Xbim.DOM
         {
             if (!CanHaveOwnGeometry) throw new Exception("Roof has decomposing elements so it can not have its own material layers specified");
 
-            IfcMaterialLayer matLayer = _document.Model.New<IfcMaterialLayer>();
+            IfcMaterialLayer matLayer = _document.Model.Instances.New<IfcMaterialLayer>();
             matLayer.Material = material.Material;
             matLayer.LayerThickness = thickness;
 
             if (IfcMaterialLayerSetUsage == null)
             {
-                IfcMaterialLayerSet matLayerSet = _document.Model.New<IfcMaterialLayerSet>();
+                IfcMaterialLayerSet matLayerSet = _document.Model.Instances.New<IfcMaterialLayerSet>();
                 //create new material layer set and set its usage
                 _ifcBuildingElement.SetMaterialLayerSetUsage(matLayerSet, IfcLayerSetDirectionEnum.AXIS1, IfcDirectionSenseEnum.POSITIVE, 0);
             }

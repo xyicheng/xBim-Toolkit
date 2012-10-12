@@ -147,7 +147,7 @@ namespace Xbim.Ifc2x3.Extensions
             //avoid adding element which is already defined as bounding element
             if (space.HasBoundingElement(model, element)) return;
 
-            IfcRelSpaceBoundary relation = model.New<IfcRelSpaceBoundary>(rel =>
+            IfcRelSpaceBoundary relation = model.Instances.New<IfcRelSpaceBoundary>(rel =>
                                                                               {
                                                                                   rel.RelatingSpace = space;
                                                                                   rel.InternalOrExternalBoundary =
@@ -171,7 +171,7 @@ namespace Xbim.Ifc2x3.Extensions
         public static bool HasBoundingElement(this IfcSpace space, IModel model, IfcElement element)
         {
             IfcRelSpaceBoundary relation =
-                model.InstancesWhere<IfcRelSpaceBoundary>(
+                model.Instances.Where<IfcRelSpaceBoundary>(
                     rel => rel.RelatingSpace == space && rel.RelatedBuildingElement == element).FirstOrDefault();
             return relation != null;
         }

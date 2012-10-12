@@ -36,9 +36,9 @@ namespace Xbim.COBie.Data
             COBieSheet<COBieAssemblyRow> assemblies = new COBieSheet<COBieAssemblyRow>(Constants.WORKSHEET_ASSEMBLY);
 
             // get ifcRelAggregates objects from IFC file what are not in the excludedTypes type list
-            IEnumerable<IfcRelAggregates> ifcRelAggregates = Model.InstancesOfType<IfcRelAggregates>();
-            IEnumerable<IfcRelNests> ifcRelNests = Model.InstancesOfType<IfcRelNests>(); 
-            IEnumerable<IfcRelAssociatesMaterial> ifcRelAssociatesMaterials = Model.InstancesOfType<IfcRelAssociatesMaterial>(); 
+            IEnumerable<IfcRelAggregates> ifcRelAggregates = Model.Instances.OfType<IfcRelAggregates>();
+            IEnumerable<IfcRelNests> ifcRelNests = Model.Instances.OfType<IfcRelNests>(); 
+            IEnumerable<IfcRelAssociatesMaterial> ifcRelAssociatesMaterials = Model.Instances.OfType<IfcRelAssociatesMaterial>(); 
 
             IEnumerable<IfcRelDecomposes> relAll = (from ra in ifcRelAggregates
                                                     where ((ra.RelatingObject is IfcProduct) || (ra.RelatingObject is IfcTypeObject)) && !Context.AssemblyExcludeTypes.Contains(ra.RelatingObject.GetType())

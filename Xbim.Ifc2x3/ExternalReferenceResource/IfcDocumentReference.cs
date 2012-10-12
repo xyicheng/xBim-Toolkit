@@ -45,7 +45,7 @@ namespace Xbim.Ifc2x3.ExternalReferenceResource
             get
             {
                 return
-                    ModelOf.InstancesWhere<IfcDocumentInformation>(
+                    ModelOf.Instances.Where<IfcDocumentInformation>(
                         d => d.DocumentReferences.Contains(this));
             }
         }

@@ -25,7 +25,7 @@ namespace Xbim.Ifc2x3.Extensions
             IModel model = GetModel(gr);
 
             IfcRelAssignsToGroup relation = gr.IsGroupedBy;
-            if (gr.IsGroupedBy == null) relation = model.New<IfcRelAssignsToGroup>(rel => rel.RelatingGroup = gr);
+            if (gr.IsGroupedBy == null) relation = model.Instances.New<IfcRelAssignsToGroup>(rel => rel.RelatingGroup = gr);
             relation.RelatedObjects.Add_Reversible(obj);
         }
 
@@ -34,7 +34,7 @@ namespace Xbim.Ifc2x3.Extensions
             IModel model = GetModel(gr);
 
             IfcRelAssignsToGroup relation = gr.IsGroupedBy;
-            if (gr.IsGroupedBy == null) relation = model.New<IfcRelAssignsToGroup>(rel => rel.RelatingGroup = gr);
+            if (gr.IsGroupedBy == null) relation = model.Instances.New<IfcRelAssignsToGroup>(rel => rel.RelatingGroup = gr);
             foreach (var item in objects)
             {
                 relation.RelatedObjects.Add_Reversible(item);
@@ -59,7 +59,7 @@ namespace Xbim.Ifc2x3.Extensions
         {
             IModel model = GetModel(gr);
 
-            IEnumerable<IfcRelAssignsToGroup> relations = model.InstancesWhere<IfcRelAssignsToGroup>(rel => rel.RelatedObjects.Contains(gr));
+            IEnumerable<IfcRelAssignsToGroup> relations = model.Instances.Where<IfcRelAssignsToGroup>(rel => rel.RelatedObjects.Contains(gr));
             foreach (IfcRelAssignsToGroup rel in relations)
             {
                 yield return rel.RelatingGroup;

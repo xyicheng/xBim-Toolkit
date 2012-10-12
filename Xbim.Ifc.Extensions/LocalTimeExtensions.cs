@@ -30,7 +30,7 @@ namespace Xbim.Ifc2x3.Extensions
             lt.SecondComponent = localTime.Second;
             lt.MinuteComponent = localTime.Minute;
 
-            IfcCoordinatedUniversalTimeOffset coordinatedUniversalTimeOffset = lt.ModelOf.New<IfcCoordinatedUniversalTimeOffset>();
+            IfcCoordinatedUniversalTimeOffset coordinatedUniversalTimeOffset = lt.ModelOf.Instances.New<IfcCoordinatedUniversalTimeOffset>();
             coordinatedUniversalTimeOffset.HourOffset = new IfcHourInDay(localTime.Offset.Hours);
             coordinatedUniversalTimeOffset.MinuteOffset = new IfcMinuteInHour(localTime.Offset.Minutes);
             if (localTime.Offset.Hours < 0 || (localTime.Offset.Hours == 0 && localTime.Offset.Minutes < 0))

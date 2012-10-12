@@ -204,7 +204,7 @@ namespace Xbim.Ifc2x3.TimeSeriesResource
             get
             {
                 return
-                    ModelOf.InstancesWhere<IfcTimeSeriesReferenceRelationship>(
+                    ModelOf.Instances.Where<IfcTimeSeriesReferenceRelationship>(
                         tr => tr.ReferencedTimeSeries == this);
             }
         }

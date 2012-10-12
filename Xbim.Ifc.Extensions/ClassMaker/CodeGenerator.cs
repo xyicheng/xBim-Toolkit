@@ -106,14 +106,14 @@ namespace Xbim.Ifc2x3.XbimExtensions.ClassMaker
             ////getEnumt.Name = "IEnumerable<" + ent.Type.FullName + ">.GetEnumerator";
             ////getEnumt.ReturnType = new CodeTypeReference("IEnumerator<" + ent.Type.FullName + ">");
             ////getEnumt.Attributes = MemberAttributes.ScopeMask;
-            ////getEnumt.Statements.Add(new CodeMethodReturnStatement(new CodeMethodReferenceExpression(new CodeFieldReferenceExpression(new CodeThisReferenceExpression(), "_model"), "InstancesOfType<" + ent.Type.FullName + ">().GetEnumerator()")));
+            ////getEnumt.Statements.Add(new CodeMethodReturnStatement(new CodeMethodReferenceExpression(new CodeFieldReferenceExpression(new CodeThisReferenceExpression(), "_model"), "Instances.OfType<" + ent.Type.FullName + ">().GetEnumerator()")));
             ////class1.Members.Add(getEnumt);
 
             ////CodeMemberMethod getEnum = new CodeMemberMethod();
             ////getEnum.Name = "IEnumerable.GetEnumerator";
             ////getEnum.ReturnType = new CodeTypeReference("IEnumerator");
             ////getEnum.Attributes = MemberAttributes.ScopeMask;
-            ////getEnum.Statements.Add(new CodeMethodReturnStatement(new CodeMethodReferenceExpression(new CodeFieldReferenceExpression(new CodeThisReferenceExpression(), "_model"), "InstancesOfType<" + ent.Type.FullName + ">().GetEnumerator()")));
+            ////getEnum.Statements.Add(new CodeMethodReturnStatement(new CodeMethodReferenceExpression(new CodeFieldReferenceExpression(new CodeThisReferenceExpression(), "_model"), "Instances.OfType<" + ent.Type.FullName + ">().GetEnumerator()")));
             ////class1.Members.Add(getEnum); 
 
 
@@ -121,7 +121,7 @@ namespace Xbim.Ifc2x3.XbimExtensions.ClassMaker
             //items.Name = "Items";
             //items.Type = new CodeTypeReference("IEnumerable<" + ent.Type.FullName + ">");
             //items.Attributes = MemberAttributes.Public | MemberAttributes.Final;
-            //items.GetStatements.Add(new CodeMethodReturnStatement(new CodeMethodReferenceExpression(new CodeFieldReferenceExpression(new CodeThisReferenceExpression(), "_model"), "InstancesOfType<" + ent.Type.FullName + ">()")));
+            //items.GetStatements.Add(new CodeMethodReturnStatement(new CodeMethodReferenceExpression(new CodeFieldReferenceExpression(new CodeThisReferenceExpression(), "_model"), "Instances.OfType<" + ent.Type.FullName + ">()")));
 
             //class1.Members.Add(items);
 

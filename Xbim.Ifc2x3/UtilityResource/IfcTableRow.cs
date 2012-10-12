@@ -109,7 +109,7 @@ namespace Xbim.Ifc2x3.UtilityResource
         [IfcAttribute(-1, IfcAttributeState.Mandatory)]
         public IfcTable OfTable
         {
-            get { return ModelOf.InstancesWhere<IfcTable>(t => t.Rows.Contains(this)).FirstOrDefault(); }
+            get { return ModelOf.Instances.Where<IfcTable>(t => t.Rows.Contains(this)).FirstOrDefault(); }
         }
 
         #region ISupportIfcParser Members

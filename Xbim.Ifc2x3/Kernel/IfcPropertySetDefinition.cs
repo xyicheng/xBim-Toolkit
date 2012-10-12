@@ -54,7 +54,7 @@ namespace Xbim.Ifc2x3.Kernel
             get
             {
                 return
-                    ModelOf.InstancesWhere<IfcRelDefinesByProperties>(
+                    ModelOf.Instances.Where<IfcRelDefinesByProperties>(
                         rel => rel.RelatingPropertyDefinition == this);
             }
         }
@@ -68,7 +68,7 @@ namespace Xbim.Ifc2x3.Kernel
             get
             {
                 return
-                    ModelOf.InstancesWhere<IfcTypeObject>(
+                    ModelOf.Instances.Where<IfcTypeObject>(
                         t => (t.HasPropertySets != null) && t.HasPropertySets.Contains(this));
             }
         }

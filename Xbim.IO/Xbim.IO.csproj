@@ -139,6 +139,7 @@
     <Compile Include="GeometryCache\MeshGeometry.cs" />
     <Compile Include="GeometryCache\SpaceTriangulatedModel.cs" />
     <Compile Include="IfcFileHeader.cs" />
+    <Compile Include="XbimInstanceCollection.cs" />
     <Compile Include="XbimInstanceHandle.cs" />
     <Compile Include="IfcMetaData.cs" />
     <Compile Include="IfcPersistedInstanceCache.cs" />
@@ -173,6 +174,8 @@
     <Compile Include="XbimPackage.cs" />
     <Compile Include="XbimParserState.cs" />
     <Compile Include="XbimReadOnlyDBTransaction.cs" />
+    <Compile Include="XbimReadTransaction.cs" />
+    <Compile Include="XbimReadWriteTransaction.cs" />
     <Compile Include="XbimViewDefinition.cs" />
   </ItemGroup>
   <ItemGroup>

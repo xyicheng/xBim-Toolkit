@@ -26,14 +26,14 @@ namespace Xbim.DOM
 
         //internal constructor for creation from XbimObjectCreator
         internal XbimBuilding(XbimDocument document, string name, XbimSpatialStructureElement parentElement, XbimElementCompositionEnum compositionEnum)
-            : base(document, document.Model.New<IfcBuilding>())
+            : base(document, document.Model.Instances.New<IfcBuilding>())
         {
             Building.Name = name;
             Building.CompositionType = GeIfcElementCompositionEnum(compositionEnum);
             if (parentElement != null) parentElement.AddToSpatialDecomposition(this);
             if (Document.ModelView == XbimModelView.CoordinationView)
             {
-                IfcLocalPlacement lp = Document.Model.New<IfcLocalPlacement>();
+                IfcLocalPlacement lp = Document.Model.Instances.New<IfcLocalPlacement>();
                 lp.RelativePlacement = Document.WCS;
                 if (parentElement != null)  lp.PlacementRelTo = parentElement.GetObjectPlacement();
                 Building.ObjectPlacement = lp;

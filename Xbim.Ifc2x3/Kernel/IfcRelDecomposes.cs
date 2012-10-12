@@ -81,6 +81,7 @@ namespace Xbim.Ifc2x3.Kernel
         /// </summary>
 
         [IfcAttribute(6, IfcAttributeState.Mandatory, IfcAttributeType.Set, 1)]
+        [IndexedProperty]
         public ObjectDefinitionSet RelatedObjects
         {
             get

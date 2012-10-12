@@ -122,7 +122,7 @@ namespace Xbim.Ifc2x3.MaterialResource
             get
             {
                 return
-                    ModelOf.InstancesWhere<IfcMaterialDefinitionRepresentation>(
+                    ModelOf.Instances.Where<IfcMaterialDefinitionRepresentation>(
                         m => m.RepresentedMaterial == this);
             }
         }
@@ -136,7 +136,7 @@ namespace Xbim.Ifc2x3.MaterialResource
             get
             {
                 return
-                    ModelOf.InstancesWhere<IfcMaterialClassificationRelationship>(
+                    ModelOf.Instances.Where<IfcMaterialClassificationRelationship>(
                         c => c.ClassifiedMaterial == this);
             }
         }

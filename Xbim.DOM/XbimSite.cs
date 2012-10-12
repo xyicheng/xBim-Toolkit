@@ -46,7 +46,7 @@ namespace Xbim.DOM
 
         //internal constructor for creation from XbimObjectCreator
         internal XbimSite(XbimDocument document, string name, XbimSpatialStructureElement parentElement, XbimElementCompositionEnum compositionEnum)
-            : base(document, document.Model.New<IfcSite>())
+            : base(document, document.Model.Instances.New<IfcSite>())
         {
             Site.Name = name;
             Site.CompositionType = GeIfcElementCompositionEnum(compositionEnum);
@@ -56,7 +56,7 @@ namespace Xbim.DOM
             if (parentElement == null) ((IfcProject)_document.Model.IfcProject).AddSite(Site);
             if (Document.ModelView == XbimModelView.CoordinationView)
             {
-                IfcLocalPlacement lp = Document.Model.New<IfcLocalPlacement>();
+                IfcLocalPlacement lp = Document.Model.Instances.New<IfcLocalPlacement>();
                 lp.RelativePlacement = Document.WCS;
                 if (parentElement != null)  lp.PlacementRelTo = parentElement.GetObjectPlacement();
                 Site.ObjectPlacement = lp;

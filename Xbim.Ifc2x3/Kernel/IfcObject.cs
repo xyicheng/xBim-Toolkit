@@ -108,7 +108,7 @@ namespace Xbim.Ifc2x3.Kernel
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class)]
         public virtual IEnumerable<IfcRelDefines> IsDefinedBy
         {
-            get { return ModelOf.InstancesWhere<IfcRelDefines>(r => r.RelatedObjects.Contains(this)); }
+            get { return ModelOf.Instances.Where<IfcRelDefines>(r => r.RelatedObjects.Contains(this)); }
         }
 
         #endregion
@@ -123,7 +123,7 @@ namespace Xbim.Ifc2x3.Kernel
             get
             {
                 return
-                    ModelOf.InstancesWhere<IfcRelDefinesByProperties>(
+                    ModelOf.Instances.Where<IfcRelDefinesByProperties>(
                         r => (r.RelatedObjects != null && r.RelatedObjects.Contains(this)));
             }
         }

@@ -69,7 +69,7 @@ namespace Xbim.Ifc2x3.Kernel
             get
             {
                 return
-                    ModelOf.InstancesWhere<IfcRelAssigns>(
+                    ModelOf.Instances.Where<IfcRelAssigns>(
                         r => (r.RelatedObjects != null && r.RelatedObjects.Contains(this)));
             }
         }
@@ -81,7 +81,7 @@ namespace Xbim.Ifc2x3.Kernel
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class)]
         public IEnumerable<IfcRelDecomposes> IsDecomposedBy
         {
-            get { return ModelOf.InstancesWhere<IfcRelDecomposes>(r => r.RelatingObject == this); }
+            get { return ModelOf.Instances.Where<IfcRelDecomposes>(r => r.RelatingObject == this); }
         }
 
         /// <summary>
@@ -94,7 +94,7 @@ namespace Xbim.Ifc2x3.Kernel
             get
             {
                 return
-                    ModelOf.InstancesWhere<IfcRelDecomposes>(
+                    ModelOf.Instances.Where<IfcRelDecomposes>(
                         r => (r.RelatedObjects != null && r.RelatedObjects.Contains(this)));
             }
         }
@@ -109,7 +109,7 @@ namespace Xbim.Ifc2x3.Kernel
             get
             {
                 return
-                    ModelOf.InstancesWhere<IfcRelAssociates>(
+                    ModelOf.Instances.Where<IfcRelAssociates>(
                         r => (r.RelatedObjects != null && r.RelatedObjects.Contains(this)));
             }
         }

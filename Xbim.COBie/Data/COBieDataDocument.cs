@@ -39,9 +39,9 @@ namespace Xbim.COBie.Data
             COBieSheet<COBieDocumentRow> documents = new COBieSheet<COBieDocumentRow>(Constants.WORKSHEET_DOCUMENT);
 
             // get all IfcBuildingStory objects from IFC file
-            IEnumerable<IfcDocumentInformation> docInfos = Model.InstancesOfType<IfcDocumentInformation>();
+            IEnumerable<IfcDocumentInformation> docInfos = Model.Instances.OfType<IfcDocumentInformation>();
             //get the owner history
-            IfcOwnerHistory ifcOwnerHistory = Model.InstancesOfType<IfcOwnerHistory>().FirstOrDefault();
+            IfcOwnerHistory ifcOwnerHistory = Model.Instances.OfType<IfcOwnerHistory>().FirstOrDefault();
 
             ProgressIndicator.Initialise("Creating Documents", docInfos.Count());
 
@@ -201,7 +201,7 @@ namespace Xbim.COBie.Data
         /// <returns>IEnumerable of IfcRelAssociatesDocument objects</returns>
         public  IEnumerable<IfcRelAssociatesDocument> DocumentInformationForObjects (IfcDocumentInformation ifcDocumentInformation )
         {
-            return Model.InstancesWhere<IfcRelAssociatesDocument>(irad => irad.RelatingDocument == ifcDocumentInformation);
+            return Model.Instances.Where<IfcRelAssociatesDocument>(irad => irad.RelatingDocument == ifcDocumentInformation);
         }
 
 

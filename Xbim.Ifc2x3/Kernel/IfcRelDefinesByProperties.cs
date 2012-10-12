@@ -41,6 +41,7 @@ namespace Xbim.Ifc2x3.Kernel
         ///   Reference to the property set definition for that object or set of objects.
         /// </summary>
         [IfcAttribute(6, IfcAttributeState.Mandatory)]
+        [IndexedProperty]
         public IfcPropertySetDefinition RelatingPropertyDefinition
         {
             get

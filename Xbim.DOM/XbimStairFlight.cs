@@ -27,7 +27,7 @@ namespace Xbim.DOM
         private void BaseInit(XbimStairFlightType type)
         {
             _document.StairFlights.Add(this);
-            _ifcBuildingElement = _document.Model.New<IfcStairFlight>();
+            _ifcBuildingElement = _document.Model.Instances.New<IfcStairFlight>();
             _ifcBuildingElement.SetDefiningType(type.IfcTypeProduct, _document.Model);
         }
         #endregion

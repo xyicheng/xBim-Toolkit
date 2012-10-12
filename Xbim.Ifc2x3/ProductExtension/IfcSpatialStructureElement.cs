@@ -215,7 +215,7 @@ namespace Xbim.Ifc2x3.ProductExtension
             get
             {
                 return
-                    ModelOf.InstancesWhere<IfcRelReferencedInSpatialStructure>(
+                    ModelOf.Instances.Where<IfcRelReferencedInSpatialStructure>(
                         r => r.RelatingStructure == this);
             }
         }
@@ -230,7 +230,7 @@ namespace Xbim.Ifc2x3.ProductExtension
             get
             {
                 return
-                    ModelOf.InstancesWhere<IfcRelServicesBuildings>(
+                    ModelOf.Instances.Where<IfcRelServicesBuildings>(
                         r => r.RelatedBuildings.Contains(this));
             }
         }
@@ -248,7 +248,7 @@ namespace Xbim.Ifc2x3.ProductExtension
             get
             {
                 return
-                    ModelOf.InstancesWhere<IfcRelContainedInSpatialStructure>(
+                    ModelOf.Instances.Where<IfcRelContainedInSpatialStructure>(
                         r => r.RelatingStructure == this);
             }
         }

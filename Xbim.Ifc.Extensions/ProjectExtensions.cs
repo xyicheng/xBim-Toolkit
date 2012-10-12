@@ -47,50 +47,50 @@ namespace Xbim.Ifc2x3.Extensions
             IModel model = ifcProject.ModelOf;
             if (units == ProjectUnits.SIUnitsUK)
             {
-                IfcUnitAssignment ua = model.New<IfcUnitAssignment>();
-                ua.Units.Add_Reversible(model.New<IfcSIUnit>(s =>
+                IfcUnitAssignment ua = model.Instances.New<IfcUnitAssignment>();
+                ua.Units.Add_Reversible(model.Instances.New<IfcSIUnit>(s =>
                                                                  {
                                                                      s.UnitType = IfcUnitEnum.LENGTHUNIT;
                                                                      s.Name = IfcSIUnitName.METRE;
                                                                      s.Prefix = IfcSIPrefix.MILLI;
                                                                  }));
-                ua.Units.Add_Reversible(model.New<IfcSIUnit>(s =>
+                ua.Units.Add_Reversible(model.Instances.New<IfcSIUnit>(s =>
                                                                  {
                                                                      s.UnitType = IfcUnitEnum.AREAUNIT;
                                                                      s.Name = IfcSIUnitName.SQUARE_METRE;
                                                                  }));
-                ua.Units.Add_Reversible(model.New<IfcSIUnit>(s =>
+                ua.Units.Add_Reversible(model.Instances.New<IfcSIUnit>(s =>
                                                                  {
                                                                      s.UnitType = IfcUnitEnum.VOLUMEUNIT;
                                                                      s.Name = IfcSIUnitName.CUBIC_METRE;
                                                                  }));
-                ua.Units.Add_Reversible(model.New<IfcSIUnit>(s =>
+                ua.Units.Add_Reversible(model.Instances.New<IfcSIUnit>(s =>
                                                                  {
                                                                      s.UnitType = IfcUnitEnum.SOLIDANGLEUNIT;
                                                                      s.Name = IfcSIUnitName.STERADIAN;
                                                                  }));
-                ua.Units.Add_Reversible(model.New<IfcSIUnit>(s =>
+                ua.Units.Add_Reversible(model.Instances.New<IfcSIUnit>(s =>
                                                                  {
                                                                      s.UnitType = IfcUnitEnum.PLANEANGLEUNIT;
                                                                      s.Name = IfcSIUnitName.RADIAN;
                                                                  }));
-                ua.Units.Add_Reversible(model.New<IfcSIUnit>(s =>
+                ua.Units.Add_Reversible(model.Instances.New<IfcSIUnit>(s =>
                                                                  {
                                                                      s.UnitType = IfcUnitEnum.MASSUNIT;
                                                                      s.Name = IfcSIUnitName.GRAM;
                                                                  }));
-                ua.Units.Add_Reversible(model.New<IfcSIUnit>(s =>
+                ua.Units.Add_Reversible(model.Instances.New<IfcSIUnit>(s =>
                                                                  {
                                                                      s.UnitType = IfcUnitEnum.TIMEUNIT;
                                                                      s.Name = IfcSIUnitName.SECOND;
                                                                  }));
-                ua.Units.Add_Reversible(model.New<IfcSIUnit>(s =>
+                ua.Units.Add_Reversible(model.Instances.New<IfcSIUnit>(s =>
                                                                  {
                                                                      s.UnitType =
                                                                          IfcUnitEnum.THERMODYNAMICTEMPERATUREUNIT;
                                                                      s.Name = IfcSIUnitName.DEGREE_CELSIUS;
                                                                  }));
-                ua.Units.Add_Reversible(model.New<IfcSIUnit>(s =>
+                ua.Units.Add_Reversible(model.Instances.New<IfcSIUnit>(s =>
                                                                  {
                                                                      s.UnitType = IfcUnitEnum.LUMINOUSINTENSITYUNIT;
                                                                      s.Name = IfcSIUnitName.LUMEN;
@@ -100,9 +100,9 @@ namespace Xbim.Ifc2x3.Extensions
             //Create the Mandatory Model View
             if (ModelContext(ifcProject) == null)
             {
-                IfcCartesianPoint origin = model.New<IfcCartesianPoint>(p => p.SetXYZ(0, 0, 0));
-                IfcAxis2Placement3D axis3D = model.New<IfcAxis2Placement3D>(a => a.Location = origin);
-                IfcGeometricRepresentationContext gc = model.New<IfcGeometricRepresentationContext>(c =>
+                IfcCartesianPoint origin = model.Instances.New<IfcCartesianPoint>(p => p.SetXYZ(0, 0, 0));
+                IfcAxis2Placement3D axis3D = model.Instances.New<IfcAxis2Placement3D>(a => a.Location = origin);
+                IfcGeometricRepresentationContext gc = model.Instances.New<IfcGeometricRepresentationContext>(c =>
                                                                                                         {
                                                                                                             c.
                                                                                                                 ContextType
@@ -125,9 +125,9 @@ namespace Xbim.Ifc2x3.Extensions
                     );
                 ifcProject.RepresentationContexts.Add_Reversible(gc);
 
-                IfcCartesianPoint origin2D = model.New<IfcCartesianPoint>(p => p.SetXY(0, 0));
-                IfcAxis2Placement2D axis2D = model.New<IfcAxis2Placement2D>(a => a.Location = origin2D);
-                IfcGeometricRepresentationContext pc = model.New<IfcGeometricRepresentationContext>(c =>
+                IfcCartesianPoint origin2D = model.Instances.New<IfcCartesianPoint>(p => p.SetXY(0, 0));
+                IfcAxis2Placement2D axis2D = model.Instances.New<IfcAxis2Placement2D>(a => a.Location = origin2D);
+                IfcGeometricRepresentationContext pc = model.Instances.New<IfcGeometricRepresentationContext>(c =>
                 {
                     c.
                         ContextType
@@ -196,7 +196,7 @@ namespace Xbim.Ifc2x3.Extensions
             IModel model = ifcProject.ModelOf;
             if (ifcProject.UnitsInContext == null)
             {
-                ifcProject.UnitsInContext = model.New<IfcUnitAssignment>();
+                ifcProject.UnitsInContext = model.Instances.New<IfcUnitAssignment>();
             }
 
             IfcUnitAssignment unitsAssignment = ifcProject.UnitsInContext;
@@ -209,7 +209,7 @@ namespace Xbim.Ifc2x3.Extensions
             IModel model = ifcProject.ModelOf;
             if (ifcProject.UnitsInContext == null)
             {
-                ifcProject.UnitsInContext = model.New<IfcUnitAssignment>();
+                ifcProject.UnitsInContext = model.Instances.New<IfcUnitAssignment>();
             }
 
             IfcUnitAssignment unitsAssignment = ifcProject.UnitsInContext;
@@ -242,7 +242,7 @@ namespace Xbim.Ifc2x3.Extensions
             IEnumerable<IfcRelDecomposes> decomposition = ifcProject.IsDecomposedBy;
             if (decomposition.Count() == 0) //none defined create the relationship
             {
-                IfcRelAggregates relSub = ifcProject.ModelOf.New<IfcRelAggregates>();
+                IfcRelAggregates relSub = ifcProject.ModelOf.Instances.New<IfcRelAggregates>();
                 relSub.RelatingObject = ifcProject;
                 relSub.RelatedObjects.Add_Reversible(site);
             }
@@ -274,7 +274,7 @@ namespace Xbim.Ifc2x3.Extensions
             IEnumerable<IfcRelDecomposes> decomposition = ifcProject.IsDecomposedBy;
             if (decomposition.Count() == 0) //none defined create the relationship
             {
-                IfcRelAggregates relSub = ifcProject.ModelOf.New<IfcRelAggregates>();
+                IfcRelAggregates relSub = ifcProject.ModelOf.Instances.New<IfcRelAggregates>();
                 relSub.RelatingObject = ifcProject;
                 relSub.RelatedObjects.Add_Reversible(building);
             }

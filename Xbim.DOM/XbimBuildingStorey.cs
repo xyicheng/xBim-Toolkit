@@ -24,7 +24,7 @@ namespace Xbim.DOM
 
         //internal constructor for creation from XbimObjectCreator
         internal XbimBuildingStorey(XbimDocument document, string name, XbimSpatialStructureElement parentElement, XbimElementCompositionEnum compositionEnum)
-            : base(document, document.Model.New<IfcBuildingStorey>())
+            : base(document, document.Model.Instances.New<IfcBuildingStorey>())
         {
             Storey.Name = name;
             Storey.CompositionType = GeIfcElementCompositionEnum(compositionEnum);

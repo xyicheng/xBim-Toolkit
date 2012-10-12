@@ -587,8 +587,8 @@ namespace Xbim.Presentation
                 double refHeight = 0;
                 double terrainHeight = 0;
                 //get the global numbers
-                IfcBuilding building = model.InstancesOfType<IfcBuilding>().FirstOrDefault();
-                IfcSite site = model.InstancesOfType<IfcSite>().FirstOrDefault();
+                IfcBuilding building = model.Instances.OfType<IfcBuilding>().FirstOrDefault();
+                IfcSite site = model.Instances.OfType<IfcSite>().FirstOrDefault();
                 if (building != null)
                 {
                     if (building.ElevationOfRefHeight.HasValue)
@@ -644,11 +644,11 @@ namespace Xbim.Presentation
         /// </summary>
         public void HideAllTypesOf(int product)
         {
-            Type typeToHide = Model.GetInstance(Math.Abs(product)).GetType();
+            Type typeToHide = Model.Instances[Math.Abs(product)].GetType();
             foreach (var placement in _items)
             {
                 int prod = placement.Key;
-                Type type = Model.GetInstance(Math.Abs(prod)).GetType();
+                Type type = Model.Instances[Math.Abs(prod)].GetType();
                 if (type == typeToHide)
                 {
                     ModelVisual3D parent = VisualTreeHelper.GetParent(placement.Value.ModelVisual) as ModelVisual3D;

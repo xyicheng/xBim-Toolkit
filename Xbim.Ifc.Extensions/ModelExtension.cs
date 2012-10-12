@@ -13,7 +13,7 @@ namespace Xbim.Ifc2x3.Extensions
     {
         //public static void GenerateNoChangeOwnerHistoryForAll(this IModel model)
         //{
-        //    IEnumerable<IfcRoot> instances = model.InstancesOfType<IfcRoot>();
+        //    IEnumerable<IfcRoot> instances = model.Instances.OfType<IfcRoot>();
         //    foreach (var instance in instances)
         //    {
         //        //create new object of owner history
@@ -28,12 +28,12 @@ namespace Xbim.Ifc2x3.Extensions
         //    IfcTimeStamp stamp = IfcTimeStamp.ToTimeStamp(DateTime.Now);
 
         //    //return new object
-        //    return model.New<IfcOwnerHistory>(h => { h.OwningUser = defOwner.OwningUser; h.OwningApplication = defOwner.OwningApplication; h.CreationDate = stamp; h.ChangeAction = changeAction; });
+        //    return model.Instances.New<IfcOwnerHistory>(h => { h.OwningUser = defOwner.OwningUser; h.OwningApplication = defOwner.OwningApplication; h.CreationDate = stamp; h.ChangeAction = changeAction; });
         //}
 
         //public static IEnumerable<IfcRoot> GetNewOrChangedObjects(this IModel model)
         //{
-        //    return model.InstancesWhere<IfcRoot>(r => r.OwnerHistory.ChangeAction == IfcChangeActionEnum.MODIFIED || r.OwnerHistory.ChangeAction == IfcChangeActionEnum.MODIFIEDADDED || r.OwnerHistory.ChangeAction == IfcChangeActionEnum.ADDED);
+        //    return model.Instances.Where<IfcRoot>(r => r.OwnerHistory.ChangeAction == IfcChangeActionEnum.MODIFIED || r.OwnerHistory.ChangeAction == IfcChangeActionEnum.MODIFIEDADDED || r.OwnerHistory.ChangeAction == IfcChangeActionEnum.ADDED);
         //}
 
         //public static void TryToCreateUndefinedElementTypes(this IModel model)

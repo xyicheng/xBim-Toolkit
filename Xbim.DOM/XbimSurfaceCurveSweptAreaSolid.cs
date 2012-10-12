@@ -20,7 +20,7 @@ namespace Xbim.DOM
 
         public void DefineReferenceSurfacePlane(XbimAxis2Placement3D position)
         {
-            IfcPlane plane = Document.Model.New<IfcPlane>(pla => pla.Position = position._ifcAxis2Placement);
+            IfcPlane plane = Document.Model.Instances.New<IfcPlane>(pla => pla.Position = position._ifcAxis2Placement);
             // IfcSurfaceCurveSweptAreaSolid.ReferenceSurface = plane;
         }
     }

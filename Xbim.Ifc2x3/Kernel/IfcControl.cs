@@ -33,7 +33,7 @@ namespace Xbim.Ifc2x3.Kernel
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set)]
         public IEnumerable<IfcRelAssignsToControl> Controls
         {
-            get { return ModelOf.InstancesWhere<IfcRelAssignsToControl>(c => c.RelatingControl == this); }
+            get { return ModelOf.Instances.Where<IfcRelAssignsToControl>(c => c.RelatingControl == this); }
         }
     }
 }

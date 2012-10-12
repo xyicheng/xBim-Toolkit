@@ -12,7 +12,7 @@
 
 #region Directives
 
-using System.Collections.Generic; 
+using System.Collections.Generic; using System.Linq;
 using Xbim.Ifc2x3.CostResource;
 using Xbim.XbimExtensions.Interfaces;
 
@@ -31,7 +31,7 @@ namespace Xbim.XbimExtensions.DataProviders
 
         public IEnumerable<IfcCostValue> Items
         {
-            get { return this._model.InstancesOfType<IfcCostValue>(); }
+            get { return this._model.Instances.OfType<IfcCostValue>(); }
         }
     }
 }

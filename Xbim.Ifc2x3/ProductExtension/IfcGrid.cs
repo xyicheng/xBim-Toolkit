@@ -158,7 +158,7 @@ namespace Xbim.Ifc2x3.ProductExtension
             get
             {
                 return
-                    ModelOf.InstancesWhere<IfcRelContainedInSpatialStructure>(
+                    ModelOf.Instances.Where<IfcRelContainedInSpatialStructure>(
                         r => r.RelatedElements.Contains(this));
             }
         }

@@ -147,7 +147,7 @@ namespace Xbim.Ifc2x3.GeometryResource
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class)]
         public IEnumerable<IfcMappedItem> MapUsage
         {
-            get { return ModelOf.InstancesWhere<IfcMappedItem>(m => m.MappingSource == this); }
+            get { return ModelOf.Instances.Where<IfcMappedItem>(m => m.MappingSource == this); }
         }
 
         #endregion

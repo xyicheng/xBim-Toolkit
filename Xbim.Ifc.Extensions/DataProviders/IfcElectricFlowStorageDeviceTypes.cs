@@ -12,7 +12,7 @@
 
 #region Directives
 
-using System.Collections.Generic; using Xbim.XbimExtensions.Interfaces;
+using System.Collections.Generic; using System.Linq;using Xbim.XbimExtensions.Interfaces;
 using Xbim.Ifc2x3.ElectricalDomain;
 
 #endregion
@@ -30,7 +30,7 @@ namespace Xbim.XbimExtensions.DataProviders
 
         public IEnumerable<IfcElectricFlowStorageDeviceType> Items
         {
-            get { return this._model.InstancesOfType<IfcElectricFlowStorageDeviceType>(); }
+            get { return this._model.Instances.OfType<IfcElectricFlowStorageDeviceType>(); }
         }
     }
 }

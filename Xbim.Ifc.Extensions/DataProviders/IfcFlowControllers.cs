@@ -12,7 +12,7 @@
 
 #region Directives
 
-using System.Collections.Generic; using Xbim.XbimExtensions.Interfaces;
+using System.Collections.Generic; using System.Linq;using Xbim.XbimExtensions.Interfaces;
 using Xbim.Ifc2x3.SharedBldgServiceElements;
 
 #endregion
@@ -30,7 +30,7 @@ namespace Xbim.XbimExtensions.DataProviders
 
         public IEnumerable<IfcFlowController> Items
         {
-            get { return this._model.InstancesOfType<IfcFlowController>(); }
+            get { return this._model.Instances.OfType<IfcFlowController>(); }
         }
 
         public IfcElectricDistributionPoints IfcElectricDistributionPoints

@@ -21,7 +21,7 @@ namespace Xbim.DOM
       
         public XbimClassification(XbimDocument document, string publisherId, string name, string edition, DateTime? date)
         {
-            IfcClassification _classification =  document.Model.New<IfcClassification>();
+            IfcClassification _classification =  document.Model.Instances.New<IfcClassification>();
             _classification.Source = publisherId;
             _classification.Name = name;
             _classification.Edition = edition;

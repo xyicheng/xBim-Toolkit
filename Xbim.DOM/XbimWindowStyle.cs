@@ -39,7 +39,7 @@ namespace Xbim.DOM
 
         private void BaseInit(string name)
         {
-            IfcWindowStyle = _document.Model.New<IfcWindowStyle>();
+            IfcWindowStyle = _document.Model.Instances.New<IfcWindowStyle>();
             IfcWindowStyle.Name = name;
             _document.WindowStyles.Add(this);
         }
@@ -96,7 +96,7 @@ namespace Xbim.DOM
                 }
 
                 //if no property set has been returned new one is created
-                IfcWindowLiningProperties prop = Document.Model.New<IfcWindowLiningProperties>();
+                IfcWindowLiningProperties prop = Document.Model.Instances.New<IfcWindowLiningProperties>();
                 IfcWindowStyle.HasPropertySets.Add_Reversible(prop);
                 return prop;
             }
@@ -154,7 +154,7 @@ namespace Xbim.DOM
         {
             for (int i = 0; i < count; i++)
             {
-                IfcWindowPanelProperties prop = (Style as IPersistIfcEntity).ModelOf.New<IfcWindowPanelProperties>();
+                IfcWindowPanelProperties prop = (Style as IPersistIfcEntity).ModelOf.Instances.New<IfcWindowPanelProperties>();
                 Style.HasPropertySets.Add_Reversible(prop);
             }
         }

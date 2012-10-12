@@ -32,7 +32,7 @@ namespace Xbim.Ifc2x3.Extensions
         public static IfcElement GetFeatureElement(this IfcFeatureElement elem, IModel model)
         {
             IfcRelVoidsElement rel =
-                model.InstancesWhere<IfcRelVoidsElement>(r => r.RelatedOpeningElement == elem).FirstOrDefault();
+                model.Instances.Where<IfcRelVoidsElement>(r => r.RelatedOpeningElement == elem).FirstOrDefault();
             return rel != null ? rel.RelatingBuildingElement : null;
         }
     }

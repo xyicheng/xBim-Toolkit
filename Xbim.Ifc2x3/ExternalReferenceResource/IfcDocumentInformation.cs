@@ -358,7 +358,7 @@ namespace Xbim.Ifc2x3.ExternalReferenceResource
             get
             {
                 return
-                    ModelOf.InstancesWhere<IfcDocumentInformationRelationship>(
+                    ModelOf.Instances.Where<IfcDocumentInformationRelationship>(
                         di => di.RelatedDocuments.Contains(this));
             }
         }
@@ -372,7 +372,7 @@ namespace Xbim.Ifc2x3.ExternalReferenceResource
             get
             {
                 return
-                    ModelOf.InstancesWhere<IfcDocumentInformationRelationship>(
+                    ModelOf.Instances.Where<IfcDocumentInformationRelationship>(
                         di => di.RelatingDocument == this);
             }
         }

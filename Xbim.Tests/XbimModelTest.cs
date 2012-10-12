@@ -477,10 +477,9 @@ namespace Xbim.Tests
                     using (XbimModel modelServer2 = new XbimModel())
                     {
                         modelServer2.Open(fileName2);
-                        foreach (var handle in modelServer.InstanceHandles)
+                        foreach (var handle in modelServer.Instances)
                         {
-                            int xi = handle.EntityLabel;
-                            IPersistIfcEntity entity = modelServer.GetInstance(xi);
+                            IPersistIfcEntity entity = modelServer.Instances[handle];
                             int entityLabel = entity.EntityLabel;
                             byte[] b1 = modelServer.GetEntityBinaryData(entity);
 
@@ -489,7 +488,7 @@ namespace Xbim.Tests
                             // we have entityLabel from 1st file, this should be in second file as well
                             IPersistIfcEntity entity2 = null;
                             bool isBadEntity = false;
-                            entity2 = modelServer2.GetInstance(entityLabel); //GetInstance(modelServer2, entityLabel); //modelServer2.GetInstance(entityLabel);
+                            entity2 = modelServer2.Instances[entityLabel]; //GetInstance(modelServer2, entityLabel); //modelServer2.GetInstance(entityLabel);
 
                             if (entity2 != null)
                             {

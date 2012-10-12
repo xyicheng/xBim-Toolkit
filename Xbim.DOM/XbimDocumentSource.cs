@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using Xbim.Ifc2x3.UtilityResource;
 using System.Diagnostics;
 using Xbim.XbimExtensions.Interfaces;
+using Xbim.IO;
 
 namespace Xbim.DOM
 {
@@ -46,7 +47,7 @@ namespace Xbim.DOM
         #region Constructors
         public XbimDocumentSource(string fileName) : base(fileName) { Init(); }
 
-        public XbimDocumentSource(IModel model) : base(model) { Init(); }
+        public XbimDocumentSource(XbimModel model) : base(model) { Init(); }
 
         private void Init()
         {

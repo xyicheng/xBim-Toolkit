@@ -12,7 +12,7 @@
 
 #region Directives
 
-using System.Collections.Generic; using Xbim.XbimExtensions.Interfaces;
+using System.Collections.Generic; using System.Linq;using Xbim.XbimExtensions.Interfaces;
 using Xbim.Ifc2x3.HVACDomain;
 
 #endregion
@@ -30,7 +30,7 @@ namespace Xbim.XbimExtensions.DataProviders
 
         public IEnumerable<IfcChillerType> Items
         {
-            get { return this._model.InstancesOfType<IfcChillerType>(); }
+            get { return this._model.Instances.OfType<IfcChillerType>(); }
         }
     }
 }

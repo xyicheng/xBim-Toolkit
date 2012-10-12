@@ -68,7 +68,7 @@ namespace Xbim.DOM
         private void BaseInit(XbimWallType xbimWallType)
         {
             _document.Walls.Add(this);
-            _ifcBuildingElement = _document.Model.New<IfcWallStandardCase>();
+            _ifcBuildingElement = _document.Model.Instances.New<IfcWallStandardCase>();
             _ifcBuildingElement.SetDefiningType(xbimWallType.IfcTypeProduct, _document.Model);
         }
         #endregion

@@ -17,7 +17,7 @@ namespace Xbim.DOM
             BaseInit<IfcRevolvedAreaSolid>();
 
             IfcRevolvedAreaSolid.Angle = angle;
-            IfcRevolvedAreaSolid.Axis = Document.Model.New<IfcAxis1Placement>
+            IfcRevolvedAreaSolid.Axis = Document.Model.Instances.New<IfcAxis1Placement>
                 (ax => {
                     ax.Axis = spindleDirection.CreateIfcDirection(Document);
                     ax.Location = spindleLocation.CreateIfcCartesianPoint(Document);

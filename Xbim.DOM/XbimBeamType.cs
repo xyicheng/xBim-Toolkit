@@ -38,7 +38,7 @@ namespace Xbim.DOM
 
         private void BaseInit(string name)
         {
-            IfcBeamType = _document.Model.New<IfcBeamType>();
+            IfcBeamType = _document.Model.Instances.New<IfcBeamType>();
             IfcBeamType.Name = name;
         }
         #endregion

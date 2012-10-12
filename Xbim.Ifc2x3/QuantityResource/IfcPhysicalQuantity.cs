@@ -137,7 +137,7 @@ namespace Xbim.Ifc2x3.QuantityResource
             get
             {
                 return
-                    ModelOf.InstancesWhere<IfcPhysicalComplexQuantity>(
+                    ModelOf.Instances.Where<IfcPhysicalComplexQuantity>(
                         pq => pq.HasQuantities.Contains(this));
             }
         }

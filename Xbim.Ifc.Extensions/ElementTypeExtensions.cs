@@ -55,7 +55,7 @@ namespace Xbim.Ifc2x3.Extensions
                     throw new Exception("IfcElementType is not contained in a valid model");
                 else
                 {
-                    relMat = model.New<IfcRelAssociatesMaterial>();
+                    relMat = model.Instances.New<IfcRelAssociatesMaterial>();
                     relMat.RelatedObjects.Add_Reversible(elemType);
                 }
             }

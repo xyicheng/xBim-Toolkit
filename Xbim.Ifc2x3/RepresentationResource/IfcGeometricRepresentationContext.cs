@@ -177,7 +177,7 @@ namespace Xbim.Ifc2x3.RepresentationResource
             get
             {
                 return
-                    ModelOf.InstancesWhere<IfcGeometricRepresentationSubContext>(
+                    ModelOf.Instances.Where<IfcGeometricRepresentationSubContext>(
                         gsc => gsc.ParentContext == this);
             }
         }

@@ -187,7 +187,7 @@ namespace Xbim.ModelGeometry.Scene
             {
                 if (_productId.HasValue)
                 {
-                    IPersistIfcEntity ent = _transformGraph.Model.GetInstance(_productId.Value);
+                    IPersistIfcEntity ent = _transformGraph.Model.Instances[_productId.Value];
                     return ent as IfcProduct;
                 }
                 else

@@ -29,7 +29,7 @@ namespace Xbim.DOM
 
         internal XbimMaterial(XbimDocument document, string materialName)
         {
-            _ifcMaterial = document.Model.New<IfcMaterial>();
+            _ifcMaterial = document.Model.Instances.New<IfcMaterial>();
             _ifcMaterial.Name = materialName;
             _document = document;
             document.Materials.Add(this);
@@ -81,7 +81,7 @@ namespace Xbim.DOM
             get
             {
                 IfcLabel matName = _ifcMaterial.Name;
-                IEnumerable<IfcPropertySet> pSets = _document.Model.InstancesWhere<IfcPropertySet>(p => p.Name == XbimMaterialQuantities._pSetName);
+                IEnumerable<IfcPropertySet> pSets = _document.Model.Instances.Where<IfcPropertySet>(p => p.Name == XbimMaterialQuantities._pSetName);
                 double volume = 0;
                 if (pSets.Count() == 0) return null;
 

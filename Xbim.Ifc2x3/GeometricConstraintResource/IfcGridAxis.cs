@@ -116,7 +116,7 @@ namespace Xbim.Ifc2x3.GeometricConstraintResource
         {
             get
             {
-                return ModelOf.InstancesWhere<IfcGrid>(g => g.WAxes.Contains(this));
+                return ModelOf.Instances.Where<IfcGrid>(g => g.WAxes.Contains(this));
             }
         }
 
@@ -128,7 +128,7 @@ namespace Xbim.Ifc2x3.GeometricConstraintResource
         {
             get
             {
-                return ModelOf.InstancesWhere<IfcGrid>(g => g.VAxes.Contains(this));
+                return ModelOf.Instances.Where<IfcGrid>(g => g.VAxes.Contains(this));
             }
         }
 
@@ -140,7 +140,7 @@ namespace Xbim.Ifc2x3.GeometricConstraintResource
         {
             get
             {
-                return ModelOf.InstancesWhere<IfcGrid>(g => g.UAxes.Contains(this));
+                return ModelOf.Instances.Where<IfcGrid>(g => g.UAxes.Contains(this));
             }
         }
         /// <summary>
@@ -151,7 +151,7 @@ namespace Xbim.Ifc2x3.GeometricConstraintResource
         {
             get
             {
-                return ModelOf.InstancesWhere<IfcVirtualGridIntersection>(vg => vg.IntersectingAxes.Contains(this));
+                return ModelOf.Instances.Where<IfcVirtualGridIntersection>(vg => vg.IntersectingAxes.Contains(this));
             }
         }
 

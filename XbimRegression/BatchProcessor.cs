@@ -169,7 +169,7 @@ namespace XbimRegression
                 {
                     model = new XbimModel();
 					model.Open(xbimFile);
-                    result.Entities = model.InstancesCount;
+                    result.Entities = model.Instances.Count;
 
                     IIfcFileHeader header = model.Header;
                     result.IfcSchema = header.FileSchema.Schemas.FirstOrDefault();

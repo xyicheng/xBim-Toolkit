@@ -28,8 +28,8 @@ namespace Xbim.Ifc2x3.Extensions
                                                                  IfcObjectDefinition decomposingObject)
         {
             IfcRelAggregates rel =
-                model.InstancesWhere<IfcRelAggregates>(r => r.RelatingObject == obj).FirstOrDefault() ??
-                model.New<IfcRelAggregates>(r => r.RelatingObject = obj);
+                model.Instances.Where<IfcRelAggregates>(r => r.RelatingObject == obj).FirstOrDefault() ??
+                model.Instances.New<IfcRelAggregates>(r => r.RelatingObject = obj);
 
             rel.RelatedObjects.Add_Reversible(decomposingObject);
         }

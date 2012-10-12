@@ -129,7 +129,7 @@ namespace Xbim.Ifc2x3.StructuralAnalysisDomain
             get
             {
                 return
-                    ModelOf.InstancesWhere<IfcStructuralResultGroup>(
+                    ModelOf.Instances.Where<IfcStructuralResultGroup>(
                         s => s.ResultForLoadGroup == this);
             }
         }
@@ -143,7 +143,7 @@ namespace Xbim.Ifc2x3.StructuralAnalysisDomain
             get
             {
                 return
-                    ModelOf.InstancesWhere<IfcStructuralAnalysisModel>(s => s.LoadedBy.Contains(this));
+                    ModelOf.Instances.Where<IfcStructuralAnalysisModel>(s => s.LoadedBy.Contains(this));
             }
         }
 

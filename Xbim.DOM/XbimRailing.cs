@@ -27,7 +27,7 @@ namespace Xbim.DOM
         private void BaseInit(XbimRailingType type)
         {
             _document.Railings.Add(this);
-            _ifcBuildingElement = _document.Model.New<IfcRailing>();
+            _ifcBuildingElement = _document.Model.Instances.New<IfcRailing>();
             _ifcBuildingElement.SetDefiningType(type.IfcTypeProduct, _document.Model);
         }
         #endregion

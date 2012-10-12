@@ -227,7 +227,7 @@ namespace Xbim.Ifc2x3.ActorResource
             get
             {
                 return
-                    ModelOf.InstancesWhere<IfcOrganizationRelationship>(
+                    ModelOf.Instances.Where<IfcOrganizationRelationship>(
                         r => r.RelatedOrganizations.Contains(this));
             }
         }
@@ -241,7 +241,7 @@ namespace Xbim.Ifc2x3.ActorResource
             get
             {
                 return
-                    ModelOf.InstancesWhere<IfcOrganizationRelationship>(
+                    ModelOf.Instances.Where<IfcOrganizationRelationship>(
                         r => r.RelatingOrganization == this);
             }
         }
@@ -255,7 +255,7 @@ namespace Xbim.Ifc2x3.ActorResource
             get
             {
                 return
-                    ModelOf.InstancesWhere<IfcPersonAndOrganization>(r => r.TheOrganization == this);
+                    ModelOf.Instances.Where<IfcPersonAndOrganization>(r => r.TheOrganization == this);
             }
         }
 

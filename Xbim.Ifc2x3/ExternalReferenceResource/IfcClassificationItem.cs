@@ -136,7 +136,7 @@ namespace Xbim.Ifc2x3.ExternalReferenceResource
             get
             {
                 return
-                    ModelOf.InstancesWhere<IfcClassificationItemRelationship>(
+                    ModelOf.Instances.Where<IfcClassificationItemRelationship>(
                         c => c.RelatedItems.Contains(this));
             }
         }
@@ -150,7 +150,7 @@ namespace Xbim.Ifc2x3.ExternalReferenceResource
             get
             {
                 return
-                    ModelOf.InstancesWhere<IfcClassificationItemRelationship>(
+                    ModelOf.Instances.Where<IfcClassificationItemRelationship>(
                         c => c.RelatingItem == this);
             }
         }

@@ -13,7 +13,7 @@ namespace Xbim.DOM
 
         public XbimAxis2Placement3D(XbimDocument document)
         {
-            _ifcAxis2Placement = document.Model.New<IfcAxis2Placement3D>();
+            _ifcAxis2Placement = document.Model.Instances.New<IfcAxis2Placement3D>();
         }
 
         public void SetLocation(double X, double Y, double Z)

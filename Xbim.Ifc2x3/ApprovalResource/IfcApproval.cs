@@ -198,7 +198,7 @@ namespace Xbim.Ifc2x3.ApprovalResource
             get
             {
                 return
-                    ModelOf.InstancesWhere<IfcResourceApprovalRelationship>(r => r.Approval == this);
+                    ModelOf.Instances.Where<IfcResourceApprovalRelationship>(r => r.Approval == this);
             }
         }
 
@@ -208,7 +208,7 @@ namespace Xbim.Ifc2x3.ApprovalResource
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class)]
         public IEnumerable<IfcApprovalActorRelationship> Actors
         {
-            get { return ModelOf.InstancesWhere<IfcApprovalActorRelationship>(r => r.Approval == this); }
+            get { return ModelOf.Instances.Where<IfcApprovalActorRelationship>(r => r.Approval == this); }
         }
 
         /// <summary>
@@ -217,7 +217,7 @@ namespace Xbim.Ifc2x3.ApprovalResource
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class)]
         public IEnumerable<IfcApprovalRelationship> IsRelatedWith
         {
-            get { return ModelOf.InstancesWhere<IfcApprovalRelationship>(r => r.RelatedApproval == this); }
+            get { return ModelOf.Instances.Where<IfcApprovalRelationship>(r => r.RelatedApproval == this); }
         }
 
         /// <summary>
@@ -229,7 +229,7 @@ namespace Xbim.Ifc2x3.ApprovalResource
             get
             {
                 return
-                    ModelOf.InstancesWhere<IfcApprovalRelationship>(r => r.RelatingApproval == this);
+                    ModelOf.Instances.Where<IfcApprovalRelationship>(r => r.RelatingApproval == this);
             }
         }
 

@@ -33,10 +33,10 @@ namespace Xbim.DOM
     public class XbimDocument : IDisposable
     {
         //DOM infrastructure
-        private IModel _model;
+        private XbimModel _model;
         private XbimObjectCreator _creator;
         //xbim transatcion on the model
-        private Transaction _transaction;
+        private XbimReadWriteTransaction _transaction;
         public XbimModelView ModelView = XbimModelView.CoordinationView;
         private IfcAxis2Placement3D _wcs;
 
@@ -60,7 +60,7 @@ namespace Xbim.DOM
         {
             HashSet<IfcBuildingElement> elements = new HashSet<IfcBuildingElement>();
             
-            IEnumerable<IfcMaterialLayer> layers = _model.InstancesWhere<IfcMaterialLayer>(l => l.Material == material.Material).Distinct();
+            IEnumerable<IfcMaterialLayer> layers = _model.Instances.Where<IfcMaterialLayer>(l => l.Material == material.Material).Distinct();
 
 
 
@@ -229,7 +229,7 @@ namespace Xbim.DOM
         {
             BaseInit();
 
-            using (Transaction trans = _model.BeginTransaction("Model initialization"))
+            using (XbimReadWriteTransaction trans = _model.BeginTransaction("Model initialization"))
             {
                 IfcApplication app = _model.DefaultOwningApplication as IfcApplication;
                 if (app != null)
@@ -249,7 +249,7 @@ namespace Xbim.DOM
                 _model.Header.FileDescription.Description.Add(viewDefinition);
                 _model.Header.FileName.AuthorName.Add(authorName);
                 _model.Header.FileName.AuthorizationName = organisationName;
-                IfcProject project = _model.New<IfcProject>();
+                IfcProject project = _model.Instances.New<IfcProject>();
                 project.Initialize(ProjectUnits.SIUnitsUK);
                 project.Name = "Xbim";
                
@@ -288,7 +288,7 @@ namespace Xbim.DOM
             InitSpatialStructures();
         }
 
-        public XbimDocument(IModel model)
+        public XbimDocument(XbimModel model)
         {
             _model = model;
 
@@ -310,7 +310,7 @@ namespace Xbim.DOM
             _creator = new XbimObjectCreator(this);
             if (_model == null) _model = new XbimModel();
             _transaction = _model.BeginTransaction("XbimDocument transaction");
-            _wcs = _model.New<IfcAxis2Placement3D>();
+            _wcs = _model.Instances.New<IfcAxis2Placement3D>();
             //set world coordinate system
             _wcs.SetNewDirectionOf_XZ(
                 0, 0, 1,
@@ -322,7 +322,7 @@ namespace Xbim.DOM
         protected virtual void InitMaterials()
         {
             _materials = new XbimMaterialCollection();
-            IEnumerable<IfcMaterial> ifcMaterials = Model.InstancesOfType<IfcMaterial>();
+            IEnumerable<IfcMaterial> ifcMaterials = Model.Instances.OfType<IfcMaterial>();
             foreach (IfcMaterial material in ifcMaterials) Materials.Add(new XbimMaterial(this, material));
         }
 
@@ -334,10 +334,10 @@ namespace Xbim.DOM
             _spaces = new List<XbimSpace>();
 
             //spatial structure elements: 
-            foreach (IfcSite site in Model.InstancesOfType<IfcSite>()) _sites.Add(new XbimSite(this, site));
-            foreach (IfcBuilding building in Model.InstancesOfType<IfcBuilding>()) _buildings.Add(new XbimBuilding(this, building));
-            foreach (IfcBuildingStorey storey in Model.InstancesOfType<IfcBuildingStorey>()) _storeys.Add(new XbimBuildingStorey(this, storey));
-            foreach (IfcSpace space in Model.InstancesOfType<IfcSpace>()) _spaces.Add(new XbimSpace(this, space));
+            foreach (IfcSite site in Model.Instances.OfType<IfcSite>()) _sites.Add(new XbimSite(this, site));
+            foreach (IfcBuilding building in Model.Instances.OfType<IfcBuilding>()) _buildings.Add(new XbimBuilding(this, building));
+            foreach (IfcBuildingStorey storey in Model.Instances.OfType<IfcBuildingStorey>()) _storeys.Add(new XbimBuildingStorey(this, storey));
+            foreach (IfcSpace space in Model.Instances.OfType<IfcSpace>()) _spaces.Add(new XbimSpace(this, space));
         }
 
         protected virtual void InitBuildingElements()
@@ -358,20 +358,20 @@ namespace Xbim.DOM
             _coverings = new List<XbimCovering>();
 
             //building elements
-            foreach (IfcWall wall in Model.InstancesOfType<IfcWall>()) _walls.Add(new XbimWall(this, wall));
-            foreach (IfcRoof roof in Model.InstancesOfType<IfcRoof>()) _roofs.Add(new XbimRoof(this, roof));
-            foreach (IfcSlab slab in Model.InstancesOfType<IfcSlab>()) _slabs.Add(new XbimSlab(this, slab));
-            foreach (IfcPlate plate in Model.InstancesOfType<IfcPlate>()) _plates.Add(new XbimPlate(this, plate));
-            foreach (IfcBeam beam in Model.InstancesOfType<IfcBeam>()) _beams.Add(new XbimBeam(this, beam));
-            foreach (IfcColumn column in Model.InstancesOfType<IfcColumn>()) _columns.Add(new XbimColumn(this, column));
-            foreach (IfcDoor door in Model.InstancesOfType<IfcDoor>()) _doors.Add(new XbimDoor(this, door));
-            foreach (IfcRailing railing in Model.InstancesOfType<IfcRailing>()) _railings.Add(new XbimRailing(this, railing));
-            foreach (IfcRampFlight ramp in Model.InstancesOfType<IfcRampFlight>()) _rampFlights.Add(new XbimRampFlight(this, ramp));
-            foreach (IfcStairFlight stairFlight in Model.InstancesOfType<IfcStairFlight>()) _stairFlights.Add(new XbimStairFlight(this, stairFlight));
-            foreach (IfcCurtainWall curtWall in Model.InstancesOfType<IfcCurtainWall>()) _curtainWalls.Add(new XbimCurtainWall(this, curtWall));
-            foreach (IfcWindow window in Model.InstancesOfType<IfcWindow>()) _windows.Add(new XbimWindow(this, window));
-            foreach (IfcBuildingElementProxy proxy in Model.InstancesOfType<IfcBuildingElementProxy>()) _buildingElementProxys.Add(new XbimBuildingElementProxy(this, proxy));
-            foreach (IfcCovering covering in Model.InstancesOfType<IfcCovering>()) _coverings.Add(new XbimCovering(this, covering));
+            foreach (IfcWall wall in Model.Instances.OfType<IfcWall>()) _walls.Add(new XbimWall(this, wall));
+            foreach (IfcRoof roof in Model.Instances.OfType<IfcRoof>()) _roofs.Add(new XbimRoof(this, roof));
+            foreach (IfcSlab slab in Model.Instances.OfType<IfcSlab>()) _slabs.Add(new XbimSlab(this, slab));
+            foreach (IfcPlate plate in Model.Instances.OfType<IfcPlate>()) _plates.Add(new XbimPlate(this, plate));
+            foreach (IfcBeam beam in Model.Instances.OfType<IfcBeam>()) _beams.Add(new XbimBeam(this, beam));
+            foreach (IfcColumn column in Model.Instances.OfType<IfcColumn>()) _columns.Add(new XbimColumn(this, column));
+            foreach (IfcDoor door in Model.Instances.OfType<IfcDoor>()) _doors.Add(new XbimDoor(this, door));
+            foreach (IfcRailing railing in Model.Instances.OfType<IfcRailing>()) _railings.Add(new XbimRailing(this, railing));
+            foreach (IfcRampFlight ramp in Model.Instances.OfType<IfcRampFlight>()) _rampFlights.Add(new XbimRampFlight(this, ramp));
+            foreach (IfcStairFlight stairFlight in Model.Instances.OfType<IfcStairFlight>()) _stairFlights.Add(new XbimStairFlight(this, stairFlight));
+            foreach (IfcCurtainWall curtWall in Model.Instances.OfType<IfcCurtainWall>()) _curtainWalls.Add(new XbimCurtainWall(this, curtWall));
+            foreach (IfcWindow window in Model.Instances.OfType<IfcWindow>()) _windows.Add(new XbimWindow(this, window));
+            foreach (IfcBuildingElementProxy proxy in Model.Instances.OfType<IfcBuildingElementProxy>()) _buildingElementProxys.Add(new XbimBuildingElementProxy(this, proxy));
+            foreach (IfcCovering covering in Model.Instances.OfType<IfcCovering>()) _coverings.Add(new XbimCovering(this, covering));
         }
 
 
@@ -392,19 +392,19 @@ namespace Xbim.DOM
             _coveringTypes = new XbimUniqueNameCollection<XbimCoveringType>();
 
             //building element types:
-            foreach (IfcWallType wallType in Model.InstancesOfType<IfcWallType>()) WallTypes.Add(new XbimWallType(this, wallType));
-            foreach (IfcSlabType slabType in Model.InstancesOfType<IfcSlabType>()) SlabTypes.Add(new XbimSlabType(this, slabType));
-            foreach (IfcPlateType plateType in Model.InstancesOfType<IfcPlateType>()) PlateTypes.Add(new XbimPlateType(this, plateType));
-            foreach (IfcBeamType ifcBeamType in Model.InstancesOfType<IfcBeamType>()) { BeamTypes.Add(new XbimBeamType(this, ifcBeamType)); }
-            foreach (IfcStairFlightType ifcStairFlightType in Model.InstancesOfType<IfcStairFlightType>()) {StairFlightTypes.Add( new XbimStairFlightType(this, ifcStairFlightType)); }
-            foreach (IfcWindowStyle windowStyle in Model.InstancesOfType<IfcWindowStyle>()) {WindowStyles.Add( new XbimWindowStyle(this, windowStyle)); }
-            foreach (IfcDoorStyle doorStyle in Model.InstancesOfType<IfcDoorStyle>()) {DoorStyles.Add(new XbimDoorStyle(this, doorStyle)); }
-            foreach (IfcCurtainWallType curtainWallType in Model.InstancesOfType<IfcCurtainWallType>()) {CurtainWallTypes.Add( new XbimCurtainWallType(this, curtainWallType)); }
-            foreach (IfcColumnType columnType in Model.InstancesOfType<IfcColumnType>()) { ColumnTypes.Add( new XbimColumnType(this, columnType)); }
-            foreach (IfcRailingType railingType in Model.InstancesOfType<IfcRailingType>()) {RailingTypes.Add( new XbimRailingType(this, railingType)); }
-            foreach (IfcRampFlightType rampFlightType in Model.InstancesOfType<IfcRampFlightType>()) {RampFlightTypes.Add( new XbimRampFlightType(this, rampFlightType)); }
-            foreach (IfcBuildingElementProxyType proxyType in Model.InstancesOfType<IfcBuildingElementProxyType>()) { BuildingElementProxyTypes.Add(new XbimBuildingElementProxyType(this, proxyType)); }
-            foreach (IfcCoveringType type in Model.InstancesOfType<IfcCoveringType>()) { CoveringTypes.Add(new XbimCoveringType(this, type)); }
+            foreach (IfcWallType wallType in Model.Instances.OfType<IfcWallType>()) WallTypes.Add(new XbimWallType(this, wallType));
+            foreach (IfcSlabType slabType in Model.Instances.OfType<IfcSlabType>()) SlabTypes.Add(new XbimSlabType(this, slabType));
+            foreach (IfcPlateType plateType in Model.Instances.OfType<IfcPlateType>()) PlateTypes.Add(new XbimPlateType(this, plateType));
+            foreach (IfcBeamType ifcBeamType in Model.Instances.OfType<IfcBeamType>()) { BeamTypes.Add(new XbimBeamType(this, ifcBeamType)); }
+            foreach (IfcStairFlightType ifcStairFlightType in Model.Instances.OfType<IfcStairFlightType>()) {StairFlightTypes.Add( new XbimStairFlightType(this, ifcStairFlightType)); }
+            foreach (IfcWindowStyle windowStyle in Model.Instances.OfType<IfcWindowStyle>()) {WindowStyles.Add( new XbimWindowStyle(this, windowStyle)); }
+            foreach (IfcDoorStyle doorStyle in Model.Instances.OfType<IfcDoorStyle>()) {DoorStyles.Add(new XbimDoorStyle(this, doorStyle)); }
+            foreach (IfcCurtainWallType curtainWallType in Model.Instances.OfType<IfcCurtainWallType>()) {CurtainWallTypes.Add( new XbimCurtainWallType(this, curtainWallType)); }
+            foreach (IfcColumnType columnType in Model.Instances.OfType<IfcColumnType>()) { ColumnTypes.Add( new XbimColumnType(this, columnType)); }
+            foreach (IfcRailingType railingType in Model.Instances.OfType<IfcRailingType>()) {RailingTypes.Add( new XbimRailingType(this, railingType)); }
+            foreach (IfcRampFlightType rampFlightType in Model.Instances.OfType<IfcRampFlightType>()) {RampFlightTypes.Add( new XbimRampFlightType(this, rampFlightType)); }
+            foreach (IfcBuildingElementProxyType proxyType in Model.Instances.OfType<IfcBuildingElementProxyType>()) { BuildingElementProxyTypes.Add(new XbimBuildingElementProxyType(this, proxyType)); }
+            foreach (IfcCoveringType type in Model.Instances.OfType<IfcCoveringType>()) { CoveringTypes.Add(new XbimCoveringType(this, type)); }
         }
 
 
@@ -626,7 +626,7 @@ namespace Xbim.DOM
         /// </summary>
         public void GenerateNoChangeOwnerHistoryForAll()
         {
-            IEnumerable<IfcRoot> instances = this.Model.InstancesOfType<IfcRoot>();
+            IEnumerable<IfcRoot> instances = this.Model.Instances.OfType<IfcRoot>();
             foreach (var instance in instances)
             {
                 //create new object of owner history
@@ -641,7 +641,7 @@ namespace Xbim.DOM
             IfcTimeStamp stamp = IfcTimeStamp.ToTimeStamp(DateTime.Now);
 
             //return new object
-            return Model.New<IfcOwnerHistory>(h => { h.OwningUser = defOwner.OwningUser; h.OwningApplication = defOwner.OwningApplication; h.CreationDate = stamp; h.ChangeAction = changeAction; });
+            return Model.Instances.New<IfcOwnerHistory>(h => { h.OwningUser = defOwner.OwningUser; h.OwningApplication = defOwner.OwningApplication; h.CreationDate = stamp; h.ChangeAction = changeAction; });
         }
 
         /// <summary>
@@ -659,7 +659,7 @@ namespace Xbim.DOM
         public static void TryToCreateUndefinedElementTypes(IModel model)
         {
             //get elements without element type
-            IEnumerable<IfcBuildingElement> temp = model.InstancesWhere<IfcBuildingElement>(el => el.GetDefiningType() == null);
+            IEnumerable<IfcBuildingElement> temp = model.Instances.Where<IfcBuildingElement>(el => el.GetDefiningType() == null);
             IEnumerable<IfcBuildingElement> elements = temp.Where(el => el.GetMaterialLayerSetUsage(model) != null);
 
             //create groups of elements with the asme material layer set usage (it means they have the same element type indirectly)
@@ -701,21 +701,21 @@ namespace Xbim.DOM
                     }
                 }
 
-                if (elem is IfcBuildingElementProxy) type = model.New<IfcBuildingElementProxyType>();
-                if (elem is IfcCovering) type = model.New<IfcCoveringType>();
-                if (elem is IfcBeam) type = model.New<IfcBeamType>();
-                if (elem is IfcColumn) type = model.New<IfcColumnType>();
-                if (elem is IfcCurtainWall) type = model.New<IfcCurtainWallType>();
-                if (elem is IfcDoor) type = model.New<IfcDoorStyle>();
-                if (elem is IfcMember) type = model.New<IfcMemberType>();
-                if (elem is IfcRailing) type = model.New<IfcRailingType>();
-                if (elem is IfcRampFlight) type = model.New<IfcRampFlightType>();
-                if (elem is IfcWall) type = model.New<IfcWallType>();
-                if (elem is IfcSlab) type = model.New<IfcSlabType>(t => t.PredefinedType = (elem as IfcSlab).PredefinedType ?? IfcSlabTypeEnum.NOTDEFINED);
-                if (elem is IfcStairFlight) type = model.New<IfcStairFlightType>();
-                if (elem is IfcWindow) type = model.New<IfcWindowStyle>();
-                if (elem is IfcPlate) type = model.New<IfcPlateType>();
-                if (elem is IfcCovering) type = model.New<IfcCoveringType>();
+                if (elem is IfcBuildingElementProxy) type = model.Instances.New<IfcBuildingElementProxyType>();
+                if (elem is IfcCovering) type = model.Instances.New<IfcCoveringType>();
+                if (elem is IfcBeam) type = model.Instances.New<IfcBeamType>();
+                if (elem is IfcColumn) type = model.Instances.New<IfcColumnType>();
+                if (elem is IfcCurtainWall) type = model.Instances.New<IfcCurtainWallType>();
+                if (elem is IfcDoor) type = model.Instances.New<IfcDoorStyle>();
+                if (elem is IfcMember) type = model.Instances.New<IfcMemberType>();
+                if (elem is IfcRailing) type = model.Instances.New<IfcRailingType>();
+                if (elem is IfcRampFlight) type = model.Instances.New<IfcRampFlightType>();
+                if (elem is IfcWall) type = model.Instances.New<IfcWallType>();
+                if (elem is IfcSlab) type = model.Instances.New<IfcSlabType>(t => t.PredefinedType = (elem as IfcSlab).PredefinedType ?? IfcSlabTypeEnum.NOTDEFINED);
+                if (elem is IfcStairFlight) type = model.Instances.New<IfcStairFlightType>();
+                if (elem is IfcWindow) type = model.Instances.New<IfcWindowStyle>();
+                if (elem is IfcPlate) type = model.Instances.New<IfcPlateType>();
+                if (elem is IfcCovering) type = model.Instances.New<IfcCoveringType>();
 
                 if (type == null) 
                 {
@@ -758,7 +758,7 @@ namespace Xbim.DOM
             IModel model = _model;
 
             //get elements
-            IEnumerable<IfcBuildingElement> elements = model.InstancesOfType<IfcBuildingElement>();
+            IEnumerable<IfcBuildingElement> elements = model.Instances.OfType<IfcBuildingElement>();
 
             foreach (var element in elements)
             {
@@ -838,7 +838,7 @@ namespace Xbim.DOM
         /// </summary>
         public static void GenerateUniqueNames(IModel model)
         {
-            IEnumerable<IfcTypeProduct> types = model.InstancesOfType<IfcTypeProduct>();
+            IEnumerable<IfcTypeProduct> types = model.Instances.OfType<IfcTypeProduct>();
             foreach (var type in types)
             {
                 List<IfcTypeProduct> identNameTypes = types.Where(t => t.Name == type.Name).ToList();
@@ -931,11 +931,11 @@ namespace Xbim.DOM
         private IfcGroup GetOrCreateGroup(string name)
         {
             //check group existence
-            IfcGroup group = Model.InstancesWhere<IfcGroup>(gr => gr.Name == name).FirstOrDefault();  //assume unique name of the group in the model which is not IFC rule
-            if (group == null) group = Model.New<IfcGroup>(gr => gr.Name = name);
+            IfcGroup group = Model.Instances.Where<IfcGroup>(gr => gr.Name == name).FirstOrDefault();  //assume unique name of the group in the model which is not IFC rule
+            if (group == null) group = Model.Instances.New<IfcGroup>(gr => gr.Name = name);
             //check relation existence and create it if it does not esist
             IfcRelAssignsToGroup relation = group.IsGroupedBy;
-            if (relation == null) Model.New<IfcRelAssignsToGroup>();
+            if (relation == null) Model.Instances.New<IfcRelAssignsToGroup>();
 
             //return group
             return group;

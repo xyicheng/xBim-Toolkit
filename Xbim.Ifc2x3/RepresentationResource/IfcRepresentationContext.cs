@@ -201,7 +201,7 @@ namespace Xbim.Ifc2x3.RepresentationResource
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class)]
         public IEnumerable<IfcRepresentation> RepresentationsInContext
         {
-            get { return ModelOf.InstancesWhere<IfcRepresentation>(r => r.ContextOfItems == this); }
+            get { return ModelOf.Instances.Where<IfcRepresentation>(r => r.ContextOfItems == this); }
         }
 
         #endregion

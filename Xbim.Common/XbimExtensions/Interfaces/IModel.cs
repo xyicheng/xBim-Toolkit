@@ -18,6 +18,7 @@ using System.IO;
 using System.Linq.Expressions;
 using Xbim.XbimExtensions.Transactions;
 using Xbim.Common;
+using System.Collections;
 
 
 #endregion
@@ -65,20 +66,11 @@ namespace Xbim.XbimExtensions.Interfaces
 
 
         XbimModelFactors GetModelFactors { get; }
-        IEnumerable<TIfcType> InstancesOfType<TIfcType>(bool activate = false) where TIfcType : IPersistIfcEntity;
-        IEnumerable<TIfcType> InstancesWhere<TIfcType>(Expression<Func<TIfcType, bool>> expression) where TIfcType : IPersistIfcEntity;
 
-       
-        TIfcType New<TIfcType>(InitProperties<TIfcType> initPropertiesFunc = null) where TIfcType : IPersistIfcEntity, new();
-
+        IXbimInstanceCollection Instances { get; }
         int Activate(IPersistIfcEntity owningEntity, bool write);
         void Delete(IPersistIfcEntity instance);
-        bool ContainsInstance(IPersistIfcEntity instance);
-        bool ContainsEntityLabel(int entityLabel);
-        IPersistIfcEntity GetInstance(int label);
 
-        long InstancesCount { get; }
-        
         IPersistIfcEntity IfcProject { get; }
         IEnumerable<IPersistIfcEntity> IfcProducts { get; }
 
@@ -87,9 +79,7 @@ namespace Xbim.XbimExtensions.Interfaces
         IPersistIfcEntity DefaultOwningApplication { get; }
         IPersistIfcEntity DefaultOwningUser { get; }
 
-        IIfcFileHeader Header { get;}
-        
-        Transaction BeginTransaction(string operationName = null);
+        IIfcFileHeader Header { get;}  
 
         bool CreateFrom(string importFrom, string xbimDbName = null, ReportProgressDelegate progDelegate = null);
         bool Create(string fileName);

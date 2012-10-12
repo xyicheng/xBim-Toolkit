@@ -148,7 +148,7 @@ namespace Xbim.IO.Parser
         {
             Part21Entity p21 = _processStack.Peek();
             if (p21.CurrentParamIndex == -1)
-                p21.CurrentParamIndex++; //first time in take the forst argument
+                p21.CurrentParamIndex++; //first time in take the first argument
             _listNestLevel++;
             if (!InHeader)
                 _binaryWriter.Write((byte)P21ParseAction.BeginList);

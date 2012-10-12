@@ -44,6 +44,7 @@ namespace Xbim.Ifc2x3.Kernel
         ///   WR21   :   The IfcRelAssociates relationship is restricted to associate information object, such as classification, document, library information, matsel, etc., to semantic object (occurrence objects based on IfcObject, and type objects, based on IfcTypeObject).
         /// </remarks>
         [IfcAttribute(5, IfcAttributeState.Mandatory, IfcAttributeType.Set, 1)]
+        [IndexedProperty]
         public XbimSet<IfcRoot> RelatedObjects
         {
             get

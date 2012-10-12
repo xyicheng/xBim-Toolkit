@@ -139,7 +139,7 @@ namespace Xbim.Ifc2x3.ExternalReferenceResource
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class)]
         public IEnumerable<IfcClassificationItem> Contains
         {
-            get { return ModelOf.InstancesWhere<IfcClassificationItem>(ci => ci.ItemOf == this); }
+            get { return ModelOf.Instances.Where<IfcClassificationItem>(ci => ci.ItemOf == this); }
         }
 
         #region INotifyPropertyChanged Members

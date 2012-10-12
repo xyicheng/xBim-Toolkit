@@ -37,7 +37,7 @@ namespace Xbim.COBie.Data
             COBieSheet<COBieConnectionRow> connections = new COBieSheet<COBieConnectionRow>(Constants.WORKSHEET_CONNECTION);
 
             // get all IfcRelConnectsElements objects from IFC file
-            IEnumerable<IfcRelConnectsElements> ifcRelConnectsElements = Model.InstancesOfType<IfcRelConnectsElements>()
+            IEnumerable<IfcRelConnectsElements> ifcRelConnectsElements = Model.Instances.OfType<IfcRelConnectsElements>()
                                                                         .Where(rce => rce.RelatedElement != null && 
                                                                                       !Context.ComponentExcludeTypes.Contains(rce.RelatedElement.GetType()) &&
                                                                                       rce.RelatingElement != null &&
@@ -45,7 +45,7 @@ namespace Xbim.COBie.Data
                                                                                       );
             //get ifcRelConnectsPorts only if we have ifcRelConnectsElements
             IEnumerable<IfcRelConnectsPorts> ifcRelConnectsPorts = Enumerable.Empty<IfcRelConnectsPorts>();
-            if (ifcRelConnectsElements.Count() > 0) ifcRelConnectsPorts = Model.InstancesOfType<IfcRelConnectsPorts>();
+            if (ifcRelConnectsElements.Count() > 0) ifcRelConnectsPorts = Model.Instances.OfType<IfcRelConnectsPorts>();
 
             ProgressIndicator.Initialise("Creating Connections", ifcRelConnectsElements.Count());
 

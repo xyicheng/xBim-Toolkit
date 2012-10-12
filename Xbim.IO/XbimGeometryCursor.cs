@@ -115,11 +115,11 @@ namespace Xbim.IO
             _colValues = new ColumnValue[] { _colValGeomType, _colValGeometryProductLabel, _colValProductIfcTypeId, _colValSubPart, _colValTransformMatrix, _colValShapeData, _colValRepItem };
 
         }
-        public XbimGeometryCursor(Instance instance, string database)
+        public XbimGeometryCursor(JET_INSTANCE instance, string database)
             : this(instance, database, OpenDatabaseGrbit.None)
         {
         }
-        public XbimGeometryCursor(Instance instance, string database, OpenDatabaseGrbit mode)
+        public XbimGeometryCursor(JET_INSTANCE instance, string database, OpenDatabaseGrbit mode)
             : base(instance, database, mode)
         {
             Api.JetOpenTable(this.sesid, this.dbId, GeometryTableName, null, 0, mode == OpenDatabaseGrbit.ReadOnly ? OpenTableGrbit.ReadOnly :

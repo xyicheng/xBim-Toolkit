@@ -60,11 +60,11 @@ namespace Xbim.Ifc2x3.Extensions
         {
             IModel model = prod.ModelOf;
 
-            prod.ObjectPlacement = model.New<IfcLocalPlacement>();
+            prod.ObjectPlacement = model.Instances.New<IfcLocalPlacement>();
             IfcLocalPlacement localPlacement = prod.ObjectPlacement as IfcLocalPlacement;
 
             if (localPlacement.RelativePlacement == null)
-                localPlacement.RelativePlacement = model.New<IfcAxis2Placement3D>();
+                localPlacement.RelativePlacement = model.Instances.New<IfcAxis2Placement3D>();
             IfcAxis2Placement3D placement = localPlacement.RelativePlacement as IfcAxis2Placement3D;
             placement.SetNewLocation(placementX, placementY, placementZ);
         }
@@ -140,11 +140,11 @@ namespace Xbim.Ifc2x3.Extensions
             IfcProductDefinitionShape definitionShape = prod.Representation as IfcProductDefinitionShape;
             if (definitionShape == null)
             {
-                definitionShape = model.New<IfcProductDefinitionShape>();
+                definitionShape = model.Instances.New<IfcProductDefinitionShape>();
                 prod.Representation = definitionShape;
             }
 
-            IfcShapeRepresentation shapeRepresentation = model.New<IfcShapeRepresentation>();
+            IfcShapeRepresentation shapeRepresentation = model.Instances.New<IfcShapeRepresentation>();
             shapeRepresentation.ContextOfItems = context; // model.IfcProject.ModelContext();
             shapeRepresentation.RepresentationIdentifier = "Body";
             shapeRepresentation.RepresentationType = "Brep";
@@ -166,11 +166,11 @@ namespace Xbim.Ifc2x3.Extensions
             IfcProductDefinitionShape definitionShape = prod.Representation as IfcProductDefinitionShape;
             if (definitionShape == null)
             {
-                definitionShape = model.New<IfcProductDefinitionShape>();
+                definitionShape = model.Instances.New<IfcProductDefinitionShape>();
                 prod.Representation = definitionShape;
             }
 
-            IfcShapeRepresentation shapeRepresentation = model.New<IfcShapeRepresentation>();
+            IfcShapeRepresentation shapeRepresentation = model.Instances.New<IfcShapeRepresentation>();
             shapeRepresentation.ContextOfItems = context; // model.IfcProject.ModelContext();
             shapeRepresentation.RepresentationIdentifier = "Body";
             shapeRepresentation.RepresentationType = "SweptSolid";

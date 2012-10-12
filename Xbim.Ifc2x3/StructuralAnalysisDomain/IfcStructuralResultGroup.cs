@@ -94,7 +94,7 @@ namespace Xbim.Ifc2x3.StructuralAnalysisDomain
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, 0, 1)]
         public IEnumerable<IfcStructuralAnalysisModel> ResultGroupFor
         {
-            get { return ModelOf.InstancesWhere<IfcStructuralAnalysisModel>(s => s.HasResults == this); }
+            get { return ModelOf.Instances.Where<IfcStructuralAnalysisModel>(s => s.HasResults == this); }
         }
 
         #endregion

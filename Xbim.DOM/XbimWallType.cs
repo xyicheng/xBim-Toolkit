@@ -45,7 +45,7 @@ namespace Xbim.DOM
 
         private void BaseInit(string name)
         {
-            _ifcTypeProduct = _document.Model.New<IfcWallType>();
+            _ifcTypeProduct = _document.Model.Instances.New<IfcWallType>();
             _ifcTypeProduct.Name = name;
         }
         #endregion

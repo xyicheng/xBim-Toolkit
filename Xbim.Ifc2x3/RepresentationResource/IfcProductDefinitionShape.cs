@@ -58,7 +58,7 @@ namespace Xbim.Ifc2x3.RepresentationResource
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class, 1, 1)]
         public IEnumerable<IfcProduct> ShapeOfProduct
         {
-            get { return ModelOf.InstancesWhere<IfcProduct>(p => p.Representation == this); }
+            get { return ModelOf.Instances.Where<IfcProduct>(p => p.Representation == this); }
         }
 
         /// <summary>
@@ -71,7 +71,7 @@ namespace Xbim.Ifc2x3.RepresentationResource
             get
             {
                 return
-                    ModelOf.InstancesWhere<IfcShapeAspect>(
+                    ModelOf.Instances.Where<IfcShapeAspect>(
                         s => s.PartOfProductDefinitionShape == this);
             }
         }

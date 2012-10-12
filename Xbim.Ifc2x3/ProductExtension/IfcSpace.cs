@@ -211,7 +211,7 @@ namespace Xbim.Ifc2x3.ProductExtension
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class)]
         public IEnumerable<IfcRelCoversSpaces> HasCoverings
         {
-            get { return ModelOf.InstancesWhere<IfcRelCoversSpaces>(r => r.RelatedSpace == this); }
+            get { return ModelOf.Instances.Where<IfcRelCoversSpaces>(r => r.RelatedSpace == this); }
         }
 
         /// <summary>
@@ -221,7 +221,7 @@ namespace Xbim.Ifc2x3.ProductExtension
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class)]
         protected IEnumerable<IfcRelSpaceBoundary> BoundedBy
         {
-            get { return ModelOf.InstancesWhere<IfcRelSpaceBoundary>(r => r.RelatingSpace == this); }
+            get { return ModelOf.Instances.Where<IfcRelSpaceBoundary>(r => r.RelatingSpace == this); }
         }
 
         #endregion

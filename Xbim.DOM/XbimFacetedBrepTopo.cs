@@ -28,9 +28,9 @@ namespace Xbim.DOM
         internal XbimFacetedBrepTopo(XbimDocument document) 
         {
             _document = document;
-            _ifcFacetedBrep = _document.Model.New<IfcFacetedBrep>();
+            _ifcFacetedBrep = _document.Model.Instances.New<IfcFacetedBrep>();
 
-            if (_ifcFacetedBrep.Outer == null) _ifcFacetedBrep.Outer = _document.Model.New<IfcClosedShell>();
+            if (_ifcFacetedBrep.Outer == null) _ifcFacetedBrep.Outer = _document.Model.Instances.New<IfcClosedShell>();
             //if (_ifcFacetedBrep.Outer.CfsFaces == null) _ifcFacetedBrep.Outer.CfsFaces = new XbimExtensions.XbimSet<IfcFace>();
 
             _vertices = new Dictionary<VertexRef, IfcVertex>();
@@ -48,9 +48,9 @@ namespace Xbim.DOM
         {
             if (_vertices.ContainsKey(externalRef)) return;  //if the reference already exists, no vertex is added.
 
-            IfcCartesianPoint point = _document.Model.New<IfcCartesianPoint>();
+            IfcCartesianPoint point = _document.Model.Instances.New<IfcCartesianPoint>();
             point.SetXYZ(X, Y, Z);
-            IfcVertex vertex = _document.Model.New<IfcVertexPoint>();
+            IfcVertex vertex = _document.Model.Instances.New<IfcVertexPoint>();
             (vertex as IfcVertexPoint).VertexGeometry = point;
 
             _vertices.Add(externalRef, vertex);
@@ -76,11 +76,11 @@ namespace Xbim.DOM
             IfcEdge edge = null;
             if (withCurveGeometry)
             {
-                edge = _document.Model.New<IfcEdgeCurve>();
+                edge = _document.Model.Instances.New<IfcEdgeCurve>();
             }
             else
             {
-                edge = _document.Model.New<IfcEdge>();
+                edge = _document.Model.Instances.New<IfcEdge>();
             }
             edge.EdgeStart = start;
             edge.EdgeEnd = end;
@@ -94,9 +94,9 @@ namespace Xbim.DOM
 
             IfcCartesianPoint pos = position.CreateIfcCartesianPoint(_document);
             IfcDirection vertorDirection = direction.CreateIfcDirection(_document);
-            IfcVector vector = _document.Model.New<IfcVector>(vct => { vct.Magnitude = 1; vct.Orientation = vertorDirection; });
+            IfcVector vector = _document.Model.Instances.New<IfcVector>(vct => { vct.Magnitude = 1; vct.Orientation = vertorDirection; });
 
-            IfcLine line = _document.Model.New<IfcLine>(ln => { ln.Dir = vector; ln.Pnt = pos; });
+            IfcLine line = _document.Model.Instances.New<IfcLine>(ln => { ln.Dir = vector; ln.Pnt = pos; });
             edgeCurve.EdgeGeometry = line;
             edgeCurve.SameSense = sameSenseOfLineAndEdge;
         }
@@ -111,9 +111,9 @@ namespace Xbim.DOM
 
             IfcCartesianPoint pos = (start as IfcVertexPoint).VertexGeometry as IfcCartesianPoint;
             IfcDirection vertorDirection = direction.CreateIfcDirection(_document);
-            IfcVector vector = _document.Model.New<IfcVector>(vct => { vct.Magnitude = 1; vct.Orientation = vertorDirection; });
+            IfcVector vector = _document.Model.Instances.New<IfcVector>(vct => { vct.Magnitude = 1; vct.Orientation = vertorDirection; });
 
-            IfcLine line = _document.Model.New<IfcLine>(ln => { ln.Dir = vector; ln.Pnt = pos; });
+            IfcLine line = _document.Model.Instances.New<IfcLine>(ln => { ln.Dir = vector; ln.Pnt = pos; });
             edgeCurve.EdgeGeometry = line;
             edgeCurve.SameSense = sameSenseOfLineAndEdge;
         }
@@ -124,7 +124,7 @@ namespace Xbim.DOM
             if (radius < 0) throw new Exception("Negative radius is not allowed.");
             IfcAxis2Placement axis2placement = placement._ifcAxis2Placement;
 
-            IfcCircle circle = _document.Model.New<IfcCircle>(cr => { cr.Position = axis2placement; cr.Radius = radius; });
+            IfcCircle circle = _document.Model.Instances.New<IfcCircle>(cr => { cr.Position = axis2placement; cr.Radius = radius; });
             edgeCurve.EdgeGeometry = circle;
             edgeCurve.SameSense = sameSenseOfCircleAndEdge;
         }
@@ -135,11 +135,11 @@ namespace Xbim.DOM
             if (radius < 0) throw new Exception("Negative radius is not allowed.");
             IfcAxis2Placement axis2placement = placement._ifcAxis2Placement;
 
-            IfcCircle circle = _document.Model.New<IfcCircle>(cr => { cr.Position = axis2placement; cr.Radius = radius; });
+            IfcCircle circle = _document.Model.Instances.New<IfcCircle>(cr => { cr.Position = axis2placement; cr.Radius = radius; });
             IfcCartesianPoint point1 = startPoint.CreateIfcCartesianPoint(_document);
             IfcCartesianPoint point2 = endPoint.CreateIfcCartesianPoint(_document);
 
-            IfcTrimmedCurve trimmedCurve = _document.Model.New<IfcTrimmedCurve>(crv => { crv.BasisCurve = circle; crv.Trim1.Add_Reversible(point1); crv.Trim2.Add_Reversible(point2); crv.SenseAgreement = senseOfTrimming; crv.MasterRepresentation = IfcTrimmingPreference.CARTESIAN; });
+            IfcTrimmedCurve trimmedCurve = _document.Model.Instances.New<IfcTrimmedCurve>(crv => { crv.BasisCurve = circle; crv.Trim1.Add_Reversible(point1); crv.Trim2.Add_Reversible(point2); crv.SenseAgreement = senseOfTrimming; crv.MasterRepresentation = IfcTrimmingPreference.CARTESIAN; });
             edgeCurve.EdgeGeometry = trimmedCurve;
             edgeCurve.SameSense = sameSenseOfArcAndEdge;
         }
@@ -150,7 +150,7 @@ namespace Xbim.DOM
             if (semiAxis1 <= 0 || semiAxis2 <= 0) throw new Exception("Semi axes must be greater than 0.");
             IfcAxis2Placement placement = position._ifcAxis2Placement;
 
-            IfcEllipse ellipse = _document.Model.New<IfcEllipse>(el => { el.Position = placement; el.SemiAxis1 = semiAxis1; el.SemiAxis2 = semiAxis2;});
+            IfcEllipse ellipse = _document.Model.Instances.New<IfcEllipse>(el => { el.Position = placement; el.SemiAxis1 = semiAxis1; el.SemiAxis2 = semiAxis2;});
             edgeCurve.EdgeGeometry = ellipse;
             edgeCurve.SameSense = sameSenseOfEllipseAndEdge;
         }
@@ -163,11 +163,11 @@ namespace Xbim.DOM
             if (semiAxis1 <= 0 || semiAxis2 <= 0) throw new Exception("Semi axes must be greater than 0.");
             IfcAxis2Placement placement = position._ifcAxis2Placement;
 
-            IfcEllipse ellipse = _document.Model.New<IfcEllipse>(el => { el.Position = placement; el.SemiAxis1 = semiAxis1; el.SemiAxis2 = semiAxis2; });
+            IfcEllipse ellipse = _document.Model.Instances.New<IfcEllipse>(el => { el.Position = placement; el.SemiAxis1 = semiAxis1; el.SemiAxis2 = semiAxis2; });
             IfcCartesianPoint point1 = startPoint.CreateIfcCartesianPoint(_document);
             IfcCartesianPoint point2 = endPoint.CreateIfcCartesianPoint(_document);
 
-            IfcTrimmedCurve trimmedCurve = _document.Model.New<IfcTrimmedCurve>(crv => { crv.BasisCurve = ellipse; crv.Trim1.Add_Reversible(point1); crv.Trim2.Add_Reversible(point2); crv.SenseAgreement = senseOfTrimming; crv.MasterRepresentation = IfcTrimmingPreference.CARTESIAN; });
+            IfcTrimmedCurve trimmedCurve = _document.Model.Instances.New<IfcTrimmedCurve>(crv => { crv.BasisCurve = ellipse; crv.Trim1.Add_Reversible(point1); crv.Trim2.Add_Reversible(point2); crv.SenseAgreement = senseOfTrimming; crv.MasterRepresentation = IfcTrimmingPreference.CARTESIAN; });
             edgeCurve.EdgeGeometry = trimmedCurve;
             edgeCurve.SameSense = sameSenseOfEllipseAndEdge;
         }
@@ -195,13 +195,13 @@ namespace Xbim.DOM
 
         public void AddFaceOuterBound(FaceRef externalRefFace, List<EdgeRef> externalRefEdges, List<bool> orientationOfEdges, bool orientationOfFaceBound)
         {
-            IfcFaceBound faceBound = _document.Model.New<IfcFaceOuterBound>(fb => fb.Orientation = orientationOfFaceBound);
+            IfcFaceBound faceBound = _document.Model.Instances.New<IfcFaceOuterBound>(fb => fb.Orientation = orientationOfFaceBound);
             SetFaceBound(externalRefFace, externalRefEdges, orientationOfEdges, ref faceBound);
         }
 
         public void AddFaceInnerBound(FaceRef externalRefFace, List<EdgeRef> externalRefEdges, List<bool> orientationOfEdges, bool orientationOfFaceBound)
         {
-            IfcFaceBound faceBound = _document.Model.New<IfcFaceBound>(fb => fb.Orientation = orientationOfFaceBound);
+            IfcFaceBound faceBound = _document.Model.Instances.New<IfcFaceBound>(fb => fb.Orientation = orientationOfFaceBound);
             SetFaceBound(externalRefFace, externalRefEdges, orientationOfEdges, ref faceBound);
         }
 
@@ -216,7 +216,7 @@ namespace Xbim.DOM
             int countOrientation = orientationOfEdges.Count;
             if (countEdges != countOrientation) throw new Exception("Number of edges and their orientation differs. Every edge must be oriented.");
 
-            IfcEdgeLoop loop = _document.Model.New<IfcEdgeLoop>();
+            IfcEdgeLoop loop = _document.Model.Instances.New<IfcEdgeLoop>();
             //if (loop.EdgeList == null) loop.EdgeList = new XbimExtensions.XbimList<IfcOrientedEdge>();
 
             for (int i = 0; i < countEdges; i++)
@@ -235,7 +235,7 @@ namespace Xbim.DOM
                 tempInt++;
                 bool orientation = orientationOfEdges[i];
 
-                IfcOrientedEdge orientEdge = _document.Model.New<IfcOrientedEdge>(ed => { ed.Orientation = orientation; ed.EdgeElement = edge; });
+                IfcOrientedEdge orientEdge = _document.Model.Instances.New<IfcOrientedEdge>(ed => { ed.Orientation = orientation; ed.EdgeElement = edge; });
                 (orientEdge as IfcEdge).EdgeStart = edge.EdgeStart;
                 (orientEdge as IfcEdge).EdgeEnd = edge.EdgeEnd;
                 orientEdge.EdgeElement = edge;
@@ -257,12 +257,12 @@ namespace Xbim.DOM
             _faces.TryGetValue(externalRefFace, out existFace);
             if (existFace != null) throw new Exception("Face with this external reference already exists.");
 
-            IfcFaceSurface face = _document.Model.New<IfcFaceSurface>(fc => fc.SameSense = sameSenseAsBound);
+            IfcFaceSurface face = _document.Model.Instances.New<IfcFaceSurface>(fc => fc.SameSense = sameSenseAsBound);
             //if (face.Bounds == null) face.Bounds = new XbimExtensions.XbimSet<IfcFaceBound>();
-            face.Surface = _document.Model.New<IfcPlane>();
+            face.Surface = _document.Model.Instances.New<IfcPlane>();
             IfcPlane plane = face.Surface as IfcPlane;
 
-            plane.Position = _document.Model.New<IfcAxis2Placement3D>();
+            plane.Position = _document.Model.Instances.New<IfcAxis2Placement3D>();
             plane.Position.SetNewLocation(position.X, position.Y, position.Z);
             plane.Position.SetNewDirectionOf_XZ(planeVector.X, planeVector.Y, planeVector.Z, normal.X, normal.Y, normal.Z);
 
@@ -277,9 +277,9 @@ namespace Xbim.DOM
             _faces.TryGetValue(externalRefFace, out existFace);
             if (existFace != null) throw new Exception("Face with this external reference already exists.");
 
-            IfcFaceSurface face = _document.Model.New<IfcFaceSurface>(fc => fc.SameSense = sameSenseAsBound);
+            IfcFaceSurface face = _document.Model.Instances.New<IfcFaceSurface>(fc => fc.SameSense = sameSenseAsBound);
             //if (face.Bounds == null) face.Bounds = new XbimExtensions.XbimSet<IfcFaceBound>();
-            face.Surface = _document.Model.New<IfcSurfaceOfLinearExtrusion>();
+            face.Surface = _document.Model.Instances.New<IfcSurfaceOfLinearExtrusion>();
             IfcSurfaceOfLinearExtrusion surface = face.Surface as IfcSurfaceOfLinearExtrusion;
 
             //get curve for extrusion from the specified edge
@@ -292,7 +292,7 @@ namespace Xbim.DOM
             //set parameters of the extrusion
             surface.Position = extrusionPosition._ifcAxis2Placement;
             surface.Depth = depthExtrusion;
-            surface.SweptCurve = _document.Model.New<IfcArbitraryOpenProfileDef>();
+            surface.SweptCurve = _document.Model.Instances.New<IfcArbitraryOpenProfileDef>();
             surface.ExtrudedDirection = extrusionDirection.CreateIfcDirection(_document);
             IfcArbitraryOpenProfileDef profile = surface.SweptCurve as IfcArbitraryOpenProfileDef;
             profile.Curve = curve;
@@ -352,17 +352,17 @@ namespace Xbim.DOM
 
         internal IfcCartesianPoint CreateIfcCartesianPoint(XbimDocument document)
         {
-            return document.Model.New<IfcCartesianPoint>(pt => pt.SetXYZ(X, Y, Z));
+            return document.Model.Instances.New<IfcCartesianPoint>(pt => pt.SetXYZ(X, Y, Z));
         }
 
         internal IfcCartesianPoint CreateIfcCartesianPoint2D(XbimDocument document)
         {
-            return document.Model.New<IfcCartesianPoint>(pt => pt.SetXY(X, Y));
+            return document.Model.Instances.New<IfcCartesianPoint>(pt => pt.SetXY(X, Y));
         }
 
         internal IfcDirection CreateIfcDirection(XbimDocument document)
         {
-            return document.Model.New<IfcDirection>(dir => dir.SetXYZ(X, Y, Z));
+            return document.Model.Instances.New<IfcDirection>(dir => dir.SetXYZ(X, Y, Z));
         }
     }
 }

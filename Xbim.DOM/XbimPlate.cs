@@ -43,7 +43,7 @@ namespace Xbim.DOM
         private void BaseInit(XbimPlateType xbimPlateType)
         {
             _document.Plates.Add(this);
-            _ifcBuildingElement = _document.Model.New<IfcPlate>();
+            _ifcBuildingElement = _document.Model.Instances.New<IfcPlate>();
             _ifcBuildingElement.SetDefiningType(xbimPlateType.IfcTypeProduct, _document.Model);
         }
         #endregion

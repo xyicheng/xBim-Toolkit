@@ -442,7 +442,7 @@ namespace Xbim.Ifc2x3.ProcessExtensions
             get
             {
                 return
-                    this.ModelOf.InstancesWhere<IfcRelAssignsTasks>(r => r.TimeForTask == this);
+                    this.ModelOf.Instances.Where<IfcRelAssignsTasks>(r => r.TimeForTask == this);
             }
         }
 

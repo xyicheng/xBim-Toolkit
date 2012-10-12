@@ -26,7 +26,7 @@ namespace Xbim.IO
     {
         #region ESE Database 
 
-        private Instance _jetInstance;
+        private static Instance _jetInstance;
         
         /// <summary>
         /// Holds the session and transaction state
@@ -218,7 +218,8 @@ namespace Xbim.IO
             Close();
             _databaseName = filename; //success store the name of the DB file
             _accessMode = accessMode;
-            _jetInstance = CreateInstance(_databaseName, accessMode == XbimDBAccess.ReadWrite); //only need recovery if we are reading and writing, exclusive is disposable as it is only used to create initial databases
+            _jetInstance = CreateInstance("XbimTransactions", accessMode == XbimDBAccess.ReadWrite); //only need recovery if we are reading and writing, exclusive is disposable as it is only used to create initial databases
+            
             XbimEntityCursor entTable = GetEntityTable();
             try
             {
@@ -261,7 +262,7 @@ namespace Xbim.IO
                         this._geometryTables[i] = null;
                     }
                 }
-                this.read.Clear();
+                ReleaseCache();
                 this._databaseName = null;
                 
                 
@@ -324,9 +325,15 @@ namespace Xbim.IO
 
         private Instance CreateInstance(string xbimDbPath, bool recovery = false)
         {
+            if (_jetInstance != null) return _jetInstance;
             _logDirectory = Path.GetFullPath(xbimDbPath);
-            _logDirectory = Path.ChangeExtension(_logDirectory, Guid.NewGuid().ToString());
-            var jetInstance = new Instance(Guid.NewGuid().ToString());
+            //if the  database is not going to carry out recovery, i.e. it is readonly,
+            //or just being created then create a unique path to allow multiplw read accesses
+           // if (recovery)
+                _logDirectory = Path.ChangeExtension(_logDirectory, "xBIMLog");
+            //else
+            //    _logDirectory = Path.ChangeExtension(_logDirectory, Guid.NewGuid().ToString());
+            var jetInstance = new Instance("XbimInstance");
             jetInstance.Parameters.BaseName = "XBM";
             jetInstance.Parameters.SystemDirectory = _logDirectory;
             jetInstance.Parameters.LogFileDirectory = _logDirectory;
@@ -1265,6 +1272,26 @@ namespace Xbim.IO
                     FreeTable(entityTable);
                 }
             }
+        }
+
+
+        /// <summary>
+        /// Releases all entities that are cached
+        /// </summary>
+        internal void ReleaseCache()
+        {
+#if DEBUG
+            //entities are invalid once the transaction has finished
+            //the cache is cleared, in debug mode we unbind the entities from the model
+            //this will cause an exception to be thrown if the entity is accessed outside
+            //the scope of the transaction scope which created it
+            //in release mode this is not performed for performance reasons
+            foreach (var entity in read.Values)
+            {
+                entity.Bind(null,-1);
+            }
+#endif
+            read.Clear();
         }
     }
 }

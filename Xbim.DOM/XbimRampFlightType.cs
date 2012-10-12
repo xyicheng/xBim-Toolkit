@@ -34,7 +34,7 @@ namespace Xbim.DOM
 
         private void BaseInit(string name)
         {
-            IfcRampFlightType = _document.Model.New<IfcRampFlightType>();
+            IfcRampFlightType = _document.Model.Instances.New<IfcRampFlightType>();
             IfcRampFlightType.Name = name;
             _document.RampFlightTypes.Add(this);
         }

@@ -36,24 +36,7 @@ namespace Xbim.IO
 
         #region Fields
 
-        #region OwnerHistory Fields
-
-
-        [NonSerialized]
-        private IfcOwnerHistory _ownerHistoryDeleteObject;
-
-        [NonSerialized]
-        private IfcOwnerHistory _ownerHistoryAddObject;
-
-        [NonSerialized]
-        private IfcOwnerHistory _ownerHistoryModifyObject;
-
-        [NonSerialized]
-        private IfcPersonAndOrganization _defaultOwningUser;
-
-        [NonSerialized]
-        private IfcApplication _defaultOwningApplication;
-        #endregion
+      
 
         #region Logging Fields
 
@@ -62,12 +45,13 @@ namespace Xbim.IO
         #endregion
 
         #region Model state fields
-
+        
         protected IfcPersistedInstanceCache Cached;
         protected UndoRedoSession undoRedoSession;
         protected IIfcFileHeader header;
         private bool disposed = false;
         private XbimModelFactors _modelFactors;
+        private XbimInstanceCollection instances;
 
         #endregion
         
@@ -76,11 +60,19 @@ namespace Xbim.IO
         public XbimModel()
         {
             Cached = new IfcPersistedInstanceCache(this);
+            instances = new XbimInstanceCollection(this.Cached);
         }
         public string DatabaseName
         {
             get { return Cached.DatabaseName; }
         }
+
+        public IXbimInstanceCollection Instances
+        {
+            get { return instances; }
+            
+        }
+
         public XbimModelFactors GetModelFactors
         {
             get
@@ -90,7 +82,7 @@ namespace Xbim.IO
                     double angleToRadiansConversionFactor = 0.0174532925199433; //assume degrees
                     double lengthToMetresConversionFactor = 1; //assume metres
 
-                    IfcUnitAssignment ua = InstancesOfType<IfcUnitAssignment>().FirstOrDefault();
+                    IfcUnitAssignment ua = Instances.OfType<IfcUnitAssignment>().FirstOrDefault();
                     if (ua != null)
                     {
 
@@ -165,7 +157,7 @@ namespace Xbim.IO
         }
 
         //Loads the property data of an entity, if it is not already loaded
-        public virtual int Activate(IPersistIfcEntity entity, bool write)
+        int IModel.Activate(IPersistIfcEntity entity, bool write)
         {
           
             if (write) //we want to activate for reading
@@ -187,33 +179,33 @@ namespace Xbim.IO
        /// </summary>
         private void InitialiseDefaultOwnership()
         {
-            IfcPerson person = New<IfcPerson>();
+            //IfcPerson person = New<IfcPerson>();
 
-            IfcOrganization organization = New<IfcOrganization>();
-            IfcPersonAndOrganization owninguser = New<IfcPersonAndOrganization>(po =>
-            {
-                po.TheOrganization = organization;
-                po.ThePerson = person;
-            });
-            Transaction.AddPropertyChange<IfcPersonAndOrganization>(m => _defaultOwningUser = m, _defaultOwningUser, owninguser);
-            IfcApplication app = New<IfcApplication>(a => a.ApplicationDeveloper = New<IfcOrganization>());
-            Transaction.AddPropertyChange<IfcApplication>(m => _defaultOwningApplication = m, _defaultOwningApplication, app);
-            IfcOwnerHistory oh = New<IfcOwnerHistory>();
-            oh.OwningUser = _defaultOwningUser;
-            oh.OwningApplication = _defaultOwningApplication;
-            oh.ChangeAction = IfcChangeActionEnum.ADDED;
-            Transaction.AddPropertyChange<IfcOwnerHistory>(m => _ownerHistoryAddObject = m, _ownerHistoryAddObject, oh);
-            _defaultOwningUser = owninguser;
-            _defaultOwningApplication = app;
-            _ownerHistoryAddObject = oh;
-            IfcOwnerHistory ohc = New<IfcOwnerHistory>();
-            ohc.OwningUser = _defaultOwningUser;
-            ohc.OwningApplication = _defaultOwningApplication;
-            ohc.ChangeAction = IfcChangeActionEnum.MODIFIED;
-            Transaction.AddPropertyChange<IfcOwnerHistory>(m => _ownerHistoryModifyObject = m, _ownerHistoryModifyObject, ohc);
-            _defaultOwningUser = owninguser;
-            _defaultOwningApplication = app;
-            _ownerHistoryModifyObject = ohc;
+            //IfcOrganization organization = New<IfcOrganization>();
+            //IfcPersonAndOrganization owninguser = New<IfcPersonAndOrganization>(po =>
+            //{
+            //    po.TheOrganization = organization;
+            //    po.ThePerson = person;
+            //});
+            //Transaction.AddPropertyChange<IfcPersonAndOrganization>(m => _defaultOwningUser = m, _defaultOwningUser, owninguser);
+            //IfcApplication app = New<IfcApplication>(a => a.ApplicationDeveloper = New<IfcOrganization>());
+            //Transaction.AddPropertyChange<IfcApplication>(m => _defaultOwningApplication = m, _defaultOwningApplication, app);
+            //IfcOwnerHistory oh = New<IfcOwnerHistory>();
+            //oh.OwningUser = _defaultOwningUser;
+            //oh.OwningApplication = _defaultOwningApplication;
+            //oh.ChangeAction = IfcChangeActionEnum.ADDED;
+            //Transaction.AddPropertyChange<IfcOwnerHistory>(m => _ownerHistoryAddObject = m, _ownerHistoryAddObject, oh);
+            //_defaultOwningUser = owninguser;
+            //_defaultOwningApplication = app;
+            //_ownerHistoryAddObject = oh;
+            //IfcOwnerHistory ohc = New<IfcOwnerHistory>();
+            //ohc.OwningUser = _defaultOwningUser;
+            //ohc.OwningApplication = _defaultOwningApplication;
+            //ohc.ChangeAction = IfcChangeActionEnum.MODIFIED;
+            //Transaction.AddPropertyChange<IfcOwnerHistory>(m => _ownerHistoryModifyObject = m, _ownerHistoryModifyObject, ohc);
+            //_defaultOwningUser = owninguser;
+            //_defaultOwningApplication = app;
+            //_ownerHistoryModifyObject = ohc;
         }
 
         protected Transaction BeginEdit(string operationName)
@@ -227,27 +219,29 @@ namespace Xbim.IO
             }
             else return null;
         }
-        
-        public Transaction BeginTransaction()
+
+        public XbimReadWriteTransaction BeginTransaction()
         {
             return this.BeginTransaction(null);
         }
 
-        public Transaction BeginTransaction(string operationName)
+        public XbimReadWriteTransaction BeginTransaction(string operationName)
         {
-            Transaction txn = BeginEdit(operationName);
-            //Debug.Assert(ToWrite.Count == 0);
-            if (txn == null) txn = undoRedoSession.Begin(operationName);
-            //txn.Finalised += TransactionFinalised;
-            //txn.Reversed += TransactionReversed;
-            return txn;
+           
+            return new XbimReadWriteTransaction(Cached);
+            //Transaction txn = BeginEdit(operationName);
+            ////Debug.Assert(ToWrite.Count == 0);
+            //if (txn == null) txn = undoRedoSession.Begin(operationName);
+            ////txn.Finalised += TransactionFinalised;
+            ////txn.Reversed += TransactionReversed;
+            //return txn;
         }
  
         public IfcOwnerHistory OwnerHistoryModifyObject
         {
             get
             {
-                return _ownerHistoryModifyObject;
+                return instances.OwnerHistoryModifyObject;
             }
         }
 
@@ -255,7 +249,7 @@ namespace Xbim.IO
         {
             get
             {
-                return _ownerHistoryAddObject;
+                return instances.OwnerHistoryAddObject;
             }
         }
 
@@ -263,14 +257,7 @@ namespace Xbim.IO
         {
             get
             {
-                if (_ownerHistoryDeleteObject == null)
-                {
-                    _ownerHistoryDeleteObject = this.New<IfcOwnerHistory>();
-                    _ownerHistoryDeleteObject.OwningUser = _defaultOwningUser;
-                    _ownerHistoryDeleteObject.OwningApplication = _defaultOwningApplication;
-                    _ownerHistoryDeleteObject.ChangeAction = IfcChangeActionEnum.DELETED;
-                }
-                return _ownerHistoryDeleteObject;
+                return instances.OwnerHistoryDeleteObject;
             }
         }
 
@@ -278,37 +265,19 @@ namespace Xbim.IO
 
         public IfcApplication DefaultOwningApplication
         {
-            get { return _defaultOwningApplication; }
+            get { return instances.DefaultOwningApplication; }
         }
 
         public IfcPersonAndOrganization DefaultOwningUser
         {
-            get { return _defaultOwningUser; }
+            get { return instances.DefaultOwningUser; }
         }
         #endregion
 
         #region IModel interface implementation
-        /// <summary>
-        ///   Returns all instances in the model of IfcType, IfcType may be an abstract Type
-        /// </summary>
-        /// <typeparam name = "TIfcType"></typeparam>
-        /// <returns></returns>
-        public IEnumerable<TIfcType> InstancesOfType<TIfcType>(bool activate = false) where TIfcType : IPersistIfcEntity
-        {
-            return Cached.OfType<TIfcType>(activate);
-        }
+        
 
-        /// <summary>
-        ///   Filters the Ifc Instances based on their Type and the predicate
-        /// </summary>
-        /// <typeparam name = "TIfcType">Ifc Type to filter</typeparam>
-        /// <param name = "expression">function to execute</param>
-        /// <returns></returns>
-        public IEnumerable<TIfcType> InstancesWhere<TIfcType>(Expression<Func<TIfcType, bool>> expression) where TIfcType : IPersistIfcEntity
-        {
-            return Cached.Where(expression);
-        }
-
+  
         /// <summary>
         /// Registers an entity for deletion
         /// </summary>
@@ -319,36 +288,9 @@ namespace Xbim.IO
             Cached.Delete_Reversable(instance);
         }
 
-        /// <summary>
-        /// Returns true if the instance is in the current model
-        /// </summary>
-        /// <param name="instance"></param>
-        /// <returns></returns>
-        public virtual bool ContainsInstance(IPersistIfcEntity instance)
-        {
-            return Cached.Contains(instance);
-        }
+       
+       
 
-        /// <summary>
-        /// Returns true if the instance label is in the current model, 
-        /// Use with care, does not check that the instance is in the current model, only the label exists
-        /// </summary>
-        /// <param name="entityLabel"></param>
-        /// <returns></returns>
-        public virtual bool ContainsEntityLabel(int entityLabel)
-        {
-            return Cached.Contains(entityLabel);
-        }
-
-        /// <summary>
-        /// Returns an instance from the Model with the corresponding label
-        /// </summary>
-        /// <param name="label"></param>
-        /// <returns></returns>
-        public virtual IPersistIfcEntity GetInstance(int label)
-        {
-            return Cached.GetInstance(label);
-        }
 
         /// <summary>
         /// Returns an instance from the Model with the corresponding label but does not keep a cache of it
@@ -365,16 +307,7 @@ namespace Xbim.IO
         }
 
 
-        /// <summary>
-        /// Returns the total number of Ifc Instances in the model
-        /// </summary>
-        public virtual long InstancesCount
-        {
-            get
-            {
-                return Cached.Count;
-            }
-        }
+       
         /// <summary>
         /// Returns the total number of Geometry objects in the model
         /// </summary>
@@ -386,29 +319,7 @@ namespace Xbim.IO
             }
         }
 
-        /// <summary>
-        ///   Creates a new Ifc Persistent Instance, this is an undoable operation
-        /// </summary>
-        /// <typeparam name = "TIfcType"> The Ifc Type, this cannot be an abstract class. An exception will be thrown if the type is not a valid Ifc Type  </typeparam>
-        public TIfcType New<TIfcType>() where TIfcType : IPersistIfcEntity, new()
-        {
-            Type t = typeof(TIfcType);
-            int nextLabel = Cached.HighestLabel + 1;
-            return (TIfcType)New(t, nextLabel);
-        }
-        /// <summary>
-        ///   Creates and Instance of TIfcType and initializes the properties in accordance with the lambda expression
-        ///   i.e. Person person = CreateInstance&gt;Person&lt;(p =&lt; { p.FamilyName = "Undefined"; p.GivenName = "Joe"; });
-        /// </summary>
-        /// <typeparam name = "TIfcType"></typeparam>
-        /// <param name = "initPropertiesFunc"></param>
-        /// <returns></returns>
-        public TIfcType New<TIfcType>(InitProperties<TIfcType> initPropertiesFunc) where TIfcType : IPersistIfcEntity, new()
-        {
-            TIfcType instance = New<TIfcType>();
-            initPropertiesFunc(instance);
-            return instance;
-        }
+
 
         /// <summary>
         /// Creates a new Model and populates with instances from the specified file, Ifc, IfcXML, IfcZip and Xbim are all supported.
@@ -523,31 +434,7 @@ namespace Xbim.IO
 
        
         
-        /// <summary>
-        /// Creates and returns a new instance of Type t, sets the label to the specificed value.
-        /// This is a reversabel operation
-        /// 
-        /// </summary>
-        /// <param name="t"></param>
-        /// <param name="label"></param>
-        /// <returns></returns>
-        internal IPersistIfcEntity New(Type t, int label)
-        {
-            int nextLabel = Math.Abs(label);
 
-            IPersistIfcEntity entity = Cached.CreateNew_Reversable(t, nextLabel);
-            //Cached.SetHighestLabel_Reversable(nextLabel);
-            //long highestLabel = Cached.HighestLabel;
-            //Xbim.XbimExtensions.Transactions.Transaction.AddPropertyChange<long>(h => _highestLabel = h, highestLabel, nextLabel);
-            //_highestLabel = Math.Max(nextLabel, _highestLabel);
-            //entity.Bind(this, -nextLabel); //a negative handle determines that the attributes of this entity have not been loaded yet
-            //Cached.Add_Reversible(nextLabel, entity);
-            
-            if (typeof(IfcRoot).IsAssignableFrom(t))
-                ((IfcRoot)entity).OwnerHistory = OwnerHistoryAddObject;
-            return entity;
-
-        }
 
        
 
@@ -581,12 +468,12 @@ namespace Xbim.IO
         {
             IndentedTextWriter tw = new IndentedTextWriter(errStream, "    ");
             tw.Indent = 0;
-            double total = InstancesCount;
+            double total = Instances.Count;
             int idx = 0;
             int errors = 0;
             int percentage = -1;
 
-            foreach (XbimInstanceHandle handle in InstanceHandles)
+            foreach (XbimInstanceHandle handle in instances.Handles())
             {
                 idx++;
                 IPersistIfcEntity ent = GetInstanceVolatile(handle.EntityLabel);
@@ -802,23 +689,7 @@ namespace Xbim.IO
             Cached.Close();
         }
 
-        /// <summary>
-        /// Commits any changes to the models database and clears the object cache
-        /// </summary>
-        /// <returns></returns>
-        public bool Commit()
-        {
-            try
-            {
-                Cached.Commit();
-                return true;
-            }
-            catch (Exception) //handle errros maybe?
-            {
-                return false;
-            } 
-           
-        }
+       
 
         #endregion
 
@@ -879,21 +750,10 @@ namespace Xbim.IO
            return Cached.InstancesOfTypeCount(t);
         }
 
-        public IEnumerable<XbimInstanceHandle> InstanceHandles
-        {
-            get
-            {
-                return Cached.InstanceHandles;
-            }
-        }
 
-        internal IEnumerable<XbimInstanceHandle> InstanceHandlesOfType<T>()
-        {
-            return Cached.InstanceHandlesOfType<T>();
-        }
 
         // Extract first ifc file from zipped file and save in the same directory
-        public string ExportZippedIfc(string inputIfcFile)
+        internal string ExportZippedIfc(string inputIfcFile)
         {
             try
             {
@@ -1167,7 +1027,7 @@ namespace Xbim.IO
 
         internal void Compact(XbimModel targetModel)
         {
-            foreach (var prod in InstancesOfType<IfcProduct>())
+            foreach (var prod in Instances.OfType<IfcProduct>())
             {
                 targetModel.InsertCopy(prod);
             }
@@ -1199,15 +1059,8 @@ namespace Xbim.IO
             return Cached.InsertCopy<T>(toCopy, mappings, includeInverses);
         }
 
-        /// <summary>
-        /// Returns an enumeration of all the entity labels in the model
-        /// </summary>
-        public IEnumerable<int> InstanceLabels 
-        {
-            get 
-            {
-                return Cached.InstanceLabels; 
-            }
-        }
+      
+
+      
     }
 }

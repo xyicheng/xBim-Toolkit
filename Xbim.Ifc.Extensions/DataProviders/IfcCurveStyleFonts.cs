@@ -12,7 +12,7 @@
 
 #region Directives
 
-using System.Collections.Generic; using Xbim.XbimExtensions.Interfaces;
+using System.Collections.Generic; using System.Linq;using Xbim.XbimExtensions.Interfaces;
 using Xbim.Ifc2x3.PresentationAppearanceResource;
 
 #endregion
@@ -30,7 +30,7 @@ namespace Xbim.XbimExtensions.DataProviders
 
         public IEnumerable<IfcCurveStyleFont> Items
         {
-            get { return this._model.InstancesOfType<IfcCurveStyleFont>(); }
+            get { return this._model.Instances.OfType<IfcCurveStyleFont>(); }
         }
     }
 }

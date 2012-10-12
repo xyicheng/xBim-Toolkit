@@ -36,7 +36,7 @@ namespace Xbim.COBie.Data
 
             // get all IfcPropertySet objects from IFC file
 
-            IEnumerable<IfcPropertySet> ifcProperties = Model.InstancesOfType<IfcPropertySet>().Where(ps => ps.Name.ToString() == "Pset_EnvironmentalImpactValues");
+            IEnumerable<IfcPropertySet> ifcProperties = Model.Instances.OfType<IfcPropertySet>().Where(ps => ps.Name.ToString() == "Pset_EnvironmentalImpactValues");
 
             ProgressIndicator.Initialise("Creating Impacts", ifcProperties.Count());
 

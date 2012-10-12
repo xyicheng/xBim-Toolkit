@@ -12,9 +12,10 @@
 
 #region Directives
 
-using System.Collections.Generic; using Xbim.XbimExtensions.Interfaces;
+using System.Collections.Generic;
+using Xbim.XbimExtensions.Interfaces;
 using Xbim.Ifc2x3.GeometricModelResource;
-
+using System.Linq;
 #endregion
 
 namespace Xbim.XbimExtensions.DataProviders
@@ -30,7 +31,7 @@ namespace Xbim.XbimExtensions.DataProviders
 
         public IEnumerable<IfcBoundingBox> Items
         {
-            get { return this._model.InstancesOfType<IfcBoundingBox>(); }
+            get { return this._model.Instances.OfType<IfcBoundingBox>(); }
         }
     }
 }

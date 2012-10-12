@@ -241,7 +241,7 @@ namespace XbimXplorer
                 string XbimFileName = Path.ChangeExtension(ifcFilename,"Xbim");
                 model.CreateFrom(ifcFilename, XbimFileName, worker.ReportProgress);
                 model.Open(XbimFileName);
-                XbimScene.ConvertGeometry(model.InstancesOfType<IfcProduct>().Where(t=>!(t is IfcFeatureElement)), worker.ReportProgress);
+                XbimScene.ConvertGeometry(model.Instances.OfType<IfcProduct>().Where(t=>!(t is IfcFeatureElement)), worker.ReportProgress);
                 args.Result = model;
                 
             }
@@ -471,7 +471,7 @@ namespace XbimXplorer
             _currentProduct = DrawingControl.GetProductAt(e);
             if (_currentProduct.HasValue && Model !=null)
             {
-                IPersistIfcEntity product = Model.GetInstance(_currentProduct.Value);
+                IPersistIfcEntity product = Model.Instances[_currentProduct.Value];
                 ContextMenu = new ContextMenu();
                 MenuItem mi = new MenuItem() { Header = string.Format("Hide this {0}", product.GetType().Name) };
                 mi.Click += new RoutedEventHandler(HideProduct);
@@ -504,7 +504,7 @@ namespace XbimXplorer
         {
             if (_currentProduct.HasValue && Model !=null)
             {
-                IPersistIfcEntity product = Model.GetInstance(_currentProduct.Value);
+                IPersistIfcEntity product = Model.Instances[_currentProduct.Value];
                 DrawingControl.Show(product.GetType());
             }
         }

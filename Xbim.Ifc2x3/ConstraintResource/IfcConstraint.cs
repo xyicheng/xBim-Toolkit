@@ -203,7 +203,7 @@ namespace Xbim.Ifc2x3.ConstraintResource
             get
             {
                 return
-                    ModelOf.InstancesWhere<IfcConstraintClassificationRelationship>(
+                    ModelOf.Instances.Where<IfcConstraintClassificationRelationship>(
                         c => c.ClassifiedConstraint == this);
             }
         }
@@ -217,7 +217,7 @@ namespace Xbim.Ifc2x3.ConstraintResource
             get
             {
                 return
-                    ModelOf.InstancesWhere<IfcConstraintRelationship>(
+                    ModelOf.Instances.Where<IfcConstraintRelationship>(
                         c => c.RelatingConstraint == this);
             }
         }
@@ -231,7 +231,7 @@ namespace Xbim.Ifc2x3.ConstraintResource
             get
             {
                 return
-                    ModelOf.InstancesWhere<IfcConstraintRelationship>(
+                    ModelOf.Instances.Where<IfcConstraintRelationship>(
                         c => c.RelatedConstraints.Contains(this));
             }
         }
@@ -245,7 +245,7 @@ namespace Xbim.Ifc2x3.ConstraintResource
             get
             {
                 return
-                    ModelOf.InstancesWhere<IfcPropertyConstraintRelationship>(
+                    ModelOf.Instances.Where<IfcPropertyConstraintRelationship>(
                         c => c.RelatingConstraint == this);
             }
         }
@@ -259,7 +259,7 @@ namespace Xbim.Ifc2x3.ConstraintResource
             get
             {
                 return
-                    ModelOf.InstancesWhere<IfcConstraintAggregationRelationship>(
+                    ModelOf.Instances.Where<IfcConstraintAggregationRelationship>(
                         c => c.RelatingConstraint == this);
             }
         }
@@ -273,7 +273,7 @@ namespace Xbim.Ifc2x3.ConstraintResource
             get
             {
                 return
-                    ModelOf.InstancesWhere<IfcConstraintAggregationRelationship>(
+                    ModelOf.Instances.Where<IfcConstraintAggregationRelationship>(
                         c => c.RelatedConstraints.Contains(this));
             }
         }

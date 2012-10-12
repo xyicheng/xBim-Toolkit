@@ -53,13 +53,13 @@ namespace Xbim.COBie.Data
             COBieSheet<COBieCoordinateRow> coordinates = new COBieSheet<COBieCoordinateRow>(Constants.WORKSHEET_COORDINATE);
             
             //Get buildings and spaces
-            IEnumerable<IfcBuildingStorey> ifcBuildingStoreys = Model.InstancesOfType<IfcBuildingStorey>();
-            IEnumerable<IfcSpace> ifcSpaces = Model.InstancesOfType<IfcSpace>().OrderBy(ifcSpace => ifcSpace.Name, new CompareIfcLabel());
+            IEnumerable<IfcBuildingStorey> ifcBuildingStoreys = Model.Instances.OfType<IfcBuildingStorey>();
+            IEnumerable<IfcSpace> ifcSpaces = Model.Instances.OfType<IfcSpace>().OrderBy(ifcSpace => ifcSpace.Name, new CompareIfcLabel());
             IEnumerable<IfcProduct> ifcProducts = ifcBuildingStoreys.Union<IfcProduct>(ifcSpaces); //add spaces
 
             //get component products as shown in Component sheet
-            IEnumerable<IfcRelAggregates> relAggregates = Model.InstancesOfType<IfcRelAggregates>();
-            IEnumerable<IfcRelContainedInSpatialStructure> relSpatial = Model.InstancesOfType<IfcRelContainedInSpatialStructure>();
+            IEnumerable<IfcRelAggregates> relAggregates = Model.Instances.OfType<IfcRelAggregates>();
+            IEnumerable<IfcRelContainedInSpatialStructure> relSpatial = Model.Instances.OfType<IfcRelContainedInSpatialStructure>();
             IEnumerable<IfcProduct> ifcElements = ((from x in relAggregates
                                                    from y in x.RelatedObjects
                                                    where !Context.ComponentExcludeTypes.Contains(y.GetType())
@@ -189,7 +189,7 @@ namespace Xbim.COBie.Data
 
             //No xbimGC required but no bounding boxes returned, might use if speed is required
             //Xbim.ModelGeometry.Scene.TransformGraph graph = new Xbim.ModelGeometry.Scene.TransformGraph(Model);
-            //graph.AddProducts(Model.InstancesOfType<IfcProduct>());
+            //graph.AddProducts(Model.Instances.OfType<IfcProduct>());
             //System.Windows.Media.Media3D.Matrix3D m3d = graph.ProductNodes[5260].WorldMatrix();
            
 

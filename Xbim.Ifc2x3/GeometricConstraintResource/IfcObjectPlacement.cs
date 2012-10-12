@@ -72,7 +72,7 @@ namespace Xbim.Ifc2x3.GeometricConstraintResource
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class, 1, 1)]
         public IEnumerable<IfcProduct> PlacesObject
         {
-            get { return ModelOf.InstancesWhere<IfcProduct>(p => p.ObjectPlacement == this); }
+            get { return ModelOf.Instances.Where<IfcProduct>(p => p.ObjectPlacement == this); }
         }
 
         /// <summary>
@@ -82,7 +82,7 @@ namespace Xbim.Ifc2x3.GeometricConstraintResource
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class)]
         public IEnumerable<IfcLocalPlacement> ReferencedByPlacements
         {
-            get { return ModelOf.InstancesWhere<IfcLocalPlacement>(l => l.PlacementRelTo == this); }
+            get { return ModelOf.Instances.Where<IfcLocalPlacement>(l => l.PlacementRelTo == this); }
         }
 
         #endregion

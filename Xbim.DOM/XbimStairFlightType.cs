@@ -35,7 +35,7 @@ namespace Xbim.DOM
 
         private void BaseInit(string name)
         {
-            IfcStairFlightType = _document.Model.New<IfcStairFlightType>();
+            IfcStairFlightType = _document.Model.Instances.New<IfcStairFlightType>();
             IfcStairFlightType.Name = name;
             _document.StairFlightTypes.Add(this);
 

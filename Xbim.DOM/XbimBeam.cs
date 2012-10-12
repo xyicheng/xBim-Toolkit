@@ -27,7 +27,7 @@ namespace Xbim.DOM
         private void BaseInit(XbimBeamType xbimBeamType)
         {
             _document.Beams.Add(this);
-            _ifcBuildingElement = _document.Model.New<IfcBeam>();
+            _ifcBuildingElement = _document.Model.Instances.New<IfcBeam>();
             _ifcBuildingElement.SetDefiningType(xbimBeamType.IfcTypeProduct, _document.Model);
         }
         #endregion

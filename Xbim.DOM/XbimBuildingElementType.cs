@@ -63,10 +63,10 @@ namespace Xbim.DOM
             IfcMaterialLayerSet materialLayerSet = IfcMaterialLayerSet;
             if (materialLayerSet == null)
             {
-                materialLayerSet = _document.Model.New<IfcMaterialLayerSet>(set => set.LayerSetName = _ifcTypeProduct.Name);
+                materialLayerSet = _document.Model.Instances.New<IfcMaterialLayerSet>(set => set.LayerSetName = _ifcTypeProduct.Name);
                 IfcElementType.SetMaterial(materialLayerSet);
             }
-            IfcMaterialLayer matLayer = _document.Model.New<IfcMaterialLayer>();
+            IfcMaterialLayer matLayer = _document.Model.Instances.New<IfcMaterialLayer>();
             matLayer.LayerThickness = thickness;
             matLayer.Material = material;
             matLayer.IsVentilated = isVentilated;
@@ -78,7 +78,7 @@ namespace Xbim.DOM
         {
             if (!HasMaterials)
             {
-                _ifcTypeProduct.SetMaterial(_document.Model.New<IfcMaterialLayerSet>());
+                _ifcTypeProduct.SetMaterial(_document.Model.Instances.New<IfcMaterialLayerSet>());
             }
             XbimMaterialLayer layer = MaterialLayers.AddMaterialLayer(material, thickness, isVentilated);
             SetMaterialLayerFunction(layer, function);
@@ -343,10 +343,10 @@ namespace Xbim.DOM
             if (_ifcMaterialLayerSet == null)
             {
 
-                _ifcMaterialLayerSet = _document.Model.New<IfcMaterialLayerSet>(l => l.LayerSetName = _ifcElementType.Name);
+                _ifcMaterialLayerSet = _document.Model.Instances.New<IfcMaterialLayerSet>(l => l.LayerSetName = _ifcElementType.Name);
                 _ifcElementType.SetMaterial(_ifcMaterialLayerSet);
             }
-            IfcMaterialLayer matLayer = _document.Model.New<IfcMaterialLayer>();
+            IfcMaterialLayer matLayer = _document.Model.Instances.New<IfcMaterialLayer>();
             matLayer.LayerThickness = thickness;
             matLayer.Material = material;
             matLayer.IsVentilated = isVentilated;

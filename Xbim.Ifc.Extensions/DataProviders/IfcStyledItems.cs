@@ -12,7 +12,7 @@
 
 #region Directives
 
-using System.Collections.Generic; using Xbim.XbimExtensions.Interfaces;
+using System.Collections.Generic; using System.Linq;using Xbim.XbimExtensions.Interfaces;
 using Xbim.Ifc2x3.PresentationAppearanceResource;
 
 #endregion
@@ -30,7 +30,7 @@ namespace Xbim.XbimExtensions.DataProviders
 
         public IEnumerable<IfcStyledItem> Items
         {
-            get { return this._model.InstancesOfType<IfcStyledItem>(); }
+            get { return this._model.Instances.OfType<IfcStyledItem>(); }
         }
 
         public IfcAnnotationOccurrences IfcAnnotationOccurrences

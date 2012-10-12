@@ -204,7 +204,7 @@ namespace Xbim.Ifc2x3.RepresentationResource
             get
             {
                 return
-                    ModelOf.InstancesWhere<IfcRepresentationMap>(m => m.MappedRepresentation == this);
+                    ModelOf.Instances.Where<IfcRepresentationMap>(m => m.MappedRepresentation == this);
             }
         }
 
@@ -218,7 +218,7 @@ namespace Xbim.Ifc2x3.RepresentationResource
             get
             {
                 return
-                    ModelOf.InstancesWhere<IfcPresentationLayerAssignment>(
+                    ModelOf.Instances.Where<IfcPresentationLayerAssignment>(
                         a => (a.AssignedItems != null && a.AssignedItems.Contains(this)));
             }
         }
@@ -233,7 +233,7 @@ namespace Xbim.Ifc2x3.RepresentationResource
             get
             {
                 return
-                    ModelOf.InstancesWhere<IfcProductRepresentation>(
+                    ModelOf.Instances.Where<IfcProductRepresentation>(
                         p => (p.Representations != null && p.Representations.Contains(this)));
             }
         }

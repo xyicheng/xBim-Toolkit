@@ -12,7 +12,8 @@
 
 #region Directives
 
-using System.Collections.Generic; using Xbim.XbimExtensions.Interfaces;
+using System.Collections.Generic; using System.Linq;
+using Xbim.XbimExtensions.Interfaces;
 using Xbim.Ifc2x3.GeometricModelResource;
 
 #endregion
@@ -30,7 +31,7 @@ namespace Xbim.XbimExtensions.DataProviders
 
         public IEnumerable<IfcBooleanResult> Items
         {
-            get { return this._model.InstancesOfType<IfcBooleanResult>(); }
+            get { return this._model.Instances.OfType<IfcBooleanResult>(); }
         }
 
         public IfcBooleanClippingResults IfcBooleanClippingResults

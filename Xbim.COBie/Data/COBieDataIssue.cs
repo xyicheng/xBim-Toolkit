@@ -34,11 +34,11 @@ namespace Xbim.COBie.Data
             //create new sheet
             COBieSheet<COBieIssueRow> issues = new COBieSheet<COBieIssueRow>(Constants.WORKSHEET_ISSUE);
             
-            //IEnumerable<IfcPropertySet> ifcProperties = Model.InstancesOfType<IfcPropertySet>().Where(ps => ps.Name.ToString() == "Pset_Risk");
+            //IEnumerable<IfcPropertySet> ifcProperties = Model.Instances.OfType<IfcPropertySet>().Where(ps => ps.Name.ToString() == "Pset_Risk");
             
 
             // get all IfcApproval objects from IFC file
-            IEnumerable<IfcApproval> ifcApprovals = Model.InstancesOfType<IfcApproval>();
+            IEnumerable<IfcApproval> ifcApprovals = Model.Instances.OfType<IfcApproval>();
             ProgressIndicator.Initialise("Creating Issues", ifcApprovals.Count());
             foreach (IfcApproval ifcApproval in ifcApprovals)
             {

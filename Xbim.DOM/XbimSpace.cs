@@ -42,7 +42,7 @@ namespace Xbim.DOM
 
         //internal constructor for creation from XbimObjectCreator
         internal XbimSpace(XbimDocument document, string name, XbimSpatialStructureElement parentElement, XbimElementCompositionEnum compositionEnum)
-            : base(document, document.Model.New<IfcSpace>())
+            : base(document, document.Model.Instances.New<IfcSpace>())
         {
             Space.CompositionType = GeIfcElementCompositionEnum(compositionEnum);
             Space.Name = name;
@@ -83,7 +83,7 @@ namespace Xbim.DOM
         public void AddBoundingElement(Guid guid, XbimPhysicalOrVirtualEnum type, XbimInternalOrExternalEnum external)
         {
             IfcGloballyUniqueId gid = new IfcGloballyUniqueId(guid);
-            IfcElement element = _document.Model.InstancesWhere<IfcBuildingElement>(elem => elem.GlobalId == gid).FirstOrDefault();
+            IfcElement element = _document.Model.Instances.Where<IfcBuildingElement>(elem => elem.GlobalId == gid).FirstOrDefault();
             if (element == null) return;
             Space.AddBoundingElement(_document.Model, element, GetIfcPhysicalOrVirtualEnum(type), GetIfcInternalOrExternalEnum(external));
         }

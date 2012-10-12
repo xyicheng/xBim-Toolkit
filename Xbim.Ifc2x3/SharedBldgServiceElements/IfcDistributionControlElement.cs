@@ -77,7 +77,7 @@ namespace Xbim.Ifc2x3.SharedBldgServiceElements
             get
             {
                 return
-                    ModelOf.InstancesWhere<IfcRelFlowControlElements>(
+                    ModelOf.Instances.Where<IfcRelFlowControlElements>(
                         r => (r.RelatedControlElements.Contains(this)));
             }
         }

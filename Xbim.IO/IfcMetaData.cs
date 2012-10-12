@@ -146,7 +146,8 @@ namespace Xbim.IO
                     (IndexedProperty[]) propInfo.GetCustomAttributes(typeof (IndexedProperty), false);
                 if (ifcIndexes.GetLength(0) > 0) //we have an index
                 {
-                    Debug.Assert(typeof(IPersistIfcEntity).IsAssignableFrom(propInfo.PropertyType)); //only handles to persisted entities are indexable
+                    Debug.Assert(typeof(IPersistIfcEntity).IsAssignableFrom(propInfo.PropertyType)
+                        || typeof(IEnumerable<IPersistIfcEntity>).IsAssignableFrom(propInfo.PropertyType)); //only handles to IPersistIfcEntitiess or collecctions of IPersistIfcEntities are indexable
                     ifcType.AddIndexedAttribute(propInfo, attributeIdx);
                 }
             }

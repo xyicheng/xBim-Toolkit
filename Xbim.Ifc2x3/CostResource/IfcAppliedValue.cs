@@ -179,7 +179,7 @@ namespace Xbim.Ifc2x3.CostResource
             get
             {
                 return
-                    ModelOf.InstancesWhere<IfcReferencesValueDocument>(
+                    ModelOf.Instances.Where<IfcReferencesValueDocument>(
                         rv => rv.ReferencingValues.Contains(this));
             }
         }
@@ -192,7 +192,7 @@ namespace Xbim.Ifc2x3.CostResource
             get
             {
                 return
-                    ModelOf.InstancesWhere<IfcAppliedValueRelationship>(
+                    ModelOf.Instances.Where<IfcAppliedValueRelationship>(
                         av => av.ComponentOfTotal == this);
             }
         }
@@ -205,7 +205,7 @@ namespace Xbim.Ifc2x3.CostResource
             get
             {
                 return
-                    ModelOf.InstancesWhere<IfcAppliedValueRelationship>(
+                    ModelOf.Instances.Where<IfcAppliedValueRelationship>(
                         av => av.Components.Contains(this));
             }
         }

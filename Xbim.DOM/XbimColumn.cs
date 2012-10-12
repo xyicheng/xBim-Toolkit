@@ -28,7 +28,7 @@ namespace Xbim.DOM
         private void BaseInit(XbimColumnType xbimColumnType)
         {
             _document.Columns.Add(this);
-            _ifcBuildingElement = _document.Model.New<IfcColumn>();
+            _ifcBuildingElement = _document.Model.Instances.New<IfcColumn>();
             _ifcBuildingElement.SetDefiningType(xbimColumnType.IfcTypeProduct, _document.Model);
         }
         #endregion

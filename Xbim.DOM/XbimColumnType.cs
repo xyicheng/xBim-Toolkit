@@ -34,7 +34,7 @@ namespace Xbim.DOM
 
         private void BaseInit(string name)
         {
-            IfcColumnType = _document.Model.New<IfcColumnType>();
+            IfcColumnType = _document.Model.Instances.New<IfcColumnType>();
             IfcColumnType.Name = name;
             _document.ColumnTypes.Add(this);
         }

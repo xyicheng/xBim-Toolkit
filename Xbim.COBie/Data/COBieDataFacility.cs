@@ -41,11 +41,11 @@ namespace Xbim.COBie.Data
             COBieSheet<COBieFacilityRow> facilities = new COBieSheet<COBieFacilityRow>(Constants.WORKSHEET_FACILITY);
 
             IfcProject ifcProject = Model.IfcProject as IfcProject;
-            IfcSite ifcSite = Model.InstancesOfType<IfcSite>().FirstOrDefault();
-            IfcBuilding ifcBuilding = Model.InstancesOfType<IfcBuilding>().FirstOrDefault();
+            IfcSite ifcSite = Model.Instances.OfType<IfcSite>().FirstOrDefault();
+            IfcBuilding ifcBuilding = Model.Instances.OfType<IfcBuilding>().FirstOrDefault();
 
             //get Element Quantity holding area values as used for AreaMeasurement below
-            IfcElementQuantity ifcElementQuantityAreas = Model.InstancesOfType<IfcElementQuantity>().Where(eq => eq.Quantities.OfType<IfcQuantityArea>().Count() > 0).FirstOrDefault();
+            IfcElementQuantity ifcElementQuantityAreas = Model.Instances.OfType<IfcElementQuantity>().Where(eq => eq.Quantities.OfType<IfcQuantityArea>().Count() > 0).FirstOrDefault();
            
             IEnumerable<IfcObject> ifcObjects = new List<IfcObject> { ifcProject, ifcSite, ifcBuilding }.AsEnumerable(); ;
             COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(ifcObjects); //properties helper class
@@ -185,7 +185,7 @@ namespace Xbim.COBie.Data
             areaUnit = "";
             volumeUnit = "";
             moneyUnit = "";
-            foreach (IfcUnitAssignment ifcUnitAssignment in Model.InstancesOfType<IfcUnitAssignment>()) //loop all IfcUnitAssignment
+            foreach (IfcUnitAssignment ifcUnitAssignment in Model.Instances.OfType<IfcUnitAssignment>()) //loop all IfcUnitAssignment
             {
                 foreach (IfcUnit ifcUnit in ifcUnitAssignment.Units) //loop the UnitSet
                 {

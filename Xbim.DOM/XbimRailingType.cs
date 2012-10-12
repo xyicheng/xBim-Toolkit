@@ -34,7 +34,7 @@ namespace Xbim.DOM
 
         private void BaseInit(string name)
         {
-            IfcRailingType = _document.Model.New<IfcRailingType>();
+            IfcRailingType = _document.Model.Instances.New<IfcRailingType>();
             IfcRailingType.Name = name;
             _document.RailingTypes.Add(this);
         }

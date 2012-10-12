@@ -158,7 +158,7 @@ namespace Xbim.Ifc2x3.PropertyResource
             get
             {
                 return
-                    ModelOf.InstancesWhere<IfcPropertyDependencyRelationship>(
+                    ModelOf.Instances.Where<IfcPropertyDependencyRelationship>(
                         p => p.DependingProperty == this);
             }
         }
@@ -172,7 +172,7 @@ namespace Xbim.Ifc2x3.PropertyResource
             get
             {
                 return
-                    ModelOf.InstancesWhere<IfcPropertyDependencyRelationship>(
+                    ModelOf.Instances.Where<IfcPropertyDependencyRelationship>(
                         p => p.DependantProperty == this);
             }
         }
@@ -183,7 +183,7 @@ namespace Xbim.Ifc2x3.PropertyResource
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class, 0, 1)]
         public IEnumerable<IfcComplexProperty> PartOfComplex
         {
-            get { return ModelOf.InstancesWhere<IfcComplexProperty>(c => c.HasProperties.Contains(this)); }
+            get { return ModelOf.Instances.Where<IfcComplexProperty>(c => c.HasProperties.Contains(this)); }
         }
 
         #region INotifyPropertyChanged Members

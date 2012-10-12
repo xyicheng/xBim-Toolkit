@@ -29,7 +29,7 @@ namespace Xbim.Ifc2x3.ProductExtension
         /// </summary>
         public IEnumerable<IfcRelServicesBuildings> ServicesBuildings
         {
-            get { return ModelOf.InstancesWhere<IfcRelServicesBuildings>(r => r.RelatingSystem == this); }
+            get { return ModelOf.Instances.Where<IfcRelServicesBuildings>(r => r.RelatingSystem == this); }
         }
     }
 }

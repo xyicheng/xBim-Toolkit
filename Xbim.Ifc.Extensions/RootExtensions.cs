@@ -33,7 +33,7 @@ namespace Xbim.Ifc2x3.Extensions
         public static IfcClassificationNotation GetFirstClassificationNotation(this IfcRoot root, IModel model)
         {
             IfcRelAssociatesClassification rel =
-                model.InstancesWhere<IfcRelAssociatesClassification>(r => r.RelatedObjects.Contains(root)).
+                model.Instances.Where<IfcRelAssociatesClassification>(r => r.RelatedObjects.Contains(root)).
                     FirstOrDefault();
             if (rel == null) return null;
             IfcClassificationNotationSelect notationSelect = rel.RelatingClassification;
@@ -60,10 +60,10 @@ namespace Xbim.Ifc2x3.Extensions
 
             IModel model = (obj as IPersistIfcEntity).ModelOf;
 
-            IfcRelAssociatesMaterial relMat = model.InstancesWhere<IfcRelAssociatesMaterial>(r => r.RelatedObjects.Contains(obj)).FirstOrDefault();
+            IfcRelAssociatesMaterial relMat = model.Instances.Where<IfcRelAssociatesMaterial>(r => r.RelatedObjects.Contains(obj)).FirstOrDefault();
             if (relMat == null)
             {
-                relMat = model.New<IfcRelAssociatesMaterial>();
+                relMat = model.Instances.New<IfcRelAssociatesMaterial>();
                 relMat.RelatedObjects.Add_Reversible(obj);
             }
             relMat.RelatingMaterial = matSel;
@@ -74,7 +74,7 @@ namespace Xbim.Ifc2x3.Extensions
         {
             IModel model = (obj as IPersistIfcEntity).ModelOf;
 
-            IfcRelAssociatesMaterial relMat = model.InstancesWhere<IfcRelAssociatesMaterial>(r => r.RelatedObjects.Contains(obj)).FirstOrDefault();
+            IfcRelAssociatesMaterial relMat = model.Instances.Where<IfcRelAssociatesMaterial>(r => r.RelatedObjects.Contains(obj)).FirstOrDefault();
             if (relMat != null)
                 return relMat.RelatingMaterial;
             else
@@ -90,7 +90,7 @@ namespace Xbim.Ifc2x3.Extensions
         public static IfcMaterialLayerSetUsage GetMaterialLayerSetUsage(this IfcRoot element, IModel model)
         {
             IfcRelAssociatesMaterial rel =
-                model.InstancesWhere<IfcRelAssociatesMaterial>(r => r.RelatedObjects.Contains(element)).FirstOrDefault();
+                model.Instances.Where<IfcRelAssociatesMaterial>(r => r.RelatedObjects.Contains(element)).FirstOrDefault();
             if (rel != null)
                 return (rel.RelatingMaterial is IfcMaterialLayerSetUsage)
                            ? (IfcMaterialLayerSetUsage)rel.RelatingMaterial
@@ -104,10 +104,10 @@ namespace Xbim.Ifc2x3.Extensions
             IfcMaterialLayerSetUsage result = GetMaterialLayerSetUsage(element, model);
             if (result != null) return result;
 
-            result = model.New<IfcMaterialLayerSetUsage>();
+            result = model.Instances.New<IfcMaterialLayerSetUsage>();
 
             //create relation
-            IfcRelAssociatesMaterial rel = model.New<IfcRelAssociatesMaterial>();
+            IfcRelAssociatesMaterial rel = model.Instances.New<IfcRelAssociatesMaterial>();
             rel.RelatedObjects.Add_Reversible(element);
             rel.RelatingMaterial = result;
 

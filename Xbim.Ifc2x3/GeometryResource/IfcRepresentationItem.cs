@@ -94,7 +94,7 @@ namespace Xbim.Ifc2x3.GeometryResource
             get
             {
                 return
-                    ModelOf.InstancesWhere<IfcPresentationLayerAssignment>(
+                    ModelOf.Instances.Where<IfcPresentationLayerAssignment>(
                         las => las.AssignedItems.Contains(this));
             }
         }
@@ -108,7 +108,7 @@ namespace Xbim.Ifc2x3.GeometryResource
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class, 0, 1)]
         public IEnumerable<IfcStyledItem> StyledByItem
         {
-            get { return ModelOf.InstancesWhere<IfcStyledItem>(i => i.Item == this); }
+            get { return ModelOf.Instances.Where<IfcStyledItem>(i => i.Item == this); }
         }
 
         #region ISupportIfcParser Members

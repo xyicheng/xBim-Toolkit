@@ -48,8 +48,8 @@ namespace Xbim.DOM
         internal XbimLocalPlacement(XbimDocument Document, double placementX, double placementY, double placementZ)
         {
             _document = Document;
-            _localPlacement = _document.Model.New<IfcLocalPlacement>();
-            _localPlacement.RelativePlacement = _document.Model.New<IfcAxis2Placement3D>();
+            _localPlacement = _document.Model.Instances.New<IfcLocalPlacement>();
+            _localPlacement.RelativePlacement = _document.Model.Instances.New<IfcAxis2Placement3D>();
             IfcAxis2Placement3D placenemt = _localPlacement.RelativePlacement as IfcAxis2Placement3D;
             placenemt.SetNewLocation(placementX, placementY, placementZ);
         }
@@ -57,7 +57,7 @@ namespace Xbim.DOM
         internal XbimLocalPlacement(XbimDocument Document, XbimAxis2Placement3D axisToPlacement)
         {
             _document = Document;
-            _localPlacement = _document.Model.New<IfcLocalPlacement>();
+            _localPlacement = _document.Model.Instances.New<IfcLocalPlacement>();
             _localPlacement.RelativePlacement = axisToPlacement._ifcAxis2Placement;
         }
 

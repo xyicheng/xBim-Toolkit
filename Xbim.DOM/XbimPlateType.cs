@@ -37,7 +37,7 @@ namespace Xbim.DOM
 
         private void BaseInit(string name)
         {
-            _ifcTypeProduct = _document.Model.New<IfcPlateType>();
+            _ifcTypeProduct = _document.Model.Instances.New<IfcPlateType>();
             _ifcTypeProduct.Name = name;
         }
         #endregion

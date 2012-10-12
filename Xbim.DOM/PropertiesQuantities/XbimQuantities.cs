@@ -67,7 +67,7 @@ namespace Xbim.DOM.PropertiesQuantities
             if (_lengthUnit == null || !(_lengthUnit is IfcSIUnit)) 
             {
                 //length unit
-                IfcSIUnit lengthUnit = model.New<IfcSIUnit>();
+                IfcSIUnit lengthUnit = model.Instances.New<IfcSIUnit>();
                 lengthUnit.Name = IfcSIUnitName.METRE;
                 lengthUnit.Prefix = IfcSIPrefix.MILLI;
                 lengthUnit.UnitType = IfcUnitEnum.LENGTHUNIT;
@@ -77,7 +77,7 @@ namespace Xbim.DOM.PropertiesQuantities
             if (_areaUnit == null ||!(_areaUnit is IfcSIUnit))
             {
                 //area unit
-                IfcSIUnit areaUnit = model.New<IfcSIUnit>();
+                IfcSIUnit areaUnit = model.Instances.New<IfcSIUnit>();
                 areaUnit.Name = IfcSIUnitName.SQUARE_METRE;
                 areaUnit.UnitType = IfcUnitEnum.AREAUNIT;
                 _areaUnit = areaUnit;
@@ -86,7 +86,7 @@ namespace Xbim.DOM.PropertiesQuantities
             if (_volumeUnit == null || !(_volumeUnit is IfcSIUnit))
             {
                 //volume init
-                IfcSIUnit volumeUnit = model.New<IfcSIUnit>();
+                IfcSIUnit volumeUnit = model.Instances.New<IfcSIUnit>();
                 volumeUnit.Name = IfcSIUnitName.CUBIC_METRE;
                 volumeUnit.UnitType = IfcUnitEnum.VOLUMEUNIT;
                 _volumeUnit = volumeUnit;

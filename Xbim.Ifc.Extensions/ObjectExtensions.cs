@@ -38,7 +38,7 @@ namespace Xbim.Ifc2x3.Extensions
         /// <returns></returns>
         public static IfcTypeObject GetDefiningType(this IfcObject tObj, IModel model)
         {
-            IfcRelDefinesByType def =  model.InstancesWhere<IfcRelDefinesByType>(rd => rd.RelatedObjects.Contains(tObj)).FirstOrDefault();
+            IfcRelDefinesByType def =  model.Instances.Where<IfcRelDefinesByType>(rd => rd.RelatedObjects.Contains(tObj)).FirstOrDefault();
             if (def != null)
                 return def.RelatingType;
             else
@@ -47,7 +47,7 @@ namespace Xbim.Ifc2x3.Extensions
 
         public static IfcTypeObject GetDefiningType(this IfcObject tObj)
         {
-            IfcRelDefinesByType def = tObj.ModelOf.InstancesWhere<IfcRelDefinesByType>(rd => rd.RelatedObjects.Contains(tObj)).FirstOrDefault();
+            IfcRelDefinesByType def = tObj.ModelOf.Instances.Where<IfcRelDefinesByType>(rd => rd.RelatedObjects.Contains(tObj)).FirstOrDefault();
             if (def != null)
                 return def.RelatingType;
             else
@@ -59,16 +59,16 @@ namespace Xbim.Ifc2x3.Extensions
         {
 
             //divorce any exisitng related types
-            IEnumerable<IfcRelDefinesByType> rels = model.InstancesWhere<IfcRelDefinesByType>(rd => rd.RelatedObjects.Contains(obj));
+            IEnumerable<IfcRelDefinesByType> rels = model.Instances.Where<IfcRelDefinesByType>(rd => rd.RelatedObjects.Contains(obj));
             foreach (var rel in rels)
             {
                 rel.RelatedObjects.Remove_Reversible(obj);
             }
             //find any existing relationships to this type
-            IfcRelDefinesByType typeRel = model.InstancesWhere<IfcRelDefinesByType>(rd => rd.RelatingType==typeObj).FirstOrDefault();
+            IfcRelDefinesByType typeRel = model.Instances.Where<IfcRelDefinesByType>(rd => rd.RelatingType==typeObj).FirstOrDefault();
             if (typeRel == null) //none defined create the relationship
             {
-                IfcRelDefinesByType relSub = model.New<IfcRelDefinesByType>();
+                IfcRelDefinesByType relSub = model.Instances.New<IfcRelDefinesByType>();
                 relSub.RelatingType = typeObj;
                 relSub.RelatedObjects.Add_Reversible(obj);
             }
@@ -197,9 +197,9 @@ namespace Xbim.Ifc2x3.Extensions
             if (pset == null)
             {
                 model = obj.ModelOf;
-                pset = model.New<IfcPropertySet>();
+                pset = model.Instances.New<IfcPropertySet>();
                 pset.Name = pSetName;
-                IfcRelDefinesByProperties relDef = model.New<IfcRelDefinesByProperties>();
+                IfcRelDefinesByProperties relDef = model.Instances.New<IfcRelDefinesByProperties>();
                 relDef.RelatingPropertyDefinition = pset;
                 relDef.RelatedObjects.Add_Reversible(obj);
             }
@@ -207,7 +207,7 @@ namespace Xbim.Ifc2x3.Extensions
             if (table == null)
             {
                 model = obj.ModelOf;
-                table = model.New<IfcPropertyTableValue>(tb => { tb.Name = propertyTableName; });
+                table = model.Instances.New<IfcPropertyTableValue>(tb => { tb.Name = propertyTableName; });
                 pset.HasProperties.Add_Reversible(table);
                 table.DefinedUnit = definedUnit;
                 table.DefiningUnit = definingUnit;
@@ -266,9 +266,9 @@ namespace Xbim.Ifc2x3.Extensions
             if (pset == null)    
             {
                 model = obj.ModelOf;
-                pset = model.New<IfcPropertySet>();
+                pset = model.Instances.New<IfcPropertySet>();
                 pset.Name = pSetName;
-                IfcRelDefinesByProperties relDef = model.New<IfcRelDefinesByProperties>();
+                IfcRelDefinesByProperties relDef = model.Instances.New<IfcRelDefinesByProperties>();
                 relDef.RelatingPropertyDefinition = pset;
                 relDef.RelatedObjects.Add_Reversible(obj);
             }
@@ -282,7 +282,7 @@ namespace Xbim.Ifc2x3.Extensions
             else
             {
                 model = obj.ModelOf;
-                singleVal = model.New<IfcPropertySingleValue>(psv => { psv.Name = propertyName; psv.NominalValue = value; });
+                singleVal = model.Instances.New<IfcPropertySingleValue>(psv => { psv.Name = propertyName; psv.NominalValue = value; });
                 pset.HasProperties.Add_Reversible(singleVal);
             }
 
@@ -297,7 +297,7 @@ namespace Xbim.Ifc2x3.Extensions
         /// <returns></returns>
         static public IEnumerable<IfcElement> GetExternalElements(IModel model)
         {
-            return model.InstancesOfType<IfcRelSpaceBoundary>().Where(r => r.InternalOrExternalBoundary == IfcInternalOrExternalEnum.EXTERNAL
+            return model.Instances.OfType<IfcRelSpaceBoundary>().Where(r => r.InternalOrExternalBoundary == IfcInternalOrExternalEnum.EXTERNAL
                 && r.PhysicalOrVirtualBoundary == IfcPhysicalOrVirtualEnum.PHYSICAL
                 && r.RelatedBuildingElement != null).Select(rsb => rsb.RelatedBuildingElement).Distinct();
         }
@@ -367,9 +367,9 @@ namespace Xbim.Ifc2x3.Extensions
             if (pset == null)
             {
                 IModel model = elem.ModelOf;
-                pset = model.New<IfcElementQuantity>();
+                pset = model.Instances.New<IfcElementQuantity>();
                 pset.Name = propertySetName;
-                IfcRelDefinesByProperties relDef = model.New<IfcRelDefinesByProperties>();
+                IfcRelDefinesByProperties relDef = model.Instances.New<IfcRelDefinesByProperties>();
                 relDef.RelatingPropertyDefinition = pset;
                 relDef.RelatedObjects.Add_Reversible(elem);
             }
@@ -413,9 +413,9 @@ namespace Xbim.Ifc2x3.Extensions
             IfcElementQuantity qset = GetElementQuantity(elem, qSetName);
             if (qset == null)
             {
-                qset = model.New<IfcElementQuantity>();
+                qset = model.Instances.New<IfcElementQuantity>();
                 qset.Name = qSetName;
-                IfcRelDefinesByProperties relDef = model.New<IfcRelDefinesByProperties>();
+                IfcRelDefinesByProperties relDef = model.Instances.New<IfcRelDefinesByProperties>();
                 relDef.RelatingPropertyDefinition = qset;
                 relDef.RelatedObjects.Add_Reversible(elem);
             }
@@ -432,22 +432,22 @@ namespace Xbim.Ifc2x3.Extensions
             switch (quantityType)
             {
                 case XbimQuantityTypeEnum.AREA:
-                    simpleQuality = model.New<IfcQuantityArea>(sq => sq.AreaValue = (IfcAreaMeasure)value);
+                    simpleQuality = model.Instances.New<IfcQuantityArea>(sq => sq.AreaValue = (IfcAreaMeasure)value);
                     break;
                 case XbimQuantityTypeEnum.COUNT:
-                    simpleQuality = model.New<IfcQuantityCount>(sq => sq.CountValue = (IfcCountMeasure)value);
+                    simpleQuality = model.Instances.New<IfcQuantityCount>(sq => sq.CountValue = (IfcCountMeasure)value);
                     break;
                 case XbimQuantityTypeEnum.LENGTH:
-                    simpleQuality = model.New<IfcQuantityLength>(sq => sq.LengthValue = (IfcLengthMeasure)value);
+                    simpleQuality = model.Instances.New<IfcQuantityLength>(sq => sq.LengthValue = (IfcLengthMeasure)value);
                     break;
                 case XbimQuantityTypeEnum.TIME:
-                    simpleQuality = model.New<IfcQuantityTime>(sq => sq.TimeValue = (IfcTimeMeasure)value);
+                    simpleQuality = model.Instances.New<IfcQuantityTime>(sq => sq.TimeValue = (IfcTimeMeasure)value);
                     break;
                 case XbimQuantityTypeEnum.VOLUME:
-                    simpleQuality = model.New<IfcQuantityVolume>(sq => sq.VolumeValue = (IfcVolumeMeasure)value);
+                    simpleQuality = model.Instances.New<IfcQuantityVolume>(sq => sq.VolumeValue = (IfcVolumeMeasure)value);
                     break;
                 case XbimQuantityTypeEnum.WEIGHT:
-                    simpleQuality = model.New<IfcQuantityWeight>(sq => sq.WeightValue = (IfcMassMeasure)value);
+                    simpleQuality = model.Instances.New<IfcQuantityWeight>(sq => sq.WeightValue = (IfcMassMeasure)value);
                     break;
                 default:
                     return;

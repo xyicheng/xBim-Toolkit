@@ -42,7 +42,7 @@ namespace Xbim.DOM
 
         private void BaseInit(string name)
         {
-            _ifcTypeProduct = _document.Model.New<IfcSlabType>();
+            _ifcTypeProduct = _document.Model.Instances.New<IfcSlabType>();
             _ifcTypeProduct.Name = name;
         }
         #endregion

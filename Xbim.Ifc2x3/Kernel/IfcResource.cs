@@ -44,7 +44,7 @@ namespace Xbim.Ifc2x3.Kernel
             get
             {
                 return
-                    ModelOf.InstancesWhere<IfcRelAssignsToResource>(c => c.RelatingResource == this);
+                    ModelOf.Instances.Where<IfcRelAssignsToResource>(c => c.RelatingResource == this);
             }
         }
     }

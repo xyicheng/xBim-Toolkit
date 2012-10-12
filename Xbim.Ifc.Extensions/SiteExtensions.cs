@@ -76,7 +76,7 @@ namespace Xbim.Ifc2x3.Extensions
             IEnumerable<IfcRelDecomposes> decomposition = site.IsDecomposedBy;
             if (decomposition.Count() == 0) //none defined create the relationship
             {
-                IfcRelAggregates relSub = site.ModelOf.New<IfcRelAggregates>();
+                IfcRelAggregates relSub = site.ModelOf.Instances.New<IfcRelAggregates>();
                 relSub.RelatingObject = site;
                 relSub.RelatedObjects.Add_Reversible(building);
             }
@@ -91,7 +91,7 @@ namespace Xbim.Ifc2x3.Extensions
             IEnumerable<IfcRelDecomposes> decomposition = site.IsDecomposedBy;
             if (decomposition.Count() == 0) //none defined create the relationship
             {
-                IfcRelAggregates relSub = site.ModelOf.New<IfcRelAggregates>();
+                IfcRelAggregates relSub = site.ModelOf.Instances.New<IfcRelAggregates>();
                 relSub.RelatingObject = site;
                 relSub.RelatedObjects.Add_Reversible(subSite);
             }
@@ -107,7 +107,7 @@ namespace Xbim.Ifc2x3.Extensions
             if (relatedElements.Count() == 0) //none defined create the relationship
             {
                 IfcRelContainedInSpatialStructure relSe =
-                    site.ModelOf.New<IfcRelContainedInSpatialStructure>();
+                    site.ModelOf.Instances.New<IfcRelContainedInSpatialStructure>();
                 relSe.RelatingStructure = site;
                 relSe.RelatedElements.Add_Reversible(element);
             }

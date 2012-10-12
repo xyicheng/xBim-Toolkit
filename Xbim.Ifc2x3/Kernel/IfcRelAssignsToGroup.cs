@@ -43,6 +43,7 @@ namespace Xbim.Ifc2x3.Kernel
         ///   WR1   :   The instance to with the relation points shall not be contained in the List of RelatedObjects.
         /// </remarks>
         [IfcAttribute(7, IfcAttributeState.Mandatory)]
+        [IndexedProperty]
         public IfcGroup RelatingGroup
         {
             get

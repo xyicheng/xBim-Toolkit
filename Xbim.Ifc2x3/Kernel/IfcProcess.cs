@@ -35,7 +35,7 @@ namespace Xbim.Ifc2x3.Kernel
             get
             {
                 return
-                    this.ModelOf.InstancesWhere<IfcRelAssignsToProcess>(
+                    this.ModelOf.Instances.Where<IfcRelAssignsToProcess>(
                         r => (r.RelatingProcess != null && r.RelatingProcess == this));
             }
         }
@@ -52,7 +52,7 @@ namespace Xbim.Ifc2x3.Kernel
             get
             {
                 return
-                    this.ModelOf.InstancesWhere<IfcRelSequence>(
+                    this.ModelOf.Instances.Where<IfcRelSequence>(
                         r => (r.RelatingProcess != null && r.RelatedProcess == this));
             }
         }
@@ -67,7 +67,7 @@ namespace Xbim.Ifc2x3.Kernel
             get
             {
                 return
-                    this.ModelOf.InstancesWhere<IfcRelSequence>(
+                    this.ModelOf.Instances.Where<IfcRelSequence>(
                         r => (r.RelatedProcess != null && r.RelatingProcess == this));
             }
         }

@@ -48,7 +48,7 @@ namespace Xbim.Ifc2x3.StructuralAnalysisDomain
             get
             {
                 return
-                    ModelOf.InstancesWhere<IfcRelConnectsStructuralElement>(
+                    ModelOf.Instances.Where<IfcRelConnectsStructuralElement>(
                         r => r.RelatedStructuralMember == this);
             }
         }
@@ -62,7 +62,7 @@ namespace Xbim.Ifc2x3.StructuralAnalysisDomain
             get
             {
                 return
-                    ModelOf.InstancesWhere<IfcRelConnectsStructuralMember>(
+                    ModelOf.Instances.Where<IfcRelConnectsStructuralMember>(
                         r => r.RelatingStructuralMember == this);
             }
         }

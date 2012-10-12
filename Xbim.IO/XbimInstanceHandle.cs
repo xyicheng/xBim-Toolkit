@@ -61,7 +61,7 @@ namespace Xbim.IO
 
         public IPersistIfcEntity GetInstance(XbimModel model)
         {
-            return model.GetInstance(EntityLabel);
+            return model.Instances[EntityLabel];
         }
 
         internal IfcType IfcType()

@@ -114,7 +114,7 @@ namespace Xbim.Ifc2x3.ProductExtension
             get
             {
                 return
-                    ModelOf.InstancesWhere<IfcRelFillsElement>(r => r.RelatedBuildingElement == this);
+                    ModelOf.Instances.Where<IfcRelFillsElement>(r => r.RelatedBuildingElement == this);
             }
         }
 
@@ -125,7 +125,7 @@ namespace Xbim.Ifc2x3.ProductExtension
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class)]
         public IEnumerable<IfcRelConnectsElements> ConnectedTo
         {
-            get { return ModelOf.InstancesWhere<IfcRelConnectsElements>(r => r.RelatingElement == this); }
+            get { return ModelOf.Instances.Where<IfcRelConnectsElements>(r => r.RelatingElement == this); }
         }
 
         /// <summary>
@@ -138,7 +138,7 @@ namespace Xbim.Ifc2x3.ProductExtension
             get
             {
                 return
-                    ModelOf.InstancesWhere<IfcRelCoversBldgElements>(
+                    ModelOf.Instances.Where<IfcRelCoversBldgElements>(
                         r => r.RelatingBuildingElement == this);
             }
         }
@@ -150,7 +150,7 @@ namespace Xbim.Ifc2x3.ProductExtension
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class)]
         public IEnumerable<IfcRelProjectsElement> HasProjections
         {
-            get { return ModelOf.InstancesWhere<IfcRelProjectsElement>(r => r.RelatingElement == this); }
+            get { return ModelOf.Instances.Where<IfcRelProjectsElement>(r => r.RelatingElement == this); }
         }
 
         /// <summary>
@@ -165,7 +165,7 @@ namespace Xbim.Ifc2x3.ProductExtension
             get
             {
                 return
-                    ModelOf.InstancesWhere<IfcRelConnectsStructuralElement>(
+                    ModelOf.Instances.Where<IfcRelConnectsStructuralElement>(
                         r => r.RelatingElement == this);
             }
         }
@@ -180,7 +180,7 @@ namespace Xbim.Ifc2x3.ProductExtension
             get
             {
                 return
-                    ModelOf.InstancesWhere<IfcRelReferencedInSpatialStructure>(
+                    ModelOf.Instances.Where<IfcRelReferencedInSpatialStructure>(
                         r => (r.RelatedElements != null && r.RelatedElements.Contains(this)));
             }
         }
@@ -195,7 +195,7 @@ namespace Xbim.Ifc2x3.ProductExtension
             get
             {
                 return
-                    ModelOf.InstancesWhere<IfcRelConnectsPortToElement>(r => r.RelatedElement == this);
+                    ModelOf.Instances.Where<IfcRelConnectsPortToElement>(r => r.RelatedElement == this);
             }
         }
 
@@ -210,7 +210,7 @@ namespace Xbim.Ifc2x3.ProductExtension
             {
                 
                 return
-                    ModelOf.InstancesWhere<IfcRelVoidsElement>(r => r.RelatingBuildingElement == this);
+                    ModelOf.Instances.Where<IfcRelVoidsElement>(r => r.RelatingBuildingElement == this);
             }
         }
 
@@ -224,7 +224,7 @@ namespace Xbim.Ifc2x3.ProductExtension
             get
             {
                 return
-                    ModelOf.InstancesWhere<IfcRelConnectsWithRealizingElements>(
+                    ModelOf.Instances.Where<IfcRelConnectsWithRealizingElements>(
                         r => (r.RealizingElements != null && r.RealizingElements.Contains(this)));
             }
         }
@@ -239,7 +239,7 @@ namespace Xbim.Ifc2x3.ProductExtension
             get
             {
                 return
-                    ModelOf.InstancesWhere<IfcRelSpaceBoundary>(r => r.RelatedBuildingElement == this);
+                    ModelOf.Instances.Where<IfcRelSpaceBoundary>(r => r.RelatedBuildingElement == this);
             }
         }
 
@@ -250,7 +250,7 @@ namespace Xbim.Ifc2x3.ProductExtension
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class)]
         public IEnumerable<IfcRelConnectsElements> ConnectedFrom
         {
-            get { return ModelOf.InstancesWhere<IfcRelConnectsElements>(r => r.RelatedElement == this); }
+            get { return ModelOf.Instances.Where<IfcRelConnectsElements>(r => r.RelatedElement == this); }
         }
 
         /// <summary>
@@ -263,7 +263,7 @@ namespace Xbim.Ifc2x3.ProductExtension
             get
             {
                 return
-                    ModelOf.InstancesWhere<IfcRelContainedInSpatialStructure>(
+                    ModelOf.Instances.Where<IfcRelContainedInSpatialStructure>(
                         r => r.RelatedElements.Contains(this));
             }
         }

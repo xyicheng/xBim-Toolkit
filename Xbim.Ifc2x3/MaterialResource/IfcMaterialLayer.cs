@@ -174,7 +174,7 @@ namespace Xbim.Ifc2x3.MaterialResource
             get
             {
                 return
-                    ModelOf.InstancesWhere<IfcMaterialLayerSet>(
+                    ModelOf.Instances.Where<IfcMaterialLayerSet>(
                         ml => ml.MaterialLayers.Contains(this)).FirstOrDefault();
             }
         }

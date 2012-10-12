@@ -36,7 +36,7 @@ namespace Xbim.DOM
 
         private void BaseInit(string name)
         {
-            _ifcTypeProduct = _document.Model.New<IfcCoveringType>();
+            _ifcTypeProduct = _document.Model.Instances.New<IfcCoveringType>();
             _ifcTypeProduct.Name = name;
         }
         #endregion

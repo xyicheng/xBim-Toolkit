@@ -107,7 +107,7 @@ namespace Xbim.Tests
             SuT.Open(Path.ChangeExtension(fullPath,"xBIM"), XbimDBAccess.Read);
             // Entity #3 is a cartesian point entity with the value of:
             // #3=IFCCARTESIANPOINT((0.,123.456789,-1.E-006));
-            var entity = SuT.GetInstance(3);
+            var entity = SuT.Instances[3];
 
             Assert.IsInstanceOfType(entity, typeof(IfcCartesianPoint));
             IfcCartesianPoint point = entity as IfcCartesianPoint;
@@ -127,7 +127,7 @@ namespace Xbim.Tests
             
             LoadModelForWriting();
             // Add a point
-            IfcCartesianPoint point = SuT.New<IfcCartesianPoint>(cp => { cp.X = 345.6789012; cp.Y = -0.000001; cp.Z = 0.0; });
+            IfcCartesianPoint point = SuT.Instances.New<IfcCartesianPoint>(cp => { cp.X = 345.6789012; cp.Y = -0.000001; cp.Z = 0.0; });
 
             string tempFile = GetTempIfcFile();
             // Act

@@ -30,8 +30,8 @@ namespace Xbim.DOM
         }
         public XbimClassificationItem(XbimDocument document, XbimClassification system,  string notation, string title )
         {
-            _ifcClassificationItem = document.Model.New<IfcClassificationItem>();
-            IfcClassificationNotationFacet facet = document.Model.New<IfcClassificationNotationFacet>(f => f.NotationValue = notation);
+            _ifcClassificationItem = document.Model.Instances.New<IfcClassificationItem>();
+            IfcClassificationNotationFacet facet = document.Model.Instances.New<IfcClassificationNotationFacet>(f => f.NotationValue = notation);
             _ifcClassificationItem.Notation = facet;
             _ifcClassificationItem.Title = title;
             system.AllItems.Add(this);
@@ -57,13 +57,13 @@ namespace Xbim.DOM
         public void Classify(IXbimRoot obj)
         {
             IModel model = _ifcClassificationItem.ModelOf;
-            IfcRelAssociatesClassification rel = model.InstancesWhere<IfcRelAssociatesClassification>(r => r.RelatingClassification == this).FirstOrDefault();
+            IfcRelAssociatesClassification rel = model.Instances.Where<IfcRelAssociatesClassification>(r => r.RelatingClassification == this).FirstOrDefault();
             if (rel == null)
             {
-                rel = model.New<IfcRelAssociatesClassification>();
+                rel = model.Instances.New<IfcRelAssociatesClassification>();
                
             }
-            IfcClassificationNotation notation = model.New<IfcClassificationNotation>();
+            IfcClassificationNotation notation = model.Instances.New<IfcClassificationNotation>();
             notation.NotationFacets.Add_Reversible(_ifcClassificationItem.Notation);
             rel.RelatingClassification = notation;
             rel.RelatedObjects.Add_Reversible(obj.AsRoot);

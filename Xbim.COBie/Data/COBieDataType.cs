@@ -40,7 +40,7 @@ namespace Xbim.COBie.Data
             COBieSheet<COBieTypeRow> types = new COBieSheet<COBieTypeRow>(Constants.WORKSHEET_TYPE);
             
             //group the types by name as we need to filter duplicate items in for each loop
-            IEnumerable<IfcTypeObject> ifcTypeObjects = Model.InstancesOfType<IfcTypeObject>()
+            IEnumerable<IfcTypeObject> ifcTypeObjects = Model.Instances.OfType<IfcTypeObject>()
                 .Select(type => type)
                 .Where(type => !Context.TypeObjectExcludeTypes.Contains(type.GetType()))
                 .GroupBy(type => type.Name).Distinct().SelectMany(g => g);

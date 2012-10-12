@@ -12,7 +12,7 @@ namespace Xbim.IO
         /// <summary>
         /// The ESENT instance the cursor is opened against.
         /// </summary>
-        protected readonly Instance instance;
+        protected readonly JET_INSTANCE instance;
         /// <summary> 
         /// The ESENT session the cursor is using.
         /// </summary>
@@ -52,7 +52,7 @@ namespace Xbim.IO
 
 
         public bool ReadOnly { get; set; }
-        public XbimCursor(Instance instance, string database, OpenDatabaseGrbit mode)
+        public XbimCursor(JET_INSTANCE instance, string database, OpenDatabaseGrbit mode)
         {
             this.lockObject = new Object();
             this.instance = instance;

@@ -44,7 +44,7 @@ namespace Xbim.DOM
         {
             _document.Coverings.Add(this);
            
-            IfcCovering cov = _document.Model.New<IfcCovering>();
+            IfcCovering cov = _document.Model.Instances.New<IfcCovering>();
             _ifcBuildingElement = cov;
             cov.PredefinedType = xbimCoveringType.IfcCoveringType.PredefinedType;
             _ifcBuildingElement.SetDefiningType(xbimCoveringType.IfcTypeProduct, _document.Model);

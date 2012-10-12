@@ -98,7 +98,7 @@ namespace Xbim.IO
                 output.WriteAttributeString("xmlns", "ifc", null, _namespace);
                 output.WriteAttributeString("xsi", "schemaLocation", null, string.Format("{0} {1}", _namespace, _ifcXSD));
 
-                foreach (int item in model.InstanceLabels)
+                foreach (int item in model.Instances)
                 {
                     Write(model, item, output);
                 }

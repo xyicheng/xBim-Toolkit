@@ -167,7 +167,7 @@ namespace Xbim
 				Logger->DebugFormat("Ifc parsed and generated XBIM file, {0}", xBimFileName);
 				_graph = gcnew TransformGraph(model, this);
 				//add everything with a representation
-				_graph->AddProducts(model->InstancesOfType<IfcProduct^>(true)); //load the products as we will be accessing their geometry
+				_graph->AddProducts(model->Instances->OfType<IfcProduct^>(true)); //load the products as we will be accessing their geometry
 				Logger->Debug("Geometry Created. Saving GC file..."); 
 				_sceneStreamFileName = xBimGeometryFileName;
 				_sceneStream = gcnew FileStream(_sceneStreamFileName, FileMode::Create, FileAccess::ReadWrite);

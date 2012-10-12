@@ -113,9 +113,9 @@ namespace Xbim.Presentation
                 {
                     Dictionary<IfcObjectDefinition, SpatialStructureTreeItem> created =
                         new Dictionary<IfcObjectDefinition, SpatialStructureTreeItem>(
-                            model.InstancesOfType<IfcRelDecomposes>().Count());
+                            model.Instances.OfType<IfcRelDecomposes>().Count());
 
-                    foreach (IfcRelDecomposes rel in model.InstancesOfType<IfcRelDecomposes>())
+                    foreach (IfcRelDecomposes rel in model.Instances.OfType<IfcRelDecomposes>())
                     {
                         if (rel.RelatingObject != null)
                         {
@@ -141,7 +141,7 @@ namespace Xbim.Presentation
                     //    treeItem.AddChild(new SpatialStructureTreeItem());
                     foreach (
                         IfcRelContainedInSpatialStructure scRel in
-                            model.InstancesOfType<IfcRelContainedInSpatialStructure>())
+                            model.Instances.OfType<IfcRelContainedInSpatialStructure>())
                     {
                         if (scRel.RelatingStructure != null)
                         {

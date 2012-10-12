@@ -61,7 +61,7 @@ namespace Xbim.DOM
         private void BaseInit()
         {
             _document.BuildingElementProxys.Add(this);
-            _ifcBuildingElement = _document.Model.New<IfcBuildingElementProxy>();
+            _ifcBuildingElement = _document.Model.Instances.New<IfcBuildingElementProxy>();
         }
 
         #endregion

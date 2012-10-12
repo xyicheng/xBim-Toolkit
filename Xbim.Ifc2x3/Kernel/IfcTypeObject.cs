@@ -109,7 +109,7 @@ namespace Xbim.Ifc2x3.Kernel
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class, 0, 1)]
         public IEnumerable<IfcRelDefinesByType> ObjectTypeOf
         {
-            get { return ModelOf.InstancesWhere<IfcRelDefinesByType>(rt => rt.RelatingType == this); }
+            get { return ModelOf.Instances.Where<IfcRelDefinesByType>(rt => rt.RelatingType == this); }
         }
 
         #endregion

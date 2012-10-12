@@ -27,7 +27,7 @@ namespace Xbim.Ifc2x3.Extensions
         {
             IModel model = cls.ModelOf;
             IEnumerable<IfcClassificationItemRelationship> itemRels =
-                model.InstancesWhere<IfcClassificationItemRelationship>(r => r.RelatingItem.ItemOf == cls);
+                model.Instances.Where<IfcClassificationItemRelationship>(r => r.RelatingItem.ItemOf == cls);
             Dictionary<IfcClassificationItem, IfcClassificationItemRelationship> roots =
                 new Dictionary<IfcClassificationItem, IfcClassificationItemRelationship>(); //top level items
             foreach (IfcClassificationItemRelationship itemRel in itemRels)

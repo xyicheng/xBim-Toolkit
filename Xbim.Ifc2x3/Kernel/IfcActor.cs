@@ -80,7 +80,7 @@ namespace Xbim.Ifc2x3.Kernel
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class)]
         public IEnumerable<IfcRelAssignsToActor> IsActingUpon
         {
-            get { return ModelOf.InstancesWhere<IfcRelAssignsToActor>(a => a.RelatingActor == this); }
+            get { return ModelOf.Instances.Where<IfcRelAssignsToActor>(a => a.RelatingActor == this); }
         }
 
         #endregion

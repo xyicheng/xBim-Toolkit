@@ -127,7 +127,7 @@ namespace Xbim.Ifc2x3.GeometryResource
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class, 1)]
         public IEnumerable<IfcCompositeCurve> UsingCurves
         {
-            get { return ModelOf.InstancesWhere<IfcCompositeCurve>(c => c.Segments.Contains(this)); }
+            get { return ModelOf.Instances.Where<IfcCompositeCurve>(c => c.Segments.Contains(this)); }
         }
 
         #endregion

@@ -27,7 +27,7 @@ namespace Xbim.DOM
         private void BaseInit(XbimCurtainWallType type)
         {
             _document.CurtainWalls.Add(this);
-            _ifcBuildingElement = _document.Model.New<IfcCurtainWall>();
+            _ifcBuildingElement = _document.Model.Instances.New<IfcCurtainWall>();
             _ifcBuildingElement.SetDefiningType(type.IfcTypeProduct, _document.Model);
         }
         #endregion
