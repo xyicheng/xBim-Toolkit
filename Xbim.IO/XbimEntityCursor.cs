@@ -257,7 +257,10 @@ namespace Xbim.IO
             if (indexed.HasValue && indexed.Value == false) indexed = null;
             using (var update = new Update(sesid, table, JET_prep.Insert))
             {
-
+                //first put a record in with a null type key
+                SetColumnValues(currentLabel, typeId, -1, data.ToArray(), indexed);
+                Api.SetColumns(sesid, table, _colValues);
+                //now add in any search keys
                 if (indexKeys != null && indexKeys.Count > 0)
                 {
                     IEnumerable<int> uniqueKeys = indexKeys.Distinct();
@@ -265,25 +268,13 @@ namespace Xbim.IO
                     JET_SETINFO setinfo = new JET_SETINFO();
                     foreach (var item in uniqueKeys)
                     {
-                        if (i == 1)
-                        {
-                            SetColumnValues(currentLabel, typeId, item, data.ToArray(), indexed.Value);
-                            Api.SetColumns(sesid, table, _colValues);
-                        }
-                        else
-                        {
-                            byte[] bytes = BitConverter.GetBytes(item);
-                            setinfo.itagSequence = i + 1;
-                            Api.JetSetColumn(sesid, table, _colIdSecondaryKey, bytes, bytes.Length, SetColumnGrbit.None, setinfo);
-                        }
+                        byte[] bytes = BitConverter.GetBytes(item);
+                        setinfo.itagSequence = i + 1;
+                        Api.JetSetColumn(sesid, table, _colIdSecondaryKey, bytes, bytes.Length, SetColumnGrbit.None, setinfo);
                         i++;
                     }
                 }
-                else
-                {
-                    SetColumnValues(currentLabel, typeId, null, data.ToArray(), indexed);
-                    Api.SetColumns(sesid, table, _colValues);
-                }
+
                 update.Save();
                 UpdateCount(1);
             }
@@ -345,27 +336,23 @@ namespace Xbim.IO
         /// <param name="typeId">the type of entity to look up</param>
         /// <param name="lookupKey">Secondary indexes on the search</param>
         /// <returns>Returns an instance handle to the first or an empty handle if not found</returns>
-        public  bool TrySeekEntityType(short typeId, out XbimInstanceHandle ih, long lookupKey = -1 )
+        public bool TrySeekEntityType(short typeId, out XbimInstanceHandle ih, long lookupKey = -1)
         {
-            if (lookupKey > 0) 
+            Api.MakeKey(sesid, table, typeId, MakeKeyGrbit.NewKey);
+            Api.MakeKey(sesid, table, lookupKey, MakeKeyGrbit.None);
+            if (Api.TrySeek(sesid, table, SeekGrbit.SeekGE))
             {
                 Api.MakeKey(sesid, table, typeId, MakeKeyGrbit.NewKey);
-                Api.MakeKey(sesid, table, lookupKey, MakeKeyGrbit.None);
-                if (Api.TrySeek(sesid, table, SeekGrbit.SeekGE))
-                {                    
-                    Api.MakeKey(sesid, table, typeId, MakeKeyGrbit.NewKey);
-                    Api.MakeKey(sesid, table, lookupKey, MakeKeyGrbit.FullColumnEndLimit);
-                    if (Api.TrySetIndexRange(sesid, table, SetIndexRangeGrbit.RangeUpperLimit | SetIndexRangeGrbit.RangeInclusive))
-                    {
-                        ih = new XbimInstanceHandle(Api.RetrieveColumnAsInt32(sesid, table, _colIdEntityLabel, RetrieveColumnGrbit.RetrieveFromIndex), Api.RetrieveColumnAsInt16(sesid, table, _colIdIfcType, RetrieveColumnGrbit.RetrieveFromIndex));
-                        return true;
-                    }
+
+                Api.MakeKey(sesid, table, lookupKey, MakeKeyGrbit.FullColumnEndLimit);
+                if (Api.TrySetIndexRange(sesid, table, SetIndexRangeGrbit.RangeUpperLimit | SetIndexRangeGrbit.RangeInclusive))
+                {
+                    ih = new XbimInstanceHandle(Api.RetrieveColumnAsInt32(sesid, table, _colIdEntityLabel, RetrieveColumnGrbit.RetrieveFromIndex), Api.RetrieveColumnAsInt16(sesid, table, _colIdIfcType, RetrieveColumnGrbit.RetrieveFromIndex));
+                    return true;
                 }
-                ih = new XbimInstanceHandle();
-                return false;
             }
-            else
-                return TrySeekEntityType(typeId, out ih);
+            ih = new XbimInstanceHandle();
+            return false;
         }
         /// <summary>
         /// Sets the order to be by entity type and then label 

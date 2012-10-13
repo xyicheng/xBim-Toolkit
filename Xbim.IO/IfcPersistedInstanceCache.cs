@@ -1051,6 +1051,37 @@ namespace Xbim.IO
                         }
                     }
                 }
+                else if (expr.Body.NodeType == ExpressionType.Call)
+                {
+                    MethodCallExpression callExp = (MethodCallExpression)expr.Body;
+                    if (callExp.Method.Name == "Contains")
+                    {
+                        Expression keyExpr = callExp.Arguments[0];
+                        if (keyExpr.NodeType == ExpressionType.Constant)
+                        {
+                            ConstantExpression constExp = (ConstantExpression)keyExpr;
+                            object key = constExp.Value;
+                            if (callExp.Object.NodeType == ExpressionType.MemberAccess)
+                            {
+                                MemberExpression memExp = (MemberExpression)callExp.Object;
+
+                                if (ifcType.IndexedProperties.Contains(memExp.Member)) //we have a primary key match
+                                {
+                                    IPersistIfcEntity entity = key as IPersistIfcEntity;
+                                    if (entity != null)
+                                    {
+                                        indexFound = true;
+                                        foreach (var item in OfType<T>(true, Math.Abs(entity.EntityLabel)))
+                                        {
+                                            if (predicate(item))
+                                                yield return item;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
 
             //we cannot optimise so just do it
@@ -1058,7 +1089,8 @@ namespace Xbim.IO
             {
                 foreach (var item in OfType<T>(true))
                 {
-                    if (predicate(item)) yield return item;
+                    if (predicate(item)) 
+                        yield return item;
                 }
             }
         }

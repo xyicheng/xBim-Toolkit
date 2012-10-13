@@ -14,7 +14,25 @@ namespace Xbim.IO
     {
         public int EntityLabel;
         public short EntityTypeId;
-        
+
+        public static bool operator ==(XbimInstanceHandle a, XbimInstanceHandle b)
+        {
+            return a.EntityLabel == b.EntityLabel && a.EntityTypeId == b.EntityTypeId;
+        }
+
+        public static bool operator !=(XbimInstanceHandle a, XbimInstanceHandle b)
+        {
+            return a.EntityLabel != b.EntityLabel || a.EntityTypeId == b.EntityTypeId;
+        }
+
+        public override int GetHashCode()
+        {
+            return (EntityLabel << sizeof(int) + EntityTypeId).GetHashCode();
+        }
+        public override bool Equals(object b)
+        {
+            return this.EntityLabel == ((XbimInstanceHandle)b).EntityLabel && this.EntityTypeId == ((XbimInstanceHandle)b).EntityTypeId;
+        }
 
         public Type EntityType
         {
