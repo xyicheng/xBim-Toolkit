@@ -43,6 +43,7 @@ namespace Xbim.Ifc2x3.Kernel
         ///   in the subtypes of IfcRelAssigns.
         /// </summary>
         [IfcAttribute(5, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class, 1)]
+        [IndexedProperty]
         public ObjectDefinitionSet RelatedObjects
         {
             get

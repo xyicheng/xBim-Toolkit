@@ -40,6 +40,7 @@ namespace Xbim.Ifc2x3.Kernel
         #endregion
 
         [IfcAttribute(7, IfcAttributeState.Mandatory)]
+        [IndexedProperty]
         public IfcResource RelatingResource
         {
             get

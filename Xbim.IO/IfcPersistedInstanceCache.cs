@@ -56,7 +56,20 @@ namespace Xbim.IO
         private string _logDirectory;
         private XbimModel _model;
         private bool disposed = false;
-       
+        static private ComparePropertyInfo comparePropInfo = new ComparePropertyInfo();
+        private class ComparePropertyInfo : IEqualityComparer<PropertyInfo>
+        {
+
+            public bool Equals(PropertyInfo x, PropertyInfo y)
+            {
+                return x.Name == y.Name;
+            }
+
+            public int GetHashCode(PropertyInfo obj)
+            {
+                return obj.Name.GetHashCode();
+            }
+        }
         public IfcPersistedInstanceCache(XbimModel model)
         {
             this.lockObject = new Object();
@@ -101,7 +114,7 @@ namespace Xbim.IO
             }
             finally
             {
-                Directory.Delete(_logDirectory, true);
+                if (Directory.Exists(_logDirectory)) Directory.Delete(_logDirectory, true);
             }
         }
 
@@ -327,6 +340,12 @@ namespace Xbim.IO
         {
             if (_jetInstance != null) return _jetInstance;
             _logDirectory = Path.GetFullPath(xbimDbPath);
+            
+             int cacheSizeInBytes = 64 * 1024 * 1024;
+            SystemParameters.DatabasePageSize = 8192;
+            SystemParameters.CacheSizeMin = cacheSizeInBytes / SystemParameters.DatabasePageSize;
+            SystemParameters.CacheSizeMax = cacheSizeInBytes / SystemParameters.DatabasePageSize;
+
             //if the  database is not going to carry out recovery, i.e. it is readonly,
             //or just being created then create a unique path to allow multiplw read accesses
            // if (recovery)
@@ -334,6 +353,7 @@ namespace Xbim.IO
             //else
             //    _logDirectory = Path.ChangeExtension(_logDirectory, Guid.NewGuid().ToString());
             var jetInstance = new Instance("XbimInstance");
+            
             jetInstance.Parameters.BaseName = "XBM";
             jetInstance.Parameters.SystemDirectory = _logDirectory;
             jetInstance.Parameters.LogFileDirectory = _logDirectory;
@@ -342,7 +362,7 @@ namespace Xbim.IO
             jetInstance.Parameters.CreatePathIfNotExist = true;
             jetInstance.Parameters.EnableIndexChecking = false;       // TODO: fix unicode indexes
             jetInstance.Parameters.CircularLog = true;
-            jetInstance.Parameters.CheckpointDepthMax = 64 * 1024 * 1024;
+            jetInstance.Parameters.CheckpointDepthMax = cacheSizeInBytes;
             jetInstance.Parameters.LogFileSize = 1024;    // 1MB logs
             jetInstance.Parameters.LogBuffers = 1024;     // buffers = 1/2 of logfile
             jetInstance.Parameters.MaxTemporaryTables = 0;
@@ -351,12 +371,14 @@ namespace Xbim.IO
             jetInstance.Parameters.WaypointLatency = 1;
             jetInstance.Parameters.MaxSessions = 256;
             jetInstance.Parameters.MaxOpenTables = 256;
-
+           
             InitGrbit grbit = EsentVersion.SupportsWindows7Features
                                   ? Windows7Grbits.ReplayIgnoreLostLogs
                                   : InitGrbit.None;
             jetInstance.Parameters.Recovery = recovery; 
             jetInstance.Init(grbit);
+            
+   
             return jetInstance;
         }
 
@@ -1064,8 +1086,8 @@ namespace Xbim.IO
                             if (callExp.Object.NodeType == ExpressionType.MemberAccess)
                             {
                                 MemberExpression memExp = (MemberExpression)callExp.Object;
-
-                                if (ifcType.IndexedProperties.Contains(memExp.Member)) //we have a primary key match
+                                PropertyInfo pInfo = (PropertyInfo)(memExp.Member);
+                                if (ifcType.IndexedProperties.Contains(pInfo, comparePropInfo)) //we have a primary key match
                                 {
                                     IPersistIfcEntity entity = key as IPersistIfcEntity;
                                     if (entity != null)
@@ -1082,6 +1104,7 @@ namespace Xbim.IO
                         }
                     }
                 }
+               
             }
 
             //we cannot optimise so just do it
@@ -1094,6 +1117,8 @@ namespace Xbim.IO
                 }
             }
         }
+
+       
         #endregion
 
       

@@ -123,8 +123,7 @@ namespace Xbim.Ifc2x3.Kernel
             get
             {
                 return
-                    ModelOf.Instances.Where<IfcRelDefinesByProperties>(
-                        r => (r.RelatedObjects != null && r.RelatedObjects.Contains(this)));
+                    ModelOf.Instances.Where<IfcRelDefinesByProperties>(r => r.RelatedObjects.Contains(this));
             }
         }
 

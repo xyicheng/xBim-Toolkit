@@ -41,6 +41,7 @@ namespace Xbim.Ifc2x3.Kernel
         ///   Reference to the Process, that is the predecessor.
         /// </summary>
         [IfcAttribute(5, IfcAttributeState.Mandatory)]
+        [IndexedProperty]
         public IfcProcess RelatingProcess
         {
             get
@@ -59,6 +60,7 @@ namespace Xbim.Ifc2x3.Kernel
         ///   Reference to the Process, that is the successor.
         /// </summary>
         [IfcAttribute(6, IfcAttributeState.Mandatory)]
+        [IndexedProperty]
         public IfcProcess RelatedProcess
         {
             get

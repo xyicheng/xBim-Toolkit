@@ -254,29 +254,40 @@ namespace Xbim.IO
         /// <param name="data">property data</param>
         internal void AddEntity(int currentLabel, short typeId, List<int> indexKeys, byte[] data, bool? indexed)
         {
-            if (indexed.HasValue && indexed.Value == false) indexed = null;
-            using (var update = new Update(sesid, table, JET_prep.Insert))
+            try
             {
-                //first put a record in with a null type key
-                SetColumnValues(currentLabel, typeId, -1, data.ToArray(), indexed);
-                Api.SetColumns(sesid, table, _colValues);
-                //now add in any search keys
-                if (indexKeys != null && indexKeys.Count > 0)
-                {
-                    IEnumerable<int> uniqueKeys = indexKeys.Distinct();
-                    int i = 1;
-                    JET_SETINFO setinfo = new JET_SETINFO();
-                    foreach (var item in uniqueKeys)
-                    {
-                        byte[] bytes = BitConverter.GetBytes(item);
-                        setinfo.itagSequence = i + 1;
-                        Api.JetSetColumn(sesid, table, _colIdSecondaryKey, bytes, bytes.Length, SetColumnGrbit.None, setinfo);
-                        i++;
-                    }
-                }
 
-                update.Save();
-                UpdateCount(1);
+
+                if (indexed.HasValue && indexed.Value == false) indexed = null;
+                using (var update = new Update(sesid, table, JET_prep.Insert))
+                {
+                    //first put a record in with a null type key
+                    SetColumnValues(currentLabel, typeId, -1, data.ToArray(), indexed);
+                    Api.SetColumns(sesid, table, _colValues);
+                    //now add in any search keys
+                    if (indexKeys != null && indexKeys.Count > 0)
+                    {
+                        IEnumerable<int> uniqueKeys = indexKeys.Distinct();
+                        int i = 2;
+                        JET_SETINFO setinfo = new JET_SETINFO();
+                        foreach (var item in uniqueKeys)
+                        {
+                            byte[] bytes = BitConverter.GetBytes(item);
+                            setinfo.itagSequence = i ;
+                            Api.JetSetColumn(sesid, table, _colIdSecondaryKey, bytes, bytes.Length, SetColumnGrbit.None, setinfo);
+                            i++;
+                           
+                        }
+                    }
+
+                    update.Save();
+                    UpdateCount(1);
+                }
+            }
+            catch (Exception e)
+            {
+
+                throw;
             }
 
         }

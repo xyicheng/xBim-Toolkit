@@ -52,27 +52,28 @@ namespace XbimConvert
                         watch.Start();
 
                         model.Open(xbimFileName, XbimDBAccess.Read);
-                        XbimModel model2 = ParseModelFile(xbimFileName);
-                         model2.Open(xbimFileName, XbimDBAccess.Read);
+                        //XbimModel model2 = ParseModelFile(xbimFileName);
+                        // model2.Open(xbimFileName, XbimDBAccess.Read);
+                        IfcProject p = model.Instances.OfType<IfcProject>().FirstOrDefault();
+                    ////    using (var txn = model.BeginTransaction())
+                    //    {
+                    //        foreach (var item in model.Instances)
+                    //        {
+                    //           // Console.WriteLine(item);
+                    //        }
+                    //    }
+                    // //               using (var txn = model2.BeginTransaction())
+                    //    {
+                    //        foreach (var item in model2.Instances)
+                    //        {
+                    //           // Console.WriteLine(item);
+                    //        }
+                    //    }
 
-                    //    using (var txn = model.BeginTransaction())
-                        {
-                            foreach (var item in model.Instances)
-                            {
-                               // Console.WriteLine(item);
-                            }
-                        }
-                     //               using (var txn = model2.BeginTransaction())
-                        {
-                            foreach (var item in model2.Instances)
-                            {
-                               // Console.WriteLine(item);
-                            }
-                        }
-
-
+                       IfcRelDecomposes r= p.Decomposes.FirstOrDefault();
+                       Console.WriteLine( r.Name);
                        //GenerateGeometry(xbimGeometryFileName, model);
-                        model2.Close();
+                        //model2.Close();
                         model.Close();
                         
                     }

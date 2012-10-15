@@ -48,6 +48,7 @@ namespace Xbim.Ifc2x3.Kernel
         ///   Reference to the information about the actor. It comprises the information about the person or organization and its addresses.
         /// </summary>
         [IfcAttribute(7, IfcAttributeState.Mandatory)]
+        [IndexedProperty]
         public IfcActor RelatingActor
         {
             get

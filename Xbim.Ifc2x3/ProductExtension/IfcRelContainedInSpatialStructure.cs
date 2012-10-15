@@ -60,6 +60,7 @@ namespace Xbim.Ifc2x3.ProductExtension
         ///   IFC2x PLATFORM CHANGE  The data type has been changed from IfcElement to IfcProduct with upward compatibility
         /// </remarks>
         [IfcAttribute(5, IfcAttributeState.Mandatory, IfcAttributeType.Set, 1)]
+        [IndexedProperty]
         public XbimSet<IfcProduct> RelatedElements
         {
             get
@@ -75,9 +76,11 @@ namespace Xbim.Ifc2x3.ProductExtension
         }
 
         /// <summary>
-        ///   Spatial structure element, within which the element is contained. Any element can only be contained within one element of the project spatial structure.
+        ///   Spatial structure element, within which the el
+        ///   Element is contained. Any element can only be contained within one element of the project spatial structure.
         /// </summary>
         [IfcAttribute(6, IfcAttributeState.Mandatory)]
+        [IndexedProperty]
         public IfcSpatialStructureElement RelatingStructure
         {
             get

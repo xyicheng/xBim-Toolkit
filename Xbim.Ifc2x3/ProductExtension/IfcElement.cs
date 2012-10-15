@@ -180,8 +180,7 @@ namespace Xbim.Ifc2x3.ProductExtension
             get
             {
                 return
-                    ModelOf.Instances.Where<IfcRelReferencedInSpatialStructure>(
-                        r => (r.RelatedElements != null && r.RelatedElements.Contains(this)));
+                    ModelOf.Instances.Where<IfcRelReferencedInSpatialStructure>(r => r.RelatedElements.Contains(this));
             }
         }
 
@@ -224,8 +223,7 @@ namespace Xbim.Ifc2x3.ProductExtension
             get
             {
                 return
-                    ModelOf.Instances.Where<IfcRelConnectsWithRealizingElements>(
-                        r => (r.RealizingElements != null && r.RealizingElements.Contains(this)));
+                    ModelOf.Instances.Where<IfcRelConnectsWithRealizingElements>(r => r.RealizingElements.Contains(this));
             }
         }
 
@@ -263,8 +261,7 @@ namespace Xbim.Ifc2x3.ProductExtension
             get
             {
                 return
-                    ModelOf.Instances.Where<IfcRelContainedInSpatialStructure>(
-                        r => r.RelatedElements.Contains(this));
+                    ModelOf.Instances.Where<IfcRelContainedInSpatialStructure>(r => r.RelatedElements.Contains(this));
             }
         }
 

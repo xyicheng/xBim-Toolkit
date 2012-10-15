@@ -40,6 +40,7 @@ namespace Xbim.Ifc2x3.Kernel
         ///   Reference to the type (or style) information for that object or set of objects.
         /// </summary>
         [IfcAttribute(6, IfcAttributeState.Mandatory)]
+        [IndexedProperty]
         public IfcTypeObject RelatingType
         {
             get
