@@ -93,30 +93,38 @@ namespace Xbim.COBie.Data
 
                 if (ifcProduct is IfcBuildingStorey)
                 {
-                    Matrix3D worldMatrix = transGraph.ProductNodes[ifcProduct.EntityLabel].WorldMatrix();
-                    ifcCartesianPointLower = new IfcCartesianPoint(worldMatrix.OffsetX, worldMatrix.OffsetY, worldMatrix.OffsetZ); //get the offset from the world coordinates system 0,0,0 point, i.e. origin point of this object in world space
+                    if (transGraph != null)
+                    {
+                        Matrix3D worldMatrix = transGraph.ProductNodes[ifcProduct.EntityLabel].WorldMatrix();
+                        ifcCartesianPointLower = new IfcCartesianPoint(worldMatrix.OffsetX, worldMatrix.OffsetY, worldMatrix.OffsetZ); //get the offset from the world coordinates system 0,0,0 point, i.e. origin point of this object in world space
+                    }
                     coordinate.SheetName = "Floor"; 
                     coordinate.Category = "point";
                     //ifcCartesianPoint = (ifcProduct.ObjectPlacement as IfcLocalPlacement).RelativePlacement.Location;
                 }
                 else 
                 {
-                    Rect3D boundBox = transGraph.ProductNodes[ifcProduct.EntityLabel].BoundingBox;
-                    Matrix3D worldMatrix = transGraph.ProductNodes[ifcProduct.EntityLabel].WorldMatrix();
-                    //do the transform in the next call to the structure TransformedBoundingBox constructor
-                    TransformedBoundingBox tranBox = new TransformedBoundingBox(boundBox, worldMatrix);
-                    ClockwiseRotation = tranBox.ClockwiseRotation;
-                    ElevationalRotation = tranBox.ElevationalRotation;
-                    YawRotation = tranBox.YawRotation;
+                    if (transGraph != null)
+                    {
+                        Rect3D boundBox = transGraph.ProductNodes[ifcProduct.EntityLabel].BoundingBox;
+                        Matrix3D worldMatrix = transGraph.ProductNodes[ifcProduct.EntityLabel].WorldMatrix();
+                        //do the transform in the next call to the structure TransformedBoundingBox constructor
+                        TransformedBoundingBox tranBox = new TransformedBoundingBox(boundBox, worldMatrix);
+                        ClockwiseRotation = tranBox.ClockwiseRotation;
+                        ElevationalRotation = tranBox.ElevationalRotation;
+                        YawRotation = tranBox.YawRotation;
+                        //set points
+                        ifcCartesianPointLower = new IfcCartesianPoint(tranBox.MinPt);
+                        ifcCartesianPointUpper = new IfcCartesianPoint(tranBox.MaxPt); 
+                    }
+                    
                     if (ifcProduct is IfcSpace)
                         coordinate.SheetName = "Space";
                     else
                         coordinate.SheetName = "Component";
 
                     coordinate.Category = "box-lowerleft"; //and box-upperright, so two values required when we do this
-                    //set points
-                    ifcCartesianPointLower = new IfcCartesianPoint(tranBox.MinPt);
-                    ifcCartesianPointUpper = new IfcCartesianPoint(tranBox.MaxPt);
+                    
                     
                 }
                 
@@ -167,23 +175,12 @@ namespace Xbim.COBie.Data
         private TransformGraph GetTransformGraph()
         {
             TransformGraph graph = null;
-              
-            if (Context.COBieGlobalValues.ContainsKey("FILENAME"))
+
+            if (Context.Scene != null)
             {
-                string cacheFile = Context.COBieGlobalValues["FILENAME"];
-                if (!string.IsNullOrEmpty(cacheFile))
-                {
-                    cacheFile = Path.ChangeExtension(cacheFile, ".xbimGC");
-                    //if no Geometry file than create it
-                    if (!File.Exists(cacheFile)) GenerateGeometry(cacheFile);
-                    //now we have a file read it into the XbimSceneStream
-                    if (File.Exists(cacheFile))
-                    {
-                        XbimSceneStream scene = new XbimSceneStream(Model, cacheFile);
-                        graph = scene.Graph; //the graph holds product boundary box's so we will return it
-                        scene.Close();
-                    }
-                }
+                //IXbimScene scene = new XbimSceneStream(Model, cacheFile);
+                graph = Context.Scene.Graph; //the graph holds product boundary box's so we will return it
+                
             }
             return graph;
 
@@ -194,93 +191,7 @@ namespace Xbim.COBie.Data
            
 
         }
-
-        /// <summary>
-        /// Create the xbimGC file
-        /// </summary>
-        /// <param name="cacheFile">file path to write file too</param>
-        private void GenerateGeometry(string cacheFile)
-        {
-            //now convert the geometry
-            IEnumerable<IfcProduct> toDraw = Model.IfcProducts.Items; //get all products for this model to place in return graph
-
-            XbimScene scene = new XbimScene(Model, toDraw);
-            int total = scene.Graph.ProductNodes.Count();
-            //create the geometry file
-            ProgressIndicator.Initialise("Create Geometry File", total);
-            using (FileStream sceneStream = new FileStream(cacheFile, FileMode.Create, FileAccess.ReadWrite))
-            {
-                BinaryWriter bw = new BinaryWriter(sceneStream);
-                //show current status to user
-                scene.Graph.Write(bw, delegate(int percentProgress, object userState)
-                {
-                    Context.UpdateStatus("Creating Geometry File", total, (total * percentProgress / 100));
-                });
-                bw.Flush();
-            }
-            ProgressIndicator.Finalise();
-        }
-
-        /// <summary>
-        /// Tests on structure TransformedBoundingBox
-        /// </summary>
-        //public void Test() //please keep for now as may use Vector calculations over matrix 
-        //{
-        //    Quaternion planangle = new Quaternion(new Vector3D(0.0, 0.0, 1.0), 45); // degree rotation on z axis
-        //    Quaternion Yawangle = new Quaternion(new Vector3D(1.0, 0.0, 0.0), -35.005); // degree rotation on x axis
-        //    Quaternion Pitchangle = new Quaternion(new Vector3D(0.0, 1.0, 0.0), 25.0); // degree rotation on y axis
-
-        //    Matrix3D matrix = new Matrix3D(); // Get Identity matrix
-        //    //matrix.RotateAt(Yawangle, new Point3D(0.0, 0.0, 0.0)); //rotate  on x axis
-        //    matrix.RotateAt(Pitchangle, new Point3D(0.0, 0.0, 0.0)); //rotate  on y axis
-        //    //matrix.RotateAt(planangle, new Point3D(0.0, 0.0, 0.0)); //rotate  on z axis
-        //    Rect3D boundBox = new Rect3D(0.0, 0.0, 0.0, 20, 10, 5.0);
-
-        //    Vector3D WorldX = new Vector3D(1.0, 0.0, 0.0);
-        //    Vector3D WorldY = new Vector3D(0.0, 1.0, 0.0);
-        //    Vector3D WorldZ = new Vector3D(0.0, 0.0, 1.0);
-        //    TransformedBoundingBox tranBox = new TransformedBoundingBox(boundBox, matrix);
-        //    Console.WriteLine("MinPt = {0}", tranBox.MinPt);
-        //    Console.WriteLine("MaxPt = {0}", tranBox.MaxPt);
-        //    Console.WriteLine("Rotation Clockwise on Plan (Z)  = {0}", tranBox.ClockwiseRotation);
-        //    Console.WriteLine("Rotation Elevation (Y)  = {0}", tranBox.ElevationalRotation);
-        //    Console.WriteLine("Rotation Yaw (X)  = {0}", tranBox.YawRotation);
-        //    Console.WriteLine("-------------------------------");
-        //    //double xxx = -Math.Asin(matrix.M31);
-        //    //double rotationY = Math.Atan2(-matrix.M31, (Math.Sqrt(Math.Pow(matrix.M32, 2) + Math.Pow(matrix.M33, 2)))); //Math.Asin(matrix.M31); 
-            
-        //    //----------angle calculations via vector----------
-        //    Vector3D RotationVector = new Vector3D(1.0, 0.0, 0.0);
-        //    Vector3D YawRotationVector = new Vector3D(0.0, 1.0, 0.0);
-        //    RotationVector = matrix.Transform(RotationVector);
-        //    YawRotationVector = matrix.Transform(YawRotationVector);
-        //    //ensure they are 1 unit in length
-        //    RotationVector.Normalize();
-        //    YawRotationVector.Normalize();
-
-        //    //Note Counter Clockwise
-        //    Vector3D flattenRot = new Vector3D(RotationVector.X, RotationVector.Y, 0.0); //remove the Z value so we only look at plan rotation
-        //    flattenRot.Normalize();
-        //    double RotProduct = Vector3D.DotProduct(WorldX, flattenRot);//dot product to the X Axis
-
-        //    double rot = Math.Acos(Vector3D.DotProduct(WorldX, flattenRot)); //dot product to the X Axis
-
-        //    double pitch = Math.Acos(Vector3D.DotProduct(WorldZ, RotationVector)); //dot product to the Z axis
-        //    double yaw = Math.Acos(Vector3D.DotProduct(WorldZ, YawRotationVector));//dot product to the Z axis
-
-        //    rot = rot * (180 / Math.PI);
-        //    if (RotProduct < 0) rot = 360.0 - rot; //if dot product is negative then in 180 to 360 range
-
-        //    yaw = 90.0 - (yaw * (180 / Math.PI));
-        //    pitch = 90.0 - (pitch * (180 / Math.PI));
-
-        //    Console.WriteLine("Rotation DotProduct  = {0}", RotProduct);
-        //    Console.WriteLine("Plan Rotation = {0}", rot);
-        //    Console.WriteLine("Elevation Rotation = {0}", pitch);
-        //    Console.WriteLine("Yaw Rotation = {0}", yaw);
-
-        //}
-       
+ 
         #endregion
     }
 

@@ -93,8 +93,8 @@ namespace Xbim.COBie.Data
                 }
                 
             }
-            //return default date of 1900-12-31:23:59:59
-            return new DateTime(1900, 12, 31, 23, 59, 59).ToString(Constants.DATE_FORMAT);
+            //return default date of now
+            return Context.COBieGlobalValues["DEFAULTDATE"];
         }
 
 
@@ -105,7 +105,12 @@ namespace Xbim.COBie.Data
         /// <returns></returns>
         public string GetExternalSystem(IfcRoot item)
         {
-            return item.OwnerHistory.OwningApplication.ApplicationFullName;
+            string appName = "";
+            if(item.OwnerHistory.LastModifyingApplication != null)
+                appName = item.OwnerHistory.LastModifyingApplication.ApplicationFullName;
+            if (string.IsNullOrEmpty(appName))
+                appName = item.OwnerHistory.OwningApplication.ApplicationFullName;
+            return string.IsNullOrEmpty(appName) ? DEFAULT_STRING : appName;
         }
 
         /// <summary>

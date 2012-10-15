@@ -251,6 +251,8 @@ namespace Xbim.COBie.Data
                 if (!string.IsNullOrEmpty(ifcSpace.LongName)) return ifcSpace.LongName;
                 else if (!string.IsNullOrEmpty(ifcSpace.Description)) return ifcSpace.Description;
                 else if (!string.IsNullOrEmpty(ifcSpace.Name)) return ifcSpace.Name;
+                
+                
             }
             return DEFAULT_STRING;
         }
@@ -262,22 +264,16 @@ namespace Xbim.COBie.Data
         /// <returns>property value as string or default value</returns>
         private string GetRoomTag(IfcSpace ifcSpace, COBieDataPropertySetValues allPropertyValues)
         {
-            string value = GetSpaceDescription(ifcSpace);
+            if (!string.IsNullOrEmpty(ifcSpace.Name)) return ifcSpace.Name;
+
+            string value = ""; // GetSpaceDescription(ifcSpace);
+            allPropertyValues.SetAllPropertySingleValues(ifcSpace);
+            //try and find it in the attached properties of the ifcSpace
+            value = allPropertyValues.GetPropertySingleValueValue("RoomTag", true);
             if (value == DEFAULT_STRING)
-            {
-                //Fall back to properties
-                //get the property single values for this ifcSpace
-                allPropertyValues.SetAllPropertySingleValues(ifcSpace);
-
-                //try and find it in the attached properties of the ifcSpace
-                value = allPropertyValues.GetPropertySingleValueValue("RoomTag", true);
-                if (value == DEFAULT_STRING)
-                    value = allPropertyValues.GetPropertySingleValueValue("Tag", true);
-                if (value == DEFAULT_STRING)
-                    value = allPropertyValues.GetPropertySingleValueValue("Room_Tag", true);
-
-            }
-
+                value = allPropertyValues.GetPropertySingleValueValue("Tag", true);
+            if (value == DEFAULT_STRING)
+                value = allPropertyValues.GetPropertySingleValueValue("Room_Tag", true);
             return value;
         }
         #endregion

@@ -12,6 +12,7 @@ using Xbim.Ifc.StructuralElementsDomain;
 using Xbim.Ifc.SharedBldgServiceElements;
 using Xbim.Ifc.HVACDomain;
 using Xbim.Ifc.ElectricalDomain;
+using Xbim.ModelGeometry.Scene;
 
 namespace Xbim.COBie
 {
@@ -33,11 +34,11 @@ namespace Xbim.COBie
                 _progress = progressHandler;
                 this.ProgressStatus += progressHandler;
             }
-			Models = new List<IModel>();
 
+            Scene = null;
             EMails = new Dictionary<long, string>();
             COBieGlobalValues = new Dictionary<string, string>();
-            COBieGlobalValues.Add("DEFAULTDATE", DateTime.Now.ToString(Constants.DATE_FORMAT));
+            //COBieGlobalValues.Add("DEFAULTDATE", DateTime.Now.ToString(Constants.DATE_FORMAT));
            
 		}
 
@@ -45,24 +46,16 @@ namespace Xbim.COBie
 		/// Collection of models to interrogate for data to populate the COBie worksheets
 		/// </summary>
         /// <remarks>Due to be obsoleted. Will merge models explicitly</remarks>
-		public ICollection<IModel> Models { get; set; }
+		
 
-
-        private IModel _model = null;
         /// <summary>
         /// Gets the model defined in this context to generate COBie data from
         /// </summary>
-        public IModel Model
-        {
-            get
-            {
-                if (_model == null)
-                {
-                    _model = Models.First();
-                }
-                return _model;
-            }
-        }
+        public IModel Model { get; set; }
+       
+
+        public IXbimScene Scene  { get; set; }
+       
 
 		/// <summary>
 		/// The pick list to use to cross-reference fields in the COBie worksheets
@@ -94,6 +87,12 @@ namespace Xbim.COBie
 
         public void Dispose()
         {
+            if (Scene != null)
+            {
+                Scene.Close();
+                Scene = null;
+            }
+
             if (_progress != null)
             {
                 ProgressStatus -= _progress;

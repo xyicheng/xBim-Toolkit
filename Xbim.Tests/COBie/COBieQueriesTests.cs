@@ -31,7 +31,7 @@ namespace Xbim.Tests.COBie
             _model = new XbimFileModelServer();
             _model.Open(SourceFile);
             _cobieContext = new COBieContext();
-            _cobieContext.Models.Add(_model);
+            _cobieContext.Model = _model;
             COBieQueries cobieEngine = new COBieQueries(_cobieContext);
 
         }

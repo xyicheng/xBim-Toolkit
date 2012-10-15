@@ -54,8 +54,13 @@ namespace Xbim.COBie
 		private void Initialise()
         {
 			if (Context == null) { throw new InvalidOperationException("COBieReader can't initialise without a valid Context."); }
-			if (Context.Models == null || Context.Models.Count == 0) { throw new ArgumentException("COBieReader context must contain one or more models."); }
+			if (Context.Model == null) { throw new ArgumentException("COBieReader context must contain one or more models."); }
 
+            //set default date for this run
+            if (Context.COBieGlobalValues.ContainsKey("DEFAULTDATE"))
+                Context.COBieGlobalValues["DEFAULTDATE"] = DateTime.Now.ToString(Constants.DATE_FORMAT);
+            else
+                Context.COBieGlobalValues.Add("DEFAULTDATE", DateTime.Now.ToString(Constants.DATE_FORMAT));
 
             // set all the properties
             COBieQueries cq = new COBieQueries(Context);
@@ -93,7 +98,10 @@ namespace Xbim.COBie
             Workbook.Add(cq.GetCOBieAttributeSheet());
 
             Workbook.Add(CobiePickLists); //Workbook.Add(new COBieSheet<COBiePickListsRow>(Constants.WORKSHEET_PICKLISTS));
-           
+
+            //clear sheet session values from context
+            Context.EMails.Clear();
+            Context.COBieGlobalValues.Clear();
 
         }
 

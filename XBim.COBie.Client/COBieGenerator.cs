@@ -10,8 +10,12 @@ using System.IO;
 using Xbim.IO;
 using Xbim.COBie;
 using XBim.COBie.Client.Formatters;
+using Xbim.ModelGeometry.Scene;
+using Xbim.ModelGeometry;
+
 using Xbim.XbimExtensions;
 using System.Diagnostics;
+using Xbim.Ifc.Kernel;
 
 namespace XBim.COBie.Client
 {
@@ -88,7 +92,11 @@ namespace XBim.COBie.Client
                     context.COBieGlobalValues.Add("TEMPLATEFILENAME", parameters.TemplateFile); //pass over template file name
                     context.COBieGlobalValues.Add("FILENAME", parameters.ModelFile); //pass over template file name
 
-                    context.Models.Add(model);
+                    context.Model = model;
+                    
+                    string cacheFile = Path.ChangeExtension(parameters.TemplateFile, ".xbimGC");
+                    if (!File.Exists(cacheFile)) GenerateGeometry(model, cacheFile, context);
+                    context.Scene = new XbimSceneStream(model, cacheFile);
 
                     // Create COBieReader
                     LogBackground("Generating COBie data...");
@@ -117,6 +125,32 @@ namespace XBim.COBie.Client
                 args.Result = ex;
                 return;
             }
+        }
+
+        /// <summary>
+        /// Create the xbimGC file
+        /// </summary>
+        /// <param name="cacheFile">file path to write file too</param>
+        private void GenerateGeometry(IModel model, string cacheFile, COBieContext context)
+        {
+            //now convert the geometry
+            IEnumerable<IfcProduct> toDraw = model.IfcProducts.Items; //get all products for this model to place in return graph
+
+            XbimScene scene = new XbimScene(model, toDraw);
+            int total = scene.Graph.ProductNodes.Count();
+            //create the geometry file
+            
+            using (FileStream sceneStream = new FileStream(cacheFile, FileMode.Create, FileAccess.ReadWrite))
+            {
+                BinaryWriter bw = new BinaryWriter(sceneStream);
+                //show current status to user
+                scene.Graph.Write(bw, delegate(int percentProgress, object userState)
+                {
+                    context.UpdateStatus("Creating Geometry File", total, (total * percentProgress / 100));
+                });
+                bw.Flush();
+            }
+            
         }
 
         /// <summary>

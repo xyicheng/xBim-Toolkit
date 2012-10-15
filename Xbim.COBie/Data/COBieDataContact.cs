@@ -104,22 +104,23 @@ namespace Xbim.COBie.Data
             if ((addresses != null) && (addresses.PostalAddresses  != null))
             {
                 IfcPostalAddress ifcPostalAddress = addresses.PostalAddresses.FirstOrDefault();
-                contact.Street = (ifcPostalAddress.AddressLines != null) ? ifcPostalAddress.AddressLines.FirstOrDefault().Value.ToString() : DEFAULT_STRING;
-                contact.PostalBox = (string.IsNullOrEmpty(ifcPostalAddress.PostalBox)) ? DEFAULT_STRING : ifcPostalAddress.PostalBox.ToString();
-                contact.Town = (string.IsNullOrEmpty(ifcPostalAddress.Town)) ? DEFAULT_STRING : ifcPostalAddress.Town.ToString();
-                contact.StateRegion = (string.IsNullOrEmpty(ifcPostalAddress.Region)) ? DEFAULT_STRING : ifcPostalAddress.Region.ToString();
-                contact.PostalCode = (string.IsNullOrEmpty(ifcPostalAddress.PostalCode)) ? DEFAULT_STRING : ifcPostalAddress.PostalCode.ToString();
-                contact.Country = (string.IsNullOrEmpty(ifcPostalAddress.Country)) ? DEFAULT_STRING : ifcPostalAddress.Country.ToString();
+                if (ifcPostalAddress != null)
+                {
+                    contact.Street = (ifcPostalAddress.AddressLines != null) ? ifcPostalAddress.AddressLines.FirstOrDefault().Value.ToString() : DEFAULT_STRING;
+                    contact.PostalBox = (string.IsNullOrEmpty(ifcPostalAddress.PostalBox)) ? DEFAULT_STRING : ifcPostalAddress.PostalBox.ToString();
+                    contact.Town = (string.IsNullOrEmpty(ifcPostalAddress.Town)) ? DEFAULT_STRING : ifcPostalAddress.Town.ToString();
+                    contact.StateRegion = (string.IsNullOrEmpty(ifcPostalAddress.Region)) ? DEFAULT_STRING : ifcPostalAddress.Region.ToString();
+                    contact.PostalCode = (string.IsNullOrEmpty(ifcPostalAddress.PostalCode)) ? DEFAULT_STRING : ifcPostalAddress.PostalCode.ToString();
+                    contact.Country = (string.IsNullOrEmpty(ifcPostalAddress.Country)) ? DEFAULT_STRING : ifcPostalAddress.Country.ToString();
+                    return;
+                }
             }
-            else
-            {
-                contact.Street = DEFAULT_STRING;
-                contact.PostalBox = DEFAULT_STRING;
-                contact.Town = DEFAULT_STRING;
-                contact.StateRegion = DEFAULT_STRING;
-                contact.PostalCode = DEFAULT_STRING;
-                contact.Country = DEFAULT_STRING;
-            }
+            contact.Street = DEFAULT_STRING;
+            contact.PostalBox = DEFAULT_STRING;
+            contact.Town = DEFAULT_STRING;
+            contact.StateRegion = DEFAULT_STRING;
+            contact.PostalCode = DEFAULT_STRING;
+            contact.Country = DEFAULT_STRING;
         }
 
         #endregion
