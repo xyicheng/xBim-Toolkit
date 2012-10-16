@@ -12,6 +12,7 @@ namespace Xbim.COBie
 	/// <summary>
 	/// Abstract base class for Rows
 	/// </summary>
+    [Serializable()]
     public abstract class COBieRow
     {
         public ICOBieSheet<COBieRow> ParentSheet;

@@ -67,12 +67,22 @@ namespace Xbim.COBie
 
             
             //create pick list from the template sheet
-            COBiePickListReader pickListReader = new COBiePickListReader(Context.COBieGlobalValues["TEMPLATEFILENAME"]);
-            COBieSheet<COBiePickListsRow>  CobiePickLists = pickListReader.Read();
+            COBieSheet<COBiePickListsRow> CobiePickLists = null;
+            if ((!string.IsNullOrEmpty(Context.TemplateFileName)) &&
+                File.Exists(Context.TemplateFileName)
+                )
+            {
+                COBiePickListReader pickListReader = new COBiePickListReader(Context.TemplateFileName);
+                CobiePickLists = pickListReader.Read();
+            }
+            
 
             //fall back to xml file if not in template
-            if (CobiePickLists.RowCount == 0)
-                CobiePickLists = cq.GetCOBiePickListsSheet("PickLists.xml");// create pick lists from xml
+            string pickListFileName = "PickLists.xml";
+            if ((CobiePickLists == null) &&
+                File.Exists(pickListFileName)
+                )
+                CobiePickLists = cq.GetCOBiePickListsSheet(pickListFileName);// create pick lists from xml
            
             // add to workbook and use workbook for error checking later
 

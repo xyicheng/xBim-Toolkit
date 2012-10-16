@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 namespace Xbim.COBie
 {
-
+    [Serializable()]
     [DebuggerDisplay("{SheetName}.{FieldName} : {ErrorDescription} - '{FieldValue}' [{Row},{Column}]")]
     public class COBieError
     {

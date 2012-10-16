@@ -5,6 +5,7 @@ using System.Text;
 
 namespace Xbim.COBie
 {
+    [Serializable()]
     public class COBieWorkbook : List<ICOBieSheet<COBieRow>> 
     {
         public ICOBieSheet<COBieRow> this[string sheetName]

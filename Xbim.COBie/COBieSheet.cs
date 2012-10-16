@@ -9,6 +9,7 @@ using System.Diagnostics;
 
 namespace Xbim.COBie
 {
+    [Serializable()]
     public class COBieSheet<T> : ICOBieSheet<T> where T : COBieRow
     {
         

@@ -93,7 +93,9 @@ namespace Xbim.COBie.Data
 
                 if (ifcProduct is IfcBuildingStorey)
                 {
-                    if (transGraph != null)
+                    if ((transGraph != null) &&
+                        transGraph.ProductNodes.ContainsKey(ifcProduct.EntityLabel)
+                        )
                     {
                         Matrix3D worldMatrix = transGraph.ProductNodes[ifcProduct.EntityLabel].WorldMatrix();
                         ifcCartesianPointLower = new IfcCartesianPoint(worldMatrix.OffsetX, worldMatrix.OffsetY, worldMatrix.OffsetZ); //get the offset from the world coordinates system 0,0,0 point, i.e. origin point of this object in world space
@@ -104,7 +106,9 @@ namespace Xbim.COBie.Data
                 }
                 else 
                 {
-                    if (transGraph != null)
+                    if ((transGraph != null) &&
+                        transGraph.ProductNodes.ContainsKey(ifcProduct.EntityLabel)
+                        )
                     {
                         Rect3D boundBox = transGraph.ProductNodes[ifcProduct.EntityLabel].BoundingBox;
                         Matrix3D worldMatrix = transGraph.ProductNodes[ifcProduct.EntityLabel].WorldMatrix();

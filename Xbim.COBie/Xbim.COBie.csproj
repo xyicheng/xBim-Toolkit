@@ -104,6 +104,8 @@
     <Compile Include="COBieContext.cs" />
     <Compile Include="COBieErrorCollection.cs" />
     <Compile Include="COBieWorkbook.cs" />
+    <Compile Include="Contracts\ICOBieDeserialiser.cs" />
+    <Compile Include="Contracts\ICOBieSerialiser.cs" />
     <Compile Include="Data\COBieData.cs" />
     <Compile Include="Data\COBieDataAssembly.cs" />
     <Compile Include="Data\COBieDataAttributeBuilder.cs" />
@@ -174,6 +176,8 @@
     <Compile Include="Rows\COBieZoneRow.cs" />
     <Compile Include="Contracts\ICOBieFormatter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Serialisers\COBieBinaryDeserialiser.cs" />
+    <Compile Include="Serialisers\COBieBinarySerialiser.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ClassDiagram1.cd" />
@@ -203,9 +207,7 @@
   <ItemGroup>
     <Content Include="PickLists.xml" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Formatters\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <WCFMetadata Include="Service References\" />
   </ItemGroup>

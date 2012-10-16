@@ -25,7 +25,8 @@ namespace Xbim.COBie
 
         public Dictionary<long, string> EMails { get; private set; }
         public Dictionary<string, string> COBieGlobalValues { get; private set; }
-        
+
+        public string TemplateFileName { get; set; }
 
         public COBieContext(ReportProgressDelegate progressHandler = null)
 		{
