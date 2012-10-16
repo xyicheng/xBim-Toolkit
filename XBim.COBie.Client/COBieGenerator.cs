@@ -130,7 +130,9 @@ namespace XBim.COBie.Client
         /// <summary>
         /// Create the xbimGC file
         /// </summary>
+        /// <param name="model">IModel object</param>
         /// <param name="cacheFile">file path to write file too</param>
+        /// <param name="context">Context object</param>
         private void GenerateGeometry(IModel model, string cacheFile, COBieContext context)
         {
             //now convert the geometry

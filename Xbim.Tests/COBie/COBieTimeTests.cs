@@ -45,246 +45,322 @@ namespace Xbim.Tests.COBie
         }
         
         [TestMethod]
+        [Ignore]
+        public void Time_On_All()
+        {
+            ContactTime();
+            FacilityTime();
+            FloorTime();
+            SpaceTime();
+            ZoneTime();
+            TypeTime();
+            ComponentTime();
+            SystemTime();
+            AssemblyTime();
+            ConnectionTime();
+            SpareTime();
+            ResourceTime();
+            JobTime();
+            ImpactTime();
+            DocumentTime();
+            AttributeTime();
+            //CoordinateTime();
+            IssueTime();
+        }
+
+        [TestMethod]
         public void Time_On_Contacts()
         {
-            //COBieQueries cobieEngine = new COBieQueries(_cobieContext);
-            Stopwatch timer = new Stopwatch();
-            timer.Start();
-            cobieEngine.GetCOBieContactSheet();
-            timer.Stop();
-            Debug.WriteLine(string.Format("Contact Sheet Time = {0}", timer.Elapsed.ToString()));
-            //check time against max time it should take.
-            Assert.IsTrue(timer.Elapsed < new TimeSpan(0,0,2));
+            Assert.IsTrue(ContactTime() < new TimeSpan(0,0,2));
         }
 
         [TestMethod]
         public void Time_On_Facility()
         {
-
-            //COBieQueries cobieEngine = new COBieQueries(_cobieContext);
-            Stopwatch timer = new Stopwatch();
-            timer.Start();
-            cobieEngine.GetCOBieFacilitySheet();
-            timer.Stop();
-            Debug.WriteLine(string.Format("Facility Sheet Time = {0}", timer.Elapsed.ToString()));
-            //check time against max time it should take.
-            Assert.IsTrue(timer.Elapsed < new TimeSpan(0, 0, 2));
+            Assert.IsTrue(FacilityTime() < new TimeSpan(0, 0, 2));
         }
 
         [TestMethod]
         public void Time_On_Floor()
         {
-
-            //COBieQueries cobieEngine = new COBieQueries(_cobieContext);
-            Stopwatch timer = new Stopwatch();
-            timer.Start();
-            cobieEngine.GetCOBieFloorSheet();
-            timer.Stop();
-            Debug.WriteLine(string.Format("Floor Sheet Time = {0}", timer.Elapsed.ToString()));
-            //check time against max time it should take.
-            Assert.IsTrue(timer.Elapsed < new TimeSpan(0, 0, 2));
+            Assert.IsTrue(FloorTime() < new TimeSpan(0, 0, 2));
         }
 
         [TestMethod]
         public void Time_On_Space()
         {
-
-            //COBieQueries cobieEngine = new COBieQueries(_cobieContext);
-            Stopwatch timer = new Stopwatch();
-            timer.Start();
-            cobieEngine.GetCOBieSpaceSheet();
-            timer.Stop();
-            Debug.WriteLine(string.Format("Space Sheet Time = {0}", timer.Elapsed.ToString()));
-            //check time against max time it should take.
-            Assert.IsTrue(timer.Elapsed < new TimeSpan(0, 0, 4));
+            Assert.IsTrue(SpaceTime()  < new TimeSpan(0, 0, 4));
         }
 
         [TestMethod]
         public void Time_On_Zone()
         {
-
-            //COBieQueries cobieEngine = new COBieQueries(_cobieContext);
-            Stopwatch timer = new Stopwatch();
-            timer.Start();
-            cobieEngine.GetCOBieZoneSheet();
-            timer.Stop();
-            Debug.WriteLine(string.Format("Zone Sheet Time = {0}", timer.Elapsed.ToString()));
-            //check time against max time it should take.
-            Assert.IsTrue(timer.Elapsed < new TimeSpan(0, 0, 2));
+            Assert.IsTrue(ZoneTime() < new TimeSpan(0, 0, 2));
         }
 
         [TestMethod]
         public void Time_On_Type()
         {
-
-            //COBieQueries cobieEngine = new COBieQueries(_cobieContext);
-            Stopwatch timer = new Stopwatch();
-            timer.Start();
-            cobieEngine.GetCOBieTypeSheet();
-            timer.Stop();
-            Debug.WriteLine(string.Format("Type Sheet Time = {0}", timer.Elapsed.ToString()));
-            //check time against max time it should take.
-            Assert.IsTrue(timer.Elapsed < new TimeSpan(0, 0, 2));
+            Assert.IsTrue(TypeTime() < new TimeSpan(0, 0, 2));
         }
 
         [TestMethod]
         public void Time_On_Component()
         {
-
-            //COBieQueries cobieEngine = new COBieQueries(_cobieContext);
-            Stopwatch timer = new Stopwatch();
-            timer.Start();
-            cobieEngine.GetCOBieComponentSheet();
-            timer.Stop();
-            Debug.WriteLine(string.Format("Component Sheet Time = {0}", timer.Elapsed.ToString()));
-            //check time against max time it should take.
-            Assert.IsTrue(timer.Elapsed < new TimeSpan(0, 0, 30));
+            Assert.IsTrue(ComponentTime() < new TimeSpan(0, 0, 30));
         }
 
         [TestMethod]
         public void Time_On_System()
         {
-
-           // COBieQueries cobieEngine = new COBieQueries(_cobieContext);
-            Stopwatch timer = new Stopwatch();
-            timer.Start();
-            cobieEngine.GetCOBieSystemSheet();
-            timer.Stop();
-            Debug.WriteLine(string.Format("System Sheet Time = {0}", timer.Elapsed.ToString()));
-            //check time against max time it should take.
-            Assert.IsTrue(timer.Elapsed < new TimeSpan(0, 0, 2));
+            Assert.IsTrue(SystemTime() < new TimeSpan(0, 0, 2));
         }
 
         [TestMethod]
         public void Time_On_Assembly()
         {
-            //COBieQueries cobieEngine = new COBieQueries(_cobieContext);
-            Stopwatch timer = new Stopwatch();
-            timer.Start();
-            cobieEngine.GetCOBieAssemblySheet();
-            timer.Stop();
-            Debug.WriteLine(string.Format("Assembly Sheet Time = {0}", timer.Elapsed.ToString()));
-            //check time against max time it should take.
-            Assert.IsTrue(timer.Elapsed < new TimeSpan(0, 0, 2));
+            Assert.IsTrue(AssemblyTime() < new TimeSpan(0, 0, 2));
         }
 
         [TestMethod]
         public void Time_On_Connection()
         {
-            //COBieQueries cobieEngine = new COBieQueries(_cobieContext);
-            Stopwatch timer = new Stopwatch();
-            timer.Start();
-            cobieEngine.GetCOBieConnectionSheet();
-            timer.Stop();
-            Debug.WriteLine(string.Format("Connection Sheet Time = {0}", timer.Elapsed.ToString()));
-            //check time against max time it should take.
-            Assert.IsTrue(timer.Elapsed < new TimeSpan(0, 0, 2));
+            Assert.IsTrue(ConnectionTime() < new TimeSpan(0, 0, 2));
         }
 
         [TestMethod]
         public void Time_On_Spare()
         {
-            //COBieQueries cobieEngine = new COBieQueries(_cobieContext);
-            Stopwatch timer = new Stopwatch();
-            timer.Start();
-            cobieEngine.GetCOBieSpareSheet();
-            timer.Stop();
-            Debug.WriteLine(string.Format("Spare Sheet Time = {0}", timer.Elapsed.ToString()));
-            //check time against max time it should take.
-            Assert.IsTrue(timer.Elapsed < new TimeSpan(0, 0, 2));
+            Assert.IsTrue(SpareTime() < new TimeSpan(0, 0, 2));
         }
 
         [TestMethod]
         public void Time_On_Resource()
         {
-            //COBieQueries cobieEngine = new COBieQueries(_cobieContext);
-            Stopwatch timer = new Stopwatch();
-            timer.Start();
-            cobieEngine.GetCOBieResourceSheet();
-            timer.Stop();
-            Debug.WriteLine(string.Format("Resource Sheet Time = {0}", timer.Elapsed.ToString()));
-            //check time against max time it should take.
-            Assert.IsTrue(timer.Elapsed < new TimeSpan(0, 0, 2));
+            Assert.IsTrue(ResourceTime() < new TimeSpan(0, 0, 2));
         }
 
         [TestMethod]
         public void Time_On_Job()
         {
-            //COBieQueries cobieEngine = new COBieQueries(_cobieContext);
-            Stopwatch timer = new Stopwatch();
-            timer.Start();
-            cobieEngine.GetCOBieJobSheet();
-            timer.Stop();
-            Debug.WriteLine(string.Format("Resource Sheet Time = {0}", timer.Elapsed.ToString()));
-            //check time against max time it should take.
-            Assert.IsTrue(timer.Elapsed < new TimeSpan(0, 0, 2));
+            Assert.IsTrue(JobTime() < new TimeSpan(0, 0, 2));
         }
 
         [TestMethod]
         public void Time_On_Impact()
         {
-            //COBieQueries cobieEngine = new COBieQueries(_cobieContext);
-            Stopwatch timer = new Stopwatch();
-            timer.Start();
-            cobieEngine.GetCOBieImpactSheet();
-            timer.Stop();
-            Debug.WriteLine(string.Format("Impact Sheet Time = {0}", timer.Elapsed.ToString()));
-            //check time against max time it should take.
-            Assert.IsTrue(timer.Elapsed < new TimeSpan(0, 0, 2));
+            Assert.IsTrue(ImpactTime() < new TimeSpan(0, 0, 2));
         }
 
         [TestMethod]
         public void Time_On_Document()
         {
-            //COBieQueries cobieEngine = new COBieQueries(_cobieContext);
-            Stopwatch timer = new Stopwatch();
-            timer.Start();
-            cobieEngine.GetCOBieDocumentSheet();
-            timer.Stop();
-            Debug.WriteLine(string.Format("Document Sheet Time = {0}", timer.Elapsed.ToString()));
-            //check time against max time it should take.
-            Assert.IsTrue(timer.Elapsed < new TimeSpan(0, 0, 2));
+            Assert.IsTrue(DocumentTime() < new TimeSpan(0, 0, 2));
         }
 
         [TestMethod]
         public void Time_On_Attribute()
         {
-            //COBieQueries cobieEngine = new COBieQueries(_cobieContext);
-            Stopwatch timer = new Stopwatch();
-            timer.Start();
-            cobieEngine.GetCOBieAttributeSheet();
-            timer.Stop();
-            Debug.WriteLine(string.Format("Attribute Sheet Time = {0}", timer.Elapsed.ToString()));
-            //check time against max time it should take.
-            Assert.IsTrue(timer.Elapsed < new TimeSpan(0, 0, 2));
+            Assert.IsTrue(AttributeTime() < new TimeSpan(0, 0, 2));
         }
 
         [TestMethod]
         [Ignore]
         public void Time_On_Coordinate()
         {
-            //COBieQueries cobieEngine = new COBieQueries(_cobieContext);
-            Stopwatch timer = new Stopwatch();
-            timer.Start();
-            cobieEngine.GetCOBieCoordinateSheet();
-            timer.Stop();
-            Debug.WriteLine(string.Format("Coordinate Sheet Time = {0}", timer.Elapsed.ToString()));
-            //check time against max time it should take.
-            Assert.IsTrue(timer.Elapsed < new TimeSpan(0, 0, 2));
+            Assert.IsTrue(CoordinateTime() < new TimeSpan(0, 0, 2));
         }
 
         [TestMethod]
         public void Time_On_Issue()
         {
+            Assert.IsTrue(IssueTime() < new TimeSpan(0, 0, 2));
+        }
+
+        //---------------------------------------------------------------------------
+        private TimeSpan ContactTime()
+        {
+            Stopwatch timer = new Stopwatch();
+            timer.Start();
+            cobieEngine.GetCOBieContactSheet();
+            timer.Stop();
+            Debug.WriteLine(string.Format("Contact Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
+            return timer.Elapsed;
+        }
+
+        private TimeSpan FacilityTime()
+        {
             //COBieQueries cobieEngine = new COBieQueries(_cobieContext);
+            Stopwatch timer = new Stopwatch();
+            timer.Start();
+            cobieEngine.GetCOBieFacilitySheet();
+            timer.Stop();
+            Debug.WriteLine(string.Format("Facility Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
+            return timer.Elapsed;
+        }
+
+        private TimeSpan FloorTime()
+        {
+            //COBieQueries cobieEngine = new COBieQueries(_cobieContext);
+            Stopwatch timer = new Stopwatch();
+            timer.Start();
+            cobieEngine.GetCOBieFloorSheet();
+            timer.Stop();
+            Debug.WriteLine(string.Format("Floor Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
+            return timer.Elapsed;
+        }
+
+        private TimeSpan SpaceTime()
+        {
+            //COBieQueries cobieEngine = new COBieQueries(_cobieContext);
+            Stopwatch timer = new Stopwatch();
+            timer.Start();
+            cobieEngine.GetCOBieSpaceSheet();
+            timer.Stop();
+            Debug.WriteLine(string.Format("Space Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
+            return timer.Elapsed;
+        }
+
+        private TimeSpan ZoneTime()
+        {
+            Stopwatch timer = new Stopwatch();
+            timer.Start();
+            cobieEngine.GetCOBieZoneSheet();
+            timer.Stop();
+            Debug.WriteLine(string.Format("Zone Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
+            return timer.Elapsed;
+        }
+
+        private TimeSpan TypeTime()
+        {
+            Stopwatch timer = new Stopwatch();
+            timer.Start();
+            cobieEngine.GetCOBieTypeSheet();
+            timer.Stop();
+            Debug.WriteLine(string.Format("Type Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
+            return timer.Elapsed;
+        }
+
+        private TimeSpan ComponentTime()
+        {
+            Stopwatch timer = new Stopwatch();
+            timer.Start();
+            cobieEngine.GetCOBieComponentSheet();
+            timer.Stop();
+            Debug.WriteLine(string.Format("Component Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
+            return timer.Elapsed;
+        }
+
+        private TimeSpan SystemTime()
+        {
+            Stopwatch timer = new Stopwatch();
+            timer.Start();
+            cobieEngine.GetCOBieSystemSheet();
+            timer.Stop();
+            Debug.WriteLine(string.Format("System Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
+            return timer.Elapsed;
+        }
+
+        private TimeSpan AssemblyTime()
+        {
+            Stopwatch timer = new Stopwatch();
+            timer.Start();
+            cobieEngine.GetCOBieAssemblySheet();
+            timer.Stop();
+            Debug.WriteLine(string.Format("Assembly Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
+            return timer.Elapsed;
+        }
+
+        private TimeSpan ConnectionTime()
+        {
+            Stopwatch timer = new Stopwatch();
+            timer.Start();
+            cobieEngine.GetCOBieConnectionSheet();
+            timer.Stop();
+            Debug.WriteLine(string.Format("Connection Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
+            return timer.Elapsed;
+        }
+
+        private TimeSpan SpareTime()
+        {
+            Stopwatch timer = new Stopwatch();
+            timer.Start();
+            cobieEngine.GetCOBieSpareSheet();
+            timer.Stop();
+            Debug.WriteLine(string.Format("Spare Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
+            return timer.Elapsed;
+        }
+
+        private TimeSpan ResourceTime()
+        {
+            Stopwatch timer = new Stopwatch();
+            timer.Start();
+            cobieEngine.GetCOBieResourceSheet();
+            timer.Stop();
+            Debug.WriteLine(string.Format("Resource Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
+            return timer.Elapsed;
+        }
+
+        private TimeSpan JobTime()
+        {
+            Stopwatch timer = new Stopwatch();
+            timer.Start();
+            cobieEngine.GetCOBieJobSheet();
+            timer.Stop();
+            Debug.WriteLine(string.Format("Job Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
+            return timer.Elapsed;
+        }
+
+        private TimeSpan ImpactTime()
+        {
+            Stopwatch timer = new Stopwatch();
+            timer.Start();
+            cobieEngine.GetCOBieImpactSheet();
+            timer.Stop();
+            Debug.WriteLine(string.Format("Impact Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
+            return timer.Elapsed;
+        }
+
+        private TimeSpan DocumentTime()
+        {
+            Stopwatch timer = new Stopwatch();
+            timer.Start();
+            cobieEngine.GetCOBieDocumentSheet();
+            timer.Stop();
+            Debug.WriteLine(string.Format("Document Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
+            return timer.Elapsed;
+        }
+
+        private TimeSpan AttributeTime()
+        {
+            Stopwatch timer = new Stopwatch();
+            timer.Start();
+            cobieEngine.GetCOBieAttributeSheet();
+            timer.Stop();
+            Debug.WriteLine(string.Format("Attribute Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
+            return timer.Elapsed;
+        }
+
+        private TimeSpan CoordinateTime()
+        {
+            Stopwatch timer = new Stopwatch();
+            timer.Start();
+            cobieEngine.GetCOBieCoordinateSheet();
+            timer.Stop();
+            Debug.WriteLine(string.Format("Coordinate Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
+            return timer.Elapsed;
+        }
+
+        private TimeSpan IssueTime()
+        {
             Stopwatch timer = new Stopwatch();
             timer.Start();
             cobieEngine.GetCOBieIssueSheet();
             timer.Stop();
-            Debug.WriteLine(string.Format("Issue Sheet Time = {0}", timer.Elapsed.ToString()));
-            //check time against max time it should take.
-            Assert.IsTrue(timer.Elapsed < new TimeSpan(0, 0, 2));
+            Debug.WriteLine(string.Format("Issue Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
+            return timer.Elapsed;
         }
+
 
         
     }
