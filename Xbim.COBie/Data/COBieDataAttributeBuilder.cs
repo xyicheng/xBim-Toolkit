@@ -89,11 +89,11 @@ namespace Xbim.COBie.Data
             RowParameters.Add("ExtSystem", Constants.DEFAULT_STRING);
             //set up lists
             ExcludeAttributePropertyNames = new List<string>();
-            ExcludeAttributePropertyNames.AddRange(Context.CommonAttExcludesEq);
+            ExcludeAttributePropertyNames.AddRange(Context.Exclude.Common.AttributesEqualTo);
             ExcludeAttributePropertyNamesWildcard = new List<string>();
-            ExcludeAttributePropertyNamesWildcard.AddRange(Context.CommonAttExcludesContains);
+            ExcludeAttributePropertyNamesWildcard.AddRange(Context.Exclude.Common.AttributesContain);
             ExcludeAttributePropertyNamesStartingWith = new List<string>();
-            ExcludeAttributePropertyNamesStartingWith.AddRange(Context.CommonAttExcludesStartWith);
+            ExcludeAttributePropertyNamesStartingWith.AddRange(Context.Exclude.Common.AttributesStartWith);
             ExcludeAttributePropertySetNames = new List<string>();
            
 

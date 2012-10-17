@@ -42,7 +42,7 @@ namespace Xbim.COBie.Data
             //group the types by name as we need to filter duplicate items in for each loop
             IEnumerable<IfcTypeObject> ifcTypeObjects = Model.InstancesOfType<IfcTypeObject>()
                 .Select(type => type)
-                .Where(type => !Context.TypeObjectExcludeTypes.Contains(type.GetType()))
+                .Where(type => !Context.Exclude.ObjectType.Types.Contains(type.GetType()))
                 .GroupBy(type => type.Name).Distinct().SelectMany(g => g);
 
             
@@ -51,9 +51,9 @@ namespace Xbim.COBie.Data
             COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(ifcTypeObjects); //properties helper class
             COBieDataAttributeBuilder attributeBuilder = new COBieDataAttributeBuilder(Context, allPropertyValues);
             attributeBuilder.InitialiseAttributes(ref _attributes);
-            attributeBuilder.ExcludeAttributePropertyNames.AddRange(Context.TypeAttExcludesEq);//we do not want for the attribute sheet so filter them out
-            attributeBuilder.ExcludeAttributePropertyNamesWildcard.AddRange(Context.TypeAttExcludesContains);//we do not want for the attribute sheet so filter them out
-            attributeBuilder.ExcludeAttributePropertySetNames.AddRange(Context.TypeAttExcludesPropertSetEq); //exclude the property set from selection of values
+            attributeBuilder.ExcludeAttributePropertyNames.AddRange(Context.Exclude.Types.AttributesEqualTo);//we do not want for the attribute sheet so filter them out
+            attributeBuilder.ExcludeAttributePropertyNamesWildcard.AddRange(Context.Exclude.Types.AttributesContain);//we do not want for the attribute sheet so filter them out
+            attributeBuilder.ExcludeAttributePropertySetNames.AddRange(Context.Exclude.Types.PropertySetsEqualTo); //exclude the property set from selection of values
             attributeBuilder.RowParameters["Sheet"] = "Type";
 
             ProgressIndicator.Initialise("Creating Types", ifcTypeObjects.Count());

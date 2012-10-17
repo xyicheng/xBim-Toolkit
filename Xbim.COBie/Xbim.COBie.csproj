@@ -131,6 +131,7 @@
     <Compile Include="Data\IAttributeProvider.cs" />
     <Compile Include="COBieProgress.cs" />
     <Compile Include="Enums.cs" />
+    <Compile Include="FilterValues.cs" />
     <Compile Include="Resources\ErrorDescription.en-GB.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

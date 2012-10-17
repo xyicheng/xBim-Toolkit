@@ -41,10 +41,10 @@ namespace Xbim.COBie.Data
             IEnumerable<IfcRelAssociatesMaterial> ifcRelAssociatesMaterials = Model.InstancesOfType<IfcRelAssociatesMaterial>(); 
 
             IEnumerable<IfcRelDecomposes> relAll = (from ra in ifcRelAggregates
-                                                    where ((ra.RelatingObject is IfcProduct) || (ra.RelatingObject is IfcTypeObject)) && !Context.AssemblyExcludeTypes.Contains(ra.RelatingObject.GetType())
+                                                    where ((ra.RelatingObject is IfcProduct) || (ra.RelatingObject is IfcTypeObject)) && !Context.Exclude.ObjectType.Assembly.Contains(ra.RelatingObject.GetType())
                                                       select ra as IfcRelDecomposes).Union
                                                       (from rn in ifcRelNests
-                                                       where ((rn.RelatingObject is IfcProduct) || (rn.RelatingObject is IfcTypeObject)) && !Context.AssemblyExcludeTypes.Contains(rn.RelatingObject.GetType())
+                                                       where ((rn.RelatingObject is IfcProduct) || (rn.RelatingObject is IfcTypeObject)) && !Context.Exclude.ObjectType.Assembly.Contains(rn.RelatingObject.GetType())
                                                       select rn as IfcRelDecomposes);
 
             //filter ifcRelAssociatesMaterials list to relating objects held in relAll

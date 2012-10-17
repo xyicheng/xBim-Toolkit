@@ -46,7 +46,7 @@ namespace Xbim.COBie.Data
             attributeBuilder.InitialiseAttributes(ref _attributes);
             
             //list of attributes to exclude form attribute sheet
-            attributeBuilder.ExcludeAttributePropertyNamesWildcard.AddRange(Context.ZoneAttExcludesContains);
+            attributeBuilder.ExcludeAttributePropertyNamesWildcard.AddRange(Context.Exclude.Zone.AttributesContain);
             attributeBuilder.RowParameters["Sheet"] = "Zone";
             
             //Also check to see if we have any zones within the spaces
@@ -110,8 +110,8 @@ namespace Xbim.COBie.Data
                     if ((!spProperties.Any()) && (!ifcZones.Any()))
                     {
                         spProperties = item.Value.Where(p => p.Name == "Department").OfType<IfcPropertySingleValue>();
-                        if ((spProperties.Any()) && (!Context.COBieGlobalValues.ContainsKey("DEPARTMENTUSEDASZONE")))
-                            Context.COBieGlobalValues.Add("DEPARTMENTUSEDASZONE", "T"); //we need to filter departments out of attribute sheet so set values to pass to Attribute Builder
+                        if (spProperties.Any())
+                            Context.DepartmentsUsedAsZones = true; //we need to filter departments out of attribute sheet so set values to pass to Attribute Builder
                     }
 
                     foreach (IfcPropertySingleValue spProp in spProperties)

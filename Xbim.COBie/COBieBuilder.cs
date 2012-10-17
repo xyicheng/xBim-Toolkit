@@ -57,10 +57,7 @@ namespace Xbim.COBie
 			if (Context.Model == null) { throw new ArgumentException("COBieReader context must contain one or more models."); }
 
             //set default date for this run
-            if (Context.COBieGlobalValues.ContainsKey("DEFAULTDATE"))
-                Context.COBieGlobalValues["DEFAULTDATE"] = DateTime.Now.ToString(Constants.DATE_FORMAT);
-            else
-                Context.COBieGlobalValues.Add("DEFAULTDATE", DateTime.Now.ToString(Constants.DATE_FORMAT));
+            Context.RunDate = DateTime.Now.ToString(Constants.DATE_FORMAT);
 
             // set all the properties
             COBieQueries cq = new COBieQueries(Context);
@@ -111,7 +108,7 @@ namespace Xbim.COBie
 
             //clear sheet session values from context
             Context.EMails.Clear();
-            Context.COBieGlobalValues.Clear();
+            
 
         }
 

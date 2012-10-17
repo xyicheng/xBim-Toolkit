@@ -49,15 +49,13 @@ namespace Xbim.COBie.Data
 
 
 
-            if ((Context.COBieGlobalValues.ContainsKey("DEPARTMENTUSEDASZONE")) &&
-                (Context.COBieGlobalValues["DEPARTMENTUSEDASZONE"] == "T")
-                )
+            if (Context.DepartmentsUsedAsZones)
                 attributeBuilder.ExcludeAttributePropertyNames.Add("Department"); //remove the department property from selection
             
             //set up filters on COBieDataPropertySetValues
-            attributeBuilder.ExcludeAttributePropertyNames.AddRange(Context.SpaceAttExcludesEq);
-            attributeBuilder.ExcludeAttributePropertyNamesWildcard.AddRange(Context.SpaceAttExcludesContains);
-            attributeBuilder.ExcludeAttributePropertySetNames.AddRange(Context.SpaceAttExcludesPropertSetEq);
+            attributeBuilder.ExcludeAttributePropertyNames.AddRange(Context.Exclude.Space.AttributesEqualTo);
+            attributeBuilder.ExcludeAttributePropertyNamesWildcard.AddRange(Context.Exclude.Space.AttributesContain);
+            attributeBuilder.ExcludeAttributePropertySetNames.AddRange(Context.Exclude.Space.PropertySetsEqualTo);
             attributeBuilder.RowParameters["Sheet"] = "Space";
 
             ProgressIndicator.Initialise("Creating Spaces", ifcSpaces.Count());
@@ -115,9 +113,9 @@ namespace Xbim.COBie.Data
             string areaUnit = null;
             double areavalue = 0.0;
 
-            if (Context.COBieGlobalValues.ContainsKey("AREAUNIT"))
-                areaUnit = Context.COBieGlobalValues["AREAUNIT"];//see what the global area unit is
-            
+            if (!string.IsNullOrEmpty(Context.WorkBookUnits.AreaUnit))
+                areaUnit = Context.WorkBookUnits.AreaUnit;//see what the global area unit is
+          
             IfcAreaMeasure netAreaValue = ifcSpace.GetNetFloorArea();  //this extension has the GSA built in so no need to get again
             if (netAreaValue != null)
             {
@@ -164,8 +162,9 @@ namespace Xbim.COBie.Data
             string areaUnit = null;
             double areavalue = 0.0;
 
-            if (Context.COBieGlobalValues.ContainsKey("AREAUNIT"))
-                areaUnit = Context.COBieGlobalValues["AREAUNIT"];//see what the global area unit is
+            if (!string.IsNullOrEmpty(Context.WorkBookUnits.AreaUnit))
+                areaUnit = Context.WorkBookUnits.AreaUnit;//see what the global area unit is
+            
             
             //Do Gross Areas 
             IfcAreaMeasure grossAreaValue = ifcSpace.GetGrossFloorArea();

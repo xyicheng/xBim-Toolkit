@@ -50,8 +50,8 @@ namespace Xbim.COBie.Data
             //list of attributes to exclude form attribute sheet
             
             //set up filters on COBieDataPropertySetValues for the SetAttributes only
-            attributeBuilder.ExcludeAttributePropertyNames.AddRange(Context.FloorAttExcludesEq);
-            attributeBuilder.ExcludeAttributePropertyNamesWildcard.AddRange(Context.FloorAttExcludesContains);
+            attributeBuilder.ExcludeAttributePropertyNames.AddRange(Context.Exclude.Floor.AttributesEqualTo);
+            attributeBuilder.ExcludeAttributePropertyNamesWildcard.AddRange(Context.Exclude.Floor.AttributesContain);
             attributeBuilder.RowParameters["Sheet"] = "Floor";
             
            

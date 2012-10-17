@@ -70,7 +70,7 @@ namespace Xbim.COBie.Data
                 if (di.CreationTime != null)
                     doc.CreatedOn = di.CreationTime.ToString();
                 else if (Model.IfcProject.OwnerHistory != null)
-                    doc.CreatedOn = Context.COBieGlobalValues["DEFAULTDATE"];
+                    doc.CreatedOn = Context.RunDate;
 
                 
                 //IfcRelAssociatesClassification ifcRAC = di.HasAssociations.OfType<IfcRelAssociatesClassification>().FirstOrDefault();

@@ -46,18 +46,18 @@ namespace Xbim.COBie.Data
 
             IEnumerable<IfcObject> ifcElements = ((from x in relAggregates
                                             from y in x.RelatedObjects
-                                                   where !Context.ComponentExcludeTypes.Contains(y.GetType())
+                                                   where !Context.Exclude.ObjectType.Component.Contains(y.GetType())
                                             select y).Union(from x in relSpatial
                                                             from y in x.RelatedElements
-                                                            where !Context.ComponentExcludeTypes.Contains(y.GetType())
+                                                            where !Context.Exclude.ObjectType.Component.Contains(y.GetType())
                                                             select y)).GroupBy(el => el.Name).Select(g => g.First()).OfType<IfcObject>(); //.Distinct().ToList();
             
             COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(ifcElements); //properties helper class
             COBieDataAttributeBuilder attributeBuilder = new COBieDataAttributeBuilder(Context, allPropertyValues);
             attributeBuilder.InitialiseAttributes(ref _attributes);
             //set up filters on COBieDataPropertySetValues for the SetAttributes only
-            attributeBuilder.ExcludeAttributePropertyNames.AddRange(Context.ComponentAttExcludesEq); //we do not want listed properties for the attribute sheet so filter them out
-            attributeBuilder.ExcludeAttributePropertyNamesWildcard.AddRange(Context.ComponentAttExcludesContains);//we do not want listed properties for the attribute sheet so filter them out
+            attributeBuilder.ExcludeAttributePropertyNames.AddRange(Context.Exclude.Component.AttributesEqualTo); //we do not want listed properties for the attribute sheet so filter them out
+            attributeBuilder.ExcludeAttributePropertyNamesWildcard.AddRange(Context.Exclude.Component.AttributesContain);//we do not want listed properties for the attribute sheet so filter them out
             attributeBuilder.RowParameters["Sheet"] = "Component";
 
 
@@ -66,7 +66,7 @@ namespace Xbim.COBie.Data
             foreach (var obj in ifcElements)
             {
                 ProgressIndicator.IncrementAndUpdate();
-                var xxx = obj.Decomposes.OfType<IfcRelAggregates>().Where(ra => Context.ComponentExcludeTypes.Contains(ra.RelatingObject.GetType()));
+                var xxx = obj.Decomposes.OfType<IfcRelAggregates>().Where(ra => Context.Exclude.ObjectType.Component.Contains(ra.RelatingObject.GetType()));
                 if (xxx.Count() > 0) 
                     continue;
 

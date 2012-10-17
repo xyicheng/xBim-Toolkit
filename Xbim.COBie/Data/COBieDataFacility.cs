@@ -54,8 +54,8 @@ namespace Xbim.COBie.Data
             
             //list of attributes to exclude form attribute sheet
             //set up filters on COBieDataPropertySetValues for the SetAttributes only
-            attributeBuilder.ExcludeAttributePropertyNames.AddRange(Context.FacilityAttExcludesEq);
-            attributeBuilder.ExcludeAttributePropertyNamesWildcard.AddRange(Context.FacilityAttExcludesContains);
+            attributeBuilder.ExcludeAttributePropertyNames.AddRange(Context.Exclude.Facility.AttributesEqualTo);
+            attributeBuilder.ExcludeAttributePropertyNamesWildcard.AddRange(Context.Exclude.Facility.AttributesContain);
             attributeBuilder.RowParameters["Sheet"] = "Facility";
             
             COBieFacilityRow facility = new COBieFacilityRow(facilities);
@@ -234,10 +234,12 @@ namespace Xbim.COBie.Data
             moneyUnit = string.IsNullOrEmpty(moneyUnit) ? DEFAULT_STRING : moneyUnit;
             
             //save values for retrieval by other sheets
-            Context.COBieGlobalValues.Add("LENGTHUNIT", linearUnit);
-            Context.COBieGlobalValues.Add("AREAUNIT", areaUnit);
-            Context.COBieGlobalValues.Add("VOLUMEUNIT", volumeUnit);
-            Context.COBieGlobalValues.Add("MONEYUNIT", moneyUnit);
+            GlobalUnits wBookUnits = Context.WorkBookUnits;
+            wBookUnits.LengthUnit = linearUnit;
+            wBookUnits.AreaUnit = areaUnit;
+            wBookUnits.VolumeUnit = volumeUnit;
+            wBookUnits.MoneyUnit = moneyUnit;
+            Context.WorkBookUnits = wBookUnits;
             
         }
 

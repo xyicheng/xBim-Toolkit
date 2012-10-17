@@ -90,8 +90,7 @@ namespace XBim.COBie.Client
                     // Build context
                     COBieContext context = new COBieContext(_worker.ReportProgress);
                     context.TemplateFileName = parameters.TemplateFile;
-                    context.COBieGlobalValues.Add("FILENAME", parameters.ModelFile); //pass over template file name
-
+                    
                     context.Model = model;
                     
                     string cacheFile = Path.ChangeExtension(parameters.TemplateFile, ".xbimGC");

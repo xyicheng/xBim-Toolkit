@@ -62,10 +62,10 @@ namespace Xbim.COBie.Data
             IEnumerable<IfcRelContainedInSpatialStructure> relSpatial = Model.InstancesOfType<IfcRelContainedInSpatialStructure>();
             IEnumerable<IfcProduct> ifcElements = ((from x in relAggregates
                                                    from y in x.RelatedObjects
-                                                   where !Context.ComponentExcludeTypes.Contains(y.GetType())
+                                                    where !Context.Exclude.ObjectType.Component.Contains(y.GetType())
                                                    select y).Union(from x in relSpatial
                                                                    from y in x.RelatedElements
-                                                                   where !Context.ComponentExcludeTypes.Contains(y.GetType())
+                                                                   where !Context.Exclude.ObjectType.Component.Contains(y.GetType())
                                                                    select y)).GroupBy(el => el.Name).Select(g => g.First()).OfType<IfcProduct>();
             ifcProducts = ifcProducts.Union(ifcElements);
 

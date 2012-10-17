@@ -94,7 +94,7 @@ namespace Xbim.COBie.Data
                 
             }
             //return default date of now
-            return Context.COBieGlobalValues["DEFAULTDATE"];
+            return Context.RunDate;
         }
 
 

@@ -29,8 +29,6 @@ namespace Xbim.Tests.COBie
             _model = new XbimFileModelServer();
             _model.Open(SourceFile);
             _cobieContext = new COBieContext();
-            _cobieContext.COBieGlobalValues.Add("FILENAME", SourceFile);
-            _cobieContext.COBieGlobalValues.Add("DEFAULTDATE", DateTime.Now.ToString(Constants.DATE_FORMAT));
             _cobieContext.Model = _model;
             COBieQueries cobieEngine = new COBieQueries(_cobieContext);
         }

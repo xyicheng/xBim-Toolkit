@@ -39,7 +39,7 @@ namespace Xbim.COBie.Rows
         [COBieAttributes(8, COBieKeyType.ForeignKey, "PickLists.DurationUnit", COBieAttributeState.Required, "DurationUnit", 255, COBieAllowedType.Text)]
         public string DurationUnit { get; set; }
 
-        [COBieAttributes(9, COBieKeyType.None, "", COBieAttributeState.Required, "Start", Constants.DOUBLE_MAXSIZE, COBieAllowedType.Numeric)]
+        [COBieAttributes(9, COBieKeyType.None, "", COBieAttributeState.Required, "Start", Constants.DOUBLE_MAXSIZE, COBieAllowedType.ISODate)]
         public string Start { get; set; }
 
         [COBieAttributes(10, COBieKeyType.ForeignKey, "PickLists.DurationUnit", COBieAttributeState.Required, "TaskStartUnit", 255, COBieAllowedType.Text)]
