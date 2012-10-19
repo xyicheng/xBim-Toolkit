@@ -72,8 +72,7 @@ namespace Xbim.COBie.Data
                 string unitName = GetUnitName(ifcPropertySingleValue.Unit);
                 job.DurationUnit = (string.IsNullOrEmpty(unitName)) ?  DEFAULT_STRING : unitName;
 
-                ifcPropertySingleValue = allPropertyValues.GetPropertySingleValue("TaskStartDate");
-                job.Start = ((ifcPropertySingleValue != null) && (ifcPropertySingleValue.NominalValue != null)) ? ifcPropertySingleValue.NominalValue.ToString() : Context.RunDate;//default is Now
+                job.Start = GetStartTime(allPropertyValues); 
                 unitName = GetUnitName(ifcPropertySingleValue.Unit);
                 job.TaskStartUnit = (string.IsNullOrEmpty(unitName)) ? DEFAULT_STRING : unitName;
 
@@ -95,6 +94,26 @@ namespace Xbim.COBie.Data
 
             ProgressIndicator.Finalise();
             return jobs;
+        }
+
+        /// <summary>
+        /// Get Formatted Start Date
+        /// </summary>
+        /// <param name="allPropertyValues"></param>
+        /// <returns></returns>
+        private string GetStartTime(COBieDataPropertySetValues allPropertyValues)
+        {
+            string startData = "";
+            IfcPropertySingleValue ifcPropertySingleValue = allPropertyValues.GetPropertySingleValue("TaskStartDate");
+            if ((ifcPropertySingleValue != null) && (ifcPropertySingleValue.NominalValue != null))
+                startData = ifcPropertySingleValue.NominalValue.ToString(); 
+            
+            DateTime frmDate;
+            if (DateTime.TryParse(startData, out frmDate))
+                startData = frmDate.ToString(Constants.DATE_FORMAT);
+            else
+                startData = Constants.DEFAULT_STRING; //Context.RunDate;//default is Now
+            return startData;
         }
 
         /// <summary>

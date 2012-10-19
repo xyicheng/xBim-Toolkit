@@ -117,7 +117,6 @@
     <Compile Include="Data\COBieDataFacility.cs" />
     <Compile Include="Data\COBieDataFloor.cs" />
     <Compile Include="Data\COBieDataImpact.cs" />
-    <Compile Include="COBiePickListReader.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="Data\COBieDataIssue.cs" />
     <Compile Include="Data\COBieDataJob.cs" />
@@ -175,10 +174,11 @@
     <Compile Include="Rows\COBieSystemRow.cs" />
     <Compile Include="Rows\COBieTypeRow.cs" />
     <Compile Include="Rows\COBieZoneRow.cs" />
-    <Compile Include="Contracts\ICOBieFormatter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Serialisers\COBieBinaryDeserialiser.cs" />
     <Compile Include="Serialisers\COBieBinarySerialiser.cs" />
+    <Compile Include="Serialisers\COBieXLSDeserialiser.cs" />
+    <Compile Include="Serialisers\COBieXLSSerialiser.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ClassDiagram1.cd" />

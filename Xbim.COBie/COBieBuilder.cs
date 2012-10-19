@@ -8,6 +8,8 @@ using Xbim.COBie.Rows;
 using Xbim.XbimExtensions;
 using System.Linq;
 using System.Reflection;
+using Xbim.COBie.Contracts;
+using Xbim.COBie.Serialisers;
 
 
 
@@ -69,8 +71,10 @@ namespace Xbim.COBie
                 File.Exists(Context.TemplateFileName)
                 )
             {
-                COBiePickListReader pickListReader = new COBiePickListReader(Context.TemplateFileName);
-                CobiePickLists = pickListReader.Read();
+                COBieXLSDeserialiser deSerialiser = new COBieXLSDeserialiser(Context.TemplateFileName, Constants.WORKSHEET_PICKLISTS);
+                COBieWorkbook wbook = deSerialiser.Deserialise();
+                if (wbook.Count > 0) CobiePickLists = (COBieSheet<COBiePickListsRow>)wbook.First();
+                
             }
             
 
@@ -168,10 +172,10 @@ namespace Xbim.COBie
 		/// <summary>
 		/// Passes this instance of the COBieReader into the provided ICOBieFormatter
 		/// </summary>
-		/// <param name="formatter">The object implementing the ICOBieFormatter interface.</param>
-		public void Export(ICOBieFormatter formatter)
+		/// <param name="serialiser">The object implementing the ICOBieFormatter interface.</param>
+        public void Export(ICOBieSerialiser serialiser)
 		{
-			if (formatter == null) { throw new ArgumentNullException("formatter", "Parameter passed to COBieReader.Export(ICOBieFormatter) must not be null."); }
+			if (serialiser == null) { throw new ArgumentNullException("formatter", "Parameter passed to COBieReader.Export(ICOBieFormatter) must not be null."); }
             
             //remove the pick list sheet
             ICOBieSheet<COBieRow> PickList = Workbook.Where(wb => wb.SheetName == "PickLists").FirstOrDefault();
@@ -179,7 +183,7 @@ namespace Xbim.COBie
                 Workbook.Remove(PickList);
 
             // Passes this 
-			formatter.Format(this);
+			serialiser.Serialise(Workbook);
 		}
 
 

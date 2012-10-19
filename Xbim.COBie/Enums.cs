@@ -25,7 +25,8 @@ namespace Xbim.COBie
         ISODate,
         Numeric,
         Text,
-        AnyType
+        AnyType,
+        ISODateTime
     }
 
     public enum COBieKeyType

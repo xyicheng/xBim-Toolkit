@@ -9,7 +9,7 @@ using Xbim.IO;
 using Xbim.COBie.Serialisers;
 using System.IO;
 using System.Diagnostics;
-using XBim.COBie.Client.Formatters;
+using Xbim.COBie.Contracts;
 
 namespace Xbim.Tests.COBie
 {
@@ -65,6 +65,56 @@ namespace Xbim.Tests.COBie
 
             // Assert
             Assert.AreEqual(19, newBook.Count);
+
+            // 19 workbooks. # rows in a selection.
+        }
+
+        [TestMethod]
+        public void Should_Roundtrip_XLSSerialise()
+        {
+            // Arrange
+
+            COBieContext context = new COBieContext(null);
+            IModel model = new XbimFileModelServer();
+            model.Open(SourceFile);
+            context.Model = model;
+            context.TemplateFileName = ExcelTemplateFile;
+
+            COBieBuilder builder = new COBieBuilder(context);
+
+            COBieWorkbook book = builder.Workbook;
+            // Act
+            string output = Path.ChangeExtension(SourceFile, ".xls");
+
+            ICOBieSerialiser serialiser = new COBieXLSSerialiser(output, ExcelTemplateFile);
+            ICOBieSheet<COBieRow> PickList = book.Where(wb => wb.SheetName == "PickLists").FirstOrDefault();
+            if (PickList != null)
+                book.Remove(PickList);
+            serialiser.Serialise(book);
+            
+            
+            
+            Stopwatch timer = new Stopwatch();
+            timer.Start();
+            //TEST on COBieXLSDeserialiser
+            COBieXLSDeserialiser deSerialiser = new COBieXLSDeserialiser(output);
+            COBieWorkbook newbook = deSerialiser.Deserialise();
+            timer.Stop();
+            Debug.WriteLine(string.Format("COBieXLSDeserialiser Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
+
+            string newOutputFile = Root + @"\" + "RoundTrip" + Path.ChangeExtension(SourceModelLeaf, ".xls"); 
+            ICOBieSerialiser serialiserTest = new COBieXLSSerialiser(newOutputFile, ExcelTemplateFile);
+            //remove the pick list sheet
+            PickList = newbook.Where(wb => wb.SheetName == "PickLists").FirstOrDefault();
+            if (PickList != null)
+                newbook.Remove(PickList);
+            serialiserTest.Serialise(newbook);
+
+            Process.Start(output);
+            Process.Start(newOutputFile);
+
+            // Assert
+            Assert.AreEqual(18, newbook.Count); //no picklist
 
             // 19 workbooks. # rows in a selection.
         }

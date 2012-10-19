@@ -78,6 +78,16 @@ namespace Xbim.COBie
 
         #region Methods
         
+        /// <summary>
+        /// Creat a COBieRow of the correct type for this sheet, not it is not added to the Rows list
+        /// </summary>
+        /// <returns>Correct COBieRow type for this COBieSheet</returns>
+        public T AddNewRow()
+        {
+           Object[] args = {this};
+           Rows.Add( (T)Activator.CreateInstance(typeof(T), args));
+           return Rows.Last();
+        }
 
         /// <summary>
         /// Get the alias attribute name values and add to a list of strings

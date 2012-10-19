@@ -8,14 +8,15 @@ using NPOI.HSSF.Util;
 using NPOI.SS.UserModel;
 using Xbim.COBie;
 using Xbim.COBie.Rows;
+using Xbim.COBie.Contracts;
 
 
-namespace XBim.COBie.Client.Formatters
+namespace Xbim.COBie.Serialisers
 {
     /// <summary>
     /// Formats COBie data into an Excel XLS 
     /// </summary>
-    public class XLSFormatter : ICOBieFormatter
+    public class COBieXLSSerialiser : ICOBieSerialiser
     {
 
         const string DefaultFileName = "Cobie.xls";
@@ -26,14 +27,14 @@ namespace XBim.COBie.Client.Formatters
         Dictionary<COBieAllowedType, HSSFCellStyle> _cellStyles = new Dictionary<COBieAllowedType, HSSFCellStyle>();
         Dictionary<string, HSSFColor> _colours = new Dictionary<string, HSSFColor>();
 
-        public XLSFormatter() : this(DefaultFileName, DefaultTemplateFileName)
+        public COBieXLSSerialiser() : this(DefaultFileName, DefaultTemplateFileName)
         { }
 
-        public XLSFormatter(string filename)
+        public COBieXLSSerialiser(string filename)
             : this(filename, DefaultTemplateFileName)
         { }
 
-        public XLSFormatter(string fileName, string templateFileName)
+        public COBieXLSSerialiser(string fileName, string templateFileName)
         {
             FileName = fileName;
             TemplateFileName = templateFileName;
@@ -47,9 +48,9 @@ namespace XBim.COBie.Client.Formatters
         /// Formats the COBie data into an Excel XLS file
         /// </summary>
         /// <param name="cobie"></param>
-        public void Format(COBieBuilder cobie)
+        public void Serialise(COBieWorkbook workbook)
         {
-            if (cobie == null) { throw new ArgumentNullException("cobie", "XLSFormatter.Format does not accept null as the COBie data parameter."); }
+            if (workbook == null) { throw new ArgumentNullException("COBie", "COBieXLSSerialiser.Serialise does not accept null as the COBie data parameter."); }
 
             // Load template file
             FileStream excelFile = File.Open(TemplateFileName, FileMode.Open, FileAccess.Read);
@@ -58,14 +59,14 @@ namespace XBim.COBie.Client.Formatters
 
             CreateFormats();
 
-            foreach (var sheet in cobie.Workbook)
+            foreach (var sheet in workbook)
             {
                 WriteSheet(sheet);
             }
 
             UpdateInstructions();
 
-            ReportErrors(cobie.Workbook);
+            ReportErrors(workbook);
 
             using (FileStream exportFile = File.Open(FileName, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None))
             {

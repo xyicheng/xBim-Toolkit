@@ -89,10 +89,8 @@ namespace Xbim.COBie.Data
                 //set from PropertySingleValues filtered via candidateProperties
                 allPropertyValues.SetAllPropertySingleValues(el); //set the internal filtered IfcPropertySingleValues List in allPropertyValues
                 component.SerialNumber = allPropertyValues.GetPropertySingleValueValue("SerialNumber", false);
-                string installationDate = allPropertyValues.GetPropertySingleValueValue("InstallationDate", false);
-                component.InstallationDate = ((installationDate == DEFAULT_STRING) || (!IsDate(installationDate))) ? GetCreatedOnDateAsFmtString(null) : installationDate;
-                string warrantyStartDate = allPropertyValues.GetPropertySingleValueValue("WarrantyStartDate", false);
-                component.WarrantyStartDate = ((warrantyStartDate == DEFAULT_STRING) || (!IsDate(warrantyStartDate))) ? GetCreatedOnDateAsFmtString(null) : warrantyStartDate;
+                component.InstallationDate = GetDateFromProperty(allPropertyValues, "InstallationDate");
+                component.WarrantyStartDate = GetDateFromProperty(allPropertyValues, "WarrantyStartDate");
                 component.TagNumber = allPropertyValues.GetPropertySingleValueValue("TagNumber", false);
                 component.BarCode = allPropertyValues.GetPropertySingleValueValue("BarCode", false);
                 component.AssetIdentifier = allPropertyValues.GetPropertySingleValueValue("AssetIdentifier", false);
@@ -111,6 +109,25 @@ namespace Xbim.COBie.Data
             return components;
         }
 
+        /// <summary>
+        /// Get Formatted Start Date
+        /// </summary>
+        /// <param name="allPropertyValues"></param>
+        /// <returns></returns>
+        private string GetDateFromProperty(COBieDataPropertySetValues allPropertyValues, string propertyName)
+        {
+            string startData = "";
+            IfcPropertySingleValue ifcPropertySingleValue = allPropertyValues.GetPropertySingleValue(propertyName);
+            if ((ifcPropertySingleValue != null) && (ifcPropertySingleValue.NominalValue != null))
+                startData = ifcPropertySingleValue.NominalValue.ToString();
+
+            DateTime frmDate;
+            if (DateTime.TryParse(startData, out frmDate))
+                startData = frmDate.ToString(Constants.DATE_FORMAT);
+            else
+                startData = Constants.DEFAULT_STRING;//Context.RunDate;
+            return startData;
+        }
         
         
         /// <summary>

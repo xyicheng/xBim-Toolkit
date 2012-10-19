@@ -9,13 +9,15 @@ using System.Windows.Forms;
 using System.IO;
 using Xbim.IO;
 using Xbim.COBie;
-using XBim.COBie.Client.Formatters;
 using Xbim.ModelGeometry.Scene;
 using Xbim.ModelGeometry;
 
 using Xbim.XbimExtensions;
 using System.Diagnostics;
 using Xbim.Ifc.Kernel;
+using Xbim.COBie.Contracts;
+using Xbim.COBie.Serialisers;
+using Xbim.COBie.Rows;
 
 namespace XBim.COBie.Client
 {
@@ -92,8 +94,8 @@ namespace XBim.COBie.Client
                     context.TemplateFileName = parameters.TemplateFile;
                     
                     context.Model = model;
-                    
-                    string cacheFile = Path.ChangeExtension(parameters.TemplateFile, ".xbimGC");
+
+                    string cacheFile = Path.ChangeExtension(parameters.ModelFile, ".xbimGC");
                     if (!File.Exists(cacheFile)) GenerateGeometry(model, cacheFile, context);
                     context.Scene = new XbimSceneStream(model, cacheFile);
 
@@ -108,22 +110,42 @@ namespace XBim.COBie.Client
                     
                     // Export
                     LogBackground(String.Format("Formatting as XLS using {0} template...", Path.GetFileName(parameters.TemplateFile)));
-                    
-                    ICOBieFormatter formatter = new XLSFormatter(outputFile, parameters.TemplateFile );
-                    builder.Export(formatter);
-                }
+
+                    ICOBieSerialiser serialiser = new COBieXLSSerialiser(outputFile, parameters.TemplateFile);
+                    builder.Export(serialiser);
+
+                    //TEST on COBieXLSDeserialiser
+                    RoundTripTest(outputFile, parameters.TemplateFile);
                 
+                }
                 LogBackground(String.Format("Export Complete: {0}", outputFile));
 
                 Process.Start(outputFile);
 
+                
                 LogBackground("Finished COBie Generation");
             }
             catch (Exception ex)
             {
                 args.Result = ex;
                 return;
-            }
+            } 
+        }
+
+        private void RoundTripTest(string outputFile, string templateFile)
+        {
+            //TEST on COBieXLSDeserialiser
+            COBieXLSDeserialiser deSerialiser = new COBieXLSDeserialiser(outputFile);
+            COBieWorkbook newbook = deSerialiser.Deserialise();
+            string newOutputFile = "RoundTrip" + outputFile;
+            ICOBieSerialiser serialiserTest = new COBieXLSSerialiser(newOutputFile, templateFile);
+            //remove the pick list sheet
+            ICOBieSheet<COBieRow> PickList = newbook.Where(wb => wb.SheetName == "PickLists").FirstOrDefault();
+            if (PickList != null)
+                newbook.Remove(PickList);
+            serialiserTest.Serialise(newbook);
+
+            Process.Start(newOutputFile);
         }
 
         /// <summary>
