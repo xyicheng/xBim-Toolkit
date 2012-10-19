@@ -115,7 +115,7 @@ namespace XBim.COBie.Client
                     builder.Export(serialiser);
 
                     //TEST on COBieXLSDeserialiser
-                    RoundTripTest(outputFile, parameters.TemplateFile);
+                    //RoundTripTest(outputFile, parameters.TemplateFile);
                 
                 }
                 LogBackground(String.Format("Export Complete: {0}", outputFile));
