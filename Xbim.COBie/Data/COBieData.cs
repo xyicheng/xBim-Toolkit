@@ -525,6 +525,78 @@ namespace Xbim.COBie.Data
             double test;
             return double.TryParse(num, out test);
         }
+        /// <summary>
+        /// Get the global units used for this building
+        /// </summary>
+        /// <param name="model">model object</param>
+        /// <param name="wBookUnits">GlobalUnits to place units into</param>
+        /// <returns>return passed wBookUnits(GlobalUnits) with units added</returns>
+        public static GlobalUnits GetGlobalUnits(IModel model, GlobalUnits wBookUnits )
+        {
+            string linearUnit = "";
+            string areaUnit = "";
+            string volumeUnit = "";
+            string moneyUnit = "";
+            foreach (IfcUnitAssignment ifcUnitAssignment in model.InstancesOfType<IfcUnitAssignment>()) //loop all IfcUnitAssignment
+            {
+                foreach (IfcUnit ifcUnit in ifcUnitAssignment.Units) //loop the UnitSet
+                {
+                    IfcNamedUnit ifcNamedUnit = ifcUnit as IfcNamedUnit;
+                    if (ifcNamedUnit != null)
+                    {
+                        if ((ifcNamedUnit.UnitType == IfcUnitEnum.LENGTHUNIT) && string.IsNullOrEmpty(linearUnit)) //we want length units until we have value
+                        {
+                            linearUnit = GetUnitName(ifcUnit);
+                            if ((!linearUnit.Contains("feet")) && (linearUnit.Last() != 's'))
+                                linearUnit = linearUnit + "s";
+                        }
+
+
+                        if ((ifcNamedUnit.UnitType == IfcUnitEnum.AREAUNIT) && string.IsNullOrEmpty(areaUnit)) //we want area units until we have value
+                        {
+                            areaUnit = GetUnitName(ifcUnit);
+                            if ((!areaUnit.Contains("feet")) && (areaUnit.Last() != 's'))
+                                areaUnit = areaUnit + "s";
+
+                        }
+
+
+                        if ((ifcNamedUnit.UnitType == IfcUnitEnum.VOLUMEUNIT) && string.IsNullOrEmpty(volumeUnit)) //we want volume units until we have value
+                        {
+                            volumeUnit = GetUnitName(ifcUnit);
+                            if ((!volumeUnit.Contains("feet")) && (volumeUnit.Last() != 's'))
+                                volumeUnit = volumeUnit + "s";
+                        }
+                    }
+                    //get the money unit
+                    if ((ifcUnit is IfcMonetaryUnit) && string.IsNullOrEmpty(moneyUnit))
+                    {
+                        moneyUnit = GetUnitName(ifcUnit);
+                        if (moneyUnit.Last() != 's')
+                            moneyUnit = moneyUnit + "s";
+                    }
+
+                }
+            }
+
+            //ensure we have a value on each unit type, if not then default
+            linearUnit = string.IsNullOrEmpty(linearUnit) ? DEFAULT_STRING : linearUnit;
+            areaUnit = string.IsNullOrEmpty(areaUnit) ? DEFAULT_STRING : areaUnit;
+            volumeUnit = string.IsNullOrEmpty(volumeUnit) ? DEFAULT_STRING : volumeUnit;
+            moneyUnit = string.IsNullOrEmpty(moneyUnit) ? DEFAULT_STRING : moneyUnit;
+
+            //save values for retrieval by other sheets
+            wBookUnits.LengthUnit = linearUnit;
+            wBookUnits.AreaUnit = areaUnit;
+            wBookUnits.VolumeUnit = volumeUnit;
+            wBookUnits.MoneyUnit = moneyUnit;
+
+            return wBookUnits;
+
+        }
+
+       
+
         #endregion
 
     }

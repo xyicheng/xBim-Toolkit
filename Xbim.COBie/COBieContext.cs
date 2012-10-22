@@ -13,6 +13,7 @@ using Xbim.Ifc.SharedBldgServiceElements;
 using Xbim.Ifc.HVACDomain;
 using Xbim.Ifc.ElectricalDomain;
 using Xbim.ModelGeometry.Scene;
+using Xbim.COBie.Data;
 
 namespace Xbim.COBie
 {
@@ -26,7 +27,30 @@ namespace Xbim.COBie
         public Dictionary<long, string> EMails { get; private set; } //contact list<EntityLable, emailaddress>
         public string TemplateFileName { get; set; } //template used by the workbook
         public string RunDate { get; set; } //Date the Workbook was created on
-        public GlobalUnits WorkBookUnits { get; set; } //Units as defined in the Facility sheet
+        
+        private  GlobalUnits _workBookUnits;
+        /// <summary>
+        /// Global Units for the workbook
+        /// </summary>
+        public GlobalUnits WorkBookUnits
+        {
+            get
+            {
+                if (Model == null)
+                {
+                    throw new ArgumentException("COBieContext must contain a model before calling WorkBookUnits."); 
+                   
+                }
+                if (_workBookUnits == null) //set up global units
+                {
+                    _workBookUnits = new GlobalUnits();
+                    COBieData<COBieRow>.GetGlobalUnits(Model, _workBookUnits);
+                }
+                return _workBookUnits;
+            }
+           
+        }
+        
         public bool DepartmentsUsedAsZones { get; set; } //indicate if we have taken departments as Zones
         public FilterValues Exclude { get; set; } //filter values for attribute extraction in sheets
 
@@ -35,7 +59,6 @@ namespace Xbim.COBie
             RunDate = DateTime.Now.ToString(Constants.DATE_FORMAT);
             EMails = new Dictionary<long, string>();
             Scene = null;
-            WorkBookUnits = new GlobalUnits();
             DepartmentsUsedAsZones = false;
             Exclude = new FilterValues();
         }
@@ -101,7 +124,7 @@ namespace Xbim.COBie
     /// <summary>
     /// Global units
     /// </summary>
-    public struct GlobalUnits 
+    public class GlobalUnits 
     {
         public string LengthUnit { get; set; }
         public string AreaUnit { get; set; }

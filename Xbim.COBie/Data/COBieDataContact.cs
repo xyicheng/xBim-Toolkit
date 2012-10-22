@@ -74,17 +74,26 @@ namespace Xbim.COBie.Data
                 
                 contact.ExtObject = "IfcPersonAndOrganization";
                 contact.ExtIdentifier = ifcPerson.Id;
+                //get department
+                string department = "";
                 if (ifcPerson.Addresses != null)
                 {
-                    string department = ifcPerson.Addresses.PostalAddresses.Select(dept => dept.InternalLocation).Where(dept => !string.IsNullOrEmpty(dept)).FirstOrDefault();
-                    if (string.IsNullOrEmpty(department))
-                        department = ifcOrganization.Description.ToString(); //only place to match example files
-                    contact.Department = (string.IsNullOrEmpty(department)) ? contact.Company : department;
+                    department = ifcPerson.Addresses.PostalAddresses.Select(dept => dept.InternalLocation).Where(dept => !string.IsNullOrEmpty(dept)).FirstOrDefault();
                 }
-                else
-                    contact.Department = contact.Company;
+                if (string.IsNullOrEmpty(department))
+                {
+                    IfcOrganization ifcRelOrganization = Model.InstancesOfType<IfcOrganizationRelationship>()
+                                                        .Where(Or => Or.RelatingOrganization.EntityLabel == ifcOrganization.EntityLabel && Or.RelatedOrganizations.Last() != null)
+                                                        .Select(Or => Or.RelatedOrganizations.Last())
+                                                        .LastOrDefault();
+                    if (ifcRelOrganization != null)
+                        department = ifcRelOrganization.Name.ToString();
+                }
+                if (string.IsNullOrEmpty(department)) 
+                    department = ifcOrganization.Description.ToString(); //only place to match example files
+                contact.Department = (string.IsNullOrEmpty(department)) ? contact.Company : department;
 
-                contact.OrganizationCode = (string.IsNullOrEmpty(ifcOrganization.Name)) ? DEFAULT_STRING : ifcOrganization.Name.ToString();
+                contact.OrganizationCode = (string.IsNullOrEmpty(ifcOrganization.Id)) ? DEFAULT_STRING : ifcOrganization.Id.ToString();
                 contact.GivenName = (string.IsNullOrEmpty(ifcPerson.GivenName)) ? DEFAULT_STRING : ifcPerson.GivenName.ToString();
                 contact.FamilyName = (string.IsNullOrEmpty(ifcPerson.FamilyName)) ? DEFAULT_STRING : ifcPerson.FamilyName.ToString();
                 if (ifcPerson.Addresses != null)

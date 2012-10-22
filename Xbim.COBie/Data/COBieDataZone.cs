@@ -65,8 +65,6 @@ namespace Xbim.COBie.Data
 
                     COBieZoneRow zone = new COBieZoneRow(zones);
 
-                    //IfcOwnerHistory ifcOwnerHistory = zn.OwnerHistory;
-
                     zone.Name = zn.Name.ToString();
 
                     zone.CreatedBy = GetTelecomEmailAddress(zn.OwnerHistory);

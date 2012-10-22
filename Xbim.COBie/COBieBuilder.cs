@@ -56,7 +56,7 @@ namespace Xbim.COBie
 		private void Initialise()
         {
 			if (Context == null) { throw new InvalidOperationException("COBieReader can't initialise without a valid Context."); }
-			if (Context.Model == null) { throw new ArgumentException("COBieReader context must contain one or more models."); }
+			if (Context.Model == null) { throw new ArgumentException("COBieReader context must contain a models."); }
 
             //set default date for this run
             Context.RunDate = DateTime.Now.ToString(Constants.DATE_FORMAT);
@@ -64,7 +64,6 @@ namespace Xbim.COBie
             // set all the properties
             COBieQueries cq = new COBieQueries(Context);
 
-            
             //create pick list from the template sheet
             COBieSheet<COBiePickListsRow> CobiePickLists = null;
             if ((!string.IsNullOrEmpty(Context.TemplateFileName)) &&
@@ -74,10 +73,8 @@ namespace Xbim.COBie
                 COBieXLSDeserialiser deSerialiser = new COBieXLSDeserialiser(Context.TemplateFileName, Constants.WORKSHEET_PICKLISTS);
                 COBieWorkbook wbook = deSerialiser.Deserialise();
                 if (wbook.Count > 0) CobiePickLists = (COBieSheet<COBiePickListsRow>)wbook.First();
-                
             }
             
-
             //fall back to xml file if not in template
             string pickListFileName = "PickLists.xml";
             if ((CobiePickLists == null) &&
@@ -85,31 +82,31 @@ namespace Xbim.COBie
                 )
                 CobiePickLists = cq.GetCOBiePickListsSheet(pickListFileName);// create pick lists from xml
            
-            // add to workbook and use workbook for error checking later
-
             //contact sheet first as it will fill contact information lookups for other sheets
             Workbook.Add(cq.GetCOBieContactSheet());
-            Workbook.Add(cq.GetCOBieFacilitySheet()); //moved so it is called earlier as it now sets some global unit values used by other sheets
-            Workbook.Add(cq.GetCOBieCoordinateSheet());
-            Workbook.Add(cq.GetCOBieZoneSheet()); //we need zone before spaces as it sets a flag on departments property
+            Workbook.Add(cq.GetCOBieFacilitySheet()); 
+            Workbook.Add(cq.GetCOBieFloorSheet());
+            COBieSheet<COBieZoneRow> zonesheet = cq.GetCOBieZoneSheet();//we need zone before spaces as it sets a flag on departments property
             Workbook.Add(cq.GetCOBieSpaceSheet());
+            Workbook.Add(zonesheet); 
+            Workbook.Add(cq.GetCOBieTypeSheet());
             Workbook.Add(cq.GetCOBieComponentSheet());
+            Workbook.Add(cq.GetCOBieSystemSheet());
             Workbook.Add(cq.GetCOBieAssemblySheet());
             Workbook.Add(cq.GetCOBieConnectionSheet());
-            Workbook.Add(cq.GetCOBieDocumentSheet());
-             Workbook.Add(cq.GetCOBieFloorSheet());
-            Workbook.Add(cq.GetCOBieImpactSheet());
-            Workbook.Add(cq.GetCOBieIssueSheet());
-            Workbook.Add(cq.GetCOBieJobSheet());            
-            Workbook.Add(cq.GetCOBieResourceSheet());
             Workbook.Add(cq.GetCOBieSpareSheet());
-            Workbook.Add(cq.GetCOBieSystemSheet());
-            Workbook.Add(cq.GetCOBieTypeSheet());
-            //we need to fill attributes last as it is populated by Components, Types etc
-            Workbook.Add(cq.GetCOBieAttributeSheet());
-
-            Workbook.Add(CobiePickLists); //Workbook.Add(new COBieSheet<COBiePickListsRow>(Constants.WORKSHEET_PICKLISTS));
-
+            Workbook.Add(cq.GetCOBieResourceSheet());
+            Workbook.Add(cq.GetCOBieJobSheet());            
+            Workbook.Add(cq.GetCOBieImpactSheet());
+            Workbook.Add(cq.GetCOBieDocumentSheet());
+            Workbook.Add(cq.GetCOBieAttributeSheet());//we need to fill attributes here as it is populated by Components, Type, Space, Zone, Floors, Facility etc
+            Workbook.Add(cq.GetCOBieCoordinateSheet());
+            Workbook.Add(cq.GetCOBieIssueSheet());
+            if (CobiePickLists != null) 
+                Workbook.Add(CobiePickLists); 
+            else
+                Workbook.Add(new COBieSheet<COBiePickListsRow>(Constants.WORKSHEET_PICKLISTS)); //add empty pick list
+           
             //clear sheet session values from context
             Context.EMails.Clear();
             
