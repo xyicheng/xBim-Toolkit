@@ -130,13 +130,12 @@ namespace Xbim.COBie.Serialisers
 
             foreach (var error in sheet.Errors)
             {
-                if (error.Row > 0 && error.Column > 0)
+                if (error.Row > 0 && error.Column >= 0)
                 {
                     IRow excelRow = excelSheet.GetRow(error.Row);
                     if (excelRow != null)
                     {
                         ICell excelCell = excelRow.GetCell(error.Column);
-
                         // A client anchor is attached to an excel worksheet. It anchors against a top-left and bottom-right cell.
                         // Create a comment 3 columns wide and 3 rows height
                         IComment comment = patr.CreateCellComment(new HSSFClientAnchor(0, 0, 0, 0, error.Column, error.Row, error.Column + 3, error.Row + 3));
@@ -153,6 +152,7 @@ namespace Xbim.COBie.Serialisers
             CreateColours();
             // TODO : Date hardwired to Yellow/Required for now. Only Date is set up for now.
             CreateFormat(COBieAllowedType.ISODate, "yyyy-MM-ddThh:mm:ss", "Yellow");
+            CreateFormat(COBieAllowedType.ISODateTime, "yyyy-MM-ddThh:mm:ss", "Yellow");
         }
 
         private void CreateColours()
@@ -335,6 +335,7 @@ Mismatch: {0}
                 // We need to set the value in the most appropriate overload of SetCellValue, so the parsing/formatting is correct
                 switch (cell.CobieCol.AllowedType)
                 {
+                    case COBieAllowedType.ISODateTime:
                     case COBieAllowedType.ISODate:
                         DateTime date;
                         if (DateTime.TryParse(cell.CellValue, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out date))

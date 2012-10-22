@@ -124,8 +124,7 @@ namespace Xbim.COBie
                 COBieProgress progress = new COBieProgress(Context);
                 progress.Initialise("Validating Workbooks", Workbook.Count, 0);
 
-                Workbook.CreateIndices();
-               
+                
                 for (int i = 0; i < Workbook.Count; i++)
                 {
 
@@ -165,7 +164,7 @@ namespace Xbim.COBie
         private void GenerateCOBieData()
         {
             Initialise();
-           
+            Workbook.CreateIndices();
             PopulateErrors();			
         }
 

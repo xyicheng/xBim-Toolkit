@@ -77,7 +77,7 @@ namespace Xbim.COBie.Data
                     sys.ExtIdentifier = product.GlobalId;
                     sys.Description = GetSystemDescription(ifcGroup);
 
-                    systems.Rows.Add(sys);
+                    systems.AddRow(sys);
                 }
 
             }
@@ -132,7 +132,7 @@ namespace Xbim.COBie.Data
                         sys.ExtIdentifier = DEFAULT_STRING; //used IfcPropertySingleValue, has no GlobalId
                         sys.Description = string.IsNullOrEmpty(name) ? DEFAULT_STRING : name; ;
 
-                    systems.Rows.Add(sys);
+                        systems.AddRow(sys);
                     }
                 }
             }

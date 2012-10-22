@@ -89,7 +89,7 @@ namespace Xbim.COBie.Data
                 job.Priors =  GetPriors(ifcTask);
                 job.ResourceNames = GetResources(ifcTask);
 
-                jobs.Rows.Add(job);
+                jobs.AddRow(job);
             }
 
             ProgressIndicator.Finalise();

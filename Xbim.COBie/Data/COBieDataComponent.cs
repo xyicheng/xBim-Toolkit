@@ -95,7 +95,7 @@ namespace Xbim.COBie.Data
                 component.BarCode = allPropertyValues.GetPropertySingleValueValue("BarCode", false);
                 component.AssetIdentifier = allPropertyValues.GetPropertySingleValueValue("AssetIdentifier", false);
                 
-                components.Rows.Add(component);
+                components.AddRow(component);
 
                 //fill in the attribute information
                 attributeBuilder.RowParameters["Name"] = component.Name;

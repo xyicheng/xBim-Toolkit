@@ -139,7 +139,7 @@ namespace Xbim.COBie.Data
                 conn.Name = (string.IsNullOrEmpty(connectionName)) ? ids.ToString() : connectionName;
                 conn.Description = (string.IsNullOrEmpty(ifcRelConnectsElement.Description)) ? DEFAULT_STRING : ifcRelConnectsElement.Description.ToString();
 
-                connections.Rows.Add(conn);
+                connections.AddRow(conn);
 
                 ids++;
             }

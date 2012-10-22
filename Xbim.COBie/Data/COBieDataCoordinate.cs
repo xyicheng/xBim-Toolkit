@@ -144,7 +144,7 @@ namespace Xbim.COBie.Data
                 coordinate.ElevationalRotation = ElevationalRotation.ToString("F4");
                 coordinate.YawRotation = YawRotation.ToString("F4");
 
-                coordinates.Rows.Add(coordinate);
+                coordinates.AddRow(coordinate);
                 if (ifcCartesianPointUpper != null) //we need a second row for upper point
                 {
                     COBieCoordinateRow coordinateUpper = new COBieCoordinateRow(coordinates);
@@ -164,7 +164,7 @@ namespace Xbim.COBie.Data
                     coordinateUpper.ElevationalRotation = coordinate.ElevationalRotation;
                     coordinateUpper.YawRotation = coordinate.YawRotation;
 
-                    coordinates.Rows.Add(coordinateUpper);
+                    coordinates.AddRow(coordinateUpper);
                 }
             }
             ProgressIndicator.Finalise();

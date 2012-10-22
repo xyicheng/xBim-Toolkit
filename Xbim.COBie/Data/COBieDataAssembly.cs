@@ -112,7 +112,7 @@ namespace Xbim.COBie.Data
                         if (index == 0)
                         {
                             assembly.ChildNames = childStr;
-                            assemblies.Rows.Add(assembly);
+                            assemblies.AddRow(assembly);
                         }
                         else
                         {
@@ -128,13 +128,13 @@ namespace Xbim.COBie.Data
                             assemblyCont.ExtIdentifier = assembly.ExtIdentifier;
                             assemblyCont.Description = assembly.Description;
                             assemblyCont.ChildNames = childStr;
-                            assemblies.Rows.Add(assemblyCont);
+                            assemblies.AddRow(assemblyCont);
                         }
                         index = ++index;
 	                }
                 }
-                else 
-                    assemblies.Rows.Add(assembly);
+                else
+                    assemblies.AddRow(assembly);
 
                 
             }

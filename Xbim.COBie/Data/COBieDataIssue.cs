@@ -69,7 +69,7 @@ namespace Xbim.COBie.Data
                 issue.ExtObject = ifcApproval.GetType().Name;
                 issue.ExtIdentifier = ifcApproval.Identifier.ToString();
 
-                issues.Rows.Add(issue);
+                issues.AddRow(issue);
             }
 
             ProgressIndicator.Finalise();

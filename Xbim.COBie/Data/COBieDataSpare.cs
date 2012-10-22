@@ -77,7 +77,7 @@ namespace Xbim.COBie.Data
                 {
                     continue;
                 }
-                spares.Rows.Add(spare);
+                spares.AddRow(spare);
             }
             ProgressIndicator.Finalise();
             return spares;

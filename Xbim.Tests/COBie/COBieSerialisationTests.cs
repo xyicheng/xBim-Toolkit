@@ -70,6 +70,43 @@ namespace Xbim.Tests.COBie
         }
 
         [TestMethod]
+        public void Should_Have_HashValue_Serialise()
+        {
+            // Arrange
+
+            COBieContext context = new COBieContext(null);
+            IModel model = new XbimFileModelServer();
+            model.Open(SourceFile);
+            context.Model = model;
+            context.TemplateFileName = ExcelTemplateFile;
+
+            COBieBuilder builder = new COBieBuilder(context);
+
+            COBieWorkbook book = builder.Workbook;
+            string hashCode1 = book[Constants.WORKSHEET_FACILITY][0].RowHashValue;
+            Debug.WriteLine(string.Format("Serialised Row hash Value = {0}", hashCode1));
+            string hashCodeSerial1 = book[Constants.WORKSHEET_FACILITY][0].InitialRowHashValue;
+            Debug.WriteLine(string.Format("Created Row Hash Value Was = {0}", hashCodeSerial1));
+            // Act
+            string output = Path.GetTempFileName();
+            COBieBinarySerialiser serialiser = new COBieBinarySerialiser(output);
+            serialiser.Serialise(book);
+
+            // Deserialiser into a new workbook.
+            COBieBinaryDeserialiser deserialiser = new COBieBinaryDeserialiser(output);
+            COBieWorkbook newBook = deserialiser.Deserialise();
+           // newBook[Constants.WORKSHEET_FACILITY][0][0] = new COBieCell("TTTTT");
+            string hashCode2 = newBook[Constants.WORKSHEET_FACILITY][0].RowHashValue;
+            Debug.WriteLine(string.Format("Deserialised Row hash Value = {0}", hashCode2));
+            string hashCodeSerial2 = book[Constants.WORKSHEET_FACILITY][0].InitialRowHashValue;
+            Debug.WriteLine(string.Format("Created Row Hash Value Was = {0}", hashCodeSerial2));
+            // Assert
+            Assert.AreEqual(hashCode1, hashCode2);
+
+            
+        }
+
+        [TestMethod]
         public void Should_Roundtrip_XLSSerialise()
         {
             // Arrange

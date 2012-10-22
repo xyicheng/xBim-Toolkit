@@ -79,14 +79,20 @@ namespace Xbim.COBie
         #region Methods
         
         /// <summary>
-        /// Creat a COBieRow of the correct type for this sheet, not it is not added to the Rows list
+        /// Create a COBieRow of the correct type for this sheet, not it is not added to the Rows list
         /// </summary>
         /// <returns>Correct COBieRow type for this COBieSheet</returns>
         public T AddNewRow()
         {
            Object[] args = {this};
-           Rows.Add( (T)Activator.CreateInstance(typeof(T), args));
+           AddRow((T)Activator.CreateInstance(typeof(T), args));
            return Rows.Last();
+        }
+
+        public void AddRow(T cOBieRow)
+        {
+            cOBieRow.RowNumber = Rows.Count() + 1;
+            Rows.Add(cOBieRow);
         }
 
         /// <summary>
@@ -128,6 +134,8 @@ namespace Xbim.COBie
                         }
                     }
                 }
+                //SetThe initial has vale for each row
+                row.SetInitialRowHash();
                 
             }
         }
@@ -166,21 +174,17 @@ namespace Xbim.COBie
                             && (workbook[sheetName].Indices.ContainsKey(fieldName))
                             )
                         {
-                            bool isPickList ;
-                            if (sheetName == Constants.WORKSHEET_PICKLISTS)
-                                isPickList = true;
-                            else
-                                isPickList = false;
+                            bool isPickList = (sheetName == Constants.WORKSHEET_PICKLISTS);
 
                             //report no match
-                            if ((isPickList//(sheetName == Constants.WORKSHEET_PICKLISTS)
+                            if ((isPickList
                                   && (!PickListMatch(workbook[sheetName].Indices[fieldName], foreignKeyValue))) 
                                 || (!workbook[sheetName].Indices[fieldName].Contains(foreignKeyValue))
                                 )
                             {
                                 //get the correct Pick list column name depending on template for the category columns only, for now
                                 string errFieldName = fieldName;
-                                if ((fieldName.Contains("Category")) && (sheetName == "PickLists"))
+                                if ((fieldName.Contains("Category")) && isPickList)
                                     errFieldName = ErrorDescription.ResourceManager.GetString(fieldName.Replace("-", "")); //strip out the "-" to get the resource, (resource did not like the '-' in the name)
                                 if (string.IsNullOrEmpty(errFieldName)) //if resource not found then reset back to field name
                                     errFieldName = fieldName;
@@ -241,16 +245,34 @@ namespace Xbim.COBie
         private void ValidatePrimaryKeys()
         {
             var dupes = Rows
-                        .GroupBy(r => r.GetPrimaryKeyValue)
-                        .Where(grp => grp.Count() > 1)
-                        .SelectMany(grp => grp);
+                    .Select((v, i) => new { row = v, index = i }) //get COBieRow and its index in the list
+                    .GroupBy(r => r.row.GetPrimaryKeyValue, (key, group) => new {rowkey = key, rows = group }) //group by the primary key value(s) joint as a delimited string
+                    .Where(grp => grp.rows.Count() > 1); 
+                 
+
+            List<string> keyColList = new List<string>();
+            foreach (COBieColumn col in KeyColumns)
+	        {
+                keyColList.Add(col.ColumnName);
+	        }
+            string keyCols = string.Join(";", keyColList);
 
             foreach (var dupe in dupes)
             {
-                // TODO: need to identify the row number so we can assign error message
-                string description = ErrorDescription.PrimaryKey_Violation + ": " + dupe.GetPrimaryKeyValue;
-                    COBieError error = new COBieError(SheetName, string.Join(";", KeyColumns.Select(s=>s.PropertyInfo.Name)), description, COBieError.ErrorTypes.PrimaryKey_Violation);
+                List<string> indexList = new List<string>();
+                foreach (var row in dupe.rows)
+                {
+                    indexList.Add((row.index + 2).ToString());
+                }
+                string rowIndexList = string.Join(",", indexList);
+                foreach (var row in dupe.rows)
+                {
+                    string errorDescription = String.Format(ErrorDescription.PrimaryKey_Violation, keyCols, rowIndexList);
+                    COBieError error = new COBieError(SheetName, keyCols, errorDescription, COBieError.ErrorTypes.PrimaryKey_Violation, KeyColumns.First().ColumnOrder, (row.index + 1));
                     _errors.Add(error);
+                }
+                
+                
             }
 
         }
@@ -293,7 +315,9 @@ namespace Xbim.COBie
                 err.ErrorType = COBieError.ErrorTypes.Email_Value_Expected;
             }
 
-            else if (allowedType == COBieAllowedType.ISODate)
+            else if ((allowedType == COBieAllowedType.ISODate) ||
+                    (allowedType == COBieAllowedType.ISODateTime) 
+                    )
             {
                 DateTime dt;
                 

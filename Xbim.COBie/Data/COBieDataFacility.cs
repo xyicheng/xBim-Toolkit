@@ -105,7 +105,7 @@ namespace Xbim.COBie.Data
             facility.SiteDescription = GetFacilitySiteDescription(ifcSite);
             facility.Phase = (string.IsNullOrEmpty(Model.IfcProject.Phase.ToString())) ? DEFAULT_STRING : Model.IfcProject.Phase.ToString();
 
-            facilities.Rows.Add(facility);
+            facilities.AddRow(facility);
 
             
             //fill in the attribute information

@@ -82,7 +82,7 @@ namespace Xbim.COBie.Data
                 //not duplicate so add to sheet
                 if (CheckForDuplicateRow(lastRow, typeRow)) 
                 {
-                    types.Rows.Add(typeRow);
+                    types.AddRow(typeRow);
                     lastRow = typeRow; //save this row to test on next loop
                 }
                 // Provide Attribute sheet with our context

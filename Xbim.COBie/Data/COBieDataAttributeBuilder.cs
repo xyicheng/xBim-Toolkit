@@ -376,7 +376,7 @@ namespace Xbim.COBie.Data
                         attribute.Description = attribute.Name;
                     }
 
-                    _attributes.Rows.Add(attribute);
+                    _attributes.AddRow(attribute);
                 }
             }
         }

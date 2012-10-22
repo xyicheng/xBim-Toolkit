@@ -18,7 +18,7 @@ namespace Xbim.COBie.Rows
         [COBieAttributes(1, COBieKeyType.ForeignKey, "Contact.Email", COBieAttributeState.Required, "CreatedBy", 255, COBieAllowedType.Email)]
         public string CreatedBy { get; set; }
 
-        [COBieAttributes(2, COBieKeyType.None, "", COBieAttributeState.Required, "CreatedOn", 19, COBieAllowedType.ISODate)]
+        [COBieAttributes(2, COBieKeyType.None, "", COBieAttributeState.Required, "CreatedOn", 19, COBieAllowedType.ISODateTime)]
         public string CreatedOn { get; set; }
 
         [COBieAttributes(3, COBieKeyType.ForeignKey, "PickLists.ResourceType", COBieAttributeState.Required, "Category", 255, COBieAllowedType.Text)]

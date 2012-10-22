@@ -99,7 +99,7 @@ namespace Xbim.COBie.Data
                 doc.Description = di.Description.ToString();
                 doc.Reference = di.Name.ToString();
 
-                documents.Rows.Add(doc);
+                documents.AddRow(doc);
             }
 
             ProgressIndicator.Finalise();

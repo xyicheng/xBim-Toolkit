@@ -85,7 +85,7 @@ namespace Xbim.COBie.Data
                 space.GrossArea = GetGrossFloorArea(ifcSpace, allPropertyValues);
                 space.NetArea = GetNetArea(ifcSpace, allPropertyValues);
 
-                spaces.Rows.Add(space);
+                spaces.AddRow(space);
                 
                 //----------fill in the attribute information for spaces-----------
 

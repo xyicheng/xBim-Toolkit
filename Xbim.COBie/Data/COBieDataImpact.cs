@@ -66,7 +66,7 @@ namespace Xbim.COBie.Data
                 impact.ExtIdentifier = ppt.GlobalId;
                 impact.Description = (ppt.Description == null) ? DEFAULT_STRING : ppt.Description.ToString();
 
-                impacts.Rows.Add(impact);
+                impacts.AddRow(impact);
             }
             ProgressIndicator.Finalise();
 

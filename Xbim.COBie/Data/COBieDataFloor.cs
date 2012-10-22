@@ -79,7 +79,7 @@ namespace Xbim.COBie.Data
 
                 floor.Height = GetFloorHeight(ifcBuildingStorey, allPropertyValues);
 
-                floors.Rows.Add(floor);
+                floors.AddRow(floor);
 
                 //fill in the attribute information
                 attributeBuilder.RowParameters["Name"] = floor.Name;

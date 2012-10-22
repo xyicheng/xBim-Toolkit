@@ -90,9 +90,9 @@ namespace Xbim.COBie.Data
                 if (ifcPerson.Addresses != null)
                     GetContactAddress(contact, ifcPerson.Addresses);
                 else
-                    GetContactAddress(contact, ifcOrganization.Addresses); 
-                
-                contacts.Rows.Add(contact);
+                    GetContactAddress(contact, ifcOrganization.Addresses);
+
+                contacts.AddRow(contact);
                 
             }
             ProgressIndicator.Finalise();

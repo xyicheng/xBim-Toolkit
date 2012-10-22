@@ -80,7 +80,7 @@ namespace Xbim.COBie.Data
                     zone.ExtObject = zn.GetType().Name;
                     zone.ExtIdentifier = zn.GlobalId;
                     zone.Description = (string.IsNullOrEmpty(zn.Description)) ? zn.Name.ToString() : zn.Description.ToString(); //if IsNullOrEmpty on Description then output Name
-                    zones.Rows.Add(zone);
+                    zones.AddRow(zone);
                     
                     //fill in the attribute information
                     attributeBuilder.RowParameters["Name"] = zone.Name;
@@ -131,7 +131,7 @@ namespace Xbim.COBie.Data
                             
                         zone.Description = (string.IsNullOrEmpty(spProp.NominalValue.ToString())) ? DEFAULT_STRING : spProp.NominalValue.ToString(); ;
 
-                        zones.Rows.Add(zone);
+                        zones.AddRow(zone);
                         
                     }
                 }
