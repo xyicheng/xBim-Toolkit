@@ -19,7 +19,7 @@ using Xbim.COBie.Contracts;
 using Xbim.COBie.Serialisers;
 using Xbim.COBie.Rows;
 
-namespace XBim.COBie.Client
+namespace Xbim.COBie.Client
 {
     public partial class COBieGenerator : Form
     {
@@ -65,12 +65,10 @@ namespace XBim.COBie.Client
 
         private void COBieWorker(object s, DoWorkEventArgs args)
         {
-
             try
             {
                 Params parameters = args.Argument as Params;
-                
-                
+
                 string outputFile = Path.ChangeExtension(parameters.ModelFile, ".xls");
 
                 if (!File.Exists(parameters.ModelFile))
@@ -121,7 +119,6 @@ namespace XBim.COBie.Client
                 LogBackground(String.Format("Export Complete: {0}", outputFile));
 
                 Process.Start(outputFile);
-
                 
                 LogBackground("Finished COBie Generation");
             }

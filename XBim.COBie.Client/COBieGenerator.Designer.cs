@@ -1,4 +1,4 @@
-﻿namespace XBim.COBie.Client
+﻿namespace Xbim.COBie.Client
 {
     partial class COBieGenerator
     {

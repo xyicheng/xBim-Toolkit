@@ -39,7 +39,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XbimRegression", "XbimRegre
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.COBie", "Xbim.COBie\Xbim.COBie.csproj", "{7DA8C61A-ACCA-45CB-B688-93A4982FA44C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XBim.COBie.Client", "XBim.COBie.Client\XBim.COBie.Client.csproj", "{FB5A1829-7B34-4DE9-94A9-AF3AD36320BB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.COBie.Client", "XBim.COBie.Client\Xbim.COBie.Client.csproj", "{FB5A1829-7B34-4DE9-94A9-AF3AD36320BB}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{0DA6263B-5A69-401E-99D0-391644EF4709}"
 EndProject

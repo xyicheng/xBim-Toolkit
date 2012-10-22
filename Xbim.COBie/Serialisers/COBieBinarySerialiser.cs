@@ -20,6 +20,11 @@ namespace Xbim.COBie.Serialisers
 
         public void Serialise(COBieWorkbook workbook)
         {
+            if (workbook == null)
+            {
+                throw new ArgumentNullException("workbook", "Xbim");
+            }
+
             BinaryFormatter formatter = new BinaryFormatter();
 
             using (Stream stream = new FileStream(_file, FileMode.Create, FileAccess.Write, FileShare.None))

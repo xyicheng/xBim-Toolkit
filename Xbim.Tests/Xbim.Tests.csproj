@@ -121,9 +121,9 @@
     <Compile Include="XbimFileModelServerTest.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\XBim.COBie.Client\XBim.COBie.Client.csproj">
+    <ProjectReference Include="..\XBim.COBie.Client\Xbim.COBie.Client.csproj">
       <Project>{FB5A1829-7B34-4DE9-94A9-AF3AD36320BB}</Project>
-      <Name>XBim.COBie.Client</Name>
+      <Name>Xbim.COBie.Client</Name>
     </ProjectReference>
     <ProjectReference Include="..\Xbim.COBie\Xbim.COBie.csproj">
       <Project>{7DA8C61A-ACCA-45CB-B688-93A4982FA44C}</Project>

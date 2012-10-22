@@ -293,8 +293,11 @@ namespace Xbim.COBie
             COBieAttributeState state = cell.COBieState;
             COBieError err = new COBieError(sheetName, cell.CobieCol.ColumnName, "", COBieError.ErrorTypes.None, col, row);
       
-
-            if (state == COBieAttributeState.Required && string.IsNullOrEmpty(cell.CellValue))
+            // If field is required and cell value is empty
+            if (string.IsNullOrEmpty(cell.CellValue) && 
+                    (state == COBieAttributeState.Required_PrimaryKey || 
+                     state == COBieAttributeState.Required_CompoundKeyPart ||
+                     state == COBieAttributeState.Required_Information))
             {
                 err.ErrorDescription = ErrorDescription.Text_Value_Expected;
                 err.ErrorType = COBieError.ErrorTypes.Text_Value_Expected;

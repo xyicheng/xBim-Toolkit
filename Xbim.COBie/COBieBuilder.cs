@@ -116,8 +116,7 @@ namespace Xbim.COBie
         private void PopulateErrors()
         {
             try
-            {                  
-                
+            {
                 COBieProgress progress = new COBieProgress(Context);
                 progress.Initialise("Validating Workbooks", Workbook.Count, 0);
 
@@ -131,10 +130,7 @@ namespace Xbim.COBie
                     if (sheet.SheetName != Constants.WORKSHEET_PICKLISTS) //skip validation on picklist
                     {
                         sheet.Validate(Workbook);
-                    }
-                    
-                    
-                    
+                    }                    
                 }
 
                 //ValidateForeignKeys(progress);
