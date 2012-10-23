@@ -170,9 +170,6 @@
     <Content Include="TestSourceFiles\Ref.ifc">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="TestSourceFiles\2012-03-23-Duplex-Handover.xbim">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="TestSourceFiles\Ref_Xbim.xbim">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -182,10 +179,13 @@
     <Content Include="TestSourceFiles\Test.ifc">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="TestSourceFiles\Clinic-Handover.ifc">
+    <Content Include="TestSourceFiles\Clinic_Handover.ifc">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="TestSourceFiles\Clinic-Handover.xbim">
+    <Content Include="TestSourceFiles\Clinic_Handover.xBIM">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestSourceFiles\2012-03-23-Duplex-Handover.xBIM">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

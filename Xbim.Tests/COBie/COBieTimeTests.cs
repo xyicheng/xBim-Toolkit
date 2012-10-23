@@ -17,7 +17,7 @@ namespace Xbim.Tests.COBie
     public class COBieTimeTests
     {
         private const string Root = "TestSourceFiles";
-        private const string SourceModelLeaf = "Clinic-Handover.ifc";
+        private const string SourceModelLeaf = "Clinic_Handover.xBIM";
         private const string SourceFile = Root + @"\" + SourceModelLeaf;
         
         static COBieContext _cobieContext = new COBieContext();
@@ -187,40 +187,37 @@ namespace Xbim.Tests.COBie
             timer.Start();
             cobieEngine.GetCOBieContactSheet();
             timer.Stop();
-            Debug.WriteLine(string.Format("Contact Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
+            Console.WriteLine(string.Format("Contact Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
             return timer.Elapsed;
         }
 
         private TimeSpan FacilityTime()
         {
-            //COBieQueries cobieEngine = new COBieQueries(_cobieContext);
             Stopwatch timer = new Stopwatch();
             timer.Start();
             cobieEngine.GetCOBieFacilitySheet();
             timer.Stop();
-            Debug.WriteLine(string.Format("Facility Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
+            Console.WriteLine(string.Format("Facility Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
             return timer.Elapsed;
         }
 
         private TimeSpan FloorTime()
         {
-            //COBieQueries cobieEngine = new COBieQueries(_cobieContext);
             Stopwatch timer = new Stopwatch();
             timer.Start();
             cobieEngine.GetCOBieFloorSheet();
             timer.Stop();
-            Debug.WriteLine(string.Format("Floor Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
+            Console.WriteLine(string.Format("Floor Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
             return timer.Elapsed;
         }
 
         private TimeSpan SpaceTime()
         {
-            //COBieQueries cobieEngine = new COBieQueries(_cobieContext);
             Stopwatch timer = new Stopwatch();
             timer.Start();
             cobieEngine.GetCOBieSpaceSheet();
             timer.Stop();
-            Debug.WriteLine(string.Format("Space Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
+            Console.WriteLine(string.Format("Space Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
             return timer.Elapsed;
         }
 
@@ -230,7 +227,7 @@ namespace Xbim.Tests.COBie
             timer.Start();
             cobieEngine.GetCOBieZoneSheet();
             timer.Stop();
-            Debug.WriteLine(string.Format("Zone Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
+            Console.WriteLine(string.Format("Zone Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
             return timer.Elapsed;
         }
 
@@ -240,7 +237,7 @@ namespace Xbim.Tests.COBie
             timer.Start();
             cobieEngine.GetCOBieTypeSheet();
             timer.Stop();
-            Debug.WriteLine(string.Format("Type Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
+            Console.WriteLine(string.Format("Type Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
             return timer.Elapsed;
         }
 
@@ -250,7 +247,7 @@ namespace Xbim.Tests.COBie
             timer.Start();
             cobieEngine.GetCOBieComponentSheet();
             timer.Stop();
-            Debug.WriteLine(string.Format("Component Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
+            Console.WriteLine(string.Format("Component Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
             return timer.Elapsed;
         }
 
@@ -260,7 +257,7 @@ namespace Xbim.Tests.COBie
             timer.Start();
             cobieEngine.GetCOBieSystemSheet();
             timer.Stop();
-            Debug.WriteLine(string.Format("System Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
+            Console.WriteLine(string.Format("System Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
             return timer.Elapsed;
         }
 
@@ -270,7 +267,7 @@ namespace Xbim.Tests.COBie
             timer.Start();
             cobieEngine.GetCOBieAssemblySheet();
             timer.Stop();
-            Debug.WriteLine(string.Format("Assembly Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
+            Console.WriteLine(string.Format("Assembly Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
             return timer.Elapsed;
         }
 
@@ -280,7 +277,7 @@ namespace Xbim.Tests.COBie
             timer.Start();
             cobieEngine.GetCOBieConnectionSheet();
             timer.Stop();
-            Debug.WriteLine(string.Format("Connection Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
+            Console.WriteLine(string.Format("Connection Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
             return timer.Elapsed;
         }
 
@@ -290,7 +287,7 @@ namespace Xbim.Tests.COBie
             timer.Start();
             cobieEngine.GetCOBieSpareSheet();
             timer.Stop();
-            Debug.WriteLine(string.Format("Spare Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
+            Console.WriteLine(string.Format("Spare Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
             return timer.Elapsed;
         }
 
@@ -300,7 +297,7 @@ namespace Xbim.Tests.COBie
             timer.Start();
             cobieEngine.GetCOBieResourceSheet();
             timer.Stop();
-            Debug.WriteLine(string.Format("Resource Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
+            Console.WriteLine(string.Format("Resource Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
             return timer.Elapsed;
         }
 
@@ -310,7 +307,7 @@ namespace Xbim.Tests.COBie
             timer.Start();
             cobieEngine.GetCOBieJobSheet();
             timer.Stop();
-            Debug.WriteLine(string.Format("Job Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
+            Console.WriteLine(string.Format("Job Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
             return timer.Elapsed;
         }
 
@@ -320,7 +317,7 @@ namespace Xbim.Tests.COBie
             timer.Start();
             cobieEngine.GetCOBieImpactSheet();
             timer.Stop();
-            Debug.WriteLine(string.Format("Impact Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
+            Console.WriteLine(string.Format("Impact Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
             return timer.Elapsed;
         }
 
@@ -330,7 +327,7 @@ namespace Xbim.Tests.COBie
             timer.Start();
             cobieEngine.GetCOBieDocumentSheet();
             timer.Stop();
-            Debug.WriteLine(string.Format("Document Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
+            Console.WriteLine(string.Format("Document Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
             return timer.Elapsed;
         }
 
@@ -340,7 +337,7 @@ namespace Xbim.Tests.COBie
             timer.Start();
             cobieEngine.GetCOBieAttributeSheet();
             timer.Stop();
-            Debug.WriteLine(string.Format("Attribute Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
+            Console.WriteLine(string.Format("Attribute Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
             return timer.Elapsed;
         }
 
@@ -350,7 +347,7 @@ namespace Xbim.Tests.COBie
             timer.Start();
             cobieEngine.GetCOBieCoordinateSheet();
             timer.Stop();
-            Debug.WriteLine(string.Format("Coordinate Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
+            Console.WriteLine(string.Format("Coordinate Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
             return timer.Elapsed;
         }
 
@@ -360,7 +357,7 @@ namespace Xbim.Tests.COBie
             timer.Start();
             cobieEngine.GetCOBieIssueSheet();
             timer.Stop();
-            Debug.WriteLine(string.Format("Issue Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
+            Console.WriteLine(string.Format("Issue Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
             return timer.Elapsed;
         }
 
