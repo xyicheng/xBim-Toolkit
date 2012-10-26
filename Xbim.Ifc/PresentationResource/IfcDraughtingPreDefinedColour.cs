@@ -58,7 +58,8 @@ namespace Xbim.Ifc.PresentationResource
         /// <summary>
         ///   Valid names for draughting colours are "black","red","green","blue","yellow", "magenta","cyan","white","by layer"
         /// </summary>
-        [IfcAttribute(1, IfcAttributeState.Mandatory)]
+        /// 
+        [IfcAttribute(1, IfcAttributeState.Mandatory)]        
         public override IfcLabel Name
         {
             get { return base.Name; }

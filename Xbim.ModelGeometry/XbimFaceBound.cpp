@@ -600,7 +600,7 @@ namespace Xbim
 				return Build((IfcPolyline^)bCurve, hasCurves);
 			else if(dynamic_cast<IfcTrimmedCurve^>(bCurve))
 				return Build((IfcTrimmedCurve^)bCurve, hasCurves);
-			if(dynamic_cast<IfcCompositeCurve^>(bCurve))
+			else if(dynamic_cast<IfcCompositeCurve^>(bCurve))
 				return Build((IfcCompositeCurve^)bCurve, hasCurves);
 			else
 			{
@@ -619,6 +619,8 @@ namespace Xbim
 		{
 			if (dynamic_cast<IfcBoundedCurve^>(curve))
 				return Build((IfcBoundedCurve^) curve, hasCurves);
+			else if(dynamic_cast<IfcCircle^>(curve))
+				return Build((IfcCircle^)curve, hasCurves);
 			else
 			{
 				Type ^ type = curve->GetType();
@@ -626,7 +628,38 @@ namespace Xbim
 			}
 
 		}
-
+		TopoDS_Wire XbimFaceBound::Build(IfcCircle ^ circle, bool% hasCurves)
+		{
+			hasCurves=true;
+			Handle(Geom_Curve) curve;
+			if(dynamic_cast<IfcAxis2Placement2D^>(circle->Position))
+			{
+				IfcAxis2Placement2D^ ax2 = (IfcAxis2Placement2D^)circle->Position;
+				gp_Ax2 gpax2(gp_Pnt(ax2->Location->X, ax2->Location->Y,0), gp_Dir(0,0,1),gp_Dir(ax2->P[0]->X, ax2->P[0]->Y,0.));			
+				gp_Circ gc(gpax2,circle->Radius);
+				curve = GC_MakeCircle(gc);
+			}
+			else if(dynamic_cast<IfcAxis2Placement3D^>(circle->Position))
+			{
+				IfcAxis2Placement3D^ ax2 = (IfcAxis2Placement3D^)circle->Position;
+				gp_Ax3 	gpax3 = XbimGeomPrim::ToAx3(ax2);		
+				gp_Circ gc(gpax3.Ax2(),circle->Radius);	
+				curve = GC_MakeCircle(gc);
+			}	
+			else
+			{
+				Type ^ type = circle->Position->GetType();
+				throw(gcnew NotImplementedException(String::Format("XbimFaceBound. Circle with Placement of type {0} is not implemented",type->Name)));	
+			}
+			BRepBuilderAPI_MakeEdge e(curve);
+			BRepBuilderAPI_MakeWire w;
+			w.Add(e);
+			TopoDS_Wire result = w.Wire();
+			// set the tolerance for this shape.
+			ShapeFix_ShapeTolerance FTol;	
+			FTol.SetTolerance(result, BRepLib::Precision() ,TopAbs_WIRE);
+			return result;
+		}
 
 		TopoDS_Wire XbimFaceBound::Build(IfcPolyline ^ pLine, bool% hasCurves)
 		{

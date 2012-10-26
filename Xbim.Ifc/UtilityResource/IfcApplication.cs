@@ -96,7 +96,7 @@ namespace Xbim.Ifc.UtilityResource
 #endif
                 return _applicationDeveloper;
             }
-            set { _applicationDeveloper = value; }
+            set {_applicationDeveloper = value;}
         }
 
         /// <summary>
@@ -114,7 +114,7 @@ namespace Xbim.Ifc.UtilityResource
 #endif
                 return _version;
             }
-            set { _version = value; }
+            set { ModelManager.SetModelValue(this, ref _version, value, v => Version = v, "Version"); }
         }
 
 
@@ -133,7 +133,7 @@ namespace Xbim.Ifc.UtilityResource
 #endif
                 return _applicationFullName;
             }
-            set { _applicationFullName = value; }
+            set { ModelManager.SetModelValue(this, ref _applicationFullName, value, v => ApplicationFullName = v, "ApplicationFullName"); }
         }
 
 
@@ -152,7 +152,7 @@ namespace Xbim.Ifc.UtilityResource
 #endif
                 return _applicationIdentifier;
             }
-            set { _applicationIdentifier = value; }
+            set { ModelManager.SetModelValue(this, ref _applicationIdentifier, value, v => ApplicationIdentifier = v, "ApplicationIdentifier"); }
         }
 
         #endregion
