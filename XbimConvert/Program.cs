@@ -14,7 +14,8 @@ using Xbim.Ifc2x3.SharedBldgElements;
 using Xbim.Common.Exceptions;
 using Xbim.Ifc2x3.ProductExtension;
 using Xbim.XbimExtensions;
-
+using Xbim.Ifc2x3.Extensions;
+using Xbim.Ifc2x3.MeasureResource;
 namespace XbimConvert
 {
     class Program
@@ -37,7 +38,7 @@ namespace XbimConvert
 
                 try
                 {
-
+                    
                     Logger.InfoFormat("Starting conversion of {0}", args[0]);
 
                     string xbimFileName = BuildFileName(arguments.IfcFileName, ".xbim");
@@ -51,10 +52,27 @@ namespace XbimConvert
                     {
                         watch.Start();
 
-                        model.Open(xbimFileName, XbimDBAccess.ReadWrite);
+                        model.Open(xbimFileName, XbimDBAccess.ReadWriteNoCache);
+                       // var txn = model.BeginTransaction();
 
-                        GenerateGeometry(xbimGeometryFileName, model);
+                        var doors = model.Instances.OfType<IfcDoor>();
 
+                        //foreach (var door in doors)
+                        //{
+                        //    door.Name = "qwerty";
+                        //}
+
+                        var door = doors.FirstOrDefault();
+                        door.Name = "qwerty";
+
+                      //  txn.Commit();
+                        //foreach (var door in model.Instances.OfType<IfcDoor>())
+                        //{
+                        //    Console.WriteLine(door.Name);
+                        //}
+
+                      //  GenerateGeometry(xbimGeometryFileName, model);
+                       
                         model.Close();
 
                     }

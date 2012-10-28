@@ -12,7 +12,7 @@ using System.Collections;
 
 namespace Xbim.IO
 {
-    public class XbimEntityCursor : XbimCursor, IEnumerator<int>, IEnumerator
+    public class XbimEntityCursor : XbimCursor
     {
 
         private  const string ifcEntityTableName = "IfcEntities";
@@ -244,6 +244,82 @@ namespace Xbim.IO
             IfcType ifcType = IfcMetaData.IfcType(toWrite);
             AddEntity(toWrite.EntityLabel, ifcType.TypeId, ifcType.GetIndexedValues(toWrite), ms.ToArray(), ifcType.IndexedClass);
         }
+        /// <summary>
+        /// Updates an entity, assumes a valid transaction is running
+        /// </summary>
+        /// <param name="toWrite"></param>
+        internal void UpdateEntity(IPersistIfcEntity toWrite)
+        {
+            MemoryStream ms = new MemoryStream();
+            BinaryWriter bw = new BinaryWriter(ms);
+            toWrite.WriteEntity(bw);
+            IfcType ifcType = IfcMetaData.IfcType(toWrite);
+            UpdateEntity(toWrite.EntityLabel, ifcType.TypeId, ifcType.GetIndexedValues(toWrite), ms.ToArray(), ifcType.IndexedClass);
+        }
+
+        /// <summary>
+        /// Updates an entity, assumes a valid transaction is running
+        /// </summary>
+        /// <param name="currentLabel">Primary key/label</param>
+        /// <param name="typeId">Type identifer</param>
+        /// <param name="indexKeys">Search keys to use specifiy null if no indices</param>
+        /// <param name="data">property data</param>
+        internal void UpdateEntity(int currentLabel, short typeId, List<int> indexKeys, byte[] data, bool? indexed)
+        {
+            try
+            {
+                if (indexed.HasValue && indexed.Value == false) indexed = null;
+                SetOrderByLabel();
+                if (!TrySeekEntityLabel(currentLabel)) throw new XbimException("Attempt to update an entity that does not exist in the model");
+                int keyCount = KeyCount();
+
+                using (var update = new Update(sesid, table, JET_prep.Replace))
+                {
+                    //first put a record in with a null type key
+                    SetColumnValues(currentLabel, typeId, -1, data, indexed);
+                    Api.SetColumns(sesid, table, _colValues);
+                    //now add in any search keys
+                    if (indexKeys != null && indexKeys.Count > 0)
+                    {
+                        IEnumerable<int> uniqueKeys = indexKeys.Distinct();
+                        int i = 2;
+                        JET_SETINFO setinfo = new JET_SETINFO();
+                        foreach (var item in uniqueKeys)
+                        {
+                            byte[] bytes = BitConverter.GetBytes(item);
+                            setinfo.itagSequence = i;
+                            Api.JetSetColumn(sesid, table, _colIdSecondaryKey, bytes, bytes.Length, SetColumnGrbit.None, setinfo);
+                            i++;
+                        }
+                        //delete any extra keys
+                        for (int j = i; j <= keyCount; j++)
+                        {
+                            setinfo.itagSequence = j;
+                            Api.JetSetColumn(sesid, table, _colIdSecondaryKey, null, 0, SetColumnGrbit.None, setinfo);
+                        }
+                    }
+                    update.Save();
+                }
+            }
+            catch (Exception e)
+            {
+
+                throw;
+            }
+
+        }
+        /// <summary>
+        /// Returns the number of keys in the secondary index column of the current record
+        /// </summary>
+        /// <returns></returns>
+        private int KeyCount()
+        {
+            JET_RETRIEVECOLUMN retrievecolumn = new JET_RETRIEVECOLUMN();
+            retrievecolumn.columnid = _colIdSecondaryKey;
+            retrievecolumn.itagSequence = 0;
+            Api.JetRetrieveColumns(sesid, table, new[] { retrievecolumn }, 1);
+            return retrievecolumn.itagSequence;
+        }
 
         /// <summary>
         /// Adds an entity, assumes a valid transaction is running
@@ -256,13 +332,11 @@ namespace Xbim.IO
         {
             try
             {
-
-
                 if (indexed.HasValue && indexed.Value == false) indexed = null;
                 using (var update = new Update(sesid, table, JET_prep.Insert))
                 {
                     //first put a record in with a null type key
-                    SetColumnValues(currentLabel, typeId, -1, data.ToArray(), indexed);
+                    SetColumnValues(currentLabel, typeId, -1, data, indexed);
                     Api.SetColumns(sesid, table, _colValues);
                     //now add in any search keys
                     if (indexKeys != null && indexKeys.Count > 0)
@@ -507,20 +581,46 @@ namespace Xbim.IO
             }
         }
 
+       
+
+    }
+
+    internal class XbimInstancesEnumerator : IEnumerator<int>, IEnumerator
+    {
+        private IfcPersistedInstanceCache cache;
+        private XbimEntityCursor cursor;
+        private int current;
+
+        public XbimInstancesEnumerator(IfcPersistedInstanceCache cache)
+        {
+            this.cache = cache;
+            this.cursor = cache.GetEntityTable();
+            Reset();
+        }
         public int Current
         {
             get { return current; }
         }
 
-        object System.Collections.IEnumerator.Current
+
+        public void Reset()
         {
-            get { return current; }
+            cursor.SetOrderByLabel();
+            cursor.MoveBeforeFirst();
+            current = 0;
         }
 
-        public bool MoveNext()
+
+
+        object IEnumerator.Current
+        {
+           get { return current; }
+        }
+
+        bool IEnumerator.MoveNext()
         {
             int label;
-            if (TryMoveNextLabel(out label))
+            if (cursor.TryMoveNextLabel(out label))
             {
                 current = label;
                 return true;
@@ -529,13 +629,10 @@ namespace Xbim.IO
                 return false;
         }
 
-        public void Reset()
-        {
-            this.SetOrderByLabel();
-            Api.MoveBeforeFirst(sesid, table);
-            current = 0;
-        }
 
-      
+        public void Dispose()
+        {
+            cache.FreeTable(cursor);
+        }
     }
 }

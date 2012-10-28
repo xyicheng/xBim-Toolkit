@@ -7,6 +7,7 @@ using System.Linq.Expressions;
 using Xbim.Ifc2x3.Kernel;
 using Xbim.Ifc2x3.UtilityResource;
 using Xbim.Ifc2x3.ActorResource;
+using Xbim.XbimExtensions.Transactions;
 
 namespace Xbim.IO
 {
@@ -16,6 +17,7 @@ namespace Xbim.IO
     public class XbimInstanceCollection : IXbimInstanceCollection
     {
         private IfcPersistedInstanceCache cache;
+        
         #region OwnerHistory Fields
 
 
@@ -123,8 +125,7 @@ namespace Xbim.IO
         public TIfcType New<TIfcType>() where TIfcType : IPersistIfcEntity, new()
         {
             Type t = typeof(TIfcType);
-            int nextLabel = cache.HighestLabel + 1;
-            return (TIfcType)New(t, nextLabel);
+            return (TIfcType)New(t);
         }
         /// <summary>
         ///   Creates and Instance of TIfcType and initializes the properties in accordance with the lambda expression
@@ -148,13 +149,20 @@ namespace Xbim.IO
         /// <param name="t"></param>
         /// <param name="label"></param>
         /// <returns></returns>
-        public IPersistIfcEntity New(Type t, int label)
+        public IPersistIfcEntity New(Type t)
         {
-            int nextLabel = Math.Abs(label);
+          
 
-            IPersistIfcEntity entity = cache.CreateNew_Reversable(t, nextLabel);
+            IPersistIfcEntity entity = cache.CreateNew_Reversable(t);
             if (typeof(IfcRoot).IsAssignableFrom(t))
-                ((IfcRoot)entity).OwnerHistory = OwnerHistoryAddObject;
+            {
+                if (_ownerHistoryAddObject == null) //create an owner history object if it is nor already available
+                {
+                    _ownerHistoryAddObject = (IfcOwnerHistory)cache.CreateNew_Reversable(typeof(IfcOwnerHistory));
+                    _ownerHistoryAddObject.ChangeAction = IfcChangeActionEnum.ADDED;
+                }
+                ((IfcRoot)entity).OwnerHistory = _ownerHistoryAddObject;
+            }
             return entity;
 
         }
@@ -185,6 +193,13 @@ namespace Xbim.IO
         {
             get
             {
+                if (_ownerHistoryModifyObject == null)
+                {
+                    _ownerHistoryModifyObject = this.New<IfcOwnerHistory>();
+                    _ownerHistoryModifyObject.OwningUser = DefaultOwningUser;
+                    _ownerHistoryModifyObject.OwningApplication = DefaultOwningApplication;
+                    _ownerHistoryModifyObject.ChangeAction = IfcChangeActionEnum.MODIFIED;
+                }
                 return _ownerHistoryModifyObject;
             }
         }
@@ -193,6 +208,13 @@ namespace Xbim.IO
         {
             get
             {
+                if (_ownerHistoryAddObject == null)
+                {
+                    _ownerHistoryAddObject = this.New<IfcOwnerHistory>();
+                    _ownerHistoryAddObject.OwningUser = DefaultOwningUser;
+                    _ownerHistoryAddObject.OwningApplication = DefaultOwningApplication;
+                    _ownerHistoryAddObject.ChangeAction = IfcChangeActionEnum.ADDED;
+                }
                 return _ownerHistoryAddObject;
             }
         }
@@ -204,8 +226,8 @@ namespace Xbim.IO
                 if (_ownerHistoryDeleteObject == null)
                 {
                     _ownerHistoryDeleteObject = this.New<IfcOwnerHistory>();
-                    _ownerHistoryDeleteObject.OwningUser = _defaultOwningUser;
-                    _ownerHistoryDeleteObject.OwningApplication = _defaultOwningApplication;
+                    _ownerHistoryDeleteObject.OwningUser = DefaultOwningUser;
+                    _ownerHistoryDeleteObject.OwningApplication = DefaultOwningApplication;
                     _ownerHistoryDeleteObject.ChangeAction = IfcChangeActionEnum.DELETED;
                 }
                 return _ownerHistoryDeleteObject;
@@ -216,22 +238,43 @@ namespace Xbim.IO
 
         internal IfcApplication DefaultOwningApplication
         {
-            get { return _defaultOwningApplication; }
+            get
+            {
+                if (_defaultOwningApplication == null)
+                {
+                    _defaultOwningApplication= New<IfcApplication>(a => a.ApplicationDeveloper = New<IfcOrganization>());
+                }
+                return _defaultOwningApplication; }
         }
 
         internal IfcPersonAndOrganization DefaultOwningUser
         {
-            get { return _defaultOwningUser; }
+            get
+            {
+                if (_defaultOwningUser == null)
+                {
+                    IfcPerson person = New<IfcPerson>();
+                    IfcOrganization organization = New<IfcOrganization>();
+                    _defaultOwningUser = New<IfcPersonAndOrganization>(po =>
+                    {
+                        po.TheOrganization = organization;
+                        po.ThePerson = person;
+                    });
+                    
+                }
+                return _defaultOwningUser;
+            }
         }
+
 
         public IEnumerator<int> GetEnumerator()
         {
-           return cache.GetEntityTable();
+            return new XbimInstancesEnumerator(cache);
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return cache.GetEntityTable();
+            return new XbimInstancesEnumerator(cache);
         }
     }
 

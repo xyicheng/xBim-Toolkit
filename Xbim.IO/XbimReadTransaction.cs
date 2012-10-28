@@ -18,21 +18,18 @@ namespace Xbim.IO
         /// True if we are in a transaction.
         /// </summary>
         protected bool inTransaction = false;
-        protected IfcPersistedInstanceCache cache;
+        protected XbimModel model;
         private XbimReadOnlyDBTransaction readTransaction;
-        protected XbimEntityCursor cursor;
 
         protected XbimReadTransaction()
         {
 
         }
 
-        internal XbimReadTransaction(IfcPersistedInstanceCache theCache)
+        internal XbimReadTransaction(XbimModel theModel, XbimReadOnlyDBTransaction txn)
         {
-            cache = theCache;
-            cache.GetEntityTable();
-            cursor = cache.GetEntityTable(); //use a cursor to hold open an active session for the model
-            readTransaction = cursor.BeginReadOnlyTransaction();
+            model = theModel;
+            readTransaction = txn;
             inTransaction = true;
         }
 
@@ -41,10 +38,16 @@ namespace Xbim.IO
             if (!disposed)
             {
                 if (disposing)
-                {                
-                    if(inTransaction) readTransaction.Dispose();                    
-                    cache.FreeTable(cursor); //release back for reuse the cursor
-                    cache.ReleaseCache();
+                {
+                    try
+                    {
+                        if (inTransaction) readTransaction.Dispose();
+                    }
+                    finally
+                    {
+                        model.EndTransaction();
+                    }                     
+                    
                 }
                 disposed = true;
             }

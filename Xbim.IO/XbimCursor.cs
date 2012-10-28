@@ -205,8 +205,18 @@ namespace Xbim.IO
             Api.JetSetCurrentIndex(this.sesid, this.table, indexName);
         }
 
+        internal void MoveBeforeFirst()
+        {
+            Api.MoveBeforeFirst(sesid, table); 
+        }
+
+
         public void Dispose()
         {
+            Api.JetCloseTable(sesid, table);
+            Api.JetCloseTable(sesid, globalsTable);
+            Api.JetCloseDatabase(sesid, dbId, CloseDatabaseGrbit.None);
+           Api.JetDetachDatabase(sesid, database);
             sesid.Dispose();
         }
     }

@@ -27,7 +27,7 @@ namespace Xbim.IO
         #region ESE Database 
 
         private static Instance _jetInstance;
-        
+        static int cacheSizeInBytes = 64 * 1024 * 1024;
         /// <summary>
         /// Holds the session and transaction state
         /// </summary>
@@ -37,6 +37,7 @@ namespace Xbim.IO
         private const int MaxCachedEntityTables = 32;
         private const int MaxCachedGeometryTables = 32;
         private XbimDBAccess _accessMode;
+       
 
         const int _transactionBatchSize = 100;
 
@@ -45,7 +46,7 @@ namespace Xbim.IO
         #endregion
         #region Cached data
         protected Dictionary<int, IPersistIfcEntity> read = new Dictionary<int, IPersistIfcEntity>();
-        protected HashSet<IPersistIfcEntity> modified = new HashSet<IPersistIfcEntity>();
+        protected Dictionary<int, IPersistIfcEntity> modified = new Dictionary<int, IPersistIfcEntity>();
         //protected HashSet<IPersistIfcEntity> ToDelete = new HashSet<IPersistIfcEntity>();
         //protected HashSet<IPersistIfcEntity> ToCreate = new HashSet<IPersistIfcEntity>();
         protected int CacheDefaultSize = 5000;
@@ -57,6 +58,7 @@ namespace Xbim.IO
         private XbimModel _model;
         private bool disposed = false;
         static private ComparePropertyInfo comparePropInfo = new ComparePropertyInfo();
+        private bool caching = false;
         private class ComparePropertyInfo : IEqualityComparer<PropertyInfo>
         {
 
@@ -70,6 +72,15 @@ namespace Xbim.IO
                 return obj.Name.GetHashCode();
             }
         }
+
+        static IfcPersistedInstanceCache()
+        {
+            SystemParameters.DatabasePageSize = 8192;
+            SystemParameters.CacheSizeMin = cacheSizeInBytes / SystemParameters.DatabasePageSize;
+            SystemParameters.CacheSizeMax = cacheSizeInBytes / SystemParameters.DatabasePageSize;
+            _jetInstance = CreateInstance("XbimReadWriteInstance", XbimModel.XbimLogDirectory);
+        }
+
         public IfcPersistedInstanceCache(XbimModel model)
         {
             this.lockObject = new Object();
@@ -81,15 +92,16 @@ namespace Xbim.IO
        
         /// <summary>
         /// Creates an empty xbim file, overwrites any existing file of the same name
+        /// throw a create failed exception if unsuccessful
         /// </summary>
         /// <returns></returns>
-        public bool CreateDatabase(string fileName)
+        static internal void CreateDatabase(string fileName)
         {
-            
+            string logDirectory = Path.GetFullPath(fileName);
+            logDirectory = Path.ChangeExtension(logDirectory, Guid.NewGuid().ToString());
             try
             {
-                Close();
-                using (Instance createInstance = CreateInstance(fileName, false))
+                using (Instance createInstance = CreateInstance("XbimCreateInstance", logDirectory, false))
                 {
                     using (var session = new Session(createInstance))
                     {
@@ -100,21 +112,21 @@ namespace Xbim.IO
                             XbimEntityCursor.CreateTable(session, dbid);
                             XbimCursor.CreateGlobalsTable(session, dbid); //create the gobals table
                             XbimGeometryCursor.CreateTable(session, dbid);
-                            return true;
                         }
-                        catch
+                        catch (Exception e)
                         {
                             Api.JetCloseDatabase(session, dbid, CloseDatabaseGrbit.None);
                             Api.JetDetachDatabase(session, fileName);
                             File.Delete(fileName);
-                            throw;
+                            throw e;
                         }
                     }
                 }
             }
             finally
             {
-                if (Directory.Exists(_logDirectory)) Directory.Delete(_logDirectory, true);
+                if (Directory.Exists(logDirectory)) 
+                    Directory.Delete(logDirectory, true);
             }
         }
 
@@ -231,8 +243,10 @@ namespace Xbim.IO
             Close();
             _databaseName = filename; //success store the name of the DB file
             _accessMode = accessMode;
-            _jetInstance = CreateInstance("XbimTransactions", accessMode == XbimDBAccess.ReadWrite); //only need recovery if we are reading and writing, exclusive is disposable as it is only used to create initial databases
-            
+            //if (accessMode == XbimDBAccess.ReadNoCache || accessMode == XbimDBAccess.ReadWriteNoCache)
+                caching = false;
+            //else
+            //    caching = true;
             XbimEntityCursor entTable = GetEntityTable();
             try
             {
@@ -257,38 +271,26 @@ namespace Xbim.IO
         /// </summary>
         public void Close()
         {
-            try
+           
+            for (int i = 0; i < this._entityTables.Length; ++i)
             {
-                for (int i = 0; i < this._entityTables.Length; ++i)
+                if (null != this._entityTables[i])
                 {
-                    if (null != this._entityTables[i])
-                    {
-                        this._entityTables[i].Dispose();
-                        this._entityTables[i] = null;
-                    }
-                }
-                for (int i = 0; i < this._geometryTables.Length; ++i)
-                {
-                    if (null != this._geometryTables[i])
-                    {
-                        this._geometryTables[i].Dispose();
-                        this._geometryTables[i] = null;
-                    }
-                }
-                ReleaseCache();
-                this._databaseName = null;
-                
-                
-            }
-            finally
-            {
-                if (_jetInstance != null)
-                {
-                    _jetInstance.Dispose();
-                    _jetInstance = null;
-                    Directory.Delete(_logDirectory, true);
+                    this._entityTables[i].Dispose();
+                    this._entityTables[i] = null;
                 }
             }
+            for (int i = 0; i < this._geometryTables.Length; ++i)
+            {
+                if (null != this._geometryTables[i])
+                {
+                    this._geometryTables[i].Dispose();
+                    this._geometryTables[i] = null;
+                }
+            }
+            EndCaching();
+
+            this._databaseName = null;
 
         }
 
@@ -336,29 +338,18 @@ namespace Xbim.IO
 
 
 
-        private Instance CreateInstance(string xbimDbPath, bool recovery = false)
+        static private Instance CreateInstance(string instanceName, string logDirectory, bool recovery = false)
         {
-            if (_jetInstance != null) return _jetInstance;
-            _logDirectory = Path.GetFullPath(xbimDbPath);
-            
-             int cacheSizeInBytes = 64 * 1024 * 1024;
-            SystemParameters.DatabasePageSize = 8192;
-            SystemParameters.CacheSizeMin = cacheSizeInBytes / SystemParameters.DatabasePageSize;
-            SystemParameters.CacheSizeMax = cacheSizeInBytes / SystemParameters.DatabasePageSize;
 
-            //if the  database is not going to carry out recovery, i.e. it is readonly,
-            //or just being created then create a unique path to allow multiplw read accesses
-           // if (recovery)
-                _logDirectory = Path.ChangeExtension(_logDirectory, "xBIMLog");
-            //else
-            //    _logDirectory = Path.ChangeExtension(_logDirectory, Guid.NewGuid().ToString());
-            var jetInstance = new Instance("XbimInstance");
-            
+
+
+            var jetInstance = new Instance(instanceName);
+         
             jetInstance.Parameters.BaseName = "XBM";
-            jetInstance.Parameters.SystemDirectory = _logDirectory;
-            jetInstance.Parameters.LogFileDirectory = _logDirectory;
-            jetInstance.Parameters.TempDirectory = _logDirectory;
-            jetInstance.Parameters.AlternateDatabaseRecoveryDirectory = _logDirectory;
+            jetInstance.Parameters.SystemDirectory = logDirectory;
+            jetInstance.Parameters.LogFileDirectory = logDirectory;
+            jetInstance.Parameters.TempDirectory = logDirectory;
+            jetInstance.Parameters.AlternateDatabaseRecoveryDirectory = logDirectory;
             jetInstance.Parameters.CreatePathIfNotExist = true;
             jetInstance.Parameters.EnableIndexChecking = false;       // TODO: fix unicode indexes
             jetInstance.Parameters.CircularLog = true;
@@ -377,8 +368,7 @@ namespace Xbim.IO
                                   : InitGrbit.None;
             jetInstance.Parameters.Recovery = recovery; 
             jetInstance.Init(grbit);
-            
-   
+
             return jetInstance;
         }
 
@@ -426,7 +416,7 @@ namespace Xbim.IO
 
         public bool Contains(int posLabel)
         {
-            if (this.read.ContainsKey(posLabel)) //check if it is cached
+            if (caching && this.read.ContainsKey(posLabel)) //check if it is cached
                 return true;
             else //look in the database
             {
@@ -554,13 +544,15 @@ namespace Xbim.IO
         /// <param name="t"></param>
         /// <param name="label"></param>
         /// <returns></returns>
-        public IPersistIfcEntity CreateNew_Reversable(Type t, int label)
+        public IPersistIfcEntity CreateNew_Reversable(Type t)
         {
-            int posLabel = Math.Abs(label);
+            Debug.Assert(caching);
+            XbimEntityCursor cursor = _model.GetTransactingCursor();
+            XbimInstanceHandle h = cursor.AddEntity(t);
             IPersistIfcEntity entity = (IPersistIfcEntity)Activator.CreateInstance(t);
-            entity.Bind(_model, posLabel); //bind it, the object is new and empty so the label is positive
-            this.read.Add_Reversible(new KeyValuePair<int, IPersistIfcEntity>(posLabel, entity));
-           // ToCreate.Add_Reversible(entity);
+            entity.Bind(_model, h.EntityLabel); //bind it, the object is new and empty so the label is positive
+            this.read.Add_Reversible(new KeyValuePair<int, IPersistIfcEntity>(h.EntityLabel, entity));
+            modified.Add_Reversible(new KeyValuePair<int, IPersistIfcEntity>(h.EntityLabel, entity));
             return entity;
         }
 
@@ -662,7 +654,7 @@ namespace Xbim.IO
         {
             int posLabel = Math.Abs(label);
             IPersistIfcEntity entity;
-            if (this.read.TryGetValue(posLabel, out entity))
+            if (caching && this.read.TryGetValue(posLabel, out entity))
                 return entity;
             else
                 return GetInstanceFromStore(posLabel, loadProperties, unCached);
@@ -697,7 +689,7 @@ namespace Xbim.IO
                         }
                         else
                             entity.Bind(_model, -posLabel); //a negative handle determines that the attributes of this entity have not been loaded yet
-                        if (!unCached)
+                        if (caching && !unCached)
                             this.read.Add(posLabel, entity);
                         return entity;
                     }
@@ -761,7 +753,7 @@ namespace Xbim.IO
                             do
                             {            
                                 IPersistIfcEntity entity;     
-                                if (this.read.TryGetValue(ih.EntityLabel, out entity))
+                                if (caching && this.read.TryGetValue(ih.EntityLabel, out entity))
                                 {
                                     if (activate && !entity.Activated) //activate if required and not already done
                                     {
@@ -783,7 +775,7 @@ namespace Xbim.IO
                                     else
                                         entity.Bind(_model, -ih.EntityLabel); //a negative handle determines that the attributes of this entity have not been loaded yet
 
-                                    this.read.Add(ih.EntityLabel, entity);
+                                    if (caching) this.read.Add(ih.EntityLabel, entity);
                                     yield return (TIfcType)entity;
                                 }
                             } while (entityTable.TryMoveNextEntityType(out ih));
@@ -904,6 +896,8 @@ namespace Xbim.IO
 
         private void SaveAsIfcZip(string storageFileName)
         {
+            if (string.IsNullOrWhiteSpace(Path.GetExtension(storageFileName))) //make sure we have an extension
+                storageFileName = Path.ChangeExtension(storageFileName, "IfcZip");
             throw new NotImplementedException();
         }
 
@@ -918,24 +912,36 @@ namespace Xbim.IO
 
         private void SaveAsIfc(string storageFileName)
         {
-
+            if (string.IsNullOrWhiteSpace(Path.GetExtension(storageFileName))) //make sure we have an extension
+                storageFileName = Path.ChangeExtension(storageFileName, "Ifc");
+            var entityTable = GetEntityTable();
             try
             {
-                using (TextWriter tw = new StreamWriter(storageFileName))
+                using (var transaction = entityTable.BeginReadOnlyTransaction())
                 {
-                    Part21FileWriter p21 = new Part21FileWriter();
-                    p21.Write(_model, tw);
+                    using (TextWriter tw = new StreamWriter(storageFileName))
+                    {
+                        Part21FileWriter p21 = new Part21FileWriter();
+                        p21.Write(_model, tw);
+                    }
+                   
                 }
             }
             catch (Exception e)
             {
                 throw new XbimException("Failed to write Ifc file " + storageFileName, e);
             }
+            finally
+            {
+                FreeTable(entityTable);
+            }
 
         }
 
         private void SaveAsIfcXml(string storageFileName)
         {
+            if (string.IsNullOrWhiteSpace(Path.GetExtension(storageFileName))) //make sure we have an extension
+                storageFileName = Path.ChangeExtension(storageFileName, "IfcXml");
             FileStream xmlOutStream = null;
             try
             {
@@ -957,12 +963,6 @@ namespace Xbim.IO
             }
         }
 
-
-
-        internal void Commit()
-        {
-            throw new NotImplementedException();
-        }
 
 
         public void Delete_Reversable(IPersistIfcEntity instance)
@@ -1290,9 +1290,21 @@ namespace Xbim.IO
             return HighestLabel + 1;
         }
 
+        /// <summary>
+        /// Adds an entity to the modified cache, if the entity is not already being edited
+        /// Throws an exception if an attempt is made to edit a duplicate reference to the entity
+        /// </summary>
+        /// <param name="entity"></param>
         internal void AddModified(IPersistIfcEntity entity)
         {
-            modified.Add(entity);
+            IPersistIfcEntity editing;
+            if (modified.TryGetValue(entity.EntityLabel, out editing)) //it  already exists as edited
+            {
+                if (!System.Object.ReferenceEquals(editing, entity)) //it is not the same object reference
+                    throw new XbimException("An attempt to edit a duplicate reference for #" + entity.EntityLabel + " error has occurred");
+            }
+            else
+                modified.Add(entity.EntityLabel, entity);
         }
 
         public string DatabaseName 
@@ -1333,24 +1345,47 @@ namespace Xbim.IO
 
 
         /// <summary>
-        /// Releases all entities that are cached
+        /// Clears any cached objects and starts a new caching session
         /// </summary>
-        internal void ReleaseCache()
+        internal void  BeginCaching()
         {
-#if DEBUG
-            //entities are invalid once the transaction has finished
-            //the cache is cleared, in debug mode we unbind the entities from the model
-            //this will cause an exception to be thrown if the entity is accessed outside
-            //the scope of the transaction scope which created it
-            //in release mode this is not performed for performance reasons
-            foreach (var entity in read.Values)
-            {
-                entity.Bind(null,-1);
-            }
-#endif
             read.Clear();
+            modified.Clear();
+            caching = true;
+
+        }
+        /// <summary>
+        /// Clears any cached objects and terminates further caching
+        /// </summary>
+        internal void  EndCaching()
+        {
+            read.Clear();
+            modified.Clear();
+            caching = false;
+        }
+
+        /// <summary>
+        /// Writes the content of the modified cache to the table, assumes a transaction is in scope
+        /// </summary>
+        internal void Write(XbimEntityCursor entityTable)
+        {
+            foreach (var entity in modified.Values)
+            {
+                entityTable.UpdateEntity(entity);
+            }
+        }
+
+
+
+        public static bool HasDatabaseInstance
+        {
+            get
+            {
+                return _jetInstance != null;
+            }
         }
     }
+
 }
 
 

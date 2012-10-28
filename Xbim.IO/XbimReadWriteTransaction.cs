@@ -12,22 +12,38 @@ namespace Xbim.IO
     {
         private XbimLazyDBTransaction readWriteTransaction;
 
-        public XbimReadWriteTransaction(IfcPersistedInstanceCache theCache)
+        internal XbimReadWriteTransaction(XbimModel theModel, XbimLazyDBTransaction txn)
         {
-            cache = theCache;
-            cache.GetEntityTable();
-            cursor = cache.GetEntityTable(); //use a cursor to hold open an active session for the model
-            readWriteTransaction = cursor.BeginLazyTransaction();
+            model = theModel;
+            readWriteTransaction = txn;
+            inTransaction = true;
         }
 
         public void Commit()
         {
-            readWriteTransaction.Commit();
+            try
+            {
+                model.Flush();
+                readWriteTransaction.Commit();
+            }
+            finally
+            {
+                inTransaction = false;
+            }
         }
+
+
         protected override void Dispose(bool disposing)
         {
-            readWriteTransaction.Dispose();
-            base.Dispose(disposing);
+            try
+            {
+                if (inTransaction) readWriteTransaction.Dispose();
+            }
+            finally
+            {
+                inTransaction = false;
+                base.Dispose(disposing);
+            }
         }
     }
 }

@@ -48,6 +48,8 @@ namespace Xbim.IO
                 Api.JetBeginTransaction(this.sesid);
                 this.inTransaction = true;
             }
+
+
             /// <summary>
             /// Rollback the transaction if not already committed.
             /// </summary>

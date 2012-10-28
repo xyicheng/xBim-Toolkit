@@ -57,7 +57,7 @@ namespace XbimXplorer
 
             DrawingControl.SelectionChanged += new SelectionChangedEventHandler(DrawingControl_SelectionChanged);
             SpatialControl.SelectedItemChanged +=new RoutedPropertyChangedEventHandler<SpatialStructureTreeItem>(SpatialControl_SelectedItemChanged);
-            DrawingControl.OnSetMaterial += new SetMaterialEventHandler(DrawingControl_OnSetMaterial);
+            //DrawingControl.OnSetMaterial += new SetMaterialEventHandler(DrawingControl_OnSetMaterial);
             //DrawingControl.OnSetFilter += new SetFilterEventHandler(DrawingControl_OnSetFilter);
         
         }
@@ -240,7 +240,7 @@ namespace XbimXplorer
             {
                 string XbimFileName = Path.ChangeExtension(ifcFilename,"Xbim");
                 model.CreateFrom(ifcFilename, XbimFileName, worker.ReportProgress);
-                model.Open(XbimFileName);
+                model.Open(XbimFileName,XbimDBAccess.ReadWriteNoCache);
                 XbimScene.ConvertGeometry(model.Instances.OfType<IfcProduct>().Where(t=>!(t is IfcFeatureElement)), worker.ReportProgress);
                 args.Result = model;
                 

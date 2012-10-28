@@ -36,6 +36,41 @@ namespace Xbim.Ifc2x3.Kernel
     public abstract class IfcRoot : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                     INotifyPropertyChanging
     {
+        public override bool Equals(object obj)
+        {
+            // Check for null
+            if (obj == null) return false;
+
+            // Check for type
+            if (this.GetType() != obj.GetType()) return false;
+
+            // Cast as IfcRoot
+            IfcRoot root = (IfcRoot)obj;
+            return this==root;
+        }
+        public override int GetHashCode()
+        {
+            return Math.Abs(_entityLabel); //good enough as most entities will be in collections of  only one model, equals distinguishes for model
+        }
+
+        public static bool operator ==(IfcRoot left, IfcRoot right)
+        {
+            // If both are null, or both are same instance, return true.
+            if (System.Object.ReferenceEquals(left, right))
+                return true;
+
+            // If one is null, but not both, return false.
+            if (((object)left == null) || ((object)right == null))
+                return false;
+
+           return  (Math.Abs(left.EntityLabel) == Math.Abs(right.EntityLabel)) && (left.ModelOf == right.ModelOf);
+          
+        }
+
+        public static bool operator !=(IfcRoot left, IfcRoot right)
+        {
+            return !(left == right);
+        }
 
         #region IPersistIfcEntity Members
 
@@ -70,7 +105,7 @@ namespace Xbim.Ifc2x3.Kernel
             if (write)
             {
                 _model.Activate(this, write);
-                if (_ownerHistory != _model.OwnerHistoryAddObject)
+                if (_ownerHistory != (_model.OwnerHistoryAddObject as IfcOwnerHistory))
                 {
                     Transaction.AddPropertyChange(v => OwnerHistory = v, _ownerHistory, (IfcOwnerHistory)_model.OwnerHistoryModifyObject);
                     ((ISupportChangeNotification)this).NotifyPropertyChanging("OwnerHistory");

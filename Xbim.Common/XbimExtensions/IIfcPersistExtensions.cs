@@ -67,11 +67,13 @@ namespace Xbim.XbimExtensions
             if (iPropChanged != null)
             {
                 target.Activate(true);
-                Transaction.AddPropertyChange(setter, field, newValue);
+               // Transaction.AddPropertyChange(setter, field, newValue);
                 
                 iPropChanged.NotifyPropertyChanging(notifyPropertyName);
                 field = newValue;
+                //target.ModelOf.Update(target);
                 iPropChanged.NotifyPropertyChanged(notifyPropertyName);
+                
             }
             else
                 throw new Exception(
@@ -79,5 +81,6 @@ namespace Xbim.XbimExtensions
                         "Request to Notify Property Changes on type {0} that does not support ISupportChangeNotification",
                         target.GetType().Name));
         }
+
     }
 }

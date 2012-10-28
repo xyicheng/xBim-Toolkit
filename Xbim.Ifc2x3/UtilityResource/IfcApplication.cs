@@ -29,7 +29,41 @@ namespace Xbim.Ifc2x3.UtilityResource
     public class IfcApplication : IPersistIfcEntity, ISupportChangeNotification, INotifyPropertyChanged,
                                   INotifyPropertyChanging
     {
+        public override bool Equals(object obj)
+        {
+            // Check for null
+            if (obj == null) return false;
 
+            // Check for type
+            if (this.GetType() != obj.GetType()) return false;
+
+            // Cast as IfcRoot
+            IfcApplication root = (IfcApplication)obj;
+            return this == root;
+        }
+        public override int GetHashCode()
+        {
+            return Math.Abs(_entityLabel); //good enough as most entities will be in collections of  only one model, equals distinguishes for model
+        }
+
+        public static bool operator ==(IfcApplication left, IfcApplication right)
+        {
+            // If both are null, or both are same instance, return true.
+            if (System.Object.ReferenceEquals(left, right))
+                return true;
+
+            // If one is null, but not both, return false.
+            if (((object)left == null) || ((object)right == null))
+                return false;
+
+            return (Math.Abs(left.EntityLabel) == Math.Abs(right.EntityLabel)) && (left.ModelOf == right.ModelOf);
+
+        }
+
+        public static bool operator !=(IfcApplication left, IfcApplication right)
+        {
+            return !(left == right);
+        }
         #region IPersistIfcEntity Members
 
         private int _entityLabel;
@@ -192,34 +226,7 @@ namespace Xbim.Ifc2x3.UtilityResource
 
         #endregion
 
-        #region Operators
-
-        public override bool Equals(object obj)
-        {
-            IfcApplication app = obj as IfcApplication;
-            if (app == null) return false;
-            return (app.ApplicationIdentifier == ApplicationIdentifier
-                    && app.ApplicationDeveloper.Name == ApplicationDeveloper.Name
-                    && app.ApplicationFullName == ApplicationFullName
-                    && app.Version == Version);
-        }
-
-        public static bool operator ==(IfcApplication obj1, IfcApplication obj2)
-        {
-            return Equals(obj1, obj2);
-        }
-
-        public static bool operator !=(IfcApplication obj1, IfcApplication obj2)
-        {
-            return !Equals(obj1, obj2);
-        }
-
-        public override int GetHashCode()
-        {
-            return base.GetHashCode();
-        }
-
-        #endregion
+    
 
         #region INotifyPropertyChanged Members
 

@@ -320,11 +320,11 @@ namespace Xbim
 							IEnumerable<IfcRelProjectsElement^>^ projections = element->HasProjections;
 							IEnumerable<IfcRelVoidsElement^>^ openings = element->HasOpenings;
 							
-							if(( Enumerable::Any(openings) || Enumerable::Any(projections)))
+							if(( Enumerable::Any(openings) /*|| Enumerable::Any(projections)*/)) //for now lets ignore projections
 							{
 								List<IXbimGeometryModel^>^ projectionSolids = gcnew List<IXbimGeometryModel^>();
 								List<IXbimGeometryModel^>^ openingSolids = gcnew List<IXbimGeometryModel^>();
-								for each(IfcRelProjectsElement^ rel in projections)
+								/*for each(IfcRelProjectsElement^ rel in projections)
 								{
 									IfcFeatureElementAddition^ fe = rel->RelatedFeatureElement;
 									if(fe->Representation!=nullptr)
@@ -338,7 +338,7 @@ namespace Xbim
 										im = im->CopyTo(fe->ObjectPlacement);
 										projectionSolids->Add(im);
 									}
-								}
+								}*/
 
 								for each(IfcRelVoidsElement^ rel in openings)
 								{

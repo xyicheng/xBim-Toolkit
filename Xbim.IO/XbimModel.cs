@@ -36,7 +36,7 @@ namespace Xbim.IO
 
         #region Fields
 
-      
+
 
         #region Logging Fields
 
@@ -45,32 +45,46 @@ namespace Xbim.IO
         #endregion
 
         #region Model state fields
-        
-        protected IfcPersistedInstanceCache Cached;
+
+        private IfcPersistedInstanceCache cache;
+        internal IfcPersistedInstanceCache Cache
+        {
+            get { return cache; }
+
+        }
         protected UndoRedoSession undoRedoSession;
         protected IIfcFileHeader header;
         private bool disposed = false;
         private XbimModelFactors _modelFactors;
         private XbimInstanceCollection instances;
+        private XbimEntityCursor editTransactionEntityCursor;
+
+        readonly private string xBimTransactionDirectory ;
+        private static string xbimLogDirectory = "XbimTransactions.Log";
+
+        public string XbimTransactionDirectory
+        {
+            get { return xBimTransactionDirectory; }
+        }
 
         #endregion
-        
+
         #endregion
 
         public XbimModel()
         {
-            Cached = new IfcPersistedInstanceCache(this);
-            instances = new XbimInstanceCollection(this.Cached);
+            cache = new IfcPersistedInstanceCache(this);
+            instances = new XbimInstanceCollection(this.cache);
         }
         public string DatabaseName
         {
-            get { return Cached.DatabaseName; }
+            get { return cache.DatabaseName; }
         }
 
         public IXbimInstanceCollection Instances
         {
             get { return instances; }
-            
+
         }
 
         public XbimModelFactors GetModelFactors
@@ -135,7 +149,7 @@ namespace Xbim.IO
         /// <returns></returns>
         internal XbimGeometryCursor GetGeometryTable()
         {
-            return Cached.GetGeometryTable();
+            return cache.GetGeometryTable();
         }
 
         /// <summary>
@@ -144,7 +158,7 @@ namespace Xbim.IO
         /// <param name="table"></param>
         internal void FreeTable(XbimGeometryCursor table)
         {
-            Cached.FreeTable(table);
+            cache.FreeTable(table);
         }
 
         /// <summary>
@@ -153,82 +167,52 @@ namespace Xbim.IO
         /// <param name="table"></param>
         internal void FreeTable(XbimEntityCursor table)
         {
-            Cached.FreeTable(table);
+            cache.FreeTable(table);
         }
 
         //Loads the property data of an entity, if it is not already loaded
         int IModel.Activate(IPersistIfcEntity entity, bool write)
         {
-          
+
             if (write) //we want to activate for reading
             {
-                if (!Transaction.IsRollingBack)
-                   Cached.AddModified(entity);
+                //if (!Transaction.IsRollingBack)
+                cache.AddModified(entity);
             }
             else //we want to read so load from db if necessary
             {
-                Cached.Activate(entity);
+                cache.Activate(entity);
             }
             return Math.Abs(entity.EntityLabel);
         }
 
         #region Transaction support
-        
-       /// <summary>
-       /// Set up the owner history objects for add, delete and modify operations
-       /// </summary>
-        private void InitialiseDefaultOwnership()
-        {
-            //IfcPerson person = New<IfcPerson>();
 
-            //IfcOrganization organization = New<IfcOrganization>();
-            //IfcPersonAndOrganization owninguser = New<IfcPersonAndOrganization>(po =>
-            //{
-            //    po.TheOrganization = organization;
-            //    po.ThePerson = person;
-            //});
-            //Transaction.AddPropertyChange<IfcPersonAndOrganization>(m => _defaultOwningUser = m, _defaultOwningUser, owninguser);
-            //IfcApplication app = New<IfcApplication>(a => a.ApplicationDeveloper = New<IfcOrganization>());
-            //Transaction.AddPropertyChange<IfcApplication>(m => _defaultOwningApplication = m, _defaultOwningApplication, app);
-            //IfcOwnerHistory oh = New<IfcOwnerHistory>();
-            //oh.OwningUser = _defaultOwningUser;
-            //oh.OwningApplication = _defaultOwningApplication;
-            //oh.ChangeAction = IfcChangeActionEnum.ADDED;
-            //Transaction.AddPropertyChange<IfcOwnerHistory>(m => _ownerHistoryAddObject = m, _ownerHistoryAddObject, oh);
-            //_defaultOwningUser = owninguser;
-            //_defaultOwningApplication = app;
-            //_ownerHistoryAddObject = oh;
-            //IfcOwnerHistory ohc = New<IfcOwnerHistory>();
-            //ohc.OwningUser = _defaultOwningUser;
-            //ohc.OwningApplication = _defaultOwningApplication;
-            //ohc.ChangeAction = IfcChangeActionEnum.MODIFIED;
-            //Transaction.AddPropertyChange<IfcOwnerHistory>(m => _ownerHistoryModifyObject = m, _ownerHistoryModifyObject, ohc);
-            //_defaultOwningUser = owninguser;
-            //_defaultOwningApplication = app;
-            //_ownerHistoryModifyObject = ohc;
-        }
 
-        protected Transaction BeginEdit(string operationName)
-        {
-            if (undoRedoSession == null)
-            {
-                undoRedoSession = new UndoRedoSession();
-                Transaction txn = undoRedoSession.Begin(operationName);
-                InitialiseDefaultOwnership();
-                return txn;
-            }
-            else return null;
-        }
+
+      
 
         public XbimReadWriteTransaction BeginTransaction()
         {
             return this.BeginTransaction(null);
         }
 
+
         public XbimReadWriteTransaction BeginTransaction(string operationName)
         {
-           
-            return new XbimReadWriteTransaction(Cached);
+            if (editTransactionEntityCursor != null) throw new XbimException("Attempt to begin another transaction whilst one is already running");
+            try
+            {
+                editTransactionEntityCursor = GetEntityTable();
+                cache.BeginCaching();
+                return new XbimReadWriteTransaction(this, editTransactionEntityCursor.BeginLazyTransaction());
+            }
+            catch (Exception e)
+            {
+
+                throw new XbimException("Failed to create ReadWrite transaction", e);
+            }
+
             //Transaction txn = BeginEdit(operationName);
             ////Debug.Assert(ToWrite.Count == 0);
             //if (txn == null) txn = undoRedoSession.Begin(operationName);
@@ -236,7 +220,7 @@ namespace Xbim.IO
             ////txn.Reversed += TransactionReversed;
             //return txn;
         }
- 
+
         public IfcOwnerHistory OwnerHistoryModifyObject
         {
             get
@@ -261,7 +245,7 @@ namespace Xbim.IO
             }
         }
 
-        
+
 
         public IfcApplication DefaultOwningApplication
         {
@@ -275,9 +259,9 @@ namespace Xbim.IO
         #endregion
 
         #region IModel interface implementation
-        
 
-  
+
+
         /// <summary>
         /// Registers an entity for deletion
         /// </summary>
@@ -285,11 +269,11 @@ namespace Xbim.IO
         /// <returns></returns>
         public void Delete(IPersistIfcEntity instance)
         {
-            Cached.Delete_Reversable(instance);
+            cache.Delete_Reversable(instance);
         }
 
-       
-       
+
+
 
 
         /// <summary>
@@ -303,11 +287,11 @@ namespace Xbim.IO
         /// <returns></returns>
         internal IPersistIfcEntity GetInstanceVolatile(int label)
         {
-            return Cached.GetInstance(label, true, true);
+            return cache.GetInstance(label, true, true);
         }
 
 
-       
+
         /// <summary>
         /// Returns the total number of Geometry objects in the model
         /// </summary>
@@ -315,7 +299,7 @@ namespace Xbim.IO
         {
             get
             {
-                return Cached.GeometriesCount();
+                return cache.GeometriesCount();
             }
         }
 
@@ -339,21 +323,21 @@ namespace Xbim.IO
                 throw new FileNotFoundException(fullPath + " file was not found");
             if (string.IsNullOrWhiteSpace(xbimDbName))
                 xbimDbName = Path.ChangeExtension(importFrom, "xBIM");
-            
+
             XbimStorageType toImportStorageType = StorageType(importFrom);
             switch (toImportStorageType)
             {
                 case XbimStorageType.IFCXML:
-                    Cached.ImportIfcXml(xbimDbName, importFrom, progDelegate);
+                    cache.ImportIfcXml(xbimDbName, importFrom, progDelegate);
                     break;
                 case XbimStorageType.IFC:
-                    Cached.ImportIfc(xbimDbName, importFrom, progDelegate);
+                    cache.ImportIfc(xbimDbName, importFrom, progDelegate);
                     break;
                 case XbimStorageType.IFCZIP:
-                    Cached.ImportIfcZip(importFrom, progDelegate);
+                    cache.ImportIfcZip(importFrom, progDelegate);
                     break;
                 case XbimStorageType.XBIM:
-                    Cached.ImportXbim(importFrom, progDelegate);
+                    cache.ImportXbim(importFrom, progDelegate);
                     break;
                 case XbimStorageType.INVALID:
                 default:
@@ -361,7 +345,7 @@ namespace Xbim.IO
             }
             return true;
         }
-        
+
 
 
         /// <summary>
@@ -376,10 +360,7 @@ namespace Xbim.IO
             {
                 XbimModel sourceModel = new XbimModel();
                 sourceModel.Open(sourceFileName, XbimDBAccess.Exclusive);
-                XbimModel targetModel = new XbimModel();
-                if (!targetModel.Create(targetFileName))
-                    throw new XbimException("Error Creating database " + targetFileName);
-                targetModel.Open(sourceFileName, XbimDBAccess.Exclusive);
+                XbimModel targetModel = XbimModel.CreateModel(targetFileName, XbimDBAccess.Exclusive);
                 sourceModel.Compact(targetModel);
                 return false;
             }
@@ -392,51 +373,55 @@ namespace Xbim.IO
 
         }
 
-       /// <summary>
-        ///  Creates a new Xbim Database 
-       /// </summary>
-       /// <param name="dbFileName">Name of the Xbim file</param>
-       /// <returns></returns>
-        public bool Create(string dbFileName)
+        /// <summary>
+        ///  Creates and opens a new Xbim Database
+        /// </summary>
+        /// <param name="dbFileName">Name of the Xbim file</param>
+        /// <returns></returns>
+        static public XbimModel CreateModel(string dbFileName, XbimDBAccess access = XbimDBAccess.ReadWrite)
         {
             try
             {
-                Close();
-                Cached.CreateDatabase(dbFileName);
-                return true;
+                if (string.IsNullOrWhiteSpace(Path.GetExtension(dbFileName)))
+                    dbFileName += ".xBIM";
+                IfcPersistedInstanceCache.CreateDatabase(dbFileName);
+                XbimModel model = new XbimModel();
+                model.Open(dbFileName, access);
+                return model;
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                return false;
+                throw new XbimException("Failed to create and open xBIM file \'" + dbFileName + "\'\n" + e.Message, e);
             }
-
+                
         }
 
+       
 
         #endregion
 
 
         public byte[] GetEntityBinaryData(IPersistIfcEntity entity)
         {
-           
-            if (entity.Activated ) //we have it in memory but not written to store yet
-            { 
+
+            if (entity.Activated) //we have it in memory but not written to store yet
+            {
                 MemoryStream entityStream = new MemoryStream(4096);
                 BinaryWriter entityWriter = new BinaryWriter(entityStream);
                 entity.WriteEntity(entityWriter);
                 return entityStream.ToArray();
             }
             else //it is in a persisted cache but hasn't been loaded yet
-            { 
-                return Cached.GetEntityBinaryData(entity);
+            {
+                return cache.GetEntityBinaryData(entity);
             }
         }
 
-       
-        
 
 
-       
+
+
+
 
 
         public IIfcFileHeader Header
@@ -446,7 +431,7 @@ namespace Xbim.IO
             set { header = value; }
         }
 
-       
+
         #region Validation
 
         public string Validate(ValidationFlags validateFlags)
@@ -634,7 +619,7 @@ namespace Xbim.IO
 
 
         #region Part 21 parse functions
-        
+
 
         private IPersistIfc _part21Parser_EntityCreate(string className, long? label, bool headerEntity,
                                                      out int[] reqParams)
@@ -658,7 +643,7 @@ namespace Xbim.IO
                 return CreateInstance(className, label);
         }
 
-        
+
         #endregion
 
 
@@ -686,10 +671,10 @@ namespace Xbim.IO
             this._modelFactors = null;
             this.undoRedoSession = null;
             this.header = null;
-            Cached.Close();
+            cache.Close();
         }
 
-       
+
 
         #endregion
 
@@ -708,7 +693,7 @@ namespace Xbim.IO
             try
             {
                 Close();
-                Cached.Open(fileName, accessMode); //opens the database
+                cache.Open(fileName, accessMode); //opens the database
                 return true;
             }
             catch (Exception e)
@@ -724,10 +709,10 @@ namespace Xbim.IO
 
             try
             {
-                Cached.SaveAs(storageType, outputFileName, progress);
+                cache.SaveAs(storageType, outputFileName, progress);
                 return true;
             }
-            catch (Exception e )
+            catch (Exception e)
             {
                 Logger.ErrorFormat("Failed to Save file as {0}\n{1}", outputFileName, e.Message);
                 return false;
@@ -747,7 +732,7 @@ namespace Xbim.IO
         /// <returns></returns>
         public long InstancesOfTypeCount(Type t)
         {
-           return Cached.InstancesOfTypeCount(t);
+            return cache.InstancesOfTypeCount(t);
         }
 
 
@@ -792,13 +777,13 @@ namespace Xbim.IO
             return "";
         }
 
-       
-       
+
+
 
 
         #region Part21 File Writer support
-        
-        
+
+
         /// <summary>
         /// Writes a Part 21 Header
         /// </summary>
@@ -909,11 +894,11 @@ namespace Xbim.IO
         /// <param name="ifcType"></param>
         /// <param name="label"></param>
         /// <returns></returns>
-        internal IPersistIfc CreateInstance(Type ifcType, long ?label)
+        internal IPersistIfc CreateInstance(Type ifcType, long? label)
         {
 
             throw new NotImplementedException("To do");
-             //return instances.AddNew(this,ifcType,label.Value);
+            //return instances.AddNew(this,ifcType,label.Value);
 
         }
 
@@ -921,7 +906,7 @@ namespace Xbim.IO
 
         public void Print()
         {
-            Cached.Print();
+            cache.Print();
         }
 
 
@@ -931,35 +916,35 @@ namespace Xbim.IO
 
         public IPersistIfcEntity IfcProject
         {
-            get 
+            get
             {
-                return Cached == null ? null : Cached.OfType<IfcProject>().FirstOrDefault(); 
+                return cache == null ? null : cache.OfType<IfcProject>().FirstOrDefault();
             }
         }
 
         public IEnumerable<IPersistIfcEntity> IfcProducts
         {
-            get { return Cached == null ? null : Cached.OfType<IfcProduct>(); }
+            get { return cache == null ? null : cache.OfType<IfcProduct>(); }
         }
 
         IPersistIfcEntity IModel.OwnerHistoryAddObject
         {
-            get { throw new NotImplementedException(); }
+            get { return instances.OwnerHistoryAddObject; }
         }
 
         IPersistIfcEntity IModel.OwnerHistoryModifyObject
         {
-            get { throw new NotImplementedException(); }
+            get { return instances.OwnerHistoryModifyObject; }
         }
 
         IPersistIfcEntity IModel.DefaultOwningApplication
         {
-            get { throw new NotImplementedException(); }
+            get { return instances.DefaultOwningApplication; }
         }
 
         IPersistIfcEntity IModel.DefaultOwningUser
         {
-            get { throw new NotImplementedException(); }
+            get { return instances.DefaultOwningUser; }
         }
 
         public int Validate(TextWriter errStream, ReportProgressDelegate progressDelegate, ValidationFlags? validateFlags = null)
@@ -971,7 +956,7 @@ namespace Xbim.IO
         {
             Dispose(false);
         }
-        
+
         public void Dispose()
         {
             Dispose(true);
@@ -980,7 +965,7 @@ namespace Xbim.IO
             // from executing a second time.
             GC.SuppressFinalize(this);
         }
-        
+
         protected void Dispose(bool disposing)
         {
             if (!this.disposed)
@@ -988,7 +973,7 @@ namespace Xbim.IO
                 // If disposing equals true, dispose all managed 
                 // and unmanaged resources.
                 if (disposing)
-                  Close();
+                    Close();
             }
             disposed = true;
         }
@@ -997,9 +982,9 @@ namespace Xbim.IO
 
         internal XbimGeometryData GetGeometryData(IfcProduct product, XbimGeometryType geomType)
         {
-            return Cached.GetGeometry(product, geomType);
+            return cache.GetGeometry(product, geomType);
         }
-        public IDictionary<string,XbimViewDefinition> Views
+        public IDictionary<string, XbimViewDefinition> Views
         {
             get
             {
@@ -1011,18 +996,18 @@ namespace Xbim.IO
 
         public IEnumerable<XbimGeometryData> Shapes(XbimGeometryType ofType)
         {
-            foreach (var shape in Cached.Shapes(ofType))
+            foreach (var shape in cache.Shapes(ofType))
             {
                 yield return shape;
             }
-          
+
         }
 
 
 
         internal XbimEntityCursor GetEntityTable()
         {
-            return Cached.GetEntityTable();
+            return cache.GetEntityTable();
         }
 
         internal void Compact(XbimModel targetModel)
@@ -1056,11 +1041,45 @@ namespace Xbim.IO
         /// <returns></returns>
         public T InsertCopy<T>(T toCopy, XbimInstanceHandleMap mappings, bool includeInverses = false) where T : IPersistIfcEntity
         {
-            return Cached.InsertCopy<T>(toCopy, mappings, includeInverses);
+            return cache.InsertCopy<T>(toCopy, mappings, includeInverses);
         }
 
-      
+        internal void EndTransaction()
+        {
+            FreeTable(editTransactionEntityCursor); //release the cursor back to the pool
+            cache.EndCaching();
+            editTransactionEntityCursor = null;
+        }
+        /// <summary>
+        /// This is the path Xbim will use to store database transactions files
+        /// Note this can only be set before an instance of XbimModel is created
+        /// </summary>
+        public static string XbimLogDirectory
+        {
+            get
+            {
+                return xbimLogDirectory;
+            }
+            set
+            {
+                if (IfcPersistedInstanceCache.HasDatabaseInstance) 
+                    Debug.Assert(false, "Attempt to set a log path after the database instance has been initialised");
+                else
+                    xbimLogDirectory = value;
+            }
+        }
 
-      
+
+
+        internal void Flush()
+        {
+            cache.Write(editTransactionEntityCursor);
+        }
+
+        internal XbimEntityCursor GetTransactingCursor()
+        {
+            Debug.Assert(editTransactionEntityCursor != null);
+            return editTransactionEntityCursor;
+        }
     }
 }

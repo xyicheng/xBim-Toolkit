@@ -33,7 +33,7 @@ namespace Xbim.IO
         public void Write(XbimModel model, TextWriter output)
         {
             _written = new HashSet<long>();
-            output.Write(HeaderAsString(model.Header));
+            output.Write(HeaderAsString(model.Header ?? new IfcFileHeader()));
             foreach (int item in model.Instances /*.Types.OrderBy(t=>t.Name)*/)
             {
                 IPersistIfcEntity entity = model.GetInstanceVolatile(item);

@@ -27,7 +27,41 @@ namespace Xbim.Ifc2x3.MeasureResource
     public class IfcDimensionalExponents : IPersistIfcEntity, ISupportChangeNotification, INotifyPropertyChanged,
                                            INotifyPropertyChanging
     {
+        public override bool Equals(object obj)
+        {
+            // Check for null
+            if (obj == null) return false;
 
+            // Check for type
+            if (this.GetType() != obj.GetType()) return false;
+
+            // Cast as IfcRoot
+            IfcDimensionalExponents root = (IfcDimensionalExponents)obj;
+            return this == root;
+        }
+        public override int GetHashCode()
+        {
+            return Math.Abs(_entityLabel); //good enough as most entities will be in collections of  only one model, equals distinguishes for model
+        }
+
+        public static bool operator ==(IfcDimensionalExponents left, IfcDimensionalExponents right)
+        {
+            // If both are null, or both are same instance, return true.
+            if (System.Object.ReferenceEquals(left, right))
+                return true;
+
+            // If one is null, but not both, return false.
+            if (((object)left == null) || ((object)right == null))
+                return false;
+
+            return (Math.Abs(left.EntityLabel) == Math.Abs(right.EntityLabel)) && (left.ModelOf == right.ModelOf);
+
+        }
+
+        public static bool operator !=(IfcDimensionalExponents left, IfcDimensionalExponents right)
+        {
+            return !(left == right);
+        }
         #region IPersistIfcEntity Members
 
         private int _entityLabel;
@@ -213,34 +247,7 @@ namespace Xbim.Ifc2x3.MeasureResource
             get { return _exponents == null ? 0 : _exponents[index]; }
         }
 
-        public override bool Equals(object obj)
-        {
-            if (obj == null)
-                return false;
-
-            if (GetType() != obj.GetType())
-                return false;
-            for (int i = 0; i < 7; i++)
-            {
-                if (this[i] != ((IfcDimensionalExponents) obj)[i]) return false;
-            }
-            return true;
-        }
-
-        public static bool operator ==(IfcDimensionalExponents dim1, IfcDimensionalExponents dim2)
-        {
-            return Equals(dim1, dim2);
-        }
-
-        public static bool operator !=(IfcDimensionalExponents dim1, IfcDimensionalExponents dim2)
-        {
-            return !Equals(dim1, dim2);
-        }
-
-        public override int GetHashCode()
-        {
-            return base.GetHashCode();
-        }
+       
 
         public static IfcDimensionalExponents DimensionsForSiUnit(IfcSIUnitName? siUnit)
         {

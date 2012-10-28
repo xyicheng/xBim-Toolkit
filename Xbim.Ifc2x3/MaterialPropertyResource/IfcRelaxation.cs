@@ -18,6 +18,42 @@ namespace Xbim.Ifc2x3.MaterialPropertyResource
     public class IfcRelaxation : IPersistIfcEntity, IPersistIfc, 
                                  INotifyPropertyChanged, ISupportChangeNotification, INotifyPropertyChanging
     {
+
+        public override bool Equals(object obj)
+        {
+            // Check for null
+            if (obj == null) return false;
+
+            // Check for type
+            if (this.GetType() != obj.GetType()) return false;
+
+            // Cast as IfcRoot
+            IfcRelaxation root = (IfcRelaxation)obj;
+            return this == root;
+        }
+        public override int GetHashCode()
+        {
+            return Math.Abs(_entityLabel); //good enough as most entities will be in collections of  only one model, equals distinguishes for model
+        }
+
+        public static bool operator ==(IfcRelaxation left, IfcRelaxation right)
+        {
+            // If both are null, or both are same instance, return true.
+            if (System.Object.ReferenceEquals(left, right))
+                return true;
+
+            // If one is null, but not both, return false.
+            if (((object)left == null) || ((object)right == null))
+                return false;
+
+            return (Math.Abs(left.EntityLabel) == Math.Abs(right.EntityLabel)) && (left.ModelOf == right.ModelOf);
+
+        }
+
+        public static bool operator !=(IfcRelaxation left, IfcRelaxation right)
+        {
+            return !(left == right);
+        }
         #region Fields
 
         private IfcNormalisedRatioMeasure _relaxationValue; 
@@ -92,12 +128,12 @@ namespace Xbim.Ifc2x3.MaterialPropertyResource
         private int _entityLabel;
         private IModel _model;
 
-        IModel IPersistIfcEntity.ModelOf
+        public IModel ModelOf
         {
             get { return _model; }
         }
 
-        void IPersistIfcEntity.Bind(IModel model, int entityLabel)
+        public void Bind(IModel model, int entityLabel)
         {
             _model = model;
             _entityLabel = entityLabel;
@@ -166,6 +202,8 @@ namespace Xbim.Ifc2x3.MaterialPropertyResource
         }
 
         #endregion
-        
+
+
+
     }
 }

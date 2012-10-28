@@ -201,7 +201,7 @@ namespace Xbim.COBie.Data
         /// <returns>IEnumerable of IfcRelAssociatesDocument objects</returns>
         public  IEnumerable<IfcRelAssociatesDocument> DocumentInformationForObjects (IfcDocumentInformation ifcDocumentInformation )
         {
-            return Model.Instances.Where<IfcRelAssociatesDocument>(irad => irad.RelatingDocument == ifcDocumentInformation);
+            return Model.Instances.Where<IfcRelAssociatesDocument>(irad => (irad.RelatingDocument as IfcDocumentInformation) == ifcDocumentInformation);
         }
 
 

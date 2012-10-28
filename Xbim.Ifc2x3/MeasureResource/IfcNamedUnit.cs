@@ -26,7 +26,41 @@ namespace Xbim.Ifc2x3.MeasureResource
     public abstract class IfcNamedUnit : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity, IfcUnit,
                                          INotifyPropertyChanging
     {
+        public override bool Equals(object obj)
+        {
+            // Check for null
+            if (obj == null) return false;
 
+            // Check for type
+            if (this.GetType() != obj.GetType()) return false;
+
+            // Cast as IfcRoot
+            IfcNamedUnit root = (IfcNamedUnit)obj;
+            return this == root;
+        }
+        public override int GetHashCode()
+        {
+            return Math.Abs(_entityLabel); //good enough as most entities will be in collections of  only one model, equals distinguishes for model
+        }
+
+        public static bool operator ==(IfcNamedUnit left, IfcNamedUnit right)
+        {
+            // If both are null, or both are same instance, return true.
+            if (System.Object.ReferenceEquals(left, right))
+                return true;
+
+            // If one is null, but not both, return false.
+            if (((object)left == null) || ((object)right == null))
+                return false;
+
+            return (Math.Abs(left.EntityLabel) == Math.Abs(right.EntityLabel)) && (left.ModelOf == right.ModelOf);
+
+        }
+
+        public static bool operator !=(IfcNamedUnit left, IfcNamedUnit right)
+        {
+            return !(left == right);
+        }
         #region IPersistIfcEntity Members
 
         private int _entityLabel;
@@ -68,14 +102,7 @@ namespace Xbim.Ifc2x3.MeasureResource
 
         #endregion
 
-        #region Overrides
-
-        public override int GetHashCode()
-        {
-            return _unitType.GetHashCode();
-        }
-
-        #endregion
+       
 
         #region Part 21 Step file Parse routines
 
