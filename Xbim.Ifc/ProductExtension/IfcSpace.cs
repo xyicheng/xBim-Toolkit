@@ -223,7 +223,7 @@ namespace Xbim.Ifc.ProductExtension
         /// </summary>
         [XmlIgnore]
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class)]
-        protected IEnumerable<IfcRelSpaceBoundary> BoundedBy
+        public IEnumerable<IfcRelSpaceBoundary> BoundedBy
         {
             get { return ModelManager.ModelOf(this).InstancesWhere<IfcRelSpaceBoundary>(r => r.RelatingSpace == this); }
         }
