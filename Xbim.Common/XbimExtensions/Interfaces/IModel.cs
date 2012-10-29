@@ -83,7 +83,7 @@ namespace Xbim.XbimExtensions.Interfaces
 
         bool CreateFrom(string importFrom, string xbimDbName = null, ReportProgressDelegate progDelegate = null);
 
-        bool SaveAs(string saveFileName, XbimStorageType storageType, ReportProgressDelegate progDelegate = null);
+        bool SaveAs(string saveFileName, XbimStorageType? storageType = null, ReportProgressDelegate progDelegate = null);
 
         bool Open(string fileName, XbimDBAccess accessMode = XbimDBAccess.Read, ReportProgressDelegate progDelegate = null);
         

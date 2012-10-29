@@ -892,7 +892,7 @@ namespace Xbim.IO
             }
             finally
             {
-                instanceCache.FreeTable(entityTable);
+                
             }
             return header;
         }

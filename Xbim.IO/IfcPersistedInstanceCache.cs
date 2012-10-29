@@ -18,6 +18,9 @@ using System.Diagnostics;
 using Xbim.Ifc2x3.ProductExtension;
 using Xbim.Ifc2x3.GeometryResource;
 using Microsoft.Isam.Esent.Interop.Windows7;
+using System.Globalization;
+using ICSharpCode.SharpZipLib.Zip;
+
 
 namespace Xbim.IO
 {
@@ -27,6 +30,8 @@ namespace Xbim.IO
         #region ESE Database 
 
         private static Instance _jetInstance;
+        private Session _session;
+        private JET_DBID _databaseId;
         static int cacheSizeInBytes = 64 * 1024 * 1024;
         /// <summary>
         /// Holds the session and transaction state
@@ -54,7 +59,6 @@ namespace Xbim.IO
         #endregion
 
         private string _databaseName;
-        private string _logDirectory;
         private XbimModel _model;
         private bool disposed = false;
         static private ComparePropertyInfo comparePropInfo = new ComparePropertyInfo();
@@ -78,7 +82,7 @@ namespace Xbim.IO
             SystemParameters.DatabasePageSize = 8192;
             SystemParameters.CacheSizeMin = cacheSizeInBytes / SystemParameters.DatabasePageSize;
             SystemParameters.CacheSizeMax = cacheSizeInBytes / SystemParameters.DatabasePageSize;
-            _jetInstance = CreateInstance("XbimReadWriteInstance", XbimModel.XbimLogDirectory);
+            _jetInstance = CreateInstance("XbimInstance", XbimModel.XbimTempDirectory);
         }
 
         public IfcPersistedInstanceCache(XbimModel model)
@@ -157,6 +161,12 @@ namespace Xbim.IO
             OpenDatabaseGrbit openMode = OpenDatabaseGrbit.None;
             if (_accessMode == XbimDBAccess.Read)
                 openMode = OpenDatabaseGrbit.ReadOnly;
+            if (_session == null)
+            {
+                _session = new Session(_jetInstance);
+                Api.JetAttachDatabase(_session, _databaseName, openMode == OpenDatabaseGrbit.ReadOnly ? AttachDatabaseGrbit.ReadOnly : AttachDatabaseGrbit.None);
+                //Api.JetOpenDatabase(_session, _databaseName, String.Empty, out _databaseId, openMode); 
+            }
             return new XbimEntityCursor(_jetInstance, _databaseName, openMode);
         }
 
@@ -179,7 +189,17 @@ namespace Xbim.IO
                     }
                 }
             }
-            return new XbimGeometryCursor(_jetInstance, _databaseName); ;
+            OpenDatabaseGrbit openMode = OpenDatabaseGrbit.None;
+            if (_accessMode == XbimDBAccess.Read)
+                openMode = OpenDatabaseGrbit.ReadOnly;
+            if (_session == null)
+            {
+                _session = new Session(_jetInstance);
+                Api.JetAttachDatabase(_session, _databaseName, openMode == OpenDatabaseGrbit.ReadOnly ? AttachDatabaseGrbit.ReadOnly : AttachDatabaseGrbit.None);
+                //Api.JetOpenDatabase(_session, _databaseName, String.Empty, out _databaseId, openMode);
+               
+            }
+            return new XbimGeometryCursor(_jetInstance, _databaseName, openMode);
         }
 
         /// <summary>
@@ -243,10 +263,7 @@ namespace Xbim.IO
             Close();
             _databaseName = filename; //success store the name of the DB file
             _accessMode = accessMode;
-            //if (accessMode == XbimDBAccess.ReadNoCache || accessMode == XbimDBAccess.ReadWriteNoCache)
-                caching = false;
-            //else
-            //    caching = true;
+            caching = false;  
             XbimEntityCursor entTable = GetEntityTable();
             try
             {
@@ -271,6 +288,7 @@ namespace Xbim.IO
         /// </summary>
         public void Close()
         {
+
            
             for (int i = 0; i < this._entityTables.Length; ++i)
             {
@@ -290,8 +308,15 @@ namespace Xbim.IO
             }
             EndCaching();
 
-            this._databaseName = null;
 
+            if (_session != null)
+            {
+                //Api.JetCloseDatabase(_session, _databaseId, CloseDatabaseGrbit.None);
+                Api.JetDetachDatabase(_session, _databaseName);
+                this._databaseName = null;
+                _session.Dispose();
+                _session = null;
+            }
         }
 
 
@@ -335,28 +360,182 @@ namespace Xbim.IO
                 throw e;
             }
         }
-
-
-
-        static private Instance CreateInstance(string instanceName, string logDirectory, bool recovery = false)
+        /// <summary>
+        /// Imports an Ifc Zip file
+        /// </summary>
+        /// <param name="toImportFilename"></param>
+        /// <param name="progressHandler"></param>
+        public void ImportIfcZip(string xbimDbName, string toImportFilename, ReportProgressDelegate progressHandler = null)
         {
+            CreateDatabase(xbimDbName);
+            Open(xbimDbName, XbimDBAccess.Exclusive);
+            var table = GetEntityTable();
+            try 
+            {
+                using (FileStream fileStream = File.OpenRead(toImportFilename))
+                {
+                    // used because - The ZipInputStream has one major advantage over using ZipFile to read a zip: 
+                    // it can read from an unseekable input stream - such as a WebClient download
+                    using (ZipInputStream zipStream = new ZipInputStream(fileStream))
+                    {
+                        ZipEntry entry = zipStream.GetNextEntry();
+                        while (entry != null)
+                        {
+                            string ext = Path.GetExtension(entry.Name);
+                            //look for a valid ifc supported file
+                            if (entry.IsFile &&
+                                (string.Compare(ext, ".ifc", true) == 0)
+                                )
+                            {
+                                using (ZipFile zipFile = new ZipFile(toImportFilename))
+                                {
+                                    using (var transaction = table.BeginLazyTransaction())
+                                    {
+                                        using (Stream reader = zipFile.GetInputStream(entry))
+                                        {
+                                            using (P21toIndexParser part21Parser = new P21toIndexParser(reader, table, transaction))
+                                            {
+                                                if (progressHandler != null) part21Parser.ProgressStatus += progressHandler;
+                                                part21Parser.Parse();
+                                                _model.Header = part21Parser.Header;
+                                                table.WriteHeader(part21Parser.Header);
+                                                if (progressHandler != null) part21Parser.ProgressStatus -= progressHandler;
+                                            }
+                                        }
+                                        transaction.Commit();
+                                    }
+                                    FreeTable(table);
+                                    Close();
+                                    return; // we only want the first file
+                                }
+                            }
+                            else if(string.Compare(ext, ".ifcxml") == 0)
+                            {
+                                using (ZipFile zipFile = new ZipFile(toImportFilename))
+                                {
+                                    using (var transaction = table.BeginLazyTransaction())
+                                    {
+                                        XmlReaderSettings settings = new XmlReaderSettings() { IgnoreComments = true, IgnoreWhitespace = false };
+                                        using (Stream xmlInStream = zipFile.GetInputStream(entry))
+                                        {
+                                            using (XmlReader xmlReader = XmlReader.Create(xmlInStream, settings))
+                                            {
+                                                IfcXmlReader reader = new IfcXmlReader();
+                                                _model.Header = reader.Read(this, table, xmlReader);
+                                                table.WriteHeader(_model.Header);
+                                            }
+                                        }
+                                        transaction.Commit();
+                                    }
+                                    FreeTable(table);
+                                    Close();
+                                    return;
+                                }
+                            }
 
+                            entry = zipStream.GetNextEntry(); //get next entry
+                        }
+                    }
+                }
+                FreeTable(table);
+                Close();
+                File.Delete(xbimDbName);
+            }
+            catch (Exception e)
+            {
+                FreeTable(table);
+                Close();
+                File.Delete(xbimDbName);
+                throw e;
+            }
 
+        }
 
+          
+                
+
+            
+           
+           
+
+        /// <summary>
+        /// Sets up the Esent directories, can only be call before the Init method of the instance
+        /// </summary>
+        
+        static string GetXbimTempDirectory()
+        {
+            //Directories are setup using the following strategy
+            //First look in the config file, then try and use windows temporary directory, then the current working directory
+            string tempDirectory = System.Configuration.ConfigurationManager.AppSettings["XbimTempDirectory"];
+            if (!IsValidDirectory(ref tempDirectory))
+            {
+                tempDirectory = Path.Combine(Path.GetTempPath(), "Xbim");
+                if (!IsValidDirectory(ref tempDirectory))
+                {
+                    tempDirectory = Path.Combine(Directory.GetCurrentDirectory(),"Xbim");
+                    if (!IsValidDirectory(ref tempDirectory))
+                        throw new XbimException("Unable to initialise the Xbim database engine, no write access. Please set a location for the XbimTempDirectory in the config file");
+                }
+            }
+            return tempDirectory;
+        }
+
+        /// <summary>
+        /// Checks the directory is writeable and modifies to be the full path
+        /// </summary>
+        /// <param name="tempDirectory"></param>
+        /// <returns></returns>
+        private static bool IsValidDirectory(ref string tempDirectory)
+        {
+            string tmpFileName = Guid.NewGuid().ToString();
+            string fullTmpFileName = "";
+            if (!string.IsNullOrWhiteSpace(tempDirectory))
+            {
+                tempDirectory = Path.GetFullPath(tempDirectory);
+                bool deleteDir = false;
+                try
+                {
+
+                    fullTmpFileName = Path.Combine(tempDirectory, tmpFileName);
+                    if (!Directory.Exists(tempDirectory))
+                    {
+                        Directory.CreateDirectory(tempDirectory);
+                        deleteDir = true;
+                    }
+                    using (FileStream fs = File.Create(fullTmpFileName)) { };
+                    return true;
+                }
+                catch (Exception)
+                {
+                    tempDirectory = null;
+                }
+                finally
+                {
+                    File.Delete(fullTmpFileName);
+                    if (deleteDir) Directory.Delete(tempDirectory);
+                }
+            }
+            return false;
+        }
+
+        static private Instance CreateInstance(string instanceName, string tempDirectory = null,  bool recovery = false)
+        {
+ 
             var jetInstance = new Instance(instanceName);
-         
+            if (string.IsNullOrWhiteSpace(tempDirectory))
+                tempDirectory = GetXbimTempDirectory();
             jetInstance.Parameters.BaseName = "XBM";
-            jetInstance.Parameters.SystemDirectory = logDirectory;
-            jetInstance.Parameters.LogFileDirectory = logDirectory;
-            jetInstance.Parameters.TempDirectory = logDirectory;
-            jetInstance.Parameters.AlternateDatabaseRecoveryDirectory = logDirectory;
+            jetInstance.Parameters.SystemDirectory = tempDirectory;
+            jetInstance.Parameters.LogFileDirectory = tempDirectory;
+            jetInstance.Parameters.TempDirectory = tempDirectory;
+            jetInstance.Parameters.AlternateDatabaseRecoveryDirectory = tempDirectory;
             jetInstance.Parameters.CreatePathIfNotExist = true;
             jetInstance.Parameters.EnableIndexChecking = false;       // TODO: fix unicode indexes
             jetInstance.Parameters.CircularLog = true;
             jetInstance.Parameters.CheckpointDepthMax = cacheSizeInBytes;
             jetInstance.Parameters.LogFileSize = 1024;    // 1MB logs
             jetInstance.Parameters.LogBuffers = 1024;     // buffers = 1/2 of logfile
-            jetInstance.Parameters.MaxTemporaryTables = 0;
+            jetInstance.Parameters.MaxTemporaryTables = 20;
             jetInstance.Parameters.MaxVerPages = 1024;
             jetInstance.Parameters.NoInformationEvent = true;
             jetInstance.Parameters.WaypointLatency = 1;
@@ -738,6 +917,10 @@ namespace Xbim.IO
         public IEnumerable<TIfcType> OfType<TIfcType>(bool activate = false, long indexKey = -1)
         {
             IfcType ifcType = IfcMetaData.IfcType(typeof(TIfcType));
+
+            //Set the IndexedClass Attribute of this class to ensure that seeking by index will work, this is a optimisation
+            Debug.Assert(ifcType.IndexedClass, "Trying to look a class up by index that is not declared as indexeable");
+
             var entityTable = GetEntityTable();
             try
             {
@@ -797,11 +980,7 @@ namespace Xbim.IO
            
         }
 
-        public void ImportIfcZip(string importFrom, ReportProgressDelegate progressHandler = null)
-        {
-           
-            throw new NotImplementedException();
-        }
+       
 
 
         public void Activate(IPersistIfcEntity entity)
@@ -885,7 +1064,7 @@ namespace Xbim.IO
                     SaveAsIfcZip(_storageFileName);
                     break;
                 case XbimStorageType.XBIM:
-                    SaveAsXbim(_storageFileName);
+                    Debug.Assert(false, "Incorrect call, see XbimModel.SaveAs");
                     break;
                 case XbimStorageType.INVALID:
                 default:
@@ -898,17 +1077,42 @@ namespace Xbim.IO
         {
             if (string.IsNullOrWhiteSpace(Path.GetExtension(storageFileName))) //make sure we have an extension
                 storageFileName = Path.ChangeExtension(storageFileName, "IfcZip");
-            throw new NotImplementedException();
+            string fileBody = Path.ChangeExtension(Path.GetFileName(storageFileName),"ifc");
+            var entityTable = GetEntityTable();
+            FileStream fs = null;
+            ZipOutputStream zipStream = null;
+            try
+            {
+                fs = new FileStream(storageFileName, FileMode.Create, FileAccess.Write);
+                zipStream = new ZipOutputStream(fs);
+                zipStream.SetLevel(3); //0-9, 9 being the highest level of compression
+                ZipEntry newEntry = new ZipEntry(fileBody);
+                newEntry.DateTime = DateTime.Now;
+                zipStream.PutNextEntry(newEntry);
+                using (var transaction = entityTable.BeginReadOnlyTransaction())
+                {
+                    using (TextWriter tw = new StreamWriter(zipStream))
+                    {
+                        Part21FileWriter p21 = new Part21FileWriter();
+                        p21.Write(_model, tw);
+                        tw.Flush();
+                    }
+
+                }
+            }
+            catch (Exception e)
+            {
+                throw new XbimException("Failed to write IfcZip file " + storageFileName, e);
+            }
+            finally
+            {
+                if (fs != null) fs.Close();
+                if (zipStream != null) zipStream.Close();
+                FreeTable(entityTable);
+            }
         }
 
-        /// <summary>
-        /// Creates a copy of the current model, the storage of the new version is compressed to remove unused space in the model file
-        /// </summary>
-        /// <param name="storageFileName"></param>
-        private void SaveAsXbim(string storageFileName)
-        {
-            
-        }
+       
 
         private void SaveAsIfc(string storageFileName)
         {
@@ -923,6 +1127,7 @@ namespace Xbim.IO
                     {
                         Part21FileWriter p21 = new Part21FileWriter();
                         p21.Write(_model, tw);
+                        tw.Flush();
                     }
                    
                 }
@@ -1383,6 +1588,24 @@ namespace Xbim.IO
             {
                 return _jetInstance != null;
             }
+        }
+
+        internal static void Compact(string sourceFileName, string targetFileName)
+        {
+            using (Session sess = new Session(_jetInstance))
+            {
+                Api.JetAttachDatabase(sess, sourceFileName, AttachDatabaseGrbit.ReadOnly);
+                try
+                {
+                    Api.JetCompact(sess, sourceFileName, targetFileName, null, null, CompactGrbit.None);
+                }
+                finally
+                {
+                    Api.JetDetachDatabase(sess, sourceFileName);
+                }
+
+            }
+
         }
     }
 

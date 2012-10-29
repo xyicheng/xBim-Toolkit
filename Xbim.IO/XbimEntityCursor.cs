@@ -154,7 +154,8 @@ namespace Xbim.IO
 
         }
 
-        public XbimEntityCursor(Instance instance, string database):this(instance,database,OpenDatabaseGrbit.None)
+        public XbimEntityCursor(Instance instance, string database)
+            : this(instance, database, OpenDatabaseGrbit.None)
         {
         }
         /// <summary>

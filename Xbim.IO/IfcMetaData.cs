@@ -103,7 +103,14 @@ namespace Xbim.IO
                     }
                 }
 
-                
+                //add the index property to abstract types
+               
+                foreach (IfcType ifcType in TypeToIfcTypeLookup.Where(t=>t.Type.IsAbstract))
+                {
+                    IndexedClass[] ifcTypeIndex = (IndexedClass[])ifcType.Type.GetCustomAttributes(typeof(IndexedClass), true);
+                    ifcType.IndexedClass = (ifcTypeIndex.GetLength(0) > 0) ;
+                }
+
                 foreach (var entityValue in Enum.GetValues(typeof(IfcEntityNameEnum)))
                     TypeIdToTypeNameLookup.Add((short)entityValue, entityValue.ToString());
 

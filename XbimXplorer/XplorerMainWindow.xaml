@@ -9,6 +9,14 @@
     <Window.Resources>
         <ObjectDataProvider x:Key="ModelProvider"  IsInitialLoadEnabled="False" ></ObjectDataProvider>
     </Window.Resources>
+    <Window.CommandBindings>
+        <CommandBinding Command="Close"
+          Executed="CommandBinding_Close" CanExecute="CommandBinding_CanExecute"/>
+        <CommandBinding Command="SaveAs"
+          Executed="CommandBinding_SaveAs"  CanExecute="CommandBinding_CanExecute"/>
+        <CommandBinding Command="Open"
+          Executed="CommandBinding_Open"/>
+    </Window.CommandBindings>
     <Grid Name="MainFrame" DataContext="{StaticResource ModelProvider}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" MinHeight="24" />
@@ -19,13 +27,9 @@
         <Menu Grid.Row="0" >
             <MenuItem Header="_File">
                 <!--<MenuItem Header="_New Xbim File" Click="FileNew_Click"/>-->
-                <MenuItem Header="_Open" Click="FileOpen_Click"/>
-                <MenuItem Header="_Import" Click="FileImport_Click"/>
-                <MenuItem Header="_SaveAs">
-                    <MenuItem Header="Ifc File" Click="SaveAsIfcClick"/>
-                    <MenuItem Header="IfcZip File" Click="SaveAsIfcZipClick"/>
-                    <MenuItem Header="IfcXml File" Click="SaveAsIfcXmlClick"/>
-                </MenuItem>
+                <MenuItem Header="_Open" Command="Open"/>
+                <MenuItem Header="_SaveAs" Command="SaveAs"/>
+                <MenuItem Header="_Close" Command="Close" />
                 <!--<MenuItem Header="_Import Ifc File" Click="FileImport_Click"/>
                 <MenuItem Header="_Export Ifc File" Click="FileExport_Click"/>-->
             </MenuItem>

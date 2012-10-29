@@ -26,6 +26,7 @@ using Xbim.Common.Logging;
 using Xbim.IO.Parser;
 using Xbim.Common;
 using Xbim.Common.Exceptions;
+using System.Globalization;
 namespace Xbim.IO
 {
     /// <summary>
@@ -60,7 +61,7 @@ namespace Xbim.IO
         private XbimEntityCursor editTransactionEntityCursor;
 
         readonly private string xBimTransactionDirectory ;
-        private static string xbimLogDirectory = "XbimTransactions.Log";
+        private static string xbimTempDirectory;
 
         public string XbimTransactionDirectory
         {
@@ -200,10 +201,11 @@ namespace Xbim.IO
 
         public XbimReadWriteTransaction BeginTransaction(string operationName)
         {
-            if (editTransactionEntityCursor != null) throw new XbimException("Attempt to begin another transaction whilst one is already running");
+            if (editTransactionEntityCursor != null) 
+                throw new XbimException("Attempt to begin another transaction whilst one is already running");
             try
             {
-                editTransactionEntityCursor = GetEntityTable();
+                editTransactionEntityCursor = cache.GetEntityTable();
                 cache.BeginCaching();
                 return new XbimReadWriteTransaction(this, editTransactionEntityCursor.BeginLazyTransaction());
             }
@@ -334,7 +336,7 @@ namespace Xbim.IO
                     cache.ImportIfc(xbimDbName, importFrom, progDelegate);
                     break;
                 case XbimStorageType.IFCZIP:
-                    cache.ImportIfcZip(importFrom, progDelegate);
+                    cache.ImportIfcZip(xbimDbName, importFrom, progDelegate);
                     break;
                 case XbimStorageType.XBIM:
                     cache.ImportXbim(importFrom, progDelegate);
@@ -354,15 +356,11 @@ namespace Xbim.IO
         /// <returns></returns>
         public static bool Compact(string sourceFileName, string targetFileName, out string errMsg)
         {
-
             errMsg = "";
             try
             {
-                XbimModel sourceModel = new XbimModel();
-                sourceModel.Open(sourceFileName, XbimDBAccess.Exclusive);
-                XbimModel targetModel = XbimModel.CreateModel(targetFileName, XbimDBAccess.Exclusive);
-                sourceModel.Compact(targetModel);
-                return false;
+                IfcPersistedInstanceCache.Compact(sourceFileName, targetFileName);
+                return true;
             }
             catch (Exception e)
             {
@@ -370,7 +368,6 @@ namespace Xbim.IO
                 File.Delete(targetFileName);
                 return false;
             }
-
         }
 
         /// <summary>
@@ -704,13 +701,47 @@ namespace Xbim.IO
         }
 
 
-        public bool SaveAs(string outputFileName, XbimStorageType storageType, ReportProgressDelegate progress = null)
+        public bool SaveAs(string outputFileName, XbimStorageType? storageType = null, ReportProgressDelegate progress = null)
         {
 
             try
             {
-                cache.SaveAs(storageType, outputFileName, progress);
-                return true;
+                if (!storageType.HasValue)
+                    storageType = StorageType(outputFileName);
+                if (storageType.Value == XbimStorageType.INVALID)
+                {
+                    string ext = Path.GetExtension(outputFileName);
+                    if(string.IsNullOrWhiteSpace(ext))
+                        throw new XbimException("Invalid file type, no extension specified in file " + outputFileName);
+                    else
+                        throw new XbimException("Invalid file type ." + ext.ToUpper() + " in file " + outputFileName);
+                }
+                if (storageType.Value == XbimStorageType.XBIM) //make a compacted copy
+                {
+                    string srcFile = this.DatabaseName;
+                    if(string.Compare(srcFile, outputFileName, true, CultureInfo.InvariantCulture) == 0)
+                        throw new XbimException("Cannot save file to the same name, " + outputFileName);
+                    try
+                    {
+                        this.Close();
+                        string errMsg;
+                        if (!XbimModel.Compact(srcFile, outputFileName, out errMsg))
+                            throw new XbimException(errMsg);
+                        else
+                            srcFile = outputFileName;
+                        return true;
+                    }
+                    finally
+                    {
+                        Open(srcFile);
+                       
+                    }
+                }
+                else
+                {
+                    cache.SaveAs(storageType.Value, outputFileName, progress);
+                    return true;
+                }
             }
             catch (Exception e)
             {
@@ -1012,10 +1043,7 @@ namespace Xbim.IO
 
         internal void Compact(XbimModel targetModel)
         {
-            foreach (var prod in Instances.OfType<IfcProduct>())
-            {
-                targetModel.InsertCopy(prod);
-            }
+          
         }
 
         /// <summary>
@@ -1054,18 +1082,18 @@ namespace Xbim.IO
         /// This is the path Xbim will use to store database transactions files
         /// Note this can only be set before an instance of XbimModel is created
         /// </summary>
-        public static string XbimLogDirectory
+        public static string XbimTempDirectory
         {
             get
             {
-                return xbimLogDirectory;
+                return xbimTempDirectory;
             }
             set
             {
                 if (IfcPersistedInstanceCache.HasDatabaseInstance) 
                     Debug.Assert(false, "Attempt to set a log path after the database instance has been initialised");
                 else
-                    xbimLogDirectory = value;
+                    xbimTempDirectory = value;
             }
         }
 

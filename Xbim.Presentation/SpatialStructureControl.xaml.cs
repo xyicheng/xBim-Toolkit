@@ -23,6 +23,7 @@ using Xbim.Ifc2x3.Kernel;
 using Xbim.Ifc2x3.ProductExtension;
 using Xbim.XbimExtensions;
 using Xbim.IO;
+using Xbim.Common.Exceptions;
 
 #endregion
 
@@ -104,72 +105,77 @@ namespace Xbim.Presentation
         {
             IfcProject proj = e.NewValue as IfcProject;
             SpatialStructureControl sc = d as SpatialStructureControl;
-            if (sc != null && proj != null)
-            {
-                XbimModel model = sc.Model;
-                ObjectDataProvider spatialStructureProvider =
-                    sc.FindResource("SpatialStructureProvider") as ObjectDataProvider;
-                if (model != null && spatialStructureProvider != null)
-                {
-                    Dictionary<IfcObjectDefinition, SpatialStructureTreeItem> created =
-                        new Dictionary<IfcObjectDefinition, SpatialStructureTreeItem>(
-                            model.Instances.OfType<IfcRelDecomposes>().Count());
+            if (sc == null) throw new XbimException("Invalid Spatial Control");
 
-                    foreach (IfcRelDecomposes rel in model.Instances.OfType<IfcRelDecomposes>())
-                    {
-                        if (rel.RelatingObject != null)
-                        {
-                            SpatialStructureTreeItem treeItem;
-                            if (!created.TryGetValue(rel.RelatingObject, out treeItem)) //already written
-                            {
-                                treeItem = new SpatialStructureTreeItem(rel.RelatingObject);
-                                created.Add(rel.RelatingObject, treeItem);
-                            }
-                            foreach (IfcObjectDefinition child in rel.RelatedObjects)
-                            {
-                                SpatialStructureTreeItem childItem;
-                                if (!created.TryGetValue(child, out childItem)) //already written
-                                {
-                                    childItem = new SpatialStructureTreeItem(child);
-                                    created.Add(child, childItem);
-                                }
-                                treeItem.AddChild(childItem);
-                            }
-                        }
-                    }
-                    //if(mdp.Model.Instances.RelContainedInSpatialStructures.First() !=null)
-                    //    treeItem.AddChild(new SpatialStructureTreeItem());
-                    foreach (
-                        IfcRelContainedInSpatialStructure scRel in
-                            model.Instances.OfType<IfcRelContainedInSpatialStructure>())
-                    {
-                        if (scRel.RelatingStructure != null)
-                        {
-                            SpatialStructureTreeItem treeItem;
-                            if (!created.TryGetValue(scRel.RelatingStructure, out treeItem)) //already written
-                            {
-                                treeItem = new SpatialStructureTreeItem(scRel.RelatingStructure);
-                                created.Add(scRel.RelatingStructure, treeItem);
-                            }
-                            foreach (IfcObjectDefinition child in scRel.RelatedElements)
-                            {
-                                SpatialStructureTreeItem childItem;
-                                if (!created.TryGetValue(child, out childItem)) //already written
-                                {
-                                    childItem = new SpatialStructureTreeItem(child);
-                                    created.Add(child, childItem);
-                                }
-                                treeItem.AddChild(childItem);
-                            }
-                        }
-                    }
-                    List<SpatialStructureTreeItem> root = new List<SpatialStructureTreeItem>(1);
-                    SpatialStructureTreeItem projItem;
-                    if (created.TryGetValue(proj, out projItem))
-                        root.Add(projItem);
-                    spatialStructureProvider.ObjectInstance = root;
-                }
+            ObjectDataProvider spatialStructureProvider =  sc.FindResource("SpatialStructureProvider") as ObjectDataProvider;
+            if (proj == null) //all cleared
+            {
+                spatialStructureProvider.ObjectInstance = null;
+                return;
             }
+            XbimModel model = sc.Model;
+
+            if (model != null && spatialStructureProvider != null)
+            {
+                Dictionary<IfcObjectDefinition, SpatialStructureTreeItem> created =
+                    new Dictionary<IfcObjectDefinition, SpatialStructureTreeItem>(
+                        model.Instances.OfType<IfcRelDecomposes>().Count());
+
+                foreach (IfcRelDecomposes rel in model.Instances.OfType<IfcRelDecomposes>())
+                {
+                    if (rel.RelatingObject != null)
+                    {
+                        SpatialStructureTreeItem treeItem;
+                        if (!created.TryGetValue(rel.RelatingObject, out treeItem)) //already written
+                        {
+                            treeItem = new SpatialStructureTreeItem(rel.RelatingObject);
+                            created.Add(rel.RelatingObject, treeItem);
+                        }
+                        foreach (IfcObjectDefinition child in rel.RelatedObjects)
+                        {
+                            SpatialStructureTreeItem childItem;
+                            if (!created.TryGetValue(child, out childItem)) //already written
+                            {
+                                childItem = new SpatialStructureTreeItem(child);
+                                created.Add(child, childItem);
+                            }
+                            treeItem.AddChild(childItem);
+                        }
+                    }
+                }
+                //if(mdp.Model.Instances.RelContainedInSpatialStructures.First() !=null)
+                //    treeItem.AddChild(new SpatialStructureTreeItem());
+                foreach (
+                    IfcRelContainedInSpatialStructure scRel in
+                        model.Instances.OfType<IfcRelContainedInSpatialStructure>())
+                {
+                    if (scRel.RelatingStructure != null)
+                    {
+                        SpatialStructureTreeItem treeItem;
+                        if (!created.TryGetValue(scRel.RelatingStructure, out treeItem)) //already written
+                        {
+                            treeItem = new SpatialStructureTreeItem(scRel.RelatingStructure);
+                            created.Add(scRel.RelatingStructure, treeItem);
+                        }
+                        foreach (IfcObjectDefinition child in scRel.RelatedElements)
+                        {
+                            SpatialStructureTreeItem childItem;
+                            if (!created.TryGetValue(child, out childItem)) //already written
+                            {
+                                childItem = new SpatialStructureTreeItem(child);
+                                created.Add(child, childItem);
+                            }
+                            treeItem.AddChild(childItem);
+                        }
+                    }
+                }
+                List<SpatialStructureTreeItem> root = new List<SpatialStructureTreeItem>(1);
+                SpatialStructureTreeItem projItem;
+                if (created.TryGetValue(proj, out projItem))
+                    root.Add(projItem);
+                spatialStructureProvider.ObjectInstance = root;
+            }
+
         }
 
 

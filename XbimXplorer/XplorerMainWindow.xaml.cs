@@ -49,6 +49,8 @@ namespace XbimXplorer
         private PropertiesWindow _propertyWindow;
         private int? _currentProduct;
         private string _currentModelFileName;
+        private string _temporaryXbimFileName;
+        private string _defaultFileName;
         
 
         public XplorerMainWindow()
@@ -59,7 +61,12 @@ namespace XbimXplorer
             SpatialControl.SelectedItemChanged +=new RoutedPropertyChangedEventHandler<SpatialStructureTreeItem>(SpatialControl_SelectedItemChanged);
             //DrawingControl.OnSetMaterial += new SetMaterialEventHandler(DrawingControl_OnSetMaterial);
             //DrawingControl.OnSetFilter += new SetFilterEventHandler(DrawingControl_OnSetFilter);
-        
+            this.Closed += new EventHandler(XplorerMainWindow_Closed);
+        }
+
+        void XplorerMainWindow_Closed(object sender, EventArgs e)
+        {
+            CloseAndDeleteTemporaryFiles();
         }
 
         void DrawingControl_ProgressChanged(object sender, ProgressChangedEventArgs e)
@@ -203,15 +210,6 @@ namespace XbimXplorer
         }
 
 
-        private void FileOpen_Click(object sender, RoutedEventArgs e)
-        {
-            OpenFileDialog dlg = new OpenFileDialog();
-
-            dlg.Filter = "Xbim Files|*.xbim;*.ifc;*.ifcxml;*.ifczip;*.zip"; // Filter files by extension 
-            dlg.FileOk += new CancelEventHandler(dlg_OpenXbimFile);
-            dlg.ShowDialog(this);
-        }
-
         private ObjectDataProvider ModelProvider
         {
             get
@@ -238,10 +236,13 @@ namespace XbimXplorer
             XbimModel model = new XbimModel();
             try
             {
-                string XbimFileName = Path.ChangeExtension(ifcFilename,"Xbim");
-                model.CreateFrom(ifcFilename, XbimFileName, worker.ReportProgress);
-                model.Open(XbimFileName,XbimDBAccess.ReadWriteNoCache);
+                _temporaryXbimFileName = Path.GetTempFileName();
+                _defaultFileName = Path.GetFileNameWithoutExtension(ifcFilename);
+                model.CreateFrom(ifcFilename, _temporaryXbimFileName, worker.ReportProgress);
+                model.Open(_temporaryXbimFileName, XbimDBAccess.ReadWrite);
                 XbimScene.ConvertGeometry(model.Instances.OfType<IfcProduct>().Where(t=>!(t is IfcFeatureElement)), worker.ReportProgress);
+                model.Close();
+                model.Open(_temporaryXbimFileName, XbimDBAccess.Read);
                 args.Result = model;
                 
             }
@@ -262,36 +263,7 @@ namespace XbimXplorer
             }
         }
 
-       
-
-        private void OpenIfcXmlFile(object s, DoWorkEventArgs args)
-        {
-            //BackgroundWorker worker = s as BackgroundWorker;
-            //ModelDataProvider modelProvider = ModelProvider;
-            //string fileName = args.Argument as string;
-
-            //IModel m = new XbimModel();
-            //try
-            //{
-            //    ClosePreviousModel();
-            //    m.Open(fileName);
-            //    XbimScene geomEngine = new XbimScene(m);
-            //   // modelProvider.Scene = geomEngine;
-            //}
-            //catch (Exception ex)
-            //{
-            //    StringBuilder sb = new StringBuilder();
-            //    sb.AppendLine("Error reading " + fileName);
-            //    string indent = "\t";
-            //    while (ex != null)
-            //    {
-            //        sb.AppendLine(indent + ex.Message);
-            //        ex = ex.InnerException;
-            //        indent += "\t";
-            //    }
-            //    args.Result = new Exception(sb.ToString());
-            //}
-        }
+      
 
         /// <summary>
         ///   This is called when we explcitly want to open an xBIM file
@@ -328,23 +300,7 @@ namespace XbimXplorer
             }
         }
 
-        private void OpenZipFile(object s, DoWorkEventArgs args)
-        {
-            //BackgroundWorker worker = s as BackgroundWorker;
-            //string zipFilename = args.Argument as string;
-
-            //XbimModel model = new XbimModel();
-            //try
-            //{
-            //    model.Open(zipFilename);
-            //    XbimScene geomEngine = new XbimScene(model);
-            //   // ModelProvider.Scene = geomEngine;
-            //}
-            //catch (Exception ex)
-            //{
-            //    args.Result = ex;
-            //}
-        }
+       
 
         private void dlg_OpenXbimFile(object sender, CancelEventArgs e)
         {
@@ -356,7 +312,7 @@ namespace XbimXplorer
                 StatusBar.Visibility = Visibility.Visible;
                 CreateWorker();
 
-                if (Model != null) Model.Dispose();
+                if (Model != null) Model.Close();
                 ModelProvider.DeferRefresh();
                 ModelProvider.ObjectInstance = null;
                 switch (ext)
@@ -366,7 +322,7 @@ namespace XbimXplorer
                         _worker.RunWorkerAsync(dlg.FileName);
                         break;
                     case ".ifcxml": //it is an IfcXml File
-                        _worker.DoWork += OpenIfcXmlFile;
+                        _worker.DoWork += OpenIfcFile;
                         _worker.RunWorkerAsync(dlg.FileName);
                         break;
                     case ".xbim": //it is an xbim File, just open it in the main thread
@@ -376,7 +332,7 @@ namespace XbimXplorer
                         break;
                     case ".ifczip": //it is a xip file containing xbim or ifc File
                     case ".zip": //it is a xip file containing xbim or ifc File
-                        _worker.DoWork += OpenZipFile;
+                        _worker.DoWork += OpenIfcFile;
                         _worker.RunWorkerAsync(dlg.FileName);
                         break;
 
@@ -525,143 +481,10 @@ namespace XbimXplorer
                 DrawingControl.HideAllTypesOf(_currentProduct.Value);
             }
         }
+       
 
 
-        private void FileImport_Click(object sender, RoutedEventArgs e)
-        {
-            OpenFileDialog dlg = new OpenFileDialog();
-
-            dlg.Filter = "Ifc Files|*.Ifc;*.Ifcx;*.IfcXml"; // Filter files by extension 
-            dlg.Title = "Import/Merge Ifc model file";
-            dlg.CheckFileExists = true;
-            // Show open file dialog box 
-            dlg.FileOk += new CancelEventHandler(dlg_ImportOk);
-            dlg.ShowDialog();
-        }
-
-        private void dlg_ImportOk(object sender, CancelEventArgs ce)
-        {
-            OpenFileDialog dlg = sender as OpenFileDialog;
-            if (dlg != null)
-            {
-                StatusBar.Visibility = Visibility.Visible;
-                _worker = new BackgroundWorker();
-                _worker.WorkerReportsProgress = true;
-                _worker.WorkerSupportsCancellation = false;
-
-                _worker.DoWork += delegate(object s, DoWorkEventArgs args)
-                                      {
-                                          BackgroundWorker worker = s as BackgroundWorker;
-
-                                          try
-                                          {
-
-                                              string xbimFileName = Path.ChangeExtension(dlg.FileName, ".xbim");
-                                              string xbimGeometryFileName = Path.ChangeExtension(dlg.FileName, ".xbimGC");
-                                              XbimScene scene = new XbimScene(dlg.FileName, xbimFileName, xbimGeometryFileName);
-                                             // ModelProvider.Scene = scene.AsSceneStream();
-                                          }
-                                          catch (Exception ex)
-                                          {
-                                              args.Result = ex;
-                                              return;
-                                          }
-                                      };
-
-                _worker.ProgressChanged += delegate(object s, ProgressChangedEventArgs args)
-                                               {
-                                                   ProgressBar.Value = args.ProgressPercentage;
-                                                   StatusMsg.Text = (string)args.UserState;
-                                               };
-
-                _worker.RunWorkerCompleted += delegate(object s, RunWorkerCompletedEventArgs args)
-                                                  {
-                                                      Exception e = args.Result as Exception;
-                                                      if (e != null) //it failed
-                                                      {
-                                                          Exception ex = e;
-                                                          StringBuilder msg = new StringBuilder();
-                                                          while (ex != null)
-                                                          {
-                                                              msg.AppendLine(ex.Message);
-                                                              ex = ex.InnerException;
-                                                          }
-                                                          MessageBox.Show(this, msg.ToString(), "Importing Ifc File",
-                                                                          MessageBoxButton.OK, MessageBoxImage.Error,
-                                                                          MessageBoxResult.None, MessageBoxOptions.None);
-                                                      }
-
-                                                  };
-
-                _worker.RunWorkerAsync();
-            }
-        }
-
-        private void FileExport_Click(object sender, RoutedEventArgs e)
-        {
-        }
-
-        private void FileNew_Click(object sender, RoutedEventArgs e)
-        {
-            SaveFileDialog dlg = new SaveFileDialog();
-
-            dlg.Filter = "Xbim Files|*.xbim"; // Filter files by extension 
-            dlg.Title = "Create New Xbim database";
-            dlg.AddExtension = true;
-            // Show open file dialog box 
-            dlg.FileOk += new CancelEventHandler(dlg_FileOk);
-            dlg.ShowDialog(this);
-        }
-
-        private void dlg_FileOk(object sender, CancelEventArgs e)
-        {
-            //SaveFileDialog dlg = sender as SaveFileDialog;
-            //if (dlg != null)
-            //{
-            //    FileInfo fInfo = new FileInfo(dlg.FileName);
-            //    try
-            //    {
-            //        if (fInfo.Exists) fInfo.Delete();
-            //        ModelDataProvider modelProvider = ModelProvider;
-            //        if (modelProvider != null)
-            //        {
-            //            ModelManager.ReleaseModel(modelProvider.Model);
-            //            modelProvider.Model = new ModelPersisted(dlg.FileName);
-
-            //        }
-            //    }
-            //    catch (Exception except)
-            //    {
-
-            //        MessageBox.Show(except.Message, "Error creating database", MessageBoxButton.OK, MessageBoxImage.Error);
-            //    }
-
-            //}
-        }
-
-        private void SaveAsIfcXmlClick(object sender, RoutedEventArgs e)
-        {
-            SaveFileDialog dlg = new SaveFileDialog();
-            dlg.Filter = "Ifc Xml Files|*.ifcxml"; // Filter files by extension 
-            dlg.Title = "Save As IfcXml File";
-            dlg.AddExtension = true;
-            // Show open file dialog box 
-            dlg.FileOk += new CancelEventHandler(dlg_FileSaveAsIfcXml);
-            dlg.ShowDialog(this);
-        }
-
-        private void SaveAsIfcClick(object sender, RoutedEventArgs e)
-        {
-            SaveFileDialog dlg = new SaveFileDialog();
-            dlg.Filter = "Ifc Files|*.ifc"; // Filter files by extension 
-            dlg.Title = "Save As Ifc File";
-            dlg.AddExtension = true;
-            // Show open file dialog box 
-            dlg.FileOk += new CancelEventHandler(dlg_FileSaveAsIfc);
-            dlg.ShowDialog(this);
-        }
-
-        private void dlg_FileSaveAsIfc(object sender, CancelEventArgs e)
+        private void dlg_FileSaveAs(object sender, CancelEventArgs e)
         {
             SaveFileDialog dlg = sender as SaveFileDialog;
             if (dlg != null)
@@ -671,75 +494,90 @@ namespace XbimXplorer
                 {
                     if (fInfo.Exists) fInfo.Delete();
 
-                    if (Model != null) Model.SaveAs(dlg.FileName, XbimStorageType.IFC);
-                    else throw new Exception("Invalid Model Server");
-                }
-                catch (Exception except)
-                {
-                    MessageBox.Show(except.Message, "Error Saving as Ifc File", MessageBoxButton.OK,
-                                    MessageBoxImage.Error);
-                }
-            }
-        }
-
-        private void dlg_FileSaveAsIfcXml(object sender, CancelEventArgs e)
-        {
-            SaveFileDialog dlg = sender as SaveFileDialog;
-            if (dlg != null)
-            {
-                FileInfo fInfo = new FileInfo(dlg.FileName);
-                try
-                {
-                    if (fInfo.Exists) fInfo.Delete();                  
-                    if (Model != null) Model.SaveAs(dlg.FileName, XbimStorageType.IFCXML);
-                    else throw new Exception("Invalid Model Server");
-                }
-                catch (Exception except)
-                {
-                    MessageBox.Show(except.Message, "Error Saving as Ifc File", MessageBoxButton.OK,
-                                    MessageBoxImage.Error);
-                }
-            }
-        }
-
-        private void SaveAsIfcZipClick(object sender, RoutedEventArgs e)
-        {
-            SaveFileDialog dlg = new SaveFileDialog();
-            dlg.Filter = "Ifc Zip Files|*.ifczip"; // Filter files by extension 
-            dlg.Title = "Save As IfcZip File";
-            dlg.AddExtension = true;
-            // Show open file dialog box 
-            dlg.FileOk += new CancelEventHandler(dlg_SaveAsIfcZip);
-            dlg.ShowDialog(this);
-        }
-
-        private void dlg_SaveAsIfcZip(object sender, CancelEventArgs e)
-        {
-            SaveFileDialog dlg = sender as SaveFileDialog;
-            if (dlg != null)
-            {
-                FileInfo fInfo = new FileInfo(dlg.FileName);
-                try
-                {
-                    if (fInfo.Exists) fInfo.Delete();
-                    if (Model != null) Model.SaveAs(dlg.FileName,XbimStorageType.IFCZIP);
-                    else throw new Exception("Invalid Model Server");
-                }
-                catch (Exception except)
-                {
-                    StringBuilder sb = new StringBuilder();
-                    Exception ex = except;
-                    String indent = "";
-                    while (ex != null)
+                    if (Model != null)
                     {
-                        sb.AppendFormat("{0}{1}\n", indent, ex.Message);
-                        ex = ex.InnerException;
-                        indent += "\t";
+                        Model.SaveAs(dlg.FileName);
+                       
+                        if (string.Compare(Path.GetExtension(dlg.FileName),"XBIM",true)==0 && 
+                            !string.IsNullOrWhiteSpace(_temporaryXbimFileName)) //we have a temp file open, it is now redundant as we have upgraded to another xbim file
+                        {
+                            File.Delete(_temporaryXbimFileName);
+                            _temporaryXbimFileName = null;
+                        }
                     }
-                    MessageBox.Show(sb.ToString(), "Error Saving as Xbim File", MessageBoxButton.OK,
+                    else throw new Exception("Invalid Model Server");
+                }
+                catch (Exception except)
+                {
+                    MessageBox.Show(except.Message, "Error Saving as", MessageBoxButton.OK,
                                     MessageBoxImage.Error);
                 }
             }
         }
+
+       
+
+        private void CommandBinding_SaveAs(object sender, ExecutedRoutedEventArgs e)
+        {
+            SaveFileDialog dlg = new SaveFileDialog();
+            dlg.DefaultExt = "ifc";
+            dlg.FileName = _defaultFileName;
+            dlg.Filter = "xBIM File (*.xBIM)|*.xBIM|Ifc File (*.ifc)|*.ifc|IfcXml File (*.IfcXml)|*.ifcxml|IfcZip File (*.IfcZip)|*.ifczip"; // Filter files by extension 
+            dlg.Title = "Save As";
+            dlg.AddExtension = true;
+           
+            // Show open file dialog box 
+            dlg.FileOk += new CancelEventHandler(dlg_FileSaveAs);
+            dlg.ShowDialog(this);
+        }
+
+        private void CommandBinding_Close(object sender, ExecutedRoutedEventArgs e)
+        {
+            CloseAndDeleteTemporaryFiles();
+        }
+
+        private void CommandBinding_Open(object sender, ExecutedRoutedEventArgs e)
+        {
+            CloseAndDeleteTemporaryFiles();
+            OpenFileDialog dlg = new OpenFileDialog();
+            dlg.Filter = "Xbim Files|*.xbim;*.ifc;*.ifcxml;*.ifczip"; // Filter files by extension 
+            dlg.FileOk += new CancelEventHandler(dlg_OpenXbimFile);
+            dlg.ShowDialog(this);
+        }
+
+        /// <summary>
+        /// Tidies up any open files and closes any open models
+        /// </summary>
+        private void CloseAndDeleteTemporaryFiles()
+        {
+            try
+            {
+                XbimModel model = ModelProvider.ObjectInstance as XbimModel;
+                if (model != null)
+                {
+                    model.Close();
+                    ModelProvider.ObjectInstance = null;
+                    ModelProvider.Refresh();
+                }
+            }
+            finally
+            {
+                if (!string.IsNullOrWhiteSpace(_temporaryXbimFileName))
+                    File.Delete(_temporaryXbimFileName);
+                _temporaryXbimFileName = null;
+                _defaultFileName = null;
+            }
+        }
+
+        private void CommandBinding_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+           if (e.Command == ApplicationCommands.Close || e.Command == ApplicationCommands.SaveAs)
+            {
+                XbimModel model = ModelProvider.ObjectInstance as XbimModel;
+                e.CanExecute = (model != null);
+            }
+
+        }
+
     }
 }

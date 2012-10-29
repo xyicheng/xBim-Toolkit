@@ -52,27 +52,8 @@ namespace XbimConvert
                     {
                         watch.Start();
 
-                        model.Open(xbimFileName, XbimDBAccess.ReadWriteNoCache);
-                       // var txn = model.BeginTransaction();
-
-                        var doors = model.Instances.OfType<IfcDoor>();
-
-                        //foreach (var door in doors)
-                        //{
-                        //    door.Name = "qwerty";
-                        //}
-
-                        var door = doors.FirstOrDefault();
-                        door.Name = "qwerty";
-
-                      //  txn.Commit();
-                        //foreach (var door in model.Instances.OfType<IfcDoor>())
-                        //{
-                        //    Console.WriteLine(door.Name);
-                        //}
-
-                      //  GenerateGeometry(xbimGeometryFileName, model);
-                       
+                        model.Open(xbimFileName, XbimDBAccess.ReadWrite);
+                        GenerateGeometry(xbimGeometryFileName, model);
                         model.Close();
 
                     }

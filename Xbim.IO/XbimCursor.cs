@@ -52,14 +52,12 @@ namespace Xbim.IO
 
 
         public bool ReadOnly { get; set; }
-        public XbimCursor(JET_INSTANCE instance, string database, OpenDatabaseGrbit mode)
+        public XbimCursor(JET_INSTANCE instance, string database,  OpenDatabaseGrbit mode)
         {
             this.lockObject = new Object();
             this.instance = instance;
-            this.database = database;
-            sesid = new Session(this.instance);
-            Api.JetAttachDatabase(this.sesid, database, mode == OpenDatabaseGrbit.ReadOnly ? AttachDatabaseGrbit.ReadOnly : AttachDatabaseGrbit.None);
-            Api.JetOpenDatabase(this.sesid, database, String.Empty, out this.dbId, mode);
+            sesid = new Session(instance);
+            Api.JetOpenDatabase(sesid, database, String.Empty, out this.dbId, mode);
             Api.JetOpenTable(this.sesid, this.dbId, globalsTableName, null, 0,  mode == OpenDatabaseGrbit.ReadOnly ? OpenTableGrbit.ReadOnly : 
                                                                                 mode == OpenDatabaseGrbit.Exclusive ? OpenTableGrbit.DenyWrite : OpenTableGrbit.None, 
                                                                                 out this.globalsTable);
@@ -215,9 +213,7 @@ namespace Xbim.IO
         {
             Api.JetCloseTable(sesid, table);
             Api.JetCloseTable(sesid, globalsTable);
-            Api.JetCloseDatabase(sesid, dbId, CloseDatabaseGrbit.None);
-           Api.JetDetachDatabase(sesid, database);
-            sesid.Dispose();
+            Api.JetCloseDatabase(this.sesid, this.dbId, CloseDatabaseGrbit.None);
         }
     }
 }

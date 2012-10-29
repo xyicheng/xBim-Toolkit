@@ -311,73 +311,66 @@ namespace Xbim
 					{
 						if(dynamic_cast<IfcGeometricRepresentationContext^>(shape->ContextOfItems))
 							BRepLib::Precision((Standard_Real)((IfcGeometricRepresentationContext^)(shape->ContextOfItems))->DefaultPrecision);
-						
-						//srl optimisation openings and projects cannot have openings or projection so don't check for them
+
+						//srl optimisation openings and projectionss cannot have openings or projection so don't check for them
 						if(CutOpenings(product, lod) && !dynamic_cast<IfcFeatureElement^>(product ))
 						{
 							IfcElement^ element = (IfcElement^) product;
-							//check if we have openings or projections
-							IEnumerable<IfcRelProjectsElement^>^ projections = element->HasProjections;
-							IEnumerable<IfcRelVoidsElement^>^ openings = element->HasOpenings;
-							
-							if(( Enumerable::Any(openings) /*|| Enumerable::Any(projections)*/)) //for now lets ignore projections
+							List<IXbimGeometryModel^>^ projectionSolids = gcnew List<IXbimGeometryModel^>();
+							List<IXbimGeometryModel^>^ openingSolids = gcnew List<IXbimGeometryModel^>();
+							for each(IfcRelProjectsElement^ rel in element->HasProjections)
 							{
-								List<IXbimGeometryModel^>^ projectionSolids = gcnew List<IXbimGeometryModel^>();
-								List<IXbimGeometryModel^>^ openingSolids = gcnew List<IXbimGeometryModel^>();
-								/*for each(IfcRelProjectsElement^ rel in projections)
+								IfcFeatureElementAddition^ fe = rel->RelatedFeatureElement;
+								if(fe->Representation!=nullptr)
 								{
-									IfcFeatureElementAddition^ fe = rel->RelatedFeatureElement;
-									if(fe->Representation!=nullptr)
-									{
-										IXbimGeometryModel^ im = CreateFrom(fe,repContext, maps, true, lod);
-										if(dynamic_cast<XbimGeometryModelCollection^>(im))
-											im = ((XbimGeometryModelCollection^)im)->Solidify();
-										if(!dynamic_cast<XbimSolid^>(im))
-											throw gcnew XbimGeometryException("FeatureElementAdditions must be of type solid");
+									IXbimGeometryModel^ im = CreateFrom(fe,repContext, maps, true, lod);
+									if(dynamic_cast<XbimGeometryModelCollection^>(im))
+										im = ((XbimGeometryModelCollection^)im)->Solidify();
+									if(!dynamic_cast<XbimSolid^>(im))
+										throw gcnew XbimGeometryException("FeatureElementAdditions must be of type solid");
 
-										im = im->CopyTo(fe->ObjectPlacement);
-										projectionSolids->Add(im);
-									}
-								}*/
-
-								for each(IfcRelVoidsElement^ rel in openings)
-								{
-									IfcFeatureElementSubtraction^ fe = rel->RelatedOpeningElement;
-									if(fe->Representation!=nullptr)
-									{
-										IXbimGeometryModel^ im = CreateFrom(fe, repContext, maps, true,lod);
-										if(im!=nullptr && !im->Handle->IsNull())
-										{	
-											im = im->CopyTo(fe->ObjectPlacement);
-											//the rules say that 
-											//The PlacementRelTo relationship of IfcLocalPlacement shall point (if given) 
-											//to the local placement of the master IfcElement (its relevant subtypes), 
-											//which is associated to the IfcFeatureElement by the appropriate relationship object
-											if(product->ObjectPlacement != ((IfcLocalPlacement^)(fe->ObjectPlacement))->PlacementRelTo)
-											{
-												if(dynamic_cast<IfcLocalPlacement^>(product->ObjectPlacement))
-												{	
-													//we need to move the opening into the coordinate space of the product
-													IfcLocalPlacement^ lp = (IfcLocalPlacement^)product->ObjectPlacement;							
-													TopLoc_Location prodLoc = XbimGeomPrim::ToLocation(lp->RelativePlacement);
-													prodLoc= prodLoc.Inverted();
-
-													(*(im->Handle)).Move(prodLoc);	
-												}
-											}
-											openingSolids->Add(im);
-										}
-									}
-									
+									im = im->CopyTo(fe->ObjectPlacement);
+									projectionSolids->Add(im);
 								}
+							}
+							for each(IfcRelVoidsElement^ rel in element->HasOpenings)
+							{
+								IfcFeatureElementSubtraction^ fe = rel->RelatedOpeningElement;
+								if(fe->Representation!=nullptr)
+								{
+									IXbimGeometryModel^ im = CreateFrom(fe, repContext, maps, true,lod);
+									if(im!=nullptr && !im->Handle->IsNull())
+									{	
+										im = im->CopyTo(fe->ObjectPlacement);
+										//the rules say that 
+										//The PlacementRelTo relationship of IfcLocalPlacement shall point (if given) 
+										//to the local placement of the master IfcElement (its relevant subtypes), 
+										//which is associated to the IfcFeatureElement by the appropriate relationship object
+										if(product->ObjectPlacement != ((IfcLocalPlacement^)(fe->ObjectPlacement))->PlacementRelTo)
+										{
+											if(dynamic_cast<IfcLocalPlacement^>(product->ObjectPlacement))
+											{	
+												//we need to move the opening into the coordinate space of the product
+												IfcLocalPlacement^ lp = (IfcLocalPlacement^)product->ObjectPlacement;							
+												TopLoc_Location prodLoc = XbimGeomPrim::ToLocation(lp->RelativePlacement);
+												prodLoc= prodLoc.Inverted();
+
+												(*(im->Handle)).Move(prodLoc);	
+											}
+										}
+										openingSolids->Add(im);
+									}
+								}
+							}
+							if(Enumerable::Any(openingSolids) || Enumerable::Any(projectionSolids))
+							{
 								IXbimGeometryModel^ baseShape = CreateFrom(shape, maps, true,lod);	
 								return  gcnew XbimFeaturedShape(product, baseShape, openingSolids, projectionSolids);
-								
 							}
 							else //we have no openings or projections
 							{
 								IXbimGeometryModel^ geomModel= CreateFrom(shape, maps, forceSolid,lod);
-								
+
 								return geomModel;
 							}
 						}
