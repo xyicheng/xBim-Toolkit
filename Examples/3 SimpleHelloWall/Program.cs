@@ -33,7 +33,7 @@ namespace SimpleHelloWall
                 building.Name = name;
                 building.OwnerHistory.OwningUser = model.DefaultOwningUser;
                 building.OwnerHistory.OwningApplication = model.DefaultOwningApplication;
-                building.ElevationOfRefHeight = elevHeight;
+                //building.ElevationOfRefHeight = elevHeight;
                 building.CompositionType = IfcElementCompositionEnum.ELEMENT;
 
                 building.ObjectPlacement = model.New<IfcLocalPlacement>();
@@ -67,7 +67,7 @@ namespace SimpleHelloWall
             if (model != null)
             {
                 IfcBuilding building = CreateBuilding(model, "Default Building", 2000);
-                
+
 
                 IfcWallStandardCase wall = CreateWall(model, 4000, 300, 2400);
                 using (Transaction txn = model.BeginTransaction("Add Wall"))
@@ -75,7 +75,7 @@ namespace SimpleHelloWall
                     building.AddElement(wall);
                     txn.Commit();
                 }
-                
+
                 if (wall != null)
                 {
                     try
@@ -95,6 +95,12 @@ namespace SimpleHelloWall
             }
             else
                 Console.WriteLine("Failed to initialise the model");
+
+
+            
+
+
+
             Console.WriteLine("Press any key to exit....");
             Console.ReadKey();
 
