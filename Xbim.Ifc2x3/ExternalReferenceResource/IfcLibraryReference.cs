@@ -28,7 +28,7 @@ namespace Xbim.Ifc2x3.ExternalReferenceResource
     ///   Definition from IAI: An IfcLibraryReference is a reference into a library of information by location (as an URL). It also provides an optional inherited ItemReference key to allow more specific references to library sections or tables, and the inherited Name attribute allows for a human interpretable identification of the library item. Also, general information on the external library can be given through IfcLibraryInformation, accessed by ReferenceIntoLibrary.
     ///   HISTORY: New Entity in IFC Release 2.0, restructured in IFC 2x .
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute, Serializable, IndexedClass]
     public class IfcLibraryReference : IfcExternalReference, IfcLibrarySelect
     {
         /// <summary>

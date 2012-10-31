@@ -31,7 +31,7 @@ namespace Xbim.Ifc2x3.ExternalReferenceResource
     ///   Use Definitions
     ///   An IfcClassificationNotationFacet object holds an individual classification value that is to be assigned to an object through IfcClassificationNotation and IfcRelAssociatesClassification objects.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute, Serializable, IndexedClass]
     public class IfcClassificationNotationFacet : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                                   INotifyPropertyChanging
     {

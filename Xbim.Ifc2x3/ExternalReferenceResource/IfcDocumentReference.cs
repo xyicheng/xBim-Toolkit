@@ -33,7 +33,7 @@ namespace Xbim.Ifc2x3.ExternalReferenceResource
     ///   Formal Propositions:
     ///   WR1   :   A name should only be given, if no document information (including the document name) is attached
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute, Serializable, IndexedClass]
     public class IfcDocumentReference : IfcExternalReference, IfcDocumentSelect
     {
         /// <summary>

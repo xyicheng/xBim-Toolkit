@@ -33,7 +33,7 @@ namespace Xbim.Ifc2x3.ExternalReferenceResource
     ///   Use Definitions
     ///   IfcClassification identifies the classification system or source from which a classification notation is derived. The objective is to minimize the number of IfcClassification objects contained within an IFC model. Ideally, each classification system or source used should have only one IfcClassification object. However, because multiple classification is allowed, there may be many IfcClassification objects used, each identifying a different classification system or source.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute, Serializable, IndexedClass]
     public class IfcClassification : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                      INotifyPropertyChanging
     {

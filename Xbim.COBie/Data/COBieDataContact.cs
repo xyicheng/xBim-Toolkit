@@ -53,8 +53,8 @@ namespace Xbim.COBie.Data
                 contact.Email = GetTelecomEmailAddress(ifcPersonAndOrganization);
 
                 //lets default the creator to that user who created the project for now, no direct link to OwnerHistory on IfcPersonAndOrganization, IfcPerson or IfcOrganization
-                contact.CreatedBy = GetTelecomEmailAddress((Model.IfcProject as IfcRoot).OwnerHistory);
-                contact.CreatedOn = GetCreatedOnDateAsFmtString((Model.IfcProject as IfcRoot).OwnerHistory);
+                contact.CreatedBy = GetTelecomEmailAddress(Model.IfcProject.OwnerHistory);
+                contact.CreatedOn = GetCreatedOnDateAsFmtString(Model.IfcProject.OwnerHistory);
                 
                 IfcActorRole ifcActorRole = null;
                 if (ifcPerson.Roles != null)
