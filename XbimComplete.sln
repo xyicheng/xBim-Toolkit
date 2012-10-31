@@ -51,10 +51,25 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{7ECDCF15-9
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{25F1A002-D766-40FD-910C-D3E9DCC6FCBF}"
 	ProjectSection(SolutionItems) = preProject
+		Readme.txt = Readme.txt
 		XbimComplete.vsmdi = XbimComplete.vsmdi
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeExamples", "CodeExamples\CodeExamples.csproj", "{9FD894A7-6637-4BF0-A0EA-D654CEB0E234}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Licences", "Licences", "{E9E301F2-FE7D-4410-B88D-F83D684A8E62}"
+	ProjectSection(SolutionItems) = preProject
+		CDDL Licence.txt = CDDL Licence.txt
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3rd Party", "3rd Party", "{10A2F674-DB37-41FF-AB71-9D54C8F0A5B6}"
+	ProjectSection(SolutionItems) = preProject
+		Apache2_0.txt = Apache2_0.txt
+		MIT Licence.txt = MIT Licence.txt
+		MS Permissive Licence.txt = MS Permissive Licence.txt
+		NewBSD Licence.txt = NewBSD Licence.txt
+		OPEN CASCADE Public Licence.txt = OPEN CASCADE Public Licence.txt
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
@@ -389,5 +404,6 @@ Global
 		{9FD894A7-6637-4BF0-A0EA-D654CEB0E234} = {0DA6263B-5A69-401E-99D0-391644EF4709}
 		{6EF22FB8-7048-4E6A-9B2F-AC2570A998A9} = {7ECDCF15-95BB-4D2B-8C0D-8615D6E3BAB1}
 		{8729CDD1-B493-48EC-A867-61ABAF3E93D2} = {7ECDCF15-95BB-4D2B-8C0D-8615D6E3BAB1}
+		{10A2F674-DB37-41FF-AB71-9D54C8F0A5B6} = {E9E301F2-FE7D-4410-B88D-F83D684A8E62}
 	EndGlobalSection
 EndGlobal
