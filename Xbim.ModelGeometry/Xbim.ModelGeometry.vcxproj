@@ -146,7 +146,7 @@
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy .\OpenCascade\win64\bin $(OutDir) /D</Command>
+      <Command>xcopy .\OpenCascade\win64\bin "$(OutDir)" /D</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -200,7 +200,7 @@
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy .\OpenCascade\win64\bin $(OutDir) /D</Command>
+      <Command>xcopy .\OpenCascade\win64\bin "$(OutDir)" /D</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">

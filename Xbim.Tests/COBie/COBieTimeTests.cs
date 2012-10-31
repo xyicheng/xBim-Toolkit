@@ -22,7 +22,7 @@ namespace Xbim.Tests.COBie
         
         static COBieContext _cobieContext = new COBieContext();
         COBieQueries cobieEngine = new COBieQueries(_cobieContext);
-        static IModel _model;
+        static XbimModel _model;
 
         [ClassInitialize]
         public static void LoadModel(TestContext context)

@@ -50,8 +50,8 @@ namespace Xbim.DOM
         }
         #region Objects modified by SRL
 
-        public IModel Model { get { return _model; } }
-        public IModel IfcModel() { return _model; }
+        public XbimModel Model { get { return _model; } }
+        public XbimModel IfcModel() { return _model; }
         
 
         #endregion
@@ -409,20 +409,7 @@ namespace Xbim.DOM
 
 
         #region public functions
-        /// <summary>
-        /// Checks the model validity and returns null if there are no errors, others a string containing a description of all the errors
-        /// </summary>
-        /// <param name="vf"></param>
-        /// <returns></returns>
-        public String Validate(ValidationFlags vf)
-        {
-            StringWriter sw = new StringWriter();
-            int errors = _model.Validate(sw, null);
-            if (errors > 0)
-                return sw.ToString();
-            else 
-                return null;
-        }
+
 
         public void Save(string fileName)
         {
@@ -451,12 +438,6 @@ namespace Xbim.DOM
         public string WriteModelToFile(string FileName, bool ValidationFlag)
         {
             string output = null;
-            if (ValidationFlag == true)
-            {
-                TextWriter txtWriter = new StringWriter();
-                Model.Validate(txtWriter, null);
-                output = txtWriter.ToString();
-            }
             Model.SaveAs(FileName, XbimStorageType.IFC);
             return output;
         }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.IO
 {
@@ -44,6 +45,11 @@ namespace Xbim.IO
                 inTransaction = false;
                 base.Dispose(disposing);
             }
+        }
+
+        public IEnumerable<IPersistIfcEntity> Modified()
+        {
+            return model.Cache.Modified();
         }
     }
 }

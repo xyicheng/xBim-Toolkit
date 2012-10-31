@@ -71,7 +71,7 @@ namespace Xbim.XbimExtensions.Interfaces
         int Activate(IPersistIfcEntity owningEntity, bool write);
         void Delete(IPersistIfcEntity instance);
 
-        IPersistIfcEntity IfcProject { get; }
+        
         IEnumerable<IPersistIfcEntity> IfcProducts { get; }
 
         IPersistIfcEntity OwnerHistoryAddObject { get; }
@@ -89,8 +89,6 @@ namespace Xbim.XbimExtensions.Interfaces
         
         void Close();
 
-        int Validate(TextWriter errStream, ReportProgressDelegate progressDelegate, ValidationFlags? validateFlags = null);
-
-
+       
     }
 }

@@ -22,6 +22,7 @@ using System.Globalization;
 using Xbim.COBie.Resources;
 using Xbim.XbimExtensions.Interfaces;
 using Xbim.XbimExtensions.SelectTypes;
+using Xbim.IO;
 
 
 namespace Xbim.COBie.Data
@@ -49,7 +50,7 @@ namespace Xbim.COBie.Data
             _progressStatus = new COBieProgress(context);
         }
 
-        protected IModel Model
+        protected XbimModel Model
         {
             get
             {

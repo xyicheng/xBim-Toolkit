@@ -297,7 +297,7 @@ namespace Xbim.IO
         /// <param name="typeId">Type identifer</param>
         /// <param name="indexKeys">Search keys to use specifiy null if no indices</param>
         /// <param name="data">property data</param>
-        internal void UpdateEntity(int currentLabel, short typeId, List<int> indexKeys, byte[] data, bool? indexed)
+        internal void UpdateEntity(int currentLabel, short typeId, IEnumerable<int> indexKeys, byte[] data, bool? indexed)
         {
             try
             {
@@ -320,7 +320,7 @@ namespace Xbim.IO
                 //Only need to implement delete to tidy the database up, may be better just to reindex and compact
 
                 //now add in any search keys
-                if (indexKeys != null && indexKeys.Count > 0)
+                if (indexKeys != null && indexKeys.Any())
                 {
                     //set the main variables of label and type just ones
                     SetEntityIndexRowValues(typeId, -1, currentLabel);
@@ -369,7 +369,7 @@ namespace Xbim.IO
         /// <param name="typeId">Type identifer</param>
         /// <param name="indexKeys">Search keys to use specifiy null if no indices</param>
         /// <param name="data">property data</param>
-        internal void AddEntity(int currentLabel, short typeId, List<int> indexKeys, byte[] data, bool? indexed)
+        internal void AddEntity(int currentLabel, short typeId, IEnumerable<int> indexKeys, byte[] data, bool? indexed)
         {
             try
             {
@@ -395,7 +395,7 @@ namespace Xbim.IO
                 }
 
                 //now add in any extra index keys
-                if (indexKeys != null && indexKeys.Count > 0)
+                if (indexKeys != null && indexKeys.Any())
                 {
                     foreach (var key in indexKeys.Distinct())
                     {

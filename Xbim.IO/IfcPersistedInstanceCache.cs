@@ -911,18 +911,19 @@ namespace Xbim.IO
         /// <param name="activate">if true loads the properties of the entity</param>
         /// <param name="indexKey">if the entity has a key object, optimises to search for this handle</param>
         /// <returns></returns>
-        public IEnumerable<TIfcType> OfType<TIfcType>(bool activate = false, int indexKey = -1)
+        public IEnumerable<TIfcType> OfType<TIfcType>(bool activate = false, int indexKey = -1) where TIfcType:IPersistIfcEntity 
         {
             IfcType ifcType = IfcMetaData.IfcType(typeof(TIfcType));
 
             //Set the IndexedClass Attribute of this class to ensure that seeking by index will work, this is a optimisation
             Debug.Assert(ifcType.IndexedClass, "Trying to look a class up by index that is not declared as indexeable");
-
+            HashSet<int> entityLabels = new HashSet<int>();
             var entityTable = GetEntityTable();
             try
             {
                 using (var transaction = entityTable.BeginReadOnlyTransaction())
                 {
+                   
                     foreach (Type t in ifcType.NonAbstractSubTypes)
                     {
                         short typeId = IfcMetaData.IfcTypeId(t);
@@ -930,8 +931,8 @@ namespace Xbim.IO
                         if (entityTable.TrySeekEntityType(typeId, out ih, indexKey) && entityTable.TrySeekEntityLabel(ih.EntityLabel)) //we have the first instance
                         {
                             do
-                            {            
-                                IPersistIfcEntity entity;     
+                            {
+                                IPersistIfcEntity entity;
                                 if (caching && this.read.TryGetValue(ih.EntityLabel, out entity))
                                 {
                                     if (activate && !entity.Activated) //activate if required and not already done
@@ -940,6 +941,7 @@ namespace Xbim.IO
                                         entity.ReadEntityProperties(this, new BinaryReader(new MemoryStream(properties)), false);
                                         entity.Bind(_model, ih.EntityLabel); //a positive handle determines that the attributes of this entity have been loaded yet
                                     }
+                                    entityLabels.Add(entity.EntityLabel);
                                     yield return (TIfcType)entity;
                                 }
                                 else
@@ -955,9 +957,38 @@ namespace Xbim.IO
                                         entity.Bind(_model, -ih.EntityLabel); //a negative handle determines that the attributes of this entity have not been loaded yet
 
                                     if (caching) this.read.Add(ih.EntityLabel, entity);
+                                    entityLabels.Add(entity.EntityLabel);
                                     yield return (TIfcType)entity;
                                 }
                             } while (entityTable.TryMoveNextEntityType(out ih) && entityTable.TrySeekEntityLabel(ih.EntityLabel));
+                        }
+                        
+                    }
+                }
+                if (caching) //look in the modified cache and find the new ones only
+                {
+
+                    foreach (var entity in Modified().OfType<TIfcType>())
+                    {
+                        if (indexKey == -1) //get all of the type
+                        {
+                            if (!entityLabels.Contains(entity.EntityLabel))
+                            {
+                                entityLabels.Add(entity.EntityLabel);
+                                yield return (TIfcType)entity;
+                            }
+                        }
+                        else
+                        {
+                            // get all types that match the index key
+                            if (ifcType.GetIndexedValues(entity).Contains(indexKey))
+                            {
+                                if (!entityLabels.Contains(entity.EntityLabel))
+                                {
+                                    entityLabels.Add(entity.EntityLabel);
+                                    yield return (TIfcType)entity;
+                                }
+                            }
                         }
                     }
                 }
@@ -1228,7 +1259,7 @@ namespace Xbim.IO
             }
         }
 
-        public IEnumerable<T> Where<T>(Expression<Func<T, bool>> expr)
+        public IEnumerable<T> Where<T>(Expression<Func<T, bool>> expr) where T : IPersistIfcEntity
         {
             bool indexFound = false;
             Type type = typeof(T);
@@ -1622,6 +1653,11 @@ namespace Xbim.IO
         {            
              if (_jetInstance == null)
                  _jetInstance = CreateInstance("XbimInstance", XbimModel.XbimTempDirectory);
+        }
+
+        internal IEnumerable<IPersistIfcEntity> Modified()
+        {
+            return modified.Values;
         }
     }
 

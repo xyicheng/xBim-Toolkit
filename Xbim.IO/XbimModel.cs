@@ -430,70 +430,21 @@ namespace Xbim.IO
 
 
         #region Validation
+                       
 
-        public string Validate(ValidationFlags validateFlags)
+        public int Validate(IEnumerable<IPersistIfcEntity> entities, TextWriter tw, ValidationFlags validateLevel = ValidationFlags.Properties)
         {
-            StringBuilder sb = new StringBuilder();
-            TextWriter tw = new StringWriter(sb);
-            Validate(tw, null, validateFlags);
-            return sb.ToString();
-        }
-
-        /// <summary>
-        ///   Only executes the flagged validation routines
-        /// </summary>
-        /// <param name = "errStream"></param>
-        /// <param name = "progressDelegate"></param>
-        /// <param name = "validateFlags"></param>
-        /// <returns></returns>
-        public int Validate(TextWriter errStream, ReportProgressDelegate progressDelegate, ValidationFlags validateFlags)
-        {
-            IndentedTextWriter tw = new IndentedTextWriter(errStream, "    ");
-            tw.Indent = 0;
-            double total = Instances.Count;
-            int idx = 0;
             int errors = 0;
-            int percentage = -1;
-
-            foreach (XbimInstanceHandle handle in instances.Handles())
+            foreach (var entity in entities)
             {
-                idx++;
-                IPersistIfcEntity ent = GetInstanceVolatile(handle.EntityLabel);
-                errors += Validate(ent, tw, validateFlags);
-
-                if (progressDelegate != null)
-                {
-                    int newPercentage = (int)(idx / total * 100.0);
-                    if (newPercentage != percentage) progressDelegate(percentage, "");
-                    percentage = newPercentage;
-                }
+                errors += Validate(entity, tw, validateLevel);
             }
             return errors;
         }
 
-        /// <summary>
-        ///   Executes all validation routines and reports progress
-        /// </summary>
-        /// <param name = "errStream"></param>
-        /// <param name = "progressDelegate"></param>
-        /// <returns></returns>
-        public int Validate(TextWriter errStream, ReportProgressDelegate progressDelegate)
+        public int Validate(IPersistIfcEntity ent, TextWriter tw, ValidationFlags validateLevel = ValidationFlags.Properties)
         {
-            return Validate(errStream, progressDelegate, ValidationFlags.All);
-        }
-
-        /// <summary>
-        ///   Validates the all aspects of all model instances
-        /// </summary>
-        /// <param name = "errStream"></param>
-        /// <returns></returns>
-        public int Validate(TextWriter errStream)
-        {
-            return Validate(errStream, null, ValidationFlags.All);
-        }
-
-        public static int Validate(IPersistIfcEntity ent, IndentedTextWriter tw, ValidationFlags validateLevel)
-        {
+            IndentedTextWriter itw = new IndentedTextWriter(tw);
             if (validateLevel == ValidationFlags.None) return 0; //nothing to do
             IfcType ifcType = IfcMetaData.IfcType(ent);
             bool notIndented = true;
@@ -507,11 +458,11 @@ namespace Xbim.IO
                     {
                         if (notIndented)
                         {
-                            tw.WriteLine(string.Format("#{0} - {1}", ent.EntityLabel, ifcType.Type.Name));
-                            tw.Indent++;
+                            itw.WriteLine(string.Format("#{0} - {1}", ent.EntityLabel, ifcType.Type.Name));
+                            itw.Indent++;
                             notIndented = false;
                         }
-                        tw.WriteLine(err.Trim('\n'));
+                        itw.WriteLine(err.Trim('\n'));
                         errors++;
                     }
                 }
@@ -525,11 +476,11 @@ namespace Xbim.IO
                     {
                         if (notIndented)
                         {
-                            tw.WriteLine(string.Format("#{0} - {1}", ent.EntityLabel, ifcType.Type.Name));
-                            tw.Indent++;
+                            itw.WriteLine(string.Format("#{0} - {1}", ent.EntityLabel, ifcType.Type.Name));
+                            itw.Indent++;
                             notIndented = false;
                         }
-                        tw.WriteLine(err.Trim('\n'));
+                        itw.WriteLine(err.Trim('\n'));
                         errors++;
                     }
                 }
@@ -540,14 +491,14 @@ namespace Xbim.IO
             {
                 if (notIndented)
                 {
-                    tw.WriteLine(string.Format("#{0} - {1}", ent.EntityLabel, ifcType.Type.Name));
-                    tw.Indent++;
+                    itw.WriteLine(string.Format("#{0} - {1}", ent.EntityLabel, ifcType.Type.Name));
+                    itw.Indent++;
                     notIndented = false;
                 }
-                tw.WriteLine(str.Trim('\n'));
+                itw.WriteLine(str.Trim('\n'));
                 errors++;
             }
-            if (!notIndented) tw.Indent--;
+            if (!notIndented) itw.Indent--;
             return errors;
         }
 
@@ -945,7 +896,7 @@ namespace Xbim.IO
 
 
 
-        public IPersistIfcEntity IfcProject
+        public IfcProject IfcProject
         {
             get
             {
@@ -978,10 +929,7 @@ namespace Xbim.IO
             get { return instances.DefaultOwningUser; }
         }
 
-        public int Validate(TextWriter errStream, ReportProgressDelegate progressDelegate, ValidationFlags? validateFlags = null)
-        {
-            throw new NotImplementedException();
-        }
+       
 
         ~XbimModel()
         {
@@ -1125,5 +1073,7 @@ namespace Xbim.IO
         {
             IfcPersistedInstanceCache.Initialize();
         }
+
+      
     }
 }

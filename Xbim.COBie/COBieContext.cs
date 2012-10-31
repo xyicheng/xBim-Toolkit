@@ -12,6 +12,7 @@ using Xbim.Ifc2x3.SharedBldgServiceElements;
 using Xbim.Ifc2x3.HVACDomain;
 using Xbim.Ifc2x3.ElectricalDomain;
 using Xbim.XbimExtensions.Interfaces;
+using Xbim.IO;
 
 namespace Xbim.COBie
 {
@@ -33,7 +34,7 @@ namespace Xbim.COBie
                 _progress = progressHandler;
                 this.ProgressStatus += progressHandler;
             }
-			Models = new List<IModel>();
+            Models = new List<XbimModel>();
 
             EMails = new Dictionary<long, string>();
             COBieGlobalValues = new Dictionary<string, string>();
@@ -45,14 +46,14 @@ namespace Xbim.COBie
 		/// Collection of models to interrogate for data to populate the COBie worksheets
 		/// </summary>
         /// <remarks>Due to be obsoleted. Will merge models explicitly</remarks>
-		public ICollection<IModel> Models { get; set; }
+        public ICollection<XbimModel> Models { get; set; }
 
 
-        private IModel _model = null;
+        private XbimModel _model = null;
         /// <summary>
         /// Gets the model defined in this context to generate COBie data from
         /// </summary>
-        public IModel Model
+        public XbimModel Model
         {
             get
             {

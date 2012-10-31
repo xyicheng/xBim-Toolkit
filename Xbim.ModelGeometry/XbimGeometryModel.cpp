@@ -542,8 +542,8 @@ namespace Xbim
 				return Build((IfcShellBasedSurfaceModel^)repItem, forceSolid);
 			else if(dynamic_cast<IfcFaceBasedSurfaceModel^>(repItem)) 
 				return Build((IfcFaceBasedSurfaceModel^)repItem, forceSolid);
-			else if(dynamic_cast<IfcBooleanClippingResult^>(repItem)) 
-				return Build((IfcBooleanClippingResult^)repItem);
+			else if(dynamic_cast<IfcBooleanResult^>(repItem)) 
+				return Build((IfcBooleanResult^)repItem);
 			else if(dynamic_cast<IfcMappedItem^>(repItem))
 			{
 				IfcMappedItem^ map = (IfcMappedItem^) repItem;
