@@ -19,4 +19,4 @@
 // AssemblyFileVersion should ideally be changed with each build, and should help identify the origin of a build
 [assembly: AssemblyFileVersion("2.3.6.0")]
 // AssemblyInformationVersion is a cosmetic version indicator
-[assembly: AssemblyInformationalVersion("Xbim 2.6")]
+[assembly: AssemblyInformationalVersion("Xbim 2.4 RC2")]
