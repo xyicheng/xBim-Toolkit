@@ -18,48 +18,19 @@ using Xbim.Ifc.ProductExtension;
 using Xbim.Ifc.MaterialResource;
 using Xbim.Ifc.SelectTypes;
 using Xbim.Ifc.PresentationOrganizationResource;
-using Xbim.Ifc.PresentationAppearanceResource; // we need this to use extension methods in VS 2005
+using Xbim.Ifc.PresentationAppearanceResource;
+using CodeExamples; // we need this to use extension methods in VS 2005
 
 
-namespace SimpleHelloWall
+namespace CodeExamples.HelloWall
 {
-    class Program
+    public class HelloWallExample : ISample
     {
-        private static IfcBuilding CreateBuilding(IModel model, string name, double elevHeight)
-        {
-            using (Transaction txn = model.BeginTransaction("Create Building"))
-            {
-                IfcBuilding building = model.New<IfcBuilding>();
-                building.Name = name;
-                building.OwnerHistory.OwningUser = model.DefaultOwningUser;
-                building.OwnerHistory.OwningApplication = model.DefaultOwningApplication;
-                //building.ElevationOfRefHeight = elevHeight;
-                building.CompositionType = IfcElementCompositionEnum.ELEMENT;
-
-                building.ObjectPlacement = model.New<IfcLocalPlacement>();
-                IfcLocalPlacement localPlacement = building.ObjectPlacement as IfcLocalPlacement;
-
-                if (localPlacement.RelativePlacement == null)
-                    localPlacement.RelativePlacement = model.New<IfcAxis2Placement3D>();
-                IfcAxis2Placement3D placement = localPlacement.RelativePlacement as IfcAxis2Placement3D;
-                placement.SetNewLocation(0.0, 0.0, 0.0);
-
-                model.IfcProject.AddBuilding(building);
-                //validate and commit changes
-                if (model.Validate(Console.Out) == 0)
-                {
-                    txn.Commit();
-                    return building;
-                }
-                else txn.Rollback();
-            }
-            return null;
-        }
         /// <summary>
         /// This sample demonstrates the minimum steps to create a compliant IFC model that contains a single standard case wall
         /// </summary>
         /// <param name="args"></param>
-        static void Main(string[] args)
+        public void Run()
         {
             //first create and initialise a model called Hello Wall
             Console.WriteLine("Initialising the IFC Project....");
@@ -94,17 +65,46 @@ namespace SimpleHelloWall
                 }
             }
             else
+            {
                 Console.WriteLine("Failed to initialise the model");
-
-
-            
-
-
+            }
 
             Console.WriteLine("Press any key to exit....");
             Console.ReadKey();
 
         }
+
+        private IfcBuilding CreateBuilding(IModel model, string name, double elevHeight)
+        {
+            using (Transaction txn = model.BeginTransaction("Create Building"))
+            {
+                IfcBuilding building = model.New<IfcBuilding>();
+                building.Name = name;
+                building.OwnerHistory.OwningUser = model.DefaultOwningUser;
+                building.OwnerHistory.OwningApplication = model.DefaultOwningApplication;
+                //building.ElevationOfRefHeight = elevHeight;
+                building.CompositionType = IfcElementCompositionEnum.ELEMENT;
+
+                building.ObjectPlacement = model.New<IfcLocalPlacement>();
+                IfcLocalPlacement localPlacement = building.ObjectPlacement as IfcLocalPlacement;
+
+                if (localPlacement.RelativePlacement == null)
+                    localPlacement.RelativePlacement = model.New<IfcAxis2Placement3D>();
+                IfcAxis2Placement3D placement = localPlacement.RelativePlacement as IfcAxis2Placement3D;
+                placement.SetNewLocation(0.0, 0.0, 0.0);
+
+                model.IfcProject.AddBuilding(building);
+                //validate and commit changes
+                if (model.Validate(Console.Out) == 0)
+                {
+                    txn.Commit();
+                    return building;
+                }
+                else txn.Rollback();
+            }
+            return null;
+        }
+        
 
 
         /// <summary>
@@ -112,7 +112,7 @@ namespace SimpleHelloWall
         /// </summary>
         /// <param name="projectName">Name of the project</param>
         /// <returns></returns>
-        static IModel CreateandInitModel(string projectName)
+        private IModel CreateandInitModel(string projectName)
         {
             IModel model = new Xbim.IO.XbimMemoryModel(); //create an empty model
 
@@ -154,7 +154,7 @@ namespace SimpleHelloWall
         /// <param name="width">Width of the rectangular footprint (width of the wall)</param>
         /// <param name="height">Height to extrude the wall, extrusion is vertical</param>
         /// <returns></returns>
-        static IfcWallStandardCase CreateWall(IModel model, double length, double width, double height)
+        private IfcWallStandardCase CreateWall(IModel model, double length, double width, double height)
         {
             //
             //begin a transaction

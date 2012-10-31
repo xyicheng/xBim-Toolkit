@@ -6,7 +6,7 @@ using Xbim.XbimExtensions;
 
 namespace CodeExamples.BoundingBox
 {
-    public class BoundingBoxExample
+    public class BoundingBoxExample : ISample
     {
 
         public void Run()
