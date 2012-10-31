@@ -17,26 +17,37 @@ namespace Xbim.IO
 
         private  const string ifcEntityTableName = "IfcEntities";
         private const string entityTableTypeLabelIndex = "EntByTypeLabel";
-        //private const string entityTableTypeIndex = "EntByType";
+        
         private const string entityTableLabelIndex = "EntByLabel"; 
         private const string colNameEntityLabel = "EntityLabel";
-        private const string colNameSecondaryKey = "SecondaryKey";
         private const string colNameIfcType = "IfcType";
         private const string colNameEntityData = "EntityData";
         private const string colNameIsIndexedClass = "IsIndexedClass";
+
+        
         private JET_COLUMNID _colIdEntityLabel;
-        private JET_COLUMNID _colIdSecondaryKey;
+        
         private JET_COLUMNID _colIdIfcType;
         private JET_COLUMNID _colIdEntityData;
         private JET_COLUMNID _colIdIsIndexedClass;
         Int32ColumnValue _colValEntityLabel;
-        Int32ColumnValue _colValSecondaryKey;
         Int16ColumnValue _colValTypeId;
         BytesColumnValue _colValData;
         BoolColumnValue _colValIsIndexedClass;
         ColumnValue[] _colValues;
-        int current;
-
+       
+        //Index Table
+        private static string ifcEntityIndexTableName = "IfcEntitiesIndex";
+        private const string colNameSecondaryKey = "SecondaryKey";
+        private JET_TABLEID _indexTable;
+        private JET_COLUMNID _colIdIdxIfcType;
+        private JET_COLUMNID _colIdIdxKey;
+        private JET_COLUMNID _colIdIdxEntityLabel;
+        Int16ColumnValue _colValIdxIfcType;
+        Int32ColumnValue _colValIdxKey;
+        Int32ColumnValue _colValIdxEntityLabel;
+        ColumnValue[] _colIdxValues;
+       
 
         public ColumnValue[] ColumnValues
         {
@@ -51,106 +62,125 @@ namespace Xbim.IO
             return table;
         }
 
-
+        public override void Dispose()
+        {
+            Api.JetCloseTable(sesid, this._indexTable);
+            base.Dispose();
+        }
 
         internal static void CreateTable(JET_SESID sesid, JET_DBID dbid)
         {
             JET_TABLEID tableid;
            
 
-            using (var transaction = new Microsoft.Isam.Esent.Interop.Transaction(sesid))
+            using (var transaction = new Transaction(sesid))
             {
                 Api.JetCreateTable(sesid, dbid, ifcEntityTableName, 8, 100, out tableid);
+                
                 JET_COLUMNID columnid;
-                var columndef = new JET_COLUMNDEF
-                {
-                    coltyp = JET_coltyp.Long,
-                    grbit = ColumndefGrbit.ColumnNotNULL
-                    
-                };
-
+                //Add the primary key, Entity Label
+                var columndef = new JET_COLUMNDEF {coltyp = JET_coltyp.Long, grbit = ColumndefGrbit.ColumnNotNULL};
                 Api.JetAddColumn(sesid, tableid, colNameEntityLabel, columndef, null, 0, out columnid);
-             
-                columndef.grbit = ColumndefGrbit.ColumnTagged | ColumndefGrbit.ColumnMultiValued;
-                // Name of the secondary key : for lookup by a property value of the object that is a foreign object
-                Api.JetAddColumn(sesid, tableid, colNameSecondaryKey, columndef, null, 0, out columnid);
+               
                 // Identity of the type of the object : 16-bit integer looked up in IfcType Table
-                columndef = new JET_COLUMNDEF
-                {
-                    coltyp = JET_coltyp.Short,
-                    grbit = ColumndefGrbit.ColumnMaybeNull
-                };
+                columndef = new JET_COLUMNDEF{coltyp = JET_coltyp.Short,grbit = ColumndefGrbit.ColumnMaybeNull};
                 Api.JetAddColumn(sesid, tableid, colNameIfcType, columndef, null, 0, out columnid);
 
-                
-                columndef = new JET_COLUMNDEF
-                {
-                    coltyp = JET_coltyp.LongBinary,
-                    grbit = ColumndefGrbit.ColumnMaybeNull
-                };
-              
-                if(EsentVersion.SupportsWindows7Features)
-                    columndef.grbit |= Windows7Grbits.ColumnCompressed;
-                
-                Api.JetAddColumn(sesid, tableid, colNameEntityData, columndef, null, 0, out columnid);
-                columndef = new JET_COLUMNDEF
-                {
-                    coltyp = JET_coltyp.Bit,
-                    grbit = ColumndefGrbit.None
-                };
-                Api.JetAddColumn(sesid, tableid, colNameIsIndexedClass, columndef, null, 0, out columnid);
 
-                //write an initial header record
+                //The properties of the entity
+                columndef = new JET_COLUMNDEF {coltyp = JET_coltyp.LongBinary,grbit = ColumndefGrbit.ColumnMaybeNull};
+                //if(EsentVersion.SupportsWindows7Features) columndef.grbit |= Windows7Grbits.ColumnCompressed;
+                Api.JetAddColumn(sesid, tableid, colNameEntityData, columndef, null, 0, out columnid);
                 
+                //Flag to say if this class is to be indexed by type
+                columndef = new JET_COLUMNDEF{coltyp = JET_coltyp.Bit,grbit = ColumndefGrbit.None};
+                Api.JetAddColumn(sesid, tableid, colNameIsIndexedClass, columndef, null, 0, out columnid);
+                
+                //Primary Key index
                 string labelIndexDef = string.Format("+{0}\0\0", colNameEntityLabel);
                 Api.JetCreateIndex(sesid, tableid, entityTableLabelIndex, CreateIndexGrbit.IndexPrimary, labelIndexDef, labelIndexDef.Length,100);
                 Api.JetCloseTable(sesid, tableid);
                 transaction.Commit(CommitTransactionGrbit.LazyFlush);
             }
-            Api.JetOpenTable(sesid, dbid, ifcEntityTableName, null, 0, OpenTableGrbit.DenyRead, out tableid);
 
-            string typeIndexDef = string.Format("+{0}\0{1}\0{2}\0\0", colNameIfcType, colNameSecondaryKey, colNameEntityLabel);
-           
-            JET_INDEXCREATE[] indexes = new[]
-                {
-                    new JET_INDEXCREATE
-                    {
-                        szIndexName = entityTableTypeLabelIndex,
-                        szKey = typeIndexDef,
-                        cbKey = typeIndexDef.Length,
-                        rgconditionalcolumn = new[]
-                        {
-                            new JET_CONDITIONALCOLUMN
-                            {
-                                szColumnName = colNameIsIndexedClass,
-                                grbit = ConditionalColumnGrbit.ColumnMustBeNonNull
-                            }
-                        },
-                        cConditionalColumn = 1,
-                        ulDensity=100,
-                        grbit = CreateIndexGrbit.IndexUnique
-                    }
-                };
+            ////Now add the conditional index for retrieval by type
+            //using (var transaction = new Transaction(sesid))
+            //{
+            //    Api.JetOpenTable(sesid, dbid, ifcEntityTableName, null, 0, OpenTableGrbit.DenyRead, out tableid);
+            //    string typeIndexDef = string.Format("+{0}\0{1}\0\0", colNameIfcType, colNameEntityLabel);
 
-            Api.JetCreateIndex2(sesid, tableid, indexes, indexes.Length);
-            Api.JetCloseTable(sesid, tableid);
+            //    JET_INDEXCREATE[] indexes = new[]
+            //    {
+            //        new JET_INDEXCREATE
+            //        {
+            //            szIndexName = entityTableTypeLabelIndex,
+            //            szKey = typeIndexDef,
+            //            cbKey = typeIndexDef.Length,
+            //            rgconditionalcolumn = new[]
+            //            {
+            //                new JET_CONDITIONALCOLUMN
+            //                {
+            //                    szColumnName = colNameIsIndexedClass,
+            //                    grbit = ConditionalColumnGrbit.ColumnMustBeNonNull
+            //                }
+            //            },
+            //            cConditionalColumn = 1,
+            //            ulDensity=100,
+            //            grbit = CreateIndexGrbit.IndexUnique
+            //        }
+            //    };
+
+            //    Api.JetCreateIndex2(sesid, tableid, indexes, indexes.Length);
+            //    Api.JetCloseTable(sesid, tableid);
+            //    transaction.Commit(CommitTransactionGrbit.LazyFlush);
+            //}
+
+            //Now create a table for the indexed properties
+            using (var transaction = new Transaction(sesid))
+            {
+                Api.JetCreateTable(sesid, dbid, ifcEntityIndexTableName, 8, 100, out tableid);
+                JET_COLUMNID columnid;                
+                // Identity of the type of the object : 16-bit integer looked up in IfcType Table
+                var columndef = new JET_COLUMNDEF{coltyp = JET_coltyp.Short,grbit = ColumndefGrbit.ColumnNotNULL};  
+                Api.JetAddColumn(sesid, tableid, colNameIfcType, columndef, null, 0, out columnid);
+                // Name of the secondary key : for lookup by a property value of the object that is a foreign object
+                columndef = new JET_COLUMNDEF { coltyp = JET_coltyp.Long, grbit = ColumndefGrbit.ColumnNotNULL }; 
+                Api.JetAddColumn(sesid, tableid, colNameSecondaryKey, columndef, null, 0, out columnid);
+                //Add the entity Label
+                Api.JetAddColumn(sesid, tableid, colNameEntityLabel, columndef, null, 0, out columnid);
+
+                //Add the primary key, Entity Type, Index label and Entity Label 
+                string labelIndexDef = string.Format("+{0}\0{1}\0{2}\0\0", colNameIfcType, colNameSecondaryKey, colNameEntityLabel);
+                Api.JetCreateIndex(sesid, tableid, entityTableLabelIndex, CreateIndexGrbit.IndexPrimary, labelIndexDef, labelIndexDef.Length, 100);
+                Api.JetCloseTable(sesid, tableid);
+                transaction.Commit(CommitTransactionGrbit.LazyFlush);
+            }
         }
         
         private void InitColumns()
         {
 
-           // IDictionary<string, JET_COLUMNID> columnids = Api.GetColumnDictionary(_jetSession, _jetCursor);
+           // The main entity Table
             _colIdEntityLabel = Api.GetTableColumnid(sesid, table, colNameEntityLabel);
-            _colIdSecondaryKey = Api.GetTableColumnid(sesid, table, colNameSecondaryKey);
+            
             _colIdIfcType = Api.GetTableColumnid(sesid, table, colNameIfcType);
             _colIdEntityData = Api.GetTableColumnid(sesid, table, colNameEntityData);
             _colIdIsIndexedClass = Api.GetTableColumnid(sesid, table, colNameIsIndexedClass);
             _colValEntityLabel = new Int32ColumnValue { Columnid = _colIdEntityLabel };
             _colValTypeId = new Int16ColumnValue { Columnid = _colIdIfcType };
-            _colValSecondaryKey = new Int32ColumnValue { Columnid = _colIdSecondaryKey };
+            
             _colValData = new BytesColumnValue { Columnid = _colIdEntityData };
             _colValIsIndexedClass = new BoolColumnValue { Columnid = _colIdIsIndexedClass };
-            _colValues = new ColumnValue[] { _colValEntityLabel, _colValSecondaryKey, _colValTypeId, _colValData, _colValIsIndexedClass };
+            _colValues = new ColumnValue[] { _colValEntityLabel, _colValTypeId, _colValData, _colValIsIndexedClass };
+
+            //The index table
+            _colIdIdxIfcType = Api.GetTableColumnid(sesid, _indexTable, colNameIfcType);
+            _colValIdxIfcType = new Int16ColumnValue { Columnid = _colIdIdxIfcType };
+            _colIdIdxKey = Api.GetTableColumnid(sesid, _indexTable, colNameSecondaryKey);
+            _colValIdxKey = new Int32ColumnValue { Columnid = _colIdIdxKey };
+            _colIdIdxEntityLabel = Api.GetTableColumnid(sesid, _indexTable, colNameEntityLabel);
+            _colValIdxEntityLabel = new Int32ColumnValue { Columnid = _colIdIdxEntityLabel };
+            _colIdxValues = new ColumnValue[] { _colValIdxIfcType, _colValIdxKey, _colValIdxEntityLabel };
 
         }
 
@@ -168,7 +198,10 @@ namespace Xbim.IO
         {
             Api.JetOpenTable(this.sesid, this.dbId, ifcEntityTableName, null, 0, 
                 mode == OpenDatabaseGrbit.ReadOnly ? OpenTableGrbit.ReadOnly :
-                mode == OpenDatabaseGrbit.Exclusive ? OpenTableGrbit.DenyWrite : OpenTableGrbit.None, out this.table);         
+                mode == OpenDatabaseGrbit.Exclusive ? OpenTableGrbit.DenyWrite : OpenTableGrbit.None, out this.table);
+            Api.JetOpenTable(this.sesid, this.dbId, ifcEntityIndexTableName, null, 0,
+                mode == OpenDatabaseGrbit.ReadOnly ? OpenTableGrbit.ReadOnly :
+                mode == OpenDatabaseGrbit.Exclusive ? OpenTableGrbit.DenyWrite : OpenTableGrbit.None, out this._indexTable);    
             InitColumns();
         }
 
@@ -178,17 +211,27 @@ namespace Xbim.IO
         /// </summary>
         /// <param name="primaryKey">The label of the entity</param>
         /// <param name="type">The index of the type of the entity</param>
-        /// <param name="indexKey">specify null if no secondary key is required</param>
         /// <param name="data">The property data</param>
-        internal void SetColumnValues(int primaryKey, short type, int? indexKey, byte[] data, bool? index)
+        internal void SetEntityRowValues(int primaryKey, short type, byte[] data, bool? index)
         {
             _colValEntityLabel.Value = primaryKey;
             _colValTypeId.Value = type;
-            _colValSecondaryKey.Value=indexKey;
             _colValData.Value = data;
             _colValIsIndexedClass.Value = index;
         }
 
+        /// <summary>
+        /// Sets the values prior to update to write to the entity index table 
+        /// </summary>
+        /// <param name="primaryKey">The entity label</param>
+        /// <param name="type">The Ifc Type ID</param>
+        /// <param name="indexKey">The secondary key to index by</param>
+        internal void SetEntityIndexRowValues(short type, int indexKey, int primaryKey)
+        {
+            _colValIdxEntityLabel.Value = primaryKey;
+            _colValIdxIfcType.Value = type;
+            _colValIdxKey.Value = indexKey;
+        }
 
 
         public string PrimaryIndex { get { return entityTableTypeLabelIndex; } }
@@ -233,18 +276,7 @@ namespace Xbim.IO
                 return null;
            
         }
-        /// <summary>
-        /// Adds an entity, assumes a valid transaction is running
-        /// </summary>
-        /// <param name="toWrite"></param>
-        internal void AddEntity(IPersistIfcEntity toWrite)
-        {
-            MemoryStream ms = new MemoryStream();
-            BinaryWriter bw = new BinaryWriter(ms);
-            toWrite.WriteEntity(bw);
-            IfcType ifcType = IfcMetaData.IfcType(toWrite);
-            AddEntity(toWrite.EntityLabel, ifcType.TypeId, ifcType.GetIndexedValues(toWrite), ms.ToArray(), ifcType.IndexedClass);
-        }
+        
         /// <summary>
         /// Updates an entity, assumes a valid transaction is running
         /// </summary>
@@ -270,36 +302,42 @@ namespace Xbim.IO
             try
             {
                 if (indexed.HasValue && indexed.Value == false) indexed = null;
-                SetOrderByLabel();
+                
                 if (!TrySeekEntityLabel(currentLabel)) throw new XbimException("Attempt to update an entity that does not exist in the model");
-                int keyCount = KeyCount();
-
+                
                 using (var update = new Update(sesid, table, JET_prep.Replace))
                 {
                     //first put a record in with a null type key
-                    SetColumnValues(currentLabel, typeId, -1, data, indexed);
+                    SetEntityRowValues(currentLabel, typeId, data, indexed);
                     Api.SetColumns(sesid, table, _colValues);
-                    //now add in any search keys
-                    if (indexKeys != null && indexKeys.Count > 0)
-                    {
-                        IEnumerable<int> uniqueKeys = indexKeys.Distinct();
-                        int i = 2;
-                        JET_SETINFO setinfo = new JET_SETINFO();
-                        foreach (var item in uniqueKeys)
-                        {
-                            byte[] bytes = BitConverter.GetBytes(item);
-                            setinfo.itagSequence = i;
-                            Api.JetSetColumn(sesid, table, _colIdSecondaryKey, bytes, bytes.Length, SetColumnGrbit.None, setinfo);
-                            i++;
-                        }
-                        //delete any extra keys
-                        for (int j = i; j <= keyCount; j++)
-                        {
-                            setinfo.itagSequence = j;
-                            Api.JetSetColumn(sesid, table, _colIdSecondaryKey, null, 0, SetColumnGrbit.None, setinfo);
-                        }
-                    }
                     update.Save();
+                }
+
+                if (indexed.HasValue && indexed.Value == true && !TrySeekEntityType(typeId, -1, currentLabel)) //this should be there
+                    throw new XbimException("It is illegal to change an entities type, please delete and insert the entity as a new type");
+
+                //TODO delete any existing keys, not strictly necessary as the search engine checks the compliance of every entity with the search criteria after retrieval
+                //Only need to implement delete to tidy the database up, may be better just to reindex and compact
+
+                //now add in any search keys
+                if (indexKeys != null && indexKeys.Count > 0)
+                {
+                    //set the main variables of label and type just ones
+                    SetEntityIndexRowValues(typeId, -1, currentLabel);
+                    IEnumerable<int> uniqueKeys = indexKeys.Distinct();
+                    foreach (var key in uniqueKeys)
+                    {
+                        if (!TrySeekEntityType(typeId, key, currentLabel)) //already got it just skip
+                        {
+                            using (var update = new Update(sesid, _indexTable, JET_prep.Insert))
+                            {
+                                _colValIdxKey.Value = key;
+                                Api.SetColumns(sesid, _indexTable, _colIdxValues);
+                                update.Save();
+                            }
+                        }
+                       
+                    }
                 }
             }
             catch (Exception e)
@@ -309,18 +347,20 @@ namespace Xbim.IO
             }
 
         }
+
         /// <summary>
-        /// Returns the number of keys in the secondary index column of the current record
+        /// Adds an entity, assumes a valid transaction is running
         /// </summary>
-        /// <returns></returns>
-        private int KeyCount()
+        /// <param name="toWrite"></param>
+        internal void AddEntity(IPersistIfcEntity toWrite)
         {
-            JET_RETRIEVECOLUMN retrievecolumn = new JET_RETRIEVECOLUMN();
-            retrievecolumn.columnid = _colIdSecondaryKey;
-            retrievecolumn.itagSequence = 0;
-            Api.JetRetrieveColumns(sesid, table, new[] { retrievecolumn }, 1);
-            return retrievecolumn.itagSequence;
+            MemoryStream ms = new MemoryStream();
+            BinaryWriter bw = new BinaryWriter(ms);
+            toWrite.WriteEntity(bw);
+            IfcType ifcType = IfcMetaData.IfcType(toWrite);
+            AddEntity(toWrite.EntityLabel, ifcType.TypeId, ifcType.GetIndexedValues(toWrite), ms.ToArray(), ifcType.IndexedClass);
         }
+        
 
         /// <summary>
         /// Adds an entity, assumes a valid transaction is running
@@ -337,26 +377,35 @@ namespace Xbim.IO
                 using (var update = new Update(sesid, table, JET_prep.Insert))
                 {
                     //first put a record in with a null type key
-                    SetColumnValues(currentLabel, typeId, -1, data, indexed);
+                    SetEntityRowValues(currentLabel, typeId, data, indexed);
                     Api.SetColumns(sesid, table, _colValues);
-                    //now add in any search keys
-                    if (indexKeys != null && indexKeys.Count > 0)
-                    {
-                        IEnumerable<int> uniqueKeys = indexKeys.Distinct();
-                        int i = 2;
-                        JET_SETINFO setinfo = new JET_SETINFO();
-                        foreach (var item in uniqueKeys)
-                        {
-                            byte[] bytes = BitConverter.GetBytes(item);
-                            setinfo.itagSequence = i ;
-                            Api.JetSetColumn(sesid, table, _colIdSecondaryKey, bytes, bytes.Length, SetColumnGrbit.None, setinfo);
-                            i++;
-                           
-                        }
-                    }
-
                     update.Save();
                     UpdateCount(1);
+                }
+                //set the main variables of label and type just ones
+                SetEntityIndexRowValues(typeId, -1, currentLabel);
+                //add -1 record to allow retrieval by type id alone
+                if (indexed.HasValue && indexed.Value == true) 
+                {
+                    using (var update = new Update(sesid, _indexTable, JET_prep.Insert))
+                    {
+                        Api.SetColumns(sesid, _indexTable, _colIdxValues);
+                        update.Save();
+                    }
+                }
+
+                //now add in any extra index keys
+                if (indexKeys != null && indexKeys.Count > 0)
+                {
+                    foreach (var key in indexKeys.Distinct())
+                    {
+                        using (var update = new Update(sesid, _indexTable, JET_prep.Insert))
+                        {
+                            _colValIdxKey.Value = key;
+                            Api.SetColumns(sesid, _indexTable, _colIdxValues);
+                            update.Save();
+                        }
+                    }
                 }
             }
             catch (Exception e)
@@ -400,62 +449,52 @@ namespace Xbim.IO
         /// <returns></returns>
         public bool TrySeekEntityType(short typeId, out XbimInstanceHandle ih)
         {
-            Api.MakeKey(sesid, table, typeId, MakeKeyGrbit.NewKey);
-            if(Api.TrySeek(sesid, table, SeekGrbit.SeekGE))
-            {
-                Api.MakeKey(sesid, table, typeId, MakeKeyGrbit.NewKey | MakeKeyGrbit.FullColumnEndLimit);
-                if( Api.TrySetIndexRange(sesid, table, SetIndexRangeGrbit.RangeUpperLimit | SetIndexRangeGrbit.RangeInclusive))
-                {
-                    ih = new XbimInstanceHandle(Api.RetrieveColumnAsInt32(sesid, table, _colIdEntityLabel, RetrieveColumnGrbit.RetrieveFromIndex), Api.RetrieveColumnAsInt16(sesid, table, _colIdIfcType, RetrieveColumnGrbit.RetrieveFromIndex));
-                    return true;
-                }
-            }
-            ih = new XbimInstanceHandle();
-            return false;
+            return TrySeekEntityType(typeId, out ih, -1);
 
+        }
+
+        /// <summary>
+        /// Looks up an entity index to see if the secondary key exists
+        /// </summary>
+        /// <param name="typeId">The Ifc Type</param>
+        /// <param name="key">The secondary key</param>
+        /// <param name="currentLabel">The indexed entity label</param>
+        /// <returns></returns>
+        private bool TrySeekEntityType(short typeId, int key, int currentLabel)
+        {
+            Api.MakeKey(sesid, _indexTable, typeId, MakeKeyGrbit.NewKey);
+            Api.MakeKey(sesid, _indexTable, key, MakeKeyGrbit.None);
+            Api.MakeKey(sesid, _indexTable, currentLabel, MakeKeyGrbit.None);
+            return Api.TrySeek(sesid, _indexTable, SeekGrbit.SeekEQ);
         }
 
         /// <summary>
         /// Trys to move to the first entity of the specified type, assumes the current index has been set to order by type (SetOrderByType)
-        /// Secondar keys are specific t the type and defined as IfcAttributes in the class declaration
+        /// Secondary keys are specific to the type and defined as IfcAttributes in the class declaration
         /// </summary>
         /// <param name="typeId">the type of entity to look up</param>
-        /// <param name="lookupKey">Secondary indexes on the search</param>
+        /// <param name="lookupKey">Secondary key on the search</param>
         /// <returns>Returns an instance handle to the first or an empty handle if not found</returns>
-        public bool TrySeekEntityType(short typeId, out XbimInstanceHandle ih, long lookupKey = -1)
+        public bool TrySeekEntityType(short typeId, out XbimInstanceHandle ih, int lookupKey = -1)
         {
-            Api.MakeKey(sesid, table, typeId, MakeKeyGrbit.NewKey);
-            Api.MakeKey(sesid, table, lookupKey, MakeKeyGrbit.None);
-            if (Api.TrySeek(sesid, table, SeekGrbit.SeekGE))
+            Api.MakeKey(sesid, _indexTable, typeId, MakeKeyGrbit.NewKey);
+            Api.MakeKey(sesid, _indexTable, lookupKey, MakeKeyGrbit.None);
+            if (Api.TrySeek(sesid, _indexTable, SeekGrbit.SeekGE))
             {
-                Api.MakeKey(sesid, table, typeId, MakeKeyGrbit.NewKey);
-
-                Api.MakeKey(sesid, table, lookupKey, MakeKeyGrbit.FullColumnEndLimit);
-                if (Api.TrySetIndexRange(sesid, table, SetIndexRangeGrbit.RangeUpperLimit | SetIndexRangeGrbit.RangeInclusive))
+                Api.MakeKey(sesid, _indexTable, typeId, MakeKeyGrbit.NewKey);
+                Api.MakeKey(sesid, _indexTable, lookupKey, MakeKeyGrbit.FullColumnEndLimit);
+                if (Api.TrySetIndexRange(sesid, _indexTable, SetIndexRangeGrbit.RangeUpperLimit | SetIndexRangeGrbit.RangeInclusive))
                 {
-                    ih = new XbimInstanceHandle(Api.RetrieveColumnAsInt32(sesid, table, _colIdEntityLabel, RetrieveColumnGrbit.RetrieveFromIndex), Api.RetrieveColumnAsInt16(sesid, table, _colIdIfcType, RetrieveColumnGrbit.RetrieveFromIndex));
+                    ih = new XbimInstanceHandle(Api.RetrieveColumnAsInt32(sesid, _indexTable, _colIdIdxEntityLabel, RetrieveColumnGrbit.RetrieveFromIndex), Api.RetrieveColumnAsInt16(sesid, _indexTable, _colIdIdxIfcType, RetrieveColumnGrbit.RetrieveFromIndex));
+                    
                     return true;
                 }
             }
             ih = new XbimInstanceHandle();
             return false;
         }
-        /// <summary>
-        /// Sets the order to be by entity type and then label 
-        /// </summary>
-        internal void SetOrderByType()
-        {
-            Api.JetSetCurrentIndex(this.sesid, this.table, entityTableTypeLabelIndex);
-        }
-
-        /// <summary>
-        /// Sets the order to be by entity label and type
-        /// </summary>
-        internal void SetOrderByLabel()
-        {
-            Api.JetSetCurrentIndex(this.sesid, this.table, entityTableLabelIndex);
-        }
         
+
 
         
         /// <summary>
@@ -501,8 +540,7 @@ namespace Xbim.IO
         }
 
         internal int RetrieveHighestLabel()
-        {
-            SetOrderByLabel();
+        { 
             if (TryMoveLast())
             {
                 int? val = Api.RetrieveColumnAsInt32(sesid, table, _colIdEntityLabel, RetrieveColumnGrbit.RetrieveFromIndex);
@@ -542,9 +580,9 @@ namespace Xbim.IO
 
         public bool TryMoveNextEntityType(out XbimInstanceHandle ih)
         {
-            if (TryMoveNext())
+            if (Api.TryMoveNext(this.sesid, this._indexTable))
             {
-                ih = new XbimInstanceHandle(Api.RetrieveColumnAsInt32(sesid, table, _colIdEntityLabel, RetrieveColumnGrbit.RetrieveFromIndex), Api.RetrieveColumnAsInt16(sesid, table, _colIdIfcType, RetrieveColumnGrbit.RetrieveFromIndex));
+                ih = new XbimInstanceHandle(Api.RetrieveColumnAsInt32(sesid, _indexTable, _colIdIdxEntityLabel, RetrieveColumnGrbit.RetrieveFromIndex), Api.RetrieveColumnAsInt16(sesid, _indexTable, _colIdIdxIfcType, RetrieveColumnGrbit.RetrieveFromIndex));
                 return true;
             }
             else
@@ -606,7 +644,6 @@ namespace Xbim.IO
 
         public void Reset()
         {
-            cursor.SetOrderByLabel();
             cursor.MoveBeforeFirst();
             current = 0;
         }

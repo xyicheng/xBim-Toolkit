@@ -1109,5 +1109,21 @@ namespace Xbim.IO
             Debug.Assert(editTransactionEntityCursor != null);
             return editTransactionEntityCursor;
         }
+
+        /// <summary>
+        /// Terminates the Xbim Database engine, any open operations will be lost
+        /// </summary>
+        public static void Terminate()
+        {
+            IfcPersistedInstanceCache.Terminate();
+        }
+
+        /// <summary>
+        /// Initializes the Xbim Database engine
+        /// </summary>
+        public static void Initialize()
+        {
+            IfcPersistedInstanceCache.Initialize();
+        }
     }
 }

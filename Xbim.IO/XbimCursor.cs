@@ -179,7 +179,7 @@ namespace Xbim.IO
             using (var transaction = this.BeginTransaction())
             {
                 Api.EscrowUpdate(this.sesid, this.globalsTable, this.flushColumn, 1);
-                transaction.Commit(CommitTransactionGrbit.None);
+                transaction.Commit(CommitTransactionGrbit.WaitLastLevel0Commit);
             }
         }
 
@@ -209,8 +209,9 @@ namespace Xbim.IO
         }
 
 
-        public void Dispose()
+        virtual public void Dispose()
         {
+          
             Api.JetCloseTable(sesid, table);
             Api.JetCloseTable(sesid, globalsTable);
             Api.JetCloseDatabase(this.sesid, this.dbId, CloseDatabaseGrbit.None);

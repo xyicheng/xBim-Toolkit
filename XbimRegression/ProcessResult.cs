@@ -26,23 +26,23 @@ namespace XbimRegression
         public String IfcDescription { get; set; }
 
 
-        public const String CsvHeader = @"IFC File, Conversion Errors, Duration (ms), IFC Size, Xbim Size, Xbim GC Size, IFC Entities, Geometry Nodes, "+
+        public const String CsvHeader = @"IFC File, Conversion Errors, Duration (ms), IFC Size, Xbim Size, IFC Entities, Geometry Nodes, "+
             "FILE_SCHEMA, FILE_NAME, FILE_DESCRIPTION";
 
         public String ToCsv()
         {
-            return String.Format("\"{0}\",{1},{2},{3},{4},{5},{6},{7},\"{8}\",\"{9}\",\"{10}\"",
+            return String.Format("\"{0}\",{1},{2},{3},{4},{5},{6},{7},\"{8}\",\"{9}\"",
                 FileName,           // 0
                 ExitCode,           // 1
                 Duration,           // 2
                 IfcLength,          // 3
                 XbimLength,         // 4
-                XbimGCLength,       // 5
-                Entities,           // 6
-                GeometryEntries,    // 7
-                IfcSchema,          // 8
-                IfcName,            // 9
-                IfcDescription      //10
+                Entities,           // 5
+                GeometryEntries,    // 6
+                IfcSchema,          // 7
+                IfcName,            // 8
+                IfcDescription      // 9
+                     
                 );
         }
     }

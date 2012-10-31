@@ -79,7 +79,7 @@ namespace Xbim.IO
 
         static IfcPersistedInstanceCache()
         {
-            SystemParameters.DatabasePageSize = 8192;
+            SystemParameters.DatabasePageSize = 4096;
             SystemParameters.CacheSizeMin = cacheSizeInBytes / SystemParameters.DatabasePageSize;
             SystemParameters.CacheSizeMax = cacheSizeInBytes / SystemParameters.DatabasePageSize;
             _jetInstance = CreateInstance("XbimInstance", XbimModel.XbimTempDirectory);
@@ -521,7 +521,7 @@ namespace Xbim.IO
         static private Instance CreateInstance(string instanceName, string tempDirectory = null,  bool recovery = false)
         {
  
-            var jetInstance = new Instance(instanceName);
+            var jetInstance = new Instance(instanceName+Guid.NewGuid().ToString());
             if (string.IsNullOrWhiteSpace(tempDirectory))
                 tempDirectory = GetXbimTempDirectory();
             jetInstance.Parameters.BaseName = "XBM";
@@ -634,7 +634,6 @@ namespace Xbim.IO
             var entityTable = GetEntityTable();
             try
             {
-                entityTable.SetOrderByType();
                 XbimInstanceHandle ih;
                 foreach (Type t in ifcType.NonAbstractSubTypes)
                 {
@@ -661,7 +660,6 @@ namespace Xbim.IO
             var entityTable = GetEntityTable();
             try
             {
-                entityTable.SetOrderByType();
                 foreach (Type t in ifcType.NonAbstractSubTypes)
                 {
                     short typeId = IfcMetaData.IfcTypeId(t);
@@ -772,7 +770,7 @@ namespace Xbim.IO
                 var entityTable = GetEntityTable();
                 try
                 {
-                    entityTable.SetOrderByType();
+                    
                     if (entityTable.TryMoveFirst()) // we have something
                     {
                         do
@@ -799,8 +797,7 @@ namespace Xbim.IO
             var entityTable = GetEntityTable();
             try
             {
-
-                entityTable.SetOrderByType();
+ 
                 foreach (Type t in ifcType.NonAbstractSubTypes)
                 {
                     short typeId = IfcMetaData.IfcTypeId(t);
@@ -855,7 +852,7 @@ namespace Xbim.IO
             {
                 using (var transaction = entityTable.BeginReadOnlyTransaction())
                 {
-                    entityTable.SetOrderByLabel();
+                    
                     if (entityTable.TrySeekEntityLabel(posLabel))
                     {
                         short currentIfcTypeId = entityTable.GetIfcType();
@@ -914,7 +911,7 @@ namespace Xbim.IO
         /// <param name="activate">if true loads the properties of the entity</param>
         /// <param name="indexKey">if the entity has a key object, optimises to search for this handle</param>
         /// <returns></returns>
-        public IEnumerable<TIfcType> OfType<TIfcType>(bool activate = false, long indexKey = -1)
+        public IEnumerable<TIfcType> OfType<TIfcType>(bool activate = false, int indexKey = -1)
         {
             IfcType ifcType = IfcMetaData.IfcType(typeof(TIfcType));
 
@@ -926,12 +923,11 @@ namespace Xbim.IO
             {
                 using (var transaction = entityTable.BeginReadOnlyTransaction())
                 {
-                    entityTable.SetOrderByType(); //use the lookup order if we plan to load the objects properties, slower than just reading the index but we need to go to the cursor for the properties
                     foreach (Type t in ifcType.NonAbstractSubTypes)
                     {
                         short typeId = IfcMetaData.IfcTypeId(t);
                         XbimInstanceHandle ih;
-                        if (entityTable.TrySeekEntityType(typeId, out ih, indexKey )) //we have the first instance
+                        if (entityTable.TrySeekEntityType(typeId, out ih, indexKey) && entityTable.TrySeekEntityLabel(ih.EntityLabel)) //we have the first instance
                         {
                             do
                             {            
@@ -961,7 +957,7 @@ namespace Xbim.IO
                                     if (caching) this.read.Add(ih.EntityLabel, entity);
                                     yield return (TIfcType)entity;
                                 }
-                            } while (entityTable.TryMoveNextEntityType(out ih));
+                            } while (entityTable.TryMoveNextEntityType(out ih) && entityTable.TrySeekEntityLabel(ih.EntityLabel));
                         }
                     }
                 }
@@ -1034,7 +1030,7 @@ namespace Xbim.IO
             {
                 using (var transaction = entityTable.BeginReadOnlyTransaction())
                 {
-                    entityTable.SetOrderByLabel();
+                    
                     int posLabel = Math.Abs(entity.EntityLabel);
                     if (entityTable.TrySeekEntityLabel(posLabel))
                         return entityTable.GetProperties();
@@ -1530,7 +1526,7 @@ namespace Xbim.IO
                 var entityTable = GetEntityTable();
                 try
                 {
-                    entityTable.SetOrderByLabel();
+                    
                     int label;
                     if (entityTable.TryMoveFirstLabel(out label)) // we have something
                     {
@@ -1606,6 +1602,26 @@ namespace Xbim.IO
 
             }
 
+        }
+
+        internal static void Terminate()
+        {
+            try
+            {
+                if (_jetInstance != null)
+                    _jetInstance.Term();
+            }
+            finally
+            {
+                 _jetInstance = null;
+            }
+           
+        }
+
+        internal static void Initialize()
+        {            
+             if (_jetInstance == null)
+                 _jetInstance = CreateInstance("XbimInstance", XbimModel.XbimTempDirectory);
         }
     }
 

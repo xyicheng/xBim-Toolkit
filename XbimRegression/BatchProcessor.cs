@@ -158,22 +158,23 @@ namespace XbimRegression
             if (!File.Exists(xbimFile))
                 return;
             XbimModel model=null;
-            IXbimScene scene=null;
+          
             try
             {
+                XbimModel.Initialize();
                 result.IfcLength = ReadFileLength(ifcFile);
                 result.XbimLength = ReadFileLength(xbimFile);
-                result.XbimGCLength = ReadFileLength(xbimGCFile);
 
                 try
                 {
                     model = new XbimModel();
-					model.Open(xbimFile);
+					model.Open(xbimFile,XbimDBAccess.Read);
                     result.Entities = model.Instances.Count;
 
                     IIfcFileHeader header = model.Header;
                     result.IfcSchema = header.FileSchema.Schemas.FirstOrDefault();
                     result.IfcDescription = String.Format("{0}, {1}", header.FileDescription.Description.FirstOrDefault(), header.FileDescription.ImplementationLevel);
+                    result.GeometryEntries = model.GeometriesCount;
                     // TODO: Ifc Name
                 }
                 catch (IOException)
@@ -182,35 +183,16 @@ namespace XbimRegression
                     // XBIM corrupt - usually due to timeout before completion
                 }
 
-                if (!File.Exists(xbimGCFile))
-                    return;
-
-                try
-                {
-                    scene = new XbimSceneStream(model, xbimGCFile);
-                    // TODO: verify if there is a better metric
-                    result.GeometryEntries = scene.Graph.ProductNodes.Count();
-                }
-                catch (IOException)
-                {
-                    Logger.Debug("XBimGC file was corrupt");
-                    // XBIMGC corrupt - usually due to timeout before completion
-                }
             }
             finally
             {
-                if (scene != null)
-                {
-                    scene.Close();
-                    scene = null;
-                }
+               
                 if (model != null)
                 {
                     model.Close();
-                    model.Dispose();
                     model = null;
                 }
-
+                XbimModel.Terminate();
             }
         }
 

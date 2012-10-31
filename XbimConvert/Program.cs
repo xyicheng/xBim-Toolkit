@@ -58,7 +58,7 @@ namespace XbimConvert
 
                     }
                     watch.Stop();
-
+                    XbimModel.Terminate();
                     ResetCursor(Console.CursorTop + 1);
                     Console.WriteLine("Success. Processed in " + watch.ElapsedMilliseconds + " ms");
                     GetInput();
