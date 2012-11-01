@@ -14,7 +14,11 @@ using Xbim.Ifc.GeometricConstraintResource;
 using System.Runtime.CompilerServices;
 using Xbim.IO;
 using System.IO;
-using Xbim.Ifc.ProductExtension; // we need this to use extension methods in VS 2005
+using Xbim.Ifc.ProductExtension;
+using Xbim.Ifc.MaterialResource;
+using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc.PresentationOrganizationResource;
+using Xbim.Ifc.PresentationAppearanceResource; // we need this to use extension methods in VS 2005
 
 
 namespace SimpleHelloWall
@@ -29,7 +33,7 @@ namespace SimpleHelloWall
                 building.Name = name;
                 building.OwnerHistory.OwningUser = model.DefaultOwningUser;
                 building.OwnerHistory.OwningApplication = model.DefaultOwningApplication;
-                building.ElevationOfRefHeight = elevHeight;
+                //building.ElevationOfRefHeight = elevHeight;
                 building.CompositionType = IfcElementCompositionEnum.ELEMENT;
 
                 building.ObjectPlacement = model.New<IfcLocalPlacement>();
@@ -63,7 +67,7 @@ namespace SimpleHelloWall
             if (model != null)
             {
                 IfcBuilding building = CreateBuilding(model, "Default Building", 2000);
-                
+
 
                 IfcWallStandardCase wall = CreateWall(model, 4000, 300, 2400);
                 using (Transaction txn = model.BeginTransaction("Add Wall"))
@@ -71,7 +75,7 @@ namespace SimpleHelloWall
                     building.AddElement(wall);
                     txn.Commit();
                 }
-                
+
                 if (wall != null)
                 {
                     try
@@ -91,6 +95,12 @@ namespace SimpleHelloWall
             }
             else
                 Console.WriteLine("Failed to initialise the model");
+
+
+            
+
+
+
             Console.WriteLine("Press any key to exit....");
             Console.ReadKey();
 
@@ -153,6 +163,7 @@ namespace SimpleHelloWall
                 IfcWallStandardCase wall = model.New<IfcWallStandardCase>();
                 wall.Name = "A Standard rectangular wall";
 
+                // required parameters for IfcWall
                 wall.OwnerHistory.OwningUser = model.DefaultOwningUser;
                 wall.OwnerHistory.OwningApplication = model.DefaultOwningApplication;
 
@@ -189,8 +200,7 @@ namespace SimpleHelloWall
 
                 //Create a Product Definition and add the model geometry to the wall
                 IfcProductDefinitionShape rep = model.New<IfcProductDefinitionShape>();
-                rep.Representations.Add_Reversible(shape);
-                
+                rep.Representations.Add_Reversible(shape);                
                 wall.Representation = rep;
 
                 //now place the wall into the model
@@ -201,19 +211,65 @@ namespace SimpleHelloWall
                 ax3d.RefDirection.SetXYZ(0, 1, 0);
                 ax3d.Axis = model.New<IfcDirection>();
                 ax3d.Axis.SetXYZ(0, 0, 1);
-
-
                 lp.RelativePlacement = ax3d;
                 wall.ObjectPlacement = lp;
 
+
+                // Where Clause: The IfcWallStandard relies on the provision of an IfcMaterialLayerSetUsage 
+                IfcMaterialLayerSetUsage ifcMaterialLayerSetUsage = model.New<IfcMaterialLayerSetUsage>();
+                IfcMaterialLayerSet ifcMaterialLayerSet = model.New<IfcMaterialLayerSet>();
+                IfcMaterialLayer ifcMaterialLayer = model.New<IfcMaterialLayer>();
+                ifcMaterialLayer.LayerThickness = 10;
+                ifcMaterialLayerSet.MaterialLayers.Add_Reversible(ifcMaterialLayer);
+                ifcMaterialLayerSetUsage.ForLayerSet = ifcMaterialLayerSet;
+                ifcMaterialLayerSetUsage.LayerSetDirection = IfcLayerSetDirectionEnum.AXIS2;
+                ifcMaterialLayerSetUsage.DirectionSense = IfcDirectionSenseEnum.NEGATIVE;
+                ifcMaterialLayerSetUsage.OffsetFromReferenceLine = 150;
+                
+                // Add material to wall
+                IfcMaterial material = model.New<IfcMaterial>();
+                material.Name = "some material";
+                IfcRelAssociatesMaterial ifcRelAssociatesMaterial = model.New<IfcRelAssociatesMaterial>();
+                ifcRelAssociatesMaterial.RelatingMaterial = material;
+                ifcRelAssociatesMaterial.RelatedObjects.Add_Reversible(wall);
+
+                ifcRelAssociatesMaterial.RelatingMaterial = ifcMaterialLayerSetUsage;
+
+                // IfcPresentationLayerAssignment is required for CAD presentation in IfcWall or IfcWallStandardCase
+                IfcPresentationLayerAssignment ifcPresentationLayerAssignment = model.New<IfcPresentationLayerAssignment>();
+                ifcPresentationLayerAssignment.Name = "some ifcPresentationLayerAssignment";
+                ifcPresentationLayerAssignment.AssignedItems.Add(shape);
+
+
+                // linear segment as IfcPolyline with two points is required for IfcWall
+                IfcPolyline ifcPolyline = model.New<IfcPolyline>();
+                IfcCartesianPoint startPoint = model.New<IfcCartesianPoint>();
+                startPoint.SetXY(0, 0);
+                IfcCartesianPoint endPoint = model.New<IfcCartesianPoint>();
+                endPoint.SetXY(4000, 0);
+                ifcPolyline.Points.Add_Reversible(startPoint);
+                ifcPolyline.Points.Add_Reversible(endPoint);
+
+                IfcShapeRepresentation shape2d = model.New<IfcShapeRepresentation>();
+                shape2d.ContextOfItems = model.IfcProject.ModelContext();
+                shape2d.RepresentationIdentifier = "Axis";
+                shape2d.RepresentationType = "Curve2D";
+                shape2d.Items.Add_Reversible(ifcPolyline);
+                rep.Representations.Add_Reversible(shape2d);
+                
+
                 //validate write any errors to the console and commit if ok, otherwise abort
-                if (model.Validate(Console.Out) == 0)
+                string err = model.Validate(ValidationFlags.All);
+                if  (string.IsNullOrEmpty(err))
                 {
                     txn.Commit();
                     return wall;
                 }
                 else
+                {
+                    Console.WriteLine(err);
                     txn.Rollback();
+                }
             }
             return null;
         }
