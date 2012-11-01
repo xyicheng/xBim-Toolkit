@@ -72,7 +72,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\</OutputPath>
+    <OutputPath>..\bin\x64\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>x64</PlatformTarget>
@@ -199,8 +199,15 @@
     <Content Include="Content\themes\base\minified\jquery.ui.tabs.min.css" />
     <Content Include="Content\themes\base\minified\jquery.ui.theme.min.css" />
     <Content Include="Readme.txt" />
+    <Content Include="Scripts\ajaxfileupload.js" />
     <Content Include="Scripts\basescenedefinition.js" />
     <Content Include="Scripts\camera.js" />
+    <Content Include="Scripts\icim-app-init.js" />
+    <Content Include="Scripts\icim-console.js" />
+    <Content Include="Scripts\icim-elementTypePanel.js" />
+    <Content Include="Scripts\icim-groupViewControl.js" />
+    <Content Include="Scripts\icim-selection.js" />
+    <Content Include="Scripts\icim-shortcuts.js" />
     <Content Include="Scripts\jdataview.js" />
     <Content Include="Scripts\jquery-1.7.2-vsdoc.js" />
     <Content Include="Scripts\jquery-1.7.2.js" />
@@ -294,6 +301,9 @@
     <Compile Include="DynamicGrouping\XbimQueryBuilder.cs" />
     <Compile Include="DynamicGrouping\XbimQueryFactory.cs" />
     <Compile Include="DynamicJsonConverter.cs" />
+    <Compile Include="FileUpload.ashx.cs">
+      <DependentUpon>FileUpload.ashx</DependentUpon>
+    </Compile>
     <Compile Include="GeometryData.cs" />
     <Compile Include="GeometryLabel.cs" />
     <Compile Include="Global.asax.cs">
@@ -349,6 +359,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="FileUpload.ashx" />
     <None Include="models\Clinic_A_20110906.xbim" />
     <None Include="models\Clinic_A_20110906.xbimGC" />
     <None Include="models\Duplex_A_20110907.xbim" />
@@ -367,6 +378,10 @@
       </FlavorProperties>
     </VisualStudio>
   </ProjectExtensions>
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

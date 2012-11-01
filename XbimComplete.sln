@@ -54,9 +54,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		XbimComplete.vsmdi = XbimComplete.vsmdi
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.SceneHelper", "Xbim.SceneHelper\Xbim.SceneHelper.csproj", "{BA6195C4-0F45-43F4-82D1-32AAD0E69B86}"
+EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 16
+		SccNumberOfProjects = 17
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://tfs.codeplex.com/tfs/tfs13
 		SccLocalPath0 = .
@@ -111,6 +113,10 @@ Global
 		SccProjectTopLevelParentUniqueName15 = XbimComplete.sln
 		SccProjectName15 = XBim.COBie.Client
 		SccLocalPath15 = XBim.COBie.Client
+		SccProjectUniqueName16 = Xbim.SceneHelper\\Xbim.SceneHelper.csproj
+		SccProjectTopLevelParentUniqueName16 = XbimComplete.sln
+		SccProjectName16 = Xbim.SceneHelper
+		SccLocalPath16 = Xbim.SceneHelper
 	EndGlobalSection
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = XbimComplete.vsmdi
@@ -126,7 +132,8 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{CBCA1EFC-7459-4A0E-A42D-55D4F58051BF}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{CBCA1EFC-7459-4A0E-A42D-55D4F58051BF}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{CBCA1EFC-7459-4A0E-A42D-55D4F58051BF}.Debug|Any CPU.Build.0 = Debug|x64
 		{CBCA1EFC-7459-4A0E-A42D-55D4F58051BF}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
 		{CBCA1EFC-7459-4A0E-A42D-55D4F58051BF}.Debug|Mixed Platforms.Build.0 = Debug|Win32
 		{CBCA1EFC-7459-4A0E-A42D-55D4F58051BF}.Debug|x64.ActiveCfg = Debug|x64
@@ -359,16 +366,31 @@ Global
 		{FB5A1829-7B34-4DE9-94A9-AF3AD36320BB}.Release|x64.Build.0 = Release|x64
 		{FB5A1829-7B34-4DE9-94A9-AF3AD36320BB}.Release|x86.ActiveCfg = Release|x86
 		{FB5A1829-7B34-4DE9-94A9-AF3AD36320BB}.Release|x86.Build.0 = Release|x86
+		{BA6195C4-0F45-43F4-82D1-32AAD0E69B86}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BA6195C4-0F45-43F4-82D1-32AAD0E69B86}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BA6195C4-0F45-43F4-82D1-32AAD0E69B86}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{BA6195C4-0F45-43F4-82D1-32AAD0E69B86}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{BA6195C4-0F45-43F4-82D1-32AAD0E69B86}.Debug|x64.ActiveCfg = Debug|x64
+		{BA6195C4-0F45-43F4-82D1-32AAD0E69B86}.Debug|x64.Build.0 = Debug|x64
+		{BA6195C4-0F45-43F4-82D1-32AAD0E69B86}.Debug|x86.ActiveCfg = Debug|x86
+		{BA6195C4-0F45-43F4-82D1-32AAD0E69B86}.Debug|x86.Build.0 = Debug|x86
+		{BA6195C4-0F45-43F4-82D1-32AAD0E69B86}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BA6195C4-0F45-43F4-82D1-32AAD0E69B86}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BA6195C4-0F45-43F4-82D1-32AAD0E69B86}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{BA6195C4-0F45-43F4-82D1-32AAD0E69B86}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{BA6195C4-0F45-43F4-82D1-32AAD0E69B86}.Release|x64.ActiveCfg = Release|Any CPU
+		{BA6195C4-0F45-43F4-82D1-32AAD0E69B86}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{219A127E-82B8-43A1-8959-7102E4724F8F} = {0DA6263B-5A69-401E-99D0-391644EF4709}
+		{5B6AC153-AC56-4B01-8734-88EAB805A6DB} = {0DA6263B-5A69-401E-99D0-391644EF4709}
 		{FB5A1829-7B34-4DE9-94A9-AF3AD36320BB} = {0DA6263B-5A69-401E-99D0-391644EF4709}
 		{D6CED5D7-BE37-4A32-90A5-1444C9FFDD91} = {0DA6263B-5A69-401E-99D0-391644EF4709}
-		{5B6AC153-AC56-4B01-8734-88EAB805A6DB} = {0DA6263B-5A69-401E-99D0-391644EF4709}
-		{8729CDD1-B493-48EC-A867-61ABAF3E93D2} = {7ECDCF15-95BB-4D2B-8C0D-8615D6E3BAB1}
+		{BA6195C4-0F45-43F4-82D1-32AAD0E69B86} = {0DA6263B-5A69-401E-99D0-391644EF4709}
 		{6EF22FB8-7048-4E6A-9B2F-AC2570A998A9} = {7ECDCF15-95BB-4D2B-8C0D-8615D6E3BAB1}
+		{8729CDD1-B493-48EC-A867-61ABAF3E93D2} = {7ECDCF15-95BB-4D2B-8C0D-8615D6E3BAB1}
 	EndGlobalSection
 EndGlobal

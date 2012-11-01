@@ -488,21 +488,115 @@ function DynamicLoad(modelid) {
 }
 
 function addClassification(modelid) {
-    
-    var Data = JSON.stringify({ ifcFilename: modelid });
+
+    var Data = JSON.stringify({ xbimFilename: modelid });
 
     $.ajax({
         type: 'POST',
-        url: '../Default.aspx/AddClassification',
+        url: 'Default.aspx/AddClassification',
         data: Data,
         contentType: 'application/json; charset=utf-8',
         dataType: 'json',
         success: function (msg) {
             // Notice that msg.d is used to retrieve the result object
-            alert(msg.d);
+            //alert(msg.d);
+            $("#navtreeClassification").append(msg.d);
+
+
+        },
+        error: function (data, status, e) {
+            alert(e);
         }
     });
 }
+
+function ajaxFileUpload() {
+    $("#loading")
+   .ajaxStart(function () {
+       $(this).show();
+   })
+   .ajaxComplete(function () {
+       $(this).hide();
+   });
+
+   $.ajaxFileUpload
+   (
+       {
+           url: 'FileUpload.ashx',
+           secureuri: false,
+           fileElementId: 'file',
+           dataType: 'json',
+           data: { name: 'logan', id: 'id' },
+           success: function (data, status) {
+               if (typeof (data.error) != 'undefined') {
+                   if (data.error != '') {
+                       alert(data.error);
+                   } else {
+                       //alert(data.msg);
+                       //DynamicLoad(data.modelid);
+
+                       $("#linkLoadAnotherFile").show();
+                       $("#uploadCtlInner").hide();
+
+                       ModelID = data.modelid;
+
+                       // convert ifc file to xbim and xbimGC
+                       //convertToxBim(ModelID);
+                       if (SceneJS.scene("Scene").findNode("materialNode") == null) {
+                           var sce = SceneJS.scene("Scene");
+                           var node = SceneJS.scene("Scene").findNode("offset");
+
+                           $("#types").show();
+                           $("#modelmenu").hide();
+
+                           //addClassification(ModelID);
+                           StartLoadingDynamicModel(sce, node, ModelID);
+
+                           //alert(ModelID);
+                           //addClassification(ModelID);
+                       }
+                   }
+               }
+           },
+           error: function (data, status, e) {
+               alert(e);
+           }
+       }
+   )
+
+    return false;
+
+}
+
+//function convertToxBim(modelid) {
+//    var Data = JSON.stringify({ ifcFilename: modelid });
+
+//    $.ajax({
+//        type: 'POST',
+//        url: '../Default.aspx/ConvertToxBim',
+//        data: Data,
+//        contentType: 'application/json; charset=utf-8',
+//        dataType: 'json',
+//        success: function (msg) {
+//            // Notice that msg.d is used to retrieve the result object
+//            //alert(msg.d);
+
+//            // once file is converted, display the file and add classification
+//            if (SceneJS.scene("Scene").findNode("materialNode") == null) {
+//                var sce = SceneJS.scene("Scene");
+//                var node = SceneJS.scene("Scene").findNode("offset");
+
+//                $("#types").show();
+//                $("#modelmenu").hide();
+
+//                StartLoadingDynamicModel(sce, node, ModelID);
+
+//                addClassification(modelid);
+//            }
+//        }
+//    });
+//}
+
 
 function setGrouping(modelid) {
 

@@ -1,7 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<?mso-infoPathSolution solutionVersion="1.0.0.2" PIVersion="1.0.0.0" href="file:///C:\Users\mxfm2\Desktop\ClassificationGroups.xsn" name="urn:schemas-microsoft-com:office:infopath:ClassificationGroups:-myXSD-2012-02-06T13-22-36" productVersion="14.0.0" ?>
-<?mso-application progid="InfoPath.Document" versionProgid="InfoPath.Document.2"?>
-<my:GroupsDefinitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:my="http://schemas.microsoft.com/office/infopath/2003/myXSD/2012-02-06T13:22:36" xmlns:xd="http://schemas.microsoft.com/office/infopath/2003" xml:lang="en-gb">
+<?xml version="1.0" encoding="UTF-8"?><?mso-infoPathSolution solutionVersion="1.0.0.2" PIVersion="1.0.0.0" href="file:///C:\Users\mxfm2\Desktop\ClassificationGroups.xsn" name="urn:schemas-microsoft-com:office:infopath:ClassificationGroups:-myXSD-2012-02-06T13-22-36" productVersion="14.0.0" ?><?mso-application progid="InfoPath.Document" versionProgid="InfoPath.Document.2"?><my:GroupsDefinitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:my="http://schemas.microsoft.com/office/infopath/2003/myXSD/2012-02-06T13:22:36" xmlns:xd="http://schemas.microsoft.com/office/infopath/2003" xml:lang="en-gb">
 	<my:groups my:classificationName="NRM">
 		<my:group my:name="Substructure" my:classification="01">
 			<my:group my:name="Foundations" my:classification="01.01">
@@ -105,5 +102,7 @@
 			<my:group my:name="Testing and commissioning of services" my:classification="05.15">
 			</my:group>
 		</my:group>
-	</my:groups>
+	<my:group my:name="External works" my:classification="08">
+										<my:group my:name="Site preparation works" my:classification="08.1"></my:group>
+									<my:group my:name="Roads, paths and pavings" my:classification="08.2"></my:group><my:group my:name="Planting" my:classification="08.3"></my:group><my:group my:name="Fencing, railings and walls" my:classification="08.4"></my:group><my:group my:name="Site/street furniture and equipment" my:classification="08.5"></my:group><my:group my:name="External drainage" my:classification="08.6"></my:group><my:group my:name="External services" my:classification="08.7"></my:group><my:group my:name="Minor building works and ancillary buildings" my:classification="08.8"></my:group></my:group></my:groups>
 </my:GroupsDefinitions>

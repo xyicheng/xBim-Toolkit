@@ -19,6 +19,9 @@ using Xbim.Ifc.MaterialResource;
 using System.Diagnostics;
 using Xbim.Ifc.ProductExtension;
 using Xbim.Ifc.SharedBldgElements;
+using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc.MeasureResource;
+using Xbim.ModelGeometry;
 
 namespace Xbim.SceneJSWebViewer
 {
@@ -43,12 +46,12 @@ namespace Xbim.SceneJSWebViewer
                     litcon.Text += "<li><a href=\"#\" OnClick=DynamicLoad('"+fi.Name+"');>"+fi.Name+"</a></li>";
                 }
                 litcon.Text+= "</ul>";
-                this.menu.Controls.Add(litcon);
+                //this.menu.Controls.Add(litcon);
             }
         }
 
         #region Preprocessing before upload
-
+                
         private static void CreateLayeredElementTypes(IModel model)
         {
             Xbim.XbimExtensions.Transactions.Transaction trans = model.BeginTransaction("Create layered element types.");
@@ -85,8 +88,8 @@ namespace Xbim.SceneJSWebViewer
 
                     //set element type name
                     string typeName = layerSet.LayerSetName;
-                    string[] parts = typeName.Split(':');
-                    if (parts.Length > 1) typeName = parts[1];
+                    string[] parts = (string.IsNullOrEmpty(typeName)) ? null : typeName.Split(':');
+                    if (parts != null && parts.Length > 1) typeName = parts[1];
                     //create default name
                     if (string.IsNullOrEmpty(typeName))
                     {
@@ -235,41 +238,124 @@ namespace Xbim.SceneJSWebViewer
         #endregion
 
         [System.Web.Services.WebMethod()]
-        public static string AddClassification(string ifcFilename)
+        public static string AddClassification(string xbimFilename)
         {
-            string file = System.Web.Hosting.HostingEnvironment.ApplicationPhysicalPath + "models\\" + ifcFilename;
-            string ifcFile = System.Web.Hosting.HostingEnvironment.ApplicationPhysicalPath + "models\\" + Path.ChangeExtension(ifcFilename, "ifc");
-            IModel model = new XbimFileModelServer(file, FileAccess.ReadWrite);
-            model.Open(file); 
+            try
+            {
+                string dirName = "models\\";
+                string file = System.Web.Hosting.HostingEnvironment.ApplicationPhysicalPath + dirName + xbimFilename;
+                //string ifcFile = System.Web.Hosting.HostingEnvironment.ApplicationPhysicalPath + dirName + Path.ChangeExtension(xbimFilename, "ifc");
+                IModel model = new XbimFileModelServer(file);
 
-            //CreateLayeredElementTypes(model);
-            //CreateElementTypesByName(model);
+                CreateLayeredElementTypes(model);
+                CreateElementTypesByName(model);
+                string result = Grouping(model);
 
-            // create ifc file
-            model.Export(XbimStorageType.IFC, ifcFile);
+                // create ifc file
+                //model.Export(XbimStorageType.IFC, ifcFile);
 
-            model.Close();
+                model.Close();
+                model.Dispose();
 
-            return "done";
+                return result;
+            }
+            catch (Exception ex)
+            {
+                return ex.Message;
+            }
+            
         }
 
-        [System.Web.Services.WebMethod()]
-        public static string Grouping(string ifcFilename)
+
+
+
+
+
+
+
+        /*
+        public static string ConvertToxBim(string ifcFilename)
         {
+            string xbimFileName = Path.ChangeExtension(ifcFilename, "xbim");
+            string xbimGeometryFileName = Path.ChangeExtension(ifcFilename, "xbimGC");
+            using (XbimFileModelServer model = ParseModelFile(ifcFilename, xbimFileName))
+            {
+                GenerateGeometry(xbimGeometryFileName, model);
+                model.Close();
+            }
+
+            return "success";
+        }
+
+        private static XbimFileModelServer ParseModelFile(string ifcFileName, string xbimFileName)
+        {
+            XbimFileModelServer model = new XbimFileModelServer();
+            //create a callback for progress
+            model.ImportIfc(ifcFileName, xbimFileName);
+
+            return model;
+        }
+
+        private static void GenerateGeometry(string xbimGeometryFileName, XbimFileModelServer model)
+        {
+            //now convert the geometry
+
+            IEnumerable<IfcProduct> toDraw = GetProducts(model);
+            
+            //XbimScene scene = new XbimScene(model, toDraw);
+
+            //using (FileStream sceneStream = new FileStream(xbimGeometryFileName, FileMode.Create, FileAccess.ReadWrite))
+            //{
+            //    BinaryWriter bw = new BinaryWriter(sceneStream);
+            //    scene.Graph.Write(bw, delegate(int percentProgress, object userState)
+            //    {
+                    
+            //    });
+            //    bw.Flush();
+            //}
+        }
+
+        private static IEnumerable<IfcProduct> GetProducts(XbimFileModelServer model)
+        {
+            IEnumerable<IfcProduct> result = null;
+
+            result = model.IfcProducts.Items;
+            return result;
+        }
+        */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        //[System.Web.Services.WebMethod()]
+        public static string Grouping(IModel model)
+        {
+            Xbim.XbimExtensions.Transactions.Transaction trans = model.BeginTransaction("Create grouping.");
+
             //List<Xbim.SceneJSWebViewer.XML.Group> results = new List<Xbim.SceneJSWebViewer.XML.Group>();
             string str = "";
 
             String fileName = System.Web.Hosting.HostingEnvironment.ApplicationPhysicalPath + "XML\\NRM clssification.xml";
-            string file = System.Web.Hosting.HostingEnvironment.ApplicationPhysicalPath + "models\\" + ifcFilename;
+            //string file = System.Web.Hosting.HostingEnvironment.ApplicationPhysicalPath + "models\\" + ifcFilename;
             String xmlRulesData = System.Web.Hosting.HostingEnvironment.ApplicationPhysicalPath + "XML\\NRM2IFC.xml";
                                  
             //enable users to use all overloaded constructors of the XmlDocument (string, XmlReader, fileName, ...)
             System.Xml.XmlDocument xmlDoc = new System.Xml.XmlDocument();
             xmlDoc.Load(fileName);
 
-            IModel model = new XbimMemoryModel();
-            IfcInputStream input = new IfcInputStream(new FileStream(file, FileMode.Open, FileAccess.Read));
-            int errs = input.Load(model);
+            //IModel model = new XbimMemoryModel();
+            //IfcInputStream input = new IfcInputStream(new FileStream(file, FileMode.Open, FileAccess.Read));
+            //int errs = input.Load(model);
 
 
 
@@ -316,7 +402,7 @@ namespace Xbim.SceneJSWebViewer
             }
 
 
-
+            trans.Commit();
 
 
 
