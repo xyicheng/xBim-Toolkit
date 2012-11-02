@@ -292,7 +292,7 @@ namespace Xbim
 		Products.ProductRepresentation that is within the specified GeometricRepresentationContext, if the Representation 
 		context is null the first "Body" ShapeRepresentation is used. Returns null if their is no valid geometric definition
 		*/
-		IXbimGeometryModel^ XbimGeometryModel::CreateFrom(IfcProduct^ product, IfcGeometricRepresentationContext^ repContext, Dictionary<IfcRepresentation^, IXbimGeometryModel^>^ maps, bool forceSolid, XbimLOD lod)
+		IXbimGeometryModel^ XbimGeometryModel::CreateFrom(IfcProduct^ product, IfcGeometricRepresentationContext^ repContext, Dictionary<IfcRepresentation^, IXbimGeometryModel^>^ maps, bool forceSolid, XbimLOD lod, bool occOut)
 		{
 			try
 			{
@@ -330,7 +330,7 @@ namespace Xbim
 									IfcFeatureElementAddition^ fe = rel->RelatedFeatureElement;
 									if(fe->Representation!=nullptr)
 									{
-										IXbimGeometryModel^ im = CreateFrom(fe,repContext, maps, true, lod);
+										IXbimGeometryModel^ im = CreateFrom(fe,repContext, maps, true, lod, occOut);
 										if(dynamic_cast<XbimGeometryModelCollection^>(im))
 											im = ((XbimGeometryModelCollection^)im)->Solidify();
 										if(!dynamic_cast<XbimSolid^>(im))
@@ -346,7 +346,7 @@ namespace Xbim
 									IfcFeatureElementSubtraction^ fe = rel->RelatedOpeningElement;
 									if(fe->Representation!=nullptr)
 									{
-										IXbimGeometryModel^ im = CreateFrom(fe, repContext, maps, true,lod);
+										IXbimGeometryModel^ im = CreateFrom(fe, repContext, maps, true,lod, occOut);
 										if(im!=nullptr && !im->Handle->IsNull())
 										{	
 											im = im->CopyTo(fe->ObjectPlacement);
@@ -371,15 +371,50 @@ namespace Xbim
 									}
 									
 								}
-								IXbimGeometryModel^ baseShape = CreateFrom(shape, maps, true,lod);	
-								return  gcnew XbimFeaturedShape(product, baseShape, openingSolids, projectionSolids);
+								IXbimGeometryModel^ baseShape = CreateFrom(shape, maps, true,lod, occOut);	
 								
+								IXbimGeometryModel^ fshape = gcnew XbimFeaturedShape(product, baseShape, openingSolids, projectionSolids);
+#ifdef _DEBUG
+								if(occOut)
+								{
+									char fname[512];
+									sprintf(fname, "#%d",shape->EntityLabel);
+									BRepTools::Write(*(fshape->Handle),fname );
+								}
+#endif
+								return fshape;
 							}
 							else //we have no openings or projections
-								return CreateFrom(shape, maps, forceSolid,lod);
+							{
+								
+								IXbimGeometryModel^ fshape = CreateFrom(shape, maps, forceSolid,lod, occOut);
+#ifdef _DEBUG
+								if(occOut)
+								{
+									
+									char fname[512];
+									sprintf(fname, "#%d",shape->EntityLabel);
+									BRepTools::Write(*(fshape->Handle),fname );
+									
+								}
+#endif
+								return fshape;
+							}
 						}
 						else
-							return CreateFrom(shape, maps, forceSolid,lod);
+						{
+							
+							IXbimGeometryModel^ fshape = CreateFrom(shape, maps, forceSolid,lod, occOut);
+#ifdef _DEBUG
+								if(occOut)
+								{
+									char fname[512];
+									sprintf(fname, "#%d",shape->EntityLabel);
+									BRepTools::Write(*(fshape->Handle),fname );
+								}
+#endif
+							return fshape;
+						}
 					}
 				}
 			}
@@ -391,18 +426,18 @@ namespace Xbim
 			return nullptr;
 		}
 
-		IXbimGeometryModel^ XbimGeometryModel::CreateFrom(IfcProduct^ product, Dictionary<IfcRepresentation^, IXbimGeometryModel^>^ maps, bool forceSolid, XbimLOD lod)
+		IXbimGeometryModel^ XbimGeometryModel::CreateFrom(IfcProduct^ product, Dictionary<IfcRepresentation^, IXbimGeometryModel^>^ maps, bool forceSolid, XbimLOD lod, bool occOut)
 		{
-			return CreateFrom(product, nullptr, maps, forceSolid, lod);
+			return CreateFrom(product, nullptr, maps, forceSolid, lod, occOut);
 		}
 
-		IXbimGeometryModel^ XbimGeometryModel::CreateFrom(IfcProduct^ product, bool forceSolid, XbimLOD lod)
+		IXbimGeometryModel^ XbimGeometryModel::CreateFrom(IfcProduct^ product, bool forceSolid, XbimLOD lod, bool occOut)
 		{
 			// HACK: Ideally we shouldn't need this try-catch handler. This just allows us to log the fault, and raise a managed exception, before the application terminates.
 			// Upstream callers should ideally terminate the application ASAP.
 			__try
 			{
-				return CreateFrom(product, nullptr, gcnew Dictionary<IfcRepresentation^, IXbimGeometryModel^>(), forceSolid,lod);
+				return CreateFrom(product, nullptr, gcnew Dictionary<IfcRepresentation^, IXbimGeometryModel^>(), forceSolid,lod,occOut);
 			}
 			__except(GetExceptionCode() == EXCEPTION_ACCESS_VIOLATION)
 			{
@@ -491,14 +526,14 @@ namespace Xbim
 		/*
 		Create a model geometry for a given shape
 		*/
-		IXbimGeometryModel^ XbimGeometryModel::CreateFrom(IfcRepresentation^ rep, Dictionary<IfcRepresentation^, IXbimGeometryModel^>^ maps, bool forceSolid, XbimLOD lod)
+		IXbimGeometryModel^ XbimGeometryModel::CreateFrom(IfcRepresentation^ rep, Dictionary<IfcRepresentation^, IXbimGeometryModel^>^ maps, bool forceSolid, XbimLOD lod, bool occOut)
 		{
 
 			if(rep->Items->Count == 0) //we have nothing to do
 				return nullptr;
 			else if (rep->Items->Count == 1) //we have a single shape geometry
 			{
-				return CreateFrom(rep->Items->First,maps, forceSolid,lod);
+				return CreateFrom(rep->Items->First,maps, forceSolid,lod, occOut);
 			}
 			else // we have a compound shape
 			{
@@ -506,24 +541,36 @@ namespace Xbim
 
 				for each (IfcRepresentationItem^ repItem in rep->Items)
 				{
-					IXbimGeometryModel^ geom = CreateFrom(repItem,maps,false,lod); // we will make a solid when we have all the bits if necessary
-					if(!(dynamic_cast<XbimSolid^>(geom) && (*(geom->Handle)).IsNull())) gms->Add(geom); //don't add solids that are empty
+					IXbimGeometryModel^ geom = CreateFrom(repItem,maps,false,lod, occOut); // we will make a solid when we have all the bits if necessary
+					if(!(dynamic_cast<XbimSolid^>(geom) && (*(geom->Handle)).IsNull())) 
+					{
+							gms->Add(geom); //don't add solids that are empty
+#ifdef _DEBUG
+							if(occOut)
+							{
+								char fname[512];
+								sprintf(fname, "#%d",repItem->EntityLabel);
+								BRepTools::Write(*(geom->Handle),fname );
+							}
+#endif
+					}
+
 				}
 				return gms;
 			}
 		}
 
-		IXbimGeometryModel^ XbimGeometryModel::CreateFrom(IfcRepresentation^ rep, bool forceSolid, XbimLOD lod)
+		IXbimGeometryModel^ XbimGeometryModel::CreateFrom(IfcRepresentation^ rep, bool forceSolid, XbimLOD lod, bool occOut)
 		{
-			return CreateFrom(rep, gcnew Dictionary<IfcRepresentation^, IXbimGeometryModel^>(), forceSolid,lod);
+			return CreateFrom(rep, gcnew Dictionary<IfcRepresentation^, IXbimGeometryModel^>(), forceSolid,lod, occOut);
 		}
 
-		IXbimGeometryModel^ XbimGeometryModel::CreateFrom(IfcRepresentationItem^ repItem, bool forceSolid, XbimLOD lod)
+		IXbimGeometryModel^ XbimGeometryModel::CreateFrom(IfcRepresentationItem^ repItem, bool forceSolid, XbimLOD lod, bool occOut)
 		{
-			return CreateFrom(repItem, gcnew Dictionary<IfcRepresentation^, IXbimGeometryModel^>(), forceSolid,lod);
+			return CreateFrom(repItem, gcnew Dictionary<IfcRepresentation^, IXbimGeometryModel^>(), forceSolid,lod, occOut);
 		}
 
-		IXbimGeometryModel^ XbimGeometryModel::CreateFrom(IfcRepresentationItem^ repItem, Dictionary<IfcRepresentation^, IXbimGeometryModel^>^ maps, bool forceSolid,XbimLOD lod)
+		IXbimGeometryModel^ XbimGeometryModel::CreateFrom(IfcRepresentationItem^ repItem, Dictionary<IfcRepresentation^, IXbimGeometryModel^>^ maps, bool forceSolid,XbimLOD lod, bool occOut)
 		{
 			if(!forceSolid && dynamic_cast<IfcFacetedBrep^>(repItem))
 				return gcnew XbimFacetedShell(((IfcFacetedBrep^)repItem)->Outer);
@@ -548,7 +595,7 @@ namespace Xbim
 				IXbimGeometryModel^ mg;
 				if(!maps->TryGetValue(repMap->MappedRepresentation, mg)) //look it up
 				{
-					mg =  CreateFrom(repMap->MappedRepresentation,maps, forceSolid,lod); //make the first one
+					mg =  CreateFrom(repMap->MappedRepresentation,maps, forceSolid,lod, occOut); //make the first one
 					maps->Add(repMap->MappedRepresentation, mg);
 				}
 

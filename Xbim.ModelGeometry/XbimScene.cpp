@@ -40,6 +40,15 @@ namespace Xbim
 			 _graph->AddProducts(toDraw);
 			
 		}
+		XbimScene::XbimScene(IModel^ model, IEnumerable<IfcProduct^>^ toDraw, bool OCCout)
+		{
+			Initialise();
+			_occOut = OCCout;
+			Logger->Debug("Creating Geometry from IModel..."); 
+			 _graph = gcnew TransformGraph(model, this);
+			 _maps = gcnew Dictionary<IfcRepresentation^, IXbimGeometryModel^>();
+			 _graph->AddProducts(toDraw);
+		}
 
 		void XbimScene::Close()
 		{
@@ -148,7 +157,8 @@ namespace Xbim
 			{
 				try
 				{
-					IXbimGeometryModel^ geomModel = XbimGeometryModel::CreateFrom(product, _maps, false, _lod);
+					IXbimGeometryModel^ geomModel = XbimGeometryModel::CreateFrom(product, _maps, false, _lod, _occOut);
+					
 					if (geomModel != nullptr)  //it has no geometry
 					{
 						XbimTriangulatedModelStream^ tm = geomModel->Mesh(true,mf->DeflectionTolerance);
