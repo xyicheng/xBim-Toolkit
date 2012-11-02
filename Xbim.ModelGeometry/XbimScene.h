@@ -22,6 +22,7 @@ namespace Xbim
 			Stream^ _sceneStream;
 			String^ _sceneStreamFileName;
 			Dictionary<IfcRepresentation^, IXbimGeometryModel^>^ _maps;
+			bool _occOut;
 			static ILogger^ Logger = LoggerFactory::GetLogger();
 			void ImportIfc(String ^ ifcFileName,String ^ xBimFileName,String ^ xBimGeometryFileName, bool removeIfcGeometry, ProcessModel ^ processingDelegate);
 
@@ -32,6 +33,7 @@ namespace Xbim
 		public:
 			XbimScene(IModel^ model);
 			XbimScene(IModel^ model, IEnumerable<IfcProduct^>^ toDraw);
+			XbimScene(IModel^ model, IEnumerable<IfcProduct^>^ toDraw, bool OCCout);
 			XbimScene(String ^ ifcFileName, String ^ xbimFileName,String ^ xBimGeometryFileName, bool removeIfcGeoemtry);
 			XbimScene(String ^ ifcFileName,String ^ xBimFileName,String ^ xBimGeometryFileName, bool removeIfcGeometry, ProcessModel ^ processingDelegate);
 			!XbimScene();
