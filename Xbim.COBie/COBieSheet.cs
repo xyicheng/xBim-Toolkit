@@ -191,7 +191,7 @@ namespace Xbim.COBie
                                
                                 string errorDescription = "";
                                 errorDescription = String.Format(ErrorDescription.PickList_Violation, sheetName, errFieldName);
-                                COBieError error = new COBieError(SheetName, column.ColumnName, errorDescription, COBieError.ErrorTypes.PickList_Violation, column.ColumnOrder, rowIndex);
+                                COBieError error = new COBieError(SheetName, column.ColumnName, errorDescription, COBieError.ErrorTypes.PickList_Violation, row.InitialRowHashValue, column.ColumnOrder, rowIndex);
                                 _errors.Add(error);
                             }
                         }
@@ -232,7 +232,7 @@ namespace Xbim.COBie
                 r++;
                 for(int col = 0 ; col < row.RowCount ; col++)
                 {
-                    COBieError err = GetCobieError(row[col], SheetName, r, col);
+                    COBieError err = GetCobieError(row[col], SheetName, r, col, row.InitialRowHashValue);
                     if (err != null)
                         _errors.Add(err);
                 }
@@ -268,7 +268,7 @@ namespace Xbim.COBie
                 foreach (var row in dupe.rows)
                 {
                     string errorDescription = String.Format(ErrorDescription.PrimaryKey_Violation, keyCols, rowIndexList);
-                    COBieError error = new COBieError(SheetName, keyCols, errorDescription, COBieError.ErrorTypes.PrimaryKey_Violation, KeyColumns.First().ColumnOrder, (row.index + 1));
+                    COBieError error = new COBieError(SheetName, keyCols, errorDescription, COBieError.ErrorTypes.PrimaryKey_Violation, row.row.InitialRowHashValue, KeyColumns.First().ColumnOrder, (row.index + 1));
                     _errors.Add(error);
                 }
                 
@@ -286,12 +286,12 @@ namespace Xbim.COBie
         /// <param name="row"></param>
         /// <param name="col"></param>
         /// <returns>COBieError object</returns>
-        private COBieError GetCobieError(COBieCell cell, string sheetName, int row, int col)
+        private COBieError GetCobieError(COBieCell cell, string sheetName, int row, int col, string initialRowHash)
         {
             int maxLength = cell.CobieCol.ColumnLength;
             COBieAllowedType allowedType = cell.CobieCol.AllowedType;
             COBieAttributeState state = cell.COBieState;
-            COBieError err = new COBieError(sheetName, cell.CobieCol.ColumnName, "", COBieError.ErrorTypes.None, col, row);
+            COBieError err = new COBieError(sheetName, cell.CobieCol.ColumnName, "", COBieError.ErrorTypes.None, initialRowHash, col, row);
       
             // If field is required and cell value is empty
             if (string.IsNullOrEmpty(cell.CellValue) && 
