@@ -470,16 +470,18 @@ namespace Xbim
 			
 			BRepOffsetAPI_MakePipeShell pipeMaker(sweep);
 			pipeMaker.Add(profile,Standard_False, Standard_True);
-			/*if(dynamic_cast<IfcPlane^>(repItem->ReferenceSurface))
+			if(dynamic_cast<IfcPlane^>(repItem->ReferenceSurface))
 			{
 				IfcPlane^ ifcPlane = (IfcPlane^)repItem->ReferenceSurface;
 				gp_Ax3 ax3 = XbimGeomPrim::ToAx3(ifcPlane->Position);
-				pipeMaker.SetMode(Standard_False);
+				pipeMaker.SetMode(ax3.Direction());
 			}
 			else
+			{
 				Logger->WarnFormat( "Entity #" + repItem->EntityLabel.ToString() + ", IfcSurfaceCurveSweptAreaSolid has a Non-Planar surface");
-		*/	
-			pipeMaker.SetMode(Standard_False);
+				pipeMaker.SetMode(Standard_False); //use auto calculation of tangent and binormal
+			}
+			
 			pipeMaker.SetTransitionMode(BRepBuilderAPI_RightCorner);
 			pipeMaker.Build();
 			if(pipeMaker.IsDone() && pipeMaker.MakeSolid())
