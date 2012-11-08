@@ -39,7 +39,6 @@ namespace Xbim.COBie
                 if (Model == null)
                 {
                     throw new ArgumentException("COBieContext must contain a model before calling WorkBookUnits."); 
-                   
                 }
                 if (_workBookUnits == null) //set up global units
                 {
@@ -50,7 +49,10 @@ namespace Xbim.COBie
             }
            
         }
-        
+        /// <summary>
+        /// if set to true and no IfcZones or no IfcSpace property names of "ZoneName", we will list 
+        /// any IfcSpace property names "Department" in the Zone sheet
+        /// </summary>
         public bool DepartmentsUsedAsZones { get; set; } //indicate if we have taken departments as Zones
         public FilterValues Exclude { get; set; } //filter values for attribute extraction in sheets
 
@@ -59,7 +61,11 @@ namespace Xbim.COBie
             RunDate = DateTime.Now.ToString(Constants.DATE_FORMAT);
             EMails = new Dictionary<long, string>();
             Scene = null;
+            Model = null;
+            //if no IfcZones or no IfcSpace property names of "ZoneName" then if DepartmentsUsedAsZones is true we will list 
+            //any IfcSpace property names "Department" in the Zone sheet and remove the "Department" property from the attribute sheet
             DepartmentsUsedAsZones = false;
+
             Exclude = new FilterValues();
         }
 

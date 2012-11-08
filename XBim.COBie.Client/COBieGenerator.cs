@@ -90,9 +90,9 @@ namespace Xbim.COBie.Client
                     // Build context
                     COBieContext context = new COBieContext(_worker.ReportProgress);
                     context.TemplateFileName = parameters.TemplateFile;
-                    
                     context.Model = model;
 
+                    //Create Scene, required for Coordinates sheet
                     string cacheFile = Path.ChangeExtension(parameters.ModelFile, ".xbimGC");
                     if (!File.Exists(cacheFile)) GenerateGeometry(model, cacheFile, context);
                     context.Scene = new XbimSceneStream(model, cacheFile);

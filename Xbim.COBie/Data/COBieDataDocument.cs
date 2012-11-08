@@ -40,9 +40,7 @@ namespace Xbim.COBie.Data
 
             // get all IfcBuildingStory objects from IFC file
             IEnumerable<IfcDocumentInformation> docInfos = Model.InstancesOfType<IfcDocumentInformation>();
-            //get the owner history
-            IfcOwnerHistory ifcOwnerHistory = Model.InstancesOfType<IfcOwnerHistory>().FirstOrDefault();
-
+            
             ProgressIndicator.Initialise("Creating Documents", docInfos.Count());
 
             foreach (IfcDocumentInformation di in docInfos)
@@ -53,35 +51,38 @@ namespace Xbim.COBie.Data
                 
                 
                 doc.Name = (di == null) ? "" : di.Name.ToString();
-
-                //no IfcOwnerHistory so take the project OwnerHistory as default
-                if (di.DocumentOwner != null)
+                //get the first associated document to extract the objects the document refers to
+                IfcRelAssociatesDocument ifcRelAssociatesDocument = DocumentInformationForObjects(di).FirstOrDefault();
+                
+                
+                if (ifcRelAssociatesDocument.OwnerHistory != null)
+                    doc.CreatedBy = GetTelecomEmailAddress(ifcRelAssociatesDocument.OwnerHistory);
+                else if (di.DocumentOwner != null)
                 {
-                    if (di.DocumentOwner is IfcPersonAndOrganization)
+                   if (di.DocumentOwner is IfcPersonAndOrganization)
                         doc.CreatedBy = GetTelecomEmailAddress(di.DocumentOwner as IfcPersonAndOrganization);
                     else if (di.DocumentOwner is IfcPerson)
-                        GetEmail(null, di.DocumentOwner as IfcPerson);
+                        doc.CreatedBy = GetEmail(null, di.DocumentOwner as IfcPerson);
                     else if (di.DocumentOwner is IfcOrganization)
-                        GetEmail(di.DocumentOwner as IfcOrganization, null);
+                        doc.CreatedBy = GetEmail(di.DocumentOwner as IfcOrganization, null);
                 }
                 else if (Model.IfcProject.OwnerHistory != null)
                     doc.CreatedBy = GetTelecomEmailAddress(Model.IfcProject.OwnerHistory);
 
-                if (di.CreationTime != null)
+
+                if (ifcRelAssociatesDocument.OwnerHistory != null)
+                    doc.CreatedOn = GetCreatedOnDateAsFmtString(ifcRelAssociatesDocument.OwnerHistory);
+                else if (di.CreationTime != null)
                     doc.CreatedOn = di.CreationTime.ToString();
                 else if (Model.IfcProject.OwnerHistory != null)
                     doc.CreatedOn = Context.RunDate;
 
                 
-                //IfcRelAssociatesClassification ifcRAC = di.HasAssociations.OfType<IfcRelAssociatesClassification>().FirstOrDefault();
-                //IfcClassificationReference ifcCR = (IfcClassificationReference)ifcRAC.RelatingClassification;
-                doc.Category = di.Purpose.ToString();
+                doc.Category = (string.IsNullOrEmpty(di.Purpose.ToString()) ) ? DEFAULT_STRING :di.Purpose.ToString();
 
-                doc.ApprovalBy = di.IntendedUse.ToString();
-                doc.Stage = di.Scope.ToString();
+                doc.ApprovalBy = (string.IsNullOrEmpty(di.IntendedUse.ToString())) ? DEFAULT_STRING : di.IntendedUse.ToString();
+                doc.Stage = (string.IsNullOrEmpty(di.Scope.ToString())) ? DEFAULT_STRING : di.Scope.ToString();
 
-                //get the first associated document to extract the objects the document refers to
-                IfcRelAssociatesDocument ifcRelAssociatesDocument = DocumentInformationForObjects(di).FirstOrDefault();
                 
                 RelatedObjectInformation relatedObjectInfo = GetRelatedObjectInformation(ifcRelAssociatesDocument);
                 doc.SheetName = relatedObjectInfo.SheetName;
@@ -89,8 +90,7 @@ namespace Xbim.COBie.Data
                 doc.ExtObject = relatedObjectInfo.ExtObject;
                 doc.ExtIdentifier = relatedObjectInfo.ExtIdentifier;
                 doc.ExtSystem = relatedObjectInfo.ExtSystem;
-                //doc.CreatedBy = relatedObjectInfo.CreatedBy;
-                //doc.CreatedOn = relatedObjectInfo.CreatedOn;
+                
                 FileInformation fileInfo = GetFileInformation(ifcRelAssociatesDocument);
                 doc.File = fileInfo.Name;
                 doc.Directory = fileInfo.Location;
@@ -120,8 +120,9 @@ namespace Xbim.COBie.Data
             {
                 //test for single document
                 IfcDocumentReference ifcDocumentReference = ifcRelAssociatesDocument.RelatingDocument as IfcDocumentReference;
-                if (ifcDocumentReference != null)
+                if (ifcDocumentReference != null) 
                 {
+                    //this is possibly incorrect, think it references information within a document
                     value = ifcDocumentReference.ItemReference.ToString();
                     if (!string.IsNullOrEmpty(value)) DocInfo.Name = value;
                     value = ifcDocumentReference.Location.ToString();
@@ -192,8 +193,6 @@ namespace Xbim.COBie.Data
         }
 
 
-        
-
         /// <summary>
         /// Missing Inverse method on  IfcDocumentInformation, need to be implemented on IfcDocumentInformation class
         /// </summary>
@@ -205,23 +204,6 @@ namespace Xbim.COBie.Data
         }
 
 
-        //private string GetDocumentCategory(IfcBuildingStorey bs)
-        //{
-        //    return (bs.LongName == null) ? "Category" : bs.LongName.ToString();
-        //}
-
-        //private string GetDocumentDescription(IfcBuildingStorey bs)
-        //{
-        //    if (bs != null)
-        //    {
-        //        if (!string.IsNullOrEmpty(bs.LongName)) return bs.LongName;
-        //        else if (!string.IsNullOrEmpty(bs.Description)) return bs.Description;
-        //        else if (!string.IsNullOrEmpty(bs.Name)) return bs.Name;
-        //    }
-        //    return DEFAULT_VAL;
-        //}
-
-        
         #endregion
 
         public struct FileInformation

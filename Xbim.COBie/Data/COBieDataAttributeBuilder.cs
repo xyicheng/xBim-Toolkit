@@ -264,9 +264,7 @@ namespace Xbim.COBie.Data
                         if ((ifcPropertySingleValue.Unit != null))
                         {
                             attribute.Unit = COBieData<COBieAttributeRow>.GetUnitName(ifcPropertySingleValue.Unit);
-                            if (ifcPropertySingleValue.Unit is IfcNamedUnit)
-                                attribute.AllowedValues = ((IfcNamedUnit)ifcPropertySingleValue.Unit).UnitType.ToString();
-
+                            
                         }
                     }
 
@@ -309,9 +307,6 @@ namespace Xbim.COBie.Data
                         if ((ifcPropertyBoundedValue.Unit != null))
                         {
                             attribute.Unit = COBieData<COBieAttributeRow>.GetUnitName(ifcPropertyBoundedValue.Unit);
-                            if (ifcPropertySingleValue.Unit is IfcNamedUnit)
-                                attribute.AllowedValues = ((IfcNamedUnit)ifcPropertySingleValue.Unit).UnitType.ToString();
-
                         }
 
                     }
@@ -364,7 +359,7 @@ namespace Xbim.COBie.Data
                     attribute.RowName = RowParameters["Name"];
                     attribute.CreatedBy = RowParameters["CreatedBy"];
                     attribute.CreatedOn = RowParameters["CreatedOn"];
-                    attribute.ExtSystem = propertySet.OwnerHistory.OwningApplication.ApplicationFullName; //RowParameters["ExtSystem"];
+                    attribute.ExtSystem = (propertySet.OwnerHistory.OwningApplication != null) ? propertySet.OwnerHistory.OwningApplication.ApplicationFullName.ToString() : RowParameters["ExtSystem"];
 
                     value = NumberValueCheck(value, attribute);
 

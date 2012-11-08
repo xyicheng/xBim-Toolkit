@@ -498,6 +498,15 @@ namespace Xbim.IO
             }
         }
 
+        /// <summary>
+        /// Swap the current owner 'ADD' Object Owner, used in COBie Serializer to maintain owner settings values
+        /// </summary>
+        /// <param name="owner">IfcOwnerHistory object</param>
+        public void SetCurrentCOBieOwner(IfcOwnerHistory owner)
+        {
+            _ownerHistoryAddObject = owner;
+        }
+
         public IfcOwnerHistory OwnerHistoryAddObject
         {
             get

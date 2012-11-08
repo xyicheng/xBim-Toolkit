@@ -116,6 +116,8 @@
     <Compile Include="COBie\COBieQueriesTests.cs" />
     <Compile Include="COBie\COBieSerialisationTests.cs" />
     <Compile Include="COBie\COBieTimeTests.cs" />
+    <Compile Include="COBie\COBieXbimSerialisationTests.cs" />
+    <Compile Include="COBie\ICOBieFormatter.cs" />
     <Compile Include="InternationalisationTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="XbimFileModelServerTest.cs" />
@@ -178,6 +180,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="TestSourceFiles\Clinic_A.xbim">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestSourceFiles\COBieToXbim.xCOBie">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

@@ -115,7 +115,11 @@ namespace Xbim.COBie.Data
                 IfcPostalAddress ifcPostalAddress = addresses.PostalAddresses.FirstOrDefault();
                 if (ifcPostalAddress != null)
                 {
-                    contact.Street = (ifcPostalAddress.AddressLines != null) ? ifcPostalAddress.AddressLines.FirstOrDefault().Value.ToString() : DEFAULT_STRING;
+                    List<string> street = new List<string>();
+                    if (ifcPostalAddress.AddressLines != null)
+                        street = ifcPostalAddress.AddressLines.Select(st => st.Value.ToString()).ToList();
+                    
+                    contact.Street = (street.Count > 0) ? string.Join(", ", street) : DEFAULT_STRING;
                     contact.PostalBox = (string.IsNullOrEmpty(ifcPostalAddress.PostalBox)) ? DEFAULT_STRING : ifcPostalAddress.PostalBox.ToString();
                     contact.Town = (string.IsNullOrEmpty(ifcPostalAddress.Town)) ? DEFAULT_STRING : ifcPostalAddress.Town.ToString();
                     contact.StateRegion = (string.IsNullOrEmpty(ifcPostalAddress.Region)) ? DEFAULT_STRING : ifcPostalAddress.Region.ToString();

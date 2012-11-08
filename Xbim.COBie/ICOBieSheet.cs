@@ -22,6 +22,7 @@ namespace Xbim.COBie
 
         void Validate(COBieWorkbook workbook);
         void BuildIndices();
+        void SetRowsHashCode();
         T AddNewRow();
         
     }

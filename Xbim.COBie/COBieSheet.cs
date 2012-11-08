@@ -111,6 +111,18 @@ namespace Xbim.COBie
         }
 
         /// <summary>
+        /// Set the initial hash code for each row in the sheet, i.e when the workbook is created
+        /// </summary>
+        public void SetRowsHashCode()
+        {
+            foreach (COBieRow row in Rows)
+            {
+                //SetThe initial has vale for each row
+                row.SetInitialRowHash();
+            }
+        }
+
+        /// <summary>
         /// Build  Dictionary of Keyed to HashSet lists, where key = field name and HashSet hold the row values for that field
         /// </summary>
         public void BuildIndices()
@@ -122,21 +134,22 @@ namespace Xbim.COBie
                     string columnName = cobieColumn.ColumnName;
                     if (!string.IsNullOrEmpty(columnName))
                     {
-                        string columnValue = cobieColumn.PropertyInfo.GetValue(row, null).ToString(); //value in this sheets row foreign key column
-
-                        if (!string.IsNullOrEmpty(columnValue))
+                        var columnData = cobieColumn.PropertyInfo.GetValue(row, null);
+                        if (columnData != null)
                         {
-                            if (!_indices.ContainsKey(columnName)) //no column key so add to dictionary
-                                _indices.Add(columnName, new HashSet<string>());
+                            string columnValue = columnData.ToString(); //value in this sheets row foreign key column
 
-                            if (!_indices[columnName].Contains(columnValue)) //add value to HashSet, if not existing
-                                _indices[columnName].Add(columnValue);
+                            if (!string.IsNullOrEmpty(columnValue))
+                            {
+                                if (!_indices.ContainsKey(columnName)) //no column key so add to dictionary
+                                    _indices.Add(columnName, new HashSet<string>());
+
+                                if (!_indices[columnName].Contains(columnValue)) //add value to HashSet, if not existing
+                                    _indices[columnName].Add(columnValue);
+                            } 
                         }
                     }
                 }
-                //SetThe initial has vale for each row
-                row.SetInitialRowHash();
-                
             }
         }
 

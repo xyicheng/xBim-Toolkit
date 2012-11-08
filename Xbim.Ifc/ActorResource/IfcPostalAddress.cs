@@ -282,7 +282,7 @@ namespace Xbim.Ifc.ActorResource
             else AddressLines.Clear_Reversible();
             foreach (string line in lines)
             {
-                AddressLines.Add_Reversible(line);
+                AddressLines.Add_Reversible(line.Trim());
             }
 
             return AddressLines;

@@ -698,29 +698,10 @@ namespace Xbim.COBie.Data
         /// <returns>string of the category</returns>
         public string GetCategory(IfcTypeObject type, COBieDataPropertySetValues allPropertyValues)
         {
-            
-            //Try by relationship first
-            IfcRelAssociatesClassification classification = type.HasAssociations.OfType<IfcRelAssociatesClassification>().FirstOrDefault();
-            if (classification != null)
+            string categoryRef = GetCategoryClassification(type);
+            if (!string.IsNullOrEmpty(categoryRef))
             {
-                IfcClassificationReference classificationRef = (IfcClassificationReference)classification.RelatingClassification;
-
-                if (!string.IsNullOrEmpty(classificationRef.Location))
-                {
-                    return classificationRef.Location;
-                }
-                if (!string.IsNullOrEmpty(classificationRef.Name))
-                {
-                    return classificationRef.Name;
-                }
-                if (!string.IsNullOrEmpty(classificationRef.ItemReference))
-                {
-                    return classificationRef.ItemReference;
-                }
-                if ((classificationRef.ReferencedSource != null) && (!string.IsNullOrEmpty(classificationRef.ReferencedSource.Name)))
-                {
-                    return classificationRef.ReferencedSource.Name;
-                }
+                return categoryRef;
             }
   
             //Try by PropertySet as fallback

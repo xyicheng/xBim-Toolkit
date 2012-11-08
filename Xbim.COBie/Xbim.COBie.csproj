@@ -181,8 +181,25 @@
     <Compile Include="Serialisers\COBieBinaryDeserialiser.cs" />
     <Compile Include="Serialisers\COBieBinarySerialiser.cs" />
     <Compile Include="Serialisers\COBieJSONSerialiser.cs" />
+    <Compile Include="Serialisers\COBieXBimSerialiser.cs" />
     <Compile Include="Serialisers\COBieXLSDeserialiser.cs" />
     <Compile Include="Serialisers\COBieXLSSerialiser.cs" />
+    <Compile Include="Serialisers\XbimSerialiser\COBieXBim.cs" />
+    <Compile Include="Serialisers\XbimSerialiser\COBieXBimAttribute.cs" />
+    <Compile Include="Serialisers\XbimSerialiser\COBieXBimComponent.cs" />
+    <Compile Include="Serialisers\XbimSerialiser\COBieXBimContext.cs" />
+    <Compile Include="Serialisers\XbimSerialiser\COBieXBimContact.cs" />
+    <Compile Include="Serialisers\XbimSerialiser\COBieXBimDocument.cs" />
+    <Compile Include="Serialisers\XbimSerialiser\COBieXBimEditScope.cs" />
+    <Compile Include="Serialisers\XbimSerialiser\COBieXBimFacility.cs" />
+    <Compile Include="Serialisers\XbimSerialiser\COBieXBimFloor.cs" />
+    <Compile Include="Serialisers\XbimSerialiser\COBieXBimJob.cs" />
+    <Compile Include="Serialisers\XbimSerialiser\COBieXBimResource.cs" />
+    <Compile Include="Serialisers\XbimSerialiser\COBieXBimSpace.cs" />
+    <Compile Include="Serialisers\XbimSerialiser\COBieXBimSpare.cs" />
+    <Compile Include="Serialisers\XbimSerialiser\COBieXBimSystem.cs" />
+    <Compile Include="Serialisers\XbimSerialiser\COBieXBimType.cs" />
+    <Compile Include="Serialisers\XbimSerialiser\COBieXBimZone.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ClassDiagram1.cd" />

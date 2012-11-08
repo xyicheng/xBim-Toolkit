@@ -25,6 +25,14 @@ namespace Xbim.COBie
             }
         }
 
+        internal void SetInitialHashCode()
+        {
+            foreach (ICOBieSheet<COBieRow> item in this)
+            {
+                item.SetRowsHashCode();
+            }
+        }
+
         
     }
 }

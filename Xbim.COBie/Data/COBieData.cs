@@ -309,25 +309,70 @@ namespace Xbim.COBie.Data
         }
 
         /// <summary>
+        /// Get the category from the IfcRelAssociatesClassification / IfcClassificationReference objects
+        /// </summary>
+        /// <param name="obj">IfcObjectDefinition object</param>
+        /// <returns></returns>
+        public string GetCategoryClassification(IfcObjectDefinition obj)
+        {
+            //Try by relationship first
+            IfcRelAssociatesClassification ifcRAC = obj.HasAssociations.OfType<IfcRelAssociatesClassification>().FirstOrDefault();
+
+            if (ifcRAC != null)
+            {
+                //need to use split as sometime the whole category is stored in both ItemReference and Name
+                IfcClassificationReference ifcCR = (IfcClassificationReference)ifcRAC.RelatingClassification;
+                //holders for first and last part of category
+                string itemReference = ifcCR.ItemReference;
+                string name = ifcCR.Name;
+                //lets hope the user does not use ":" more than once, We split here as sometimes the whole category(13-15 11 34 11: Office) is place in itemReference and Name
+                if (!string.IsNullOrEmpty(itemReference)) itemReference = itemReference.Split(':').First().Trim();
+                string[] nameSplit = name.Split(':');
+                //just in case we have more than one ":"
+                if (itemReference.ToLower() == nameSplit.First().ToLower())
+                {
+                    for (int i = 0; i < nameSplit.Count(); i++)
+                    {
+                        //skip first item
+                        if (i == 1) name = nameSplit[i];
+                        if (i > 1) name += ": " + nameSplit[i]; //add back the second, third... ": "
+                    }
+                    
+                }
+                else //no match on first split item so just go with the whole string for both, if same filtered below
+                {
+                    itemReference = ifcCR.ItemReference;
+                    name = ifcCR.Name;
+                }
+
+                if ((!string.IsNullOrEmpty(itemReference))
+                    && (!string.IsNullOrEmpty(name))
+                    && (itemReference.ToLower() != name.ToLower())
+                    )
+                    return itemReference + ": " + name;
+                else if (!string.IsNullOrEmpty(itemReference))
+                    return itemReference;
+                else if (!string.IsNullOrEmpty(name))
+                    return name;
+                else if (!string.IsNullOrEmpty(ifcCR.Location))
+                    return ifcCR.Location;
+                else if ((ifcCR.ReferencedSource != null) && (!string.IsNullOrEmpty(ifcCR.ReferencedSource.Name)))
+                    return ifcCR.ReferencedSource.Name;
+            }
+            return null;
+        }
+
+        /// <summary>
         /// Get Category method
         /// </summary>
         /// <param name="obj">Object to try and extract method from</param>
         /// <returns></returns>
         public string GetCategory(IfcObject obj)
         {
-            //Try by relationship first
-           
-            IfcRelAssociatesClassification ifcRAC = obj.HasAssociations.OfType<IfcRelAssociatesClassification>().FirstOrDefault();
-                            
-            if (ifcRAC != null)
+            string categoryRef = GetCategoryClassification(obj);
+            if (!string.IsNullOrEmpty(categoryRef))
             {
-                IfcClassificationReference ifcCR = (IfcClassificationReference)ifcRAC.RelatingClassification;
-                if (!string.IsNullOrEmpty(ifcCR.Location))
-                    return ifcCR.Location;
-                else
-                    return ifcCR.Name;
-                
-                
+                return categoryRef;
             }
             //Try by PropertySet as fallback
             var query = from pSet in obj.PropertySets

@@ -86,9 +86,8 @@ namespace Xbim.COBie
             Workbook.Add(cq.GetCOBieContactSheet());
             Workbook.Add(cq.GetCOBieFacilitySheet()); 
             Workbook.Add(cq.GetCOBieFloorSheet());
-            COBieSheet<COBieZoneRow> zonesheet = cq.GetCOBieZoneSheet();//we need zone before spaces as it sets a flag on departments property
             Workbook.Add(cq.GetCOBieSpaceSheet());
-            Workbook.Add(zonesheet); 
+            Workbook.Add(cq.GetCOBieZoneSheet()); 
             Workbook.Add(cq.GetCOBieTypeSheet());
             Workbook.Add(cq.GetCOBieComponentSheet());
             Workbook.Add(cq.GetCOBieSystemSheet());
@@ -119,7 +118,7 @@ namespace Xbim.COBie
             {
                 COBieProgress progress = new COBieProgress(Context);
                 progress.Initialise("Validating Workbooks", Workbook.Count, 0);
-
+                Workbook.CreateIndices();
                 
                 for (int i = 0; i < Workbook.Count; i++)
                 {
@@ -157,7 +156,8 @@ namespace Xbim.COBie
         private void GenerateCOBieData()
         {
             Initialise();
-            Workbook.CreateIndices();
+            Workbook.SetInitialHashCode();//set the initial row hash value to compare against for row changes
+           
             PopulateErrors();			
         }
 

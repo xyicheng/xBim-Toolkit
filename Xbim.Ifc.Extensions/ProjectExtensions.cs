@@ -190,7 +190,7 @@ namespace Xbim.Ifc.Extensions
         }
 
         public static void SetOrChangeSIUnit(this IfcProject ifcProject, IfcUnitEnum unitType, IfcSIUnitName siUnitName,
-                                             IfcSIPrefix siUnitPrefix)
+                                             IfcSIPrefix? siUnitPrefix)
         {
             IModel model = ModelManager.ModelOf(ifcProject);
             if (ifcProject.UnitsInContext == null)

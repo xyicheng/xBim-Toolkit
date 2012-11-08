@@ -1,0 +1,264 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Xbim.XbimExtensions;
+using Xbim.Ifc.ActorResource;
+using Xbim.Ifc.GeometryResource;
+using Xbim.Ifc.MeasureResource;
+using Xbim.Ifc.ProductExtension;
+using Xbim.Ifc.Kernel;
+
+namespace Xbim.COBie.Serialisers.XbimSerialiser
+{
+    public class COBieXBimContext
+    {
+
+        #region Fields
+        private IfcSIUnit _secondUnit;
+        private IfcDimensionalExponents _dimensionalExponents;
+        #endregion
+
+        #region Properties
+        // <summary>
+        /// Model to add COBie data too
+        /// </summary>
+        public IModel Model { get; set; }
+
+        /// <summary>
+        /// WorkBook holding the COBie data
+        /// </summary>
+        public COBieWorkbook WorkBook { get;  set; }
+
+        /// <summary>
+        /// Contacts dictionary keyed on email address
+        /// </summary>
+        public Dictionary<string, IfcPersonAndOrganization> Contacts { get; private set; }
+        
+        private IfcConversionBasedUnit _ifcConversionBasedUnitYear;
+        /// <summary>
+        /// Year Unit
+        /// </summary>
+        public IfcConversionBasedUnit IfcConversionBasedUnitYear
+        {
+            get
+            {
+                if (_ifcConversionBasedUnitYear == null)
+                    SetYearDurationUnit();
+                return _ifcConversionBasedUnitYear;
+            }          
+            
+        }
+
+        public IfcDimensionalExponents DimensionalExponentSingleUnit
+        {
+            get
+            {
+                if (_dimensionalExponents == null)
+                    SetSecondUnit();
+                return _dimensionalExponents;
+            }
+        }
+
+        private IfcConversionBasedUnit _ifcConversionBasedUnitMonth;
+        /// <summary>
+        /// Month Unit
+        /// </summary>
+        public IfcConversionBasedUnit IfcConversionBasedUnitMonth
+        {
+            get
+            {
+                if (_ifcConversionBasedUnitMonth == null)
+                    SetMonthDurationUnit();
+                return _ifcConversionBasedUnitMonth;
+            }
+
+        }
+
+        private IfcConversionBasedUnit _ifcConversionBasedUnitWeek;
+        /// <summary>
+        /// Month Unit
+        /// </summary>
+        public IfcConversionBasedUnit IfcConversionBasedUnitWeek
+        {
+            get
+            {
+                if (_ifcConversionBasedUnitWeek == null)
+                    SetWeekDurationUnit();
+                return _ifcConversionBasedUnitWeek;
+            }
+
+        }
+
+        private IfcConversionBasedUnit _ifcConversionBasedUnitMinute;
+        /// <summary>
+        /// Month Unit
+        /// </summary>
+        public IfcConversionBasedUnit IfcConversionBasedUnitMinute
+        {
+            get
+            {
+                if (_ifcConversionBasedUnitMinute == null)
+                    SetMinuteDurationUnit();
+                return _ifcConversionBasedUnitMinute;
+            }
+
+        }
+        
+        /// <summary>
+        /// World Coordinates Sytem for the Model
+        /// </summary>
+        public IfcAxis2Placement3D WCS { get;  private set; }
+        #endregion
+        
+        
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="model">Model to add COBie data too</param>
+        /// <param name="workBook">Work Book With COBie data </param>
+        public COBieXBimContext (IModel model)
+        {
+            Model = model;
+            Contacts = new Dictionary<string, IfcPersonAndOrganization>();
+            WCS = Model.New<IfcAxis2Placement3D>();
+        }
+
+        public void Reset()
+        {
+            Contacts.Clear();
+            _ifcConversionBasedUnitYear = null;
+            _ifcConversionBasedUnitMonth = null;
+            _ifcConversionBasedUnitWeek = null;
+            _secondUnit = null;
+            _dimensionalExponents = null;
+            WorkBook = null;
+        }
+
+        /// <summary>
+        /// Set the Year Duration Unit
+        /// </summary>
+        private void SetYearDurationUnit()
+        {
+            SetSecondUnit();
+            
+            IfcMeasureWithUnit yearMeasure = Model.New<IfcMeasureWithUnit>(mwu =>
+            {
+                mwu.ValueComponent = new IfcReal(3.1536E7);
+                mwu.UnitComponent = _secondUnit;
+            });
+            IfcConversionBasedUnit yearConBaseUnit = Model.New<IfcConversionBasedUnit>(s =>
+            {
+                s.UnitType = IfcUnitEnum.TIMEUNIT;
+                s.Name = "Year";
+                s.Dimensions = _dimensionalExponents;
+                s.ConversionFactor = yearMeasure;
+            });
+            //set context units
+            _ifcConversionBasedUnitYear = yearConBaseUnit;
+        }
+
+        /// <summary>
+        /// Set the month duration unit
+        /// </summary>
+        private void SetMonthDurationUnit()
+        {
+            SetSecondUnit();
+
+            IfcMeasureWithUnit monthMeasure = Model.New<IfcMeasureWithUnit>(mwu =>
+            {
+                mwu.ValueComponent = new IfcReal(3.1536E7 / 12); //not accurate month but take average
+                mwu.UnitComponent = _secondUnit;
+            });
+            IfcConversionBasedUnit monthConBaseUnit = Model.New<IfcConversionBasedUnit>(s =>
+            {
+                s.UnitType = IfcUnitEnum.TIMEUNIT;
+                s.Name = "Month";
+                s.Dimensions = _dimensionalExponents;
+                s.ConversionFactor = monthMeasure;
+            });
+
+            
+            //set context units
+            _ifcConversionBasedUnitMonth = monthConBaseUnit;
+        }
+
+        /// <summary>
+        /// Set the week duration unit
+        /// </summary>
+        private void SetWeekDurationUnit()
+        {
+            SetSecondUnit();
+
+            IfcMeasureWithUnit weekMeasure = Model.New<IfcMeasureWithUnit>(mwu =>
+            {
+                mwu.ValueComponent = new IfcReal(3.1536E7 / 52); //not accurate week but take average
+                mwu.UnitComponent = _secondUnit;
+            });
+            IfcConversionBasedUnit weekConBaseUnit = Model.New<IfcConversionBasedUnit>(s =>
+            {
+                s.UnitType = IfcUnitEnum.TIMEUNIT;
+                s.Name = "Month";
+                s.Dimensions = _dimensionalExponents;
+                s.ConversionFactor = weekMeasure;
+            });
+
+            //set context units
+            _ifcConversionBasedUnitWeek = weekConBaseUnit;
+        }
+
+        /// <summary>
+        /// Set the week duration unit
+        /// </summary>
+        private void SetMinuteDurationUnit()
+        {
+            SetSecondUnit();
+
+            IfcMeasureWithUnit minuteMeasure = Model.New<IfcMeasureWithUnit>(mwu =>
+            {
+                mwu.ValueComponent = new IfcReal(60); //not accurate week but take average
+                mwu.UnitComponent = _secondUnit;
+            });
+            IfcConversionBasedUnit minuteConBaseUnit = Model.New<IfcConversionBasedUnit>(s =>
+            {
+                s.UnitType = IfcUnitEnum.TIMEUNIT;
+                s.Name = "Minute";
+                s.Dimensions = _dimensionalExponents;
+                s.ConversionFactor = minuteMeasure;
+            });
+
+            //set context units
+            _ifcConversionBasedUnitMinute = minuteConBaseUnit;
+        }
+
+        /// <summary>
+        /// set the second unit, used for time duration units
+        /// </summary>
+        private void SetSecondUnit()
+        {
+            if (_secondUnit == null)
+            {
+                _secondUnit = Model.New<IfcSIUnit>(si =>
+                {
+                    si.UnitType = IfcUnitEnum.TIMEUNIT;
+                    si.Prefix = null;
+                    si.Name = IfcSIUnitName.SECOND;
+                });
+            }
+
+            if (_dimensionalExponents == null)
+            {
+                _dimensionalExponents = Model.New<IfcDimensionalExponents>(de =>
+                {
+                    de.LengthExponent = 1;
+                    de.MassExponent = 1;
+                    de.TimeExponent = 1;
+                    de.ElectricCurrentExponent = 1;
+                    de.ThermodynamicTemperatureExponent = 1;
+                    de.AmountOfSubstanceExponent = 1;
+                    de.LuminousIntensityExponent = 1;
+                });
+            }
+        }
+    }
+}

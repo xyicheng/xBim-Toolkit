@@ -69,16 +69,16 @@ namespace Xbim.COBie.Data
                 allPropertyValues.SetAllPropertySingleValues(ifcTask); //set properties values to this task
                 IfcPropertySingleValue ifcPropertySingleValue = allPropertyValues.GetPropertySingleValue("TaskDuration");
                 job.Duration = ((ifcPropertySingleValue != null) && (ifcPropertySingleValue.NominalValue != null)) ? ConvertNumberOrDefault(ifcPropertySingleValue.NominalValue.ToString()) : DEFAULT_NUMERIC;
-                string unitName = GetUnitName(ifcPropertySingleValue.Unit);
+                string unitName = ((ifcPropertySingleValue != null) && (ifcPropertySingleValue.Unit != null)) ? GetUnitName(ifcPropertySingleValue.Unit) : null; 
                 job.DurationUnit = (string.IsNullOrEmpty(unitName)) ?  DEFAULT_STRING : unitName;
 
-                job.Start = GetStartTime(allPropertyValues); 
-                unitName = GetUnitName(ifcPropertySingleValue.Unit);
+                job.Start = GetStartTime(allPropertyValues);
+                unitName = ((ifcPropertySingleValue != null) && (ifcPropertySingleValue.Unit != null)) ? GetUnitName(ifcPropertySingleValue.Unit) : null; 
                 job.TaskStartUnit = (string.IsNullOrEmpty(unitName)) ? DEFAULT_STRING : unitName;
 
                 ifcPropertySingleValue = allPropertyValues.GetPropertySingleValue("TaskInterval");
                 job.Frequency = ((ifcPropertySingleValue != null) && (ifcPropertySingleValue.NominalValue != null)) ? ConvertNumberOrDefault(ifcPropertySingleValue.NominalValue.ToString()) : DEFAULT_NUMERIC;
-                unitName = GetUnitName(ifcPropertySingleValue.Unit);
+                unitName = ((ifcPropertySingleValue != null) && (ifcPropertySingleValue.Unit != null)) ? GetUnitName(ifcPropertySingleValue.Unit) : null;
                 job.FrequencyUnit = (string.IsNullOrEmpty(unitName)) ? DEFAULT_STRING : unitName;
 
                 job.ExtSystem = GetExternalSystem(ifcTask);
@@ -120,22 +120,14 @@ namespace Xbim.COBie.Data
         /// Get the number of tasks before this task
         /// </summary>
         /// <param name="ifcTask">IfcTask object</param>
-        /// <returns>string holding number of tasks that are before this task</returns>
+        /// <returns>string holding predecessor name of last task(s)</returns>
         private string GetPriors(IfcTask ifcTask)
         {
             IEnumerable<IfcRelSequence> isSuccessorFrom = ifcTask.IsSuccessorFrom;
-            //skip the first link to match example sheets count
-            if (isSuccessorFrom.Count() == 1) isSuccessorFrom = isSuccessorFrom.First().RelatingProcess.IsSuccessorFrom; 
-
-            int count = 0;
-            //assume that the isSuccessorFrom list can only hold one IfcRelSequence.
-            while (isSuccessorFrom.Count() == 1) //have a successor task so count one
-            {
-                count++;
-                isSuccessorFrom = isSuccessorFrom.First().RelatingProcess.IsSuccessorFrom; //move up linked tasks to see if a successor to the successor
-            }
-
-            return count.ToString();
+            if ((isSuccessorFrom.Count() == 1) && (isSuccessorFrom.First().RelatingProcess is IfcTask))
+                return ((IfcTask)isSuccessorFrom.First().RelatingProcess).TaskId;
+            else
+                return "0";
         }
 
         /// <summary>

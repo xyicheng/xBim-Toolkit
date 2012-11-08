@@ -102,14 +102,12 @@ namespace Xbim.COBie.Data
                 {
                     IfcPropertySet pset = item.Key;
                     spProperties = item.Value.Where(p => p.Name.ToString().Contains("ZoneName")).OfType<IfcPropertySingleValue>();
-                
-                
-                    //if we have no ifcZones or "ZoneName" properties, lets make a guess that departments will be close to zones and list them
-                    if ((!spProperties.Any()) && (!ifcZones.Any()))
+
+
+                    //if we have no ifcZones or "ZoneName" properties, and the DepartmentsUsedAsZones flag is true then list departments as zones
+                    if ((!spProperties.Any()) && (!ifcZones.Any()) && (Context.DepartmentsUsedAsZones == true))
                     {
                         spProperties = item.Value.Where(p => p.Name == "Department").OfType<IfcPropertySingleValue>();
-                        if (spProperties.Any())
-                            Context.DepartmentsUsedAsZones = true; //we need to filter departments out of attribute sheet so set values to pass to Attribute Builder
                     }
 
                     foreach (IfcPropertySingleValue spProp in spProperties)
