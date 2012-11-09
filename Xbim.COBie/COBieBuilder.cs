@@ -120,17 +120,12 @@ namespace Xbim.COBie
                 progress.Initialise("Validating Workbooks", Workbook.Count, 0);
                 Workbook.CreateIndices();
                 
-                for (int i = 0; i < Workbook.Count; i++)
+                // Validate the workbook
+                Workbook.Validate((lastProcessedSheetIndex) =>
                 {
-
+                    // When each sheet has been processed, increment the progress bar
                     progress.IncrementAndUpdate();
-
-                    var sheet = Workbook[i];
-                    if (sheet.SheetName != Constants.WORKSHEET_PICKLISTS) //skip validation on picklist
-                    {
-                        sheet.Validate(Workbook);
-                    }                    
-                }
+                });
 
                 //ValidateForeignKeys(progress);
                 progress.Finalise();

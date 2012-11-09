@@ -222,9 +222,14 @@ namespace Xbim.COBie.Serialisers
 
             foreach(var sheet in workbook.OrderBy(w=>w.SheetName))
             {
+                if(sheet.SheetName != Constants.WORKSHEET_PICKLISTS)
+                {
+                    // Ensure the validation is up to date
+                     sheet.Validate(workbook);
+                }
+
                 WriteErrors(errorsSheet, sheet.Errors);  
             }
-            
         }
 
 

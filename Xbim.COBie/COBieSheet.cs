@@ -159,10 +159,11 @@ namespace Xbim.COBie
         /// <param name="workbook"></param>
         public void Validate(COBieWorkbook workbook)
         {
+            _errors.Clear();
+
             ValidateFields();
             ValidatePrimaryKeys();
             ValidateForeignKeys(workbook);
-
         }
 
         /// <summary>
