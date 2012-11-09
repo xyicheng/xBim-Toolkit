@@ -189,6 +189,7 @@
     <Compile Include="Serialisers\XbimSerialiser\COBieXBimComponent.cs" />
     <Compile Include="Serialisers\XbimSerialiser\COBieXBimContext.cs" />
     <Compile Include="Serialisers\XbimSerialiser\COBieXBimContact.cs" />
+    <Compile Include="Serialisers\XbimSerialiser\COBieXBimCoordinate.cs" />
     <Compile Include="Serialisers\XbimSerialiser\COBieXBimDocument.cs" />
     <Compile Include="Serialisers\XbimSerialiser\COBieXBimEditScope.cs" />
     <Compile Include="Serialisers\XbimSerialiser\COBieXBimFacility.cs" />

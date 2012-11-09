@@ -93,7 +93,7 @@ namespace Xbim.COBie.Data
                 
                 FileInformation fileInfo = GetFileInformation(ifcRelAssociatesDocument);
                 doc.File = fileInfo.Name;
-                doc.Directory = fileInfo.Location;
+                doc.Directory = GetDirectory(fileInfo.Location);
 
                 
                 doc.Description = di.Description.ToString();
@@ -104,6 +104,18 @@ namespace Xbim.COBie.Data
 
             ProgressIndicator.Finalise();
             return documents;
+        }
+
+        private string GetDirectory(string dir)
+        {
+            if (!Uri.IsWellFormedUriString(dir, UriKind.Absolute))
+            {
+                if (dir.Last() != '/')
+                {
+                    dir = dir + "/";
+                }
+            }
+            return dir;
         }
 
         /// <summary>

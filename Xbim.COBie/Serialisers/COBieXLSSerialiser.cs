@@ -113,6 +113,11 @@ namespace Xbim.COBie.Serialisers
                 }
             }
 
+            if (sheet.RowCount == 0)
+            {
+                excelSheet.TabColorIndex = HSSFColor.GREY_50_PERCENT.index;
+            }
+
             HighlightErrors(excelSheet, sheet);
 
             RecalculateSheet(excelSheet);
@@ -151,7 +156,7 @@ namespace Xbim.COBie.Serialisers
         {
             CreateColours();
             // TODO : Date hardwired to Yellow/Required for now. Only Date is set up for now.
-            CreateFormat(COBieAllowedType.ISODate, "yyyy-MM-ddThh:mm:ss", "Yellow");
+            CreateFormat(COBieAllowedType.ISODate, "yyyy-MM-dd", "Yellow");
             CreateFormat(COBieAllowedType.ISODateTime, "yyyy-MM-ddThh:mm:ss", "Yellow");
         }
 

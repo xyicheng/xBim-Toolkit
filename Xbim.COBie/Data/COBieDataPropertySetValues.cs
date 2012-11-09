@@ -248,12 +248,15 @@ namespace Xbim.COBie.Data
             if (_propSetsValuesTypeObjectsFirstRelatedObject.Any())
             {
                 List<IfcSimpleProperty> RelObjValues = new List<IfcSimpleProperty>();
-
-                RelObjValues = (from dic in _propSetsValuesTypeObjectsFirstRelatedObject[ifcTypeObject]
+                if (_propSetsValuesTypeObjectsFirstRelatedObject.ContainsKey(ifcTypeObject))
+                {
+                    RelObjValues = (from dic in _propSetsValuesTypeObjectsFirstRelatedObject[ifcTypeObject]
                                 from psetval in dic.Value //list of IfcPropertySingleValue
                                 select psetval).ToList();
 
-                _ifcPropertySingleValues.AddRange(RelObjValues);
+                    _ifcPropertySingleValues.AddRange(RelObjValues);
+                }
+                
             }
         }
         

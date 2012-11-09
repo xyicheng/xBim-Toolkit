@@ -114,6 +114,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 ifcBuilding.CompositionType = IfcElementCompositionEnum.ELEMENT;
                 IfcLocalPlacement lp = Model.New<IfcLocalPlacement>();
                 lp.RelativePlacement = WCS;
+                lp.PlacementRelTo = GetSite().ObjectPlacement;
                 ifcBuilding.ObjectPlacement = lp;
                 Model.IfcProject.AddBuilding(ifcBuilding);
             }

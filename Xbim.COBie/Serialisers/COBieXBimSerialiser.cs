@@ -110,8 +110,10 @@ namespace Xbim.COBie.Serialisers
             COBieXBimAttribute xBimAttribute = new COBieXBimAttribute(XBimContext);
             xBimAttribute.SerialiseAttribute((COBieSheet<COBieAttributeRow>)WorkBook[Constants.WORKSHEET_ATTRIBUTE]);
 
+            COBieXBimCoordinate xBimCoordinate = new COBieXBimCoordinate(XBimContext);
+            xBimCoordinate.SerialiseCoordinate((COBieSheet<COBieCoordinateRow>)WorkBook[Constants.WORKSHEET_COORDINATE]);
+            
             _transaction.Commit();
-           
             
         }
 
@@ -139,7 +141,7 @@ namespace Xbim.COBie.Serialisers
                 Model.Header.FileName.AuthorizationName = "4Projects";
                 IfcProject project = Model.New<IfcProject>();
                 //set world coordinate system
-                XBimContext.WCS.SetNewDirectionOf_XZ(0, 0, 1, 0, 1, 0);
+                XBimContext.WCS.SetNewDirectionOf_XZ(1, 0, 0, 0, 0, 1);
                 XBimContext.WCS.SetNewLocation(0, 0, 0);
                 trans.Commit();
             }
