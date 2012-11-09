@@ -40,7 +40,7 @@ namespace Xbim.COBie
             return isEmail;
         }
 
-        static Regex RegExAlphaNumeric = new Regex(@"\w");
+        static Regex RegExAlphaNumeric = new Regex(@"\w|[%]");
         
     }
 }

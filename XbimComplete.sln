@@ -25,7 +25,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{B5EDEE8A-69B9-47E5-8455-E1A9A7ED8969}"
 	ProjectSection(SolutionItems) = preProject
 		SharedAssemblyInfo.cpp = SharedAssemblyInfo.cpp
-		SharedAssemblyInfo.cs = SharedAssemblyInfo.cs
 		Xbim.ModelGeometry\Version.rc = Xbim.ModelGeometry\Version.rc
 	EndProjectSection
 EndProject

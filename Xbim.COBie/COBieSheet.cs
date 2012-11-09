@@ -185,6 +185,7 @@ namespace Xbim.COBie
                         string foreignKeyValue = column.PropertyInfo.GetValue(row, null).ToString(); //value in this sheets row foreign key column
 
                         if ((!string.IsNullOrEmpty(foreignKeyValue))  //will be reported by the Foreign Key null value check, so just skip here if null or empty here
+                            && (workbook[sheetName] != null)
                             && (workbook[sheetName].Indices.ContainsKey(fieldName))
                             )
                         {

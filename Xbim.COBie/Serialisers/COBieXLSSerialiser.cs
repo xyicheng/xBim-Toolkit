@@ -113,9 +113,11 @@ namespace Xbim.COBie.Serialisers
                 }
             }
 
-            if (sheet.RowCount == 0)
+            if ((sheet.RowCount == 0) &&
+                (_colours.ContainsKey("Grey"))
+                )
             {
-                excelSheet.TabColorIndex = HSSFColor.GREY_50_PERCENT.index;
+                excelSheet.TabColorIndex = _colours["Grey"].GetIndex();
             }
 
             HighlightErrors(excelSheet, sheet);

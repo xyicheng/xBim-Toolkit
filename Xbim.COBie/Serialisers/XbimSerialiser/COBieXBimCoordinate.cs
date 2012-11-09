@@ -116,62 +116,70 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             IfcBuildingStorey ifcBuildingStorey = Model.InstancesWhere<IfcBuildingStorey>(bs => bs.Name == row.RowName).FirstOrDefault();
             if (ifcBuildingStorey != null)
             {
-                double x, y, z;
-                if ((double.TryParse(row.CoordinateXAxis, out x)) &&
-                    (double.TryParse(row.CoordinateYAxis, out y)) &&
-                    (double.TryParse(row.CoordinateZAxis, out z))
-                    )
+                IfcProduct placementRelToIfcProduct = ifcBuildingStorey.SpatialStructuralElementParent as IfcProduct;
+                IfcLocalPlacement objectPlacement = SetObjectPlacement(row, placementRelToIfcProduct);
+                if (objectPlacement != null)
                 {
-                    Point3D locationPt = new Point3D(x, y, z);
-                    IfcProduct ifcProduct = ifcBuildingStorey.SpatialStructuralElementParent as IfcProduct;
-                    
-
-                    if ((ifcProduct != null) && (ifcProduct.ObjectPlacement is IfcLocalPlacement))
-	                {
-                        //TEST
-                        //((IfcLocalPlacement)ifcProduct.ObjectPlacement).RelativePlacement.S
-                        IfcLocalPlacement placementRelTo = (IfcLocalPlacement)ifcProduct.ObjectPlacement;
-                        Matrix3D matrix3D = ConvertMatrix3D(placementRelTo);
-                        //we want to take off the translations and rotations caused by IfcLocalPlacement of the parent objects as we will add these to the new IfcLocalPlacement for this floor
-                        matrix3D.Invert(); //so invert matrix to remove the translations to give the origin for the next IfcLocalPlacement
-                        locationPt = matrix3D.Transform(locationPt); //get the point with relation to the last IfcLocalPlacement i.e the parent element
-
-                        Matrix3D matrixRotation3D = new Matrix3D(); 
-                        double rotationX, rotationY, rotationZ;
-                        if (double.TryParse(row.YawRotation, out rotationX))
-                        {
-                            Quaternion q = new Quaternion(new Vector3D(1, 0, 0), rotationX);
-                            matrixRotation3D.Rotate(q);
-
-                        }
-                        if (double.TryParse(row.ElevationalRotation, out rotationY))
-                        {
-                            Quaternion q = new Quaternion(new Vector3D(0, 1, 0), rotationY);
-                            matrixRotation3D.Rotate(q);
-                        }
-                        if (double.TryParse(row.ClockwiseRotation, out rotationZ))
-                        {
-                            rotationZ = 360.0 - rotationZ; //if anticlockwise rotation required
-                            Quaternion q = new Quaternion(new Vector3D(0, 0, 1), rotationZ);
-                            matrixRotation3D.Rotate(q);
-                        }
-                        Vector3D ucsXAxis = matrixRotation3D.Transform(new Vector3D(1, 0, 0));
-                        Vector3D ucsZAxis = matrixRotation3D.Transform(new Vector3D(0, 0, 1));
-                        ucsXAxis.Normalize();
-                        ucsZAxis.Normalize();
-                        //IfcDirection refDirection = Model.New<IfcDirection>(dir => dir.SetXYZ(ucsXAxis.X, ucsXAxis.Y, ucsXAxis.Z));
-                        //IfcDirection axis = Model.New<IfcDirection>(dir => dir.SetXYZ(ucsZAxis.X, ucsZAxis.Y, ucsZAxis.Z)); 
-                        IfcAxis2Placement3D relativePlacemant = Model.New<IfcAxis2Placement3D>();
-                        relativePlacemant.SetNewDirectionOf_XZ(ucsXAxis.X, ucsXAxis.Y, ucsXAxis.Z, ucsZAxis.X, ucsZAxis.Y, ucsZAxis.Z);
-                        relativePlacemant.SetNewLocation(locationPt.X, locationPt.Y, locationPt.Z);
-                        IfcLocalPlacement objectPlacement = Model.New<IfcLocalPlacement>();
-                        objectPlacement.PlacementRelTo = placementRelTo;
-                        objectPlacement.RelativePlacement = relativePlacemant;
-                        ifcBuildingStorey.ObjectPlacement = objectPlacement;
-	                }
+                    ifcBuildingStorey.ObjectPlacement = objectPlacement;
                 }
-
             }
+        }
+
+        private IfcLocalPlacement SetObjectPlacement(COBieCoordinateRow row, IfcProduct placementRelToIfcProduct)
+        {
+            double x, y, z;
+            if ((double.TryParse(row.CoordinateXAxis, out x)) &&
+                (double.TryParse(row.CoordinateYAxis, out y)) &&
+                (double.TryParse(row.CoordinateZAxis, out z))
+                )
+            {
+                Point3D locationPt = new Point3D(x, y, z);
+                if ((placementRelToIfcProduct != null) && (placementRelToIfcProduct.ObjectPlacement is IfcLocalPlacement))
+                {
+                    //TEST, change the building position to see if the same point comes out in Excel sheet, it should be, and in test was.
+                    //((IfcAxis2Placement3D)((IfcLocalPlacement)placementRelToIfcProduct.ObjectPlacement).RelativePlacement).SetNewLocation(10.0, 10.0, 0.0);
+                    IfcLocalPlacement placementRelTo = (IfcLocalPlacement)placementRelToIfcProduct.ObjectPlacement;
+                    Matrix3D matrix3D = ConvertMatrix3D(placementRelTo);
+                    //we want to take off the translations and rotations caused by IfcLocalPlacement of the parent objects as we will add these to the new IfcLocalPlacement for this floor
+                    matrix3D.Invert(); //so invert matrix to remove the translations to give the origin for the next IfcLocalPlacement
+                    locationPt = matrix3D.Transform(locationPt); //get the point with relation to the last IfcLocalPlacement i.e the parent element
+
+                    Matrix3D matrixRotation3D = new Matrix3D();
+                    double rotationX, rotationY, rotationZ;
+                    if (double.TryParse(row.YawRotation, out rotationX))
+                    {
+                        Quaternion q = new Quaternion(new Vector3D(1, 0, 0), rotationX);
+                        matrixRotation3D.Rotate(q);
+
+                    }
+                    if (double.TryParse(row.ElevationalRotation, out rotationY))
+                    {
+                        Quaternion q = new Quaternion(new Vector3D(0, 1, 0), rotationY);
+                        matrixRotation3D.Rotate(q);
+                    }
+                    if (double.TryParse(row.ClockwiseRotation, out rotationZ))
+                    {
+                        rotationZ = 360.0 - rotationZ; //if anticlockwise rotation required
+                        Quaternion q = new Quaternion(new Vector3D(0, 0, 1), rotationZ);
+                        matrixRotation3D.Rotate(q);
+                    }
+                    Vector3D ucsXAxis = matrixRotation3D.Transform(new Vector3D(1, 0, 0));
+                    Vector3D ucsZAxis = matrixRotation3D.Transform(new Vector3D(0, 0, 1));
+                    ucsXAxis.Normalize();
+                    ucsZAxis.Normalize();
+                    //IfcDirection refDirection = Model.New<IfcDirection>(dir => dir.SetXYZ(ucsXAxis.X, ucsXAxis.Y, ucsXAxis.Z));
+                    //IfcDirection axis = Model.New<IfcDirection>(dir => dir.SetXYZ(ucsZAxis.X, ucsZAxis.Y, ucsZAxis.Z)); 
+                    IfcAxis2Placement3D relativePlacemant = Model.New<IfcAxis2Placement3D>();
+                    relativePlacemant.SetNewDirectionOf_XZ(ucsXAxis.X, ucsXAxis.Y, ucsXAxis.Z, ucsZAxis.X, ucsZAxis.Y, ucsZAxis.Z);
+                    relativePlacemant.SetNewLocation(locationPt.X, locationPt.Y, locationPt.Z);
+                    IfcLocalPlacement objectPlacement = Model.New<IfcLocalPlacement>();
+                    objectPlacement.PlacementRelTo = placementRelTo;
+                    objectPlacement.RelativePlacement = relativePlacemant;
+                    return objectPlacement;
+                }
+            }
+            return null;
+           
         }
 
         
