@@ -85,6 +85,8 @@ namespace Xbim.Ifc.Extensions
         /// <param name = "prod"></param>
         public static void AddElement(this IfcSpatialStructureElement se, IfcProduct prod)
         {
+            if (prod == null) return;
+
             IEnumerable<IfcRelContainedInSpatialStructure> relatedElements = se.ContainsElements;
             if (relatedElements.Count() == 0) //none defined create the relationship
             {
