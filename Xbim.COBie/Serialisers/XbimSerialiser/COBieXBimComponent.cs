@@ -19,6 +19,8 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         #region Properties
         public  IEnumerable<IfcTypeObject> IfcTypeObjects { get; private set; }
         public  IEnumerable<IfcSpace> IfcSpaces { get; private set; }
+        public IEnumerable<IfcBuildingStorey> IfcBuildingStoreys { get; private set; }
+        
         #endregion
 
         public COBieXBimComponent(COBieXBimContext xBimContext)
@@ -41,6 +43,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 {
                     IfcTypeObjects = Model.InstancesOfType<IfcTypeObject>();
                     IfcSpaces = Model.InstancesOfType<IfcSpace>();
+                    IfcBuildingStoreys = Model.InstancesOfType<IfcBuildingStorey>();
                     for (int i = 0; i < cOBieSheet.RowCount; i++)
                     {
                         COBieComponentRow row = cOBieSheet[i]; 
@@ -72,56 +75,73 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             {
                 //Create object using reflection
                 IfcType ifcType;
-                IfcInstances.IfcTypeLookup.TryGetValue(row.ExtObject.ToUpper(), out ifcType);
-                MethodInfo method = typeof(IModel).GetMethod("New", Type.EmptyTypes);
-                MethodInfo generic = method.MakeGenericMethod(ifcType.Type);
-                IfcElement ifcElement = (IfcElement)generic.Invoke(Model, null);
-
-                //Add Created By, Created On and ExtSystem to Owner History. 
-                if ((ValidateString(row.CreatedBy)) && (Contacts.ContainsKey(row.CreatedBy)))
-                    SetNewOwnerHistory(ifcElement, row.ExtSystem, Contacts[row.CreatedBy], row.CreatedOn);
-                else
-                    SetNewOwnerHistory(ifcElement, row.ExtSystem, Model.DefaultOwningUser, row.CreatedOn);
-                //using statement will set the Model.OwnerHistoryAddObject to ifcElement.OwnerHistory as OwnerHistoryAddObject is used upon any property changes, 
-                //then swaps the original OwnerHistoryAddObject back in the dispose, so set any properties within the using statement
-                using (COBieXBimEditScope context = new COBieXBimEditScope(Model, ifcElement.OwnerHistory))
+                if (IfcInstances.IfcTypeLookup.TryGetValue(row.ExtObject.ToUpper(), out ifcType))
                 {
-                    //Add Name
-                    string name = row.Name;
-                    if (ValidateString(row.Name)) ifcElement.Name = row.Name;
-
-                    //Add description
-                    if (ValidateString(row.Description)) ifcElement.Description = row.Description;
-
-                    //Add GlobalId
-                    AddGlobalId(row.ExtIdentifier, ifcElement);
-
-                    //Add Property Set Properties
-                    if (ValidateString(row.SerialNumber))
-                        AddPropertySingleValue(ifcElement, "Pset_Component", "Component Properties From COBie", "SerialNumber", "Serial Number for " + name, new IfcLabel(row.SerialNumber));
-                    if (ValidateString(row.InstallationDate))
-                        AddPropertySingleValue(ifcElement, "Pset_Component", null, "InstallationDate", "Installation Date for " + name, new IfcLabel(row.InstallationDate));
-                    if (ValidateString(row.WarrantyStartDate))
-                        AddPropertySingleValue(ifcElement, "Pset_Component", null, "WarrantyStartDate", "Warranty Start Date for " + name, new IfcLabel(row.WarrantyStartDate));
-                    if (ValidateString(row.TagNumber))
-                        AddPropertySingleValue(ifcElement, "Pset_Component", null, "TagNumber", "Tag Number for " + name, new IfcLabel(row.TagNumber));
-                    if (ValidateString(row.BarCode))
-                        AddPropertySingleValue(ifcElement, "Pset_Component", null, "BarCode", "Bar Code for " + name, new IfcLabel(row.BarCode));
-                    if (ValidateString(row.AssetIdentifier))
-                        AddPropertySingleValue(ifcElement, "Pset_Component", null, "AssetIdentifier", "Asset Identifier for " + name, new IfcLabel(row.AssetIdentifier));
-                    //set up relationship of the component to the type the component is
-                    if (ValidateString(row.TypeName))
+                    MethodInfo method = typeof(IModel).GetMethod("New", Type.EmptyTypes);
+                    MethodInfo generic = method.MakeGenericMethod(ifcType.Type);
+                    var eleObj = generic.Invoke(Model, null);
+                    if (eleObj is IfcElement)
                     {
-                        IfcTypeObject ifcTypeObject = IfcTypeObjects.Where(to => to.Name.ToString().ToLower() == row.TypeName.ToLower()).FirstOrDefault();
-                        if (ifcTypeObject != null)
-                            ifcElement.SetDefiningType(ifcTypeObject, Model);
-                    }
-                    //set up relationship of the component to the space
-                    if (ValidateString(row.Space))
-                    {
-                        IfcSpace ifcSpace = IfcSpaces.Where(space => space.Name == row.Space).FirstOrDefault();
-                        if (ifcSpace != null)
-                            ifcSpace.AddElement(ifcElement);
+                        IfcElement ifcElement = (IfcElement)eleObj;
+
+                        //Add Created By, Created On and ExtSystem to Owner History. 
+                        if ((ValidateString(row.CreatedBy)) && (Contacts.ContainsKey(row.CreatedBy)))
+                            SetNewOwnerHistory(ifcElement, row.ExtSystem, Contacts[row.CreatedBy], row.CreatedOn);
+                        else
+                            SetNewOwnerHistory(ifcElement, row.ExtSystem, Model.DefaultOwningUser, row.CreatedOn);
+                        //using statement will set the Model.OwnerHistoryAddObject to ifcElement.OwnerHistory as OwnerHistoryAddObject is used upon any property changes, 
+                        //then swaps the original OwnerHistoryAddObject back in the dispose, so set any properties within the using statement
+                        using (COBieXBimEditScope context = new COBieXBimEditScope(Model, ifcElement.OwnerHistory))
+                        {
+                            //Add Name
+                            string name = row.Name;
+                            if (ValidateString(row.Name)) ifcElement.Name = row.Name;
+
+                            //Add description
+                            if (ValidateString(row.Description)) ifcElement.Description = row.Description;
+
+                            //Add GlobalId
+                            AddGlobalId(row.ExtIdentifier, ifcElement);
+
+                            //Add Property Set Properties
+                            if (ValidateString(row.SerialNumber))
+                                AddPropertySingleValue(ifcElement, "Pset_Component", "Component Properties From COBie", "SerialNumber", "Serial Number for " + name, new IfcLabel(row.SerialNumber));
+                            if (ValidateString(row.InstallationDate))
+                                AddPropertySingleValue(ifcElement, "Pset_Component", null, "InstallationDate", "Installation Date for " + name, new IfcLabel(row.InstallationDate));
+                            if (ValidateString(row.WarrantyStartDate))
+                                AddPropertySingleValue(ifcElement, "Pset_Component", null, "WarrantyStartDate", "Warranty Start Date for " + name, new IfcLabel(row.WarrantyStartDate));
+                            if (ValidateString(row.TagNumber))
+                                AddPropertySingleValue(ifcElement, "Pset_Component", null, "TagNumber", "Tag Number for " + name, new IfcLabel(row.TagNumber));
+                            if (ValidateString(row.BarCode))
+                                AddPropertySingleValue(ifcElement, "Pset_Component", null, "BarCode", "Bar Code for " + name, new IfcLabel(row.BarCode));
+                            if (ValidateString(row.AssetIdentifier))
+                                AddPropertySingleValue(ifcElement, "Pset_Component", null, "AssetIdentifier", "Asset Identifier for " + name, new IfcLabel(row.AssetIdentifier));
+                            //set up relationship of the component to the type the component is
+                            if (ValidateString(row.TypeName))
+                            {
+                                IfcTypeObject ifcTypeObject = IfcTypeObjects.Where(to => to.Name.ToString().ToLower() == row.TypeName.ToLower()).FirstOrDefault();
+                                if (ifcTypeObject != null)
+                                    ifcElement.SetDefiningType(ifcTypeObject, Model);
+                            }
+                            //set up relationship of the component to the space
+                            if (ValidateString(row.Space))
+                            {
+                                IfcSpace ifcSpace = IfcSpaces.Where(space => space.Name == row.Space).FirstOrDefault();
+                                if (ifcSpace != null)
+                                    ifcSpace.AddElement(ifcElement);
+                                else //assume that it has a building association
+                                {
+                                    IfcBuildingStorey ifcBuildingStorey = IfcBuildingStoreys.Where(bs => bs.Name == row.Space).FirstOrDefault();
+                                    if (ifcBuildingStorey != null)
+                                        ifcBuildingStorey.AddElement(ifcElement);
+                                    else
+                                        GetBuilding().AddElement(ifcElement); //default to building, probably give incorrect bounding box as we do not know what the element parent was
+
+                                }
+
+
+                            }
+                        }
                     }
                 }
             

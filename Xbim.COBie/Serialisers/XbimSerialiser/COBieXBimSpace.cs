@@ -115,7 +115,11 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 if (area != null)
                 {
                     IfcQuantityArea ifcQuantityArea = Model.New<IfcQuantityArea>(qa => { qa.Name = "NetFloorArea"; qa.Description = "Net Floor Area"; qa.AreaValue = new IfcAreaMeasure((double)area); });
-                    ifcSpace.AddQuantity("BaseQuantities", ifcQuantityArea, ifcSpace.OwnerHistory.OwningApplication.ApplicationFullName.ToString());
+                    string appname = "";
+                    if (ifcSpace.OwnerHistory.OwningApplication != null)
+                        appname = ifcSpace.OwnerHistory.OwningApplication.ApplicationFullName.ToString();
+
+                    ifcSpace.AddQuantity("BaseQuantities", ifcQuantityArea, appname);
                 }
             }
         }
@@ -133,7 +137,12 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 if (area != null)
                 {
                     IfcQuantityArea ifcQuantityArea = Model.New<IfcQuantityArea>(qa => { qa.Name = "GrossFloorArea"; qa.Description = "Gross Floor Area"; qa.AreaValue = new IfcAreaMeasure((double)area); });
-                    ifcSpace.AddQuantity("BaseQuantities", ifcQuantityArea, ifcSpace.OwnerHistory.OwningApplication.ApplicationFullName.ToString());
+                    string appname = "";
+                    if (ifcSpace.OwnerHistory.OwningApplication != null)
+                        appname = ifcSpace.OwnerHistory.OwningApplication.ApplicationFullName.ToString();
+                    
+
+                    ifcSpace.AddQuantity("BaseQuantities", ifcQuantityArea, appname);
                 }
             }
         }

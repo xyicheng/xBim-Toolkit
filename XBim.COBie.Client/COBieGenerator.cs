@@ -69,14 +69,33 @@ namespace Xbim.COBie.Client
             {
                 Params parameters = args.Argument as Params;
 
-                string outputFile = Path.ChangeExtension(parameters.ModelFile, ".xls");
+                string outputFile = "";
 
                 if (!File.Exists(parameters.ModelFile))
                 {
                     LogBackground(String.Format("That file doesn't exist in {0}.", Directory.GetCurrentDirectory()));
                     return;
                 }
+                if (Path.GetExtension(parameters.ModelFile).ToLower() == ".xls")
+                {
+                    //txtOutput.Clear();
+                    LogBackground(String.Format("Reading{0}....", parameters.ModelFile));
+                    COBieXLSDeserialiser deSerialiser = new COBieXLSDeserialiser(parameters.ModelFile);
+                    COBieWorkbook newbook = deSerialiser.Deserialise();
+                    
+                    LogBackground("Creating xBim objects...");
+                    COBieXBimSerialiser xBimSerialiser = new COBieXBimSerialiser();
+                    xBimSerialiser.Serialise(newbook);
 
+                    outputFile =  Path.GetFileNameWithoutExtension(parameters.ModelFile) + "COBieToIFC.ifc";
+                    LogBackground(String.Format("Creating file {0}....", outputFile));
+                    
+                    xBimSerialiser.Save(outputFile);
+                    LogBackground(String.Format("Finished {0} Generation", outputFile));
+                    return;
+                }
+
+                outputFile = Path.ChangeExtension(parameters.ModelFile, ".xls");
                 //set the UI language to get correct resource file for template
                 if (Path.GetFileName(parameters.TemplateFile).Contains("-UK-"))
                     ChangeUILanguage("en-GB"); //have to set as default is from install language which is en-US
@@ -206,7 +225,7 @@ namespace Xbim.COBie.Client
         {
             OpenFileDialog dlg = new OpenFileDialog();
 
-            dlg.Filter = "IFC Files|*.ifc;*.ifcxml;*.ifczip|Xbim Files|*.xbim"; 
+            dlg.Filter = "IFC Files|*.ifc;*.ifcxml;*.ifczip|Xbim Files|*.xbim|XLS Files|*.xls"; 
             dlg.Title = "Choose a source model file";
             dlg.CheckFileExists = true;
             // Show open file dialog box 

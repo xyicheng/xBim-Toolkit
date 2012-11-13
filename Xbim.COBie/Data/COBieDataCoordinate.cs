@@ -216,21 +216,14 @@ namespace Xbim.COBie.Data
             MaxPt = matrix.Transform(MaxPt);
            
             //--------Calculate rotations from matrix-------
-            //calculations from http://forums.codeguru.com/archive/index.php/t-329530.html and http://planning.cs.uiuc.edu/node103.html#eqn:angfrommat and http://nghiaho.com/?page_id=846
-            //rotation around Z axis
-            double rotationZ = Math.Atan2(matrix.M21, matrix.M11);
-            rotationZ = RTD(rotationZ);
-            //if negative then in 0 to 180.0 range counter clockwise from the 0.0 degree (assuming using RH rule), but we want clockwise so...
-            if (rotationZ < 0)
-                rotationZ = 360.0 + rotationZ; //rotZ is negative
-            else //if positive then in 180 to 360 range counter clockwise measured from the 360 degree (assuming using RH rule) 
-                rotationZ = Math.Abs(rotationZ);
-            //zero anything out of range
-            if (!((rotationZ > 0.0) && (rotationZ < 360.0))) rotationZ = 0.0;
-
-            double rotationY = -Math.Asin(matrix.M31);  //Math.Atan2(-matrix.M31, (Math.Sqrt(Math.Pow(matrix.M32, 2) + Math.Pow(matrix.M33, 2))))
-            double rotationX = Math.Atan2(matrix.M32, matrix.M33);
+            //rotation around X,Y,Z axis
+            double rotationZ, rotationY, rotationX;
+            GetMatrixRotations(matrix, out rotationX, out rotationY, out rotationZ);
             
+            //adjust Z to get clockwise rotation
+            rotationZ = RTD(rotationZ);
+            rotationZ = MakeZRotationClockwise(rotationZ);
+
             ClockwiseRotation = rotationZ;
             ElevationalRotation = RTD(rotationY);
             YawRotation = RTD(rotationX);
@@ -238,11 +231,44 @@ namespace Xbim.COBie.Data
 	    }
 
         /// <summary>
+        /// Make the Z rotation Clockwise
+        /// </summary>
+        /// <param name="rotationZ">Rotation angle in Degrees</param>
+        /// <returns>Clockwise rotation</returns>
+        public static double MakeZRotationClockwise(double rotationZ)
+        {
+            //if negative then in 0 to 180.0 range counter clockwise from the 0.0 degree (assuming using RH rule), but we want clockwise so...
+            if (rotationZ < 0)
+                rotationZ = 360.0 + rotationZ; //rotZ is negative
+            else //if positive then in 180 to 360 range counter clockwise measured from the 360 degree (assuming using RH rule) 
+                rotationZ = Math.Abs(rotationZ);
+            //zero anything out of range
+            if (!((rotationZ > 0.0) && (rotationZ < 360.0))) rotationZ = 0.0;
+            return rotationZ;
+        }
+
+        /// <summary>
+        /// Get the rotation values of the matrix around the X, Y and Z axis
+        /// </summary>
+        /// <param name="matrix">Matrix3D object</param>
+        /// <param name="rotationX">Rotation around the X axis</param>
+        /// <param name="rotationY">Rotation around the Y axis</param>
+        /// <param name="rotationZ">Rotation around the Z axis</param>
+        public static void GetMatrixRotations(Matrix3D matrix, out double rotationX, out double rotationY, out double rotationZ)
+        {
+            //calculations from http://forums.codeguru.com/archive/index.php/t-329530.html and http://planning.cs.uiuc.edu/node103.html#eqn:angfrommat and http://nghiaho.com/?page_id=846
+            //rotation around Z axis
+            rotationZ = Math.Atan2(matrix.M21, matrix.M11);
+            rotationY = -Math.Asin(matrix.M31);  //Math.Atan2(-matrix.M31, (Math.Sqrt(Math.Pow(matrix.M32, 2) + Math.Pow(matrix.M33, 2))))
+            rotationX = Math.Atan2(matrix.M32, matrix.M33);
+        }
+
+        /// <summary>
         /// Radians to Degrees
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
-        public double RTD (double value)
+        public static double RTD (double value)
         {
             return value * (180 / Math.PI);
         }

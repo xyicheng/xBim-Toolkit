@@ -146,28 +146,31 @@ namespace Xbim.COBie.Data
                     if (ifcDocumentInformation != null)
                     {
                         IEnumerable<IfcDocumentReference> ifcDocumentReferences = ifcDocumentInformation.DocumentReferences;
-                        List<string> strNameValues = new List<string>();
-                        List<string> strLocationValues = new List<string>();
-                        foreach (IfcDocumentReference docRef in ifcDocumentReferences)
+                        if (ifcDocumentReferences != null)
                         {
-                            //get file name
-                            value = docRef.ItemReference.ToString();
-                            if (!string.IsNullOrEmpty(value))
-                                strNameValues.Add(value);
-                            else
+                            List<string> strNameValues = new List<string>();
+                            List<string> strLocationValues = new List<string>();
+                            foreach (IfcDocumentReference docRef in ifcDocumentReferences)
                             {
-                                value = docRef.Name.ToString();
-                                if (!string.IsNullOrEmpty(value)) 
+                                //get file name
+                                value = docRef.ItemReference.ToString();
+                                if (!string.IsNullOrEmpty(value))
                                     strNameValues.Add(value);
+                                else
+                                {
+                                    value = docRef.Name.ToString();
+                                    if (!string.IsNullOrEmpty(value))
+                                        strNameValues.Add(value);
+                                }
+                                //get file location
+                                value = docRef.Location.ToString();
+                                if ((!string.IsNullOrEmpty(value)) && (!strNameValues.Contains(value))) strLocationValues.Add(value);
                             }
-                            //get file location
-                            value = docRef.Location.ToString();
-                            if ((!string.IsNullOrEmpty(value)) && (!strNameValues.Contains(value))) strLocationValues.Add(value);
+                            //set values to return
+                            if (strNameValues.Count > 0) DocInfo.Name = string.Join(" : ", strNameValues);
+                            if (strLocationValues.Count > 0) DocInfo.Location = string.Join(" : ", strLocationValues);
+                            
                         }
-                        //set values to return
-                        if (strNameValues.Count > 0) DocInfo.Name = string.Join(" : ", strNameValues);
-                        if (strLocationValues.Count > 0) DocInfo.Location = string.Join(" : ", strLocationValues);
-                        
                        
                     }
                 }

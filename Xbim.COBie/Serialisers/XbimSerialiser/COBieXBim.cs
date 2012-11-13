@@ -92,8 +92,8 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             }
             IfcOwnerHistory ifcOwnerHistory = Model.InstancesOfType<IfcOwnerHistory>().Where(oh => (oh.CreationDate == stamp) &&
                                                                            (oh.OwningUser.EntityLabel == createdBy.EntityLabel) &&
-                                                                           ((oh.OwningApplication.ApplicationFullName.ToString().ToLower() == externalSystem.ToLower()) ||
-                                                                           (oh.LastModifyingApplication.ApplicationFullName.ToString().ToLower() == externalSystem.ToLower())
+                                                                           (((oh.OwningApplication != null) && (oh.OwningApplication.ApplicationFullName.ToString().ToLower() == externalSystem.ToLower()) )||
+                                                                            ((oh.LastModifyingApplication != null) && (oh.LastModifyingApplication.ApplicationFullName.ToString().ToLower() == externalSystem.ToLower()))
                                                                            )
                                                                            ).FirstOrDefault();
             if (ifcOwnerHistory != null) 

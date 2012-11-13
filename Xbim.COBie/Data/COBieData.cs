@@ -108,7 +108,9 @@ namespace Xbim.COBie.Data
             string appName = "";
             if(item.OwnerHistory.LastModifyingApplication != null)
                 appName = item.OwnerHistory.LastModifyingApplication.ApplicationFullName;
-            if (string.IsNullOrEmpty(appName))
+            if ((string.IsNullOrEmpty(appName)) &&
+                (item.OwnerHistory.OwningApplication != null)
+                )
                 appName = item.OwnerHistory.OwningApplication.ApplicationFullName;
             return string.IsNullOrEmpty(appName) ? DEFAULT_STRING : appName;
         }
