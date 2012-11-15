@@ -240,7 +240,7 @@ namespace XbimXplorer
                 _defaultFileName = Path.GetFileNameWithoutExtension(ifcFilename);
                 model.CreateFrom(ifcFilename, _temporaryXbimFileName, worker.ReportProgress);
                 model.Open(_temporaryXbimFileName, XbimDBAccess.ReadWrite);
-                XbimScene.ConvertGeometry(model.Instances.OfType<IfcProduct>().Where(t=>!(t is IfcFeatureElement)), worker.ReportProgress);
+                XbimScene.ConvertGeometry(model.Instances.OfType<IfcProduct>().Where(t=>!(t is IfcFeatureElement)), worker.ReportProgress, false);
                 model.Close();
                 model.Open(_temporaryXbimFileName, XbimDBAccess.Read);
                 args.Result = model;

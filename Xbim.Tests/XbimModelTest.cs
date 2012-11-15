@@ -344,13 +344,11 @@ namespace Xbim.Tests
             private string CreateGeometry(string xbimSourceFile)
             {
                 string xbimFilePath = Path.GetDirectoryName(xbimSourceFile);
-                string geomXbimFileName = CreateTempFile(xbimFilePath, ".xbimGC");
 
-                // create xbim geometry file
                 XbimModel modelServer = new XbimModel();
                 modelServer.Open(xbimSourceFile,XbimDBAccess.ReadWrite);
                 IEnumerable<IfcProduct> toDraw = modelServer.IfcProducts.Cast<IfcProduct>();
-                XbimScene.ConvertGeometry(toDraw, null);
+                XbimScene.ConvertGeometry(toDraw, null,false);
                 modelServer.Close();
 
                 return xbimSourceFile;

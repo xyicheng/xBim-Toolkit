@@ -23,7 +23,7 @@ namespace Xbim
 			_maps = gcnew Dictionary<IfcRepresentation^, IXbimGeometryModel^>();
 		}
 
-		XbimScene::XbimScene(IModel^ model)
+		XbimScene::XbimScene(XbimModel^ model)
 		{
 
 			Initialise();
@@ -33,17 +33,9 @@ namespace Xbim
 			 _graph->AddProducts(Enumerable::Cast<IfcProduct^>(model->IfcProducts));
 		}
 
-		XbimScene::XbimScene(IModel^ model, IEnumerable<IfcProduct^>^ toDraw )
-		{
-			Initialise();
-			Logger->Debug("Creating Geometry from IModel..."); 
-			_graph = gcnew TransformGraph(model, this);
-			_maps = gcnew Dictionary<IfcRepresentation^, IXbimGeometryModel^>();
-			_graph->AddProducts(toDraw);
 
-		}
 
-		void XbimScene::ConvertGeometry( IEnumerable<IfcProduct^>^ toConvert, ReportProgressDelegate^ progDelegate)
+		void XbimScene::ConvertGeometry( IEnumerable<IfcProduct^>^ toConvert, ReportProgressDelegate^ progDelegate, bool oCCout)
 		{
 
 			IfcProduct^ p = Enumerable::FirstOrDefault(toConvert);
@@ -72,7 +64,7 @@ namespace Xbim
 					try
 					{
 						XbimLOD lod = XbimLOD::LOD_Unspecified;
-						IXbimGeometryModel^ geomModel = XbimGeometryModel::CreateFrom(product, maps, false, lod);
+						IXbimGeometryModel^ geomModel = XbimGeometryModel::CreateFrom(product, maps, false, lod,oCCout);
 						if (geomModel != nullptr)  //it has no geometry
 						{
 
@@ -127,6 +119,15 @@ namespace Xbim
 
 
 
+		}
+		XbimScene::XbimScene(XbimModel^ model, IEnumerable<IfcProduct^>^ toDraw, bool OCCout)
+		{
+			Initialise();
+			_occOut = OCCout;
+			Logger->Debug("Creating Geometry from IModel..."); 
+			 _graph = gcnew TransformGraph(model, this);
+			 _maps = gcnew Dictionary<IfcRepresentation^, IXbimGeometryModel^>();
+			 _graph->AddProducts(toDraw);
 		}
 
 
@@ -209,7 +210,8 @@ namespace Xbim
 			{
 				try
 				{
-					IXbimGeometryModel^ geomModel = XbimGeometryModel::CreateFrom(product, _maps, false, _lod);
+					IXbimGeometryModel^ geomModel = XbimGeometryModel::CreateFrom(product, _maps, false, _lod, _occOut);
+					
 					if (geomModel != nullptr)  //it has no geometry
 					{
 						XbimTriangulatedModelCollection^ tm = geomModel->Mesh(true);

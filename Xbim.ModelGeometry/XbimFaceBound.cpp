@@ -477,6 +477,8 @@ namespace Xbim
 				return Build((IfcCompositeCurve^)profile->OuterCurve, hasCurves);
 			if(dynamic_cast<IfcPolyline^>(profile->OuterCurve))
 				return Build((IfcPolyline^)profile->OuterCurve, hasCurves);
+			if(dynamic_cast<IfcCurve^>(profile->OuterCurve))
+				return Build((IfcCurve^)profile->OuterCurve, hasCurves);
 			else
 			{
 				Type ^ type = profile->OuterCurve->GetType();

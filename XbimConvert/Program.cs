@@ -120,7 +120,7 @@ namespace XbimConvert
                     Console.Write(string.Format("{0:D5} Converted", percentProgress));
                     ResetCursor(Console.CursorTop);
                 }
-            });
+            }, arguments.OCC);
             //XbimScene scene = new XbimScene(model, toDraw);
             //TransformGraph graph = new TransformGraph(model, scene);
             //add everything with a representation

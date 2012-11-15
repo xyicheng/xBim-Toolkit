@@ -203,21 +203,18 @@ namespace Xbim.COBie.Data
         {
             //now convert the geometry
             IEnumerable<IfcProduct> toDraw = Model.IfcProducts.Cast<IfcProduct>(); //get all products for this model to place in return graph
-
-            XbimScene scene = new XbimScene(Model, toDraw);
-            int total = scene.Graph.ProductNodes.Count();
-            //create the geometry file
-            ProgressIndicator.Initialise("Create Geometry File", total);
-            using (FileStream sceneStream = new FileStream(cacheFile, FileMode.Create, FileAccess.ReadWrite))
+            string modelName = Model.DatabaseName;
+            Model.Close();
+            Model.Open(modelName,XbimDBAccess.ReadWrite);           
+            ProgressIndicator.Initialise("Create Geometry", 0);
+            XbimScene.ConvertGeometry(toDraw, delegate(int percentProgress, object userState)
             {
-                BinaryWriter bw = new BinaryWriter(sceneStream);
-                //show current status to user
-                scene.Graph.Write(bw, delegate(int percentProgress, object userState)
-                {
-                    Context.UpdateStatus("Creating Geometry File", total, (total * percentProgress / 100));
-                });
-                bw.Flush();
-            }
+
+                Context.UpdateStatus("Creating Geometry", percentProgress);
+               
+            }, false);
+            Model.Close();
+            Model.Open(modelName, XbimDBAccess.Read);          
             ProgressIndicator.Finalise();
         }
 

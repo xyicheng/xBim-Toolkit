@@ -84,6 +84,8 @@ namespace Xbim.IO
                 yield return item;
             
         }
+
+      
         /// <summary>
         /// Returns an enumerabale of all the instance handles in the model
         /// </summary>

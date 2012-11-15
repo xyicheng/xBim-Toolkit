@@ -20,13 +20,14 @@ namespace Xbim
 		{
 
 		public:
-			static void ConvertGeometry(IEnumerable<IfcProduct^>^ toConvert, ReportProgressDelegate^ progDelegate);
+			static void ConvertGeometry(IEnumerable<IfcProduct^>^ toConvert, ReportProgressDelegate^ progDelegate, bool oCCout );
 		private:
 			XbimLOD _lod;
 			TransformGraph^ _graph;
 			Stream^ _sceneStream;
 			String^ _sceneStreamFileName;
 			Dictionary<IfcRepresentation^, IXbimGeometryModel^>^ _maps;
+			bool _occOut;
 			static ILogger^ Logger = LoggerFactory::GetLogger();
 			void ImportIfc(String ^ ifcFileName,String ^ xBimFileName,String ^ xBimGeometryFileName,  ProcessModel ^ processingDelegate);
 
@@ -35,8 +36,8 @@ namespace Xbim
 				Standard::SetReentrant(Standard_True);
 			}
 		public:
-			XbimScene(IModel^ model);
-			XbimScene(IModel^ model, IEnumerable<IfcProduct^>^ toDraw);
+			XbimScene(XbimModel^ model);
+			XbimScene(XbimModel^ model, IEnumerable<IfcProduct^>^ toDraw, bool oCCout );
 			XbimScene(String ^ ifcFileName, String ^ xbimFileName,String ^ xBimGeometryFileName);
 			XbimScene(String ^ ifcFileName,String ^ xBimFileName,String ^ xBimGeometryFileName, ProcessModel ^ processingDelegate);
 			!XbimScene();

@@ -23,7 +23,7 @@ namespace XbimConvert
             if (args.Length < 1)
             {
                 Console.WriteLine("Invalid number of Parameters, filename required");
-                Console.WriteLine("Syntax: XbimConvert source [-quiet|-q] [-keepextension|-ke] [-filter|-f <elementid|elementtype>] [-sanitiselog]");
+                Console.WriteLine("Syntax: XbimConvert source [-quiet|-q] [-keepextension|-ke] [-filter|-f <elementid|elementtype>] [-sanitiselog] [-occ]");
                 return;
             }
 
@@ -63,7 +63,9 @@ namespace XbimConvert
                             case "-sanitiselog":
                                 SanitiseLogs = true;
                                 break;
-
+                            case "-occ":
+                                OCC = true;
+                                break;
                             default:
                                 Console.WriteLine("Skipping un-expected argument '{0}'", arg);
                                 break;
@@ -112,6 +114,7 @@ namespace XbimConvert
         public FilterType FilterType { get; set; }
         public int ElementIdFilter {get;set;}
         public IfcType ElementTypeFilter { get; set; }
+        public bool OCC { get; set; }
         /// <summary>
         /// Indicates that logs should not contain sensitive path information.
         /// </summary>
