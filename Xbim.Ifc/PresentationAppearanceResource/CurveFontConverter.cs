@@ -61,7 +61,7 @@ namespace Xbim.Ifc.PresentationAppearanceResource
                 if (tokens.Length > 1) //it is a scaled font
                 {
                     str = tokens[0].Trim();
-                    scale = double.Parse(tokens[1]);
+                    scale = double.Parse(tokens[1], CultureInfo.InvariantCulture);
                 }
 
                 if (char.IsLetter(str, 0)) //it is a predefined font 

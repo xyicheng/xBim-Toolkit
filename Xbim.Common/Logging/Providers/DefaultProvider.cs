@@ -40,6 +40,21 @@ namespace Xbim.Common.Logging.Providers
 			return new DefaultLogger();
 		}
 
-		#endregion
-	}
+        // Null implementation
+        public string AttachMemoryLogger()
+        {
+            return String.Empty;
+        }
+
+        public System.Collections.Generic.List<Event> GetEvents(string name)
+        {
+            return new System.Collections.Generic.List<Event>() ;
+        }
+
+        public void DetatchMemoryLogger(string name)
+        {
+            // Do nothing
+        }
+        #endregion
+    }
 }

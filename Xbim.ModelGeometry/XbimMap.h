@@ -66,7 +66,7 @@ namespace Xbim
 			{
 				TopoDS_Shape* get()
 				{
-					throw gcnew NotImplementedException("Handle needs to be implemented");	
+					throw gcnew NotImplementedException("Handle needs to be implemented");
 				}
 
 			}

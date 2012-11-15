@@ -111,7 +111,7 @@ namespace Xbim.Ifc.MaterialPropertyResource
 
         #region ISupportIfcParser Members
 
-        public string WhereRule()
+        public virtual string WhereRule()
         {
             return "";
         }

@@ -22,6 +22,15 @@
  <script type="text/javascript" src="Scripts/modelstreamer.js" ></script>
  <script type="text/javascript" src="Scripts/menus.js" ></script>
  <script type="text/javascript" src="Scripts/viewer.js" ></script>
+
+ <script type="text/javascript" src="Scripts/ajaxfileupload.js"></script>
+
+ <script src="Scripts/icim-console.js" type="text/javascript"></script>
+ <script src="Scripts/icim-elementTypePanel.js" type="text/javascript"></script>
+ <script src="Scripts/icim-groupViewControl.js" type="text/javascript"></script>
+ <script src="Scripts/icim-selection.js" type="text/javascript"></script>
+ <script src="Scripts/icim-shortcuts.js" type="text/javascript"></script>
+ <script src="Scripts/icim-app-init.js" type="text/javascript"></script>
 </asp:Content>
 <asp:Content ID="BodyContent" runat="server" ContentPlaceHolderID="MainContent">
     <div id="loadingScreen" style="display:none; background-repeat:no-repeat; background-image: url('Styles/modelloading.gif');  background-position:center center; text-align:center; z-index:10000000; background-color:Gray; position:absolute;">
@@ -35,12 +44,14 @@
         <div id="loadedbar"></div>
     </div>
 
+    
+
     <div id="modelmenu" class="dragmenu unselectable">
         <span class="resetBoundary"></span>
         <div class="menuHeader">
             Model Menu
         </div>
-        <div id="menu" runat=server>
+        <div id="menu" runat="server">
         </div>
     </div>
     <div id="types" class="dragmenu unselectable">
@@ -55,6 +66,32 @@
                 <div id="navtree"></div>
             </div>
         </div>
+    </div>
+
+    <div id="classification" class="dragmenu unselectable ui-draggable ui-resizable" style="height: 250px; width: 300px; display: block; opacity: 1; left: 0px;">
+        <span class="resetBoundary"></span>
+        <div class="menuHeader">
+            Classification
+        </div>
+
+        <div class="menuContent">
+            <div id="navTreeContainerClassification">
+                <div id="navtreeClassification"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="uploadCtl" class="dragmenu unselectable">
+        <span class="resetBoundary"></span>
+        <div id="uploadCtlInner">
+            <div class="menuHeader">
+                <span>File</span>
+                <input type="file" id="file" name="file" size="10"/>
+                <button id="buttonUpload" onclick="return ajaxFileUpload();">Upload</button>
+                <img id="loading" src="Styles/loading.gif" style="display:none;" alt="" />
+            </div>
+        </div>
+        <a id="linkLoadAnotherFile" href="Default.aspx" style="display:none;">Load another file</a>
     </div>
 
     <div id="properties" class="dragmenu unselectable">
@@ -92,4 +129,9 @@
     </div>
 
     <div id="debuginfo" style="display:none; width:100%; height: 200px;"><h1>Debug Info:</h1></div>
+
+    
+
 </asp:Content>
+
+

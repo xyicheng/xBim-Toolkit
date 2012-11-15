@@ -6,7 +6,8 @@ using namespace System::IO;
 using namespace Xbim::IO;
 using namespace Xbim::ModelGeometry::Scene;
 using namespace Xbim::Common::Exceptions;
-
+using namespace Xbim::XbimExtensions;
+using namespace Xbim::Common;
 namespace Xbim
 {
 	namespace ModelGeometry
@@ -17,16 +18,36 @@ namespace Xbim
 
 		XbimScene::~XbimScene()
 		{
+			_maps = gcnew Dictionary<IfcRepresentation^, IXbimGeometryModel^>();
 		}
 
-
 		XbimScene::XbimScene(IModel^ model)
+		{
+
+			Initialise();
+			Logger->Debug("Creating Geometry from IModel..."); 
+			 _graph = gcnew TransformGraph(model, this);
+			 _maps = gcnew Dictionary<IfcRepresentation^, IXbimGeometryModel^>();
+			 _graph->AddProducts(model->IfcProducts->Items);
+		}
+
+		XbimScene::XbimScene(IModel^ model, IEnumerable<IfcProduct^>^ toDraw )
 		{
 			Initialise();
 			Logger->Debug("Creating Geometry from IModel..."); 
 			 _graph = gcnew TransformGraph(model, this);
-			 _graph->AddProducts(model->IfcProducts->Items);
+			 _maps = gcnew Dictionary<IfcRepresentation^, IXbimGeometryModel^>();
+			 _graph->AddProducts(toDraw);
 			
+		}
+		XbimScene::XbimScene(IModel^ model, IEnumerable<IfcProduct^>^ toDraw, bool OCCout)
+		{
+			Initialise();
+			_occOut = OCCout;
+			Logger->Debug("Creating Geometry from IModel..."); 
+			 _graph = gcnew TransformGraph(model, this);
+			 _maps = gcnew Dictionary<IfcRepresentation^, IXbimGeometryModel^>();
+			 _graph->AddProducts(toDraw);
 		}
 
 		void XbimScene::Close()
@@ -69,6 +90,7 @@ namespace Xbim
 			Logger->InfoFormat("Importing IFC model {0}.", ifcFileName);
 			
 			XbimFileModelServer^ model = gcnew XbimFileModelServer();
+			_maps = gcnew Dictionary<IfcRepresentation^, IXbimGeometryModel^>();
 			try
 			{
 				String^ tmpFileName = Path::GetTempFileName();
@@ -88,7 +110,7 @@ namespace Xbim
 				_sceneStream = gcnew FileStream(_sceneStreamFileName, FileMode::Create, FileAccess::ReadWrite);
 				BinaryWriter^ bw = gcnew BinaryWriter(_sceneStream);
 				{
-					_graph->Write(bw);
+					_graph->Write(bw, nullptr);
 					bw->Flush();
 					Close();
 					ReOpen();
@@ -128,16 +150,18 @@ namespace Xbim
 
 		XbimTriangulatedModelStream^ XbimScene::Triangulate(TransformNode^ node)
 		{
-
+			
 			IfcProduct^ product = node->Product;
+			XbimModelFactors^ mf = ((IPersistIfcEntity^)product)->ModelOf->GetModelFactors;
 			if(product!=nullptr) //there is no product at this node
 			{
 				try
 				{
-					IXbimGeometryModel^ geomModel = XbimGeometryModel::CreateFrom(product, false);
+					IXbimGeometryModel^ geomModel = XbimGeometryModel::CreateFrom(product, _maps, false, _lod, _occOut);
+					
 					if (geomModel != nullptr)  //it has no geometry
 					{
-						XbimTriangulatedModelStream^ tm = geomModel->Mesh(true);
+						XbimTriangulatedModelStream^ tm = geomModel->Mesh(true,mf->DeflectionTolerance);
 						XbimBoundingBox^ bb = geomModel->GetBoundingBox(true);
 						node->BoundingBox = bb->GetRect3D();
 						return tm;

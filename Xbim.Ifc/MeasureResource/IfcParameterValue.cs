@@ -58,7 +58,7 @@ namespace Xbim.Ifc.MeasureResource
 
         public string ToPart21
         {
-            get { return _theValue.ToString(); }
+            get { return IfcReal.AsPart21(_theValue); }
         }
 
         public IfcParameterValue(double val)

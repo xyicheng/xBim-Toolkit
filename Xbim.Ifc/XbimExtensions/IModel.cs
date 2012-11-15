@@ -24,6 +24,7 @@ using Xbim.XbimExtensions.DataProviders;
 using Xbim.XbimExtensions.Parser;
 using Xbim.XbimExtensions.Transactions;
 using Xbim.Ifc.SharedBldgElements;
+using Xbim.Common;
 
 #endregion
 
@@ -58,8 +59,9 @@ namespace Xbim.XbimExtensions
         /// </summary>
         XBIM = 16
     }
-    public interface IModel
+    public interface IModel : IDisposable
     {
+        XbimModelFactors GetModelFactors { get; }
         IEnumerable<TIfcType> InstancesOfType<TIfcType>() where TIfcType : IPersistIfcEntity;
 
         IEnumerable<TIfcType> InstancesWhere<TIfcType>(Expression<Func<TIfcType, bool>> expression)
@@ -96,6 +98,7 @@ namespace Xbim.XbimExtensions
         string Validate(ValidationFlags validateFlags);
         void Export(XbimStorageType fileType, string outputFileName);
         string Open(string inputFileName);
+        string Open(string inputFileName, ReportProgressDelegate progDelegate);
         bool Save();
         bool SaveAs(string outputFileName);
         void Import(string inputFileName);

@@ -131,7 +131,12 @@ namespace Xbim.Ifc.GeometryResource
         #endregion
 
         #region Constructors
-
+        public IfcDirection(IfcDirection dir)
+        {
+            _x = dir._x;
+            _y = dir._y;
+            _z = dir._z;
+        }
         /// <summary>
         ///   Constructs a 3D direction
         /// </summary>
@@ -335,6 +340,16 @@ namespace Xbim.Ifc.GeometryResource
             ModelManager.SetModelValue(this, ref _x, x, v => _x = v, "X");
             ModelManager.SetModelValue(this, ref _y, y, v => _y = v, "Y");
             ModelManager.SetModelValue(this, ref _z, z, v => _z = v, "Z");
+        }
+
+        public bool IsInvalid()
+        {
+            if (Dim == 3)
+                return (_x == 0 && _y == 0 && _z == 0);
+            else if (Dim == 2)
+                return (_x == 0 && _y == 0);
+            else
+                return true;
         }
 
         /// <summary>

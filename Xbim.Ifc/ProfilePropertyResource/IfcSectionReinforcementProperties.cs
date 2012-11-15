@@ -218,7 +218,7 @@ namespace Xbim.Ifc.ProfilePropertyResource
                 case 3:
                     _reinforcementRole =
                         (IfcReinforcingBarRoleEnum)
-                        Enum.Parse(typeof (IfcReinforcingBarRoleEnum), value.StringVal, true);
+                        Enum.Parse(typeof (IfcReinforcingBarRoleEnum), value.EnumVal, true);
                     break;
                 case 4:
                     _crossSectionArea = (IfcSectionProperties) value.EntityVal;

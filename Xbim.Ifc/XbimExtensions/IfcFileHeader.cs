@@ -33,6 +33,7 @@ namespace Xbim.XbimExtensions
         public FileDescription(string implementationLevel)
         {
             ImplementationLevel = implementationLevel;
+            Description.Add("ViewDefinition [CoordinationView]");
         }
 
         public List<string> Description = new List<string>(2);

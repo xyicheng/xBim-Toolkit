@@ -50,6 +50,10 @@ namespace Xbim
 				}
 
 			}
+
+			//returns the Newell's Normal for a wire
+			static gp_Vec NewellsNormal(const TopoDS_Wire & bound);
+
 			/*Interface*/
 			virtual property XbimEdgeLoop^ Bound
 			{
@@ -62,6 +66,23 @@ namespace Xbim
 
 			void Print();
 			//static methods
+			// SRL: Builds a wire from a IfcCraneRailFShapeProfileDef
+			static TopoDS_Wire Build(IfcCraneRailFShapeProfileDef ^ profile, bool% hasCurves);
+			
+			// SRL: Builds a wire from a IfcCraneRailAShapeProfileDef
+			static TopoDS_Wire Build(IfcCraneRailAShapeProfileDef ^ profile, bool% hasCurves);
+
+			// SRL: Builds a wire from a IfcEllipseProfileDef
+			static TopoDS_Wire Build(IfcEllipseProfileDef ^ profile, bool% hasCurves);
+
+			// SRL: Builds a wire from a IfcCShapeProfileDef
+			static TopoDS_Wire Build(IfcCShapeProfileDef ^ profile, bool% hasCurves);
+			
+			// SRL: Builds a wire from a IfcTShapeProfileDef
+			static TopoDS_Wire Build(IfcTShapeProfileDef ^ profile, bool% hasCurves);
+
+			// SRL: Builds a wire from a IfcZShapeProfileDef
+			static TopoDS_Wire Build(IfcZShapeProfileDef ^ profile, bool% hasCurves);
 
 			// AK: Builds a wire from a IfcLShapeProfileDef
 			static TopoDS_Wire Build(IfcLShapeProfileDef ^ profile, bool% hasCurves);
@@ -87,6 +108,9 @@ namespace Xbim
 			//Builds a wire segment from a  curve
 			static TopoDS_Wire Build(IfcCurve ^ curve, bool% hasCurves);
 
+			//Builds a wire segment from a  circle
+			static TopoDS_Wire Build(IfcCircle ^ circle, bool% hasCurves);
+			
 			//Builds a wire  from a  BoundedCurve
 			static TopoDS_Wire Build(IfcBoundedCurve ^ bCurve, bool% hasCurves);
 

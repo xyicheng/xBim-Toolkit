@@ -32,7 +32,7 @@ namespace Xbim.Ifc.GeometryResource
     [IfcPersistedEntity, Serializable]
     public class CartesianPointList : XbimList<IfcCartesianPoint>
     {
-        internal CartesianPointList(IPersistIfcEntity owner)
+        public CartesianPointList(IPersistIfcEntity owner)
             : base(owner, 5)
         {
         }
@@ -59,6 +59,7 @@ namespace Xbim.Ifc.GeometryResource
 
     public interface ICoordinateList : IList<IfcLengthMeasure>, ExpressEnumerable
     {
+        
     }
 
 
@@ -153,6 +154,13 @@ namespace Xbim.Ifc.GeometryResource
         public IfcCartesianPoint(Point pt2D)
             : this(pt2D.X, pt2D.Y)
         {
+        }
+
+        public IfcCartesianPoint(IfcCartesianPoint cp)
+        {
+            _x = cp._x;
+            _y = cp._y;
+            _z = cp._z;
         }
 
         public IfcCartesianPoint(double x, double y, double z)
@@ -270,6 +278,24 @@ namespace Xbim.Ifc.GeometryResource
                 return _x;
             }
             set { ModelManager.SetModelValue(this, ref _x, value, v => _x = v, "X"); }
+        }
+
+        public void XYZ(out double x, out double y, out double z)
+        {
+            if (Dim == 3)
+            {
+               
+                x = _x; y = _z; z = _z;
+            }
+            else if (Dim == 2)
+            {
+               
+                x = _x; y = _y; z = 0;
+            }
+            else
+            {
+                z = y = x = double.NaN;
+            }
         }
 
         public double Y

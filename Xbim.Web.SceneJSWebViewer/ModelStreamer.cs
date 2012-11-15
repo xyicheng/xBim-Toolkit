@@ -27,7 +27,11 @@ namespace Xbim.SceneJSWebViewer
                 serializer.RegisterConverters(new[] { new DynamicJsonConverter() });
                 dynamic obj = serializer.Deserialize(data, typeof(object));
 
-                modelId = System.Web.Hosting.HostingEnvironment.ApplicationPhysicalPath + "models\\" + obj.ModelID.ToString().Split(new char[] { '.' })[0];
+                string ifcDir = "models\\";
+                //if (obj.fromTemp != null)
+                //    if (obj.fromTemp.ToString() == "True") 
+                //        ifcDir = "Temp\\";
+                modelId = System.Web.Hosting.HostingEnvironment.ApplicationPhysicalPath + ifcDir + obj.ModelID.ToString().Split(new char[] { '.' })[0];
                 if (modelId == String.Empty)
                 {
                     return null;
@@ -46,7 +50,7 @@ namespace Xbim.SceneJSWebViewer
                         return Connection.Send(connectionId, ModelStreamer.SendSharedGeometry(connectionId, modelId));
                     case Command.GeometryData: // Actual vertex locations
                         String temp = obj.id;
-                        String[] temps = temp.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                        String[] temps = temp.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries); 
                         return Connection.Send(connectionId, ModelStreamer.SendGeometryData(connectionId, modelId, temps));
                     case Command.Data: //Setup Data
                         return Connection.Send(connectionId, ModelStreamer.SendData(connectionId, modelId));
