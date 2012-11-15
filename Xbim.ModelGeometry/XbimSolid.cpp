@@ -457,8 +457,6 @@ namespace Xbim
 				profile = XbimFaceBound::Build((IfcRectangleProfileDef^)repItem->SweptArea, hasCurves);	
 			else if(dynamic_cast<IfcCircleProfileDef^>(repItem->SweptArea))
 				profile = XbimFaceBound::Build((IfcCircleProfileDef^)repItem->SweptArea, hasCurves);	
-			else if(dynamic_cast<IfcCurve^>(repItem->SweptArea))
-				profile = XbimFaceBound::Build((IfcCurve^)(repItem->SweptArea), hasCurves);	
 			else
 			{
 				Type ^ type = repItem->SweptArea->GetType();
