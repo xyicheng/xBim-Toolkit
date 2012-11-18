@@ -1,5 +1,6 @@
 #include "StdAfx.h"
 #include "CartesianTransform.h"
+
 namespace Xbim
 {
 	namespace ModelGeometry
@@ -13,16 +14,16 @@ namespace Xbim
 			Vector3D U1; //Y axis direction
 			if(stepTransform->Axis3!=nullptr)
 			{
-				IfcDirection% dir = (IfcDirection%)stepTransform->Axis3;
-				U3 = Vector3D(dir.DirectionRatios[0],dir.DirectionRatios[1],dir.DirectionRatios[2]); 
+				IfcDirection^ dir = stepTransform->Axis3;
+				U3 = Vector3D(dir->DirectionRatios[0],dir->DirectionRatios[1],dir->DirectionRatios[2]); 
 				U3.Normalize();
 			}
 			else
 				U3 = Vector3D(0.,0.,1.); 
 			if(stepTransform->Axis1!=nullptr)
 			{
-				IfcDirection% dir = (IfcDirection%)stepTransform->Axis1;
-				U1 = Vector3D(dir.DirectionRatios[0],dir.DirectionRatios[1],dir.DirectionRatios[2]); 
+				IfcDirection^ dir = stepTransform->Axis1;
+				U1 = Vector3D(dir->DirectionRatios[0],dir->DirectionRatios[1],dir->DirectionRatios[2]); 
 				U1.Normalize();
 			}
 			else
@@ -39,8 +40,8 @@ namespace Xbim
 
 			if(stepTransform->Axis2!=nullptr)
 			{
-				IfcDirection% dir = (IfcDirection%)stepTransform->Axis2;
-				U2 = Vector3D(dir.DirectionRatios[0],dir.DirectionRatios[1],dir.DirectionRatios[2]); 
+				IfcDirection^ dir = stepTransform->Axis2;
+				U2 = Vector3D(dir->DirectionRatios[0],dir->DirectionRatios[1],dir->DirectionRatios[2]); 
 				U2.Normalize();
 			}
 			else
@@ -70,25 +71,25 @@ namespace Xbim
 		{
 			if(dynamic_cast<IfcLocalPlacement^>(objPlacement))
 			{
-				IfcLocalPlacement% locPlacement = (IfcLocalPlacement%)objPlacement;
-				if (dynamic_cast<IfcAxis2Placement3D^>(locPlacement.RelativePlacement))
+				IfcLocalPlacement^ locPlacement = (IfcLocalPlacement^)objPlacement;
+				if (dynamic_cast<IfcAxis2Placement3D^>(locPlacement->RelativePlacement))
 				{
-					IfcAxis2Placement3D% axis3D = (IfcAxis2Placement3D%)locPlacement.RelativePlacement;
-					Vector3D ucsXAxis(axis3D.RefDirection->DirectionRatios[0], axis3D.RefDirection->DirectionRatios[1], axis3D.RefDirection->DirectionRatios[2]);
-					Vector3D ucsZAxis(axis3D.Axis->DirectionRatios[0], axis3D.Axis->DirectionRatios[1], axis3D.Axis->DirectionRatios[2]);
+					IfcAxis2Placement3D^ axis3D = (IfcAxis2Placement3D^)locPlacement->RelativePlacement;
+					Vector3D ucsXAxis(axis3D->RefDirection->DirectionRatios[0], axis3D->RefDirection->DirectionRatios[1], axis3D->RefDirection->DirectionRatios[2]);
+					Vector3D ucsZAxis(axis3D->Axis->DirectionRatios[0], axis3D->Axis->DirectionRatios[1], axis3D->Axis->DirectionRatios[2]);
 					ucsXAxis.Normalize();
 					ucsZAxis.Normalize();
 					Vector3D ucsYAxis = Vector3D::CrossProduct(ucsZAxis, ucsXAxis);
 					ucsYAxis.Normalize();
-					Point3D% ucsCentre = axis3D.Location->WPoint3D();
+					Point3D% ucsCentre = axis3D->Location->WPoint3D();
 
 					Matrix3D ucsTowcs (	ucsXAxis.X, ucsXAxis.Y, ucsXAxis.Z, 0,
 						ucsYAxis.X, ucsYAxis.Y, ucsYAxis.Z, 0,
 						ucsZAxis.X, ucsZAxis.Y, ucsZAxis.Z, 0,
 						ucsCentre.X, ucsCentre.Y, ucsCentre.Z , 1);
-					if (locPlacement.PlacementRelTo != nullptr)
+					if (locPlacement->PlacementRelTo != nullptr)
 					{
-						return Matrix3D::Multiply(ucsTowcs, CartesianTransform::ConvertMatrix3D(locPlacement.PlacementRelTo));
+						return Matrix3D::Multiply(ucsTowcs, CartesianTransform::ConvertMatrix3D(locPlacement->PlacementRelTo));
 					}
 					else
 						return ucsTowcs;

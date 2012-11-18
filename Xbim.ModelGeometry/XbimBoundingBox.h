@@ -1,15 +1,16 @@
 #pragma once
-#include "XbimVertexPoint.h"
 #include <Bnd_Box.hxx>
+#include "XbimVertexPoint.h"
 #include <gp_Pnt.hxx>
-using namespace System;
 
 
 namespace Xbim
 {
 	namespace ModelGeometry
 	{
+		using namespace System;
 		using namespace System::Runtime::InteropServices;
+
 		public ref class XbimBoundingBox
 		{
 		protected:
@@ -34,7 +35,7 @@ namespace Xbim
 			}
 			void InstanceCleanup()
 			{   
-				int temp = System::Threading::Interlocked::Exchange((int)(void*)pBox, 0);
+				int temp = System::Threading::Interlocked::Exchange((int%)pBox, 0);
 				if(temp!=0)
 				{
 					if (pBox)

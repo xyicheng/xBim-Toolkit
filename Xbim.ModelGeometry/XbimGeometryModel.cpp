@@ -378,7 +378,7 @@ namespace Xbim
 								if(occOut)
 								{
 									char fname[512];
-									sprintf(fname, "#%d",shape->EntityLabel);
+									sprintf_s(fname, "#%d",shape->EntityLabel);
 									BRepTools::Write(*(fshape->Handle),fname );
 								}
 #endif
@@ -393,7 +393,7 @@ namespace Xbim
 								{
 									
 									char fname[512];
-									sprintf(fname, "#%d",shape->EntityLabel);
+									sprintf_s(fname, "#%d",shape->EntityLabel);
 									BRepTools::Write(*(fshape->Handle),fname );
 									
 								}
@@ -409,7 +409,7 @@ namespace Xbim
 								if(occOut)
 								{
 									char fname[512];
-									sprintf(fname, "#%d",shape->EntityLabel);
+									sprintf_s(fname, "#%d",shape->EntityLabel);
 									BRepTools::Write(*(fshape->Handle),fname );
 								}
 #endif
@@ -549,7 +549,7 @@ namespace Xbim
 							if(occOut)
 							{
 								char fname[512];
-								sprintf(fname, "#%d",repItem->EntityLabel);
+								sprintf_s(fname, "#%d",repItem->EntityLabel);
 								BRepTools::Write(*(geom->Handle),fname );
 							}
 #endif

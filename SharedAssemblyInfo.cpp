@@ -2,6 +2,9 @@
 
 using namespace System;
 using namespace System::Reflection;
+using namespace System::Runtime::CompilerServices;
+using namespace System::Runtime::InteropServices;
+using namespace System::Security::Permissions;
 
 // This file contains Assembly meta-data that is common for C++ across the solution
 
