@@ -1,6 +1,26 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{B5EDEE8A-69B9-47E5-8455-E1A9A7ED8969}"
+	ProjectSection(SolutionItems) = preProject
+		SharedAssemblyInfo.cpp = SharedAssemblyInfo.cpp
+		SharedAssemblyInfo.cs = SharedAssemblyInfo.cs
+		Xbim.ModelGeometry\Version.rc = Xbim.ModelGeometry\Version.rc
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{0DA6263B-5A69-401E-99D0-391644EF4709}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{7ECDCF15-95BB-4D2B-8C0D-8615D6E3BAB1}"
+	ProjectSection(SolutionItems) = preProject
+		Local.testsettings = Local.testsettings
+		TraceAndTestImpact.testsettings = TraceAndTestImpact.testsettings
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{25F1A002-D766-40FD-910C-D3E9DCC6FCBF}"
+	ProjectSection(SolutionItems) = preProject
+		XbimComplete.vsmdi = XbimComplete.vsmdi
+	EndProjectSection
+EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Xbim.ModelGeometry", "Xbim.ModelGeometry\Xbim.ModelGeometry.vcxproj", "{CBCA1EFC-7459-4A0E-A42D-55D4F58051BF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.Ifc", "Xbim.Ifc\Xbim.Ifc.csproj", "{5D4C907D-1293-4E5F-9642-D0862AE4741C}"
@@ -22,13 +42,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.DOM", "Xbim.DOM\Xbim.D
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.Common", "Xbim.Common\Xbim.Common.csproj", "{6745F5AC-AF3C-4372-81AA-A75E7B1FA03B}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{B5EDEE8A-69B9-47E5-8455-E1A9A7ED8969}"
-	ProjectSection(SolutionItems) = preProject
-		SharedAssemblyInfo.cpp = SharedAssemblyInfo.cpp
-		SharedAssemblyInfo.cs = SharedAssemblyInfo.cs
-		Xbim.ModelGeometry\Version.rc = Xbim.ModelGeometry\Version.rc
-	EndProjectSection
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.SceneJSWebViewer", "Xbim.Web.SceneJSWebViewer\Xbim.SceneJSWebViewer.csproj", "{219A127E-82B8-43A1-8959-7102E4724F8F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XbimConvert", "XbimConvert\XbimConvert.csproj", "{5B6AC153-AC56-4B01-8734-88EAB805A6DB}"
@@ -40,19 +53,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.COBie", "Xbim.COBie\Xbim.COBie.csproj", "{7DA8C61A-ACCA-45CB-B688-93A4982FA44C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XBim.COBie.Client", "XBim.COBie.Client\XBim.COBie.Client.csproj", "{FB5A1829-7B34-4DE9-94A9-AF3AD36320BB}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{0DA6263B-5A69-401E-99D0-391644EF4709}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{7ECDCF15-95BB-4D2B-8C0D-8615D6E3BAB1}"
-	ProjectSection(SolutionItems) = preProject
-		Local.testsettings = Local.testsettings
-		TraceAndTestImpact.testsettings = TraceAndTestImpact.testsettings
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{25F1A002-D766-40FD-910C-D3E9DCC6FCBF}"
-	ProjectSection(SolutionItems) = preProject
-		XbimComplete.vsmdi = XbimComplete.vsmdi
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "3 SimpleHelloWall", "Examples\3 SimpleHelloWall\3 SimpleHelloWall.csproj", "{3E685E73-8207-4C99-A146-3BFF00CA5A74}"
 EndProject
@@ -76,53 +76,53 @@ Global
 		SccProjectUniqueName4 = Xbim.ModelGeometry.Scene\\Xbim.ModelGeometry.Scene.csproj
 		SccProjectName4 = Xbim.ModelGeometry.Scene
 		SccLocalPath4 = Xbim.ModelGeometry.Scene
-		SccProjectUniqueName5 = Xbim.ModelGeometry\\Xbim.ModelGeometry.vcxproj
-		SccProjectName5 = Xbim.ModelGeometry
-		SccLocalPath5 = Xbim.ModelGeometry
-		SccProjectUniqueName6 = Xbim.Presentation\\Xbim.Presentation.csproj
-		SccProjectName6 = Xbim.Presentation
-		SccLocalPath6 = Xbim.Presentation
-		SccProjectUniqueName7 = XbimXplorer\\XbimXplorer.csproj
-		SccProjectTopLevelParentUniqueName7 = XbimComplete.sln
-		SccProjectName7 = XbimXplorer
-		SccLocalPath7 = XbimXplorer
-		SccProjectUniqueName8 = Xbim.DOM\\Xbim.DOM.csproj
-		SccProjectName8 = Xbim.DOM
-		SccLocalPath8 = Xbim.DOM
-		SccProjectUniqueName9 = Xbim.Common\\Xbim.Common.csproj
-		SccProjectName9 = Xbim.Common
-		SccLocalPath9 = Xbim.Common
-		SccProjectUniqueName10 = Xbim.Web.SceneJSWebViewer\\Xbim.SceneJSWebViewer.csproj
+		SccProjectUniqueName5 = Xbim.Presentation\\Xbim.Presentation.csproj
+		SccProjectName5 = Xbim.Presentation
+		SccLocalPath5 = Xbim.Presentation
+		SccProjectUniqueName6 = XbimXplorer\\XbimXplorer.csproj
+		SccProjectTopLevelParentUniqueName6 = XbimComplete.sln
+		SccProjectName6 = XbimXplorer
+		SccLocalPath6 = XbimXplorer
+		SccProjectUniqueName7 = Xbim.DOM\\Xbim.DOM.csproj
+		SccProjectName7 = Xbim.DOM
+		SccLocalPath7 = Xbim.DOM
+		SccProjectUniqueName8 = Xbim.Common\\Xbim.Common.csproj
+		SccProjectName8 = Xbim.Common
+		SccLocalPath8 = Xbim.Common
+		SccProjectUniqueName9 = Xbim.Web.SceneJSWebViewer\\Xbim.SceneJSWebViewer.csproj
+		SccProjectTopLevelParentUniqueName9 = XbimComplete.sln
+		SccProjectName9 = Xbim.Web.SceneJSWebViewer
+		SccLocalPath9 = Xbim.Web.SceneJSWebViewer
+		SccProjectUniqueName10 = XbimConvert\\XbimConvert.csproj
 		SccProjectTopLevelParentUniqueName10 = XbimComplete.sln
-		SccProjectName10 = Xbim.Web.SceneJSWebViewer
-		SccLocalPath10 = Xbim.Web.SceneJSWebViewer
-		SccProjectUniqueName11 = XbimConvert\\XbimConvert.csproj
+		SccProjectName10 = XbimConvert
+		SccLocalPath10 = XbimConvert
+		SccProjectUniqueName11 = Xbim.Tests\\Xbim.Tests.csproj
 		SccProjectTopLevelParentUniqueName11 = XbimComplete.sln
-		SccProjectName11 = XbimConvert
-		SccLocalPath11 = XbimConvert
-		SccProjectUniqueName12 = Xbim.Tests\\Xbim.Tests.csproj
+		SccProjectName11 = Xbim.Tests
+		SccLocalPath11 = Xbim.Tests
+		SccProjectUniqueName12 = XbimRegression\\XbimRegression.csproj
 		SccProjectTopLevelParentUniqueName12 = XbimComplete.sln
-		SccProjectName12 = Xbim.Tests
-		SccLocalPath12 = Xbim.Tests
-		SccProjectUniqueName13 = XbimRegression\\XbimRegression.csproj
-		SccProjectTopLevelParentUniqueName13 = XbimComplete.sln
-		SccProjectName13 = XbimRegression
-		SccLocalPath13 = XbimRegression
-		SccProjectUniqueName14 = Xbim.COBie\\Xbim.COBie.csproj
-		SccProjectName14 = Xbim.COBie
-		SccLocalPath14 = Xbim.COBie
-		SccProjectUniqueName15 = XBim.COBie.Client\\XBim.COBie.Client.csproj
+		SccProjectName12 = XbimRegression
+		SccLocalPath12 = XbimRegression
+		SccProjectUniqueName13 = Xbim.COBie\\Xbim.COBie.csproj
+		SccProjectName13 = Xbim.COBie
+		SccLocalPath13 = Xbim.COBie
+		SccProjectUniqueName14 = XBim.COBie.Client\\XBim.COBie.Client.csproj
+		SccProjectTopLevelParentUniqueName14 = XbimComplete.sln
+		SccProjectName14 = XBim.COBie.Client
+		SccLocalPath14 = XBim.COBie.Client
+		SccProjectUniqueName15 = Examples\\3\u0020SimpleHelloWall\\3\u0020SimpleHelloWall.csproj
 		SccProjectTopLevelParentUniqueName15 = XbimComplete.sln
-		SccProjectName15 = XBim.COBie.Client
-		SccLocalPath15 = XBim.COBie.Client
-		SccProjectUniqueName16 = Examples\\3\u0020SimpleHelloWall\\3\u0020SimpleHelloWall.csproj
+		SccProjectName15 = Examples/3\u0020SimpleHelloWall
+		SccLocalPath15 = Examples\\3\u0020SimpleHelloWall
+		SccProjectUniqueName16 = Xbim.SceneHelper\\Xbim.SceneHelper.csproj
 		SccProjectTopLevelParentUniqueName16 = XbimComplete.sln
-		SccProjectName16 = Examples/3\u0020SimpleHelloWall
-		SccLocalPath16 = Examples\\3\u0020SimpleHelloWall
-		SccProjectUniqueName17 = Xbim.SceneHelper\\Xbim.SceneHelper.csproj
-		SccProjectTopLevelParentUniqueName17 = XbimComplete.sln
-		SccProjectName17 = Xbim.SceneHelper
-		SccLocalPath17 = Xbim.SceneHelper
+		SccProjectName16 = Xbim.SceneHelper
+		SccLocalPath16 = Xbim.SceneHelper
+		SccProjectUniqueName17 = Xbim.ModelGeometry\\Xbim.ModelGeometry.vcxproj
+		SccProjectName17 = Xbim.ModelGeometry
+		SccLocalPath17 = Xbim.ModelGeometry
 	EndGlobalSection
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = XbimComplete.vsmdi
@@ -408,13 +408,13 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
+		{D6CED5D7-BE37-4A32-90A5-1444C9FFDD91} = {0DA6263B-5A69-401E-99D0-391644EF4709}
 		{219A127E-82B8-43A1-8959-7102E4724F8F} = {0DA6263B-5A69-401E-99D0-391644EF4709}
 		{5B6AC153-AC56-4B01-8734-88EAB805A6DB} = {0DA6263B-5A69-401E-99D0-391644EF4709}
 		{FB5A1829-7B34-4DE9-94A9-AF3AD36320BB} = {0DA6263B-5A69-401E-99D0-391644EF4709}
-		{D6CED5D7-BE37-4A32-90A5-1444C9FFDD91} = {0DA6263B-5A69-401E-99D0-391644EF4709}
 		{3E685E73-8207-4C99-A146-3BFF00CA5A74} = {0DA6263B-5A69-401E-99D0-391644EF4709}
 		{BA6195C4-0F45-43F4-82D1-32AAD0E69B86} = {0DA6263B-5A69-401E-99D0-391644EF4709}
-		{6EF22FB8-7048-4E6A-9B2F-AC2570A998A9} = {7ECDCF15-95BB-4D2B-8C0D-8615D6E3BAB1}
 		{8729CDD1-B493-48EC-A867-61ABAF3E93D2} = {7ECDCF15-95BB-4D2B-8C0D-8615D6E3BAB1}
+		{6EF22FB8-7048-4E6A-9B2F-AC2570A998A9} = {7ECDCF15-95BB-4D2B-8C0D-8615D6E3BAB1}
 	EndGlobalSection
 EndGlobal
