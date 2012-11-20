@@ -36,12 +36,16 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 try
                 {
                     IfcTypeObjects = Model.InstancesOfType<IfcTypeObject>();
-                    
+
+                    ProgressIndicator.ReportMessage("Starting Spares...");
+                    ProgressIndicator.Initialise("Creating Spares", cOBieSheet.RowCount);
                     for (int i = 0; i < cOBieSheet.RowCount; i++)
                     {
+                        ProgressIndicator.IncrementAndUpdate();
                         COBieSpareRow row = cOBieSheet[i];
                         AddSpare(row);
                     }
+                    ProgressIndicator.Finalise();
                     trans.Commit();
                 }
                 catch (Exception)
@@ -78,7 +82,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 //Add Type Relationship
                 if (ValidateString(row.TypeName))
                 {
-                    List<string> typeNames = SplitString(row.TypeName);
+                    List<string> typeNames = SplitString(row.TypeName, ':');
                     IEnumerable<IfcTypeObject> ifcTypeObjects = IfcTypeObjects.Where(to => typeNames.Contains(to.Name.ToString().Trim()));
                     SetRelAssignsToResource(ifcConstructionProductResource, ifcTypeObjects);
                 }

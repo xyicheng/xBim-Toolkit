@@ -34,12 +34,16 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 try
                 {
 
+                    ProgressIndicator.ReportMessage("Starting Zones...");
+                    ProgressIndicator.Initialise("Creating Zones", cOBieSheet.RowCount);
                     for (int i = 0; i < cOBieSheet.RowCount; i++)
                     {
+                        ProgressIndicator.IncrementAndUpdate();
                         COBieZoneRow row = cOBieSheet[i];
                         AddZone(row);
                     }
 
+                    ProgressIndicator.Finalise();
                     trans.Commit();
 
                 }

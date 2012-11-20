@@ -34,19 +34,13 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         /// <param name="cOBieSheet">COBieSheet of COBieCoordinateRow to read data from</param>
         public void SerialiseCoordinate(COBieSheet<COBieCoordinateRow> cOBieSheet)
         {
-            using (Transaction trans = Model.BeginTransaction("Add Floor"))
+            using (Transaction trans = Model.BeginTransaction("Add Coordinate"))
             {
 
                 try
                 {
-                    
-                   //------------------------------TESTING----------------------------------
-                    var xxx = Model.InstancesOfType<IfcLocalPlacement>().Last();
-                    Matrix3D matrix = ConvertMatrix3D(xxx);
-
-                    var yyy = Model.InstancesOfType<IfcGeometricRepresentationContext>();
-                    //-----------------------------------------------------------------------
-
+                    ProgressIndicator.ReportMessage("Starting Coordinates...");
+                    ProgressIndicator.Initialise("Creating Coordinates", cOBieSheet.RowCount);
                     for (int i = 0; i < cOBieSheet.RowCount; i++)
                     {
                         COBieCoordinateRow row = cOBieSheet[i];
@@ -57,6 +51,8 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                             (row.Category.ToLower() == "point")
                             )
                         {
+                            ProgressIndicator.IncrementAndUpdate();
+                        
                             AddFloorPlacement(row);
                             continue; //work done, next loop please
                         }
@@ -81,8 +77,12 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                                 (row.RowName == rowNext.RowName)
                                 )
                             {
+                                ProgressIndicator.IncrementAndUpdate();
+                                
                                 AddBoundingBoxAsExtrudedAreaSolid(row, rowNext);
                                 
+                                ProgressIndicator.IncrementAndUpdate(); //two row processed here
+                        
 #if DEBUG
                                 Console.WriteLine("{0} : {1} == {2} : {3} ", row.SheetName, row.RowName, rowNext.SheetName, rowNext.RowName);
 #endif                           
@@ -93,14 +93,13 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
 #if DEBUG
                                 Console.WriteLine("*************Failed to find pair*************");
 #endif
-                                i = i--; //set back in case next is point, as two box points failed
+                                i--; //set back in case next is point, as two box points failed
                             }
-
-                            
                         }
                        
                     }
-
+                    ProgressIndicator.Finalise();
+                    
                     trans.Commit();
 
                 }
@@ -138,7 +137,12 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 IfcLocalPlacement objectPlacement = CalcObjectPlacement(row, placementRelToIfcProduct);
                 if (objectPlacement != null)
                 {
-                    ifcBuildingStorey.ObjectPlacement = objectPlacement;
+                    //using statement will set the Model.OwnerHistoryAddObject to IfcRoot.OwnerHistory as OwnerHistoryAddObject is used upon any property changes, 
+                    //then swaps the original OwnerHistoryAddObject back in the dispose, so set any properties within the using statement
+                    using (COBieXBimEditScope context = new COBieXBimEditScope(Model, ifcBuildingStorey.OwnerHistory))
+                    {
+                        ifcBuildingStorey.ObjectPlacement = objectPlacement;
+                    }
                 }
             }
         }
@@ -172,9 +176,14 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
 
                 if (ifcSpace != null)
                 {
-                    IfcProduct placementRelToIfcProduct = ifcSpace.SpatialStructuralElementParent as IfcProduct;
+                    //using statement will set the Model.OwnerHistoryAddObject to IfcRoot.OwnerHistory as OwnerHistoryAddObject is used upon any property changes, 
+                    //then swaps the original OwnerHistoryAddObject back in the dispose, so set any properties within the using statement
+                    using (COBieXBimEditScope context = new COBieXBimEditScope(Model, ifcSpace.OwnerHistory))
+                    {
+                        IfcProduct placementRelToIfcProduct = ifcSpace.SpatialStructuralElementParent as IfcProduct;
 
-                    AddExtrudedRectangle(row, rowNext, ifcSpace, placementRelToIfcProduct);
+                        AddExtrudedRectangle(row, rowNext, ifcSpace, placementRelToIfcProduct);
+                    }
                 }
 
             }
@@ -202,21 +211,26 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
 
                 if (ifcElement != null)
                 {
-                    IfcProduct placementRelToIfcProduct = ifcElement.ContainedInStructure as IfcProduct;
-                    IfcRelContainedInSpatialStructure ifcRelContainedInSpatialStructure = Model.InstancesOfType<IfcRelContainedInSpatialStructure>().Where(rciss => rciss.RelatedElements.Contains(ifcElement)).FirstOrDefault();
-                    if ((ifcRelContainedInSpatialStructure != null) &&
-                        (ifcRelContainedInSpatialStructure.RelatingStructure != null)
-                        )
+                    //using statement will set the Model.OwnerHistoryAddObject to IfcRoot.OwnerHistory as OwnerHistoryAddObject is used upon any property changes, 
+                    //then swaps the original OwnerHistoryAddObject back in the dispose, so set any properties within the using statement
+                    using (COBieXBimEditScope context = new COBieXBimEditScope(Model, ifcElement.OwnerHistory))
                     {
-                        placementRelToIfcProduct = ifcRelContainedInSpatialStructure.RelatingStructure as IfcProduct; 
-                        AddExtrudedRectangle(row, rowNext, ifcElement, placementRelToIfcProduct);
-                    }
-                    else
-                    {
+                        IfcProduct placementRelToIfcProduct = ifcElement.ContainedInStructure as IfcProduct;
+                        IfcRelContainedInSpatialStructure ifcRelContainedInSpatialStructure = Model.InstancesOfType<IfcRelContainedInSpatialStructure>().Where(rciss => rciss.RelatedElements.Contains(ifcElement)).FirstOrDefault();
+                        if ((ifcRelContainedInSpatialStructure != null) &&
+                            (ifcRelContainedInSpatialStructure.RelatingStructure != null)
+                            )
+                        {
+                            placementRelToIfcProduct = ifcRelContainedInSpatialStructure.RelatingStructure as IfcProduct;
+                            AddExtrudedRectangle(row, rowNext, ifcElement, placementRelToIfcProduct);
+                        }
+                        else
+                        {
 #if DEBUG
-                        Console.WriteLine("COBieXBimCoordinate.AddBoundingBoxAsExtrudedAreaSolid: Cannot find Parent object placement");
+                            Console.WriteLine("COBieXBimCoordinate.AddBoundingBoxAsExtrudedAreaSolid: Cannot find Parent object placement");
 #endif
- 
+
+                        }
                     }
                     
                 }

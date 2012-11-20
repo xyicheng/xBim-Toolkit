@@ -27,12 +27,16 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 try
                 {
                     //IfcTypeObjects = Model.InstancesOfType<IfcTypeObject>();
-                    
+
+                    ProgressIndicator.ReportMessage("Starting Resources...");
+                    ProgressIndicator.Initialise("Creating Resources", cOBieSheet.RowCount);
                     for (int i = 0; i < cOBieSheet.RowCount; i++)
                     {
+                        ProgressIndicator.IncrementAndUpdate();
                         COBieResourceRow row = cOBieSheet[i];
                         AddResource(row);
                     }
+                    ProgressIndicator.Finalise();
                     trans.Commit();
                 }
                 catch (Exception)

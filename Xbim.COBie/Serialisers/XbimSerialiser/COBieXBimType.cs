@@ -9,6 +9,7 @@ using Xbim.Ifc.MeasureResource;
 using Xbim.Ifc.PropertyResource;
 using Xbim.XbimExtensions;
 using System.Reflection;
+using Xbim.Ifc.MaterialResource;
 
 namespace Xbim.COBie.Serialisers.XbimSerialiser
 {
@@ -31,12 +32,21 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             {
                 try
                 {
+                    ProgressIndicator.ReportMessage("Starting Types...");
+                    ProgressIndicator.Initialise("Creating Types", cOBieSheet.RowCount);
                     for (int i = 0; i < cOBieSheet.RowCount; i++)
                     {
-                        COBieTypeRow row = cOBieSheet[i]; 
-                        AddType(row);
+                        ProgressIndicator.IncrementAndUpdate();
+                        COBieTypeRow row = cOBieSheet[i];
+                        if ((ValidateString(row.ExtObject)) &&
+                            (row.ExtObject.ToLower().Contains("ifcmaterial"))
+                            )
+                            AddMaterial(row);
+                        else
+                            AddType(row);
                     }
 
+                    ProgressIndicator.Finalise();
                     trans.Commit();
                 }
                 catch (Exception)
@@ -45,6 +55,29 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                     //TODO: Catch with logger?
                     throw;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Add the data to the Material object
+        /// </summary>
+        /// <param name="row">COBieTypeRow holding the data</param>
+        
+        private void AddMaterial(COBieTypeRow row)
+        { 
+            //we will skip over the IfcMaterialLayerSets and allow the assembly sheet to create them
+            if ((row.ExtObject.ToLower() == "ifcmaterial") &&
+                (ValidateString(row.Name))
+                )
+            {
+                double matThick = 0.0;
+                if ((ValidateString(row.NominalWidth)) &&
+                    (!double.TryParse(row.NominalWidth, out matThick))
+                    ) 
+                    matThick = 0.0;
+                
+                IfcMaterial ifcMaterial = Model.New<IfcMaterial>(m => { m.Name = row.Name; });
+                IfcMaterialLayer ifcMaterialLayer = Model.New<IfcMaterialLayer>(ml => { ml.Material = ifcMaterial; ml.LayerThickness = matThick; });
             }
         }
 

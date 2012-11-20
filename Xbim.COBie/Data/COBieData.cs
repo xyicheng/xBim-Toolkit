@@ -21,6 +21,10 @@ using Xbim.Ifc.StructuralElementsDomain;
 using Xbim.Ifc.SharedBldgServiceElements;
 using System.Globalization;
 using Xbim.COBie.Resources;
+using Xbim.Ifc.ApprovalResource;
+using Xbim.Ifc.ConstructionMgmtDomain;
+using System.Reflection;
+using Xbim.Ifc.MaterialResource;
 
 
 namespace Xbim.COBie.Data
@@ -103,16 +107,57 @@ namespace Xbim.COBie.Data
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
-        public string GetExternalSystem(IfcRoot item)
+        public string GetExternalSystem(IfcOwnerHistory ifcOwnerHistory)
         {
             string appName = "";
-            if(item.OwnerHistory.LastModifyingApplication != null)
-                appName = item.OwnerHistory.LastModifyingApplication.ApplicationFullName;
-            if ((string.IsNullOrEmpty(appName)) &&
-                (item.OwnerHistory.OwningApplication != null)
-                )
-                appName = item.OwnerHistory.OwningApplication.ApplicationFullName;
+
+            if (ifcOwnerHistory != null)
+            {
+                if (ifcOwnerHistory.LastModifyingApplication != null)
+                    appName = ifcOwnerHistory.LastModifyingApplication.ApplicationFullName;
+                if ((string.IsNullOrEmpty(appName)) &&
+                    (ifcOwnerHistory.OwningApplication != null)
+                    )
+                    appName = ifcOwnerHistory.OwningApplication.ApplicationFullName; 
+            }
+
             return string.IsNullOrEmpty(appName) ? DEFAULT_STRING : appName;
+        }
+
+        /// <summary>
+        /// Gets the name of the application that is linked with the supplied item
+        /// </summary>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        public string GetExternalSystem(IfcRoot item)
+        {
+            return GetExternalSystem(item.OwnerHistory);
+        }
+
+        /// <summary>
+        /// Get the IfcRelAssociatesMaterial object from the passed IfcMaterialLayerSet
+        /// </summary>
+        /// <param name="ifcMaterialLayerSet">IfcMaterialLayerSet object</param>
+        /// <returns>IfcOwnerHistory object or null if none found</returns>
+        protected IfcOwnerHistory GetMaterialOwnerHistory(IfcMaterialLayerSet ifcMaterialLayerSet)
+        {
+            IEnumerable<IfcRelAssociatesMaterial> ifcRelAssociatesMaterials = Model.InstancesOfType<IfcRelAssociatesMaterial>();
+            IfcMaterialLayerSetUsage ifcMaterialLayerSetUsage = Model.InstancesWhere<IfcMaterialLayerSetUsage>(mlsu => mlsu.ForLayerSet == ifcMaterialLayerSet).FirstOrDefault();
+
+            IfcRelAssociatesMaterial ifcRelAssociatesMaterial = null;
+            if (ifcMaterialLayerSetUsage != null)
+                ifcRelAssociatesMaterial = ifcRelAssociatesMaterials.Where(ram => ram.RelatingMaterial == ifcMaterialLayerSetUsage).FirstOrDefault();
+
+            if (ifcRelAssociatesMaterial == null)
+                ifcRelAssociatesMaterial = ifcRelAssociatesMaterials.Where(ram => ram.RelatingMaterial == ifcMaterialLayerSet).FirstOrDefault();
+
+            if (ifcRelAssociatesMaterial == null)
+                ifcRelAssociatesMaterial = ifcRelAssociatesMaterials.Where(ram => ifcMaterialLayerSet.MaterialLayers.Contains(ram.RelatingMaterial)).FirstOrDefault();
+
+            if (ifcRelAssociatesMaterial != null)
+                return ifcRelAssociatesMaterial.OwnerHistory;
+            else
+                return null;
         }
 
         /// <summary>
@@ -505,20 +550,37 @@ namespace Xbim.COBie.Data
         /// <summary>
         /// Determined the sheet the IfcRoot will have come from using the object type
         /// </summary>
-        /// <param name="ifcRoot">object which inherits from IfcRoot </param>
+        /// <param name="ifcItem">object which inherits from IfcRoot </param>
         /// <returns>string holding sheet name</returns>
-        public string GetSheetByObjectType(IfcRoot ifcRoot)
+        public string GetSheetByObjectType(Type ifcItem)
         {
+            
             string value = DEFAULT_STRING;
-            if (ifcRoot is IfcTypeObject) value = "Type";
-            else if (ifcRoot is IfcRelAggregates) value = "Component";
-            else if (ifcRoot is IfcRelContainedInSpatialStructure) value = "Component";
-            else if (ifcRoot is IfcElement) value = "Component";
+            if (ifcItem == typeof(IfcTypeObject)) value = Constants.WORKSHEET_TYPE;
+            else if (ifcItem.IsSubclassOf(typeof(IfcElement))) value = Constants.WORKSHEET_COMPONENT;
+            else if (ifcItem.IsSubclassOf(typeof(IfcProcess))) value = Constants.WORKSHEET_JOB;
+            else if (ifcItem.IsSubclassOf(typeof(IfcRelDecomposes))) value = Constants.WORKSHEET_ASSEMBLY;
+            else if (ifcItem.IsSubclassOf(typeof(IfcRelConnects))) value = Constants.WORKSHEET_CONNECTION;
+            else if (ifcItem == typeof(IfcDocumentInformation)) value = Constants.WORKSHEET_DOCUMENT;
+            else if (ifcItem == typeof(IfcOrganization)) value = Constants.WORKSHEET_CONTACT;
+            else if (ifcItem == typeof(IfcPerson)) value = Constants.WORKSHEET_CONTACT;
+            else if (ifcItem == typeof(IfcPersonAndOrganization)) value = Constants.WORKSHEET_CONTACT;
+            else if (ifcItem == typeof(IfcSite)) value = Constants.WORKSHEET_FACILITY;
+            else if (ifcItem == typeof(IfcBuilding)) value = Constants.WORKSHEET_FACILITY;
+            else if (ifcItem == typeof(IfcProject)) value = Constants.WORKSHEET_FACILITY;
+            else if (ifcItem == typeof(IfcBuildingStorey)) value = Constants.WORKSHEET_FLOOR;
+            else if (ifcItem == typeof(IfcApproval)) value = Constants.WORKSHEET_ISSUE;
+            else if (ifcItem == typeof(IfcConstructionEquipmentResource)) value = Constants.WORKSHEET_RESOURCE;
+            else if (ifcItem == typeof(IfcSpace)) value = Constants.WORKSHEET_SPACE;
+            else if (ifcItem == typeof(IfcConstructionProductResource)) value = Constants.WORKSHEET_SPARE;
+            else if (ifcItem == typeof(IfcGroup)) value = Constants.WORKSHEET_SYSTEM;
+            else if (ifcItem == typeof(IfcZone)) value = Constants.WORKSHEET_ZONE;
+            //Impact and attributes are off property sets so not here for now
             //more sheets as tests date becomes available
             return value;
         }
+
         
-       
         /// <summary>
         /// Get the associated Type for a IfcObject, so a Door can be of type "Door Type A"
         /// </summary>
@@ -642,7 +704,68 @@ namespace Xbim.COBie.Data
 
         }
 
-       
+        /// <summary>
+        /// Get the EnumerationValues from a IfcPropertyEnumeratedValue property
+        /// </summary>
+        /// <param name="ifcValues">IEnumerable of IfcValue</param>
+        /// <returns>delimited string of values</returns>
+        public static string GetEnumerationValues(IEnumerable<IfcValue> ifcValues)
+        {
+            List<string> EnumValues = new List<string>();
+            foreach (var item in ifcValues)
+            {
+                EnumValues.Add(item.Value.ToString());
+            }
+            return string.Join(" : ", EnumValues);
+        }
+
+        /// <summary>
+        /// Get the IfcPropertySingleValue value and unit associated with the value
+        /// </summary>
+        /// <param name="propertyList">List of IfcSimpleProperty</param>
+        /// <param name="name">property name we want to extract</param>
+        /// <returns></returns>
+        public Interval GetPropertyValue(List<IfcSimpleProperty> propertyList, string name)
+        {
+            Interval result = new Interval() { Value = DEFAULT_STRING, Unit = DEFAULT_STRING };
+            IfcPropertySingleValue ifcPSValue = propertyList.OfType<IfcPropertySingleValue>().Where(psv => psv.Name == name).FirstOrDefault();
+            if (ifcPSValue != null)
+            {
+                result.Value = (!string.IsNullOrEmpty(ifcPSValue.NominalValue.ToString())) ? ifcPSValue.NominalValue.Value.ToString() : DEFAULT_STRING;
+                result.Unit = (ifcPSValue.Unit != null) ? GetUnitName(ifcPSValue.Unit) : DEFAULT_STRING;
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Get the IfcPropertyEnumeratedValue value and unit associated with the value
+        /// </summary>
+        /// <param name="propertyList">List of IfcSimpleProperty</param>
+        /// <param name="name">property name we want to extract</param>
+        /// <returns></returns>
+        public Interval GetPropertyEnumValue(List<IfcSimpleProperty> propertyList, string name)
+        {
+            Interval result = new Interval() { Value = DEFAULT_STRING, Unit = DEFAULT_STRING };
+            IfcPropertyEnumeratedValue ifcPEValue = propertyList.OfType<IfcPropertyEnumeratedValue>().Where(psv => psv.Name == name).FirstOrDefault();
+            if (ifcPEValue != null)
+            {
+                if (ifcPEValue.EnumerationValues != null)
+                {
+                    result.Value = GetEnumerationValues(ifcPEValue.EnumerationValues);
+                }
+                //get  the unit and all possible values held in the Enumeration
+                if (ifcPEValue.EnumerationReference != null)
+                {
+                    if (ifcPEValue.EnumerationReference.Unit != null)
+                    {
+                        result.Unit = GetUnitName(ifcPEValue.EnumerationReference.Unit);
+                    }
+                    //string EnumValuesHeld = GetEnumerationValues(ifcPEValue.EnumerationReference.EnumerationValues);
+                }
+                
+            }
+            return result;
+        }
 
         #endregion
 

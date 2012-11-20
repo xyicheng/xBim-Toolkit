@@ -35,15 +35,18 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         public void SerialiseJob(COBieSheet<COBieJobRow> cOBieSheet)
         {
 
-            using (Transaction trans = Model.BeginTransaction("Add Resource"))
+            using (Transaction trans = Model.BeginTransaction("Add Job"))
             {
                 try
                 {
                     IfcTypeObjects = Model.InstancesOfType<IfcTypeObject>();
                     IfcConstructionEquipmentResources = Model.InstancesOfType<IfcConstructionEquipmentResource>();
 
+                    ProgressIndicator.ReportMessage("Starting Jobs...");
+                    ProgressIndicator.Initialise("Creating Jobs", (cOBieSheet.RowCount * 2));
                     for (int i = 0; i < cOBieSheet.RowCount; i++)
                     {
+                        ProgressIndicator.IncrementAndUpdate();
                         COBieJobRow row = cOBieSheet[i];
                         AddJob(row);
                     }
@@ -52,10 +55,12 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                     IfcTasks = Model.InstancesOfType<IfcTask>(); //get new tasks
                     for (int i = 0; i < cOBieSheet.RowCount; i++)
                     {
+                        ProgressIndicator.IncrementAndUpdate();
                         COBieJobRow row = cOBieSheet[i];
                         SetPriors(row);
                     }
-
+                    ProgressIndicator.Finalise();
+                    
                     trans.Commit();
                 }
                 catch (Exception)
@@ -97,7 +102,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 //Add Type Relationship
                 if (ValidateString(row.TypeName))
                 {
-                    List<string> typeNames = SplitString(row.TypeName);
+                    List<string> typeNames = SplitString(row.TypeName, ':');
                     IEnumerable<IfcTypeObject> ifcTypeObjects = IfcTypeObjects.Where(to => typeNames.Contains(to.Name.ToString().Trim()) );
                     SetRelAssignsToProcess(ifcTask, ifcTypeObjects);
                 }

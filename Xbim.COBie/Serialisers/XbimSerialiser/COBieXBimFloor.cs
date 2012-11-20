@@ -33,12 +33,16 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 try
                 {
 
+                    ProgressIndicator.ReportMessage("Starting Floors...");
+                    ProgressIndicator.Initialise("Creating Floors", cOBieSheet.RowCount);
                     for (int i = 0; i < cOBieSheet.RowCount; i++)
                     {
+                        ProgressIndicator.IncrementAndUpdate();
                         COBieFloorRow row = cOBieSheet[i]; 
                         AddBuildingStory(row);
                     }
 
+                    ProgressIndicator.Finalise();
                     trans.Commit();
 
                 }

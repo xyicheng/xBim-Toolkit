@@ -20,7 +20,7 @@ namespace Xbim.COBie
 	/// <summary>
 	/// Context for generating COBie data from one or more IFC models
 	/// </summary>
-	public class COBieContext : IDisposable
+    public class COBieContext : ICOBieContext 
 	{
 
         //Worksheet Global
@@ -136,5 +136,10 @@ namespace Xbim.COBie
         public string AreaUnit { get; set; }
         public string VolumeUnit { get; set; }
         public string MoneyUnit { get; set; }
+    }
+
+    public interface ICOBieContext : IDisposable
+    {
+        void UpdateStatus(string message, int total = 0, int current = 0);
     }
 }

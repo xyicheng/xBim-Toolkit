@@ -275,7 +275,7 @@ namespace Xbim.COBie.Data
                         string EnumValuesHeld = "";
                         if (ifcPropertyEnumeratedValue.EnumerationValues != null)
                         {
-                            value = GetEnumerationValues(ifcPropertyEnumeratedValue.EnumerationValues);
+                            value = COBieData<COBieAttributeRow>.GetEnumerationValues(ifcPropertyEnumeratedValue.EnumerationValues);
                         }
 
                         //get  the unit and all possible values held in the Enumeration
@@ -285,7 +285,7 @@ namespace Xbim.COBie.Data
                             {
                                 attribute.Unit = COBieData<COBieAttributeRow>.GetUnitName(ifcPropertyEnumeratedValue.EnumerationReference.Unit);
                             }
-                            EnumValuesHeld = GetEnumerationValues(ifcPropertyEnumeratedValue.EnumerationReference.EnumerationValues);
+                            EnumValuesHeld = COBieData<COBieAttributeRow>.GetEnumerationValues(ifcPropertyEnumeratedValue.EnumerationReference.EnumerationValues);
                             if (!string.IsNullOrEmpty(EnumValuesHeld)) attribute.AllowedValues = EnumValuesHeld;
                         }
                     }
@@ -335,7 +335,7 @@ namespace Xbim.COBie.Data
                     {
                         if (ifcPropertyListValue.ListValues != null)
                         {
-                            value = GetEnumerationValues(ifcPropertyListValue.ListValues);
+                            value = COBieData<COBieAttributeRow>.GetEnumerationValues(ifcPropertyListValue.ListValues);
                         }
 
                         //get  the unit and all possible values held in the Enumeration
@@ -417,15 +417,7 @@ namespace Xbim.COBie.Data
             return value;
         }
 
-        private string GetEnumerationValues(IEnumerable<IfcValue> ifcValues)
-        {
-            List<string> EnumValues = new List<string>();
-            foreach (var item in ifcValues)
-            {
-                EnumValues.Add(item.Value.ToString());
-            }
-            return string.Join(" : ", EnumValues);
-        }
+        
 
         /// <summary>
         /// Get the first related object properties, fall back to where the IfcTypeObject has no properties

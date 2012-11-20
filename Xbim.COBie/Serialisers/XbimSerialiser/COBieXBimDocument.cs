@@ -39,11 +39,15 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             {
                 try
                 {
+                    ProgressIndicator.ReportMessage("Starting Documents...");
+                    ProgressIndicator.Initialise("Creating Documents", cOBieSheet.RowCount);
                     for (int i = 0; i < cOBieSheet.RowCount; i++)
                     {
+                        ProgressIndicator.IncrementAndUpdate();
                         COBieDocumentRow row = cOBieSheet[i];
                         AddDocument(row);
                     }
+                    ProgressIndicator.Finalise();
                     trans.Commit();
                 }
                 catch (Exception)
@@ -115,8 +119,8 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             {
                 //get locations, assume we have the same number of locations and document names
                 List<string> strLocationValues = null;
-                if (ValidateString(row.Directory)) strLocationValues = SplitString(row.Directory);
-                List<string> strNameValues = SplitString(row.File);
+                if (ValidateString(row.Directory)) strLocationValues = SplitString(row.Directory, ':');
+                List<string> strNameValues = SplitString(row.File, ':');
                 //see if we have a location match to every document name
                 if ((strLocationValues != null) && (strNameValues.Count != strLocationValues.Count))
                 {

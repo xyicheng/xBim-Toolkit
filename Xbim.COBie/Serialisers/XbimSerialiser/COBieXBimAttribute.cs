@@ -43,16 +43,20 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         /// <param name="cOBieSheet">COBieSheet of COBieAttributeRow to read data from</param>
         public void SerialiseAttribute(COBieSheet<COBieAttributeRow> cOBieSheet)
         {
-            using (Transaction trans = Model.BeginTransaction("Add Type"))
+            using (Transaction trans = Model.BeginTransaction("Add Attribute"))
             {
                 try
                 {
                     var sortedRows =  cOBieSheet.Rows.OrderBy(r => r.SheetName).ThenBy(r => r.RowName);
+                    ProgressIndicator.ReportMessage("Starting Attributes...");
+                    ProgressIndicator.Initialise("Creating Attributes", cOBieSheet.RowCount);
                     foreach (COBieAttributeRow row in sortedRows)
                     {
+                        ProgressIndicator.IncrementAndUpdate();
                         AddAttribute(row);
                     }
-                    
+
+                    ProgressIndicator.Finalise();
                     trans.Commit();
                 }
                 catch (Exception)
@@ -184,24 +188,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             
         }
 
-        private IfcValue[] GetValueArray(string value)
-        {
-            char splitKey = ',';
-            if (value.Contains(":"))
-                splitKey = ':';
-            double number;
-            IfcValue[] ifcValues;
-            string[] strValues = value.Split(splitKey);
-            ifcValues = new IfcValue[strValues.Length];
-            for (int i = 0; i < strValues.Length; i++)
-            {
-                if (double.TryParse(strValues[i].Trim(), out number))
-                    ifcValues[i] = new IfcReal((double)number);
-                else
-                    ifcValues[i] = new IfcLabel(strValues[i].Trim());
-            }
-            return ifcValues;
-        }
+        
 
         /// <summary>
         /// Set Category to the property set

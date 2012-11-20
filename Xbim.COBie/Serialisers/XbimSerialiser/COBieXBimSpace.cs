@@ -35,12 +35,16 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 try
                 {
 
+                    ProgressIndicator.ReportMessage("Starting Spaces...");
+                    ProgressIndicator.Initialise("Creating Spaces", cOBieSheet.RowCount);
                     for (int i = 0; i < cOBieSheet.RowCount; i++)
                     {
+                        ProgressIndicator.IncrementAndUpdate();
                         COBieSpaceRow row = cOBieSheet[i]; 
                         AddSpace(row);
                     }
 
+                    ProgressIndicator.Finalise();
                     trans.Commit();
 
                 }

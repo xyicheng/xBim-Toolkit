@@ -36,9 +36,12 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
 
                 try
                 {
-                    
+
+                    ProgressIndicator.ReportMessage("Starting Systems...");
+                    ProgressIndicator.Initialise("Creating Systems", cOBieSheet.RowCount);
                     for (int i = 0; i < cOBieSheet.RowCount; i++)
                     {
+                        ProgressIndicator.IncrementAndUpdate();
                         COBieSystemRow row = cOBieSheet[i];
                         if (ValidateString(row.Name))
                         {
@@ -56,6 +59,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                         }
                     }
 
+                    ProgressIndicator.Finalise();                    
                     trans.Commit();
 
                 }

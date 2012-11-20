@@ -10,6 +10,7 @@ using Xbim.Ifc.UtilityResource;
 using Xbim.XbimExtensions;
 using Xbim.Ifc.Kernel;
 using Xbim.Ifc.MeasureResource;
+using Xbim.COBie.Serialisers.XbimSerialiser;
 
 namespace Xbim.COBie.Data
 {
@@ -167,8 +168,8 @@ namespace Xbim.COBie.Data
                                 if ((!string.IsNullOrEmpty(value)) && (!strNameValues.Contains(value))) strLocationValues.Add(value);
                             }
                             //set values to return
-                            if (strNameValues.Count > 0) DocInfo.Name = string.Join(" : ", strNameValues);
-                            if (strLocationValues.Count > 0) DocInfo.Location = string.Join(" : ", strLocationValues);
+                            if (strNameValues.Count > 0) DocInfo.Name = COBieXBim.JoinStrings(':', strNameValues);
+                            if (strLocationValues.Count > 0) DocInfo.Location = COBieXBim.JoinStrings(':', strLocationValues);
                             
                         }
                        
@@ -191,7 +192,7 @@ namespace Xbim.COBie.Data
                 IfcRoot relatedObject = ifcRelAssociatesDocument.RelatedObjects.FirstOrDefault();
                 if (relatedObject != null)
                 {
-                    string value = GetSheetByObjectType(relatedObject);
+                    string value = GetSheetByObjectType(relatedObject.GetType());
                     
                     if (!string.IsNullOrEmpty(value)) objectInfo.SheetName = value;
                     value = relatedObject.Name.ToString();

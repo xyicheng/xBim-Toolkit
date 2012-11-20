@@ -14,6 +14,7 @@ using Xbim.Ifc.UtilityResource;
 using Xbim.ModelGeometry.Scene;
 using Xbim.Ifc.Kernel;
 using Xbim.ModelGeometry;
+using Xbim.COBie.Serialisers.XbimSerialiser;
 
 namespace Xbim.Tests.COBie
 {
@@ -148,6 +149,30 @@ namespace Xbim.Tests.COBie
             //Assert.AreEqual(19, newBook.Count);
 
             // 19 workbooks. # rows in a selection.
+        }
+        [TestMethod]
+        public void Delimited_Strings()
+        {
+            string test1 = "This is split : here and , here and : again";
+            string test2 = "This is not split";
+            string test3 = "This is also not split";
+            string test4 = "This is split , here and , here and , again";
+            List<string> strList = new List<string>() { test1, test2, test3, test4 };
+
+            string delimited = COBieXBim.JoinStrings(':', strList);
+            List<string> delimitesStrings = COBieXBim.SplitString(delimited, ':');
+
+            Debug.WriteLine(string.Format("\"{0}\"", delimited));
+            Debug.WriteLine(string.Format("\"{0}\" \"{1}\"", test1, delimitesStrings[0]));
+            Debug.WriteLine(string.Format("\"{0}\" \"{1}\"", test2, delimitesStrings[1]));
+            Debug.WriteLine(string.Format("\"{0}\" \"{1}\"", test3, delimitesStrings[2]));
+            Debug.WriteLine(string.Format("\"{0}\" \"{1}\"", test4, delimitesStrings[3]));
+
+            Assert.AreEqual(test1, delimitesStrings[0]);
+            Assert.AreEqual(test2, delimitesStrings[1]);
+            Assert.AreEqual(test3, delimitesStrings[2]);
+            Assert.AreEqual(test4, delimitesStrings[3]);
+            
         }
         /// <summary>
         /// Create the xbimGC file

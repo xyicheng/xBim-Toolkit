@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using Xbim.COBie.Contracts;
 using Xbim.COBie.Rows;
@@ -12,7 +14,7 @@ using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Transactions;
 using Xbim.Ifc.ProductExtension;
 using Xbim.Ifc.UtilityResource;
-using System.Collections.Generic;
+using Xbim.XbimExtensions.Parser;
 
 namespace Xbim.COBie.Serialisers
 {
@@ -51,6 +53,16 @@ namespace Xbim.COBie.Serialisers
            
         }
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        public COBieXBimSerialiser(ReportProgressDelegate progressHandler) 
+        {
+            XBimContext = new COBieXBimContext(new XbimMemoryModel(), progressHandler);
+            _transaction = Model.BeginTransaction("COBieXBimSerialiser transaction");
+
+        }
+
 
         #region Methods
         /// <summary>
@@ -63,9 +75,9 @@ namespace Xbim.COBie.Serialisers
             XBimContext.Reset(); //clear out the dictionaries
             XBimContext.WorkBook = workbook;
             ModelSetUp();
-            
+
             COBieXBimContact xBimContact = new COBieXBimContact(XBimContext);
-            xBimContact.SetDefaultUser(); //needed to avoid an extra IfcPersonAndOrganization in contacts list
+            //xBimContact.SetDefaultUser(); //needed to avoid an extra IfcPersonAndOrganization in contacts list
             xBimContact.SerialiseContacts((COBieSheet<COBieContactRow>)WorkBook[Constants.WORKSHEET_CONTACT]);
 
             COBieXBimFacility xBimFacility = new COBieXBimFacility(XBimContext);
@@ -88,11 +100,13 @@ namespace Xbim.COBie.Serialisers
 
             COBieXBimSystem xBimSystem = new COBieXBimSystem(XBimContext);
             xBimSystem.SerialiseSystem((COBieSheet<COBieSystemRow>)WorkBook[Constants.WORKSHEET_SYSTEM]);
+
+            COBieXBimAssembly xBimAssembly = new COBieXBimAssembly(XBimContext);
+            xBimAssembly.SerialiseAssembly((COBieSheet<COBieAssemblyRow>)WorkBook[Constants.WORKSHEET_ASSEMBLY]);
+
+            COBieXBimConnection xBimConnection = new COBieXBimConnection(XBimContext);
+            xBimConnection.SerialiseConnection((COBieSheet<COBieConnectionRow>)WorkBook[Constants.WORKSHEET_CONNECTION]);
             
-            //TODO: Assembly Sheet
-
-            //TODO: Connection Sheet
-
             COBieXBimSpare xBimSpare = new COBieXBimSpare(XBimContext);
             xBimSpare.SerialiseSpare((COBieSheet<COBieSpareRow>)WorkBook[Constants.WORKSHEET_SPARE]);
 
@@ -102,7 +116,8 @@ namespace Xbim.COBie.Serialisers
             COBieXBimJob xBimJob = new COBieXBimJob(XBimContext);
             xBimJob.SerialiseJob((COBieSheet<COBieJobRow>)WorkBook[Constants.WORKSHEET_JOB]);
 
-            //TODO: Impact Sheet
+            COBieXBimImpact xBimImpact = new COBieXBimImpact(XBimContext);
+            xBimImpact.SerialiseImpact((COBieSheet<COBieImpactRow>)WorkBook[Constants.WORKSHEET_IMPACT]);
 
             COBieXBimDocument xBimDocument = new COBieXBimDocument(XBimContext);
             xBimDocument.SerialiseDocument((COBieSheet<COBieDocumentRow>)WorkBook[Constants.WORKSHEET_DOCUMENT]);
@@ -112,7 +127,10 @@ namespace Xbim.COBie.Serialisers
 
             COBieXBimCoordinate xBimCoordinate = new COBieXBimCoordinate(XBimContext);
             xBimCoordinate.SerialiseCoordinate((COBieSheet<COBieCoordinateRow>)WorkBook[Constants.WORKSHEET_COORDINATE]);
-            
+
+            COBieXBimIssue xBimIssue = new COBieXBimIssue(XBimContext);
+            xBimIssue.SerialiseIssue((COBieSheet<COBieIssueRow>)WorkBook[Constants.WORKSHEET_ISSUE]);
+
             _transaction.Commit();
             
         }
@@ -154,7 +172,7 @@ namespace Xbim.COBie.Serialisers
         {
             if (Model != null)
             {
-                //commit transaction of the xbim document
+                //commit transaction of the xBim document
                 if (_transaction != null)
                     _transaction.Commit();
 

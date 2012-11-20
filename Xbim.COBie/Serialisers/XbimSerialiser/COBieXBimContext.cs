@@ -8,15 +8,20 @@ using Xbim.Ifc.GeometryResource;
 using Xbim.Ifc.MeasureResource;
 using Xbim.Ifc.ProductExtension;
 using Xbim.Ifc.Kernel;
+using Xbim.XbimExtensions.Parser;
 
 namespace Xbim.COBie.Serialisers.XbimSerialiser
 {
-    public class COBieXBimContext
+    public class COBieXBimContext : ICOBieContext
     {
 
         #region Fields
         private IfcSIUnit _secondUnit;
         private IfcDimensionalExponents _dimensionalExponents;
+
+        private ReportProgressDelegate _progress = null;
+        public event ReportProgressDelegate ProgressStatus;
+        
         #endregion
 
         #region Properties
@@ -106,9 +111,11 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         }
         
         /// <summary>
-        /// World Coordinates Sytem for the Model
+        /// World Coordinates System for the Model
         /// </summary>
         public IfcAxis2Placement3D WCS { get;  private set; }
+
+
         #endregion
         
         
@@ -123,6 +130,17 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             Contacts = new Dictionary<string, IfcPersonAndOrganization>();
             WCS = Model.New<IfcAxis2Placement3D>();
         }
+
+        public COBieXBimContext(IModel model, ReportProgressDelegate progressHandler = null)
+            : this(model) 
+        {
+            if (progressHandler != null)
+            {
+                _progress = progressHandler;
+                this.ProgressStatus += progressHandler;
+            }
+        }
+
 
         public void Reset()
         {
@@ -260,5 +278,37 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 });
             }
         }
+
+
+        /// <summary>
+        /// Updates the delegates with the current percentage complete
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="total"></param>
+        /// <param name="current"></param>
+        public void UpdateStatus(string message, int total = 0, int current = 0)
+        {
+            decimal percent = 0;
+            if (total != 0 && current > 0)
+            {
+                message = string.Format("{0} [{1}/{2}]", message, current, total);
+                percent = (decimal)current / total * 100;
+            }
+            if (ProgressStatus != null)
+                ProgressStatus((int)percent, message);
+        }
+
+        /// <summary>
+        /// Dispose function
+        /// </summary>
+        public void Dispose()
+        {
+            if (_progress != null)
+            {
+                ProgressStatus -= _progress;
+                _progress = null;
+            }
+        }
+
     }
 }

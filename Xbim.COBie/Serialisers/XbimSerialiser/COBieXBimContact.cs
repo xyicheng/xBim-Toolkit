@@ -27,13 +27,19 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             {
                 try
                 {
+                    ProgressIndicator.ReportMessage("Starting Contacts...");
+                    ProgressIndicator.Initialise("Creating Contacts", cOBieSheet.RowCount);
                     for (int i = 0; i < cOBieSheet.RowCount; i++)
                     {
+                        ProgressIndicator.IncrementAndUpdate();
                         COBieContactRow row = cOBieSheet[i];
-
-                        CreatePersonAndOrganization(row);
+                        if(i == 0)
+                            CreatePersonAndOrganization(row, Model.DefaultOwningUser);
+                        else
+                            CreatePersonAndOrganization(row);
 
                     }
+                    ProgressIndicator.Finalise();
                     trans.Commit();
                 }
                 catch (Exception)
@@ -54,13 +60,14 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         }
 
 
-        public void CreatePersonAndOrganization(COBieContactRow row)
+        public void CreatePersonAndOrganization(COBieContactRow row, IfcPersonAndOrganization ifcPersonAndOrganization = null)
         {
             if (!Contacts.ContainsKey(row.Email))
             {
                 IfcPerson ifcPerson = Model.New<IfcPerson>();
                 IfcOrganization ifcOrganization = Model.New<IfcOrganization>();
-                IfcPersonAndOrganization ifcPersonAndOrganization = Model.New<IfcPersonAndOrganization>();
+                if (ifcPersonAndOrganization == null)
+                    ifcPersonAndOrganization = Model.New<IfcPersonAndOrganization>();
                 Contacts.Add(row.Email, ifcPersonAndOrganization); //build a list to reference for History objects
 
                 //add email
@@ -147,41 +154,41 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         /// <summary>
         /// set the default IfcPersonAndOrganization in the Model
         /// </summary>
-        public void SetDefaultUser()
-        {
-            using (Transaction trans = Model.BeginTransaction("Add Default User"))
-            {
-                try
-                {
-                    COBieSheet<COBieFacilityRow> facilityRow = (COBieSheet<COBieFacilityRow>)WorkBook[Constants.WORKSHEET_FACILITY];
-                    if (facilityRow.RowCount > 0)
-                    {
-                        COBieFacilityRow row = facilityRow[0]; //use first row supported on facility sheet
+        //public void SetDefaultUser()
+        //{
+        //    using (Transaction trans = Model.BeginTransaction("Add Default User"))
+        //    {
+        //        try
+        //        {
+        //            COBieSheet<COBieFacilityRow> facilityRow = (COBieSheet<COBieFacilityRow>)WorkBook[Constants.WORKSHEET_FACILITY];
+        //            if (facilityRow.RowCount > 0)
+        //            {
+        //                COBieFacilityRow row = facilityRow[0]; //use first row supported on facility sheet
 
-                        string defaultUser = "";
-                        if ((!string.IsNullOrEmpty(row.CreatedBy)) || (row.CreatedBy != Constants.DEFAULT_STRING)) defaultUser = row.CreatedBy;
-                        COBieSheet<COBieContactRow> contacts = (COBieSheet<COBieContactRow>)WorkBook[Constants.WORKSHEET_CONTACT];
-                        for (int i = 0; i < contacts.RowCount; i++)
-                        {
-                            if (contacts[i].CreatedBy == defaultUser)
-                                CreatePersonAndOrganization(contacts[i]);
-                        }
-                        //set the default values
-                        if (!string.IsNullOrEmpty(defaultUser))
-                        {
-                            Model.DefaultOwningUser.ThePerson = Contacts[row.CreatedBy].ThePerson;
-                            Model.DefaultOwningUser.TheOrganization = Contacts[row.CreatedBy].TheOrganization;
-                        }
-                    }
-                    trans.Commit();
-                }
-                catch (Exception)
-                {
-                    trans.Rollback();
-                    //TODO: Catch with logger?
-                    throw;
-                }
-            }
-        }
+        //                string defaultUser = "";
+        //                if ((!string.IsNullOrEmpty(row.CreatedBy)) || (row.CreatedBy != Constants.DEFAULT_STRING)) defaultUser = row.CreatedBy;
+        //                COBieSheet<COBieContactRow> contacts = (COBieSheet<COBieContactRow>)WorkBook[Constants.WORKSHEET_CONTACT];
+        //                for (int i = 0; i < contacts.RowCount; i++)
+        //                {
+        //                    if (contacts[i].CreatedBy == defaultUser)
+        //                        CreatePersonAndOrganization(contacts[i]);
+        //                }
+        //                //set the default values
+        //                if (!string.IsNullOrEmpty(defaultUser))
+        //                {
+        //                    Model.DefaultOwningUser.ThePerson = Contacts[row.CreatedBy].ThePerson;
+        //                    Model.DefaultOwningUser.TheOrganization = Contacts[row.CreatedBy].TheOrganization;
+        //                }
+        //            }
+        //            trans.Commit();
+        //        }
+        //        catch (Exception)
+        //        {
+        //            trans.Rollback();
+        //            //TODO: Catch with logger?
+        //            throw;
+        //        }
+        //    }
+        //}
     }
 }

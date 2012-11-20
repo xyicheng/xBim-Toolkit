@@ -13,11 +13,19 @@ using Xbim.Ifc.ExternalReferenceResource;
 using Xbim.Ifc.PropertyResource;
 using Xbim.Ifc.Extensions;
 using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc.ApprovalResource;
+using Xbim.Ifc.ConstructionMgmtDomain;
+using System.Reflection;
 
 namespace Xbim.COBie.Serialisers.XbimSerialiser
 {
     public class COBieXBim
     {
+
+        #region Fields
+        private COBieProgress _progressStatus;
+        #endregion
+
         #region Properties
         /// <summary>
         /// Context object holding Model, WorkBook etc...
@@ -54,11 +62,21 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         {
             get { return XBimContext.Contacts; }
         }
+
+        protected COBieProgress ProgressIndicator
+        {
+            get
+            {
+                return _progressStatus;
+            }
+        }
+
         #endregion
 
         public COBieXBim(COBieXBimContext xBimContext)
         {
             XBimContext = xBimContext;
+            _progressStatus = new COBieProgress(xBimContext);
         }
 
         #region Methods
@@ -91,7 +109,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                     stamp = IfcTimeStamp.ToTimeStamp(dateTime);
             }
             IfcOwnerHistory ifcOwnerHistory = Model.InstancesOfType<IfcOwnerHistory>().Where(oh => (oh.CreationDate == stamp) &&
-                                                                           (oh.OwningUser.EntityLabel == createdBy.EntityLabel) &&
+                                                                           (oh.OwningUser == createdBy) &&
                                                                            (((oh.OwningApplication != null) && (oh.OwningApplication.ApplicationFullName.ToString().ToLower() == externalSystem.ToLower()) )||
                                                                             ((oh.LastModifyingApplication != null) && (oh.LastModifyingApplication.ApplicationFullName.ToString().ToLower() == externalSystem.ToLower()))
                                                                            )
@@ -344,7 +362,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 ifcPropertySet = Model.New<IfcPropertySet>();
                 ifcPropertySet.Name = pSetName;
                 ifcPropertySet.Description = pSetDescription;
-                //set relationship
+                //add to type object property set list
                 ifcObject.AddPropertySet(ifcPropertySet);
             }
             return ifcPropertySet;
@@ -362,8 +380,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             IfcPropertySingleValue ifcPropertySingleValue = ifcPropertySet.HasProperties.Where<IfcPropertySingleValue>(p => p.Name == propertyName).FirstOrDefault();
             if (ifcPropertySingleValue == null)
             {
-                ifcPropertySingleValue = Model.New<IfcPropertySingleValue>(psv => { psv.Name = propertyName; psv.Description = propertyDescription;  psv.NominalValue = value; });
-                ifcPropertySet.HasProperties.Add_Reversible(ifcPropertySingleValue);
+                ifcPropertySingleValue = Model.New<IfcPropertySingleValue>(psv => { psv.Name = propertyName; psv.Description = propertyDescription;  });
             }
             ifcPropertySingleValue.NominalValue = value;
             ifcPropertySingleValue.Unit = unit;
@@ -420,6 +437,31 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             //add to property set
             ifcPropertySet.HasProperties.Add_Reversible(ifcPropertyEnumeratedValue);
             return ifcPropertyEnumeratedValue;
+        }
+
+        /// <summary>
+        /// create a IfcValue array from a delimited string, either "," or ":" delimited
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public IfcValue[] GetValueArray(string value)
+        {
+            char splitKey = ',';
+            if (value.Contains(":"))
+                splitKey = ':';
+            double number;
+            IfcValue[] ifcValues;
+            string[] strValues = value.Split(splitKey);
+            ifcValues = new IfcValue[strValues.Length];
+            for (int i = 0; i < strValues.Length; i++)
+            {
+                string str = strValues[i].Trim().Replace(" ", ""); //enumeration so remove spaces
+                if (double.TryParse(str, out number))
+                    ifcValues[i] = new IfcReal((double)number);
+                else
+                    ifcValues[i] = new IfcLabel(str);
+            }
+            return ifcValues;
         }
 
         /// <summary>
@@ -697,21 +739,162 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             return (returnUnit != null);
         }
 
+        
+
         /// <summary>
-        /// split strings on a ":"
+        /// Determined the sheet the IfcRoot will have come from using the object type
         /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        protected List<string> SplitString(string value)
+        /// <param name="ifcItem">object which inherits from IfcRoot </param>
+        /// <returns>string holding sheet name</returns>
+        public IfcRoot GetRootObject(string sheetName, string rowName)
         {
-            string[] values = value.Split(':');
-            for (int i = 0; i < values.Count(); i++)
+            rowName = rowName.ToLower().Trim();
+            switch (sheetName)
             {
-                values[i] = values[i].Trim();
+                case Constants.WORKSHEET_TYPE:
+                    return Model.InstancesWhere<IfcTypeObject>(obj => obj.Name.ToString().ToLower().Trim() == rowName).FirstOrDefault();
+                case Constants.WORKSHEET_COMPONENT:
+                    return Model.InstancesWhere<IfcElement>(obj => obj.Name.ToString().ToLower().Trim() == rowName).FirstOrDefault();
+                case Constants.WORKSHEET_JOB:
+                    return Model.InstancesWhere<IfcProcess>(obj => obj.Name.ToString().ToLower().Trim() == rowName).FirstOrDefault();
+                case Constants.WORKSHEET_ASSEMBLY:
+                    return Model.InstancesWhere<IfcRelDecomposes>(obj => obj.Name.ToString().ToLower().Trim() == rowName).FirstOrDefault();
+                case Constants.WORKSHEET_CONNECTION:
+                    return Model.InstancesWhere<IfcRelConnectsElements>(obj => obj.Name.ToString().ToLower().Trim() == rowName).FirstOrDefault();
+                case Constants.WORKSHEET_FACILITY:
+                    IfcRoot ifcRoot = Model.InstancesWhere<IfcSite>(obj => obj.Name.ToString().ToLower().Trim() == rowName).FirstOrDefault();
+                    if (ifcRoot == null)
+                        ifcRoot = Model.InstancesWhere<IfcBuilding>(obj => obj.Name.ToString().ToLower().Trim() == rowName).FirstOrDefault();
+                    if (ifcRoot == null)
+                        ifcRoot = Model.InstancesWhere<IfcProject>(obj => obj.Name.ToString().ToLower().Trim() == rowName).FirstOrDefault();
+	                return ifcRoot;
+                case Constants.WORKSHEET_RESOURCE:
+                    return Model.InstancesWhere<IfcConstructionEquipmentResource>(obj => obj.Name.ToString().ToLower().Trim() == rowName).FirstOrDefault();
+                case Constants.WORKSHEET_SPACE:
+                    return Model.InstancesWhere<IfcSpace>(obj => obj.Name.ToString().ToLower().Trim() == rowName).FirstOrDefault();
+                case Constants.WORKSHEET_SPARE:
+                    return Model.InstancesWhere<IfcConstructionProductResource>(obj => obj.Name.ToString().ToLower().Trim() == rowName).FirstOrDefault();
+                case Constants.WORKSHEET_SYSTEM:
+                    return Model.InstancesWhere<IfcGroup>(obj => obj.Name.ToString().ToLower().Trim() == rowName).FirstOrDefault();
+                case Constants.WORKSHEET_ZONE:
+                    return Model.InstancesWhere<IfcZone>(obj => obj.Name.ToString().ToLower().Trim() == rowName).FirstOrDefault();
+                default:
+                    return null;
+                    
             }
-            return values.ToList<string>();
         }
 
+        /// <summary>
+        /// Get the ActorSelect fro the given email
+        /// </summary>
+        /// <param name="email">string</param>
+        /// <returns>IfcActorSelect object</returns>
+        public IfcActorSelect GetActorSelect(string email)
+        {
+            IfcActorSelect ifcActorSelect = null;
+
+            ifcActorSelect = Model.InstancesWhere<IfcPersonAndOrganization>(po => GetEmail(po.TheOrganization, po.ThePerson).Contains(email)).FirstOrDefault();
+            if (ifcActorSelect == null)
+                ifcActorSelect = Model.InstancesWhere<IfcPerson>(po => GetEmail(null, po).Contains(email)).FirstOrDefault();
+            if (ifcActorSelect == null)
+                ifcActorSelect = Model.InstancesWhere<IfcOrganization>(po => GetEmail(po, null).Contains(email)).FirstOrDefault();
+           
+            return ifcActorSelect;
+        }
+
+        /// <summary>
+        /// Get email address from an IfcOrganization or IfcPerson
+        /// </summary>
+        /// <param name="ifcOrganization">IfcOrganization Object</param>
+        /// <param name="ifcPerson">IfcPerson Object</param>
+        /// <returns>IEnumerable<IfcLabel> of email addresses</returns>
+        public IEnumerable<IfcLabel> GetEmail(IfcOrganization ifcOrganization, IfcPerson ifcPerson)
+        {
+            IEnumerable<IfcLabel> emails = Enumerable.Empty<IfcLabel>();
+            if ((ifcPerson != null) && (ifcPerson.Addresses != null))
+            {
+                emails = ifcPerson.Addresses.TelecomAddresses.Select(address => address.ElectronicMailAddresses).Where(item => item != null).SelectMany(em => em).Where(em => !string.IsNullOrEmpty(em));
+            }
+            if ((emails == null) || (emails.Count() == 0))
+            {
+                if ((ifcOrganization != null) && (ifcOrganization.Addresses != null))
+                {
+                    emails = ifcOrganization.Addresses.TelecomAddresses.Select(address => address.ElectronicMailAddresses).Where(item => item != null).SelectMany(em => em).Where(em => !string.IsNullOrEmpty(em));
+                }
+            }
+            return emails;
+        }
+
+        /// <summary>
+        /// Join string list into a delimited string, but escape any character that is within an added string which is also the delimited character
+        /// </summary>
+        /// <param name="strings">list of strings</param>
+        /// <param name="splitChar">delimited character</param>
+        /// <returns></returns>
+        public static string JoinStrings (char splitChar, List<string> strings)
+        {
+            StringBuilder sb = new StringBuilder();
+            string split_Char = splitChar.ToString();
+            int i = 1;
+            foreach (string str in strings)
+            {
+                sb.Append(str.Replace(split_Char, "\\" + split_Char));
+                if (i < strings.Count)
+                {
+                    sb.Append(" ");//place space around delimiter
+                    sb.Append(splitChar);
+                    sb.Append(" ");
+                }
+                i++;
+            }
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// Split a string but also remove any escape characters used to preserve the delimited character within a string
+        /// </summary>
+        /// <param name="str">string to split</param>
+        /// <param name="splitChar">Delimited character to use</param>
+        /// <returns></returns>
+        public static List<string> SplitString(string str, char splitChar)
+        {
+            List<string> strings = new List<string>();
+            StringBuilder sb = new StringBuilder();
+            bool isEscaped = false;
+            foreach (char c in str)
+            {
+                if (c == '\\')
+                {
+                    isEscaped = true;
+                }
+                else if ((c == splitChar) && !isEscaped)
+                {
+                    strings.Add(sb.ToString().Trim());
+                    sb.Clear();
+                    isEscaped = false;
+                }
+                else
+                {
+                    sb.Append(c);
+                    isEscaped = false;
+                }
+            }
+            //pick up last string
+            if (sb.Length > 0)
+            {
+                strings.Add(sb.ToString().Trim());
+            }
+
+            return strings;
+        }
+
+        //public object GetIt(Type type)
+        //{
+        //    // Model.InstancesOfType<Ifc????>()
+        //    MethodInfo method = typeof(IModel).GetMethod("InstancesOfType");
+        //    MethodInfo generic = method.MakeGenericMethod(type);
+        //    return generic.Invoke(Model, null);
+        //}
         #endregion
 
     }

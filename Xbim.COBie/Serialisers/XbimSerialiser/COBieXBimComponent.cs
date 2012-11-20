@@ -30,7 +30,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         }
 
         #region Methods
-        // <summary>
+        /// <summary>
         /// Create and setup objects held in the Component COBieSheet
         /// </summary>
         /// <param name="cOBieSheet">COBieSheet of COBieComponentRow to read data from</param>
@@ -44,12 +44,16 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                     IfcTypeObjects = Model.InstancesOfType<IfcTypeObject>();
                     IfcSpaces = Model.InstancesOfType<IfcSpace>();
                     IfcBuildingStoreys = Model.InstancesOfType<IfcBuildingStorey>();
+                    ProgressIndicator.ReportMessage("Starting Components...");
+                    ProgressIndicator.Initialise("Creating Components", cOBieSheet.RowCount);
                     for (int i = 0; i < cOBieSheet.RowCount; i++)
                     {
+                        ProgressIndicator.IncrementAndUpdate();
                         COBieComponentRow row = cOBieSheet[i]; 
                         AddComponent(row);
                     }
 
+                    ProgressIndicator.Finalise();
                     trans.Commit();
 
                 }

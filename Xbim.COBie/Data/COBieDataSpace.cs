@@ -73,7 +73,7 @@ namespace Xbim.COBie.Data
 
                 space.Category = GetCategory(ifcSpace);
 
-                space.FloorName = ifcSpace.SpatialStructuralElementParent.Name.ToString();
+                space.FloorName = ((ifcSpace.SpatialStructuralElementParent != null) && (string.IsNullOrEmpty(ifcSpace.SpatialStructuralElementParent.Name))) ? ifcSpace.SpatialStructuralElementParent.Name.ToString() : DEFAULT_STRING;
                 space.Description = GetSpaceDescription(ifcSpace);
                 space.ExtSystem = GetExternalSystem(ifcSpace);
                 space.ExtObject = ifcSpace.GetType().Name;

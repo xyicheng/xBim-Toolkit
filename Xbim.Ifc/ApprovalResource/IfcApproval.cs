@@ -81,41 +81,9 @@ namespace Xbim.Ifc.ApprovalResource
         #region Ifc Properties
 
         /// <summary>
-        ///   A computer interpretable identifier by which the approval is known.
-        /// </summary>
-        [IfcAttribute(1, IfcAttributeState.Optional)]
-        public IfcIdentifier? Identifier
-        {
-            get
-            {
-#if SupportActivation
-                ((IPersistIfcEntity) this).Activate(false);
-#endif
-                return _identifier;
-            }
-            set { ModelManager.SetModelValue(this, ref _identifier, value, v => Identifier = v, "Identifier"); }
-        }
-
-        /// <summary>
-        ///   A human readable name given to an approval.
-        /// </summary>
-        [IfcAttribute(2, IfcAttributeState.Optional)]
-        public IfcLabel? Name
-        {
-            get
-            {
-#if SupportActivation
-                ((IPersistIfcEntity) this).Activate(false);
-#endif
-                return _name;
-            }
-            set { ModelManager.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
-        }
-
-        /// <summary>
         ///   A general textual description of a design, work task, plan, etc. that is being approved for.
         /// </summary>
-        [IfcAttribute(3, IfcAttributeState.Optional)]
+        [IfcAttribute(1, IfcAttributeState.Optional)]
         public IfcText? Description
         {
             get
@@ -127,11 +95,11 @@ namespace Xbim.Ifc.ApprovalResource
             }
             set { ModelManager.SetModelValue(this, ref _description, value, v => Description = v, "Description"); }
         }
-
+        
         /// <summary>
         ///   Date and time when the result of the approval process is produced.
         /// </summary>
-        [IfcAttribute(4, IfcAttributeState.Optional)]
+        [IfcAttribute(2, IfcAttributeState.Optional)]
         public IfcDateTimeSelect ApprovalDateTime
         {
             get
@@ -147,11 +115,12 @@ namespace Xbim.Ifc.ApprovalResource
                                            "ApprovalDateTime");
             }
         }
+        
 
         /// <summary>
         ///   The result or current status of the approval, e.g. Requested, Processed, Approved, Not Approved.
         /// </summary>
-        [IfcAttribute(5, IfcAttributeState.Optional)]
+        [IfcAttribute(3, IfcAttributeState.Optional)]
         public IfcLabel? ApprovalStatus
         {
             get
@@ -167,7 +136,7 @@ namespace Xbim.Ifc.ApprovalResource
         /// <summary>
         ///   Level of the approval e.g. Draft v.s. Completed design.
         /// </summary>
-        [IfcAttribute(6, IfcAttributeState.Optional)]
+        [IfcAttribute(4, IfcAttributeState.Optional)]
         public IfcLabel? ApprovalLevel
         {
             get
@@ -183,7 +152,7 @@ namespace Xbim.Ifc.ApprovalResource
         /// <summary>
         ///   Textual description of special constraints or conditions for the approval.
         /// </summary>
-        [IfcAttribute(7, IfcAttributeState.Optional)]
+        [IfcAttribute(5, IfcAttributeState.Optional)]
         public IfcText? ApprovalQualifier
         {
             get
@@ -198,6 +167,38 @@ namespace Xbim.Ifc.ApprovalResource
                 ModelManager.SetModelValue(this, ref _approvalQualifier, value, v => ApprovalQualifier = v,
                                            "ApprovalQualifier");
             }
+        }
+
+        /// <summary>
+        ///   A human readable name given to an approval.
+        /// </summary>
+        [IfcAttribute(6, IfcAttributeState.Optional)]
+        public IfcLabel? Name
+        {
+            get
+            {
+#if SupportActivation
+                ((IPersistIfcEntity) this).Activate(false);
+#endif
+                return _name;
+            }
+            set { ModelManager.SetModelValue(this, ref _name, value, v => Name = v, "Name"); }
+        }
+
+        /// <summary>
+        ///   A computer interpretable identifier by which the approval is known.
+        /// </summary>
+        [IfcAttribute(7, IfcAttributeState.Optional)]
+        public IfcIdentifier? Identifier
+        {
+            get
+            {
+#if SupportActivation
+                ((IPersistIfcEntity) this).Activate(false);
+#endif
+                return _identifier;
+            }
+            set { ModelManager.SetModelValue(this, ref _identifier, value, v => Identifier = v, "Identifier"); }
         }
 
         #endregion

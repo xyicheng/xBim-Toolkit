@@ -11,6 +11,7 @@ using Xbim.XbimExtensions;
 using Xbim.Ifc.PropertyResource;
 using Xbim.Ifc.MeasureResource;
 using Xbim.Ifc.SelectTypes;
+using Xbim.COBie.Serialisers.XbimSerialiser;
 
 namespace Xbim.COBie.Data
 {
@@ -178,7 +179,7 @@ namespace Xbim.COBie.Data
                             strList.Add(ifcTypeItem.Name.ToString());
                     }
                 }
-                return (strList.Count > 0) ? string.Join(" : ", strList) : DEFAULT_STRING;
+                return (strList.Count > 0) ? COBieXBim.JoinStrings(':', strList) : DEFAULT_STRING;
             }
 
 
@@ -201,9 +202,9 @@ namespace Xbim.COBie.Data
                                 strList.Add(ifcRelDefinesByType.RelatingType.Name.ToString());
                         }
                     }
-                    return (strList.Count > 0) ? string.Join(" : ", strList) : DEFAULT_STRING;
+                    return (strList.Count > 0) ? COBieXBim.JoinStrings(':', strList) : DEFAULT_STRING;
                 }
-                return (strList.Count > 0) ? string.Join(" : ", strList) : DEFAULT_STRING;
+                return (strList.Count > 0) ? COBieXBim.JoinStrings(':', strList) : DEFAULT_STRING;
             }
 
             return DEFAULT_STRING; //fail to get any types

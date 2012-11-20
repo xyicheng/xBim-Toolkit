@@ -84,9 +84,13 @@ namespace Xbim.COBie.Client
                     COBieWorkbook newbook = deSerialiser.Deserialise();
                     
                     LogBackground("Creating xBim objects...");
-                    COBieXBimSerialiser xBimSerialiser = new COBieXBimSerialiser();
+                    Stopwatch timer = new Stopwatch();
+                    timer.Start();
+                    COBieXBimSerialiser xBimSerialiser = new COBieXBimSerialiser(_worker.ReportProgress);
                     xBimSerialiser.Serialise(newbook);
-
+                    timer.Stop();
+                    LogBackground(String.Format("Time to generate XBim COBie data = {0} seconds", timer.Elapsed.TotalSeconds.ToString("F3")));
+                    
                     outputFile =  Path.GetFileNameWithoutExtension(parameters.ModelFile) + "COBieToIFC.ifc";
                     LogBackground(String.Format("Creating file {0}....", outputFile));
                     
@@ -123,7 +127,7 @@ namespace Xbim.COBie.Client
                     timer.Start();
                     COBieBuilder builder = new COBieBuilder(context);
                     timer.Stop();
-                    LogBackground(String.Format("Time to generate COBie data = {0}", timer.Elapsed.ToString()));
+                    LogBackground(String.Format("Time to generate COBie data = {0} seconds", timer.Elapsed.TotalSeconds.ToString("F3")));
                     
                     // Export
                     LogBackground(String.Format("Formatting as XLS using {0} template...", Path.GetFileName(parameters.TemplateFile)));

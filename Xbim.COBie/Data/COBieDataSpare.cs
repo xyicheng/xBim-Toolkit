@@ -9,6 +9,7 @@ using Xbim.Ifc.Kernel;
 using Xbim.Ifc.ExternalReferenceResource;
 using Xbim.Ifc.Extensions;
 using Xbim.Ifc.PropertyResource;
+using Xbim.COBie.Serialisers.XbimSerialiser;
 
 namespace Xbim.COBie.Data
 {
@@ -113,7 +114,7 @@ namespace Xbim.COBie.Data
                             strList.Add(ifcTypeItem.Name.ToString());
                     }
                 }
-                return (strList.Count > 0) ? string.Join(" : ", strList) : DEFAULT_STRING;
+                return (strList.Count > 0) ? COBieXBim.JoinStrings(':', strList) : DEFAULT_STRING;
             }
 
 
@@ -136,9 +137,9 @@ namespace Xbim.COBie.Data
                                 strList.Add(ifcRelDefinesByType.RelatingType.Name.ToString());
                         }
                     }
-                    return (strList.Count > 0) ? string.Join(" : ", strList) : DEFAULT_STRING;
+                    return (strList.Count > 0) ? COBieXBim.JoinStrings(':', strList) : DEFAULT_STRING;
                 }
-                return (strList.Count > 0) ? string.Join(" : ", strList) : DEFAULT_STRING;
+                return (strList.Count > 0) ? COBieXBim.JoinStrings(':', strList) : DEFAULT_STRING;
             }
 
             return DEFAULT_STRING; //fail to get any types

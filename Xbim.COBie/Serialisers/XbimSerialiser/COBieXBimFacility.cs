@@ -33,18 +33,26 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             {
                 try
                 {
-
+                    ProgressIndicator.ReportMessage("Starting Facility...");
+                    ProgressIndicator.Initialise("Creating Facility", 3);
+                    
                     //Assume we have only one site and one building to a project
                     COBieFacilityRow row = cOBieSheet[0];
-
+                    ProgressIndicator.IncrementAndUpdate();
                     SetUpProject(row);
+
+                    ProgressIndicator.IncrementAndUpdate();
                     CreateSite(row);
+
+                    ProgressIndicator.IncrementAndUpdate();
                     CreateBuilding(row);
+
                     //set up relationships
                     GetSite().AddBuilding(GetBuilding());
                     Model.IfcProject.AddBuilding(GetBuilding());
                     Model.IfcProject.AddSite(GetSite());
 
+                    ProgressIndicator.Finalise();
                    
 
                     trans.Commit();

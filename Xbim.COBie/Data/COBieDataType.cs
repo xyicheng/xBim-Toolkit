@@ -8,6 +8,8 @@ using Xbim.Ifc.Kernel;
 using Xbim.Ifc.MeasureResource;
 using Xbim.Ifc.PropertyResource;
 using Xbim.Ifc.SharedFacilitiesElements;
+using Xbim.Ifc.MaterialResource;
+using Xbim.Ifc.UtilityResource;
 
 namespace Xbim.COBie.Data
 {
@@ -94,6 +96,92 @@ namespace Xbim.COBie.Data
                 attributeBuilder.PopulateAttributesRows(type); //fill attribute sheet rows
                 
             }
+            //--------------Loop all IfcMaterialLayerSet-----------------------------
+            IEnumerable<IfcMaterialLayerSet> ifcMaterialLayerSets = Model.InstancesOfType<IfcMaterialLayerSet>();
+            ChildNamesList rowHolderChildNames = new ChildNamesList();
+            string createdBy = DEFAULT_STRING, createdOn = DEFAULT_STRING, extSystem = DEFAULT_STRING;
+
+            foreach (IfcMaterialLayerSet ifcMaterialLayerSet in ifcMaterialLayerSets)
+            {
+                
+                //Material layer has no owner history, so lets take the owner history from IfcRelAssociatesMaterial.RelatingMaterial -> (IfcMaterialLayerSetUsage.ForLayerSet -> IfcMaterialLayerSet) || IfcMaterialLayerSet || IfcMaterialLayer as it is a IfcMaterialSelect
+                IfcOwnerHistory ifcOwnerHistory = GetMaterialOwnerHistory(ifcMaterialLayerSet);
+                if (ifcOwnerHistory != null)
+                {
+                    createdBy = GetTelecomEmailAddress(ifcOwnerHistory);
+                    createdOn = GetCreatedOnDateAsFmtString(ifcOwnerHistory);
+                    extSystem = GetExternalSystem(ifcOwnerHistory);
+                }
+                else //default to the project as we failed to find a IfcRoot object to extract it from
+                {
+                    createdBy = GetTelecomEmailAddress(Model.IfcProject.OwnerHistory);
+                    createdOn = GetCreatedOnDateAsFmtString(Model.IfcProject.OwnerHistory);
+                    extSystem = GetExternalSystem(Model.IfcProject.OwnerHistory);
+                }
+                //add materialLayerSet name to rows
+                COBieTypeRow matSetRow = new COBieTypeRow(types);
+                matSetRow.Name = (string.IsNullOrEmpty(ifcMaterialLayerSet.Name)) ? DEFAULT_STRING : ifcMaterialLayerSet.Name;
+                matSetRow.CreatedBy = createdBy;
+                matSetRow.CreatedOn = createdOn;
+                matSetRow.ExtSystem = extSystem;
+                matSetRow.ExtObject = ifcMaterialLayerSet.GetType().Name;
+                matSetRow.AssetType = "Fixed";
+                types.AddRow(matSetRow);
+
+                //loop the materials within the material layer set
+                foreach (IfcMaterialLayer ifcMaterialLayer in ifcMaterialLayerSet.MaterialLayers)
+                {
+                    if (!string.IsNullOrEmpty(ifcMaterialLayer.Material.Name))
+                    {
+                        string name = ifcMaterialLayer.Material.Name.ToString().Trim();
+                        double thickness = ifcMaterialLayer.LayerThickness;
+
+                        if (!rowHolderChildNames.Contains(name.ToLower())) //check we do not already have it
+                        {
+                            COBieTypeRow matRow = new COBieTypeRow(types);
+                            
+                            matRow.Name = name;
+                            matRow.CreatedBy = createdBy; 
+                            matRow.CreatedOn = createdOn;
+                            matRow.ExtSystem = extSystem;
+                            matRow.ExtObject = ifcMaterialLayer.Material.GetType().Name;
+                            matRow.AssetType = "Fixed";
+                            matRow.NominalWidth = thickness.ToString();
+
+                            types.AddRow(matRow);
+                        }
+
+                        rowHolderChildNames.Add(name.ToLower());
+                    }
+                }
+            }
+            //--------Loop Materials in case they are not in a layer Set-----
+            IEnumerable<IfcMaterial> ifcMaterials = Model.InstancesOfType<IfcMaterial>();
+
+            foreach (IfcMaterial ifcMaterial in ifcMaterials)
+            {
+
+                string name = ifcMaterial.Name.ToString().Trim();
+                if (!string.IsNullOrEmpty(ifcMaterial.Name))
+                {
+                    if (!rowHolderChildNames.Contains(name.ToLower())) //check we do not already have it
+                    {
+                        COBieTypeRow matRow = new COBieTypeRow(types);
+                        
+                        matRow.Name = name;
+                        matRow.CreatedBy = createdBy; //no way of extraction on material, if no material layer set, so use last found in Layer Set loop
+                        matRow.CreatedOn = createdOn; //ditto
+                        matRow.ExtSystem = extSystem; //ditto
+                        matRow.ExtObject = ifcMaterial.GetType().Name;
+                        matRow.AssetType = "Fixed";
+
+                        types.AddRow(matRow);
+                    }
+
+                    rowHolderChildNames.Add(name.ToLower());
+                }
+            }
+
             ProgressIndicator.Finalise();
             return types;
         }

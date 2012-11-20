@@ -56,10 +56,10 @@ namespace Xbim.COBie.Serialisers
         }
 
         /// <summary>
-        /// Create the empty COBieSheet<COBieRow> to the correct type decided by sheetname
+        /// Create the empty COBieSheet<COBieRow> to the correct type decided by sheet name
         /// </summary>
         /// <param name="sheetname">Sheet name we want to create</param>
-        /// <returns>ICOBieSheet of COBieRow to the correct row type to match the sheetname</returns>
+        /// <returns>ICOBieSheet of COBieRow to the correct row type to match the sheet name</returns>
         private ICOBieSheet<COBieRow> GetSheetType(string sheetname)
         {
             switch (sheetname)
@@ -150,42 +150,57 @@ namespace Xbim.COBie.Serialisers
                             }
                             else
                             {
-                                COBieRow sheetRow = thisSheet.AddNewRow(); //add a new empty COBie row to the sheet
+                                bool addRow = false;
+                                //check we have some data on the row
                                 for (int i = 0; i < columnCount; i++)
                                 {
-                                    string cellValue = ""; //default value
                                     ICell cell = row.GetCell(i);
-                                    if (cell != null)
-                                        switch (cell.CellType) 
-                                        {
-                                            case CellType.STRING:
-                                                cellValue = cell.StringCellValue;
-                                                break;
-                                            case CellType.NUMERIC:
-                                                if (sheetRow[i].CobieCol.AllowedType == COBieAllowedType.ISODate) 
-                                                    cellValue = cell.DateCellValue.ToString(Constants.DATE_FORMAT);
-                                                else if (sheetRow[i].CobieCol.AllowedType == COBieAllowedType.ISODateTime)
-                                                    cellValue = cell.DateCellValue.ToString(Constants.DATETIME_FORMAT);
-                                                else
-                                                    cellValue = cell.NumericCellValue.ToString();
-                                                break;
-                                            case CellType.BOOLEAN:
-                                                cellValue = cell.BooleanCellValue.ToString();
-                                                break;
-                                            case CellType.ERROR:
-                                                cellValue = cell.ErrorCellValue.ToString();
-                                                break;
-                                            case CellType.BLANK:
-                                            case CellType.FORMULA:
-                                            case CellType.Unknown:
-                                                cellValue = cell.StringCellValue;
-                                                break;
-                                            default:
-                                                break;
-                                        }
+                                    if ((cell != null) && (cell.CellType != CellType.BLANK))
+                                    {
+                                        addRow = true;
+                                        break;
+                                    }
+                                }
+                                //add a none blank row
+                                if (addRow)
+                                {
+                                    COBieRow sheetRow = thisSheet.AddNewRow(); //add a new empty COBie row to the sheet
+                                    for (int i = 0; i < columnCount; i++)
+                                    {
+                                        string cellValue = ""; //default value
+                                        ICell cell = row.GetCell(i);
+                                        if (cell != null)
+                                            switch (cell.CellType)
+                                            {
+                                                case CellType.STRING:
+                                                    cellValue = cell.StringCellValue;
+                                                    break;
+                                                case CellType.NUMERIC:
+                                                    if (sheetRow[i].CobieCol.AllowedType == COBieAllowedType.ISODate)
+                                                        cellValue = cell.DateCellValue.ToString(Constants.DATE_FORMAT);
+                                                    else if (sheetRow[i].CobieCol.AllowedType == COBieAllowedType.ISODateTime)
+                                                        cellValue = cell.DateCellValue.ToString(Constants.DATETIME_FORMAT);
+                                                    else
+                                                        cellValue = cell.NumericCellValue.ToString();
+                                                    break;
+                                                case CellType.BOOLEAN:
+                                                    cellValue = cell.BooleanCellValue.ToString();
+                                                    break;
+                                                case CellType.ERROR:
+                                                    cellValue = cell.ErrorCellValue.ToString();
+                                                    break;
+                                                case CellType.BLANK:
+                                                case CellType.FORMULA:
+                                                case CellType.Unknown:
+                                                    cellValue = cell.StringCellValue;
+                                                    break;
+                                                default:
+                                                    break;
+                                            }
 
-                                    if (i < COBieColumnCount) //check we are in the column range of the COBieRow and add value
-                                        sheetRow[i] = new COBieCell(cellValue);
+                                        if (i < COBieColumnCount) //check we are in the column range of the COBieRow and add value
+                                            sheetRow[i] = new COBieCell(cellValue);
+                                    }
                                 }
                             }
                             rownumber++;
