@@ -140,7 +140,24 @@ namespace XbimRegression
 
             try
             {
-                GetXbimData(ifcFile, result);
+                if (exitCode >= 0) //don't try and read incomplete or corrupt files
+                    GetXbimData(ifcFile, result);
+                else //tidy up failed file
+                {
+                    // We're appending the xbim extension to avoid clashes between ifc, ifcxml and ifczips with the same leafname
+                    String xbimFile = BuildFileName(ifcFile, ".xbim");
+                    try
+                    {
+                        if (File.Exists(xbimFile))
+                            File.Delete(xbimFile);
+                    }
+                    catch (Exception)
+                    {
+                      
+                    }
+
+                }
+
             }
             catch (Exception e)
             {
@@ -154,7 +171,6 @@ namespace XbimRegression
         {
             // We're appending the xbim extension to avoid clashes between ifc, ifcxml and ifczips with the same leafname
             String xbimFile = BuildFileName(ifcFile, ".xbim");
-            String xbimGCFile = BuildFileName(ifcFile, ".xbimgc");
             if (!File.Exists(xbimFile))
                 return;
             XbimModel model=null;
