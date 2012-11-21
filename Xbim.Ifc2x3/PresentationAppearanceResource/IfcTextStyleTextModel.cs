@@ -23,7 +23,7 @@ using Xbim.XbimExtensions.Interfaces;
 namespace Xbim.Ifc2x3.PresentationAppearanceResource
 {
     [IfcPersistedEntityAttribute, Serializable]
-    public class IfcTextStyleTextModel : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
+    public class IfcTextStyleTextModel : IfcTextStyleSelect, INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                          INotifyPropertyChanging
     {
         public override bool Equals(object obj)

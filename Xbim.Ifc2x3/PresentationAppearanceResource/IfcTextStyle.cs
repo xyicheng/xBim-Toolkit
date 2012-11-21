@@ -48,14 +48,14 @@ namespace Xbim.Ifc2x3.PresentationAppearanceResource
         }
 
         [IfcAttribute(3, IfcAttributeState.Optional)]
-        public IfcTextStyleSelect TextStyleVal
+        public IfcTextStyleSelect TextStyle
         {
             get
             {
                 ((IPersistIfcEntity) this).Activate(false);
                 return _textStyle;
             }
-            set { this.SetModelValue(this, ref _textStyle, value, v => TextStyleVal = v, "TextStyleVal"); }
+            set { this.SetModelValue(this, ref _textStyle, value, v => TextStyle = v, "TextStyle"); }
         }
 
         [IfcAttribute(4, IfcAttributeState.Optional)]

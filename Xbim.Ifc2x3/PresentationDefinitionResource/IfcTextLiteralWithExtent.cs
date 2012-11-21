@@ -30,6 +30,30 @@ namespace Xbim.Ifc2x3.PresentationDefinitionResource
 
         #endregion
 
+        [IfcAttribute(4, IfcAttributeState.Mandatory)]
+        public IfcPlanarExtent Extent
+        {
+            get
+            {
+                ((IPersistIfcEntity)this).Activate(false);
+                return _extent;
+            }
+            set { this.SetModelValue(this, ref _extent, value, v => Extent = v, "Extent"); }
+        }
+
+        /// <summary>
+        ///   The writing direction of the text literal.
+        /// </summary>
+        [IfcAttribute(5, IfcAttributeState.Mandatory)]
+        public IfcBoxAlignment BoxAlignment
+        {
+            get
+            {
+                ((IPersistIfcEntity)this).Activate(false);
+                return _boxAlignment;
+            }
+            set { this.SetModelValue(this, ref _boxAlignment, value, v => BoxAlignment = v, "BoxAlignment"); }
+        }
         public override void IfcParse(int propIndex, IPropertyValue value)
         {
             switch (propIndex)

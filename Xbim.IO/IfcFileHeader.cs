@@ -215,8 +215,8 @@ namespace Xbim.IO
 
         internal void Write(BinaryWriter binaryWriter)
         {
-            binaryWriter.Write(Name);
-            binaryWriter.Write(TimeStamp);
+            binaryWriter.Write(Name??"");
+            binaryWriter.Write(TimeStamp??"");
             binaryWriter.Write(AuthorName.Count);
             foreach (string item in AuthorName)
                 binaryWriter.Write(item);

@@ -415,10 +415,10 @@ namespace Xbim.IO
                                 {
                                     using (var transaction = table.BeginLazyTransaction())
                                     {
-                                        XmlReaderSettings settings = new XmlReaderSettings() { IgnoreComments = true, IgnoreWhitespace = false };
+                                       // XmlReaderSettings settings = new XmlReaderSettings() { IgnoreComments = true, IgnoreWhitespace = false };
                                         using (Stream xmlInStream = zipFile.GetInputStream(entry))
                                         {
-                                            using (XmlReader xmlReader = XmlReader.Create(xmlInStream, settings))
+                                            using (XmlTextReader xmlReader = new XmlTextReader(xmlInStream))
                                             {
                                                 IfcXmlReader reader = new IfcXmlReader();
                                                 _model.Header = reader.Read(this, table, xmlReader);
@@ -536,7 +536,7 @@ namespace Xbim.IO
             jetInstance.Parameters.LogFileSize = 1024;    // 1MB logs
             jetInstance.Parameters.LogBuffers = 1024;     // buffers = 1/2 of logfile
             jetInstance.Parameters.MaxTemporaryTables = 20;
-            jetInstance.Parameters.MaxVerPages = 1024;
+            jetInstance.Parameters.MaxVerPages = 2048;
             jetInstance.Parameters.NoInformationEvent = true;
             jetInstance.Parameters.WaypointLatency = 1;
             jetInstance.Parameters.MaxSessions = 256;
@@ -563,10 +563,10 @@ namespace Xbim.IO
             {
                 using (var transaction = table.BeginLazyTransaction())
                 {
-                    XmlReaderSettings settings = new XmlReaderSettings() { IgnoreComments = true, IgnoreWhitespace = false };
+                    //XmlReaderSettings settings = new XmlReaderSettings() { IgnoreComments = true, IgnoreWhitespace = false };
                     using (Stream xmlInStream = new FileStream(xmlFilename, FileMode.Open, FileAccess.Read))
                     {
-                        using (XmlReader xmlReader = XmlReader.Create(xmlInStream, settings))
+                        using (XmlTextReader xmlReader = new XmlTextReader(xmlInStream))
                         {
                             IfcXmlReader reader = new IfcXmlReader();
                             _model.Header = reader.Read(this, table, xmlReader);
@@ -583,7 +583,7 @@ namespace Xbim.IO
                 FreeTable(table);
                 Close();
                 File.Delete(xbimDbName);
-                throw new XbimException("Error importing IfcXml File " + xmlFilename, e);
+                throw new Exception("Error importing IfcXml File " + xmlFilename, e);
             }
         }
 

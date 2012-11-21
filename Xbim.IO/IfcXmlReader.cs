@@ -28,6 +28,7 @@ using System.Windows.Markup;
 using Xbim.XbimExtensions;
 using Xbim.IO.Parser;
 using Microsoft.Isam.Esent.Interop;
+using Xbim.Common.Exceptions;
 
 #endregion
 
@@ -43,15 +44,15 @@ namespace Xbim.IO
         static IfcXmlReader()
         {
             primitives = new Dictionary<string, IfcParserType>();
-            primitives.Add("ex:double-wrapper", IfcParserType.Real);
-            primitives.Add("ex:long-wrapper", IfcParserType.Integer);
-            primitives.Add("ex:string-wrapper", IfcParserType.String);
-            primitives.Add("ex:integer-wrapper", IfcParserType.Integer);
-            primitives.Add("ex:boolean-wrapper", IfcParserType.Boolean);
-            primitives.Add("ex:logical-wrapper", IfcParserType.Boolean);
-            primitives.Add("ex:decimal-wrapper", IfcParserType.Real);
-            primitives.Add("ex:hexBinary-wrapper", IfcParserType.HexaDecimal);
-            primitives.Add("ex:base64Binary-wrapper", IfcParserType.Entity);
+            primitives.Add("double-wrapper", IfcParserType.Real);
+            primitives.Add("long-wrapper", IfcParserType.Integer);
+            primitives.Add("string-wrapper", IfcParserType.String);
+            primitives.Add("integer-wrapper", IfcParserType.Integer);
+            primitives.Add("boolean-wrapper", IfcParserType.Boolean);
+            primitives.Add("logical-wrapper", IfcParserType.Boolean);
+            primitives.Add("decimal-wrapper", IfcParserType.Real);
+            primitives.Add("hexBinary-wrapper", IfcParserType.HexaDecimal);
+            primitives.Add("base64Binary-wrapper", IfcParserType.Entity);
             primitives.Add(typeof(double).Name, IfcParserType.Real);
             primitives.Add(typeof(long).Name, IfcParserType.Integer);
             primitives.Add(typeof(string).Name, IfcParserType.String);
@@ -138,6 +139,8 @@ namespace Xbim.IO
 
             public void SetValue(string val, IfcParserType parserType)
             {
+                if (parserType == IfcParserType.Boolean && string.Compare(val, "unknown", true) == 0) //do nothing with IfcLogicals that are undefined
+                    return;
                 PropertyValue propVal = new PropertyValue();
                 propVal.Init(val, parserType);
                 ((XmlEntity)Parent).Entity.IfcParse(PropertyIndex - 1, propVal);
@@ -220,10 +223,12 @@ namespace Xbim.IO
 
         private XmlNode _currentNode;
         private int _entitiesParsed = 0;
+        private string _expressNamespace;
+        private string _cTypeAttribute;
 
         private void StartElement(IfcPersistedInstanceCache cache, XmlReader input, XbimEntityCursor entityTable, XbimLazyDBTransaction transaction)
         {
-            string elementName = input.Name;
+            string elementName = input.LocalName;
             bool isRefType;
             int id = GetId(input, out isRefType);
 
@@ -348,7 +353,7 @@ namespace Xbim.IO
             else if (id == -1 && IsIfcProperty(elementName, out propIndex, out prop)) //we have an element which is a property
             {
 
-                string cType = input.GetAttribute("ex:cType");
+                string cType = input.GetAttribute(_cTypeAttribute);
 
                 if (!string.IsNullOrEmpty(cType) && IsCollection(prop)) //the property is a collection
                 {
@@ -542,7 +547,7 @@ namespace Xbim.IO
                         {
                             //propNode.SetValue(expressNode);
                             IfcType ifcType;
-                            if (IsIfcType(input.Name, out ifcType))
+                            if (IsIfcType(input.LocalName, out ifcType))
                             //we have an IPersistIfc
                             {
                                 IPersistIfc ent;
@@ -568,7 +573,7 @@ namespace Xbim.IO
                 }
 
 
-                else if (prevInputType == XmlNodeType.Element && prevInputName == input.Name &&
+                else if (prevInputType == XmlNodeType.Element && prevInputName == input.LocalName &&
                     _currentNode is XmlProperty && _currentNode.Parent != null && _currentNode.Parent is XmlEntity)
                 {
                     // WE SHOULDNT EXECUTE THE FOLLOWING CODE IF THIS PROPERTY ALREADY CALLED SETVALUE
@@ -684,7 +689,7 @@ namespace Xbim.IO
             }
             catch (Exception e)
             {
-                throw new Exception("Error reading IfcXML data at node " + input.Name, e);
+                throw new Exception("Error reading IfcXML data at node " + input.LocalName, e);
             }
         }
 
@@ -759,7 +764,10 @@ namespace Xbim.IO
                             else if (parserType != IfcParserType.Undefined && !string.IsNullOrWhiteSpace(input.Value))
                             {
                                 if (parserType == IfcParserType.Boolean)
-                                    propVal.Init(Convert.ToBoolean(input.Value) ? ".T." : ".F.", parserType);
+                                {
+                                    if(string.Compare(input.Value, "unknown", true) != 0) //do nothing with IfcLogicals that are undefined
+                                        propVal.Init(Convert.ToBoolean(input.Value) ? ".T." : ".F.", parserType);
+                                }
                                 else
                                     propVal.Init(input.Value, parserType);
 
@@ -775,19 +783,19 @@ namespace Xbim.IO
             }
             catch (Exception e)
             {
-                throw new Exception("Error reading IfcXML data at node " + input.Name, e);
+                throw new Exception("Error reading IfcXML data at node " + input.LocalName, e);
             }
         }
 
 
 
-        internal IfcFileHeader Read(IfcPersistedInstanceCache instanceCache, XbimEntityCursor entityTable,  XmlReader input)
+        internal IfcFileHeader Read(IfcPersistedInstanceCache instanceCache, XbimEntityCursor entityTable,  XmlTextReader input)
         {
            
             // Read until end of file
 
             _entitiesParsed = 0;
-
+            bool foundHeader = false;
             IfcFileHeader header = new IfcFileHeader();
             string headerId="";
             while (_currentNode == null && input.Read()) //read through to UOS
@@ -795,36 +803,53 @@ namespace Xbim.IO
                 switch (input.NodeType)
                 {
                     case XmlNodeType.Element:
-                        if (string.Compare(input.Name, "uos", true) == 0)
+                        if (string.Compare(input.LocalName, "uos", true) == 0)
+                        {
                             _currentNode = new XmlUosCollection();
+                           
+                        }
+                        else if (string.Compare(input.LocalName, "iso_10303_28", true) == 0)
+                        {
+                            foundHeader = true;
+                            if (!string.IsNullOrWhiteSpace(input.Prefix))
+                            {
+                                _expressNamespace = input.Prefix;
+                                _cTypeAttribute = _expressNamespace + ":cType";
+                            }
+                            else
+                               _cTypeAttribute = "cType";
+                                
+                        }
                         else
-                            headerId = input.Name.ToLower();
+                        {
+                            headerId = input.LocalName.ToLower();
+                        }
                         break;
                     case XmlNodeType.Text:
                         switch (headerId)
                         {
-                            case "ex:name":
+                            case "name":
                                 header.FileName.Name = input.Value;
                                 break;
-                            case "ex:time_stamp":
+                            case "time_stamp":
                                 header.FileName.TimeStamp= input.Value;
                                 break;
-                            case "ex:author":
+                            case "author":
                                 header.FileName.AuthorName.Add(input.Value);
                                 break;
-                            case "ex:organization":
+                            case "organization":
                                 header.FileName.Organization.Add(input.Value);
                                 break;
-                            case "ex:preprocessor_version":
+                            case "preprocessor_version":
                                 header.FileName.PreprocessorVersion = input.Value;
                                 break;
-                            case "ex:originating_system":
+                            case "originating_system":
                                 header.FileName.OriginatingSystem = input.Value;
                                 break;
-                            case "ex:authorization":
+                            case "authorization":
                                 header.FileName.AuthorizationName = input.Value;
                                 break;
-                            case "ex:documentation":
+                            case "documentation":
                                 header.FileDescription.Description.Add(input.Value);
                                 break;
                             default:
@@ -836,7 +861,8 @@ namespace Xbim.IO
                 }
                
             }
-
+            if (!foundHeader)
+                throw new Exception("Invalid XML format, iso_10303_28 tag not found");
             XmlNodeType prevInputType = XmlNodeType.None;
             string prevInputName = "";
 
@@ -885,14 +911,14 @@ namespace Xbim.IO
                                 break;
                         }
                         prevInputType = input.NodeType;
-                        prevInputName = input.Name;
+                        prevInputName = input.LocalName;
                     }
                     transaction.Commit();
                 }
             }
-            finally
+            catch(Exception e)
             {
-                
+                throw new Exception(String.Format("Error reading XML, Line={0}, Position={1}, Tag='{2}'", input.LineNumber, input.LinePosition, input.LocalName), e);
             }
             return header;
         }
