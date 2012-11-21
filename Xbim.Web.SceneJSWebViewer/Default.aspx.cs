@@ -22,6 +22,7 @@ using Xbim.Ifc.SharedBldgElements;
 using Xbim.Ifc.SelectTypes;
 using Xbim.Ifc.MeasureResource;
 using Xbim.ModelGeometry;
+using System.Text;
 
 namespace Xbim.SceneJSWebViewer
 {
@@ -254,8 +255,12 @@ namespace Xbim.SceneJSWebViewer
                 // create ifc file
                 //model.Export(XbimStorageType.IFC, ifcFile);
 
+                model.Export(XbimStorageType.IFC, Path.ChangeExtension(file, "ifc"));
+                
                 model.Close();
                 model.Dispose();
+
+                //result = result.Replace("\"", "inches");
 
                 return result;
             }
@@ -266,7 +271,7 @@ namespace Xbim.SceneJSWebViewer
             
         }
 
-
+        
 
 
 

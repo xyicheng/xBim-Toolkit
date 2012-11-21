@@ -100,7 +100,7 @@ function GrabNextGeoPiece() {
     {
         connection.send(JSON.stringify({ "command": CommandCode.Metadata, "ModelID": ModelID}));
         if (failedpieces > 0) {
-            alert("Model finished loading. " + failedpieces + " products have no geometry to display");
+            //alert("Model finished loading. " + failedpieces + " products have no geometry to display");
         }
         addClassification(ModelID);
     } else {

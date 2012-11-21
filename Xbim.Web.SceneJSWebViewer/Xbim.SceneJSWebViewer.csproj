@@ -198,10 +198,22 @@
     <Content Include="Content\themes\base\minified\jquery.ui.slider.min.css" />
     <Content Include="Content\themes\base\minified\jquery.ui.tabs.min.css" />
     <Content Include="Content\themes\base\minified\jquery.ui.theme.min.css" />
+    <Content Include="model01.aspx" />
+    <Content Include="model02.aspx" />
+    <Content Include="model03.aspx" />
+    <Content Include="model04.aspx" />
+    <Content Include="model05.aspx" />
+    <Content Include="model06.aspx" />
+    <Content Include="MultiFiles.aspx" />
     <Content Include="Readme.txt" />
     <Content Include="Scripts\ajaxfileupload.js" />
     <Content Include="Scripts\basescenedefinition.js" />
     <Content Include="Scripts\camera.js" />
+    <Content Include="Scripts\model04.js" />
+    <Content Include="Scripts\model05.js" />
+    <Content Include="Scripts\model06.js" />
+    <Content Include="Scripts\model03.js" />
+    <Content Include="Scripts\model02.js" />
     <Content Include="Scripts\icim-app-init.js" />
     <Content Include="Scripts\icim-console.js" />
     <Content Include="Scripts\icim-elementTypePanel.js" />
@@ -221,13 +233,16 @@
     <Content Include="Scripts\jquery.viewport.mini.js" />
     <Content Include="Scripts\key_status.js" />
     <Content Include="Scripts\menus.js" />
+    <Content Include="Scripts\model01.js" />
     <Content Include="Scripts\modelbuilder.js" />
     <Content Include="Scripts\modelstreamer.js" />
+    <Content Include="Scripts\multifiles.js" />
     <Content Include="Scripts\orbit.js" />
     <Content Include="Scripts\quaternion.js" />
     <Content Include="Scripts\scenejs.js" />
     <Content Include="Scripts\viewer-mesh.js" />
     <Content Include="Scripts\viewer.js" />
+    <Content Include="Scripts\xbim3dviewer.js" />
     <Content Include="Styles\icons.gif" />
     <Content Include="Styles\loading.gif" />
     <Content Include="Styles\modelloading.gif" />
@@ -236,7 +251,9 @@
     <Content Include="Global.asax" />
     <Content Include="Styles\ui.dynatree.css" />
     <Content Include="Styles\vline.gif" />
-    <Content Include="Web.config" />
+    <Content Include="Web.config">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </Content>
@@ -311,7 +328,56 @@
     </Compile>
     <Compile Include="IModelStream.cs" />
     <Compile Include="Material.cs" />
+    <Compile Include="model01.aspx.cs">
+      <DependentUpon>model01.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="model01.aspx.designer.cs">
+      <DependentUpon>model01.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="model02.aspx.cs">
+      <DependentUpon>model02.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="model02.aspx.designer.cs">
+      <DependentUpon>model02.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="model03.aspx.cs">
+      <DependentUpon>model03.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="model03.aspx.designer.cs">
+      <DependentUpon>model03.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="model04.aspx.cs">
+      <DependentUpon>model04.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="model04.aspx.designer.cs">
+      <DependentUpon>model04.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="model05.aspx.cs">
+      <DependentUpon>model05.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="model05.aspx.designer.cs">
+      <DependentUpon>model05.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="model06.aspx.cs">
+      <DependentUpon>model06.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="model06.aspx.designer.cs">
+      <DependentUpon>model06.aspx</DependentUpon>
+    </Compile>
     <Compile Include="ModelStreamer.cs" />
+    <Compile Include="MultiFiles.aspx.cs">
+      <DependentUpon>MultiFiles.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="MultiFiles.aspx.designer.cs">
+      <DependentUpon>MultiFiles.aspx</DependentUpon>
+    </Compile>
     <Compile Include="ObjectDataProviders\SimpleBuildingElementType.cs" />
     <Compile Include="ObjectDataProviders\SimpleGroup.cs" />
     <Compile Include="ObjectDataProviders\SimpleGroupHierarchyEnumerable.cs" />
