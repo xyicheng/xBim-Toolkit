@@ -457,19 +457,17 @@ namespace Xbim
 				profile = XbimFaceBound::Build((IfcRectangleProfileDef^)repItem->SweptArea, hasCurves);	
 			else if(dynamic_cast<IfcCircleProfileDef^>(repItem->SweptArea))
 				profile = XbimFaceBound::Build((IfcCircleProfileDef^)repItem->SweptArea, hasCurves);	
-			else if(dynamic_cast<IfcCurve^>(repItem->SweptArea))
-				profile = XbimFaceBound::Build((IfcCurve^)repItem->SweptArea, hasCurves);	
 			else
 			{
 				Type ^ type = repItem->SweptArea->GetType();
 				Logger->WarnFormat(String::Format("XbimSolid. Could not BuildShape of type {0}. It is not implemented",type->Name));
 				return TopoDS_Solid();
 			}
-			profile.Move(XbimGeomPrim::ToLocation(repItem->Position));
+						//profile.Move(XbimGeomPrim::ToLocation(repItem->Position));
 			TopoDS_Wire sweep = XbimFaceBound::Build(repItem->Directrix, hasCurves);
-
+			
 			BRepOffsetAPI_MakePipeShell pipeMaker(sweep);
-			pipeMaker.Add(profile);
+			pipeMaker.Add(profile,Standard_False, Standard_True);
 			if(dynamic_cast<IfcPlane^>(repItem->ReferenceSurface))
 			{
 				IfcPlane^ ifcPlane = (IfcPlane^)repItem->ReferenceSurface;
@@ -477,10 +475,19 @@ namespace Xbim
 				pipeMaker.SetMode(ax3.Direction());
 			}
 			else
+			{
 				Logger->WarnFormat( "Entity #" + repItem->EntityLabel.ToString() + ", IfcSurfaceCurveSweptAreaSolid has a Non-Planar surface");
+				pipeMaker.SetMode(Standard_False); //use auto calculation of tangent and binormal
+			}
+			
+			pipeMaker.SetTransitionMode(BRepBuilderAPI_RightCorner);
 			pipeMaker.Build();
 			if(pipeMaker.IsDone() && pipeMaker.MakeSolid())
-				return TopoDS::Solid(pipeMaker.Shape());
+			{ 
+				TopoDS_Shape result = pipeMaker.Shape();
+				result.Move(XbimGeomPrim::ToLocation(repItem->Position));
+				return TopoDS::Solid(result);
+			}
 			else
 			{
 				Logger->WarnFormat( "Entity #" + repItem->EntityLabel.ToString() + ", IfcSurfaceCurveSweptAreaSolid could not be constructed ");
