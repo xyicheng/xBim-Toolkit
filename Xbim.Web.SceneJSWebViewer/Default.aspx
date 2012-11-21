@@ -29,22 +29,25 @@
  <script src="Scripts/icim-elementTypePanel.js" type="text/javascript"></script>
  <script src="Scripts/icim-groupViewControl.js" type="text/javascript"></script>
  <script src="Scripts/icim-selection.js" type="text/javascript"></script>
- <script src="Scripts/icim-shortcuts.js" type="text/javascript"></script>
+ <%--<script src="Scripts/icim-shortcuts.js" type="text/javascript"></script>--%>
  <script src="Scripts/icim-app-init.js" type="text/javascript"></script>
 </asp:Content>
 <asp:Content ID="BodyContent" runat="server" ContentPlaceHolderID="MainContent">
     <div id="loadingScreen" style="display:none; background-repeat:no-repeat; background-image: url('Styles/modelloading.gif');  background-position:center center; text-align:center; z-index:10000000; background-color:Gray; position:absolute;">
         <p style="color:White;">Loading Geometry Manifest. Depending on file size, this may take a while.</p>
     </div>
+
     <canvas id="scenejsCanvas">
         <p>This example requires a browser that supports the <a href="http://www.w3.org/html/wg/html5/">HTML5</a> &lt;canvas&gt; feature.</p>
     </canvas>
+    
     <div id="loadedWrapper">
         <div id="loaded"></div>
         <div id="loadedbar"></div>
     </div>
 
-    
+
+        
 
     <div id="modelmenu" class="dragmenu unselectable">
         <span class="resetBoundary"></span>
@@ -68,7 +71,7 @@
         </div>
     </div>
 
-    <div id="classification" class="dragmenu unselectable ui-draggable ui-resizable" style="height: 250px; width: 300px; display: block; opacity: 1; left: 0px;">
+    <div id="classification" class="dragmenu unselectable ui-draggable ui-resizable" style="height: 300px; width: 300px; display: block; opacity: 1; left: 0px;">
         <span class="resetBoundary"></span>
         <div class="menuHeader">
             Classification
@@ -130,7 +133,12 @@
 
     <div id="debuginfo" style="display:none; width:100%; height: 200px;"><h1>Debug Info:</h1></div>
 
-    
+    <%--<script type="text/javascript" language="javascript">
+        $(document).ready(function () {
+            $('scenejsCanvases#scenejsCanvas').xbim3dview({ sceneId: "Scene", canvasId: "scenejsCanvas" });
+            $('scenejsCanvases#scenejsCanvas2').xbim3dview({ sceneId: "Scene2", canvasId: "scenejsCanvas2" });
+        });
+    </script>--%>
 
 </asp:Content>
 
