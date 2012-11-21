@@ -261,7 +261,7 @@ namespace Xbim.IO
         internal void Open(string filename, XbimDBAccess accessMode = XbimDBAccess.Read)
         {
             Close();
-            _databaseName = filename; //success store the name of the DB file
+            _databaseName = Path.GetFullPath(filename); //success store the name of the DB file
             _accessMode = accessMode;
             caching = false;  
             XbimEntityCursor entTable = GetEntityTable();
