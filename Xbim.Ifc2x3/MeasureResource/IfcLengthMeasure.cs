@@ -16,6 +16,7 @@ using System;
 using Xbim.XbimExtensions.SelectTypes;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
+using System.Globalization;
 
 #endregion
 
@@ -71,7 +72,7 @@ namespace Xbim.Ifc2x3.MeasureResource
 
         public IfcLengthMeasure(string val)
         {
-            _theValue = Convert.ToDouble(val);
+            _theValue = IfcReal.ToDouble(val);
         }
 
         public static implicit operator IfcLengthMeasure(double? value)

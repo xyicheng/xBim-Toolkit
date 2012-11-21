@@ -127,7 +127,12 @@ namespace Xbim.Tests
             
             LoadModelForWriting();
             // Add a point
-            IfcCartesianPoint point = SuT.Instances.New<IfcCartesianPoint>(cp => { cp.X = 345.6789012; cp.Y = -0.000001; cp.Z = 0.0; });
+            using (XbimReadWriteTransaction txn = SuT.BeginTransaction())
+            {
+                IfcCartesianPoint point = SuT.Instances.New<IfcCartesianPoint>(cp => { cp.X = 345.6789012; cp.Y = -0.000001; cp.Z = 0.0; });
+                txn.Commit();
+            }
+            
 
             string tempFile = GetTempIfcFile();
             // Act
@@ -159,7 +164,7 @@ namespace Xbim.Tests
             String xbimFile = Path.ChangeExtension(fullPath,"xBIM");
            
             SuT.Open(xbimFile, XbimDBAccess.ReadWrite);
-            SuT.BeginTransaction("CultureTest");
+            
             EnsureDeleted(xbimFile);
             return xbimFile;
         }

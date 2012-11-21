@@ -181,6 +181,7 @@ namespace Xbim.COBie.Data
 
         private void GetGlobalUnits(out string linearUnit, out string areaUnit, out string volumeUnit, out string moneyUnit)
         {
+            
             linearUnit = "";
             areaUnit = "";
             volumeUnit = "";
@@ -232,7 +233,8 @@ namespace Xbim.COBie.Data
             areaUnit = string.IsNullOrEmpty(areaUnit) ? DEFAULT_STRING : areaUnit;
             volumeUnit = string.IsNullOrEmpty(volumeUnit) ? DEFAULT_STRING : volumeUnit;
             moneyUnit = string.IsNullOrEmpty(moneyUnit) ? DEFAULT_STRING : moneyUnit;
-            
+
+            if (Context.COBieGlobalValues.Count >= 4) return; //already been called for this context
             //save values for retrieval by other sheets
             Context.COBieGlobalValues.Add("LENGTHUNIT", linearUnit);
             Context.COBieGlobalValues.Add("AREAUNIT", areaUnit);

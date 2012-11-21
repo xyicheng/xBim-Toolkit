@@ -1,23 +1,24 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<TestSettings name="Local" id="d997ab2a-42f4-485e-b884-f0d82402da0e" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+<TestSettings name="XbimTestSettings" id="c6fae5b0-2f78-404d-adce-f0d9c974d14c" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
   <Description>These are default test settings for a local test run.</Description>
-  <Deployment enabled="false">
+  <Deployment>
     <DeploymentItem filename="Xbim.ModelGeometry\OpenCascade\Win32\bin\TKGeomBase.dll" />
     <DeploymentItem filename="Xbim.ModelGeometry\OpenCascade\Win32\bin\TKBool.dll" />
-    <DeploymentItem filename="Xbim.ModelGeometry\OpenCascade\Win32\bin\TKG2d.dll" />
     <DeploymentItem filename="Xbim.ModelGeometry\OpenCascade\Win32\bin\TKOffset.dll" />
     <DeploymentItem filename="Xbim.ModelGeometry\OpenCascade\Win32\bin\TKPrim.dll" />
     <DeploymentItem filename="Xbim.ModelGeometry\OpenCascade\Win32\bin\TKTopAlgo.dll" />
     <DeploymentItem filename="Xbim.ModelGeometry\OpenCascade\Win32\bin\TKBRep.dll" />
     <DeploymentItem filename="Xbim.ModelGeometry\OpenCascade\Win32\bin\TKMath.dll" />
-    <DeploymentItem filename="Xbim.ModelGeometry\OpenCascade\Win32\bin\TKMesh.dll" />
-    <DeploymentItem filename="Xbim.ModelGeometry\OpenCascade\Win32\bin\TKG3d.dll" />
-    <DeploymentItem filename="Xbim.ModelGeometry\OpenCascade\Win32\bin\TKGeomAlgo.dll" />
     <DeploymentItem filename="Xbim.ModelGeometry\OpenCascade\Win32\bin\TKShHealing.dll" />
+    <DeploymentItem filename="Xbim.ModelGeometry\OpenCascade\Win32\bin\TKG3d.dll" />
+    <DeploymentItem filename="Xbim.ModelGeometry\OpenCascade\Win32\bin\TKMesh.dll" />
     <DeploymentItem filename="Xbim.ModelGeometry\OpenCascade\Win32\bin\TKernel.dll" />
+    <DeploymentItem filename="Xbim.ModelGeometry\OpenCascade\Win32\bin\TKGeomAlgo.dll" />
+    <DeploymentItem filename="Xbim.ModelGeometry\OpenCascade\Win32\bin\TKG2d.dll" />
     <DeploymentItem filename="Xbim.ModelGeometry\OpenCascade\Win32\bin\TKFillet.dll" />
     <DeploymentItem filename="Xbim.ModelGeometry\OpenCascade\Win32\bin\TKBO.dll" />
   </Deployment>
+  <NamingScheme baseName="TestRun" appendTimeStamp="false" useDefault="false" />
   <Execution>
     <TestTypeSpecific>
       <UnitTestRunConfig testTypeId="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b">
@@ -26,7 +27,7 @@
         </AssemblyResolution>
       </UnitTestRunConfig>
     </TestTypeSpecific>
-    <AgentRule name="LocalMachineDefaultRole">
+    <AgentRule name="Execution Agents">
     </AgentRule>
   </Execution>
 </TestSettings>

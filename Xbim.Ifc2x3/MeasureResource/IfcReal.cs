@@ -148,5 +148,10 @@ namespace Xbim.Ifc2x3.MeasureResource
         }
 
         #endregion
+
+        public static double ToDouble(string val)
+        {
+            return Convert.ToDouble(val, CultureInfo.CreateSpecificCulture("en-US"));
+        }
     }
 }

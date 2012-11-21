@@ -16,6 +16,8 @@ using Xbim.XbimExtensions.Interfaces;
 using Xbim.IO.Parser;
 using Xbim.Ifc2x3.Kernel;
 using Xbim.ModelGeometry;
+using Xbim.ModelGeometry.Scene;
+
 
 namespace Xbim.Tests
 {
@@ -42,18 +44,18 @@ namespace Xbim.Tests
             Directory.CreateDirectory(Path.Combine(Root, Temp));
         }
 
-        [TestInitialize]
-        public void TestInit()
+        [AssemblyInitialize()]
+        static public void TestInit(TestContext context)
         {
             // this method runs before start of every test
-            // any init code
+            XbimModel.Initialize();
         }
 
-        [TestCleanup]
-        public void TestCleanup()
+        [AssemblyCleanup()]
+        static public void TestCleanup()
         {
             // this method runs after finishes every test
-
+            XbimModel.Terminate();
         }
 
         #endregion
@@ -61,7 +63,7 @@ namespace Xbim.Tests
         #region "Tests: Converts ifc reference file to various formats successfully"
 
         [TestMethod]
-        public void Test_01_CreateTestSuite()
+        public void Test_XbimImport()
         {
             // This method expects a Ref.ifc file to be converted to various formats in "TestSourceFiles" folder
             // Original Ref.ifc -> Ref_Xbim.xbim -> Ref_Xbim_IfcXml.ifcxml -> Ref_Xbim_IfcXml_Xbim.xbim
@@ -94,141 +96,11 @@ namespace Xbim.Tests
             CompareXbimFiles(Ref_Xbim, Ref_Xbim_IfcXml_Xbim);
             CompareXbimFiles(Ref_Xbim_IfcXml_Xbim, Ref_Xbim_IfcXml_Xbim_ifc_Xbim);
             CompareXbimFiles(Ref_Xbim_IfcXml_Xbim_ifc_Xbim, Ref_Xbim);
+            CreateGeometry(Ref_Xbim);
             Assert.IsTrue(true);
         }
 
         #endregion
-
-        #region "Tests: Convert files from one format to another"
-
-        [TestMethod]
-        public void Test_ConvertIfcToXbim()
-        {
-            string ifcFileName = TestSourceFileIfc;
-            string xbimFileName = CreateXbimFile(ifcFileName);
-
-            // check if file is created 
-            bool fileExist = File.Exists(xbimFileName);
-            Assert.IsTrue(fileExist);
-
-            // check file created is not blank
-            byte[] data = File.ReadAllBytes(xbimFileName);
-            bool isValidFile = (data.Length > 0);
-            Assert.IsTrue(isValidFile);
-
-            // check the created xbim file is same as reference xbim file
-            // get any labels in xbimFile1 that are not in xbimFile2
-            List<int> badLabels1 = GetFileBadLabels(xbimFileName, TestSourceFileXbim);
-
-            // get any labels in xbimFile2 that are not in xbimFile1
-            List<int> badLabels2 = GetFileBadLabels(TestSourceFileXbim, xbimFileName);
-
-            // both files are created using different procedures from same ifc, so should be same and have 0 badlabels
-            Assert.AreEqual(badLabels1.Count, 0);
-            Assert.AreEqual(badLabels2.Count, 0);
-
-            
-        }
-
-        [TestMethod]
-        public void Test_ConvertIfcXmlToXbim()
-        {
-            string ifcXmlFileName = TestSourceFileIfcXml;
-            string xbimFileName = CreateXbimFile(ifcXmlFileName);
-
-            // check if file is created 
-            bool fileExist = File.Exists(xbimFileName);
-            Assert.IsTrue(fileExist);
-
-            // check file created is not blank
-            byte[] data = File.ReadAllBytes(xbimFileName);
-            bool isValidFile = (data.Length > 0);
-            Assert.IsTrue(isValidFile);
-
-            // check the created xbim file is same as reference xbim file
-            // get any labels in xbimFile1 that are not in xbimFile2
-            List<int> badLabels1 = GetFileBadLabels(xbimFileName, TestSourceFileXbim);
-
-            // get any labels in xbimFile2 that are not in xbimFile1
-            List<int> badLabels2 = GetFileBadLabels(TestSourceFileXbim, xbimFileName);
-
-            // both files are created using different procedures from same ifc, so should be same and have 0 badlabels
-            Assert.AreEqual(badLabels1.Count, 0);
-            Assert.AreEqual(badLabels2.Count, 0);
-
-            
-        }
-
-        [TestMethod]
-        public void Test_ConvertXbimToIfcXml()
-        {
-            string xbimFileName = TestSourceFileXbim;
-            string ifcXmlFileName = CreateIfcXmlFile(xbimFileName);
-
-            // check if file is created 
-            bool fileExist = File.Exists(ifcXmlFileName);
-            Assert.IsTrue(fileExist);
-
-            // check file created is not blank
-            byte[] data = File.ReadAllBytes(ifcXmlFileName);
-            bool isValidFile = (data.Length > 0);
-            Assert.IsTrue(isValidFile);
-
-            
-        }
-
-        [TestMethod]
-        public void Test_ConvertXbimToIfc()
-        {
-            string xbimFileName = TestSourceFileXbim;
-            string ifcFileName = CreateIfcFile(xbimFileName);
-
-            // check if file is created 
-            bool fileExist = File.Exists(ifcFileName);
-            Assert.IsTrue(fileExist);
-
-            // check file created is not blank
-            byte[] data = File.ReadAllBytes(ifcFileName);
-            bool isValidFile = (data.Length > 0);
-            Assert.IsTrue(isValidFile);
-
-            
-        }
-
-        [TestMethod]
-        public void Test_ConvertIfcxmlToIfc()
-        {
-            string ifcXmlFileName = TestSourceFileIfcXml;
-            string ifcFileName = CreateIfcFile(ifcXmlFileName);
-
-            // check if file is created 
-            bool fileExist = File.Exists(ifcXmlFileName);
-            Assert.IsTrue(fileExist);
-
-            // check file created is not blank
-            byte[] data = File.ReadAllBytes(ifcXmlFileName);
-            bool isValidFile = (data.Length > 0);
-            Assert.IsTrue(isValidFile);
-
-
-        }
-
-        [TestMethod]
-        public void Test_ConvertXbimToGeometryCache()
-        {
-            string geomFileName = CreateGeometry(TestSourceFileXbim);
-
-            // check if file is created 
-            bool fileExist = File.Exists(geomFileName);
-            Assert.IsTrue(fileExist);
-
-            // check file created is not blank
-            byte[] data = File.ReadAllBytes(geomFileName);
-            bool isValidFile = (data.Length > 0);
-            Assert.IsTrue(isValidFile);
-
-
-        }
 
 
         [TestMethod]
@@ -251,27 +123,22 @@ namespace Xbim.Tests
             }
         }
 
-        #endregion
+       
 
         #region "Tests: Open and close files of different formats using FileModelServer and MemoryModel"
 
-        [TestMethod]
         public void Test_OpenIfcXml_FileModel()
         {
             XbimModel model = new XbimModel();
-            model.Open(TestSourceFileIfcXml);
-            model.Close();
-        }
+            model.CreateFrom(TestSourceFileIfcXml);
 
-        [TestMethod]
+        }
         public void Test_OpenIfc_FileModel()
         {
             IModel model = new XbimModel();
-            model.Open(TestSourceFileIfc);
-            model.Close();
-        }
+            model.CreateFrom(TestSourceFileIfc);
 
-        [TestMethod]
+        }
         public void Test_OpenXbim_FileModel()
         {
             IModel model = new XbimModel();
@@ -279,29 +146,8 @@ namespace Xbim.Tests
             model.Close();
         }
 
-        [TestMethod]
-        public void Test_OpenIfcXml_MemoryModel()
-        {
-            IModel model = new XbimModel();
-            model.Open(TestSourceFileIfcXml);
-            model.Close();
-        }
 
-        [TestMethod]
-        public void Test_OpenIfc_MemoryModel()
-        {
-            IModel model = new XbimModel();
-            model.Open(TestSourceFileIfc);
-            model.Close();
-        }
 
-        [TestMethod]
-        public void Test_OpenXbim_MemoryModel()
-        {
-            IModel model = new XbimModel();
-            model.Open(TestSourceFileXbim);
-            model.Close();
-        }
 #endregion
 
         #region "Private Methods"

@@ -27,7 +27,7 @@ namespace Xbim.Tests.COBie
         [ClassInitialize]
         public static void LoadModel(TestContext context)
         {
-
+            
             _model = new XbimModel();
             if (!File.Exists(SourceFile)) throw new Exception("Cannot find file");
             _model.Open(SourceFile);
@@ -46,6 +46,7 @@ namespace Xbim.Tests.COBie
                 _model.Close();
             _model = null;
             _cobieContext = null;
+            
         }
         
         [TestMethod]
@@ -116,7 +117,7 @@ namespace Xbim.Tests.COBie
         [TestMethod]
         public void Time_On_System()
         {
-            Assert.IsTrue(SystemTime() < new TimeSpan(0, 0, 2));
+            Assert.IsTrue(SystemTime() < new TimeSpan(0, 0, 10));
         }
 
         [TestMethod]
