@@ -22,7 +22,7 @@ using Xbim.XbimExtensions.Parser;
 namespace Xbim.Ifc.HVACDomain
 {
     [IfcPersistedEntity, Serializable]
-    internal class IfcGasTerminalType : IfcFlowTerminalType
+    public class IfcGasTerminalType : IfcFlowTerminalType
     {
         #region Fields
 
