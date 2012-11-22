@@ -1279,12 +1279,24 @@ namespace Xbim.IO
 
             XbimStorageType fileType = XbimStorageType.XBIM;
             string ext = Path.GetExtension(inputFileName).ToLower();
-            if (ext == ".xbim") fileType = XbimStorageType.XBIM;
-            else if (ext == ".ifc") fileType = XbimStorageType.IFC;
-            else if (ext == ".ifcxml") fileType = XbimStorageType.IFCXML;
-            else if (ext == ".zip" || ext == ".ifczip") fileType = XbimStorageType.IFCZIP;
-            else
-                throw new Exception("Invalid file type: " + ext);
+            switch (ext)
+            {
+                case ".xbim": 
+                    fileType = XbimStorageType.XBIM;
+                    break;
+                case ".ifc":
+                    fileType = XbimStorageType.IFC;
+                    break;
+                case ".ifcxml":
+                    fileType = XbimStorageType.IFCXML;
+                    break;
+                case ".zip":
+                case ".ifczip":
+                    fileType = XbimStorageType.IFCZIP;
+                    break;
+                default:
+                    throw new Exception("Invalid file type: " + ext);
+            }
             try
             {
                 if (fileType.HasFlag(XbimStorageType.IFCZIP))
