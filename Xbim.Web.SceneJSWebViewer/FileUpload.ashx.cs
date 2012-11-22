@@ -4,6 +4,11 @@ using System.Linq;
 using System.Web;
 using System.IO;
 using System.Diagnostics;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.IO;
+using Xbim.ModelGeometry;
+using Xbim.XbimExtensions;
 
 namespace Xbim.SceneJSWebViewer
 {
@@ -45,19 +50,26 @@ namespace Xbim.SceneJSWebViewer
 
                     try
                     {
-                        Process p = new Process();
-                        // Redirect the output stream of the child process.
-                        p.StartInfo.UseShellExecute = false;
-                        p.StartInfo.RedirectStandardOutput = true;
-                        p.StartInfo.FileName = context.Server.MapPath("~/ConvertGCApp/Xbim.SceneHelper.exe");
-                        p.StartInfo.Arguments = fileName;
-                        p.Start();
-                        // Do not wait for the child process to exit before
-                        // reading to the end of its redirected stream.
-                        // p.WaitForExit();
-                        // Read the output stream first and then wait.
-                        string output = p.StandardOutput.ReadToEnd();
-                        p.WaitForExit(60000);
+
+                        string xbimFileName = Path.ChangeExtension(fileName, ".xbim");
+                        XbimModel model = new XbimModel();
+                        model.CreateFrom(fileName, xbimFileName, null);
+                        model.Open(xbimFileName, XbimDBAccess.ReadWrite);
+                        XbimScene.ConvertGeometry(model.Instances.OfType<IfcProduct>().Where(t => !(t is IfcFeatureElement)), null, false);
+                        model.Close();
+                        ////////Process p = new Process();
+                        ////////// Redirect the output stream of the child process.
+                        ////////p.StartInfo.UseShellExecute = false;
+                        ////////p.StartInfo.RedirectStandardOutput = true;
+                        ////////p.StartInfo.FileName = context.Server.MapPath("~/ConvertGCApp/Xbim.SceneHelper.exe");
+                        ////////p.StartInfo.Arguments = fileName;
+                        ////////p.Start();
+                        ////////// Do not wait for the child process to exit before
+                        ////////// reading to the end of its redirected stream.
+                        ////////// p.WaitForExit();
+                        ////////// Read the output stream first and then wait.
+                        ////////string output = p.StandardOutput.ReadToEnd();
+                        ////////p.WaitForExit(60000);
 
 
                         //System.Diagnostics.ProcessStartInfo start = new System.Diagnostics.ProcessStartInfo();
