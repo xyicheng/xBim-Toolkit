@@ -4,6 +4,7 @@ using System.Linq;
 using System.Web;
 using System.IO;
 using System.Diagnostics;
+using Xbim.ModelGeometry;
 
 namespace Xbim.SceneJSWebViewer
 {
@@ -45,19 +46,27 @@ namespace Xbim.SceneJSWebViewer
 
                     try
                     {
-                        Process p = new Process();
-                        // Redirect the output stream of the child process.
-                        p.StartInfo.UseShellExecute = false;
-                        p.StartInfo.RedirectStandardOutput = true;
-                        p.StartInfo.FileName = context.Server.MapPath("~/ConvertGCApp/Xbim.SceneHelper.exe");
-                        p.StartInfo.Arguments = fileName;
-                        p.Start();
-                        // Do not wait for the child process to exit before
-                        // reading to the end of its redirected stream.
-                        // p.WaitForExit();
-                        // Read the output stream first and then wait.
-                        string output = p.StandardOutput.ReadToEnd();
-                        p.WaitForExit(60000);
+
+                        string xbimFileName = Path.ChangeExtension(fileName, ".xbim");
+                        string xbimGeometryFileName = Path.ChangeExtension(fileName, ".xbimGC");
+                        //ClosePreviousModel();
+                        XbimScene scene = new XbimScene(fileName, xbimFileName, xbimGeometryFileName, false);
+                        scene.Close();
+                        scene.Dispose();
+
+                        //Process p = new Process();
+                        //// Redirect the output stream of the child process.
+                        //p.StartInfo.UseShellExecute = false;
+                        //p.StartInfo.RedirectStandardOutput = true;
+                        //p.StartInfo.FileName = context.Server.MapPath("~/ConvertGCApp/Xbim.SceneHelper.exe");
+                        //p.StartInfo.Arguments = fileName;
+                        //p.Start();
+                        //// Do not wait for the child process to exit before
+                        //// reading to the end of its redirected stream.
+                        //// p.WaitForExit();
+                        //// Read the output stream first and then wait.
+                        //string output = p.StandardOutput.ReadToEnd();
+                        //p.WaitForExit(60000);
 
 
                         //System.Diagnostics.ProcessStartInfo start = new System.Diagnostics.ProcessStartInfo();
