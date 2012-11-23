@@ -8,6 +8,7 @@ using Xbim.Ifc.Kernel;
 using Xbim.Ifc.PropertyResource;
 using Xbim.Ifc.MeasureResource;
 using Xbim.Ifc.ExternalReferenceResource;
+using Xbim.Ifc.UtilityResource;
 
 namespace Xbim.COBie.Data
 {
@@ -15,6 +16,7 @@ namespace Xbim.COBie.Data
     {
 
         
+
         #region IAttributeProvider Implementation
         
         COBieSheet<COBieAttributeRow> _attributes;
@@ -157,7 +159,7 @@ namespace Xbim.COBie.Data
                             }
                         }
                     }
-
+                    
                     IEnumerable<IfcSimpleProperty> pSVs = pairValues.Value; //Get Property SetAttribSheet Property Single Values
                     //filter on ExcludePropertyValueNames and ExcludePropertyValueNamesWildcard
                     pSVs = FilterRows(pSVs);
@@ -205,7 +207,7 @@ namespace Xbim.COBie.Data
                                select item).Count() == 0)
                        select pVS;
             }
-
+            
             return pSVs;
         }
 
@@ -229,6 +231,10 @@ namespace Xbim.COBie.Data
 
                     if (string.IsNullOrEmpty(name))
                     {
+#if DEBUG
+                        Console.WriteLine("Excluded attribute has no name");
+#endif
+
                         continue; //skip to next loop item
                     }
 
@@ -247,6 +253,9 @@ namespace Xbim.COBie.Data
                             if (double.TryParse(value, out num)) value = num.ToString("F3");
                             if ((string.IsNullOrEmpty(value)) || (string.Compare(value, ifcPropertySingleValue.Name.ToString(), true) == 0) || (string.Compare(value, "default", true) == 0))
                             {
+#if DEBUG
+                                Console.WriteLine("Excluded attribute {0}, has no value", name);
+#endif
                                 continue; //skip to next loop item
                             }
 
@@ -357,8 +366,9 @@ namespace Xbim.COBie.Data
                     //passed properties from the sheet
                     attribute.SheetName = RowParameters["Sheet"];
                     attribute.RowName = RowParameters["Name"];
-                    attribute.CreatedBy = RowParameters["CreatedBy"];
-                    attribute.CreatedOn = RowParameters["CreatedOn"];
+                    attribute.CreatedBy = COBieData<COBieAttributeRow>.GetEmail( propertySet.OwnerHistory.OwningUser.TheOrganization, propertySet.OwnerHistory.OwningUser.ThePerson);
+                    string onDate = COBieData<COBieAttributeRow>.GetCreatedOnDate(propertySet.OwnerHistory);
+                    attribute.CreatedOn = (string.IsNullOrEmpty(onDate)) ? Context.RunDate : onDate;
                     attribute.ExtSystem = (propertySet.OwnerHistory.OwningApplication != null) ? propertySet.OwnerHistory.OwningApplication.ApplicationFullName.ToString() : RowParameters["ExtSystem"];
 
                     value = NumberValueCheck(value, attribute);
@@ -375,6 +385,8 @@ namespace Xbim.COBie.Data
                 }
             }
         }
+
+        
 
         private string NumberValueCheck(string value, COBieAttributeRow attribute)
         {

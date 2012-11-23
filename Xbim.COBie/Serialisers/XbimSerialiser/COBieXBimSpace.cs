@@ -185,7 +185,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 }
                 else
                 {
-                    spaceBuildingStory = Model.InstancesOfType<IfcBuildingStorey>().Where(bs => bs.Name == floorName).FirstOrDefault();
+                    spaceBuildingStory = Model.InstancesOfType<IfcBuildingStorey>().Where(bs => bs.Name.ToString().ToLower().Trim() == floorName.ToLower().Trim()).FirstOrDefault();
                     if (spaceBuildingStory != null)
                         Floors.Add(floorName, spaceBuildingStory);
                 }

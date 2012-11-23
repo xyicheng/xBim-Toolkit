@@ -82,6 +82,13 @@ namespace Xbim.COBie.Data
         /// <returns></returns>
         protected string GetCreatedOnDateAsFmtString(IfcOwnerHistory ownerHistory)
         {
+            string date = GetCreatedOnDate(ownerHistory);
+            //return default date of now
+            return (date != null) ? date : Context.RunDate;
+        }
+
+        public static string GetCreatedOnDate(IfcOwnerHistory ownerHistory)
+        {
             if (ownerHistory != null)
             {
                 int createdOnTStamp = (int)ownerHistory.CreationDate;
@@ -93,12 +100,10 @@ namespace Xbim.COBie.Data
                     //but if the time stamp is Coordinated Universal Time (UTC), then daylight time should be ignored. see http://msdn.microsoft.com/en-us/library/bb546099.aspx
                     //IfcTimeStamp.ToDateTime(CreatedOnTStamp).ToLocalTime()...; //test to see if corrects 1 hour difference, and yes it did, but should we?
 
-                    return IfcTimeStamp.ToDateTime(createdOnTStamp).ToString(Constants.DATETIME_FORMAT); 
+                    return IfcTimeStamp.ToDateTime(createdOnTStamp).ToUniversalTime().ToString(Constants.DATETIME_FORMAT);
                 }
-                
             }
-            //return default date of now
-            return Context.RunDate;
+            return null;
         }
 
 
@@ -218,7 +223,10 @@ namespace Xbim.COBie.Data
                 else
                 {
                     IfcOrganization ifcOrganization = ifcOwnerHistory.OwningUser.TheOrganization;
-                    return GetEmail(ifcOrganization, ifcPerson);
+                    string email = GetEmail(ifcOrganization, ifcPerson);
+                    //save to the email directory for quick retrieval
+                    Context.EMails.Add(ifcPerson.EntityLabel, email);
+                    return email;
                 }
             }
             else
@@ -241,7 +249,9 @@ namespace Xbim.COBie.Data
                 else
                 {
                     IfcOrganization ifcOrganization = ifcPersonAndOrganization.TheOrganization;
-                    return GetEmail(ifcOrganization, ifcPerson);
+                    string email = GetEmail(ifcOrganization, ifcPerson);
+                    Context.EMails.Add(ifcPerson.EntityLabel, email);
+                    return email;
                 }
             }
             else
@@ -256,7 +266,7 @@ namespace Xbim.COBie.Data
         /// <param name="ifcOrganization"></param>
         /// <param name="ifcPerson"></param>
         /// <returns></returns>
-        protected string GetEmail( IfcOrganization ifcOrganization, IfcPerson ifcPerson)
+        public static string GetEmail( IfcOrganization ifcOrganization, IfcPerson ifcPerson)
         {
             string email = "";
             IEnumerable<IfcLabel> emails = Enumerable.Empty<IfcLabel>();
@@ -329,8 +339,7 @@ namespace Xbim.COBie.Data
                 email += (string.IsNullOrEmpty(organization)) ? "unknown" : organization;
                 email += (string.IsNullOrEmpty(domType)) ? ".com" : domType; 
             }
-            //save to the email directory for quick retrieval
-            Context.EMails.Add(ifcPerson.EntityLabel, email);
+            
 
             return email;
         }
@@ -376,13 +385,13 @@ namespace Xbim.COBie.Data
                 if (!string.IsNullOrEmpty(itemReference)) itemReference = itemReference.Split(':').First().Trim();
                 string[] nameSplit = name.Split(':');
                 //just in case we have more than one ":"
-                if (itemReference.ToLower() == nameSplit.First().ToLower())
+                if (itemReference.ToLower().Trim() == nameSplit.First().ToLower().Trim())
                 {
                     for (int i = 0; i < nameSplit.Count(); i++)
                     {
                         //skip first item
-                        if (i == 1) name = nameSplit[i];
-                        if (i > 1) name += ": " + nameSplit[i]; //add back the second, third... ": "
+                        if (i == 1) name = nameSplit[i].Trim();
+                        if (i > 1) name += " : " + nameSplit[i].Trim(); //add back the second, third... ": "
                     }
                     
                 }
@@ -396,7 +405,7 @@ namespace Xbim.COBie.Data
                     && (!string.IsNullOrEmpty(name))
                     && (itemReference.ToLower() != name.ToLower())
                     )
-                    return itemReference + ": " + name;
+                    return itemReference.Trim() + " : " + name.Trim();
                 else if (!string.IsNullOrEmpty(itemReference))
                     return itemReference;
                 else if (!string.IsNullOrEmpty(name))
@@ -556,7 +565,8 @@ namespace Xbim.COBie.Data
         {
             
             string value = DEFAULT_STRING;
-            if (ifcItem == typeof(IfcTypeObject)) value = Constants.WORKSHEET_TYPE;
+            if (ifcItem.IsSubclassOf(typeof(IfcTypeObject))) value = Constants.WORKSHEET_TYPE;
+            else if (ifcItem == typeof(IfcTypeObject)) value = Constants.WORKSHEET_TYPE;
             else if (ifcItem.IsSubclassOf(typeof(IfcElement))) value = Constants.WORKSHEET_COMPONENT;
             else if (ifcItem.IsSubclassOf(typeof(IfcProcess))) value = Constants.WORKSHEET_JOB;
             else if (ifcItem.IsSubclassOf(typeof(IfcRelDecomposes))) value = Constants.WORKSHEET_ASSEMBLY;
@@ -573,7 +583,7 @@ namespace Xbim.COBie.Data
             else if (ifcItem == typeof(IfcConstructionEquipmentResource)) value = Constants.WORKSHEET_RESOURCE;
             else if (ifcItem == typeof(IfcSpace)) value = Constants.WORKSHEET_SPACE;
             else if (ifcItem == typeof(IfcConstructionProductResource)) value = Constants.WORKSHEET_SPARE;
-            else if (ifcItem == typeof(IfcGroup)) value = Constants.WORKSHEET_SYSTEM;
+            else if (ifcItem == typeof(IfcSystem)) value = Constants.WORKSHEET_SYSTEM;
             else if (ifcItem == typeof(IfcZone)) value = Constants.WORKSHEET_ZONE;
             //Impact and attributes are off property sets so not here for now
             //more sheets as tests date becomes available

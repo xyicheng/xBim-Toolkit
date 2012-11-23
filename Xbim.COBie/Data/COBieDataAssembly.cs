@@ -208,8 +208,9 @@ namespace Xbim.COBie.Data
 
                     if (ifcMaterialLayer.LayerThickness != null)
                     {
+                        double thick = ifcMaterialLayer.LayerThickness;
                         strBuilder.Append(" (");
-                        strBuilder.Append(ifcMaterialLayer.LayerThickness.ToString());
+                        strBuilder.Append(thick.ToString("F1"));
                         strBuilder.Append(")");
                     }
                     if (ifcMaterialLayers.Count > i)
@@ -237,8 +238,13 @@ namespace Xbim.COBie.Data
             {
                 if (!string.IsNullOrEmpty(ifcMaterialLayer.Material.Name))
                 {
-                    //if (!childNamesFilter.Contains(ifcMaterialLayer.Material.Name)) //removed the filter as we should recode all elements of the assembly
-                        childNamesFilter.Add(ifcMaterialLayer.Material.Name);
+                    string name = ifcMaterialLayer.Material.Name;
+                    if (ifcMaterialLayer.LayerThickness != null)
+                    {
+                        double thick = ifcMaterialLayer.LayerThickness;
+                        name += " (" + thick.ToString("F1") + ")";
+                    }
+                    childNamesFilter.Add(name);
                 }
             }
             return childNamesFilter;

@@ -143,12 +143,25 @@ namespace Xbim.COBie.Serialisers
                     if (excelRow != null)
                     {
                         ICell excelCell = excelRow.GetCell(error.Column);
-                        // A client anchor is attached to an excel worksheet. It anchors against a top-left and bottom-right cell.
-                        // Create a comment 3 columns wide and 3 rows height
-                        IComment comment = patr.CreateCellComment(new HSSFClientAnchor(0, 0, 0, 0, error.Column, error.Row, error.Column + 3, error.Row + 3));
-                        comment.String = new HSSFRichTextString(error.ErrorDescription);
-                        comment.Author = "XBim";
-                        excelCell.CellComment = comment;
+                        if (excelCell != null)
+                        {
+                            if (excelCell.CellComment == null)
+                            {
+                                // A client anchor is attached to an excel worksheet. It anchors against a top-left and bottom-right cell.
+                                // Create a comment 3 columns wide and 3 rows height
+                                IComment comment = patr.CreateCellComment(new HSSFClientAnchor(0, 0, 0, 0, error.Column, error.Row, error.Column + 3, error.Row + 3));
+                                comment.String = new HSSFRichTextString(error.ErrorDescription);
+                                comment.Author = "XBim";
+                                excelCell.CellComment = comment;
+                            }
+                            else
+                            {
+                                excelCell.CellComment.String = new HSSFRichTextString(excelCell.CellComment.String.ToString() + " Also " + error.ErrorDescription);
+                            }
+                            
+                            
+                        }
+                        
                     }
                 }
             }

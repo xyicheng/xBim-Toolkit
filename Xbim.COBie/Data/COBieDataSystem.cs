@@ -79,6 +79,25 @@ namespace Xbim.COBie.Data
 
                     systems.AddRow(sys);
                 }
+                //check if no products then add group only
+                if (!ifcProducts.Any())
+                {
+                    COBieSystemRow sys = new COBieSystemRow(systems);
+
+                    sys.Name = ifcGroup.Name;
+
+                    sys.CreatedBy = GetTelecomEmailAddress(ifcGroup.OwnerHistory);
+                    sys.CreatedOn = GetCreatedOnDateAsFmtString(ifcGroup.OwnerHistory);
+
+                    sys.Category = GetCategory(ifcGroup);
+                    sys.ComponentNames = DEFAULT_STRING;
+                    sys.ExtSystem = GetExternalSystem(ifcGroup);
+                    sys.ExtObject = ifcGroup.GetType().Name;
+                    sys.ExtIdentifier = ifcGroup.GlobalId;
+                    sys.Description = GetSystemDescription(ifcGroup);
+
+                    systems.AddRow(sys);
+                }
 
             }
 

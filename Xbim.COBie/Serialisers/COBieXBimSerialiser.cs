@@ -124,13 +124,14 @@ namespace Xbim.COBie.Serialisers
 
             COBieXBimAttribute xBimAttribute = new COBieXBimAttribute(XBimContext);
             xBimAttribute.SerialiseAttribute((COBieSheet<COBieAttributeRow>)WorkBook[Constants.WORKSHEET_ATTRIBUTE]);
-
+            
             COBieXBimCoordinate xBimCoordinate = new COBieXBimCoordinate(XBimContext);
             xBimCoordinate.SerialiseCoordinate((COBieSheet<COBieCoordinateRow>)WorkBook[Constants.WORKSHEET_COORDINATE]);
-
+            
             COBieXBimIssue xBimIssue = new COBieXBimIssue(XBimContext);
             xBimIssue.SerialiseIssue((COBieSheet<COBieIssueRow>)WorkBook[Constants.WORKSHEET_ISSUE]);
-
+            
+            
             _transaction.Commit();
             
         }

@@ -8,6 +8,8 @@ using Xbim.Ifc.Kernel;
 using Xbim.Ifc.ExternalReferenceResource;
 using Xbim.Ifc.ProductExtension;
 using Xbim.XbimExtensions;
+using Xbim.Ifc.ApprovalResource;
+using Xbim.Ifc.ConstructionMgmtDomain;
 
 namespace Xbim.COBie.Serialisers.XbimSerialiser
 {
@@ -103,7 +105,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 if (ValidateString(row.Description)) ifcDocumentInformation.Description = row.Description;
 
                 //Add Reference
-                //this is the document name, so added above.
+                if (ValidateString(row.Reference)) ifcDocumentInformation.DocumentId = row.Reference;
                
             }
         }
@@ -151,35 +153,74 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         /// <param name="ifcRelAssociatesDocument">IfcRelAssociatesDocument object to hold relationship</param>
         private void AddObjectRelationship(COBieDocumentRow row, IfcRelAssociatesDocument ifcRelAssociatesDocument)
         {
-            if (ValidateString(row.SheetName))
+            if ((ValidateString(row.SheetName)) &&  (ValidateString(row.RowName)))
             {
-                switch (row.SheetName.ToLower())
+                string rowName = row.RowName.ToLower().Trim();
+                IfcRoot ifcRoot = null;
+                switch (row.SheetName.ToLower().Trim())
                 {
                     case "type":
                         //get all types, one time only
                         if (IfcTypeObjects == null)
                             IfcTypeObjects = Model.InstancesOfType<IfcTypeObject>();
-                        if (ValidateString(row.RowName))
-                        {
-                            IfcTypeObject ifcTypeObject = IfcTypeObjects.Where(to => to.Name.ToString().ToLower() == row.RowName.ToLower()).FirstOrDefault();
-                            if (ifcTypeObject != null)
-                                ifcRelAssociatesDocument.RelatedObjects.Add_Reversible(ifcTypeObject);
-                        }
+                        ifcRoot = IfcTypeObjects.Where(to => to.Name.ToString().ToLower().Trim() == rowName).FirstOrDefault();
                         break;
                     case "component":
                         //get all types, one time only
                         if (IfcElements == null)
                             IfcElements = Model.InstancesOfType<IfcElement>();
-                        if (ValidateString(row.RowName))
-                        {
-                            IfcElement ifcElement = IfcElements.Where(to => to.Name.ToString().ToLower() == row.RowName.ToLower()).FirstOrDefault();
-                            if (ifcElement != null)
-                                ifcRelAssociatesDocument.RelatedObjects.Add_Reversible(ifcElement);
-                        }
+                        ifcRoot = IfcElements.Where(to => to.Name.ToString().ToLower().Trim() == rowName).FirstOrDefault();
                         break;
+                    case "job":
+                        ifcRoot = Model.InstancesWhere<IfcProcess>(to => to.Name.ToString().ToLower().Trim() == rowName).FirstOrDefault();
+                        break;
+                    case "assembly":
+                        ifcRoot = Model.InstancesWhere<IfcRelDecomposes>(to => to.Name.ToString().ToLower().Trim() == rowName).FirstOrDefault();
+                        break;
+                    case "connection":
+                        ifcRoot = Model.InstancesWhere<IfcRelConnects>(to => to.Name.ToString().ToLower().Trim() == rowName).FirstOrDefault();
+                        break;
+                    case "facility":
+                        ifcRoot = Model.InstancesWhere<IfcBuilding>(to => to.Name.ToString().ToLower().Trim() == rowName).FirstOrDefault();
+                        if (ifcRoot == null)
+                            ifcRoot = Model.InstancesWhere<IfcSite>(to => to.Name.ToString().ToLower().Trim() == rowName).FirstOrDefault();
+                        if (ifcRoot == null)
+                            ifcRoot = Model.InstancesWhere<IfcProject>(to => to.Name.ToString().ToLower().Trim() == rowName).FirstOrDefault();
+                        break;
+                    case "floor":
+                        ifcRoot = Model.InstancesWhere<IfcBuildingStorey>(to => to.Name.ToString().ToLower().Trim() == rowName).FirstOrDefault();
+                        break;
+                    case "resources":
+                        ifcRoot = Model.InstancesWhere<IfcConstructionEquipmentResource>(to => to.Name.ToString().ToLower().Trim() == rowName).FirstOrDefault();
+                        break;
+                    case "space":
+                        ifcRoot = Model.InstancesWhere<IfcSpace>(to => to.Name.ToString().ToLower().Trim() == rowName).FirstOrDefault();
+                        break;
+                    case "spare":
+                        ifcRoot = Model.InstancesWhere<IfcConstructionProductResource>(to => to.Name.ToString().ToLower().Trim() == rowName).FirstOrDefault();
+                        break;
+                    case "system":
+                        ifcRoot = Model.InstancesWhere<IfcGroup>(to => to.Name.ToString().ToLower().Trim() == rowName).FirstOrDefault();
+                        break;
+                    case "zone":
+                        ifcRoot = Model.InstancesWhere<IfcZone>(to => to.Name.ToString().ToLower().Trim() == rowName).FirstOrDefault();
+                        break;
+                    //case "document": //not derived from IfcRoot
+                    //    ifcRoot = Model.InstancesWhere<IfcDocumentInformation>(to => to.Name.ToString().ToLower().Trim() == rowName).FirstOrDefault();
+                    //    break;
+                    //case "contact": //not derived from IfcRoot
+                    //    ifcRoot = Model.InstancesWhere<IfcPersonAndOrganization>(to => to.Name.ToString().ToLower().Trim() == rowName).FirstOrDefault();
+                    //    break;
+                    //case "issue": //not derived from IfcRoot
+                    //    ifcRoot = Model.InstancesWhere<IfcApproval>(to => to.Name.ToString().ToLower().Trim() == rowName).FirstOrDefault();
+                    //    break;
                     default:
                         break;
                 }
+
+                //add to the document relationship object
+                if (ifcRoot != null)
+                    ifcRelAssociatesDocument.RelatedObjects.Add_Reversible(ifcRoot);
 
             }
         }

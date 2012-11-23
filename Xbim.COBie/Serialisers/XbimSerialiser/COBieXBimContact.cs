@@ -23,20 +23,20 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         public void SerialiseContacts(COBieSheet<COBieContactRow> cOBieSheet)
         {
 
+            
+                    
             using (Transaction trans = Model.BeginTransaction("Add Contacts"))
             {
                 try
                 {
+                    SetDefaultUser();
                     ProgressIndicator.ReportMessage("Starting Contacts...");
                     ProgressIndicator.Initialise("Creating Contacts", cOBieSheet.RowCount);
                     for (int i = 0; i < cOBieSheet.RowCount; i++)
                     {
                         ProgressIndicator.IncrementAndUpdate();
                         COBieContactRow row = cOBieSheet[i];
-                        if(i == 0)
-                            CreatePersonAndOrganization(row, Model.DefaultOwningUser);
-                        else
-                            CreatePersonAndOrganization(row);
+                        CreatePersonAndOrganization(row);
 
                     }
                     ProgressIndicator.Finalise();
@@ -154,41 +154,26 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         /// <summary>
         /// set the default IfcPersonAndOrganization in the Model
         /// </summary>
-        //public void SetDefaultUser()
-        //{
-        //    using (Transaction trans = Model.BeginTransaction("Add Default User"))
-        //    {
-        //        try
-        //        {
-        //            COBieSheet<COBieFacilityRow> facilityRow = (COBieSheet<COBieFacilityRow>)WorkBook[Constants.WORKSHEET_FACILITY];
-        //            if (facilityRow.RowCount > 0)
-        //            {
-        //                COBieFacilityRow row = facilityRow[0]; //use first row supported on facility sheet
+        public void SetDefaultUser()
+        {
+            COBieSheet<COBieFacilityRow> facilityRow = (COBieSheet<COBieFacilityRow>)WorkBook[Constants.WORKSHEET_FACILITY];
+            if (facilityRow.RowCount > 0)
+            {
+                COBieFacilityRow row = facilityRow[0]; //use first row supported on facility sheet
 
-        //                string defaultUser = "";
-        //                if ((!string.IsNullOrEmpty(row.CreatedBy)) || (row.CreatedBy != Constants.DEFAULT_STRING)) defaultUser = row.CreatedBy;
-        //                COBieSheet<COBieContactRow> contacts = (COBieSheet<COBieContactRow>)WorkBook[Constants.WORKSHEET_CONTACT];
-        //                for (int i = 0; i < contacts.RowCount; i++)
-        //                {
-        //                    if (contacts[i].CreatedBy == defaultUser)
-        //                        CreatePersonAndOrganization(contacts[i]);
-        //                }
-        //                //set the default values
-        //                if (!string.IsNullOrEmpty(defaultUser))
-        //                {
-        //                    Model.DefaultOwningUser.ThePerson = Contacts[row.CreatedBy].ThePerson;
-        //                    Model.DefaultOwningUser.TheOrganization = Contacts[row.CreatedBy].TheOrganization;
-        //                }
-        //            }
-        //            trans.Commit();
-        //        }
-        //        catch (Exception)
-        //        {
-        //            trans.Rollback();
-        //            //TODO: Catch with logger?
-        //            throw;
-        //        }
-        //    }
-        //}
+                string defaultUser = "";
+                if ((!string.IsNullOrEmpty(row.CreatedBy)) || (row.CreatedBy != Constants.DEFAULT_STRING)) defaultUser = row.CreatedBy;
+                COBieSheet<COBieContactRow> contacts = (COBieSheet<COBieContactRow>)WorkBook[Constants.WORKSHEET_CONTACT];
+                for (int i = 0; i < contacts.RowCount; i++)
+                {
+                    if (contacts[i].Email == defaultUser)
+                    {
+                        CreatePersonAndOrganization(contacts[i], Model.DefaultOwningUser);
+                        break;
+                    }
+                }
+
+            }
+        }
     }
 }

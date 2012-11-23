@@ -161,8 +161,8 @@ namespace Xbim.COBie
         {
             _errors.Clear();
 
-            ValidateFields();
             ValidatePrimaryKeys();
+            ValidateFields();
             ValidateForeignKeys(workbook);
         }
 
@@ -193,9 +193,13 @@ namespace Xbim.COBie
                             bool isPickList = (sheetName == Constants.WORKSHEET_PICKLISTS);
 
                             //report no match
-                            if ((isPickList
-                                  && (!PickListMatch(workbook[sheetName].Indices[fieldName], foreignKeyValue))) 
-                                || (!workbook[sheetName].Indices[fieldName].Contains(foreignKeyValue))
+                            if (( isPickList //is a pick list so do PickListMatch function test
+                                  && (!PickListMatch(workbook[sheetName].Indices[fieldName], foreignKeyValue))
+                                  ) 
+                                || 
+                                ( !isPickList //not a pick list so do Contains test
+                                  && (!workbook[sheetName].Indices[fieldName].Contains(foreignKeyValue, StringComparer.OrdinalIgnoreCase))
+                                  )
                                 )
                             {
                                 //get the correct Pick list column name depending on template for the category columns only, for now
@@ -229,12 +233,27 @@ namespace Xbim.COBie
         /// <returns>true if a match, false if none</returns>
         private bool PickListMatch(HashSet<string> hashSet, string foreignKeyValue)
         {
-            if (hashSet.Contains(foreignKeyValue))  return true;
+            if (foreignKeyValue == Constants.DEFAULT_STRING) return false;
+            if (hashSet.Contains(foreignKeyValue, StringComparer.OrdinalIgnoreCase)) return true;
 
-            //create anonymous method in linq statement so we only do Split once
-            return hashSet.Where(s => { var split = s.Split(':'); return ((split.Last() == foreignKeyValue) || (split.First() == foreignKeyValue)); }
-                                ).Any();
-        
+            foreignKeyValue = foreignKeyValue.ToLower().Trim();
+            if (foreignKeyValue.Contains(":")) //assume category split
+            {
+                //check both sides of : for match
+                string[] catKeys = foreignKeyValue.Split(':');
+                string first = catKeys.First().Trim();
+                string last = catKeys.Last().Trim();
+                var match = hashSet.Where(s => { var split = s.Split(':'); return ((split.Last().ToLower().Trim() == last)  && (split.First().ToLower().Trim() == first)); });
+                if (match.Any()) 
+                    return true;
+
+                //check if either side matched whole foreignKeyValue
+                //create anonymous method in linq statement so we only do Split once
+                return hashSet.Where(s => { var split = s.Split(':'); return ((split.Last().ToLower().Trim() == foreignKeyValue) || (split.First().ToLower().Trim() == foreignKeyValue)); }
+                                    ).Any();
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -262,7 +281,7 @@ namespace Xbim.COBie
         {
             var dupes = Rows
                     .Select((v, i) => new { row = v, index = i }) //get COBieRow and its index in the list
-                    .GroupBy(r => r.row.GetPrimaryKeyValue, (key, group) => new {rowkey = key, rows = group }) //group by the primary key value(s) joint as a delimited string
+                    .GroupBy(r => r.row.GetPrimaryKeyValue.ToLower().Trim(), (key, group) => new {rowkey = key, rows = group }) //group by the primary key value(s) joint as a delimited string
                     .Where(grp => grp.rows.Count() > 1); 
                  
 
@@ -271,7 +290,7 @@ namespace Xbim.COBie
 	        {
                 keyColList.Add(col.ColumnName);
 	        }
-            string keyCols = string.Join(";", keyColList);
+            string keyCols = string.Join(",", keyColList);
 
             foreach (var dupe in dupes)
             {
@@ -286,6 +305,7 @@ namespace Xbim.COBie
                     string errorDescription = String.Format(ErrorDescription.PrimaryKey_Violation, keyCols, rowIndexList);
                     COBieError error = new COBieError(SheetName, keyCols, errorDescription, COBieError.ErrorTypes.PrimaryKey_Violation, row.row.InitialRowHashValue, KeyColumns.First().ColumnOrder, (row.index + 1));
                     _errors.Add(error);
+                   
                 }
                 
                 

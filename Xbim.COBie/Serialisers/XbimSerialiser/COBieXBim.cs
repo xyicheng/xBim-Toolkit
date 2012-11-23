@@ -888,6 +888,29 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             return strings;
         }
 
+        /// <summary>
+        /// get name without the thickness value
+        /// </summary>
+        /// <param name="str">string</param>
+        /// <returns>string with (???) removed</returns>
+        public string GetMaterialName(string str)
+        {
+            int end = str.IndexOf("(");
+            if (end < 0) //no bracket found
+            {
+                return str;
+            }
+            return str.Substring(0, end).Trim();
+        }
+
+        public static string TestPerson(IModel model)
+        {
+            var xxx = model.InstancesWhere<IfcSpace>(s => s.Name == "1A01")
+                            .SelectMany(s => s.PropertySets).Where(ps => ps.HasProperties.Where(p => p.Name == "BaseColor").Any())
+                            ;
+            return xxx.First().OwnerHistory.OwningUser.ThePerson.FamilyName;
+        }
+
         //public object GetIt(Type type)
         //{
         //    // Model.InstancesOfType<Ifc????>()

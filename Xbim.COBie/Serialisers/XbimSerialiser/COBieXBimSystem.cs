@@ -111,9 +111,10 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 ifcProduct = Model.InstancesOfType<IfcProduct>().Where(p => p.GlobalId == id).FirstOrDefault(); 
             }
             //if we fail to get IfcProduct from GlobalId then try name
-            if ((ifcProduct == null) && (ValidateString(row.Name)))
+            if ((ifcProduct == null) && (ValidateString(row.ComponentNames)))
             {
-               ifcProduct = Model.InstancesOfType<IfcProduct>().Where(p => p.Name.ToString().ToLower() == row.Name.ToLower()).FirstOrDefault(); 
+                string compName = row.ComponentNames.ToLower().Trim();
+                ifcProduct = Model.InstancesOfType<IfcProduct>().Where(p => p.Name.ToString().ToLower().Trim() == compName).FirstOrDefault(); 
             }
 
             //if we have found product then add to the IfcSystem group

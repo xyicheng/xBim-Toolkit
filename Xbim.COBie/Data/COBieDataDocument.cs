@@ -97,8 +97,8 @@ namespace Xbim.COBie.Data
                 doc.Directory = GetDirectory(fileInfo.Location);
 
                 
-                doc.Description = di.Description.ToString();
-                doc.Reference = di.Name.ToString();
+                doc.Description = (string.IsNullOrEmpty(di.Description)) ? DEFAULT_STRING : di.Description.ToString();
+                doc.Reference = (di.DocumentId.Value != null) ? di.DocumentId.Value.ToString() : DEFAULT_STRING;
 
                 documents.AddRow(doc);
             }

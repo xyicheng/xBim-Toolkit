@@ -99,6 +99,8 @@ namespace Xbim.COBie.Data
             //--------------Loop all IfcMaterialLayerSet-----------------------------
             IEnumerable<IfcMaterialLayerSet> ifcMaterialLayerSets = Model.InstancesOfType<IfcMaterialLayerSet>();
             ChildNamesList rowHolderChildNames = new ChildNamesList();
+            ChildNamesList rowHolderLayerChildNames = new ChildNamesList();
+            
             string createdBy = DEFAULT_STRING, createdOn = DEFAULT_STRING, extSystem = DEFAULT_STRING;
 
             foreach (IfcMaterialLayerSet ifcMaterialLayerSet in ifcMaterialLayerSets)
@@ -135,23 +137,29 @@ namespace Xbim.COBie.Data
                     {
                         string name = ifcMaterialLayer.Material.Name.ToString().Trim();
                         double thickness = ifcMaterialLayer.LayerThickness;
-
-                        if (!rowHolderChildNames.Contains(name.ToLower())) //check we do not already have it
+                        string keyName = name + " (" + thickness.ToString() + ")";
+                        if (!rowHolderLayerChildNames.Contains(keyName.ToLower())) //check we do not already have it
                         {
                             COBieTypeRow matRow = new COBieTypeRow(types);
-                            
-                            matRow.Name = name;
+
+                            matRow.Name = keyName;
                             matRow.CreatedBy = createdBy; 
                             matRow.CreatedOn = createdOn;
                             matRow.ExtSystem = extSystem;
-                            matRow.ExtObject = ifcMaterialLayer.Material.GetType().Name;
+                            matRow.ExtObject = ifcMaterialLayer.GetType().Name;
                             matRow.AssetType = "Fixed";
                             matRow.NominalWidth = thickness.ToString();
+
+                            rowHolderLayerChildNames.Add(keyName.ToLower());
+
+                            //we also don't want to repeat on the IfcMaterial loop below
+                            if (!rowHolderChildNames.Contains(name.ToLower()))
+                                rowHolderChildNames.Add(name.ToLower());
 
                             types.AddRow(matRow);
                         }
 
-                        rowHolderChildNames.Add(name.ToLower());
+                       
                     }
                 }
             }

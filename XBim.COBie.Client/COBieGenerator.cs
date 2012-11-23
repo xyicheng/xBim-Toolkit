@@ -91,7 +91,20 @@ namespace Xbim.COBie.Client
                     timer.Stop();
                     LogBackground(String.Format("Time to generate XBim COBie data = {0} seconds", timer.Elapsed.TotalSeconds.ToString("F3")));
                     
-                    outputFile =  Path.GetFileNameWithoutExtension(parameters.ModelFile) + "COBieToIFC.ifc";
+                    outputFile =  Path.GetFileNameWithoutExtension(parameters.ModelFile) + "-COBieToIFC.ifc";
+                    outputFile = Path.GetDirectoryName(parameters.ModelFile) + "\\" + outputFile;
+                    string GCFile = Path.ChangeExtension(outputFile, "xbimGC");
+                    if (File.Exists(GCFile))
+                    {
+                        try
+                        {
+                            File.Delete(GCFile);
+                        }
+                        catch (Exception ex)
+                        {
+                           LogBackground(String.Format("Failed to delete file {0} - ", GCFile, ex.Message));
+                        }
+                    }
                     LogBackground(String.Format("Creating file {0}....", outputFile));
                     
                     xBimSerialiser.Save(outputFile);
@@ -131,7 +144,6 @@ namespace Xbim.COBie.Client
                     
                     // Export
                     LogBackground(String.Format("Formatting as XLS using {0} template...", Path.GetFileName(parameters.TemplateFile)));
-
                     ICOBieSerialiser serialiser = new COBieXLSSerialiser(outputFile, parameters.TemplateFile);
                     builder.Export(serialiser);
 

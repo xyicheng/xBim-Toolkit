@@ -151,9 +151,9 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                     List<string> Resources = row.ResourceNames.Split(',').ToList<string>(); //did dangerous using , as ',' as user can easily place out of sequence.
                     for (int i = 0; i < Resources.Count; i++)
                     {
-                        Resources[i] = Resources[i].Trim();
+                        Resources[i] = Resources[i].ToLower().Trim().Replace(".", string.Empty); //remove full stop
                     }
-                    IEnumerable<IfcConstructionEquipmentResource> ifcConstructionEquipmentResource = IfcConstructionEquipmentResources.Where(cer => Resources.Contains(cer.Name.ToString().Trim()));
+                    IEnumerable<IfcConstructionEquipmentResource> ifcConstructionEquipmentResource = IfcConstructionEquipmentResources.Where(cer => Resources.Contains(cer.Name.ToString().ToLower().Trim().Replace(".", string.Empty)));
                     if (ifcConstructionEquipmentResource != null) 
                         SetRelAssignsToProcess(ifcTask, ifcConstructionEquipmentResource);
                    

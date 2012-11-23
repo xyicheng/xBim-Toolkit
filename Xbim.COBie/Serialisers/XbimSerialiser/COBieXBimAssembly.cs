@@ -49,12 +49,10 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                         ProgressIndicator.IncrementAndUpdate();
                         COBieAssemblyRow row = cOBieSheet[i];
                         string objType = row.ExtObject.ToLower().Trim();
-                        if ((objType == "ifcrelaggregates") ||
-                            (objType == "ifcrelnests")
-                            )
-                            AddAssembly(row);
-                        else
+                        if (objType.Contains("ifcmaterial"))
                             AddMaterial(row);
+                        else
+                            AddAssembly(row);
                         
                         LastRow = row;
                         
@@ -85,7 +83,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 IfcRelAssociatesMaterial ifcRelAssociatesMaterial = null;
                 IfcBuildingElementProxy ifcBuildingElementProxy = null;
 
-                if ((LastIfcMaterialLayerSet != null) && IsContinuedRow(row)) //this row line is a continuation of objects from the line above
+                if ((LastIfcMaterialLayerSet != null) && IsContinuedMaterialRow(row)) //this row line is a continuation of objects from the line above
                     ifcMaterialLayerSet = LastIfcMaterialLayerSet;
                 else
                 {
@@ -105,7 +103,34 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
 
                 //add the child objects
                 AddChildObjects(ifcMaterialLayerSet, row.ChildNames);
+                LastIfcMaterialLayerSet = ifcMaterialLayerSet;
             }
+        }
+
+        private bool IsContinuedMaterialRow(COBieAssemblyRow row)
+        {
+            if (ValidateString(row.Name))
+            {
+                if (row.Name.Contains(" : continued "))//our flag for a continued assembly child list
+                    return true;
+
+                if (ValidateString(row.ChildNames))
+                {
+                    string name = row.Name.ToLower().Trim();
+                    string lastname = LastRow.Name.ToLower().Trim();
+                    lastname = RemPostFixNumber(lastname);
+
+                    if (name.Contains(lastname))
+                    {
+                        //test to see if ChildName row as a whole text finds a material, if so then a sing material on the row, so assume the material layer set is listed per row, and not in the ChildName field as a delimited string
+                        string test = row.ChildNames.ToLower().Trim();
+                        IfcMaterialLayer ifcMaterialLayer = IfcMaterialLayers.Where(ml => (ml.Material.Name != null) && (ml.Material.Name.ToString().ToLower().Trim() == test)).FirstOrDefault();
+                        if (ifcMaterialLayer != null)
+                            return true;
+                    }
+                }
+            }
+            return false;
         }
 
         /// <summary>
@@ -119,16 +144,16 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             {
                 IfcRelDecomposes ifcRelDecomposes = null;
 
-                if ((LastIfcRelDecomposes != null) && IsContinuedRow(row)) //this row line is a continuation of objects from the line above
+                if ((LastIfcRelDecomposes != null) && IsContinuedAssemblyRow(row)) //this row line is a continuation of objects from the line above
                 {
                     ifcRelDecomposes = LastIfcRelDecomposes;
                 }
                 else
                 {
-                    if (row.ExtObject.ToLower().Trim() == "ifcrelaggregates")
-                        ifcRelDecomposes = Model.New<IfcRelAggregates>();
-                    else
+                    if (row.ExtObject.ToLower().Trim() == "ifcrelnests")
                         ifcRelDecomposes = Model.New<IfcRelNests>();
+                    else
+                        ifcRelDecomposes = Model.New<IfcRelAggregates>();
                     
 
                     //Add Created By, Created On and ExtSystem to Owner History. 
@@ -161,27 +186,74 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             }
         }
 
-        private bool IsContinuedRow(COBieAssemblyRow row)
+        private bool IsContinuedAssemblyRow(COBieAssemblyRow row)
         {
             if (ValidateString(row.Name))
             {
-		        if (row.Name.Contains(" : continued ") )
+		        if (row.Name.Contains(" : continued ") )//our flag for a continued assembly child list
                     return true;
 
                 if (ValidateString(row.ChildNames))
                 {
                     string name = row.Name.ToLower().Trim();
                     string lastname = LastRow.Name.ToLower().Trim();
-                
-                    List<string> splitChildNames = GetChildNames(row.ChildNames);
-                    //if the row name holds the same string as the last row within it, and the child is a single entry, then we can assume it is lightly row be a continuation on the assembly/MaterialSet used in the last row
-                    if ((name.Contains(lastname)) && (splitChildNames.Count() == 1)) 
-                        return true;
+                    lastname = RemPostFixNumber(lastname);
+
+                    if (name.Contains(lastname))
+                    {
+                        //this is a bit messy but gets over the placement of : on single entries
+                        IEnumerable<IfcObjectDefinition> childObjs = GetSheetObjectList(row.SheetName);
+                        //check that the name is not a single element, also gets over single entries with : in them
+                        string test = row.ChildNames.ToLower().Trim();
+                        IfcObjectDefinition RelatedObject = childObjs.Where(obj => obj.Name.ToString().ToLower().Trim() == test).FirstOrDefault();
+                        if (RelatedObject != null)
+                            return true;
+                    }
                 }
             }
             return false;
         }
 
+        /// <summary>
+        /// Remove the post fix numbers on a string
+        /// </summary>
+        /// <param name="str">string to process</param>
+        /// <returns>String with post fix numbers removed</returns>
+        private string RemPostFixNumber (string str)
+        {
+            for (int i = (str.Length - 1); i >= 0 ; i--)
+			{
+                if (char.IsDigit(str[i]))
+                    str = str.Remove(i);
+                else
+                    break;
+            }
+            return str;
+        }
+
+        
+
+        /// <summary>
+        /// Get any value held in ()
+        /// </summary>
+        /// <param name="str">string</param>
+        /// <returns>double value or null</returns>
+        private double? GetLayerThickness(string str)
+        {
+            int start = str.IndexOf("(");
+            int end = str.IndexOf(")");
+            if ((start < 0) || (end < 0)) //faild to find bracket pair
+            {
+                return null;
+            }
+            str = str.Substring((start + 1), (end - start - 1));
+
+            double value;
+            if (double.TryParse(str, out value))
+                return value;
+            else
+                return null;
+        }
         
 
         /// <summary>
@@ -214,25 +286,46 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         private bool AddChildObjects(IfcRelDecomposes ifcRelDecomposes, string sheetName, string childNames)
         {
             bool returnValue = false;
-            IEnumerable<IfcObjectDefinition> childObjs;
-            if (sheetName.ToLower() == Constants.WORKSHEET_COMPONENT.ToLower()) 
-                childObjs = IfcElements;
-            else //if not components then it should by Type
-                childObjs = IfcTypeObjects;
-
-            List<string> splitChildNames = GetChildNames(childNames);
-            
-            foreach (string item in splitChildNames)
+            IEnumerable<IfcObjectDefinition> childObjs  = GetSheetObjectList(sheetName);
+            //check that the name is not a single element, also gets over single entries with : in them
+            string test = childNames.ToLower().Trim();
+            IfcObjectDefinition RelatedObject = childObjs.Where(obj => obj.Name.ToString().ToLower().Trim() == test).FirstOrDefault();
+            if (RelatedObject != null)
             {
-                string name = item.ToLower().Trim();
-                IfcObjectDefinition RelatedObject = childObjs.Where(obj => obj.Name.ToString().ToLower().Trim() == name).FirstOrDefault();
-                if (RelatedObject != null)
+                ifcRelDecomposes.RelatedObjects.Add_Reversible(RelatedObject);
+                returnValue = true;
+            }
+            else //ok nothing found for the full string so assume delimited string
+            {
+                List<string> splitChildNames = GetChildNames(childNames);
+
+                foreach (string item in splitChildNames)
                 {
-                    ifcRelDecomposes.RelatedObjects.Add_Reversible(RelatedObject);
-                    returnValue = true;
+                    string name = item.ToLower().Trim();
+                    RelatedObject = childObjs.Where(obj => obj.Name.ToString().ToLower().Trim() == name).FirstOrDefault();
+                    if (RelatedObject != null)
+                    {
+                        ifcRelDecomposes.RelatedObjects.Add_Reversible(RelatedObject);
+                        returnValue = true;
+                    }
                 }
             }
             return returnValue;
+        }
+
+        /// <summary>
+        /// Get the ObjectDefinitions related to the sheet
+        /// </summary>
+        /// <param name="sheetName">Sheet name we are wanting the objects for</param>
+        /// <returns>IEnumerable of IfcObjectDefinition</returns>
+        private IEnumerable<IfcObjectDefinition> GetSheetObjectList(string sheetName)
+        {
+            IEnumerable<IfcObjectDefinition> childObjs;
+            if (sheetName.ToLower() == Constants.WORKSHEET_COMPONENT.ToLower())
+                childObjs = IfcElements;
+            else //if not components then it should by Type
+                childObjs = IfcTypeObjects;
+            return childObjs;
         }
 
         /// <summary>
@@ -262,9 +355,24 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
 
             foreach (string item in splitChildNames)
             {
-                string name = item.ToLower().Trim();
+                string name = item;
+                double? thickness = GetLayerThickness(name);
+                name = GetMaterialName(name).ToLower().Trim();
+                IfcMaterialLayer ifcMaterialLayer = null;
+                    
+                IEnumerable<IfcMaterialLayer> ifcMaterialLayers = IfcMaterialLayers.Where(ml => (ml.Material.Name != null) && (ml.Material.Name.ToString().ToLower().Trim() == name));
+                if ((ifcMaterialLayers.Any()) && 
+                    (ifcMaterialLayers.Count() > 1) &&
+                    (thickness != null)
+                    )
+                {
+                    ifcMaterialLayer = ifcMaterialLayers.Where(ml => ml.LayerThickness == thickness).FirstOrDefault();
+                }
+                else
+                {
+                    ifcMaterialLayer = ifcMaterialLayers.FirstOrDefault();
+                }
 
-                IfcMaterialLayer ifcMaterialLayer = IfcMaterialLayers.Where(ml => (ml.Material.Name != null) && (ml.Material.Name.ToString().ToLower().Trim() == name)).FirstOrDefault();
                 if (ifcMaterialLayer != null)
                 {
                     ifcMaterialLayerSet.MaterialLayers.Add_Reversible(ifcMaterialLayer);

@@ -12,6 +12,7 @@ using Xbim.Ifc.PropertyResource;
 using Xbim.Ifc.SelectTypes;
 using Xbim.Ifc.UtilityResource;
 using Xbim.Ifc.ExternalReferenceResource;
+using Xbim.Ifc.ConstructionMgmtDomain;
 
 namespace Xbim.COBie.Serialisers.XbimSerialiser
 {
@@ -25,6 +26,8 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         public IEnumerable<IfcElement> IfcElements { get; private set; }
         public IEnumerable<IfcZone> IfcZones { get; private set; }
         public IEnumerable<IfcBuilding> IfcBuildings { get; private set; }
+        public IEnumerable<IfcConstructionProductResource> IfcConstructionProductResources { get; private set; }
+        
         private IfcObjectDefinition CurrentObject { get; set; }
         #endregion
 
@@ -54,8 +57,8 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                     {
                         ProgressIndicator.IncrementAndUpdate();
                         AddAttribute(row);
+                        
                     }
-
                     ProgressIndicator.Finalise();
                     trans.Commit();
                 }
@@ -99,6 +102,11 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                         if (!((CurrentObject is IfcTypeObject) && (CurrentObject.Name == row.RowName)))
                             CurrentObject = IfcTypeObjects.Where(b => b.Name.ToString().ToLower() == row.RowName.ToLower()).FirstOrDefault();
                         break;
+                    case "spare":
+                        if (IfcConstructionProductResources == null) IfcConstructionProductResources = Model.InstancesOfType<IfcConstructionProductResource>();
+                        if (!((CurrentObject is IfcConstructionProductResource) && (CurrentObject.Name == row.RowName)))
+                            CurrentObject = IfcConstructionProductResources.Where(b => b.Name.ToString().ToLower() == row.RowName.ToLower()).FirstOrDefault();
+                        break;
                     case "component":
                         if (IfcElements == null) IfcElements = Model.InstancesOfType<IfcElement>();
                         if (!((CurrentObject is IfcElement) && (CurrentObject.Name == row.RowName)))
@@ -110,34 +118,42 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                             CurrentObject = IfcZones.Where(b => b.Name.ToString().ToLower() == row.RowName.ToLower()).FirstOrDefault();
                         break;
                     default:
+                        CurrentObject = null;
                         break;
                 }
                
                 if (CurrentObject != null)
                 {
                     string pSetName = "";
-                    if ((ValidateString(row.Name)) &&
-                        (!string.IsNullOrEmpty(row.Value)) &&
-                        (!string.IsNullOrEmpty(row.ExtObject))
-                        )
+                    if (ValidateString(row.Name)) 
                     {
+                        if (ValidateString(row.ExtObject))
+                            pSetName = row.ExtObject;
+                        else
+                            pSetName = "PSet_COBie_UnSpecified_for_" + row.Name;
 
-                        pSetName = row.ExtObject;
-                        if (!pSetName.Contains("PSet_")) pSetName = "PSet_" + pSetName;
+                        if (!pSetName.ToLower().Contains("pset_")) pSetName = "PSet_" + pSetName;
                         IfcPropertySet ifcPropertySet = null;
 
                         if (CurrentObject is IfcObject)
                             ifcPropertySet = AddPropertySet((IfcObject)CurrentObject, pSetName, "");
                         else if (CurrentObject is IfcTypeObject)
                             ifcPropertySet = AddPropertySet((IfcTypeObject)CurrentObject, pSetName, "");
-                        
+
+                        //Add GlobalId
+                        AddGlobalId(row.ExtIdentifier, ifcPropertySet);
+                        //Set Description
+                        string description = "";
+                        if (ValidateString(row.Description))
+                            description = row.Description;
+
                         //set the unit used for property
                         IfcUnit ifcUnit = null;
                         if (ValidateString(row.Unit))
                         {
                             ifcUnit = GetDurationUnit(row.Unit); //see if time unit
                             //see if we can convert to a IfcSIUnit
-                            if (ifcUnit == null) 
+                            if (ifcUnit == null)
                                 ifcUnit = GetSIUnit(row.Unit);
                             //OK set as a user defined
                             if (ifcUnit == null)
@@ -152,7 +168,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                         {
                             IfcValue[] ifcValues = GetValueArray(row.Value);
                             IfcValue[] ifcValueEnums = GetValueArray(row.AllowedValues);
-                            AddPropertyEnumeratedValue(ifcPropertySet, row.Name, "", ifcValues, ifcValueEnums, ifcUnit);
+                            AddPropertyEnumeratedValue(ifcPropertySet, row.Name, description, ifcValues, ifcValueEnums, ifcUnit);
                         }
                         else
                         {
@@ -162,7 +178,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                                 ifcValue = new IfcReal((double)number);
                             else
                                 ifcValue = new IfcLabel(row.Value);
-                            AddPropertySingleValue(ifcPropertySet, row.Name, "", ifcValue, ifcUnit);
+                            AddPropertySingleValue(ifcPropertySet, row.Name, description, ifcValue, ifcUnit);
                         }
 
                         //Add Category****
@@ -172,7 +188,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                         }
 
                         //****************Note need this as last call Add OwnerHistory*************
-                        if (ifcPropertySet != null) 
+                        if (ifcPropertySet != null)
                         {
                             if ((ValidateString(row.CreatedBy)) && (Contacts.ContainsKey(row.CreatedBy)))
                             {
@@ -181,9 +197,27 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                         }
                         //****************Note need SetOwnerHistory above to be last call, as XBim changes to default on any property set or changed, cannot use edit context as property set used more than once per row******
                     }
+                    else
+                    {
+ #if DEBUG
+                        Console.WriteLine("Failed to create attribute. No name : {0} value {1}", row.Name, row.ExtObject);
+#endif
+                    }
                     
                 }
+                else
+                {
+#if DEBUG
+                    Console.WriteLine("Failed to create attribute. No object fond to add too {0} value {1}", row.Name, row.ExtObject);
+#endif
+                }
                 
+            }
+            else
+            {
+#if DEBUG
+                Console.WriteLine("Failed to create attribute. No sheet or row name {0} value {1}", row.Name, row.ExtObject);
+#endif
             }
             
         }

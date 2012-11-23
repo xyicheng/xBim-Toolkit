@@ -138,23 +138,22 @@ namespace Xbim.COBie.Data
         internal string GetComponentRelatedSpace(IfcElement el)
         {
             string value = "";
-            var xxx = Model.InstancesOfType<IfcRelContainedInSpatialStructure>().Where(rciss => rciss.RelatedElements.Contains(el)).FirstOrDefault();
             if (el != null && el.ContainedInStructure.Count() > 0)
             {
-                var owningSpace = el.ContainedInStructure.Select(cis => cis.RelatingStructure).OfType<IfcSpace>().FirstOrDefault(); //only one or zero held in ContainedInStructure
-                if ((owningSpace != null) && (owningSpace.Name != null))
-                    value = owningSpace.Name.ToString();
-                else
+                IEnumerable<IfcRoot> owningObjects = el.ContainedInStructure.Select(cis => cis.RelatingStructure).OfType<IfcSpace>(); //only one or zero held in ContainedInStructure
+                if (!owningObjects.Any())
+                    owningObjects = el.ContainedInStructure.Select(cis => cis.RelatingStructure).OfType<IfcBuildingStorey>(); //only one or zero held in ContainedInStructure
+                if (!owningObjects.Any()) 
+                    owningObjects = el.ContainedInStructure.Select(cis => cis.RelatingStructure).OfType<IfcBuilding>(); //only one or zero held in ContainedInStructure
+                if (owningObjects.Any())
                 {
-                    var owningFloor = el.ContainedInStructure.Select(cis => cis.RelatingStructure).OfType<IfcBuildingStorey>().FirstOrDefault(); //only one or zero held in ContainedInStructure
-                    if ((owningFloor != null) && (owningFloor.Name != null))
-                        value = owningFloor.Name.ToString();
-                    else
+                    List<string> names = new List<string>();
+                    foreach (IfcRoot item in owningObjects)
                     {
-                        var owningBuilding = el.ContainedInStructure.Select(cis => cis.RelatingStructure).OfType<IfcBuilding>().FirstOrDefault(); //only one or zero held in ContainedInStructure
-                        if ((owningBuilding != null) && (owningBuilding.Name != null))
-                            value = owningBuilding.Name.ToString();
+                        if (item.Name != null)
+                            names.Add(item.Name);
                     }
+                    value = string.Join(", ", names);
                 }
             }
             

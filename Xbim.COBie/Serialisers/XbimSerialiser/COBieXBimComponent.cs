@@ -79,7 +79,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             {
                 //Create object using reflection
                 IfcType ifcType;
-                if (IfcInstances.IfcTypeLookup.TryGetValue(row.ExtObject.ToUpper(), out ifcType))
+                if (IfcInstances.IfcTypeLookup.TryGetValue(row.ExtObject.Trim().ToUpper(), out ifcType))
                 {
                     MethodInfo method = typeof(IModel).GetMethod("New", Type.EmptyTypes);
                     MethodInfo generic = method.MakeGenericMethod(ifcType.Type);
@@ -126,27 +126,48 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                                 IfcTypeObject ifcTypeObject = IfcTypeObjects.Where(to => to.Name.ToString().ToLower() == row.TypeName.ToLower()).FirstOrDefault();
                                 if (ifcTypeObject != null)
                                     ifcElement.SetDefiningType(ifcTypeObject, Model);
+                                else
+                                    ifcElement.ObjectType = row.TypeName; //no type so save type name in IfcLable property of IfcObject
                             }
                             //set up relationship of the component to the space
                             if (ValidateString(row.Space))
                             {
-                                IfcSpace ifcSpace = IfcSpaces.Where(space => space.Name == row.Space).FirstOrDefault();
-                                if (ifcSpace != null)
-                                    ifcSpace.AddElement(ifcElement);
-                                else //assume that it has a building association
+                                string spaceNames = row.Space.ToLower().Trim();
+                                char SplitChar = ',';
+                                if (spaceNames.Contains(":"))
+                                    SplitChar = ':';
+                                string[] spaceArray = spaceNames.Split(SplitChar);
+                                IfcSpace ifcSpace = null;
+                                foreach (string spaceitem in spaceArray)
                                 {
-                                    IfcBuildingStorey ifcBuildingStorey = IfcBuildingStoreys.Where(bs => bs.Name == row.Space).FirstOrDefault();
-                                    if (ifcBuildingStorey != null)
-                                        ifcBuildingStorey.AddElement(ifcElement);
+                                    string spaceName = spaceitem.Trim();
+                                    ifcSpace = IfcSpaces.Where(space => space.Name.ToString().ToLower().Trim() == spaceName).FirstOrDefault();
+                                    if (ifcSpace != null)
+                                        ifcSpace.AddElement(ifcElement);
                                     else
-                                        GetBuilding().AddElement(ifcElement); //default to building, probably give incorrect bounding box as we do not know what the element parent was
-
+                                    {
+                                        IfcBuildingStorey ifcBuildingStorey = IfcBuildingStoreys.Where(bs => bs.Name.ToString().ToLower().Trim() == spaceName).FirstOrDefault();
+                                        if (ifcBuildingStorey != null)
+                                            ifcBuildingStorey.AddElement(ifcElement);
+                                        else
+                                            GetBuilding().AddElement(ifcElement); //default to building, probably give incorrect bounding box as we do not know what the element parent was
+                                    }
                                 }
-
-
                             }
                         }
                     }
+                    else
+                    {
+#if DEBUG
+                        Console.WriteLine("Failed to create {0} of {1}", row.Name, row.ExtObject);
+#endif
+                    }
+                }
+                else
+                {
+#if DEBUG
+                    Console.WriteLine("Failed to create {0} of {1}", row.Name, row.ExtObject);
+#endif
                 }
             
             }

@@ -21,6 +21,8 @@ namespace Xbim.COBie
         public SpaceValues Space { get; set; }
         public TypeValues Types { get; set; }
         public ZoneValues Zone { get; set; }
+        public SpareValues Spare { get; set; }
+        
 
         public FilterValues()
         {
@@ -32,6 +34,7 @@ namespace Xbim.COBie
             Space = new SpaceValues();
             Types = new TypeValues();
             Zone = new ZoneValues();
+            Spare = new SpareValues();
         }
     }
 
@@ -289,6 +292,28 @@ namespace Xbim.COBie
 
         }
         
+    }
+
+    /// <summary>
+    /// Attribute exclude strings class, for Spare sheet
+    /// </summary>
+    public class SpareValues
+    {
+        /// <summary>
+        /// List of property names that are to be excluded from the Attributes generated from the Spare sheet with equal compare
+        /// </summary>
+        public List<string> AttributesEqualTo { get; private set; }
+        /// <summary>
+        /// List of property names that are to be excluded from the Attributes generated from the Spare sheet with contains compare
+        /// </summary>
+        public List<string> AttributesContain { get; private set; }
+        public SpareValues()
+        {
+            AttributesEqualTo = new List<string> { "Suppliers"}; //excludePropertyValueNames
+            AttributesContain = new List<string> { "Suppliers" };
+
+        }
+
     }
 
     /// <summary>

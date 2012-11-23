@@ -27,7 +27,7 @@ namespace Xbim.COBie
         public Dictionary<long, string> EMails { get; private set; } //contact list<EntityLable, emailaddress>
         public string TemplateFileName { get; set; } //template used by the workbook
         public string RunDate { get; set; } //Date the Workbook was created on
-        
+
         private  GlobalUnits _workBookUnits;
         /// <summary>
         /// Global Units for the workbook
@@ -67,6 +67,7 @@ namespace Xbim.COBie
             DepartmentsUsedAsZones = false;
 
             Exclude = new FilterValues();
+            
         }
 
         public COBieContext(ReportProgressDelegate progressHandler = null) : this() 
