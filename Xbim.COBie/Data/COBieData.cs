@@ -100,7 +100,8 @@ namespace Xbim.COBie.Data
                     //but if the time stamp is Coordinated Universal Time (UTC), then daylight time should be ignored. see http://msdn.microsoft.com/en-us/library/bb546099.aspx
                     //IfcTimeStamp.ToDateTime(CreatedOnTStamp).ToLocalTime()...; //test to see if corrects 1 hour difference, and yes it did, but should we?
 
-                    return IfcTimeStamp.ToDateTime(createdOnTStamp).ToUniversalTime().ToString(Constants.DATETIME_FORMAT);
+                    return IfcTimeStamp.ToDateTime(createdOnTStamp).ToString(Constants.DATETIME_FORMAT);
+                    
                 }
             }
             return null;
