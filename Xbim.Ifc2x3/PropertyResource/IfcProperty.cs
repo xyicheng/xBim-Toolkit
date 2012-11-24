@@ -56,7 +56,7 @@ namespace Xbim.Ifc2x3.PropertyResource
     /// <summary>
     ///   Definition from IAI: An abstract generalization for all types of properties that can be associated with IFC objects through the property set mechanism.
     /// </summary>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute, Serializable, IndexedClass]
     public abstract class IfcProperty : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                         INotifyPropertyChanging
     {
