@@ -1,6 +1,27 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{B5EDEE8A-69B9-47E5-8455-E1A9A7ED8969}"
+	ProjectSection(SolutionItems) = preProject
+		SharedAssemblyInfo.cpp = SharedAssemblyInfo.cpp
+		SharedAssemblyInfo.cs = SharedAssemblyInfo.cs
+		Xbim.ModelGeometry\Version.rc = Xbim.ModelGeometry\Version.rc
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{0DA6263B-5A69-401E-99D0-391644EF4709}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{7ECDCF15-95BB-4D2B-8C0D-8615D6E3BAB1}"
+	ProjectSection(SolutionItems) = preProject
+		Local.testsettings = Local.testsettings
+		TraceAndTestImpact.testsettings = TraceAndTestImpact.testsettings
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{25F1A002-D766-40FD-910C-D3E9DCC6FCBF}"
+	ProjectSection(SolutionItems) = preProject
+		TestSettings1.testsettings = TestSettings1.testsettings
+		XbimComplete.vsmdi = XbimComplete.vsmdi
+	EndProjectSection
+EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Xbim.ModelGeometry", "Xbim.ModelGeometry\Xbim.ModelGeometry.vcxproj", "{CBCA1EFC-7459-4A0E-A42D-55D4F58051BF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.IO", "Xbim.IO\Xbim.IO.csproj", "{85856DF2-C8AB-4120-8A8D-AE05D2696B51}"
@@ -18,13 +39,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.DOM", "Xbim.DOM\Xbim.D
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.Common", "Xbim.Common\Xbim.Common.csproj", "{6745F5AC-AF3C-4372-81AA-A75E7B1FA03B}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{B5EDEE8A-69B9-47E5-8455-E1A9A7ED8969}"
-	ProjectSection(SolutionItems) = preProject
-		SharedAssemblyInfo.cpp = SharedAssemblyInfo.cpp
-		SharedAssemblyInfo.cs = SharedAssemblyInfo.cs
-		Xbim.ModelGeometry\Version.rc = Xbim.ModelGeometry\Version.rc
-	EndProjectSection
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.SceneJSWebViewer", "Xbim.Web.SceneJSWebViewer\Xbim.SceneJSWebViewer.csproj", "{219A127E-82B8-43A1-8959-7102E4724F8F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XbimConvert", "XbimConvert\XbimConvert.csproj", "{5B6AC153-AC56-4B01-8734-88EAB805A6DB}"
@@ -36,20 +50,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.COBie", "Xbim.COBie\Xbim.COBie.csproj", "{7DA8C61A-ACCA-45CB-B688-93A4982FA44C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XBim.COBie.Client", "XBim.COBie.Client\XBim.COBie.Client.csproj", "{FB5A1829-7B34-4DE9-94A9-AF3AD36320BB}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{0DA6263B-5A69-401E-99D0-391644EF4709}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{7ECDCF15-95BB-4D2B-8C0D-8615D6E3BAB1}"
-	ProjectSection(SolutionItems) = preProject
-		Local.testsettings = Local.testsettings
-		TraceAndTestImpact.testsettings = TraceAndTestImpact.testsettings
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{25F1A002-D766-40FD-910C-D3E9DCC6FCBF}"
-	ProjectSection(SolutionItems) = preProject
-		TestSettings1.testsettings = TestSettings1.testsettings
-		XbimComplete.vsmdi = XbimComplete.vsmdi
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "3 SimpleHelloWall", "Examples\3 SimpleHelloWall\3 SimpleHelloWall.csproj", "{3E685E73-8207-4C99-A146-3BFF00CA5A74}"
 EndProject
@@ -140,6 +140,7 @@ Global
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{CBCA1EFC-7459-4A0E-A42D-55D4F58051BF}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{CBCA1EFC-7459-4A0E-A42D-55D4F58051BF}.Debug|Any CPU.Build.0 = Debug|Win32
 		{CBCA1EFC-7459-4A0E-A42D-55D4F58051BF}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
 		{CBCA1EFC-7459-4A0E-A42D-55D4F58051BF}.Debug|Mixed Platforms.Build.0 = Debug|Win32
 		{CBCA1EFC-7459-4A0E-A42D-55D4F58051BF}.Debug|x64.ActiveCfg = Debug|x64
@@ -357,21 +358,25 @@ Global
 		{3E685E73-8207-4C99-A146-3BFF00CA5A74}.Release|x86.ActiveCfg = Release|x86
 		{3E685E73-8207-4C99-A146-3BFF00CA5A74}.Release|x86.Build.0 = Release|x86
 		{5D4C907D-1293-4E5F-9642-D0862AE4741C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5D4C907D-1293-4E5F-9642-D0862AE4741C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5D4C907D-1293-4E5F-9642-D0862AE4741C}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
 		{5D4C907D-1293-4E5F-9642-D0862AE4741C}.Debug|x64.ActiveCfg = Debug|x64
 		{5D4C907D-1293-4E5F-9642-D0862AE4741C}.Debug|x86.ActiveCfg = Debug|x86
 		{5D4C907D-1293-4E5F-9642-D0862AE4741C}.Debug|x86.Build.0 = Debug|x86
 		{5D4C907D-1293-4E5F-9642-D0862AE4741C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5D4C907D-1293-4E5F-9642-D0862AE4741C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5D4C907D-1293-4E5F-9642-D0862AE4741C}.Release|Mixed Platforms.ActiveCfg = Release|x86
 		{5D4C907D-1293-4E5F-9642-D0862AE4741C}.Release|x64.ActiveCfg = Release|x64
 		{5D4C907D-1293-4E5F-9642-D0862AE4741C}.Release|x86.ActiveCfg = Release|x86
 		{5D4C907D-1293-4E5F-9642-D0862AE4741C}.Release|x86.Build.0 = Release|x86
 		{09870F18-1796-4A3E-A66D-68DB3DA60B24}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{09870F18-1796-4A3E-A66D-68DB3DA60B24}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{09870F18-1796-4A3E-A66D-68DB3DA60B24}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
 		{09870F18-1796-4A3E-A66D-68DB3DA60B24}.Debug|x64.ActiveCfg = Debug|x64
 		{09870F18-1796-4A3E-A66D-68DB3DA60B24}.Debug|x86.ActiveCfg = Debug|x86
 		{09870F18-1796-4A3E-A66D-68DB3DA60B24}.Debug|x86.Build.0 = Debug|x86
 		{09870F18-1796-4A3E-A66D-68DB3DA60B24}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{09870F18-1796-4A3E-A66D-68DB3DA60B24}.Release|Any CPU.Build.0 = Release|Any CPU
 		{09870F18-1796-4A3E-A66D-68DB3DA60B24}.Release|Mixed Platforms.ActiveCfg = Release|x86
 		{09870F18-1796-4A3E-A66D-68DB3DA60B24}.Release|x64.ActiveCfg = Release|x64
 		{09870F18-1796-4A3E-A66D-68DB3DA60B24}.Release|x86.ActiveCfg = Release|x86
@@ -397,13 +402,13 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
+		{D6CED5D7-BE37-4A32-90A5-1444C9FFDD91} = {0DA6263B-5A69-401E-99D0-391644EF4709}
 		{219A127E-82B8-43A1-8959-7102E4724F8F} = {0DA6263B-5A69-401E-99D0-391644EF4709}
 		{5B6AC153-AC56-4B01-8734-88EAB805A6DB} = {0DA6263B-5A69-401E-99D0-391644EF4709}
 		{FB5A1829-7B34-4DE9-94A9-AF3AD36320BB} = {0DA6263B-5A69-401E-99D0-391644EF4709}
-		{D6CED5D7-BE37-4A32-90A5-1444C9FFDD91} = {0DA6263B-5A69-401E-99D0-391644EF4709}
 		{3E685E73-8207-4C99-A146-3BFF00CA5A74} = {0DA6263B-5A69-401E-99D0-391644EF4709}
 		{BA6195C4-0F45-43F4-82D1-32AAD0E69B86} = {0DA6263B-5A69-401E-99D0-391644EF4709}
-		{6EF22FB8-7048-4E6A-9B2F-AC2570A998A9} = {7ECDCF15-95BB-4D2B-8C0D-8615D6E3BAB1}
 		{8729CDD1-B493-48EC-A867-61ABAF3E93D2} = {7ECDCF15-95BB-4D2B-8C0D-8615D6E3BAB1}
+		{6EF22FB8-7048-4E6A-9B2F-AC2570A998A9} = {7ECDCF15-95BB-4D2B-8C0D-8615D6E3BAB1}
 	EndGlobalSection
 EndGlobal

@@ -37,7 +37,7 @@ namespace Xbim.Ifc2x3.CostResource
     ///   Similarly, an IfcAppliedValue may have a 'fixed until' date. This is intended to fix the date on which the value ceases to be relevant for use. 
     ///   An instance of IfcAppliedValue may have a unit basis asserted. This is defined as an IfcMeasureWithUnit that determines the extent of the unit value for application purposes. It is assumed that when this attribute is asserted, then the value given to IfcAppliedValue is that for unit quantity. This is not enforced within the IFC schema and thus needs to be controlled within an application.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute, Serializable, IndexedClass]
     public abstract class IfcAppliedValue : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                             IfcObjectReferenceSelect, INotifyPropertyChanging
     {

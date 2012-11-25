@@ -21,7 +21,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc2x3.GeometricConstraintResource
 {
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute, Serializable, IndexedClass]
     public class IfcConnectionSurfaceGeometry : IfcConnectionGeometry
     {
         #region Fields
@@ -33,7 +33,7 @@ namespace Xbim.Ifc2x3.GeometricConstraintResource
 
         #region Properties
 
-        [IfcAttribute(1, IfcAttributeState.Mandatory)]
+        [IfcAttribute(1, IfcAttributeState.Mandatory), IndexedProperty]
         public IfcSurfaceOrFaceSurface SurfaceOnRelatingElement
         {
             get
@@ -48,7 +48,7 @@ namespace Xbim.Ifc2x3.GeometricConstraintResource
             }
         }
 
-        [IfcAttribute(2, IfcAttributeState.Optional)]
+        [IfcAttribute(2, IfcAttributeState.Optional), IndexedProperty]
         public IfcSurfaceOrFaceSurface SurfaceOnRelatedElement
         {
             get

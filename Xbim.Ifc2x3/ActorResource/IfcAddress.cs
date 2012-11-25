@@ -125,7 +125,7 @@ namespace Xbim.Ifc2x3.ActorResource
     /// <summary>
     ///   WR1   :   EXISTS (InternalLocation) OR EXISTS (AddressLines) OR EXISTS (PostalBox) OR EXISTS (PostalCode) OR EXISTS (Town) OR EXISTS (Region) OR EXISTS (Country);
     /// </summary>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute, Serializable, IndexedClass]
     public abstract class IfcAddress : IPersistIfcEntity, IFormattable, ISupportChangeNotification,
                                        INotifyPropertyChanged, IfcObjectReferenceSelect, INotifyPropertyChanging
     {

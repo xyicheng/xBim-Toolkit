@@ -40,7 +40,7 @@ namespace Xbim.Ifc2x3.CostResource
     ///   A = ((E * F) + C + (G * H * J)) 
     ///   EXPRESS specification:
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute, Serializable, IndexedClass]
     public class IfcAppliedValueRelationship : ISupportChangeNotification, INotifyPropertyChanged, IPersistIfcEntity,
                                                INotifyPropertyChanging
     {

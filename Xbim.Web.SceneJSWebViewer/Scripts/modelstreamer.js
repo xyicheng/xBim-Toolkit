@@ -21,7 +21,7 @@ CommandCode = {
 //////////////////////////////////////////////////////////
 function StartLoadingDynamicModel(Scene, StartAtNode, Model) {
     ModelID = Model;
-
+    
     //reset progress bar
     $("#loadedbar").progressbar({ value: 0 });
 
@@ -102,7 +102,7 @@ function GrabNextGeoPiece() {
         if (failedpieces > 0) {
             alert("Model finished loading. " + failedpieces + " products have no geometry to display");
         }
-        addClassification(ModelID);
+        //addClassification(ModelID);
     } else {
         if (!pauseDownload) { //if we haven't paused the download
             //Get the lesser of batch size or how many are remaining

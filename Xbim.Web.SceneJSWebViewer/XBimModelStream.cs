@@ -19,6 +19,7 @@ namespace Xbim.SceneJSWebViewer
     using Xbim.IO;
     using Xbim.ModelGeometry.Scene;
     using Xbim.Common.Logging;
+    using Xbim.XbimExtensions;
 
     /// <summary>
     /// An XBim implementation of an <see cref="IModelStream"/>. 
@@ -82,7 +83,7 @@ namespace Xbim.SceneJSWebViewer
             string xbimFile = model + ".xbim";
             string gcFile = model + ".xbimGC";
 
-            if ((!File.Exists(xbimFile) || !File.Exists(gcFile)))
+            if (!File.Exists(xbimFile))
             {
                 Logger.WarnFormat("Timed out waiting for XBIM files to become available for model : {0}", model);
                 throw new System.TimeoutException("Model Stream Timed Out Waiting for Model Caching");
@@ -91,8 +92,8 @@ namespace Xbim.SceneJSWebViewer
             _modelId = model;
             _model = new XbimModel();
             _model.Open(xbimFile);
-            _scene = new XbimSceneStream(_model, gcFile); // opens the pre-calculated Geometry file
-            Init(model);
+           // _scene = new XbimSceneStream(_model, gcFile); // opens the pre-calculated Geometry file
+            //Init(model);
         }
 
         #endregion
@@ -116,35 +117,13 @@ namespace Xbim.SceneJSWebViewer
         {
             BoundingBox box = new BoundingBox();
 
-            foreach (var item in Scene.Graph.ProductNodes)
+            foreach (XbimGeometryData shape in _model.Shapes(XbimGeometryType.BoundingBox))
             {
-                XbimTriangulatedModelStream tm = null;
-                try
-                {
-                    tm = Scene.Triangulate(item.Value);
-                }
-                catch (Exception) { continue; }
-
-                if (tm != null)
-                {
-                    if (item.Value != null)
-                    {
-                        if (item.Value.BoundingBox != null)
-                        {
-                            if (item.Value.BoundingBox.SizeX + item.Value.BoundingBox.SizeY + item.Value.BoundingBox.SizeZ != 0)
-                            {
-                                BoundingBox bb = new BoundingBox();
-                                Point3D min = new Point3D(item.Value.BoundingBox.X, item.Value.BoundingBox.Y, item.Value.BoundingBox.Z);
-                                Point3D max = new Point3D(item.Value.BoundingBox.X + item.Value.BoundingBox.SizeX,
-                                    item.Value.BoundingBox.Y + item.Value.BoundingBox.SizeY,
-                                    item.Value.BoundingBox.Z + item.Value.BoundingBox.SizeZ);
-                                bb.IncludePoint(min);
-                                bb.IncludePoint(max);
-                                box.IncludeBoundingBox(bb.TransformBy(item.Value.WorldMatrix()));
-                            }
-                        }
-                    }
-                }
+                
+                Matrix3D matrix3d = new Matrix3D().FromArray(shape.TransformData);
+                BoundingBox bb = BoundingBox.FromArray(shape.ShapeData);
+                bb.TransformBy(matrix3d);
+              
             }
             return box;
         }

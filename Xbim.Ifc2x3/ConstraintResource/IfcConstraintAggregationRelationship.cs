@@ -27,7 +27,7 @@ namespace Xbim.Ifc2x3.ConstraintResource
     ///   An IfcConstraintAggregationRelationship is an objectified relationship that enables instances
     ///   of IfcConstraint and its subtypes to be aggregated together logically.
     /// </summary>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute, Serializable, IndexedClass]
     public class IfcConstraintAggregationRelationship : INotifyPropertyChanged, ISupportChangeNotification,
                                                         IPersistIfcEntity, INotifyPropertyChanging
     {

@@ -54,7 +54,7 @@ namespace Xbim.Ifc2x3.ActorResource
         }
     }
 
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute, Serializable, IndexedClass]
     public class IfcPerson : IfcActorSelect, IPersistIfcEntity, IFormattable, ISupportChangeNotification,
                              INotifyPropertyChanged, IfcObjectReferenceSelect, INotifyPropertyChanging
     {

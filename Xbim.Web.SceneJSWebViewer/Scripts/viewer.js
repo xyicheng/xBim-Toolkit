@@ -518,9 +518,10 @@ function ajaxFileUpload() {
    .ajaxComplete(function () {
        $(this).hide();
    });
-
+   alert('uploading');
    $.ajaxFileUpload
    (
+
        {
            url: 'FileUpload.ashx',
            secureuri: false,
@@ -537,18 +538,18 @@ function ajaxFileUpload() {
 
                        $("#linkLoadAnotherFile").show();
                        $("#uploadCtlInner").hide();
-
+                       //alert(data.modelid);
                        ModelID = data.modelid;
 
-                       // convert ifc file to xbim and xbimGC
-                       //convertToxBim(ModelID);
+
                        if (SceneJS.scene("Scene").findNode("materialNode") == null) {
+                          
                            var sce = SceneJS.scene("Scene");
                            var node = SceneJS.scene("Scene").findNode("offset");
 
                            $("#types").show();
                            $("#modelmenu").hide();
-
+                           
                            //addClassification(ModelID);
                            StartLoadingDynamicModel(sce, node, ModelID);
 

@@ -16,6 +16,7 @@ namespace Xbim.XbimExtensions.Interfaces
         T New<T>() where T : IPersistIfcEntity, new();
         IPersistIfcEntity this[int label] { get; }
         long Count { get; }
+        long CountOf<T>() where T : IPersistIfcEntity;
         
     }
 }

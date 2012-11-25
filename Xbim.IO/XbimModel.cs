@@ -707,15 +707,6 @@ namespace Xbim.IO
             get { return undoRedoSession; }
         }
 
-        /// <summary>
-        ///   Returns the number of instances of a specific type, NB does not include subtypes
-        /// </summary>
-        /// <param name = "t"></param>
-        /// <returns></returns>
-        public long InstancesOfTypeCount(Type t)
-        {
-            return cache.InstancesOfTypeCount(t);
-        }
 
 
 

@@ -343,7 +343,7 @@ namespace Xbim.IO
             catch (Exception e)
             {
 
-                throw;
+                throw new XbimException("Error updating an entity in the database", e);
             }
 
         }
@@ -493,8 +493,17 @@ namespace Xbim.IO
             ih = new XbimInstanceHandle();
             return false;
         }
-        
 
+        public bool TrySeekEntityType(short typeId)
+        {
+            Api.MakeKey(sesid, _indexTable, typeId, MakeKeyGrbit.NewKey);
+            if (Api.TrySeek(sesid, _indexTable, SeekGrbit.SeekGE))
+            {
+                Api.MakeKey(sesid, _indexTable, typeId, MakeKeyGrbit.NewKey);
+                return Api.TrySetIndexRange(sesid, _indexTable, SetIndexRangeGrbit.RangeUpperLimit | SetIndexRangeGrbit.RangeInclusive);
+            }
+            return false;
+        }
 
         
         /// <summary>
@@ -504,8 +513,8 @@ namespace Xbim.IO
         /// <returns></returns>
         internal XbimInstanceHandle GetInstanceHandle()
         {
-            int? label = Api.RetrieveColumnAsInt32(sesid, table, _colIdEntityLabel, RetrieveColumnGrbit.RetrieveFromIndex);
-            short? typeId = Api.RetrieveColumnAsInt16(sesid, table, _colIdIfcType, RetrieveColumnGrbit.RetrieveFromIndex);
+            int? label = Api.RetrieveColumnAsInt32(sesid, table, _colIdEntityLabel);
+            short? typeId = Api.RetrieveColumnAsInt16(sesid, table, _colIdIfcType);
             return new XbimInstanceHandle(label.Value, typeId.Value);
             
         }
@@ -564,7 +573,7 @@ namespace Xbim.IO
         }
 
         /// <summary>
-        /// Returns the current enity label
+        /// Returns the current enity label from the curos of the main entity table
         /// </summary>
         /// <returns></returns>
         public int GetLabel()
@@ -577,7 +586,11 @@ namespace Xbim.IO
         }
 
 
-
+        /// <summary>
+        /// For use only on the index table, accesses data from the index only
+        /// </summary>
+        /// <param name="ih"></param>
+        /// <returns></returns>
         public bool TryMoveNextEntityType(out XbimInstanceHandle ih)
         {
             if (Api.TryMoveNext(this.sesid, this._indexTable))
@@ -591,7 +604,11 @@ namespace Xbim.IO
                 return false;
             }
         }
-
+        /// <summary>
+        /// Iterates over the main entity table, access data from the index only
+        /// </summary>
+        /// <param name="label"></param>
+        /// <returns></returns>
         internal bool TryMoveFirstLabel(out int label)
         {
             if (TryMoveFirst())
@@ -605,7 +622,11 @@ namespace Xbim.IO
                 return false;
             }
         }
-
+        /// <summary>
+        /// Iterates over the main entity table, access data from the index only
+        /// </summary>
+        /// <param name="label"></param>
+        /// <returns></returns>
         internal bool TryMoveNextLabel(out int label)
         {
             if (TryMoveNext())

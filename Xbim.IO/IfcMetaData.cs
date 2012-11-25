@@ -126,6 +126,13 @@ namespace Xbim.IO
             {
                 throw new Exception("Error reading Ifc Entity Meta Data", e);
             }
+            //foreach (var item in TypeNameToIfcTypeLookup)
+            //{
+            //    if (!item.Value.Type.IsAbstract && !item.Value.Type.IsValueType && !typeof(Xbim.Ifc2x3.GeometryResource.IfcRepresentationItem).IsAssignableFrom( item.Value.Type))
+            //    {
+            //        if (!item.Value.IndexedClass) Debug.WriteLine(item.Key + " = " + item.Value.IndexedClass);
+            //    }
+            //}
         }
        
         internal static void AddProperties(IfcType ifcType)

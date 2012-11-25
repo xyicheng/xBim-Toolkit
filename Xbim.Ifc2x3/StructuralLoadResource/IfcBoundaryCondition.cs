@@ -26,7 +26,7 @@ namespace Xbim.Ifc2x3.StructuralLoadResource
     ///   The abstract entity IfcBoundaryCondition is the supertype of all boundary conditions that can be applied to structural connection definitions, 
     ///   either directly for the connection (e.g. the joint) or for the relation between a structural member and the connection.
     /// </summary>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute, Serializable, IndexedClass]
     public abstract class IfcBoundaryCondition : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                                  INotifyPropertyChanging
     {

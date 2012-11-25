@@ -51,7 +51,15 @@ namespace Xbim.IO
                 return cache.Count;
             }
         }
-
+        /// <summary>
+        /// Returns the count of the number of instances of the specified type
+        /// </summary>
+        /// <typeparam name="TIfcType"></typeparam>
+        /// <returns></returns>
+        public long CountOf<TIfcType>() where TIfcType : IPersistIfcEntity
+        {
+            return cache.CountOf<TIfcType>(); 
+        }
         /// <summary>
         /// Returns all instances in the model of IfcType, IfcType may be an abstract Type
         /// </summary>

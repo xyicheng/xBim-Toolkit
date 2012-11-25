@@ -33,7 +33,7 @@ namespace Xbim.Ifc2x3.GeometricConstraintResource
     ///   Geometry Use Definitions: 
     ///   The IfcPoint (or the IfcVertexPoint with an associated IfcPoint) at the PointOnRelatingElement attribute defines the point where the basic geometry items of the connected elements connects. The point coordinates are provided within the local coordinate system of the RelatingElement, as specified at the IfcRelConnectsSubtype that utilizes the IfcConnectionPointGeometry. Optionally, the same point coordinates can also be provided within the local coordinate system of the RelatedElement by using the PointOnRelatedElement attribute. If both point coordinates are not identical within a common parent coordinate system (latestly within the world coordinate system), the subtype IfcConnectionPointEccentricity shall be used.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute, Serializable, IndexedClass]
     public class IfcConnectionPointGeometry : IfcConnectionGeometry
     {
         private IfcPointOrVertexPoint _pointOnRelatingElement;
@@ -43,6 +43,7 @@ namespace Xbim.Ifc2x3.GeometricConstraintResource
         /// <summary>
         ///   Point at which the connected object is aligned at the relating element, given in the LCS of the relating element.
         /// </summary>
+         [IfcAttribute(1, IfcAttributeState.Mandatory), IndexedProperty]
         public IfcPointOrVertexPoint PointOnRelatingElement
         {
             get { return _pointOnRelatingElement; }
@@ -56,7 +57,8 @@ namespace Xbim.Ifc2x3.GeometricConstraintResource
         /// <summary>
         ///   Optional. Point at which connected objects are aligned at the related element, given in the LCS of the related element. If the information is omitted, then the origin of the related element is used.
         /// </summary>
-        public IfcPointOrVertexPoint PointOnRelatedElement
+         [IfcAttribute(2, IfcAttributeState.Mandatory), IndexedProperty]
+         public IfcPointOrVertexPoint PointOnRelatedElement
         {
             get { return _pointOnRelatedElement; }
             set
