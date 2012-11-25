@@ -52,6 +52,8 @@ namespace Xbim.IO
         #region Cached data
         protected Dictionary<int, IPersistIfcEntity> read = new Dictionary<int, IPersistIfcEntity>();
         protected Dictionary<int, IPersistIfcEntity> modified = new Dictionary<int, IPersistIfcEntity>();
+        protected Dictionary<int, IPersistIfcEntity> createdNew = new Dictionary<int, IPersistIfcEntity>();
+       
         //protected HashSet<IPersistIfcEntity> ToDelete = new HashSet<IPersistIfcEntity>();
         //protected HashSet<IPersistIfcEntity> ToCreate = new HashSet<IPersistIfcEntity>();
         protected int CacheDefaultSize = 5000;
@@ -164,8 +166,9 @@ namespace Xbim.IO
             if (_session == null)
             {
                 _session = new Session(_jetInstance);
+ 
                 Api.JetAttachDatabase(_session, _databaseName, openMode == OpenDatabaseGrbit.ReadOnly ? AttachDatabaseGrbit.ReadOnly : AttachDatabaseGrbit.None);
-                //Api.JetOpenDatabase(_session, _databaseName, String.Empty, out _databaseId, openMode); 
+                Api.JetOpenDatabase(_session, _databaseName, String.Empty, out _databaseId, openMode); 
             }
             return new XbimEntityCursor(_jetInstance, _databaseName, openMode);
         }
@@ -196,7 +199,7 @@ namespace Xbim.IO
             {
                 _session = new Session(_jetInstance);
                 Api.JetAttachDatabase(_session, _databaseName, openMode == OpenDatabaseGrbit.ReadOnly ? AttachDatabaseGrbit.ReadOnly : AttachDatabaseGrbit.None);
-                //Api.JetOpenDatabase(_session, _databaseName, String.Empty, out _databaseId, openMode);
+                Api.JetOpenDatabase(_session, _databaseName, String.Empty, out _databaseId, openMode);
                
             }
             return new XbimGeometryCursor(_jetInstance, _databaseName, openMode);
@@ -311,10 +314,18 @@ namespace Xbim.IO
 
             if (_session != null)
             {
-                //Api.JetCloseDatabase(_session, _databaseId, CloseDatabaseGrbit.None);
-                Api.JetDetachDatabase(_session, _databaseName);
+                Api.JetCloseDatabase(_session, _databaseId, CloseDatabaseGrbit.None);
+                try
+                {
+                    Api.JetDetachDatabase(_session, _databaseName);
+                }
+                catch (Exception ) //Databases can be attached many times and detached just once, ignore failed detaches
+                {      
+                  
+                }
+                
                 this._databaseName = null;
-                _session.Dispose();
+                //_session.Dispose();
                 _session = null;
             }
         }
@@ -672,10 +683,10 @@ namespace Xbim.IO
             {
                 FreeTable(entityTable);
             }
-            if (caching) //look in the modified cache and find the new ones only
+            if (caching) //look in the createdNew cache and find the new ones only
             {
-                foreach (var entity in Modified().Where(m => m.GetType() == theType))
-                    entityLabels.Add(entity.EntityLabel);
+                foreach (var entity in createdNew.Where(m => m.Value.GetType() == theType))
+                    entityLabels.Add(entity.Key);
                   
             }
             return entityLabels.Count;
@@ -712,7 +723,9 @@ namespace Xbim.IO
                 var entityTable = GetEntityTable();
                 try
                 {
-                    return entityTable.RetrieveCount();
+                    long dbCount =  entityTable.RetrieveCount();
+                    if (caching) dbCount += createdNew.Count;
+                    return dbCount;
                 }
                 finally
                 {
@@ -748,15 +761,16 @@ namespace Xbim.IO
         /// <param name="t"></param>
         /// <param name="label"></param>
         /// <returns></returns>
-        public IPersistIfcEntity CreateNew_Reversable(Type t)
+        internal IPersistIfcEntity CreateNew_Reversable(Type t)
         {
             Debug.Assert(caching);
             XbimEntityCursor cursor = _model.GetTransactingCursor();
             XbimInstanceHandle h = cursor.AddEntity(t);
             IPersistIfcEntity entity = (IPersistIfcEntity)Activator.CreateInstance(t);
             entity.Bind(_model, h.EntityLabel); //bind it, the object is new and empty so the label is positive
-            this.read.Add_Reversible(new KeyValuePair<int, IPersistIfcEntity>(h.EntityLabel, entity));
-            modified.Add_Reversible(new KeyValuePair<int, IPersistIfcEntity>(h.EntityLabel, entity));
+            this.read.Add(h.EntityLabel, entity);
+            modified.Add(h.EntityLabel, entity);
+            createdNew.Add(h.EntityLabel, entity);
             return entity;
         }
 
@@ -980,11 +994,11 @@ namespace Xbim.IO
                 }
                 if (caching) //look in the modified cache and find the new ones only
                 {
-                    foreach (var entity in Modified().OfType<TIfcType>())
+                    foreach (var item in createdNew.Where(e=>e.Value is TIfcType  ))
                     {
-                        if (entityLabels.Add(entity.EntityLabel))
+                        if (entityLabels.Add(item.Key))
                         { 
-                            yield return (TIfcType)entity;
+                            yield return (TIfcType)item.Value;
                         }
                     }
                 }
@@ -1064,29 +1078,23 @@ namespace Xbim.IO
 
                         }
                     }
-                    if (caching) //look in the modified cache and find the new ones only
+                    if (caching) //look in the createnew cache and find the new ones only
                     {
 
-                        foreach (var entity in Modified().OfType<TIfcType>())
+                        foreach (var item in createdNew.Where(e => e.Value is TIfcType))
                         {
                             if (indexKey == -1) //get all of the type
                             {
-                                if (!entityLabels.Contains(entity.EntityLabel))
-                                {
-                                    entityLabels.Add(entity.EntityLabel);
-                                    yield return (TIfcType)entity;
-                                }
+                                if (entityLabels.Add(item.Key))
+                                    yield return (TIfcType)item.Value;
                             }
                             else
                             {
                                 // get all types that match the index key
-                                if (ifcType.GetIndexedValues(entity).Contains(indexKey))
+                                if (ifcType.GetIndexedValues(item.Value).Contains(indexKey))
                                 {
-                                    if (!entityLabels.Contains(entity.EntityLabel))
-                                    {
-                                        entityLabels.Add(entity.EntityLabel);
-                                        yield return (TIfcType)entity;
-                                    }
+                                    if (entityLabels.Add(item.Key))
+                                        yield return (TIfcType)item.Value;
                                 }
                             }
                         }
@@ -1683,6 +1691,7 @@ namespace Xbim.IO
         {
             read.Clear();
             modified.Clear();
+            createdNew.Clear();
             caching = true;
 
         }
@@ -1693,6 +1702,7 @@ namespace Xbim.IO
         {
             read.Clear();
             modified.Clear();
+            createdNew.Clear();
             caching = false;
         }
 

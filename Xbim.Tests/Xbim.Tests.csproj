@@ -125,6 +125,7 @@
     <Compile Include="COBie\COBieTimeTests.cs" />
     <Compile Include="InternationalisationTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="XbimModelIndexingTests.cs" />
     <Compile Include="XbimModelTest.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -195,6 +196,9 @@
     <Content Include="TestSourceFiles\2012-03-23-Duplex-Handover.xBIM">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <None Include="XbimModelTests.orderedtest">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

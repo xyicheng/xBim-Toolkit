@@ -411,7 +411,7 @@ namespace Xbim.IO
             catch (Exception e)
             {
 
-                throw;
+                throw new XbimException("Failed to add entity to the database", e);
             }
 
         }
