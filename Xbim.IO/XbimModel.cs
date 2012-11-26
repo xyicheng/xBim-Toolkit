@@ -619,6 +619,8 @@ namespace Xbim.IO
             this._modelFactors = null;
             this.undoRedoSession = null;
             this.header = null;
+            if (editTransactionEntityCursor != null)
+                EndTransaction();
             cache.Close();
         }
 

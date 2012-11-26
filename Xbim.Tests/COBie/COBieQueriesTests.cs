@@ -23,15 +23,15 @@ namespace Xbim.Tests.COBie
         private const string PickListFile = Root + @"\" + PickListLeaf;
 
 
-        static COBieContext _cobieContext = new COBieContext();
-        static XbimModel _model;
+        private COBieContext _cobieContext = new COBieContext();
+        private XbimModel _model;
 
-        [ClassInitialize]
-        public static void LoadModel(TestContext context)
+        [TestInitialize]
+        public  void LoadModel()
         {
 
             _model = new XbimModel();
-            _model.Open(SourceFile);
+            _model.Open(SourceFile,XbimDBAccess.ReadWrite);
             _cobieContext = new COBieContext();
             if (!_cobieContext.COBieGlobalValues.ContainsKey("DEFAULTDATE"))
                 _cobieContext.COBieGlobalValues.Add("DEFAULTDATE", DateTime.Now.ToString(Constants.DATE_FORMAT));
@@ -40,13 +40,14 @@ namespace Xbim.Tests.COBie
 
         }
 
-        [ClassCleanup]
-        public static void CloseModel()
+        [TestCleanup]
+        public void CloseModel()
         {
-            if(_model != null)
-                _model.Close();
-            _model = null;
             _cobieContext = null;
+            if(_model != null)
+                _model.Dispose();
+            _model = null;
+            
         }
 
         [TestMethod]

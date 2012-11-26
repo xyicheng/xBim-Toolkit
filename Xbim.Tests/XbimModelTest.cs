@@ -44,19 +44,6 @@ namespace Xbim.Tests
             Directory.CreateDirectory(Path.Combine(Root, Temp));
         }
 
-        [AssemblyInitialize()]
-        static public void TestInit(TestContext context)
-        {
-            // this method runs before start of every test
-            XbimModel.Initialize();
-        }
-
-        [AssemblyCleanup()]
-        static public void TestCleanup()
-        {
-            // this method runs after finishes every test
-            XbimModel.Terminate();
-        }
 
         #endregion
 

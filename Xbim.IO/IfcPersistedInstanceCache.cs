@@ -319,13 +319,14 @@ namespace Xbim.IO
                 {
                     Api.JetDetachDatabase(_session, _databaseName);
                 }
-                catch (Exception ) //Databases can be attached many times and detached just once, ignore failed detaches
+                catch (Microsoft.Isam.Esent.Interop.EsentDatabaseInUseException) //Databases can be attached many times and detached just once, ignore failed detaches
                 {      
                   
                 }
                 
                 this._databaseName = null;
-                //_session.Dispose();
+                
+                _session.Dispose();
                 _session = null;
             }
         }
@@ -756,14 +757,15 @@ namespace Xbim.IO
 
 
         /// <summary>
-        /// Creates a new instance this is a reversable action and should be used typically
+        /// Creates a new instance
         /// </summary>
         /// <param name="t"></param>
         /// <param name="label"></param>
         /// <returns></returns>
-        internal IPersistIfcEntity CreateNew_Reversable(Type t)
+        internal IPersistIfcEntity CreateNew(Type t)
         {
-            Debug.Assert(caching);
+            if (!caching)
+                throw new XbimException("XbimModel.BeginTransaction must be called before editing a model");
             XbimEntityCursor cursor = _model.GetTransactingCursor();
             XbimInstanceHandle h = cursor.AddEntity(t);
             IPersistIfcEntity entity = (IPersistIfcEntity)Activator.CreateInstance(t);

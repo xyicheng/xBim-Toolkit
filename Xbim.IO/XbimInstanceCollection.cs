@@ -163,12 +163,12 @@ namespace Xbim.IO
         {
           
 
-            IPersistIfcEntity entity = cache.CreateNew_Reversable(t);
+            IPersistIfcEntity entity = cache.CreateNew(t);
             if (typeof(IfcRoot).IsAssignableFrom(t))
             {
                 if (_ownerHistoryAddObject == null) //create an owner history object if it is nor already available
                 {
-                    _ownerHistoryAddObject = (IfcOwnerHistory)cache.CreateNew_Reversable(typeof(IfcOwnerHistory));
+                    _ownerHistoryAddObject = (IfcOwnerHistory)cache.CreateNew(typeof(IfcOwnerHistory));
                     _ownerHistoryAddObject.ChangeAction = IfcChangeActionEnum.ADDED;
                 }
                 ((IfcRoot)entity).OwnerHistory = _ownerHistoryAddObject;

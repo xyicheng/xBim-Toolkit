@@ -10,9 +10,9 @@
     <DeploymentItem filename="Xbim.ModelGeometry\OpenCascade\Win32\bin\TKBRep.dll" />
     <DeploymentItem filename="Xbim.ModelGeometry\OpenCascade\Win32\bin\TKMath.dll" />
     <DeploymentItem filename="Xbim.ModelGeometry\OpenCascade\Win32\bin\TKShHealing.dll" />
-    <DeploymentItem filename="Xbim.ModelGeometry\OpenCascade\Win32\bin\TKG3d.dll" />
-    <DeploymentItem filename="Xbim.ModelGeometry\OpenCascade\Win32\bin\TKMesh.dll" />
     <DeploymentItem filename="Xbim.ModelGeometry\OpenCascade\Win32\bin\TKernel.dll" />
+    <DeploymentItem filename="Xbim.ModelGeometry\OpenCascade\Win32\bin\TKMesh.dll" />
+    <DeploymentItem filename="Xbim.ModelGeometry\OpenCascade\Win32\bin\TKG3d.dll" />
     <DeploymentItem filename="Xbim.ModelGeometry\OpenCascade\Win32\bin\TKGeomAlgo.dll" />
     <DeploymentItem filename="Xbim.ModelGeometry\OpenCascade\Win32\bin\TKG2d.dll" />
     <DeploymentItem filename="Xbim.ModelGeometry\OpenCascade\Win32\bin\TKFillet.dll" />

@@ -153,20 +153,24 @@ namespace Xbim.Tests
         [TestMethod]
         public void CheckModelReadWrite()
         {
-            bool opened1;
-            bool opened2;
             using (XbimModel model1 = new XbimModel())
             {
-                opened1 = model1.Open(SourceFile, XbimDBAccess.ReadWrite);
-                long c1 = model1.Instances.Count; //DO SOMETHING
+                Assert.IsTrue(model1.Open(SourceFile, XbimDBAccess.ReadWrite));
+                using (var txn1 = model1.BeginTransaction())
+                {
+                     model1.Instances.New<IfcWall>(); //DO SOMETHING
+                }
+               
                 using (XbimModel model2 = new XbimModel())
                 {
-                    opened2 = model2.Open(SourceFile, XbimDBAccess.ReadWrite);
-                    long c2 = model1.Instances.Count; //DO SOMETHING
+                    Assert.IsTrue(model2.Open(SourceFile, XbimDBAccess.ReadWrite));
+                    using (var txn2 = model2.BeginTransaction())
+                    {
+                        model2.Instances.New<IfcWall>(); //DO SOMETHING
+                    }
                 }
-            } //dispose should close the model, allowing us to open it for reading and writing
-            Assert.IsTrue(opened1);
-            Assert.IsTrue(opened2);
+            } //dispose should close the models, allowing us to open it for reading and writing
+
             try
             {
                 FileStream f = File.OpenWrite(SourceFile); //check if file is unlocked
@@ -185,8 +189,13 @@ namespace Xbim.Tests
                     f.Close();
                     Assert.Fail(); //it should not be able to be opened
                 }
-                catch (Exception) //this should fail
+                catch (System.IO.IOException) //this should fail
                 {
+
+                }
+                finally
+                {
+                    model.Close();
                 }
             }
         }
