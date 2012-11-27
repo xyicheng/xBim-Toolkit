@@ -1469,16 +1469,21 @@ namespace Xbim.IO
 
 
 
-        public XbimGeometryData GetGeometry(IfcProduct product, XbimGeometryType geomType)
+        public IEnumerable<XbimGeometryData> GetGeometry(int productLabel, XbimGeometryType geomType)
         {
            
             XbimGeometryCursor geomTable = GetGeometryTable();
             using (var transaction = geomTable.BeginReadOnlyTransaction())
             {
-                return geomTable.GeometryData(product, geomType);
+                foreach (var item in geomTable.GeometryData(productLabel, geomType))
+                {
+                    yield return item;
+                }
             }
+            FreeTable(geomTable);
         }
 
+       
 
         /// <summary>
         /// Iterates over all the shape geoemtry
@@ -1486,11 +1491,11 @@ namespace Xbim.IO
         /// </summary>
         /// <param name="ofType"></param>
         /// <returns></returns>
-        public IEnumerable<XbimGeometryData> Shapes(XbimGeometryType ofType)
+        public IEnumerable<XbimGeometryData> GetGeometryData(XbimGeometryType ofType)
         {
             //Get a cached or open a new Table
             XbimGeometryCursor geometryTable = GetGeometryTable();
-            foreach (var shape in geometryTable.Shapes(ofType))
+            foreach (var shape in geometryTable.GetGeometryData(ofType))
                 yield return shape;
             FreeTable(geometryTable);
         }

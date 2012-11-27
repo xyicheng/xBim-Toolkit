@@ -147,35 +147,47 @@ namespace Xbim.IO
             }
         }
 
-        internal XbimGeometryData GeometryData(IfcProduct product, XbimGeometryType geomType)
+        internal IEnumerable<XbimGeometryData> GeometryData(int productLabel, XbimGeometryType geomType)
         {
-            int posLabel = Math.Abs(product.EntityLabel);
+            int posLabel = Math.Abs(productLabel);
             Api.JetSetCurrentIndex(sesid, table, geometryTablePrimaryIndex);
             Api.MakeKey(sesid, table, (byte)geomType, MakeKeyGrbit.NewKey);
             Api.MakeKey(sesid, table, posLabel, MakeKeyGrbit.None);
-            if (Api.TrySeek(sesid, table, SeekGrbit.SeekEQ))
+            if (Api.TrySeek(sesid, table, SeekGrbit.SeekGE))
             {
-                Api.RetrieveColumns(sesid, table, _colValues);
-                return new XbimGeometryData(posLabel, (XbimGeometryType) _colValGeomType.Value, _colValProductIfcTypeId.Value.Value,_colValShapeData.Value,_colValTransformMatrix.Value, _colValRepItem.Value.Value);
+                Api.MakeKey(sesid, table, (byte)geomType, MakeKeyGrbit.NewKey);
+                Api.MakeKey(sesid, table, posLabel, MakeKeyGrbit.FullColumnEndLimit);
+                if (Api.TrySetIndexRange(sesid, table, SetIndexRangeGrbit.RangeUpperLimit | SetIndexRangeGrbit.RangeInclusive))
+                {
+                    do
+                    {
+
+                        Api.RetrieveColumns(sesid, table, _colValues);
+                        System.Diagnostics.Debug.Assert((byte)geomType == _colValGeomType.Value);
+                        yield return new XbimGeometryData(posLabel, (XbimGeometryType)_colValGeomType.Value, _colValProductIfcTypeId.Value.Value, _colValShapeData.Value, _colValTransformMatrix.Value, _colValRepItem.Value.Value);
+
+                    } while (Api.TryMoveNext(sesid, table));
+                }
             }
-            else
-                return null;
         }
 
-        internal IEnumerable<XbimGeometryData> Shapes(XbimGeometryType ofType)
+        internal IEnumerable<XbimGeometryData> GetGeometryData(XbimGeometryType ofType)
         {
 
             Api.JetSetCurrentIndex(sesid, table, geometryTablePrimaryIndex);
             Api.MakeKey(sesid, table, (byte)ofType, MakeKeyGrbit.NewKey);
-
             if (Api.TrySeek(sesid, table, SeekGrbit.SeekGE))
             {
-                do
-                {
-                    Api.RetrieveColumns(sesid, table, _colValues);
-                    yield return new XbimGeometryData(_colValGeometryProductLabel.Value.Value, (XbimGeometryType)_colValGeomType.Value, _colValProductIfcTypeId.Value.Value, _colValShapeData.Value, _colValTransformMatrix.Value, _colValRepItem.Value.Value);
-                } while (Api.TryMoveNext(sesid, table));
+                Api.MakeKey(sesid, table, (byte)ofType,  MakeKeyGrbit.NewKey| MakeKeyGrbit.FullColumnEndLimit);
 
+                if (Api.TrySetIndexRange(sesid, table, SetIndexRangeGrbit.RangeUpperLimit | SetIndexRangeGrbit.RangeInclusive))
+                {
+                    do
+                    {
+                        Api.RetrieveColumns(sesid, table, _colValues);
+                        yield return new XbimGeometryData(_colValGeometryProductLabel.Value.Value, (XbimGeometryType)_colValGeomType.Value, _colValProductIfcTypeId.Value.Value, _colValShapeData.Value, _colValTransformMatrix.Value, _colValRepItem.Value.Value);
+                    } while (Api.TryMoveNext(sesid, table));
+                }
             }
         }
 
@@ -197,5 +209,7 @@ namespace Xbim.IO
         {
             Api.EscrowUpdate(this.sesid, this.globalsTable, this.geometryCountColumn, delta);
         }
+
+       
     }
 }

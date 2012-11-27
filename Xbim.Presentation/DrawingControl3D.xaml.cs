@@ -554,7 +554,7 @@ namespace Xbim.Presentation
             if (worker != null && model != null)
             {
                 worker.ReportProgress(0, "Reading Geometry");
-                foreach (var shape in model.Shapes(XbimGeometryType.TriangulatedMesh).Where(sh =>  IfcMetaData.GetType(sh.IfcTypeId) != typeof(IfcSpace)))
+                foreach (var shape in model.GetGeometryData(XbimGeometryType.TriangulatedMesh).Where(sh =>  IfcMetaData.GetType(sh.IfcTypeId) != typeof(IfcSpace)))
                 {
                     processed++;
                     worker.ReportProgress(processed, shape);

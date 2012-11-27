@@ -70,7 +70,7 @@ namespace Xbim
 
 							XbimTriangulatedModelCollection^ tm = geomModel->Mesh(true);
 							XbimBoundingBox^ bb = geomModel->GetBoundingBox(true);
-							node->BoundingBox = bb->GetRect3D();
+							//node->BoundingBox = bb->GetRect3D();
 							array<Byte>^ matrix = Matrix3DExtensions::ToArray(node->WorldMatrix(), true);
 							Nullable<short> typeId = IfcMetaData::IfcTypeId(product);
 							geomTable->AddGeometry(product->EntityLabel, XbimGeometryType::BoundingBox, typeId.Value, matrix, bb->ToArray(), 0, 0 ) ;

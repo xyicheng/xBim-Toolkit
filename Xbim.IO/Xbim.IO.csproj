@@ -177,6 +177,8 @@
     <Compile Include="XbimReadOnlyDBTransaction.cs" />
     <Compile Include="XbimReadTransaction.cs" />
     <Compile Include="XbimReadWriteTransaction.cs" />
+    <Compile Include="XbimReferencedModel.cs" />
+    <Compile Include="XbimReferencedModelCollection.cs" />
     <Compile Include="XbimViewDefinition.cs" />
   </ItemGroup>
   <ItemGroup>

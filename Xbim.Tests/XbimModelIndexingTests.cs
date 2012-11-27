@@ -200,5 +200,18 @@ namespace Xbim.Tests
             }
         }
 
+        [TestMethod]
+        public void CheckReferenceModels()
+        {
+            using (XbimModel model = new XbimModel())
+            {
+                using (var txn = model.BeginTransaction())
+                {
+                   // model.AddModelReference(
+                    txn.Commit();
+                }
+            }
+        }
+
     }
 }

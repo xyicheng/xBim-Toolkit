@@ -51,16 +51,17 @@ namespace Xbim.SceneJSWebViewer
                     try
                     {
 
-                        string xbimFileName = Path.ChangeExtension(fileName, ".xbim");
-                        XbimModel model = new XbimModel();
-                        model.CreateFrom(fileName, xbimFileName, null);
-                        model.Open(xbimFileName, XbimDBAccess.ReadWrite);
-                        XbimScene.ConvertGeometry(model.Instances.OfType<IfcProduct>().Where(t => !(t is IfcFeatureElement)), null, false);
-                        model.Close();
+                        //string xbimFileName = Path.ChangeExtension(fileName, ".xbim");
+                        //XbimModel model = new XbimModel();
+                        //model.CreateFrom(fileName, xbimFileName, null);
+                        //model.Open(xbimFileName, XbimDBAccess.ReadWrite);
+                        //XbimScene.ConvertGeometry(model.Instances.OfType<IfcProduct>().Where(t => !(t is IfcFeatureElement)), null, false);
+                        //model.Close();
                        
                         string msg = "{";
                         msg += string.Format("error:'{0}',\n", string.Empty);
-                        msg += string.Format("modelid:'{0}'\n", Path.ChangeExtension(strFileName, "xbim"));
+                        msg += string.Format("modelid:'{0}'\n", "Munkerud.xbim");
+                        ;
                         msg += "}";
                         context.Response.Write(msg);
                         

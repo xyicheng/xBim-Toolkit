@@ -27,6 +27,10 @@ using Xbim.IO.Parser;
 using Xbim.Common;
 using Xbim.Common.Exceptions;
 using System.Globalization;
+using Xbim.Ifc2x3.ExternalReferenceResource;
+using Xbim.Ifc.SelectTypes;
+
+
 namespace Xbim.IO
 {
     /// <summary>
@@ -53,20 +57,18 @@ namespace Xbim.IO
             get { return cache; }
 
         }
-        protected UndoRedoSession undoRedoSession;
+        
         protected IIfcFileHeader header;
         private bool disposed = false;
         private XbimModelFactors _modelFactors;
         private XbimInstanceCollection instances;
         private XbimEntityCursor editTransactionEntityCursor;
 
-        readonly private string xBimTransactionDirectory ;
+        
         private static string xbimTempDirectory;
-
-        public string XbimTransactionDirectory
-        {
-            get { return xBimTransactionDirectory; }
-        }
+        const string refDocument = "XbimReferencedModel";
+        private XbimReferencedModelCollection _referencedModels = new XbimReferencedModelCollection();
+       
 
         #endregion
 
@@ -215,12 +217,7 @@ namespace Xbim.IO
                 throw new XbimException("Failed to create ReadWrite transaction", e);
             }
 
-            //Transaction txn = BeginEdit(operationName);
-            ////Debug.Assert(ToWrite.Count == 0);
-            //if (txn == null) txn = undoRedoSession.Begin(operationName);
-            ////txn.Finalised += TransactionFinalised;
-            ////txn.Reversed += TransactionReversed;
-            //return txn;
+           
         }
 
         public IfcOwnerHistory OwnerHistoryModifyObject
@@ -616,9 +613,11 @@ namespace Xbim.IO
         /// </summary>
         public void Close()
         {
-            this._modelFactors = null;
-            this.undoRedoSession = null;
+            this._modelFactors = null;          
             this.header = null;
+            foreach (var refModel in _referencedModels)
+                refModel.Model.Close();
+            _referencedModels.Clear();
             if (editTransactionEntityCursor != null)
                 EndTransaction();
             cache.Close();
@@ -644,12 +643,12 @@ namespace Xbim.IO
             {
                 Close();
                 cache.Open(fileName, accessMode); //opens the database
+                this.LoadReferenceModels();
                 return true;
             }
             catch (Exception e)
             {
-                Logger.WarnFormat("Error opening file {0}\n{1}", fileName, e.Message);
-                return false;
+                throw new XbimException(string.Format("Error opening file {0}\n{1}", fileName, e.Message));
             }
         }
 
@@ -698,18 +697,12 @@ namespace Xbim.IO
             }
             catch (Exception e)
             {
-                Logger.ErrorFormat("Failed to Save file as {0}\n{1}", outputFileName, e.Message);
-                return false;
+                throw new XbimException(string.Format("Failed to Save file as {0}\n{1}", outputFileName, e.Message));
             }
         }
 
 
-        public UndoRedoSession UndoRedo
-        {
-            get { return undoRedoSession; }
-        }
-
-
+      
 
 
         // Extract first ifc file from zipped file and save in the same directory
@@ -952,10 +945,22 @@ namespace Xbim.IO
 
 
 
-        internal XbimGeometryData GetGeometryData(IfcProduct product, XbimGeometryType geomType)
+        public IEnumerable<XbimGeometryData> GetGeometryData(IfcProduct product, XbimGeometryType geomType)
         {
-            return cache.GetGeometry(product, geomType);
+            foreach (var item in cache.GetGeometry(product.EntityLabel, geomType))
+            {
+               yield return item;
+            }
         }
+
+        public IEnumerable<XbimGeometryData> GetGeometryData(int productLabel, XbimGeometryType geomType)
+        {
+            foreach (var item in cache.GetGeometry(productLabel, geomType))
+            {
+                yield return item;
+            }
+        }
+
         public IDictionary<string, XbimViewDefinition> Views
         {
             get
@@ -966,9 +971,9 @@ namespace Xbim.IO
             }
         }
 
-        public IEnumerable<XbimGeometryData> Shapes(XbimGeometryType ofType)
+        public IEnumerable<XbimGeometryData> GetGeometryData(XbimGeometryType ofType)
         {
-            foreach (var shape in cache.Shapes(ofType))
+            foreach (var shape in cache.GetGeometryData(ofType))
             {
                 yield return shape;
             }
@@ -1067,6 +1072,39 @@ namespace Xbim.IO
             IfcPersistedInstanceCache.Initialize();
         }
 
-      
+        #region Model Group functions
+
+       /// <summary>
+        /// adds a model as a reference model, a valid transaction must be running
+       /// </summary>
+       /// <param name="linkModel">the model to reference</param>
+       /// <param name="owner">the actor who supplied the model</param>
+       /// <returns></returns>
+        public IfcIdentifier AddModelReference(XbimModel linkModel, IfcActorSelect owner)
+        {
+            Debug.Assert(editTransactionEntityCursor != null);
+            var docRef = Instances.New<IfcDocumentInformation>();
+            docRef.DocumentId = _referencedModels.NextIdentifer();
+            docRef.Name = linkModel.DatabaseName;
+            docRef.DocumentOwner = owner;
+            docRef.IntendedUse = refDocument;
+            return docRef.DocumentId;
+        }
+
+        private void LoadReferenceModels()
+        {
+            var docInfos = this.Instances.OfType<IfcDocumentInformation>().Where(d => d.IntendedUse == refDocument);
+            foreach (var docInfo in docInfos)
+            {
+                XbimModel model = new XbimModel();
+                if (!model.Open(docInfo.Name, XbimDBAccess.Read))
+                    throw new XbimException("Unable to open reference model " + docInfo.Name);
+                else
+                    _referencedModels.Add(new XbimReferencedModel(docInfo, model));
+            }
+        }
+
+        #endregion
+
     }
 }

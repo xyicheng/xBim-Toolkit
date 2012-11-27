@@ -93,7 +93,7 @@ namespace Xbim.SceneJSWebViewer
             _model = new XbimModel();
             _model.Open(xbimFile);
            // _scene = new XbimSceneStream(_model, gcFile); // opens the pre-calculated Geometry file
-            //Init(model);
+           // Init(model);
         }
 
         #endregion
@@ -117,13 +117,14 @@ namespace Xbim.SceneJSWebViewer
         {
             BoundingBox box = new BoundingBox();
 
-            foreach (XbimGeometryData shape in _model.Shapes(XbimGeometryType.BoundingBox))
+            foreach (XbimGeometryData shape in _model.GetGeometryData(XbimGeometryType.BoundingBox))
             {
                 
                 Matrix3D matrix3d = new Matrix3D().FromArray(shape.TransformData);
                 BoundingBox bb = BoundingBox.FromArray(shape.ShapeData);
                 bb.TransformBy(matrix3d);
-              
+                box.IncludeBoundingBox(bb);
+                AddProduct(shape.IfcTypeId, shape.IfcProductLabel, shape.IfcRepresentationLabel);
             }
             return box;
         }
@@ -136,63 +137,71 @@ namespace Xbim.SceneJSWebViewer
 
         public GeometryData GetGeometryData(String entityId)
         {
-            Int64 id = Convert.ToInt64(entityId);
-
-            //check item exists
-            if (!Scene.Graph.ProductNodes.ContainsKey(id))
-                return new GeometryData();
-
-            TransformNode tn = Scene.Graph.ProductNodes[id];
-            XbimTriangulatedModelStream tm = Scene.Triangulate(tn);
-
-
-            if (!tm.IsEmpty)
+            Int32 id = Convert.ToInt32(entityId);
+            MemoryStream ms = new MemoryStream();
+            ushort tally = 0;
+            byte[] wm = null;
+            foreach (XbimGeometryData geom in _model.GetGeometryData(id, XbimGeometryType.TriangulatedMesh))
             {
-                if (!tn.Product.GetType().IsSubclassOf(typeof(IfcFeatureElementSubtraction)) && !(tn.Product.GetType() == typeof(IfcSpace)))
-                {
-                    try
-                    {
-                        if (tn.Product.EntityLabel != 0)
-                        {
-                            //get transform matrix
-                            Double[] dWorldMatrix = new Double[16];
-                            Matrix3D worldMatrix = tn.WorldMatrix();
-                            if (!worldMatrix.IsIdentity)
-                            {
-                                dWorldMatrix[0] = worldMatrix.M11;
-                                dWorldMatrix[1] = worldMatrix.M12;
-                                dWorldMatrix[2] = worldMatrix.M13;
-                                dWorldMatrix[3] = worldMatrix.M14;
-
-                                dWorldMatrix[4] = worldMatrix.M21;
-                                dWorldMatrix[5] = worldMatrix.M22;
-                                dWorldMatrix[6] = worldMatrix.M23;
-                                dWorldMatrix[7] = worldMatrix.M24;
-
-                                dWorldMatrix[8] = worldMatrix.M31;
-                                dWorldMatrix[9] = worldMatrix.M32;
-                                dWorldMatrix[10] = worldMatrix.M33;
-                                dWorldMatrix[11] = worldMatrix.M34;
-
-                                dWorldMatrix[12] = worldMatrix.OffsetX;
-                                dWorldMatrix[13] = worldMatrix.OffsetY;
-                                dWorldMatrix[14] = worldMatrix.OffsetZ;
-                                dWorldMatrix[15] = worldMatrix.M44;
-                            }
-                            return new GeometryData(Convert.ToInt32(id), tm.DataStream.ToArray(), tm.HasData, tm.NumChildren, dWorldMatrix);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.Warn(
-                            String.Format("Failed to get geometry data for entity #{0} {1) in model {2}.", entityId, tn.Product.ToString(), _modelId),
-                            ex);
-                        return null;
-                    }
-                }
+                ms.Write(geom.ShapeData, 0, geom.ShapeData.Length);
+                tally++;
+                if(wm==null) wm = geom.TransformData;
             }
-            Logger.InfoFormat("No geometry available for entity {0} - {1} in model {2}.", entityId, tn.Product.ToString(), _modelId);
-            return null;
+            return new GeometryData(id,ms.ToArray(),0, tally,wm);
+           
+
+
+            //TransformNode tn = Scene.Graph.ProductNodes[id];
+            //XbimTriangulatedModelStream tm = Scene.Triangulate(tn);
+
+
+            //if (!tm.IsEmpty)
+            //{
+            //    if (!tn.Product.GetType().IsSubclassOf(typeof(IfcFeatureElementSubtraction)) && !(tn.Product.GetType() == typeof(IfcSpace)))
+            //    {
+            //        try
+            //        {
+            //            if (tn.Product.EntityLabel != 0)
+            //            {
+            //                //get transform matrix
+            //                Double[] dWorldMatrix = new Double[16];
+            //                Matrix3D worldMatrix = tn.WorldMatrix();
+            //                if (!worldMatrix.IsIdentity)
+            //                {
+            //                    dWorldMatrix[0] = worldMatrix.M11;
+            //                    dWorldMatrix[1] = worldMatrix.M12;
+            //                    dWorldMatrix[2] = worldMatrix.M13;
+            //                    dWorldMatrix[3] = worldMatrix.M14;
+
+            //                    dWorldMatrix[4] = worldMatrix.M21;
+            //                    dWorldMatrix[5] = worldMatrix.M22;
+            //                    dWorldMatrix[6] = worldMatrix.M23;
+            //                    dWorldMatrix[7] = worldMatrix.M24;
+
+            //                    dWorldMatrix[8] = worldMatrix.M31;
+            //                    dWorldMatrix[9] = worldMatrix.M32;
+            //                    dWorldMatrix[10] = worldMatrix.M33;
+            //                    dWorldMatrix[11] = worldMatrix.M34;
+
+            //                    dWorldMatrix[12] = worldMatrix.OffsetX;
+            //                    dWorldMatrix[13] = worldMatrix.OffsetY;
+            //                    dWorldMatrix[14] = worldMatrix.OffsetZ;
+            //                    dWorldMatrix[15] = worldMatrix.M44;
+            //                }
+            //                return new GeometryData(Convert.ToInt32(id), tm.DataStream.ToArray(), tm.HasData, tm.NumChildren, dWorldMatrix);
+            //            }
+            //        }
+            //        catch (Exception ex)
+            //        {
+            //            Logger.Warn(
+            //                String.Format("Failed to get geometry data for entity #{0} {1) in model {2}.", entityId, tn.Product.ToString(), _modelId),
+            //                ex);
+            //            return null;
+            //        }
+            //    }
+            //}
+            //Logger.InfoFormat("No geometry available for entity {0} - {1} in model {2}.", entityId, tn.Product.ToString(), _modelId);
+            //return null;
         }
 
         public List<GeometryLabel> GetGeometryHeaders()
@@ -210,34 +219,15 @@ namespace Xbim.SceneJSWebViewer
             return TypeList;
         }
 
-        private void AddProduct(TransformNode node)
+        private void AddProduct(short typeId, int productLabel, int representationLabel)
         {
-            if (node.ChildCount > 0 || (node.TriangulatedModel.HasData == 1 || node.TriangulatedModel.NumChildren > 0))
-            {
+           
                 //try to get any material defined in the model
-                Material definedMaterial = GetDefinedMaterial(node); ;
+                Material definedMaterial = GetDefinedMaterial( typeId,  productLabel,  representationLabel);
 
-                String materialName = String.Empty;
-                Material material = null;
+                String materialName = definedMaterial.Name;
+                Material material = definedMaterial;
 
-                if (definedMaterial != null)
-                {
-                    materialName = definedMaterial.Name;
-                    material = definedMaterial;
-                }
-                else
-                {
-                    material = DefaultMaterials.LookupMaterial(node.Product);
-
-                    if (material == null)
-                    {
-                        Logger.WarnFormat("Could not locate default material for entity #{0} in model {1}", node.ProductId, _modelId);
-                        // set null material as SHOCKING PINK
-                        material = new Material(DefaultMaterials.StripString(node.ProductId.GetType().ToString()), 0.98823529411764705882352941176471d, 0.05882352941176470588235294117647d, 0.75294117647058823529411764705882d, 1.0d, 0.0d);
-                    }
-
-                    materialName = material.Name;
-                }
 
                 //check if the material already exists, if not - add it
                 if (!TypeList.Contains(material.Name))
@@ -247,12 +237,8 @@ namespace Xbim.SceneJSWebViewer
 
                 //add the product to the correct header now we are sure to have the material in the list
                 GeometryLabel label = ProductsList.First(s => s.Type == materialName);
-                label.Geometries.Add(node.ProductId.ToString());
-            }
-            else
-            {
-                Logger.DebugFormat("No mesh available for entity #{0} - {1}", node.ProductId, node.Product.ToString());
-            }
+                label.Geometries.Add(productLabel.ToString());
+           
         }
 
         private String AddMaterialType(String materialName, Material material)
@@ -271,42 +257,42 @@ namespace Xbim.SceneJSWebViewer
             return materialName;
         }
 
-        private static Material GetDefinedMaterial(TransformNode node)
+        private static Material GetDefinedMaterial(short typeId, int productLabel, int representationLabel)
         {
-            try
-            {
-                if (node.Product.Representation == null)
-                    return null;
+            //try
+            //{
+                //if (node.Product.Representation == null)
+                //    return null;
 
-                var representation = node.Product.Representation.Representations.First();
+                //var representation = node.Product.Representation.Representations.First();
 
-                //if we dont have any representation, return
-                if (representation == null || representation.Items.Count == 0) return null;
-                var styledBy = representation.Items.First();
-                if (styledBy == null || styledBy.StyledByItem.Count() == 0) return null;
-                var styleByItem = styledBy.StyledByItem.First();
-                if(styleByItem == null || styleByItem.Styles.Count == 0) return null;
-                var firstStyle = styleByItem.Styles.First;
-                if (firstStyle == null || firstStyle.Styles.Count == 0) return null;
-                IfcSurfaceStyle surfaceStyle = firstStyle.Styles.First as IfcSurfaceStyle;
-                if (surfaceStyle == null || surfaceStyle.Styles.Count == 0) return null;
-                IfcSurfaceStyleRendering rgb = surfaceStyle.Styles.First as IfcSurfaceStyleRendering;
-                if (rgb == null) return null;
+                ////if we dont have any representation, return
+                //if (representation == null || representation.Items.Count == 0) return null;
+                //var styledBy = representation.Items.First();
+                //if (styledBy == null || styledBy.StyledByItem.Count() == 0) return null;
+                //var styleByItem = styledBy.StyledByItem.First();
+                //if(styleByItem == null || styleByItem.Styles.Count == 0) return null;
+                //var firstStyle = styleByItem.Styles.First;
+                //if (firstStyle == null || firstStyle.Styles.Count == 0) return null;
+                //IfcSurfaceStyle surfaceStyle = firstStyle.Styles.First as IfcSurfaceStyle;
+                //if (surfaceStyle == null || surfaceStyle.Styles.Count == 0) return null;
+                //IfcSurfaceStyleRendering rgb = surfaceStyle.Styles.First as IfcSurfaceStyleRendering;
+                //if (rgb == null) return null;
                     
-                return new Material(surfaceStyle.Name.Value + "Material",
-                    rgb.SurfaceColour.Red,
-                    rgb.SurfaceColour.Green,
-                    rgb.SurfaceColour.Blue,
-                    (1.0 - (double)rgb.Transparency.Value.Value),
+                return new Material( "DefaultMaterial",
+                    .5,
+                    .1,
+                   .3,
+                    .7,
                     0.0);
                 
-            }
-            catch (Exception ex)
-            {
-                Logger.Warn(String.Format("Failed to get Representation and Material for entity #{0}", node.ProductId),
-                    ex);
-            }
-            return null;
+            //}
+            //catch (Exception ex)
+            //{
+            //    Logger.Warn(String.Format("Failed to get Representation and Material for entity #{0}", node.ProductId),
+            //        ex);
+            //}
+            //return null;
         }
 
         private Func<TransformNode, bool> FilterByType(Type t)
@@ -316,68 +302,71 @@ namespace Xbim.SceneJSWebViewer
 
         public void Init(string model)
         {
-            //prepare temp collections of the different types we want to prioritise
-            IEnumerable<TransformNode> Slabs = Scene.Graph.ProductNodes.Values.Where(FilterByType(typeof(IfcSlab)));
-            IEnumerable<TransformNode> Walls = Scene.Graph.ProductNodes.Values.Where(FilterByType(typeof(IfcWall)));
-            IEnumerable<TransformNode> Roofs = Scene.Graph.ProductNodes.Values.Where(FilterByType(typeof(IfcRoof)));
-            IEnumerable<TransformNode> Windows = Scene.Graph.ProductNodes.Values.Where(FilterByType(typeof(IfcWindow)));
-            IEnumerable<TransformNode> Doors = Scene.Graph.ProductNodes.Values.Where(FilterByType(typeof(IfcDoor)));
-            IEnumerable<TransformNode> Plates = Scene.Graph.ProductNodes.Values.Where(FilterByType(typeof(IfcPlate)));
-            IEnumerable<TransformNode> Beams = Scene.Graph.ProductNodes.Values.Where(FilterByType(typeof(IfcBeam)));
-            IEnumerable<TransformNode> Columns = Scene.Graph.ProductNodes.Values.Where(FilterByType(typeof(IfcColumn)));
-            IEnumerable<TransformNode> Others = Scene.Graph.ProductNodes.Values.Except(Slabs).Except(Walls).Except(Roofs).Except(Windows).Except(Doors).Except(Plates).Except(Beams).Except(Columns);
 
-            //Add the types we want to load first (in reverse order as client pops from top of list)
-            foreach (TransformNode tn in Others)
-            {
-                if (!tn.Product.GetType().IsSubclassOf(typeof(IfcFeatureElementSubtraction)) && !(tn.Product.GetType() == typeof(IfcSpace)))
-                {
-                    AddProduct(tn);
-                }
-                else
-                {
-                    Logger.DebugFormat("Skipping non-visible entity #{0} - {1}", tn.ProductId, tn.Product.ToString());
-                }
-            }
 
-            foreach (TransformNode tn in Beams)
-            {
-                AddProduct(tn);
-            }
-            foreach (TransformNode tn in Columns)
-            {
-                AddProduct(tn);
-            }
-            foreach (TransformNode tn in Plates)
-            {
-                AddProduct(tn);
-            }
-            foreach (TransformNode tn in Doors)
-            {
-                AddProduct(tn);
-            }
-            foreach (TransformNode tn in Windows)
-            {
-                AddProduct(tn);
-            }
-            foreach (TransformNode tn in Roofs)
-            {
-                AddProduct(tn);
-            }
+           
+        //    //prepare temp collections of the different types we want to prioritise
+        //    IEnumerable<TransformNode> Slabs = Scene.Graph.ProductNodes.Values.Where(FilterByType(typeof(IfcSlab)));
+        //    IEnumerable<TransformNode> Walls = Scene.Graph.ProductNodes.Values.Where(FilterByType(typeof(IfcWall)));
+        //    IEnumerable<TransformNode> Roofs = Scene.Graph.ProductNodes.Values.Where(FilterByType(typeof(IfcRoof)));
+        //    IEnumerable<TransformNode> Windows = Scene.Graph.ProductNodes.Values.Where(FilterByType(typeof(IfcWindow)));
+        //    IEnumerable<TransformNode> Doors = Scene.Graph.ProductNodes.Values.Where(FilterByType(typeof(IfcDoor)));
+        //    IEnumerable<TransformNode> Plates = Scene.Graph.ProductNodes.Values.Where(FilterByType(typeof(IfcPlate)));
+        //    IEnumerable<TransformNode> Beams = Scene.Graph.ProductNodes.Values.Where(FilterByType(typeof(IfcBeam)));
+        //    IEnumerable<TransformNode> Columns = Scene.Graph.ProductNodes.Values.Where(FilterByType(typeof(IfcColumn)));
+        //    IEnumerable<TransformNode> Others = Scene.Graph.ProductNodes.Values.Except(Slabs).Except(Walls).Except(Roofs).Except(Windows).Except(Doors).Except(Plates).Except(Beams).Except(Columns);
 
-            foreach (TransformNode tn in Walls)
-            {
-                AddProduct(tn);
-            }
-            foreach (TransformNode tn in Slabs)
-            {
-                AddProduct(tn);
-            }
+        //    //Add the types we want to load first (in reverse order as client pops from top of list)
+        //    foreach (TransformNode tn in Others)
+        //    {
+        //        if (!tn.Product.GetType().IsSubclassOf(typeof(IfcFeatureElementSubtraction)) && !(tn.Product.GetType() == typeof(IfcSpace)))
+        //        {
+        //            AddProduct(tn);
+        //        }
+        //        else
+        //        {
+        //            Logger.DebugFormat("Skipping non-visible entity #{0} - {1}", tn.ProductId, tn.Product.ToString());
+        //        }
+        //    }
 
-            if (Logger.IsDebugEnabled)
-            {
-                DumpProducts();
-            }
+        //    foreach (TransformNode tn in Beams)
+        //    {
+        //        AddProduct(tn);
+        //    }
+        //    foreach (TransformNode tn in Columns)
+        //    {
+        //        AddProduct(tn);
+        //    }
+        //    foreach (TransformNode tn in Plates)
+        //    {
+        //        AddProduct(tn);
+        //    }
+        //    foreach (TransformNode tn in Doors)
+        //    {
+        //        AddProduct(tn);
+        //    }
+        //    foreach (TransformNode tn in Windows)
+        //    {
+        //        AddProduct(tn);
+        //    }
+        //    foreach (TransformNode tn in Roofs)
+        //    {
+        //        AddProduct(tn);
+        //    }
+
+        //    foreach (TransformNode tn in Walls)
+        //    {
+        //        AddProduct(tn);
+        //    }
+        //    foreach (TransformNode tn in Slabs)
+        //    {
+        //        AddProduct(tn);
+        //    }
+
+        //    if (Logger.IsDebugEnabled)
+        //    {
+        //        DumpProducts();
+        //    }
         }
 
         private void DumpProducts()

@@ -9,13 +9,16 @@ namespace Xbim.IO
 {
     public static class IfcProductExtensions
     {
-        public static XbimGeometryData GeometryData(this  IfcProduct product, XbimGeometryType geomType)
+        public static IEnumerable<XbimGeometryData> GeometryData(this  IfcProduct product, XbimGeometryType geomType)
         {
-            XbimModel model =  product.ModelOf as XbimModel;
-            if (model != null) 
-                return model.GetGeometryData(product, geomType);
-            else
-                return null;
+            XbimModel model = product.ModelOf as XbimModel;
+            if (model != null)
+            {
+                foreach (var item in model.GetGeometryData(product, geomType))
+                {
+                    yield return item;
+                }
+            }
         }
     }
 }

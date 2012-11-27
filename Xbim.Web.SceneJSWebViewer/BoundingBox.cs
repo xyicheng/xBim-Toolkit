@@ -35,7 +35,7 @@ namespace Xbim.SceneJSWebViewer
         public BoundingBox(double srXmin, double srYmin, double srZmin, double srXmax, double srYmax, double srZmax )
         {
             PointMin = new Point3D(srXmin, srYmin, srZmin);
-            PointMin = new Point3D(srXmax, srYmax, srZmax);
+            PointMax = new Point3D(srXmax, srYmax, srZmax);
             IsValid = true;
         }
         /// <summary>
@@ -44,10 +44,17 @@ namespace Xbim.SceneJSWebViewer
         /// <returns></returns>
         public static BoundingBox FromArray(byte[] array)
         {
-
             MemoryStream ms = new MemoryStream(array);
             BinaryReader bw = new BinaryReader(ms);
-            return new BoundingBox(bw.ReadDouble(), bw.ReadDouble(), bw.ReadDouble(), bw.ReadDouble(), bw.ReadDouble(), bw.ReadDouble());
+
+            double minX = bw.ReadDouble();
+            double minY = bw.ReadDouble();
+            double minZ = bw.ReadDouble();
+            double maxX = bw.ReadDouble();
+            double maxY = bw.ReadDouble();
+            double maxZ = bw.ReadDouble();
+
+            return new BoundingBox(minX, minY, minZ, maxX, maxY, maxZ);
 
         }
         /// <summary>

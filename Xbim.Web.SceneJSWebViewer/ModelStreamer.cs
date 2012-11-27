@@ -165,16 +165,17 @@ namespace Xbim.SceneJSWebViewer
                     offset += 4;
 
                     //view transform matrix
-                    if (gdata[i].MatrixTransform.Length == 16) //if we have a well formed matrix
-                    {
-                        foreach (Double md in gdata[i].MatrixTransform)
-                        {
-                            BitConverter.GetBytes(md).CopyTo(data, offset);
-                            offset += 8;
-                        }
-                    }
-                    else { offset += 16 * 8; }
-
+                    //if (gdata[i].MatrixTransform.Length == 16) //if we have a well formed matrix
+                    //{
+                    //    //foreach (Double md in gdata[i].MatrixTransform)
+                    //    //{
+                    //    //    BitConverter.GetBytes(md).CopyTo(data, offset);
+                    //    //    offset += 8;
+                    //    //}
+                    //}
+                    //else { offset += 16 * 8; }
+                    gdata[i].MatrixTransform.CopyTo(data, offset);
+                    offset += gdata[i].MatrixTransform.Length;
                     //add data length
                     BitConverter.GetBytes(Convert.ToUInt32(gdata[i].data.Length)).CopyTo(data, offset);
                     offset += 4;
