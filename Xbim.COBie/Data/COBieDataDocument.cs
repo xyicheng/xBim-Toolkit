@@ -198,11 +198,11 @@ namespace Xbim.COBie.Data
                     value = relatedObject.Name.ToString();
                     if (!string.IsNullOrEmpty(value)) objectInfo.Name = value;
                     objectInfo.ExtObject = relatedObject.GetType().Name;
-                    objectInfo.ExtIdentifier = relatedObject.GlobalId;
-                    objectInfo.ExtSystem = GetExternalSystem(relatedObject);
+                    objectInfo.ExtIdentifier = ifcRelAssociatesDocument.GlobalId;
+                    objectInfo.ExtSystem = GetExternalSystem(ifcRelAssociatesDocument.OwnerHistory); 
 
-                    objectInfo.CreatedBy = GetTelecomEmailAddress(relatedObject.OwnerHistory);
-                    objectInfo.CreatedOn = GetCreatedOnDateAsFmtString(relatedObject.OwnerHistory);
+                    objectInfo.CreatedBy = GetTelecomEmailAddress(ifcRelAssociatesDocument.OwnerHistory);
+                    objectInfo.CreatedOn = GetCreatedOnDateAsFmtString(ifcRelAssociatesDocument.OwnerHistory);
                 }
             }
             return objectInfo;

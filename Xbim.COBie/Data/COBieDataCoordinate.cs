@@ -47,127 +47,144 @@ namespace Xbim.COBie.Data
         /// <returns>COBieSheet<COBieCoordinateRow></returns>
         public override COBieSheet<COBieCoordinateRow> Fill()
         {
-            ProgressIndicator.ReportMessage("Starting Coordinates...");
-
-            //Create new sheet
-            COBieSheet<COBieCoordinateRow> coordinates = new COBieSheet<COBieCoordinateRow>(Constants.WORKSHEET_COORDINATE);
-            
-            //Get buildings and spaces
-            IEnumerable<IfcBuildingStorey> ifcBuildingStoreys = Model.InstancesOfType<IfcBuildingStorey>();
-            IEnumerable<IfcSpace> ifcSpaces = Model.InstancesOfType<IfcSpace>().OrderBy(ifcSpace => ifcSpace.Name, new CompareIfcLabel());
-            IEnumerable<IfcProduct> ifcProducts = ifcBuildingStoreys.Union<IfcProduct>(ifcSpaces); //add spaces
-
-            //get component products as shown in Component sheet
-            IEnumerable<IfcRelAggregates> relAggregates = Model.InstancesOfType<IfcRelAggregates>();
-            IEnumerable<IfcRelContainedInSpatialStructure> relSpatial = Model.InstancesOfType<IfcRelContainedInSpatialStructure>();
-            IEnumerable<IfcProduct> ifcElements = ((from x in relAggregates
-                                                   from y in x.RelatedObjects
-                                                    where !Context.Exclude.ObjectType.Component.Contains(y.GetType())
-                                                   select y).Union(from x in relSpatial
-                                                                   from y in x.RelatedElements
-                                                                   where !Context.Exclude.ObjectType.Component.Contains(y.GetType())
-                                                                   select y)).GroupBy(el => el.Name).Select(g => g.First()).OfType<IfcProduct>();
-            ifcProducts = ifcProducts.Union(ifcElements);
-
-            ProgressIndicator.Initialise("Creating Coordinates", ifcProducts.Count());
             TransformGraph transGraph = GetTransformGraph();
+            COBieSheet<COBieCoordinateRow> coordinates = new COBieSheet<COBieCoordinateRow>(Constants.WORKSHEET_COORDINATE);
 
-            foreach (IfcProduct ifcProduct in ifcProducts)
+            if (transGraph != null)
             {
-                ProgressIndicator.IncrementAndUpdate();
+                ProgressIndicator.ReportMessage("Starting Coordinates...");
 
-                COBieCoordinateRow coordinate = new COBieCoordinateRow(coordinates);
 
-                coordinate.Name = (string.IsNullOrEmpty(ifcProduct.Name.ToString())) ? DEFAULT_STRING : ifcProduct.Name.ToString();// (ifcBuildingStorey == null || ifcBuildingStorey.Name.ToString() == "") ? "CoordinateName" : ifcBuildingStorey.Name.ToString();
+                //Create new sheet
                 
-                coordinate.CreatedBy = GetTelecomEmailAddress(ifcProduct.OwnerHistory);
-                coordinate.CreatedOn = GetCreatedOnDateAsFmtString(ifcProduct.OwnerHistory);
-               
-                
-                coordinate.RowName = coordinate.Name;
-                IfcCartesianPoint ifcCartesianPointLower = null;
-                IfcCartesianPoint ifcCartesianPointUpper = null;
-                double ClockwiseRotation = 0.0;
-                double ElevationalRotation = 0.0;
-                double YawRotation = 0.0;
+                //Get buildings and spaces
+                IEnumerable<IfcBuildingStorey> ifcBuildingStoreys = Model.InstancesOfType<IfcBuildingStorey>();
+                IEnumerable<IfcSpace> ifcSpaces = Model.InstancesOfType<IfcSpace>().OrderBy(ifcSpace => ifcSpace.Name, new CompareIfcLabel());
+                IEnumerable<IfcProduct> ifcProducts = ifcBuildingStoreys.Union<IfcProduct>(ifcSpaces); //add spaces
 
-                if (ifcProduct is IfcBuildingStorey)
+                //get component products as shown in Component sheet
+                IEnumerable<IfcRelAggregates> relAggregates = Model.InstancesOfType<IfcRelAggregates>();
+                IEnumerable<IfcRelContainedInSpatialStructure> relSpatial = Model.InstancesOfType<IfcRelContainedInSpatialStructure>();
+                IEnumerable<IfcProduct> ifcElements = ((from x in relAggregates
+                                                        from y in x.RelatedObjects
+                                                        where !Context.Exclude.ObjectType.Component.Contains(y.GetType())
+                                                        select y).Union(from x in relSpatial
+                                                                        from y in x.RelatedElements
+                                                                        where !Context.Exclude.ObjectType.Component.Contains(y.GetType())
+                                                                        select y)).GroupBy(el => el.Name).Select(g => g.First()).OfType<IfcProduct>();
+                ifcProducts = ifcProducts.Union(ifcElements);
+
+                ProgressIndicator.Initialise("Creating Coordinates", ifcProducts.Count());
+
+                foreach (IfcProduct ifcProduct in ifcProducts)
                 {
-                    if ((transGraph != null) &&
-                        transGraph.ProductNodes.ContainsKey(ifcProduct.EntityLabel)
-                        )
+                    ProgressIndicator.IncrementAndUpdate();
+
+                    COBieCoordinateRow coordinate = new COBieCoordinateRow(coordinates);
+
+                    coordinate.Name = (string.IsNullOrEmpty(ifcProduct.Name.ToString())) ? DEFAULT_STRING : ifcProduct.Name.ToString();// (ifcBuildingStorey == null || ifcBuildingStorey.Name.ToString() == "") ? "CoordinateName" : ifcBuildingStorey.Name.ToString();
+
+                    coordinate.CreatedBy = GetTelecomEmailAddress(ifcProduct.OwnerHistory);
+                    coordinate.CreatedOn = GetCreatedOnDateAsFmtString(ifcProduct.OwnerHistory);
+
+
+                    coordinate.RowName = coordinate.Name;
+                    IfcCartesianPoint ifcCartesianPointLower = null;
+                    IfcCartesianPoint ifcCartesianPointUpper = null;
+                    double ClockwiseRotation = 0.0;
+                    double ElevationalRotation = 0.0;
+                    double YawRotation = 0.0;
+
+                    if (ifcProduct is IfcBuildingStorey)
                     {
-                        Matrix3D worldMatrix = transGraph.ProductNodes[ifcProduct.EntityLabel].WorldMatrix();
-                        ifcCartesianPointLower = new IfcCartesianPoint(worldMatrix.OffsetX, worldMatrix.OffsetY, worldMatrix.OffsetZ); //get the offset from the world coordinates system 0,0,0 point, i.e. origin point of this object in world space
+                        if ((transGraph != null) &&
+                            transGraph.ProductNodes.ContainsKey(ifcProduct.EntityLabel)
+                            )
+                        {
+                            Matrix3D worldMatrix = transGraph.ProductNodes[ifcProduct.EntityLabel].WorldMatrix();
+                            ifcCartesianPointLower = new IfcCartesianPoint(worldMatrix.OffsetX, worldMatrix.OffsetY, worldMatrix.OffsetZ); //get the offset from the world coordinates system 0,0,0 point, i.e. origin point of this object in world space
+                        }
+                        //we will allow to add 0,0,0 as if components then it can place themselves relative to the 0,0,0 point
+                        else
+                        {
+                            continue; //no info so skip
+                        }
+                        coordinate.SheetName = "Floor";
+                        coordinate.Category = "point";
+                        //ifcCartesianPoint = (ifcProduct.ObjectPlacement as IfcLocalPlacement).RelativePlacement.Location;
                     }
-                    coordinate.SheetName = "Floor"; 
-                    coordinate.Category = "point";
-                    //ifcCartesianPoint = (ifcProduct.ObjectPlacement as IfcLocalPlacement).RelativePlacement.Location;
-                }
-                else 
-                {
-                    if ((transGraph != null) &&
-                        transGraph.ProductNodes.ContainsKey(ifcProduct.EntityLabel)
-                        )
-                    {
-                        Rect3D boundBox = transGraph.ProductNodes[ifcProduct.EntityLabel].BoundingBox;
-                        Matrix3D worldMatrix = transGraph.ProductNodes[ifcProduct.EntityLabel].WorldMatrix();
-                        //do the transform in the next call to the structure TransformedBoundingBox constructor
-                        TransformedBoundingBox tranBox = new TransformedBoundingBox(boundBox, worldMatrix);
-                        ClockwiseRotation = tranBox.ClockwiseRotation;
-                        ElevationalRotation = tranBox.ElevationalRotation;
-                        YawRotation = tranBox.YawRotation;
-                        //set points
-                        ifcCartesianPointLower = new IfcCartesianPoint(tranBox.MinPt);
-                        ifcCartesianPointUpper = new IfcCartesianPoint(tranBox.MaxPt); 
-                    }
-                    
-                    if (ifcProduct is IfcSpace)
-                        coordinate.SheetName = "Space";
                     else
-                        coordinate.SheetName = "Component";
+                    {
+                        if ((transGraph != null) &&
+                            transGraph.ProductNodes.ContainsKey(ifcProduct.EntityLabel)
+                            )
+                        {
+                            Rect3D boundBox = transGraph.ProductNodes[ifcProduct.EntityLabel].BoundingBox;
+                            Matrix3D worldMatrix = transGraph.ProductNodes[ifcProduct.EntityLabel].WorldMatrix();
+                            //do the transform in the next call to the structure TransformedBoundingBox constructor
+                            TransformedBoundingBox tranBox = new TransformedBoundingBox(boundBox, worldMatrix);
+                            ClockwiseRotation = tranBox.ClockwiseRotation;
+                            ElevationalRotation = tranBox.ElevationalRotation;
+                            YawRotation = tranBox.YawRotation;
+                            //set points
+                            ifcCartesianPointLower = new IfcCartesianPoint(tranBox.MinPt);
+                            ifcCartesianPointUpper = new IfcCartesianPoint(tranBox.MaxPt);
+                        }
+                        else
+                        {
+                            continue;//no info so skip
+                        }
+                        if (ifcProduct is IfcSpace)
+                            coordinate.SheetName = "Space";
+                        else
+                            coordinate.SheetName = "Component";
 
-                    coordinate.Category = "box-lowerleft"; //and box-upperright, so two values required when we do this
-                    
-                    
+                        coordinate.Category = "box-lowerleft"; //and box-upperright, so two values required when we do this
+
+
+                    }
+
+
+
+                    coordinate.CoordinateXAxis = (ifcCartesianPointLower != null) ? string.Format("{0:F4}", (double)ifcCartesianPointLower[0]) : "0.0";
+                    coordinate.CoordinateYAxis = (ifcCartesianPointLower != null) ? string.Format("{0:F4}", (double)ifcCartesianPointLower[1]) : "0.0";
+                    coordinate.CoordinateZAxis = (ifcCartesianPointLower != null) ? string.Format("{0:F4}", (double)ifcCartesianPointLower[2]) : "0.0";
+                    coordinate.ExtSystem = GetExternalSystem(ifcProduct);
+                    coordinate.ExtObject = ifcProduct.GetType().Name;
+                    coordinate.ExtIdentifier = ifcProduct.GlobalId.ToString();
+                    coordinate.ClockwiseRotation = ClockwiseRotation.ToString("F4");
+                    coordinate.ElevationalRotation = ElevationalRotation.ToString("F4");
+                    coordinate.YawRotation = YawRotation.ToString("F4");
+
+                    coordinates.AddRow(coordinate);
+                    if (ifcCartesianPointUpper != null) //we need a second row for upper point
+                    {
+                        COBieCoordinateRow coordinateUpper = new COBieCoordinateRow(coordinates);
+                        coordinateUpper.Name = coordinate.Name;
+                        coordinateUpper.CreatedBy = coordinate.CreatedBy;
+                        coordinateUpper.CreatedOn = coordinate.CreatedOn;
+                        coordinateUpper.RowName = coordinate.RowName;
+                        coordinateUpper.SheetName = coordinate.SheetName;
+                        coordinateUpper.Category = "box-upperright";
+                        coordinateUpper.CoordinateXAxis = (ifcCartesianPointUpper != null) ? string.Format("{0:F4}", (double)ifcCartesianPointUpper[0]) : "0.0";
+                        coordinateUpper.CoordinateYAxis = (ifcCartesianPointUpper != null) ? string.Format("{0:F4}", (double)ifcCartesianPointUpper[1]) : "0.0";
+                        coordinateUpper.CoordinateZAxis = (ifcCartesianPointUpper != null) ? string.Format("{0:F4}", (double)ifcCartesianPointUpper[2]) : "0.0";
+                        coordinateUpper.ExtSystem = coordinate.ExtSystem;
+                        coordinateUpper.ExtObject = coordinate.ExtObject;
+                        coordinateUpper.ExtIdentifier = coordinate.ExtIdentifier;
+                        coordinateUpper.ClockwiseRotation = coordinate.ClockwiseRotation;
+                        coordinateUpper.ElevationalRotation = coordinate.ElevationalRotation;
+                        coordinateUpper.YawRotation = coordinate.YawRotation;
+
+                        coordinates.AddRow(coordinateUpper);
+                    }
                 }
-                
-
-
-                coordinate.CoordinateXAxis = (ifcCartesianPointLower != null) ? string.Format("{0:F4}", (double)ifcCartesianPointLower[0]) : "0.0";
-                coordinate.CoordinateYAxis = (ifcCartesianPointLower != null) ? string.Format("{0:F4}", (double)ifcCartesianPointLower[1]) : "0.0";
-                coordinate.CoordinateZAxis = (ifcCartesianPointLower != null) ? string.Format("{0:F4}", (double)ifcCartesianPointLower[2]) : "0.0";
-                coordinate.ExtSystem = GetExternalSystem(ifcProduct);
-                coordinate.ExtObject = ifcProduct.GetType().Name;
-                coordinate.ExtIdentifier = ifcProduct.GlobalId.ToString();
-                coordinate.ClockwiseRotation = ClockwiseRotation.ToString("F4");
-                coordinate.ElevationalRotation = ElevationalRotation.ToString("F4");
-                coordinate.YawRotation = YawRotation.ToString("F4");
-
-                coordinates.AddRow(coordinate);
-                if (ifcCartesianPointUpper != null) //we need a second row for upper point
-                {
-                    COBieCoordinateRow coordinateUpper = new COBieCoordinateRow(coordinates);
-                    coordinateUpper.Name = coordinate.Name;
-                    coordinateUpper.CreatedBy = coordinate.CreatedBy;
-                    coordinateUpper.CreatedOn = coordinate.CreatedOn;
-                    coordinateUpper.RowName = coordinate.RowName;
-                    coordinateUpper.SheetName = coordinate.SheetName;
-                    coordinateUpper.Category = "box-upperright";
-                    coordinateUpper.CoordinateXAxis = (ifcCartesianPointUpper != null) ? string.Format("{0:F4}", (double)ifcCartesianPointUpper[0]) : "0.0";
-                    coordinateUpper.CoordinateYAxis = (ifcCartesianPointUpper != null) ? string.Format("{0:F4}", (double)ifcCartesianPointUpper[1]) : "0.0";
-                    coordinateUpper.CoordinateZAxis = (ifcCartesianPointUpper != null) ? string.Format("{0:F4}", (double)ifcCartesianPointUpper[2]) : "0.0";
-                    coordinateUpper.ExtSystem = coordinate.ExtSystem;
-                    coordinateUpper.ExtObject = coordinate.ExtObject;
-                    coordinateUpper.ExtIdentifier = coordinate.ExtIdentifier;
-                    coordinateUpper.ClockwiseRotation = coordinate.ClockwiseRotation;
-                    coordinateUpper.ElevationalRotation = coordinate.ElevationalRotation;
-                    coordinateUpper.YawRotation = coordinate.YawRotation;
-
-                    coordinates.AddRow(coordinateUpper);
-                }
+                ProgressIndicator.Finalise();
             }
-            ProgressIndicator.Finalise();
+            else
+            {
+                ProgressIndicator.ReportMessage("Skipping Coordinates, no graphics tree...");return coordinates;
+            }
             return coordinates;
         }
 

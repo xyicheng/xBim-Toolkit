@@ -94,7 +94,10 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 
                 //Add Stage
                 if (ValidateString(row.Stage)) ifcDocumentInformation.Scope = row.Stage;
-                
+
+                //Add GlobalId
+                AddGlobalId(row.ExtIdentifier, ifcRelAssociatesDocument);
+
                 //Add Object Relationship
                 AddObjectRelationship(row, ifcRelAssociatesDocument);
 

@@ -125,10 +125,19 @@ namespace Xbim.COBie.Data
         private string GetPriors(IfcTask ifcTask)
         {
             IEnumerable<IfcRelSequence> isSuccessorFrom = ifcTask.IsSuccessorFrom;
-            if ((isSuccessorFrom.Count() == 1) && (isSuccessorFrom.First().RelatingProcess is IfcTask))
-                return ((IfcTask)isSuccessorFrom.First().RelatingProcess).TaskId;
+            List<string> relatingTasks = new List<string>();
+            foreach (IfcRelSequence ifcRelSequence in isSuccessorFrom)
+            {
+                IfcTask relatingIfcTask = ifcRelSequence.RelatingProcess as IfcTask;
+                if (relatingIfcTask != null)
+                    relatingTasks.Add(relatingIfcTask.TaskId.ToString().Trim());
+            }
+
+            if (relatingTasks.Count > 0)
+                return string.Join(":", relatingTasks);
             else
-                return "0";
+                return ifcTask.TaskId.ToString().Trim(); //if no priors, refrence itself
+           
         }
 
         /// <summary>

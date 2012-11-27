@@ -59,7 +59,7 @@ namespace Xbim.COBie.Data
             attributeBuilder.RowParameters["Sheet"] = "Type";
 
             ProgressIndicator.Initialise("Creating Types", ifcTypeObjects.Count());
-            COBieTypeRow lastRow = null;
+            //COBieTypeRow lastRow = null;
             foreach (IfcTypeObject type in ifcTypeObjects)
             {
                 ProgressIndicator.IncrementAndUpdate();
@@ -82,11 +82,11 @@ namespace Xbim.COBie.Data
             
                 FillPropertySetsValues(allPropertyValues, type, typeRow);
                 //not duplicate so add to sheet
-                if (CheckForDuplicateRow(lastRow, typeRow)) 
-                {
+                //if (CheckForDuplicateRow(lastRow, typeRow)) 
+                //{
                     types.AddRow(typeRow);
-                    lastRow = typeRow; //save this row to test on next loop
-                }
+                    //lastRow = typeRow; //save this row to test on next loop
+                //}
                 // Provide Attribute sheet with our context
                 //fill in the attribute information
                 attributeBuilder.RowParameters["Name"] = typeRow.Name;
@@ -835,10 +835,16 @@ namespace Xbim.COBie.Data
             string value = "";
             if (properties.Any())
             {
+                string conCatChar;
+                if (Context.TemplateCulture == "en-GB")
+                    conCatChar = " : ";
+                else
+                    conCatChar = ": ";
+
                 string code = properties.Where(p => p.NominalValue != null && categoriesCode.Contains(p.Name)).Select(p => p.NominalValue.ToString()).FirstOrDefault();
                 string description = properties.Where(p => p.NominalValue != null && categoriesDesc.Contains(p.Name)).Select(p => p.NominalValue.ToString()).FirstOrDefault();
                 if (!string.IsNullOrEmpty(code)) value += code;
-                if (!string.IsNullOrEmpty(description)) value += ": " +  description;
+                if (!string.IsNullOrEmpty(description)) value += conCatChar + description;
             }
 
             if (string.IsNullOrEmpty(value))

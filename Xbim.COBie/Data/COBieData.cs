@@ -377,6 +377,12 @@ namespace Xbim.COBie.Data
 
             if (ifcRAC != null)
             {
+                string conCatChar;
+                if (Context.TemplateCulture == "en-GB")
+                    conCatChar = " : ";
+                else
+                    conCatChar = ": ";
+
                 //need to use split as sometime the whole category is stored in both ItemReference and Name
                 IfcClassificationReference ifcCR = (IfcClassificationReference)ifcRAC.RelatingClassification;
                 //holders for first and last part of category
@@ -392,7 +398,7 @@ namespace Xbim.COBie.Data
                     {
                         //skip first item
                         if (i == 1) name = nameSplit[i].Trim();
-                        if (i > 1) name += " : " + nameSplit[i].Trim(); //add back the second, third... ": "
+                        if (i > 1) name += conCatChar + nameSplit[i].Trim(); //add back the second, third... ": "
                     }
                     
                 }
@@ -406,7 +412,7 @@ namespace Xbim.COBie.Data
                     && (!string.IsNullOrEmpty(name))
                     && (itemReference.ToLower() != name.ToLower())
                     )
-                    return itemReference.Trim() + " : " + name.Trim();
+                    return itemReference.Trim() + conCatChar + name.Trim();
                 else if (!string.IsNullOrEmpty(itemReference))
                     return itemReference;
                 else if (!string.IsNullOrEmpty(name))

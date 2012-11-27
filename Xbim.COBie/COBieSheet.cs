@@ -338,6 +338,13 @@ namespace Xbim.COBie
                 err.ErrorDescription = ErrorDescription.Text_Value_Expected;
                 err.ErrorType = COBieError.ErrorTypes.Text_Value_Expected;
             }
+            else if (( (state == COBieAttributeState.Required_Information) || 
+                       (state == COBieAttributeState.Required_IfSpecified) ) &&
+                     (cell.CellValue == Constants.DEFAULT_STRING)
+                    ) //if a required value but marked as n/a then do not class as error
+            {
+                return null;
+            }
             else if (cell.CellValue.Length > maxLength)
             {
                 err.ErrorDescription = String.Format(ErrorDescription.Value_Out_of_Bounds, maxLength);

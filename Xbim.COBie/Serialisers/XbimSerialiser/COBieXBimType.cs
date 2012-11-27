@@ -10,6 +10,7 @@ using Xbim.Ifc.PropertyResource;
 using Xbim.XbimExtensions;
 using System.Reflection;
 using Xbim.Ifc.MaterialResource;
+using Xbim.Ifc.SharedBldgServiceElements;
 
 namespace Xbim.COBie.Serialisers.XbimSerialiser
 {
@@ -230,6 +231,12 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
 
 
                 }
+            }
+            else
+            {
+#if DEBUG
+                Console.WriteLine("Failed to create type {0} of {1}", row.Name, row.ExtObject);
+#endif
             }
 
 

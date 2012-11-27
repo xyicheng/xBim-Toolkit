@@ -149,9 +149,11 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             IfcTimeStamp stamp = null;
             if (ValidateString(createdOn))
             {
-                DateTime dateTime;
+                DateTime dateTime;// = new DateTime(0, DateTimeKind.Utc);
                 if (DateTime.TryParse(createdOn, out dateTime))
-                    stamp = IfcTimeStamp.ToTimeStamp(dateTime.ToUniversalTime());
+                {
+                    stamp = IfcTimeStamp.ToTimeStamp(dateTime);
+                }
             }
 
             return Model.New<IfcOwnerHistory>(oh =>

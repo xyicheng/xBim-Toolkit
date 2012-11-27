@@ -132,7 +132,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                         else
                             pSetName = "PSet_COBie_UnSpecified_for_" + row.Name;
 
-                        if (!pSetName.ToLower().Contains("pset_")) pSetName = "PSet_" + pSetName;
+                        //if (!pSetName.ToLower().Contains("pset_")) pSetName = "PSet_" + pSetName;
                         IfcPropertySet ifcPropertySet = null;
 
                         if (CurrentObject is IfcObject)
@@ -208,7 +208,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 else
                 {
 #if DEBUG
-                    Console.WriteLine("Failed to create attribute. No object fond to add too {0} value {1}", row.Name, row.ExtObject);
+                    Console.WriteLine("Failed to create attribute. No object found to add too {0} value {1}", row.Name, row.ExtObject);
 #endif
                 }
                 

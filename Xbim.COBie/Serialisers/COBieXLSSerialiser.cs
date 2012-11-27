@@ -363,7 +363,7 @@ Mismatch: {0}
                     case COBieAllowedType.ISODateTime:
                     case COBieAllowedType.ISODate:
                         DateTime date;
-                        if (DateTime.TryParse(cell.CellValue, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out date))
+                        if (DateTime.TryParse(cell.CellValue, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out date))
                         {
                             excelCell.SetCellValue(date);
                             processed = true;

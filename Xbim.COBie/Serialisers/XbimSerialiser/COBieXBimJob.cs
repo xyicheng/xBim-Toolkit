@@ -197,19 +197,30 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             if (ifcTaskFound.Count() == 1) //should equal one
             {
                 IfcTask ifcTask = ifcTaskFound.First();
-                //find any existing relationships to this type
-                IfcRelSequence relSequence = Model.InstancesWhere<IfcRelSequence>(rs => rs.RelatedProcess == ifcTask).FirstOrDefault();
-                if (relSequence == null) //none defined create the relationship
+                if (ValidateString(row.Priors))
                 {
-                    relSequence = Model.New<IfcRelSequence>();
-                    relSequence.RelatedProcess = ifcTask;
-                }
-
-                ifcTaskFound = IfcTasks.Where(task => task.Name == row.Name && task.TaskId == row.Priors);
-                if (ifcTaskFound.Count() == 1) //should equal one
-                {
-                    relSequence.RelatingProcess = ifcTaskFound.First();
-                    return; //stop exception
+                    string priors = row.Priors.ToString();
+                    char splitKey = ',';
+                    if (priors.Contains(":"))
+                        splitKey = ':';
+                    string[] priorsArray = row.Priors.ToString().Split(splitKey);
+                    foreach (string prior in priorsArray)
+                    {
+                        string testName = prior.ToLower().Trim();
+                        ifcTaskFound = IfcTasks.Where(task => task.TaskId.ToString().ToLower().Trim() == testName);
+                        foreach (IfcTask ifcTaskitem in ifcTaskFound)
+                        {
+                            //check the relationship does not exist
+                            //IfcRelSequence relSequence = Model.InstancesWhere<IfcRelSequence>(rs => rs.RelatedProcess == ifcTask && rs.RelatingProcess == ifcTaskitem).FirstOrDefault();
+                            //if (relSequence == null) //none defined, create the relationship
+                            //{
+                                IfcRelSequence relSequence = Model.New<IfcRelSequence>();
+                                relSequence.RelatedProcess = ifcTask;
+                                relSequence.RelatingProcess = ifcTaskitem;
+                            //}
+                        }
+                        
+                    }
                 }
             }
             //throw new Exception("COBieXBimJob.SetPriors(): did not find a single task matching name and task number");

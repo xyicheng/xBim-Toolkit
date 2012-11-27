@@ -228,11 +228,16 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                         {
 #if DEBUG
                             Console.WriteLine("COBieXBimCoordinate.AddBoundingBoxAsExtrudedAreaSolid: Cannot find Parent object placement");
-#endif
-
+#endif                        
                         }
                     }
                     
+                }
+                else
+                {
+#if DEBUG
+                    Console.WriteLine("COBieXBimCoordinate.AddBoundingBoxAsExtrudedAreaSolid: Cannot find object to relate points too");
+#endif
                 }
             }
             
@@ -345,6 +350,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                     
                     //rotation around X,Y,Z axis for the matrix at the placementRelTo IfcLocalPlacement, we need to remove this from the row value so the object placement + this placement will equal the row rotation
                     double lastRotationZ, lastRotationY, lastRotationX;
+                    matrix3D.Invert(); //invert matrix back to original to get rotations
                     TransformedBoundingBox.GetMatrixRotations(matrix3D, out lastRotationX, out lastRotationY, out lastRotationZ);
                     //convert to degrees
                     lastRotationZ = TransformedBoundingBox.RTD(lastRotationZ);
@@ -357,13 +363,13 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                     double rotationX, rotationY, rotationZ;
                     if (double.TryParse(row.YawRotation, out rotationX))
                     {
-                        rotationX = rotationX - lastRotationX;
+                        rotationX = (rotationX - lastRotationX) * -1; //switch rotation direction to match original direction on extracted xls sheet
                         Quaternion q = new Quaternion(new Vector3D(1, 0, 0), rotationX);
                         matrixRotation3D.Rotate(q);
                     }
                     if (double.TryParse(row.ElevationalRotation, out rotationY))
                     {
-                        rotationY = rotationY - lastRotationY;
+                        rotationY = (rotationY - lastRotationY) * -1; //switch rotation direction to match original direction on extracted xls sheet, 
                         Quaternion q = new Quaternion(new Vector3D(0, 1, 0), rotationY);
                         matrixRotation3D.Rotate(q);
                     }

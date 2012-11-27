@@ -84,7 +84,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             {
                 AddGlobalId(row.ExternalSiteIdentifier, ifcSite);
                 if (ValidateString(row.SiteName))
-                    ifcSite.Name = row.Name;
+                    ifcSite.Name = row.SiteName;
                 ifcSite.CompositionType = IfcElementCompositionEnum.ELEMENT;
                 IfcLocalPlacement lp = Model.New<IfcLocalPlacement>();
                 lp.RelativePlacement = WCS;

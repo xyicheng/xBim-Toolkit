@@ -113,9 +113,7 @@ namespace Xbim.COBie.Client
                 }
 
                 outputFile = Path.ChangeExtension(parameters.ModelFile, ".xls");
-                //set the UI language to get correct resource file for template
-                if (Path.GetFileName(parameters.TemplateFile).Contains("-UK-"))
-                    ChangeUILanguage("en-GB"); //have to set as default is from install language which is en-US
+                
                 
                 LogBackground(String.Format("Loading model {0}...", Path.GetFileName(parameters.ModelFile)));
                 using(IModel model = new XbimFileModelServer())
@@ -127,6 +125,13 @@ namespace Xbim.COBie.Client
                     COBieContext context = new COBieContext(_worker.ReportProgress);
                     context.TemplateFileName = parameters.TemplateFile;
                     context.Model = model;
+
+                    //set the UI language to get correct resource file for template
+                    if (Path.GetFileName(parameters.TemplateFile).Contains("-UK-"))
+                    {
+                        ChangeUILanguage("en-GB"); //have to set as default is from install language which is en-US
+                        context.TemplateCulture = "en-GB";
+                    }
 
                     //Create Scene, required for Coordinates sheet
                     string cacheFile = Path.ChangeExtension(parameters.ModelFile, ".xbimGC");
