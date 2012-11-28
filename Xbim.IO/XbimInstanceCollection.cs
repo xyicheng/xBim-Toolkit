@@ -35,10 +35,15 @@ namespace Xbim.IO
 
         [NonSerialized]
         private IfcApplication _defaultOwningApplication;
+        private XbimModel xbimModel;
         #endregion
-        internal XbimInstanceCollection(IfcPersistedInstanceCache theCache)
+       
+
+        internal XbimInstanceCollection(XbimModel xbimModel)
         {
-            cache = theCache;
+            
+            this.xbimModel = xbimModel;
+            cache = xbimModel.Cache;
         }
 
         /// <summary>
@@ -48,7 +53,12 @@ namespace Xbim.IO
         {
             get
             {
-                return cache.Count;
+                long thisCount = cache.Count;
+                foreach (var m in xbimModel.RefencedModels)
+                {
+                    thisCount += m.Model.Instances.Count;
+                }
+                return thisCount;
             }
         }
         /// <summary>

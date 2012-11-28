@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xbim.Ifc2x3.ActorResource;
 using Xbim.Ifc2x3.GeometryResource;
 using Xbim.Ifc2x3.SharedBldgElements;
 using Xbim.IO;
@@ -203,13 +204,41 @@ namespace Xbim.Tests
         [TestMethod]
         public void CheckReferenceModels()
         {
-            using (XbimModel model = new XbimModel())
+            using (XbimModel model = XbimModel.CreateModel("ReferenceTestModel.xBIM"))
             {
                 using (var txn = model.BeginTransaction())
                 {
-                   // model.AddModelReference(
+                    //create an author of the referenced model
+                    IfcOrganization org = model.Instances.New<IfcOrganization>();
+                    IfcActorRole role = model.Instances.New<IfcActorRole>();
+                    role.Role=IfcRole.Architect;
+                    org.Name="Grand Designers";
+                    org.AddRole(role);
+
+                    //reference in the other model
+                    model.AddModelReference(SourceFile, org);
                     txn.Commit();
                 }
+                //ensure everything is closed
+                model.Close();
+                //open the referenced model to get count
+                long originalCount;
+                using ( XbimModel original = new XbimModel())
+                {
+                    original.Open(SourceFile);
+                    originalCount = original.Instances.Count;
+                    original.Close();
+                }
+                //open the referencing model to get count
+                long referencingCount;
+                using (XbimModel referencing = new XbimModel())
+                {
+                    referencing.Open("ReferenceTestModel.xBIM");
+                    referencingCount = referencing.Instances.Count;
+                    referencing.Close();
+                }
+                //there should be 3 more instances than in the original model
+                Assert.IsTrue(3 == (referencingCount - originalCount));
             }
         }
 

@@ -364,6 +364,13 @@ namespace Xbim.Ifc2x3.ActorResource
 
         #region Add methods
 
+        public void AddRole(IfcActorRole newRole)
+        {
+            if (_roles == null)
+                _roles = new ActorRoleCollection(this);
+            _roles.Add(newRole);
+        }
+
         /////// <summary>
         /////// Creates a new Engagement with the capacity defined in roles
         /////// </summary>
@@ -448,30 +455,25 @@ namespace Xbim.Ifc2x3.ActorResource
         /////// </summary>
         /////// <param name="newRole"></param>
         /////// <returns></returns>
-        ////public ActorRole AddRole(Role newRole)
-        ////{
-        ////    ActorRole aRole = new ActorRole(newRole);
-        ////    aRole.OnModelAdd(Model);
-        ////    return AddRole(aRole);
-        ////}
+        
 
-        ////public ActorRole AddRole(ActorRole newRole)
-        ////{
-        ////    using (Transaction txn = BeginTransaction("AddRole", true))
-        ////    {
-        ////        if (_roles == null)
-        ////            SetRoles(newRole); //this take care of notifications
-        ////        else
-        ////        {
-        ////            _roles.Add_Reversible(newRole);
-        ////            Transaction.AddTransactionReversedHandler(() => { NotifyPropertyChanged("Roles"); NotifyPropertyChanged("RolesString"); });
-        ////            NotifyPropertyChanged("Roles");
-        ////            NotifyPropertyChanged("RolesString");
-        ////        }
-        ////        if (txn != null) txn.Commit();
-        ////        return newRole;
-        ////    }
-        ////}
+        //////public ActorRole AddRole(ActorRole newRole)
+        //////{
+        //////    using (Transaction txn = BeginTransaction("AddRole", true))
+        //////    {
+        //////        if (_roles == null)
+        //////            SetRoles(newRole); //this take care of notifications
+        //////        else
+        //////        {
+        //////            _roles.Add_Reversible(newRole);
+        //////            Transaction.AddTransactionReversedHandler(() => { NotifyPropertyChanged("Roles"); NotifyPropertyChanged("RolesString"); });
+        //////            NotifyPropertyChanged("Roles");
+        //////            NotifyPropertyChanged("RolesString");
+        //////        }
+        //////        if (txn != null) txn.Commit();
+        //////        return newRole;
+        //////    }
+        //////}
 
         /////// <summary>
         /////// Deletes the specified Role from the roles collection

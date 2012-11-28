@@ -77,7 +77,7 @@ namespace Xbim.IO
         public XbimModel()
         {
             cache = new IfcPersistedInstanceCache(this);
-            instances = new XbimInstanceCollection(this.cache);
+            instances = new XbimInstanceCollection(this);
         }
         public string DatabaseName
         {
@@ -1077,18 +1077,21 @@ namespace Xbim.IO
        /// <summary>
         /// adds a model as a reference model, a valid transaction must be running
        /// </summary>
-       /// <param name="linkModel">the model to reference</param>
+        /// <param name="refModelPath">the file path of the xbim model to reference, this must be an xbim file</param>
        /// <param name="owner">the actor who supplied the model</param>
        /// <returns></returns>
-        public IfcIdentifier AddModelReference(XbimModel linkModel, IfcActorSelect owner)
+        public IfcIdentifier AddModelReference(string refModelPath, IfcActorSelect owner)
         {
             Debug.Assert(editTransactionEntityCursor != null);
-            var docRef = Instances.New<IfcDocumentInformation>();
-            docRef.DocumentId = _referencedModels.NextIdentifer();
-            docRef.Name = linkModel.DatabaseName;
-            docRef.DocumentOwner = owner;
-            docRef.IntendedUse = refDocument;
-            return docRef.DocumentId;
+            XbimModel refModel = new XbimModel();
+            refModel.Open(refModelPath);
+            var docInfo = Instances.New<IfcDocumentInformation>();
+            docInfo.DocumentId = _referencedModels.NextIdentifer();
+            docInfo.Name = refModelPath;
+            docInfo.DocumentOwner = owner;
+            docInfo.IntendedUse = refDocument;
+            _referencedModels.Add(new XbimReferencedModel(docInfo, refModel));
+            return docInfo.DocumentId;
         }
 
         private void LoadReferenceModels()
@@ -1106,5 +1109,14 @@ namespace Xbim.IO
 
         #endregion
 
+
+        public IEnumerable<XbimReferencedModel> RefencedModels
+        {
+            get
+            {
+                return _referencedModels;
+            }
+            
+        }
     }
 }
