@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Windows.Media.Media3D;
 
 namespace Xbim.ModelGeometry.Scene
 {
     public class XbimTriangulatedModelCollection : List<byte[]>
     {
+      
         public static readonly XbimTriangulatedModelCollection Empty;
         
 
@@ -22,6 +24,7 @@ namespace Xbim.ModelGeometry.Scene
         public XbimTriangulatedModelCollection(byte[] model) : base(1)
         {
             this.Add(model);
+           
         }
 
         public XbimTriangulatedModelCollection(int c) : base(c)

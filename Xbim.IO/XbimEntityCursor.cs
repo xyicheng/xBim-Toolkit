@@ -475,7 +475,7 @@ namespace Xbim.IO
         /// <param name="typeId">the type of entity to look up</param>
         /// <param name="lookupKey">Secondary key on the search</param>
         /// <returns>Returns an instance handle to the first or an empty handle if not found</returns>
-        public bool TrySeekEntityType(short typeId, out XbimInstanceHandle ih, int lookupKey = -1)
+        public bool TrySeekEntityType(short typeId, out XbimInstanceHandle ih, int lookupKey)
         {
             Api.MakeKey(sesid, _indexTable, typeId, MakeKeyGrbit.NewKey);
             Api.MakeKey(sesid, _indexTable, lookupKey, MakeKeyGrbit.None);

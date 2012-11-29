@@ -47,20 +47,19 @@ namespace Xbim.IO
         }
 
         /// <summary>
-        /// Returns the total number of Ifc Instances in the model
+        /// Returns the total number of Ifc Instances in this model
         /// </summary>
         public long Count
         {
             get
             {
-                long thisCount = cache.Count;
-                foreach (var m in xbimModel.RefencedModels)
-                {
-                    thisCount += m.Model.Instances.Count;
-                }
-                return thisCount;
+                return cache.Count;
+                
             }
         }
+
+      
+
         /// <summary>
         /// Returns the count of the number of instances of the specified type
         /// </summary>

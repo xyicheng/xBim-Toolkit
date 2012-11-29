@@ -81,7 +81,7 @@ namespace Xbim.SceneJSWebViewer
         private XBimModelStream(String model)
         {
             string xbimFile = model + ".xbim";
-            string gcFile = model + ".xbimGC";
+           
 
             if (!File.Exists(xbimFile))
             {

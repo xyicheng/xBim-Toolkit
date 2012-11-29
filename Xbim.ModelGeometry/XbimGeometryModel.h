@@ -80,7 +80,7 @@ namespace Xbim
 				Init();
 				
 			}
-			static public void Init()
+			static void Init()
 			{
 				Standard::SetReentrant(Standard_True);
 				

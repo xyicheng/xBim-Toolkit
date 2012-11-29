@@ -83,7 +83,7 @@ namespace Xbim
 
 		XbimTriangulatedModelCollection^ XbimFacetedShell::Mesh(bool withNormals, double deflection, Matrix3D transform )
 		{
-
+			bool doTransform = (transform!=Matrix3D::Identity);
 			GLUtesselator *tess = gluNewTess();
 
 			gluTessCallback(tess, GLU_TESS_BEGIN_DATA,  (void (CALLBACK *)()) BeginTessellate);
@@ -107,7 +107,8 @@ namespace Xbim
 						IfcPolyLoop^ polyLoop=(IfcPolyLoop^)faceBound->Bound;
 						for each(IfcCartesianPoint^ pt in polyLoop->Polygon)
 						{
-							Point3D% p3 = pt->WPoint3D();
+							Point3D p3 = pt->WPoint3D();
+							if(doTransform ) p3 = transform.Transform(p3);
 							int pPos;
 							if(!uniquePoints->TryGetValue(p3, pPos))
 							{
@@ -192,13 +193,21 @@ namespace Xbim
 				{
 
 					IVector3D^ normal = ((IFace^)fc)->Normal;
+					
 					//srl if an invalid normal is returned the face is not valid (sometimes a line or a point is defined) skip the face
 					/*if(normal->IsInvalid()) 
 					{
 						(*pFaceCount)--;
 						break;
 					}*/
-					vertexData.BeginFace(normal->X, normal->Y, normal->Z);
+					if(doTransform ) 
+					{
+						Vector3D v(normal->X, normal->Y, normal->Z);
+						v = transform.Transform(v);
+						vertexData.BeginFace(v.X, v.Y, v.Z);
+					}
+					else
+						vertexData.BeginFace(normal->X, normal->Y, normal->Z);
 					gluTessBeginPolygon(tess, &vertexData);
 					// go over each bound
 					for each (IfcFaceBound^ bound in fc->Bounds)
@@ -220,6 +229,7 @@ namespace Xbim
 						for each(IfcCartesianPoint^ p in pts)
 						{
 							Point3D p3D = p->WPoint3D();
+							if(doTransform ) p3D = transform.Transform(p3D);
 							glPt3D[0] = p3D.X;
 							glPt3D[1] = p3D.Y;
 							glPt3D[2] = p3D.Z;

@@ -342,7 +342,7 @@ namespace Xbim
 									IfcFeatureElementSubtraction^ fe = rel->RelatedOpeningElement;
 									if(fe->Representation!=nullptr)
 									{
-										IXbimGeometryModel^ im = CreateFrom(fe, repContext, maps, true,lod,occOut);
+										IXbimGeometryModel^ im = CreateFrom(fe, repContext, maps, true,lod, occOut);
 										if(im!=nullptr && !im->Handle->IsNull())
 										{	
 											im = im->CopyTo(fe->ObjectPlacement);
@@ -358,36 +358,14 @@ namespace Xbim
 													IfcLocalPlacement^ lp = (IfcLocalPlacement^)product->ObjectPlacement;							
 													TopLoc_Location prodLoc = XbimGeomPrim::ToLocation(lp->RelativePlacement);
 													prodLoc= prodLoc.Inverted();
-													IfcFeatureElementSubtraction^ fe = rel->RelatedOpeningElement;
-													if(fe->Representation!=nullptr)
-													{
-														IXbimGeometryModel^ im = CreateFrom(fe, repContext, maps, true,lod, occOut);
-														if(im!=nullptr && !im->Handle->IsNull())
-														{	
-															im = im->CopyTo(fe->ObjectPlacement);
-															//the rules say that 
-															//The PlacementRelTo relationship of IfcLocalPlacement shall point (if given) 
-															//to the local placement of the master IfcElement (its relevant subtypes), 
-															//which is associated to the IfcFeatureElement by the appropriate relationship object
-															if(product->ObjectPlacement != ((IfcLocalPlacement^)(fe->ObjectPlacement))->PlacementRelTo)
-															{
-																if(dynamic_cast<IfcLocalPlacement^>(product->ObjectPlacement))
-																{	
-																	//we need to move the opening into the coordinate space of the product
-																	IfcLocalPlacement^ lp = (IfcLocalPlacement^)product->ObjectPlacement;							
-																	TopLoc_Location prodLoc = XbimGeomPrim::ToLocation(lp->RelativePlacement);
-																	prodLoc= prodLoc.Inverted();
 
-																	(*(im->Handle)).Move(prodLoc);	
-																}
-															}
-															openingSolids->Add(im);
-														}
-													}
+													(*(im->Handle)).Move(prodLoc);	
 												}
 											}
+											openingSolids->Add(im);
 										}
 									}
+									
 								}
 								if(Enumerable::Any(openingSolids) || Enumerable::Any(projectionSolids))
 								{
@@ -554,7 +532,6 @@ namespace Xbim
 				return nullptr;
 			else if (rep->Items->Count == 1) //we have a single shape geometry
 			{
-				return CreateFrom(rep->Items->First,maps, forceSolid,lod, occOut);
 				IfcRepresentationItem^ repItem = rep->Items->First;
 				IXbimGeometryModel^ geom = CreateFrom(repItem,maps, forceSolid,lod,occOut);
 				geom->RepresentationLabel = repItem->EntityLabel;
