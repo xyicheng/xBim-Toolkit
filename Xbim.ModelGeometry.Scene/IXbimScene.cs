@@ -9,7 +9,6 @@ namespace Xbim.ModelGeometry.Scene
     public interface IXbimScene
     {
         void Close();
-        XbimTriangulatedModelStream Triangulate(TransformNode node);
         TransformGraph Graph { get; }
         XbimLOD LOD { get; set; }
     }

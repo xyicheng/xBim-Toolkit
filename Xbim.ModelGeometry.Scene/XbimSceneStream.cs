@@ -36,27 +36,6 @@ namespace Xbim.ModelGeometry.Scene
 
         
 
-        public XbimTriangulatedModelStream Triangulate(TransformNode node)
-        {
-            lock (_sceneStream)
-            {
-                _sceneStream.Seek(node.FilePosition, SeekOrigin.Begin);
-                BinaryReader br = new BinaryReader(_sceneStream);
-                int len = br.ReadInt32();
-
-                if (len > 0)
-                {
-                    UInt16 numChildren = br.ReadUInt16();
-                    Byte hasData = br.ReadByte();
-                    byte[] data = br.ReadBytes(len);
-                    return new XbimTriangulatedModelStream(data, numChildren, hasData);
-                }
-                else
-                    return XbimTriangulatedModelStream.Empty;
-            }
-        }
-
-
         public TransformGraph Graph
         {
             get { return _graph; }

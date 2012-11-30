@@ -30,10 +30,12 @@
 #include <BRepBuilderAPI_Transform.hxx>
 #include <GeomLProp_SLProps.hxx>
 #include <BRepLib.hxx>
+#using  <Xbim.IO.dll> as_friend
+using namespace Xbim::IO;
 using namespace Xbim::Ifc2x3::ProductExtension;
 using namespace Xbim::Ifc2x3::SharedComponentElements;
 using namespace System::Linq;
-
+using namespace Xbim::Ifc2x3::PresentationAppearanceResource;
 using namespace Xbim::Common::Exceptions;
 class Message_ProgressIndicator {};
 
@@ -381,6 +383,7 @@ namespace Xbim
 										BRepTools::Write(*(fshape->Handle),fname );
 									}
 #endif
+
 									return fshape;
 								}
 								else //we have no openings or projections
@@ -535,16 +538,26 @@ namespace Xbim
 				IfcRepresentationItem^ repItem = rep->Items->First;
 				IXbimGeometryModel^ geom = CreateFrom(repItem,maps, forceSolid,lod,occOut);
 				geom->RepresentationLabel = repItem->EntityLabel;
+				IfcSurfaceStyle^ surfaceStyle = IfcRepresentationItemExtensions::SurfaceStyle(repItem);
+				if(surfaceStyle!=nullptr) geom->SurfaceStyleLabel=Math::Abs(surfaceStyle->EntityLabel);
 				return geom;
 			}
 			else // we have a compound shape
 			{
 				XbimGeometryModelCollection^ gms = gcnew XbimGeometryModelCollection();
-
+				bool first = true;
 				for each (IfcRepresentationItem^ repItem in rep->Items)
 				{
+					
 					IXbimGeometryModel^ geom = CreateFrom(repItem,maps,false,lod,occOut); // we will make a solid when we have all the bits if necessary
 					geom->RepresentationLabel = repItem->EntityLabel;
+				    IfcSurfaceStyle^ surfaceStyle = IfcRepresentationItemExtensions::SurfaceStyle(repItem);
+					if(surfaceStyle!=nullptr) geom->SurfaceStyleLabel=Math::Abs(surfaceStyle->EntityLabel);else  geom->SurfaceStyleLabel = 0;
+					if(first)
+					{
+						first = false;
+						gms->SurfaceStyleLabel=geom->SurfaceStyleLabel; //set collection same as first one for bounding boxes
+					}
 					if(!(dynamic_cast<XbimSolid^>(geom) && (*(geom->Handle)).IsNull())) 
 					{
 						gms->Add(geom); //don't add solids that are empty
@@ -640,6 +653,7 @@ namespace Xbim
 			else if(dynamic_cast<XbimGeometryModelCollection^>(item))
 			{
 				XbimGeometryModelCollection^ mapColl = gcnew XbimGeometryModelCollection();
+				mapColl->SurfaceStyleLabel=item->SurfaceStyleLabel;
 				XbimGeometryModelCollection^ toMap = (XbimGeometryModelCollection^) item;
 				for each(IXbimGeometryModel^ model in toMap)
 					mapColl->Add(CreateMap(model,origin,transform, maps, forceSolid));
@@ -1032,7 +1046,7 @@ namespace Xbim
 
 					array<unsigned char>^ managedArray = gcnew array<unsigned char>(streamLen);
 					Marshal::Copy(vertexPtr, managedArray, 0, streamLen);
-					return gcnew XbimTriangulatedModelCollection(managedArray);
+					return gcnew XbimTriangulatedModelCollection(managedArray, shape->RepresentationLabel, shape->SurfaceStyleLabel);
 				}
 				catch(...)
 				{

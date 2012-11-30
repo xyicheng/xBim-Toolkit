@@ -38,19 +38,7 @@ namespace Xbim.ModelGeometry.Scene
         {
             Empty = new XbimTriangulatedModelStream(true);    
         }
-        public XbimTriangulatedModelStream(XbimTriangulatedModelCollection collection)
-        {
-            _dataStream = new MemoryStream();
-            BinaryWriter bw = new BinaryWriter(_dataStream);
-            foreach (var item in collection)
-            {
-                 bw.Write(item.ToArray());
-            }
-
-            _numChildren = (ushort)collection.Count;
-            _hasData = 0;
-
-        }
+       
         internal XbimTriangulatedModelStream(bool empty)
         {
 

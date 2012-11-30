@@ -105,6 +105,8 @@ namespace Xbim
 
 		XbimSolid::XbimSolid(XbimSolid^ solid, IfcAxis2Placement^ origin, IfcCartesianTransformationOperator^ transform, bool hasCurves)
 		{
+			_representationLabel = solid->RepresentationLabel;
+			_surfaceStyleLabel = solid->SurfaceStyleLabel;
 			TopoDS_Solid temp = *(((TopoDS_Solid*)solid->Handle));
 			nativeHandle = new TopoDS_Solid();
 			_hasCurvedEdges = solid->HasCurvedEdges;

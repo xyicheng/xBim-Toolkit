@@ -52,22 +52,7 @@ namespace Xbim.ModelGeometry.Scene
         }
 
          
-        public XbimTriangulatedModelStream TriangulatedModel
-        {
-            get
-            {
-                if (_triangulatedModel == null)
-                {
-                    _triangulatedModel = _transformGraph.Scene.Triangulate(this);
-                }
-                return _triangulatedModel;
-            }
-            set 
-            {
-                _triangulatedModel = value; 
-            }
-        }
-
+       
         public Rect3D BoundingBox
         {
             get { return _boundingBox; }

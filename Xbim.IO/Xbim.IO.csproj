@@ -140,6 +140,7 @@
     <Compile Include="GeometryCache\MeshGeometry.cs" />
     <Compile Include="GeometryCache\SpaceTriangulatedModel.cs" />
     <Compile Include="IfcFileHeader.cs" />
+    <Compile Include="IfcRepresentationItemExtensions.cs" />
     <Compile Include="XbimInstanceCollection.cs" />
     <Compile Include="XbimInstanceHandle.cs" />
     <Compile Include="IfcMetaData.cs" />

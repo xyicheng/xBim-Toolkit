@@ -6,7 +6,7 @@ using System.Windows.Media.Media3D;
 
 namespace Xbim.ModelGeometry.Scene
 {
-    public class XbimTriangulatedModelCollection : List<byte[]>
+    public class XbimTriangulatedModelCollection : List<XbimTriangulatedModel>
     {
       
         public static readonly XbimTriangulatedModelCollection Empty;
@@ -14,29 +14,19 @@ namespace Xbim.ModelGeometry.Scene
 
         static XbimTriangulatedModelCollection()
         {
-            Empty = new XbimTriangulatedModelCollection(0);    
+            Empty = new XbimTriangulatedModelCollection();    
         }
 
-        public XbimTriangulatedModelCollection()
+        public XbimTriangulatedModelCollection():base(1)
         {
+
         }
 
-        public XbimTriangulatedModelCollection(byte[] model) : base(1)
+        public XbimTriangulatedModelCollection(byte[] triangles, int representationLabel, int surfaceStyleLabel) :base(1)
         {
-            this.Add(model);
-           
+            this.Add(new XbimTriangulatedModel(triangles,  representationLabel,  surfaceStyleLabel));
         }
 
-        public XbimTriangulatedModelCollection(int c) : base(c)
-        {
-           
-        }
-
-        public XbimTriangulatedModelCollection Add(XbimTriangulatedModelCollection collection)
-        {
-            foreach (var item in collection)
-                this.Add(item);
-            return this;
-        }
+       
     }
 }

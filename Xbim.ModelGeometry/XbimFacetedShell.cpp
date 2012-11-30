@@ -247,7 +247,7 @@ namespace Xbim
 				//System::Diagnostics::Debug::WriteLine(String::Format("MemSize={0}, Actual={1}, Diff={2}", memSize/2, len, (memSize/2) - len));
 				array<unsigned char>^ managedArray = gcnew array<unsigned char>(len);
 				Marshal::Copy(vertexPtr, managedArray, 0, len);
-				return gcnew XbimTriangulatedModelCollection(managedArray);
+				return gcnew XbimTriangulatedModelCollection(managedArray,this->RepresentationLabel, this->SurfaceStyleLabel);
 			}
 			catch(Exception^ e)
 			{

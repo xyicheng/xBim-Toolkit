@@ -166,7 +166,6 @@ namespace Xbim.IO
         /// 
         /// </summary>
         /// <param name="t"></param>
-        /// <param name="label"></param>
         /// <returns></returns>
         public IPersistIfcEntity New(Type t)
         {

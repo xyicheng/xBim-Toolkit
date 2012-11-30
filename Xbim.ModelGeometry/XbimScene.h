@@ -29,8 +29,7 @@ namespace Xbim
 			Dictionary<IfcRepresentation^, IXbimGeometryModel^>^ _maps;
 			bool _occOut;
 			static ILogger^ Logger = LoggerFactory::GetLogger();
-			void ImportIfc(String ^ ifcFileName,String ^ xBimFileName,String ^ xBimGeometryFileName,  ProcessModel ^ processingDelegate);
-
+			
 			void Initialise(void)
 			{
 				Standard::SetReentrant(Standard_True);
@@ -38,14 +37,13 @@ namespace Xbim
 		public:
 			XbimScene(XbimModel^ model);
 			XbimScene(XbimModel^ model, IEnumerable<IfcProduct^>^ toDraw, bool oCCout );
-			XbimScene(String ^ ifcFileName, String ^ xbimFileName,String ^ xBimGeometryFileName);
-			XbimScene(String ^ ifcFileName,String ^ xBimFileName,String ^ xBimGeometryFileName, ProcessModel ^ processingDelegate);
+
 			!XbimScene();
 			~XbimScene();
 			virtual void Close();
 
-			XbimSceneStream^ AsSceneStream();
-			virtual XbimTriangulatedModelStream^ Triangulate(TransformNode^ node);
+			
+			
 			virtual property TransformGraph^ Graph
 			{
 				TransformGraph^ get()

@@ -17,7 +17,8 @@ namespace Xbim
 		XbimMap::XbimMap(IXbimGeometryModel^ item, IfcAxis2Placement^ origin, IfcCartesianTransformationOperator^ transform)
 		{
 			_mappedItem = item;
-			 
+			 _representationLabel = item->RepresentationLabel;
+			_surfaceStyleLabel = item->SurfaceStyleLabel;
 			if(origin !=nullptr)
 			{
 				if(dynamic_cast<IfcAxis2Placement3D^>(origin))

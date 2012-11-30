@@ -13,7 +13,8 @@ namespace Xbim
 		private:
 			IXbimGeometryModel^ _mappedItem;
 			Matrix3D _transform;
-			Int64 _representationLabel;
+			Int32 _representationLabel;
+			Int32 _surfaceStyleLabel;
 		public:
 			XbimMap(IXbimGeometryModel^ item, IfcAxis2Placement^ origin, IfcCartesianTransformationOperator^ transform);
 			virtual IXbimGeometryModel^ Cut(IXbimGeometryModel^ shape);
@@ -31,11 +32,19 @@ namespace Xbim
 			{
 				return _mappedItem->GetBoundingBox(precise);
 			};
-			virtual property Int64 RepresentationLabel
+						
+			virtual property Int32 RepresentationLabel
 			{
-				Int64 get(){return _representationLabel; }
-				void set(Int64 value){ _representationLabel=value; }
+				Int32 get(){return _representationLabel; }
+				void set(Int32 value){ _representationLabel=value; }
 			}
+
+			virtual property Int32 SurfaceStyleLabel
+			{
+				Int32 get(){return _surfaceStyleLabel; }
+				void set(Int32 value){ _surfaceStyleLabel=value; }
+			}
+
 			property Matrix3D Transform
 			{
 				Matrix3D get()

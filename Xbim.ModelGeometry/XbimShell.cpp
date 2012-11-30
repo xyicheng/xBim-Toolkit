@@ -96,6 +96,8 @@ namespace Xbim
 		XbimShell::XbimShell(XbimShell^ shell, IfcAxis2Placement^ origin, IfcCartesianTransformationOperator^ transform, bool hasCurves )
 		{
 			_hasCurvedEdges = hasCurves;
+			_representationLabel = shell->RepresentationLabel;
+			_surfaceStyleLabel = shell->SurfaceStyleLabel;
 			TopoDS_Shape temp = *(shell->Handle);
 			pShell = new TopoDS_Shape();
 			if(origin!=nullptr)

@@ -17,7 +17,8 @@ namespace Xbim
 
 		public interface class IXbimGeometryModel
 		{
-			property Int64 RepresentationLabel{Int64 get();void set(Int64 value);}
+			property Int32 RepresentationLabel{Int32 get();void set(Int32 value);}
+			property Int32 SurfaceStyleLabel{Int32 get();void set(Int32 value);}
 			property TopoDS_Shape* Handle{ TopoDS_Shape* get();};
 			IXbimGeometryModel^ Cut(IXbimGeometryModel^ shape);
 			IXbimGeometryModel^ Union(IXbimGeometryModel^ shape);

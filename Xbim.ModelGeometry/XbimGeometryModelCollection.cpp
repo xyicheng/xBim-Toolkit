@@ -157,7 +157,7 @@ namespace Xbim
 			{
 				XbimTriangulatedModelCollection^ tm = gcnew XbimTriangulatedModelCollection();
 				for each(IXbimGeometryModel^ gm in shapes)
-					tm->Add(gm->Mesh(withNormals, deflection, transform));
+					tm->AddRange(gm->Mesh(withNormals, deflection, transform));
 				return tm;
 			}
 			else
