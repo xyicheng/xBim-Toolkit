@@ -69,7 +69,7 @@ namespace Xbim
 						if (geomModel != nullptr)  //it has no geometry
 						{
 
-							XbimTriangulatedModelCollection^ tm = geomModel->Mesh(true);
+							List<XbimTriangulatedModel^>^tm = geomModel->Mesh(true);
 							XbimBoundingBox^ bb = geomModel->GetBoundingBox(true);
 							//node->BoundingBox = bb->GetRect3D();
 							array<Byte>^ matrix = Matrix3DExtensions::ToArray(node->WorldMatrix(), true);

@@ -44,27 +44,20 @@ namespace SimpleHelloWall
                 placement.SetNewLocation(0.0, 0.0, 0.0);
                 IfcProject project = model.IfcProject;
 
-                
 
-                try
-                {
-                    if (project != null)
-                        project.AddBuilding(building);
 
-                    //validate and commit changes
-                    if (model.Validate(txn.Modified(), Console.Out) == 0)
-                    {
-                        txn.Commit();
-                        return building;
-                    }
-                }
-                catch (Exception ex)
+                if (project != null)
+                    project.AddBuilding(building);
+
+                //validate and commit changes
+                if (model.Validate(txn.Modified(), Console.Out) == 0)
                 {
-                    
-                    throw;
+                    txn.Commit();
+                    return building;
                 }
-                
-                
+
+
+
             }
             return null;
         }

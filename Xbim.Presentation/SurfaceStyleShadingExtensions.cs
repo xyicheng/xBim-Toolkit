@@ -24,26 +24,20 @@ namespace Xbim.Presentation
 {
     public static class SurfaceStyleShadingExtensions
     {
-        public static Material ToMaterial(this IfcSurfaceStyleShading shading, ModelDataProvider mdp)
+        public static Material ToMaterial(this IfcSurfaceStyleShading shading)
         {
             if (shading is IfcSurfaceStyleRendering)
-                return ((IfcSurfaceStyleRendering) shading).ToMaterial(mdp);
+                return ((IfcSurfaceStyleRendering) shading).ToMaterial();
             else
             {
-                Material mat;
-                if (mdp.Materials.TryGetValue(shading, out mat)) return mat; //already made one
-                else
-                {
                     byte red = Convert.ToByte(shading.SurfaceColour.Red*255);
                     byte green = Convert.ToByte(shading.SurfaceColour.Green*255);
                     byte blue = Convert.ToByte(shading.SurfaceColour.Blue*255);
                     Color col = Color.FromRgb(red, green, blue);
                     Brush brush = new SolidColorBrush(col);
-                    //brush.Opacity = mdp.Transparency;
-                    mat = new DiffuseMaterial(brush);
-                    mdp.Materials.Add(shading, mat);
+                    Material mat = new DiffuseMaterial(brush);
                     return mat;
-                }
+                
             }
         }
     }

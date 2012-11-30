@@ -46,7 +46,7 @@ namespace Xbim.IO
 
         protected readonly object lockObject;
 
-        private string database;
+       
         private static string ifcHeaderColumnName = "IfcHeader";
 
 

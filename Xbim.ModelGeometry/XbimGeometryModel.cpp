@@ -1,5 +1,6 @@
 #include "StdAfx.h"
 #include "XbimGeometryModel.h"
+#include "XbimTriangularMeshStreamer.h"
 #include "XbimLocation.h"
 #include "XbimSolid.h"
 #include "XbimGeomPrim.h"
@@ -39,217 +40,23 @@ using namespace Xbim::Ifc2x3::PresentationAppearanceResource;
 using namespace Xbim::Common::Exceptions;
 class Message_ProgressIndicator {};
 
-TesselateStream::TesselateStream( unsigned char* pDataStream, const TopTools_IndexedMapOfShape& points, unsigned short faceCount, int streamSize)
+
+void CALLBACK XMS_BeginTessellate(GLenum type, void *pPolygonData)
 {
-	_streamSize=streamSize;
-	_pDataStream = pDataStream;
-	_position=0;
-
-	//write out number of points
-	unsigned int * pPointCount = (unsigned int *)_pDataStream;
-	*pPointCount = points.Extent();
-
-	//move position on 
-	_position+=sizeof(unsigned int);
-	if(TesselateStream::UseDouble)
-	{
-		for(unsigned int i=1;i<=*pPointCount;i++)
-		{
-			const TopoDS_Vertex& vertex = TopoDS::Vertex(points.FindKey(i));
-			gp_Pnt p = BRep_Tool::Pnt(vertex);
-			double* pCord = (double *)(_pDataStream + _position);
-			*pCord = p.X(); _position += sizeof(double);
-			pCord = (double *)(_pDataStream + _position);
-			*pCord = p.Y(); _position += sizeof(double);
-			pCord = (double *)(_pDataStream + _position);
-			*pCord = p.Z(); _position += sizeof(double);
-		}
-	}
-	else
-	{
-		for(unsigned int i=1;i<=*pPointCount;i++)
-		{
-			const TopoDS_Vertex& vertex = TopoDS::Vertex(points.FindKey(i));
-			gp_Pnt p = BRep_Tool::Pnt(vertex);
-			float* pCord = (float *)(_pDataStream + _position);
-			*pCord = (float)p.X(); _position += sizeof(float);
-			pCord = (float*)(_pDataStream + _position);
-			*pCord = (float)p.Y(); _position += sizeof(float);
-			pCord = (float*)(_pDataStream + _position);
-			*pCord = (float)p.Z(); _position += sizeof(float);
-		}
-
-	}
-	unsigned short * pFaceCount = (unsigned short *)(_pDataStream + _position);
-	*pFaceCount=faceCount;
-	_position+=sizeof(faceCount);
-}
-
-
-
-TesselateStream::TesselateStream( unsigned char* pDataStream, unsigned short faceCount, unsigned int nodeCount, int streamSize)
-{
-	_streamSize=streamSize;
-	_pDataStream = pDataStream;
-	_position=0;
-	//write out number of points
-	unsigned int * pPointCount = (unsigned int *)_pDataStream;
-	*pPointCount = nodeCount;
-	_position+=sizeof(unsigned int);
-	_pointPosition = _position;
-	//move position on 
-	if(UseDouble)
-		_position+=nodeCount * 3 * sizeof(double);
-	else
-		_position+=nodeCount * 3 * sizeof(float);
-	unsigned short * pFaceCount = (unsigned short *)(_pDataStream + _position);
-	*pFaceCount=faceCount;
-	_position+=sizeof(faceCount);
-}
-
-TesselateStream::TesselateStream( unsigned char* pDataStream,  int streamSize, int position)
-{
-	_streamSize=streamSize;
-	_pDataStream = pDataStream;
-	_position=position;
-}
-
-void TesselateStream::BeginFace(const gp_Dir& normal)
-{
-	//reset polygon count
-	_polygonCount=0;
-	//write out space for number of polygons
-	_faceStart = _position;
-	_position += sizeof(unsigned short);
-	unsigned short * pCount = (unsigned short *)(_pDataStream + _position); _position += sizeof(unsigned short);
-	*pCount=1;
-	double* pCord = (double *)(_pDataStream + _position);
-	*pCord = normal.X(); _position += sizeof(double);
-	pCord = (double *)(_pDataStream + _position);
-	*pCord = normal.Y(); _position += sizeof(double);
-	pCord = (double *)(_pDataStream + _position);
-	*pCord = normal.Z(); _position += sizeof(double);
-
-}
-void TesselateStream::BeginFace(const double x, const double y, const double z)
-{
-	//reset polygon count
-	_polygonCount=0;
-	//write out space for number of polygons
-	_faceStart = _position;
-	_position += sizeof(unsigned short);
-	unsigned short * pCount = (unsigned short *)(_pDataStream + _position); _position += sizeof(unsigned short);
-	*pCount=1;
-	double* pCord = (double *)(_pDataStream + _position);
-	*pCord = x; _position += sizeof(double);
-	pCord = (double *)(_pDataStream + _position);
-	*pCord = y; _position += sizeof(double);
-	pCord = (double *)(_pDataStream + _position);
-	*pCord = z; _position += sizeof(double);
-
-}
-
-void TesselateStream::EndFace()
-{
-	unsigned short * pPolyCount = (unsigned short *)(_pDataStream+_faceStart);
-	*pPolyCount = _polygonCount;
-}
-
-void TesselateStream::BeginPolygon(GLenum type)
-{
-	_polygonCount++;
-	_polygonStart =_position;
-	unsigned char * pType = (_pDataStream+_polygonStart);
-	*pType= (unsigned char)type;
-	_position+= sizeof(unsigned char) + sizeof(unsigned short); //move on to leave space for number of points
-	_indicesCount=0;
-}
-
-void TesselateStream::WritePoint(double x, double y, double z)
-{
-	if(UseDouble)
-	{
-		double* pCord = (double *)(_pDataStream + _pointPosition);
-		*pCord = x; _pointPosition += sizeof(double);
-		pCord = (double *)(_pDataStream + _pointPosition);
-		*pCord = y; _pointPosition += sizeof(double);
-		pCord = (double *)(_pDataStream + _pointPosition);
-		*pCord = z; _pointPosition += sizeof(double);
-	}
-	else
-	{
-		float* pCord = (float *)(_pDataStream + _pointPosition);
-		*pCord = (float)x; _pointPosition += sizeof(float);
-		pCord = (float *)(_pDataStream + _pointPosition);
-		*pCord = (float)y; _pointPosition += sizeof(float);
-		pCord = (float *)(_pDataStream + _pointPosition);
-		*pCord = (float)z; _pointPosition += sizeof(float);
-	}
-}
-
-void TesselateStream::WritePointInt(unsigned int index)
-{
-
-	unsigned int * pIndex = (unsigned int*)(_pDataStream + _position);
-	*pIndex = index;
-	_position+=sizeof(unsigned int);
-	_indicesCount++;
-}
-
-void TesselateStream::WritePointShort(unsigned int index)
-{
-
-	unsigned short * pIndex = (unsigned short*)(_pDataStream + _position);
-	*pIndex = (unsigned short)index;
-	_position+=sizeof(unsigned short);
-	_indicesCount++;
-}
-
-
-void TesselateStream::WritePointByte(unsigned int index)
-{
-
-	unsigned char * pIndex = (unsigned char*)(_pDataStream + _position);
-	*pIndex = (unsigned char)index;
-	_position+=sizeof(unsigned char);
-	_indicesCount++;
-}
-void TesselateStream::EndPolygon()
-{
-	unsigned short * pCount = (unsigned short *)(_pDataStream + _polygonStart + sizeof(unsigned char));
-	*pCount = _indicesCount;
-}
-
-void CALLBACK BeginTessellate(GLenum type, void *pPolygonData)
-{
-	((TesselateStream*)pPolygonData)->BeginPolygon(type);
+	((XbimTriangularMeshStreamer*)pPolygonData)->BeginPolygon(type);
 };
-void CALLBACK EndTessellate(void *pVertexData)
+void CALLBACK XMS_EndTessellate(void *pVertexData)
 {
-	((TesselateStream*)pVertexData)->EndPolygon();
+	((XbimTriangularMeshStreamer*)pVertexData)->EndPolygon();
 };
-
-void CALLBACK TessellateError(GLenum err)
+void CALLBACK XMS_TessellateError(GLenum err)
 {
+	// swallow the error.
 };
-
-void CALLBACK AddVertexByte(void *pVertexData, void *pPolygonData)
+void CALLBACK XMS_AddVertexIndex(void *pVertexData, void *pPolygonData)
 {
-	((TesselateStream*)pPolygonData)->WritePointByte((unsigned char)pVertexData);
+	((XbimTriangularMeshStreamer*)pPolygonData)->WriteTriangleIndex((unsigned int)pVertexData);
 };
-void CALLBACK AddVertexShort(void *pVertexData, void *pPolygonData)
-{
-	((TesselateStream*)pPolygonData)->WritePointShort((unsigned short)pVertexData);
-};
-void CALLBACK AddVertexInt(void *pVertexData, void *pPolygonData)
-{
-	((TesselateStream*)pPolygonData)->WritePointInt((unsigned int)pVertexData);
-};
-
-
-
-
-
 gp_Dir GetNormal(const TopoDS_Face& face)
 {
 	// get bounds of face
@@ -820,22 +627,19 @@ namespace Xbim
 		}
 
 #pragma unmanaged
+
+		
 #pragma unmanaged
-		long OpenCascadeMesh(const TopoDS_Shape & shape, unsigned char* pStream, unsigned short faceCount, int nodeCount, int streamSize)
+
+		long OpenCascadeShapeStreamerFeed(const TopoDS_Shape & shape, XbimTriangularMeshStreamer* tms)
 		{
+			// vertexData receives the calls from the following code that put the information in the binary stream.
+			//
+			// XbimTriangularMeshStreamer tms;
 
-			TesselateStream vertexData(pStream, faceCount, nodeCount, streamSize);
-
+			// triangle indices are 1 based; this converts them to 0 based them and deals with multiple triangles to be added for multiple calls to faces.
+			//
 			int tally = -1;	
-			void  (TesselateStream::*writePoint) (unsigned int);
-
-			if(nodeCount<=0xFF) //we will use byte for indices
-				writePoint = &TesselateStream::WritePointByte;
-			else if(nodeCount<=0xFFFF) //use  unsigned short int for indices
-				writePoint = &TesselateStream::WritePointShort;
-			else //use unsigned int for indices
-				writePoint = &TesselateStream::WritePointInt;
-
 
 			for (TopExp_Explorer faceEx(shape,TopAbs_FACE) ; faceEx.More(); faceEx.Next()) 
 			{
@@ -848,93 +652,140 @@ namespace Xbim
 					continue;
 				}	
 
-				/*Poly::ComputeNormals(facing);
-				nTally = 0;
-				const TShort_Array1OfShortReal& normals =  facing->Normals();*/
-
-				gp_Dir normal = GetNormal(face);
-				vertexData.BeginFace(normal); //need to send array of normals
-
-				/*for(Standard_Integer nd = 1 ; nd <= nbNodes ; nd++)
-				{
-				if(orient == TopAbs_REVERSED)
-				receiver->AddNormal(-normals.Value(nTally+1),-normals.Value(nTally+2),-normals.Value(nTally+3));
-				else
-				receiver->AddNormal(normals.Value(nTally+1),normals.Value(nTally+2),normals.Value(nTally+3));
-				nTally+=3;
-				}*/
-
+				// computation of normals
+				// the returing array is 3 times longer than point array and it's to be read in groups of 3.
+				//
+				Poly::ComputeNormals(facing);
+				const TShort_Array1OfShortReal& normals =  facing->Normals();
+				
 				Standard_Integer nbNodes = facing->NbNodes();
+				// tms.info('p', (int)nbNodes);
 				Standard_Integer nbTriangles = facing->NbTriangles();
 
 				const TColgp_Array1OfPnt& points = facing->Nodes();
 				int nTally = 0;
 
+				tms->BeginFace(nbNodes);
+
 				for(Standard_Integer nd = 1 ; nd <= nbNodes ; nd++)
 				{
 					gp_XYZ p = points(nd).Coord();
-					loc.Transformation().Transforms(p);
-					vertexData.WritePoint(p.X(), p.Y(), p.Z());
+					loc.Transformation().Transforms(p); // bonghi: question: to fix how mapped representation works, will we still have to apply the transform? 
+					
+					tms->WritePoint((float)p.X(), (float)p.Y(), (float)p.Z());
 					nTally+=3;
 				}
 
 				const Poly_Array1OfTriangle& triangles = facing->Triangles();
 
 				Standard_Integer n1, n2, n3;
-				vertexData.BeginPolygon(GL_TRIANGLES);
+				float nrmx, nrmy, nrmz;
+
+				tms->BeginPolygon(GL_TRIANGLES);
 				for(Standard_Integer tr = 1 ; tr <= nbTriangles ; tr++)
 				{
-					triangles(tr).Get(n1, n2, n3);
-
+					triangles(tr).Get(n1, n2, n3); // triangle indices are 1 based
+					int iPointIndex;
 					if(orient == TopAbs_REVERSED)
 					{
-						(vertexData.*writePoint)(n3+tally);
-						(vertexData.*writePoint)(n2+tally);
-						(vertexData.*writePoint)(n1+tally);
+						// note the negative values of the normals for reversed faces.
+						// tms->info('R');
+
+						// setnormal and point
+						iPointIndex = 3 * n1 - 2; // n3
+						nrmx = -(float)normals(iPointIndex++);
+						nrmy = -(float)normals(iPointIndex++);
+						nrmz = -(float)normals(iPointIndex++);
+						tms->SetNormal(nrmx, nrmy, nrmz);
+						tms->WriteTriangleIndex(n3);
+						
+
+						// setnormal and point
+						iPointIndex = 3 * n2 - 2;
+						nrmx = -(float)normals(iPointIndex++);
+						nrmy = -(float)normals(iPointIndex++);
+						nrmz = -(float)normals(iPointIndex++);
+						tms->SetNormal(nrmx, nrmy, nrmz);
+						tms->WriteTriangleIndex(n2);
+						
+
+						// setnormal and point
+						iPointIndex = 3 * n3 - 2; // n1
+						nrmx = -(float)normals(iPointIndex++);
+						nrmy = -(float)normals(iPointIndex++);
+						nrmz = -(float)normals(iPointIndex++);
+						tms->SetNormal(nrmx, nrmy, nrmz);
+						tms->WriteTriangleIndex(n1);
+						
 					}
 					else
 					{
-						(vertexData.*writePoint)(n1+tally);
-						(vertexData.*writePoint)(n2+tally);
-						(vertexData.*writePoint)(n3+tally);
+						// tms->info('N');
+						// setnormal and point
+						iPointIndex = 3 * n1 - 2;
+						nrmx = (float)normals(iPointIndex++);
+						nrmy = (float)normals(iPointIndex++);
+						nrmz = (float)normals(iPointIndex++);
+						tms->SetNormal(nrmx, nrmy, nrmz);
+						tms->WriteTriangleIndex(n1);
+						
+
+						// setnormal and point
+						iPointIndex = 3 * n2 - 2;
+						nrmx = (float)normals(iPointIndex++);
+						nrmy = (float)normals(iPointIndex++);
+						nrmz = (float)normals(iPointIndex++);
+						tms->SetNormal(nrmx, nrmy, nrmz);
+						tms->WriteTriangleIndex(n2);
+						
+
+						// setnormal and point
+						iPointIndex = 3 * n3 - 2;
+						nrmx = (float)normals(iPointIndex++);
+						nrmy = (float)normals(iPointIndex++);
+						nrmz = (float)normals(iPointIndex++);
+						tms->SetNormal(nrmx, nrmy, nrmz);
+						tms->WriteTriangleIndex(n3);
 					}
 				}
-				tally+=nbNodes;
-				vertexData.EndPolygon();
-				vertexData.EndFace();
+				tally+=nbNodes; // bonghi: question: point coordinates might be duplicated with this method for different faces. Size optimisation could be possible at the cost of performance speed.
+
+				tms->EndPolygon();
+				tms->EndFace();
 			}
-			return vertexData.Length();
+			int iSize = tms->StreamSize();
+			return 0;
 		}
 
-		long OpenGLMesh(const TopoDS_Shape & shape, const TopTools_IndexedMapOfShape& points, unsigned char* pStream, unsigned short faceCount, int streamSize)
+		void OpenGLShapeStreamerFeed(const TopoDS_Shape & shape, XbimTriangularMeshStreamer* tms)
 		{
+			GLUtesselator *ActiveTss = gluNewTess();
 
-			GLUtesselator *tess = gluNewTess();
-
-			gluTessCallback(tess, GLU_TESS_BEGIN_DATA,  (void (CALLBACK *)()) BeginTessellate);
-			gluTessCallback(tess, GLU_TESS_END_DATA,  (void (CALLBACK *)()) EndTessellate);
-			gluTessCallback(tess, GLU_TESS_ERROR,    (void (CALLBACK *)()) TessellateError);
-			int vertexCount=points.Extent();
-			if(vertexCount<=0xFF) //we will use byte for indices
-				gluTessCallback(tess, GLU_TESS_VERTEX_DATA,  (void (CALLBACK *)()) AddVertexByte);
-			else if(vertexCount<=0xFFFF) //use  unsigned short int for indices
-				gluTessCallback(tess, GLU_TESS_VERTEX_DATA,  (void (CALLBACK *)()) AddVertexShort);
-			else //use unsigned int for indices
-				gluTessCallback(tess, GLU_TESS_VERTEX_DATA,  (void (CALLBACK *)()) AddVertexInt);
+			gluTessCallback(ActiveTss, GLU_TESS_BEGIN_DATA,  (void (CALLBACK *)()) XMS_BeginTessellate);
+			gluTessCallback(ActiveTss, GLU_TESS_END_DATA,  (void (CALLBACK *)()) XMS_EndTessellate);
+			gluTessCallback(ActiveTss, GLU_TESS_ERROR,    (void (CALLBACK *)()) XMS_TessellateError);
+			gluTessCallback(ActiveTss, GLU_TESS_VERTEX_DATA,  (void (CALLBACK *)()) XMS_AddVertexIndex);
 
 			GLdouble glPt3D[3];
-			TesselateStream vertexData(pStream, points, faceCount, streamSize);
+			// TesselateStream vertexData(pStream, points, faceCount, streamSize);
 			for (TopExp_Explorer faceEx(shape,TopAbs_FACE) ; faceEx.More(); faceEx.Next()) 
 			{
+				tms->BeginFace(-1);
 				const TopoDS_Face& face = TopoDS::Face(faceEx.Current());
 				gp_Dir normal = GetNormal(face);
-				vertexData.BeginFace(normal);
-				gluTessBeginPolygon(tess, &vertexData);
+				tms->SetNormal(
+					(float)normal.X(), 
+					(float)normal.Y(), 
+					(float)normal.Z()
+					);
+				// vertexData.BeginFace(normal);
+				// gluTessBeginPolygon(tess, &vertexData);
+				gluTessBeginPolygon(ActiveTss, tms);
+
 				// go over each wire
 				for (TopExp_Explorer wireEx(face,TopAbs_WIRE) ; wireEx.More(); wireEx.Next()) 
 				{
-
-					gluTessBeginContour(tess);
+					gluTessBeginContour(ActiveTss);
 					const TopoDS_Wire& wire = TopoDS::Wire(wireEx.Current());
 
 					BRepTools_WireExplorer wEx(wire);
@@ -947,40 +798,29 @@ namespace Xbim
 						glPt3D[0] = p.X();
 						glPt3D[1] = p.Y();
 						glPt3D[2] = p.Z();
-						void * pIndex = (void *) (points.FindIndex(vertex) - 1);//convert to 0 based
-						gluTessVertex(tess, glPt3D, pIndex); 
+						void * pIndex = (void *)tms->WritePoint((float)p.X(), (float)p.Y(), (float)p.Z());
+						gluTessVertex(ActiveTss, glPt3D, pIndex); 
 					}
-					gluTessEndContour(tess);
+					gluTessEndContour(ActiveTss);
 				}
-				gluTessEndPolygon(tess);
-				vertexData.EndFace();
+				gluTessEndPolygon(ActiveTss);
+				tms->EndFace();
 			}
-
-			gluDeleteTess(tess);
-			return vertexData.Length();
+			gluDeleteTess(ActiveTss);
 		}
-
-
 
 #pragma managed
 
 
-		XbimTriangulatedModelCollection^ XbimGeometryModel::Mesh(IXbimGeometryModel^ shape, bool withNormals, double deflection, Matrix3D transform )
+		List<XbimTriangulatedModel^>^XbimGeometryModel::Mesh(IXbimGeometryModel^ shape, bool withNormals, double deflection, Matrix3D transform )
 		{
-
-			//Build the Mesh
+			
+//Build the Mesh
 			try
 			{
-
 				bool hasCurvedEdges = shape->HasCurvedEdges;
-				if(hasCurvedEdges) BRepMesh_IncrementalMesh incrementalMesh(*(shape->Handle), deflection);
-				//size the job up
-				//get all of the vertices in a map
-				TopTools_IndexedMapOfShape points;
-				unsigned short faceCount = 0;
-				int maxVertexCount = 0;
-				int triangleIndexCount = 0;
 
+				// transformed shape is the shape placed according to the transform matrix
 				TopoDS_Shape transformedShape;
 				if(transform!=Matrix3D::Identity)
 				{
@@ -989,84 +829,54 @@ namespace Xbim
 				}
 				else
 					transformedShape = *(shape->Handle);
-				for (TopExp_Explorer faceEx(transformedShape,TopAbs_FACE) ; faceEx.More(); faceEx.Next()) 
-				{
-					faceCount++;
-					if(hasCurvedEdges)
-					{
-						TopLoc_Location loc;
-						Handle (Poly_Triangulation) facing = BRep_Tool::Triangulation(TopoDS::Face(faceEx.Current()),loc);
-
-						if(facing.IsNull())
-							continue;
-						maxVertexCount+=facing->NbNodes();
-						triangleIndexCount += facing->NbTriangles()*3;
-					}
-					else
-					{
-						for (TopExp_Explorer vEx(faceEx.Current(),TopAbs_VERTEX) ; vEx.More(); vEx.Next()) 
-						{
-
-							maxVertexCount++;
-							points.Add(vEx.Current());
-
-						}
-					}
-				}
-				int vertexCount;
-				if(hasCurvedEdges) vertexCount=maxVertexCount; else vertexCount= points.Extent();
-				if(vertexCount==0) return XbimTriangulatedModelCollection::Empty;
-				int memSize =  sizeof(int) + (vertexCount * 3 *sizeof(double)); //number of points plus x,y,z of each point
-
-				memSize += sizeof(unsigned int); //allow int for total number of faces
-
-				int indexSize;
-				if(vertexCount<=0xFF) //we will use byte for indices
-					indexSize =sizeof(unsigned char) ;
-				else if(vertexCount<=0xFFFF) 
-					indexSize = sizeof(unsigned short); //use  unsigned short int for indices
-				else
-					indexSize = sizeof(unsigned int); //use unsigned int for indices
-				memSize += faceCount * (sizeof(unsigned char)+(2*sizeof(unsigned short)) +sizeof(unsigned short)+ 3 * sizeof(double)); //allow space for the type of triangulation (1 byte plus number of indices - 2 bytes plus polygon count-2 bytes) + normal count + the normal
-				if(hasCurvedEdges)
-					memSize += triangleIndexCount * indexSize; //write out each indices
-				else
-					memSize += (maxVertexCount*indexSize) + (maxVertexCount); //assume worst case each face is made only of triangles, Max number of indices + Triangle Mode=1byte per triangle
-				memSize*=2; //add a bit of capacity
-				IntPtr vertexPtr = Marshal::AllocHGlobal(memSize);
-				unsigned char* pointBuffer = (unsigned char*)vertexPtr.ToPointer();
-				//decide which meshing algorithm to use, Opencascade is slow but necessary to resolve curved edges
 				try
 				{
-					long streamLen;
-					if(hasCurvedEdges)
-						streamLen=OpenCascadeMesh(transformedShape, pointBuffer, faceCount, maxVertexCount,memSize);
+					XbimTriangularMeshStreamer value(shape->RepresentationLabel, shape->SurfaceStyleLabel);
+					XbimTriangularMeshStreamer* m = &value;
+					//decide which meshing algorithm to use, Opencascade is slow but necessary to resolve curved edges
+					if (hasCurvedEdges) 
+					{
+						// BRepMesh_IncrementalMesh calls BRepMesh_FastDiscret to create the mesh geometry.
+						// todo: Bonghi: Question: is this ok to use the shape instead of transformedShape? I assume the transformed shape points to the shape.
+						BRepMesh_IncrementalMesh incrementalMesh(*(shape->Handle), deflection); 
+						OpenCascadeShapeStreamerFeed(transformedShape, m);
+					}
 					else
-						streamLen=OpenGLMesh(transformedShape, points, pointBuffer, faceCount,memSize );
+						OpenGLShapeStreamerFeed(transformedShape, m);
+					unsigned int uiCalcSize = m->StreamSize();
 
-					array<unsigned char>^ managedArray = gcnew array<unsigned char>(streamLen);
-					Marshal::Copy(vertexPtr, managedArray, 0, streamLen);
-					return gcnew XbimTriangulatedModelCollection(managedArray, shape->RepresentationLabel, shape->SurfaceStyleLabel);
+					IntPtr BonghiUnManMem = Marshal::AllocHGlobal(uiCalcSize);
+					unsigned char* BonghiUnManMemBuf = (unsigned char*)BonghiUnManMem.ToPointer();
+					unsigned int controlSize = m->StreamTo(BonghiUnManMemBuf);
+
+					if (uiCalcSize != controlSize)
+					{
+						int iError = 0;
+						iError++;
+					}
+
+					array<unsigned char>^ BmanagedArray = gcnew array<unsigned char>(uiCalcSize);
+					Marshal::Copy(BonghiUnManMem, BmanagedArray, 0, uiCalcSize);
+					Marshal::FreeHGlobal(BonghiUnManMem);
+					List<XbimTriangulatedModel^>^list = gcnew List<XbimTriangulatedModel^>();
+					list->Add(gcnew XbimTriangulatedModel(BmanagedArray, shape->RepresentationLabel, shape->SurfaceStyleLabel) );
+					return list;
 				}
 				catch(...)
 				{
-					Logger->Error("Error processing geometry in XbimGeometryModel::Mesh");
-					return XbimTriangulatedModelCollection::Empty;
+					System::Diagnostics::Debug::WriteLine("Error processing geometry in XbimGeometryModel::Mesh");
 				}
 				finally
 				{
-					Marshal::FreeHGlobal(vertexPtr);
+					// Marshal::FreeHGlobal(vertexPtr);
 				}
+				
 			}
 			catch(...)
 			{
-				Logger->Error("Failed to Triangulate shape");
-				return XbimTriangulatedModelCollection::Empty;
+				System::Diagnostics::Debug::WriteLine("Failed to Triangulate shape");
+				return gcnew List<XbimTriangulatedModel^>();
 			}
-
-
-
-
 		}	
 
 		XbimBoundingBox^ XbimGeometryModel::GetBoundingBox(IXbimGeometryModel^ shape, bool precise)

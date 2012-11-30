@@ -9,13 +9,12 @@ namespace Xbim.ModelGeometry.Scene
     /// <summary>
     /// This class extends the WPF MeshGeometry3D class to support the XbimTriangulationModel
     /// </summary>
-    public class XbimMeshGeometry3D : IXbimTriangulatedModelBuilder
+    public class XbimMeshGeometry3D : IXbimTriangulatesToPositionsIndices, IXbimTriangulatesToPositionsNormalsIndices
     {
         Model3DGroup _modelGroup;
         MeshGeometry3D _meshGeometry;
         GeometryModel3D _geometryModel;
         Point3DCollection _points;
-        //HashSet<uint> _facePointIndexes;
         TriangleType _meshType;
         uint _previousToLastIndex;
         uint _lastIndex;
@@ -24,11 +23,12 @@ namespace Xbim.ModelGeometry.Scene
 
         public static implicit operator Model3D(XbimMeshGeometry3D modelGeom)
         {
-
             return modelGeom._modelGroup;
         }
 
-        public void BeginBuild()
+        #region standard calls
+
+        private void Init()
         {
             _modelGroup = new Model3DGroup();
             _meshGeometry = new MeshGeometry3D();
@@ -37,87 +37,62 @@ namespace Xbim.ModelGeometry.Scene
             _modelGroup.Children.Add(_geometryModel);
         }
 
-        public void BeginVertices(uint numPoints)
+        private void StandardBeginPolygon(TriangleType meshType)
         {
-            _points = new Point3DCollection((int)numPoints);
-        }
-
-        public void AddVertex(Point3D point3D)
-        {
-            _points.Add(point3D);
-        }
-
-        public void EndVertices()
-        {
-        }
-
-        public void BeginFaces(ushort numFaces)
-        {
-            
-        }
-
-        public void BeginFace()
-        {
-            //_facePointIndexes = new HashSet<uint>();
-        }
-
-        public void BeginNormals(ushort numNormals)
-        {
-            
-        }
-
-        public void AddNormal(Vector3D normal)
-        {
-            
-        }
-
-        public void EndNormals()
-        {
-           
-        }
-
-        public void BeginPolygons(ushort numPolygons)
-        {
-            
-        }
-
-        public void BeginPolygon()
-        {
-            
-        }
-
-        public void BeginTriangulation(TriangleType meshType, uint indicesCount)
-        {
-           
             _meshType = meshType;
             _pointTally = 0;
             _previousToLastIndex = 0;
             _lastIndex = 0;
             _fanStartIndex = 0;
         }
+        #endregion
 
-        public void AddTriangleIndex(uint index)
+        #region IXbimTriangulatesToPointsIndices
+
+        void IXbimTriangulatesToPositionsIndices.BeginBuild()
         {
-            //int actualIndex = (int)index;
-            //if(!_facePointIndexes.Contains(index);
-            //{
-            //    _facePointIndexes.Add(index);
-            //    actualIndex = 
-            //}
+            Init();
+        }
+
+        void IXbimTriangulatesToPositionsIndices.BeginPositions(uint numPoints)
+        {
+            _points = new Point3DCollection((int)numPoints);
+        }
+
+        void IXbimTriangulatesToPositionsIndices.AddPosition(Point3D point3D)
+        {
+            _points.Add(point3D);
+        }
+
+        void IXbimTriangulatesToPositionsIndices.EndPositions()
+        {
+        }
+
+        void IXbimTriangulatesToPositionsIndices.BeginPolygons(uint totalNumberTriangles, uint numPolygons)
+        {
+            // three position for each triangle
+            _meshGeometry.Positions = new Point3DCollection((int)(totalNumberTriangles * 3));
+            _meshGeometry.TriangleIndices = new System.Windows.Media.Int32Collection((int)(totalNumberTriangles * 3));
+        }
+
+        void IXbimTriangulatesToPositionsIndices.BeginPolygon(TriangleType meshType, uint indicesCount)
+        {
+            StandardBeginPolygon(meshType);
+        }
+
+        void IXbimTriangulatesToPositionsIndices.AddTriangleIndex(uint index)
+        {
             if (_pointTally == 0)
                 _fanStartIndex = index;
             if (_pointTally < 3) //first time
             {
-
                 _meshGeometry.TriangleIndices.Add(_meshGeometry.Positions.Count);
                 _meshGeometry.Positions.Add(_points[(int)index]);
             }
             else
             {
-
                 switch (_meshType)
                 {
-
                     case TriangleType.GL_TRIANGLES://      0x0004
                         _meshGeometry.TriangleIndices.Add(_meshGeometry.Positions.Count);
                         _meshGeometry.Positions.Add(_points[(int)index]);
@@ -157,49 +132,117 @@ namespace Xbim.ModelGeometry.Scene
             _pointTally++;
         }
 
-        public void EndTriangulation()
+        void IXbimTriangulatesToPositionsIndices.EndPolygon()
         {
-            
+
         }
 
-        public void EndPolygon()
+        void IXbimTriangulatesToPositionsIndices.EndPolygons()
         {
-           
+
         }
 
-        public void EndPolygons()
+        void IXbimTriangulatesToPositionsIndices.EndBuild()
         {
-           
+
+        }
+        #endregion
+
+        #region IXbimTriangulatesToPositionsNormalsIndices
+
+        void IXbimTriangulatesToPositionsNormalsIndices.BeginBuild()
+        {
+            Init();
         }
 
-        public void EndFace()
+        void IXbimTriangulatesToPositionsNormalsIndices.BeginPoints(uint numPoints)
         {
-           
+            _meshGeometry.Positions = new Point3DCollection((int)numPoints);
+            _meshGeometry.Normals = new Vector3DCollection((int)numPoints);
         }
 
-        public void EndFaces()
+        void IXbimTriangulatesToPositionsNormalsIndices.AddPosition(Point3D point3D)
         {
-            
+            _meshGeometry.Positions.Add(point3D);
         }
 
-        public void EndBuild()
+        void IXbimTriangulatesToPositionsNormalsIndices.AddNormal(Vector3D normal)
         {
-           
+            _meshGeometry.Normals.Add(normal);
         }
 
-
-        public void BeginChild()
+        void IXbimTriangulatesToPositionsNormalsIndices.EndPoints()
         {
-            //_geometryModel.Freeze();
-            _meshGeometry = new MeshGeometry3D();
-            _geometryModel = new GeometryModel3D();
-            _geometryModel.Geometry = _meshGeometry;
-            _modelGroup.Children.Add(_geometryModel);
+            // purposely empty
         }
 
-        public void EndChild()
+        void IXbimTriangulatesToPositionsNormalsIndices.BeginPolygons(uint totalNumberTriangles, uint numPolygons)
         {
-           
+            _meshGeometry.TriangleIndices = new System.Windows.Media.Int32Collection((int)(totalNumberTriangles * 3));
         }
+
+        void IXbimTriangulatesToPositionsNormalsIndices.BeginPolygon(TriangleType meshType, uint indicesCount)
+        {
+            StandardBeginPolygon(meshType);
+        }
+
+        void IXbimTriangulatesToPositionsNormalsIndices.AddTriangleIndex(uint index)
+        {
+            if (_pointTally == 0)
+                _fanStartIndex = index;
+            if (_pointTally < 3) //first time
+            {
+                _meshGeometry.TriangleIndices.Add((int)index);
+                // _meshGeometry.Positions.Add(_points[(int)index]);
+            }
+            else
+            {
+                switch (_meshType)
+                {
+                    case TriangleType.GL_TRIANGLES://      0x0004
+                        _meshGeometry.TriangleIndices.Add((int)index);
+                        break;
+                    case TriangleType.GL_TRIANGLE_STRIP:// 0x0005
+                        if (_pointTally % 2 == 0)
+                        {
+                            _meshGeometry.TriangleIndices.Add((int)_previousToLastIndex);
+                            _meshGeometry.TriangleIndices.Add((int)_lastIndex);
+                        }
+                        else
+                        {
+                            _meshGeometry.TriangleIndices.Add((int)_lastIndex);
+                            _meshGeometry.TriangleIndices.Add((int)_previousToLastIndex);
+                        }
+                        _meshGeometry.TriangleIndices.Add((int)index);
+                        break;
+                    case TriangleType.GL_TRIANGLE_FAN://   0x0006
+                        _meshGeometry.TriangleIndices.Add((int)_fanStartIndex);
+                        _meshGeometry.TriangleIndices.Add((int)_lastIndex);
+                        _meshGeometry.TriangleIndices.Add((int)index);
+                        break;
+                    default:
+                        break;
+                }
+            }
+            _previousToLastIndex = _lastIndex;
+            _lastIndex = index;
+            _pointTally++;
+        }
+
+        void IXbimTriangulatesToPositionsNormalsIndices.EndPolygon()
+        {
+            // purposely empty
+        }
+
+        void IXbimTriangulatesToPositionsNormalsIndices.EndPolygons()
+        {
+            // purposely empty
+        }
+
+        void IXbimTriangulatesToPositionsNormalsIndices.EndBuild()
+        {
+            // purposely empty
+        }
+        #endregion
     }
 }

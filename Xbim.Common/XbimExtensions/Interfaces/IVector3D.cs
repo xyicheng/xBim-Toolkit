@@ -17,5 +17,8 @@ namespace Xbim.XbimExtensions.Interfaces
         double X { get; }
         double Y { get; }
         double Z { get; }
+        bool IsInvalid();
+       
+        
     }
 }

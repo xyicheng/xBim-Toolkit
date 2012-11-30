@@ -9,6 +9,7 @@ using namespace Xbim::Ifc2x3::GeometricConstraintResource;
 using namespace Xbim::XbimExtensions::SelectTypes;
 using namespace Xbim::ModelGeometry::Scene;
 using namespace System::Windows::Media::Media3D;
+using namespace System::Collections::Generic;
 namespace Xbim
 {
 	namespace ModelGeometry
@@ -23,10 +24,10 @@ namespace Xbim
 			IXbimGeometryModel^ Cut(IXbimGeometryModel^ shape);
 			IXbimGeometryModel^ Union(IXbimGeometryModel^ shape);
 			IXbimGeometryModel^ Intersection(IXbimGeometryModel^ shape);
-			XbimTriangulatedModelCollection^ Mesh(bool withNormals, double deflection, Matrix3D transform );
-			XbimTriangulatedModelCollection^ Mesh(bool withNormals, double deflection );
-			XbimTriangulatedModelCollection^ Mesh(bool withNormals);
-			XbimTriangulatedModelCollection^ Mesh();
+			List<XbimTriangulatedModel^>^Mesh(bool withNormals, double deflection, Matrix3D transform );
+			List<XbimTriangulatedModel^>^Mesh(bool withNormals, double deflection );
+			List<XbimTriangulatedModel^>^Mesh(bool withNormals);
+			List<XbimTriangulatedModel^>^Mesh();
 			IXbimGeometryModel^ CopyTo(IfcObjectPlacement^ placement);
 			property XbimLocation ^ Location {XbimLocation ^ get(); void set(XbimLocation ^ location);};
 			XbimBoundingBox^ GetBoundingBox(bool precise);

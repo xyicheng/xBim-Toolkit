@@ -88,10 +88,10 @@ namespace Xbim
 			virtual IXbimGeometryModel^ Union(IXbimGeometryModel^ shape);
 			virtual IXbimGeometryModel^ Intersection(IXbimGeometryModel^ shape);
 			virtual IXbimGeometryModel^ CopyTo(IfcObjectPlacement^ placement);
-			virtual XbimTriangulatedModelCollection^ Mesh(bool withNormals, double deflection, Matrix3D transform);
-			virtual XbimTriangulatedModelCollection^ Mesh(bool withNormals, double deflection);
-			virtual XbimTriangulatedModelCollection^ Mesh(bool withNormals);
-			virtual XbimTriangulatedModelCollection^ Mesh();
+			virtual List<XbimTriangulatedModel^>^Mesh(bool withNormals, double deflection, Matrix3D transform);
+			virtual List<XbimTriangulatedModel^>^Mesh(bool withNormals, double deflection);
+			virtual List<XbimTriangulatedModel^>^Mesh(bool withNormals);
+			virtual List<XbimTriangulatedModel^>^Mesh();
 			
 			virtual property Int32 RepresentationLabel
 			{

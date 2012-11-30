@@ -150,6 +150,7 @@
     <Compile Include="Utils\TrackballDecorator.cs" />
     <Compile Include="Utils\Viewport3DDecorator.cs" />
     <Compile Include="XbimMaterialProvider.cs" />
+    <Compile Include="XbimModelPresentationExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="DrawingControl3D.xaml">

@@ -305,23 +305,23 @@ namespace Xbim
 			return gcnew XbimFeaturedShape(this,placement);
 		}
 
-		XbimTriangulatedModelCollection^ XbimFeaturedShape::Mesh()
+		List<XbimTriangulatedModel^>^XbimFeaturedShape::Mesh()
 		{
 			return Mesh( true, XbimGeometryModel::DefaultDeflection);
 		}
 
-		XbimTriangulatedModelCollection^ XbimFeaturedShape::Mesh(bool withNormals )
+		List<XbimTriangulatedModel^>^XbimFeaturedShape::Mesh(bool withNormals )
 		{
 			return Mesh(withNormals, XbimGeometryModel::DefaultDeflection);
 		}
 
-		XbimTriangulatedModelCollection^ XbimFeaturedShape::Mesh(bool withNormals, double deflection )
+		List<XbimTriangulatedModel^>^XbimFeaturedShape::Mesh(bool withNormals, double deflection )
 		{
 			return XbimGeometryModel::Mesh(mResultShape,withNormals,deflection, Matrix3D::Identity);
 			
 		}
 		
-		XbimTriangulatedModelCollection^ XbimFeaturedShape::Mesh(bool withNormals, double deflection, Matrix3D transform )
+		List<XbimTriangulatedModel^>^XbimFeaturedShape::Mesh(bool withNormals, double deflection, Matrix3D transform )
 		{
 			return XbimGeometryModel::Mesh(mResultShape,withNormals,deflection, transform);
 			

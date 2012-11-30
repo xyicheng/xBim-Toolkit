@@ -982,7 +982,7 @@
     <None Include="PresentationDefinitionResource\PresentationDefinitionResourceClassDiagram.cd" />
     <None Include="PresentationOrganizationResource\ClassDiagramPresentationOrganizationResource.cd" />
     <None Include="PresentationResource\ClassDiagramPresentationResource.cd" />
-    <None Include="ProductExtension\ClassDiagramProductExtension.cd" />
+    <None Include="ProductExtension\ClassDiagram1.cd" />
     <None Include="ProfileResource\ClassDiagramProfileResource.cd" />
     <None Include="QuantityResource\ClassDiagramQuantityResource.cd" />
     <None Include="RepresentationResource\ClassDiagramRepresentationResource.cd" />

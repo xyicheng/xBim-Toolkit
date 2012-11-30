@@ -205,23 +205,23 @@ namespace Xbim
 			return gcnew XbimMeshedFaceEnumerable(*nativeHandle);
 		}
 
-		XbimTriangulatedModelCollection^ XbimSolid::Mesh()
+		List<XbimTriangulatedModel^>^XbimSolid::Mesh()
 		{
 			return Mesh(true, XbimGeometryModel::DefaultDeflection, Matrix3D::Identity);
 		}
 
-		XbimTriangulatedModelCollection^ XbimSolid::Mesh(bool withNormals )
+		List<XbimTriangulatedModel^>^XbimSolid::Mesh(bool withNormals )
 		{
 			return Mesh(withNormals, XbimGeometryModel::DefaultDeflection, Matrix3D::Identity);
 		}
 
-		XbimTriangulatedModelCollection^ XbimSolid::Mesh( bool withNormals, double deflection )
+		List<XbimTriangulatedModel^>^XbimSolid::Mesh( bool withNormals, double deflection )
 		{
 			return XbimGeometryModel::Mesh(this,withNormals,deflection, Matrix3D::Identity);
 			
 		}
 
-		XbimTriangulatedModelCollection^ XbimSolid::Mesh(bool withNormals, double deflection, Matrix3D transform )
+		List<XbimTriangulatedModel^>^XbimSolid::Mesh(bool withNormals, double deflection, Matrix3D transform )
 		{
 			return XbimGeometryModel::Mesh(this,withNormals,deflection, transform);
 			

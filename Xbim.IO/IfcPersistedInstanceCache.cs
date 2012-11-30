@@ -760,7 +760,6 @@ namespace Xbim.IO
         /// Creates a new instance
         /// </summary>
         /// <param name="t"></param>
-        /// <param name="label"></param>
         /// <returns></returns>
         internal IPersistIfcEntity CreateNew(Type t)
         {

@@ -115,7 +115,7 @@ namespace Xbim.Presentation
             IfcType ifcType = IfcMetaData.IfcType(entityTypeId);
             return GetDefaultMaterial(ifcType.Type.Name);
         }
-
+      
         public static XbimMaterialProvider GetDefaultMaterial(IfcType ifcType)
         {
             return GetDefaultMaterial(ifcType.Type.Name);

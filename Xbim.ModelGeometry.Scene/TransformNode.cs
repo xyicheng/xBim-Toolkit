@@ -40,8 +40,7 @@ namespace Xbim.ModelGeometry.Scene
         
 
     
-        //non stored data
-        XbimTriangulatedModelStream _triangulatedModel;
+       
         private bool _visible;
         private TransformNode _parent;
 

@@ -27,14 +27,18 @@ namespace Xbim.Presentation
         ///   Returns a material corresponding to this surface style, materials are cached in the ModelDataProvider
         /// </summary>
         /// <param name = "sStyle"></param>
-        /// <param name = "mdp"></param>
         /// <returns></returns>
-        public static Material ToMaterial(this IfcSurfaceStyle sStyle, ModelDataProvider mdp)
+        public static Material ToMaterial(this IfcSurfaceStyle sStyle)
         {
             //need to change this to return a material group that considers all types of Styles
-            IfcSurfaceStyleShading shading = sStyle.Styles.OfType<IfcSurfaceStyleShading>().FirstOrDefault();
-            if (shading != null) return (shading).ToMaterial(mdp);
-            else return null;
+            IfcSurfaceStyleRendering rendering = sStyle.Styles.OfType<IfcSurfaceStyleRendering>().FirstOrDefault();
+            if (rendering != null) return rendering.ToMaterial();
+            else //try the shading
+            { 
+                IfcSurfaceStyleShading shading = sStyle.Styles.OfType<IfcSurfaceStyleShading>().FirstOrDefault();
+                 if (shading != null) return shading.ToMaterial();
+            }
+            return null; //no luck
         }
 
         public static IfcSurfaceStyleShading GetSurfaceStyleShading(this IfcSurfaceStyle sStyle)

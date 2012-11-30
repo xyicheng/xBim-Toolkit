@@ -182,10 +182,10 @@ virtual property XbimLocation ^ Location
 			virtual IXbimGeometryModel^ Cut(IXbimGeometryModel^ shape);
 			virtual IXbimGeometryModel^ Union(IXbimGeometryModel^ shape);
 			virtual IXbimGeometryModel^ Intersection(IXbimGeometryModel^ shape);
-			virtual XbimTriangulatedModelCollection^ Mesh(bool withNormals, double deflection, Matrix3D transform);
-			virtual XbimTriangulatedModelCollection^ Mesh(bool withNormals, double deflection);
-			virtual XbimTriangulatedModelCollection^ Mesh(bool withNormals);
-			virtual XbimTriangulatedModelCollection^ Mesh();
+			virtual List<XbimTriangulatedModel^>^Mesh(bool withNormals, double deflection, Matrix3D transform);
+			virtual List<XbimTriangulatedModel^>^Mesh(bool withNormals, double deflection);
+			virtual List<XbimTriangulatedModel^>^Mesh(bool withNormals);
+			virtual List<XbimTriangulatedModel^>^Mesh();
 			virtual IXbimGeometryModel^ CopyTo(IfcObjectPlacement^ placement);
 			
 		};

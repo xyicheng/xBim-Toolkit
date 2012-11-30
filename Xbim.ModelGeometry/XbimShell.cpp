@@ -70,24 +70,24 @@ namespace Xbim
 			_hasCurvedEdges = hasCurves;
 		}
 
-		XbimTriangulatedModelCollection^ XbimShell::Mesh()
+		List<XbimTriangulatedModel^>^XbimShell::Mesh()
 		{
 			return Mesh(true, XbimGeometryModel::DefaultDeflection, Matrix3D::Identity);
 		}
 
-		XbimTriangulatedModelCollection^ XbimShell::Mesh( bool withNormals )
+		List<XbimTriangulatedModel^>^XbimShell::Mesh( bool withNormals )
 		{
 			return Mesh(withNormals, XbimGeometryModel::DefaultDeflection, Matrix3D::Identity);
 		}
 
-		XbimTriangulatedModelCollection^ XbimShell::Mesh(bool withNormals, double deflection )
+		List<XbimTriangulatedModel^>^XbimShell::Mesh(bool withNormals, double deflection )
 		{
 
 			return XbimGeometryModel::Mesh(this,withNormals,deflection, Matrix3D::Identity);
 			
 		}
 
-		XbimTriangulatedModelCollection^ XbimShell::Mesh(bool withNormals, double deflection, Matrix3D transform )
+		List<XbimTriangulatedModel^>^XbimShell::Mesh(bool withNormals, double deflection, Matrix3D transform )
 		{
 			return XbimGeometryModel::Mesh(this,withNormals,deflection, transform);
 			

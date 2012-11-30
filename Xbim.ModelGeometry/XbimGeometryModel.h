@@ -21,43 +21,12 @@ using namespace Xbim::Common::Logging;
 using namespace Xbim::Ifc2x3::SharedBldgElements;
 #pragma unmanaged
 
-		public class TesselateStream
-		{
-		public:
-			const static bool UseDouble = false;
-			TesselateStream( unsigned char* pDataStream, const TopTools_IndexedMapOfShape& points, unsigned short faceCount, int streamSize);
-			TesselateStream( unsigned char* pDataStream, unsigned short faceCount, unsigned int nodeCount, int streamSize);
-			TesselateStream( unsigned char* pDataStream,  int streamSize, int position);
-			void BeginFace(const gp_Dir& normal);
-			void BeginFace(const double x, const double y, const double z);
-			void EndFace();
-			void BeginPolygon(GLenum type);
-			void WritePoint(double x, double y, double z);
-			void WritePointInt(unsigned int index);
-			void WritePointShort(unsigned int index);
-			void WritePointByte(unsigned int index);
-			void EndPolygon();
-			long Length() {return _position;};
-		private:
-			unsigned char* _pDataStream;
-			int _position;
-			int _polygonStart;
-			int _pointPosition;
-			int _faceStart;
-			int _polygonCount;
-			int _streamSize;
-			unsigned short _indicesCount;
-		};
-
-		void CALLBACK BeginTessellate(GLenum type, void *pPolygonData);
-		void CALLBACK EndTessellate(void *pVertexData);
-		void CALLBACK TessellateError(GLenum err);
-		void CALLBACK AddVertexByte(void *pVertexData, void *pPolygonData);
-		void CALLBACK AddVertexShort(void *pVertexData, void *pPolygonData);
-		void CALLBACK AddVertexInt(void *pVertexData, void *pPolygonData);
-
+void CALLBACK XMS_BeginTessellate(GLenum type, void *pPolygonData);
+void CALLBACK XMS_EndTessellate(void *pVertexData);
+void CALLBACK XMS_TessellateError(GLenum err);
+void CALLBACK XMS_AddVertexIndex(void *pVertexData, void *pPolygonData);
 		
-		#pragma managed
+#pragma managed
 
 namespace Xbim
 {
@@ -90,10 +59,10 @@ namespace Xbim
 
 			
 			XbimGeometryModel(void){};
-			virtual XbimTriangulatedModelCollection^ Mesh(bool withNormals, double deflection, Matrix3D transform) abstract;
-			virtual XbimTriangulatedModelCollection^ Mesh(bool withNormals, double deflection) abstract;
-			virtual XbimTriangulatedModelCollection^ Mesh(bool withNormals) abstract;
-			virtual XbimTriangulatedModelCollection^ Mesh() abstract;
+			virtual List<XbimTriangulatedModel^>^Mesh(bool withNormals, double deflection, Matrix3D transform) abstract;
+			virtual List<XbimTriangulatedModel^>^Mesh(bool withNormals, double deflection) abstract;
+			virtual List<XbimTriangulatedModel^>^Mesh(bool withNormals) abstract;
+			virtual List<XbimTriangulatedModel^>^Mesh() abstract;
 			property TopoDS_Shape* Handle{ virtual TopoDS_Shape* get() abstract;};
 			virtual IXbimGeometryModel^ Cut(IXbimGeometryModel^ shape) abstract;
 			virtual IXbimGeometryModel^ Union(IXbimGeometryModel^ shape)abstract;
@@ -117,7 +86,7 @@ namespace Xbim
 			static IXbimGeometryModel^ CreateMap(IXbimGeometryModel^ item, Dictionary<IfcRepresentation^, IXbimGeometryModel^>^ maps, bool forceSolid);
 
 			static IXbimGeometryModel^ Fix(IXbimGeometryModel^ shape);
-			static XbimTriangulatedModelCollection^ Mesh(IXbimGeometryModel^ shape,  bool withNormals, double deflection, Matrix3D transform );
+			static List<XbimTriangulatedModel^>^Mesh(IXbimGeometryModel^ shape,  bool withNormals, double deflection, Matrix3D transform );
 			virtual XbimBoundingBox^ GetBoundingBox(bool precise) abstract;
 			static XbimBoundingBox^ GetBoundingBox(IXbimGeometryModel^ shape, bool precise);
 			property double Volume {virtual double get()abstract;};

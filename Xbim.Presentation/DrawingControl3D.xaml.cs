@@ -138,21 +138,21 @@ namespace Xbim.Presentation
             remove { _progressChanged -= value; }
         }
 
-        private event SetMaterialEventHandler _onSetMaterial;
+        //private event SetMaterialEventHandler _onSetMaterial;
 
-        public event SetMaterialEventHandler OnSetMaterial
-        {
-            add { _onSetMaterial += value; }
-            remove { _onSetMaterial -= value; }
-        }
+        //public event SetMaterialEventHandler OnSetMaterial
+        //{
+        //    add { _onSetMaterial += value; }
+        //    remove { _onSetMaterial -= value; }
+        //}
 
-        private event SetFilterEventHandler _onSetFilter;
+        //private event SetFilterEventHandler _onSetFilter;
 
-        public event SetFilterEventHandler OnSetFilter
-        {
-            add { _onSetFilter += value; }
-            remove { _onSetFilter -= value; }
-        }
+        //public event SetFilterEventHandler OnSetFilter
+        //{
+        //    add { _onSetFilter += value; }
+        //    remove { _onSetFilter -= value; }
+        //}
 
       
        
@@ -486,8 +486,8 @@ namespace Xbim.Presentation
 
         private void DrawShape( XbimGeometryData geom)
         {
-            
-            XbimMaterialProvider mat = null;
+
+            XbimMaterialProvider mat = Model.GetRenderMaterial(geom);
             DrawingControl3DItem d3D;
             IfcType ifcType = IfcMetaData.IfcType(geom.IfcTypeId);
             bool transparent = (ifcType.Type == typeof(IfcWindow)) || (ifcType.Type == typeof(IfcPlate));
@@ -504,9 +504,7 @@ namespace Xbim.Presentation
            
             ModelVisual3D mv = d3D.ModelVisual;
 
-            //if (_onSetMaterial != null)
-            //    mat = _onSetMaterial(ifcType);
-            mat = ModelDataProvider.GetDefaultMaterial(ifcType);
+
             if (mat == null) //set it just in case
             {
                 if (transparent)
