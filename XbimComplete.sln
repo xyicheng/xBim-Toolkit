@@ -58,16 +58,16 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeExamples", "CodeExample
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Licences", "Licences", "{E9E301F2-FE7D-4410-B88D-F83D684A8E62}"
 	ProjectSection(SolutionItems) = preProject
-		CDDL Licence.txt = CDDL Licence.txt
+		Licences\CDDL Licence.txt = Licences\CDDL Licence.txt
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3rd Party", "3rd Party", "{10A2F674-DB37-41FF-AB71-9D54C8F0A5B6}"
 	ProjectSection(SolutionItems) = preProject
-		Apache2_0.txt = Apache2_0.txt
-		MIT Licence.txt = MIT Licence.txt
-		MS Permissive Licence.txt = MS Permissive Licence.txt
-		NewBSD Licence.txt = NewBSD Licence.txt
-		OPEN CASCADE Public Licence.txt = OPEN CASCADE Public Licence.txt
+		Licences\Apache2_0.txt = Licences\Apache2_0.txt
+		Licences\MIT Licence.txt = Licences\MIT Licence.txt
+		Licences\MS Permissive Licence.txt = Licences\MS Permissive Licence.txt
+		Licences\NewBSD Licence.txt = Licences\NewBSD Licence.txt
+		Licences\OPEN CASCADE Public Licence.txt = Licences\OPEN CASCADE Public Licence.txt
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "COBie.Xbim.Tester", "COBie.Xbim.Tester\COBie.Xbim.Tester.csproj", "{823FEDA5-EEE3-4583-82CE-E51CE88BCF44}"

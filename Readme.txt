@@ -4,16 +4,17 @@ XBIM - the eXtensible Building Information Modelling (BIM) Toolkit
 What is it?
 -----------
 
-The xBIM Tookit (eXtensible Building Information Modelling) is an open-source, software development BIM tool that 
+The xBIM Tookit (eXtensible Building Information Modelling) is an open-source, software development BIM toolkit that 
 supports the BuildingSmart Data Model (aka the Industry Foundation Classes IFC).
 
 xBIM allows developers to read, create and view Building Information (BIM) Models in the IFC format. 
-There is full support for geometric, topological operations and visualisation. 
+There is full support for geometric, topological operations and visualisation. In addition xBIM supports 
+bi-directional translation between IFC and COBie formats
 
 Getting Started
 ---------------
 
-You will need Visual Studio 2010 SP1 or newer to compile the Solution. To compile the ScenenJSWebViewer sample
+You will need Visual Studio 2010 SP1 or newer to compile the Solution. To compile the SceneJSWebViewer sample
 project you will require ASP.NET MVC 3.0 to be installed. All solutions target .NET 4.0. The 4.0 Client profile
 may be supported for some projects.
 
@@ -21,12 +22,13 @@ Before compiling, you should ensure you have targetted the correct platform in t
 Xbim currently supports targetting x86 and x64 architectures - choose the one most appropriate to your
 environment. 
 
-Note that targetting Any CPU or Mixed Platforms is not advised due the the dependency on native C++ DLLs in OpenCascade.
+Note that targetting Any CPU or Mixed Platforms is not advised due the the dependency on native C++ DLLs in the 
+OpenCascade geometry engine.
 
 Xbim is a software library, and is currently deployed with a number of sample applications to demonstrate its capabilities
 
 * XbimXplorer - a Windows WPF sample application that can open and render 3D IFC models (and native XBIM models ) as well as displaying semantic data.
-* Xbim.SceneJSWebViewer - a MVC web application that can open and render 3D IFC models (converted to XBIM) using a WebGL compatible browser. 
+* Xbim.SceneJSWebViewer - a MVC web application that can open and render 3D IFC models (previously converted to XBIM) using a WebGL compatible browser. 
 * XbimConvert - a sample console application to generate native XBIM model and geometry files from an IFC file.
 * Xbim.COBie.Client - A sample windows application demonstrating how a COBie spreadsheet can be generated from an IFC model.
 * CodeExamples - a sample console application demonstrating how to undertake a number of BIM processes using XBIM
@@ -61,8 +63,8 @@ Additionally the Samples also make use of the followig libraries
 
 All licences are included in full under the Licences\3rd Party solution folder. 
 
-Support/Help
-------------
+Support & Help
+--------------
 
 Please use the Discussion forum at http://xbim.codeplex.com/discussions to ask any questions.
 Alternatively use the Issue Tracker to raise any bugs relating to Xbim.
