@@ -40,6 +40,8 @@ namespace Xbim.COBie.Data
 
         protected COBieContext Context { get; set; }
         private COBieProgress _progressStatus;
+        protected int UnknownCount { get; set; } //use for unnamed items as an index
+
         //private static Dictionary<long, string> _eMails = new Dictionary<long, string>();
 
         protected COBieData()
@@ -50,6 +52,7 @@ namespace Xbim.COBie.Data
         {
             Context = context;
             _progressStatus = new COBieProgress(context);
+            UnknownCount = 1;
         }
 
         protected IModel Model
@@ -230,6 +233,8 @@ namespace Xbim.COBie.Data
                     return email;
                 }
             }
+            else if (Context.EMails.Count == 1) //if only one then no contact are probably set up so use as default
+                return Context.EMails.First().Value;
             else
                 return Constants.DEFAULT_EMAIL;
         }
@@ -322,7 +327,8 @@ namespace Xbim.COBie.Data
                     int index = 1;
                     foreach (string item in split)
                     {
-                        if (index == 1) 
+                        
+                        if (index == 1)
                             organization = item; //first item always
                         else if (index < split.Length) //all the way up to the last item
                             organization += "." + item;
@@ -338,7 +344,8 @@ namespace Xbim.COBie.Data
                 email += (string.IsNullOrEmpty(lastName)) ? "unknown" : lastName;
                 email += "@";
                 email += (string.IsNullOrEmpty(organization)) ? "unknown" : organization;
-                email += (string.IsNullOrEmpty(domType)) ? ".com" : domType; 
+                email += (string.IsNullOrEmpty(domType)) ? ".com" : domType;
+                email = email.Replace(" ", ""); //remove any spaces
             }
             
 

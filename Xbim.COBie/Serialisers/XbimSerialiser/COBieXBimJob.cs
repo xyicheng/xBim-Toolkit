@@ -200,9 +200,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 if (ValidateString(row.Priors))
                 {
                     string priors = row.Priors.ToString();
-                    char splitKey = ',';
-                    if (priors.Contains(":"))
-                        splitKey = ':';
+                    char splitKey = GetSplitChar(priors);
                     string[] priorsArray = row.Priors.ToString().Split(splitKey);
                     foreach (string prior in priorsArray)
                     {

@@ -142,6 +142,7 @@ namespace Xbim.COBie
                                                             typeof(IfcPipeSegmentType),
                                                             typeof(IfcFastenerType),
                                                             typeof(IfcSpaceType),
+                                                            typeof(IfcBuildingElementProxyType)
                                                             //typeof(Xbim.Ifc.SharedBldgElements.IfcRampType), //IFC2x Edition 4.
                                                             //typeof(IfcStairType), //IFC2x Edition 4.
                                                              };

@@ -31,7 +31,13 @@ namespace Xbim.COBie
             {
                 int c = ParentSheet.KeyColumns.Count();
                 if (c == 1)
-                    return ParentSheet.KeyColumns.First().PropertyInfo.GetValue(this, null) as String;
+                {
+                    var value = ParentSheet.KeyColumns.First().PropertyInfo.GetValue(this, null);
+                    if (value != null)
+                        return value as String;
+                    else
+                        return "";
+                }
                 else if (c > 1)
                 {
                     List<string> keyValues = new List<string>(c);

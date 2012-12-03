@@ -448,9 +448,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         /// <returns></returns>
         public IfcValue[] GetValueArray(string value)
         {
-            char splitKey = ',';
-            if (value.Contains(":"))
-                splitKey = ':';
+            char splitKey = GetSplitChar(value);
             double number;
             IfcValue[] ifcValues;
             string[] strValues = value.Split(splitKey);
@@ -464,6 +462,37 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                     ifcValues[i] = new IfcLabel(str);
             }
             return ifcValues;
+        }
+
+        /// <summary>
+        /// Get the most likely character which splits the line
+        /// </summary>
+        /// <param name="value">delimited string</param>
+        /// <returns>split character</returns>
+        public static char GetSplitChar(string value)
+        {
+            //swapped these on 28 Nov 2012, might cause problem, should see in testing
+            char splitKey = ':'; //contained within names so give "," a higher likelihood
+            if (value.Contains(",")) 
+                splitKey = ',';
+            return splitKey;
+        }
+
+        /// <summary>
+        /// Split the string 
+        /// </summary>
+        /// <param name="str">string to split via a ":" or ","</param>
+        /// <returns>string array</returns>
+        public List<string> SplitTheString(string str)
+        {
+            if (ValidateString(str))
+            {
+                char splitKey = GetSplitChar(str);
+                return SplitString(str, splitKey);
+            }
+            else
+                return new List<string>();
+            
         }
 
         /// <summary>
@@ -750,13 +779,31 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         /// <returns>string holding sheet name</returns>
         public IfcRoot GetRootObject(string sheetName, string rowName)
         {
+            //ensure we have worksheet name format 
+            sheetName = sheetName.ToLower().Trim();
+            sheetName = char.ToUpper(sheetName[0]) + sheetName.Substring(1);
+            string objName = rowName;
             rowName = rowName.ToLower().Trim();
             switch (sheetName)
             {
                 case Constants.WORKSHEET_TYPE:
-                    return Model.InstancesWhere<IfcTypeObject>(obj => obj.Name.ToString().ToLower().Trim() == rowName).FirstOrDefault();
+                    IfcTypeObject ifcTypeObject = Model.InstancesWhere<IfcTypeObject>(obj => obj.Name.ToString().ToLower().Trim() == rowName).FirstOrDefault();
+                    //if no Type Object create one to maintain relationship
+                    if (ifcTypeObject == null)
+                    {
+                        ifcTypeObject = Model.New<IfcBuildingElementProxyType>();
+                        ifcTypeObject.Name = objName;
+                    }
+                    return ifcTypeObject;
                 case Constants.WORKSHEET_COMPONENT:
-                    return Model.InstancesWhere<IfcElement>(obj => obj.Name.ToString().ToLower().Trim() == rowName).FirstOrDefault();
+                    IfcElement ifcElement = Model.InstancesWhere<IfcElement>(obj => obj.Name.ToString().ToLower().Trim() == rowName).FirstOrDefault();
+                    //if no Element Object create one to maintain relationship
+                    if (ifcElement == null)
+                    {
+                        ifcElement = Model.New<IfcVirtualElement>();
+                        ifcElement.Name = objName;
+                    }
+                    return ifcElement;
                 case Constants.WORKSHEET_JOB:
                     return Model.InstancesWhere<IfcProcess>(obj => obj.Name.ToString().ToLower().Trim() == rowName).FirstOrDefault();
                 case Constants.WORKSHEET_ASSEMBLY:
@@ -770,6 +817,8 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                     if (ifcRoot == null)
                         ifcRoot = Model.InstancesWhere<IfcProject>(obj => obj.Name.ToString().ToLower().Trim() == rowName).FirstOrDefault();
 	                return ifcRoot;
+                case Constants.WORKSHEET_FLOOR:
+                    return Model.InstancesWhere<IfcBuildingStorey>(to => to.Name.ToString().ToLower().Trim() == rowName).FirstOrDefault();
                 case Constants.WORKSHEET_RESOURCE:
                     return Model.InstancesWhere<IfcConstructionEquipmentResource>(obj => obj.Name.ToString().ToLower().Trim() == rowName).FirstOrDefault();
                 case Constants.WORKSHEET_SPACE:
@@ -905,13 +954,13 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             return str.Substring(0, end).Trim();
         }
 
-        public static string TestPerson(IModel model)
-        {
-            var xxx = model.InstancesWhere<IfcSpace>(s => s.Name == "1A01")
-                            .SelectMany(s => s.PropertySets).Where(ps => ps.HasProperties.Where(p => p.Name == "BaseColor").Any())
-                            ;
-            return xxx.First().OwnerHistory.OwningUser.ThePerson.FamilyName;
-        }
+        //public static string TestPerson(IModel model)
+        //{
+        //    var xxx = model.InstancesWhere<IfcSpace>(s => s.Name == "1A01")
+        //                    .SelectMany(s => s.PropertySets).Where(ps => ps.HasProperties.Where(p => p.Name == "BaseColor").Any())
+        //                    ;
+        //    return xxx.First().OwnerHistory.OwningUser.ThePerson.FamilyName;
+        //}
 
         //public object GetIt(Type type)
         //{

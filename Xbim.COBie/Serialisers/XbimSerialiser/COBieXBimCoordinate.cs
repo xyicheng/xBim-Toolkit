@@ -365,20 +365,23 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                     {
                         rotationX = (rotationX - lastRotationX) * -1; //switch rotation direction to match original direction on extracted xls sheet
                         Quaternion q = new Quaternion(new Vector3D(1, 0, 0), rotationX);
-                        matrixRotation3D.Rotate(q);
+                        //matrixRotation3D.Rotate(q);
+                        matrixRotation3D.RotatePrepend(q);
                     }
                     if (double.TryParse(row.ElevationalRotation, out rotationY))
                     {
                         rotationY = (rotationY - lastRotationY) * -1; //switch rotation direction to match original direction on extracted xls sheet, 
                         Quaternion q = new Quaternion(new Vector3D(0, 1, 0), rotationY);
-                        matrixRotation3D.Rotate(q);
+                        //matrixRotation3D.Rotate(q);
+                        matrixRotation3D.RotatePrepend(q);
                     }
                     if (double.TryParse(row.ClockwiseRotation, out rotationZ))
                     {
                         rotationZ = rotationZ - lastRotationZ;
                         rotationZ = 360.0 - rotationZ; //if anticlockwise rotation required, see TransformedBoundingBox structure for why
                         Quaternion q = new Quaternion(new Vector3D(0, 0, 1), rotationZ);
-                        matrixRotation3D.Rotate(q);
+                        //matrixRotation3D.Rotate(q);
+                        matrixRotation3D.RotatePrepend(q);
                     }
 
                     //set up the coordinates directions for this local placement, might need to look at the rotations of the parent placementRelTo on a merge, but for straight extraction we should be OK here

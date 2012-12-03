@@ -76,7 +76,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         private void AddMaterial(COBieAssemblyRow row)
         {
             //check we have a chance of creating the IfcMaterialLayerSet object
-            if ((ValidateString(row.ParentName)) && (ValidateString(row.ChildNames)))
+            if (ValidateString(row.ParentName)) // && (ValidateString(row.ChildNames))
             {
                 IfcMaterialLayerSet ifcMaterialLayerSet = null;
                 IfcMaterialLayerSetUsage ifcMaterialLayerSetUsage = null;
@@ -175,6 +175,8 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                            )
                         )
                     {
+                        //Add GlobalId
+                        AddGlobalId(row.ExtIdentifier, ifcRelDecomposes);
                         //failed to add parent or child so remove as not a valid IfcRelDecomposes object
 		                Model.Delete(ifcRelDecomposes);
                         ifcRelDecomposes = null;
@@ -297,7 +299,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             }
             else //ok nothing found for the full string so assume delimited string
             {
-                List<string> splitChildNames = GetChildNames(childNames);
+                List<string> splitChildNames = SplitString(childNames, ':');
 
                 foreach (string item in splitChildNames)
                 {
@@ -328,20 +330,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             return childObjs;
         }
 
-        /// <summary>
-        /// Split a string via a delimiting ',' or ':'
-        /// </summary>
-        /// <param name="childNames">string to split</param>
-        /// <returns>string[] split string list</returns>
-        private static List<string> GetChildNames(string childNames)
-        {
-            char splitKey = ',';
-            if (childNames.Contains(":")) 
-                splitKey = ':';
-
-            List<string> splitChildNames = SplitString(childNames, splitKey);
-            return splitChildNames;
-        }
+        
 
         /// <summary>
         /// Add the child objects to the IfcMaterialLayerSet
@@ -351,7 +340,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         private bool AddChildObjects(IfcMaterialLayerSet ifcMaterialLayerSet, string childNames)
         {
             bool returnValue = false;
-            List<string> splitChildNames = GetChildNames(childNames);
+            List<string> splitChildNames = SplitString(childNames, ':');
 
             foreach (string item in splitChildNames)
             {

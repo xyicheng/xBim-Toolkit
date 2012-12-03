@@ -79,15 +79,18 @@ namespace Xbim.COBie.Data
                 foreach (IfcProduct ifcProduct in ifcProducts)
                 {
                     ProgressIndicator.IncrementAndUpdate();
+                    //if no name to link the row name too skip it, as no way to link back to the parent object
+                    if (string.IsNullOrEmpty(ifcProduct.Name))
+                        continue;
 
                     COBieCoordinateRow coordinate = new COBieCoordinateRow(coordinates);
-
+                    
                     coordinate.Name = (string.IsNullOrEmpty(ifcProduct.Name.ToString())) ? DEFAULT_STRING : ifcProduct.Name.ToString();// (ifcBuildingStorey == null || ifcBuildingStorey.Name.ToString() == "") ? "CoordinateName" : ifcBuildingStorey.Name.ToString();
 
                     coordinate.CreatedBy = GetTelecomEmailAddress(ifcProduct.OwnerHistory);
                     coordinate.CreatedOn = GetCreatedOnDateAsFmtString(ifcProduct.OwnerHistory);
 
-
+                    
                     coordinate.RowName = coordinate.Name;
                     IfcCartesianPoint ifcCartesianPointLower = null;
                     IfcCartesianPoint ifcCartesianPointUpper = null;
@@ -105,10 +108,10 @@ namespace Xbim.COBie.Data
                             ifcCartesianPointLower = new IfcCartesianPoint(worldMatrix.OffsetX, worldMatrix.OffsetY, worldMatrix.OffsetZ); //get the offset from the world coordinates system 0,0,0 point, i.e. origin point of this object in world space
                         }
                         //we will allow to add 0,0,0 as if components then it can place themselves relative to the 0,0,0 point
-                        else
-                        {
-                            continue; //no info so skip
-                        }
+                        //else
+                        //{
+                        //    continue; //no info so skip
+                        //}
                         coordinate.SheetName = "Floor";
                         coordinate.Category = "point";
                         //ifcCartesianPoint = (ifcProduct.ObjectPlacement as IfcLocalPlacement).RelativePlacement.Location;

@@ -67,7 +67,7 @@ namespace Xbim.COBie.Data
         /// <param name="sourceRows"></param>
         public COBieDataPropertySetValues(IEnumerable<IfcObject> sourceRows)
         {
-            _propSetsValuesObjects = sourceRows.ToDictionary(el => el, el => el.PropertySets
+            _propSetsValuesObjects = sourceRows.Where(el => (el != null)).ToDictionary(el => el, el => el.PropertySets
                 .ToDictionary(ps => ps, ps => ps.HasProperties.OfType<IfcSimpleProperty>().ToList()));
             
         }

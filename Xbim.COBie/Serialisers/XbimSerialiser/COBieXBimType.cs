@@ -100,18 +100,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         private void AddType(COBieTypeRow row)
         {
             //IfcTypeObject ifcTypeObject = Model.New<IfcTypeObject>();
-            IfcType ifcType;
-            IfcTypeObject ifcTypeObject = null;
-            if (IfcInstances.IfcTypeLookup.TryGetValue(row.ExtObject.Trim().ToUpper(), out ifcType))
-            {
-                MethodInfo method = typeof(IModel).GetMethod("New", Type.EmptyTypes);
-                MethodInfo generic = method.MakeGenericMethod(ifcType.Type);
-                var newObj = generic.Invoke(Model, null);
-                if (newObj is IfcTypeObject)
-                    ifcTypeObject = (IfcTypeObject)newObj;
-            }
-            if (ifcTypeObject == null) //if we cannot make a object assume base IfcTypeObject
-                ifcTypeObject = Model.New<IfcTypeObject>();
+            IfcTypeObject ifcTypeObject = GetTypeInstance(row.ExtObject, Model);
 
             if (ifcTypeObject != null)
             {
@@ -240,6 +229,31 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             }
 
 
+        }
+
+        /// <summary>
+        /// Create an Instance of a Object Type
+        /// </summary>
+        /// <param name="typeName">string name to create instance of</param>
+        /// <param name="model">Model object</param>
+        /// <returns>IfcTypeObject object of the type passed in of IfcTypeObject if failed to create passed in type</returns>
+        public static IfcTypeObject GetTypeInstance(string typeName, IModel model)
+        {
+            typeName = typeName.Trim().ToUpper();
+            
+            IfcType ifcType;
+            IfcTypeObject ifcTypeObject = null;
+            if (IfcInstances.IfcTypeLookup.TryGetValue(typeName, out ifcType))
+            {
+                MethodInfo method = typeof(IModel).GetMethod("New", Type.EmptyTypes);
+                MethodInfo generic = method.MakeGenericMethod(ifcType.Type);
+                var newObj = generic.Invoke(model, null);
+                if (newObj is IfcTypeObject)
+                    ifcTypeObject = (IfcTypeObject)newObj;
+            }
+            if (ifcTypeObject == null) //if we cannot make a object assume base IfcTypeObject
+                ifcTypeObject = model.New<IfcTypeObject>();
+            return ifcTypeObject;
         }
 
         

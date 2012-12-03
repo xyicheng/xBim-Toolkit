@@ -26,7 +26,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         public COBieXBimComponent(COBieXBimContext xBimContext)
             : base(xBimContext)
         {
-
+            
         }
 
         #region Methods
@@ -78,20 +78,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             if (ValidateString(row.ExtObject))
             {
                 //Create object using reflection
-                IfcType ifcType;
-                IfcElement ifcElement = null;
-                if (IfcInstances.IfcTypeLookup.TryGetValue(row.ExtObject.Trim().ToUpper(), out ifcType))
-                {
-                    MethodInfo method = typeof(IModel).GetMethod("New", Type.EmptyTypes);
-                    MethodInfo generic = method.MakeGenericMethod(ifcType.Type);
-                    var eleObj = generic.Invoke(Model, null);
-                    if (eleObj is IfcElement)
-                        ifcElement = (IfcElement)eleObj;
-                }
-                
-
-                if (ifcElement == null)
-                    ifcElement = Model.New<IfcVirtualElement>();
+                IfcElement ifcElement = GetElementInstance(row.ExtObject, Model);
                     
                 if(ifcElement != null)
                 {
@@ -106,7 +93,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                     {
                         //Add Name
                         string name = row.Name;
-                        if (ValidateString(row.Name)) ifcElement.Name = row.Name;
+                        if (ValidateString(name)) ifcElement.Name = name;
 
                         //Add description
                         if (ValidateString(row.Description)) ifcElement.Description = row.Description;
@@ -140,10 +127,8 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                         if (ValidateString(row.Space))
                         {
                             string spaceNames = row.Space.ToLower().Trim();
-                            char SplitChar = ',';
-                            if (spaceNames.Contains(":"))
-                                SplitChar = ':';
-                            string[] spaceArray = spaceNames.Split(SplitChar);
+                            char splitKey = GetSplitChar(spaceNames);
+                            string[] spaceArray = spaceNames.Split(splitKey);
                             IfcSpace ifcSpace = null;
                             foreach (string spaceitem in spaceArray)
                             {
@@ -171,6 +156,32 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 }
             
             }
+        }
+
+        /// <summary>
+        /// Create an instance of an object via a string name
+        /// </summary>
+        /// <param name="elementTypeName">String holding object type name we eant to create</param>
+        /// <param name="model">Model object</param>
+        /// <returns></returns>
+        public static IfcElement GetElementInstance(string elementTypeName, IModel model)
+        {
+            elementTypeName = elementTypeName.Trim().ToUpper();
+            IfcType ifcType;
+            IfcElement ifcElement = null;
+            if (IfcInstances.IfcTypeLookup.TryGetValue(elementTypeName, out ifcType))
+            {
+                MethodInfo method = typeof(IModel).GetMethod("New", Type.EmptyTypes);
+                MethodInfo generic = method.MakeGenericMethod(ifcType.Type);
+                var eleObj = generic.Invoke(model, null);
+                if (eleObj is IfcElement)
+                    ifcElement = (IfcElement)eleObj;
+            }
+
+
+            if (ifcElement == null)
+                ifcElement = model.New<IfcVirtualElement>();
+            return ifcElement;
         }
         #endregion
     }

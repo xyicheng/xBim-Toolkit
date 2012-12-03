@@ -118,14 +118,18 @@ namespace Xbim.COBie
             {
                 COBieProgress progress = new COBieProgress(Context);
                 progress.Initialise("Validating Workbooks", Workbook.Count, 0);
+                progress.ReportMessage("Building Indices...");
                 Workbook.CreateIndices();
+                progress.ReportMessage("Building Indices...Finished");
                 
                 // Validate the workbook
+                progress.ReportMessage("Starting Validation...");
                 Workbook.Validate((lastProcessedSheetIndex) =>
                 {
                     // When each sheet has been processed, increment the progress bar
                     progress.IncrementAndUpdate();
                 });
+                progress.ReportMessage("Finished Validation");
 
                 //ValidateForeignKeys(progress);
                 progress.Finalise();

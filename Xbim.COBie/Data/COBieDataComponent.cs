@@ -15,6 +15,7 @@ using Xbim.Ifc.SharedComponentElements;
 
 namespace Xbim.COBie.Data
 {
+    
     /// <summary>
     /// Class to input data into excel worksheets for the the Component tab.
     /// </summary>
@@ -26,7 +27,9 @@ namespace Xbim.COBie.Data
         /// <param name="model">The context of the model being generated</param>
         public COBieDataComponent(COBieContext context)
             : base(context)
-        { }
+        { 
+            
+        }
 
 
         #region Methods
@@ -66,15 +69,21 @@ namespace Xbim.COBie.Data
             foreach (var obj in ifcElements)
             {
                 ProgressIndicator.IncrementAndUpdate();
-                var xxx = obj.Decomposes.OfType<IfcRelAggregates>().Where(ra => Context.Exclude.ObjectType.Component.Contains(ra.RelatingObject.GetType()));
-                if (xxx.Count() > 0) 
-                    continue;
+                //var xxx = obj.Decomposes.OfType<IfcRelAggregates>().Where(ra => Context.Exclude.ObjectType.Component.Contains(ra.RelatingObject.GetType()));
+                //if (xxx.Count() > 0)
+                //    continue;
 
                 COBieComponentRow component = new COBieComponentRow(components);
 
                 IfcElement el = obj as IfcElement;
                 if (el == null)
                     continue;
+                if (string.IsNullOrEmpty(el.Name))
+                {
+                    el.Name = "Name Unknown " + UnknownCount.ToString();
+                    UnknownCount++;
+                }
+                
                 component.Name = el.Name;
                 component.CreatedBy = GetTelecomEmailAddress(el.OwnerHistory);
                 component.CreatedOn = GetCreatedOnDateAsFmtString(el.OwnerHistory);
@@ -109,6 +118,7 @@ namespace Xbim.COBie.Data
             return components;
         }
 
+        
         /// <summary>
         /// Get Formatted Start Date
         /// </summary>

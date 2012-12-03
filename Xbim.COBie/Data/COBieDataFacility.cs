@@ -47,7 +47,13 @@ namespace Xbim.COBie.Data
             //get Element Quantity holding area values as used for AreaMeasurement below
             IfcElementQuantity ifcElementQuantityAreas = Model.InstancesOfType<IfcElementQuantity>().Where(eq => eq.Quantities.OfType<IfcQuantityArea>().Count() > 0).FirstOrDefault();
            
-            IEnumerable<IfcObject> ifcObjects = new List<IfcObject> { ifcProject, ifcSite, ifcBuilding }.AsEnumerable(); ;
+            List<IfcObject> ifcObjectList = new List<IfcObject>();
+            if (ifcProject != null) ifcObjectList.Add(ifcProject);
+            if (ifcSite != null) ifcObjectList.Add(ifcSite);
+            if (ifcBuilding != null)  ifcObjectList.Add(ifcBuilding);
+
+            IEnumerable<IfcObject> ifcObjects = ifcObjectList.AsEnumerable();
+
             COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(ifcObjects); //properties helper class
             COBieDataAttributeBuilder attributeBuilder = new COBieDataAttributeBuilder(Context, allPropertyValues);
             attributeBuilder.InitialiseAttributes(ref _attributes);
@@ -92,7 +98,7 @@ namespace Xbim.COBie.Data
             facility.ExternalProjectIdentifier = ifcProject.GlobalId;
 
             facility.ExternalSiteObject = "IfcSite";
-            facility.ExternalSiteIdentifier = ifcSite.GlobalId;
+            facility.ExternalSiteIdentifier = (ifcSite != null) ? ifcSite.GlobalId.ToString() : DEFAULT_STRING;
 
             facility.ExternalFacilityObject = "IfcBuilding";
             facility.ExternalFacilityIdentifier = ifcBuilding.GlobalId;

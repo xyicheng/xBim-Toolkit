@@ -122,7 +122,7 @@ namespace Xbim.COBie.Data
                 areavalue = ((double)netAreaValue);
                 if (areavalue > 0.0)
                 {
-                    if ((!string.IsNullOrEmpty(areaUnit)) && (areaUnit.ToLower().Contains("milli")) ) //we are using millimetres
+                    if ((!string.IsNullOrEmpty(areaUnit)) && (areaUnit.ToLower().Contains("milli")) && (areavalue > 250000.0)) //we are using millimetres, and areavalue is lightly to be in mmsq if over 250000(0.5msq)
                         areavalue = areavalue / 1000000.0;
 
                     return areavalue.ToString("F4");
@@ -144,7 +144,7 @@ namespace Xbim.COBie.Data
             {
                 if (double.TryParse(value, out areavalue))
                 {
-                    if ((!string.IsNullOrEmpty(areaUnit)) && (areaUnit.ToLower().Contains("milli")))//we are using millimetres
+                    if ((!string.IsNullOrEmpty(areaUnit)) && (areaUnit.ToLower().Contains("milli")) && (areavalue > 250000.0))//we are using millimetres, and areavalue is lightly to be in mmsq if over 250000(0.5msq)
                         areavalue = areavalue / 1000000.0;
                     return areavalue.ToString("F4");
                 }
@@ -178,7 +178,7 @@ namespace Xbim.COBie.Data
             }
             if (areavalue > 0.0)
 	        {
-                if ((!string.IsNullOrEmpty(areaUnit)) && (areaUnit.ToLower().Contains("milli"))) //we are using millimetres
+                if ((!string.IsNullOrEmpty(areaUnit)) && (areaUnit.ToLower().Contains("milli")) && (areavalue > 250000.0)) //we are using millimetres, and areavalue is lightly to be in mmsq if over 250000(0.5msq)
                     areavalue = areavalue / 1000000.0;
                 
 		         return areavalue.ToString("F4");
@@ -199,7 +199,7 @@ namespace Xbim.COBie.Data
             {
                 if (double.TryParse(value, out areavalue))
                 {
-                    if ((!string.IsNullOrEmpty(areaUnit)) && (areaUnit.ToLower().Contains("milli")))//we are using millimetres
+                    if ((!string.IsNullOrEmpty(areaUnit)) && (areaUnit.ToLower().Contains("milli")) && (areavalue > 250000.0))//we are using millimetres, and areavalue is lightly to be in mmsq if over 250000(0.5msq)
                         areavalue = areavalue / 1000000.0;
                     return areavalue.ToString("F4");
                 }

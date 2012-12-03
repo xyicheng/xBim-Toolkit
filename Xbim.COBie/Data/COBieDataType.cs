@@ -68,6 +68,11 @@ namespace Xbim.COBie.Data
                 COBieTypeRow typeRow = new COBieTypeRow(types);
                 
                 // TODO: Investigate centralising this common code.
+                if (string.IsNullOrEmpty(type.Name))
+                {
+                    type.Name = "Name Unknown " + UnknownCount.ToString();
+                    UnknownCount++;
+                }
                 typeRow.Name = type.Name;
                 typeRow.CreatedBy = GetTelecomEmailAddress(type.OwnerHistory);
                 typeRow.CreatedOn = GetCreatedOnDateAsFmtString(type.OwnerHistory);
@@ -133,11 +138,13 @@ namespace Xbim.COBie.Data
                 //loop the materials within the material layer set
                 foreach (IfcMaterialLayer ifcMaterialLayer in ifcMaterialLayerSet.MaterialLayers)
                 {
-                    if (!string.IsNullOrEmpty(ifcMaterialLayer.Material.Name))
+                    if ((ifcMaterialLayer.Material != null) && 
+                        (!string.IsNullOrEmpty(ifcMaterialLayer.Material.Name))
+                        )
                     {
                         string name = ifcMaterialLayer.Material.Name.ToString().Trim();
                         double thickness = ifcMaterialLayer.LayerThickness;
-                        string keyName = name + " (" + thickness.ToString() + ")";
+                        string keyName = name + " (" + thickness.ToString("F1") + ")";
                         if (!rowHolderLayerChildNames.Contains(keyName.ToLower())) //check we do not already have it
                         {
                             COBieTypeRow matRow = new COBieTypeRow(types);
@@ -148,7 +155,7 @@ namespace Xbim.COBie.Data
                             matRow.ExtSystem = extSystem;
                             matRow.ExtObject = ifcMaterialLayer.GetType().Name;
                             matRow.AssetType = "Fixed";
-                            matRow.NominalWidth = thickness.ToString();
+                            matRow.NominalWidth = thickness.ToString("F1");
 
                             rowHolderLayerChildNames.Add(keyName.ToLower());
 

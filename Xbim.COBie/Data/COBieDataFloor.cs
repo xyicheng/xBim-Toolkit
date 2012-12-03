@@ -18,12 +18,15 @@ namespace Xbim.COBie.Data
     /// </summary>
     public class COBieDataFloor : COBieData<COBieFloorRow>, IAttributeProvider
     {
+        
         /// <summary>
         /// Data Floor constructor
         /// </summary>
         /// <param name="model">The context of the model being generated</param>
         public COBieDataFloor(COBieContext context) : base(context)
-        { }
+        {
+            
+        }
 
         #region Methods
 
@@ -63,6 +66,11 @@ namespace Xbim.COBie.Data
                 ProgressIndicator.IncrementAndUpdate();
 
                 COBieFloorRow floor = new COBieFloorRow(floors);
+                if (string.IsNullOrEmpty(ifcBuildingStorey.Name))
+                {
+                    ifcBuildingStorey.Name = "Name Unknown " + UnknownCount.ToString();
+                    UnknownCount++;
+                }
 
                 floor.Name = ifcBuildingStorey.Name.ToString();
 

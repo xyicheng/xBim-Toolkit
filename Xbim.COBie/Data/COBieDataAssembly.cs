@@ -202,15 +202,18 @@ namespace Xbim.COBie.Data
             int i = 1;
             foreach (IfcMaterialLayer ifcMaterialLayer in ifcMaterialLayers)
             {
-                if (!string.IsNullOrEmpty(ifcMaterialLayer.Material.Name))
+                if ((ifcMaterialLayer.Material != null) &&
+                    (!string.IsNullOrEmpty(ifcMaterialLayer.Material.Name))
+                    )
                 {
                     strBuilder.Append(ifcMaterialLayer.Material.Name);
+                    double? thick = ifcMaterialLayer.LayerThickness;
 
-                    if (ifcMaterialLayer.LayerThickness != null)
+                    if (thick != null)
                     {
-                        double thick = ifcMaterialLayer.LayerThickness;
+                        
                         strBuilder.Append(" (");
-                        strBuilder.Append(thick.ToString("F1"));
+                        strBuilder.Append(((double)thick).ToString("F1"));
                         strBuilder.Append(")");
                     }
                     if (ifcMaterialLayers.Count > i)
@@ -236,13 +239,15 @@ namespace Xbim.COBie.Data
             ChildNamesList childNamesFilter = new ChildNamesList();
             foreach (IfcMaterialLayer ifcMaterialLayer in ifcMaterialLayers)
             {
-                if (!string.IsNullOrEmpty(ifcMaterialLayer.Material.Name))
+                if ((ifcMaterialLayer.Material != null) &&
+                    (!string.IsNullOrEmpty(ifcMaterialLayer.Material.Name))
+                    )
                 {
                     string name = ifcMaterialLayer.Material.Name;
-                    if (ifcMaterialLayer.LayerThickness != null)
+                    double? thick = ifcMaterialLayer.LayerThickness;
+                    if (thick != null)
                     {
-                        double thick = ifcMaterialLayer.LayerThickness;
-                        name += " (" + thick.ToString("F1") + ")";
+                        name += " (" + ((double)thick).ToString("F1") + ")";
                     }
                     childNamesFilter.Add(name);
                 }

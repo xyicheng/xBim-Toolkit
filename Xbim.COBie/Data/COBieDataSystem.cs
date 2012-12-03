@@ -71,15 +71,20 @@ namespace Xbim.COBie.Data
                     sys.CreatedOn = GetCreatedOnDateAsFmtString(ifcGroup.OwnerHistory);
 
                     sys.Category = GetCategory(ifcGroup);
+                    if (string.IsNullOrEmpty(product.Name) || (product.Name == Constants.DEFAULT_STRING))
+                    {
+                        product.Name = product.GetType().Name + " Name Unknown SYS-IN" + UnknownCount.ToString();
+                        UnknownCount++;
+                    }
                     sys.ComponentNames = product.Name;
-                    sys.ExtSystem = GetExternalSystem(product);
-                    sys.ExtObject = ifcGroup.GetType().Name;
-                    sys.ExtIdentifier = product.GlobalId;
+                    sys.ExtSystem = GetExternalSystem(ifcGroup);
+                    sys.ExtObject = ifcGroup.GetType().Name; //need to create product if filtered out in the components sheet
+                    sys.ExtIdentifier = ifcGroup.GlobalId;//need to create product if filtered out in the components sheet
                     sys.Description = GetSystemDescription(ifcGroup);
 
                     systems.AddRow(sys);
                 }
-                //check if no products then add group only
+                //check if no products then add group only, new line for each, or should we do as assembly? conCant with :
                 if (!ifcProducts.Any())
                 {
                     COBieSystemRow sys = new COBieSystemRow(systems);

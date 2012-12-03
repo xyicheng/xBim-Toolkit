@@ -155,20 +155,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
 
         }
 
-        /// <summary>
-        /// Split the string 
-        /// </summary>
-        /// <param name="str">string to split via a ":" or ","</param>
-        /// <returns>string array</returns>
-        private List<string> SplitTheString (string str)
-        {
-            char splitKey = ',';
-            if (str.Contains(":"))
-                splitKey = ':';
-
-            return SplitString(str, splitKey);
-        }
-
+        
         /// <summary>
         /// Get the IfcElement Object given the name
         /// </summary>

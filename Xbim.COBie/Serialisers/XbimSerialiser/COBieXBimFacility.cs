@@ -11,6 +11,7 @@ using Xbim.Ifc.ProductExtension;
 using Xbim.Ifc.UtilityResource;
 using Xbim.XbimExtensions.Transactions;
 using System.Collections.Generic;
+using Xbim.Ifc.QuantityResource;
 
 namespace Xbim.COBie.Serialisers.XbimSerialiser
 {
@@ -118,6 +119,10 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
 
                 if (ValidateString(row.Description))
                     ifcBuilding.Description = row.Description;
+                if (ValidateString(row.AreaMeasurement))
+                {
+                    SetAreaMeasure(ifcBuilding, row);
+                }
 
                 ifcBuilding.CompositionType = IfcElementCompositionEnum.ELEMENT;
                 IfcLocalPlacement lp = Model.New<IfcLocalPlacement>();
@@ -125,8 +130,48 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 lp.PlacementRelTo = GetSite().ObjectPlacement;
                 ifcBuilding.ObjectPlacement = lp;
                 Model.IfcProject.AddBuilding(ifcBuilding);
+
             }
             
+        }
+
+        /// <summary>
+        /// Set the area measure to the building
+        /// </summary>
+        /// <param name="ifcBuilding">Building object</param>
+        /// <param name="row">COBieFacilityRow object holding data</param>
+        private void SetAreaMeasure(IfcBuilding ifcBuilding, COBieFacilityRow row)
+        {
+            IfcSIUnit ifcSIUnitArea = null;
+           if (ValidateString(row.AreaUnits))
+            {
+                ifcSIUnitArea = GetSIUnit(row.AreaUnits);
+            }
+           string areaMeasure = string.Empty;
+           if (ValidateString(row.AreaMeasurement))
+           {
+               areaMeasure = row.AreaMeasurement;
+           }
+            
+           IfcQuantityArea IfcQuantityArea = Model.New<IfcQuantityArea>(qa => 
+                                                { 
+                                                    qa.Unit = ifcSIUnitArea;
+                                                    qa.Name = "AreaMeasure";
+                                                    qa.Description = "Created to maintain COBie information";
+                                               });
+           IfcElementQuantity ifcElementQuantity = Model.New<IfcElementQuantity>(eq =>
+                                                        {
+                                                            eq.Quantities.Add_Reversible(IfcQuantityArea);
+                                                            eq.MethodOfMeasurement = areaMeasure;
+                                                            eq.Description = "Created to maintain COBie information";
+ 
+                                                        });
+           IfcRelDefinesByProperties ifcRelDefinesByProperties = Model.New<IfcRelDefinesByProperties>(rdbp =>
+                                                               {
+                                                                   rdbp.RelatedObjects.Add_Reversible(ifcBuilding);
+                                                                   rdbp.RelatingPropertyDefinition = ifcElementQuantity;
+                                                                   rdbp.Description = "Created to maintain COBie information";
+                                                               });
         }
 
         /// <summary>
@@ -196,7 +241,22 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             else
             {
                 ConversionBasedUnit conversionBasedUnit;
-                if (Enum.TryParse(value.ToUpper(), out conversionBasedUnit))
+                value = value.ToUpper();
+                //see if the passed value contains a ConversionBasedUnit value, i.e INCHS would match ConversionBasedUnit.INCH
+                foreach (string str in Enum.GetNames(typeof(ConversionBasedUnit)))
+                {
+                    string test = str.Split('_').First();
+                    //try both ways
+                    if ((value.Contains(test)) ||
+                        (test.Contains(value))
+                        )
+                    {
+                        value = str;
+                        break;
+                    }
+                    
+                }
+                if (Enum.TryParse(value, out conversionBasedUnit))
                 {
                     ifcUnitAssignment.SetOrChangeConversionUnit(unitType, conversionBasedUnit);
                 }

@@ -158,54 +158,96 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         {
             if ((ValidateString(row.SheetName)) &&  (ValidateString(row.RowName)))
             {
+                string sheetName = row.SheetName.ToLower().Trim();
+                sheetName = char.ToUpper(sheetName[0]) + sheetName.Substring(1);
+            
                 string rowName = row.RowName.ToLower().Trim();
+
+                string extObject = string.Empty;
+                if (ValidateString(row.ExtObject)) //if valid change to correct type
+                    extObject = row.ExtObject.Trim().ToUpper();
+
                 IfcRoot ifcRoot = null;
-                switch (row.SheetName.ToLower().Trim())
+                switch (sheetName)
                 {
-                    case "type":
+                    case Constants.WORKSHEET_TYPE:
                         //get all types, one time only
                         if (IfcTypeObjects == null)
                             IfcTypeObjects = Model.InstancesOfType<IfcTypeObject>();
                         ifcRoot = IfcTypeObjects.Where(to => to.Name.ToString().ToLower().Trim() == rowName).FirstOrDefault();
+                        if (ifcRoot == null)
+                        {
+                            string typeName = string.Empty;
+                            if (ValidateString(extObject))
+                                typeName = extObject;
+                            else
+                                typeName = "IFCBUILDINGELEMENTPROXYTYPE";
+                            ifcRoot = COBieXBimType.GetTypeInstance(typeName, Model); 
+                            ifcRoot.Name = row.RowName;
+                            ifcRoot.Description = "Created to maintain relationship with document object from COBie information";
+                        }
                         break;
-                    case "component":
+                    case Constants.WORKSHEET_COMPONENT:
                         //get all types, one time only
                         if (IfcElements == null)
                             IfcElements = Model.InstancesOfType<IfcElement>();
                         ifcRoot = IfcElements.Where(to => to.Name.ToString().ToLower().Trim() == rowName).FirstOrDefault();
+                        string elementTypeName = "IFCVIRTUALELEMENT";
+                        if (ifcRoot == null)
+                        {
+                            if (ValidateString(extObject)) //if valid change to correct type
+                                elementTypeName = extObject;
+                                
+                            ifcRoot = COBieXBimComponent.GetElementInstance(elementTypeName, Model);
+                            ifcRoot.Name = row.RowName;
+                            ifcRoot.Description = "Created to maintain relationship with document object from COBie information";
+                        }
+                        else if ((ifcRoot.GetType().Name.ToUpper() == elementTypeName) &&//check type, if IFCVIRTUALELEMENT and
+                                  (ValidateString(extObject)) &&
+                                  (extObject != elementTypeName) && //not IFCVIRTUALELEMENT then delete virtual, and add correct type
+                                  (ValidateString(ifcRoot.Description)) && //ensure we set to maintain relationship on another sheet
+                                  (ifcRoot.Description.ToString().Contains("COBie information"))
+                                )
+                        {
+                            Model.Delete(ifcRoot); //remove IFCVIRTUALELEMENT, probably added by system sheet
+                            elementTypeName = extObject;
+                            ifcRoot = COBieXBimComponent.GetElementInstance(elementTypeName, Model);
+                            ifcRoot.Name = row.RowName;
+                            ifcRoot.Description = "Created to maintain relationship with document object from COBie information";
+                        }
                         break;
-                    case "job":
+                    case Constants.WORKSHEET_JOB:
                         ifcRoot = Model.InstancesWhere<IfcProcess>(to => to.Name.ToString().ToLower().Trim() == rowName).FirstOrDefault();
                         break;
-                    case "assembly":
+                    case Constants.WORKSHEET_ASSEMBLY:
                         ifcRoot = Model.InstancesWhere<IfcRelDecomposes>(to => to.Name.ToString().ToLower().Trim() == rowName).FirstOrDefault();
                         break;
-                    case "connection":
+                    case Constants.WORKSHEET_CONNECTION:
                         ifcRoot = Model.InstancesWhere<IfcRelConnects>(to => to.Name.ToString().ToLower().Trim() == rowName).FirstOrDefault();
                         break;
-                    case "facility":
+                    case Constants.WORKSHEET_FACILITY:
                         ifcRoot = Model.InstancesWhere<IfcBuilding>(to => to.Name.ToString().ToLower().Trim() == rowName).FirstOrDefault();
                         if (ifcRoot == null)
                             ifcRoot = Model.InstancesWhere<IfcSite>(to => to.Name.ToString().ToLower().Trim() == rowName).FirstOrDefault();
                         if (ifcRoot == null)
                             ifcRoot = Model.InstancesWhere<IfcProject>(to => to.Name.ToString().ToLower().Trim() == rowName).FirstOrDefault();
                         break;
-                    case "floor":
+                    case Constants.WORKSHEET_FLOOR:
                         ifcRoot = Model.InstancesWhere<IfcBuildingStorey>(to => to.Name.ToString().ToLower().Trim() == rowName).FirstOrDefault();
                         break;
-                    case "resources":
+                    case Constants.WORKSHEET_RESOURCE:
                         ifcRoot = Model.InstancesWhere<IfcConstructionEquipmentResource>(to => to.Name.ToString().ToLower().Trim() == rowName).FirstOrDefault();
                         break;
-                    case "space":
+                    case Constants.WORKSHEET_SPACE:
                         ifcRoot = Model.InstancesWhere<IfcSpace>(to => to.Name.ToString().ToLower().Trim() == rowName).FirstOrDefault();
                         break;
-                    case "spare":
+                    case Constants.WORKSHEET_SPARE:
                         ifcRoot = Model.InstancesWhere<IfcConstructionProductResource>(to => to.Name.ToString().ToLower().Trim() == rowName).FirstOrDefault();
                         break;
-                    case "system":
+                    case Constants.WORKSHEET_SYSTEM:
                         ifcRoot = Model.InstancesWhere<IfcGroup>(to => to.Name.ToString().ToLower().Trim() == rowName).FirstOrDefault();
                         break;
-                    case "zone":
+                    case Constants.WORKSHEET_ZONE:
                         ifcRoot = Model.InstancesWhere<IfcZone>(to => to.Name.ToString().ToLower().Trim() == rowName).FirstOrDefault();
                         break;
                     //case "document": //not derived from IfcRoot

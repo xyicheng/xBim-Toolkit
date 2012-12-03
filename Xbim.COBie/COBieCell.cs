@@ -30,6 +30,7 @@ namespace Xbim.COBie
             bool isEmail = false;
             try
             {
+                if (this.CellValue == Constants.DEFAULT_STRING) return isEmail; //false
                 System.Net.Mail.MailAddress address = new System.Net.Mail.MailAddress(this.CellValue);
                 isEmail = true;
             }
