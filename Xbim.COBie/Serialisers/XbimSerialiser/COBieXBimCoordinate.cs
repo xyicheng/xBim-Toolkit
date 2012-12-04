@@ -83,15 +83,15 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                                 
                                 ProgressIndicator.IncrementAndUpdate(); //two row processed here
                         
-#if DEBUG
-                                Console.WriteLine("{0} : {1} == {2} : {3} ", row.SheetName, row.RowName, rowNext.SheetName, rowNext.RowName);
-#endif                           
+//#if DEBUG
+//                                Console.WriteLine("{0} : {1} == {2} : {3} ", row.SheetName, row.RowName, rowNext.SheetName, rowNext.RowName);
+//#endif                           
                                 continue;
                             }
                             else
                             {
 #if DEBUG
-                                Console.WriteLine("*************Failed to find pair*************");
+                                Console.WriteLine("Failed to find pair {0} : {1} != {2} : {3} ", row.SheetName, row.RowName, rowNext.SheetName, rowNext.RowName);
 #endif
                                 i--; //set back in case next is point, as two box points failed
                             }

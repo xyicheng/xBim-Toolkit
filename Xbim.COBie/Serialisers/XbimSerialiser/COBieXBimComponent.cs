@@ -126,25 +126,11 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                         //set up relationship of the component to the space
                         if (ValidateString(row.Space))
                         {
-                            string spaceNames = row.Space.ToLower().Trim();
-                            char splitKey = GetSplitChar(spaceNames);
-                            string[] spaceArray = spaceNames.Split(splitKey);
-                            IfcSpace ifcSpace = null;
-                            foreach (string spaceitem in spaceArray)
-                            {
-                                string spaceName = spaceitem.Trim();
-                                ifcSpace = IfcSpaces.Where(space => space.Name.ToString().ToLower().Trim() == spaceName).FirstOrDefault();
-                                if (ifcSpace != null)
-                                    ifcSpace.AddElement(ifcElement);
-                                else
-                                {
-                                    IfcBuildingStorey ifcBuildingStorey = IfcBuildingStoreys.Where(bs => bs.Name.ToString().ToLower().Trim() == spaceName).FirstOrDefault();
-                                    if (ifcBuildingStorey != null)
-                                        ifcBuildingStorey.AddElement(ifcElement);
-                                    else
-                                        GetBuilding().AddElement(ifcElement); //default to building, probably give incorrect bounding box as we do not know what the element parent was
-                                }
-                            }
+                            AddElementRelationship(ifcElement, row.Space);
+                        }
+                        else
+                        {
+                            GetBuilding().AddElement(ifcElement); //default to building, probably give incorrect bounding box as we do not know what the element parent was
                         }
                     }
                 }
@@ -155,6 +141,56 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
 #endif
                 }
             
+            }
+        }
+
+        /// <summary>
+        /// Add element relationship to a parent object
+        /// </summary>
+        /// <param name="ifcElement">IfcElement object</param>
+        /// <param name="spaceNames">Name used as key to find parent object</param>
+        private void AddElementRelationship(IfcElement ifcElement, string spaceNames)
+        {
+            spaceNames = spaceNames.ToLower().Trim();
+            IfcSpace ifcSpace = null;
+            IfcBuildingStorey ifcBuildingStorey = null;
+            //see if the full name is in spaces
+            ifcSpace = IfcSpaces.Where(space => space.Name.ToString().ToLower().Trim() == spaceNames).FirstOrDefault();
+            if (ifcSpace != null)
+                ifcSpace.AddElement(ifcElement);
+            else //not in spaces so try Floors
+            {
+                ifcBuildingStorey = IfcBuildingStoreys.Where(bs => bs.Name.ToString().ToLower().Trim() == spaceNames).FirstOrDefault();
+                if (ifcBuildingStorey != null)
+                    ifcBuildingStorey.AddElement(ifcElement);
+                else //not in floors so see if the space names is a delimited list
+                {
+                    char splitKey = GetSplitChar(spaceNames);
+                    string[] spaceArray = spaceNames.Split(splitKey);
+                    if (spaceArray.Count() > 1) //if one we have already tried above, if more than one then try each item 
+                    {
+                        foreach (string spaceitem in spaceArray)
+                        {
+                            string spaceName = spaceitem.Trim();
+                            ifcSpace = IfcSpaces.Where(space => space.Name.ToString().ToLower().Trim() == spaceName).FirstOrDefault();
+                            if (ifcSpace != null)
+                                ifcSpace.AddElement(ifcElement);
+                            else
+                            {
+                                ifcBuildingStorey = IfcBuildingStoreys.Where(bs => bs.Name.ToString().ToLower().Trim() == spaceName).FirstOrDefault();
+                                if (ifcBuildingStorey != null)
+                                    ifcBuildingStorey.AddElement(ifcElement);
+                                else
+                                    GetBuilding().AddElement(ifcElement); //default to building, probably give incorrect bounding box as we do not know what the element parent was
+                            }
+                        }
+                    }
+                    else
+                    {
+                        GetBuilding().AddElement(ifcElement); //default to building, probably give incorrect bounding box as we do not know what the element parent was
+                    }
+
+                }
             }
         }
 

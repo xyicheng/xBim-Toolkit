@@ -235,27 +235,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
 
         
 
-        /// <summary>
-        /// Get any value held in ()
-        /// </summary>
-        /// <param name="str">string</param>
-        /// <returns>double value or null</returns>
-        private double? GetLayerThickness(string str)
-        {
-            int start = str.IndexOf("(");
-            int end = str.IndexOf(")");
-            if ((start < 0) || (end < 0)) //faild to find bracket pair
-            {
-                return null;
-            }
-            str = str.Substring((start + 1), (end - start - 1));
-
-            double value;
-            if (double.TryParse(str, out value))
-                return value;
-            else
-                return null;
-        }
+        
         
 
         /// <summary>

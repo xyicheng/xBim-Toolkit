@@ -129,7 +129,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 lp.RelativePlacement = WCS;
                 lp.PlacementRelTo = GetSite().ObjectPlacement;
                 ifcBuilding.ObjectPlacement = lp;
-                Model.IfcProject.AddBuilding(ifcBuilding);
+               
 
             }
             

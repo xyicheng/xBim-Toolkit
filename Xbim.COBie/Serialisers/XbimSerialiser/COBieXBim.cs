@@ -444,8 +444,8 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         /// <summary>
         /// create a IfcValue array from a delimited string, either "," or ":" delimited
         /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
+        /// <param name="value">string</param>
+        /// <returns>IfcValue[]/returns>
         public IfcValue[] GetValueArray(string value)
         {
             char splitKey = GetSplitChar(value);
@@ -946,12 +946,57 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         /// <returns>string with (???) removed</returns>
         public string GetMaterialName(string str)
         {
-            int end = str.IndexOf("(");
-            if (end < 0) //no bracket found
-            {
+            int end = GetLastMatchChar(str, '(');
+            if (end < 0) //no match return original
                 return str;
-            }
+ 
+            //check we have a number in the brackets
+            double? isNum = GetLayerThickness(str);
+            if (isNum == null) //no number so return original
+                return str;
+            
             return str.Substring(0, end).Trim();
+        }
+        /// <summary>
+        /// Get any value held in ()
+        /// </summary>
+        /// <param name="str">string</param>
+        /// <returns>double value or null</returns>
+        public  double? GetLayerThickness(string str)
+        {
+            int start = GetLastMatchChar(str, '(');
+            int end = GetLastMatchChar(str, ')');
+            if ((start < 0) || (end < 0)) //failed to find bracket pair
+            {
+                return null;
+            }
+            str = str.Substring((start + 1), (end - start - 1));
+
+            double value;
+            if (double.TryParse(str, out value))
+                return value;
+            else
+                return null;
+        }
+
+        /// <summary>
+        /// find the string matching from the back of the string
+        /// </summary>
+        /// <param name="str"></param>
+        /// <param name="match"></param>
+        /// <returns></returns>
+        public int GetLastMatchChar(string str, char match)
+        {
+            char[] arr = str.ToCharArray();
+            Array.Reverse(arr);
+            string newStr = new string(arr);
+
+            int end = newStr.IndexOf(match);
+            if (end >= 0) //bracket found, if not will return -1
+            {
+                end = str.Length - end - 1; //less one more zero based, as length is not zero based
+            }
+            return end;
         }
 
         //public static string TestPerson(IModel model)

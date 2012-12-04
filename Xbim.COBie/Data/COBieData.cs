@@ -643,6 +643,7 @@ namespace Xbim.COBie.Data
         {
             try
             {
+                if (email == Constants.DEFAULT_STRING) return false; //false
                 System.Net.Mail.MailAddress address = new System.Net.Mail.MailAddress(email);
                 return true;
             }

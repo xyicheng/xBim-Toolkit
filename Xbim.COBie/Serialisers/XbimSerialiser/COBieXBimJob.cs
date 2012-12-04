@@ -204,8 +204,9 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                     string[] priorsArray = row.Priors.ToString().Split(splitKey);
                     foreach (string prior in priorsArray)
                     {
+                        string name = row.Name.ToLower().Trim();
                         string testName = prior.ToLower().Trim();
-                        ifcTaskFound = IfcTasks.Where(task => task.TaskId.ToString().ToLower().Trim() == testName);
+                        ifcTaskFound = IfcTasks.Where(task => (task.TaskId.ToString().ToLower().Trim() == testName) && (task.Name.ToString().ToLower().Trim() == name));
                         foreach (IfcTask ifcTaskitem in ifcTaskFound)
                         {
                             //check the relationship does not exist

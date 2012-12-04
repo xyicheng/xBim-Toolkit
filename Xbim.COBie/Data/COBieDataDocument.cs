@@ -56,7 +56,7 @@ namespace Xbim.COBie.Data
                 IfcRelAssociatesDocument ifcRelAssociatesDocument = DocumentInformationForObjects(di).FirstOrDefault();
                 
                 
-                if (ifcRelAssociatesDocument.OwnerHistory != null)
+                if ((ifcRelAssociatesDocument != null) && (ifcRelAssociatesDocument.OwnerHistory != null))
                     doc.CreatedBy = GetTelecomEmailAddress(ifcRelAssociatesDocument.OwnerHistory);
                 else if (di.DocumentOwner != null)
                 {
@@ -71,7 +71,7 @@ namespace Xbim.COBie.Data
                     doc.CreatedBy = GetTelecomEmailAddress(Model.IfcProject.OwnerHistory);
 
 
-                if (ifcRelAssociatesDocument.OwnerHistory != null)
+                if ((ifcRelAssociatesDocument != null) && (ifcRelAssociatesDocument.OwnerHistory != null))
                     doc.CreatedOn = GetCreatedOnDateAsFmtString(ifcRelAssociatesDocument.OwnerHistory);
                 else if (di.CreationTime != null)
                     doc.CreatedOn = di.CreationTime.ToString();

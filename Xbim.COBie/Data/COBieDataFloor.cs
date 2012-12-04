@@ -59,7 +59,7 @@ namespace Xbim.COBie.Data
             
            
 
-            ProgressIndicator.Initialise("Creating Components", buildingStories.Count());
+            ProgressIndicator.Initialise("Creating Floors", buildingStories.Count());
 
             foreach (IfcBuildingStorey ifcBuildingStorey in buildingStories)
             {
