@@ -36,6 +36,31 @@ namespace Xbim.COBie
             Zone = new ZoneValues();
             Spare = new SpareValues();
         }
+
+        public void Clear()
+        {
+            ObjectType.Component.Clear();
+            ObjectType.Types.Clear();
+            ObjectType.Assembly.Clear();
+            Space.PropertySetsEqualTo.Clear();
+            Space.AttributesEqualTo.Clear();
+            Space.AttributesContain.Clear();
+            Types.PropertySetsEqualTo.Clear();
+            Types.AttributesEqualTo.Clear();
+            Types.AttributesContain.Clear();
+            Zone.AttributesContain.Clear();
+            Spare.AttributesEqualTo.Clear();
+            Spare.AttributesContain.Clear();
+            Floor.AttributesContain.Clear();
+            Floor.AttributesEqualTo.Clear();
+            Facility.AttributesEqualTo.Clear();
+            Facility.AttributesContain.Clear();
+            Component.AttributesEqualTo.Clear();
+            Component.AttributesContain.Clear();
+            Common.AttributesStartWith.Clear();
+            Common.AttributesEqualTo.Clear();
+            Common.AttributesContain.Clear();
+        }
     }
 
     

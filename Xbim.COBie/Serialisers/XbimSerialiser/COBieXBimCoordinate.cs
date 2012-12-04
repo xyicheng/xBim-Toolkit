@@ -288,38 +288,48 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                         Rect3D bBox = new Rect3D();
                         bBox.Location = lowpt;
                         bBox.Union(highpt);
-                        Point3D ctrPt = new Point3D(bBox.X + (bBox.SizeX / 2.0), bBox.Y + (bBox.SizeY / 2.0), bBox.Z + (bBox.SizeZ / 2.0));
+                        if ((double.NaN.CompareTo(bBox.SizeX) != 0) && (double.NaN.CompareTo(bBox.SizeY) != 0))
+                        {
+                            Point3D ctrPt = new Point3D(bBox.X + (bBox.SizeX / 2.0), bBox.Y + (bBox.SizeY / 2.0), bBox.Z + (bBox.SizeZ / 2.0));
 
-                        //Create IfcRectangleProfileDef
-                        IfcCartesianPoint IfcCartesianPointCtr = Model.New<IfcCartesianPoint>(cp => { cp.X = ctrPt.X; cp.Y = ctrPt.Y; cp.Z = 0.0; }); //centre point of 2D box
-                        IfcDirection IfcDirectionXDir = Model.New<IfcDirection>(d => { d.X = 1.0; d.Y = 0; d.Z = 0.0; }); //default to X direction
-                        IfcAxis2Placement2D ifcAxis2Placement2DCtr = Model.New<IfcAxis2Placement2D>(a2p => { a2p.Location = IfcCartesianPointCtr; a2p.RefDirection = IfcDirectionXDir; });
-                        IfcRectangleProfileDef ifcRectangleProfileDef = Model.New<IfcRectangleProfileDef>(rpd => { rpd.ProfileType = IfcProfileTypeEnum.AREA; rpd.ProfileName = row.RowName; rpd.Position = ifcAxis2Placement2DCtr; rpd.XDim = bBox.SizeX; rpd.YDim = bBox.SizeY; });
+                            //Create IfcRectangleProfileDef
+                            IfcCartesianPoint IfcCartesianPointCtr = Model.New<IfcCartesianPoint>(cp => { cp.X = ctrPt.X; cp.Y = ctrPt.Y; cp.Z = 0.0; }); //centre point of 2D box
+                            IfcDirection IfcDirectionXDir = Model.New<IfcDirection>(d => { d.X = 1.0; d.Y = 0; d.Z = 0.0; }); //default to X direction
+                            IfcAxis2Placement2D ifcAxis2Placement2DCtr = Model.New<IfcAxis2Placement2D>(a2p => { a2p.Location = IfcCartesianPointCtr; a2p.RefDirection = IfcDirectionXDir; });
+                            IfcRectangleProfileDef ifcRectangleProfileDef = Model.New<IfcRectangleProfileDef>(rpd => { rpd.ProfileType = IfcProfileTypeEnum.AREA; rpd.ProfileName = row.RowName; rpd.Position = ifcAxis2Placement2DCtr; rpd.XDim = bBox.SizeX; rpd.YDim = bBox.SizeY; });
 
-                        //Create IfcExtrudedAreaSolid
-                        IfcDirection IfcDirectionAxis = Model.New<IfcDirection>(d => { d.X = 0.0; d.Y = 0; d.Z = 1.0; }); //default to Z direction
-                        IfcDirection IfcDirectionRefDir = Model.New<IfcDirection>(d => { d.X = 1.0; d.Y = 0; d.Z = 0.0; }); //default to X direction
-                        IfcCartesianPoint IfcCartesianPointPosition = Model.New<IfcCartesianPoint>(cp => { cp.X = 0.0; cp.Y = 0.0; cp.Z = 0.0; }); //centre point of 2D box
-                        IfcAxis2Placement3D ifcAxis2Placement3DPosition = Model.New<IfcAxis2Placement3D>(a2p3D => { a2p3D.Location = IfcCartesianPointPosition; a2p3D.Axis = IfcDirectionAxis; a2p3D.RefDirection = IfcDirectionRefDir; });
-                        IfcDirection IfcDirectionExtDir = Model.New<IfcDirection>(d => { d.X = 0.0; d.Y = 0; d.Z = 1.0; }); //default to Z direction
-                        IfcExtrudedAreaSolid ifcExtrudedAreaSolid = Model.New<IfcExtrudedAreaSolid>(eas => { eas.SweptArea = ifcRectangleProfileDef; eas.Position = ifcAxis2Placement3DPosition; eas.ExtrudedDirection = IfcDirectionExtDir; eas.Depth = bBox.SizeZ; });
+                            //Create IfcExtrudedAreaSolid
+                            IfcDirection IfcDirectionAxis = Model.New<IfcDirection>(d => { d.X = 0.0; d.Y = 0; d.Z = 1.0; }); //default to Z direction
+                            IfcDirection IfcDirectionRefDir = Model.New<IfcDirection>(d => { d.X = 1.0; d.Y = 0; d.Z = 0.0; }); //default to X direction
+                            IfcCartesianPoint IfcCartesianPointPosition = Model.New<IfcCartesianPoint>(cp => { cp.X = 0.0; cp.Y = 0.0; cp.Z = 0.0; }); //centre point of 2D box
+                            IfcAxis2Placement3D ifcAxis2Placement3DPosition = Model.New<IfcAxis2Placement3D>(a2p3D => { a2p3D.Location = IfcCartesianPointPosition; a2p3D.Axis = IfcDirectionAxis; a2p3D.RefDirection = IfcDirectionRefDir; });
+                            IfcDirection IfcDirectionExtDir = Model.New<IfcDirection>(d => { d.X = 0.0; d.Y = 0; d.Z = 1.0; }); //default to Z direction
+                            IfcExtrudedAreaSolid ifcExtrudedAreaSolid = Model.New<IfcExtrudedAreaSolid>(eas => { eas.SweptArea = ifcRectangleProfileDef; eas.Position = ifcAxis2Placement3DPosition; eas.ExtrudedDirection = IfcDirectionExtDir; eas.Depth = bBox.SizeZ; });
 
-                        //Create IfcShapeRepresentation
-                        IfcShapeRepresentation ifcShapeRepresentation = Model.New<IfcShapeRepresentation>(sr => { sr.ContextOfItems = Model.IfcProject.ModelContext(); sr.RepresentationIdentifier = "Body"; sr.RepresentationType = "SweptSolid"; });
-                        ifcShapeRepresentation.Items.Add_Reversible(ifcExtrudedAreaSolid);
+                            //Create IfcShapeRepresentation
+                            IfcShapeRepresentation ifcShapeRepresentation = Model.New<IfcShapeRepresentation>(sr => { sr.ContextOfItems = Model.IfcProject.ModelContext(); sr.RepresentationIdentifier = "Body"; sr.RepresentationType = "SweptSolid"; });
+                            ifcShapeRepresentation.Items.Add_Reversible(ifcExtrudedAreaSolid);
 
-                        //create IfcProductDefinitionShape
-                        IfcProductDefinitionShape ifcProductDefinitionShape = Model.New<IfcProductDefinitionShape>(pds => { pds.Name = row.Name; pds.Description = row.SheetName; });
-                        ifcProductDefinitionShape.Representations.Add_Reversible(ifcShapeRepresentation);
+                            //create IfcProductDefinitionShape
+                            IfcProductDefinitionShape ifcProductDefinitionShape = Model.New<IfcProductDefinitionShape>(pds => { pds.Name = row.Name; pds.Description = row.SheetName; });
+                            ifcProductDefinitionShape.Representations.Add_Reversible(ifcShapeRepresentation);
 
-                        //Link to the IfcProduct
-                        ifcProduct.Representation = ifcProductDefinitionShape;
+                            //Link to the IfcProduct
+                            ifcProduct.Representation = ifcProductDefinitionShape;
+                        }
+                        else
+                        {
+#if DEBUG
+                            Console.WriteLine("Failed to calculate box size for {0}", row.Name);
+#endif
+                        }
                     }
+                    
                 }
                 else
                 {
 #if DEBUG
-                    Console.WriteLine("Failed to add Object placement");
+                    Console.WriteLine("Failed to add Object placement for {0}", row.Name);
 #endif
                 }
 

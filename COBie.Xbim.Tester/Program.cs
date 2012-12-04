@@ -49,6 +49,9 @@ namespace COBie.Xbim.Tester
                 string cacheFile = Path.ChangeExtension(sourceFile, ".xbimGC");
                 /*if (!File.Exists(cacheFile))*/ GenerateGeometry(model, cacheFile, context); //we want to generate each run
                 context.Scene = new XbimSceneStream(model, cacheFile);
+                
+                //Clear filters to see what co-ordinates we generate
+                context.Exclude.Clear();
 
                 COBieBuilder builder = new COBieBuilder(context);
                 workBook = builder.Workbook;

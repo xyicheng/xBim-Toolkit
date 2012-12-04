@@ -41,6 +41,7 @@
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.ProgressBar = new System.Windows.Forms.ToolStripProgressBar();
             this.StatusMsg = new System.Windows.Forms.ToolStripStatusLabel();
+            this.clearFilters = new System.Windows.Forms.CheckBox();
             this.groupBox1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -188,11 +189,22 @@
             this.StatusMsg.Name = "StatusMsg";
             this.StatusMsg.Size = new System.Drawing.Size(0, 17);
             // 
+            // clearFilters
+            // 
+            this.clearFilters.AutoSize = true;
+            this.clearFilters.Location = new System.Drawing.Point(430, 235);
+            this.clearFilters.Name = "clearFilters";
+            this.clearFilters.Size = new System.Drawing.Size(96, 17);
+            this.clearFilters.TabIndex = 8;
+            this.clearFilters.Text = "Remove Filters";
+            this.clearFilters.UseVisualStyleBackColor = true;
+            // 
             // COBieGenerator
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(523, 343);
+            this.Controls.Add(this.clearFilters);
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.txtOutput);
             this.Controls.Add(this.btnClear);
@@ -224,6 +236,7 @@
         private System.Windows.Forms.StatusStrip statusStrip1;
         private System.Windows.Forms.ToolStripStatusLabel StatusMsg;
         private System.Windows.Forms.ToolStripProgressBar ProgressBar;
+        private System.Windows.Forms.CheckBox clearFilters;
     }
 }
 

@@ -70,7 +70,7 @@ namespace Xbim.COBie.Client
                 Params parameters = args.Argument as Params;
 
                 string outputFile = "";
-
+                
                 if (!File.Exists(parameters.ModelFile))
                 {
                     LogBackground(String.Format("That file doesn't exist in {0}.", Directory.GetCurrentDirectory()));
@@ -125,6 +125,7 @@ namespace Xbim.COBie.Client
                     COBieContext context = new COBieContext(_worker.ReportProgress);
                     context.TemplateFileName = parameters.TemplateFile;
                     context.Model = model;
+                    if (clearFilters.Checked) context.Exclude.Clear();
 
                     //set the UI language to get correct resource file for template
                     if (Path.GetFileName(parameters.TemplateFile).Contains("-UK-"))
