@@ -26,6 +26,7 @@ using Xbim.Ifc.Kernel;
 using Xbim.Ifc.RepresentationResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Parser;
+using System.Threading.Tasks;
 
 #endregion
 
@@ -103,10 +104,27 @@ namespace Xbim.ModelGeometry.Scene
         {
             strm.Write((long) -1);
             double total = _productNodes.Values.Count;
-            double current = 0;
-            int percentageParsed = 0;
+            double currentpercentageParsed = 0, currentpercentageWritten = 0;
+            int percentageParsed = 0, percentageWritten = 0;
             if(progressStatus != null)
                 progressStatus(0, "Geometry Converted");
+
+            Parallel.ForEach<TransformNode>(_productNodes.Values, node =>
+            {
+                //preload the geometry in a parallel loop (instead of lazy load in an iterative loop below)
+                var temp = node.TriangulatedModel;
+                if (progressStatus != null)
+                {
+                    currentpercentageParsed++;
+                    int newPercentage = Convert.ToInt32(currentpercentageParsed / total * 100.0);
+                    if (newPercentage > percentageParsed)
+                    {
+                        percentageParsed = newPercentage;
+                        progressStatus(percentageParsed, "Geometry Converted");
+                    }
+                }
+            });
+
             foreach (var node in _productNodes.Values)
             {
                 node.FilePosition = strm.BaseStream.Position;
@@ -114,12 +132,12 @@ namespace Xbim.ModelGeometry.Scene
                 node.TriangulatedModel = null; //delete data to save memory, can always get back fro the stream later
                 if (progressStatus != null)
                 {
-                    current++;
-                    int newPercentage = Convert.ToInt32(current / total * 100.0);
-                    if (newPercentage > percentageParsed)
+                    currentpercentageWritten++;
+                    int newPercentage = Convert.ToInt32(currentpercentageWritten / total * 100.0);
+                    if (newPercentage > percentageWritten)
                     {
-                        percentageParsed = newPercentage;
-                        progressStatus(percentageParsed, "Geometry Converted");
+                        percentageWritten = newPercentage;
+                        progressStatus(percentageWritten, "Geometry Written");
                     }
                 }
             }
