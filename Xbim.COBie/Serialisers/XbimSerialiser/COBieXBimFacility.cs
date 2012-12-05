@@ -241,21 +241,30 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             else
             {
                 ConversionBasedUnit conversionBasedUnit;
-                value = value.ToUpper();
+                value = value.Trim().Replace(" ", "_").ToUpper();
                 //see if the passed value contains a ConversionBasedUnit value, i.e INCHS would match ConversionBasedUnit.INCH
-                foreach (string str in Enum.GetNames(typeof(ConversionBasedUnit)))
+                string[] cBasedUnits = Enum.GetNames(typeof(ConversionBasedUnit));
+                if (!cBasedUnits.Contains(value))
                 {
-                    string test = str.Split('_').First();
-                    //try both ways
-                    if ((value.Contains(test)) ||
-                        (test.Contains(value))
-                        )
+                    foreach (string str in cBasedUnits)
                     {
-                        value = str;
-                        break;
+                        if (str == value)
+                        {
+                            break;
+                        }
+                        string test = str.Split('_').First();
+                        //try both ways
+                        if ((value.Contains(test)) ||
+                            (test.Contains(value))
+                            )
+                        {
+                            value = str;
+                            break;
+                        }
+
                     }
-                    
                 }
+                
                 if (Enum.TryParse(value, out conversionBasedUnit))
                 {
                     ifcUnitAssignment.SetOrChangeConversionUnit(unitType, conversionBasedUnit);

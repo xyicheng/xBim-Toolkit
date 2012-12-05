@@ -10,6 +10,8 @@ using System.Linq;
 using System.Reflection;
 using Xbim.COBie.Contracts;
 using Xbim.COBie.Serialisers;
+using Xbim.Ifc.ProductExtension;
+using Xbim.Ifc.Kernel;
 
 
 
@@ -73,7 +75,10 @@ namespace Xbim.COBie
                 COBieXLSDeserialiser deSerialiser = new COBieXLSDeserialiser(Context.TemplateFileName, Constants.WORKSHEET_PICKLISTS);
                 COBieWorkbook wbook = deSerialiser.Deserialise();
                 if (wbook.Count > 0) CobiePickLists = (COBieSheet<COBiePickListsRow>)wbook.First();
+
+                
             }
+
             
             //fall back to xml file if not in template
             string pickListFileName = "PickLists.xml";
@@ -81,7 +86,12 @@ namespace Xbim.COBie
                 File.Exists(pickListFileName)
                 )
                 CobiePickLists = cq.GetCOBiePickListsSheet(pickListFileName);// create pick lists from xml
-           
+            if (Context.ExcludeFromPickList)
+            {
+                SetExcludeComponentTypes(CobiePickLists);
+                SetExcludeObjTypeTypes(CobiePickLists);
+            }
+
             //contact sheet first as it will fill contact information lookups for other sheets
             Workbook.Add(cq.GetCOBieContactSheet());
             Workbook.Add(cq.GetCOBieFacilitySheet()); 
@@ -110,6 +120,60 @@ namespace Xbim.COBie
             Context.EMails.Clear();
             
 
+        }
+
+        /// <summary>
+        /// Set the exclude list using the pick list sheet as the source of allowed Object Types
+        /// </summary>
+        /// <param name="CobiePickLists">COBieSheet of COBiePickListsRow</param>
+        private void SetExcludeObjTypeTypes(COBieSheet<COBiePickListsRow> CobiePickLists)
+        {
+            List<Type> objTypes = GetExcludedTypes(CobiePickLists, typeof(IfcTypeObject), 37);
+            Context.Exclude.ObjectType.Types.Clear();
+            Context.Exclude.ObjectType.Types.AddRange(objTypes);
+        }
+
+        /// <summary>
+        /// Set the exclude list using the pick list sheet as the source of allowed Element types
+        /// </summary>
+        /// <param name="CobiePickLists">COBieSheet of COBiePickListsRow</param>
+        private void SetExcludeComponentTypes(COBieSheet<COBiePickListsRow> CobiePickLists)
+        {
+            List<Type> eleTypes = GetExcludedTypes(CobiePickLists, typeof(IfcElement), 22);
+            Context.Exclude.ObjectType.Component.Clear();
+            Context.Exclude.ObjectType.Component.AddRange(eleTypes);
+        }
+
+        /// <summary>
+        /// Returns a list of class types to use as exclusions
+        /// </summary>
+        /// <param name="CobiePickLists">COBieSheet of COBiePickListsRow</param>
+        /// <param name="reqType">Type object to filter selection on</param>
+        /// <param name="colIndex">column index to get required classes from</param>
+        /// <returns></returns>
+        private List<Type> GetExcludedTypes(COBieSheet<COBiePickListsRow> CobiePickLists, Type reqType, int colIndex)
+        {
+            List<Type> classTypes = AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => a.GetTypes()).Where(t => t.IsSubclassOf(reqType)).ToList();
+            
+            if ((CobiePickLists.RowCount > 0) && 
+                (classTypes.Count > 0)
+                )
+            {
+                for (int i = 0; i < CobiePickLists.RowCount; i++)
+                {
+                    COBiePickListsRow row = CobiePickLists[i];
+                    var colvalue = row[colIndex];
+                    if ((colvalue != null) && 
+                        (!string.IsNullOrEmpty(colvalue.CellValue))
+                        )
+                    {
+                        IfcType ifcType;
+                        if (IfcInstances.IfcTypeLookup.TryGetValue(colvalue.CellValue.Trim().ToUpper(), out ifcType))
+                            classTypes.Remove(ifcType.Type);
+                    }
+                }
+            }
+            return classTypes;
         }
 
         private void PopulateErrors()

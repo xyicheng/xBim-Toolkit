@@ -681,7 +681,9 @@ namespace Xbim.COBie.Data
                         if ((ifcNamedUnit.UnitType == IfcUnitEnum.LENGTHUNIT) && string.IsNullOrEmpty(linearUnit)) //we want length units until we have value
                         {
                             linearUnit = GetUnitName(ifcUnit);
-                            if ((!linearUnit.Contains("feet")) && (linearUnit.Last() != 's'))
+                            if ( ( !((linearUnit.Contains("feet")) || (linearUnit.Contains("foot"))) )
+                                 && (linearUnit.Last() != 's')
+                                )
                                 linearUnit = linearUnit + "s";
                         }
 
@@ -689,7 +691,9 @@ namespace Xbim.COBie.Data
                         if ((ifcNamedUnit.UnitType == IfcUnitEnum.AREAUNIT) && string.IsNullOrEmpty(areaUnit)) //we want area units until we have value
                         {
                             areaUnit = GetUnitName(ifcUnit);
-                            if ((!areaUnit.Contains("feet")) && (areaUnit.Last() != 's'))
+                            if ( ( !((areaUnit.Contains("feet")) || (areaUnit.Contains("foot")) ) )
+                                 && (areaUnit.Last() != 's')
+                                )
                                 areaUnit = areaUnit + "s";
 
                         }
@@ -698,7 +702,9 @@ namespace Xbim.COBie.Data
                         if ((ifcNamedUnit.UnitType == IfcUnitEnum.VOLUMEUNIT) && string.IsNullOrEmpty(volumeUnit)) //we want volume units until we have value
                         {
                             volumeUnit = GetUnitName(ifcUnit);
-                            if ((!volumeUnit.Contains("feet")) && (volumeUnit.Last() != 's'))
+                            if ( ( !((volumeUnit.Contains("feet")) || (volumeUnit.Contains("foot"))) )
+                                 && (volumeUnit.Last() != 's')
+                                )
                                 volumeUnit = volumeUnit + "s";
                         }
                     }

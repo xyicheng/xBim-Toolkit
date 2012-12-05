@@ -125,8 +125,21 @@ namespace Xbim.COBie.Client
                     COBieContext context = new COBieContext(_worker.ReportProgress);
                     context.TemplateFileName = parameters.TemplateFile;
                     context.Model = model;
-                    if (clearFilters.Checked) context.Exclude.Clear();
-
+                    //set filter option
+                    var chckBtn = gbFilter.Controls.OfType<RadioButton>().FirstOrDefault(rb => rb.Checked);
+                    switch (chckBtn.Name)
+                    {
+                        case "rbDefault":
+                            break;
+                        case "rbPickList":
+                            context.ExcludeFromPickList = true;
+                            break;
+                        case "rbNoFilters":
+                            context.Exclude.Clear();
+                            break;
+                        default:
+                            break;
+                    }
                     //set the UI language to get correct resource file for template
                     if (Path.GetFileName(parameters.TemplateFile).Contains("-UK-"))
                     {

@@ -53,7 +53,7 @@ namespace Xbim.COBie.Data
                                             select y).Union(from x in relSpatial
                                                             from y in x.RelatedElements
                                                             where !Context.Exclude.ObjectType.Component.Contains(y.GetType())
-                                                            select y)).GroupBy(el => el.Name).Select(g => g.First()).OfType<IfcObject>(); //.Distinct().ToList();
+                                                            select y)).OfType<IfcObject>(); //.GroupBy(el => el.Name).Select(g => g.First())//.Distinct().ToList();
             
             COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(ifcElements); //properties helper class
             COBieDataAttributeBuilder attributeBuilder = new COBieDataAttributeBuilder(Context, allPropertyValues);

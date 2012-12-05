@@ -45,7 +45,7 @@ namespace Xbim.COBie.Data
             IEnumerable<IfcTypeObject> ifcTypeObjects = Model.InstancesOfType<IfcTypeObject>()
                 .Select(type => type)
                 .Where(type => !Context.Exclude.ObjectType.Types.Contains(type.GetType()))
-                .GroupBy(type => type.Name).Distinct().SelectMany(g => g);
+                .GroupBy(type => type.Name).SelectMany(g => g);//.Distinct()
 
             
             

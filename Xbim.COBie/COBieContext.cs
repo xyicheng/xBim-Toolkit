@@ -28,6 +28,7 @@ namespace Xbim.COBie
         public string TemplateFileName { get; set; } //template used by the workbook
         public string RunDate { get; set; } //Date the Workbook was created on
         public string TemplateCulture { get; set; }
+        public bool ExcludeFromPickList { get; set; }
  
         private  GlobalUnits _workBookUnits;
         /// <summary>
@@ -70,6 +71,7 @@ namespace Xbim.COBie
             Exclude = new FilterValues();
 
             TemplateCulture = "en-US";
+            ExcludeFromPickList = false;
             
         }
 

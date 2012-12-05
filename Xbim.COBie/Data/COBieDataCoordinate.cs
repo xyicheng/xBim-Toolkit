@@ -71,7 +71,7 @@ namespace Xbim.COBie.Data
                                                         select y).Union(from x in relSpatial
                                                                         from y in x.RelatedElements
                                                                         where !Context.Exclude.ObjectType.Component.Contains(y.GetType())
-                                                                        select y)).GroupBy(el => el.Name).Select(g => g.First()).OfType<IfcProduct>();
+                                                                        select y)).OfType<IfcProduct>();  //.GroupBy(el => el.Name).Select(g => g.First())
                 ifcProducts = ifcProducts.Union(ifcElements);
 
                 ProgressIndicator.Initialise("Creating Coordinates", ifcProducts.Count());

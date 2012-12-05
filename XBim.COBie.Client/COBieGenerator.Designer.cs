@@ -41,9 +41,13 @@
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.ProgressBar = new System.Windows.Forms.ToolStripProgressBar();
             this.StatusMsg = new System.Windows.Forms.ToolStripStatusLabel();
-            this.clearFilters = new System.Windows.Forms.CheckBox();
+            this.gbFilter = new System.Windows.Forms.GroupBox();
+            this.rbDefault = new System.Windows.Forms.RadioButton();
+            this.rbPickList = new System.Windows.Forms.RadioButton();
+            this.rbNoFilters = new System.Windows.Forms.RadioButton();
             this.groupBox1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
+            this.gbFilter.SuspendLayout();
             this.SuspendLayout();
             // 
             // groupBox1
@@ -189,22 +193,56 @@
             this.StatusMsg.Name = "StatusMsg";
             this.StatusMsg.Size = new System.Drawing.Size(0, 17);
             // 
-            // clearFilters
+            // gbFilter
             // 
-            this.clearFilters.AutoSize = true;
-            this.clearFilters.Location = new System.Drawing.Point(430, 235);
-            this.clearFilters.Name = "clearFilters";
-            this.clearFilters.Size = new System.Drawing.Size(96, 17);
-            this.clearFilters.TabIndex = 8;
-            this.clearFilters.Text = "Remove Filters";
-            this.clearFilters.UseVisualStyleBackColor = true;
+            this.gbFilter.Controls.Add(this.rbNoFilters);
+            this.gbFilter.Controls.Add(this.rbPickList);
+            this.gbFilter.Controls.Add(this.rbDefault);
+            this.gbFilter.Location = new System.Drawing.Point(424, 96);
+            this.gbFilter.Name = "gbFilter";
+            this.gbFilter.Size = new System.Drawing.Size(87, 98);
+            this.gbFilter.TabIndex = 9;
+            this.gbFilter.TabStop = false;
+            this.gbFilter.Text = "Class Filter ";
+            // 
+            // rbDefault
+            // 
+            this.rbDefault.AutoSize = true;
+            this.rbDefault.Checked = true;
+            this.rbDefault.Location = new System.Drawing.Point(6, 19);
+            this.rbDefault.Name = "rbDefault";
+            this.rbDefault.Size = new System.Drawing.Size(59, 17);
+            this.rbDefault.TabIndex = 0;
+            this.rbDefault.TabStop = true;
+            this.rbDefault.Text = "Default";
+            this.rbDefault.UseVisualStyleBackColor = true;
+            // 
+            // rbPickList
+            // 
+            this.rbPickList.AutoSize = true;
+            this.rbPickList.Location = new System.Drawing.Point(6, 47);
+            this.rbPickList.Name = "rbPickList";
+            this.rbPickList.Size = new System.Drawing.Size(65, 17);
+            this.rbPickList.TabIndex = 1;
+            this.rbPickList.Text = "Pick List";
+            this.rbPickList.UseVisualStyleBackColor = true;
+            // 
+            // rbNoFilters
+            // 
+            this.rbNoFilters.AutoSize = true;
+            this.rbNoFilters.Location = new System.Drawing.Point(6, 75);
+            this.rbNoFilters.Name = "rbNoFilters";
+            this.rbNoFilters.Size = new System.Drawing.Size(69, 17);
+            this.rbNoFilters.TabIndex = 2;
+            this.rbNoFilters.Text = "No Filters";
+            this.rbNoFilters.UseVisualStyleBackColor = true;
             // 
             // COBieGenerator
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(523, 343);
-            this.Controls.Add(this.clearFilters);
+            this.Controls.Add(this.gbFilter);
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.txtOutput);
             this.Controls.Add(this.btnClear);
@@ -216,6 +254,8 @@
             this.groupBox1.PerformLayout();
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
+            this.gbFilter.ResumeLayout(false);
+            this.gbFilter.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -236,7 +276,10 @@
         private System.Windows.Forms.StatusStrip statusStrip1;
         private System.Windows.Forms.ToolStripStatusLabel StatusMsg;
         private System.Windows.Forms.ToolStripProgressBar ProgressBar;
-        private System.Windows.Forms.CheckBox clearFilters;
+        private System.Windows.Forms.GroupBox gbFilter;
+        private System.Windows.Forms.RadioButton rbNoFilters;
+        private System.Windows.Forms.RadioButton rbPickList;
+        private System.Windows.Forms.RadioButton rbDefault;
     }
 }
 
