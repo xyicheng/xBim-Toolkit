@@ -153,7 +153,7 @@ namespace Xbim.Ifc.ActorResource
         ///   NOTE: Information on the world wide web for a person or organization may be separated into a number of pages and across a number of host sites, all of which may be linked together. It is assumed that all such information may be referenced from a single page that is termed the home page for that person or organization.
         /// </remarks>
         [IfcAttribute(8, IfcAttributeState.Optional)]
-        public IfcLabel? WWWHomePageUrl
+        public IfcLabel? WWWHomePageURL
         {
             get
             {
@@ -162,7 +162,7 @@ namespace Xbim.Ifc.ActorResource
 #endif
                 return _wwwHomePageUrl;
             }
-            set { ModelManager.SetModelValue(this, ref _wwwHomePageUrl, value, v => WWWHomePageUrl = v, "WwwHomePageUrl"); }
+            set { ModelManager.SetModelValue(this, ref _wwwHomePageUrl, value, v => WWWHomePageURL = v, "WWWHomePageURL"); }
         }
 
         #endregion
@@ -220,7 +220,7 @@ namespace Xbim.Ifc.ActorResource
                 (_electronicMailAddresses == null || _electronicMailAddresses.Count == 0 ||
                  string.IsNullOrEmpty(_electronicMailAddresses.ToString())) &&
                 string.IsNullOrEmpty(PagerNumber.GetValueOrDefault()) &&
-                string.IsNullOrEmpty(WWWHomePageUrl.GetValueOrDefault()))
+                string.IsNullOrEmpty(WWWHomePageURL.GetValueOrDefault()))
                 baseErr +=
                     "WR1 TelecomAddress: At least one attribute of facsimile numbers, telephone numbers, electronic mail addresses, pager number or world wide web home page URL must be asserted.";
             return baseErr;
@@ -282,8 +282,8 @@ namespace Xbim.Ifc.ActorResource
             if (_facsimileNumbers != null && _facsimileNumbers.Count > 0) str.AppendLine(_facsimileNumbers.ToString());
             if (_electronicMailAddresses != null && _electronicMailAddresses.Count > 0)
                 str.AppendLine(_electronicMailAddresses.ToString());
-            if (!string.IsNullOrEmpty(WWWHomePageUrl.GetValueOrDefault()))
-                str.AppendLine(WWWHomePageUrl.GetValueOrDefault());
+            if (!string.IsNullOrEmpty(WWWHomePageURL.GetValueOrDefault()))
+                str.AppendLine(WWWHomePageURL.GetValueOrDefault());
             if (!string.IsNullOrEmpty(PagerNumber.GetValueOrDefault())) str.AppendLine(PagerNumber.GetValueOrDefault());
             return str.ToString().Trim();
         }

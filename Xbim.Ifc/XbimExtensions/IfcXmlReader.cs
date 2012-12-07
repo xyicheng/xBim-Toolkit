@@ -392,7 +392,10 @@ namespace Xbim.XbimExtensions
                         else
                         {
                             if (pt.ToString().ToLower() == "boolean")
-                                propVal.Init(Convert.ToBoolean(input.Value) ? ".T." : ".F", pt);
+                                if (input.Value.ToUpper() == "UNKNOWN")
+                                    propVal.Init(".UNKNOWN.", pt);
+                                else
+                                    propVal.Init(Convert.ToBoolean(input.Value) ? ".T." : ".F", pt);
                             else
                                 propVal.Init(input.Value, pt);
                         }
@@ -668,7 +671,10 @@ namespace Xbim.XbimExtensions
                         else
                         {
                             if (pt.ToString().ToLower() == "boolean")
-                                propVal.Init(Convert.ToBoolean(input.Value) ? ".T." : ".F", pt);
+                                if (input.Value.ToUpper() == "UNKNOWN")
+                                    propVal.Init(".UNKNOWN.", pt);
+                                else 
+                                    propVal.Init(Convert.ToBoolean(input.Value) ? ".T." : ".F", pt);
                             else
                                 propVal.Init(input.Value, pt);
                         }
@@ -828,7 +834,10 @@ namespace Xbim.XbimExtensions
                             else if (parserType != IfcParserType.Undefined && !string.IsNullOrWhiteSpace(input.Value))
                             {
                                 if (parserType == IfcParserType.Boolean)
-                                    propVal.Init(Convert.ToBoolean(input.Value) ? ".T." : ".F.", parserType);
+                                    if (input.Value.ToUpper() == "UNKNOWN")
+                                        propVal.Init(".UNKNOWN.", parserType);
+                                    else
+                                        propVal.Init(Convert.ToBoolean(input.Value) ? ".T." : ".F.", parserType);
                                 else
                                     propVal.Init(input.Value, parserType);
 
