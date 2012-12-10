@@ -2,8 +2,9 @@
 var connection = $.connection('xbim');
 
 $(window).load(function () {
+    
     $(document).ready(function () {
-
+        
         //setup our received data handler
         connection.received(function (buffer) {
             // Write the bytes of the received string to an ArrayBuffer (as we need to convert from base64 to bytes)
@@ -64,8 +65,11 @@ $(window).load(function () {
 
         camera = new Camera(SceneJS.scene("Scene").findNode("zoom"));
         camera.SetAspectRatio($("#scenejsCanvas").width(), $("#scenejsCanvas").height());
+        
+        InitScene("scenejsCanvas", "Scene");
 
-        InitScene();
+
+
     });
 });
 function toggleantialias() {
@@ -283,9 +287,10 @@ function changeControlMethod(newmethod) {
     controlMethod = newmethod;
     controlMethod.init();
 }
-function InitScene() {
-    canvas = document.getElementById("scenejsCanvas");
-
+function InitScene(scenejsCanvasId, sceneId) {
+    
+    canvas = document.getElementById(scenejsCanvasId);
+    
     orbitcontrol.fullscreenelement = canvas;
 
     //Enable scene graph compilation to speed things up
@@ -294,7 +299,6 @@ function InitScene() {
             enabled: true
         }
     });
-
     //mouse movement variables
     var dragging = false;
     var leftDown = false;
@@ -302,7 +306,7 @@ function InitScene() {
     var mouseDownTime = 0;
 
     //setup the rendering function
-    SceneJS.scene("Scene").start(SceneStarter);
+    SceneJS.scene(sceneId).start(SceneStarter);
 
     //Handler for mouse down
     function mouseDown(event) {
@@ -330,7 +334,7 @@ function InitScene() {
         if (controlMethod.mousedown)
             controlMethod.mousedown(event);
     }
-
+    
     //Handler for mouse up (if mouse was clicked quickly it's a pick, otherwise we are stopping a drag)
     function mouseUp(event) {
 
@@ -340,14 +344,14 @@ function InitScene() {
         var mouseTop = (event.pageY - canvas.offsetTop);
         lastX = mouseLeft;
         lastY = mouseTop;
-
+        
         //check whether the mouseup occurred within 1/4 sec of mousedown - indicates a click rather than a drag
         var now = new Date();
         if (now.getTime() - mouseDownTime < 250) {
 
             //if its just a left mouse click, then its a pick
             if (leftDown && !rightDown) {
-                var item = SceneJS.scene("Scene").pick(mouseLeft, mouseTop);
+                var item = SceneJS.scene(sceneId).pick(mouseLeft, mouseTop);
 
                 if (item) {  //check if we found an item
                     ClickPickItem(item);
@@ -471,18 +475,219 @@ function InitScene() {
 //all the tags in the scene
 var tags = [];
 
-function DynamicLoad(modelid) {
-    ModelID = modelid;  
+function DynamicLoadMultiFiles(modelid) {
+
+    ModelID = modelid;
+
     if (SceneJS.scene("Scene").findNode("materialNode") == null) {
         var sce = SceneJS.scene("Scene");
         var node = SceneJS.scene("Scene").findNode("offset");
 
-        $("#types").show();
-        $("#modelmenu").hide();
+        
 
         StartLoadingDynamicModel(sce, node, ModelID);
+        $("#types").hide();
+        //addClassification(modelid);
+        //setGrouping(modelid);
     }
 }
+
+function DynamicLoad(modelid) {
+    
+    ModelID = modelid;
+    
+    if (SceneJS.scene("Scene").findNode("materialNode") == null) {
+        var sce = SceneJS.scene("Scene");
+        var node = SceneJS.scene("Scene").findNode("offset");
+        
+        $("#types").show();
+        $("#modelmenu").hide();
+        
+        StartLoadingDynamicModel(sce, node, ModelID);
+
+        //addClassification(modelid);
+        //setGrouping(modelid);
+    }
+}
+
+function addClassification(modelid) {
+
+    var Data = JSON.stringify({ xbimFilename: modelid });
+
+    $.ajax({
+        type: 'POST',
+        url: 'Default.aspx/AddClassification',
+        data: Data,
+        contentType: 'application/json; charset=utf-8',
+        dataType: 'json',
+        success: function (msg) {
+            // Notice that msg.d is used to retrieve the result object
+            //alert(msg.d);
+            $("#navtreeClassification").append(msg.d);
+
+
+        },
+        error: function (data, status, e) {
+            alert(e);
+        }
+    });
+}
+
+function ajaxFileUpload() {
+    $("#loading")
+   .ajaxStart(function () {
+       $(this).show();
+   })
+   .ajaxComplete(function () {
+       $(this).hide();
+   });
+
+   $.ajaxFileUpload
+   (
+       {
+           url: 'FileUpload.ashx',
+           secureuri: false,
+           fileElementId: 'file',
+           dataType: 'json',
+           data: { name: 'logan', id: 'id' },
+           success: function (data, status) {
+               if (typeof (data.error) != 'undefined') {
+                   if (data.error != '') {
+                       alert(data.error);
+                   } else {
+                       //alert(data.msg);
+                       //DynamicLoad(data.modelid);
+
+                       $("#linkLoadAnotherFile").show();
+                       $("#uploadCtlInner").hide();
+
+                       ModelID = data.modelid;
+
+                       // convert ifc file to xbim and xbimGC
+                       //convertToxBim(ModelID);
+                       if (SceneJS.scene("Scene").findNode("materialNode") == null) {
+                           var sce = SceneJS.scene("Scene");
+                           var node = SceneJS.scene("Scene").findNode("offset");
+
+                           $("#types").show();
+                           $("#modelmenu").hide();
+
+                           //addClassification(ModelID);
+                           StartLoadingDynamicModel(sce, node, ModelID);
+
+                           //alert(ModelID);
+                           //addClassification(ModelID);
+                       }
+                   }
+               }
+           },
+           error: function (data, status, e) {
+               alert(e);
+           }
+       }
+   )
+
+    return false;
+
+}
+
+//function convertToxBim(modelid) {
+//    var Data = JSON.stringify({ ifcFilename: modelid });
+
+//    $.ajax({
+//        type: 'POST',
+//        url: '../Default.aspx/ConvertToxBim',
+//        data: Data,
+//        contentType: 'application/json; charset=utf-8',
+//        dataType: 'json',
+//        success: function (msg) {
+//            // Notice that msg.d is used to retrieve the result object
+//            //alert(msg.d);
+
+//            // once file is converted, display the file and add classification
+//            if (SceneJS.scene("Scene").findNode("materialNode") == null) {
+//                var sce = SceneJS.scene("Scene");
+//                var node = SceneJS.scene("Scene").findNode("offset");
+
+//                $("#types").show();
+//                $("#modelmenu").hide();
+
+//                StartLoadingDynamicModel(sce, node, ModelID);
+
+//                addClassification(modelid);
+//            }
+//        }
+//    });
+//}
+
+
+function setGrouping(modelid) {
+
+    var Data = JSON.stringify({ ifcFilename: modelid });
+
+    $.ajax({
+        type: 'POST',
+        url: '../Default.aspx/Grouping',
+        data: Data,
+        contentType: 'application/json; charset=utf-8',
+        dataType: 'json',
+        success: function (msg) {
+            // Notice that msg.d is used to retrieve the result object
+            //alert(msg.d);
+
+            $("#navtreeClassification").append(msg.d);
+        }
+    });
+}
+
+function setGroupingOld(modelid) {
+
+    var Data = JSON.stringify({ ifcFilename: modelid });
+
+    $.ajax({
+        type: 'POST',
+        url: '../Default.aspx/Grouping',
+        data: Data,
+        contentType: 'application/json; charset=utf-8',
+        dataType: 'json',
+        success: function (msg) {
+            // Notice that msg.d is used to retrieve the result object
+            //alert(msg.d);
+            var i = 0;
+            var j = 0;
+            var str = "";
+            //$("#navtreeClassification").append("<ul>");
+            str = "<ul>";
+            for (i = 0; i < msg.d.length; i++) {
+                //$("#navtreeClassification").append("<li onclick='toggle(navtreeClassification_" + i + ");'>" + msg.d[i].groupName + "<br />");
+                var id = "navtreeClassification_" + i;
+                str = str + "<li onclick='toggle(" + id + ");'>" + msg.d[i].groupName + "<br />";
+                str = str + "<span id='" + id + "' style='display:none;'>"
+                //$("#navtreeClassification").append("<ul>");
+                str = str + "<ul>";
+                for (j = 0; j < msg.d[i].groupItems.length; j++) {
+                    //$("#navtreeClassification").append("<li>" + msg.d[i].groupItems[j].objName + " " + msg.d[i].groupItems[j].objTypeName + " " + msg.d[i].groupItems[j].objGuid + "</li>");
+                    str = str + "<li>" + msg.d[i].groupItems[j].objName + " " + msg.d[i].groupItems[j].objTypeName + " " + msg.d[i].groupItems[j].objGuid + "</li>";
+                }
+                //$("#navtreeClassification").append("</ul>");
+                str = str + "</ul>";
+                //$("#navtreeClassification").append("</li>");
+
+                str = str + "</span>";
+                str = str + "</li>";
+                //$('#navtreeClassification_' + i).hide();
+            }
+            str = str + "</ul><br />";
+            //$("#navtreeClassification").append("</ul><br />");
+            $("#navtreeClassification").append(str);
+        }
+    });
+}
+
+function toggle(group) {
+    $(group).toggle();
+}
+
 function filterchange() {
     var checked = $(":checked");
     var tags = "(";

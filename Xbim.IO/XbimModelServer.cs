@@ -143,6 +143,7 @@ namespace Xbim.IO
                     get
                     {
                         if (_parserType == IfcParserType.Real) return _double;
+                        else if (_parserType == IfcParserType.Integer) return Convert.ToDouble(_long);
                         throw new Exception(string.Format("Wrong parameter type, found {0}, expected {1}",
                                                           _parserType.ToString(), "Real"));
                     }

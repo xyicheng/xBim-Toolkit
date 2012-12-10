@@ -102,7 +102,7 @@ namespace XbimConvert
 
             IEnumerable<IfcProduct> toDraw = GetProducts(model);
 
-            XbimScene scene = new XbimScene(model, toDraw);
+            XbimScene scene = new XbimScene(model, toDraw, arguments.OCC);
 
             using (FileStream sceneStream = new FileStream(xbimGeometryFileName, FileMode.Create, FileAccess.ReadWrite))
             {

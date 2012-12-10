@@ -100,8 +100,9 @@ function GrabNextGeoPiece() {
     {
         connection.send(JSON.stringify({ "command": CommandCode.Metadata, "ModelID": ModelID}));
         if (failedpieces > 0) {
-            alert("Model finished loading. " + failedpieces + " products have no geometry to display");
+            //alert("Model finished loading. " + failedpieces + " products have no geometry to display");
         }
+        addClassification(ModelID);
     } else {
         if (!pauseDownload) { //if we haven't paused the download
             //Get the lesser of batch size or how many are remaining
