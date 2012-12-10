@@ -481,7 +481,7 @@ namespace Xbim.DOM
         /// <param name="UnitType">Enumeration of unit types</param>
         /// <param name="siUnitName">Enumeration of base SI unit names</param>
         /// <param name="siUnitPrefix">Enumeration of SI units prefixes</param>
-        public void SetOrChangeSIUnit(IfcUnitEnum UnitType, IfcSIUnitName siUnitName, IfcSIPrefix siUnitPrefix)
+        public void SetOrChangeSIUnit(IfcUnitEnum UnitType, IfcSIUnitName siUnitName, IfcSIPrefix? siUnitPrefix)
         {
             Model.IfcProject.SetOrChangeSIUnit(UnitType, siUnitName, siUnitPrefix);
         }

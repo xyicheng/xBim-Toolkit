@@ -15,6 +15,7 @@ namespace Xbim.XbimExtensions.Parser
     public interface IPropertyValue
     {
         bool BooleanVal { get; }
+        bool? BooleanNullableVal { get; }
         string EnumVal { get; }
         object EntityVal { get; }
         long HexadecimalVal { get; }

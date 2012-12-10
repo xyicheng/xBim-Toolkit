@@ -1257,7 +1257,7 @@ namespace Xbim.IO
                     using (XmlReader xmlReader = XmlReader.Create(xmlInStream, settings))
                     {
                         IfcXmlReader reader = new IfcXmlReader();
-
+                        
                         reader.AppendToStream += WriteToStream;
 
                         errors = reader.Read(this, xmlReader);
@@ -1308,6 +1308,11 @@ namespace Xbim.IO
         {
             string outputFileName = Path.ChangeExtension(inputFileName, "xbim");
 
+            if (new FileInfo(inputFileName).Length == 0)  
+            {
+                throw new Exception(string.Format("File {0} is empty", inputFileName));
+            }
+
             XbimStorageType fileType = XbimStorageType.XBIM;
             string ext = Path.GetExtension(inputFileName).ToLower();
             if (ext == ".xbim") fileType = XbimStorageType.XBIM;
@@ -1316,6 +1321,8 @@ namespace Xbim.IO
             else if (ext == ".zip" || ext == ".ifczip") fileType = XbimStorageType.IFCZIP;
             else
                 throw new Exception("Invalid file type: " + ext);
+
+            
 
             if (fileType.HasFlag(XbimStorageType.XBIM))
             {

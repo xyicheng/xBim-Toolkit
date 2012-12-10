@@ -25,7 +25,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{B5EDEE8A-69B9-47E5-8455-E1A9A7ED8969}"
 	ProjectSection(SolutionItems) = preProject
 		SharedAssemblyInfo.cpp = SharedAssemblyInfo.cpp
-		SharedAssemblyInfo.cs = SharedAssemblyInfo.cs
 		Xbim.ModelGeometry\Version.rc = Xbim.ModelGeometry\Version.rc
 	EndProjectSection
 EndProject
@@ -39,7 +38,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XbimRegression", "XbimRegre
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.COBie", "Xbim.COBie\Xbim.COBie.csproj", "{7DA8C61A-ACCA-45CB-B688-93A4982FA44C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XBim.COBie.Client", "XBim.COBie.Client\XBim.COBie.Client.csproj", "{FB5A1829-7B34-4DE9-94A9-AF3AD36320BB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.COBie.Client", "XBim.COBie.Client\Xbim.COBie.Client.csproj", "{FB5A1829-7B34-4DE9-94A9-AF3AD36320BB}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{0DA6263B-5A69-401E-99D0-391644EF4709}"
 EndProject
@@ -51,12 +50,27 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{7ECDCF15-9
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{25F1A002-D766-40FD-910C-D3E9DCC6FCBF}"
 	ProjectSection(SolutionItems) = preProject
+		Readme.txt = Readme.txt
 		XbimComplete.vsmdi = XbimComplete.vsmdi
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "3 SimpleHelloWall", "Examples\3 SimpleHelloWall\3 SimpleHelloWall.csproj", "{3E685E73-8207-4C99-A146-3BFF00CA5A74}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeExamples", "CodeExamples\CodeExamples.csproj", "{9FD894A7-6637-4BF0-A0EA-D654CEB0E234}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.SceneHelper", "Xbim.SceneHelper\Xbim.SceneHelper.csproj", "{BA6195C4-0F45-43F4-82D1-32AAD0E69B86}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Licences", "Licences", "{E9E301F2-FE7D-4410-B88D-F83D684A8E62}"
+	ProjectSection(SolutionItems) = preProject
+		Licences\CDDL Licence.txt = Licences\CDDL Licence.txt
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3rd Party", "3rd Party", "{10A2F674-DB37-41FF-AB71-9D54C8F0A5B6}"
+	ProjectSection(SolutionItems) = preProject
+		Licences\Apache2_0.txt = Licences\Apache2_0.txt
+		Licences\MIT Licence.txt = Licences\MIT Licence.txt
+		Licences\MS Permissive Licence.txt = Licences\MS Permissive Licence.txt
+		Licences\NewBSD Licence.txt = Licences\NewBSD Licence.txt
+		Licences\OPEN CASCADE Public Licence.txt = Licences\OPEN CASCADE Public Licence.txt
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "COBie.Xbim.Tester", "COBie.Xbim.Tester\COBie.Xbim.Tester.csproj", "{823FEDA5-EEE3-4583-82CE-E51CE88BCF44}"
 EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
@@ -111,18 +125,18 @@ Global
 		SccProjectUniqueName14 = Xbim.COBie\\Xbim.COBie.csproj
 		SccProjectName14 = Xbim.COBie
 		SccLocalPath14 = Xbim.COBie
-		SccProjectUniqueName15 = XBim.COBie.Client\\XBim.COBie.Client.csproj
+		SccProjectUniqueName15 = XBim.COBie.Client\\Xbim.COBie.Client.csproj
 		SccProjectTopLevelParentUniqueName15 = XbimComplete.sln
 		SccProjectName15 = XBim.COBie.Client
 		SccLocalPath15 = XBim.COBie.Client
-		SccProjectUniqueName16 = Examples\\3\u0020SimpleHelloWall\\3\u0020SimpleHelloWall.csproj
+		SccProjectUniqueName16 = CodeExamples\\CodeExamples.csproj
 		SccProjectTopLevelParentUniqueName16 = XbimComplete.sln
-		SccProjectName16 = Examples/3\u0020SimpleHelloWall
-		SccLocalPath16 = Examples\\3\u0020SimpleHelloWall
-		SccProjectUniqueName17 = Xbim.SceneHelper\\Xbim.SceneHelper.csproj
+		SccProjectName16 = CodeExamples
+		SccLocalPath16 = CodeExamples
+		SccProjectUniqueName17 = COBie.Xbim.Tester\\COBie.Xbim.Tester.csproj
 		SccProjectTopLevelParentUniqueName17 = XbimComplete.sln
-		SccProjectName17 = Xbim.SceneHelper
-		SccLocalPath17 = Xbim.SceneHelper
+		SccProjectName17 = COBie.Xbim.Tester
+		SccLocalPath17 = COBie.Xbim.Tester
 	EndGlobalSection
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = XbimComplete.vsmdi
@@ -370,38 +384,30 @@ Global
 		{FB5A1829-7B34-4DE9-94A9-AF3AD36320BB}.Release|x64.Build.0 = Release|x64
 		{FB5A1829-7B34-4DE9-94A9-AF3AD36320BB}.Release|x86.ActiveCfg = Release|x86
 		{FB5A1829-7B34-4DE9-94A9-AF3AD36320BB}.Release|x86.Build.0 = Release|x86
-		{3E685E73-8207-4C99-A146-3BFF00CA5A74}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3E685E73-8207-4C99-A146-3BFF00CA5A74}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3E685E73-8207-4C99-A146-3BFF00CA5A74}.Debug|Mixed Platforms.ActiveCfg = Debug|x64
-		{3E685E73-8207-4C99-A146-3BFF00CA5A74}.Debug|Mixed Platforms.Build.0 = Debug|x64
-		{3E685E73-8207-4C99-A146-3BFF00CA5A74}.Debug|x64.ActiveCfg = Debug|x64
-		{3E685E73-8207-4C99-A146-3BFF00CA5A74}.Debug|x64.Build.0 = Debug|x64
-		{3E685E73-8207-4C99-A146-3BFF00CA5A74}.Debug|x86.ActiveCfg = Debug|x86
-		{3E685E73-8207-4C99-A146-3BFF00CA5A74}.Debug|x86.Build.0 = Debug|x86
-		{3E685E73-8207-4C99-A146-3BFF00CA5A74}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3E685E73-8207-4C99-A146-3BFF00CA5A74}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3E685E73-8207-4C99-A146-3BFF00CA5A74}.Release|Mixed Platforms.ActiveCfg = Release|x64
-		{3E685E73-8207-4C99-A146-3BFF00CA5A74}.Release|Mixed Platforms.Build.0 = Release|x64
-		{3E685E73-8207-4C99-A146-3BFF00CA5A74}.Release|x64.ActiveCfg = Release|x64
-		{3E685E73-8207-4C99-A146-3BFF00CA5A74}.Release|x64.Build.0 = Release|x64
-		{3E685E73-8207-4C99-A146-3BFF00CA5A74}.Release|x86.ActiveCfg = Release|x86
-		{3E685E73-8207-4C99-A146-3BFF00CA5A74}.Release|x86.Build.0 = Release|x86
-		{BA6195C4-0F45-43F4-82D1-32AAD0E69B86}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BA6195C4-0F45-43F4-82D1-32AAD0E69B86}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BA6195C4-0F45-43F4-82D1-32AAD0E69B86}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
-		{BA6195C4-0F45-43F4-82D1-32AAD0E69B86}.Debug|Mixed Platforms.Build.0 = Debug|x86
-		{BA6195C4-0F45-43F4-82D1-32AAD0E69B86}.Debug|x64.ActiveCfg = Debug|x64
-		{BA6195C4-0F45-43F4-82D1-32AAD0E69B86}.Debug|x64.Build.0 = Debug|x64
-		{BA6195C4-0F45-43F4-82D1-32AAD0E69B86}.Debug|x86.ActiveCfg = Debug|x86
-		{BA6195C4-0F45-43F4-82D1-32AAD0E69B86}.Debug|x86.Build.0 = Debug|x86
-		{BA6195C4-0F45-43F4-82D1-32AAD0E69B86}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BA6195C4-0F45-43F4-82D1-32AAD0E69B86}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BA6195C4-0F45-43F4-82D1-32AAD0E69B86}.Release|Mixed Platforms.ActiveCfg = Release|x86
-		{BA6195C4-0F45-43F4-82D1-32AAD0E69B86}.Release|Mixed Platforms.Build.0 = Release|x86
-		{BA6195C4-0F45-43F4-82D1-32AAD0E69B86}.Release|x64.ActiveCfg = Release|x64
-		{BA6195C4-0F45-43F4-82D1-32AAD0E69B86}.Release|x64.Build.0 = Release|x64
-		{BA6195C4-0F45-43F4-82D1-32AAD0E69B86}.Release|x86.ActiveCfg = Release|x86
-		{BA6195C4-0F45-43F4-82D1-32AAD0E69B86}.Release|x86.Build.0 = Release|x86
+		{9FD894A7-6637-4BF0-A0EA-D654CEB0E234}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{9FD894A7-6637-4BF0-A0EA-D654CEB0E234}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{9FD894A7-6637-4BF0-A0EA-D654CEB0E234}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{9FD894A7-6637-4BF0-A0EA-D654CEB0E234}.Debug|x64.ActiveCfg = Debug|x86
+		{9FD894A7-6637-4BF0-A0EA-D654CEB0E234}.Debug|x86.ActiveCfg = Debug|x86
+		{9FD894A7-6637-4BF0-A0EA-D654CEB0E234}.Debug|x86.Build.0 = Debug|x86
+		{9FD894A7-6637-4BF0-A0EA-D654CEB0E234}.Release|Any CPU.ActiveCfg = Release|x86
+		{9FD894A7-6637-4BF0-A0EA-D654CEB0E234}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{9FD894A7-6637-4BF0-A0EA-D654CEB0E234}.Release|Mixed Platforms.Build.0 = Release|x86
+		{9FD894A7-6637-4BF0-A0EA-D654CEB0E234}.Release|x64.ActiveCfg = Release|x86
+		{9FD894A7-6637-4BF0-A0EA-D654CEB0E234}.Release|x86.ActiveCfg = Release|x86
+		{9FD894A7-6637-4BF0-A0EA-D654CEB0E234}.Release|x86.Build.0 = Release|x86
+		{823FEDA5-EEE3-4583-82CE-E51CE88BCF44}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{823FEDA5-EEE3-4583-82CE-E51CE88BCF44}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{823FEDA5-EEE3-4583-82CE-E51CE88BCF44}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{823FEDA5-EEE3-4583-82CE-E51CE88BCF44}.Debug|x64.ActiveCfg = Debug|x86
+		{823FEDA5-EEE3-4583-82CE-E51CE88BCF44}.Debug|x86.ActiveCfg = Debug|x86
+		{823FEDA5-EEE3-4583-82CE-E51CE88BCF44}.Debug|x86.Build.0 = Debug|x86
+		{823FEDA5-EEE3-4583-82CE-E51CE88BCF44}.Release|Any CPU.ActiveCfg = Release|x86
+		{823FEDA5-EEE3-4583-82CE-E51CE88BCF44}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{823FEDA5-EEE3-4583-82CE-E51CE88BCF44}.Release|Mixed Platforms.Build.0 = Release|x86
+		{823FEDA5-EEE3-4583-82CE-E51CE88BCF44}.Release|x64.ActiveCfg = Release|x86
+		{823FEDA5-EEE3-4583-82CE-E51CE88BCF44}.Release|x86.ActiveCfg = Release|x86
+		{823FEDA5-EEE3-4583-82CE-E51CE88BCF44}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -411,9 +417,12 @@ Global
 		{5B6AC153-AC56-4B01-8734-88EAB805A6DB} = {0DA6263B-5A69-401E-99D0-391644EF4709}
 		{FB5A1829-7B34-4DE9-94A9-AF3AD36320BB} = {0DA6263B-5A69-401E-99D0-391644EF4709}
 		{D6CED5D7-BE37-4A32-90A5-1444C9FFDD91} = {0DA6263B-5A69-401E-99D0-391644EF4709}
+		{9FD894A7-6637-4BF0-A0EA-D654CEB0E234} = {0DA6263B-5A69-401E-99D0-391644EF4709}
+		{823FEDA5-EEE3-4583-82CE-E51CE88BCF44} = {0DA6263B-5A69-401E-99D0-391644EF4709}
 		{3E685E73-8207-4C99-A146-3BFF00CA5A74} = {0DA6263B-5A69-401E-99D0-391644EF4709}
 		{BA6195C4-0F45-43F4-82D1-32AAD0E69B86} = {0DA6263B-5A69-401E-99D0-391644EF4709}
 		{6EF22FB8-7048-4E6A-9B2F-AC2570A998A9} = {7ECDCF15-95BB-4D2B-8C0D-8615D6E3BAB1}
 		{8729CDD1-B493-48EC-A867-61ABAF3E93D2} = {7ECDCF15-95BB-4D2B-8C0D-8615D6E3BAB1}
+		{10A2F674-DB37-41FF-AB71-9D54C8F0A5B6} = {E9E301F2-FE7D-4410-B88D-F83D684A8E62}
 	EndGlobalSection
 EndGlobal

@@ -71,13 +71,37 @@ namespace Xbim.COBie.Data
                     sys.CreatedOn = GetCreatedOnDateAsFmtString(ifcGroup.OwnerHistory);
 
                     sys.Category = GetCategory(ifcGroup);
+                    if (string.IsNullOrEmpty(product.Name) || (product.Name == Constants.DEFAULT_STRING))
+                    {
+                        product.Name = product.GetType().Name + " Name Unknown SYS-IN" + UnknownCount.ToString();
+                        UnknownCount++;
+                    }
                     sys.ComponentNames = product.Name;
-                    sys.ExtSystem = GetExternalSystem(product);
-                    sys.ExtObject = ifcGroup.GetType().Name;
-                    sys.ExtIdentifier = product.GlobalId;
+                    sys.ExtSystem = GetExternalSystem(ifcGroup);
+                    sys.ExtObject = ifcGroup.GetType().Name; //need to create product if filtered out in the components sheet
+                    sys.ExtIdentifier = ifcGroup.GlobalId;//need to create product if filtered out in the components sheet
                     sys.Description = GetSystemDescription(ifcGroup);
 
-                    systems.Rows.Add(sys);
+                    systems.AddRow(sys);
+                }
+                //check if no products then add group only, new line for each, or should we do as assembly? conCant with :
+                if (!ifcProducts.Any())
+                {
+                    COBieSystemRow sys = new COBieSystemRow(systems);
+
+                    sys.Name = ifcGroup.Name;
+
+                    sys.CreatedBy = GetTelecomEmailAddress(ifcGroup.OwnerHistory);
+                    sys.CreatedOn = GetCreatedOnDateAsFmtString(ifcGroup.OwnerHistory);
+
+                    sys.Category = GetCategory(ifcGroup);
+                    sys.ComponentNames = DEFAULT_STRING;
+                    sys.ExtSystem = GetExternalSystem(ifcGroup);
+                    sys.ExtObject = ifcGroup.GetType().Name;
+                    sys.ExtIdentifier = ifcGroup.GlobalId;
+                    sys.Description = GetSystemDescription(ifcGroup);
+
+                    systems.AddRow(sys);
                 }
 
             }
@@ -132,7 +156,7 @@ namespace Xbim.COBie.Data
                         sys.ExtIdentifier = DEFAULT_STRING; //used IfcPropertySingleValue, has no GlobalId
                         sys.Description = string.IsNullOrEmpty(name) ? DEFAULT_STRING : name; ;
 
-                    systems.Rows.Add(sys);
+                        systems.AddRow(sys);
                     }
                 }
             }

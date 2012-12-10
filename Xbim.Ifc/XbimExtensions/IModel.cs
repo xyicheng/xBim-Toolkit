@@ -87,6 +87,8 @@ namespace Xbim.XbimExtensions
         IfcProject IfcProject { get; }
         IfcProducts IfcProducts { get; }
 
+        void SetCurrentCOBieOwner(IfcOwnerHistory owner);
+
         IfcApplication DefaultOwningApplication { get; }
         IfcPersonAndOrganization DefaultOwningUser { get; }
         Transaction BeginTransaction(string operationName);

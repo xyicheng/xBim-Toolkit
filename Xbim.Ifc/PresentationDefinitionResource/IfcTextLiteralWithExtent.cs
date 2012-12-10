@@ -29,7 +29,33 @@ namespace Xbim.Ifc.PresentationDefinitionResource
         private IfcBoxAlignment _boxAlignment;
 
         #endregion
+        #region Part 21 Step file Phrse routines
+        [IfcAttribute(4, IfcAttributeState.Mandatory)]
+        public IfcPlanarExtent Extent
+        {
+            get
+            {
+#if SupportActivation
+                ((IPersistIfcEntity)this).Activate(false);
+#endif
+                return _extent;
+            }
+            set { ModelManager.SetModelValue(this, ref _extent, value, v => Extent = v, "Extent"); }
+        }
 
+        [IfcAttribute(5, IfcAttributeState.Mandatory)]
+        public IfcBoxAlignment BoxAlignment
+        {
+            get
+            {
+#if SupportActivation
+                ((IPersistIfcEntity)this).Activate(false);
+#endif
+                return _boxAlignment;
+            }
+            set { ModelManager.SetModelValue(this, ref _boxAlignment, value, v => BoxAlignment = v, "BoxAlignment"); }
+        }
+        
         public override void IfcParse(int propIndex, IPropertyValue value)
         {
             switch (propIndex)
@@ -49,5 +75,6 @@ namespace Xbim.Ifc.PresentationDefinitionResource
                     this.HandleUnexpectedAttribute(propIndex, value); break;
             }
         }
+        #endregion
     }
 }

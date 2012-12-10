@@ -18,12 +18,15 @@ namespace Xbim.COBie.Data
     /// </summary>
     public class COBieDataFloor : COBieData<COBieFloorRow>, IAttributeProvider
     {
+        
         /// <summary>
         /// Data Floor constructor
         /// </summary>
         /// <param name="model">The context of the model being generated</param>
         public COBieDataFloor(COBieContext context) : base(context)
-        { }
+        {
+            
+        }
 
         #region Methods
 
@@ -50,19 +53,24 @@ namespace Xbim.COBie.Data
             //list of attributes to exclude form attribute sheet
             
             //set up filters on COBieDataPropertySetValues for the SetAttributes only
-            attributeBuilder.ExcludeAttributePropertyNames.AddRange(Context.FloorAttExcludesEq);
-            attributeBuilder.ExcludeAttributePropertyNamesWildcard.AddRange(Context.FloorAttExcludesContains);
+            attributeBuilder.ExcludeAttributePropertyNames.AddRange(Context.Exclude.Floor.AttributesEqualTo);
+            attributeBuilder.ExcludeAttributePropertyNamesWildcard.AddRange(Context.Exclude.Floor.AttributesContain);
             attributeBuilder.RowParameters["Sheet"] = "Floor";
             
            
 
-            ProgressIndicator.Initialise("Creating Components", buildingStories.Count());
+            ProgressIndicator.Initialise("Creating Floors", buildingStories.Count());
 
             foreach (IfcBuildingStorey ifcBuildingStorey in buildingStories)
             {
                 ProgressIndicator.IncrementAndUpdate();
 
                 COBieFloorRow floor = new COBieFloorRow(floors);
+                if (string.IsNullOrEmpty(ifcBuildingStorey.Name))
+                {
+                    ifcBuildingStorey.Name = "Name Unknown " + UnknownCount.ToString();
+                    UnknownCount++;
+                }
 
                 floor.Name = ifcBuildingStorey.Name.ToString();
 
@@ -79,7 +87,7 @@ namespace Xbim.COBie.Data
 
                 floor.Height = GetFloorHeight(ifcBuildingStorey, allPropertyValues);
 
-                floors.Rows.Add(floor);
+                floors.AddRow(floor);
 
                 //fill in the attribute information
                 attributeBuilder.RowParameters["Name"] = floor.Name;

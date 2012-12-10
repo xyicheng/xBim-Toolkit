@@ -524,6 +524,43 @@ namespace Xbim.Ifc.ExternalReferenceResource
         }
 
         #endregion
+        #region Collection initialisation methods
+        /// <summary>
+        ///   Initialise the Document Reference list and add passed IfcDocumentReference objects to list
+        /// </summary>  
+        /// <param name="clear">if true will clear existing list if existing</param>
+        /// <param name="ifcDocumentReferences">IfcDocumentReference objects as list or ',' separated parameters</param>
+        public XbimSet<IfcDocumentReference> SetDocumentReferences(bool clear, params IfcDocumentReference[] ifcDocumentReferences )
+        {
+
+            if (_documentReferences == null) _documentReferences = new XbimSet<IfcDocumentReference>(this);
+            else if (clear) _documentReferences.Clear_Reversible();
+            foreach (IfcDocumentReference ifcDocumentReference in ifcDocumentReferences)
+            {
+                _documentReferences.Add_Reversible(ifcDocumentReference);
+            }
+            return _documentReferences;
+        }
+
+        /// <summary>
+        ///   Initialise the Editors List and add passed IfcActorSelect objects to list
+        /// </summary>  
+        /// <param name="clear">if true will clear existing list if existing</param>
+        /// <param name="ifcActorSelects">IfcActorSelect objects as list or ',' separated parameters</param>
+        public XbimSet<IfcActorSelect> SetEditors(bool clear, params IfcActorSelect[] ifcActorSelects )
+        {
+
+            if (_editors == null) _editors = new XbimSet<IfcActorSelect>(this);
+            else if (clear) _editors.Clear_Reversible();
+            foreach (IfcActorSelect ifcActorSelect in ifcActorSelects)
+            {
+                _editors.Add_Reversible(ifcActorSelect);
+            }
+            return _editors;
+        }
+
+         
+        #endregion
 
         #region ISupportIfcParser Members
 

@@ -147,6 +147,7 @@ namespace Xbim.COBie
         public COBieSheet<COBieSpareRow> GetCOBieSpareSheet()
         {
             COBieDataSpare spares = new COBieDataSpare(Context);
+            (spares as IAttributeProvider).InitialiseAttributes(ref _attributes);
             return spares.Fill();
         }
 

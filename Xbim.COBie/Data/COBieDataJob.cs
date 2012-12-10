@@ -11,6 +11,7 @@ using Xbim.XbimExtensions;
 using Xbim.Ifc.PropertyResource;
 using Xbim.Ifc.MeasureResource;
 using Xbim.Ifc.SelectTypes;
+using Xbim.COBie.Serialisers.XbimSerialiser;
 
 namespace Xbim.COBie.Data
 {
@@ -69,17 +70,17 @@ namespace Xbim.COBie.Data
                 allPropertyValues.SetAllPropertySingleValues(ifcTask); //set properties values to this task
                 IfcPropertySingleValue ifcPropertySingleValue = allPropertyValues.GetPropertySingleValue("TaskDuration");
                 job.Duration = ((ifcPropertySingleValue != null) && (ifcPropertySingleValue.NominalValue != null)) ? ConvertNumberOrDefault(ifcPropertySingleValue.NominalValue.ToString()) : DEFAULT_NUMERIC;
-                string unitName = GetUnitName(ifcPropertySingleValue.Unit);
+                string unitName = ((ifcPropertySingleValue != null) && (ifcPropertySingleValue.Unit != null)) ? GetUnitName(ifcPropertySingleValue.Unit) : null; 
                 job.DurationUnit = (string.IsNullOrEmpty(unitName)) ?  DEFAULT_STRING : unitName;
 
                 ifcPropertySingleValue = allPropertyValues.GetPropertySingleValue("TaskStartDate");
-                job.Start = ((ifcPropertySingleValue != null) && (ifcPropertySingleValue.NominalValue != null)) ? ifcPropertySingleValue.NominalValue.ToString() : new DateTime(1900, 12, 31, 23, 59, 59).ToString(Constants.DATE_FORMAT);//default is 1900-12-31T23:59:59;
-                unitName = GetUnitName(ifcPropertySingleValue.Unit);
+                job.Start = GetStartTime(ifcPropertySingleValue);
+                unitName = ((ifcPropertySingleValue != null) && (ifcPropertySingleValue.Unit != null)) ? GetUnitName(ifcPropertySingleValue.Unit) : null; 
                 job.TaskStartUnit = (string.IsNullOrEmpty(unitName)) ? DEFAULT_STRING : unitName;
 
                 ifcPropertySingleValue = allPropertyValues.GetPropertySingleValue("TaskInterval");
                 job.Frequency = ((ifcPropertySingleValue != null) && (ifcPropertySingleValue.NominalValue != null)) ? ConvertNumberOrDefault(ifcPropertySingleValue.NominalValue.ToString()) : DEFAULT_NUMERIC;
-                unitName = GetUnitName(ifcPropertySingleValue.Unit);
+                unitName = ((ifcPropertySingleValue != null) && (ifcPropertySingleValue.Unit != null)) ? GetUnitName(ifcPropertySingleValue.Unit) : null;
                 job.FrequencyUnit = (string.IsNullOrEmpty(unitName)) ? DEFAULT_STRING : unitName;
 
                 job.ExtSystem = GetExternalSystem(ifcTask);
@@ -90,7 +91,7 @@ namespace Xbim.COBie.Data
                 job.Priors =  GetPriors(ifcTask);
                 job.ResourceNames = GetResources(ifcTask);
 
-                jobs.Rows.Add(job);
+                jobs.AddRow(job);
             }
 
             ProgressIndicator.Finalise();
@@ -98,25 +99,45 @@ namespace Xbim.COBie.Data
         }
 
         /// <summary>
+        /// Get Formatted Start Date
+        /// </summary>
+        /// <param name="allPropertyValues"></param>
+        /// <returns></returns>
+        private string GetStartTime(IfcPropertySingleValue ifcPropertySingleValue)
+        {
+            string startData = "";
+            if ((ifcPropertySingleValue != null) && (ifcPropertySingleValue.NominalValue != null))
+                startData = ifcPropertySingleValue.NominalValue.ToString(); 
+            
+            DateTime frmDate;
+            if (DateTime.TryParse(startData, out frmDate))
+                startData = frmDate.ToString(Constants.DATE_FORMAT);
+            else
+                startData = Constants.DEFAULT_STRING; //Context.RunDate;//default is Now
+            return startData;
+        }
+
+        /// <summary>
         /// Get the number of tasks before this task
         /// </summary>
         /// <param name="ifcTask">IfcTask object</param>
-        /// <returns>string holding number of tasks that are before this task</returns>
+        /// <returns>string holding predecessor name of last task(s)</returns>
         private string GetPriors(IfcTask ifcTask)
         {
             IEnumerable<IfcRelSequence> isSuccessorFrom = ifcTask.IsSuccessorFrom;
-            //skip the first link to match example sheets count
-            if (isSuccessorFrom.Count() == 1) isSuccessorFrom = isSuccessorFrom.First().RelatingProcess.IsSuccessorFrom; 
-
-            int count = 0;
-            //assume that the isSuccessorFrom list can only hold one IfcRelSequence.
-            while (isSuccessorFrom.Count() == 1) //have a successor task so count one
+            List<string> relatingTasks = new List<string>();
+            foreach (IfcRelSequence ifcRelSequence in isSuccessorFrom)
             {
-                count++;
-                isSuccessorFrom = isSuccessorFrom.First().RelatingProcess.IsSuccessorFrom; //move up linked tasks to see if a successor to the successor
+                IfcTask relatingIfcTask = ifcRelSequence.RelatingProcess as IfcTask;
+                if (relatingIfcTask != null)
+                    relatingTasks.Add(relatingIfcTask.TaskId.ToString().Trim());
             }
 
-            return count.ToString();
+            if (relatingTasks.Count > 0)
+                return string.Join(":", relatingTasks);
+            else
+                return ifcTask.TaskId.ToString().Trim(); //if no priors, refrence itself
+           
         }
 
         /// <summary>
@@ -167,7 +188,7 @@ namespace Xbim.COBie.Data
                             strList.Add(ifcTypeItem.Name.ToString());
                     }
                 }
-                return (strList.Count > 0) ? string.Join(" : ", strList) : DEFAULT_STRING;
+                return (strList.Count > 0) ? COBieXBim.JoinStrings(':', strList) : DEFAULT_STRING;
             }
 
 
@@ -190,9 +211,9 @@ namespace Xbim.COBie.Data
                                 strList.Add(ifcRelDefinesByType.RelatingType.Name.ToString());
                         }
                     }
-                    return (strList.Count > 0) ? string.Join(" : ", strList) : DEFAULT_STRING;
+                    return (strList.Count > 0) ? COBieXBim.JoinStrings(':', strList) : DEFAULT_STRING;
                 }
-                return (strList.Count > 0) ? string.Join(" : ", strList) : DEFAULT_STRING;
+                return (strList.Count > 0) ? COBieXBim.JoinStrings(':', strList) : DEFAULT_STRING;
             }
 
             return DEFAULT_STRING; //fail to get any types

@@ -31,7 +31,7 @@ namespace Xbim.Tests.COBie
             _model = new XbimFileModelServer();
             _model.Open(SourceFile);
             _cobieContext = new COBieContext();
-            _cobieContext.Models.Add(_model);
+            _cobieContext.Model = _model;
             COBieQueries cobieEngine = new COBieQueries(_cobieContext);
 
         }
@@ -58,7 +58,7 @@ namespace Xbim.Tests.COBie
         }        
 
         [TestMethod]
-        [Ignore]    // "Need to resolve interdependency between sheets. Errors since Facilities needs calling first"
+        //[Ignore]    // "Need to resolve interdependency between sheets. Errors since Facilities needs calling first"
         public void Should_Return_Spaces()
         {
             COBieQueries cobieEngine = new COBieQueries(_cobieContext);
