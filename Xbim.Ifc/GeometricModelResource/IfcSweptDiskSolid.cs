@@ -142,10 +142,10 @@ namespace Xbim.Ifc.GeometricModelResource
                     _innerRadius = value.RealVal;
                     break;
                 case 3:
-                    _startParam = (IfcParameterValue) value.EntityVal;
+                    _startParam = new IfcParameterValue(value.RealVal);
                     break;
                 case 4:
-                    _endParam = (IfcParameterValue) value.EntityVal;
+                    _endParam = new IfcParameterValue(value.RealVal);
                     break;
 
                 default:

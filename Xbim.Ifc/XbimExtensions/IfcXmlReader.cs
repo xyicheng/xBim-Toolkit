@@ -39,6 +39,7 @@ namespace Xbim.XbimExtensions
         static IfcXmlReader()
         {
             primitives = new Dictionary<string, IfcParserType>();
+
             primitives.Add("ex:double-wrapper", IfcParserType.Real);
             primitives.Add("ex:long-wrapper", IfcParserType.Integer);
             primitives.Add("ex:string-wrapper", IfcParserType.String);
@@ -48,11 +49,23 @@ namespace Xbim.XbimExtensions
             primitives.Add("ex:decimal-wrapper", IfcParserType.Real);
             primitives.Add("ex:hexBinary-wrapper", IfcParserType.HexaDecimal);
             primitives.Add("ex:base64Binary-wrapper", IfcParserType.Entity);
+            //think ArchiCad exports these
+            primitives.Add("exp:double-wrapper", IfcParserType.Real);
+            primitives.Add("exp:long-wrapper", IfcParserType.Integer);
+            primitives.Add("exp:string-wrapper", IfcParserType.String);
+            primitives.Add("exp:integer-wrapper", IfcParserType.Integer);
+            primitives.Add("exp:boolean-wrapper", IfcParserType.Boolean);
+            primitives.Add("exp:logical-wrapper", IfcParserType.Boolean);
+            primitives.Add("exp:decimal-wrapper", IfcParserType.Real);
+            primitives.Add("exp:hexBinary-wrapper", IfcParserType.HexaDecimal);
+            primitives.Add("exp:base64Binary-wrapper", IfcParserType.Entity);
+
             primitives.Add(typeof(double).Name, IfcParserType.Real);
             primitives.Add(typeof(long).Name, IfcParserType.Integer);
             primitives.Add(typeof(string).Name, IfcParserType.String);
             primitives.Add(typeof(int).Name, IfcParserType.Integer);
             primitives.Add(typeof(bool).Name, IfcParserType.Boolean);
+            primitives.Add(typeof(bool?).ToString(), IfcParserType.BooleanNullable); //ToString used as all nullables give same name
             primitives.Add("Enum", IfcParserType.Enum);
         }
 
@@ -321,7 +334,7 @@ namespace Xbim.XbimExtensions
                 if (!model.ContainsInstance(id))
                 {
                     // not been declared in a ref yet
-                    // model.New creates an instance uisng type and id
+                    // model.New creates an instance using type and id
                     ent = model.AddNew(ifcType, id);
                    
                 }
@@ -335,6 +348,9 @@ namespace Xbim.XbimExtensions
                     _appendToStream(xmlEnt.Entity);
                         
                 string pos = input.GetAttribute("pos");
+                if (string.IsNullOrEmpty(pos))
+                     pos = input.GetAttribute("exp:pos");
+                
                 if (!string.IsNullOrEmpty(pos))
                     xmlEnt.Position = Convert.ToInt32(pos);
 
@@ -350,7 +366,7 @@ namespace Xbim.XbimExtensions
                 else if (_currentNode is XmlProperty)
                 {
                     // if it is a ref then it will be empty element and wont have an end tag
-                    // so nither SetValue nor EndElement will be called, so set the value of ref here e.g. #3
+                    // so neither SetValue nor EndElement will be called, so set the value of ref here e.g. #3
                     ((XmlProperty)(_currentNode)).SetValue(ent);
                 }
                 else if (!(_currentNode is XmlUosCollection) && _currentNode is XmlCollectionProperty && !(_currentNode.Parent is XmlUosCollection))
@@ -366,7 +382,7 @@ namespace Xbim.XbimExtensions
                     PropertyValue propVal = new PropertyValue();
                     Type t = node.Property.PropertyType;
 
-                    if (!typeof(ExpressEnumerable).IsAssignableFrom(t)) // if its a empty collection then dont do anything
+                    if (!typeof(ExpressEnumerable).IsAssignableFrom(t)) // if its a empty collection then don't do anything
                     {
                         if (t != null && t.IsGenericType && t.GetGenericTypeDefinition().Equals(typeof(Nullable<>)))
                             t = Nullable.GetUnderlyingType(t);
@@ -376,7 +392,16 @@ namespace Xbim.XbimExtensions
 
                         IfcParserType pt;
                         if (et != null)
-                            pt = primitives[et.UnderlyingSystemType.Name];
+                        {
+                            try
+                            {
+                                pt = primitives[et.UnderlyingSystemType.Name];
+                            }
+                            catch (KeyNotFoundException) //check for nullable types, uses tostring not name
+                            {
+                                pt = primitives[et.UnderlyingSystemType.ToString()];
+                            }
+                        }
                         else
                         {
                             if (t.IsEnum)
@@ -391,7 +416,7 @@ namespace Xbim.XbimExtensions
                             propVal.Init("'" + input.Value + "'", pt);
                         else
                         {
-                            if (pt.ToString().ToLower() == "boolean")
+                            if ((pt == IfcParserType.Boolean) || (pt == IfcParserType.BooleanNullable))
                                 if (input.Value.ToUpper() == "UNKNOWN")
                                     propVal.Init(".UNKNOWN.", pt);
                                 else
@@ -419,6 +444,8 @@ namespace Xbim.XbimExtensions
             {
 
                 string cType = input.GetAttribute("ex:cType");
+                if (string.IsNullOrEmpty(cType))
+                    cType = input.GetAttribute("exp:cType");
 
                 if (!string.IsNullOrEmpty(cType) && IsCollection(prop)) //the property is a collection
                 {
@@ -518,7 +545,7 @@ namespace Xbim.XbimExtensions
             if (!ok)
             {
 
-                if (elementName.Contains("-wrapper") && elementName.StartsWith("ex:") == false) // we have an inline type definition
+                if (elementName.Contains("-wrapper") && (! (elementName.StartsWith("ex:") || elementName.StartsWith("exp:") ))) // we have an inline type definition
                 {
                     string inputName = elementName.Substring(0, elementName.LastIndexOf("-"));
                     ok = IfcInstances.IfcTypeLookup.TryGetValue(inputName.ToUpper(), out ifcType);
@@ -653,7 +680,16 @@ namespace Xbim.XbimExtensions
 
                     IfcParserType pt = IfcParserType.Undefined;
                     if (et != null)
-                        pt = primitives[et.UnderlyingSystemType.Name];
+                    {
+                        try
+                        {
+                            pt = primitives[et.UnderlyingSystemType.Name];
+                        }
+                        catch (KeyNotFoundException) //check for nullable types
+                        {
+                            pt = primitives[et.UnderlyingSystemType.ToString()];
+                        }
+                    }
                     else
                     {
                         if (t.IsEnum)
@@ -670,7 +706,7 @@ namespace Xbim.XbimExtensions
                             propVal.Init("'" + input.Value + "'", pt);
                         else
                         {
-                            if (pt.ToString().ToLower() == "boolean")
+                            if ((pt == IfcParserType.Boolean) || (pt == IfcParserType.BooleanNullable))
                                 if (input.Value.ToUpper() == "UNKNOWN")
                                     propVal.Init(".UNKNOWN.", pt);
                                 else 
@@ -814,7 +850,14 @@ namespace Xbim.XbimExtensions
                             if (typeof(ExpressType).IsAssignableFrom(t) && !(typeof(ExpressComplexType).IsAssignableFrom(t) ))
                             {
                                 ExpressType et = (ExpressType)(Activator.CreateInstance(t));
-                                parserType = primitives[et.UnderlyingSystemType.Name];
+                                try
+                                {
+                                    parserType = primitives[et.UnderlyingSystemType.Name];
+                                }
+                                catch (KeyNotFoundException) //check for nullable types
+                                {
+                                    parserType = primitives[et.UnderlyingSystemType.ToString()];
+                                }
                             }
                             else if (t.IsEnum)
                             {
@@ -833,7 +876,7 @@ namespace Xbim.XbimExtensions
                             }
                             else if (parserType != IfcParserType.Undefined && !string.IsNullOrWhiteSpace(input.Value))
                             {
-                                if (parserType == IfcParserType.Boolean)
+                                if ((parserType == IfcParserType.Boolean) || (parserType == IfcParserType.BooleanNullable))
                                     if (input.Value.ToUpper() == "UNKNOWN")
                                         propVal.Init(".UNKNOWN.", parserType);
                                     else
@@ -843,8 +886,6 @@ namespace Xbim.XbimExtensions
 
                                 ((XmlEntity)node.Parent).Entity.IfcParse(node.PropertyIndex - 1, propVal);
                             }
-
-                            
                         }
                     }
                 }

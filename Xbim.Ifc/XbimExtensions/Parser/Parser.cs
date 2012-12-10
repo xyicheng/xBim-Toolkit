@@ -67,7 +67,8 @@ namespace Xbim.XbimExtensions.Parser
         Integer,
         Real,
         String,
-        Undefined
+        Undefined,
+        BooleanNullable
     }
 
     public struct PropertyValue : IPropertyValue
@@ -120,6 +121,23 @@ namespace Xbim.XbimExtensions.Parser
                 else
                     throw new Exception(string.Format("Wrong parameter type, found {0}, expected {1}",
                                                       _ifcParserType.ToString(), "Boolean"));
+            }
+        }
+
+        public bool? BooleanNullableVal
+        {
+            get
+            {
+                if ((_ifcParserType == IfcParserType.BooleanNullable) || (_ifcParserType == IfcParserType.Boolean))
+                {
+                    if (_strVal == ".UNKNOWN.")
+                        return null;
+                    else
+                        return _strVal == ".T.";
+                }
+                else
+                    throw new Exception(string.Format("Wrong parameter type, found {0}, expected {1}",
+                                                      _ifcParserType.ToString(), "BooleanNullable"));
             }
         }
 

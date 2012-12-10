@@ -164,7 +164,7 @@ namespace Xbim.Ifc.MaterialResource
                     _layerThickness = value.RealVal;
                     break;
                 case 2:
-                    _isVentilated = value.BooleanVal;
+                    _isVentilated = value.BooleanNullableVal;
                     break;
                 default:
                     this.HandleUnexpectedAttribute(propIndex, value); break;

@@ -1257,7 +1257,7 @@ namespace Xbim.IO
                     using (XmlReader xmlReader = XmlReader.Create(xmlInStream, settings))
                     {
                         IfcXmlReader reader = new IfcXmlReader();
-
+                        
                         reader.AppendToStream += WriteToStream;
 
                         errors = reader.Read(this, xmlReader);

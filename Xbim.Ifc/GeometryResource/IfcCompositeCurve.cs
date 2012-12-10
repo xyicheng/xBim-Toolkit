@@ -47,7 +47,7 @@ namespace Xbim.Ifc.GeometryResource
         #region Fields
 
         private CompositeCurveSegmentList _segments;
-        private IfcLogical _selfIntersect;
+        private IfcLogical? _selfIntersect;
 
         #endregion
 
@@ -67,7 +67,7 @@ namespace Xbim.Ifc.GeometryResource
         }
 
         [IfcAttribute(2, IfcAttributeState.Mandatory)]
-        public IfcLogical SelfIntersect
+        public IfcLogical? SelfIntersect
         {
             get
             {
@@ -111,7 +111,7 @@ namespace Xbim.Ifc.GeometryResource
                     _segments.Add((IfcCompositeCurveSegment) value.EntityVal);
                     break;
                 case 1:
-                    _selfIntersect = value.BooleanVal;
+                    _selfIntersect = value.BooleanNullableVal;
                     break;
                 default:
                     this.HandleUnexpectedAttribute(propIndex, value); break;

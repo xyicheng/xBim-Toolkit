@@ -52,6 +52,7 @@ namespace Xbim.IO
             private class IndexPropertyValue : IPropertyValue
             {
                 private bool _bool;
+                private bool? _boolNullable;
                 private string _string;
                 private long _long;
                 private double _double;
@@ -70,6 +71,16 @@ namespace Xbim.IO
                     get
                     {
                         if (_parserType == IfcParserType.Boolean) return _bool;
+                        throw new Exception(string.Format("Wrong parameter type, found {0}, expected {1}",
+                                                          _parserType.ToString(), "Boolean"));
+                    }
+                }
+
+                public bool? BooleanNullableVal
+                {
+                    get
+                    {
+                        if ((_parserType == IfcParserType.BooleanNullable) || (_parserType == IfcParserType.Boolean)) return _boolNullable;
                         throw new Exception(string.Format("Wrong parameter type, found {0}, expected {1}",
                                                           _parserType.ToString(), "Boolean"));
                     }
@@ -178,6 +189,12 @@ namespace Xbim.IO
                     _bool = value;
                     _parserType = ifcParserType;
                 }
+
+                internal void Init(bool? value, IfcParserType ifcParserType)
+                {
+                    _boolNullable = value;
+                    _parserType = ifcParserType;
+                }
             }
 
             public ParserState(IPersistIfcEntity entity)
@@ -275,6 +292,12 @@ namespace Xbim.IO
             internal void SetBooleanValue(bool value)
             {
                 _propertyValue.Init(value, IfcParserType.Boolean);
+                SetEntityParameter();
+            }
+
+            internal void SetBooleanNullableValue(bool? value)
+            {
+                _propertyValue.Init(value, IfcParserType.BooleanNullable);
                 SetEntityParameter();
             }
 

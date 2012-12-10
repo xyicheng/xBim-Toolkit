@@ -55,7 +55,7 @@ namespace Xbim.Ifc.MeasureResource
 
         Type ExpressType.UnderlyingSystemType
         {
-            get { return typeof(bool); }
+            get { return typeof(bool?); }
         }
 
         public bool IsUnknown
