@@ -2,10 +2,22 @@
 echo check out the entire inc directory from source control before executing this
 echo check that the src and target directories below are correct
 echo if you have added any other include files from open cascade make sure they are named below
-set src=C:\OpenCASCADE6.5.3\ros\inc
-set target=G:\Documents\XbimCP\XbimFramework\Dev\OpenCascadeUpgrade\Xbim.ModelGeometry\OpenCascade\inc
+set src=C:\OpenCASCADE6.5.4\ros\inc
+set target="D:\Users\steve\My Documents\Xbim\Opencascade\OpenCascadeUpgrade\Xbim.ModelGeometry\OpenCascade\inc"
 echo Copying from %src% to %target%
 pause
+copy %src%\TColStd_DataMapNodeOfDataMapOfIntegerListOfInteger.hxx %target%
+copy %src%\NCollection_BaseVector.hxx %target%
+copy %src%\BOPTools_DSFiller.lxx %target%
+copy %src%\Handle_TColStd_DataMapNodeOfDataMapOfIntegerListOfInteger.hxx %target%
+copy %src%\TColStd_DataMapOfIntegerListOfInteger.hxx %target%
+copy %src%\BOPTools_PPaveFiller.hxx %target%
+copy %src%\BOPTools_PaveFiller.hxx %target%
+copy %src%\BOPTools_PInterferencePool.hxx %target%
+copy %src%\BooleanOperations_PShapesDataStructure.hxx %target%
+copy %src%\BOPTools_DSFiller.hxx %target%
+copy %src%\GC_MakeLine.hxx %target%
+copy %src%\Adaptor2d_Curve2d.hxx %target%
 copy %src%\Standard_NullObject.hxx %target%
 copy %src%\Handle_TColStd_HArray1OfReal.hxx %target%
 copy %src%\Handle_Standard_NullObject.hxx %target%

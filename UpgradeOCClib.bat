@@ -1,6 +1,6 @@
 @echo off
-set src=C:\OpenCASCADE6.5.3\ros
-set target=C:\Users\pgnj4\Documents\xBIM\Head
+set src=C:\OpenCASCADE6.5.4\ros
+set target="D:\Users\steve\My Documents\Xbim\Opencascade\OpenCascadeUpgrade"
 echo Copying from %src% to %target%
 echo Win32 Library Release files
 pause
