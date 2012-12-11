@@ -38,7 +38,7 @@ namespace Xbim
 
 		void XbimScene::ConvertGeometry( IEnumerable<IfcProduct^>^ toConvert, ReportProgressDelegate^ progDelegate, bool oCCout)
 		{
-
+			oCCout=true;
 			IfcProduct^ p = Enumerable::FirstOrDefault(toConvert);
 			if(p == nullptr) //nothing to do
 				return;

@@ -97,7 +97,7 @@ namespace Xbim
 			//Builds a TopoDS_Compound from a ShellBasedSurfaceModel
 			static IXbimGeometryModel^ Build(IfcShellBasedSurfaceModel^ repItem, bool forceSolid);
 			static IXbimGeometryModel^ Build(IfcFaceBasedSurfaceModel^ repItem, bool forceSolid);
-			static IXbimGeometryModel^ Build(IfcBooleanResult^ repItem);
+			//static IXbimGeometryModel^ Build(IfcBooleanResult^ repItem);
 			
 			
 		};

@@ -1,6 +1,7 @@
 #pragma once
 #include <TopoDS_Face.hxx>
 #include "XbimFaceBoundEnumerator.h"
+#include <GeomLProp_SLProps.hxx>
 
 using namespace Xbim::XbimExtensions::Interfaces;
 using namespace System;
@@ -71,6 +72,7 @@ namespace Xbim
 				return  gcnew XbimFaceBoundEnumerator(*nativeHandle);
 
 			}
+
 			
 			// SRL: Builds a face from a IfcParameterizedProfileDef
 			static TopoDS_Face Build(IfcParameterizedProfileDef ^ profile, bool% hasCurves);

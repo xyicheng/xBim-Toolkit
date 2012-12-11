@@ -256,80 +256,80 @@ namespace Xbim
 			}
 		}
 
-		IXbimGeometryModel^ XbimGeometryModel::Build(IfcBooleanResult^ repItem)
-		{
-			IfcBooleanOperand^ fOp= repItem->FirstOperand;
-			IfcBooleanOperand^ sOp= repItem->SecondOperand;
-			IXbimGeometryModel^ shape1;
-			IXbimGeometryModel^ shape2;
-			System::Nullable<bool> _shape1IsSolid;
-			if(dynamic_cast<IfcBooleanResult^>(fOp))
-				shape1 = Build((IfcBooleanResult^)fOp);
-			else if(dynamic_cast<IfcSolidModel^>(fOp))
-				shape1 = gcnew XbimSolid((IfcSolidModel^)fOp);
-			else if(dynamic_cast<IfcHalfSpaceSolid^>(fOp))
-			{
-				shape1 = gcnew XbimSolid((IfcHalfSpaceSolid^)fOp);
-				if(dynamic_cast<IfcBoxedHalfSpace^>(fOp))
-					_shape1IsSolid = false;
-			}
-			else if(dynamic_cast<IfcCsgPrimitive3D^>(fOp))
-				shape1 = gcnew XbimSolid((IfcCsgPrimitive3D^)fOp);
-			else
-				throw(gcnew XbimException("XbimGeometryModel. Build(BooleanResult) FirstOperand must be a valid IfcBooleanOperand"));
+		//IXbimGeometryModel^ XbimGeometryModel::Build(IfcBooleanResult^ repItem)
+		//{
+		//	IfcBooleanOperand^ fOp= repItem->FirstOperand;
+		//	IfcBooleanOperand^ sOp= repItem->SecondOperand;
+		//	IXbimGeometryModel^ shape1;
+		//	IXbimGeometryModel^ shape2;
+		//	System::Nullable<bool> _shape1IsSolid;
+		//	if(dynamic_cast<IfcBooleanResult^>(fOp))
+		//		shape1 = Build((IfcBooleanResult^)fOp);
+		//	else if(dynamic_cast<IfcSolidModel^>(fOp))
+		//		shape1 = gcnew XbimSolid((IfcSolidModel^)fOp);
+		//	else if(dynamic_cast<IfcHalfSpaceSolid^>(fOp))
+		//	{
+		//		shape1 = gcnew XbimSolid((IfcHalfSpaceSolid^)fOp);
+		//		if(dynamic_cast<IfcBoxedHalfSpace^>(fOp))
+		//			_shape1IsSolid = false;
+		//	}
+		//	else if(dynamic_cast<IfcCsgPrimitive3D^>(fOp))
+		//		shape1 = gcnew XbimSolid((IfcCsgPrimitive3D^)fOp);
+		//	else
+		//		throw(gcnew XbimException("XbimGeometryModel. Build(BooleanResult) FirstOperand must be a valid IfcBooleanOperand"));
 
 
-			try
-			{
+		//	try
+		//	{
 
-				if(dynamic_cast<IfcBooleanResult^>(sOp))
-					shape2 = Build((IfcBooleanResult^)sOp);
-				else if(dynamic_cast<IfcSolidModel^>(sOp))
-					shape2 = gcnew XbimSolid((IfcSolidModel^)sOp);
-				else if(dynamic_cast<IfcHalfSpaceSolid^>(sOp))
-				{
-					shape2 = gcnew XbimSolid((IfcHalfSpaceSolid^)sOp);
-					if(dynamic_cast<IfcBoxedHalfSpace^>(sOp))
-						_shape1IsSolid = true;
-				}
-				else if(dynamic_cast<IfcCsgPrimitive3D^>(sOp))
-					shape2 = gcnew XbimSolid((IfcCsgPrimitive3D^)sOp);
-				else
-					throw(gcnew XbimException("XbimGeometryModel. Build(BooleanResult) FirstOperand must be a valid IfcBooleanOperand"));
+		//		if(dynamic_cast<IfcBooleanResult^>(sOp))
+		//			shape2 = Build((IfcBooleanResult^)sOp);
+		//		else if(dynamic_cast<IfcSolidModel^>(sOp))
+		//			shape2 = gcnew XbimSolid((IfcSolidModel^)sOp);
+		//		else if(dynamic_cast<IfcHalfSpaceSolid^>(sOp))
+		//		{
+		//			shape2 = gcnew XbimSolid((IfcHalfSpaceSolid^)sOp);
+		//			if(dynamic_cast<IfcBoxedHalfSpace^>(sOp))
+		//				_shape1IsSolid = true;
+		//		}
+		//		else if(dynamic_cast<IfcCsgPrimitive3D^>(sOp))
+		//			shape2 = gcnew XbimSolid((IfcCsgPrimitive3D^)sOp);
+		//		else
+		//			throw(gcnew XbimException("XbimGeometryModel. Build(BooleanResult) FirstOperand must be a valid IfcBooleanOperand"));
 
-				//check if we have boxed half spaces then see if there is any intersect
-				if(_shape1IsSolid.HasValue)
-				{
+		//		//check if we have boxed half spaces then see if there is any intersect
+		//		if(_shape1IsSolid.HasValue)
+		//		{
 
-					if(!shape1->GetBoundingBox(false)->Intersects(shape2->GetBoundingBox(false)))
-					{
-						if(_shape1IsSolid.Value == true) return shape1; else return shape2;
-					}
+		//			if(!shape1->GetBoundingBox(false)->Intersects(shape2->GetBoundingBox(false)))
+		//			{
+		//				if(_shape1IsSolid.Value == true) return shape1; else return shape2;
+		//			}
 
-				}
+		//		}
 
-				if((*(shape2->Handle)).IsNull())
-					return shape1; //nothing to subtract
+		//		if((*(shape2->Handle)).IsNull())
+		//			return shape1; //nothing to subtract
 
-				switch(repItem->Operator)
-				{
-				case IfcBooleanOperator::Union:
-					return shape1->Union(shape2);	
-				case IfcBooleanOperator::Intersection:
-					return shape1->Intersection(shape2);
-				case IfcBooleanOperator::Difference:
-					return shape1->Cut(shape2);
+		//		switch(repItem->Operator)
+		//		{
+		//		case IfcBooleanOperator::Union:
+		//			return shape1->Union(shape2);	
+		//		case IfcBooleanOperator::Intersection:
+		//			return shape1->Intersection(shape2);
+		//		case IfcBooleanOperator::Difference:
+		//			return shape1->Cut(shape2);
 
-				default:
-					throw(gcnew InvalidOperationException("XbimGeometryModel. Build(BooleanClippingResult) Unsupported Operation"));
-				}
-			}
-			catch(XbimGeometryException^ xbimE)
-			{
-				Logger->WarnFormat("Error performing boolean operation for entity #{0}={1}\n{2}\nA simplified version has been used",repItem->EntityLabel,repItem->GetType()->Name,xbimE->Message);
-				return shape1;
-			}
-		}
+		//		default:
+		//			throw(gcnew InvalidOperationException("XbimGeometryModel. Build(BooleanClippingResult) Unsupported Operation"));
+		//		}
+		//	}
+		//	catch(XbimGeometryException^ xbimE)
+		//	{
+		//		Logger->WarnFormat("Error performing boolean operation for entity #{0}={1}\n{2}\nA simplified version has been used",repItem->EntityLabel,repItem->GetType()->Name,xbimE->Message);
+		//		return shape1;
+		//	}
+		//}
 
 
 		/*
@@ -396,7 +396,13 @@ namespace Xbim
 		IXbimGeometryModel^ XbimGeometryModel::CreateFrom(IfcRepresentationItem^ repItem, Dictionary<IfcRepresentation^, IXbimGeometryModel^>^ maps, bool forceSolid,XbimLOD lod, bool occOut)
 		{
 			if(!forceSolid && dynamic_cast<IfcFacetedBrep^>(repItem))
-				return gcnew XbimFacetedShell(((IfcFacetedBrep^)repItem)->Outer);
+			{
+				IXbimGeometryModel^ geom = gcnew XbimFacetedShell(((IfcFacetedBrep^)repItem)->Outer);
+				geom->RepresentationLabel = repItem->EntityLabel;
+				IfcSurfaceStyle^ surfaceStyle = IfcRepresentationItemExtensions::SurfaceStyle(repItem);
+				if(surfaceStyle!=nullptr) geom->SurfaceStyleLabel=Math::Abs(surfaceStyle->EntityLabel);
+				return geom;
+			}
 			else if(dynamic_cast<IfcSolidModel^>(repItem))
 				return gcnew XbimSolid((IfcSolidModel^)repItem);
 			else if(dynamic_cast<IfcHalfSpaceSolid^>(repItem))
@@ -410,7 +416,7 @@ namespace Xbim
 			else if(dynamic_cast<IfcFaceBasedSurfaceModel^>(repItem)) 
 				return Build((IfcFaceBasedSurfaceModel^)repItem, forceSolid);
 			else if(dynamic_cast<IfcBooleanResult^>(repItem)) 
-				return Build((IfcBooleanResult^)repItem);
+				return gcnew XbimSolid((IfcBooleanResult^)repItem);
 			else if(dynamic_cast<IfcMappedItem^>(repItem))
 			{
 				IfcMappedItem^ map = (IfcMappedItem^) repItem;
@@ -455,7 +461,10 @@ namespace Xbim
 			}
 			else if(dynamic_cast<XbimFacetedShell^>(item))
 			{
-				return gcnew XbimMap(item,origin,transform);
+				IXbimGeometryModel^ geom = gcnew XbimMap(item,origin,transform);
+				geom->RepresentationLabel = item->RepresentationLabel;
+				geom->SurfaceStyleLabel=item->SurfaceStyleLabel;
+				return geom;
 			}
 			else if(dynamic_cast<XbimGeometryModelCollection^>(item))
 			{
@@ -490,7 +499,14 @@ namespace Xbim
 				if(forceSolid)
 					return gcnew XbimSolid((IfcClosedShell^)(repItem->FbsmFaces->First));
 				else
-					return  gcnew XbimFacetedShell((IfcClosedShell^)(repItem->FbsmFaces->First));
+				{
+					IXbimGeometryModel^ geom = gcnew XbimFacetedShell((IfcClosedShell^)(repItem->FbsmFaces->First));
+					geom->RepresentationLabel = repItem->EntityLabel;
+					IfcSurfaceStyle^ surfaceStyle = IfcRepresentationItemExtensions::SurfaceStyle(repItem);
+					if(surfaceStyle!=nullptr) geom->SurfaceStyleLabel=Math::Abs(surfaceStyle->EntityLabel);
+					return geom;
+				}
+
 			}
 
 			else if(repItem->FbsmFaces->Count == 1) //its an open shell
@@ -501,7 +517,14 @@ namespace Xbim
 					return solid;
 				}
 				else
-					return gcnew XbimFacetedShell(repItem->FbsmFaces->First);
+				{
+					IXbimGeometryModel^ geom = gcnew XbimFacetedShell(repItem->FbsmFaces->First);
+					geom->RepresentationLabel = repItem->EntityLabel;
+					IfcSurfaceStyle^ surfaceStyle = IfcRepresentationItemExtensions::SurfaceStyle(repItem);
+					if(surfaceStyle!=nullptr) geom->SurfaceStyleLabel=Math::Abs(surfaceStyle->EntityLabel);
+					return geom;
+				}
+					
 			}
 
 			else
@@ -548,17 +571,11 @@ namespace Xbim
 				//A Closed shell must be defined by IfcPolyLoop, therefore we can assume it comples as XbimFacetedShell
 
 				XbimFacetedShell^ solid =  gcnew XbimFacetedShell((IfcClosedShell^)(repItem->SbsmBoundary->First));
-				/*if( Enumerable::FirstOrDefault(solid->Faces) == nullptr)
-				return nullptr;
-				else*/
 				return solid;
 			}
 			else if(repItem->SbsmBoundary->Count == 1 )
 			{
 				XbimFacetedShell^ shell =  gcnew XbimFacetedShell(repItem->SbsmBoundary->First);
-				/*if( Enumerable::FirstOrDefault(shell->CfsFaces) == nullptr)
-				return nullptr;
-				else*/
 				return shell;
 			}
 			else

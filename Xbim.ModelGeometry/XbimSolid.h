@@ -140,7 +140,7 @@ namespace Xbim
 			XbimSolid(IfcClosedShell^ repItem);
 
 			XbimSolid(IfcConnectedFaceSet^ repItem);
-
+			XbimSolid(IfcBooleanResult^ repItem);
 			XbimSolid(IfcCsgPrimitive3D^ repItem);
 			void Print();
 			~XbimSolid()
@@ -232,7 +232,7 @@ namespace Xbim
 			virtual IXbimGeometryModel^ CopyTo(IfcObjectPlacement^ placement);
 			///static builders 
 
-			static TopoDS_Solid Build(IfcCsgSolid^ csgSolid, bool% hasCurves);
+			static TopoDS_Shape Build(IfcCsgSolid^ csgSolid, bool% hasCurves);
 			static TopoDS_Shape Build(IfcManifoldSolidBrep^ manifold, bool% hasCurves);
 			
 			static TopoDS_Solid Build(IfcSweptDiskSolid^ swdSolid, bool% hasCurves);
@@ -247,7 +247,7 @@ namespace Xbim
 			static TopoDS_Shape Build(IfcConnectedFaceSet^ cFaces, bool% hasCurves);
 			static TopoDS_Solid Build(IfcHalfSpaceSolid^ repItem, bool% hasCurves);
 			static TopoDS_Solid Build(IfcPolygonalBoundedHalfSpace^ pbhs, bool% hasCurves);
-			
+			static TopoDS_Shape Build(IfcBooleanResult^ repItem, bool% hasCurves);
 		private:
 			static TopoDS_Shell Build(const TopoDS_Wire & wire, IfcDirection^ dir, double depth, bool% hasCurves);
 			static TopoDS_Solid Build(const TopoDS_Face & face, IfcDirection^ dir, double depth, bool% hasCurves);
