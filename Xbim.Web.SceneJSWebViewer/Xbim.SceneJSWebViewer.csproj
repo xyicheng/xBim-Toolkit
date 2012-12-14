@@ -434,11 +434,8 @@
   <ItemGroup>
     <Content Include="FileUpload.ashx" />
     <None Include="models\Clinic_A_20110906.xbim" />
-    <None Include="models\Clinic_A_20110906.xbimGC" />
     <None Include="models\Duplex_A_20110907.xbim" />
-    <None Include="models\Duplex_A_20110907.xbimGC" />
     <None Include="models\Office_A_20110811.xbim" />
-    <None Include="models\Office_A_20110811.xbimGC" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

@@ -5,7 +5,8 @@
     xmlns:xbim="http://schemas.Xbim.com/Presentation"
     xmlns:xbimIO="clr-namespace:Xbim.IO;assembly=Xbim.IO"
     xmlns:local="clr-namespace:XbimXplorer"
-    Title="Xbim Xplorer" Height="600" Width="800" Loaded="Window_Loaded">
+    Title="Xbim Xplorer" Height="600" Width="800" Loaded="Window_Loaded"
+    Icon="icon.ico">
     <Window.Resources>
         <ObjectDataProvider x:Key="ModelProvider"  IsInitialLoadEnabled="False" ></ObjectDataProvider>
     </Window.Resources>

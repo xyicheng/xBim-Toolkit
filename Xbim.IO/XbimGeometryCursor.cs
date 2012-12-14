@@ -173,7 +173,7 @@ namespace Xbim.IO
         internal IEnumerable<XbimGeometryData> GeometryData(int productLabel, XbimGeometryType geomType)
         {
             int posLabel = Math.Abs(productLabel);
-            Api.JetSetCurrentIndex(sesid, table, geometryTablePrimaryIndex);
+            Api.JetSetCurrentIndex(sesid, table, geometryTableGeomTypeIndex);
             Api.MakeKey(sesid, table, (byte)geomType, MakeKeyGrbit.NewKey);
             Api.MakeKey(sesid, table, posLabel, MakeKeyGrbit.None);
             if (Api.TrySeek(sesid, table, SeekGrbit.SeekGE))
