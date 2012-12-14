@@ -436,9 +436,9 @@ namespace Xbim.Presentation
 
             Vector3D changeVector = new Vector3D(change.X, change.Y, 0);
 
-            _translate.OffsetX += changeVector.X * .04;
-            _translate.OffsetY -= changeVector.Y * .04;
-            _translate.OffsetZ += changeVector.Z * .04;
+            _translate.OffsetX += changeVector.X/4 ;
+           // _translate.OffsetY -= changeVector.Y ;
+            _translate.OffsetZ -= changeVector.Y/4 ;
 
             _previousPosition3D = currentPosition3D;
            
@@ -506,6 +506,17 @@ namespace Xbim.Presentation
         private double _stepFactor;
         private bool _cameraMoved = false;
 
+        public void SetHome()
+        {
+            _scale = new ScaleTransform3D();
+            _rotation = new AxisAngleRotation3D();
+            _translate = new TranslateTransform3D();
+            _transform = new Transform3DGroup();
+            _transform.Children.Add(_scale);
+            _transform.Children.Add(_translate);
+            _transform.Children.Add(new RotateTransform3D(_rotation));
+            UpdateCamera();
+        }
 
         
     }

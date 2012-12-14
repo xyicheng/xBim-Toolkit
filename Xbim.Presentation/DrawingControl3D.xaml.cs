@@ -337,6 +337,7 @@ namespace Xbim.Presentation
         public static readonly DependencyProperty PercentageLoadedProperty =
             DependencyProperty.Register("PercentageLoaded", typeof (double), typeof (DrawingControl3D),
                                         new UIPropertyMetadata(0.0));
+        private Rect3D _boundingBox;
 
 
 
@@ -439,12 +440,31 @@ namespace Xbim.Presentation
             mesh.Positions.Add(points[index]);
         }
 
+        private Rect3D GetModelBounds(XbimModel model)
+        {
+            Rect3D box = new Rect3D();
+
+            foreach (XbimGeometryData shape in model.GetGeometryData(XbimGeometryType.BoundingBox))
+            {
+                Matrix3D matrix3d = new Matrix3D();
+                matrix3d = matrix3d.FromArray(shape.TransformData);
+                Rect3D bb = new Rect3D(); 
+                bb = bb.FromArray(shape.ShapeData);
+                bb = bb.TransformBy(matrix3d);
+                box.Union(bb);
+            }
+            return box;
+        }
+
         private void LoadGeometry(XbimModel model)
         {
 
             //reset all the visuals
             ClearGraphics();
             
+            //get bounding box for the whole building
+            if(model!=null) InitialiseView(model);
+
             _worker = new BackgroundWorker();
             _worker.DoWork += new DoWorkEventHandler(GenerateGeometry);
 
@@ -464,7 +484,6 @@ namespace Xbim.Presentation
 
             RoutedEventArgs ev = new RoutedEventArgs(LoadedEvent);
             RaiseEvent(ev);
-            InitialiseView(e.Result as XbimModel);
         }
 
         private void GenerateGeometry_ProgressChanged(object sender, ProgressChangedEventArgs e)
@@ -565,67 +584,62 @@ namespace Xbim.Presentation
 
         private void InitialiseView(XbimModel model)
         {
-            Rect3D b = VisualTreeHelper.GetDescendantBounds(BuildingModel);
+            _boundingBox = GetModelBounds(model);
 
-            //if the view size id empty draw at Least once, if it has been drawn and the camera hasn't moved and the a resize is needed resize
-            if (_viewSize.IsEmpty || (!b.IsEmpty && !_viewSize.Contains(b) && !TrackBall.CameraMoved))
+
+            double toMetres = model.GetModelFactors.LengthToMetresConversionFactor;
+            double maxPlanDim = Math.Max(_boundingBox.SizeX, _boundingBox.SizeY) * toMetres;
+            double maxHeight = _boundingBox.SizeZ * toMetres;
+
+            if (maxPlanDim > 100) //we have a very large site, probably mapped into GIS system, just show top right hand 1KM square corner
             {
-                double toMetres = model.GetModelFactors.LengthToMetresConversionFactor;
-                double maxPlanDim = Math.Max(b.SizeX, b.SizeY) * toMetres;
-                double maxHeight = b.SizeZ * toMetres;
-                
-                if (maxPlanDim > 100) //we have a very large site, probably mapped into GIS system, just show top right hand 1KM square corner
-                {
-                    double to1Km = 100/toMetres;
-                    b.Offset(new Vector3D(b.SizeX - to1Km, b.SizeY - to1Km, b.Z));
-                    b.SizeX=to1Km;
-                    b.SizeY=to1Km;
-                }
-                
-                double refHeight = 0;
-                double terrainHeight = 0;
-                //get the global numbers
-                IfcBuilding building = model.Instances.OfType<IfcBuilding>().FirstOrDefault();
-                IfcSite site = model.Instances.OfType<IfcSite>().FirstOrDefault();
-                if (building != null)
-                {
-                    if (building.ElevationOfRefHeight.HasValue)
-                    {
-                        refHeight = building.ElevationOfRefHeight.Value;
-                        terrainHeight = refHeight;
-                    }
-                    if (building.ElevationOfTerrain.HasValue) terrainHeight = building.ElevationOfTerrain.Value;
-                }
-                if (site != null && site.RefElevation.HasValue) terrainHeight = site.RefElevation.Value;
-                //adjust for ground level
-                
-
-               
-                //calculate how far to move the canvas to be centred on 0,0
-                double xOffset = b.X + (b.SizeX/2);
-                double yOffset = b.Y + (b.SizeY/2);
-               
-                
-                _viewSize = b;
-                Transform3DGroup t3d = new Transform3DGroup();
-
-                //map model to a 100 unit space
-               
-                double planScaleFactor = 100 / Math.Max(b.SizeX, b.SizeY);
-                double heightScaleFactor = 100 / (b.SizeZ-terrainHeight);
-                double scaleFactor = Math.Min(planScaleFactor, heightScaleFactor);
-                double zOffset = b.Z - scaleFactor*100; //shove it up a bit to stop render clash
-               
-
-                t3d.Children.Add(new TranslateTransform3D(-xOffset, -yOffset, -zOffset));
-                t3d.Children.Add(new ScaleTransform3D(scaleFactor, scaleFactor, scaleFactor));
-                t3d.Children.Add(new RotateTransform3D(new AxisAngleRotation3D(new Vector3D(1, 0, 0), -90)));
-                BuildingModel.Transform = t3d;
-
-                
+                double to1Km = 100 / toMetres;
+                _boundingBox.Offset(new Vector3D(_boundingBox.SizeX - to1Km, _boundingBox.SizeY - to1Km, _boundingBox.Z));
+                _boundingBox.SizeX = to1Km;
+                _boundingBox.SizeY = to1Km;
             }
-            
-            
+
+
+
+            //uses the following variables: 
+            // minX-maxZ: The values from the bounding box
+            // aspect: canvas width / canvas height
+            // fovy the Y Field Of View value in degrees
+            // DEG2RAD: Math.PI / 180
+
+            const double DEG2RAD = Math.PI / 180;
+            double minX = _boundingBox.X;
+            double minY = _boundingBox.Y;
+            double minZ = _boundingBox.Z;
+            double maxX = _boundingBox.SizeX + minX;
+            double maxY = _boundingBox.SizeY + minY;
+            double maxZ = _boundingBox.SizeZ + minZ;
+            var eyez = Math.Max(maxX - minX, Math.Max(maxY - minY, maxZ - minZ));
+
+            //setup a sensible modifier for how much we step (hack until we can sort out a step value from model)
+            TrackBall.StepFactor = eyez / 650;
+
+            var centerX = minX + ((maxX - minX) / 2);
+            var centerY = minY + ((maxY - minY) / 2);
+            var centerZ = minZ + ((maxZ - minZ) / 2);
+
+            //calc set zoom based on basic trig: tan(theta) = Opposite / Adjacent
+            var fovy = Camera.FieldOfView;
+            var theta = (fovy / 2);
+            var opposite = eyez / 2;
+            var setZoom = opposite / (Math.Tan(theta * DEG2RAD));
+
+            //setZoom is now the distance we need from camera to edge of model, but we need to take from center of model, so we add max-center
+            setZoom += (maxY - centerY);
+
+            //Camera can now be set at x: centerX, y: centerY+setZoom, z: centerZ
+            Camera.Position = new Point3D(0, -setZoom, 0);
+            Camera.LookDirection = new Vector3D(0,1,0);
+            Camera.UpDirection = new Vector3D(0,0,1);
+            Camera.FarPlaneDistance = setZoom * 10;
+            Camera.NearPlaneDistance = setZoom / 1000;
+           
+            this.TrackBall.SetHome();
         }
 
         #region Query methods

@@ -12,9 +12,9 @@
     </UserControl.Resources>
 
     <local:TrackballDecorator x:Name="TrackBall" >
-            <local:DrawingViewport3D x:Name="Canvas"  Grid.Row="0" Grid.Column="0" >
-                <!--Camera-->
-                <local:DrawingViewport3D.Camera>
+        <local:DrawingViewport3D x:Name="Canvas"  Grid.Row="0" Grid.Column="0" >
+            <!--Camera-->
+            <local:DrawingViewport3D.Camera>
                 <PerspectiveCamera  FieldOfView="45" x:Name="Camera" Position="-120,25,120" LookDirection="1,0,-1" UpDirection="0,1,0"/>
             </local:DrawingViewport3D.Camera>
             <local:DrawingViewport3D.Children>
@@ -26,17 +26,17 @@
                         </Model3DGroup>
                     </ModelVisual3D.Content>
                 </ModelVisual3D>
-                
+
                 <local:DrawingView3D x:Name="BuildingModel">
                     <local:DrawingView3D.Children>
                         <ModelVisual3D x:Name="Solids"></ModelVisual3D>
                         <ModelVisual3D x:Name="Transparents"></ModelVisual3D>
-                       
+
                     </local:DrawingView3D.Children>
                 </local:DrawingView3D>
-                <ModelVisual3D>
-                    <ModelVisual3D.Content>
-                        <GeometryModel3D Material="{StaticResource GroundMaterial}" BackMaterial="{StaticResource GroundMaterial}">
+                <!--<ModelVisual3D >
+                    <ModelVisual3D.Content >
+                        <GeometryModel3D x:Name="Ground"  Material="{StaticResource GroundMaterial}" BackMaterial="{StaticResource GroundMaterial}">
                             <GeometryModel3D.Geometry>
                                 <MeshGeometry3D TriangleIndices="0,1,2    2,3,0"
                                                         TextureCoordinates="0,1 1,1 1,0 0,0"
@@ -45,13 +45,13 @@
                             </GeometryModel3D.Geometry>
                             <GeometryModel3D.Transform>
                                 <ScaleTransform3D ScaleX="10000"  ScaleZ="10000">
-                                    
+
                                 </ScaleTransform3D>
                             </GeometryModel3D.Transform>
 
                         </GeometryModel3D>
                     </ModelVisual3D.Content>
-                </ModelVisual3D>
+                </ModelVisual3D>-->
             </local:DrawingViewport3D.Children>
         </local:DrawingViewport3D>
     </local:TrackballDecorator>

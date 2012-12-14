@@ -21,6 +21,36 @@ namespace Xbim.ModelGeometry.Scene
 {
     public static class Rect3DExtensions
     {
+        /// <summary>
+        /// Reinitialises the rectangle 3d from the byte array
+        /// </summary>
+        /// <param name="rect"></param>
+        /// <param name="array">6 doubles, definine, min and max values of the boudning box</param>
+        public static Rect3D FromArray(this Rect3D rect, byte[] array)
+        {
+            MemoryStream ms = new MemoryStream(array);
+            BinaryReader bw = new BinaryReader(ms);
+
+            double srXmin = bw.ReadDouble();
+            double srYmin = bw.ReadDouble();
+            double srZmin = bw.ReadDouble();
+            double srXmax = bw.ReadDouble();
+            double srYmax = bw.ReadDouble();
+            double srZmax = bw.ReadDouble();
+            rect.Location = new Point3D(srXmin, srYmin, srZmin);
+            rect.SizeX = srXmax - srXmin;
+            rect.SizeY = srYmax - srYmin;
+            rect.SizeZ = srZmax - srZmin;
+            return rect;
+        }
+
+        static public Rect3D TransformBy(this Rect3D rect, Matrix3D matrix3d)
+        {
+            MatrixTransform3D m3d = new MatrixTransform3D(matrix3d);
+            return m3d.TransformBounds(rect);
+            
+        }
+
         public static void Write(this Rect3D rect, BinaryWriter strm)
         {
             if (rect.IsEmpty)

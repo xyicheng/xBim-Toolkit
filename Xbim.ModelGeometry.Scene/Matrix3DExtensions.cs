@@ -26,6 +26,7 @@ namespace Xbim.ModelGeometry.Scene
         {
             MemoryStream ms = new MemoryStream(array);
             BinaryReader strm = new BinaryReader(ms);
+           
             if (useDouble)
             {
                 m3D.M11 = strm.ReadDouble();
