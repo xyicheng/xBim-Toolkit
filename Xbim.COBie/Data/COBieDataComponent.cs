@@ -134,8 +134,9 @@ namespace Xbim.COBie.Data
             DateTime frmDate;
             if (DateTime.TryParse(startData, out frmDate))
                 startData = frmDate.ToString(Constants.DATE_FORMAT);
-            else
+            else if (string.IsNullOrEmpty(startData))
                 startData = Constants.DEFAULT_STRING;//Context.RunDate;
+            
             return startData;
         }
         
