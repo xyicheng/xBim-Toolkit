@@ -20,6 +20,8 @@ namespace Xbim.SceneJSWebViewer
     using Xbim.ModelGeometry.Scene;
     using Xbim.Common.Logging;
     using Xbim.XbimExtensions;
+    using Xbim.XbimExtensions.Interfaces;
+    using Xbim.Ifc2x3.Kernel;
 
     /// <summary>
     /// An XBim implementation of an <see cref="IModelStream"/>. 
@@ -28,6 +30,17 @@ namespace Xbim.SceneJSWebViewer
     /// using the XBIM.IFC library</remarks>
     public class XBimModelStream : IModelStream
     {
+        #region private members
+        private List<XbimSurfaceStyle> MaterialList;
+        private List<String> TypeList = new List<string>();
+        private List<GeometryHeader> ProductsList = new List<GeometryHeader>();
+        private Camera DefaultCamera = new Camera();
+        private XbimModel _model;
+
+        private string _modelId;
+        #endregion
+
+
         #region Static / Factory Members
         /// <summary>
         /// A Factory method to acquire a <see cref="IModelStream"/> for the requested model file.
@@ -92,24 +105,20 @@ namespace Xbim.SceneJSWebViewer
             _modelId = model;
             _model = new XbimModel();
             _model.Open(xbimFile);
-           // _scene = new XbimSceneStream(_model, gcFile); // opens the pre-calculated Geometry file
-           // Init(model);
+             Init(model);
         }
 
         #endregion
 
-        /// <summary>
-        /// Gets the XBim Geometry scene, containing Graphs and Triangulated Meshes.
-        /// </summary>
-        public IXbimScene Scene { get { return _scene; } }
+       
 
 
         #region SceneJSTest.IModelStream
         public void Close()
         {
-            _scene.Close();
+            
             _model.Dispose();
-            _scene = null;
+            
             _model = null;
         }
 
@@ -124,7 +133,6 @@ namespace Xbim.SceneJSWebViewer
                 BoundingBox bb = BoundingBox.FromArray(shape.ShapeData);
                 bb.TransformBy(matrix3d);
                 box.IncludeBoundingBox(bb);
-                AddProduct(shape.IfcTypeId, shape.IfcProductLabel, shape.GeometryHash);
             }
             return box;
         }
@@ -145,71 +153,18 @@ namespace Xbim.SceneJSWebViewer
             {
                 ms.Write(geom.ShapeData, 0, geom.ShapeData.Length);
                 tally++;
-                if(wm==null) wm = geom.TransformData;
+                if (wm == null) wm = geom.TransformData;
             }
-            return new GeometryData(id,ms.ToArray(),0, tally,wm);
-           
+            return new GeometryData(id, ms.ToArray(), 0, tally, wm);
 
-
-            //TransformNode tn = Scene.Graph.ProductNodes[id];
-            //XbimTriangulatedModelStream tm = Scene.Triangulate(tn);
-
-
-            //if (!tm.IsEmpty)
-            //{
-            //    if (!tn.Product.GetType().IsSubclassOf(typeof(IfcFeatureElementSubtraction)) && !(tn.Product.GetType() == typeof(IfcSpace)))
-            //    {
-            //        try
-            //        {
-            //            if (tn.Product.EntityLabel != 0)
-            //            {
-            //                //get transform matrix
-            //                Double[] dWorldMatrix = new Double[16];
-            //                Matrix3D worldMatrix = tn.WorldMatrix();
-            //                if (!worldMatrix.IsIdentity)
-            //                {
-            //                    dWorldMatrix[0] = worldMatrix.M11;
-            //                    dWorldMatrix[1] = worldMatrix.M12;
-            //                    dWorldMatrix[2] = worldMatrix.M13;
-            //                    dWorldMatrix[3] = worldMatrix.M14;
-
-            //                    dWorldMatrix[4] = worldMatrix.M21;
-            //                    dWorldMatrix[5] = worldMatrix.M22;
-            //                    dWorldMatrix[6] = worldMatrix.M23;
-            //                    dWorldMatrix[7] = worldMatrix.M24;
-
-            //                    dWorldMatrix[8] = worldMatrix.M31;
-            //                    dWorldMatrix[9] = worldMatrix.M32;
-            //                    dWorldMatrix[10] = worldMatrix.M33;
-            //                    dWorldMatrix[11] = worldMatrix.M34;
-
-            //                    dWorldMatrix[12] = worldMatrix.OffsetX;
-            //                    dWorldMatrix[13] = worldMatrix.OffsetY;
-            //                    dWorldMatrix[14] = worldMatrix.OffsetZ;
-            //                    dWorldMatrix[15] = worldMatrix.M44;
-            //                }
-            //                return new GeometryData(Convert.ToInt32(id), tm.DataStream.ToArray(), tm.HasData, tm.NumChildren, dWorldMatrix);
-            //            }
-            //        }
-            //        catch (Exception ex)
-            //        {
-            //            Logger.Warn(
-            //                String.Format("Failed to get geometry data for entity #{0} {1) in model {2}.", entityId, tn.Product.ToString(), _modelId),
-            //                ex);
-            //            return null;
-            //        }
-            //    }
-            //}
-            //Logger.InfoFormat("No geometry available for entity {0} - {1} in model {2}.", entityId, tn.Product.ToString(), _modelId);
-            //return null;
         }
 
-        public List<GeometryLabel> GetGeometryHeaders()
+        public List<GeometryHeader> GetGeometryHeaders()
         {
             return ProductsList;
         }
 
-        public List<Material> GetMaterials()
+        public List<XbimSurfaceStyle> GetMaterials()
         {
             return MaterialList;
         }
@@ -219,80 +174,20 @@ namespace Xbim.SceneJSWebViewer
             return TypeList;
         }
 
-        private void AddProduct(short typeId, int productLabel, int representationLabel)
+  
+        private static Material GetDefinedMaterial(IfcSurfaceStyle surfaceStyle)
         {
-           
-                //try to get any material defined in the model
-                Material definedMaterial = GetDefinedMaterial( typeId,  productLabel,  representationLabel);
-
-                String materialName = definedMaterial.Name;
-                Material material = definedMaterial;
-
-
-                //check if the material already exists, if not - add it
-                if (!TypeList.Contains(material.Name))
-                {
-                    materialName = AddMaterialType(materialName, material);
-                }
-
-                //add the product to the correct header now we are sure to have the material in the list
-                GeometryLabel label = ProductsList.First(s => s.Type == materialName);
-                label.Geometries.Add(productLabel.ToString());
-           
-        }
-
-        private String AddMaterialType(String materialName, Material material)
-        {
-            materialName = material.Name;
-            TypeList.Add(materialName);
-            GeometryLabel g = new GeometryLabel();
-            g.Type = materialName;
-            g.Material = materialName;
-            if (material.Alpha < 1)
-            {
-                g.LayerPriority = 1;
-            }
-            MaterialList.Add(material);
-            ProductsList.Add(g);
-            return materialName;
-        }
-
-        private static Material GetDefinedMaterial(short typeId, int productLabel, int representationLabel)
-        {
-            //try
-            //{
-                //if (node.Product.Representation == null)
-                //    return null;
-
-                //var representation = node.Product.Representation.Representations.First();
-
-                ////if we dont have any representation, return
-                //if (representation == null || representation.Items.Count == 0) return null;
-                //var styledBy = representation.Items.First();
-                //if (styledBy == null || styledBy.StyledByItem.Count() == 0) return null;
-                //var styleByItem = styledBy.StyledByItem.First();
-                //if(styleByItem == null || styleByItem.Styles.Count == 0) return null;
-                //var firstStyle = styleByItem.Styles.First;
-                //if (firstStyle == null || firstStyle.Styles.Count == 0) return null;
-                //IfcSurfaceStyle surfaceStyle = firstStyle.Styles.First as IfcSurfaceStyle;
-                //if (surfaceStyle == null || surfaceStyle.Styles.Count == 0) return null;
-                //IfcSurfaceStyleRendering rgb = surfaceStyle.Styles.First as IfcSurfaceStyleRendering;
-                //if (rgb == null) return null;
-                    
-                return new Material( "DefaultMaterial",
-                    .5,
-                    .1,
-                   .3,
-                    .7,
-                    0.0);
-                
-            //}
-            //catch (Exception ex)
-            //{
-            //    Logger.Warn(String.Format("Failed to get Representation and Material for entity #{0}", node.ProductId),
-            //        ex);
-            //}
-            //return null;
+            
+            if (surfaceStyle == null || surfaceStyle.Styles.Count == 0) return null;
+            IfcSurfaceStyleRendering rgb = surfaceStyle.Styles.First as IfcSurfaceStyleRendering;
+            if (rgb == null) return null;
+            string materialName = surfaceStyle.Name.HasValue ? surfaceStyle.Name.Value.ToString() : surfaceStyle.EntityLabel.ToString();
+            return new Material(materialName + "Material",
+                     rgb.SurfaceColour.Red,
+                     rgb.SurfaceColour.Green,
+                     rgb.SurfaceColour.Blue,
+                     (1.0 - (double)rgb.Transparency.Value.Value),
+                     0.0);
         }
 
         private Func<TransformNode, bool> FilterByType(Type t)
@@ -303,70 +198,51 @@ namespace Xbim.SceneJSWebViewer
         public void Init(string model)
         {
 
+            var handles = _model.GetGeometryHandles();
+            var surfaceStyles = handles.GetSurfaceStyles();
+            MaterialList = new List<XbimSurfaceStyle>(surfaceStyles);
+            foreach (XbimSurfaceStyle surfaceStyle in MaterialList)
+            {
+                
+                 //try to get any material defined in the model
+                Material definedMaterial = GetDefinedMaterial(surfaceStyle.IfcSurfaceStyle(_model));
+                surfaceStyle.TagRenderMaterial = definedMaterial; //store the material
+                String materialName = String.Empty;
+                Material material = null;
+                if (definedMaterial != null)
+                {
+                    materialName = definedMaterial.Name;
+                    material = definedMaterial;
+                }
+                else
+                {
+                    material = DefaultMaterials.LookupMaterial(surfaceStyle.IfcTypeId);
+                    if (material == null)
+                    {
+                        Logger.WarnFormat("Could not locate default material for entity type #{0} in model {1}", surfaceStyle.IfcType.Name, _modelId);
+                        // set null material as SHOCKING PINK
+                        material = new Material(surfaceStyle.IfcType.Name, 0.98823529411764705882352941176471d, 0.05882352941176470588235294117647d, 0.75294117647058823529411764705882d, 1.0d, 0.0d);
+                    }
+                    materialName = material.Name;
+                }
 
-           
-        //    //prepare temp collections of the different types we want to prioritise
-        //    IEnumerable<TransformNode> Slabs = Scene.Graph.ProductNodes.Values.Where(FilterByType(typeof(IfcSlab)));
-        //    IEnumerable<TransformNode> Walls = Scene.Graph.ProductNodes.Values.Where(FilterByType(typeof(IfcWall)));
-        //    IEnumerable<TransformNode> Roofs = Scene.Graph.ProductNodes.Values.Where(FilterByType(typeof(IfcRoof)));
-        //    IEnumerable<TransformNode> Windows = Scene.Graph.ProductNodes.Values.Where(FilterByType(typeof(IfcWindow)));
-        //    IEnumerable<TransformNode> Doors = Scene.Graph.ProductNodes.Values.Where(FilterByType(typeof(IfcDoor)));
-        //    IEnumerable<TransformNode> Plates = Scene.Graph.ProductNodes.Values.Where(FilterByType(typeof(IfcPlate)));
-        //    IEnumerable<TransformNode> Beams = Scene.Graph.ProductNodes.Values.Where(FilterByType(typeof(IfcBeam)));
-        //    IEnumerable<TransformNode> Columns = Scene.Graph.ProductNodes.Values.Where(FilterByType(typeof(IfcColumn)));
-        //    IEnumerable<TransformNode> Others = Scene.Graph.ProductNodes.Values.Except(Slabs).Except(Walls).Except(Roofs).Except(Windows).Except(Doors).Except(Plates).Except(Beams).Except(Columns);
 
-        //    //Add the types we want to load first (in reverse order as client pops from top of list)
-        //    foreach (TransformNode tn in Others)
-        //    {
-        //        if (!tn.Product.GetType().IsSubclassOf(typeof(IfcFeatureElementSubtraction)) && !(tn.Product.GetType() == typeof(IfcSpace)))
-        //        {
-        //            AddProduct(tn);
-        //        }
-        //        else
-        //        {
-        //            Logger.DebugFormat("Skipping non-visible entity #{0} - {1}", tn.ProductId, tn.Product.ToString());
-        //        }
-        //    }
+                //add all the products with per surface style
+                GeometryHeader geomHeader = new GeometryHeader();
+                geomHeader.Type = materialName;
+                geomHeader.Material = materialName;
+                if (material.Alpha < 1)
+                {
+                    geomHeader.LayerPriority = 1;
+                }
+                MaterialList.Add(surfaceStyle);
+                ProductsList.Add(geomHeader);
+                foreach (var geomHandle in handles.GetGeometryHandles(surfaceStyle))
+                {
+                    geomHeader.Geometries.Add(geomHandle.GeometryLabel.ToString());
+                }
+            }
 
-        //    foreach (TransformNode tn in Beams)
-        //    {
-        //        AddProduct(tn);
-        //    }
-        //    foreach (TransformNode tn in Columns)
-        //    {
-        //        AddProduct(tn);
-        //    }
-        //    foreach (TransformNode tn in Plates)
-        //    {
-        //        AddProduct(tn);
-        //    }
-        //    foreach (TransformNode tn in Doors)
-        //    {
-        //        AddProduct(tn);
-        //    }
-        //    foreach (TransformNode tn in Windows)
-        //    {
-        //        AddProduct(tn);
-        //    }
-        //    foreach (TransformNode tn in Roofs)
-        //    {
-        //        AddProduct(tn);
-        //    }
-
-        //    foreach (TransformNode tn in Walls)
-        //    {
-        //        AddProduct(tn);
-        //    }
-        //    foreach (TransformNode tn in Slabs)
-        //    {
-        //        AddProduct(tn);
-        //    }
-
-        //    if (Logger.IsDebugEnabled)
-        //    {
-        //        DumpProducts();
-        //    }
         }
 
         private void DumpProducts()
@@ -387,7 +263,7 @@ namespace Xbim.SceneJSWebViewer
             foreach (var material in MaterialList)
             {
                 sb.Append("\t");
-                sb.AppendLine(material.Name);
+                sb.AppendLine(material.TagRenderMaterial.ToString());
             }
 
             sb.AppendLine();
@@ -411,47 +287,22 @@ namespace Xbim.SceneJSWebViewer
 
         public string QueryData(string id, string query)
         {
-            //foreach (var item in Scene.Graph.ProductNodes)
-            //{
-            TransformNode tn = null;
-            if (Scene.Graph.ProductNodes.TryGetValue(Convert.ToInt64(id), out tn))
+            IfcProduct product = _model.Instances[Convert.ToInt32(id)] as IfcProduct;
+            if (product != null)
             {
                 StringBuilder sb = new StringBuilder();
                 sb.Append("ID " + id);
                 sb.Append(" Name: ");
-                try
-                {
-                    sb.Append(tn.Product.ToString());
-                    //sb.Append(" " + tn.Product.OwnerHistory.LastModifyingUser.ThePerson.FamilyName.Value.ToPart21);
-                }
-                catch { }
-                //sb.Append(" min: ");
-                //sb.Append(tn.BoundingBox.X); sb.Append(", ");
-                //sb.Append(tn.BoundingBox.Y); sb.Append(", ");
-                //sb.Append(tn.BoundingBox.Z);
-                //sb.Append(" max: ");
-                //sb.Append(tn.BoundingBox.X + tn.BoundingBox.SizeX); sb.Append(", ");
-                //sb.Append(tn.BoundingBox.Y + tn.BoundingBox.SizeY); sb.Append(", ");
-                //sb.Append(tn.BoundingBox.Z + tn.BoundingBox.SizeZ);
-                sb.Append(", IFC Type: " + DefaultMaterials.StripString(tn.Product.GetType().ToString()));
-
+                sb.Append(product.ToString());
+                sb.Append(", IFC Type: " + product.GetType().Name);
                 Logger.DebugFormat("Query result: ", sb);
                 return sb.ToString();
             }
-            //}
-            return "You sent a query of: '" + query + "' for id: '" + id + "'";
+            else
+                return "You sent a query of: '" + query + "' for id: '" + id + "'";
         }
 
         #endregion SceneJSTest.IModelStream
 
-        #region private members
-        private List<Material> MaterialList = new List<Material>();
-        private List<String> TypeList = new List<string>();
-        private List<GeometryLabel> ProductsList = new List<GeometryLabel>();
-        private Camera DefaultCamera = new Camera();
-        private XbimModel _model;
-        private IXbimScene _scene;
-        private string _modelId;
-        #endregion
     }
 }

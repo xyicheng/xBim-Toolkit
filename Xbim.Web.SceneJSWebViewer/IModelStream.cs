@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using Xbim.IO;
 
     /// <summary>
     /// Interface for a model streaming object
@@ -43,13 +44,13 @@
         /// Gets the Materials in the model
         /// </summary>
         /// <returns>A List of Material objects</returns>
-        List<Material> GetMaterials();
+        List<XbimSurfaceStyle> GetMaterials();
 
         /// <summary>
         /// Gets the headers (labels) for the geometry
         /// </summary>
         /// <returns>a list of Geometry Labels</returns>
-        List<GeometryLabel> GetGeometryHeaders();
+        List<GeometryHeader> GetGeometryHeaders();
 
         /// <summary>
         /// Gets the actual geometric data of the geometry

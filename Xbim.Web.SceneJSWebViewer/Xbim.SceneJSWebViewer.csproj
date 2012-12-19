@@ -328,7 +328,7 @@
       <DependentUpon>FileUpload.ashx</DependentUpon>
     </Compile>
     <Compile Include="GeometryData.cs" />
-    <Compile Include="GeometryLabel.cs" />
+    <Compile Include="GeometryHeader.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>

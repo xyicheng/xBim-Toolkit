@@ -14,6 +14,7 @@ namespace Xbim.IO
     {
         private int styleId;
         private short ifcTypeId;
+
         /// <summary>
         /// Holds the material used by the graphics engine to render the surface style
         /// Set to a value to suite  specific needs of the graphics environment being used
@@ -23,6 +24,12 @@ namespace Xbim.IO
         /// List of Geometry data objects rendererd by this style
         /// </summary>
         public List<XbimGeometryData> GeometryData = new List<XbimGeometryData>();
+
+
+        public short IfcTypeId
+        {
+            get { return ifcTypeId; }
+        }
 
         public XbimSurfaceStyle(short ifcTypeId, int ifcSurfaceStyleId)
         {

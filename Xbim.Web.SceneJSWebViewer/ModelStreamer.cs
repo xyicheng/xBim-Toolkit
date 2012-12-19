@@ -9,6 +9,7 @@ using System.Collections.Concurrent;
 using System.Web.Script.Serialization;
 using System.Diagnostics;
 using Xbim.Common.Logging;
+using Xbim.IO;
 
 namespace Xbim.SceneJSWebViewer
 {
@@ -234,15 +235,15 @@ namespace Xbim.SceneJSWebViewer
             data.Add((byte)Command.SharedGeometry); //Command
             data.Add(BitConverter.IsLittleEndian ? (byte)0x01 : (byte)0x00); //Endian Flag
 
-            List<GeometryLabel> temp = modelstream.GetGeometryHeaders();
+            List<GeometryHeader> temp = modelstream.GetGeometryHeaders();
             data.AddRange(BitConverter.GetBytes(Convert.ToUInt16(temp.Count)));
             Int32 totalcount = 0;
-            foreach (GeometryLabel g in temp)
+            foreach (GeometryHeader g in temp)
             {
                 totalcount += g.Geometries.Count;
             }
             data.AddRange(BitConverter.GetBytes(Convert.ToUInt16(totalcount)));
-            foreach (GeometryLabel g in temp)
+            foreach (GeometryHeader g in temp)
             {
                 data.AddRange(BitConverter.GetBytes(Convert.ToUInt16(g.Type.Length)));
                 data.AddRange(encoding.GetBytes(g.Type));
@@ -317,7 +318,7 @@ namespace Xbim.SceneJSWebViewer
         internal static byte[] SendSharedMaterials(string connectionId, string modelId)
         {
             IModelStream modelstream = GetModelStream(modelId);
-            List<Material> mats = modelstream.GetMaterials();
+            List<XbimSurfaceStyle> mats = modelstream.GetMaterials();
 
             System.Text.UTF8Encoding encoding = new System.Text.UTF8Encoding();
 
@@ -330,8 +331,9 @@ namespace Xbim.SceneJSWebViewer
             data.AddRange(BitConverter.GetBytes(Convert.ToUInt16(mats.Count)));
 
             //send each material
-            foreach (Material m in mats)
+            foreach (XbimSurfaceStyle ss in mats)
             {
+                Material m = ss.TagRenderMaterial as Material;
                 //send name length
                 data.AddRange(BitConverter.GetBytes(Convert.ToUInt16(m.Name.Length)));
                 //send name

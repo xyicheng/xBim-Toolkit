@@ -8,12 +8,12 @@ namespace Xbim.SceneJSWebViewer
     /// <summary>
     /// Represents a Header for a type of Geometry
     /// </summary>
-    public class GeometryLabel
+    public class GeometryHeader
     {
         /// <summary>
         /// Default constructor
         /// </summary>
-        public GeometryLabel()
+        public GeometryHeader()
         {
             this.Geometries = new List<String>();
         }
@@ -24,7 +24,7 @@ namespace Xbim.SceneJSWebViewer
         /// <param name="type">Name of the Type</param>
         /// <param name="mat">Material Name</param>
         /// <param name="geom">Geometry IDs which are of this type and material</param>
-        public GeometryLabel(String type, String mat, Int16 layerPriority, List<String> geom)
+        public GeometryHeader(String type, String mat, Int16 layerPriority, List<String> geom)
         {
             this.Type = type;
             this.Material = mat;
@@ -38,7 +38,7 @@ namespace Xbim.SceneJSWebViewer
         /// <param name="type">Name of the Type</param>
         /// <param name="mat">Material Name</param>
         /// <param name="geom">Geometry IDs which are of this type and material (as an Array)</param>
-        public GeometryLabel(String type, String mat, Int16 layerPriority, String[] geom)
+        public GeometryHeader(String type, String mat, Int16 layerPriority, String[] geom)
         {
             this.Type = type;
             this.Material = mat;

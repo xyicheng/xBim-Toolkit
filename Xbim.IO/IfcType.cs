@@ -140,6 +140,14 @@ namespace Xbim.IO
                 return _indexedValues != null && _indexedValues.Count > 0;
             }
         }
+
+        public string Name 
+        {
+            get
+            {
+                return Type.Name; 
+            }
+        }
     }
 
 }
