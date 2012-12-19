@@ -232,7 +232,7 @@ namespace XbimXplorer
         {
             BackgroundWorker worker = s as BackgroundWorker;
             string ifcFilename = args.Argument as string;
-
+            
             XbimModel model = new XbimModel();
             try
             {
@@ -242,7 +242,7 @@ namespace XbimXplorer
                 model.Open(_temporaryXbimFileName, XbimDBAccess.ReadWrite);
                 XbimScene.ConvertGeometry(model.Instances.OfType<IfcProduct>().Where(t=>!(t is IfcFeatureElement)), worker.ReportProgress, false);
                 model.Close();
-                model.Open(_temporaryXbimFileName, XbimDBAccess.Read);
+                model.Open(_temporaryXbimFileName, XbimDBAccess.Read, worker.ReportProgress);
                 args.Result = model;
                 
             }
@@ -277,11 +277,8 @@ namespace XbimXplorer
             XbimModel model = new XbimModel();
             try
             {
-                if (fileName.ToLower() == _currentModelFileName) //same file do nothing
-                    return;
-                else
-                    _currentModelFileName = fileName.ToLower();
-                model.Open(fileName); //load entities into the model
+                _currentModelFileName = fileName.ToLower();
+                model.Open(fileName, XbimDBAccess.Read, worker.ReportProgress); //load entities into the model
                 args.Result = model;
             }
             catch (Exception ex)
@@ -311,31 +308,23 @@ namespace XbimXplorer
                 string ext = fInfo.Extension.ToLower();
                 StatusBar.Visibility = Visibility.Visible;
                 CreateWorker();
-
-                if (Model != null) Model.Close();
-                ModelProvider.DeferRefresh();
-                ModelProvider.ObjectInstance = null;
+                if (dlg.FileName.ToLower() == _currentModelFileName) //same file do nothing
+                   return;
                 switch (ext)
                 {
                     case ".ifc": //it is an Ifc File
-                        _worker.DoWork += OpenIfcFile;
-                        _worker.RunWorkerAsync(dlg.FileName);
-                        break;
                     case ".ifcxml": //it is an IfcXml File
+                    case ".ifczip": //it is a xip file containing xbim or ifc File
+                    case ".zip": //it is a xip file containing xbim or ifc File
+                        CloseAndDeleteTemporaryFiles();
                         _worker.DoWork += OpenIfcFile;
                         _worker.RunWorkerAsync(dlg.FileName);
                         break;
                     case ".xbim": //it is an xbim File, just open it in the main thread
+                        CloseAndDeleteTemporaryFiles();
                         _worker.DoWork += OpenXbimFile;
-                        _worker.RunWorkerAsync(dlg.FileName);
-                       
+                        _worker.RunWorkerAsync(dlg.FileName);   
                         break;
-                    case ".ifczip": //it is a xip file containing xbim or ifc File
-                    case ".zip": //it is a xip file containing xbim or ifc File
-                        _worker.DoWork += OpenIfcFile;
-                        _worker.RunWorkerAsync(dlg.FileName);
-                        break;
-
                     default:
                         break;
                 }
@@ -538,7 +527,7 @@ namespace XbimXplorer
 
         private void CommandBinding_Open(object sender, ExecutedRoutedEventArgs e)
         {
-            CloseAndDeleteTemporaryFiles();
+           
             OpenFileDialog dlg = new OpenFileDialog();
             dlg.Filter = "Xbim Files|*.xbim;*.ifc;*.ifcxml;*.ifczip"; // Filter files by extension 
             dlg.FileOk += new CancelEventHandler(dlg_OpenXbimFile);

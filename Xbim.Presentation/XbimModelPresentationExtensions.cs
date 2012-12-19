@@ -12,17 +12,17 @@ namespace Xbim.Presentation
 {
     public static class XbimModelPresentationExtensions
     {
-        public static XbimMaterialProvider GetRenderMaterial(this XbimModel model, XbimGeometryData geomData)
+        public static XbimMaterialProvider GetRenderMaterial(this XbimModel model, XbimSurfaceStyle style)
         {
-            if (geomData.StyleLabel > 0)
+            if (style.IsIfcSurfaceStyle)
             {
-                IfcSurfaceStyle surfaceStyle = model.Instances[geomData.StyleLabel] as IfcSurfaceStyle;
+                IfcSurfaceStyle surfaceStyle = style.IfcSurfaceStyle(model);
                 if (surfaceStyle != null)
                     return new XbimMaterialProvider(surfaceStyle.ToMaterial());
                 
             }
-            //nothing specificgo for default of type
-            return ModelDataProvider.GetDefaultMaterial(IfcMetaData.IfcType(geomData.IfcTypeId));
+            //nothing specific go for default of type
+            return ModelDataProvider.GetDefaultMaterial(style.IfcType);
         }
     }
 }

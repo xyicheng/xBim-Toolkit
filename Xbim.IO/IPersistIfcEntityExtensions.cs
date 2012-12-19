@@ -21,13 +21,13 @@ namespace Xbim.IO
         #region Write the properties of an IPersistIfcEntity to a stream
 
         /// <summary>
-        /// Returns the index value of this type for use in Xbim datanase storage
+        /// Returns the index value of this type for use in Xbim database storage
         /// </summary>
         /// <param name="entity"></param>
         /// <returns></returns>
-        public static short? IfcTypeId(this  IPersistIfcEntity entity)
+        public static short IfcTypeId(this  IPersistIfcEntity entity)
         {
-            return entity.IfcTypeId();
+            return IfcMetaData.IfcTypeId(entity);
         }
 
         /// <summary>

@@ -29,6 +29,7 @@ using Xbim.Common.Exceptions;
 using System.Globalization;
 using Xbim.Ifc2x3.ExternalReferenceResource;
 using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.PresentationAppearanceResource;
 
 
 namespace Xbim.IO
@@ -948,33 +949,55 @@ namespace Xbim.IO
             disposed = true;
         }
 
-
-
-        public IEnumerable<XbimGeometryData> GetGeometryData(IfcProduct product, XbimGeometryType geomType)
+        public void CheckMaps()
         {
-            foreach (var item in cache.GetGeometry(product.EntityLabel, geomType))
+            foreach (var mesh in GetGeometryData(XbimGeometryType.TriangulatedMesh))
             {
-               yield return item;
+                Debug.WriteLine(string.Format("{0}, hash = {1}", mesh.GeometryLabel, mesh.GeometryHash));
             }
         }
 
+        public XbimGeometryHandleCollection GetGeometryHandles(XbimGeometryType geomType=XbimGeometryType.TriangulatedMesh, XbimGeometrySort sortOrder=XbimGeometrySort.OrderByIfcSurfaceStyleThenIfcType)
+        {
+            return cache.GetGeometryHandles(geomType,sortOrder);
+          
+        }
+
+        /// <summary>
+        /// Returns all the geometries for the geometry type
+        /// Typically bounding box returns a single object, triangulated mesh mes may return multiple geometry meshes
+        /// where an object is made of multiple materials
+        /// </summary>
+        /// <param name="productLabel"></param>
+        /// <param name="geomType"></param>
+        /// <returns></returns>
         public IEnumerable<XbimGeometryData> GetGeometryData(int productLabel, XbimGeometryType geomType)
         {
-            foreach (var item in cache.GetGeometry(productLabel, geomType))
+            IPersistIfc entity = cache.GetInstance(productLabel, false, true);
+            foreach (var item in cache.GetGeometry(IfcMetaData.IfcTypeId(entity),productLabel, geomType))
             {
                 yield return item;
             }
         }
 
-        public IDictionary<string, XbimViewDefinition> Views
+        public IEnumerable<XbimGeometryData> GetGeometryData(IfcProduct product, XbimGeometryType geomType)
         {
-            get
+
+            foreach (var item in cache.GetGeometry(IfcMetaData.IfcTypeId(product), product.EntityLabel, geomType))
             {
-                Dictionary<string, XbimViewDefinition> views = new Dictionary<string, XbimViewDefinition>();
-                views.Add("Default", new XbimViewDefinition());
-                return views;
+                yield return item;
             }
         }
+
+        //public IDictionary<string, XbimViewDefinition> Views
+        //{
+        //    get
+        //    {
+        //        Dictionary<string, XbimViewDefinition> views = new Dictionary<string, XbimViewDefinition>();
+        //        views.Add("Default", new XbimViewDefinition());
+        //        return views;
+        //    }
+        //}
 
         public IEnumerable<XbimGeometryData> GetGeometryData(XbimGeometryType ofType)
         {
@@ -1122,6 +1145,17 @@ namespace Xbim.IO
                 return _referencedModels;
             }
             
+        }
+
+        public XbimGeometryData GetGeometryData(XbimGeometryHandle handle)
+        {
+            return cache.GetGeometryData(handle);
+        }
+
+        public IEnumerable<XbimGeometryData> GetGeometryData(IEnumerable<XbimGeometryHandle> handles)
+        {
+            foreach (var item in cache.GetGeometryData(handles))
+                yield return item;
         }
     }
 }

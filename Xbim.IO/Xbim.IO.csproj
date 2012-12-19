@@ -141,6 +141,9 @@
     <Compile Include="GeometryCache\SpaceTriangulatedModel.cs" />
     <Compile Include="IfcFileHeader.cs" />
     <Compile Include="IfcRepresentationItemExtensions.cs" />
+    <Compile Include="XbimGeometryHandle.cs" />
+    <Compile Include="XbimGeometryHandleCollection.cs" />
+    <Compile Include="XbimGeometrySort.cs" />
     <Compile Include="XbimInstanceCollection.cs" />
     <Compile Include="XbimInstanceHandle.cs" />
     <Compile Include="IfcMetaData.cs" />
@@ -175,11 +178,14 @@
     <Compile Include="XbimOutputStream.cs" />
     <Compile Include="XbimPackage.cs" />
     <Compile Include="XbimParserState.cs" />
+    <Compile Include="XbimProductGeometry.cs" />
     <Compile Include="XbimReadOnlyDBTransaction.cs" />
     <Compile Include="XbimReadTransaction.cs" />
     <Compile Include="XbimReadWriteTransaction.cs" />
     <Compile Include="XbimReferencedModel.cs" />
     <Compile Include="XbimReferencedModelCollection.cs" />
+    <Compile Include="XbimSurfaceStyle.cs" />
+    <Compile Include="XbimSurfaceStyleMap.cs" />
     <Compile Include="XbimViewDefinition.cs" />
   </ItemGroup>
   <ItemGroup>

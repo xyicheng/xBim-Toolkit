@@ -433,8 +433,11 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="FileUpload.ashx" />
+    <Content Include="models\Clinic_A_20110906.ifc" />
     <None Include="models\Clinic_A_20110906.xbim" />
+    <Content Include="models\Duplex_A_20110907.ifc" />
     <None Include="models\Duplex_A_20110907.xbim" />
+    <Content Include="models\Office_A_20110811.ifc" />
     <None Include="models\Office_A_20110811.xbim" />
   </ItemGroup>
   <PropertyGroup>

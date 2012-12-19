@@ -24,21 +24,31 @@ namespace Xbim.Presentation
     {
         private Material _faceMaterial;
         private Material _backgroundMaterial;
-
+        private bool _transparent;
         /// <summary>
         ///   Sets face and background Material to material
         /// </summary>
         /// <param name = "material"></param>
-        public XbimMaterialProvider(Material material)
+        public XbimMaterialProvider(Material material, bool transparent = false)
         {
             _faceMaterial = material;
             _backgroundMaterial = material;
+            _transparent = transparent;
         }
 
-        public XbimMaterialProvider(Material faceMaterial, Material backgroundMaterial)
+        public XbimMaterialProvider(Material faceMaterial, Material backgroundMaterial, bool transparent = false)
         {
             _faceMaterial = faceMaterial;
             _backgroundMaterial = backgroundMaterial;
+            _transparent = transparent;
+        }
+
+        public bool IsTransparent
+        {
+            get
+            {
+                return _transparent;
+            }
         }
 
         public Material FaceMaterial

@@ -74,11 +74,11 @@ namespace Xbim
 							array<Byte>^ matrix = Matrix3DExtensions::ToArray(node->WorldMatrix(), true);
 							Nullable<short> typeId = IfcMetaData::IfcTypeId(product);
 
-							geomTable->AddGeometry(product->EntityLabel, XbimGeometryType::BoundingBox, typeId.Value, matrix, bb->ToArray(), geomModel->RepresentationLabel, 0 ,geomModel->SurfaceStyleLabel) ;
+							geomTable->AddGeometry(product->EntityLabel, XbimGeometryType::BoundingBox, typeId.Value, matrix, bb->ToArray(), 0 ,geomModel->SurfaceStyleLabel) ;
 							int subPart = 0;
 							for each(XbimTriangulatedModel^ b in tm)
 							{
-								geomTable->AddGeometry(product->EntityLabel, XbimGeometryType::TriangulatedMesh, typeId.Value, matrix, b->Triangles , b->RepresentationLabel, subPart, b->SurfaceStyleLabel) ;
+								geomTable->AddGeometry(product->EntityLabel, XbimGeometryType::TriangulatedMesh, typeId.Value, matrix, b->Triangles , subPart, b->SurfaceStyleLabel) ;
 								subPart++;
 							}
 							tally++;

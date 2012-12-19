@@ -34,25 +34,16 @@ using Xbim.XbimExtensions;
 using Xbim.Ifc2x3.SharedComponentElements;
 using Xbim.XbimExtensions.Interfaces;
 using Xbim.IO;
+using System.Diagnostics;
+using System.Windows.Markup;
+using Xbim.Common.Exceptions;
+using System.Threading;
 
 #endregion
 
 namespace Xbim.Presentation
 {
-    public class DrawingControl3DItem
-    {
-        public ModelVisual3D ModelVisual { get; set; }
-        public long ProductLabel { get; set; }
-        
-       
 
-        public DrawingControl3DItem(long product, ModelVisual3D modelVisual)
-        {
-            ProductLabel = product;
-            ModelVisual = modelVisual;
-            
-        }
-    }
 
     public delegate XbimMaterialProvider SetMaterialEventHandler(IfcProduct product);
 
@@ -116,10 +107,12 @@ namespace Xbim.Presentation
         #region Fields
 
         private BackgroundWorker _worker;
-        private Dictionary<int, DrawingControl3DItem> _items = new Dictionary<int, DrawingControl3DItem>();
+        Dictionary<int, MeshGeometry3D> _meshMap = new Dictionary<int, MeshGeometry3D>();
+        private Dictionary<int, ModelVisual3D> _items = new Dictionary<int, ModelVisual3D>();
         private Dictionary<ModelVisual3D, ModelVisual3D> _hidden = new Dictionary<ModelVisual3D, ModelVisual3D>();
+       
         private List<Type> _hiddenTypes = new List<Type>();
-        private Rect3D _viewSize;
+       
         private XbimMaterialProvider _defaultMaterial;
         private XbimMaterialProvider _defaultTransparentMaterial;
 
@@ -245,21 +238,21 @@ namespace Xbim.Presentation
                 int? newProd = e.NewValue as int?;
                 if (oldProd.HasValue) //unhighlight last one
                 {
-                    DrawingControl3DItem item;
+                    ModelVisual3D item;
                     if (d3d._items.TryGetValue(oldProd.Value, out item))
                     {
                         Material oldMat = null;
-                        d3d._selectedVisual = item.ModelVisual;
-                        d3d.SwapMaterial(item.ModelVisual.Content, d3d._selectedVisualPreviousMaterial, ref oldMat);
+                        d3d._selectedVisual = item;
+                        d3d.SwapMaterial(item.Content, d3d._selectedVisualPreviousMaterial, ref oldMat);
                     }
                 }
                 if (newProd.HasValue) //highlight new one
                 {
-                    DrawingControl3DItem item;
+                    ModelVisual3D item;
                     if (d3d._items.TryGetValue(newProd.Value, out item))
                     {
-                        d3d._selectedVisual = item.ModelVisual;
-                        d3d.SwapMaterial(item.ModelVisual.Content, d3d._selectedVisualMaterial,
+                        d3d._selectedVisual = item;
+                        d3d.SwapMaterial(item.Content, d3d._selectedVisualMaterial,
                                          ref d3d._selectedVisualPreviousMaterial);
                     }
                 }
@@ -321,7 +314,7 @@ namespace Xbim.Presentation
 
         #endregion
 
-        public IDictionary<int, DrawingControl3DItem> Items
+        public IDictionary<int, ModelVisual3D> Items
         {
             get { return _items; }
         }
@@ -351,7 +344,8 @@ namespace Xbim.Presentation
             //BuildingModel.Content = null;
             _items.Clear();
             TrackBall.CameraMoved = false;
-            _viewSize = new Rect3D();
+            _meshMap.Clear();
+            
         }
 
         private MeshGeometry3D MakeBoundingBox(Rect3D r3D)
@@ -481,19 +475,17 @@ namespace Xbim.Presentation
         private void GenerateGeometry_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             _worker = null;
-
+            
             RoutedEventArgs ev = new RoutedEventArgs(LoadedEvent);
             RaiseEvent(ev);
         }
 
         private void GenerateGeometry_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
-            XbimGeometryData shapeToDraw = e.UserState as XbimGeometryData;
-            if (shapeToDraw != null)
+            XbimSurfaceStyle shapesToDraw = e.UserState as XbimSurfaceStyle;
+            if (shapesToDraw != null)
             {
-                DrawShape(shapeToDraw);
-                //if (e.ProgressPercentage % 50 == 0) //draw every 5%
-                //    InitialiseView(Model);
+                DrawShapes(shapesToDraw);
             }
             ProgressChangedEventHandler handler = _progressChanged;
             if (handler != null)
@@ -503,62 +495,87 @@ namespace Xbim.Presentation
 
         }
 
-        private void DrawShape( XbimGeometryData geom)
+        private void DrawShapes(XbimSurfaceStyle geometry)
         {
-
-            XbimMaterialProvider mat = Model.GetRenderMaterial(geom);
-            DrawingControl3DItem d3D;
-            IfcType ifcType = IfcMetaData.IfcType(geom.IfcTypeId);
-            bool transparent = (ifcType.Type == typeof(IfcWindow)) || (ifcType.Type == typeof(IfcPlate));
-            if (!_items.TryGetValue(geom.IfcProductLabel, out d3D))
+            
+            //take the building out of the scene
+           // ModelVisual3D building = BuildingModel;
+           // this.Canvas.Children.Remove(BuildingModel);
+            XbimMaterialProvider mat = Model.GetRenderMaterial(geometry);
+            
+            foreach (var prodGeom in geometry.ProductGeometries)
             {
-                _items.Add(geom.IfcProductLabel, d3D = new DrawingControl3DItem(geom.IfcProductLabel, new ModelVisual3D()));
-                if (transparent)
-                    Transparents.Children.Add(d3D.ModelVisual);
-                else
-                    Solids.Children.Add(d3D.ModelVisual);
-                Matrix3D matrix3d = new Matrix3D().FromArray(geom.TransformData);
-                d3D.ModelVisual.Transform = new MatrixTransform3D(matrix3d);
-            }
-           
-            ModelVisual3D mv = d3D.ModelVisual;
-
-
-            if (mat == null) //set it just in case
-            {
-                if (transparent)
-                    mat = _defaultTransparentMaterial;
-                else
-                    mat = _defaultMaterial;
-            }
-
-            mv.SetValue(TagProperty, geom.IfcProductLabel);
-
-            XbimTriangulatedModelStream tMod = new XbimTriangulatedModelStream(geom.ShapeData);
-            Binding bf = new Binding("FaceMaterial");
-            bf.Source = mat;
-            Binding bb = new Binding("BackgroundMaterial");
-            bb.Source = mat;
-
-            Model3D m3d = tMod.AsModel3D();
-            Model3DGroup grp = m3d as Model3DGroup;
-            if (grp != null)
-            {
-                foreach (var item in grp.Children)
+                //Try and get the visual for the product, if not found create one
+                ModelVisual3D mv;
+                bool newVisual = false;
+                if (!_items.TryGetValue(prodGeom.ProductLabel, out mv))
                 {
-                    BindingOperations.SetBinding(item, GeometryModel3D.MaterialProperty, bf); // mat;
-                    BindingOperations.SetBinding(item, GeometryModel3D.BackMaterialProperty, bb); // mat;
+                    mv = new ModelVisual3D();
+                    newVisual = true;
+                }
+               
+                //Set up the Model Geometry to hold the product geometry, this has unique material and tranform
+                //and may reuse GeometryModel3D meshes from previous renders
+                GeometryModel3D m3d = new GeometryModel3D();
+                m3d.BackMaterial = mat.BackgroundMaterial;
+                m3d.Material = mat.FaceMaterial;
+                bool first = true;
+                foreach (var geom in prodGeom.Geometry) //create a new one don't add it to the scene yet as we may have no valid content
+                {
+                    if (first)
+                    {
+                        Matrix3D matrix3d = new Matrix3D().FromArray(geom.TransformData);
+                        m3d.Transform = new MatrixTransform3D(matrix3d);
+                        first = false;
+                    }
+                    int geomHash = geom.GeometryHash; //check if it is already loaded
+                    MeshGeometry3D mesh;
+                    if (!_meshMap.TryGetValue(geomHash, out mesh)) //if not loaded, load it and merge with any other meshes in play
+                    {
+                        if (geom.GeometryType == XbimGeometryType.TriangulatedMesh)
+                        {
+                            XbimTriangulatedModelStream tMod = new XbimTriangulatedModelStream(geom.ShapeData);
+                            mesh = tMod.AsMeshGeometry3D();
+                            _meshMap.Add(geomHash, mesh);
+                        }
+                        else if (geom.GeometryType == XbimGeometryType.BoundingBox)
+                        {
+                            Rect3D r3d = new Rect3D().FromArray(geom.ShapeData);
+                            mesh = MakeBoundingBox(r3d);
+                            _meshMap.Add(geomHash, mesh);
+                        }
+                        else
+                            throw new XbimException("Illegal geometry type found");
+                        if (m3d.Geometry == null)
+                            m3d.Geometry = mesh;
+                        else
+                            m3d.Geometry = m3d.Geometry.Append(mesh);
+
+                    }
+                    else //add a new GeometryModel3d to the visual as we want to reference an existing mesh
+                    {
+                        GeometryModel3D m3dRef = new GeometryModel3D();
+                        m3dRef.BackMaterial = mat.BackgroundMaterial; //give the mesh its own materials and transform
+                        m3dRef.Material = mat.FaceMaterial;
+                        m3dRef.Geometry = mesh;
+                        m3dRef.Transform = m3d.Transform; //reuse the same transform
+                        mv.AddGeometry(m3dRef);
+                    }
+                }
+                if (m3d.Geometry != null) //we have added some unique content to this object
+                {
+                    mv.AddGeometry(m3d);
+                    if (newVisual) //we have some new visual representation to add, don't add model visual otherwise
+                    {
+                        mv.SetValue(TagProperty, prodGeom.ProductLabel);
+                        _items.Add(prodGeom.ProductLabel, mv);
+                        Solids.Children.Add(mv); //add to the visual scene
+                        
+                    }
                 }
             }
-            if(mv.Content==null)
-                mv.Content = m3d;
-            else
-            {
-                ModelVisual3D child = new ModelVisual3D();
-                child.Content = m3d;
-                mv.Children.Add(child);
-            }
-          
+           // this.Canvas.Children.Add(building);
+           
         }
 
 
@@ -566,16 +583,23 @@ namespace Xbim.Presentation
         {
             BackgroundWorker worker = s as BackgroundWorker;
             XbimModel model = args.Argument as XbimModel;
-            int processed = 0;
+           
             
             if (worker != null && model != null)
             {
                 worker.ReportProgress(0, "Reading Geometry");
-                foreach (var shape in model.GetGeometryData(XbimGeometryType.TriangulatedMesh).Where(sh =>  IfcMetaData.GetType(sh.IfcTypeId) != typeof(IfcSpace)))
+
+                XbimGeometryHandleCollection handles = model.GetGeometryHandles();
+                double total = handles.Count;
+                double processed = 0;
+                foreach (var ss in handles.GetSurfaceStyles())
                 {
-                    processed++;
-                    worker.ReportProgress(processed, shape);
-                }
+                    ss.GeometryData = model.GetGeometryData(handles.GetGeometryHandles(ss)).ToList();
+                    processed += ss.GeometryData.Count;
+                    int progress = Convert.ToInt32(100.0 * processed / total);
+                    worker.ReportProgress(progress, ss);
+                    Thread.Sleep(100);
+                } 
             }
             worker.ReportProgress(-1, "Complete");
             args.Result = model;
@@ -633,7 +657,7 @@ namespace Xbim.Presentation
             setZoom += (maxY - centerY);
 
             //Camera can now be set at x: centerX, y: centerY+setZoom, z: centerZ
-            Camera.Position = new Point3D(0, -setZoom, 0);
+            Camera.Position = new Point3D(centerX, -(centerY+ setZoom), centerZ);
             Camera.LookDirection = new Vector3D(0,1,0);
             Camera.UpDirection = new Vector3D(0,0,1);
             Camera.FarPlaneDistance = setZoom * 10;
@@ -663,11 +687,11 @@ namespace Xbim.Presentation
                 Type type = Model.Instances[Math.Abs(prod)].GetType();
                 if (type == typeToHide)
                 {
-                    ModelVisual3D parent = VisualTreeHelper.GetParent(placement.Value.ModelVisual) as ModelVisual3D;
+                    ModelVisual3D parent = VisualTreeHelper.GetParent(placement.Value) as ModelVisual3D;
                     if (parent != null)
                     {
-                        _hidden.Add(placement.Value.ModelVisual, parent);
-                        parent.Children.Remove(placement.Value.ModelVisual);
+                        _hidden.Add(placement.Value, parent);
+                        parent.Children.Remove(placement.Value);
                     }
                 }
             }
@@ -676,14 +700,14 @@ namespace Xbim.Presentation
 
         public void Hide(int hideProduct)
         {
-            DrawingControl3DItem item;
+            ModelVisual3D item;
             if (_items.TryGetValue(hideProduct, out item))
             {
-                ModelVisual3D parent = VisualTreeHelper.GetParent(item.ModelVisual) as ModelVisual3D;
+                ModelVisual3D parent = VisualTreeHelper.GetParent(item) as ModelVisual3D;
                 if (parent != null)
                 {
-                    _hidden.Add(item.ModelVisual, parent);
-                    parent.Children.Remove(item.ModelVisual);
+                    _hidden.Add(item, parent);
+                    parent.Children.Remove(item);
                 }
                 return;
             }

@@ -9,6 +9,11 @@ namespace Xbim.IO
 {
     public static class IfcRepresentationItemExtensions
     {
+        /// <summary>
+        /// Returns the first IfcSurfaceStyle associated with the representation item
+        /// </summary>
+        /// <param name="repItem"></param>
+        /// <returns></returns>
         public static IfcSurfaceStyle SurfaceStyle(this IfcRepresentationItem repItem)
         {
             IfcStyledItem styledItem = repItem.ModelOf.Instances.Where<IfcStyledItem>(s => s.Item == repItem).FirstOrDefault();

@@ -124,7 +124,7 @@ namespace Xbim.SceneJSWebViewer
                 BoundingBox bb = BoundingBox.FromArray(shape.ShapeData);
                 bb.TransformBy(matrix3d);
                 box.IncludeBoundingBox(bb);
-                AddProduct(shape.IfcTypeId, shape.IfcProductLabel, shape.IfcRepresentationLabel);
+                AddProduct(shape.IfcTypeId, shape.IfcProductLabel, shape.GeometryHash);
             }
             return box;
         }

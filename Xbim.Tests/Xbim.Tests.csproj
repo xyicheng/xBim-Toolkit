@@ -128,7 +128,7 @@
     <Compile Include="InternationalisationTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="AssemblySettings.cs" />
-    <Compile Include="XbimModelIndexingTests.cs" />
+    <Compile Include="XbimModelDatabaseTests.cs" />
     <Compile Include="XbimModelTest.cs" />
   </ItemGroup>
   <ItemGroup>

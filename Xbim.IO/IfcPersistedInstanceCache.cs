@@ -20,6 +20,7 @@ using Xbim.Ifc2x3.GeometryResource;
 using Microsoft.Isam.Esent.Interop.Windows7;
 using System.Globalization;
 using ICSharpCode.SharpZipLib.Zip;
+using Xbim.Ifc2x3.PresentationAppearanceResource;
 
 
 namespace Xbim.IO
@@ -995,7 +996,7 @@ namespace Xbim.IO
                 }
                 if (caching) //look in the modified cache and find the new ones only
                 {
-                    foreach (var item in createdNew.Where(e=>e.Value is TIfcType  ))
+                    foreach (var item in createdNew.Where(e => e.Value is TIfcType).ToList()) //force the iteration to avoid concurrency clashes
                     {
                         if (entityLabels.Add(item.Key))
                         { 
@@ -1082,7 +1083,7 @@ namespace Xbim.IO
                     if (caching) //look in the createnew cache and find the new ones only
                     {
 
-                        foreach (var item in createdNew.Where(e => e.Value is TIfcType))
+                        foreach (var item in createdNew.Where(e => e.Value is TIfcType).ToList())
                         {
                             if (indexKey == -1) //get all of the type
                             {
@@ -1468,28 +1469,26 @@ namespace Xbim.IO
 
 
 
-        public IEnumerable<XbimGeometryData> GetGeometry(int productLabel, XbimGeometryType geomType)
+        public IEnumerable<XbimGeometryData> GetGeometry(short typeId, int productLabel, XbimGeometryType geomType)
         {
-           
             XbimGeometryCursor geomTable = GetGeometryTable();
             try
             {
-                using (var transaction = geomTable.BeginReadOnlyTransaction())
+            using (var transaction = geomTable.BeginReadOnlyTransaction())
+            {
+                    foreach (var item in geomTable.GeometryData(typeId, productLabel, geomType))
                 {
-                    foreach (var item in geomTable.GeometryData(productLabel, geomType))
-                    {
-                        yield return item;
-                    }
+                    yield return item;
                 }
             }
-            finally 
-            {
-
-                FreeTable(geomTable);
             }
-           
-            
+            finally
+            {
+            FreeTable(geomTable);
+
+            }
         }
+
 
        
 
@@ -1503,9 +1502,16 @@ namespace Xbim.IO
         {
             //Get a cached or open a new Table
             XbimGeometryCursor geometryTable = GetGeometryTable();
-            foreach (var shape in geometryTable.GetGeometryData(ofType))
-                yield return shape;
-            FreeTable(geometryTable);
+            try
+            {
+                foreach (var shape in geometryTable.GetGeometryData(ofType))
+                    yield return shape;
+            }
+            finally
+            {
+                FreeTable(geometryTable);
+            }
+
         }
 
         internal long GeometriesCount()
@@ -1786,6 +1792,47 @@ namespace Xbim.IO
         }
 
      
+        internal XbimGeometryHandleCollection GetGeometryHandles(XbimGeometryType geomType=XbimGeometryType.TriangulatedMesh, XbimGeometrySort sortOrder=XbimGeometrySort.OrderByIfcSurfaceStyleThenIfcType)
+        {
+            //Get a cached or open a new Table
+            XbimGeometryCursor geometryTable = GetGeometryTable();
+            try
+            {
+                return geometryTable.GetGeometryHandles(geomType, sortOrder);               
+            }
+            finally
+            {
+                FreeTable(geometryTable);
+            }
+        }
+
+        internal XbimGeometryData GetGeometryData(XbimGeometryHandle handle)
+        {
+            //Get a cached or open a new Table
+            XbimGeometryCursor geometryTable = GetGeometryTable();
+            try
+            {
+                return geometryTable.GetGeometryData(handle);
+            }
+            finally
+            {
+                FreeTable(geometryTable);
+            }
+        }
+
+        internal IEnumerable<XbimGeometryData> GetGeometryData(IEnumerable<XbimGeometryHandle> handles)
+        {
+            //Get a cached or open a new Table
+            XbimGeometryCursor geometryTable = GetGeometryTable();
+            try
+            {
+                return geometryTable.GetGeometryData(handles);
+            }
+            finally
+            {
+                FreeTable(geometryTable);
+            }
+        }
     }
 
 }

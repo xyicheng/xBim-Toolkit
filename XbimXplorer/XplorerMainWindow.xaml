@@ -53,8 +53,15 @@
                 ShowsPreview="True"
                 Width="5"
                 />
-            <xbim:DrawingControl3D x:Name="DrawingControl" MouseRightButtonDown="DrawingControl_MouseRightButtonDown" Model ="{Binding}" Grid.Column="2"  Focusable="True" Background="#3A758DB2" Width="Auto" Height="Auto" ProgressChanged="ProgressChanged" />
-        
+            <xbim:DrawingControl3D x:Name="DrawingControl" MouseRightButtonDown="DrawingControl_MouseRightButtonDown" Model ="{Binding}" Grid.Column="2"  Focusable="True" Width="Auto" Height="Auto" ProgressChanged="ProgressChanged" >
+                <xbim:DrawingControl3D.Background>
+                    <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
+                        <GradientStop Color="Black" Offset="1"/>
+                        <GradientStop Color="#FF9286BD"/>
+                    </LinearGradientBrush>
+                </xbim:DrawingControl3D.Background>
+            </xbim:DrawingControl3D>
+
         </Grid>
         <StatusBar Grid.Row="2" Height="23"  Name="statusBar" VerticalAlignment="Top" >
             <StatusBarItem>

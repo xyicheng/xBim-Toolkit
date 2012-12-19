@@ -11,9 +11,8 @@ namespace Xbim.ModelGeometry.Scene
     /// </summary>
     public class XbimMeshGeometry3D : IXbimTriangulatesToPositionsIndices, IXbimTriangulatesToPositionsNormalsIndices
     {
-        Model3DGroup _modelGroup;
+       
         MeshGeometry3D _meshGeometry;
-        GeometryModel3D _geometryModel;
         Point3DCollection _points;
         TriangleType _meshType;
         uint _previousToLastIndex;
@@ -21,20 +20,17 @@ namespace Xbim.ModelGeometry.Scene
         uint _pointTally;
         uint _fanStartIndex;
 
-        public static implicit operator Model3D(XbimMeshGeometry3D modelGeom)
+        public static implicit operator MeshGeometry3D(XbimMeshGeometry3D modelGeom)
         {
-            return modelGeom._modelGroup;
+
+            return modelGeom._meshGeometry;
         }
 
         #region standard calls
 
         private void Init()
-        {
-            _modelGroup = new Model3DGroup();
+        {   
             _meshGeometry = new MeshGeometry3D();
-            _geometryModel = new GeometryModel3D();
-            _geometryModel.Geometry = _meshGeometry;
-            _modelGroup.Children.Add(_geometryModel);
         }
 
         private void StandardBeginPolygon(TriangleType meshType)
@@ -144,7 +140,7 @@ namespace Xbim.ModelGeometry.Scene
 
         void IXbimTriangulatesToPositionsIndices.EndBuild()
         {
-
+            _meshGeometry.Freeze(); //freeze it so that it cannot be changed
         }
         #endregion
 

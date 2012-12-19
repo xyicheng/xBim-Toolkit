@@ -228,36 +228,19 @@ namespace Xbim.Presentation
                         {
                             case Key.Home:
                             case Key.Escape:
-                                _previousPosition3D = new Vector3D(0, 0, 1);
-                                _translate.OffsetX = 0;
-                                _translate.OffsetY = 0;
-                                _translate.OffsetZ = 0;
-                                _scale.ScaleX = 1;
-                                _scale.ScaleY = 1;
-                                _scale.ScaleZ = 1;
-                                _rotation.Axis = new Vector3D(0, 0, 1);
-                                _rotation.Angle = 0;
-                                if (viewport3D.Camera.Transform != _transform)
-                                    viewport3D.Camera.Transform = _transform;
+                                SetHome();
                                 break;
                             case Key.Left:
-                                PanLeft();
-                                //Point newPosition = _previousPosition2D;
-                                //newPosition.Offset(-ActualWidth / 20, 0);
-                                //Pan(newPosition);
+                                _translate.OffsetX -= ActualWidth/20 * _stepFactor;
                                 break;
                             case Key.Right:
-                                axa = new AxisAngleRotation3D(new Vector3D(0, 0, 1), -.5);
+                                _translate.OffsetX += ActualWidth / 20 * _stepFactor;
                                 break;
                             case Key.Up:
-                                Vector3D nvu = pc.LookDirection;
-                                nvu.Normalize();
-                                pc.Position += nvu * _stepFactor;
+                                _translate.OffsetZ -= ActualHeight / 20 * _stepFactor;
                                 break;
                             case Key.Down:
-                                Vector3D nvd = pc.LookDirection;
-                                nvd.Normalize();
-                                pc.Position -= nvd * _stepFactor;
+                                _translate.OffsetZ += ActualHeight / 20 * _stepFactor;
                                 break;
                             case Key.PageUp:
                                 TranslateTransform3D trup = new TranslateTransform3D(0, 0, .5);
@@ -313,18 +296,6 @@ namespace Xbim.Presentation
 
        
 
-        private void PanLeft()
-        {
-            
-
-            Vector3D changeVector = new Vector3D(ActualWidth/20, 0, 0);
-
-            _translate.OffsetX += changeVector.X * .004;
-            _translate.OffsetY -= changeVector.Y * .004;
-            _translate.OffsetZ += changeVector.Z * .004;
-
-            
-        }
         void UpdateCamera()
         {
             Viewport3D viewport3D = this.Viewport3D;

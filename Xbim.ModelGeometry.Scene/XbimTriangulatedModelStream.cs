@@ -262,7 +262,7 @@ namespace Xbim.ModelGeometry.Scene
 			_dataStream = result;
 		}
 
-		public Model3D AsModel3D()
+        public MeshGeometry3D AsMeshGeometry3D()
 		{
 			XbimMeshGeometry3D m3D = new XbimMeshGeometry3D();
 			BuildWithNormals(m3D);

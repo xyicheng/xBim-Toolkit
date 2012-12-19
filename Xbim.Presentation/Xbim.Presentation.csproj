@@ -123,8 +123,6 @@
     </Compile>
     <Compile Include="CoPlanarComparer.cs" />
     <Compile Include="DrawingControl3D.xaml.cs" />
-    <Compile Include="DrawingItem3D.cs" />
-    <Compile Include="DrawingView3D.cs" />
     <Compile Include="DrawingViewport3D.cs" />
     <Compile Include="IfcMetaDataControl.xaml.cs">
       <DependentUpon>IfcMetaDataControl.xaml</DependentUpon>
@@ -132,11 +130,12 @@
     <Compile Include="IGroupable.cs" />
     <Compile Include="ISelectable.cs" />
     <Compile Include="ListRange.cs" />
+    <Compile Include="MeshGeometry3DExtensions.cs" />
     <Compile Include="ModelDataProvider.cs" />
+    <Compile Include="ModelVisual3DExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SceneGraph.cs" />
     <Compile Include="SelectionService3D.cs" />
-    <Compile Include="ShapeNode.cs" />
     <Compile Include="SkyBox.cs" />
     <Compile Include="SkySphere.cs" />
     <Compile Include="SpatialStructureControl.xaml.cs">

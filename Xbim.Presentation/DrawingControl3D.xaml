@@ -15,25 +15,25 @@
         <local:DrawingViewport3D x:Name="Canvas"  Grid.Row="0" Grid.Column="0" >
             <!--Camera-->
             <local:DrawingViewport3D.Camera>
-                <PerspectiveCamera  FieldOfView="45" x:Name="Camera" Position="-120,25,120" LookDirection="1,0,-1" UpDirection="0,1,0"/>
+                <PerspectiveCamera  FieldOfView="65" x:Name="Camera" Position="-120,25,120" LookDirection="1,0,-1" UpDirection="0,1,0"/>
             </local:DrawingViewport3D.Camera>
             <local:DrawingViewport3D.Children>
                 <ModelVisual3D x:Name="Light">
                     <ModelVisual3D.Content>
                         <Model3DGroup>
-                            <DirectionalLight x:Name="Headlight" Color="White"  Transform="{Binding ElementName=Camera, Path=Transform}" Direction="{Binding ElementName=Camera, Path=LookDirection}" />
+                            <DirectionalLight x:Name="Headlight" Color="White"  Transform="{Binding ElementName=Camera, Path=Transform}" Direction="{Binding ElementName=Camera, Path=LookDirection}"  />
                             <PointLight x:Name="Sun" Color="White" Position="-1000,1000, 0" ></PointLight>
                         </Model3DGroup>
                     </ModelVisual3D.Content>
                 </ModelVisual3D>
 
-                <local:DrawingView3D x:Name="BuildingModel">
-                    <local:DrawingView3D.Children>
+                <ModelVisual3D x:Name="BuildingModel">
+                    <ModelVisual3D.Children>
                         <ModelVisual3D x:Name="Solids"></ModelVisual3D>
                         <ModelVisual3D x:Name="Transparents"></ModelVisual3D>
 
-                    </local:DrawingView3D.Children>
-                </local:DrawingView3D>
+                    </ModelVisual3D.Children>
+                    </ModelVisual3D>
                 <!--<ModelVisual3D >
                     <ModelVisual3D.Content >
                         <GeometryModel3D x:Name="Ground"  Material="{StaticResource GroundMaterial}" BackMaterial="{StaticResource GroundMaterial}">
