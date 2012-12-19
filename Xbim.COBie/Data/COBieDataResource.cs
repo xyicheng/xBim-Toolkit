@@ -55,7 +55,7 @@ namespace Xbim.COBie.Data
                 resource.ExtIdentifier = ifcConstructionEquipmentResource.GlobalId;
                 resource.Description = (string.IsNullOrEmpty(ifcConstructionEquipmentResource.Description)) ? DEFAULT_STRING : ifcConstructionEquipmentResource.Description.ToString();
 
-                resources.Rows.Add(resource);
+                resources.AddRow(resource);
             }
             ProgressIndicator.Finalise();
             return resources;

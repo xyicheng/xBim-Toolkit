@@ -15,6 +15,7 @@ using Xbim.Ifc2x3.SharedComponentElements;
 
 namespace Xbim.COBie.Data
 {
+    
     /// <summary>
     /// Class to input data into excel worksheets for the the Component tab.
     /// </summary>
@@ -26,7 +27,9 @@ namespace Xbim.COBie.Data
         /// <param name="model">The context of the model being generated</param>
         public COBieDataComponent(COBieContext context)
             : base(context)
-        { }
+        { 
+            
+        }
 
 
         #region Methods
@@ -46,18 +49,18 @@ namespace Xbim.COBie.Data
 
             IEnumerable<IfcObject> ifcElements = ((from x in relAggregates
                                             from y in x.RelatedObjects
-                                                   where !Context.ComponentExcludeTypes.Contains(y.GetType())
+                                                   where !Context.Exclude.ObjectType.Component.Contains(y.GetType())
                                             select y).Union(from x in relSpatial
                                                             from y in x.RelatedElements
-                                                            where !Context.ComponentExcludeTypes.Contains(y.GetType())
-                                                            select y)).GroupBy(el => el.Name).Select(g => g.First()).OfType<IfcObject>(); //.Distinct().ToList();
+                                                            where !Context.Exclude.ObjectType.Component.Contains(y.GetType())
+                                                            select y)).OfType<IfcObject>(); //.GroupBy(el => el.Name).Select(g => g.First())//.Distinct().ToList();
             
             COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(ifcElements); //properties helper class
             COBieDataAttributeBuilder attributeBuilder = new COBieDataAttributeBuilder(Context, allPropertyValues);
             attributeBuilder.InitialiseAttributes(ref _attributes);
             //set up filters on COBieDataPropertySetValues for the SetAttributes only
-            attributeBuilder.ExcludeAttributePropertyNames.AddRange(Context.ComponentAttExcludesEq); //we do not want listed properties for the attribute sheet so filter them out
-            attributeBuilder.ExcludeAttributePropertyNamesWildcard.AddRange(Context.ComponentAttExcludesContains);//we do not want listed properties for the attribute sheet so filter them out
+            attributeBuilder.ExcludeAttributePropertyNames.AddRange(Context.Exclude.Component.AttributesEqualTo); //we do not want listed properties for the attribute sheet so filter them out
+            attributeBuilder.ExcludeAttributePropertyNamesWildcard.AddRange(Context.Exclude.Component.AttributesContain);//we do not want listed properties for the attribute sheet so filter them out
             attributeBuilder.RowParameters["Sheet"] = "Component";
 
 
@@ -66,15 +69,21 @@ namespace Xbim.COBie.Data
             foreach (var obj in ifcElements)
             {
                 ProgressIndicator.IncrementAndUpdate();
-                var xxx = obj.Decomposes.OfType<IfcRelAggregates>().Where(ra => Context.ComponentExcludeTypes.Contains(ra.RelatingObject.GetType()));
-                if (xxx.Count() > 0) 
-                    continue;
+                //var xxx = obj.Decomposes.OfType<IfcRelAggregates>().Where(ra => Context.Exclude.ObjectType.Component.Contains(ra.RelatingObject.GetType()));
+                //if (xxx.Count() > 0)
+                //    continue;
 
                 COBieComponentRow component = new COBieComponentRow(components);
 
                 IfcElement el = obj as IfcElement;
                 if (el == null)
                     continue;
+                if (string.IsNullOrEmpty(el.Name))
+                {
+                    el.Name = "Name Unknown " + UnknownCount.ToString();
+                    UnknownCount++;
+                }
+                
                 component.Name = el.Name;
                 component.CreatedBy = GetTelecomEmailAddress(el.OwnerHistory);
                 component.CreatedOn = GetCreatedOnDateAsFmtString(el.OwnerHistory);
@@ -89,15 +98,13 @@ namespace Xbim.COBie.Data
                 //set from PropertySingleValues filtered via candidateProperties
                 allPropertyValues.SetAllPropertySingleValues(el); //set the internal filtered IfcPropertySingleValues List in allPropertyValues
                 component.SerialNumber = allPropertyValues.GetPropertySingleValueValue("SerialNumber", false);
-                string installationDate = allPropertyValues.GetPropertySingleValueValue("InstallationDate", false);
-                component.InstallationDate = ((installationDate == DEFAULT_STRING) || (!IsDate(installationDate))) ? GetCreatedOnDateAsFmtString(null) : installationDate;
-                string warrantyStartDate = allPropertyValues.GetPropertySingleValueValue("WarrantyStartDate", false);
-                component.WarrantyStartDate = ((warrantyStartDate == DEFAULT_STRING) || (!IsDate(warrantyStartDate))) ? GetCreatedOnDateAsFmtString(null) : warrantyStartDate;
+                component.InstallationDate = GetDateFromProperty(allPropertyValues, "InstallationDate");
+                component.WarrantyStartDate = GetDateFromProperty(allPropertyValues, "WarrantyStartDate");
                 component.TagNumber = allPropertyValues.GetPropertySingleValueValue("TagNumber", false);
                 component.BarCode = allPropertyValues.GetPropertySingleValueValue("BarCode", false);
                 component.AssetIdentifier = allPropertyValues.GetPropertySingleValueValue("AssetIdentifier", false);
                 
-                components.Rows.Add(component);
+                components.AddRow(component);
 
                 //fill in the attribute information
                 attributeBuilder.RowParameters["Name"] = component.Name;
@@ -112,6 +119,26 @@ namespace Xbim.COBie.Data
         }
 
         
+        /// <summary>
+        /// Get Formatted Start Date
+        /// </summary>
+        /// <param name="allPropertyValues"></param>
+        /// <returns></returns>
+        private string GetDateFromProperty(COBieDataPropertySetValues allPropertyValues, string propertyName)
+        {
+            string startData = "";
+            IfcPropertySingleValue ifcPropertySingleValue = allPropertyValues.GetPropertySingleValue(propertyName);
+            if ((ifcPropertySingleValue != null) && (ifcPropertySingleValue.NominalValue != null))
+                startData = ifcPropertySingleValue.NominalValue.ToString();
+
+            DateTime frmDate;
+            if (DateTime.TryParse(startData, out frmDate))
+                startData = frmDate.ToString(Constants.DATE_FORMAT);
+            else if (string.IsNullOrEmpty(startData))
+                startData = Constants.DEFAULT_STRING;//Context.RunDate;
+            return startData;
+        }
+        
         
         /// <summary>
         /// Get Space name which holds the passed in IfcElement
@@ -123,9 +150,23 @@ namespace Xbim.COBie.Data
             string value = "";
             if (el != null && el.ContainedInStructure.Count() > 0)
             {
-                var owningSpace = el.ContainedInStructure.Select(cis => cis.RelatingStructure).OfType<IfcSpace>().FirstOrDefault(); //only one or zero held in ContainedInStructure
-                if ((owningSpace != null) && (owningSpace.Name != null)) value =  owningSpace.Name.ToString();  
+                IEnumerable<IfcRoot> owningObjects = el.ContainedInStructure.Select(cis => cis.RelatingStructure).OfType<IfcSpace>(); //only one or zero held in ContainedInStructure
+                if (!owningObjects.Any())
+                    owningObjects = el.ContainedInStructure.Select(cis => cis.RelatingStructure).OfType<IfcBuildingStorey>(); //only one or zero held in ContainedInStructure
+                if (!owningObjects.Any()) 
+                    owningObjects = el.ContainedInStructure.Select(cis => cis.RelatingStructure).OfType<IfcBuilding>(); //only one or zero held in ContainedInStructure
+                if (owningObjects.Any())
+                {
+                    List<string> names = new List<string>();
+                    foreach (IfcRoot item in owningObjects)
+                    {
+                        if (item.Name != null)
+                            names.Add(item.Name);
+                    }
+                    value = string.Join(", ", names);
+                }
             }
+            
             return string.IsNullOrEmpty(value) ? Constants.DEFAULT_STRING : value;
         }
 

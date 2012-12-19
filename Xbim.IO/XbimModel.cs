@@ -228,12 +228,16 @@ namespace Xbim.IO
                 return instances.OwnerHistoryModifyObject;
             }
         }
-
+        
         public IfcOwnerHistory OwnerHistoryAddObject
         {
             get
             {
                 return instances.OwnerHistoryAddObject;
+            }
+            set//required for creation of COBie data from xls to a ifc new file
+            {
+                instances.OwnerHistoryAddObject = value;
             }
         }
 

@@ -42,7 +42,7 @@ namespace XbimConvert
                     Logger.InfoFormat("Starting conversion of {0}", args[0]);
 
                     string xbimFileName = BuildFileName(arguments.IfcFileName, ".xbim");
-                    string xbimGeometryFileName = BuildFileName(arguments.IfcFileName, ".xbimGC");
+                    //string xbimGeometryFileName = BuildFileName(arguments.IfcFileName, ".xbimGC");
                     System.Diagnostics.Stopwatch watch = new System.Diagnostics.Stopwatch();
 
                     
@@ -53,7 +53,7 @@ namespace XbimConvert
                         watch.Start();
 
                         model.Open(xbimFileName, XbimDBAccess.ReadWrite);
-                        GenerateGeometry(xbimGeometryFileName, model);
+                        GenerateGeometry( model);
                         model.Close();
 
                     }
@@ -107,7 +107,7 @@ namespace XbimConvert
             GetInput();
         }
 
-        private static void GenerateGeometry(string xbimGeometryFileName, XbimModel model)
+        private static void GenerateGeometry( XbimModel model)
         {
             //now convert the geometry
 

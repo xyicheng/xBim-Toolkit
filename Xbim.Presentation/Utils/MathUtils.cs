@@ -1,13 +1,23 @@
-#region XbimHeader
-
-// The eXtensible Building Information Modelling (xBIM) Toolkit
-// Solution:    XbimComplete
-// Project:     Xbim.Presentation
-// Filename:    MathUtils.cs
-// Published:   01, 2012
-// Last Edited: 9:05 AM on 20 12 2011
-// (See accompanying copyright.rtf)
-
+#region MS Permissive Header
+//---------------------------------------------------------------------------
+//
+// (c) Copyright Microsoft Corporation.
+// This source is subject to the Microsoft Limited Permissive License.
+// See http://www.microsoft.com/resources/sharedsource/licensingbasics/limitedpermissivelicense.mspx
+// All other rights reserved.
+//
+// This file is part of the 3D Tools for Windows Presentation Foundation
+// project.  For more information, see:
+// 
+// http://CodePlex.com/Wiki/View.aspx?ProjectName=3DTools
+//
+// The following article discusses the mechanics behind this
+// trackball implementation: http://viewport3d.com/trackball.htm
+//
+// Reading the article is not required to use this sample code,
+// but skimming it might be useful.
+//
+//---------------------------------------------------------------------------
 #endregion
 
 #region Directives

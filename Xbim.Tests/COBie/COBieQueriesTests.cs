@@ -22,57 +22,56 @@ namespace Xbim.Tests.COBie
         private const string SourceFile =  Root + @"\" + SourceModelLeaf;
         private const string PickListFile = Root + @"\" + PickListLeaf;
 
-
-        private COBieContext _cobieContext = new COBieContext();
-        private XbimModel _model;
-
         [TestInitialize]
         public  void LoadModel()
         {
 
-            _model = new XbimModel();
-            _model.Open(SourceFile,XbimDBAccess.ReadWrite);
-            _cobieContext = new COBieContext();
-            if (!_cobieContext.COBieGlobalValues.ContainsKey("DEFAULTDATE"))
-                _cobieContext.COBieGlobalValues.Add("DEFAULTDATE", DateTime.Now.ToString(Constants.DATE_FORMAT));
-            _cobieContext.Models.Add(_model);
-            COBieQueries cobieEngine = new COBieQueries(_cobieContext);
 
         }
 
         [TestCleanup]
         public void CloseModel()
         {
-            _cobieContext = null;
-            if(_model != null)
-                _model.Dispose();
-            _model = null;
-            
+           
         }
 
         [TestMethod]
         public void Should_Return_Floors()
         {
-            COBieQueries cobieEngine = new COBieQueries(_cobieContext);
+            using (XbimModel model = new XbimModel())
+            {
+                model.Open(SourceFile, XbimDBAccess.ReadWrite);
+                COBieContext cobieContext = new COBieContext();
+                cobieContext.Model = model;
+                
+                COBieQueries cobieEngine = new COBieQueries(cobieContext);
 
-            var floors = cobieEngine.GetCOBieFloorSheet();
+                var floors = cobieEngine.GetCOBieFloorSheet();
 
-            Assert.AreEqual(4, floors.Rows.Count);
+                Assert.AreEqual(4, floors.Rows.Count);
 
-            FormatRows(floors);           
+                FormatRows(floors);
+            }
         }        
 
         [TestMethod]
           // "Need to resolve interdependency between sheets. Errors since Facilities needs calling first"
         public void Should_Return_Spaces()
         {
-            COBieQueries cobieEngine = new COBieQueries(_cobieContext);
+            using (XbimModel model = new XbimModel())
+            {
+                model.Open(SourceFile, XbimDBAccess.ReadWrite);
+                COBieContext cobieContext = new COBieContext();
+                cobieContext.Model = model;
 
-            var spaces = cobieEngine.GetCOBieSpaceSheet();
+                COBieQueries cobieEngine = new COBieQueries(cobieContext);
 
-            Assert.AreEqual(22, spaces.Rows.Count);
+                var spaces = cobieEngine.GetCOBieSpaceSheet();
 
-            FormatRows(spaces);
+                Assert.AreEqual(22, spaces.Rows.Count);
+
+                FormatRows(spaces);
+            }
         }
 
         private static void FormatRows(ICOBieSheet<COBieRow> cOBieSheet)
@@ -96,9 +95,6 @@ namespace Xbim.Tests.COBie
             }
            
         }
-
-       
-
    
     }
 }

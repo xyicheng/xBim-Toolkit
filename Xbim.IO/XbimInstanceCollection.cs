@@ -235,6 +235,10 @@ namespace Xbim.IO
                 }
                 return _ownerHistoryAddObject;
             }
+            set //required for creation of COBie data from xls to a ifc new file
+            {
+                _ownerHistoryAddObject = value;
+            }
         }
 
         internal IfcOwnerHistory OwnerHistoryDeleteObject

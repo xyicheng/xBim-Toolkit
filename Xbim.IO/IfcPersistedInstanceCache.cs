@@ -1472,14 +1472,23 @@ namespace Xbim.IO
         {
            
             XbimGeometryCursor geomTable = GetGeometryTable();
-            using (var transaction = geomTable.BeginReadOnlyTransaction())
+            try
             {
-                foreach (var item in geomTable.GeometryData(productLabel, geomType))
+                using (var transaction = geomTable.BeginReadOnlyTransaction())
                 {
-                    yield return item;
+                    foreach (var item in geomTable.GeometryData(productLabel, geomType))
+                    {
+                        yield return item;
+                    }
                 }
             }
-            FreeTable(geomTable);
+            finally 
+            {
+
+                FreeTable(geomTable);
+            }
+           
+            
         }
 
        

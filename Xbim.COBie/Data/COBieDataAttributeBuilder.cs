@@ -1,4 +1,6 @@
-﻿using System;
+﻿//#define DEBUGATT
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +10,7 @@ using Xbim.Ifc2x3.Kernel;
 using Xbim.Ifc2x3.PropertyResource;
 using Xbim.Ifc2x3.MeasureResource;
 using Xbim.Ifc2x3.ExternalReferenceResource;
+using Xbim.Ifc2x3.UtilityResource;
 
 namespace Xbim.COBie.Data
 {
@@ -15,6 +18,7 @@ namespace Xbim.COBie.Data
     {
 
         
+
         #region IAttributeProvider Implementation
         
         COBieSheet<COBieAttributeRow> _attributes;
@@ -89,11 +93,11 @@ namespace Xbim.COBie.Data
             RowParameters.Add("ExtSystem", Constants.DEFAULT_STRING);
             //set up lists
             ExcludeAttributePropertyNames = new List<string>();
-            ExcludeAttributePropertyNames.AddRange(Context.CommonAttExcludesEq);
+            ExcludeAttributePropertyNames.AddRange(Context.Exclude.Common.AttributesEqualTo);
             ExcludeAttributePropertyNamesWildcard = new List<string>();
-            ExcludeAttributePropertyNamesWildcard.AddRange(Context.CommonAttExcludesContains);
+            ExcludeAttributePropertyNamesWildcard.AddRange(Context.Exclude.Common.AttributesContain);
             ExcludeAttributePropertyNamesStartingWith = new List<string>();
-            ExcludeAttributePropertyNamesStartingWith.AddRange(Context.CommonAttExcludesStartWith);
+            ExcludeAttributePropertyNamesStartingWith.AddRange(Context.Exclude.Common.AttributesStartWith);
             ExcludeAttributePropertySetNames = new List<string>();
            
 
@@ -157,7 +161,7 @@ namespace Xbim.COBie.Data
                             }
                         }
                     }
-
+                    
                     IEnumerable<IfcSimpleProperty> pSVs = pairValues.Value; //Get Property SetAttribSheet Property Single Values
                     //filter on ExcludePropertyValueNames and ExcludePropertyValueNamesWildcard
                     pSVs = FilterRows(pSVs);
@@ -205,7 +209,7 @@ namespace Xbim.COBie.Data
                                select item).Count() == 0)
                        select pVS;
             }
-
+            
             return pSVs;
         }
 
@@ -229,6 +233,10 @@ namespace Xbim.COBie.Data
 
                     if (string.IsNullOrEmpty(name))
                     {
+#if DEBUGATT
+                        Console.WriteLine("Excluded attribute has no name");
+#endif
+
                         continue; //skip to next loop item
                     }
 
@@ -247,6 +255,9 @@ namespace Xbim.COBie.Data
                             if (double.TryParse(value, out num)) value = num.ToString("F3");
                             if ((string.IsNullOrEmpty(value)) || (string.Compare(value, ifcPropertySingleValue.Name.ToString(), true) == 0) || (string.Compare(value, "default", true) == 0))
                             {
+#if DEBUGATT
+                                Console.WriteLine("Excluded attribute {0}, has no value", name);
+#endif
                                 continue; //skip to next loop item
                             }
 
@@ -264,9 +275,7 @@ namespace Xbim.COBie.Data
                         if ((ifcPropertySingleValue.Unit != null))
                         {
                             attribute.Unit = COBieData<COBieAttributeRow>.GetUnitName(ifcPropertySingleValue.Unit);
-                            if (ifcPropertySingleValue.Unit is IfcNamedUnit)
-                                attribute.AllowedValues = ((IfcNamedUnit)ifcPropertySingleValue.Unit).UnitType.ToString();
-
+                            
                         }
                     }
 
@@ -277,7 +286,7 @@ namespace Xbim.COBie.Data
                         string EnumValuesHeld = "";
                         if (ifcPropertyEnumeratedValue.EnumerationValues != null)
                         {
-                            value = GetEnumerationValues(ifcPropertyEnumeratedValue.EnumerationValues);
+                            value = COBieData<COBieAttributeRow>.GetEnumerationValues(ifcPropertyEnumeratedValue.EnumerationValues);
                         }
 
                         //get  the unit and all possible values held in the Enumeration
@@ -287,7 +296,7 @@ namespace Xbim.COBie.Data
                             {
                                 attribute.Unit = COBieData<COBieAttributeRow>.GetUnitName(ifcPropertyEnumeratedValue.EnumerationReference.Unit);
                             }
-                            EnumValuesHeld = GetEnumerationValues(ifcPropertyEnumeratedValue.EnumerationReference.EnumerationValues);
+                            EnumValuesHeld = COBieData<COBieAttributeRow>.GetEnumerationValues(ifcPropertyEnumeratedValue.EnumerationReference.EnumerationValues);
                             if (!string.IsNullOrEmpty(EnumValuesHeld)) attribute.AllowedValues = EnumValuesHeld;
                         }
                     }
@@ -309,9 +318,6 @@ namespace Xbim.COBie.Data
                         if ((ifcPropertyBoundedValue.Unit != null))
                         {
                             attribute.Unit = COBieData<COBieAttributeRow>.GetUnitName(ifcPropertyBoundedValue.Unit);
-                            if (ifcPropertySingleValue.Unit is IfcNamedUnit)
-                                attribute.AllowedValues = ((IfcNamedUnit)ifcPropertySingleValue.Unit).UnitType.ToString();
-
                         }
 
                     }
@@ -340,7 +346,7 @@ namespace Xbim.COBie.Data
                     {
                         if (ifcPropertyListValue.ListValues != null)
                         {
-                            value = GetEnumerationValues(ifcPropertyListValue.ListValues);
+                            value = COBieData<COBieAttributeRow>.GetEnumerationValues(ifcPropertyListValue.ListValues);
                         }
 
                         //get  the unit and all possible values held in the Enumeration
@@ -362,9 +368,10 @@ namespace Xbim.COBie.Data
                     //passed properties from the sheet
                     attribute.SheetName = RowParameters["Sheet"];
                     attribute.RowName = RowParameters["Name"];
-                    attribute.CreatedBy = RowParameters["CreatedBy"];
-                    attribute.CreatedOn = RowParameters["CreatedOn"];
-                    attribute.ExtSystem = propertySet.OwnerHistory.OwningApplication.ApplicationFullName; //RowParameters["ExtSystem"];
+                    attribute.CreatedBy = COBieData<COBieAttributeRow>.GetEmail( propertySet.OwnerHistory.OwningUser.TheOrganization, propertySet.OwnerHistory.OwningUser.ThePerson);
+                    string onDate = COBieData<COBieAttributeRow>.GetCreatedOnDate(propertySet.OwnerHistory);
+                    attribute.CreatedOn = (string.IsNullOrEmpty(onDate)) ? Context.RunDate : onDate;
+                    attribute.ExtSystem = (propertySet.OwnerHistory.OwningApplication != null) ? propertySet.OwnerHistory.OwningApplication.ApplicationFullName.ToString() : RowParameters["ExtSystem"];
 
                     value = NumberValueCheck(value, attribute);
 
@@ -376,10 +383,12 @@ namespace Xbim.COBie.Data
                         attribute.Description = attribute.Name;
                     }
 
-                    _attributes.Rows.Add(attribute);
+                    _attributes.AddRow(attribute);
                 }
             }
         }
+
+        
 
         private string NumberValueCheck(string value, COBieAttributeRow attribute)
         {
@@ -422,15 +431,7 @@ namespace Xbim.COBie.Data
             return value;
         }
 
-        private string GetEnumerationValues(IEnumerable<IfcValue> ifcValues)
-        {
-            List<string> EnumValues = new List<string>();
-            foreach (var item in ifcValues)
-            {
-                EnumValues.Add(item.Value.ToString());
-            }
-            return string.Join(" : ", EnumValues);
-        }
+        
 
         /// <summary>
         /// Get the first related object properties, fall back to where the IfcTypeObject has no properties

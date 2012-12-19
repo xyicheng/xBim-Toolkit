@@ -932,6 +932,52 @@ namespace Xbim.Ifc2x3.ActorResource
             }
         }
 
+        ///<summary>
+        ///  Sets the ActorRoleCollection to the array of ActorRole, deletes any previous values, initialises collection.
+        ///</summary>
+        public void SetRoles(params IfcActorRole[] actorRoles)
+        {
+            if (_roles == null) _roles = new ActorRoleCollection(this);
+            else
+                _roles.Clear_Reversible();
+            foreach (IfcActorRole item in actorRoles)
+            {
+                _roles.Add_Reversible(item);
+            }
+        }
+
+        ///<summary>
+        ///  Sets the AddressCollection to the array of IfcTelecomAddress, deletes any previous values, initialises collection.
+        ///  Should test to see if Addresses exists before calling unless a new list is required, if not use Add or Add_Reversible if within a transaction 
+        ///</summary>
+        public void SetTelecomAddresss(params IfcTelecomAddress[] telecomAddress)
+        {
+            if (_addresses == null) _addresses = new AddressCollection(this);
+            else
+                _addresses.Clear_Reversible();
+            foreach (IfcTelecomAddress item in telecomAddress)
+            {
+                _addresses.Add_Reversible(item);
+            }
+        }
+
+        ///<summary>
+        ///  Sets the AddressCollection to the array of IfcPostalAddress, deletes any previous values, initialises collection.
+        ///  Should test to see if Addresses exists before calling unless a new list is required, if not use Add or Add_Reversible if within a transaction 
+        ///</summary>
+        public void SetPostalAddresss(params IfcPostalAddress[] telecomAddress)
+        {
+            if (_addresses == null) _addresses = new AddressCollection(this);
+            else
+                _addresses.Clear_Reversible();
+            foreach (IfcPostalAddress item in telecomAddress)
+            {
+                _addresses.Add_Reversible(item);
+            }
+        }
+
+
+
         #endregion
 
         #region INotifyPropertyChanged Members

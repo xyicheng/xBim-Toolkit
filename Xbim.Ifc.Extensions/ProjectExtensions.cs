@@ -191,7 +191,7 @@ namespace Xbim.Ifc2x3.Extensions
         }
 
         public static void SetOrChangeSIUnit(this IfcProject ifcProject, IfcUnitEnum unitType, IfcSIUnitName siUnitName,
-                                             IfcSIPrefix siUnitPrefix)
+                                             IfcSIPrefix? siUnitPrefix)
         {
             IModel model = ifcProject.ModelOf;
             if (ifcProject.UnitsInContext == null)

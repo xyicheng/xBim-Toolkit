@@ -33,6 +33,18 @@ namespace Xbim.IO
             }
         }
 
+        public void Begin()
+        {
+            try
+            {
+                readWriteTransaction.Begin();
+            }
+            finally
+            {
+                inTransaction = true;
+            }
+        }
+
 
         protected override void Dispose(bool disposing)
         {

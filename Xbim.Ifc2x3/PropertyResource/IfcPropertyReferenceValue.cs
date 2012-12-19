@@ -37,6 +37,11 @@ namespace Xbim.Ifc2x3.PropertyResource
 
         #region Constructors
 
+        public IfcPropertyReferenceValue()
+        {
+
+        }
+
         public IfcPropertyReferenceValue(IfcIdentifier name)
             : base(name)
         {

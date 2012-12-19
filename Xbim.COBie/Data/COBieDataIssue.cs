@@ -7,6 +7,11 @@ using Xbim.Ifc2x3.ApprovalResource;
 using Xbim.Ifc2x3.UtilityResource;
 using Xbim.XbimExtensions;
 using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.ControlExtension;
+using Xbim.Ifc2x3.PropertyResource;
+using Xbim.Ifc2x3.ProcessExtensions;
+using Xbim.Ifc2x3.ActorResource;
+using Xbim.Ifc2x3.MeasureResource;
 
 namespace Xbim.COBie.Data
 {
@@ -42,39 +47,121 @@ namespace Xbim.COBie.Data
             ProgressIndicator.Initialise("Creating Issues", ifcApprovals.Count());
             foreach (IfcApproval ifcApproval in ifcApprovals)
             {
-                
-
                 ProgressIndicator.IncrementAndUpdate();
-                if (ifcApproval == null) continue; //skip if null
-
                 COBieIssueRow issue = new COBieIssueRow(issues);
-                issue.Name = (string.IsNullOrEmpty(ifcApproval.Name.ToString())) ? DEFAULT_STRING : ifcApproval.Name.ToString();
+                //get the associated property setIfcPropertySet
+                var ifcPropertySet = Model.Instances.OfType<IfcRelAssociatesApproval>()
+                                   .Where(ral => ral.RelatingApproval == ifcApproval)
+                                   .SelectMany(ral => ral.RelatedObjects.OfType<IfcPropertySet>())
+                                   .Where(ps => ps.Name == "Pset_Risk")
+                                   .FirstOrDefault();
+
+                List<IfcSimpleProperty> propertyList = new List<IfcSimpleProperty>();
+                if (ifcPropertySet != null)
+                    propertyList = ifcPropertySet.HasProperties.OfType<IfcSimpleProperty>().ToList();
+
+                issue.Name = (string.IsNullOrEmpty(ifcApproval.Name)) ? DEFAULT_STRING : ifcApproval.Name.ToString();
 
                 //lets default the creator to that user who created the project for now, no direct link to OwnerHistory on IfcApproval
-                issue.CreatedBy = GetTelecomEmailAddress((Model.IfcProject as IfcRoot).OwnerHistory);
-                issue.CreatedOn = GetCreatedOnDateAsFmtString((Model.IfcProject as IfcRoot).OwnerHistory);
-               
-                issue.Type = DEFAULT_STRING;
-                issue.Risk = DEFAULT_STRING;
-                issue.Chance = DEFAULT_STRING;
-                issue.Impact = DEFAULT_STRING;
-                issue.SheetName1 = DEFAULT_STRING;
-                issue.RowName1 = DEFAULT_STRING;
-                issue.SheetName2 = DEFAULT_STRING;
-                issue.RowName2 = DEFAULT_STRING;
+                if (ifcPropertySet != null)
+                {
+                    //use "Pset_Risk" Property Set as source for this
+                    issue.CreatedBy = GetTelecomEmailAddress(ifcPropertySet.OwnerHistory);
+                    issue.CreatedOn = GetCreatedOnDateAsFmtString(ifcPropertySet.OwnerHistory);
+                }
+                else
+                {
+                    //if property set is null use project defaults
+                    issue.CreatedBy = GetTelecomEmailAddress(Model.IfcProject.OwnerHistory);
+                    issue.CreatedOn = GetCreatedOnDateAsFmtString(Model.IfcProject.OwnerHistory);
+                }
+                Interval propValues = GetPropertyEnumValue(propertyList, "RiskType");
+                issue.Type = propValues.Value;
+
+                propValues = GetPropertyEnumValue(propertyList, "RiskRating");
+                issue.Risk = propValues.Value;
+
+                propValues = GetPropertyEnumValue(propertyList, "AssessmentOfRisk");
+                issue.Chance = propValues.Value;
+
+                propValues = GetPropertyEnumValue(propertyList, "RiskConsequence");
+                issue.Impact = propValues.Value;
+                //GetIt(typeof(IfcApproval));
+                //Risk assessment has to be on a task so we should have one
+                List<IfcRoot> IfcRoots = GetIfcObjects(ifcApproval);
+                issue.SheetName1 = (IfcRoots.Count > 0) ? GetSheetByObjectType(IfcRoots[0].GetType()) : DEFAULT_STRING;
+                issue.RowName1 = (IfcRoots.Count > 0) ? IfcRoots[0].Name.ToString() : DEFAULT_STRING;
+
+                //assuming that this row is a person associated with the ifcApproval, but might be a task
+                string email = GetContact(ifcApproval);
+                if (email == DEFAULT_STRING) //if no email, see if we have another ifcobject
+                {
+                    issue.SheetName2 = (IfcRoots.Count > 1) ? GetSheetByObjectType(IfcRoots[1].GetType()) : DEFAULT_STRING;
+                    issue.RowName2 = (IfcRoots.Count > 1) ? IfcRoots[1].Name.ToString() : DEFAULT_STRING;
+                }
+                else
+                {
+                    issue.SheetName2 = (email != DEFAULT_STRING) ? Constants.WORKSHEET_CONTACT : DEFAULT_STRING;
+                    issue.RowName2 = (email != DEFAULT_STRING) ? email : DEFAULT_STRING;
+                }
+                 
                 issue.Description = (string.IsNullOrEmpty(ifcApproval.Description.ToString())) ? DEFAULT_STRING : ifcApproval.Description.ToString();
-                issue.Owner = issue.CreatedBy;
-                issue.Mitigation = DEFAULT_STRING;
-                issue.ExtSystem = DEFAULT_STRING;   // TODO: IfcApprocval is not a Root object so has no Owner. What should this be?
+
+                propValues = GetPropertyEnumValue(propertyList, "RiskOwner");
+                issue.Owner = propValues.Value;
+
+                propValues = GetPropertyValue(propertyList, "PreventiveMeassures");
+                issue.Mitigation = propValues.Value;
+
+                issue.ExtSystem = (ifcPropertySet != null) ? GetExternalSystem(ifcPropertySet) : DEFAULT_STRING;
                 issue.ExtObject = ifcApproval.GetType().Name;
                 issue.ExtIdentifier = ifcApproval.Identifier.ToString();
 
-                issues.Rows.Add(issue);
+                issues.AddRow(issue);
             }
 
             ProgressIndicator.Finalise();
             return issues;
         }
+        /// <summary>
+        /// get all the IfcRoot objects attached to the ifcApproval
+        /// </summary>
+        /// <param name="ifcApproval">IfcApproval Object</param>
+        /// <returns>List of IfcRoot Objects</returns>
+        private List<IfcRoot> GetIfcObjects(IfcApproval ifcApproval)
+        {
+            List<IfcRoot> ifcRootObjs = new List<IfcRoot>();
+            IEnumerable<IfcRoot> IfcRoots = Model.Instances.Where<IfcRelAssociatesApproval>(ral => ral.RelatingApproval.EntityLabel == ifcApproval.EntityLabel)
+                                            .SelectMany(ral => ral.RelatedObjects).OfType<IfcRoot>();
+            foreach (IfcRoot item in IfcRoots)
+            {
+                if (item.GetType() != typeof(IfcPropertySet))
+                {
+                    ifcRootObjs.Add(item);
+                }
+            }
+            
+            return ifcRootObjs;
+        }
+
+        
+
+        private string GetContact(IfcApproval ifcApproval)
+        {
+            string eMail = DEFAULT_STRING;
+
+            IfcPersonAndOrganization IfcPersonAndOrganization = Model.Instances.OfType<IfcApprovalActorRelationship>()
+                                                       .Where(aar => aar.Approval.EntityLabel == ifcApproval.EntityLabel)
+                                                       .Select(aar => aar.Actor).OfType<IfcPersonAndOrganization>().FirstOrDefault();
+        
+            if(IfcPersonAndOrganization != null)
+            {
+                eMail = GetTelecomEmailAddress(IfcPersonAndOrganization);
+            }
+
+            return eMail;
+        }
+
         #endregion
     }
 }

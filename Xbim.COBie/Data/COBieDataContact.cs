@@ -74,25 +74,34 @@ namespace Xbim.COBie.Data
                 
                 contact.ExtObject = "IfcPersonAndOrganization";
                 contact.ExtIdentifier = ifcPerson.Id;
+                //get department
+                string department = "";
                 if (ifcPerson.Addresses != null)
                 {
-                    string department = ifcPerson.Addresses.PostalAddresses.Select(dept => dept.InternalLocation).Where(dept => !string.IsNullOrEmpty(dept)).FirstOrDefault();
-                    if (string.IsNullOrEmpty(department))
-                        department = ifcOrganization.Description.ToString(); //only place to match example files
-                    contact.Department = (string.IsNullOrEmpty(department)) ? contact.Company : department;
+                    department = ifcPerson.Addresses.PostalAddresses.Select(dept => dept.InternalLocation).Where(dept => !string.IsNullOrEmpty(dept)).FirstOrDefault();
                 }
-                else
-                    contact.Department = contact.Company;
+                if (string.IsNullOrEmpty(department))
+                {
+                    IfcOrganization ifcRelOrganization = Model.Instances.OfType<IfcOrganizationRelationship>()
+                                                        .Where(Or => Or.RelatingOrganization.EntityLabel == ifcOrganization.EntityLabel && Or.RelatedOrganizations.Last() != null)
+                                                        .Select(Or => Or.RelatedOrganizations.Last())
+                                                        .LastOrDefault();
+                    if (ifcRelOrganization != null)
+                        department = ifcRelOrganization.Name.ToString();
+                }
+                if (string.IsNullOrEmpty(department)) 
+                    department = ifcOrganization.Description.ToString(); //only place to match example files
+                contact.Department = (string.IsNullOrEmpty(department)) ? contact.Company : department;
 
-                contact.OrganizationCode = (string.IsNullOrEmpty(ifcOrganization.Name)) ? DEFAULT_STRING : ifcOrganization.Name.ToString();
+                contact.OrganizationCode = (string.IsNullOrEmpty(ifcOrganization.Id)) ? DEFAULT_STRING : ifcOrganization.Id.ToString();
                 contact.GivenName = (string.IsNullOrEmpty(ifcPerson.GivenName)) ? DEFAULT_STRING : ifcPerson.GivenName.ToString();
                 contact.FamilyName = (string.IsNullOrEmpty(ifcPerson.FamilyName)) ? DEFAULT_STRING : ifcPerson.FamilyName.ToString();
                 if (ifcPerson.Addresses != null)
                     GetContactAddress(contact, ifcPerson.Addresses);
                 else
-                    GetContactAddress(contact, ifcOrganization.Addresses); 
-                
-                contacts.Rows.Add(contact);
+                    GetContactAddress(contact, ifcOrganization.Addresses);
+
+                contacts.AddRow(contact);
                 
             }
             ProgressIndicator.Finalise();
@@ -104,22 +113,27 @@ namespace Xbim.COBie.Data
             if ((addresses != null) && (addresses.PostalAddresses  != null))
             {
                 IfcPostalAddress ifcPostalAddress = addresses.PostalAddresses.FirstOrDefault();
-                contact.Street = (ifcPostalAddress.AddressLines != null) ? ifcPostalAddress.AddressLines.FirstOrDefault().Value.ToString() : DEFAULT_STRING;
-                contact.PostalBox = (string.IsNullOrEmpty(ifcPostalAddress.PostalBox)) ? DEFAULT_STRING : ifcPostalAddress.PostalBox.ToString();
-                contact.Town = (string.IsNullOrEmpty(ifcPostalAddress.Town)) ? DEFAULT_STRING : ifcPostalAddress.Town.ToString();
-                contact.StateRegion = (string.IsNullOrEmpty(ifcPostalAddress.Region)) ? DEFAULT_STRING : ifcPostalAddress.Region.ToString();
-                contact.PostalCode = (string.IsNullOrEmpty(ifcPostalAddress.PostalCode)) ? DEFAULT_STRING : ifcPostalAddress.PostalCode.ToString();
-                contact.Country = (string.IsNullOrEmpty(ifcPostalAddress.Country)) ? DEFAULT_STRING : ifcPostalAddress.Country.ToString();
+                if (ifcPostalAddress != null) 
+                {
+                    List<string> street = new List<string>();
+                    if (ifcPostalAddress.AddressLines != null)
+                        street = ifcPostalAddress.AddressLines.Select(st => st.Value.ToString()).ToList();
+                    
+                    contact.Street = (street.Count > 0) ? string.Join(", ", street) : DEFAULT_STRING;
+                    contact.PostalBox = (string.IsNullOrEmpty(ifcPostalAddress.PostalBox)) ? DEFAULT_STRING : ifcPostalAddress.PostalBox.ToString();
+                    contact.Town = (string.IsNullOrEmpty(ifcPostalAddress.Town)) ? DEFAULT_STRING : ifcPostalAddress.Town.ToString();
+                    contact.StateRegion = (string.IsNullOrEmpty(ifcPostalAddress.Region)) ? DEFAULT_STRING : ifcPostalAddress.Region.ToString();
+                    contact.PostalCode = (string.IsNullOrEmpty(ifcPostalAddress.PostalCode)) ? DEFAULT_STRING : ifcPostalAddress.PostalCode.ToString();
+                    contact.Country = (string.IsNullOrEmpty(ifcPostalAddress.Country)) ? DEFAULT_STRING : ifcPostalAddress.Country.ToString();
+                    return;
+                }
             }
-            else
-            {
-                contact.Street = DEFAULT_STRING;
-                contact.PostalBox = DEFAULT_STRING;
-                contact.Town = DEFAULT_STRING;
-                contact.StateRegion = DEFAULT_STRING;
-                contact.PostalCode = DEFAULT_STRING;
-                contact.Country = DEFAULT_STRING;
-            }
+            contact.Street = DEFAULT_STRING;
+            contact.PostalBox = DEFAULT_STRING;
+            contact.Town = DEFAULT_STRING;
+            contact.StateRegion = DEFAULT_STRING;
+            contact.PostalCode = DEFAULT_STRING;
+            contact.Country = DEFAULT_STRING;
         }
 
         #endregion

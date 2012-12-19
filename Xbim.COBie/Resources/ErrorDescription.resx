@@ -145,7 +145,8 @@
     <comment>{0} = Sheet name, {1} = column name</comment>
   </data>
   <data name="PrimaryKey_Violation" xml:space="preserve">
-    <value>Value must be unique</value>
+    <value>Value must be unique in column(s) {0} in rows {1} </value>
+    <comment>{0} = Column list, {1} = row index</comment>
   </data>
   <data name="Text_Value_Expected" xml:space="preserve">
     <value>Required value is empty</value>

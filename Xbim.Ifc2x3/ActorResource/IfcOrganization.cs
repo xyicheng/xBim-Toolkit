@@ -606,8 +606,20 @@ namespace Xbim.Ifc2x3.ActorResource
 
         #endregion
 
-        #region Methods
-
+        #region Set Collections
+        ///<summary>
+        ///  Sets the ActorRoleCollection to the array of ActorRole, deletes any previous values, initialises collection.
+        ///</summary>
+        public void SetRoles(params IfcActorRole[] actorRoles)
+        {
+            if (_roles == null) _roles = new ActorRoleCollection(this);
+            else
+                _roles.Clear_Reversible();
+            foreach (IfcActorRole item in actorRoles)
+            {
+                _roles.Add_Reversible(item);
+            }
+        }
         #endregion
 
         #region IFormattable Members

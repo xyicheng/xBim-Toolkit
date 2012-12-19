@@ -47,7 +47,7 @@ namespace Xbim.Ifc2x3.GeometryResource
         #region Fields
 
         private CompositeCurveSegmentList _segments;
-        private IfcLogical _selfIntersect;
+        private IfcLogical? _selfIntersect;
 
         #endregion
 
@@ -65,7 +65,7 @@ namespace Xbim.Ifc2x3.GeometryResource
         }
 
         [IfcAttribute(2, IfcAttributeState.Mandatory)]
-        public IfcLogical SelfIntersect
+        public IfcLogical? SelfIntersect
         {
             get
             {

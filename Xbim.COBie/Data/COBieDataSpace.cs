@@ -47,17 +47,13 @@ namespace Xbim.COBie.Data
             COBieDataAttributeBuilder attributeBuilder = new COBieDataAttributeBuilder(Context, allPropertyValues);
             attributeBuilder.InitialiseAttributes(ref _attributes);
 
-
-
-            if ((Context.COBieGlobalValues.ContainsKey("DEPARTMENTUSEDASZONE")) &&
-                (Context.COBieGlobalValues["DEPARTMENTUSEDASZONE"] == "T")
-                )
+            if (Context.DepartmentsUsedAsZones)
                 attributeBuilder.ExcludeAttributePropertyNames.Add("Department"); //remove the department property from selection
             
             //set up filters on COBieDataPropertySetValues
-            attributeBuilder.ExcludeAttributePropertyNames.AddRange(Context.SpaceAttExcludesEq);
-            attributeBuilder.ExcludeAttributePropertyNamesWildcard.AddRange(Context.SpaceAttExcludesContains);
-            attributeBuilder.ExcludeAttributePropertySetNames.AddRange(Context.SpaceAttExcludesPropertSetEq);
+            attributeBuilder.ExcludeAttributePropertyNames.AddRange(Context.Exclude.Space.AttributesEqualTo);
+            attributeBuilder.ExcludeAttributePropertyNamesWildcard.AddRange(Context.Exclude.Space.AttributesContain);
+            attributeBuilder.ExcludeAttributePropertySetNames.AddRange(Context.Exclude.Space.PropertySetsEqualTo);
             attributeBuilder.RowParameters["Sheet"] = "Space";
 
             ProgressIndicator.Initialise("Creating Spaces", ifcSpaces.Count());
@@ -75,7 +71,7 @@ namespace Xbim.COBie.Data
 
                 space.Category = GetCategory(ifcSpace);
 
-                space.FloorName = ifcSpace.SpatialStructuralElementParent.Name.ToString();
+                space.FloorName = ((ifcSpace.SpatialStructuralElementParent != null) && (!string.IsNullOrEmpty(ifcSpace.SpatialStructuralElementParent.Name))) ? ifcSpace.SpatialStructuralElementParent.Name.ToString() : DEFAULT_STRING;
                 space.Description = GetSpaceDescription(ifcSpace);
                 space.ExtSystem = GetExternalSystem(ifcSpace);
                 space.ExtObject = ifcSpace.GetType().Name;
@@ -87,7 +83,7 @@ namespace Xbim.COBie.Data
                 space.GrossArea = GetGrossFloorArea(ifcSpace, allPropertyValues);
                 space.NetArea = GetNetArea(ifcSpace, allPropertyValues);
 
-                spaces.Rows.Add(space);
+                spaces.AddRow(space);
                 
                 //----------fill in the attribute information for spaces-----------
 
@@ -115,16 +111,16 @@ namespace Xbim.COBie.Data
             string areaUnit = null;
             double areavalue = 0.0;
 
-            if (Context.COBieGlobalValues.ContainsKey("AREAUNIT"))
-                areaUnit = Context.COBieGlobalValues["AREAUNIT"];//see what the global area unit is
-
+            if (!string.IsNullOrEmpty(Context.WorkBookUnits.AreaUnit))
+                areaUnit = Context.WorkBookUnits.AreaUnit;//see what the global area unit is
+          
             IfcAreaMeasure netAreaValue = ifcSpace.GetNetFloorArea();  //this extension has the GSA built in so no need to get again
             if (netAreaValue != null)
             {
                 areavalue = ((double)netAreaValue);
                 if (areavalue > 0.0)
                 {
-                    if ((!string.IsNullOrEmpty(areaUnit)) && (areaUnit.ToLower().Contains("milli"))) //we are using millimetres
+                    if ((!string.IsNullOrEmpty(areaUnit)) && (areaUnit.ToLower().Contains("milli")) && (areavalue > 250000.0)) //we are using millimetres, and areavalue is lightly to be in mmsq if over 250000(0.5msq)
                         areavalue = areavalue / 1000000.0;
 
                     return areavalue.ToString("F4");
@@ -146,7 +142,7 @@ namespace Xbim.COBie.Data
             {
                 if (double.TryParse(value, out areavalue))
                 {
-                    if ((!string.IsNullOrEmpty(areaUnit)) && (areaUnit.ToLower().Contains("milli")))//we are using millimetres
+                    if ((!string.IsNullOrEmpty(areaUnit)) && (areaUnit.ToLower().Contains("milli")) && (areavalue > 250000.0))//we are using millimetres, and areavalue is lightly to be in mmsq if over 250000(0.5msq)
                         areavalue = areavalue / 1000000.0;
                     return areavalue.ToString("F4");
                 }
@@ -164,8 +160,9 @@ namespace Xbim.COBie.Data
             string areaUnit = null;
             double areavalue = 0.0;
 
-            if (Context.COBieGlobalValues.ContainsKey("AREAUNIT"))
-                areaUnit = Context.COBieGlobalValues["AREAUNIT"];//see what the global area unit is
+            if (!string.IsNullOrEmpty(Context.WorkBookUnits.AreaUnit))
+                areaUnit = Context.WorkBookUnits.AreaUnit;//see what the global area unit is
+            
             
             //Do Gross Areas 
             IfcAreaMeasure grossAreaValue = ifcSpace.GetGrossFloorArea();
@@ -179,7 +176,7 @@ namespace Xbim.COBie.Data
             }
             if (areavalue > 0.0)
 	        {
-                if ((!string.IsNullOrEmpty(areaUnit)) && (areaUnit.ToLower().Contains("milli"))) //we are using millimetres
+                if ((!string.IsNullOrEmpty(areaUnit)) && (areaUnit.ToLower().Contains("milli")) && (areavalue > 250000.0)) //we are using millimetres, and areavalue is lightly to be in mmsq if over 250000(0.5msq)
                     areavalue = areavalue / 1000000.0;
                 
 		         return areavalue.ToString("F4");
@@ -200,7 +197,7 @@ namespace Xbim.COBie.Data
             {
                 if (double.TryParse(value, out areavalue))
                 {
-                    if ((!string.IsNullOrEmpty(areaUnit)) && (areaUnit.ToLower().Contains("milli")))//we are using millimetres
+                    if ((!string.IsNullOrEmpty(areaUnit)) && (areaUnit.ToLower().Contains("milli")) && (areavalue > 250000.0))//we are using millimetres, and areavalue is lightly to be in mmsq if over 250000(0.5msq)
                         areavalue = areavalue / 1000000.0;
                     return areavalue.ToString("F4");
                 }
@@ -251,6 +248,8 @@ namespace Xbim.COBie.Data
                 if (!string.IsNullOrEmpty(ifcSpace.LongName)) return ifcSpace.LongName;
                 else if (!string.IsNullOrEmpty(ifcSpace.Description)) return ifcSpace.Description;
                 else if (!string.IsNullOrEmpty(ifcSpace.Name)) return ifcSpace.Name;
+                
+                
             }
             return DEFAULT_STRING;
         }
@@ -262,22 +261,16 @@ namespace Xbim.COBie.Data
         /// <returns>property value as string or default value</returns>
         private string GetRoomTag(IfcSpace ifcSpace, COBieDataPropertySetValues allPropertyValues)
         {
-            string value = GetSpaceDescription(ifcSpace);
+            if (!string.IsNullOrEmpty(ifcSpace.Name)) return ifcSpace.Name;
+
+            string value = ""; // GetSpaceDescription(ifcSpace);
+            allPropertyValues.SetAllPropertySingleValues(ifcSpace);
+            //try and find it in the attached properties of the ifcSpace
+            value = allPropertyValues.GetPropertySingleValueValue("RoomTag", true);
             if (value == DEFAULT_STRING)
-            {
-                //Fall back to properties
-                //get the property single values for this ifcSpace
-                allPropertyValues.SetAllPropertySingleValues(ifcSpace);
-
-                //try and find it in the attached properties of the ifcSpace
-                value = allPropertyValues.GetPropertySingleValueValue("RoomTag", true);
-                if (value == DEFAULT_STRING)
-                    value = allPropertyValues.GetPropertySingleValueValue("Tag", true);
-                if (value == DEFAULT_STRING)
-                    value = allPropertyValues.GetPropertySingleValueValue("Room_Tag", true);
-
-            }
-
+                value = allPropertyValues.GetPropertySingleValueValue("Tag", true);
+            if (value == DEFAULT_STRING)
+                value = allPropertyValues.GetPropertySingleValueValue("Room_Tag", true);
             return value;
         }
         #endregion

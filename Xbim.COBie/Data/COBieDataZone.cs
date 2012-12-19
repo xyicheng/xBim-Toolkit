@@ -46,7 +46,7 @@ namespace Xbim.COBie.Data
             attributeBuilder.InitialiseAttributes(ref _attributes);
             
             //list of attributes to exclude form attribute sheet
-            attributeBuilder.ExcludeAttributePropertyNamesWildcard.AddRange(Context.ZoneAttExcludesContains);
+            attributeBuilder.ExcludeAttributePropertyNamesWildcard.AddRange(Context.Exclude.Zone.AttributesContain);
             attributeBuilder.RowParameters["Sheet"] = "Zone";
             
             //Also check to see if we have any zones within the spaces
@@ -65,8 +65,6 @@ namespace Xbim.COBie.Data
 
                     COBieZoneRow zone = new COBieZoneRow(zones);
 
-                    //IfcOwnerHistory ifcOwnerHistory = zn.OwnerHistory;
-
                     zone.Name = zn.Name.ToString();
 
                     zone.CreatedBy = GetTelecomEmailAddress(zn.OwnerHistory);
@@ -80,7 +78,7 @@ namespace Xbim.COBie.Data
                     zone.ExtObject = zn.GetType().Name;
                     zone.ExtIdentifier = zn.GlobalId;
                     zone.Description = (string.IsNullOrEmpty(zn.Description)) ? zn.Name.ToString() : zn.Description.ToString(); //if IsNullOrEmpty on Description then output Name
-                    zones.Rows.Add(zone);
+                    zones.AddRow(zone);
                     
                     //fill in the attribute information
                     attributeBuilder.RowParameters["Name"] = zone.Name;
@@ -104,14 +102,12 @@ namespace Xbim.COBie.Data
                 {
                     IfcPropertySet pset = item.Key;
                     spProperties = item.Value.Where(p => p.Name.ToString().Contains("ZoneName")).OfType<IfcPropertySingleValue>();
-                
-                
-                    //if we have no ifcZones or "ZoneName" properties, lets make a guess that departments will be close to zones and list them
-                    if ((!spProperties.Any()) && (!ifcZones.Any()))
+
+
+                    //if we have no ifcZones or "ZoneName" properties, and the DepartmentsUsedAsZones flag is true then list departments as zones
+                    if ((!spProperties.Any()) && (!ifcZones.Any()) && (Context.DepartmentsUsedAsZones == true))
                     {
                         spProperties = item.Value.Where(p => p.Name == "Department").OfType<IfcPropertySingleValue>();
-                        if ((spProperties.Any()) && (!Context.COBieGlobalValues.ContainsKey("DEPARTMENTUSEDASZONE")))
-                            Context.COBieGlobalValues.Add("DEPARTMENTUSEDASZONE", "T"); //we need to filter departments out of attribute sheet so set values to pass to Attribute Builder
                     }
 
                     foreach (IfcPropertySingleValue spProp in spProperties)
@@ -131,7 +127,7 @@ namespace Xbim.COBie.Data
                             
                         zone.Description = (string.IsNullOrEmpty(spProp.NominalValue.ToString())) ? DEFAULT_STRING : spProp.NominalValue.ToString(); ;
 
-                        zones.Rows.Add(zone);
+                        zones.AddRow(zone);
                         
                     }
                 }
