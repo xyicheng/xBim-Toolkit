@@ -1833,6 +1833,19 @@ namespace Xbim.IO
                 FreeTable(geometryTable);
             }
         }
+
+        internal XbimGeometryHandle GetGeometryHandle(int geometryLabel)
+        {
+            XbimGeometryCursor geometryTable = GetGeometryTable();
+            try
+            {
+                return geometryTable.GetGeometryHandle(geometryLabel);
+            }
+            finally
+            {
+                FreeTable(geometryTable);
+            }
+        }
     }
 
 }

@@ -963,6 +963,12 @@ namespace Xbim.IO
           
         }
 
+        public XbimGeometryHandle GetGeometryHandle(int geometryLabel)
+        {
+            return cache.GetGeometryHandle(geometryLabel);
+
+        }
+
         /// <summary>
         /// Returns all the geometries for the geometry type
         /// Typically bounding box returns a single object, triangulated mesh mes may return multiple geometry meshes

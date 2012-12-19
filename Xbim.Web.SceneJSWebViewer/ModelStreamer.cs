@@ -10,20 +10,26 @@ using System.Web.Script.Serialization;
 using System.Diagnostics;
 using Xbim.Common.Logging;
 using Xbim.IO;
+using System.IO;
 
 namespace Xbim.SceneJSWebViewer
 {
+    /// <summary>
+    /// ModelStreamer listens for the data queries received from the javascript client and delivers the different
+    /// types of information requested.
+    /// </summary>
     public class ModelStreamer : PersistentConnection
     {
         private static readonly ILogger Logger = LoggerFactory.GetLogger();
         private static ConcurrentDictionary<String, String> usermodels = new ConcurrentDictionary<String, String>();
-        
+
         protected override Task OnReceivedAsync(IRequest request, string connectionId, string data)
         {
             String modelId = String.Empty;
             try
             {
-                //Attempt to deserialise the string as a dynamic JSON object
+                // Attempt to deserialise the string as a dynamic JSON object
+                //
                 var serializer = new JavaScriptSerializer();
                 serializer.RegisterConverters(new[] { new DynamicJsonConverter() });
                 dynamic obj = serializer.Deserialize(data, typeof(object));
@@ -53,6 +59,7 @@ namespace Xbim.SceneJSWebViewer
                         String temp = obj.id;
                         String[] temps = temp.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries); 
                         return Connection.Send(connectionId, ModelStreamer.SendGeometryData(connectionId, modelId, temps));
+
                     case Command.Data: //Setup Data
                         return Connection.Send(connectionId, ModelStreamer.SendData(connectionId, modelId));
                     case Command.QueryData:
@@ -121,78 +128,96 @@ namespace Xbim.SceneJSWebViewer
 
         internal static byte[] SendGeometryData(string connectionId, string modelId, String[] ids)
         {
+            
+            UInt32[] UintIds = new UInt32[ids.Length];
+            for (int i = 0; i < ids.Length; i++)
+            {
+                UintIds[i] = (UInt32)Convert.ToInt64(ids[i]);
+            }
+
+            // GeometryData[] gdata = new GeometryData[ids.Length];
             IModelStream modelstream = GetModelStream(modelId);
-            GeometryData[] gdata = new GeometryData[ids.Length];
-            Int32 size = 6;
-            Int32 NoOfNull = 0;
-            for (int i = 0; i < gdata.Length; i++)
+            
+            // writing objects
+            MemoryStream retStream = new MemoryStream();
+            BinaryWriter retStreamWriter = new BinaryWriter(retStream);
+            
+
+            // start sending the command type and endianness
+            retStream.WriteByte ((byte)Command.GeometryData); //Command
+            retStream.WriteByte(BitConverter.IsLittleEndian ? (byte)0x01 : (byte)0x00); //Endian Flag
+            byte[] vals = retStream.ToArray();
+            
+            // how many
+            //
+            retStreamWriter.Write((UInt16)ids.Length); // Uint16
+            retStreamWriter.Flush();
+            vals = retStream.ToArray();
+
+
+            for (int i = 0; i < ids.Length; i++)
             {
-                GeometryData gd = modelstream.GetGeometryData(ids[i]);
-                gdata[i] = gd;
-                if (gd != null)
-                {
-                    size += 11
-                        + gdata[i].data.Length
-                        + (16 * 8);//add in the transform matrix length
-                }
+                retStreamWriter.Write(UintIds[i]); // id to send uint32
+                retStreamWriter.Flush();
+                vals = retStream.ToArray();
+
+                MemoryStream partialStream = modelstream.GetPNIGeometryData(ids[i]);
+                if (partialStream.Length == 0)
+                    retStreamWriter.Write((byte)0x00); // no data
                 else
-                {
-                    NoOfNull++;
-                }
+                    retStreamWriter.Write((byte)0x01); // has data
+                retStreamWriter.Flush();
+                vals = retStream.ToArray();
+
+                partialStream.WriteTo(retStream);
             }
+            retStreamWriter.Flush();
+            vals = retStream.ToArray();
+            
+            string dbg = BitConverter.ToString(vals);
+
+            return vals;
+
+            ////setup a new byte list for return, and add the command/endian
+            //data[0] = ((byte)Command.GeometryData); //Command
+            //data[1] = BitConverter.IsLittleEndian ? (byte)0x01 : (byte)0x00; //Endian Flag
+
+            //Int32 offset = 2;
+
+            ////send count of items
+            //BitConverter.GetBytes(Convert.ToUInt16(gdata.Length - NoOfNull)).CopyTo(data, offset);
+            //offset += 2;
+
+            //BitConverter.GetBytes(Convert.ToUInt16(NoOfNull)).CopyTo(data, offset);
+            //offset += 2;
+
+            ////foreach item
+            //for (int i = 0; i < gdata.Length; i++)
+            //{
+            //    if (gdata[i] != null)
+            //    {
+            //        BitConverter.GetBytes(gdata[i].ID).CopyTo(data, offset);
+            //        offset += 4;
 
 
-            byte[] data = new byte[size];
+            //        gdata[i].MatrixTransform.CopyTo(data, offset);
+            //        offset += gdata[i].MatrixTransform.Length;
+            //        //add data length
+            //        BitConverter.GetBytes(Convert.ToUInt32(gdata[i].data.Length)).CopyTo(data, offset);
+            //        offset += 4;
 
-            //setup a new byte list for return, and add the command/endian
-            data[0] = ((byte)Command.GeometryData); //Command
-            data[1] = BitConverter.IsLittleEndian ? (byte)0x01 : (byte)0x00; //Endian Flag
+            //        BitConverter.GetBytes(gdata[i].NumChildren).CopyTo(data, offset);
+            //        offset += 2;
 
-            Int32 offset = 2;
+            //        BitConverter.GetBytes(gdata[i].HasData).CopyTo(data, offset);
+            //        offset += 1;
 
-            //send count of items
-            BitConverter.GetBytes(Convert.ToUInt16(gdata.Length - NoOfNull)).CopyTo(data, offset);
-            offset += 2;
-
-            BitConverter.GetBytes(Convert.ToUInt16(NoOfNull)).CopyTo(data, offset);
-            offset += 2;
-
-            //foreach item
-            for (int i = 0; i < gdata.Length; i++)
-            {
-                if (gdata[i] != null)
-                {
-                    BitConverter.GetBytes(gdata[i].ID).CopyTo(data, offset);
-                    offset += 4;
-
-                    //view transform matrix
-                    //if (gdata[i].MatrixTransform.Length == 16) //if we have a well formed matrix
-                    //{
-                    //    //foreach (Double md in gdata[i].MatrixTransform)
-                    //    //{
-                    //    //    BitConverter.GetBytes(md).CopyTo(data, offset);
-                    //    //    offset += 8;
-                    //    //}
-                    //}
-                    //else { offset += 16 * 8; }
-                    gdata[i].MatrixTransform.CopyTo(data, offset);
-                    offset += gdata[i].MatrixTransform.Length;
-                    //add data length
-                    BitConverter.GetBytes(Convert.ToUInt32(gdata[i].data.Length)).CopyTo(data, offset);
-                    offset += 4;
-
-                    BitConverter.GetBytes(gdata[i].NumChildren).CopyTo(data, offset);
-                    offset += 2;
-
-                    BitConverter.GetBytes(gdata[i].HasData).CopyTo(data, offset);
-                    offset += 1;
-
-                    //add data
-                    gdata[i].data.CopyTo(data, offset);
-                    offset += gdata[i].data.Length;
-                }
-            }
-            return data;
+            //        //add data
+            //        gdata[i].data.CopyTo(data, offset);
+            //        offset += gdata[i].data.Length;
+            //    }
+            //}
+            // return data;
         }
 
         //Query IFC model for property information
@@ -225,6 +250,10 @@ namespace Xbim.SceneJSWebViewer
             return data.ToArray();
         }
 
+
+        /// <summary>
+        /// geometry handles
+        /// </summary>
         internal static byte[] SendSharedGeometry(string connectionId, string modelId)
         {
             IModelStream modelstream = GetModelStream(modelId);

@@ -6,6 +6,13 @@ using System.IO;
 
 namespace Xbim.ModelGeometry.Scene
 {
+    /// <summary>
+    /// Binary stream of triangles with posisiton, normals, indices.
+    /// Uint32 numPointsAndNormals
+    /// Uint32 numTriangles
+    /// numPointsAndNormals * 6 floats (3 float posistions + 3 float normals)
+    /// numTriangles * 3 uint (three indices)
+    /// </summary>
     public class PositionsNormalsIndicesBinaryStreamWriter : IXbimTriangulatesToSimplePositionsNormalsIndices
     {
         private int _size = 0;
@@ -15,6 +22,12 @@ namespace Xbim.ModelGeometry.Scene
         public PositionsNormalsIndicesBinaryStreamWriter()
         {
             
+        }
+
+        public PositionsNormalsIndicesBinaryStreamWriter(byte[] ShapeData)
+        {
+            XbimTriangulatedModelStream SourceStream = new XbimTriangulatedModelStream(ShapeData);
+            SourceStream.BuildPNI(this);
         }
 
         public void FromXbimTriangulatedModelStream(XbimTriangulatedModelStream SourceStream)

@@ -98,6 +98,7 @@
     <Compile Include="IXbimTriangulatesToPositionsNormalsIndices.cs" />
     <Compile Include="IXbimTriangulatesToSimplePositionsNormalsIndices.cs" />
     <Compile Include="Matrix3DExtensions.cs" />
+    <Compile Include="PositionsNormalsIndicesBinaryStreamMerger.cs" />
     <Compile Include="PositionsNormalsIndicesBinaryStreamWriter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Rect3DExtensions.cs" />

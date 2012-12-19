@@ -319,10 +319,10 @@
       <DependentUpon>Default.aspx</DependentUpon>
     </Compile>
     <Compile Include="DefaultMaterials.cs" />
-    <Compile Include="DynamicGrouping\GroupingByXml.cs" />
-    <Compile Include="DynamicGrouping\GroupsFromXml.cs" />
-    <Compile Include="DynamicGrouping\XbimQueryBuilder.cs" />
-    <Compile Include="DynamicGrouping\XbimQueryFactory.cs" />
+    <Compile Include="Content\DynamicGrouping\GroupingByXml.cs" />
+    <Compile Include="Content\DynamicGrouping\GroupsFromXml.cs" />
+    <Compile Include="Content\DynamicGrouping\XbimQueryBuilder.cs" />
+    <Compile Include="Content\DynamicGrouping\XbimQueryFactory.cs" />
     <Compile Include="DynamicJsonConverter.cs" />
     <Compile Include="FileUpload.ashx.cs">
       <DependentUpon>FileUpload.ashx</DependentUpon>

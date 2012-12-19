@@ -143,20 +143,50 @@ namespace Xbim.SceneJSWebViewer
             return new Camera(box.PointMin.X, box.PointMin.Y, box.PointMin.Z, box.PointMax.X, box.PointMax.Y, box.PointMax.Z);
         }
 
-        public GeometryData GetGeometryData(String entityId)
+        public MemoryStream GetPNIGeometryData(String entityId)
         {
             Int32 id = Convert.ToInt32(entityId);
             MemoryStream ms = new MemoryStream();
-            ushort tally = 0;
-            byte[] wm = null;
-            foreach (XbimGeometryData geom in _model.GetGeometryData(id, XbimGeometryType.TriangulatedMesh))
-            {
-                ms.Write(geom.ShapeData, 0, geom.ShapeData.Length);
-                tally++;
-                if (wm == null) wm = geom.TransformData;
-            }
-            return new GeometryData(id, ms.ToArray(), 0, tally, wm);
+            // BinaryWriter bw = new BinaryWriter(ms);
+            // ushort tally = 0;
+            // byte[] wm = null;
+            // ms.Write()
 
+            // bool TransformMatrixInitialised = false;
+            var geometries = _model.GetGeometryData(id, XbimGeometryType.TriangulatedMesh);
+            if (geometries.Count() == 1)
+            {
+                XbimGeometryData geom = geometries.First();
+                PositionsNormalsIndicesBinaryStreamWriter PNI_SW = new PositionsNormalsIndicesBinaryStreamWriter(geom.ShapeData);
+                if (PNI_SW.Stream.Length > 0)
+                {
+
+                    ms.Write(geom.TransformData, 0, geom.TransformData.Length); // send transform 
+                    ms.Flush();
+                }
+                // write the geometry
+                PNI_SW.Stream.WriteTo(ms);
+            }
+            else
+            {
+                PositionsNormalsIndicesBinaryStreamMerger mrger = new PositionsNormalsIndicesBinaryStreamMerger();
+                foreach (XbimGeometryData geom in geometries)
+                {
+                    PositionsNormalsIndicesBinaryStreamWriter PNI_SW = new PositionsNormalsIndicesBinaryStreamWriter(geom.ShapeData);
+                    mrger.Merge(geom.ShapeData, geom.TransformData);
+                }
+
+                if (mrger.iTotPosNormals > 0)
+                {
+                    ms.Write(mrger.TransformData, 0, mrger.TransformData.Length); // send transform matrix only once
+                    ms.Flush();
+                }
+                mrger.WriteTo(ms);
+            }
+            ms.Seek(0, SeekOrigin.Begin);
+            return ms;
+
+            
         }
 
         public List<GeometryHeader> GetGeometryHeaders()
@@ -200,7 +230,7 @@ namespace Xbim.SceneJSWebViewer
 
             var handles = _model.GetGeometryHandles();
             var surfaceStyles = handles.GetSurfaceStyles();
-            MaterialList = new List<XbimSurfaceStyle>(surfaceStyles);
+            MaterialList = surfaceStyles.ToList();
             foreach (XbimSurfaceStyle surfaceStyle in MaterialList)
             {
                 
@@ -232,14 +262,12 @@ namespace Xbim.SceneJSWebViewer
                 geomHeader.Type = materialName;
                 geomHeader.Material = materialName;
                 if (material.Alpha < 1)
-                {
                     geomHeader.LayerPriority = 1;
-                }
-                MaterialList.Add(surfaceStyle);
+  
                 ProductsList.Add(geomHeader);
                 foreach (var geomHandle in handles.GetGeometryHandles(surfaceStyle))
                 {
-                    geomHeader.Geometries.Add(geomHandle.GeometryLabel.ToString());
+                    geomHeader.Geometries.Add(geomHandle.ProductLabel.ToString());
                 }
             }
 

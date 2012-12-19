@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using Xbim.IO;
+    using System.IO;
 
     /// <summary>
     /// Interface for a model streaming object
@@ -57,6 +58,6 @@
         /// </summary>
         /// <param name="id">the id of the geometry piece</param>
         /// <returns>A GeometryData object</returns>
-        GeometryData GetGeometryData(String id);
+        MemoryStream GetPNIGeometryData(String id);
     }
 }

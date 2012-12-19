@@ -394,5 +394,21 @@ namespace Xbim.IO
                 }
             }
         }
+
+        internal XbimGeometryHandle GetGeometryHandle(int geometryLabel)
+        {
+            Api.JetSetCurrentIndex(sesid, table, geometryTablePrimaryIndex);
+
+            Api.MakeKey(sesid, table, geometryLabel, MakeKeyGrbit.NewKey);
+            if (Api.TrySeek(sesid, table, SeekGrbit.SeekEQ))
+            {
+                int? style = Api.RetrieveColumnAsInt32(sesid, table, _colIdStyleLabel, RetrieveColumnGrbit.RetrieveFromIndex);
+                short? ifcType = Api.RetrieveColumnAsInt16(sesid, table, _colIdProductIfcTypeId, RetrieveColumnGrbit.RetrieveFromIndex);
+                int? product = Api.RetrieveColumnAsInt32(sesid, table, _colIdProductLabel, RetrieveColumnGrbit.RetrieveFromIndex);
+                byte? geomType = Api.RetrieveColumnAsByte(sesid, table, _colIdGeomType, RetrieveColumnGrbit.RetrieveFromIndex);
+                return new XbimGeometryHandle(geometryLabel, (XbimGeometryType)geomType.Value, product.Value, ifcType.Value, style.Value);
+            }
+            return new XbimGeometryHandle();
+        }
     }
 }
