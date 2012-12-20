@@ -1,6 +1,6 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Xbim.ModelGeometry", "Xbim.ModelGeometry\Xbim.ModelGeometry.vcxproj", "{CBCA1EFC-7459-4A0E-A42D-55D4F58051BF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.IO", "Xbim.IO\Xbim.IO.csproj", "{85856DF2-C8AB-4120-8A8D-AE05D2696B51}"
@@ -66,16 +66,29 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.Ifc2x3", "Xbim.Ifc2x3\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.Ifc2x3.Extensions", "Xbim.Ifc.Extensions\Xbim.Ifc2x3.Extensions.csproj", "{09870F18-1796-4A3E-A66D-68DB3DA60B24}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test Models", "Test Models", "{C6B4AF28-D42D-430E-9275-B74CBE3EC107}"
+	ProjectSection(SolutionItems) = preProject
+		Test Models\BIM Logo-Complete, fully schema compliant.ifc = Test Models\BIM Logo-Complete, fully schema compliant.ifc
+		Test Models\BIM Logo-Coordination View 2 - No M.ifc = Test Models\BIM Logo-Coordination View 2 - No M.ifc
+		Test Models\BIM Logo-Coordination View 2.ifc = Test Models\BIM Logo-Coordination View 2.ifc
+		Test Models\BIM Logo-ExclaimationBody.ifc = Test Models\BIM Logo-ExclaimationBody.ifc
+		Test Models\BIM Logo-ExclaimationSphere.ifc = Test Models\BIM Logo-ExclaimationSphere.ifc
+		Test Models\BIM Logo-ibody.ifc = Test Models\BIM Logo-ibody.ifc
+		Test Models\BIM Logo-ipunctuation.ifc = Test Models\BIM Logo-ipunctuation.ifc
+		Test Models\BIM Logo-LetterB.ifc = Test Models\BIM Logo-LetterB.ifc
+		Test Models\BIM Logo-LetterM.ifc = Test Models\BIM Logo-LetterM.ifc
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 18
+		SccNumberOfProjects = 19
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://tfs.codeplex.com/tfs/tfs13
 		SccLocalPath0 = .
-		SccProjectUniqueName1 = Xbim.Ifc2x3\Xbim.Ifc2x3.csproj
+		SccProjectUniqueName1 = Xbim.Ifc2x3\\Xbim.Ifc2x3.csproj
 		SccProjectName1 = Xbim.Ifc2x3
 		SccLocalPath1 = Xbim.Ifc2x3
-		SccProjectUniqueName2 = Xbim.Ifc.Extensions\Xbim.Ifc2x3.Extensions.csproj
+		SccProjectUniqueName2 = Xbim.Ifc.Extensions\\Xbim.Ifc2x3.Extensions.csproj
 		SccProjectName2 = Xbim.Ifc.Extensions
 		SccLocalPath2 = Xbim.Ifc.Extensions
 		SccProjectUniqueName3 = Xbim.IO\\Xbim.IO.csproj
@@ -119,7 +132,7 @@ Global
 		SccProjectUniqueName14 = Xbim.COBie\\Xbim.COBie.csproj
 		SccProjectName14 = Xbim.COBie
 		SccLocalPath14 = Xbim.COBie
-		SccProjectUniqueName15 = XBim.COBie.Client\\XBim.COBie.Client.csproj
+		SccProjectUniqueName15 = XBim.COBie.Client\\Xbim.COBie.Client.csproj
 		SccProjectTopLevelParentUniqueName15 = XbimComplete.sln
 		SccProjectName15 = XBim.COBie.Client
 		SccLocalPath15 = XBim.COBie.Client
@@ -422,6 +435,7 @@ Global
 		{D6CED5D7-BE37-4A32-90A5-1444C9FFDD91} = {0DA6263B-5A69-401E-99D0-391644EF4709}
 		{9FD894A7-6637-4BF0-A0EA-D654CEB0E234} = {0DA6263B-5A69-401E-99D0-391644EF4709}
 		{BA6195C4-0F45-43F4-82D1-32AAD0E69B86} = {0DA6263B-5A69-401E-99D0-391644EF4709}
+		{C6B4AF28-D42D-430E-9275-B74CBE3EC107} = {0DA6263B-5A69-401E-99D0-391644EF4709}
 		{6EF22FB8-7048-4E6A-9B2F-AC2570A998A9} = {7ECDCF15-95BB-4D2B-8C0D-8615D6E3BAB1}
 		{8729CDD1-B493-48EC-A867-61ABAF3E93D2} = {7ECDCF15-95BB-4D2B-8C0D-8615D6E3BAB1}
 		{10A2F674-DB37-41FF-AB71-9D54C8F0A5B6} = {E9E301F2-FE7D-4410-B88D-F83D684A8E62}

@@ -165,7 +165,7 @@
     </ProjectReference>
     <ProjectReference Include="..\Xbim.ModelGeometry\Xbim.ModelGeometry.vcxproj">
       <Project>{CBCA1EFC-7459-4A0E-A42D-55D4F58051BF}</Project>
-      <Name>Xbim.ModelGeometry</Name>
+      <Name>Xbim.ModelGeometry %28Visual Studio 2010%29</Name>
     </ProjectReference>
     <ProjectReference Include="..\Xbim.ModelGeometry\Xbim.ModelGeometry.vcxproj">
       <Project>{CBCA1EFC-7459-4A0E-A42D-55D4F58051BF}</Project>
