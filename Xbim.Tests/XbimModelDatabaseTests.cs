@@ -10,10 +10,13 @@ using Xbim.Ifc2x3.PresentationAppearanceResource;
 using Xbim.Ifc2x3.SharedBldgElements;
 using Xbim.IO;
 using Xbim.XbimExtensions;
+using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Tests
 {
     [DeploymentItem(SourceFile, Root)]
+    [DeploymentItem(ModelA, Root)]
+    [DeploymentItem(ModelB, Root)]
     [TestClass]
     public class XbimModelDatabaseTests
     {
@@ -21,7 +24,8 @@ namespace Xbim.Tests
         private const string Root = "TestSourceFiles";
         private const string SourceModelLeaf = "Clinic_Handover.xbim";
         private const string SourceFile = Root + @"\" + SourceModelLeaf;
-
+        private const string ModelA = Root + @"\BIM Logo-Complete, fully schema compliant.xBIM";
+        private const string ModelB = Root + @"\BIM Logo - Coordination View 2 - No M.xBIM";
         [ClassInitialize]
         public static void TestInit(TestContext context)
         {
@@ -304,6 +308,45 @@ namespace Xbim.Tests
                 Assert.IsTrue(geomHandles.Count == map.GeometryHandles.Count());
                 Assert.IsTrue(map.Styles.Count() == uniqueStyles.Count());
             }
+        }
+
+        /// <summary>
+        /// Check if the unique surface style function is correct
+        /// </summary>
+        [TestMethod]
+        public void CountSameObjects()
+        {
+            using (XbimModel model1 = new XbimModel())
+            {
+                Assert.IsTrue(model1.Open(ModelA, XbimDBAccess.Read));
+                
+                foreach (var handle in model1.Instances)
+                {
+                   
+                    MemoryStream ms = new MemoryStream();
+                    BinaryWriter bw = new BinaryWriter(ms);
+                    IPersistIfcEntity entity = model1.Instances[handle];
+                    entity.WriteEntity(bw);
+                    int uniqueHash = XbimGeometryData.GenerateGeometryHash(ms.GetBuffer());
+                    Debug.WriteLine(uniqueHash + ", #" + handle);
+                }
+                Debug.WriteLine("End of Model A");
+                using (XbimModel model2 = new XbimModel())
+                {
+                    Assert.IsTrue(model2.Open(ModelB, XbimDBAccess.Read));
+                   
+                    foreach (var handle in model2.Instances)
+                    {
+                        MemoryStream ms = new MemoryStream();
+                        BinaryWriter bw = new BinaryWriter(ms);
+                        IPersistIfcEntity entity = model2.Instances[handle];           
+                        entity.WriteEntity(bw);
+                        int uniqueHash = XbimGeometryData.GenerateGeometryHash(ms.GetBuffer());
+                        Debug.WriteLine(uniqueHash + ", #" + handle);
+                    }
+                }
+            }
+
         }
     }
 }

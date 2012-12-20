@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Xbim.Ifc2x3;
 
 namespace Xbim.IO
 {
@@ -36,6 +37,46 @@ namespace Xbim.IO
             return uniqueStyles;
         }
 
+        /// <summary>
+        /// Returns all handles that are not of type to exclude
+        /// </summary>
+        /// <param name="exclude"></param>
+        /// <returns></returns>
+        public IEnumerable<XbimGeometryHandle> Exclude(params IfcEntityNameEnum[] exclude)
+        {
+            HashSet<IfcEntityNameEnum> excludeSet = new HashSet<IfcEntityNameEnum>(exclude);
+            foreach (var ex in exclude)
+            {
+                IfcType ifcType = IfcMetaData.IfcType((short)ex);
+                foreach (var sub in ifcType.IfcSubTypes)
+                    excludeSet.Add(sub.IfcTypeEnum);
+            }
+
+            foreach (var h in this)
+                if (!excludeSet.Contains((IfcEntityNameEnum)h.IfcTypeId)) yield return h;
+           
+        }
+
+        /// <summary>
+        /// returns all handles that of of type to include
+        /// </summary>
+        /// <param name="include"></param>
+        /// <returns></returns>
+        public IEnumerable<XbimGeometryHandle> Include(params IfcEntityNameEnum[] include)
+        {
+            HashSet<IfcEntityNameEnum> includeSet = new HashSet<IfcEntityNameEnum>(include);
+            foreach (var inc in include)
+            {
+                IfcType ifcType = IfcMetaData.IfcType((short)inc);
+                foreach (var sub in ifcType.IfcSubTypes)
+                    includeSet.Add(sub.IfcTypeEnum);
+            }
+            foreach (var h in this)
+                if (includeSet.Contains((IfcEntityNameEnum)h.IfcTypeId)) yield return h;
+
+        }
+
+      
         /// <summary>
         /// Returns all the Geometry Handles for a specified SurfaceStyle
         /// Obtain the SurfaceStyle by calling the GetSurfaceStyles function

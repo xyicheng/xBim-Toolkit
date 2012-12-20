@@ -5,6 +5,7 @@ using System.Text;
 using System.Reflection;
 using Xbim.XbimExtensions.SelectTypes;
 using Xbim.XbimExtensions.Interfaces;
+using Xbim.Ifc2x3;
 
 namespace Xbim.IO
 {
@@ -41,6 +42,14 @@ namespace Xbim.IO
         public override string ToString()
         {
             return Type.Name;
+        }
+
+        public IfcEntityNameEnum IfcTypeEnum
+        {
+            get
+            {
+                return (IfcEntityNameEnum) Enum.Parse(typeof(IfcEntityNameEnum), Type.Name, true);
+            }
         }
 
         public IList<Type> NonAbstractSubTypes

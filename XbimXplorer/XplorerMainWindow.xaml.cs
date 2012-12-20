@@ -387,6 +387,7 @@ namespace XbimXplorer
         private void SpatialControl_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             DisplayPropertyWindow();
+            DrawingControl.ZoomExtents(_currentProduct);
         }
 
         private void DisplayPropertyWindow()
@@ -413,31 +414,31 @@ namespace XbimXplorer
 
         private void DrawingControl_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
         {
-            _currentProduct = DrawingControl.GetProductAt(e);
-            if (_currentProduct.HasValue && Model !=null)
-            {
-                IPersistIfcEntity product = Model.Instances[_currentProduct.Value];
-                ContextMenu = new ContextMenu();
-                MenuItem mi = new MenuItem() { Header = string.Format("Hide this {0}", product.GetType().Name) };
-                mi.Click += new RoutedEventHandler(HideProduct);
-                ContextMenu.Items.Add(mi);
-                mi = new MenuItem() { Header = string.Format("Hide all {0}s", product.GetType().Name) };
-                mi.Click += new RoutedEventHandler(HideAllTypesOf);
-                ContextMenu.Items.Add(mi);
-                mi = new MenuItem() { Header = string.Format("Show all {0}s", product.GetType().Name) };
-                mi.Click += new RoutedEventHandler(ShowAllTypesOf);
-                ContextMenu.Items.Add(mi);
-                ContextMenu.Items.Add(new Separator());
-                mi = new MenuItem() {Header = "Show all"};
-                mi.Click += new RoutedEventHandler(ShowAll);
-                ContextMenu.Items.Add(mi);
-                ContextMenu.Items.Add(new Separator());
-                mi = new MenuItem() {Header = "Properties"};
-                mi.Click += new RoutedEventHandler(ShowProperties);
-                ContextMenu.Items.Add(mi);
-            }
-            else
-                ContextMenu = null;
+            //_currentProduct = DrawingControl.GetProductAt(e);
+            //if (_currentProduct.HasValue && Model !=null)
+            //{
+            //    IPersistIfcEntity product = Model.Instances[_currentProduct.Value];
+            //    ContextMenu = new ContextMenu();
+            //    MenuItem mi = new MenuItem() { Header = string.Format("Hide this {0}", product.GetType().Name) };
+            //    mi.Click += new RoutedEventHandler(HideProduct);
+            //    ContextMenu.Items.Add(mi);
+            //    mi = new MenuItem() { Header = string.Format("Hide all {0}s", product.GetType().Name) };
+            //    mi.Click += new RoutedEventHandler(HideAllTypesOf);
+            //    ContextMenu.Items.Add(mi);
+            //    mi = new MenuItem() { Header = string.Format("Show all {0}s", product.GetType().Name) };
+            //    mi.Click += new RoutedEventHandler(ShowAllTypesOf);
+            //    ContextMenu.Items.Add(mi);
+            //    ContextMenu.Items.Add(new Separator());
+            //    mi = new MenuItem() {Header = "Show all"};
+            //    mi.Click += new RoutedEventHandler(ShowAll);
+            //    ContextMenu.Items.Add(mi);
+            //    ContextMenu.Items.Add(new Separator());
+            //    mi = new MenuItem() {Header = "Properties"};
+            //    mi.Click += new RoutedEventHandler(ShowProperties);
+            //    ContextMenu.Items.Add(mi);
+            //}
+            //else
+            //    ContextMenu = null;
         }
 
         private void ShowAll(object sender, RoutedEventArgs e)
@@ -560,12 +561,18 @@ namespace XbimXplorer
 
         private void CommandBinding_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
-           if (e.Command == ApplicationCommands.Close || e.Command == ApplicationCommands.SaveAs)
+            if (e.Command == ApplicationCommands.Close || e.Command == ApplicationCommands.SaveAs)
             {
                 XbimModel model = ModelProvider.ObjectInstance as XbimModel;
                 e.CanExecute = (model != null);
             }
 
+        }
+
+
+        private void MenuItem_ZoomExtents(object sender, RoutedEventArgs e)
+        {
+            DrawingControl.ZoomExtents(null);
         }
 
     }

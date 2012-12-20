@@ -38,6 +38,7 @@ using System.Diagnostics;
 using System.Windows.Markup;
 using Xbim.Common.Exceptions;
 using System.Threading;
+using Xbim.Ifc2x3;
 
 #endregion
 
@@ -57,7 +58,7 @@ namespace Xbim.Presentation
         public DrawingControl3D()
         {
             InitializeComponent();
-           
+            
             _defaultMaterial = new XbimMaterialProvider(new DiffuseMaterial(Brushes.LightGray));
             _selectedVisualMaterial = new DiffuseMaterial(Brushes.LightGreen);
             SolidColorBrush transparentBrush = new SolidColorBrush(Colors.LightBlue);
@@ -66,9 +67,9 @@ namespace Xbim.Presentation
             window.Children.Add(new DiffuseMaterial(transparentBrush));
             window.Children.Add(new SpecularMaterial(transparentBrush, 40));
             _defaultTransparentMaterial = new XbimMaterialProvider(window);
-
             //this.DataContextChanged += new DependencyPropertyChangedEventHandler(DrawingControl3D_DataContextChanged);
-           
+            Viewport = Canvas;
+
         }
 
         
@@ -130,24 +131,12 @@ namespace Xbim.Presentation
             add { _progressChanged += value; }
             remove { _progressChanged -= value; }
         }
-
-        //private event SetMaterialEventHandler _onSetMaterial;
-
-        //public event SetMaterialEventHandler OnSetMaterial
-        //{
-        //    add { _onSetMaterial += value; }
-        //    remove { _onSetMaterial -= value; }
-        //}
-
-        //private event SetFilterEventHandler _onSetFilter;
-
-        //public event SetFilterEventHandler OnSetFilter
-        //{
-        //    add { _onSetFilter += value; }
-        //    remove { _onSetFilter -= value; }
-        //}
-
-      
+        /// <summary>
+        /// Gets or sets the model.
+        /// </summary>
+        /// <value>The model.</value>
+        public Model3D Model3d { get; set; }
+       
        
 
         #endregion
@@ -176,14 +165,14 @@ namespace Xbim.Presentation
 
         private void Canvas_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            long? prod = Canvas.GetProductAt(e);
-            if (prod.HasValue)
-            {
-                IList remove = new long[] { };
-                IList add = new long[] { prod.Value };
-                SelectionChangedEventArgs selEv = new SelectionChangedEventArgs(SelectionChangedEvent, remove, add);
-                RaiseEvent(selEv);
-            }
+            //long? prod = Canvas.GetProductAt(e);
+            //if (prod.HasValue)
+            //{
+            //    IList remove = new long[] { };
+            //    IList add = new long[] { prod.Value };
+            //    SelectionChangedEventArgs selEv = new SelectionChangedEventArgs(SelectionChangedEvent, remove, add);
+            //    RaiseEvent(selEv);
+            //}
         }
 
         #endregion
@@ -215,6 +204,18 @@ namespace Xbim.Presentation
             }
 
         }
+
+
+        public HelixToolkit.Wpf.HelixViewport3D Viewport
+        {
+            get { return (HelixToolkit.Wpf.HelixViewport3D)GetValue(ViewportProperty); }
+            set { SetValue(ViewportProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for Viewport.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty ViewportProperty =
+            DependencyProperty.Register("Viewport", typeof(HelixToolkit.Wpf.HelixViewport3D), typeof(DrawingControl3D),new PropertyMetadata(null));
+
         
 
         public IfcProduct SelectedItem
@@ -300,7 +301,7 @@ namespace Xbim.Presentation
             set
             {
                 SetValue(StrideProperty, value);
-                TrackBall.StepFactor = Stride;
+                //TrackBall.StepFactor = Stride;
             }
         }
 
@@ -336,15 +337,15 @@ namespace Xbim.Presentation
 
         private void ClearGraphics()
         {
-            PercentageLoaded = 0;
-            Transparents.Children.Clear();
-            Solids.Children.Clear();
-            _hidden.Clear();
-            _hiddenTypes.Clear();
-            //BuildingModel.Content = null;
-            _items.Clear();
-            TrackBall.CameraMoved = false;
-            _meshMap.Clear();
+            //PercentageLoaded = 0;
+            //Transparents.Children.Clear();
+            //Solids.Children.Clear();
+            //_hidden.Clear();
+            //_hiddenTypes.Clear();
+            ////BuildingModel.Content = null;
+            //_items.Clear();
+            //TrackBall.CameraMoved = false;
+            //_meshMap.Clear();
             
         }
 
@@ -457,7 +458,7 @@ namespace Xbim.Presentation
             ClearGraphics();
             
             //get bounding box for the whole building
-            if(model!=null) InitialiseView(model);
+           // if(model!=null) InitialiseView(model);
 
             _worker = new BackgroundWorker();
             _worker.DoWork += new DoWorkEventHandler(GenerateGeometry);
@@ -497,7 +498,7 @@ namespace Xbim.Presentation
 
         private void DrawShapes(XbimSurfaceStyle geometry)
         {
-            
+            ModelVisual3D visualsToAdd = new ModelVisual3D();
             //take the building out of the scene
            // ModelVisual3D building = BuildingModel;
            // this.Canvas.Children.Remove(BuildingModel);
@@ -508,6 +509,7 @@ namespace Xbim.Presentation
                 //Try and get the visual for the product, if not found create one
                 ModelVisual3D mv;
                 bool newVisual = false;
+                
                 if (!_items.TryGetValue(prodGeom.ProductLabel, out mv))
                 {
                     mv = new ModelVisual3D();
@@ -560,21 +562,27 @@ namespace Xbim.Presentation
                         m3dRef.Geometry = mesh;
                         m3dRef.Transform = m3d.Transform; //reuse the same transform
                         mv.AddGeometry(m3dRef);
+                   
                     }
                 }
-                if (m3d.Geometry != null) //we have added some unique content to this object
+
+                if (m3d.Geometry != null ) //we have added some unique content to this object
                 {
                     mv.AddGeometry(m3d);
+                }
                     if (newVisual) //we have some new visual representation to add, don't add model visual otherwise
                     {
                         mv.SetValue(TagProperty, prodGeom.ProductLabel);
                         _items.Add(prodGeom.ProductLabel, mv);
-                        Solids.Children.Add(mv); //add to the visual scene
-                        
+                        visualsToAdd.Children.Add(mv);
                     }
-                }
+                
             }
-           // this.Canvas.Children.Add(building);
+            if (visualsToAdd.Children.Count > 0)
+            {
+                Canvas.Items.Add(visualsToAdd);
+                Canvas.ZoomExtents();
+            }
            
         }
 
@@ -589,7 +597,8 @@ namespace Xbim.Presentation
             {
                 worker.ReportProgress(0, "Reading Geometry");
 
-                XbimGeometryHandleCollection handles = model.GetGeometryHandles();
+                XbimGeometryHandleCollection handles = new XbimGeometryHandleCollection(model.GetGeometryHandles()
+                                                        .Exclude(IfcEntityNameEnum.IFCSPACE, IfcEntityNameEnum.IFCFEATUREELEMENT));
                 double total = handles.Count;
                 double processed = 0;
                 foreach (var ss in handles.GetSurfaceStyles())
@@ -606,72 +615,14 @@ namespace Xbim.Presentation
         }
 
 
-        private void InitialiseView(XbimModel model)
-        {
-            _boundingBox = GetModelBounds(model);
-
-
-            double toMetres = model.GetModelFactors.LengthToMetresConversionFactor;
-            double maxPlanDim = Math.Max(_boundingBox.SizeX, _boundingBox.SizeY) * toMetres;
-            double maxHeight = _boundingBox.SizeZ * toMetres;
-
-            if (maxPlanDim > 100) //we have a very large site, probably mapped into GIS system, just show top right hand 1KM square corner
-            {
-                double to1Km = 100 / toMetres;
-                _boundingBox.Offset(new Vector3D(_boundingBox.SizeX - to1Km, _boundingBox.SizeY - to1Km, _boundingBox.Z));
-                _boundingBox.SizeX = to1Km;
-                _boundingBox.SizeY = to1Km;
-            }
-
-
-
-            //uses the following variables: 
-            // minX-maxZ: The values from the bounding box
-            // aspect: canvas width / canvas height
-            // fovy the Y Field Of View value in degrees
-            // DEG2RAD: Math.PI / 180
-
-            const double DEG2RAD = Math.PI / 180;
-            double minX = _boundingBox.X;
-            double minY = _boundingBox.Y;
-            double minZ = _boundingBox.Z;
-            double maxX = _boundingBox.SizeX + minX;
-            double maxY = _boundingBox.SizeY + minY;
-            double maxZ = _boundingBox.SizeZ + minZ;
-            var eyez = Math.Max(maxX - minX, Math.Max(maxY - minY, maxZ - minZ));
-
-            //setup a sensible modifier for how much we step (hack until we can sort out a step value from model)
-            TrackBall.StepFactor = eyez / 650;
-
-            var centerX = minX + ((maxX - minX) / 2);
-            var centerY = minY + ((maxY - minY) / 2);
-            var centerZ = minZ + ((maxZ - minZ) / 2);
-
-            //calc set zoom based on basic trig: tan(theta) = Opposite / Adjacent
-            var fovy = Camera.FieldOfView;
-            var theta = (fovy / 2);
-            var opposite = eyez / 2;
-            var setZoom = opposite / (Math.Tan(theta * DEG2RAD));
-
-            //setZoom is now the distance we need from camera to edge of model, but we need to take from center of model, so we add max-center
-            setZoom += (maxY - centerY);
-
-            //Camera can now be set at x: centerX, y: centerY+setZoom, z: centerZ
-            Camera.Position = new Point3D(centerX, -(centerY+ setZoom), centerZ);
-            Camera.LookDirection = new Vector3D(0,1,0);
-            Camera.UpDirection = new Vector3D(0,0,1);
-            Camera.FarPlaneDistance = setZoom * 10;
-            Camera.NearPlaneDistance = setZoom / 1000;
-           
-            this.TrackBall.SetHome();
-        }
+       
 
         #region Query methods
 
-        public int? GetProductAt(MouseButtonEventArgs e)
-        {
-            return Canvas.GetProductAt(e);
-        }
+        //public int? GetProductAt(MouseButtonEventArgs e)
+        //{
+        //    return Canvas.GetProductAt(e);
+        //}
 
         #endregion
 
@@ -743,7 +694,15 @@ namespace Xbim.Presentation
         }
 
 
-
+        public void ZoomExtents(int? selection)
+        {
+            if(!selection.HasValue)
+                Canvas.ZoomExtents();
+            else
+            {
+                ModelVisual3D mv = _items[selection.Value];
+            }
+        }
         
     }
 }

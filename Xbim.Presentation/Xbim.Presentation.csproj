@@ -93,11 +93,20 @@
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="HelixToolkit.Wpf">
+      <HintPath>..\packages\HelixToolkit.2012.4.23.1\lib\NET40\HelixToolkit.Wpf.dll</HintPath>
+    </Reference>
     <Reference Include="PresentationCore">
       <RequiredTargetFramework>3.0</RequiredTargetFramework>
     </Reference>
     <Reference Include="PresentationFramework">
       <RequiredTargetFramework>3.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="PropertyTools">
+      <HintPath>..\packages\PropertyTools.Wpf.2012.4.27.1\lib\NET40\PropertyTools.dll</HintPath>
+    </Reference>
+    <Reference Include="PropertyTools.Wpf">
+      <HintPath>..\packages\PropertyTools.Wpf.2012.4.27.1\lib\NET40\PropertyTools.Wpf.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
@@ -172,6 +181,7 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <None Include="packages.config" />
     <None Include="XbimIfcKey.pfx" />
   </ItemGroup>
   <ItemGroup>

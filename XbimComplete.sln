@@ -54,10 +54,12 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3rd Party", "3rd Party", "{10A2F674-DB37-41FF-AB71-9D54C8F0A5B6}"
 	ProjectSection(SolutionItems) = preProject
 		Licences\Apache2_0.txt = Licences\Apache2_0.txt
+		packages\HelixToolkit.2012.4.23.1\Helix 3D.txt = packages\HelixToolkit.2012.4.23.1\Helix 3D.txt
 		Licences\MIT Licence.txt = Licences\MIT Licence.txt
 		Licences\MS Permissive Licence.txt = Licences\MS Permissive Licence.txt
 		Licences\NewBSD Licence.txt = Licences\NewBSD Licence.txt
 		Licences\OPEN CASCADE Public Licence.txt = Licences\OPEN CASCADE Public Licence.txt
+		packages\PropertyTools.Wpf.2012.4.27.1\PropertyTools.txt = packages\PropertyTools.Wpf.2012.4.27.1\PropertyTools.txt
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.SceneHelper", "Xbim.SceneHelper\Xbim.SceneHelper.csproj", "{BA6195C4-0F45-43F4-82D1-32AAD0E69B86}"

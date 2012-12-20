@@ -5,18 +5,17 @@
     xmlns:xbim="http://schemas.Xbim.com/Presentation"
     xmlns:xbimIO="clr-namespace:Xbim.IO;assembly=Xbim.IO"
     xmlns:local="clr-namespace:XbimXplorer"
+    xmlns:pt="clr-namespace:PropertyTools.Wpf;assembly=PropertyTools.Wpf" 
     Title="Xbim Xplorer" Height="600" Width="800" Loaded="Window_Loaded"
     Icon="icon.ico">
     <Window.Resources>
         <ObjectDataProvider x:Key="ModelProvider"  IsInitialLoadEnabled="False" ></ObjectDataProvider>
     </Window.Resources>
     <Window.CommandBindings>
-        <CommandBinding Command="Close"
-          Executed="CommandBinding_Close" CanExecute="CommandBinding_CanExecute"/>
-        <CommandBinding Command="SaveAs"
-          Executed="CommandBinding_SaveAs"  CanExecute="CommandBinding_CanExecute"/>
-        <CommandBinding Command="Open"
-          Executed="CommandBinding_Open"/>
+        <CommandBinding Command="Close"  Executed="CommandBinding_Close" CanExecute="CommandBinding_CanExecute"/>
+        <CommandBinding Command="SaveAs" Executed="CommandBinding_SaveAs"  CanExecute="CommandBinding_CanExecute"/>
+        <CommandBinding Command="Open"   Executed="CommandBinding_Open"/>
+        
     </Window.CommandBindings>
     <Grid Name="MainFrame" DataContext="{StaticResource ModelProvider}">
         <Grid.RowDefinitions>
@@ -34,7 +33,42 @@
                 <!--<MenuItem Header="_Import Ifc File" Click="FileImport_Click"/>
                 <MenuItem Header="_Export Ifc File" Click="FileExport_Click"/>-->
             </MenuItem>
+            <MenuItem Header="View">
+                <MenuItem Header="_Zoom Extents" Click="MenuItem_ZoomExtents"/>
+
+            </MenuItem>
+            <MenuItem Header="Camera">
+                <MenuItem IsCheckable="True" Header="RotateAroundMouseDownPoint" IsChecked="{Binding Viewport.RotateAroundMouseDownPoint, ElementName=DrawingControl}"/>
+                <MenuItem IsCheckable="True" Header="ZoomAroundMouseDownPoint" IsChecked="{Binding Viewport.ZoomAroundMouseDownPoint, ElementName=DrawingControl}"/>
+                <MenuItem IsCheckable="True" Header="Orthographic" IsChecked="{Binding Viewport.Orthographic, ElementName=DrawingControl}"/>
+                <MenuItem IsCheckable="True" Header="InfiniteSpin" IsChecked="{Binding Viewport.InfiniteSpin, ElementName=DrawingControl}"/>
+                <MenuItem IsCheckable="True" Header="IsPanEnabled" IsChecked="{Binding Viewport.IsPanEnabled, ElementName=DrawingControl}"/>
+                <MenuItem IsCheckable="True" Header="IsRotationEnabled" IsChecked="{Binding Viewport.IsRotationEnabled, ElementName=DrawingControl}"/>
+                <MenuItem IsCheckable="True" Header="IsZoomEnabled" IsChecked="{Binding Viewport.IsZoomEnabled, ElementName=DrawingControl}"/>
+                <MenuItem IsCheckable="True" Header="IsChangeFovEnabled" IsChecked="{Binding Viewport.IsChangeFieldOfViewEnabled, ElementName=DrawingControl}"/>
+                <MenuItem Header="RotationSensitivity">
+                    <StackPanel Orientation="Horizontal">
+                        <Slider Value="{Binding Viewport.RotationSensitivity, ElementName=DrawingControl}" Minimum="0.1" Maximum="5" Width="200"/>
+                        <TextBlock Text="{Binding Viewport.RotationSensitivity, StringFormat='{}{0:0.0}', ElementName=DrawingControl}"/>
+                    </StackPanel>
+                </MenuItem>
+                <MenuItem Header="ZoomSensitivity">
+                    <StackPanel Orientation="Horizontal">
+                        <Slider Value="{Binding Viewport.ZoomSensitivity, ElementName=DrawingControl}" Minimum="0.1" Maximum="5" Width="200"/>
+                        <TextBlock Text="{Binding Viewport.ZoomSensitivity, StringFormat='{}{0:0.0}', ElementName=DrawingControl}"/>
+                    </StackPanel>
+                </MenuItem>
+                <MenuItem Header="CameraInertiaFactor">
+                    <StackPanel Orientation="Horizontal">
+                        <Slider Value="{Binding Viewport.CameraInertiaFactor, ElementName=DrawingControl}" Minimum="0.7" Maximum="1" Width="200"/>
+                        <TextBlock Text="{Binding Viewport.CameraInertiaFactor, StringFormat='{}{0:0.000}', ElementName=DrawingControl}"/>
+                    </StackPanel>
+                </MenuItem>
+            </MenuItem>
+            <pt:EnumMenuItem SelectedValue="{Binding Viewport.CameraRotationMode, ElementName=DrawingControl}" Header="CameraRotationMode"/>
+            <pt:EnumMenuItem SelectedValue="{Binding Viewport.CameraMode, ElementName=DrawingControl}" Header="CameraMode" />
         </Menu>
+       
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width=".3*"/>

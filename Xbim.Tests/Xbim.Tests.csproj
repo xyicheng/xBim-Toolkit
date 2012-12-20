@@ -219,6 +219,14 @@
     <Content Include="TestSourceFiles\Clinic_Handover.xBIM">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <None Include="TestSourceFiles\BIM Logo - Coordination View 2 - No M.xBIM">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="TestSourceFiles\BIM Logo-Complete, fully schema compliant.ifc" />
+    <None Include="TestSourceFiles\BIM Logo-Complete, fully schema compliant.xBIM">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="TestSourceFiles\BIM Logo-Coordination View 2 - No M.ifc" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

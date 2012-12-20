@@ -2,57 +2,21 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="clr-namespace:Xbim.Presentation" 
-    xmlns:ifc="http://schemas.Xbim.com/ifc">
-    <UserControl.Resources>
-        <DiffuseMaterial x:Key="GroundMaterial">
-            <DiffuseMaterial.Brush>
-                <SolidColorBrush Color="Chocolate"  Opacity=".4" />
-            </DiffuseMaterial.Brush>
-        </DiffuseMaterial>
-    </UserControl.Resources>
+    xmlns:ifc="http://schemas.Xbim.com/ifc"
+    xmlns:HelixToolkit="clr-namespace:HelixToolkit.Wpf;assembly=HelixToolkit.Wpf"
+>
 
-    <local:TrackballDecorator x:Name="TrackBall" >
-        <local:DrawingViewport3D x:Name="Canvas"  Grid.Row="0" Grid.Column="0" >
-            <!--Camera-->
-            <local:DrawingViewport3D.Camera>
-                <PerspectiveCamera  FieldOfView="65" x:Name="Camera" Position="-120,25,120" LookDirection="1,0,-1" UpDirection="0,1,0"/>
-            </local:DrawingViewport3D.Camera>
-            <local:DrawingViewport3D.Children>
-                <ModelVisual3D x:Name="Light">
-                    <ModelVisual3D.Content>
-                        <Model3DGroup>
-                            <DirectionalLight x:Name="Headlight" Color="White"  Transform="{Binding ElementName=Camera, Path=Transform}" Direction="{Binding ElementName=Camera, Path=LookDirection}"  />
-                            <PointLight x:Name="Sun" Color="White" Position="-1000,1000, 0" ></PointLight>
-                        </Model3DGroup>
-                    </ModelVisual3D.Content>
-                </ModelVisual3D>
+    <HelixToolkit:HelixViewport3D  x:Name="Canvas" ZoomAroundMouseDownPoint="True" RotateAroundMouseDownPoint="True" CameraMode="Inspect" CameraRotationMode="Turntable" IsHeadLightEnabled="False" ShowCoordinateSystem="True" ZoomExtentsWhenLoaded="True">
 
-                <ModelVisual3D x:Name="BuildingModel">
-                    <ModelVisual3D.Children>
-                        <ModelVisual3D x:Name="Solids"></ModelVisual3D>
-                        <ModelVisual3D x:Name="Transparents"></ModelVisual3D>
+        <!-- Remember to add light to the scene -->
+        <HelixToolkit:SunLight/>
 
-                    </ModelVisual3D.Children>
-                    </ModelVisual3D>
-                <!--<ModelVisual3D >
-                    <ModelVisual3D.Content >
-                        <GeometryModel3D x:Name="Ground"  Material="{StaticResource GroundMaterial}" BackMaterial="{StaticResource GroundMaterial}">
-                            <GeometryModel3D.Geometry>
-                                <MeshGeometry3D TriangleIndices="0,1,2    2,3,0"
-                                                        TextureCoordinates="0,1 1,1 1,0 0,0"
-                                                        Positions="-1,0,-1     1,00,-1    1,0,1   -1,0,1" 
-                                                        />
-                            </GeometryModel3D.Geometry>
-                            <GeometryModel3D.Transform>
-                                <ScaleTransform3D ScaleX="10000"  ScaleZ="10000">
+        <!-- The content of this visual is defined in MainViewModel.cs -->
+        <ModelVisual3D Content="{Binding Model}"/>
 
-                                </ScaleTransform3D>
-                            </GeometryModel3D.Transform>
+        <!-- You can also add elements here in the xaml -->
+        <HelixToolkit:GridLinesVisual3D Width="8" Length="8" MinorDistance="1" MajorDistance="1" Thickness="0.01"/>
 
-                        </GeometryModel3D>
-                    </ModelVisual3D.Content>
-                </ModelVisual3D>-->
-            </local:DrawingViewport3D.Children>
-        </local:DrawingViewport3D>
-    </local:TrackballDecorator>
+    </HelixToolkit:HelixViewport3D>
+   
 </UserControl>

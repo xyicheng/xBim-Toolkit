@@ -347,7 +347,7 @@ namespace Xbim.IO
             return new XbimInstanceHandle(Math.Abs(entity.EntityLabel), IfcMetaData.IfcTypeId(entity));
         }
 
-        internal static void WriteEntity(this IPersistIfcEntity entity, BinaryWriter entityWriter)
+        public static void WriteEntity(this IPersistIfcEntity entity, BinaryWriter entityWriter)
         {
            
             IfcType ifcType = IfcMetaData.IfcType(entity);
