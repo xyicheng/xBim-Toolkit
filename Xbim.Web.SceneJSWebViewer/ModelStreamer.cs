@@ -53,8 +53,8 @@ namespace Xbim.SceneJSWebViewer
                         return Connection.Send(connectionId, ModelStreamer.SendSharedMaterials(connectionId, modelId));
                     case Command.Types: //Setup Types
                         return Connection.Send(connectionId, ModelStreamer.SendTypes(connectionId, modelId));
-                    case Command.SharedGeometry: //Setup Shared Geometry
-                        return Connection.Send(connectionId, ModelStreamer.SendSharedGeometry(connectionId, modelId));
+                    case Command.GeometryHeaders: //Setup Shared Geometry
+                        return Connection.Send(connectionId, ModelStreamer.SendGeometryHeaders(connectionId, modelId));
                     case Command.GeometryData: // Actual vertex locations
                         String temp = obj.id;
                         String[] temps = temp.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries); 
@@ -162,6 +162,11 @@ namespace Xbim.SceneJSWebViewer
                 vals = retStream.ToArray();
 
                 MemoryStream partialStream = modelstream.GetPNIGeometryData(ids[i]);
+
+                Debug.WriteLine("==== mesh" + ids[i]);
+                string dbg = BitConverter.ToString(partialStream.ToArray());
+                Debug.WriteLine(dbg);
+
                 if (partialStream.Length == 0)
                     retStreamWriter.Write((byte)0x00); // no data
                 else
@@ -173,9 +178,6 @@ namespace Xbim.SceneJSWebViewer
             }
             retStreamWriter.Flush();
             vals = retStream.ToArray();
-            
-            string dbg = BitConverter.ToString(vals);
-
             return vals;
 
             ////setup a new byte list for return, and add the command/endian
@@ -254,14 +256,14 @@ namespace Xbim.SceneJSWebViewer
         /// <summary>
         /// geometry handles
         /// </summary>
-        internal static byte[] SendSharedGeometry(string connectionId, string modelId)
+        internal static byte[] SendGeometryHeaders(string connectionId, string modelId)
         {
             IModelStream modelstream = GetModelStream(modelId);
             System.Text.UTF8Encoding encoding = new System.Text.UTF8Encoding();
 
             //setup a new byte list for return, and add the command/endian
             List<byte> data = new List<byte>();
-            data.Add((byte)Command.SharedGeometry); //Command
+            data.Add((byte)Command.GeometryHeaders); //Command
             data.Add(BitConverter.IsLittleEndian ? (byte)0x01 : (byte)0x00); //Endian Flag
 
             List<GeometryHeader> temp = modelstream.GetGeometryHeaders();

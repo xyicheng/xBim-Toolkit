@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
+using System.Diagnostics;
 
 namespace Xbim.ModelGeometry.Scene
 {
@@ -18,6 +19,47 @@ namespace Xbim.ModelGeometry.Scene
         private int _size = 0;
         public MemoryStream Stream;
         private BinaryWriter _bw;
+
+        public static bool DebugStream(byte[] GeomData, bool withTransform, string message)
+        {
+            MemoryStream ms = new MemoryStream(GeomData);
+            BinaryReader br = new BinaryReader(ms);
+
+            if (withTransform)
+                br.BaseStream.Seek(128, SeekOrigin.Begin);
+
+            UInt32 numPosNormals = br.ReadUInt32();
+            UInt32 numTriangles = br.ReadUInt32();
+
+            int numBytesCoords = (int)(numPosNormals * 24); // 24 = 4 bytes (float32) times the 6 coords (3pos + 3 nrm) 
+            int numBytesTriangs = (int)(numTriangles * 12); // 3 uint per triangle
+            int calcsize = numBytesCoords + numBytesTriangs + 8;
+            if (withTransform)
+                calcsize += 128;
+
+            bool isOk = (calcsize == GeomData.Length);
+
+            Debug.WriteLine(string.Format("========================="));
+            if (message != "")
+            {
+                Debug.WriteLine(message);
+                Debug.WriteLine("=========================");
+            }
+            if (!isOk)
+            {
+                Debug.WriteLine("ERROR");
+                Debug.WriteLine("=========================");
+            }
+            if (withTransform)
+                Debug.WriteLine("With transform.");
+            Debug.WriteLine(string.Format("PositionsAndNormals: {0} [{1} bytes]", numPosNormals, numBytesCoords));
+            Debug.WriteLine(string.Format("Triangles          : {0} [{1} bytes]", numTriangles, numBytesTriangs));
+
+            Debug.WriteLine(string.Format("Cals size          : {0}", calcsize));
+            Debug.WriteLine(string.Format("Actual size        : {0}", GeomData.Length));
+            
+            return isOk;
+        }
 
         public PositionsNormalsIndicesBinaryStreamWriter()
         {
@@ -85,5 +127,7 @@ namespace Xbim.ModelGeometry.Scene
         }
 
         #endregion
+
+        
     }
 }

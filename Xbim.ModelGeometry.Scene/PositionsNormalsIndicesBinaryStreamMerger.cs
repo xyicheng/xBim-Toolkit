@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using Xbim.Common.Exceptions;
+using System.Diagnostics;
 
 namespace Xbim.ModelGeometry.Scene
 {
@@ -28,6 +29,8 @@ namespace Xbim.ModelGeometry.Scene
 
         public void Merge(byte[] GeomData, byte[] TransformData)
         {
+            PositionsNormalsIndicesBinaryStreamWriter.DebugStream(GeomData, false, "in merge");
+
             if (_TransformData == null)
             {
                 _TransformData = TransformData;
@@ -45,13 +48,17 @@ namespace Xbim.ModelGeometry.Scene
             UInt32 numTriangles = br.ReadUInt32();
             iTotPosNormals += numPosNormals;
             iTotTriangles += numTriangles;
+            int numBytesPosAndNormals = (int)(numPosNormals * 24); // 24 = 4 bytes (float32) times the 6 coords (3pos + 3 nrm) 
+            int numBytesTriangs = (int)(numTriangles * 12); // 3 uint per triangle
 
-            int numBytesCoords = (int)(numPosNormals * 24); // 24 = 4 bytes (float32) times the 6 coords (3pos + 3 nrm) 
-            msPosNormals.Write(GeomData, 2, numBytesCoords);
+            int iPosAndNormalsBegin = 8;
+
+            msPosNormals.Write(GeomData, iPosAndNormalsBegin, numBytesPosAndNormals);
+            msPosNormals.Flush();
 
             if (iPosNormalOffset > 0) // have to increment the indices
             {
-                ms.Seek(numBytesCoords + 2, SeekOrigin.Begin); // goes where the indices begin
+                ms.Seek(iPosAndNormalsBegin + numBytesPosAndNormals, SeekOrigin.Begin); // goes where the indices begin
                 BinaryWriter IndexWriter = new BinaryWriter(msIndices);
                 UInt32 iCnt = 0; // 
                 while (iCnt++ < numTriangles * 3)
@@ -62,11 +69,9 @@ namespace Xbim.ModelGeometry.Scene
             }
             else // write the indices as they are
             {
-                msIndices.Write(GeomData, 2 + numBytesCoords, (int)(numTriangles * 12));
+                msIndices.Write(GeomData, iPosAndNormalsBegin + numBytesPosAndNormals, numBytesTriangs);
             }
             iPosNormalOffset += numPosNormals;
-            br.Dispose();
-            ms.Dispose();
         }
 
         public void WriteTo(MemoryStream ms)
@@ -76,8 +81,11 @@ namespace Xbim.ModelGeometry.Scene
             bw.Write(iTotTriangles);
             bw.Flush();
 
+            msPosNormals.Seek(0, SeekOrigin.Begin);
             msPosNormals.WriteTo(ms);
             ms.Flush();
+
+            msIndices.Seek(0, SeekOrigin.Begin);
             msIndices.WriteTo(ms);
             ms.Flush();
         }

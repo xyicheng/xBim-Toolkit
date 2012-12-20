@@ -22,6 +22,8 @@ namespace Xbim.SceneJSWebViewer
     using Xbim.XbimExtensions;
     using Xbim.XbimExtensions.Interfaces;
     using Xbim.Ifc2x3.Kernel;
+    using System.Diagnostics;
+    using Xbim.Ifc2x3;
 
     /// <summary>
     /// An XBim implementation of an <see cref="IModelStream"/>. 
@@ -31,7 +33,7 @@ namespace Xbim.SceneJSWebViewer
     public class XBimModelStream : IModelStream
     {
         #region private members
-        private List<XbimSurfaceStyle> MaterialList;
+        private List<XbimSurfaceStyle> SurfaceStyleList;
         private List<String> TypeList = new List<string>();
         private List<GeometryHeader> ProductsList = new List<GeometryHeader>();
         private Camera DefaultCamera = new Camera();
@@ -160,12 +162,28 @@ namespace Xbim.SceneJSWebViewer
                 PositionsNormalsIndicesBinaryStreamWriter PNI_SW = new PositionsNormalsIndicesBinaryStreamWriter(geom.ShapeData);
                 if (PNI_SW.Stream.Length > 0)
                 {
-
                     ms.Write(geom.TransformData, 0, geom.TransformData.Length); // send transform 
                     ms.Flush();
                 }
                 // write the geometry
                 PNI_SW.Stream.WriteTo(ms);
+
+                // used for debugging
+                //PositionsNormalsIndicesBinaryStreamMerger mrger = new PositionsNormalsIndicesBinaryStreamMerger();
+                //mrger.Merge(PNI_SW.Stream.ToArray(), geom.TransformData);
+                //MemoryStream merged = new MemoryStream();
+                //mrger.WriteTo(merged);
+
+                //byte[] rght = PNI_SW.Stream.ToArray();
+                //byte[] wrong = merged.ToArray();
+
+                //for (int i = 0; i < rght.Length; i++)
+                //{
+                //    if (rght[i] != wrong[i])
+                //    {
+
+                //    }
+                //}
             }
             else
             {
@@ -173,7 +191,8 @@ namespace Xbim.SceneJSWebViewer
                 foreach (XbimGeometryData geom in geometries)
                 {
                     PositionsNormalsIndicesBinaryStreamWriter PNI_SW = new PositionsNormalsIndicesBinaryStreamWriter(geom.ShapeData);
-                    mrger.Merge(geom.ShapeData, geom.TransformData);
+                    PositionsNormalsIndicesBinaryStreamWriter.DebugStream(PNI_SW.Stream.ToArray(), false, "merge geom source " + geom.GeometryLabel);
+                    mrger.Merge(PNI_SW.Stream.ToArray(), geom.TransformData);
                 }
 
                 if (mrger.iTotPosNormals > 0)
@@ -182,11 +201,11 @@ namespace Xbim.SceneJSWebViewer
                     ms.Flush();
                 }
                 mrger.WriteTo(ms);
+                ms.Flush();
             }
+            PositionsNormalsIndicesBinaryStreamWriter.DebugStream(ms.ToArray(), true, "Completed " + entityId.ToString());
             ms.Seek(0, SeekOrigin.Begin);
             return ms;
-
-            
         }
 
         public List<GeometryHeader> GetGeometryHeaders()
@@ -196,7 +215,7 @@ namespace Xbim.SceneJSWebViewer
 
         public List<XbimSurfaceStyle> GetMaterials()
         {
-            return MaterialList;
+            return SurfaceStyleList;
         }
 
         public List<String> GetTypes()
@@ -205,19 +224,27 @@ namespace Xbim.SceneJSWebViewer
         }
 
   
-        private static Material GetDefinedMaterial(IfcSurfaceStyle surfaceStyle)
+        private static Material GetMaterialFromSurfaceStyle(IfcSurfaceStyle surfaceStyle)
         {
             
-            if (surfaceStyle == null || surfaceStyle.Styles.Count == 0) return null;
+            if (surfaceStyle == null || surfaceStyle.Styles.Count == 0) 
+                return null;
             IfcSurfaceStyleRendering rgb = surfaceStyle.Styles.First as IfcSurfaceStyleRendering;
-            if (rgb == null) return null;
+            if (rgb == null) 
+                return null;
+
+            // defines the material name from a property or from the enetity label of the surfacestyle
+
             string materialName = surfaceStyle.Name.HasValue ? surfaceStyle.Name.Value.ToString() : surfaceStyle.EntityLabel.ToString();
-            return new Material(materialName + "Material",
-                     rgb.SurfaceColour.Red,
-                     rgb.SurfaceColour.Green,
-                     rgb.SurfaceColour.Blue,
-                     (1.0 - (double)rgb.Transparency.Value.Value),
-                     0.0);
+            
+            return new Material(
+                materialName + "Material",  //name
+                rgb.SurfaceColour.Red,
+                rgb.SurfaceColour.Green,
+                rgb.SurfaceColour.Blue,
+                1.0 - (double)rgb.Transparency.Value.Value, // alpha
+                0.0  // emit
+                );
         }
 
         private Func<TransformNode, bool> FilterByType(Type t)
@@ -225,50 +252,61 @@ namespace Xbim.SceneJSWebViewer
             return p => (p.Product.GetType() == t || p.Product.GetType().IsSubclassOf(t));
         }
 
+
+        // ok, cleaned up
         public void Init(string model)
         {
-
-            var handles = _model.GetGeometryHandles();
-            var surfaceStyles = handles.GetSurfaceStyles();
-            MaterialList = surfaceStyles.ToList();
-            foreach (XbimSurfaceStyle surfaceStyle in MaterialList)
+            // surface styles are taken starting from the geometryhandles
+            //
+            XbimGeometryHandleCollection handles = new XbimGeometryHandleCollection(_model.GetGeometryHandles().Exclude(IfcEntityNameEnum.IFCSPACE, IfcEntityNameEnum.IFCFEATUREELEMENT));
+            SurfaceStyleList = handles.GetSurfaceStyles().ToList();
+            TypeList = new List<string>();
+            ProductsList = new List<GeometryHeader>();
+            
+            foreach (XbimSurfaceStyle surfaceStyle in SurfaceStyleList)
             {
-                
                  //try to get any material defined in the model
-                Material definedMaterial = GetDefinedMaterial(surfaceStyle.IfcSurfaceStyle(_model));
-                surfaceStyle.TagRenderMaterial = definedMaterial; //store the material
-                String materialName = String.Empty;
-                Material material = null;
-                if (definedMaterial != null)
+                Material SurfaceStyleMaterial = GetMaterialFromSurfaceStyle(surfaceStyle.IfcSurfaceStyle(_model));
+                
+                if (SurfaceStyleMaterial == null)
                 {
-                    materialName = definedMaterial.Name;
-                    material = definedMaterial;
-                }
-                else
-                {
-                    material = DefaultMaterials.LookupMaterial(surfaceStyle.IfcTypeId);
-                    if (material == null)
+                    SurfaceStyleMaterial = DefaultMaterials.LookupMaterial(surfaceStyle.IfcTypeId);
+                    if (SurfaceStyleMaterial == null)
                     {
                         Logger.WarnFormat("Could not locate default material for entity type #{0} in model {1}", surfaceStyle.IfcType.Name, _modelId);
                         // set null material as SHOCKING PINK
-                        material = new Material(surfaceStyle.IfcType.Name, 0.98823529411764705882352941176471d, 0.05882352941176470588235294117647d, 0.75294117647058823529411764705882d, 1.0d, 0.0d);
+                        SurfaceStyleMaterial = new Material(
+                            surfaceStyle.IfcType.Name, 
+                            0.98823529411764705882352941176471d, 
+                            0.05882352941176470588235294117647d, 
+                            0.75294117647058823529411764705882d, 
+                            1.0d, 
+                            0.0d);
                     }
-                    materialName = material.Name;
                 }
-
-
-                //add all the products with per surface style
+                SurfaceStyleMaterial.Name = SurfaceStyleMaterial.Name.Replace(' ', '_');
+                SurfaceStyleMaterial.Name = SurfaceStyleMaterial.Name.Replace(',', '_');
+                //prepare geometry header to send to client
+                //
                 GeometryHeader geomHeader = new GeometryHeader();
-                geomHeader.Type = materialName;
-                geomHeader.Material = materialName;
-                if (material.Alpha < 1)
+                geomHeader.Type = SurfaceStyleMaterial.Name;
+                geomHeader.Material = SurfaceStyleMaterial.Name;
+                if (SurfaceStyleMaterial.Alpha < 1)
                     geomHeader.LayerPriority = 1;
-  
-                ProductsList.Add(geomHeader);
                 foreach (var geomHandle in handles.GetGeometryHandles(surfaceStyle))
                 {
-                    geomHeader.Geometries.Add(geomHandle.ProductLabel.ToString());
+                    string label = geomHandle.ProductLabel.ToString();
+                    if (!geomHeader.Geometries.Contains(label))
+                        geomHeader.Geometries.Add(label);
                 }
+                
+
+                // populate lists
+                ProductsList.Add(geomHeader);
+                TypeList.Add(SurfaceStyleMaterial.Name);
+
+                //store the material
+                surfaceStyle.TagRenderMaterial = SurfaceStyleMaterial; 
             }
 
         }
@@ -286,9 +324,9 @@ namespace Xbim.SceneJSWebViewer
             }
 
             sb.AppendLine();
-            sb.AppendFormat("-- Materials: {0}", MaterialList.Count);
+            sb.AppendFormat("-- Materials: {0}", SurfaceStyleList.Count);
             sb.AppendLine();
-            foreach (var material in MaterialList)
+            foreach (var material in SurfaceStyleList)
             {
                 sb.Append("\t");
                 sb.AppendLine(material.TagRenderMaterial.ToString());
