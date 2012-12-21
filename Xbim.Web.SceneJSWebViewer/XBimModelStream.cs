@@ -311,7 +311,23 @@ namespace Xbim.SceneJSWebViewer
                 surfaceStyle.TagRenderMaterial = SurfaceStyleMaterial; 
             }
 
-        Modificaton
+        }
+
+        private void DumpProducts()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.AppendFormat("-- Types: {0}", TypeList.Count);
+            sb.AppendLine();
+            foreach (string type in TypeList)
+            {
+                sb.Append("\t");
+                sb.AppendLine(type);
+            }
+
+            sb.AppendLine();
+            sb.AppendFormat("-- Materials: {0}", SurfaceStyleList.Count);
+            sb.AppendLine();
             foreach (var material in SurfaceStyleList)
             {
                 sb.Append("\t");
