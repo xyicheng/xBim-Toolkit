@@ -191,7 +191,7 @@ namespace Xbim.SceneJSWebViewer
                 foreach (XbimGeometryData geom in geometries)
                 {
                     PositionsNormalsIndicesBinaryStreamWriter PNI_SW = new PositionsNormalsIndicesBinaryStreamWriter(geom.ShapeData);
-                    PositionsNormalsIndicesBinaryStreamWriter.DebugStream(PNI_SW.Stream.ToArray(), false, "merge geom source " + geom.GeometryLabel);
+                    // PositionsNormalsIndicesBinaryStreamWriter.DebugStream(PNI_SW.Stream.ToArray(), false, "merge geom source " + geom.GeometryLabel);
                     mrger.Merge(PNI_SW.Stream.ToArray(), geom.TransformData);
                 }
 
@@ -203,7 +203,7 @@ namespace Xbim.SceneJSWebViewer
                 mrger.WriteTo(ms);
                 ms.Flush();
             }
-            PositionsNormalsIndicesBinaryStreamWriter.DebugStream(ms.ToArray(), true, "Completed " + entityId.ToString());
+            // PositionsNormalsIndicesBinaryStreamWriter.DebugStream(ms.ToArray(), true, "Completed " + entityId.ToString());
             ms.Seek(0, SeekOrigin.Begin);
             return ms;
         }
@@ -256,6 +256,8 @@ namespace Xbim.SceneJSWebViewer
         // ok, cleaned up
         public void Init(string model)
         {
+            HashSet<int> SentProducts = new HashSet<int>();
+
             // surface styles are taken starting from the geometryhandles
             //
             XbimGeometryHandleCollection handles = new XbimGeometryHandleCollection(_model.GetGeometryHandles().Exclude(IfcEntityNameEnum.IFCSPACE, IfcEntityNameEnum.IFCFEATUREELEMENT));
@@ -295,11 +297,14 @@ namespace Xbim.SceneJSWebViewer
                     geomHeader.LayerPriority = 1;
                 foreach (var geomHandle in handles.GetGeometryHandles(surfaceStyle))
                 {
-                    string label = geomHandle.ProductLabel.ToString();
-                    if (!geomHeader.Geometries.Contains(label))
+                    int lab = geomHandle.ProductLabel;
+                    if (!SentProducts.Contains(lab))
+                    {
+                        string label = geomHandle.ProductLabel.ToString();
                         geomHeader.Geometries.Add(label);
+                        SentProducts.Add(lab);
+                    }
                 }
-                
 
                 // populate lists
                 ProductsList.Add(geomHeader);
@@ -353,19 +358,28 @@ namespace Xbim.SceneJSWebViewer
 
         public string QueryData(string id, string query)
         {
-            IfcProduct product = _model.Instances[Convert.ToInt32(id)] as IfcProduct;
-            if (product != null)
+            string justId = id.Split(new char[] { '_' })[0];
+            try
             {
-                StringBuilder sb = new StringBuilder();
-                sb.Append("ID " + id);
-                sb.Append(" Name: ");
-                sb.Append(product.ToString());
-                sb.Append(", IFC Type: " + product.GetType().Name);
-                Logger.DebugFormat("Query result: ", sb);
-                return sb.ToString();
+                IfcProduct product = _model.Instances[Convert.ToInt32(justId)] as IfcProduct;
+                if (product != null)
+                {
+                    StringBuilder sb = new StringBuilder();
+                    sb.Append("ID " + id);
+                    sb.Append(" Name: ");
+                    sb.Append(product.ToString());
+                    sb.Append(", IFC Type: " + product.GetType().Name);
+                    Logger.DebugFormat("Query result: ", sb);
+                    return sb.ToString();
+                }
+                else
+                    return "You sent a query of: '" + query + "' for id: '" + id + "'";
             }
-            else
+            catch (Exception)
+            {
+
                 return "You sent a query of: '" + query + "' for id: '" + id + "'";
+            }
         }
 
         #endregion SceneJSTest.IModelStream

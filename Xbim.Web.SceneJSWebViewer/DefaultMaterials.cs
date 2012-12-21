@@ -40,13 +40,22 @@
         public static Material LookupMaterial(short ifcType)
         {
             Type type = IfcMetaData.GetType(ifcType);
+            string origName = type.Name;
             Material material;
 
             while (type != null)
             {
                 if (_materialMap.TryGetValue(type, out material))
-                    return material;
-
+                {
+                    return new Material(
+                        origName,
+                        material.Red,
+                        material.Green,
+                        material.Blue,
+                        material.Alpha,
+                        material.Emit
+                        );
+                }
                 type = type.BaseType;
             }
             return null;

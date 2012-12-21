@@ -220,35 +220,34 @@ function SetupTypes(view) {
 function SetupGeometryHeaders(view) {
     var d1 = new Date();
 
-    var count = view.getUint16(); //total geometry types
+    var countStyles = view.getUint16(); //total geometry types
     var totalcount = view.getUint16(); //total geometry
 
-    $("#debuginfo").append('<p>Received headers for ' + count + ' geometry types, with a total of ' + totalcount + ' pieces of geometry</p>');
+    $("#debuginfo").append('<p>Received headers for ' + countStyles + ' geometry styles, with a total of ' + totalcount + ' pieces of geometry</p>');
 
     var addedCount = 0;
     ToLoad = new Array(totalcount);
-    for (var i = 0; i < count; i++) {
+    for (var iCurStyle = 0; iCurStyle < countStyles; iCurStyle++) {
         //type
         var typeLen = view.getUint16();
-        var type = view.getString(typeLen);
+        var typeName = view.getString(typeLen);
         //material
         var matLen = view.getUint16();
-        var mat = view.getString(matLen);
+        var matName = view.getString(matLen);
 
-        var layer = view.getInt16();
-
-        UpdateLayers(streamScene, type, layer);
+        var layer = view.getInt16(); // has to do with transparency
+        UpdateLayers(streamScene, typeName, layer);
 
         //geometry details
         var geomcount = view.getUint16();
-        var geometry = new Array(geomcount);
+        var geometryLabels = new Array(geomcount);
         for (var j = 0; j < geomcount; j++) {
             var id = view.getInt32();
-            geometry[j] = id;
+            geometryLabels[j] = id;
             ToLoad[addedCount] = id;
             addedCount++;
         }
-        LoadGeometryHeaders(streamScene, type, mat, geometry);
+        LoadGeometryHeaders(streamScene, typeName, matName, geometryLabels, iCurStyle);
     }
 
     //Setup total number to load and fire off the first load

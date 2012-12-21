@@ -48,13 +48,14 @@ function UpdateLayers(Scene, Type, Priority) {
     var node = Scene.findNode(Type + "_layer");
     if (node) node.set("priority", Priority);
 }
-function LoadGeometryHeaders(Scene, Type, Material, IDs) {
+function LoadGeometryHeaders(Scene, Type, Material, IDs, styleNumber) {
     var typenode = Scene.findNode(Type);
     if (typenode == null) {
         alert("type not found.");
     }
     for (var i = 0; i < IDs.length; i++) {
-        var node = CreateGeometryHeader(IDs[i], IDs[i]);
+        var uniqueID = IDs[i]; // + "_" + styleNumber;
+        var node = CreateGeometryHeader(uniqueID);
         var vMat = typenode.node(Type + "Mat");
         if (vMat == null) {
             
@@ -71,7 +72,7 @@ function LoadGeometryHeaders(Scene, Type, Material, IDs) {
                 vMat.add("node", node);
         }
         currentNode = $("#navtree").dynatree("getTree").getNodeByKey(Type);
-        currentNode.addChild({ "title": IDs[i], "tooltip": Type, "key": IDs[i], "select": true });
+        currentNode.addChild({ "title": uniqueID, "tooltip": Type, "key": uniqueID, "select": true });
     }
 }
 function CreateGeometryHeader(ID) {
