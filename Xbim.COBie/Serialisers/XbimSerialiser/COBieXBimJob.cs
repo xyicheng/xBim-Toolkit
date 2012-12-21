@@ -79,7 +79,37 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         /// <param name="row">COBieJobRow holding the data</param>
         private void AddJob(COBieJobRow row)
         {
-            IfcTask ifcTask = Model.New<IfcTask>();
+            IEnumerable<IfcTypeObject> ifcTypeObjects = Enumerable.Empty<IfcTypeObject>();
+            IfcTask ifcTask = null;
+            
+            //get the objects in the typeName cell
+            if (ValidateString(row.TypeName))
+            {
+                List<string> typeNames = SplitString(row.TypeName, ':');
+                ifcTypeObjects = IfcTypeObjects.Where(to => typeNames.Contains(to.Name.ToString().Trim()));
+            }
+
+            //if merging check for existing task
+            if (XBimContext.IsMerge)
+            {
+                string taskNo = string.Empty;
+                //get the task ID
+                if (ValidateString(row.TaskNumber)) 
+                    taskNo = row.TaskNumber;
+                //see if task matches name and task number
+                ifcTask = CheckIfObjExistOnMerge<IfcTask>(row.Name).Where(task => task.TaskId == taskNo).FirstOrDefault();
+                if (ifcTask != null)
+                {
+                    IfcRelAssignsToProcess processRel = Model.InstancesWhere<IfcRelAssignsToProcess>(rd => rd.RelatingProcess == ifcTask).FirstOrDefault();
+                    int matchCount = ifcTypeObjects.Count(to => processRel.RelatedObjects.Contains(to));
+                    if (matchCount == ifcTypeObjects.Count()) //task IfcRelAssignsToProcess object hold the correct number of ifcTypeObjects objects so consider a match
+                        return; //consider a match so return
+                    
+                }
+            }
+
+            //no match on task    
+            ifcTask = Model.New<IfcTask>();
             //Add Created By, Created On and ExtSystem to Owner History. 
             if ((ValidateString(row.CreatedBy)) && (Contacts.ContainsKey(row.CreatedBy)))
                 SetNewOwnerHistory(ifcTask, row.ExtSystem, Contacts[row.CreatedBy], row.CreatedOn);
@@ -100,10 +130,8 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 if (ValidateString(row.Status)) ifcTask.Status = row.Status;
 
                 //Add Type Relationship
-                if (ValidateString(row.TypeName))
+                if (ifcTypeObjects.Any())
                 {
-                    List<string> typeNames = SplitString(row.TypeName, ':');
-                    IEnumerable<IfcTypeObject> ifcTypeObjects = IfcTypeObjects.Where(to => typeNames.Contains(to.Name.ToString().Trim()) );
                     SetRelAssignsToProcess(ifcTask, ifcTypeObjects);
                 }
                 //Add GlobalId
@@ -177,13 +205,14 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             {
                 processRel = Model.New<IfcRelAssignsToProcess>();
                 processRel.RelatingProcess = processObj;
-
-
             }
             //add the type objects
             foreach (IfcObjectDefinition type in typeObjs)
             {
-                processRel.RelatedObjects.Add_Reversible(type);
+                if (!processRel.RelatedObjects.Contains(type))
+                {
+                    processRel.RelatedObjects.Add_Reversible(type);
+                }
             }
         }
 

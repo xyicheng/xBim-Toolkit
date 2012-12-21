@@ -62,6 +62,12 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         /// <param name="row">COBieSpareRow holding the data</param>
         private void AddSpare(COBieSpareRow row)
         {
+            //we are merging so check for an existing item name, assume the same item as should be the same building
+            if (CheckIfExistOnMerge<IfcConstructionProductResource>(row.Name))
+            {
+                return;//we have it so no need to create
+            }
+
             IfcConstructionProductResource ifcConstructionProductResource = Model.New<IfcConstructionProductResource>();
             //Add Created By, Created On and ExtSystem to Owner History. 
             if ((ValidateString(row.CreatedBy)) && (Contacts.ContainsKey(row.CreatedBy)))

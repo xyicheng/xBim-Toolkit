@@ -62,6 +62,12 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         /// <param name="row">COBieFloorRow holding the data</param>
         private void AddBuildingStory(COBieFloorRow row)
         {
+            //we are merging so check for an existing item name, assume the same item as should be the same building, maybe should do a check on that
+            if (CheckIfExistOnMerge<IfcBuildingStorey>(row.Name))
+            {
+                return;//we have it so no need to create
+            }
+
             IfcBuildingStorey ifcBuildingStorey = Model.New<IfcBuildingStorey>();
             
             //Add Created By, Created On and ExtSystem to Owner History. 

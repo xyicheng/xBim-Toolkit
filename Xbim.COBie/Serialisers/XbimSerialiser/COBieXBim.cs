@@ -16,6 +16,7 @@ using Xbim.Ifc.SelectTypes;
 using Xbim.Ifc.ApprovalResource;
 using Xbim.Ifc.ConstructionMgmtDomain;
 using System.Reflection;
+using Xbim.Ifc.MaterialResource;
 
 namespace Xbim.COBie.Serialisers.XbimSerialiser
 {
@@ -999,6 +1000,53 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             return end;
         }
 
+        /// <summary>
+        /// Check that a IfcRoot object name exists in the model on a merge
+        /// </summary>
+        /// <typeparam name="T">object derived from IfcRoot </typeparam>
+        /// <param name="name">string name to compare with name property of objects in model</param>
+        /// <returns>bool</returns>
+        protected bool CheckIfExistOnMerge<T>(string name) where T : IfcRoot
+        {
+            if (XBimContext.IsMerge)
+            {
+                if (ValidateString(name)) //we have a primary key to check
+                {
+                    string testName = name.ToLower().Trim();
+                    T testObj = Model.InstancesWhere<T>(bs => bs.Name.ToString().ToLower().Trim() == testName).FirstOrDefault();
+                    if (testObj != null)
+                    {
+#if DEBUG
+                        Console.WriteLine("{0} : {1} exists so skip on merge", testObj.GetType().Name, name);
+#endif
+                        return true; //we have it so no need to create
+                    }
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Check that a IfcRoot object name exists in the model on a merge
+        /// </summary>
+        /// <typeparam name="T">object derived from IfcRoot </typeparam>
+        /// <param name="name">string name to compare with name property of objects in model</param>
+        /// <returns>the object</returns>
+        protected IEnumerable<T> CheckIfObjExistOnMerge<T>(string name) where T : IfcRoot
+        {
+            if (XBimContext.IsMerge)
+            {
+                if (ValidateString(name)) //we have a primary key to check
+                {
+                    string testName = name.ToLower().Trim();
+                    IEnumerable<T> testObjs = Model.InstancesWhere<T>(bs => bs.Name.ToString().ToLower().Trim() == testName);
+                    return testObjs;
+                }
+            }
+            return Enumerable.Empty<T>();
+        }
+
+        
         //public static string TestPerson(IModel model)
         //{
         //    var xxx = model.InstancesWhere<IfcSpace>(s => s.Name == "1A01")

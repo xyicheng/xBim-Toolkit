@@ -63,6 +63,12 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         /// <param name="row">COBieSpaceRow holding the data</param>
         private void AddSpace(COBieSpaceRow row)
         {
+            //we are merging so check for an existing item name, assume the same item as should be the same building
+            if (CheckIfExistOnMerge<IfcSpace>(row.Name))
+            {
+                return;//we have it so no need to create
+            }
+            
             IfcSpace ifcSpace = Model.New<IfcSpace>();
 
             //Add Created By, Created On and ExtSystem to Owner History

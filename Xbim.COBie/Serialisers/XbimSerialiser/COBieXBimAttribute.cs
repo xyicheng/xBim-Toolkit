@@ -132,13 +132,11 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                         else
                             pSetName = "PSet_COBie_UnSpecified_for_" + row.Name;
 
-                        //if (!pSetName.ToLower().Contains("pset_")) pSetName = "PSet_" + pSetName;
-                        IfcPropertySet ifcPropertySet = null;
-
-                        if (CurrentObject is IfcObject)
-                            ifcPropertySet = AddPropertySet((IfcObject)CurrentObject, pSetName, "");
-                        else if (CurrentObject is IfcTypeObject)
-                            ifcPropertySet = AddPropertySet((IfcTypeObject)CurrentObject, pSetName, "");
+                        IfcPropertySet ifcPropertySet = CheckIfExistOnMerge(pSetName);
+                        if (ifcPropertySet == null)
+                        {
+                            return; //skip as no property set was created, or in merge property set existed on object so skip it
+                        }
 
                         //Add GlobalId
                         AddGlobalId(row.ExtIdentifier, ifcPropertySet);
@@ -220,6 +218,48 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
 #endif
             }
             
+        }
+
+        /// <summary>
+        /// Check if property set exists on object when in merge, if not merge just create property det
+        /// </summary>
+        /// <param name="pSetName">Property set name</param>
+        /// <returns>IfcPropertySet</returns>
+        private IfcPropertySet CheckIfExistOnMerge(string pSetName)
+        {
+            IfcPropertySet ifcPropertySet = null;
+
+            if (CurrentObject is IfcObject)
+            {
+                if (XBimContext.IsMerge)
+                {
+                    ifcPropertySet = (CurrentObject as IfcObject).GetPropertySet(pSetName);
+                    if (ifcPropertySet != null)
+                    {
+#if DEBUG
+                        Console.WriteLine("{0} : {1} exists on object so skip on merge", ifcPropertySet.GetType().Name, pSetName);
+#endif
+                        return null; //property already set on object
+                    }
+                }
+                ifcPropertySet = AddPropertySet((IfcObject)CurrentObject, pSetName, "");
+            }
+            else if (CurrentObject is IfcTypeObject)
+            {
+                if (XBimContext.IsMerge)
+                {
+                    ifcPropertySet = (CurrentObject as IfcTypeObject).GetPropertySet(pSetName);
+                    if (ifcPropertySet != null)
+                    {
+#if DEBUG
+                        Console.WriteLine("{0} : {1} exists on object so skip on merge", ifcPropertySet.GetType().Name, pSetName);
+#endif
+                        return null; //property already set on object
+                    }
+                }
+                ifcPropertySet = AddPropertySet((IfcTypeObject)CurrentObject, pSetName, "");
+            }
+            return ifcPropertySet;
         }
 
         

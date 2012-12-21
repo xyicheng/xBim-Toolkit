@@ -217,7 +217,10 @@ namespace Xbim.COBie.Data
         /// <returns>string of comma delimited addresses</returns>
         protected string GetTelecomEmailAddress(IfcOwnerHistory ifcOwnerHistory)
         {
-            if (ifcOwnerHistory != null)
+            if ((ifcOwnerHistory != null) &&
+                (ifcOwnerHistory.OwningUser != null) &&
+                (ifcOwnerHistory.OwningUser.ThePerson != null)
+                )
             {
                 IfcPerson ifcPerson = ifcOwnerHistory.OwningUser.ThePerson;
                 if (Context.EMails.ContainsKey(ifcPerson.EntityLabel))

@@ -74,9 +74,15 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             }
         }
 
+        /// <summary>
+        /// Add an IfcApproval to the model based on COBieIssueRow data
+        /// </summary>
+        /// <param name="row">COBieIssueRow data</param>
         private void AddIssue(COBieIssueRow row)
         {
-            
+
+            if (CheckIfExistOnMerge(row)) //check on merge to see if IfcApproval exists
+                return; //already exists
 
             //create the property set to attach to the approval
             IfcPropertySet ifcPropertySet = Model.New<IfcPropertySet>();
@@ -153,8 +159,39 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                     ifcApproval.Identifier = row.ExtIdentifier; // AddGlobalId(row.ExtIdentifier, ifcPropertySet); //IfcApproval gas no GlobalId
             }
         }
-        #endregion
 
+        /// <summary>
+        /// Check to see if IfcApproval exists in model
+        /// </summary>
+        /// <param name="row">COBieIssueRow data</param>
+        /// <returns>bool</returns>
+        private bool CheckIfExistOnMerge(COBieIssueRow row)
+        {
+            if (XBimContext.IsMerge)
+            {
+                if (ValidateString(row.Name)) //we have a primary key to check
+                {
+                    string testName = row.Name.ToLower().Trim();
+                    IfcApproval testObj = Model.InstancesWhere<IfcApproval>(bs => bs.Name.ToString().ToLower().Trim() == testName).FirstOrDefault();
+                    if (testObj != null)
+                    {
+#if DEBUG
+                        Console.WriteLine("{0} : {1} exists so skip on merge", testObj.GetType().Name, row.Name);
+#endif
+                        return true; //we have it so no need to create
+                    }
+                }
+            }
+            return false;
+        }
+        
+        /// <summary>
+        /// Set the IfcRelAssociatesApproval object
+        /// </summary>
+        /// <param name="sheetName">Sheet name</param>
+        /// <param name="rowName">Row name</param>
+        /// <param name="ifcApproval">IfcApproval object</param>
+        /// <param name="ifcRelAssociatesApproval">IfcRelAssociatesApproval object</param>
         private void SetRelObjectToApproval(string sheetName, string rowName, IfcApproval ifcApproval, IfcRelAssociatesApproval ifcRelAssociatesApproval)
         {
             IfcRoot ifcRoot = GetRootObject(sheetName, rowName);
@@ -205,7 +242,8 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             return ifcTask;
         }
 
-        
+        #endregion
+
 
         
     }

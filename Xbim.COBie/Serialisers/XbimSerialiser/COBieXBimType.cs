@@ -82,13 +82,15 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 }
                 if ((ifcMaterial != null) && (row.ExtObject.ToLower() == "ifcmateriallayer"))
                 {
+                    IfcMaterialLayer ifcMaterialLayer = null;
                     double matThick = 0.0;
                     if ((ValidateString(row.NominalWidth)) &&
                         (!double.TryParse(row.NominalWidth, out matThick))
                         )
                         matThick = 0.0;
-
-                    IfcMaterialLayer ifcMaterialLayer = Model.New<IfcMaterialLayer>(ml => { ml.Material = ifcMaterial; ml.LayerThickness = matThick; });
+                    ifcMaterialLayer = Model.InstancesWhere<IfcMaterialLayer>(ml => ml.Material == ifcMaterial && ml.LayerThickness == matThick).FirstOrDefault();
+                    if (ifcMaterialLayer == null) 
+                        ifcMaterialLayer = Model.New<IfcMaterialLayer>(ml => { ml.Material = ifcMaterial; ml.LayerThickness = matThick; });
                 } 
             }
         }
@@ -99,7 +101,12 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         /// <param name="row">COBieTypeRow holding the data</param>
         private void AddType(COBieTypeRow row)
         {
-            //IfcTypeObject ifcTypeObject = Model.New<IfcTypeObject>();
+            //we are merging so check for an existing item name, assume the same item as should be the same building
+            if (CheckIfExistOnMerge<IfcTypeObject>(row.Name))
+            {
+                return;//we have it so no need to create
+            }
+
             IfcTypeObject ifcTypeObject = GetTypeInstance(row.ExtObject, Model);
 
             if (ifcTypeObject != null)

@@ -62,7 +62,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
 
         public void CreatePersonAndOrganization(COBieContactRow row, IfcPersonAndOrganization ifcPersonAndOrganization = null)
         {
-            if (!Contacts.ContainsKey(row.Email))
+            if (!Contacts.ContainsKey(row.Email)) //should filter on merge also unless Contacts is reset
             {
                 IfcPerson ifcPerson = Model.New<IfcPerson>();
                 IfcOrganization ifcOrganization = Model.New<IfcOrganization>();

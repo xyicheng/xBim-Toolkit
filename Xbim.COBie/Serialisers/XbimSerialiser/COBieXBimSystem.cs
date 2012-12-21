@@ -82,6 +82,12 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         /// <param name="row">COBieSystemRow holding the data</param>
         private void AddSystem(COBieSystemRow row)
         {
+            //we are merging so check for an existing item name, assume the same item as should be the same building
+            if (CheckIfExistOnMerge<IfcSystem>(row.Name))
+            {
+                return;//we have it so no need to create
+            }
+
             IfcSystemObj = GetGroupInstance(row.ExtObject);//Model.New<IfcSystem>();
             IfcSystemObj.Name = row.Name;
             //Add Created By, Created On and ExtSystem to Owner History. 
@@ -140,7 +146,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 foreach (string componentName in SplitTheString(componentNames))
                 {
                     IfcProduct ifcProduct = null;
-                    if ((ifcProduct == null) && (ValidateString(componentName)))
+                    if ((ifcProduct == null) && (ValidateString(componentName))) 
                     {
                         string compName = componentName.ToLower().Trim();
                         ifcProduct = Model.InstancesOfType<IfcProduct>().Where(p => p.Name.ToString().ToLower().Trim() == compName).FirstOrDefault();
@@ -162,7 +168,16 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                     //if we have found product then add to the IfcSystem group
                     if (ifcProduct != null)
                     {
-                        IfcSystemObj.AddObjectToGroup(ifcProduct);
+                        if (IfcSystemObj.IsGroupedBy != null) //if we already have a IfcRelAssignsToGroup assigned to IsGroupedBy
+                        {
+                            if (!IfcSystemObj.IsGroupedBy.RelatedObjects.Contains(ifcProduct)) //check to see if product already exists in group
+                            {
+                                IfcSystemObj.AddObjectToGroup(ifcProduct);//if not add
+                            }
+                        }
+                        else
+                            IfcSystemObj.AddObjectToGroup(ifcProduct);
+                       
                     }
                 }
             }

@@ -72,8 +72,12 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         /// <param name="row">COBieComponentRow holding the data</param>
         private void AddComponent(COBieComponentRow row)
         {
-           
 
+            //we are merging so check for an existing item name, assume the same item as should be the same building
+            if (CheckIfExistOnMerge<IfcElement>(row.Name))
+            {
+                return;//we have it so no need to create
+            }
             //we need the ExtObject to exist to create the object
             if (ValidateString(row.ExtObject))
             {
