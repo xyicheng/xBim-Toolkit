@@ -496,26 +496,26 @@ namespace Xbim.Presentation
 
         }
 
-        private void DrawShapes(XbimSurfaceStyle geometry)
+        private void DrawShapes(XbimSurfaceStyle StyleToDraw)
         {
             ModelVisual3D visualsToAdd = new ModelVisual3D();
             //take the building out of the scene
-           // ModelVisual3D building = BuildingModel;
-           // this.Canvas.Children.Remove(BuildingModel);
-            XbimMaterialProvider mat = Model.GetRenderMaterial(geometry);
-            
-            foreach (var prodGeom in geometry.ProductGeometries)
+            // ModelVisual3D building = BuildingModel;
+            // this.Canvas.Children.Remove(BuildingModel);
+            XbimMaterialProvider mat = Model.GetRenderMaterial(StyleToDraw);
+
+            foreach (var prodGeom in StyleToDraw.ProductGeometries)
             {
                 //Try and get the visual for the product, if not found create one
                 ModelVisual3D mv;
                 bool newVisual = false;
-                
+
                 if (!_items.TryGetValue(prodGeom.ProductLabel, out mv))
                 {
                     mv = new ModelVisual3D();
                     newVisual = true;
                 }
-               
+
                 //Set up the Model Geometry to hold the product geometry, this has unique material and tranform
                 //and may reuse GeometryModel3D meshes from previous renders
                 GeometryModel3D m3d = new GeometryModel3D();
@@ -552,7 +552,6 @@ namespace Xbim.Presentation
                             m3d.Geometry = mesh;
                         else
                             m3d.Geometry = m3d.Geometry.Append(mesh);
-
                     }
                     else //add a new GeometryModel3d to the visual as we want to reference an existing mesh
                     {
@@ -562,28 +561,25 @@ namespace Xbim.Presentation
                         m3dRef.Geometry = mesh;
                         m3dRef.Transform = m3d.Transform; //reuse the same transform
                         mv.AddGeometry(m3dRef);
-                   
                     }
                 }
 
-                if (m3d.Geometry != null ) //we have added some unique content to this object
+                if (m3d.Geometry != null) //we have added some unique content to this object
                 {
                     mv.AddGeometry(m3d);
                 }
-                    if (newVisual) //we have some new visual representation to add, don't add model visual otherwise
-                    {
-                        mv.SetValue(TagProperty, prodGeom.ProductLabel);
-                        _items.Add(prodGeom.ProductLabel, mv);
-                        visualsToAdd.Children.Add(mv);
-                    }
-                
+                if (newVisual) //we have some new visual representation to add, don't add model visual otherwise
+                {
+                    mv.SetValue(TagProperty, prodGeom.ProductLabel);
+                    _items.Add(prodGeom.ProductLabel, mv);
+                    visualsToAdd.Children.Add(mv);
+                }
             }
             if (visualsToAdd.Children.Count > 0)
             {
                 Canvas.Items.Add(visualsToAdd);
                 Canvas.ZoomExtents();
             }
-           
         }
 
 
