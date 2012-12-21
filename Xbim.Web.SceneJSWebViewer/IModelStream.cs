@@ -58,6 +58,6 @@
         /// </summary>
         /// <param name="id">the id of the geometry piece</param>
         /// <returns>A GeometryData object</returns>
-        MemoryStream GetPNIGeometryData(String id);
+        MemoryStream GetPNIGeometryData(int id);
     }
 }

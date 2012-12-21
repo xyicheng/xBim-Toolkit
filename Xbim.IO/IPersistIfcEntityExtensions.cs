@@ -11,6 +11,8 @@ using Xbim.Ifc2x3.MeasureResource;
 using Xbim.XbimExtensions;
 using Xbim.Common.Exceptions;
 using System.Reflection;
+using System.Collections.Specialized;
+using Xbim.Ifc2x3.Kernel;
 
 namespace Xbim.IO
 {
@@ -40,6 +42,18 @@ namespace Xbim.IO
             return IfcMetaData.IfcType(entity);
         }
 
+        public static StringCollection SummaryString(this IPersistIfcEntity entity)
+        {
+            StringCollection sc = new StringCollection();
+            sc.Add("Entity #" + entity.EntityLabel);
+            if (entity is IfcRoot)
+            {
+                IfcRoot root = entity as IfcRoot;
+                sc.Add("Global Id \t = " + root.GlobalId);
+                sc.Add("Name\t\t = " + (root.Name.HasValue ? root.Name.Value.ToString() : ""));
+            }
+            return sc;
+        }
        
 
         internal static void WriteEntity(this IPersistIfcEntity entity, TextWriter tw, byte[] propertyData)

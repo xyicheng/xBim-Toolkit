@@ -17,6 +17,6 @@ namespace Xbim.XbimExtensions.Interfaces
         IPersistIfcEntity this[int label] { get; }
         long Count { get; }
         long CountOf<T>() where T : IPersistIfcEntity;
-        
+        IPersistIfcEntity GetFromGeometryLabel(int geometryLabel);
     }
 }

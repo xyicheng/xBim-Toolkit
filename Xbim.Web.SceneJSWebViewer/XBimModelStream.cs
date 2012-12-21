@@ -145,9 +145,9 @@ namespace Xbim.SceneJSWebViewer
             return new Camera(box.PointMin.X, box.PointMin.Y, box.PointMin.Z, box.PointMax.X, box.PointMax.Y, box.PointMax.Z);
         }
 
-        public MemoryStream GetPNIGeometryData(String entityId)
+        public MemoryStream GetPNIGeometryData(int geometryId)
         {
-            Int32 id = Convert.ToInt32(entityId);
+           
             MemoryStream ms = new MemoryStream();
             // BinaryWriter bw = new BinaryWriter(ms);
             // ushort tally = 0;
@@ -155,7 +155,10 @@ namespace Xbim.SceneJSWebViewer
             // ms.Write()
 
             // bool TransformMatrixInitialised = false;
-            var geometries = _model.GetGeometryData(id, XbimGeometryType.TriangulatedMesh);
+
+            XbimGeometryHandle handle = _model.GetGeometryHandle(geometryId);
+            IEnumerable<XbimGeometryData> geometries = _model.GetGeometryData(handle.ProductLabel, handle.GeometryType).Where(gd => gd.StyleLabel == handle.SurfaceStyleLabel);
+            
             if (geometries.Count() == 1)
             {
                 XbimGeometryData geom = geometries.First();
@@ -256,8 +259,7 @@ namespace Xbim.SceneJSWebViewer
         // ok, cleaned up
         public void Init(string model)
         {
-            HashSet<int> SentProducts = new HashSet<int>();
-
+          
             // surface styles are taken starting from the geometryhandles
             //
             XbimGeometryHandleCollection handles = new XbimGeometryHandleCollection(_model.GetGeometryHandles().Exclude(IfcEntityNameEnum.IFCSPACE, IfcEntityNameEnum.IFCFEATUREELEMENT));
@@ -295,15 +297,10 @@ namespace Xbim.SceneJSWebViewer
                 geomHeader.Material = SurfaceStyleMaterial.Name;
                 if (SurfaceStyleMaterial.Alpha < 1)
                     geomHeader.LayerPriority = 1;
-                foreach (var geomHandle in handles.GetGeometryHandles(surfaceStyle))
+                foreach (var geomHandle in handles.GetGeometryHandles(surfaceStyle).Distinct(new CompareDistinctGeometryHandles()))
                 {
-                    int lab = geomHandle.ProductLabel;
-                    if (!SentProducts.Contains(lab))
-                    {
-                        string label = geomHandle.ProductLabel.ToString();
-                        geomHeader.Geometries.Add(label);
-                        SentProducts.Add(lab);
-                    }
+                    string label = geomHandle.GeometryLabel.ToString();
+                    geomHeader.Geometries.Add(label);
                 }
 
                 // populate lists
@@ -314,23 +311,7 @@ namespace Xbim.SceneJSWebViewer
                 surfaceStyle.TagRenderMaterial = SurfaceStyleMaterial; 
             }
 
-        }
-
-        private void DumpProducts()
-        {
-            StringBuilder sb = new StringBuilder();
-
-            sb.AppendFormat("-- Types: {0}", TypeList.Count);
-            sb.AppendLine();
-            foreach (string type in TypeList)
-            {
-                sb.Append("\t");
-                sb.AppendLine(type);
-            }
-
-            sb.AppendLine();
-            sb.AppendFormat("-- Materials: {0}", SurfaceStyleList.Count);
-            sb.AppendLine();
+        Modificaton
             foreach (var material in SurfaceStyleList)
             {
                 sb.Append("\t");
@@ -358,10 +339,11 @@ namespace Xbim.SceneJSWebViewer
 
         public string QueryData(string id, string query)
         {
-            string justId = id.Split(new char[] { '_' })[0];
+            
             try
             {
-                IfcProduct product = _model.Instances[Convert.ToInt32(justId)] as IfcProduct;
+                
+                IfcProduct product = _model.Instances.GetFromGeometryLabel(Convert.ToInt32(id)) as IfcProduct;
                 if (product != null)
                 {
                     StringBuilder sb = new StringBuilder();
@@ -384,5 +366,21 @@ namespace Xbim.SceneJSWebViewer
 
         #endregion SceneJSTest.IModelStream
 
+        /// <summary>
+        /// Comapres two geometry handles to be distinct per surace style render
+        /// </summary>
+        private class CompareDistinctGeometryHandles : IEqualityComparer<XbimGeometryHandle>
+        {
+
+            public bool Equals(XbimGeometryHandle x, XbimGeometryHandle y)
+            {
+                return x.ProductLabel == y.ProductLabel && x.SurfaceStyleLabel == y.SurfaceStyleLabel;
+            }
+
+            public int GetHashCode(XbimGeometryHandle obj)
+            {
+                return obj.ProductLabel ^ obj.SurfaceStyleLabel;
+            }
+        }
     }
 }

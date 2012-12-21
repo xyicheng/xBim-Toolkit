@@ -129,10 +129,10 @@ namespace Xbim.SceneJSWebViewer
         internal static byte[] SendGeometryData(string connectionId, string modelId, String[] ids)
         {
             
-            UInt32[] UintIds = new UInt32[ids.Length];
+           int[] intIds = new int[ids.Length];
             for (int i = 0; i < ids.Length; i++)
             {
-                UintIds[i] = (UInt32)Convert.ToInt64(ids[i]);
+                intIds[i] = Convert.ToInt32(ids[i]);
             }
 
             // GeometryData[] gdata = new GeometryData[ids.Length];
@@ -155,13 +155,13 @@ namespace Xbim.SceneJSWebViewer
             vals = retStream.ToArray();
 
 
-            for (int i = 0; i < ids.Length; i++)
+            for (int i = 0; i < intIds.Length; i++)
             {
-                retStreamWriter.Write(UintIds[i]); // id to send uint32
+                retStreamWriter.Write(intIds[i]); // id to send uint32
                 retStreamWriter.Flush();
                 vals = retStream.ToArray();
 
-                MemoryStream partialStream = modelstream.GetPNIGeometryData(ids[i]);
+                MemoryStream partialStream = modelstream.GetPNIGeometryData(intIds[i]);
 
                 Debug.WriteLine("==== mesh" + ids[i]);
                 string dbg = BitConverter.ToString(partialStream.ToArray());
@@ -364,6 +364,7 @@ namespace Xbim.SceneJSWebViewer
             //send each material
             foreach (XbimSurfaceStyle ss in mats)
             {
+         
                 Material m = ss.TagRenderMaterial as Material;
                 //send name length
                 data.AddRange(BitConverter.GetBytes(Convert.ToUInt16(m.Name.Length)));

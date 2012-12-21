@@ -1163,5 +1163,7 @@ namespace Xbim.IO
             foreach (var item in cache.GetGeometryData(handles))
                 yield return item;
         }
+
+        
     }
 }

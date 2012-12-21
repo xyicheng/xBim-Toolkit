@@ -136,7 +136,17 @@ namespace Xbim.IO
                 return cache.GetInstance(label, true, true);
             }
         }
-    
+        /// <summary>
+        /// Returns the Ifc entity for a given Geometry Label
+        /// </summary>
+        /// <param name="geometryLabel"></param>
+        /// <returns></returns>
+        public IPersistIfcEntity GetFromGeometryLabel(int geometryLabel)
+        {
+            XbimGeometryHandle filledGeomData = cache.GetGeometryHandle(geometryLabel);
+            return cache.GetInstance(filledGeomData.ProductLabel, true, true);
+        }
+
         /// <summary>
         ///   Creates a new Ifc Persistent Instance, this is an undoable operation
         /// </summary>

@@ -32,6 +32,7 @@ namespace Xbim.XbimExtensions
         readonly public short IfcTypeId;
         readonly public int StyleLabel;
 
+
         public XbimGeometryData(int geometrylabel, int productLabel, XbimGeometryType geomType, short ifcTypeId, byte[] shape, byte[] transform, int geometryHash, int styleLabel)
         {
             GeometryLabel = geometrylabel;
@@ -66,6 +67,8 @@ namespace Xbim.XbimExtensions
             GeometryHash = GenerateGeometryHash(ShapeData);
             StyleLabel = styleLabel;
         }
+
+        
         
         /// <summary>
         /// Returns true if the two geometries have identical shape data

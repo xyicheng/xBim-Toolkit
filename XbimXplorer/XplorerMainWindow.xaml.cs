@@ -415,7 +415,7 @@ namespace XbimXplorer
         private void DrawingControl_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
         {
             //_currentProduct = DrawingControl.GetProductAt(e);
-            //if (_currentProduct.HasValue && Model !=null)
+            //if (_currentProduct.HasValue && Model != null)
             //{
             //    IPersistIfcEntity product = Model.Instances[_currentProduct.Value];
             //    ContextMenu = new ContextMenu();
@@ -429,11 +429,11 @@ namespace XbimXplorer
             //    mi.Click += new RoutedEventHandler(ShowAllTypesOf);
             //    ContextMenu.Items.Add(mi);
             //    ContextMenu.Items.Add(new Separator());
-            //    mi = new MenuItem() {Header = "Show all"};
+            //    mi = new MenuItem() { Header = "Show all" };
             //    mi.Click += new RoutedEventHandler(ShowAll);
             //    ContextMenu.Items.Add(mi);
             //    ContextMenu.Items.Add(new Separator());
-            //    mi = new MenuItem() {Header = "Properties"};
+            //    mi = new MenuItem() { Header = "Properties" };
             //    mi.Click += new RoutedEventHandler(ShowProperties);
             //    ContextMenu.Items.Add(mi);
             //}

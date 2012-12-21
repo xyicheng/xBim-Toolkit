@@ -6,11 +6,11 @@
     xmlns:HelixToolkit="clr-namespace:HelixToolkit.Wpf;assembly=HelixToolkit.Wpf"
 >
 
-    <HelixToolkit:HelixViewport3D  x:Name="Canvas" ZoomAroundMouseDownPoint="True" RotateAroundMouseDownPoint="True" CameraMode="Inspect" CameraRotationMode="Turntable" IsHeadLightEnabled="False" ShowCoordinateSystem="True" ZoomExtentsWhenLoaded="True">
+    <HelixToolkit:HelixViewport3D  x:Name="Canvas" ZoomAroundMouseDownPoint="True" RotateAroundMouseDownPoint="True" CameraMode="Inspect" CameraRotationMode="Turntable" IsHeadLightEnabled="false" ShowCoordinateSystem="True" >
 
         <!-- Remember to add light to the scene -->
         <HelixToolkit:SunLight/>
-
+        <HelixToolkit:BillboardTextVisual3D  x:Name="PropertiesBillBoard"  Background="WhiteSmoke" Foreground="DarkBlue" FontSize="12" Position="0,0,0" Text="" DepthOffset="0.01" IsRendering="False" />
         <!-- The content of this visual is defined in MainViewModel.cs -->
         <ModelVisual3D Content="{Binding Model}"/>
 

@@ -16,7 +16,7 @@ namespace Xbim.IO
         public XbimProductGeometry(int productLabel, IEnumerable<XbimGeometryData> geometryData)
             : base(geometryData)
         {
-            Debug.Assert(geometryData.Any()); ///must be at least one
+            Debug.Assert(geometryData.Any()); //must be at least one
             ProductLabel = productLabel;
         }
         public XbimGeometryType GeometryType

@@ -39,6 +39,7 @@ using System.Windows.Markup;
 using Xbim.Common.Exceptions;
 using System.Threading;
 using Xbim.Ifc2x3;
+using HelixToolkit.Wpf;
 
 #endregion
 
@@ -67,8 +68,9 @@ namespace Xbim.Presentation
             window.Children.Add(new DiffuseMaterial(transparentBrush));
             window.Children.Add(new SpecularMaterial(transparentBrush, 40));
             _defaultTransparentMaterial = new XbimMaterialProvider(window);
-            //this.DataContextChanged += new DependencyPropertyChangedEventHandler(DrawingControl3D_DataContextChanged);
+           
             Viewport = Canvas;
+            Canvas.MouseDown+=Canvas_MouseDown;
 
         }
 
@@ -118,8 +120,8 @@ namespace Xbim.Presentation
         private XbimMaterialProvider _defaultTransparentMaterial;
 
 
-
-        protected ModelVisual3D _selectedVisual;
+        private int? _currentProduct;
+        protected HelixToolkit.Wpf.Viewport3DHelper.HitResult _selectedVisual;
         protected Material _selectedVisualMaterial;
         protected Material _selectedVisualPreviousMaterial;
 
@@ -165,14 +167,46 @@ namespace Xbim.Presentation
 
         private void Canvas_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            //long? prod = Canvas.GetProductAt(e);
-            //if (prod.HasValue)
-            //{
-            //    IList remove = new long[] { };
-            //    IList add = new long[] { prod.Value };
-            //    SelectionChangedEventArgs selEv = new SelectionChangedEventArgs(SelectionChangedEvent, remove, add);
-            //    RaiseEvent(selEv);
-            //}
+            PropertiesBillBoard.IsRendering = false;
+            this.Canvas.Children.Remove(PropertiesBillBoard);
+           
+            var pos = e.GetPosition(Canvas);
+            foreach (var hit in Viewport3DHelper.FindHits(Canvas.Viewport, pos))
+            {
+                object id = hit.Visual.GetValue(TagProperty);
+                if (id is int)
+                {
+                    IList remove;
+                    if (_currentProduct.HasValue)
+                    {
+                        GeometryModel3D geom = _selectedVisual.Model as GeometryModel3D;
+                        if (geom != null)
+                            geom.Material = _selectedVisualPreviousMaterial;
+                        remove = new int[] { _currentProduct.Value };
+        }
+                    else
+                        remove = new int[] { };
+                    _selectedVisual = hit;
+                    GeometryModel3D selGeom = _selectedVisual.Model as GeometryModel3D;
+                    if (selGeom != null)
+                    {
+                        _selectedVisualPreviousMaterial = selGeom.Material;
+                        selGeom.Material = _selectedVisualMaterial;
+                    }
+                    this.Canvas.Children.Add(PropertiesBillBoard);
+                    PropertiesBillBoard.IsRendering = true;
+                    _currentProduct = (int)id;
+
+                    PropertiesBillBoard.Text = Model.Instances[_currentProduct.Value].SummaryString().EnumerateToString(null,"\n");
+                    PropertiesBillBoard.Position = hit.RayHit.PointHit;
+
+                    
+                    IList add = new int[] { _currentProduct.Value };
+                    SelectionChangedEventArgs selEv = new SelectionChangedEventArgs(SelectionChangedEvent, remove, add);
+                    RaiseEvent(selEv);
+                    return;
+                }
+            }
         }
 
         #endregion
@@ -232,32 +266,32 @@ namespace Xbim.Presentation
 
         private static void OnSelectedItemChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            DrawingControl3D d3d = d as DrawingControl3D;
-            if (d3d != null)
-            {
-                int? oldProd = e.OldValue as int?;
-                int? newProd = e.NewValue as int?;
-                if (oldProd.HasValue) //unhighlight last one
-                {
-                    ModelVisual3D item;
-                    if (d3d._items.TryGetValue(oldProd.Value, out item))
-                    {
-                        Material oldMat = null;
-                        d3d._selectedVisual = item;
-                        d3d.SwapMaterial(item.Content, d3d._selectedVisualPreviousMaterial, ref oldMat);
-                    }
-                }
-                if (newProd.HasValue) //highlight new one
-                {
-                    ModelVisual3D item;
-                    if (d3d._items.TryGetValue(newProd.Value, out item))
-                    {
-                        d3d._selectedVisual = item;
-                        d3d.SwapMaterial(item.Content, d3d._selectedVisualMaterial,
-                                         ref d3d._selectedVisualPreviousMaterial);
-                    }
-                }
-            }
+            //DrawingControl3D d3d = d as DrawingControl3D;
+            //if (d3d != null)
+            //{
+            //    int? oldProd = e.OldValue as int?;
+            //    int? newProd = e.NewValue as int?;
+            //    if (oldProd.HasValue) //unhighlight last one
+            //    {
+            //        ModelVisual3D item;
+            //        if (d3d._items.TryGetValue(oldProd.Value, out item))
+            //        {
+            //            Material oldMat = null;
+            //            d3d._selectedVisual = item;
+            //            d3d.SwapMaterial(item.Content, d3d._selectedVisualPreviousMaterial, ref oldMat);
+            //        }
+            //    }
+            //    if (newProd.HasValue) //highlight new one
+            //    {
+            //        ModelVisual3D item;
+            //        if (d3d._items.TryGetValue(newProd.Value, out item))
+            //        {
+            //            d3d._selectedVisual = item;
+            //            d3d.SwapMaterial(item.Content, d3d._selectedVisualMaterial,
+            //                             ref d3d._selectedVisualPreviousMaterial);
+            //        }
+            //    }
+            //}
         }
 
 
@@ -337,16 +371,13 @@ namespace Xbim.Presentation
 
         private void ClearGraphics()
         {
-            //PercentageLoaded = 0;
-            //Transparents.Children.Clear();
-            //Solids.Children.Clear();
-            //_hidden.Clear();
-            //_hiddenTypes.Clear();
-            ////BuildingModel.Content = null;
-            //_items.Clear();
-            //TrackBall.CameraMoved = false;
-            //_meshMap.Clear();
-            
+            PercentageLoaded = 0;
+            _hidden.Clear();
+            _hiddenTypes.Clear();
+            _items.Clear();
+            _meshMap.Clear();
+            _selectedVisual = null;
+            _currentProduct = null;
         }
 
         private MeshGeometry3D MakeBoundingBox(Rect3D r3D)
@@ -438,7 +469,7 @@ namespace Xbim.Presentation
         private Rect3D GetModelBounds(XbimModel model)
         {
             Rect3D box = new Rect3D();
-
+            if (model == null) return box;
             foreach (XbimGeometryData shape in model.GetGeometryData(XbimGeometryType.BoundingBox))
             {
                 Matrix3D matrix3d = new Matrix3D();
@@ -458,7 +489,8 @@ namespace Xbim.Presentation
             ClearGraphics();
             
             //get bounding box for the whole building
-           // if(model!=null) InitialiseView(model);
+            _boundingBox = GetModelBounds(model);
+             Canvas.ZoomExtents(_boundingBox);
 
             _worker = new BackgroundWorker();
             _worker.DoWork += new DoWorkEventHandler(GenerateGeometry);
@@ -498,24 +530,22 @@ namespace Xbim.Presentation
 
         private void DrawShapes(XbimSurfaceStyle StyleToDraw)
         {
+            //create a variable to hold visuals and avoid too many redraws
             ModelVisual3D visualsToAdd = new ModelVisual3D();
-            //take the building out of the scene
-            // ModelVisual3D building = BuildingModel;
-            // this.Canvas.Children.Remove(BuildingModel);
             XbimMaterialProvider mat = Model.GetRenderMaterial(StyleToDraw);
-
+            
             foreach (var prodGeom in StyleToDraw.ProductGeometries)
             {
                 //Try and get the visual for the product, if not found create one
                 ModelVisual3D mv;
                 bool newVisual = false;
-
+                
                 if (!_items.TryGetValue(prodGeom.ProductLabel, out mv))
                 {
                     mv = new ModelVisual3D();
                     newVisual = true;
                 }
-
+               
                 //Set up the Model Geometry to hold the product geometry, this has unique material and tranform
                 //and may reuse GeometryModel3D meshes from previous renders
                 GeometryModel3D m3d = new GeometryModel3D();
@@ -568,12 +598,12 @@ namespace Xbim.Presentation
                 {
                     mv.AddGeometry(m3d);
                 }
-                if (newVisual) //we have some new visual representation to add, don't add model visual otherwise
-                {
-                    mv.SetValue(TagProperty, prodGeom.ProductLabel);
-                    _items.Add(prodGeom.ProductLabel, mv);
-                    visualsToAdd.Children.Add(mv);
-                }
+                    if (newVisual) //we have some new visual representation to add, don't add model visual otherwise
+                    {
+                        mv.SetValue(TagProperty, prodGeom.ProductLabel);
+                        _items.Add(prodGeom.ProductLabel, mv);
+                        visualsToAdd.Children.Add(mv);
+                    }
             }
             if (visualsToAdd.Children.Count > 0)
             {
@@ -588,7 +618,6 @@ namespace Xbim.Presentation
             BackgroundWorker worker = s as BackgroundWorker;
             XbimModel model = args.Argument as XbimModel;
            
-            
             if (worker != null && model != null)
             {
                 worker.ReportProgress(0, "Reading Geometry");
@@ -615,10 +644,18 @@ namespace Xbim.Presentation
 
         #region Query methods
 
-        //public int? GetProductAt(MouseButtonEventArgs e)
-        //{
-        //    return Canvas.GetProductAt(e);
-        //}
+       
+        private void ContainerElementMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.LeftButton == MouseButtonState.Pressed)
+            {
+                var element = sender as ModelUIElement3D;
+                var model = element.Model as GeometryModel3D;
+                model.Material = model.Material == Materials.Green ? Materials.Gray : Materials.Green;
+                e.Handled = true;
+            }
+        }
+        
 
         #endregion
 
@@ -693,7 +730,7 @@ namespace Xbim.Presentation
         public void ZoomExtents(int? selection)
         {
             if(!selection.HasValue)
-                Canvas.ZoomExtents();
+                Canvas.ZoomExtents(_boundingBox,500);
             else
             {
                 ModelVisual3D mv = _items[selection.Value];

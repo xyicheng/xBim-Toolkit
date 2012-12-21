@@ -28,6 +28,7 @@ namespace Xbim.IO
         /// The type of geometric representation
         /// </summary>
         public XbimGeometryType GeometryType;
+       
         /// <summary>
         /// A handle to a geometry object
         /// </summary>
@@ -43,6 +44,16 @@ namespace Xbim.IO
             ProductLabel = productLabel;
             IfcTypeId = ifcTypeId;
             GeometryType = geometryType;
+        }
+
+        public XbimGeometryHandle(int geometryLabel)
+        {
+            GeometryLabel = geometryLabel;
+            GeometryType = XbimGeometryType.Undefined;
+            SurfaceStyleLabel = 0;
+            ProductLabel = 0;
+            IfcTypeId = 0;
+            
         }
 
         /// <summary>
