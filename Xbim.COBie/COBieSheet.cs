@@ -145,7 +145,7 @@ namespace Xbim.COBie
                                     _indices.Add(columnName, new HashSet<string>());
 
                                 if (!_indices[columnName].Contains(columnValue)) //add value to HashSet, if not existing
-                                    _indices[columnName].Add(columnValue);
+                                    _indices[columnName].Add(columnValue.Trim());
                             } 
                         }
                     }
@@ -198,7 +198,7 @@ namespace Xbim.COBie
                                   ) 
                                 || 
                                 ( !isPickList //not a pick list so do Contains test
-                                  && (!workbook[sheetName].Indices[fieldName].Contains(foreignKeyValue, StringComparer.OrdinalIgnoreCase))
+                                  && (!ForeignKeyMatch(workbook[sheetName].Indices[fieldName], foreignKeyValue))
                                   )
                                 )
                             {
@@ -222,6 +222,30 @@ namespace Xbim.COBie
 
         }
 
+        /// <summary>
+        /// Match the Foreign Key with the primary key field
+        /// </summary>
+        /// <param name="hashSet">list of the data in the primary key field</param>
+        /// <param name="foreignKeyValue">Foreign key to match</param>
+        /// <returns>bool</returns>
+        private bool ForeignKeyMatch(HashSet<string> hashSet, string foreignKeyValue)
+        {
+            if (hashSet.Contains(foreignKeyValue.Trim(), StringComparer.OrdinalIgnoreCase)) return true; //matches full string
+            //no match an full string, so se if a comma delimited string and assume each item might be a match
+            if (foreignKeyValue.Contains(",")) //assume multiple matches
+            {
+                //check both sides of : for match
+                string[] catKeys = foreignKeyValue.Split(',');
+                foreach (string item in catKeys)
+                {
+                    if (!hashSet.Contains(item.Trim(), StringComparer.OrdinalIgnoreCase))
+                        return false;
+                }
+                return true;
+            }
+            return false;
+        }
+
         
        
 
@@ -234,7 +258,7 @@ namespace Xbim.COBie
         private bool PickListMatch(HashSet<string> hashSet, string foreignKeyValue)
         {
             if (foreignKeyValue == Constants.DEFAULT_STRING) return false;
-            if (hashSet.Contains(foreignKeyValue, StringComparer.OrdinalIgnoreCase)) return true;
+            if (hashSet.Contains(foreignKeyValue.Trim(), StringComparer.OrdinalIgnoreCase)) return true;
 
             foreignKeyValue = foreignKeyValue.ToLower().Trim();
             if (foreignKeyValue.Contains(":")) //assume category split
@@ -251,6 +275,17 @@ namespace Xbim.COBie
                 //create anonymous method in linq statement so we only do Split once
                 return hashSet.Where(s => { var split = s.Split(':'); return ((split.Last().ToLower().Trim() == foreignKeyValue) || (split.First().ToLower().Trim() == foreignKeyValue)); }
                                     ).Any();
+            }
+            if (foreignKeyValue.Contains(",")) //assume multiple matches
+            {
+                //check both sides of : for match
+                string[] catKeys = foreignKeyValue.Split(',');
+                foreach (string item in catKeys)
+                {
+                    if (!hashSet.Contains(item.Trim(), StringComparer.OrdinalIgnoreCase))
+                        return false;
+                }
+                return true;
             }
 
             return false;
