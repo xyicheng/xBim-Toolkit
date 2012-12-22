@@ -266,7 +266,9 @@ namespace Xbim.SceneJSWebViewer
             SurfaceStyleList = handles.GetSurfaceStyles().ToList();
             TypeList = new List<string>();
             ProductsList = new List<GeometryHeader>();
-            
+
+            HashSet<int> alreadysent = new HashSet<int>();
+                        
             foreach (XbimSurfaceStyle surfaceStyle in SurfaceStyleList)
             {
                  //try to get any material defined in the model
@@ -299,8 +301,12 @@ namespace Xbim.SceneJSWebViewer
                     geomHeader.LayerPriority = 1;
                 foreach (var geomHandle in handles.GetGeometryHandles(surfaceStyle).Distinct(new CompareDistinctGeometryHandles()))
                 {
-                    string label = geomHandle.GeometryLabel.ToString();
-                    geomHeader.Geometries.Add(label);
+                    if (!alreadysent.Contains(geomHandle.GeometryLabel))
+                    {
+                        string label = geomHandle.GeometryLabel.ToString();
+                        geomHeader.Geometries.Add(label);
+                        alreadysent.Add(geomHandle.GeometryLabel);
+                    }
                 }
 
                 // populate lists
@@ -310,7 +316,7 @@ namespace Xbim.SceneJSWebViewer
                 //store the material
                 surfaceStyle.TagRenderMaterial = SurfaceStyleMaterial; 
             }
-
+            // DumpProducts();
         }
 
         private void DumpProducts()
@@ -346,24 +352,25 @@ namespace Xbim.SceneJSWebViewer
                 sb.Append(" - ");
                 sb.Append(product.Material);
                 sb.AppendFormat(": {0} entities", product.Geometries.Count);
+                sb.AppendFormat(" [{0}]", string.Join(",", product.Geometries.ToArray()));
+
                 sb.AppendLine();
                 totalEntities += product.Geometries.Count;
             }
             sb.AppendFormat("-- Total Entities: {0}", totalEntities);
+            Debug.WriteLine(sb.ToString());
             Logger.DebugFormat("- Model Manifest for: {0}\n\n{1}", _modelId, sb);
         }
 
         public string QueryData(string id, string query)
         {
-            
             try
-            {
-                
+            {       
                 IfcProduct product = _model.Instances.GetFromGeometryLabel(Convert.ToInt32(id)) as IfcProduct;
                 if (product != null)
                 {
                     StringBuilder sb = new StringBuilder();
-                    sb.Append("ID " + id);
+                    sb.Append("ID " + product.EntityLabel + "/" + id);
                     sb.Append(" Name: ");
                     sb.Append(product.ToString());
                     sb.Append(", IFC Type: " + product.GetType().Name);
@@ -375,7 +382,6 @@ namespace Xbim.SceneJSWebViewer
             }
             catch (Exception)
             {
-
                 return "You sent a query of: '" + query + "' for id: '" + id + "'";
             }
         }
