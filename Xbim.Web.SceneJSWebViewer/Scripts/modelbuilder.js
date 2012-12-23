@@ -1,19 +1,41 @@
-﻿//Adds the types to the Scene at a specified Node
-function AddTypes(Scene, NodeAt, Types) {
-    for (var i = 0; i < Types.length; i++) {
-        AddType(Scene, NodeAt, Types[i]);
+﻿//Adds the types to the Scene and UI tree at a specified Node
+function AddTypes(Scene, NodeAt, TypesArray) {
+    var rootUiTreeNode = $("#navtree").dynatree("getRoot");
+    for (var i = 0; i < TypesArray.length; i++) {
+        var Type = TypesArray[i];
+        // add to the UI tree interface
+        rootUiTreeNode.addChild({ "title": Type, "tooltip": "Type", "key": Type, "select": true });
+
+        // add to the 3d scene
+        if (!Scene.findNode(Type)) {
+            NodeAt.add("node", CreateType(Type));
+        }
     }
 }
-function AddType(Scene, NodeAt, Type) {
-    if (!Scene.findNode(Type)) {
-        NodeAt.add("node", CreateType(Type));
+//Creates a JSON type for the SceneJS tree
+function CreateType(Name) {
+    return {
+        "type": "layer",
+        "id": Name + "_layer",
+        "nodes": [
+        {
+            "type": "tag",
+            "tag": Name,
+            "id": Name,
+            "nodes": [
+                {
+                    "type": "material",
+                    "id": Name + "Mat",
+                    "coreId": Name + "Material"
     }
-    currentNode = $("#navtree").dynatree("getRoot");
-    currentNode.addChild({ "title": Type, "tooltip": "Type", "key": Type, "select": true });
+            ]
+}
+        ]
+    }
 }
 
 //Adds an item to the shared library
-function AddItemToLibrary(Scene, Item) {
+function AddItemToSceneLibrary(Scene, Item) {
     var lib = Scene.findNode("library");
     if (!lib) {
         Scene.add("node",
@@ -48,31 +70,32 @@ function UpdateLayers(Scene, Type, Priority) {
     var node = Scene.findNode(Type + "_layer");
     if (node) node.set("priority", Priority);
 }
+
+// adds elements to the UI tree and the scene
+//
 function LoadGeometryHeaders(Scene, Type, Material, IDs, styleNumber) {
     var typenode = Scene.findNode(Type);
     if (typenode == null) {
         alert("type not found.");
     }
+    // loops through the nodes to add
     for (var i = 0; i < IDs.length; i++) {
-        var uniqueID = IDs[i]; // + "_" + styleNumber;
+        var uniqueID = IDs[i]; 
         var node = CreateGeometryHeader(uniqueID);
         var vMat = typenode.node(Type + "Mat");
-        if (vMat == null) {
-            
-        }
         if (Material != null) {
-            vMat.add("node",
-                {
+            vMat.add("node", {
                     "type": "material",
                     "coreId": Material,
                     "nodes": [node]
-                }
-            );
+                    });
         } else {
                 vMat.add("node", node);
         }
-        currentNode = $("#navtree").dynatree("getTree").getNodeByKey(Type);
-        currentNode.addChild({ "title": uniqueID, "tooltip": Type, "key": uniqueID, "select": true });
+        
+        // preparing UI
+        var rootUiTreeNode = $("#navtree").dynatree("getTree").getNodeByKey(Type);
+        rootUiTreeNode.addChild({ "title": uniqueID, "tooltip": Type, "key": uniqueID, "select": true });
     }
 }
 function CreateGeometryHeader(ID) {
@@ -101,15 +124,15 @@ function CreateGeometryData(Scene, ID, MeshType, positions, normals, indices, ma
         return;
     }
     if (positions == null || positions.length == 0) {
-        alert("positions empty");
+        // alert("positions empty");
         return;
     }
     if (normals == null || normals.length == 0) {
-        alert("normals empty");
+        // alert("normals empty");
         return;
     }
     if (indices == null || indices.length == 0) {
-        alert("indices empty");
+        // alert("indices empty");
         return;
     }
 
@@ -162,25 +185,4 @@ function CreateGeometryData(Scene, ID, MeshType, positions, normals, indices, ma
     var flags = geoNodeFlags.get("flags");
     flags.enabled = true;
     geoNodeFlags.set("flags", flags);
-}
-//Creates a JSON type for an IFC/xBim Type
-function CreateType(Name) {
-    return {
-        "type": "layer",
-        "id": Name + "_layer",
-        "nodes": [
-        {
-            "type": "tag",
-            "tag": Name,
-            "id": Name,
-            "nodes": [
-                {
-                    "type": "material",
-                    "id": Name + "Mat",
-                    "coreId": Name + "Material"
-                }
-            ]
-        }
-        ]
-    }
 }

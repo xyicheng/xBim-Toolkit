@@ -155,6 +155,10 @@ namespace Xbim.SceneJSWebViewer
             // ms.Write()
 
             // bool TransformMatrixInitialised = false;
+            if (geometryId == 610)
+            {
+
+            }
 
             XbimGeometryHandle handle = _model.GetGeometryHandle(geometryId);
             IEnumerable<XbimGeometryData> geometries = _model.GetGeometryData(handle.ProductLabel, handle.GeometryType).Where(gd => gd.StyleLabel == handle.SurfaceStyleLabel);
