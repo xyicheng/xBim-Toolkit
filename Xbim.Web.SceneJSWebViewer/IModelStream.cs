@@ -31,7 +31,7 @@
         /// Get's the Data for the Camera settings
         /// </summary>
         /// <returns>A Camera object</returns>
-        Camera GetCamera();
+        Camera GetBoundingBox();
 
         /// <summary>
         /// Performs a query on an item

@@ -7,7 +7,7 @@ namespace Xbim.SceneJSWebViewer
 {
     internal enum Command
     {
-        ModelView = 0,
+        ModelBasicProperties = 0,
         SharedMaterials = 1,
         Types = 2,
         GeometryHeaders = 3,

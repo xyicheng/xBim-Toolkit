@@ -47,7 +47,7 @@ namespace Xbim.SceneJSWebViewer
 
                 switch ((Command)obj.command)
                 {
-                    case Command.ModelView: //Setup model stream and send Model View
+                    case Command.ModelBasicProperties: //Setup model stream and send Model View
                         return Connection.Send(connectionId, ModelStreamer.SendModelView(connectionId, modelId));
                     case Command.SharedMaterials: //Setup Shared Materials
                         return Connection.Send(connectionId, ModelStreamer.SendSharedMaterials(connectionId, modelId));
@@ -323,10 +323,10 @@ namespace Xbim.SceneJSWebViewer
             IModelStream modelstream = GetModelStream(modelId);
 
             List<byte> data = new List<byte>();
-            data.Add((byte)Command.ModelView); //Command
+            data.Add((byte)Command.ModelBasicProperties); //Command
             data.Add(BitConverter.IsLittleEndian ? (byte)0x01 : (byte)0x00); //Endian Flag
 
-            Camera cam = modelstream.GetCamera();
+            Camera cam = modelstream.GetBoundingBox();
 
             //Check the cam values
             if (cam.minX == Double.MinValue || cam.minY == Double.MinValue || cam.minZ == Double.MinValue || cam.maxX == Double.MaxValue || cam.maxY == Double.MaxValue || cam.maxZ == Double.MaxValue)

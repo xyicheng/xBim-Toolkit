@@ -6,7 +6,8 @@ using System.Web;
 namespace Xbim.SceneJSWebViewer
 {
     /// <summary>
-    /// Represents a Camera looking at the model space
+    /// Could be developed to represent a Camera looking at the model space.
+    /// At present it only represents the model bounding box.
     /// </summary>
     public class Camera
     {

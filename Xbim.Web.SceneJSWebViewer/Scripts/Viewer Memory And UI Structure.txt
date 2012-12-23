@@ -1,0 +1,16 @@
+var InitialModelView;
+
+StartLoadingDynamicModel is the function that kickstarts the model load.
+
+Scene
+	Library ("id": "library")
+		Material: id=MaterialName
+		Mat....
+	... plenty of stuff See basescenedefinition.js for the core structure of the Scene transformgraph
+		
+		
+translate [id: "offset"] // is the starting point of the 3D items we add
+	"type": "layer", id": Name + "_layer", // the types of elements 
+		"type": "tag", "tag": Name, "id": Name,
+			"type": "material", "id": Name + "Mat", "coreId": Name + "Material"
+	

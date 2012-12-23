@@ -9,7 +9,7 @@ var pauseDownload = false; //setting this to true will pause teh geometry stream
 
 //enums for the different command codes
 CommandCode = {
-    ModelView: 0,
+    ModelBasicProperties: 0,
     SharedMaterials: 1,
     Types: 2,
     GeometryHeaders: 3,
@@ -36,12 +36,12 @@ function StartLoadingDynamicModel(Scene, StartAtNode, Model) {
 
     //send command to request camera info
     $("#debuginfo").append('<p>Requesting Camera Info</p>');
-    connection.send(JSON.stringify({ "command": CommandCode.ModelView, "ModelID": ModelID }));
+    connection.send(JSON.stringify({ "command": CommandCode.ModelBasicProperties, "ModelID": ModelID }));
 }
 function ModelDataReceived(command, view) {
     //select the right function based on the incoming command type
     switch (command) {
-        case CommandCode.ModelView:
+        case CommandCode.ModelBasicProperties:
             SetupModelView(view);
             if (!Loaded) {
                 Loaded = true;
@@ -175,6 +175,9 @@ function ResetModelView() {
     //set up plane
     newInput = true;
 }
+
+// gets the model boundaries then zooms to it.
+//
 function SetupModelView(view) {
 
     /////////////////////////////
@@ -194,9 +197,15 @@ function SetupSharedMaterials(view) {
     $("#debuginfo").append('<p>Received ' + count + ' shared materials</p>');
     for (var i = 0; i < count; i++) {
         var length = view.getUint16();
-        //                                 name                    R                  G                  B                  Alpha             Emit
-        var material = CreateMaterial(view.getString(length), view.getFloat64(), view.getFloat64(), view.getFloat64(), view.getFloat64(), view.getFloat64());
-        AddItemToLibrary(streamScene, material);
+        var material = CreateMaterial(  // in modelbuilder.js
+            view.getString(length), // name
+            view.getFloat64(), // R
+            view.getFloat64(), // G
+            view.getFloat64(), // B
+            view.getFloat64(), // Alpha
+            view.getFloat64()  // Emit
+            );
+        AddItemToSceneLibrary(streamScene, material);  // in modelbuilder.js
     }
 
     $("#debuginfo").append('<p>Requesting Type Info</p>');
@@ -204,16 +213,17 @@ function SetupSharedMaterials(view) {
 }
 function SetupTypes(view) {
     var count = view.getUint16();
-    var type = new Array(count);
+    var typesArray = new Array(count);
 
     for (var i = 0; i < count; i++) {
         var length = view.getUint16();
-        type[i] = view.getString(length);
+        typesArray[i] = view.getString(length);
     }
-    $("#debuginfo").append('<p>Received ' + count + ' types: ' + type.toString() + '</p>');
+    $("#debuginfo").append('<p>Received ' + count + ' types: ' + typesArray.toString() + '</p>');
 
-    AddTypes(streamScene, streamNodeAt, type);
-
+    // streamNodeAt is the starting point for a model.
+    //
+    AddTypes(streamScene, streamNodeAt, typesArray); // in ModelBuilder.js
     $("#debuginfo").append('<p>Requesting Geometry Headers</p>');
     connection.send(JSON.stringify({ "command": CommandCode.GeometryHeaders, "ModelID": ModelID}));
 }

@@ -138,7 +138,7 @@ namespace Xbim.SceneJSWebViewer
             }
             return box;
         }
-        public Camera GetCamera()
+        public Camera GetBoundingBox()
         {
             //get the model boundaries
             BoundingBox box = GetModelBounds();

@@ -246,6 +246,7 @@
     <Content Include="Scripts\orbit.js" />
     <Content Include="Scripts\quaternion.js" />
     <Content Include="Scripts\scenejs.js" />
+    <Content Include="Scripts\Viewer Memory And UI Structure.txt" />
     <Content Include="Scripts\viewer-mesh.js" />
     <Content Include="Scripts\viewer.js" />
     <Content Include="Scripts\xbim3dviewer.js" />
