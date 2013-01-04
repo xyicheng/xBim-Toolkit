@@ -4,9 +4,10 @@ using System.Linq;
 using System.Text;
 using Xbim.XbimExtensions.Transactions;
 using Xbim.COBie.Rows;
-using Xbim.Ifc.ProductExtension;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.SharedBldgServiceElements;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.SharedBldgServiceElements;
+using Xbim.IO;
 
 namespace Xbim.COBie.Serialisers.XbimSerialiser
 {
@@ -29,17 +30,20 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         /// <param name="cOBieSheet">COBieSheet of COBieConnectionRow to read data from</param>
         public void SerialiseConnection(COBieSheet<COBieConnectionRow> cOBieSheet)
         {
-            using (Transaction trans = Model.BeginTransaction("Add Connection"))
+            using (XbimReadWriteTransaction trans = Model.BeginTransaction("Add Connection"))
             {
 
                 try
                 {
-                    IfcElements = Model.InstancesOfType<IfcElement>();
+                    int count = 1;
+                    IfcElements = Model.Instances.OfType<IfcElement>();
                     
                     ProgressIndicator.ReportMessage("Starting Connections...");
                     ProgressIndicator.Initialise("Creating Connections", cOBieSheet.RowCount);
                     for (int i = 0; i < cOBieSheet.RowCount; i++)
                     {
+                        BumpTransaction(trans, count);
+                        count++;
                         ProgressIndicator.IncrementAndUpdate();
                         COBieConnectionRow row = cOBieSheet[i];
                         AddConnection(row);
@@ -51,7 +55,6 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 }
                 catch (Exception)
                 {
-                    trans.Rollback();
                     //TODO: Catch with logger?
                     throw;
                 }
@@ -64,7 +67,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         /// <param name="row">COBieConnectionRow holding the data</param>
         private void AddConnection(COBieConnectionRow row)
         {
-            IfcRelConnectsElements ifcRelConnectsElements = Model.New<IfcRelConnectsElements>();
+            IfcRelConnectsElements ifcRelConnectsElements = Model.Instances.New<IfcRelConnectsElements>();
             //Add Created By, Created On and ExtSystem to Owner History. 
             if ((ValidateString(row.CreatedBy)) && (Contacts.ContainsKey(row.CreatedBy)))
                 SetNewOwnerHistory(ifcRelConnectsElements, row.ExtSystem, Contacts[row.CreatedBy], row.CreatedOn);
@@ -123,9 +126,9 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 {
                     for (int i = 0; i < relatedPortList.Count(); i++)
                     {
-                        IfcDistributionPort ifcPortRelated = Model.New<IfcDistributionPort>(p => {p.Name = relatedPortList[i]; });
-                        IfcDistributionPort ifcPortRelating = Model.New<IfcDistributionPort>(p => { p.Name = relatingPortList[i]; });
-                        IfcRelConnectsPorts ifcRelConnectsPorts = Model.New<IfcRelConnectsPorts>(rcp => 
+                        IfcDistributionPort ifcPortRelated = Model.Instances.New<IfcDistributionPort>(p => {p.Name = relatedPortList[i]; });
+                        IfcDistributionPort ifcPortRelating = Model.Instances.New<IfcDistributionPort>(p => { p.Name = relatingPortList[i]; });
+                        IfcRelConnectsPorts ifcRelConnectsPorts = Model.Instances.New<IfcRelConnectsPorts>(rcp => 
                                                                  { 
                                                                      rcp.RelatedPort = ifcPortRelated;
                                                                      rcp.RelatingPort = ifcPortRelating; 
@@ -136,14 +139,14 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
 
                         //create the Relationship object
                         if (relatedElement != null)
-                            Model.New<IfcRelConnectsPortToElement>(rcpe =>
+                            Model.Instances.New<IfcRelConnectsPortToElement>(rcpe =>
                                 {
                                     rcpe.RelatingPort = ifcPortRelated;
                                     rcpe.RelatedElement = relatedElement;
                                 }
                                 );
                         if (relatingElement != null)
-                            Model.New<IfcRelConnectsPortToElement>(rcpe =>
+                            Model.Instances.New<IfcRelConnectsPortToElement>(rcpe =>
                                 {
                                     rcpe.RelatingPort = ifcPortRelating;
                                     rcpe.RelatedElement = relatingElement;

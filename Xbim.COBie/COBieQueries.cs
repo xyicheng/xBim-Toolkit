@@ -1,5 +1,5 @@
 ﻿using Xbim.XbimExtensions;
-using Xbim.Ifc.ProductExtension;
+using Xbim.Ifc2x3.ProductExtension;
 using System.Xml;
 using Xbim.COBie.Rows;
 using Xbim.COBie.Data;

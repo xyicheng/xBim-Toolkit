@@ -4,13 +4,15 @@ using System.Linq;
 using System.Text;
 using Xbim.COBie.Rows;
 using Xbim.XbimExtensions.Transactions;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.ApprovalResource;
-using Xbim.Ifc.ControlExtension;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.ApprovalResource;
+using Xbim.Ifc2x3.ControlExtension;
 using Xbim.Ifc.SelectTypes;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.ProcessExtensions;
-using Xbim.Ifc.ActorResource;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.Ifc2x3.ProcessExtensions;
+using Xbim.Ifc2x3.ActorResource;
+using Xbim.XbimExtensions.SelectTypes;
+using Xbim.IO;
 
 namespace Xbim.COBie.Serialisers.XbimSerialiser
 {
@@ -48,14 +50,17 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         /// <param name="cOBieSheet">COBieSheet of COBieIssueRow to read data from</param>
         public void SerialiseIssue(COBieSheet<COBieIssueRow> cOBieSheet)
         {
-            using (Transaction trans = Model.BeginTransaction("Add Issue"))
+            using (XbimReadWriteTransaction trans = Model.BeginTransaction("Add Issue"))
             {
                 try
                 {
+                    int count = 1;
                     ProgressIndicator.ReportMessage("Starting Issues...");
                     ProgressIndicator.Initialise("Creating Issues", cOBieSheet.RowCount);
                     for (int i = 0; i < cOBieSheet.RowCount; i++)
                     {
+                        BumpTransaction(trans, count);
+                        count++;
                         ProgressIndicator.IncrementAndUpdate();
                         COBieIssueRow row = cOBieSheet[i];
                         AddIssue(row);
@@ -67,7 +72,6 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 }
                 catch (Exception)
                 {
-                    trans.Rollback();
                     //TODO: Catch with logger?
                     throw;
                 }
@@ -79,7 +83,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             
 
             //create the property set to attach to the approval
-            IfcPropertySet ifcPropertySet = Model.New<IfcPropertySet>();
+            IfcPropertySet ifcPropertySet = Model.Instances.New<IfcPropertySet>();
             ifcPropertySet.Name = "Pset_Risk";
             ifcPropertySet.Description = "An indication of exposure to mischance, peril, menace, hazard or loss";
            
@@ -93,9 +97,9 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             using (COBieXBimEditScope context = new COBieXBimEditScope(Model, ifcPropertySet.OwnerHistory))
             {
                 //create the approval object
-                IfcApproval ifcApproval = Model.New<IfcApproval>();
+                IfcApproval ifcApproval = Model.Instances.New<IfcApproval>();
                 //set relationship
-                IfcRelAssociatesApproval ifcRelAssociatesApproval = Model.New<IfcRelAssociatesApproval>();
+                IfcRelAssociatesApproval ifcRelAssociatesApproval = Model.Instances.New<IfcRelAssociatesApproval>();
                 ifcRelAssociatesApproval.RelatingApproval = ifcApproval;
                 ifcRelAssociatesApproval.RelatedObjects.Add_Reversible(ifcPropertySet);
 
@@ -171,14 +175,14 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 if (ifcActorSelect != null)
                 {
                     //see if the relation ship exists, if so no need to create
-                    IfcActorSelect IfcActorSelectTest = Model.InstancesOfType<IfcApprovalActorRelationship>()
+                    IfcActorSelect IfcActorSelectTest = Model.Instances.OfType<IfcApprovalActorRelationship>()
                                                         .Where(aar => aar.Approval == ifcApproval)
                                                         .Select(aar => aar.Actor).OfType<IfcActorSelect>()
                                                         .Where(po => po == ifcActorSelect)
                                                         .FirstOrDefault();
                     if (IfcActorSelectTest == null)
                     {
-                        IfcApprovalActorRelationship ifcApprovalActorRelationship = Model.New<IfcApprovalActorRelationship>();
+                        IfcApprovalActorRelationship ifcApprovalActorRelationship = Model.Instances.New<IfcApprovalActorRelationship>();
                         ifcApprovalActorRelationship.Actor = ifcActorSelect;
                         ifcApprovalActorRelationship.Approval = ifcApproval;
                     }
@@ -196,7 +200,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             IfcTask ifcTask = null;
 
             if (IfcTasks == null)
-                IfcTasks = Model.InstancesOfType<IfcTask>();
+                IfcTasks = Model.Instances.OfType<IfcTask>();
 
             name = name.ToLower().Trim();
             ifcTask = IfcTasks.Where(t => t.Name.ToString().ToLower().Trim() == name).FirstOrDefault();

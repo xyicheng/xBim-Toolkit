@@ -5,6 +5,8 @@ using Xbim.COBie;
 using Xbim.IO;
 using Xbim.XbimExtensions;
 using Xbim.COBie.Rows;
+using Xbim.XbimExtensions.Interfaces;
+using System;
 
 namespace Xbim.Tests.COBie
 {
@@ -17,110 +19,82 @@ namespace Xbim.Tests.COBie
         private const string SourceModelLeaf = "2012-03-23-Duplex-Handover.xbim";
         private const string PickListLeaf = "PickLists.xml";
 
-        private const string SourceFile = Root + @"\" + SourceModelLeaf;
+        private const string SourceFile =  Root + @"\" + SourceModelLeaf;
         private const string PickListFile = Root + @"\" + PickListLeaf;
 
-
-        static COBieContext _cobieContext = new COBieContext();
-        static IModel _model;
-
-        [ClassInitialize]
-        public static void LoadModel(TestContext context)
+        [TestInitialize]
+        public  void LoadModel()
         {
 
-            _model = new XbimFileModelServer();
-            _model.Open(SourceFile);
-            _cobieContext = new COBieContext();
-            _cobieContext.Model = _model;
-            COBieQueries cobieEngine = new COBieQueries(_cobieContext);
 
         }
 
-        [ClassCleanup]
-        public static void CloseModel()
+        [TestCleanup]
+        public void CloseModel()
         {
-            if(_model != null)
-                _model.Dispose();
-            _model = null;
-            _cobieContext = null;
+           
         }
 
         [TestMethod]
         public void Should_Return_Floors()
         {
-            COBieQueries cobieEngine = new COBieQueries(_cobieContext);
+            using (XbimModel model = new XbimModel())
+            {
+                model.Open(SourceFile, XbimDBAccess.ReadWrite);
+                COBieContext cobieContext = new COBieContext();
+                cobieContext.Model = model;
+                
+                COBieQueries cobieEngine = new COBieQueries(cobieContext);
 
-            var floors = cobieEngine.GetCOBieFloorSheet();
+                var floors = cobieEngine.GetCOBieFloorSheet();
 
-            Assert.AreEqual(4, floors.Rows.Count);
+                Assert.AreEqual(4, floors.Rows.Count);
 
-            FormatFloors(floors);           
+                FormatRows(floors);
+            }
         }        
 
         [TestMethod]
-        //[Ignore]    // "Need to resolve interdependency between sheets. Errors since Facilities needs calling first"
+          // "Need to resolve interdependency between sheets. Errors since Facilities needs calling first"
         public void Should_Return_Spaces()
         {
-            COBieQueries cobieEngine = new COBieQueries(_cobieContext);
+            using (XbimModel model = new XbimModel())
+            {
+                model.Open(SourceFile, XbimDBAccess.ReadWrite);
+                COBieContext cobieContext = new COBieContext();
+                cobieContext.Model = model;
 
-            var spaces = cobieEngine.GetCOBieSpaceSheet();
+                COBieQueries cobieEngine = new COBieQueries(cobieContext);
 
-            Assert.AreEqual(22, spaces.Rows.Count);
+                var spaces = cobieEngine.GetCOBieSpaceSheet();
 
-            FormatSpaces(spaces);
+                Assert.AreEqual(22, spaces.Rows.Count);
+
+                FormatRows(spaces);
+            }
         }
 
-        // TODO: refactor to generic
-        private static void FormatFloors(COBieSheet<COBieFloorRow> floors)
+        private static void FormatRows(ICOBieSheet<COBieRow> cOBieSheet)
         {
             int columns = 0;
-            foreach (var column in floors.Columns.OrderBy(c => c.Key))
+            foreach (var column in cOBieSheet.Columns.OrderBy(c => c.Key))
             {
-
-                Debug.Write(column.Value.ColumnName);
-                Debug.Write(", ");
+                Console.Write(column.Value.ColumnName);
+                Console.Write(", ");
                 columns++;
             }
-            foreach (var row in floors.Rows)
+            for (int i = 0; i < cOBieSheet.RowCount; i++)
             {
-                Debug.WriteLine("");
-                for (int i = 0; i < columns; i++)
+                COBieRow row = cOBieSheet[i];
+                Console.WriteLine("");
+                for (int col = 0; col < columns; col++)
                 {
-                    Debug.Write(row[i].CellValue);
-                    Debug.Write(",");
+                    Console.Write(row[col].CellValue);
+                    Console.Write(",");
                 }
             }
+           
         }
-
-        // TODO: refactor to generic
-        private static void FormatSpaces(COBieSheet<COBieSpaceRow> spaces)
-        {
-            int columns = 0;
-            foreach (var column in spaces.Columns.OrderBy(c => c.Key))
-            {
-                Debug.Write(column.Value.ColumnName);
-                Debug.Write(", ");
-                columns++;
-            }
-            foreach (var row in spaces.Rows)
-            {
-                Debug.WriteLine("");
-                for (int i = 0; i < columns; i++)
-                {
-                    Debug.Write(row[i].CellValue);
-                    Debug.Write(",");
-                }
-            }
-        }
-
-        private IModel Model
-        {
-            get
-            {
-                return _model;
-            }
-        }
-
    
     }
 }

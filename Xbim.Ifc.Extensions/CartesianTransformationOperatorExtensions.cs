@@ -15,12 +15,12 @@
 using System;
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
-using Xbim.Ifc.GeometryResource;
+using Xbim.Ifc2x3.GeometryResource;
 using WVector = System.Windows.Vector;
 
 #endregion
 
-namespace Xbim.Ifc.Extensions
+namespace Xbim.Ifc2x3.Extensions
 {
     public static class CartesianTransformationOperatorExtensions
     {

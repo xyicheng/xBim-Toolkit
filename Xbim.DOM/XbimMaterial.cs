@@ -3,14 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Xbim.XbimExtensions;
-using Xbim.Ifc.MaterialResource;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.Extensions;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.SelectTypes;
-using Xbim.Ifc.MaterialPropertyResource;
-using Xbim.Ifc.PropertyResource;
+using Xbim.Ifc2x3.MaterialResource;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.Extensions;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.XbimExtensions.SelectTypes;
+using Xbim.Ifc2x3.MaterialPropertyResource;
+using Xbim.Ifc2x3.PropertyResource;
 using Xbim.DOM.PropertiesQuantities;
+using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.DOM
 {
@@ -28,7 +29,7 @@ namespace Xbim.DOM
 
         internal XbimMaterial(XbimDocument document, string materialName)
         {
-            _ifcMaterial = document.Model.New<IfcMaterial>();
+            _ifcMaterial = document.Model.Instances.New<IfcMaterial>();
             _ifcMaterial.Name = materialName;
             _document = document;
             document.Materials.Add(this);
@@ -80,7 +81,7 @@ namespace Xbim.DOM
             get
             {
                 IfcLabel matName = _ifcMaterial.Name;
-                IEnumerable<IfcPropertySet> pSets = _document.Model.InstancesWhere<IfcPropertySet>(p => p.Name == XbimMaterialQuantities._pSetName);
+                IEnumerable<IfcPropertySet> pSets = _document.Model.Instances.Where<IfcPropertySet>(p => p.Name == XbimMaterialQuantities._pSetName);
                 double volume = 0;
                 if (pSets.Count() == 0) return null;
 

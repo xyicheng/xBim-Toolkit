@@ -2,29 +2,31 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Xbim.Ifc.UtilityResource;
-using Xbim.Ifc.MeasureResource;
+using Xbim.Ifc2x3.UtilityResource;
+using Xbim.Ifc2x3.MeasureResource;
 using Xbim.XbimExtensions;
-using Xbim.Ifc.ActorResource;
+using Xbim.Ifc2x3.ActorResource;
 using Xbim.COBie.Rows;
-using Xbim.Ifc.PropertyResource;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.Extensions;
-using Xbim.Ifc.ExternalReferenceResource;
-using Xbim.Ifc.SelectTypes;
-using Xbim.Ifc.ProductExtension;
-using Xbim.Ifc.SharedBldgElements;
-using Xbim.Ifc.HVACDomain;
-using Xbim.Ifc.ElectricalDomain;
-using Xbim.Ifc.SharedComponentElements;
-using Xbim.Ifc.StructuralElementsDomain;
-using Xbim.Ifc.SharedBldgServiceElements;
+using Xbim.Ifc2x3.PropertyResource;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.Extensions;
+using Xbim.Ifc2x3.ExternalReferenceResource;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.Ifc2x3.SharedBldgElements;
+using Xbim.Ifc2x3.HVACDomain;
+using Xbim.Ifc2x3.ElectricalDomain;
+using Xbim.Ifc2x3.SharedComponentElements;
+using Xbim.Ifc2x3.StructuralElementsDomain;
+using Xbim.Ifc2x3.SharedBldgServiceElements;
 using System.Globalization;
 using Xbim.COBie.Resources;
-using Xbim.Ifc.ApprovalResource;
-using Xbim.Ifc.ConstructionMgmtDomain;
+using Xbim.Ifc2x3.ApprovalResource;
+using Xbim.Ifc2x3.ConstructionMgmtDomain;
 using System.Reflection;
-using Xbim.Ifc.MaterialResource;
+using Xbim.Ifc2x3.MaterialResource;
+using Xbim.XbimExtensions.Interfaces;
+using Xbim.XbimExtensions.SelectTypes;
+using Xbim.IO;
 
 
 namespace Xbim.COBie.Data
@@ -55,7 +57,7 @@ namespace Xbim.COBie.Data
             UnknownCount = 1;
         }
 
-        protected IModel Model
+        protected XbimModel Model
         {
             get
             {
@@ -150,15 +152,15 @@ namespace Xbim.COBie.Data
         /// <returns>IfcOwnerHistory object or null if none found</returns>
         protected IfcOwnerHistory GetMaterialOwnerHistory(IfcMaterialLayerSet ifcMaterialLayerSet)
         {
-            IEnumerable<IfcRelAssociatesMaterial> ifcRelAssociatesMaterials = Model.InstancesOfType<IfcRelAssociatesMaterial>();
-            IfcMaterialLayerSetUsage ifcMaterialLayerSetUsage = Model.InstancesWhere<IfcMaterialLayerSetUsage>(mlsu => mlsu.ForLayerSet == ifcMaterialLayerSet).FirstOrDefault();
+            IEnumerable<IfcRelAssociatesMaterial> ifcRelAssociatesMaterials = Model.Instances.OfType<IfcRelAssociatesMaterial>();
+            IfcMaterialLayerSetUsage ifcMaterialLayerSetUsage = Model.Instances.Where<IfcMaterialLayerSetUsage>(mlsu => mlsu.ForLayerSet == ifcMaterialLayerSet).FirstOrDefault();
 
             IfcRelAssociatesMaterial ifcRelAssociatesMaterial = null;
             if (ifcMaterialLayerSetUsage != null)
-                ifcRelAssociatesMaterial = ifcRelAssociatesMaterials.Where(ram => ram.RelatingMaterial == ifcMaterialLayerSetUsage).FirstOrDefault();
+                ifcRelAssociatesMaterial = ifcRelAssociatesMaterials.Where(ram => (ram.RelatingMaterial is IfcMaterialLayerSetUsage) && ((ram.RelatingMaterial as IfcMaterialLayerSetUsage) == ifcMaterialLayerSetUsage)).FirstOrDefault();
 
             if (ifcRelAssociatesMaterial == null)
-                ifcRelAssociatesMaterial = ifcRelAssociatesMaterials.Where(ram => ram.RelatingMaterial == ifcMaterialLayerSet).FirstOrDefault();
+                ifcRelAssociatesMaterial = ifcRelAssociatesMaterials.Where(ram => (ram.RelatingMaterial is IfcMaterialLayerSet) && ((ram.RelatingMaterial as IfcMaterialLayerSet) == ifcMaterialLayerSet)).FirstOrDefault();
 
             if (ifcRelAssociatesMaterial == null)
                 ifcRelAssociatesMaterial = ifcRelAssociatesMaterials.Where(ram => ifcMaterialLayerSet.MaterialLayers.Contains(ram.RelatingMaterial)).FirstOrDefault();
@@ -220,9 +222,9 @@ namespace Xbim.COBie.Data
             if (ifcOwnerHistory != null)
             {
                 IfcPerson ifcPerson = ifcOwnerHistory.OwningUser.ThePerson;
-                if (Context.EMails.ContainsKey(ifcPerson.EntityLabel))
+                if (Context.EMails.ContainsKey(Math.Abs(ifcPerson.EntityLabel)))
                 {
-                    return Context.EMails[ifcPerson.EntityLabel];
+                    return Context.EMails[Math.Abs(ifcPerson.EntityLabel)];
                 }
                 else
                 {
@@ -248,9 +250,9 @@ namespace Xbim.COBie.Data
             if (ifcPersonAndOrganization != null)
             {
                 IfcPerson ifcPerson = ifcPersonAndOrganization.ThePerson;
-                if (Context.EMails.ContainsKey(ifcPerson.EntityLabel))
+                if (Context.EMails.ContainsKey(Math.Abs(ifcPerson.EntityLabel)))
                 {
-                    return Context.EMails[ifcPerson.EntityLabel];
+                    return Context.EMails[Math.Abs(ifcPerson.EntityLabel)];
                 }
                 else
                 {
@@ -347,7 +349,6 @@ namespace Xbim.COBie.Data
                 email += (string.IsNullOrEmpty(domType)) ? ".com" : domType;
                 email = email.Replace(" ", ""); //remove any spaces
             }
-            
 
             return email;
         }
@@ -671,7 +672,7 @@ namespace Xbim.COBie.Data
             string areaUnit = "";
             string volumeUnit = "";
             string moneyUnit = "";
-            foreach (IfcUnitAssignment ifcUnitAssignment in model.InstancesOfType<IfcUnitAssignment>()) //loop all IfcUnitAssignment
+            foreach (IfcUnitAssignment ifcUnitAssignment in model.Instances.OfType<IfcUnitAssignment>()) //loop all IfcUnitAssignment
             {
                 foreach (IfcUnit ifcUnit in ifcUnitAssignment.Units) //loop the UnitSet
                 {

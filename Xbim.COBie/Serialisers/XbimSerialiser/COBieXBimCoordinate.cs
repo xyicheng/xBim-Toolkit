@@ -4,17 +4,18 @@ using System.Linq;
 using System.Text;
 using Xbim.XbimExtensions.Transactions;
 using Xbim.COBie.Rows;
-using Xbim.Ifc.GeometricConstraintResource;
-using Xbim.Ifc.RepresentationResource;
+using Xbim.Ifc2x3.GeometricConstraintResource;
+using Xbim.Ifc2x3.RepresentationResource;
 using System.Windows.Media.Media3D;
-using Xbim.Ifc.GeometryResource;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.ProductExtension;
-using Xbim.Ifc.Extensions;
+using Xbim.Ifc2x3.GeometryResource;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.Ifc2x3.Extensions;
 using Xbim.COBie.Data;
-using Xbim.Ifc.ProfileResource;
-using Xbim.Ifc.GeometricModelResource;
-using Xbim.Ifc.UtilityResource;
+using Xbim.Ifc2x3.ProfileResource;
+using Xbim.Ifc2x3.GeometricModelResource;
+using Xbim.Ifc2x3.UtilityResource;
+using Xbim.IO;
 
 namespace Xbim.COBie.Serialisers.XbimSerialiser
 {
@@ -34,18 +35,21 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         /// <param name="cOBieSheet">COBieSheet of COBieCoordinateRow to read data from</param>
         public void SerialiseCoordinate(COBieSheet<COBieCoordinateRow> cOBieSheet)
         {
-            using (Transaction trans = Model.BeginTransaction("Add Coordinate"))
+            using (XbimReadWriteTransaction trans = Model.BeginTransaction("Add Coordinate"))
             {
 
                 try
                 {
+                    int count = 1;
                     ProgressIndicator.ReportMessage("Starting Coordinates...");
                     ProgressIndicator.Initialise("Creating Coordinates", cOBieSheet.RowCount);
                     for (int i = 0; i < cOBieSheet.RowCount; i++)
                     {
                         COBieCoordinateRow row = cOBieSheet[i];
                         COBieCoordinateRow rowNext = null;
-
+                        BumpTransaction(trans, count);
+                        count++;
+                        
                         //do floor placement point
                         if ((ValidateString(row.Category)) &&  
                             (row.Category.ToLower() == "point")
@@ -91,7 +95,8 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                             else
                             {
 #if DEBUG
-                                Console.WriteLine("Failed to find pair {0} : {1} != {2} : {3} ", row.SheetName, row.RowName, rowNext.SheetName, rowNext.RowName);
+                                if (rowNext != null)
+                                    Console.WriteLine("Failed to find pair {0} : {1} != {2} : {3} ", row.SheetName, row.RowName, rowNext.SheetName, rowNext.RowName);
 #endif
                                 i--; //set back in case next is point, as two box points failed
                             }
@@ -105,7 +110,6 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 }
                 catch (Exception)
                 {
-                    trans.Rollback();
                     //TODO: Catch with logger?
                     throw;
                 }
@@ -123,12 +127,12 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             if (ValidateString(row.ExtIdentifier))
             {
                 IfcGloballyUniqueId id = new IfcGloballyUniqueId(row.ExtIdentifier);
-                ifcBuildingStorey = Model.InstancesWhere<IfcBuildingStorey>(bs => bs.GlobalId == id).FirstOrDefault();
+                ifcBuildingStorey = Model.Instances.Where<IfcBuildingStorey>(bs => bs.GlobalId == id).FirstOrDefault();
             }
 
             if ((ifcBuildingStorey == null) && (ValidateString(row.RowName)))
             {
-                ifcBuildingStorey = Model.InstancesWhere<IfcBuildingStorey>(bs => bs.Name == row.RowName).FirstOrDefault();
+                ifcBuildingStorey = Model.Instances.Where<IfcBuildingStorey>(bs => bs.Name == row.RowName).FirstOrDefault();
             }
 
             if (ifcBuildingStorey != null)
@@ -160,15 +164,15 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 if (ValidateString(row.ExtIdentifier))
                 {
                     IfcGloballyUniqueId id = new IfcGloballyUniqueId(row.ExtIdentifier);
-                    ifcSpace = Model.InstancesWhere<IfcSpace>(bs => bs.GlobalId == id).FirstOrDefault();
+                    ifcSpace = Model.Instances.Where<IfcSpace>(bs => bs.GlobalId == id).FirstOrDefault();
                 }
                 if ((ifcSpace == null) && (ValidateString(row.RowName)))
                 {
-                    ifcSpace = Model.InstancesWhere<IfcSpace>(bs => bs.Name == row.RowName).FirstOrDefault();
+                    ifcSpace = Model.Instances.Where<IfcSpace>(bs => bs.Name == row.RowName).FirstOrDefault();
                 }
                 if ((ifcSpace == null) && (ValidateString(row.RowName)))
                 {
-                    IEnumerable<IfcSpace> ifcSpaces = Model.InstancesWhere<IfcSpace>(bs => bs.Description == row.RowName);
+                    IEnumerable<IfcSpace> ifcSpaces = Model.Instances.Where<IfcSpace>(bs => bs.Description == row.RowName);
                     //check we have one, if >1 then no match
                     if ((ifcSpaces.Any()) && (ifcSpaces.Count() == 1))
                         ifcSpace = ifcSpaces.FirstOrDefault();
@@ -194,16 +198,16 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 if (ValidateString(row.ExtIdentifier))
                 {
                     IfcGloballyUniqueId id = new IfcGloballyUniqueId(row.ExtIdentifier);
-                    ifcElement = Model.InstancesWhere<IfcElement>(bs => bs.GlobalId == id).FirstOrDefault();
+                    ifcElement = Model.Instances.Where<IfcElement>(bs => bs.GlobalId == id).FirstOrDefault();
                 }
                 if ((ifcElement == null) && (ValidateString(row.RowName)))
                 {
-                    ifcElement = Model.InstancesWhere<IfcElement>(bs => bs.Name == row.RowName).FirstOrDefault();
+                    ifcElement = Model.Instances.Where<IfcElement>(bs => bs.Name == row.RowName).FirstOrDefault();
                 }
 
                 if ((ifcElement == null) && (ValidateString(row.RowName)))
                 {
-                    IEnumerable<IfcElement> ifcElements = Model.InstancesWhere<IfcElement>(bs => bs.Description == row.RowName);
+                    IEnumerable<IfcElement> ifcElements = Model.Instances.Where<IfcElement>(bs => bs.Description == row.RowName);
                     //check we have one, if >1 then no match
                     if ((ifcElements.Any()) && (ifcElements.Count() == 1))
                         ifcElement = ifcElements.FirstOrDefault();
@@ -216,7 +220,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                     using (COBieXBimEditScope context = new COBieXBimEditScope(Model, ifcElement.OwnerHistory))
                     {
                         IfcProduct placementRelToIfcProduct = ifcElement.ContainedInStructure as IfcProduct;
-                        IfcRelContainedInSpatialStructure ifcRelContainedInSpatialStructure = Model.InstancesOfType<IfcRelContainedInSpatialStructure>().Where(rciss => rciss.RelatedElements.Contains(ifcElement)).FirstOrDefault();
+                        IfcRelContainedInSpatialStructure ifcRelContainedInSpatialStructure = Model.Instances.OfType<IfcRelContainedInSpatialStructure>().Where(rciss => rciss.RelatedElements.Contains(ifcElement)).FirstOrDefault();
                         if ((ifcRelContainedInSpatialStructure != null) &&
                             (ifcRelContainedInSpatialStructure.RelatingStructure != null)
                             )
@@ -293,25 +297,25 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                             Point3D ctrPt = new Point3D(bBox.X + (bBox.SizeX / 2.0), bBox.Y + (bBox.SizeY / 2.0), bBox.Z + (bBox.SizeZ / 2.0));
 
                             //Create IfcRectangleProfileDef
-                            IfcCartesianPoint IfcCartesianPointCtr = Model.New<IfcCartesianPoint>(cp => { cp.X = ctrPt.X; cp.Y = ctrPt.Y; cp.Z = 0.0; }); //centre point of 2D box
-                            IfcDirection IfcDirectionXDir = Model.New<IfcDirection>(d => { d.X = 1.0; d.Y = 0; d.Z = 0.0; }); //default to X direction
-                            IfcAxis2Placement2D ifcAxis2Placement2DCtr = Model.New<IfcAxis2Placement2D>(a2p => { a2p.Location = IfcCartesianPointCtr; a2p.RefDirection = IfcDirectionXDir; });
-                            IfcRectangleProfileDef ifcRectangleProfileDef = Model.New<IfcRectangleProfileDef>(rpd => { rpd.ProfileType = IfcProfileTypeEnum.AREA; rpd.ProfileName = row.RowName; rpd.Position = ifcAxis2Placement2DCtr; rpd.XDim = bBox.SizeX; rpd.YDim = bBox.SizeY; });
+                            IfcCartesianPoint IfcCartesianPointCtr = Model.Instances.New<IfcCartesianPoint>(cp => { cp.X = ctrPt.X; cp.Y = ctrPt.Y; cp.Z = 0.0; }); //centre point of 2D box
+                            IfcDirection IfcDirectionXDir = Model.Instances.New<IfcDirection>(d => { d.X = 1.0; d.Y = 0; d.Z = 0.0; }); //default to X direction
+                            IfcAxis2Placement2D ifcAxis2Placement2DCtr = Model.Instances.New<IfcAxis2Placement2D>(a2p => { a2p.Location = IfcCartesianPointCtr; a2p.RefDirection = IfcDirectionXDir; });
+                            IfcRectangleProfileDef ifcRectangleProfileDef = Model.Instances.New<IfcRectangleProfileDef>(rpd => { rpd.ProfileType = IfcProfileTypeEnum.AREA; rpd.ProfileName = row.RowName; rpd.Position = ifcAxis2Placement2DCtr; rpd.XDim = bBox.SizeX; rpd.YDim = bBox.SizeY; });
 
                             //Create IfcExtrudedAreaSolid
-                            IfcDirection IfcDirectionAxis = Model.New<IfcDirection>(d => { d.X = 0.0; d.Y = 0; d.Z = 1.0; }); //default to Z direction
-                            IfcDirection IfcDirectionRefDir = Model.New<IfcDirection>(d => { d.X = 1.0; d.Y = 0; d.Z = 0.0; }); //default to X direction
-                            IfcCartesianPoint IfcCartesianPointPosition = Model.New<IfcCartesianPoint>(cp => { cp.X = 0.0; cp.Y = 0.0; cp.Z = 0.0; }); //centre point of 2D box
-                            IfcAxis2Placement3D ifcAxis2Placement3DPosition = Model.New<IfcAxis2Placement3D>(a2p3D => { a2p3D.Location = IfcCartesianPointPosition; a2p3D.Axis = IfcDirectionAxis; a2p3D.RefDirection = IfcDirectionRefDir; });
-                            IfcDirection IfcDirectionExtDir = Model.New<IfcDirection>(d => { d.X = 0.0; d.Y = 0; d.Z = 1.0; }); //default to Z direction
-                            IfcExtrudedAreaSolid ifcExtrudedAreaSolid = Model.New<IfcExtrudedAreaSolid>(eas => { eas.SweptArea = ifcRectangleProfileDef; eas.Position = ifcAxis2Placement3DPosition; eas.ExtrudedDirection = IfcDirectionExtDir; eas.Depth = bBox.SizeZ; });
+                            IfcDirection IfcDirectionAxis = Model.Instances.New<IfcDirection>(d => { d.X = 0.0; d.Y = 0; d.Z = 1.0; }); //default to Z direction
+                            IfcDirection IfcDirectionRefDir = Model.Instances.New<IfcDirection>(d => { d.X = 1.0; d.Y = 0; d.Z = 0.0; }); //default to X direction
+                            IfcCartesianPoint IfcCartesianPointPosition = Model.Instances.New<IfcCartesianPoint>(cp => { cp.X = 0.0; cp.Y = 0.0; cp.Z = 0.0; }); //centre point of 2D box
+                            IfcAxis2Placement3D ifcAxis2Placement3DPosition = Model.Instances.New<IfcAxis2Placement3D>(a2p3D => { a2p3D.Location = IfcCartesianPointPosition; a2p3D.Axis = IfcDirectionAxis; a2p3D.RefDirection = IfcDirectionRefDir; });
+                            IfcDirection IfcDirectionExtDir = Model.Instances.New<IfcDirection>(d => { d.X = 0.0; d.Y = 0; d.Z = 1.0; }); //default to Z direction
+                            IfcExtrudedAreaSolid ifcExtrudedAreaSolid = Model.Instances.New<IfcExtrudedAreaSolid>(eas => { eas.SweptArea = ifcRectangleProfileDef; eas.Position = ifcAxis2Placement3DPosition; eas.ExtrudedDirection = IfcDirectionExtDir; eas.Depth = bBox.SizeZ; });
 
                             //Create IfcShapeRepresentation
-                            IfcShapeRepresentation ifcShapeRepresentation = Model.New<IfcShapeRepresentation>(sr => { sr.ContextOfItems = Model.IfcProject.ModelContext(); sr.RepresentationIdentifier = "Body"; sr.RepresentationType = "SweptSolid"; });
+                            IfcShapeRepresentation ifcShapeRepresentation = Model.Instances.New<IfcShapeRepresentation>(sr => { sr.ContextOfItems = Model.IfcProject.ModelContext(); sr.RepresentationIdentifier = "Body"; sr.RepresentationType = "SweptSolid"; });
                             ifcShapeRepresentation.Items.Add_Reversible(ifcExtrudedAreaSolid);
 
                             //create IfcProductDefinitionShape
-                            IfcProductDefinitionShape ifcProductDefinitionShape = Model.New<IfcProductDefinitionShape>(pds => { pds.Name = row.Name; pds.Description = row.SheetName; });
+                            IfcProductDefinitionShape ifcProductDefinitionShape = Model.Instances.New<IfcProductDefinitionShape>(pds => { pds.Name = row.Name; pds.Description = row.SheetName; });
                             ifcProductDefinitionShape.Representations.Add_Reversible(ifcShapeRepresentation);
 
                             //Link to the IfcProduct
@@ -401,12 +405,12 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                     ucsZAxis.Normalize();
                     
                     //set up AxisPlacment
-                    IfcAxis2Placement3D relativePlacemant = Model.New<IfcAxis2Placement3D>();
+                    IfcAxis2Placement3D relativePlacemant = Model.Instances.New<IfcAxis2Placement3D>();
                     relativePlacemant.SetNewDirectionOf_XZ(ucsXAxis.X, ucsXAxis.Y, ucsXAxis.Z, ucsZAxis.X, ucsZAxis.Y, ucsZAxis.Z);
                     relativePlacemant.SetNewLocation(locationPt.X, locationPt.Y, locationPt.Z);
                     
                     //Set up Local Placement
-                    IfcLocalPlacement objectPlacement = Model.New<IfcLocalPlacement>();
+                    IfcLocalPlacement objectPlacement = Model.Instances.New<IfcLocalPlacement>();
                     objectPlacement.PlacementRelTo = placementRelTo;
                     objectPlacement.RelativePlacement = relativePlacemant;
 

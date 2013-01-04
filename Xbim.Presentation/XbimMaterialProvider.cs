@@ -14,6 +14,7 @@
 
 using System;
 using System.ComponentModel;
+using System.Windows.Data;
 using System.Windows.Media.Media3D;
 
 #endregion
@@ -24,21 +25,47 @@ namespace Xbim.Presentation
     {
         private Material _faceMaterial;
         private Material _backgroundMaterial;
+        private bool _transparent;
+        Binding _faceMaterialBinding;
+        Binding _backgroundMaterialBinding;
 
+
+        public Binding FaceMaterialBinding
+        {
+            get { return _faceMaterialBinding; }
+           
+        }
+        
+
+        public Binding BackgroundMaterialBinding
+        {
+            get { return _backgroundMaterialBinding; }
+            
+        }
         /// <summary>
         ///   Sets face and background Material to material
         /// </summary>
         /// <param name = "material"></param>
-        public XbimMaterialProvider(Material material)
+        public XbimMaterialProvider(Material material, bool transparent = false)
         {
-            _faceMaterial = material;
-            _backgroundMaterial = material;
+            FaceMaterial = material;
+            BackgroundMaterial = material;
+            _transparent = transparent;
         }
 
-        public XbimMaterialProvider(Material faceMaterial, Material backgroundMaterial)
+        public XbimMaterialProvider(Material faceMaterial, Material backgroundMaterial, bool transparent = false)
         {
-            _faceMaterial = faceMaterial;
-            _backgroundMaterial = backgroundMaterial;
+            FaceMaterial = faceMaterial;
+            BackgroundMaterial = backgroundMaterial;
+            _transparent = transparent;
+        }
+
+        public bool IsTransparent
+        {
+            get
+            {
+                return _transparent;
+            }
         }
 
         public Material FaceMaterial
@@ -47,6 +74,12 @@ namespace Xbim.Presentation
             set
             {
                 _faceMaterial = value;
+                if (_faceMaterialBinding == null)
+                {
+                    _faceMaterialBinding = new Binding("FaceMaterial");
+                    _faceMaterialBinding.Source = this;
+                }
+                
                 PropertyChangedEventHandler handler = PropertyChanged;
                 if (handler != null)
                 {
@@ -61,6 +94,11 @@ namespace Xbim.Presentation
             get { return _backgroundMaterial; }
             set
             {
+                if (_backgroundMaterialBinding == null)
+                {
+                    _backgroundMaterialBinding = new Binding("BackgroundMaterial");
+                    _backgroundMaterialBinding.Source = this;
+                }
                 _backgroundMaterial = value;
                 PropertyChangedEventHandler handler = PropertyChanged;
                 if (handler != null)

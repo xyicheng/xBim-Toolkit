@@ -14,12 +14,13 @@
 
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
-using Xbim.Ifc.GeometryResource;
+using Xbim.Ifc2x3.GeometryResource;
 using Xbim.XbimExtensions;
+using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.Extensions
+namespace Xbim.Ifc2x3.Extensions
 {
     public static class Axis2Placement3DExtensions
     {
@@ -92,8 +93,8 @@ namespace Xbim.Ifc.Extensions
 
         public static void SetNewLocation(this IfcAxis2Placement3D axis3, double x, double y, double z)
         {
-            IModel model = ModelManager.ModelOf(axis3);
-            IfcCartesianPoint location = model.New<IfcCartesianPoint>();
+            IModel model = axis3.ModelOf;
+            IfcCartesianPoint location = model.Instances.New<IfcCartesianPoint>();
             location.X = x;
             location.Y = y;
             location.Z = z;
@@ -115,15 +116,15 @@ namespace Xbim.Ifc.Extensions
                                                 double xAxisDirectionY, double xAxisDirectionZ, double zAxisDirectionX,
                                                 double zAxisDirectionY, double zAxisDirectionZ)
         {
-            IModel model = ModelManager.ModelOf(axis3);
-            IfcDirection zDirection = model.New<IfcDirection>();
+            IModel model = axis3.ModelOf;
+            IfcDirection zDirection = model.Instances.New<IfcDirection>();
             zDirection.DirectionRatios[0] = zAxisDirectionX;
             zDirection.DirectionRatios[1] = zAxisDirectionY;
             zDirection.DirectionRatios[2] = zAxisDirectionZ;
             zDirection.Normalise();
             axis3.Axis = zDirection;
 
-            IfcDirection xDirection = model.New<IfcDirection>();
+            IfcDirection xDirection = model.Instances.New<IfcDirection>();
             xDirection.DirectionRatios[0] = xAxisDirectionX;
             xDirection.DirectionRatios[1] = xAxisDirectionY;
             xDirection.DirectionRatios[2] = xAxisDirectionZ;

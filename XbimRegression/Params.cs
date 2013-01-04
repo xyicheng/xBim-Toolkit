@@ -14,7 +14,7 @@ namespace XbimRegression
 
         private static readonly ILogger Logger = LoggerFactory.GetLogger();
 
-        private const int DefaultTimeout = 1000 * 60 * 5; // 5 mins
+        private const int DefaultTimeout = 1000 * 60 * 15; // 15 mins
 
         public static Params ParseParams(string[] args)
         {

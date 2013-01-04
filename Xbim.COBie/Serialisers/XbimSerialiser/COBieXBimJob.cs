@@ -4,12 +4,13 @@ using System.Linq;
 using System.Text;
 using Xbim.COBie.Rows;
 using Xbim.XbimExtensions.Transactions;
-using Xbim.Ifc.ProcessExtensions;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.Extensions;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.PropertyResource;
-using Xbim.Ifc.ConstructionMgmtDomain;
+using Xbim.Ifc2x3.ProcessExtensions;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.Extensions;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.Ifc2x3.PropertyResource;
+using Xbim.Ifc2x3.ConstructionMgmtDomain;
+using Xbim.IO;
 
 
 namespace Xbim.COBie.Serialisers.XbimSerialiser
@@ -35,29 +36,34 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         public void SerialiseJob(COBieSheet<COBieJobRow> cOBieSheet)
         {
 
-            using (Transaction trans = Model.BeginTransaction("Add Job"))
+            using (XbimReadWriteTransaction trans = Model.BeginTransaction("Add Job"))
             {
                 try
                 {
-                    IfcTypeObjects = Model.InstancesOfType<IfcTypeObject>();
-                    IfcConstructionEquipmentResources = Model.InstancesOfType<IfcConstructionEquipmentResource>();
+                    int count = 1;
+                    IfcTypeObjects = Model.Instances.OfType<IfcTypeObject>();
+                    IfcConstructionEquipmentResources = Model.Instances.OfType<IfcConstructionEquipmentResource>();
 
                     ProgressIndicator.ReportMessage("Starting Jobs...");
                     ProgressIndicator.Initialise("Creating Jobs", (cOBieSheet.RowCount * 2));
                     for (int i = 0; i < cOBieSheet.RowCount; i++)
                     {
+                        BumpTransaction(trans, count);
+                        count++;
                         ProgressIndicator.IncrementAndUpdate();
                         COBieJobRow row = cOBieSheet[i];
                         AddJob(row);
+                        count++;
                     }
-
                     //we need to assign IfcRelSequence relationships, but we need all tasks implemented, so loop rows again
-                    IfcTasks = Model.InstancesOfType<IfcTask>(); //get new tasks
+                    IfcTasks = Model.Instances.OfType<IfcTask>(); //get new tasks
                     for (int i = 0; i < cOBieSheet.RowCount; i++)
                     {
+                        BumpTransaction(trans, count);
                         ProgressIndicator.IncrementAndUpdate();
                         COBieJobRow row = cOBieSheet[i];
                         SetPriors(row);
+                        count++;
                     }
                     ProgressIndicator.Finalise();
                     
@@ -65,11 +71,12 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 }
                 catch (Exception)
                 {
-                    trans.Rollback();
                     throw;
                 }
             }
         }
+
+        
 
         
 
@@ -79,7 +86,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         /// <param name="row">COBieJobRow holding the data</param>
         private void AddJob(COBieJobRow row)
         {
-            IfcTask ifcTask = Model.New<IfcTask>();
+            IfcTask ifcTask = Model.Instances.New<IfcTask>();
             //Add Created By, Created On and ExtSystem to Owner History. 
             if ((ValidateString(row.CreatedBy)) && (Contacts.ContainsKey(row.CreatedBy)))
                 SetNewOwnerHistory(ifcTask, row.ExtSystem, Contacts[row.CreatedBy], row.CreatedOn);
@@ -172,10 +179,10 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         public void SetRelAssignsToProcess(IfcProcess processObj, IEnumerable<IfcObjectDefinition> typeObjs)
         {
             //find any existing relationships to this type
-            IfcRelAssignsToProcess processRel = Model.InstancesWhere<IfcRelAssignsToProcess>(rd => rd.RelatingProcess == processObj).FirstOrDefault();
+            IfcRelAssignsToProcess processRel = Model.Instances.Where<IfcRelAssignsToProcess>(rd => rd.RelatingProcess == processObj).FirstOrDefault();
             if (processRel == null) //none defined create the relationship
             {
-                processRel = Model.New<IfcRelAssignsToProcess>();
+                processRel = Model.Instances.New<IfcRelAssignsToProcess>();
                 processRel.RelatingProcess = processObj;
 
 
@@ -206,19 +213,14 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                     {
                         string name = row.Name.ToLower().Trim();
                         string testName = prior.ToLower().Trim();
-                        ifcTaskFound = IfcTasks.Where(task => (task.TaskId.ToString().ToLower().Trim() == testName) && (task.Name.ToString().ToLower().Trim() == name));
-                        foreach (IfcTask ifcTaskitem in ifcTaskFound)
+                        IEnumerable<IfcTask> ifcTaskRelating = IfcTasks.Where(task => (ifcTask.EntityLabel != task.EntityLabel) && (task.TaskId.ToString().ToLower().Trim() == testName) && (task.Name.ToString().ToLower().Trim() == name));
+                        List<IfcTask> ifcTaskRelatingTasks = ifcTaskRelating.ToList(); //avoids crash of foreach loop, Steve to fix then this can be removed
+                        foreach (IfcTask ifcTaskitem in ifcTaskRelatingTasks)
                         {
-                            //check the relationship does not exist
-                            //IfcRelSequence relSequence = Model.InstancesWhere<IfcRelSequence>(rs => rs.RelatedProcess == ifcTask && rs.RelatingProcess == ifcTaskitem).FirstOrDefault();
-                            //if (relSequence == null) //none defined, create the relationship
-                            //{
-                                IfcRelSequence relSequence = Model.New<IfcRelSequence>();
-                                relSequence.RelatedProcess = ifcTask;
-                                relSequence.RelatingProcess = ifcTaskitem;
-                            //}
+                            IfcRelSequence relSequence = Model.Instances.New<IfcRelSequence>();
+                            relSequence.RelatedProcess = ifcTask;
+                            relSequence.RelatingProcess = ifcTaskitem;
                         }
-                        
                     }
                 }
             }

@@ -1,13 +1,14 @@
 #pragma once
 #include <TopoDS_Face.hxx>
 #include "XbimFaceBoundEnumerator.h"
+#include <GeomLProp_SLProps.hxx>
 
 using namespace Xbim::XbimExtensions::Interfaces;
 using namespace System;
 using namespace System::Collections::Generic;
-using namespace Xbim::Ifc::ProfileResource;
-using namespace Xbim::Ifc::GeometryResource;
-using namespace Xbim::Ifc::TopologyResource;
+using namespace Xbim::Ifc2x3::ProfileResource;
+using namespace Xbim::Ifc2x3::GeometryResource;
+using namespace Xbim::Ifc2x3::TopologyResource;
 
 namespace Xbim
 {
@@ -71,6 +72,7 @@ namespace Xbim
 				return  gcnew XbimFaceBoundEnumerator(*nativeHandle);
 
 			}
+
 			
 			// SRL: Builds a face from a IfcParameterizedProfileDef
 			static TopoDS_Face Build(IfcParameterizedProfileDef ^ profile, bool% hasCurves);

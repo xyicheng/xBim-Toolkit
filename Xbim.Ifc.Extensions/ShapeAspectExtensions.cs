@@ -12,11 +12,11 @@
 
 #region Directives
 
-using Xbim.Ifc.RepresentationResource;
+using Xbim.Ifc2x3.RepresentationResource;
 
 #endregion
 
-namespace Xbim.Ifc.Extensions
+namespace Xbim.Ifc2x3.Extensions
 {
     public static class ShapeAspectExtensions
     {

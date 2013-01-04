@@ -18,8 +18,7 @@ namespace Xbim.SceneJSWebViewer
             this.ID = 0;
             this.HasData = 0;
             this.NumChildren = 0;
-            this.data = new byte[] { };
-            this.MatrixTransform = new Double[16];
+
         }
 
         /// <summary>
@@ -29,7 +28,7 @@ namespace Xbim.SceneJSWebViewer
         /// <param name="pos">3d Positions Array</param>
         /// <param name="norm">Normal vectors Array</param>
         /// <param name="ind">Indices Array</param>
-        public GeometryData(Int32 id, Byte[] binarystream, byte hasData, UInt16 NoOfChildren, Double[] matrix)
+        public GeometryData(Int32 id, Byte[] binarystream, byte hasData, UInt16 NoOfChildren, Byte[] matrix)
         {
             this.ID = id;
             this.HasData = hasData;
@@ -63,7 +62,7 @@ namespace Xbim.SceneJSWebViewer
         /// <summary>
         /// Gets or sets the Transform Matrix
         /// </summary>
-        public Double[] MatrixTransform
+        public Byte[] MatrixTransform
         {
             get;
             set;

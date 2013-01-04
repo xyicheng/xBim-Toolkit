@@ -3,15 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Xbim.COBie.Rows;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.ProductExtension;
-using Xbim.Ifc.SharedBldgElements;
-using Xbim.Ifc.SharedBldgServiceElements;
-using Xbim.Ifc.Extensions;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.Ifc2x3.SharedBldgElements;
+using Xbim.Ifc2x3.SharedBldgServiceElements;
+using Xbim.Ifc2x3.Extensions;
 using Xbim.XbimExtensions;
-using Xbim.Ifc.PropertyResource;
-using Xbim.Ifc.StructuralElementsDomain;
-using Xbim.Ifc.SharedComponentElements;
+using Xbim.Ifc2x3.PropertyResource;
+using Xbim.Ifc2x3.StructuralElementsDomain;
+using Xbim.Ifc2x3.SharedComponentElements;
 
 namespace Xbim.COBie.Data
 {
@@ -44,8 +44,8 @@ namespace Xbim.COBie.Data
             //Create new sheet
             COBieSheet<COBieComponentRow> components = new COBieSheet<COBieComponentRow>(Constants.WORKSHEET_COMPONENT);
          
-            IEnumerable<IfcRelAggregates> relAggregates = Model.InstancesOfType<IfcRelAggregates>();
-            IEnumerable<IfcRelContainedInSpatialStructure> relSpatial = Model.InstancesOfType<IfcRelContainedInSpatialStructure>();
+            IEnumerable<IfcRelAggregates> relAggregates = Model.Instances.OfType<IfcRelAggregates>();
+            IEnumerable<IfcRelContainedInSpatialStructure> relSpatial = Model.Instances.OfType<IfcRelContainedInSpatialStructure>();
 
             IEnumerable<IfcObject> ifcElements = ((from x in relAggregates
                                             from y in x.RelatedObjects
@@ -134,7 +134,7 @@ namespace Xbim.COBie.Data
             DateTime frmDate;
             if (DateTime.TryParse(startData, out frmDate))
                 startData = frmDate.ToString(Constants.DATE_FORMAT);
-            else
+            else if (string.IsNullOrEmpty(startData))
                 startData = Constants.DEFAULT_STRING;//Context.RunDate;
             return startData;
         }

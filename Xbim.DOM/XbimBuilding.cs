@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Xbim.Ifc.ProductExtension;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.SelectTypes;
-using Xbim.Ifc.Extensions;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.XbimExtensions.SelectTypes;
+using Xbim.Ifc2x3.Extensions;
 using Xbim.DOM.PropertiesQuantities;
-using Xbim.Ifc.GeometricConstraintResource;
+using Xbim.Ifc2x3.GeometricConstraintResource;
 
 namespace Xbim.DOM
 {
@@ -26,14 +26,14 @@ namespace Xbim.DOM
 
         //internal constructor for creation from XbimObjectCreator
         internal XbimBuilding(XbimDocument document, string name, XbimSpatialStructureElement parentElement, XbimElementCompositionEnum compositionEnum)
-            : base(document, document.Model.New<IfcBuilding>())
+            : base(document, document.Model.Instances.New<IfcBuilding>())
         {
             Building.Name = name;
             Building.CompositionType = GeIfcElementCompositionEnum(compositionEnum);
             if (parentElement != null) parentElement.AddToSpatialDecomposition(this);
             if (Document.ModelView == XbimModelView.CoordinationView)
             {
-                IfcLocalPlacement lp = Document.Model.New<IfcLocalPlacement>();
+                IfcLocalPlacement lp = Document.Model.Instances.New<IfcLocalPlacement>();
                 lp.RelativePlacement = Document.WCS;
                 if (parentElement != null)  lp.PlacementRelTo = parentElement.GetObjectPlacement();
                 Building.ObjectPlacement = lp;

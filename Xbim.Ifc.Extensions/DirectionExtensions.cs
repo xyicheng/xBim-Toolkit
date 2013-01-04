@@ -13,12 +13,12 @@
 #region Directives
 
 using System;
-using Xbim.Ifc.GeometryResource;
+using Xbim.Ifc2x3.GeometryResource;
 using WVector = System.Windows.Vector;
 
 #endregion
 
-namespace Xbim.Ifc.Extensions
+namespace Xbim.Ifc2x3.Extensions
 {
     public static class DirectionExtensions
     {

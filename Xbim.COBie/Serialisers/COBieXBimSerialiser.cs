@@ -7,21 +7,23 @@ using System.Reflection;
 using Xbim.COBie.Contracts;
 using Xbim.COBie.Rows;
 using Xbim.COBie.Serialisers.XbimSerialiser;
-using Xbim.Ifc.Extensions;
-using Xbim.Ifc.Kernel;
+using Xbim.Ifc2x3.Extensions;
+using Xbim.Ifc2x3.Kernel;
 using Xbim.IO;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Transactions;
-using Xbim.Ifc.ProductExtension;
-using Xbim.Ifc.UtilityResource;
-using Xbim.XbimExtensions.Parser;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.Ifc2x3.UtilityResource;
+using Xbim.XbimExtensions.Interfaces;
+using Xbim.Ifc2x3.GeometryResource;
+//using Xbim.XbimExtensions.Parser;
 
 namespace Xbim.COBie.Serialisers
 {
     public class COBieXBimSerialiser : ICOBieSerialiser , IDisposable
     {
         #region Fileds
-        private Transaction _transaction;
+        //private XbimReadWriteTransaction _transaction;
         public COBieXBimContext XBimContext { get; private set; }
         #endregion
 
@@ -37,7 +39,7 @@ namespace Xbim.COBie.Serialisers
         /// <summary>
         /// XBim Model Object
         /// </summary>
-        public IModel Model
+        public XbimModel Model
         {
             get { return XBimContext.Model; }
         }
@@ -46,20 +48,20 @@ namespace Xbim.COBie.Serialisers
         /// <summary>
         /// Constructor
         /// </summary>
-        public COBieXBimSerialiser()
+        /// <param name="fileName">.xBIM file name and path</param>
+        public COBieXBimSerialiser(string fileName)
         {
-            XBimContext = new COBieXBimContext(new XbimMemoryModel());
-            _transaction = Model.BeginTransaction("COBieXBimSerialiser transaction");
-           
+            XBimContext = new COBieXBimContext(XbimModel.CreateModel(fileName));
+            //_transaction = Model.BeginTransaction("COBieXBimSerialiser transaction");
         }
 
         /// <summary>
         /// Constructor
         /// </summary>
-        public COBieXBimSerialiser(ReportProgressDelegate progressHandler) 
+        public COBieXBimSerialiser(string fileName, ReportProgressDelegate progressHandler) 
         {
-            XBimContext = new COBieXBimContext(new XbimMemoryModel(), progressHandler);
-            _transaction = Model.BeginTransaction("COBieXBimSerialiser transaction");
+            XBimContext = new COBieXBimContext(XbimModel.CreateModel(fileName), progressHandler);
+            //_transaction = Model.BeginTransaction("COBieXBimSerialiser transaction");
 
         }
 
@@ -132,7 +134,7 @@ namespace Xbim.COBie.Serialisers
             xBimIssue.SerialiseIssue((COBieSheet<COBieIssueRow>)WorkBook[Constants.WORKSHEET_ISSUE]);
             
             
-            _transaction.Commit();
+            //_transaction.Commit();
             
         }
 
@@ -141,7 +143,7 @@ namespace Xbim.COBie.Serialisers
         /// </summary>
         private void ModelSetUp()
         {
-            using (Transaction trans = Model.BeginTransaction("Model initialization"))
+            using (XbimReadWriteTransaction trans = Model.BeginTransaction("Model initialization"))
             {
                 Assembly assembly = Assembly.GetExecutingAssembly();
                 FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
@@ -154,12 +156,17 @@ namespace Xbim.COBie.Serialisers
                 //TODO add correct IfcPersonAndOrganization to DefaultOwningUser
                 Model.DefaultOwningUser.ThePerson.FamilyName = "Unknown";
                 Model.DefaultOwningUser.TheOrganization.Name = "Unknown";
+                if (Model.Header == null)
+                {
+                    Model.Header = new IfcFileHeader();
+                }
                 Model.Header.FileDescription.Description.Clear();
                 Model.Header.FileDescription.Description.Add("ViewDefinition[CoordinationView]");
                 Model.Header.FileName.AuthorName.Add("4Projects");
                 Model.Header.FileName.AuthorizationName = "4Projects";
-                IfcProject project = Model.New<IfcProject>();
+                IfcProject project = Model.Instances.New<IfcProject>();
                 //set world coordinate system
+                XBimContext.WCS = Model.Instances.New<IfcAxis2Placement3D>();
                 XBimContext.WCS.SetNewDirectionOf_XZ(1, 0, 0, 0, 0, 1);
                 XBimContext.WCS.SetNewLocation(0, 0, 0);
                 trans.Commit();
@@ -173,19 +180,16 @@ namespace Xbim.COBie.Serialisers
         {
             if (Model != null)
             {
-                //commit transaction of the xBim document
-                if (_transaction != null)
-                    _transaction.Commit();
+                //commit XbimReadWriteTransaction of the xBim document
+                //if (_transaction != null)
+                //    _transaction.Commit();
 
                 //close model server if it is the case
-                if (Model is XbimModelServer)
+                if (Model is XbimModel)
                 {
-                    (Model as XbimModelServer).Dispose();
+                    (Model as XbimModel).Dispose();
                     XBimContext.Model = null;
                 }
-
-                if (Model is XbimMemoryModel) 
-                    XBimContext.Model = null;
 
             }
         }
@@ -193,12 +197,12 @@ namespace Xbim.COBie.Serialisers
         /// <summary>
         /// Validate Model Object Foe Errors
         /// </summary>
-        /// <param name="vf"></param>
+        /// <param name="trans"></param>
         /// <returns></returns>
-        public String Validate(ValidationFlags vf)
+        public String Validate(XbimReadWriteTransaction trans)
         {
             StringWriter sw = new StringWriter();
-            int errors = Model.Validate(sw, null);
+            int errors = Model.Validate(trans.Modified(), sw);
             if (errors > 0)
                 return sw.ToString();
             else
@@ -211,10 +215,21 @@ namespace Xbim.COBie.Serialisers
         /// <param name="fileName"></param>
         public void Save(string fileName)
         {
-            //string error = Validate(ValidationFlags.All);
-            Model.Header.FileName.Name = Path.GetFileName(fileName);
-            IfcOutputStream oStream = new Xbim.IO.IfcOutputStream(new StreamWriter(fileName));
-            oStream.Store(Model);
+            try
+            {
+                //write the Ifc File
+                Model.SaveAs(fileName);
+                Model.Close();
+#if DEBUG
+                Console.WriteLine(fileName + " has been successfully written");
+#endif
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+            
+            
         }
         #endregion
         

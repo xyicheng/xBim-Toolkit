@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Xbim.Ifc.GeometricModelResource;
-using Xbim.Ifc.GeometryResource;
-using Xbim.Ifc.ProfileResource;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.GeometricModelResource;
+using Xbim.Ifc2x3.GeometryResource;
+using Xbim.Ifc2x3.ProfileResource;
+using Xbim.XbimExtensions.SelectTypes;
 using Xbim.XbimExtensions;
 
 namespace Xbim.DOM
@@ -29,9 +29,9 @@ namespace Xbim.DOM
 
         protected void BaseInit<T>() where T : IfcSweptAreaSolid
         {
-            if (typeof(T) == typeof(IfcExtrudedAreaSolid)) _ifcSweptAreaSolid = _document.Model.New<IfcExtrudedAreaSolid>();
-            if (typeof(T) == typeof(IfcRevolvedAreaSolid)) _ifcSweptAreaSolid = _document.Model.New<IfcRevolvedAreaSolid>();
-            if (typeof(T) == typeof(IfcSurfaceCurveSweptAreaSolid)) _ifcSweptAreaSolid = _document.Model.New<IfcSurfaceCurveSweptAreaSolid>();
+            if (typeof(T) == typeof(IfcExtrudedAreaSolid)) _ifcSweptAreaSolid = _document.Model.Instances.New<IfcExtrudedAreaSolid>();
+            if (typeof(T) == typeof(IfcRevolvedAreaSolid)) _ifcSweptAreaSolid = _document.Model.Instances.New<IfcRevolvedAreaSolid>();
+            if (typeof(T) == typeof(IfcSurfaceCurveSweptAreaSolid)) _ifcSweptAreaSolid = _document.Model.Instances.New<IfcSurfaceCurveSweptAreaSolid>();
 
             //placement inside of the opening
             XbimAxis2Placement3D placement = new XbimAxis2Placement3D(_document);
@@ -49,8 +49,8 @@ namespace Xbim.DOM
         {
             if (_initialized) throw new Exception("Object has been already initialized");
 
-            IfcCompositeCurve compositeCurve = _document.Model.New<IfcCompositeCurve>();
-            IfcArbitraryClosedProfileDef profile = _document.Model.New<IfcArbitraryClosedProfileDef>(prof => prof.OuterCurve = compositeCurve);
+            IfcCompositeCurve compositeCurve = _document.Model.Instances.New<IfcCompositeCurve>();
+            IfcArbitraryClosedProfileDef profile = _document.Model.Instances.New<IfcArbitraryClosedProfileDef>(prof => prof.OuterCurve = compositeCurve);
             profile.ProfileType = IfcProfileTypeEnum.AREA;
             _profileCurveSegments = compositeCurve.Segments;
 
@@ -68,13 +68,13 @@ namespace Xbim.DOM
         protected void InitToRectangleProfile(double Ydim, double Xdim)
         {
             //represent wall as a rectangular profile
-            IfcRectangleProfileDef rectProf = _document.Model.New<IfcRectangleProfileDef>();
+            IfcRectangleProfileDef rectProf = _document.Model.Instances.New<IfcRectangleProfileDef>();
             rectProf.ProfileType = IfcProfileTypeEnum.AREA;
             rectProf.XDim = Xdim;
             rectProf.YDim = Ydim;
-            IfcCartesianPoint insertPoint = _document.Model.New<IfcCartesianPoint>();
+            IfcCartesianPoint insertPoint = _document.Model.Instances.New<IfcCartesianPoint>();
             insertPoint.SetXY(Xdim/2, Ydim/2); //insert at arbitrary position
-            rectProf.Position = _document.Model.New<IfcAxis2Placement2D>(); //default values should be OK (normal direction)
+            rectProf.Position = _document.Model.Instances.New<IfcAxis2Placement2D>(); //default values should be OK (normal direction)
             rectProf.Position.Location = insertPoint;
 
             IfcSweptAreaSolid.SweptArea = rectProf;
@@ -94,19 +94,19 @@ namespace Xbim.DOM
             {
                 //use old outer curve in the new profile
                 IfcCurve curve = oldProfile.OuterCurve;
-                IfcArbitraryProfileDefWithVoids newProfile = _document.Model.New<IfcArbitraryProfileDefWithVoids>(prof => { prof.OuterCurve = curve; prof.ProfileType = oldProfile.ProfileType; });
+                IfcArbitraryProfileDefWithVoids newProfile = _document.Model.Instances.New<IfcArbitraryProfileDefWithVoids>(prof => { prof.OuterCurve = curve; prof.ProfileType = oldProfile.ProfileType; });
                 _document.Model.Delete(oldProfile);
                 IfcSweptAreaSolid.SweptArea = newProfile;
 
                 //change target of adding of new curves into the profile to the new compositeCurve
-                IfcCompositeCurve compositeCurve = _document.Model.New<IfcCompositeCurve>();
+                IfcCompositeCurve compositeCurve = _document.Model.Instances.New<IfcCompositeCurve>();
                 newProfile.InnerCurves.Add_Reversible(compositeCurve);
                 _profileCurveSegments = compositeCurve.Segments;
             }
             else if (IfcSweptAreaSolid.SweptArea is IfcArbitraryProfileDefWithVoids)
             {
                 //change target of adding of new curves into the profile to the new compositeCurve
-                IfcCompositeCurve compositeCurve = _document.Model.New<IfcCompositeCurve>();
+                IfcCompositeCurve compositeCurve = _document.Model.Instances.New<IfcCompositeCurve>();
                 (oldProfile as IfcArbitraryProfileDefWithVoids).InnerCurves.Add_Reversible(compositeCurve);
                 _profileCurveSegments = compositeCurve.Segments;
             }
@@ -121,7 +121,7 @@ namespace Xbim.DOM
         {
             CheckInitialization();
 
-            IfcPolyline line = _document.Model.New<IfcPolyline>();
+            IfcPolyline line = _document.Model.Instances.New<IfcPolyline>();
             line.Points.Add_Reversible(start.CreateIfcCartesianPoint2D(_document));
             line.Points.Add_Reversible(end.CreateIfcCartesianPoint2D(_document));
 
@@ -136,10 +136,10 @@ namespace Xbim.DOM
             if (ax2place == null) throw new NotSupportedException();
 
             IfcAxis2Placement axis2placement = ax2place._ifcAxis2Placement;
-            IfcCircle circle = _document.Model.New<IfcCircle>(cr => { cr.Position = axis2placement; cr.Radius = radius; });
+            IfcCircle circle = _document.Model.Instances.New<IfcCircle>(cr => { cr.Position = axis2placement; cr.Radius = radius; });
             IfcCartesianPoint point1 = startPoint.CreateIfcCartesianPoint2D(_document);
             IfcCartesianPoint point2 = endPoint.CreateIfcCartesianPoint2D(_document);
-            IfcTrimmedCurve trimmedCurve = _document.Model.New<IfcTrimmedCurve>(crv => { crv.BasisCurve = circle; crv.Trim1.Add_Reversible(point1); crv.Trim2.Add_Reversible(point2); crv.SenseAgreement = true; crv.MasterRepresentation = IfcTrimmingPreference.CARTESIAN; });
+            IfcTrimmedCurve trimmedCurve = _document.Model.Instances.New<IfcTrimmedCurve>(crv => { crv.BasisCurve = circle; crv.Trim1.Add_Reversible(point1); crv.Trim2.Add_Reversible(point2); crv.SenseAgreement = true; crv.MasterRepresentation = IfcTrimmingPreference.CARTESIAN; });
 
             CreateCompositeCurveSegment(trimmedCurve);
         }
@@ -153,7 +153,7 @@ namespace Xbim.DOM
             if (ax2place == null) throw new NotSupportedException();
 
             IfcAxis2Placement axis2placement = ax2place._ifcAxis2Placement;
-            IfcCircle circle = _document.Model.New<IfcCircle>(cr => { cr.Position = axis2placement; cr.Radius = radius; });
+            IfcCircle circle = _document.Model.Instances.New<IfcCircle>(cr => { cr.Position = axis2placement; cr.Radius = radius; });
 
             CreateCompositeCurveSegment(circle);
         }
@@ -167,7 +167,7 @@ namespace Xbim.DOM
             if (ax2place == null) throw new NotSupportedException();
 
             IfcAxis2Placement axis2placement = ax2place._ifcAxis2Placement;
-            IfcEllipse ellipse = _document.Model.New<IfcEllipse>(el => { el.Position = axis2placement; el.SemiAxis1 = semiAxis1; el.SemiAxis2 = semiAxis2; });
+            IfcEllipse ellipse = _document.Model.Instances.New<IfcEllipse>(el => { el.Position = axis2placement; el.SemiAxis1 = semiAxis1; el.SemiAxis2 = semiAxis2; });
 
             CreateCompositeCurveSegment(ellipse);
         }
@@ -182,10 +182,10 @@ namespace Xbim.DOM
             if (ax2place == null) throw new NotSupportedException();
 
             IfcAxis2Placement placement = ax2place._ifcAxis2Placement;
-            IfcEllipse ellipse = _document.Model.New<IfcEllipse>(el => { el.Position = placement; el.SemiAxis1 = semiAxis1; el.SemiAxis2 = semiAxis2; });
+            IfcEllipse ellipse = _document.Model.Instances.New<IfcEllipse>(el => { el.Position = placement; el.SemiAxis1 = semiAxis1; el.SemiAxis2 = semiAxis2; });
             IfcCartesianPoint point1 = startPoint.CreateIfcCartesianPoint(_document);
             IfcCartesianPoint point2 = endPoint.CreateIfcCartesianPoint(_document);
-            IfcTrimmedCurve trimmedCurve = _document.Model.New<IfcTrimmedCurve>(crv => { crv.BasisCurve = ellipse; crv.Trim1.Add_Reversible(point1); crv.Trim2.Add_Reversible(point2); crv.SenseAgreement = true; crv.MasterRepresentation = IfcTrimmingPreference.CARTESIAN; });
+            IfcTrimmedCurve trimmedCurve = _document.Model.Instances.New<IfcTrimmedCurve>(crv => { crv.BasisCurve = ellipse; crv.Trim1.Add_Reversible(point1); crv.Trim2.Add_Reversible(point2); crv.SenseAgreement = true; crv.MasterRepresentation = IfcTrimmingPreference.CARTESIAN; });
 
             CreateCompositeCurveSegment(trimmedCurve);
         }
@@ -194,7 +194,7 @@ namespace Xbim.DOM
         {
             CheckInitialization();
 
-            IfcCompositeCurveSegment segment = _document.Model.New<IfcCompositeCurveSegment>(seg => 
+            IfcCompositeCurveSegment segment = _document.Model.Instances.New<IfcCompositeCurveSegment>(seg => 
             {
                 seg.SameSense = true; 
                 seg.Transition = IfcTransitionCode.CONTINUOUS;

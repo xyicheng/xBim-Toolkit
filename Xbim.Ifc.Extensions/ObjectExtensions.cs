@@ -15,17 +15,18 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.ProductExtension;
-using Xbim.Ifc.PropertyResource;
-using Xbim.Ifc.QuantityResource;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.Ifc2x3.PropertyResource;
+using Xbim.Ifc2x3.QuantityResource;
+using Xbim.XbimExtensions.SelectTypes;
 using Xbim.XbimExtensions;
+using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.Extensions
+namespace Xbim.Ifc2x3.Extensions
 {
     public static class ObjectExtensions
     {
@@ -37,7 +38,7 @@ namespace Xbim.Ifc.Extensions
         /// <returns></returns>
         public static IfcTypeObject GetDefiningType(this IfcObject tObj, IModel model)
         {
-            IfcRelDefinesByType def =  model.InstancesWhere<IfcRelDefinesByType>(rd => rd.RelatedObjects.Contains(tObj)).FirstOrDefault();
+            IfcRelDefinesByType def =  model.Instances.Where<IfcRelDefinesByType>(rd => rd.RelatedObjects.Contains(tObj)).FirstOrDefault();
             if (def != null)
                 return def.RelatingType;
             else
@@ -46,7 +47,7 @@ namespace Xbim.Ifc.Extensions
 
         public static IfcTypeObject GetDefiningType(this IfcObject tObj)
         {
-            IfcRelDefinesByType def = ModelManager.ModelOf(tObj).InstancesWhere<IfcRelDefinesByType>(rd => rd.RelatedObjects.Contains(tObj)).FirstOrDefault();
+            IfcRelDefinesByType def = tObj.ModelOf.Instances.Where<IfcRelDefinesByType>(rd => rd.RelatedObjects.Contains(tObj)).FirstOrDefault();
             if (def != null)
                 return def.RelatingType;
             else
@@ -58,16 +59,16 @@ namespace Xbim.Ifc.Extensions
         {
 
             //divorce any exisitng related types
-            IEnumerable<IfcRelDefinesByType> rels = model.InstancesWhere<IfcRelDefinesByType>(rd => rd.RelatedObjects.Contains(obj));
+            IEnumerable<IfcRelDefinesByType> rels = model.Instances.Where<IfcRelDefinesByType>(rd => rd.RelatedObjects.Contains(obj));
             foreach (var rel in rels)
             {
                 rel.RelatedObjects.Remove_Reversible(obj);
             }
             //find any existing relationships to this type
-            IfcRelDefinesByType typeRel = model.InstancesWhere<IfcRelDefinesByType>(rd => rd.RelatingType==typeObj).FirstOrDefault();
+            IfcRelDefinesByType typeRel = model.Instances.Where<IfcRelDefinesByType>(rd => rd.RelatingType==typeObj).FirstOrDefault();
             if (typeRel == null) //none defined create the relationship
             {
-                IfcRelDefinesByType relSub = model.New<IfcRelDefinesByType>();
+                IfcRelDefinesByType relSub = model.Instances.New<IfcRelDefinesByType>();
                 relSub.RelatingType = typeObj;
                 relSub.RelatedObjects.Add_Reversible(obj);
             }
@@ -84,20 +85,20 @@ namespace Xbim.Ifc.Extensions
         /// <param name="obj"></param>
         /// <param name="pSetName"></param>
         /// <returns></returns>
-        public static IfcPropertySet GetPropertySet(this Xbim.Ifc.Kernel.IfcObject obj, string pSetName)
+        public static IfcPropertySet GetPropertySet(this Xbim.Ifc2x3.Kernel.IfcObject obj, string pSetName)
         {
             IfcRelDefinesByProperties rel= obj.IsDefinedByProperties.Where(r => r.RelatingPropertyDefinition.Name == pSetName).FirstOrDefault();
             if (rel != null) return rel.RelatingPropertyDefinition as IfcPropertySet;
             else return null;
         }
-        public static IfcPropertySingleValue GetPropertySingleValue(this Xbim.Ifc.Kernel.IfcObject obj, string pSetName, string propertyName)
+        public static IfcPropertySingleValue GetPropertySingleValue(this Xbim.Ifc2x3.Kernel.IfcObject obj, string pSetName, string propertyName)
         {
             IfcPropertySet pset = GetPropertySet(obj, pSetName);
             if (pset != null)
                 return pset.HasProperties.Where<IfcPropertySingleValue>(p => p.Name == propertyName).FirstOrDefault();
             return null;
         }
-        public static VType GetPropertySingleValue<VType>(this Xbim.Ifc.Kernel.IfcObject obj, string pSetName, string propertyName) where VType : IfcValue
+        public static VType GetPropertySingleValue<VType>(this Xbim.Ifc2x3.Kernel.IfcObject obj, string pSetName, string propertyName) where VType : IfcValue
         {
             IfcPropertySet pset = GetPropertySet(obj, pSetName);
             if (pset != null)
@@ -115,13 +116,13 @@ namespace Xbim.Ifc.Extensions
         /// <param name="pSetName"></param>
         /// <param name="propertyName"></param>
         /// <returns></returns>
-        public static IfcValue GetPropertySingleNominalValue (this Xbim.Ifc.Kernel.IfcObject obj, string pSetName, string propertyName)
+        public static IfcValue GetPropertySingleNominalValue (this Xbim.Ifc2x3.Kernel.IfcObject obj, string pSetName, string propertyName)
         {
             IfcPropertySingleValue psv = GetPropertySingleValue(obj, pSetName, propertyName);
             return psv == null ? null : psv.NominalValue;
         }
 
-        public static List<IfcPropertySet> GetAllPropertySets(this Xbim.Ifc.Kernel.IfcObject obj)
+        public static List<IfcPropertySet> GetAllPropertySets(this Xbim.Ifc2x3.Kernel.IfcObject obj)
         {
             List<IfcPropertySet> result = new List<IfcPropertySet>();
             IEnumerable<IfcRelDefinesByProperties> rels = obj.IsDefinedByProperties;
@@ -134,7 +135,7 @@ namespace Xbim.Ifc.Extensions
             return result;
         }
 
-        public static Dictionary<IfcLabel, Dictionary<IfcIdentifier, IfcValue>> GetAllPropertySingleValues(this Xbim.Ifc.Kernel.IfcObject obj)
+        public static Dictionary<IfcLabel, Dictionary<IfcIdentifier, IfcValue>> GetAllPropertySingleValues(this Xbim.Ifc2x3.Kernel.IfcObject obj)
         {
             Dictionary<IfcLabel, Dictionary<IfcIdentifier, IfcValue>> result = new Dictionary<IfcLabel, Dictionary<IfcIdentifier, IfcValue>>();
             IEnumerable<IfcRelDefinesByProperties> relations = obj.IsDefinedByProperties.OfType<IfcRelDefinesByProperties>();
@@ -156,14 +157,14 @@ namespace Xbim.Ifc.Extensions
             return result;
         }
 
-        public static void DeletePropertySingleValueValue(this Xbim.Ifc.Kernel.IfcObject obj, string pSetName, string propertyName)
+        public static void DeletePropertySingleValueValue(this Xbim.Ifc2x3.Kernel.IfcObject obj, string pSetName, string propertyName)
         {
             IfcPropertySingleValue psv = GetPropertySingleValue(obj, pSetName, propertyName);
             if (psv == null) return;
             psv.NominalValue = null;
         }
 
-        public static IfcPropertyTableValue GetPropertyTableValue(this Xbim.Ifc.Kernel.IfcObject obj, string pSetName, string propertyTableName)
+        public static IfcPropertyTableValue GetPropertyTableValue(this Xbim.Ifc2x3.Kernel.IfcObject obj, string pSetName, string propertyTableName)
         {
             IfcPropertySet pset = GetPropertySet(obj, pSetName);
             if (pset != null)
@@ -171,7 +172,7 @@ namespace Xbim.Ifc.Extensions
             return null;
         }
 
-        public static IfcValue GetPropertyTableItemValue(this Xbim.Ifc.Kernel.IfcObject obj, string pSetName, string propertyTableName, IfcValue definingValue)
+        public static IfcValue GetPropertyTableItemValue(this Xbim.Ifc2x3.Kernel.IfcObject obj, string pSetName, string propertyTableName, IfcValue definingValue)
         {
             IfcPropertyTableValue table = GetPropertyTableValue(obj, pSetName, propertyTableName);
             if (table == null) return null;
@@ -184,29 +185,29 @@ namespace Xbim.Ifc.Extensions
             return table.DefinedValues[index];
         }
 
-        public static void SetPropertyTableItemValue(this Xbim.Ifc.Kernel.IfcObject obj, string pSetName, string propertyTableName, IfcValue definingValue, IfcValue definedValue)
+        public static void SetPropertyTableItemValue(this Xbim.Ifc2x3.Kernel.IfcObject obj, string pSetName, string propertyTableName, IfcValue definingValue, IfcValue definedValue)
         {
             SetPropertyTableItemValue(obj, pSetName, propertyTableName, definingValue, definedValue, null, null);
         }
 
-        public static void SetPropertyTableItemValue(this Xbim.Ifc.Kernel.IfcObject obj, string pSetName, string propertyTableName, IfcValue definingValue, IfcValue definedValue, IfcUnit definingUnit, IfcUnit definedUnit)
+        public static void SetPropertyTableItemValue(this Xbim.Ifc2x3.Kernel.IfcObject obj, string pSetName, string propertyTableName, IfcValue definingValue, IfcValue definedValue, IfcUnit definingUnit, IfcUnit definedUnit)
         {
             IfcPropertySet pset = GetPropertySet(obj, pSetName);
             IModel model = null;
             if (pset == null)
             {
-                model = ModelManager.ModelOf(obj);
-                pset = model.New<IfcPropertySet>();
+                model = obj.ModelOf;
+                pset = model.Instances.New<IfcPropertySet>();
                 pset.Name = pSetName;
-                IfcRelDefinesByProperties relDef = model.New<IfcRelDefinesByProperties>();
+                IfcRelDefinesByProperties relDef = model.Instances.New<IfcRelDefinesByProperties>();
                 relDef.RelatingPropertyDefinition = pset;
                 relDef.RelatedObjects.Add_Reversible(obj);
             }
             IfcPropertyTableValue table = GetPropertyTableValue(obj, pSetName, propertyTableName);
             if (table == null)
             {
-                model = ModelManager.ModelOf(obj);
-                table = model.New<IfcPropertyTableValue>(tb => { tb.Name = propertyTableName; });
+                model = obj.ModelOf;
+                table = model.Instances.New<IfcPropertyTableValue>(tb => { tb.Name = propertyTableName; });
                 pset.HasProperties.Add_Reversible(table);
                 table.DefinedUnit = definedUnit;
                 table.DefiningUnit = definingUnit;
@@ -239,7 +240,7 @@ namespace Xbim.Ifc.Extensions
         /// <param name="propertyName">Property name</param>
         /// <param name="type">Type of the property</param>
         /// <returns>Property single value with default value of the specified type</returns>
-        public static IfcPropertySingleValue SetPropertySingleValue(this Xbim.Ifc.Kernel.IfcObject obj, string pSetName, string propertyName, Type type)
+        public static IfcPropertySingleValue SetPropertySingleValue(this Xbim.Ifc2x3.Kernel.IfcObject obj, string pSetName, string propertyName, Type type)
         {
             if (typeof(IfcValue).IsAssignableFrom(type))
             {
@@ -258,16 +259,16 @@ namespace Xbim.Ifc.Extensions
                 throw new ArgumentException("Type '" + type.Name + "' is not compatible with IfcValue type.");
         }
 
-        public static IfcPropertySingleValue SetPropertySingleValue(this Xbim.Ifc.Kernel.IfcObject obj, string pSetName, string propertyName, IfcValue value)
+        public static IfcPropertySingleValue SetPropertySingleValue(this Xbim.Ifc2x3.Kernel.IfcObject obj, string pSetName, string propertyName, IfcValue value)
         {
             IfcPropertySet pset = GetPropertySet(obj, pSetName);
             IModel model = null;
             if (pset == null)    
             {
-                model = ModelManager.ModelOf(obj);
-                pset = model.New<IfcPropertySet>();
+                model = obj.ModelOf;
+                pset = model.Instances.New<IfcPropertySet>();
                 pset.Name = pSetName;
-                IfcRelDefinesByProperties relDef = model.New<IfcRelDefinesByProperties>();
+                IfcRelDefinesByProperties relDef = model.Instances.New<IfcRelDefinesByProperties>();
                 relDef.RelatingPropertyDefinition = pset;
                 relDef.RelatedObjects.Add_Reversible(obj);
             }
@@ -280,8 +281,8 @@ namespace Xbim.Ifc.Extensions
             }
             else
             {
-                model = ModelManager.ModelOf(obj);
-                singleVal = model.New<IfcPropertySingleValue>(psv => { psv.Name = propertyName; psv.NominalValue = value; });
+                model = obj.ModelOf;
+                singleVal = model.Instances.New<IfcPropertySingleValue>(psv => { psv.Name = propertyName; psv.NominalValue = value; });
                 pset.HasProperties.Add_Reversible(singleVal);
             }
 
@@ -296,7 +297,7 @@ namespace Xbim.Ifc.Extensions
         /// <returns></returns>
         static public IEnumerable<IfcElement> GetExternalElements(IModel model)
         {
-            return model.InstancesOfType<IfcRelSpaceBoundary>().Where(r => r.InternalOrExternalBoundary == IfcInternalOrExternalEnum.EXTERNAL
+            return model.Instances.OfType<IfcRelSpaceBoundary>().Where(r => r.InternalOrExternalBoundary == IfcInternalOrExternalEnum.EXTERNAL
                 && r.PhysicalOrVirtualBoundary == IfcPhysicalOrVirtualEnum.PHYSICAL
                 && r.RelatedBuildingElement != null).Select(rsb => rsb.RelatedBuildingElement).Distinct();
         }
@@ -365,10 +366,10 @@ namespace Xbim.Ifc.Extensions
 
             if (pset == null)
             {
-                IModel model = ModelManager.ModelOf(elem);
-                pset = model.New<IfcElementQuantity>();
+                IModel model = elem.ModelOf;
+                pset = model.Instances.New<IfcElementQuantity>();
                 pset.Name = propertySetName;
-                IfcRelDefinesByProperties relDef = model.New<IfcRelDefinesByProperties>();
+                IfcRelDefinesByProperties relDef = model.Instances.New<IfcRelDefinesByProperties>();
                 relDef.RelatingPropertyDefinition = pset;
                 relDef.RelatedObjects.Add_Reversible(elem);
             }
@@ -407,14 +408,14 @@ namespace Xbim.Ifc.Extensions
 
         public static void SetElementPhysicalSimpleQuantity(this IfcObject elem, string qSetName, string qualityName, double value, XbimQuantityTypeEnum quantityType,IfcNamedUnit unit)
         {
-            IModel model = ModelManager.ModelOf(elem);
+            IModel model = elem.ModelOf;
 
             IfcElementQuantity qset = GetElementQuantity(elem, qSetName);
             if (qset == null)
             {
-                qset = model.New<IfcElementQuantity>();
+                qset = model.Instances.New<IfcElementQuantity>();
                 qset.Name = qSetName;
-                IfcRelDefinesByProperties relDef = model.New<IfcRelDefinesByProperties>();
+                IfcRelDefinesByProperties relDef = model.Instances.New<IfcRelDefinesByProperties>();
                 relDef.RelatingPropertyDefinition = qset;
                 relDef.RelatedObjects.Add_Reversible(elem);
             }
@@ -431,22 +432,22 @@ namespace Xbim.Ifc.Extensions
             switch (quantityType)
             {
                 case XbimQuantityTypeEnum.AREA:
-                    simpleQuality = model.New<IfcQuantityArea>(sq => sq.AreaValue = (IfcAreaMeasure)value);
+                    simpleQuality = model.Instances.New<IfcQuantityArea>(sq => sq.AreaValue = (IfcAreaMeasure)value);
                     break;
                 case XbimQuantityTypeEnum.COUNT:
-                    simpleQuality = model.New<IfcQuantityCount>(sq => sq.CountValue = (IfcCountMeasure)value);
+                    simpleQuality = model.Instances.New<IfcQuantityCount>(sq => sq.CountValue = (IfcCountMeasure)value);
                     break;
                 case XbimQuantityTypeEnum.LENGTH:
-                    simpleQuality = model.New<IfcQuantityLength>(sq => sq.LengthValue = (IfcLengthMeasure)value);
+                    simpleQuality = model.Instances.New<IfcQuantityLength>(sq => sq.LengthValue = (IfcLengthMeasure)value);
                     break;
                 case XbimQuantityTypeEnum.TIME:
-                    simpleQuality = model.New<IfcQuantityTime>(sq => sq.TimeValue = (IfcTimeMeasure)value);
+                    simpleQuality = model.Instances.New<IfcQuantityTime>(sq => sq.TimeValue = (IfcTimeMeasure)value);
                     break;
                 case XbimQuantityTypeEnum.VOLUME:
-                    simpleQuality = model.New<IfcQuantityVolume>(sq => sq.VolumeValue = (IfcVolumeMeasure)value);
+                    simpleQuality = model.Instances.New<IfcQuantityVolume>(sq => sq.VolumeValue = (IfcVolumeMeasure)value);
                     break;
                 case XbimQuantityTypeEnum.WEIGHT:
-                    simpleQuality = model.New<IfcQuantityWeight>(sq => sq.WeightValue = (IfcMassMeasure)value);
+                    simpleQuality = model.Instances.New<IfcQuantityWeight>(sq => sq.WeightValue = (IfcMassMeasure)value);
                     break;
                 default:
                     return;
@@ -458,7 +459,7 @@ namespace Xbim.Ifc.Extensions
             qset.Quantities.Add_Reversible(simpleQuality);
         }
 
-        public static void RemovePropertySingleValue(this Xbim.Ifc.Kernel.IfcObject obj, string pSetName, string propertyName)
+        public static void RemovePropertySingleValue(this Xbim.Ifc2x3.Kernel.IfcObject obj, string pSetName, string propertyName)
         {
             IfcPropertySet pset = GetPropertySet(obj, pSetName);
             if (pset != null)

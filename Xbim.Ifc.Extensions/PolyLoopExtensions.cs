@@ -13,13 +13,13 @@
 #region Directives
 
 using System.Collections.Generic;
-using Xbim.Ifc.GeometryResource;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.TopologyResource;
+using Xbim.Ifc2x3.GeometryResource;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.Ifc2x3.TopologyResource;
 
 #endregion
 
-namespace Xbim.Ifc.Extensions
+namespace Xbim.Ifc2x3.Extensions
 {
     public static class PolyLoopExtensions
     {

@@ -4,10 +4,12 @@ using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.ComponentModel;
-using Xbim.Ifc.Kernel;
+using Xbim.Ifc2x3.Kernel;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Transactions;
 using System.Collections.Specialized;
+using Xbim.XbimExtensions.Interfaces;
+using Xbim.IO;
 
 namespace Xbim.SceneJSWebViewer.ObjectDataProviders
 {
@@ -22,7 +24,7 @@ namespace Xbim.SceneJSWebViewer.ObjectDataProviders
         private SimpleGroup _parent;
         private List<SimpleGroup> _children;
         private List<SimpleBuildingElementType> _buildingElementTypes;
-        private IModel _model { get { return (_group as IPersistIfcEntity).ModelOf; } }
+        private XbimModel _model { get { return ((_group as IPersistIfcEntity).ModelOf) as XbimModel; } }
 
         public SimpleGroup Parent { get { return _parent; } }
         public IEnumerable<SimpleGroup> Children { get { foreach (var item in _children) yield return item; } }
@@ -42,12 +44,12 @@ namespace Xbim.SceneJSWebViewer.ObjectDataProviders
             _children = new List<SimpleGroup>();
             _buildingElementTypes = new List<SimpleBuildingElementType>();
 
-            IEnumerable<IfcRelAssignsToGroup> rels = _model.InstancesWhere<IfcRelAssignsToGroup>(r => r.RelatingGroup == _group).ToList();
+            IEnumerable<IfcRelAssignsToGroup> rels = _model.Instances.Where<IfcRelAssignsToGroup>(r => r.RelatingGroup == _group).ToList();
             if (rels.FirstOrDefault() == null)
             {
-                using (Transaction trans = _model.BeginTransaction("Group relation creation"))
+                using (XbimReadWriteTransaction trans = _model.BeginTransaction("Group relation creation"))
                 {
-                    var rel = _model.New<IfcRelAssignsToGroup>(r => r.RelatingGroup = _group);
+                    var rel = _model.Instances.New<IfcRelAssignsToGroup>(r => r.RelatingGroup = _group);
                     trans.Commit();
                     (rel as INotifyPropertyChanged).PropertyChanged += new PropertyChangedEventHandler(RelationChanged);
                     (rel.RelatedObjects as INotifyCollectionChanged).CollectionChanged -= new NotifyCollectionChangedEventHandler(ElementCollectionChanged);

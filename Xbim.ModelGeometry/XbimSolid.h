@@ -14,9 +14,9 @@
 using namespace Xbim::XbimExtensions::Interfaces;
 using namespace System::Collections::Generic;
 
-using namespace Xbim::Ifc::SelectTypes;
-using namespace Xbim::Ifc::GeometricModelResource;
-using namespace Xbim::Ifc::GeometricConstraintResource;
+using namespace Xbim::XbimExtensions::SelectTypes;
+using namespace Xbim::Ifc2x3::GeometricModelResource;
+using namespace Xbim::Ifc2x3::GeometricConstraintResource;
 using namespace Xbim::Common::Logging;
 
 namespace Xbim
@@ -84,8 +84,10 @@ namespace Xbim
 		protected:
 			TopoDS_Shape* nativeHandle;
 			static ILogger^ Logger = LoggerFactory::GetLogger();
-		private:
 			
+		private:
+			Int32 _representationLabel;
+			Int32 _surfaceStyleLabel;
 			bool _hasCurvedEdges;
 				
 			
@@ -138,7 +140,7 @@ namespace Xbim
 			XbimSolid(IfcClosedShell^ repItem);
 
 			XbimSolid(IfcConnectedFaceSet^ repItem);
-
+			XbimSolid(IfcBooleanResult^ repItem);
 			XbimSolid(IfcCsgPrimitive3D^ repItem);
 			void Print();
 			~XbimSolid()
@@ -179,6 +181,18 @@ namespace Xbim
 				}
 			}
 
+			virtual property Int32 RepresentationLabel
+			{
+				Int32 get(){return _representationLabel; }
+				void set(Int32 value){ _representationLabel=value; }
+			}
+
+			virtual property Int32 SurfaceStyleLabel
+			{
+				Int32 get(){return _surfaceStyleLabel; }
+				void set(Int32 value){ _surfaceStyleLabel=value; }
+			}
+
 			/*Interfaces*/
 
 
@@ -207,10 +221,10 @@ namespace Xbim
 			{
 				System::Collections::Generic::IEnumerable<XbimMeshedFace^>^ get();
 			}
-			virtual XbimTriangulatedModelStream^ Mesh(bool withNormals, double deflection, Matrix3D transform);
-			virtual XbimTriangulatedModelStream^ Mesh(bool withNormals, double deflection);
-			virtual XbimTriangulatedModelStream^ Mesh(bool withNormals);
-			virtual XbimTriangulatedModelStream^ Mesh();
+			virtual List<XbimTriangulatedModel^>^Mesh(bool withNormals, double deflection, Matrix3D transform);
+			virtual List<XbimTriangulatedModel^>^Mesh(bool withNormals, double deflection);
+			virtual List<XbimTriangulatedModel^>^Mesh(bool withNormals);
+			virtual List<XbimTriangulatedModel^>^Mesh();
 
 
 			//solid operations
@@ -218,7 +232,7 @@ namespace Xbim
 			virtual IXbimGeometryModel^ CopyTo(IfcObjectPlacement^ placement);
 			///static builders 
 
-			static TopoDS_Solid Build(IfcCsgSolid^ csgSolid, bool% hasCurves);
+			static TopoDS_Shape Build(IfcCsgSolid^ csgSolid, bool% hasCurves);
 			static TopoDS_Shape Build(IfcManifoldSolidBrep^ manifold, bool% hasCurves);
 			
 			static TopoDS_Solid Build(IfcSweptDiskSolid^ swdSolid, bool% hasCurves);
@@ -233,7 +247,7 @@ namespace Xbim
 			static TopoDS_Shape Build(IfcConnectedFaceSet^ cFaces, bool% hasCurves);
 			static TopoDS_Solid Build(IfcHalfSpaceSolid^ repItem, bool% hasCurves);
 			static TopoDS_Solid Build(IfcPolygonalBoundedHalfSpace^ pbhs, bool% hasCurves);
-			
+			static TopoDS_Shape Build(IfcBooleanResult^ repItem, bool% hasCurves);
 		private:
 			static TopoDS_Shell Build(const TopoDS_Wire & wire, IfcDirection^ dir, double depth, bool% hasCurves);
 			static TopoDS_Solid Build(const TopoDS_Face & face, IfcDirection^ dir, double depth, bool% hasCurves);

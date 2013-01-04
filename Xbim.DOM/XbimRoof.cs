@@ -2,19 +2,19 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Xbim.Ifc.SharedBldgElements;
-using Xbim.Ifc.MaterialResource;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.GeometryResource;
+using Xbim.Ifc2x3.SharedBldgElements;
+using Xbim.Ifc2x3.MaterialResource;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.GeometryResource;
 using System.Diagnostics;
-using Xbim.Ifc.RepresentationResource;
+using Xbim.Ifc2x3.RepresentationResource;
 using Xbim.XbimExtensions;
-using Xbim.Ifc.Extensions;
-using Xbim.Ifc.ProductExtension;
-using Xbim.Ifc.SelectTypes;
-using Xbim.Ifc.PropertyResource;
-using Xbim.Ifc.QuantityResource;
+using Xbim.Ifc2x3.Extensions;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.XbimExtensions.SelectTypes;
+using Xbim.Ifc2x3.PropertyResource;
+using Xbim.Ifc2x3.QuantityResource;
 using Xbim.DOM.PropertiesQuantities;
 namespace Xbim.DOM
 {
@@ -26,7 +26,7 @@ namespace Xbim.DOM
             : base(document)
         {
             _document.Roofs.Add(this);
-            _ifcBuildingElement = _document.Model.New<IfcRoof>();
+            _ifcBuildingElement = _document.Model.Instances.New<IfcRoof>();
             IfcRoof.ShapeType = GetIfcRoofTypeEnum(roofType);
         }
 
@@ -70,13 +70,13 @@ namespace Xbim.DOM
         {
             if (!CanHaveOwnGeometry) throw new Exception("Roof has decomposing elements so it can not have its own material layers specified");
 
-            IfcMaterialLayer matLayer = _document.Model.New<IfcMaterialLayer>();
+            IfcMaterialLayer matLayer = _document.Model.Instances.New<IfcMaterialLayer>();
             matLayer.Material = material.Material;
             matLayer.LayerThickness = thickness;
 
             if (IfcMaterialLayerSetUsage == null)
             {
-                IfcMaterialLayerSet matLayerSet = _document.Model.New<IfcMaterialLayerSet>();
+                IfcMaterialLayerSet matLayerSet = _document.Model.Instances.New<IfcMaterialLayerSet>();
                 //create new material layer set and set its usage
                 _ifcBuildingElement.SetMaterialLayerSetUsage(matLayerSet, IfcLayerSetDirectionEnum.AXIS1, IfcDirectionSenseEnum.POSITIVE, 0);
             }

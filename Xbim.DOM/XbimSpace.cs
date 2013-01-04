@@ -2,14 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Xbim.Ifc.ProductExtension;
-using Xbim.Ifc.PropertyResource;
-using Xbim.Ifc.Extensions;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.Ifc2x3.PropertyResource;
+using Xbim.Ifc2x3.Extensions;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.XbimExtensions.SelectTypes;
 using Xbim.XbimExtensions;
-using Xbim.Ifc.QuantityResource;
-using Xbim.Ifc.UtilityResource;
+using Xbim.Ifc2x3.QuantityResource;
+using Xbim.Ifc2x3.UtilityResource;
 using Xbim.DOM.PropertiesQuantities;
 
 namespace Xbim.DOM
@@ -42,7 +42,7 @@ namespace Xbim.DOM
 
         //internal constructor for creation from XbimObjectCreator
         internal XbimSpace(XbimDocument document, string name, XbimSpatialStructureElement parentElement, XbimElementCompositionEnum compositionEnum)
-            : base(document, document.Model.New<IfcSpace>())
+            : base(document, document.Model.Instances.New<IfcSpace>())
         {
             Space.CompositionType = GeIfcElementCompositionEnum(compositionEnum);
             Space.Name = name;
@@ -83,7 +83,7 @@ namespace Xbim.DOM
         public void AddBoundingElement(Guid guid, XbimPhysicalOrVirtualEnum type, XbimInternalOrExternalEnum external)
         {
             IfcGloballyUniqueId gid = new IfcGloballyUniqueId(guid);
-            IfcElement element = _document.Model.InstancesWhere<IfcBuildingElement>(elem => elem.GlobalId == gid).FirstOrDefault();
+            IfcElement element = _document.Model.Instances.Where<IfcBuildingElement>(elem => elem.GlobalId == gid).FirstOrDefault();
             if (element == null) return;
             Space.AddBoundingElement(_document.Model, element, GetIfcPhysicalOrVirtualEnum(type), GetIfcInternalOrExternalEnum(external));
         }

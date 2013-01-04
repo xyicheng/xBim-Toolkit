@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Xbim.Ifc.ActorResource;
+using Xbim.Ifc2x3.ActorResource;
 using Xbim.COBie.Rows;
 using Xbim.XbimExtensions.Transactions;
+using Xbim.IO;
 
 namespace Xbim.COBie.Serialisers.XbimSerialiser
 {
@@ -25,15 +26,18 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
 
             
                     
-            using (Transaction trans = Model.BeginTransaction("Add Contacts"))
+            using (XbimReadWriteTransaction trans = Model.BeginTransaction("Add Contacts"))
             {
                 try
                 {
+                    int count = 1;
                     SetDefaultUser();
                     ProgressIndicator.ReportMessage("Starting Contacts...");
                     ProgressIndicator.Initialise("Creating Contacts", cOBieSheet.RowCount);
                     for (int i = 0; i < cOBieSheet.RowCount; i++)
                     {
+                        BumpTransaction(trans, count);
+                        count++;
                         ProgressIndicator.IncrementAndUpdate();
                         COBieContactRow row = cOBieSheet[i];
                         CreatePersonAndOrganization(row);
@@ -44,7 +48,6 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 }
                 catch (Exception)
                 {
-                    trans.Rollback();
                     throw;
                 }
             }
@@ -55,7 +58,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             //{
             //    model.Instances.Add(thisContact);
             //}
-            //IEnumerable<IfcPersonAndOrganization> ifcPersonAndOrganizations = Model.InstancesOfType<IfcPersonAndOrganization>();
+            //IEnumerable<IfcPersonAndOrganization> ifcPersonAndOrganizations = Model.Instances.OfType<IfcPersonAndOrganization>();
             //string xxx = ifcPersonAndOrganizations.First().ThePerson.GivenName;
         }
 
@@ -64,14 +67,14 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         {
             if (!Contacts.ContainsKey(row.Email))
             {
-                IfcPerson ifcPerson = Model.New<IfcPerson>();
-                IfcOrganization ifcOrganization = Model.New<IfcOrganization>();
+                IfcPerson ifcPerson = Model.Instances.New<IfcPerson>();
+                IfcOrganization ifcOrganization = Model.Instances.New<IfcOrganization>();
                 if (ifcPersonAndOrganization == null)
-                    ifcPersonAndOrganization = Model.New<IfcPersonAndOrganization>();
+                    ifcPersonAndOrganization = Model.Instances.New<IfcPersonAndOrganization>();
                 Contacts.Add(row.Email, ifcPersonAndOrganization); //build a list to reference for History objects
 
                 //add email
-                IfcTelecomAddress ifcTelecomAddress = Model.New<IfcTelecomAddress>();
+                IfcTelecomAddress ifcTelecomAddress = Model.Instances.New<IfcTelecomAddress>();
                 if (ValidateString(row.Email))
                 {
                     if (ifcTelecomAddress.ElectronicMailAddresses == null)
@@ -85,7 +88,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 //add Role from Category
                 if (ValidateString(row.Category))
                 {
-                    IfcActorRole ifcActorRole = Model.New<IfcActorRole>();
+                    IfcActorRole ifcActorRole = Model.Instances.New<IfcActorRole>();
                     ifcActorRole.RoleString = row.Category;
                     if (ifcPerson.Roles == null)
                         ifcPerson.SetRoles(ifcActorRole);//create the ActorRoleCollection and set to Roles field
@@ -112,7 +115,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 //add External Identifier
                 if (ValidateString(row.ExtIdentifier)) ifcPerson.Id = row.ExtIdentifier;
                 //add Department
-                IfcPostalAddress ifcPostalAddress = Model.New<IfcPostalAddress>();
+                IfcPostalAddress ifcPostalAddress = Model.Instances.New<IfcPostalAddress>();
                 if (ValidateString(row.Department)) ifcPostalAddress.InternalLocation = row.Department;
                 //add Organization code
                 if (ValidateString(row.OrganizationCode)) ifcOrganization.Id = row.OrganizationCode;

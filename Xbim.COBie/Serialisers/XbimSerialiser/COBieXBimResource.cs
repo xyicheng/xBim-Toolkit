@@ -4,7 +4,8 @@ using System.Linq;
 using System.Text;
 using Xbim.COBie.Rows;
 using Xbim.XbimExtensions.Transactions;
-using Xbim.Ifc.ConstructionMgmtDomain;
+using Xbim.Ifc2x3.ConstructionMgmtDomain;
+using Xbim.IO;
 
 namespace Xbim.COBie.Serialisers.XbimSerialiser
 {
@@ -22,16 +23,19 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         public void SerialiseResource(COBieSheet<COBieResourceRow> cOBieSheet)
         {
 
-            using (Transaction trans = Model.BeginTransaction("Add Resource"))
+            using (XbimReadWriteTransaction trans = Model.BeginTransaction("Add Resource"))
             {
                 try
                 {
-                    //IfcTypeObjects = Model.InstancesOfType<IfcTypeObject>();
+                    //IfcTypeObjects = Model.Instances.OfType<IfcTypeObject>();
 
+                    int count = 1;
                     ProgressIndicator.ReportMessage("Starting Resources...");
                     ProgressIndicator.Initialise("Creating Resources", cOBieSheet.RowCount);
                     for (int i = 0; i < cOBieSheet.RowCount; i++)
                     {
+                        BumpTransaction(trans, count);
+                        count++;
                         ProgressIndicator.IncrementAndUpdate();
                         COBieResourceRow row = cOBieSheet[i];
                         AddResource(row);
@@ -41,7 +45,6 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 }
                 catch (Exception)
                 {
-                    trans.Rollback();
                     throw;
                 }
             }
@@ -53,7 +56,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         /// <param name="row">COBieResourceRow holding the data</param>
         private void AddResource(COBieResourceRow row)
         {
-            IfcConstructionEquipmentResource ifcConstructionEquipmentResource = Model.New<IfcConstructionEquipmentResource>();
+            IfcConstructionEquipmentResource ifcConstructionEquipmentResource = Model.Instances.New<IfcConstructionEquipmentResource>();
             //Add Created By, Created On and ExtSystem to Owner History. 
             if ((ValidateString(row.CreatedBy)) && (Contacts.ContainsKey(row.CreatedBy)))
                 SetNewOwnerHistory(ifcConstructionEquipmentResource, row.ExtSystem, Contacts[row.CreatedBy], row.CreatedOn);

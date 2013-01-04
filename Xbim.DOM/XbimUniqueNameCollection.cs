@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
-using Xbim.Ifc.Kernel;
+using Xbim.Ifc2x3.Kernel;
 
 namespace Xbim.DOM
 {

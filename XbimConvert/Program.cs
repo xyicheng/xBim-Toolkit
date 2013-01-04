@@ -8,9 +8,14 @@ using Xbim.ModelGeometry;
 
 using System.IO;
 using Xbim.Common.Logging;
-using Xbim.Ifc.Kernel;
-using Xbim.Common.Exceptions;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.SharedBldgElements;
 
+using Xbim.Common.Exceptions;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.XbimExtensions;
+using Xbim.Ifc2x3.Extensions;
+using Xbim.Ifc2x3.MeasureResource;
 namespace XbimConvert
 {
     class Program
@@ -33,21 +38,27 @@ namespace XbimConvert
 
                 try
                 {
+                    
                     Logger.InfoFormat("Starting conversion of {0}", args[0]);
 
                     string xbimFileName = BuildFileName(arguments.IfcFileName, ".xbim");
-                    string xbimGeometryFileName = BuildFileName(arguments.IfcFileName, ".xbimGC");
+                    //string xbimGeometryFileName = BuildFileName(arguments.IfcFileName, ".xbimGC");
                     System.Diagnostics.Stopwatch watch = new System.Diagnostics.Stopwatch();
 
-                    watch.Start();
-                    using (XbimFileModelServer model = ParseModelFile(xbimFileName))
+                    
+
+
+                    using (XbimModel model = ParseModelFile(xbimFileName))
                     {
-                        GenerateGeometry(xbimGeometryFileName, model);
+                        watch.Start();
+
+                        model.Open(xbimFileName, XbimDBAccess.ReadWrite);
+                        GenerateGeometry( model);
                         model.Close();
+
                     }
-
                     watch.Stop();
-
+                    XbimModel.Terminate();
                     ResetCursor(Console.CursorTop + 1);
                     Console.WriteLine("Success. Processed in " + watch.ElapsedMilliseconds + " ms");
                     GetInput();
@@ -96,50 +107,44 @@ namespace XbimConvert
             GetInput();
         }
 
-        private static void GenerateGeometry(string xbimGeometryFileName, XbimFileModelServer model)
+        private static void GenerateGeometry( XbimModel model)
         {
             //now convert the geometry
 
             IEnumerable<IfcProduct> toDraw = GetProducts(model);
 
-            XbimScene scene = new XbimScene(model, toDraw, arguments.OCC);
-
-            using (FileStream sceneStream = new FileStream(xbimGeometryFileName, FileMode.Create, FileAccess.ReadWrite))
+            XbimScene.ConvertGeometry(toDraw, delegate(int percentProgress, object userState)
             {
-                BinaryWriter bw = new BinaryWriter(sceneStream);
-                scene.Graph.Write(bw, delegate(int percentProgress, object userState)
+                if (!arguments.IsQuiet)
                 {
-                    if (!arguments.IsQuiet)
-                    {
-                        Console.Write(string.Format("{0:D2}% {1}", percentProgress, userState));
-                        ResetCursor(Console.CursorTop);
-                    }
-                });
-                bw.Flush();
-            }
+                    Console.Write(string.Format("{0:D5} Converted", percentProgress));
+                    ResetCursor(Console.CursorTop);
+                }
+            }, arguments.OCC);
+            
         }
 
-        private static IEnumerable<IfcProduct> GetProducts(XbimFileModelServer model)
+        private static IEnumerable<IfcProduct> GetProducts(XbimModel model)
         {
             IEnumerable<IfcProduct> result = null;
 
             switch (arguments.FilterType)
             {
                 case FilterType.None:
-                    result = model.IfcProducts.Items;
+                    result = model.Instances.OfType<IfcProduct>().Where(t=>!(t is IfcFeatureElement)); //exclude openings and additions
                     Logger.Debug("All geometry items will be generated");
                     break;
 
                 case FilterType.ElementID:
                     List<IfcProduct> list = new List<IfcProduct>();
-                    list.Add(model.GetInstance(arguments.ElementIdFilter) as IfcProduct);
+                    list.Add(model.Instances[arguments.ElementIdFilter] as IfcProduct);
                     result = list;
                     Logger.DebugFormat("Only generating product element ID {0}", arguments.ElementIdFilter);
                     break;
 
                 case FilterType.ElementType:
                     Type theType = arguments.ElementTypeFilter.Type;
-                    result = model.InstancesWhere<IfcProduct>(i=> i.GetType() == theType);
+                    result = model.Instances.Where<IfcProduct>(i=> i.GetType() == theType);
                     Logger.DebugFormat("Only generating product elements of type '{0}'", arguments.ElementTypeFilter);
                     break;
 
@@ -149,14 +154,16 @@ namespace XbimConvert
             return result;
         }
 
-        private static XbimFileModelServer ParseModelFile(string xbimFileName)
+        private static XbimModel ParseModelFile(string xbimFileName)
         {
-            XbimFileModelServer model = new XbimFileModelServer();
+            XbimModel model = new XbimModel();
             //create a callback for progress
             switch (Path.GetExtension(arguments.IfcFileName).ToLowerInvariant())
             {
                 case ".ifc":
-                    model.ImportIfc(arguments.IfcFileName,
+                case ".ifczip":
+                case ".ifcxml":
+                    model.CreateFrom(arguments.IfcFileName,
                         xbimFileName,
                         delegate(int percentProgress, object userState)
                         {
@@ -169,15 +176,8 @@ namespace XbimConvert
                         );
                     break;
                 case ".xbim":
-                    // TODO: check this
-                    model.Open(xbimFileName);
-                    break;
-
-                case ".ifcxml":
-                    model.ImportXml(arguments.IfcFileName, xbimFileName);
-                    break;
-                case ".ifczip":
-                    model.ImportIfc(arguments.IfcFileName, xbimFileName);
+                    
+                    model = new XbimModel();
                     break;
                 default:
                     throw new NotImplementedException(String.Format("XbimConvert does not support {0} file formats currently", Path.GetExtension(arguments.IfcFileName)));

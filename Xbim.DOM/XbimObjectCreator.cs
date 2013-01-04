@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Xbim.Ifc.SelectTypes;
-using Xbim.Ifc.SharedBldgElements;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.MaterialResource;
+using Xbim.XbimExtensions.SelectTypes;
+using Xbim.Ifc2x3.SharedBldgElements;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.MaterialResource;
 
 namespace Xbim.DOM
 {

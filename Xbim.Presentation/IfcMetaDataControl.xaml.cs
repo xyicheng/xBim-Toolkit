@@ -19,11 +19,13 @@ using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using Xbim.Ifc.Extensions;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.ProductExtension;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.Extensions;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.XbimExtensions.SelectTypes;
 using Xbim.XbimExtensions;
+using Xbim.XbimExtensions.Interfaces;
+using Xbim.IO;
 
 #endregion
 
@@ -130,7 +132,7 @@ namespace Xbim.Presentation
 
         private void LoadMetaData(IPersistIfcEntity item)
         {
-            IfcType ifcType = IfcInstances.IfcEntities[item];
+            IfcType ifcType = item.IfcType();
 
             List<PropertyItem> pis = new List<PropertyItem>(ifcType.IfcProperties.Count());
             PropertyItem plabel = new PropertyItem()
@@ -167,11 +169,12 @@ namespace Xbim.Presentation
             //now deal with PropertySets
             _propertySets.Clear();
             _typePropertySets.Clear();
+            _materials.Clear();
             IfcObject ifcObj = item as IfcObject;
             //ModelDataProvider mdp = DataContext as ModelDataProvider;
             if (ifcObj != null)
             {
-                IModel m = ModelManager.ModelOf(ifcObj);
+                IModel m = ifcObj.ModelOf;
                 //write out any material layers
                 IEnumerable<IfcRelAssociatesMaterial> matRels =
                     ifcObj.HasAssociations.OfType<IfcRelAssociatesMaterial>();

@@ -2,17 +2,19 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Xbim.Ifc.Kernel;
+using Xbim.Ifc2x3.Kernel;
 using System.Diagnostics;
-using Xbim.Ifc.SelectTypes;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.Extensions;
-using Xbim.Ifc.MaterialResource;
+
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.Ifc2x3.Extensions;
+using Xbim.Ifc2x3.MaterialResource;
 using System.ComponentModel;
-using Xbim.Ifc.PropertyResource;
+using Xbim.Ifc2x3.PropertyResource;
 using Xbim.XbimExtensions;
-using Xbim.Ifc.MaterialPropertyResource;
+using Xbim.Ifc2x3.MaterialPropertyResource;
 using System.Globalization;
+using Xbim.XbimExtensions.Interfaces;
+using Xbim.XbimExtensions.SelectTypes;
 
 namespace Xbim.DOM.PropertiesQuantities
 {
@@ -58,7 +60,7 @@ namespace Xbim.DOM.PropertiesQuantities
         public XbimPropertySingleValue NewProperty(string propertyName, object value, XbimValueTypeEnum type)
         {
             IModel model = _matPset == null?(_pSet as IPersistIfcEntity).ModelOf :(_matPset as IPersistIfcEntity).ModelOf;
-            IfcPropertySingleValue prop = model.New<IfcPropertySingleValue>(p => p.Name = propertyName);
+            IfcPropertySingleValue prop = model.Instances.New<IfcPropertySingleValue>(p => p.Name = propertyName);
             
             if (_pSet.HasProperties != null) _pSet.HasProperties.Add_Reversible(prop);
             else _matPset.ExtendedProperties.Add_Reversible(prop);
@@ -149,8 +151,8 @@ namespace Xbim.DOM.PropertiesQuantities
             if (_ifcObject != null)
             {
                 model = (_ifcObject as IPersistIfcEntity).ModelOf;
-                IfcPropertySet pset = model.New<IfcPropertySet>(p => p.Name = name);
-                IfcRelDefinesByProperties rel = model.New<IfcRelDefinesByProperties>();
+                IfcPropertySet pset = model.Instances.New<IfcPropertySet>(p => p.Name = name);
+                IfcRelDefinesByProperties rel = model.Instances.New<IfcRelDefinesByProperties>();
 
                 rel.RelatingPropertyDefinition = pset;
                 rel.RelatedObjects.Add_Reversible(_ifcObject);
@@ -161,7 +163,7 @@ namespace Xbim.DOM.PropertiesQuantities
             else if (_ifcTypeObject != null)
             {
                 model = (_ifcTypeObject as IPersistIfcEntity).ModelOf;
-                IfcPropertySet pset = model.New<IfcPropertySet>(p => p.Name = name);
+                IfcPropertySet pset = model.Instances.New<IfcPropertySet>(p => p.Name = name);
 
                 if (_ifcTypeObject.HasPropertySets == null) _ifcTypeObject.CreateHasPropertySets();
                 _ifcTypeObject.HasPropertySets.Add_Reversible(pset);
@@ -172,7 +174,7 @@ namespace Xbim.DOM.PropertiesQuantities
             else if (_material != null)
             {
                 model = (_material as IPersistIfcEntity).ModelOf;
-                IfcExtendedMaterialProperties pset = model.New<IfcExtendedMaterialProperties>(p => p.Name = name);
+                IfcExtendedMaterialProperties pset = model.Instances.New<IfcExtendedMaterialProperties>(p => p.Name = name);
                 pset.Material = _material;
 
                 result = new XbimSimplePropertySet(pset);

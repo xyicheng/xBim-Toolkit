@@ -14,10 +14,11 @@ using Xbim.ModelGeometry;
 
 using Xbim.XbimExtensions;
 using System.Diagnostics;
-using Xbim.Ifc.Kernel;
+using Xbim.Ifc2x3.Kernel;
 using Xbim.COBie.Contracts;
 using Xbim.COBie.Serialisers;
 using Xbim.COBie.Rows;
+using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.COBie.Client
 {
@@ -86,27 +87,17 @@ namespace Xbim.COBie.Client
                     LogBackground("Creating xBim objects...");
                     Stopwatch timer = new Stopwatch();
                     timer.Start();
-                    COBieXBimSerialiser xBimSerialiser = new COBieXBimSerialiser(_worker.ReportProgress);
+                    outputFile = Path.GetFileNameWithoutExtension(parameters.ModelFile) + "-GenCOBie.xBIM";
+                    outputFile = Path.GetDirectoryName(parameters.ModelFile) + "\\" + outputFile;
+
+                    COBieXBimSerialiser xBimSerialiser = new COBieXBimSerialiser(outputFile, _worker.ReportProgress);
                     xBimSerialiser.Serialise(newbook);
                     timer.Stop();
                     LogBackground(String.Format("Time to generate XBim COBie data = {0} seconds", timer.Elapsed.TotalSeconds.ToString("F3")));
                     
                     outputFile =  Path.GetFileNameWithoutExtension(parameters.ModelFile) + "-COBieToIFC.ifc";
                     outputFile = Path.GetDirectoryName(parameters.ModelFile) + "\\" + outputFile;
-                    string GCFile = Path.ChangeExtension(outputFile, "xbimGC");
-                    if (File.Exists(GCFile))
-                    {
-                        try
-                        {
-                            File.Delete(GCFile);
-                        }
-                        catch (Exception ex)
-                        {
-                           LogBackground(String.Format("Failed to delete file {0} - ", GCFile, ex.Message));
-                        }
-                    }
                     LogBackground(String.Format("Creating file {0}....", outputFile));
-                    
                     xBimSerialiser.Save(outputFile);
                     LogBackground(String.Format("Finished {0} Generation", outputFile));
                     return;
@@ -116,10 +107,19 @@ namespace Xbim.COBie.Client
                 
                 
                 LogBackground(String.Format("Loading model {0}...", Path.GetFileName(parameters.ModelFile)));
-                using(IModel model = new XbimFileModelServer())
+                using (XbimModel model = new XbimModel())
                 {
-
-                    model.Open(parameters.ModelFile, _worker.ReportProgress);
+                    string xbimFile = Path.ChangeExtension(parameters.ModelFile, "xBIM");
+                    // TODO: needs sorting out.
+                    if (Path.GetExtension(parameters.ModelFile).ToLower() == ".xbim")
+                    {
+                        xbimFile = parameters.ModelFile;
+                    }
+                    else
+                    {
+                        model.CreateFrom(parameters.ModelFile, xbimFile, _worker.ReportProgress);
+                    }
+                    model.Open(xbimFile,  XbimDBAccess.ReadWrite);
 
                     // Build context
                     COBieContext context = new COBieContext(_worker.ReportProgress);
@@ -149,28 +149,29 @@ namespace Xbim.COBie.Client
 
                     //Create Scene, required for Coordinates sheet
                     string cacheFile = Path.ChangeExtension(parameters.ModelFile, ".xbimGC");
-                    if (!File.Exists(cacheFile)) GenerateGeometry(model, cacheFile, context);
-                    context.Scene = new XbimSceneStream(model, cacheFile);
+                    GenerateGeometry(context);
+                    //context.Scene = new XbimSceneStream(model, cacheFile);
 
                     // Create COBieReader
                     LogBackground("Generating COBie data...");
-                    
+
                     Stopwatch timer = new Stopwatch();
                     timer.Start();
                     COBieBuilder builder = new COBieBuilder(context);
                     timer.Stop();
                     LogBackground(String.Format("Time to generate COBie data = {0} seconds", timer.Elapsed.TotalSeconds.ToString("F3")));
-                    
+
                     // Export
                     LogBackground(String.Format("Formatting as XLS using {0} template...", Path.GetFileName(parameters.TemplateFile)));
                     ICOBieSerialiser serialiser = new COBieXLSSerialiser(outputFile, parameters.TemplateFile);
                     builder.Export(serialiser);
-
                     //TEST on COBieXLSDeserialiser
                     //RoundTripTest(outputFile, parameters.TemplateFile);
                 
                 }
                 LogBackground(String.Format("Export Complete: {0}", outputFile));
+
+
 
                 Process.Start(outputFile);
                 
@@ -203,28 +204,16 @@ namespace Xbim.COBie.Client
         /// Create the xbimGC file
         /// </summary>
         /// <param name="model">IModel object</param>
-        /// <param name="cacheFile">file path to write file too</param>
         /// <param name="context">Context object</param>
-        private void GenerateGeometry(IModel model, string cacheFile, COBieContext context)
+        private void GenerateGeometry(COBieContext context)
         {
             //now convert the geometry
-            IEnumerable<IfcProduct> toDraw = model.IfcProducts.Items; //get all products for this model to place in return graph
-
-            XbimScene scene = new XbimScene(model, toDraw);
-            int total = scene.Graph.ProductNodes.Count();
-            //create the geometry file
-            
-            using (FileStream sceneStream = new FileStream(cacheFile, FileMode.Create, FileAccess.ReadWrite))
+            IEnumerable<IfcProduct> toDraw = context.Model.IfcProducts.Cast<IfcProduct>(); //get all products for this model to place in return graph
+            int total = toDraw.Count();
+            XbimScene.ConvertGeometry(toDraw, delegate(int percentProgress, object userState)
             {
-                BinaryWriter bw = new BinaryWriter(sceneStream);
-                //show current status to user
-                scene.Graph.Write(bw, delegate(int percentProgress, object userState)
-                {
-                    context.UpdateStatus("Creating Geometry File", total, (total * percentProgress / 100));
-                });
-                bw.Flush();
-            }
-            
+                context.UpdateStatus("Creating Geometry File", total, (total * percentProgress / 100));
+            }, false);
         }
 
         /// <summary>

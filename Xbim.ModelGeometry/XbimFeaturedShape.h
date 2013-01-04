@@ -4,7 +4,7 @@
 
 #include <BRepGProp.hxx>
 #include <GProp_GProps.hxx> 
-using namespace Xbim::Ifc::ProductExtension;
+using namespace Xbim::Ifc2x3::ProductExtension;
 using namespace System::Collections::Generic;
 using namespace Xbim::ModelGeometry::Scene;
 using namespace Xbim::Common::Logging;
@@ -16,7 +16,8 @@ namespace Xbim
 		{
 		private:
 			static ILogger^ Logger = LoggerFactory::GetLogger();
-
+			Int32 _representationLabel;
+			Int32 _surfaceStyleLabel;
 		protected:
 			IXbimGeometryModel^ mResultShape;
 			IXbimGeometryModel^ mBaseShape;
@@ -87,11 +88,22 @@ namespace Xbim
 			virtual IXbimGeometryModel^ Union(IXbimGeometryModel^ shape);
 			virtual IXbimGeometryModel^ Intersection(IXbimGeometryModel^ shape);
 			virtual IXbimGeometryModel^ CopyTo(IfcObjectPlacement^ placement);
-			virtual XbimTriangulatedModelStream^ Mesh(bool withNormals, double deflection, Matrix3D transform);
-			virtual XbimTriangulatedModelStream^ Mesh(bool withNormals, double deflection);
-			virtual XbimTriangulatedModelStream^ Mesh(bool withNormals);
-			virtual XbimTriangulatedModelStream^ Mesh();
+			virtual List<XbimTriangulatedModel^>^Mesh(bool withNormals, double deflection, Matrix3D transform);
+			virtual List<XbimTriangulatedModel^>^Mesh(bool withNormals, double deflection);
+			virtual List<XbimTriangulatedModel^>^Mesh(bool withNormals);
+			virtual List<XbimTriangulatedModel^>^Mesh();
 			
+			virtual property Int32 RepresentationLabel
+			{
+				Int32 get(){return _representationLabel; }
+				void set(Int32 value){ _representationLabel=value; }
+			}
+
+			virtual property Int32 SurfaceStyleLabel
+			{
+				Int32 get(){return _surfaceStyleLabel; }
+				void set(Int32 value){ _surfaceStyleLabel=value; }
+			}
 		};
 	}
 }

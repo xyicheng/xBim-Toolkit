@@ -2,31 +2,31 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Xbim.Ifc.UtilityResource;
+using Xbim.Ifc2x3.UtilityResource;
 using Xbim.XbimExtensions;
-using Xbim.Ifc.ActorResource;
-using Xbim.Ifc.MeasureResource;
+using Xbim.Ifc2x3.ActorResource;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.XbimExtensions.Interfaces;
+using Xbim.IO;
 
 namespace Xbim.COBie.Serialisers.XbimSerialiser
 {
     class COBieXBimEditScope : IDisposable
     {
         private IfcOwnerHistory ifcOwnerHistory {  get;  set; }
-        private IModel Model {  get;  set; }
+        private XbimModel Model {  get;  set; }
 
-        public COBieXBimEditScope(IModel model, IfcOwnerHistory owner)
+        public COBieXBimEditScope(XbimModel model, IfcOwnerHistory owner)
         {
             Model = model;
-
             ifcOwnerHistory = Model.OwnerHistoryAddObject;
-            Model.SetCurrentCOBieOwner(owner);
+            Model.OwnerHistoryAddObject = owner;
             
         }
 
-
         public void Dispose()
         {
-            Model.SetCurrentCOBieOwner(ifcOwnerHistory);
+            Model.OwnerHistoryAddObject = ifcOwnerHistory;
         }
     }
 }

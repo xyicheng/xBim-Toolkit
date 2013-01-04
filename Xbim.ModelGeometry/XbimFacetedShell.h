@@ -2,8 +2,8 @@
 #include "IXbimGeometryModel.h"
 #include "XbimGeometryModel.h"
 #include "XbimShell.h"
-using namespace Xbim::Ifc::GeometryResource;
-using namespace Xbim::Ifc::TopologyResource;
+using namespace Xbim::Ifc2x3::GeometryResource;
+using namespace Xbim::Ifc2x3::TopologyResource;
 using namespace Xbim::Common::Logging;
 namespace Xbim
 {
@@ -16,7 +16,8 @@ namespace Xbim
 			XbimShell^ _occShell;
 			XbimBoundingBox^ _boundingBox;
 			static ILogger^ Logger = LoggerFactory::GetLogger();
-			
+			Int32 _representationLabel;
+			Int32 _surfaceStyleLabel;
 		public:
 
 			XbimFacetedShell(IfcConnectedFaceSet^ faceSet);
@@ -40,10 +41,10 @@ namespace Xbim
 			{
 				return _boundingBox;
 			};
-			virtual XbimTriangulatedModelStream^ Mesh(bool withNormals, double deflection, Matrix3D transform);
-			virtual XbimTriangulatedModelStream^ Mesh(bool withNormals, double deflection);
-			virtual XbimTriangulatedModelStream^ Mesh(bool withNormals);
-			virtual XbimTriangulatedModelStream^ Mesh();
+			virtual List<XbimTriangulatedModel^>^Mesh(bool withNormals, double deflection, Matrix3D transform);
+			virtual List<XbimTriangulatedModel^>^Mesh(bool withNormals, double deflection);
+			virtual List<XbimTriangulatedModel^>^Mesh(bool withNormals);
+			virtual List<XbimTriangulatedModel^>^Mesh();
 			virtual property double Volume
 			{
 				double get()
@@ -74,7 +75,18 @@ namespace Xbim
 				};		
 				
 			}
-			
+
+			virtual property Int32 RepresentationLabel
+			{
+				Int32 get(){return _representationLabel; }
+				void set(Int32 value){ _representationLabel=value; }
+			}
+
+			virtual property Int32 SurfaceStyleLabel
+			{
+				Int32 get(){return _surfaceStyleLabel; }
+				void set(Int32 value){ _surfaceStyleLabel=value; }
+			}
 			
 		};
 	}

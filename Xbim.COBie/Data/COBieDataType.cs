@@ -2,14 +2,14 @@
 using System.Linq;
 using System.Reflection;
 using Xbim.COBie.Rows;
-using Xbim.Ifc.Extensions;
-using Xbim.Ifc.ExternalReferenceResource;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.PropertyResource;
-using Xbim.Ifc.SharedFacilitiesElements;
-using Xbim.Ifc.MaterialResource;
-using Xbim.Ifc.UtilityResource;
+using Xbim.Ifc2x3.Extensions;
+using Xbim.Ifc2x3.ExternalReferenceResource;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.Ifc2x3.PropertyResource;
+using Xbim.Ifc2x3.SharedFacilitiesElements;
+using Xbim.Ifc2x3.UtilityResource;
+using Xbim.Ifc2x3.MaterialResource;
 
 namespace Xbim.COBie.Data
 {
@@ -42,7 +42,7 @@ namespace Xbim.COBie.Data
             COBieSheet<COBieTypeRow> types = new COBieSheet<COBieTypeRow>(Constants.WORKSHEET_TYPE);
             
             //group the types by name as we need to filter duplicate items in for each loop
-            IEnumerable<IfcTypeObject> ifcTypeObjects = Model.InstancesOfType<IfcTypeObject>()
+            IEnumerable<IfcTypeObject> ifcTypeObjects = Model.Instances.OfType<IfcTypeObject>()
                 .Select(type => type)
                 .Where(type => !Context.Exclude.ObjectType.Types.Contains(type.GetType()))
                 .GroupBy(type => type.Name).SelectMany(g => g);//.Distinct()
@@ -102,7 +102,7 @@ namespace Xbim.COBie.Data
                 
             }
             //--------------Loop all IfcMaterialLayerSet-----------------------------
-            IEnumerable<IfcMaterialLayerSet> ifcMaterialLayerSets = Model.InstancesOfType<IfcMaterialLayerSet>();
+            IEnumerable<IfcMaterialLayerSet> ifcMaterialLayerSets = Model.Instances.OfType<IfcMaterialLayerSet>();
             ChildNamesList rowHolderChildNames = new ChildNamesList();
             ChildNamesList rowHolderLayerChildNames = new ChildNamesList();
             
@@ -171,7 +171,7 @@ namespace Xbim.COBie.Data
                 }
             }
             //--------Loop Materials in case they are not in a layer Set-----
-            IEnumerable<IfcMaterial> ifcMaterials = Model.InstancesOfType<IfcMaterial>();
+            IEnumerable<IfcMaterial> ifcMaterials = Model.Instances.OfType<IfcMaterial>();
 
             foreach (IfcMaterial ifcMaterial in ifcMaterials)
             {

@@ -1,8 +1,8 @@
 #pragma once
 
 using namespace System::Windows::Media::Media3D;
-using namespace Xbim::Ifc::GeometryResource;
-using namespace Xbim::Ifc::GeometricConstraintResource;
+using namespace Xbim::Ifc2x3::GeometryResource;
+using namespace Xbim::Ifc2x3::GeometricConstraintResource;
 namespace Xbim
 {	
 	namespace ModelGeometry

@@ -188,21 +188,28 @@ namespace Xbim
 		{
 			TopoDS_Wire wire = XbimFaceBound::Build(profile->OuterCurve, hasCurves);
 			TopoDS_Face face;
-				BRepBuilderAPI_MakeFace faceMaker(wire, false);
-				BRepBuilderAPI_FaceError er = faceMaker.Error();
-				if ( er == BRepBuilderAPI_NotPlanar ) {
-					ShapeFix_ShapeTolerance FTol;
-					FTol.SetTolerance(wire, 0.001, TopAbs_WIRE);
-					BRepBuilderAPI_MakeFace faceMaker2(wire, false);
-					er = faceMaker2.Error();
-					if ( er != BRepBuilderAPI_FaceDone )
-						return TopoDS_Face();
-					else
-						face= faceMaker2.Face();
-				}
+			BRepBuilderAPI_MakeFace faceMaker(wire, false);
+			BRepBuilderAPI_FaceError er = faceMaker.Error();
+			if ( er == BRepBuilderAPI_NotPlanar ) {
+				ShapeFix_ShapeTolerance FTol;
+				FTol.SetTolerance(wire, 0.001, TopAbs_WIRE);
+				BRepBuilderAPI_MakeFace faceMaker2(wire, false);
+				er = faceMaker2.Error();
+				if ( er != BRepBuilderAPI_FaceDone )
+					return TopoDS_Face();
 				else
-					face= faceMaker.Face();
+					face= faceMaker2.Face();
+			}
+			else
+				face= faceMaker.Face();
+
 			gp_Vec nn =   XbimFaceBound::NewellsNormal(wire);
+			gp_Vec tn = XbimFace::TopoNormal(face);
+			if ( tn.Dot(nn) < 0 ) 
+			{
+				TopAbs_Orientation o = face.Orientation();
+				face.Orientation(o == TopAbs_FORWARD ? TopAbs_REVERSED : TopAbs_FORWARD);
+			}
 			BRepBuilderAPI_MakeFace faceMaker3(face);
 			for each( IfcCurve^ curve in profile->InnerCurves)
 			{
@@ -230,7 +237,6 @@ namespace Xbim
 		TopoDS_Face XbimFace::Build(IfcCompositeCurve ^ cCurve, bool% hasCurves)
 		{
 			BRepBuilderAPI_MakeFace faceBlder(XbimFaceBound::Build(cCurve, hasCurves));
-
 			return faceBlder.Face();
 		}
 

@@ -16,6 +16,8 @@ namespace Xbim
 			TopoDS_Compound* pCompound;
 			List<IXbimGeometryModel^>^ shapes;
 			bool _hasCurvedEdges;
+			Int32 _representationLabel;
+			Int32 _surfaceStyleLabel;
 		public:
 			
 			XbimGeometryModelCollection()
@@ -95,6 +97,18 @@ virtual property XbimLocation ^ Location
 					return volume;
 				}
 			}
+			
+			virtual property Int32 RepresentationLabel
+			{
+				Int32 get(){return _representationLabel; }
+				void set(Int32 value){ _representationLabel=value; }
+			}
+
+			virtual property Int32 SurfaceStyleLabel
+			{
+				Int32 get(){return _surfaceStyleLabel; }
+				void set(Int32 value){ _surfaceStyleLabel=value; }
+			}
 
 			virtual XbimBoundingBox^ GetBoundingBox(bool precise)
 			{
@@ -168,10 +182,10 @@ virtual property XbimLocation ^ Location
 			virtual IXbimGeometryModel^ Cut(IXbimGeometryModel^ shape);
 			virtual IXbimGeometryModel^ Union(IXbimGeometryModel^ shape);
 			virtual IXbimGeometryModel^ Intersection(IXbimGeometryModel^ shape);
-			virtual XbimTriangulatedModelStream^ Mesh(bool withNormals, double deflection, Matrix3D transform);
-			virtual XbimTriangulatedModelStream^ Mesh(bool withNormals, double deflection);
-			virtual XbimTriangulatedModelStream^ Mesh(bool withNormals);
-			virtual XbimTriangulatedModelStream^ Mesh();
+			virtual List<XbimTriangulatedModel^>^Mesh(bool withNormals, double deflection, Matrix3D transform);
+			virtual List<XbimTriangulatedModel^>^Mesh(bool withNormals, double deflection);
+			virtual List<XbimTriangulatedModel^>^Mesh(bool withNormals);
+			virtual List<XbimTriangulatedModel^>^Mesh();
 			virtual IXbimGeometryModel^ CopyTo(IfcObjectPlacement^ placement);
 			
 		};

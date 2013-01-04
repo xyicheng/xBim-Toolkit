@@ -9,8 +9,9 @@ using Xbim.COBie.Serialisers;
 using System.IO;
 using System.Diagnostics;
 using Xbim.ModelGeometry.Scene;
-using Xbim.Ifc.Kernel;
+using Xbim.Ifc2x3.Kernel;
 using Xbim.ModelGeometry;
+using Xbim.Ifc2x3.ProductExtension;
 
 namespace COBie.Xbim.Tester
 {
@@ -27,56 +28,60 @@ namespace COBie.Xbim.Tester
 
         static void Main(string[] args)
         {
-            //string sourceFile = _sourceFile;
-            //string binaryFile = _binaryFile;
+            //SRL: Needs to be upgraded to work with Xbim files
 
-            string sourceFile = _duplexSourceFile;
-            string binaryFile = _duplexBinaryFile;
 
-            COBieWorkbook workBook;
-            if (true) //we want a geometry file (!File.Exists(binaryFile))
-            {
-                COBieContext context = new COBieContext(null);
-                IModel model = new XbimFileModelServer();
-                model.Open(sourceFile, delegate(int percentProgress, object userState)
-                {
-                    Console.Write("\rReading File {1} {0}", percentProgress, sourceFile);
-                });
-                context.Model = model;
-                context.TemplateFileName = _templateFile;
 
-                //Create Scene, required for Coordinates sheet
-                string cacheFile = Path.ChangeExtension(sourceFile, ".xbimGC");
-                /*if (!File.Exists(cacheFile))*/ GenerateGeometry(model, cacheFile, context); //we want to generate each run
-                context.Scene = new XbimSceneStream(model, cacheFile);
+            //////////string sourceFile = _sourceFile;
+            //////////string binaryFile = _binaryFile;
+
+            ////////string sourceFile = _duplexSourceFile;
+            ////////string binaryFile = _duplexBinaryFile;
+
+            ////////COBieWorkbook workBook;
+            ////////if (true) //we want a geometry file (!File.Exists(binaryFile))
+            ////////{
+            ////////    COBieContext context = new COBieContext(null);
+            ////////    XbimModel model = new XbimModel();
+            ////////    model.Open(sourceFile, XbimDBAccess.Read,delegate(int percentProgress, object userState)
+            ////////    {
+            ////////        Console.Write("\rReading File {1} {0}", percentProgress, sourceFile);
+            ////////    });
+            ////////    context.Model = model;
+            ////////    context.TemplateFileName = _templateFile;
+
+            ////////    //Create Scene, required for Coordinates sheet
+            ////////    string cacheFile = Path.ChangeExtension(sourceFile, ".xbimGC");
+            ////////    /*if (!File.Exists(cacheFile))*/ GenerateGeometry(model, cacheFile, context); //we want to generate each run
+            ////////    context.Scene = new XbimSceneStream(model, cacheFile);
                 
-                //Clear filters to see what co-ordinates we generate
-                context.Exclude.Clear();
+            ////////    //Clear filters to see what co-ordinates we generate
+            ////////    context.Exclude.Clear();
 
-                COBieBuilder builder = new COBieBuilder(context);
-                workBook = builder.Workbook;
-                COBieBinarySerialiser serialiser = new COBieBinarySerialiser(binaryFile);
-                serialiser.Serialise(workBook);
-            }
-            //else
-            //{
-            //    COBieBinaryDeserialiser deserialiser = new COBieBinaryDeserialiser(binaryFile);
-            //    workBook = deserialiser.Deserialise();
-            //}
-            Stopwatch sWatch = new Stopwatch();
-            sWatch.Start();
+            ////////    COBieBuilder builder = new COBieBuilder(context);
+            ////////    workBook = builder.Workbook;
+            ////////    COBieBinarySerialiser serialiser = new COBieBinarySerialiser(binaryFile);
+            ////////    serialiser.Serialise(workBook);
+            ////////}
+            //////////else
+            //////////{
+            //////////    COBieBinaryDeserialiser deserialiser = new COBieBinaryDeserialiser(binaryFile);
+            //////////    workBook = deserialiser.Deserialise();
+            //////////}
+            ////////Stopwatch sWatch = new Stopwatch();
+            ////////sWatch.Start();
             
-            COBieXBimSerialiser xBimSerialiser = new COBieXBimSerialiser();
-            xBimSerialiser.Serialise(workBook);
+            ////////COBieXBimSerialiser xBimSerialiser = new COBieXBimSerialiser();
+            ////////xBimSerialiser.Serialise(workBook);
 
 
-            sWatch.Stop();
-            Console.WriteLine("Time = {0}", sWatch.Elapsed.Seconds);
-            string output = Path.GetFileNameWithoutExtension(sourceFile) + "COBieToIFC.ifc";
+            ////////sWatch.Stop();
+            ////////Console.WriteLine("Time = {0}", sWatch.Elapsed.Seconds);
+            ////////string output = Path.GetFileNameWithoutExtension(sourceFile) + "COBieToIFC.ifc";
 
-            xBimSerialiser.Save(output);
-            Console.WriteLine("Press any key...");
-            Console.ReadKey();
+            ////////xBimSerialiser.Save(output);
+            ////////Console.WriteLine("Press any key...");
+            ////////Console.ReadKey();
         }
 
         /// <summary>
@@ -85,26 +90,18 @@ namespace COBie.Xbim.Tester
         /// <param name="model">IModel object</param>
         /// <param name="cacheFile">file path to write file too</param>
         /// <param name="context">Context object</param>
-        private static void GenerateGeometry(IModel model, string cacheFile, COBieContext context)
+        private static void GenerateGeometry(XbimModel model, string cacheFile, COBieContext context)
         {
-            //now convert the geometry
-            IEnumerable<IfcProduct> toDraw = model.IfcProducts.Items; //get all products for this model to place in return graph
 
-            XbimScene scene = new XbimScene(model, toDraw);
-            int total = scene.Graph.ProductNodes.Count();
+            int total = (int)model.GeometriesCount;
             //create the geometry file
 
-            using (FileStream sceneStream = new FileStream(cacheFile, FileMode.Create, FileAccess.ReadWrite))
+            IEnumerable<IfcProduct> toDraw = model.Instances.OfType<IfcProduct>().Where(t => !(t is IfcFeatureElement)); //exclude openings and additions
+            XbimScene.ConvertGeometry(toDraw, delegate(int percentProgress, object userState)
             {
-                BinaryWriter bw = new BinaryWriter(sceneStream);
-                //show current status to user
-                scene.Graph.Write(bw, delegate(int percentProgress, object userState)
-                {
-                    context.UpdateStatus("Creating Geometry File", total, (total * percentProgress / 100));
-                });
-                bw.Flush();
-            }
-
+                context.UpdateStatus("Creating Geometry File", total, (total * percentProgress / 100));
+            }, false);
+          
         }
 
         

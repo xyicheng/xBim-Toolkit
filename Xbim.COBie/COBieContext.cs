@@ -3,15 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Xbim.XbimExtensions;
-using Xbim.XbimExtensions.Parser;
-using Xbim.Ifc.SharedBldgElements;
-using Xbim.Ifc.ProductExtension;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.SharedComponentElements;
-using Xbim.Ifc.StructuralElementsDomain;
-using Xbim.Ifc.SharedBldgServiceElements;
-using Xbim.Ifc.HVACDomain;
-using Xbim.Ifc.ElectricalDomain;
+using Xbim.Ifc2x3.SharedBldgElements;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.SharedComponentElements;
+using Xbim.Ifc2x3.StructuralElementsDomain;
+using Xbim.Ifc2x3.SharedBldgServiceElements;
+using Xbim.Ifc2x3.HVACDomain;
+using Xbim.Ifc2x3.ElectricalDomain;
+using Xbim.XbimExtensions.Interfaces;
+using Xbim.IO;
 using Xbim.ModelGeometry.Scene;
 using Xbim.COBie.Data;
 
@@ -84,14 +85,16 @@ namespace Xbim.COBie
             }
 		}
 
-		/// <summary>
+		/// /// <summary>
         /// Gets the model defined in this context to generate COBie data from
         /// </summary>
-        public IModel Model { get; set; }
-       
-        /// <summary>
-        /// Scene object to get Geometry from
-        /// </summary>
+        public XbimModel Model { get; set; }
+        
+
+		/// <summary>
+		/// The pick list to use to cross-reference fields in the COBie worksheets
+		/// </summary>
+		//public COBiePickList PickList { get; set; }
         public IXbimScene Scene  { get; set; }
        
 

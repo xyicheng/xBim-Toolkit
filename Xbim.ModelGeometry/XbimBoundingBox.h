@@ -3,7 +3,7 @@
 #include <Bnd_Box.hxx>
 #include <gp_Pnt.hxx>
 using namespace System;
-
+using namespace System::IO;
 
 namespace Xbim
 {
@@ -79,7 +79,22 @@ namespace Xbim
 				return pBox->IsZThin(XbimVertexPoint::Precision) || pBox->IsXThin(XbimVertexPoint::Precision)|| pBox->IsYThin(XbimVertexPoint::Precision);
 			}
 
-			
+			array<Byte>^ ToArray()
+			{
+				array<Byte>^ arr= gcnew array<Byte>(6*sizeof(double));
+				if(pBox->IsVoid()) return arr;
+				Standard_Real srXmin, srYmin, srZmin, srXmax, srYmax, srZmax;
+				pBox->Get(srXmin, srYmin, srZmin, srXmax, srYmax, srZmax);
+				MemoryStream^ ms = gcnew MemoryStream(arr);
+				BinaryWriter^ bw = gcnew BinaryWriter(ms);
+				bw->Write(srXmin);
+				bw->Write(srYmin);
+				bw->Write(srZmin);
+				bw->Write(srXmax);
+				bw->Write(srYmax);
+				bw->Write(srZmax);
+				return arr;
+			}
 
 			Rect3D GetRect3D()
 			{

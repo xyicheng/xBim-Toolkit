@@ -3,7 +3,7 @@
 #include "XbimGeomPrim.h"
 using namespace System::Collections::Generic;
 using namespace Xbim::XbimExtensions;
-using namespace Xbim::Ifc::Extensions;
+using namespace Xbim::Ifc2x3::Extensions;
 using namespace System::Windows::Media::Media3D;
 using namespace System::Linq;
 using namespace Xbim::Common::Exceptions;
@@ -17,7 +17,8 @@ namespace Xbim
 		XbimMap::XbimMap(IXbimGeometryModel^ item, IfcAxis2Placement^ origin, IfcCartesianTransformationOperator^ transform)
 		{
 			_mappedItem = item;
-			 
+			 _representationLabel = item->RepresentationLabel;
+			_surfaceStyleLabel = item->SurfaceStyleLabel;
 			if(origin !=nullptr)
 			{
 				if(dynamic_cast<IfcAxis2Placement3D^>(origin))
@@ -53,21 +54,21 @@ namespace Xbim
 			throw gcnew NotImplementedException("CopyTo needs to be implemented");
 		}
 
-		XbimTriangulatedModelStream^ XbimMap::Mesh()
+		List<XbimTriangulatedModel^>^XbimMap::Mesh()
 		{
 			return Mesh(true, XbimGeometryModel::DefaultDeflection,_transform);
 		}
 
-		XbimTriangulatedModelStream^ XbimMap::Mesh( bool withNormals )
+		List<XbimTriangulatedModel^>^XbimMap::Mesh( bool withNormals )
 		{
 			return Mesh(withNormals, XbimGeometryModel::DefaultDeflection, _transform);
 		}
-		XbimTriangulatedModelStream^ XbimMap::Mesh(bool withNormals, double deflection )
+		List<XbimTriangulatedModel^>^XbimMap::Mesh(bool withNormals, double deflection )
 		{
 			return _mappedItem->Mesh(withNormals, deflection, _transform);
 		}
 
-		XbimTriangulatedModelStream^ XbimMap::Mesh(bool withNormals, double deflection, Matrix3D transform )
+		List<XbimTriangulatedModel^>^XbimMap::Mesh(bool withNormals, double deflection, Matrix3D transform )
 		{
 			if(Matrix3D::Identity==transform)
 				return _mappedItem->Mesh(withNormals, deflection, _transform);

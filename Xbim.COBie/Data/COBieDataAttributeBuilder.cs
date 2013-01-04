@@ -1,14 +1,16 @@
-﻿using System;
+﻿//#define DEBUGATT
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Xbim.COBie.Rows;
-using Xbim.Ifc.SelectTypes;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.PropertyResource;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.ExternalReferenceResource;
-using Xbim.Ifc.UtilityResource;
+using Xbim.XbimExtensions.SelectTypes;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.PropertyResource;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.Ifc2x3.ExternalReferenceResource;
+using Xbim.Ifc2x3.UtilityResource;
 
 namespace Xbim.COBie.Data
 {
@@ -231,7 +233,7 @@ namespace Xbim.COBie.Data
 
                     if (string.IsNullOrEmpty(name))
                     {
-#if DEBUG
+#if DEBUGATT
                         Console.WriteLine("Excluded attribute has no name");
 #endif
 
@@ -253,7 +255,7 @@ namespace Xbim.COBie.Data
                             if (double.TryParse(value, out num)) value = num.ToString("F3");
                             if ((string.IsNullOrEmpty(value)) || (string.Compare(value, ifcPropertySingleValue.Name.ToString(), true) == 0) || (string.Compare(value, "default", true) == 0))
                             {
-#if DEBUG
+#if DEBUGATT
                                 Console.WriteLine("Excluded attribute {0}, has no value", name);
 #endif
                                 continue; //skip to next loop item

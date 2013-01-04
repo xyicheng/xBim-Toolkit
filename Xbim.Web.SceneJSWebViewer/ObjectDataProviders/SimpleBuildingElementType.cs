@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.ComponentModel;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.ProductExtension;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.ProductExtension;
 using System.Collections.Specialized;
 using Xbim.XbimExtensions;
+using Xbim.XbimExtensions.Interfaces;
+using Xbim.IO;
 
 namespace Xbim.SceneJSWebViewer.ObjectDataProviders
 {
@@ -54,12 +56,12 @@ namespace Xbim.SceneJSWebViewer.ObjectDataProviders
 
         private IEnumerable<IfcBuildingElement> GetElements()
         {
-            IModel model = (_type as IPersistIfcEntity).ModelOf;
-            IEnumerable<IfcRelDefinesByType> rels = model.InstancesWhere<IfcRelDefinesByType>(r => r.RelatingType == _type);
+            XbimModel model = (_type as IPersistIfcEntity).ModelOf as XbimModel;
+            IEnumerable<IfcRelDefinesByType> rels = model.Instances.Where<IfcRelDefinesByType>(r => r.RelatingType == _type);
             if (rels.FirstOrDefault() == null) //we need at least one relation to listen to
             {
                 //using (Transaction trans = model.BeginTransaction("RelDefinesByType for element type "+ _type.Name)){
-                IfcRelDefinesByType newRel = model.New<IfcRelDefinesByType>(r => r.RelatingType = _type);
+                IfcRelDefinesByType newRel = model.Instances.New<IfcRelDefinesByType>(r => r.RelatingType = _type);
                 rels = new List<IfcRelDefinesByType>();
                 (rels as List<IfcRelDefinesByType>).Add(newRel);
                 //    trans.Commit();

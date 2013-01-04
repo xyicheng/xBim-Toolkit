@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using Xbim.XbimExtensions;
 using Xbim.COBie.Rows;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.ExternalReferenceResource;
-using Xbim.Ifc.ProductExtension;
-using Xbim.Ifc.MaterialResource;
-using Xbim.Ifc.UtilityResource;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.ExternalReferenceResource;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.Ifc2x3.MaterialResource;
+using Xbim.Ifc2x3.UtilityResource;
 using Xbim.COBie.Serialisers.XbimSerialiser;
 
 namespace Xbim.COBie.Data
@@ -38,8 +38,10 @@ namespace Xbim.COBie.Data
             COBieSheet<COBieAssemblyRow> assemblies = new COBieSheet<COBieAssemblyRow>(Constants.WORKSHEET_ASSEMBLY);
 
             // get ifcRelAggregates objects from IFC file what are not in the excludedTypes type list
-            IEnumerable<IfcRelAggregates> ifcRelAggregates = Model.InstancesOfType<IfcRelAggregates>();
-            IEnumerable<IfcRelNests> ifcRelNests = Model.InstancesOfType<IfcRelNests>(); 
+            IEnumerable<IfcRelAggregates> ifcRelAggregates = Model.Instances.OfType<IfcRelAggregates>();
+            IEnumerable<IfcRelNests> ifcRelNests = Model.Instances.OfType<IfcRelNests>(); 
+            
+
             IEnumerable<IfcRelDecomposes> relAll = (from ra in ifcRelAggregates
                                                     where ((ra.RelatingObject is IfcProduct) || (ra.RelatingObject is IfcTypeObject)) && !Context.Exclude.ObjectType.Assembly.Contains(ra.RelatingObject.GetType())
                                                       select ra as IfcRelDecomposes).Union
@@ -88,7 +90,7 @@ namespace Xbim.COBie.Data
             }
 
             //--------------Loop all IfcMaterialLayerSet-----------------------------
-            IEnumerable<IfcMaterialLayerSet> ifcMaterialLayerSets = Model.InstancesOfType<IfcMaterialLayerSet>();
+            IEnumerable<IfcMaterialLayerSet> ifcMaterialLayerSets = Model.Instances.OfType<IfcMaterialLayerSet>();
             char setNamePostFix = 'A';       
             foreach (IfcMaterialLayerSet ifcMaterialLayerSet in ifcMaterialLayerSets)
             {

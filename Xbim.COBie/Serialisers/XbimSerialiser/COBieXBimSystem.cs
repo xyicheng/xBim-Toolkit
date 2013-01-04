@@ -4,12 +4,14 @@ using System.Linq;
 using System.Text;
 using Xbim.COBie.Rows;
 using Xbim.XbimExtensions.Transactions;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.ProductExtension;
-using Xbim.Ifc.UtilityResource;
-using Xbim.Ifc.Extensions;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.Ifc2x3.UtilityResource;
+using Xbim.Ifc2x3.Extensions;
 using Xbim.XbimExtensions;
 using System.Reflection;
+using Xbim.IO;
+using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.COBie.Serialisers.XbimSerialiser
 {
@@ -35,16 +37,19 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         /// <param name="cOBieSheet">COBieSheet of COBieSystemRow to read data from</param>
         public void SerialiseSystem(COBieSheet<COBieSystemRow> cOBieSheet)
         {
-            using (Transaction trans = Model.BeginTransaction("Add System"))
+            using (XbimReadWriteTransaction trans = Model.BeginTransaction("Add System"))
             {
 
                 try
                 {
 
+                    int count = 1;
                     ProgressIndicator.ReportMessage("Starting Systems...");
                     ProgressIndicator.Initialise("Creating Systems", cOBieSheet.RowCount);
                     for (int i = 0; i < cOBieSheet.RowCount; i++)
                     {
+                        BumpTransaction(trans, count);
+                        count++;
                         ProgressIndicator.IncrementAndUpdate();
                         COBieSystemRow row = cOBieSheet[i];
                         if (ValidateString(row.Name))
@@ -69,7 +74,6 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 }
                 catch (Exception)
                 {
-                    trans.Rollback();
                     //TODO: Catch with logger?
                     throw;
                 }
@@ -82,7 +86,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         /// <param name="row">COBieSystemRow holding the data</param>
         private void AddSystem(COBieSystemRow row)
         {
-            IfcSystemObj = GetGroupInstance(row.ExtObject);//Model.New<IfcSystem>();
+            IfcSystemObj = GetGroupInstance(row.ExtObject);//Model.Instances.New<IfcSystem>();
             IfcSystemObj.Name = row.Name;
             //Add Created By, Created On and ExtSystem to Owner History. 
             if ((ValidateString(row.CreatedBy)) && (Contacts.ContainsKey(row.CreatedBy)))
@@ -114,18 +118,18 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             groupTypeName = groupTypeName.Trim().ToUpper();
             IfcType ifcType;
             IfcSystem ifcSystem = null;
-            if (IfcInstances.IfcTypeLookup.TryGetValue(groupTypeName, out ifcType))
+            if (IfcMetaData.TryGetIfcType(groupTypeName, out ifcType))
             {
-                MethodInfo method = typeof(IModel).GetMethod("New", Type.EmptyTypes);
+                MethodInfo method = typeof(IXbimInstanceCollection).GetMethod("New", Type.EmptyTypes);
                 MethodInfo generic = method.MakeGenericMethod(ifcType.Type);
-                var eleObj = generic.Invoke(Model, null);
+                var eleObj = generic.Invoke(Model.Instances, null);
                 if (eleObj is IfcSystem)
                     ifcSystem = (IfcSystem)eleObj;
             }
 
 
             if (ifcSystem == null)
-                ifcSystem = Model.New<IfcSystem>();
+                ifcSystem = Model.Instances.New<IfcSystem>();
             return ifcSystem;
         }
 
@@ -143,7 +147,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                     if ((ifcProduct == null) && (ValidateString(componentName)))
                     {
                         string compName = componentName.ToLower().Trim();
-                        ifcProduct = Model.InstancesOfType<IfcProduct>().Where(p => p.Name.ToString().ToLower().Trim() == compName).FirstOrDefault();
+                        ifcProduct = Model.Instances.OfType<IfcProduct>().Where(p => p.Name.ToString().ToLower().Trim() == compName).FirstOrDefault();
                     }
                     if (ifcProduct == null)
                     {

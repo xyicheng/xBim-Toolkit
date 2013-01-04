@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.PropertyResource;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.PropertyResource;
 
 
 

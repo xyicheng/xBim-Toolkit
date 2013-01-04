@@ -136,32 +136,32 @@ namespace Xbim
 			//	return nullptr;
 			//}
 		}
-		XbimTriangulatedModelStream^ XbimGeometryModelCollection::Mesh( )
+		List<XbimTriangulatedModel^>^XbimGeometryModelCollection::Mesh( )
 		{
 			return Mesh(true, XbimGeometryModel::DefaultDeflection, Matrix3D::Identity);
 		}
 
-		XbimTriangulatedModelStream^ XbimGeometryModelCollection::Mesh(bool withNormals )
+		List<XbimTriangulatedModel^>^XbimGeometryModelCollection::Mesh(bool withNormals )
 		{
 			return Mesh(withNormals, XbimGeometryModel::DefaultDeflection, Matrix3D::Identity);
 		}
-		XbimTriangulatedModelStream^ XbimGeometryModelCollection::Mesh(bool withNormals, double deflection )
+		List<XbimTriangulatedModel^>^XbimGeometryModelCollection::Mesh(bool withNormals, double deflection )
 		{ 
 			return Mesh(withNormals, deflection, Matrix3D::Identity);
 		}
 
-		XbimTriangulatedModelStream^ XbimGeometryModelCollection::Mesh(bool withNormals, double deflection, Matrix3D transform )
+		List<XbimTriangulatedModel^>^ XbimGeometryModelCollection::Mesh(bool withNormals, double deflection, Matrix3D transform )
 		{ 
 			
 			if(shapes->Count > 0) //we have children that need special materials etc
 			{
-				XbimTriangulatedModelStream^ tm = gcnew XbimTriangulatedModelStream();
+				List<XbimTriangulatedModel^>^tm = gcnew List<XbimTriangulatedModel^>();
 				for each(IXbimGeometryModel^ gm in shapes)
-					tm->AddChild(gm->Mesh(withNormals, deflection, transform));
+					tm->AddRange(gm->Mesh(withNormals, deflection, transform));
 				return tm;
 			}
 			else
-				return XbimTriangulatedModelStream::Empty;
+				return gcnew List<XbimTriangulatedModel^>();
 			
 		}
 

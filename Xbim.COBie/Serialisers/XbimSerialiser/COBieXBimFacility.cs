@@ -2,16 +2,17 @@
 using System.Globalization;
 using System.Linq;
 using Xbim.COBie.Rows;
-using Xbim.Ifc.Extensions;
-using Xbim.Ifc.ExternalReferenceResource;
-using Xbim.Ifc.GeometricConstraintResource;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.ProductExtension;
-using Xbim.Ifc.UtilityResource;
+using Xbim.Ifc2x3.Extensions;
+using Xbim.Ifc2x3.ExternalReferenceResource;
+using Xbim.Ifc2x3.GeometricConstraintResource;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.Ifc2x3.UtilityResource;
 using Xbim.XbimExtensions.Transactions;
 using System.Collections.Generic;
-using Xbim.Ifc.QuantityResource;
+using Xbim.Ifc2x3.QuantityResource;
+using Xbim.IO;
 
 namespace Xbim.COBie.Serialisers.XbimSerialiser
 {
@@ -30,7 +31,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         /// <param name="cOBieSheet">COBieSheet of COBieFacilityRows to read data from</param>
         public void SerialiseFacility(COBieSheet<COBieFacilityRow> cOBieSheet)
         {
-            using (Transaction trans = Model.BeginTransaction("Add Facility"))
+            using (XbimReadWriteTransaction trans = Model.BeginTransaction("Add Facility"))
             {
                 try
                 {
@@ -60,12 +61,11 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 }
                 catch (Exception)
                 {
-                    trans.Rollback();
                     //TODO: Catch with logger?
                     throw;
                 }
 
-                IEnumerable<IfcOwnerHistory> xxx = Model.InstancesOfType<IfcOwnerHistory>();
+                IEnumerable<IfcOwnerHistory> xxx = Model.Instances.OfType<IfcOwnerHistory>();
             }
         }
         /// <summary>
@@ -75,7 +75,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         /// <returns>IfcSite object</returns>
         private void CreateSite(COBieFacilityRow row)
         {
-            IfcSite ifcSite = Model.New<IfcSite>();
+            IfcSite ifcSite = Model.Instances.New<IfcSite>();
             
             //set owner history
             SetNewOwnerHistory(ifcSite, row.ExternalSystem, Model.DefaultOwningUser, row.CreatedOn);
@@ -87,7 +87,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 if (ValidateString(row.SiteName))
                     ifcSite.Name = row.SiteName;
                 ifcSite.CompositionType = IfcElementCompositionEnum.ELEMENT;
-                IfcLocalPlacement lp = Model.New<IfcLocalPlacement>();
+                IfcLocalPlacement lp = Model.Instances.New<IfcLocalPlacement>();
                 lp.RelativePlacement = WCS;
                 ifcSite.ObjectPlacement = lp;
 
@@ -104,7 +104,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         /// <param name="row">COBieFacilityRow object to read data from</param>
         private void CreateBuilding(COBieFacilityRow row)
         {
-            IfcBuilding ifcBuilding = Model.New<IfcBuilding>();
+            IfcBuilding ifcBuilding = Model.Instances.New<IfcBuilding>();
             SetNewOwnerHistory(ifcBuilding, row.ExternalSystem, Model.DefaultOwningUser, row.CreatedOn);
 
             //using statement will set the Model.OwnerHistoryAddObject to ifcBuilding.OwnerHistory as OwnerHistoryAddObject is used upon any property changes, 
@@ -125,7 +125,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 }
 
                 ifcBuilding.CompositionType = IfcElementCompositionEnum.ELEMENT;
-                IfcLocalPlacement lp = Model.New<IfcLocalPlacement>();
+                IfcLocalPlacement lp = Model.Instances.New<IfcLocalPlacement>();
                 lp.RelativePlacement = WCS;
                 lp.PlacementRelTo = GetSite().ObjectPlacement;
                 ifcBuilding.ObjectPlacement = lp;
@@ -153,20 +153,20 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                areaMeasure = row.AreaMeasurement;
            }
             
-           IfcQuantityArea IfcQuantityArea = Model.New<IfcQuantityArea>(qa => 
+           IfcQuantityArea IfcQuantityArea = Model.Instances.New<IfcQuantityArea>(qa => 
                                                 { 
                                                     qa.Unit = ifcSIUnitArea;
                                                     qa.Name = "AreaMeasure";
                                                     qa.Description = "Created to maintain COBie information";
                                                });
-           IfcElementQuantity ifcElementQuantity = Model.New<IfcElementQuantity>(eq =>
+           IfcElementQuantity ifcElementQuantity = Model.Instances.New<IfcElementQuantity>(eq =>
                                                         {
                                                             eq.Quantities.Add_Reversible(IfcQuantityArea);
                                                             eq.MethodOfMeasurement = areaMeasure;
                                                             eq.Description = "Created to maintain COBie information";
  
                                                         });
-           IfcRelDefinesByProperties ifcRelDefinesByProperties = Model.New<IfcRelDefinesByProperties>(rdbp =>
+           IfcRelDefinesByProperties ifcRelDefinesByProperties = Model.Instances.New<IfcRelDefinesByProperties>(rdbp =>
                                                                {
                                                                    rdbp.RelatedObjects.Add_Reversible(ifcBuilding);
                                                                    rdbp.RelatingPropertyDefinition = ifcElementQuantity;
@@ -311,7 +311,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 }
                 else
                 {
-                    ifcUnitAssignment.Units.Add_Reversible(Model.New<IfcMonetaryUnit>(ifcmu =>
+                    ifcUnitAssignment.Units.Add_Reversible(Model.Instances.New<IfcMonetaryUnit>(ifcmu =>
                     {
                         ifcmu.Currency = enumCode;
                     }));
@@ -327,7 +327,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             IfcProject ifcProject = Model.IfcProject;
             if (ifcProject.UnitsInContext == null)
             {
-                ifcProject.UnitsInContext = Model.New<IfcUnitAssignment>();
+                ifcProject.UnitsInContext = Model.Instances.New<IfcUnitAssignment>();
             }
 
             return ifcProject.UnitsInContext;

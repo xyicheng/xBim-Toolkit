@@ -17,10 +17,13 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.RepresentationResource;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.RepresentationResource;
 using Xbim.XbimExtensions;
 using Xbim.ModelGeometry.Scene;
+using Xbim.XbimExtensions.Interfaces;
+using Xbim.IO;
+using System.Windows.Data;
 
 #endregion
 
@@ -33,20 +36,28 @@ namespace Xbim.Presentation
     }
 
 
-    public class ModelDataProvider : INotifyPropertyChanged 
+    public class ModelDataProvider : ObjectDataProvider 
     {
-      
-        public ModelDataProvider()
+
+        private static readonly MaterialDictionary _defaultMaterials;
+        static ModelDataProvider()
         {
+            SolidColorBrush transparentBrush = new SolidColorBrush(Colors.LightBlue);
+            transparentBrush.Opacity = 0.5;
+            MaterialGroup windowMaterial = new MaterialGroup();
+            windowMaterial.Children.Add(new DiffuseMaterial(transparentBrush));
+            windowMaterial.Children.Add(new SpecularMaterial(transparentBrush, 40));
+
+
             _defaultMaterials = new MaterialDictionary();
             _defaultMaterials.Add("IfcProduct", new DiffuseMaterial(new SolidColorBrush(Colors.Wheat)));
             _defaultMaterials.Add("IfcBuildingElementProxy", new DiffuseMaterial(new SolidColorBrush(Colors.Snow)));
             _defaultMaterials.Add("IfcWall", new DiffuseMaterial(new SolidColorBrush(Colors.White)));
             _defaultMaterials.Add("IfcRoof", new DiffuseMaterial(new SolidColorBrush(Colors.LightSteelBlue)));
             _defaultMaterials.Add("IfcSlab", new DiffuseMaterial(new SolidColorBrush(Colors.LightSteelBlue) { }));
-            _defaultMaterials.Add("IfcWindow",
-                                  new DiffuseMaterial(new SolidColorBrush(Colors.LightBlue) {Opacity = 0.4}));
-            _defaultMaterials.Add("IfcDoor", new DiffuseMaterial(new SolidColorBrush(Colors.CadetBlue) {}));
+            _defaultMaterials.Add("IfcWindow", windowMaterial);
+            _defaultMaterials.Add("IfcPlate", windowMaterial); 
+            _defaultMaterials.Add("IfcDoor", new DiffuseMaterial(new SolidColorBrush(Colors.CadetBlue) { }));
             _defaultMaterials.Add("IfcStair",
                                   new DiffuseMaterial(new SolidColorBrush(Colors.Wheat)));
             _defaultMaterials.Add("IfcBeam", new DiffuseMaterial(new SolidColorBrush(Colors.LightSlateGray) { }));
@@ -55,45 +66,38 @@ namespace Xbim.Presentation
                                   new DiffuseMaterial(new SolidColorBrush(Colors.WhiteSmoke) {Opacity = 0.7}));
             _defaultMaterials.Add("IfcDistributionFlowElement",
                                   new DiffuseMaterial(new SolidColorBrush(Colors.AntiqueWhite) {Opacity = 1.0}));
-            _defaultMaterials.Add("IfcSpace", new DiffuseMaterial(new SolidColorBrush(Colors.Red) {Opacity = 0.7}));
-            _defaultMaterials.Add("IfcPlate", new DiffuseMaterial(new SolidColorBrush(Colors.LightBlue) {Opacity = 0.4}));
+            _defaultMaterials.Add("IfcSpace", new DiffuseMaterial(new SolidColorBrush(Colors.Red) {Opacity = 0.4}));
+    
             _defaultMaterials.Add("IfcRailing", new DiffuseMaterial(new SolidColorBrush(Colors.Goldenrod) {  }));
+            _defaultMaterials.Add("IfcOpeningElement", new DiffuseMaterial(new SolidColorBrush(Colors.Red) { Opacity = 0.4 }));
         }
 
         #region Fields
 
-        private readonly MaterialDictionary _defaultMaterials;
+        
         private readonly MaterialDictionary _materials = new MaterialDictionary();
         private double _transparency = 0.5;
 
-        private readonly Dictionary<IfcRepresentation, FramedGeometryModel3D> _mappedRepresentations =
-            new Dictionary<IfcRepresentation, FramedGeometryModel3D>();
+       
 
-        private IXbimScene _scene;
-
-        public IXbimScene Scene
-        {
-            get { return _scene; }
-            set { _scene = value; NotifyPropertyChanged("Model"); NotifyPropertyChanged("Scene"); }
-        }
-
+        
         #endregion
 
 
-        public Material GetDefaultMaterial(string typeName)
+        public static XbimMaterialProvider GetDefaultMaterial(string typeName)
         {
             Material mat;
-            IfcType elemType = IfcInstances.IfcTypeLookup[typeName.ToUpper()];
+            IfcType elemType = IfcMetaData.IfcType(typeName.ToUpperInvariant());
             while (elemType != null)
             {
                 if (_defaultMaterials.TryGetValue(elemType.Type.Name, out mat))
-                    return mat;
+                    return new XbimMaterialProvider(mat);
                 elemType = elemType.IfcSuperType;
             }
             return null;
         }
 
-        public Material GetDefaultMaterial(IPersistIfcEntity obj)
+        public static XbimMaterialProvider GetDefaultMaterial(IPersistIfcEntity obj)
         {
             if (obj != null)
                 return GetDefaultMaterial(obj.GetType().Name);
@@ -101,6 +105,21 @@ namespace Xbim.Presentation
                 return null;
         }
 
+        public static XbimMaterialProvider GetDefaultMaterial(Type entityType)
+        {
+            return GetDefaultMaterial(entityType.Name);  
+        }
+
+        public static XbimMaterialProvider GetDefaultMaterial(short entityTypeId)
+        {
+            IfcType ifcType = IfcMetaData.IfcType(entityTypeId);
+            return GetDefaultMaterial(ifcType.Type.Name);
+        }
+      
+        public static XbimMaterialProvider GetDefaultMaterial(IfcType ifcType)
+        {
+            return GetDefaultMaterial(ifcType.Type.Name);
+        }
 
         /// <summary>
         ///   Dictionary of shared materials, key is normally an Ifc object that the material represents
@@ -110,18 +129,22 @@ namespace Xbim.Presentation
             get { return _materials; }
         }
 
-        public MaterialDictionary DefaultMaterials
+        public static MaterialDictionary DefaultMaterials
         {
             get { return _defaultMaterials; }
         }
 
 
-        public IModel Model
+        public XbimModel Model
         {
-            get {
-                if (_scene != null && _scene.Graph != null)
-                    return _scene.Graph.Model;
-                return null;
+            get 
+            {
+                return (XbimModel)this.ObjectInstance;
+            }
+            set
+            {
+                this.ObjectInstance = value;
+                //NotifyPropertyChanged("Model");
             }
         }
 
@@ -159,26 +182,6 @@ namespace Xbim.Presentation
             }
         }
 
-        #region INotifyPropertyChanged Members
-
-        [field: NonSerialized] //don't serialize events
-            private event PropertyChangedEventHandler PropertyChanged;
-
-        event PropertyChangedEventHandler INotifyPropertyChanged.PropertyChanged
-        {
-            add { PropertyChanged += value; }
-            remove { PropertyChanged -= value; }
-        }
-
-        public void NotifyPropertyChanged(string propertyName)
-        {
-            PropertyChangedEventHandler handler = PropertyChanged;
-            if (handler != null)
-            {
-                handler(this, new PropertyChangedEventArgs(propertyName));
-            }
-        }
-
-        #endregion
+        
     }
 }

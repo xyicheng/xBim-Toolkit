@@ -4,6 +4,10 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using Xbim.ModelGeometry;
+using Xbim.IO;
+using Xbim.XbimExtensions;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.ProductExtension;
 
 namespace Xbim.SceneHelper
 {
@@ -11,17 +15,19 @@ namespace Xbim.SceneHelper
     {
         static void Main(string[] args)
         {
-            CreateXbimFiles(args[0]);
+            CreateXbimFile(args[0]);
         }
 
-        private static void CreateXbimFiles(string fileName)
+        private static void CreateXbimFile(string fileName)
         {
+
             string xbimFileName = Path.ChangeExtension(fileName, ".xbim");
-            string xbimGeometryFileName = Path.ChangeExtension(fileName, ".xbimGC");
-            //ClosePreviousModel();
-            XbimScene scene = new XbimScene(fileName, xbimFileName, xbimGeometryFileName, false);
-            scene.Close();
-            scene.Dispose();
+            XbimModel model = new XbimModel();
+            model.CreateFrom(fileName, xbimFileName, null);
+            model.Open(xbimFileName, XbimDBAccess.ReadWrite);
+            XbimScene.ConvertGeometry(model.Instances.OfType<IfcProduct>().Where(t => !(t is IfcFeatureElement)),null, false);
+            model.Close();
+            
         }
     }
 }

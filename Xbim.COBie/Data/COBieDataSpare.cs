@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using Xbim.XbimExtensions;
 using Xbim.COBie.Rows;
-using Xbim.Ifc.ConstructionMgmtDomain;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.ExternalReferenceResource;
-using Xbim.Ifc.Extensions;
-using Xbim.Ifc.PropertyResource;
+using Xbim.Ifc2x3.ConstructionMgmtDomain;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.ExternalReferenceResource;
+using Xbim.Ifc2x3.Extensions;
+using Xbim.Ifc2x3.PropertyResource;
 using Xbim.COBie.Serialisers.XbimSerialiser;
 
 namespace Xbim.COBie.Data
@@ -38,7 +38,7 @@ namespace Xbim.COBie.Data
             //Create new sheet
             COBieSheet<COBieSpareRow> spares = new COBieSheet<COBieSpareRow>(Constants.WORKSHEET_SPARE);
                         // get all IfcBuildingStory objects from IFC file
-            IEnumerable<IfcConstructionProductResource> ifcConstructionProductResources = Model.InstancesOfType<IfcConstructionProductResource>();
+            IEnumerable<IfcConstructionProductResource> ifcConstructionProductResources = Model.Instances.OfType<IfcConstructionProductResource>();
 
             COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(ifcConstructionProductResources); //properties helper class
             COBieDataAttributeBuilder attributeBuilder = new COBieDataAttributeBuilder(Context, allPropertyValues);
@@ -49,7 +49,7 @@ namespace Xbim.COBie.Data
             attributeBuilder.ExcludeAttributePropertyNamesWildcard.AddRange(Context.Exclude.Spare.AttributesContain);
             
 
-            //IfcTypeObject typeObject = Model.InstancesOfType<IfcTypeObject>().FirstOrDefault();
+            //IfcTypeObject typeObject = Model.Instances.OfType<IfcTypeObject>().FirstOrDefault();
 
             ProgressIndicator.Initialise("Creating Spares", ifcConstructionProductResources.Count());
 
