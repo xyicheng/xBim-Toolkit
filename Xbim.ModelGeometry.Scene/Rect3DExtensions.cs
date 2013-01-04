@@ -67,6 +67,18 @@ namespace Xbim.ModelGeometry.Scene
             }
         }
 
+        /// <summary>
+        /// Calculates the centre of the 3D rect
+        /// </summary>
+        /// <param name="rect3D"></param>
+        /// <returns></returns>
+        public static Point3D Centroid(this Rect3D rect3D)
+        {
+            return new Point3D((rect3D.X + rect3D.SizeX / 2), (rect3D.Y + rect3D.SizeY / 2), (rect3D.Z + rect3D.SizeZ / 2));
+        }
+
+
+
         public static Rect3D Read(this Rect3D rect, BinaryReader strm)
         {
             char test = strm.ReadChar();

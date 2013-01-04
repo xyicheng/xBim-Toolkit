@@ -130,35 +130,27 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="CoPlanarComparer.cs" />
+    <Compile Include="ClassificationViewModel.cs" />
     <Compile Include="DrawingControl3D.xaml.cs" />
-    <Compile Include="DrawingViewport3D.cs" />
     <Compile Include="IfcMetaDataControl.xaml.cs">
       <DependentUpon>IfcMetaDataControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="IGroupable.cs" />
-    <Compile Include="ISelectable.cs" />
-    <Compile Include="ListRange.cs" />
+    <Compile Include="IfcProductModelView.cs" />
+    <Compile Include="IXbimViewModel.cs" />
     <Compile Include="MeshGeometry3DExtensions.cs" />
     <Compile Include="ModelDataProvider.cs" />
     <Compile Include="ModelVisual3DExtensions.cs" />
+    <Compile Include="ContainedElementsViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SceneGraph.cs" />
-    <Compile Include="SelectionService3D.cs" />
-    <Compile Include="SkyBox.cs" />
-    <Compile Include="SkySphere.cs" />
-    <Compile Include="SpatialStructureControl.xaml.cs">
-      <DependentUpon>SpatialStructureControl.xaml</DependentUpon>
-    </Compile>
+    <Compile Include="SpatialViewModel.cs" />
     <Compile Include="SurfaceStyleExtensions.cs" />
     <Compile Include="SurfaceStyleRenderingExtensions.cs" />
     <Compile Include="SurfaceStyleShadingExtensions.cs" />
     <Compile Include="ToolTipController.cs" />
-    <Compile Include="Utils\MathUtils.cs" />
-    <Compile Include="Utils\TrackballDecorator.cs" />
-    <Compile Include="Utils\Viewport3DDecorator.cs" />
     <Compile Include="XbimMaterialProvider.cs" />
     <Compile Include="XbimModelPresentationExtensions.cs" />
+    <Compile Include="XbimTreeview.cs" />
+    <Compile Include="XbimViewType.cs" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="DrawingControl3D.xaml">
@@ -168,12 +160,6 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="IfcMetaDataControl.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="SpatialStructureControl.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -223,21 +209,6 @@
       <ProductName>Windows Installer 3.1</ProductName>
       <Install>true</Install>
     </BootstrapperPackage>
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="SkyBoxImages\north.jpg" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="SkyBoxImages\east.jpg" />
-    <Resource Include="SkyBoxImages\south.jpg" />
-    <Resource Include="SkyBoxImages\up.jpg" />
-    <Resource Include="SkyBoxImages\west.jpg" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="SkyBoxImages\down.jpg" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="SkyBoxImages\SphericalOvercast.jpg" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

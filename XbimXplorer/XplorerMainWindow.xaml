@@ -10,6 +10,39 @@
     Icon="icon.ico">
     <Window.Resources>
         <ObjectDataProvider x:Key="ModelProvider"  IsInitialLoadEnabled="False" ></ObjectDataProvider>
+         <DataTemplate DataType="{x:Type xbim:SpatialViewModel}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <!--<Image Grid.Column="0" Source="/folder.png" Margin="0 0 4 0"/>-->
+                <TextBlock Grid.Column="1" Text="{Binding Name}"/>
+            </Grid>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type xbim:ContainedElementsViewModel}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <!--<Image Grid.Column="0" Source="/folder.png" Margin="0 0 4 0"/>-->
+                <TextBlock Grid.Column="1" Text="{Binding Name}"/>
+            </Grid>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type xbim:IfcProductModelView}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <!--<Image Grid.Column="0" Source="/folder.png" Margin="0 0 4 0"/>-->
+                <TextBlock Grid.Column="1" Text="{Binding Name}"/>
+            </Grid>
+        </DataTemplate>
     </Window.Resources>
     <Window.CommandBindings>
         <CommandBinding Command="Close"  Executed="CommandBinding_Close" CanExecute="CommandBinding_CanExecute"/>
@@ -75,10 +108,14 @@
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition />
             </Grid.ColumnDefinitions>
-            <xbim:SpatialStructureControl Name="SpatialControl" FontSize="10" FontWeight="normal" Grid.Column="0" Project ="{Binding Path=IfcProject}" Background="#114682D4" MouseDoubleClick="SpatialControl_MouseDoubleClick"/>
-            <!--<ListBox  Name="Lister" MouseDoubleClick="Lister_MouseDoubleClick">
-               
-            </ListBox>-->
+
+            <xbim:XbimTreeview x:Name="SpatialControl"
+                               SelectedValue="{Binding Path=SelectedItem, ElementName=DrawingControl}"
+                               Indentation="12" 
+                               Model="{Binding}"  
+                               BorderThickness="0" SelectionMode="Single"
+                               MouseDoubleClick="SpatialControl_MouseDoubleClick"
+                               />
             <GridSplitter 
                 Grid.Column="1" 
                 HorizontalAlignment="Center"
@@ -87,7 +124,16 @@
                 ShowsPreview="True"
                 Width="5"
                 />
-            <xbim:DrawingControl3D x:Name="DrawingControl" MouseRightButtonDown="DrawingControl_MouseRightButtonDown" Model ="{Binding}" Grid.Column="2"  Focusable="True" Width="Auto" Height="Auto" ProgressChanged="ProgressChanged" >
+            <xbim:DrawingControl3D x:Name="DrawingControl" 
+                                   SelectedItem="{Binding Path=SelectedValue, ElementName=SpatialControl}"    
+                                   Model ="{Binding}" 
+                                   Grid.Column="2" 
+                                   Focusable="True" 
+                                   Width="Auto" 
+                                   Height="Auto" 
+                                   ProgressChanged="ProgressChanged" 
+                                   MouseDoubleClick="SpatialControl_MouseDoubleClick"
+                                   >
                 <xbim:DrawingControl3D.Background>
                     <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
                         <GradientStop Color="Black" Offset="1"/>
@@ -95,7 +141,6 @@
                     </LinearGradientBrush>
                 </xbim:DrawingControl3D.Background>
             </xbim:DrawingControl3D>
-
         </Grid>
         <StatusBar Grid.Row="2" Height="23"  Name="statusBar" VerticalAlignment="Top" >
             <StatusBarItem>
@@ -108,9 +153,9 @@
             <StatusBarItem>
                 <Separator/>
             </StatusBarItem>
-            <Slider x:Name="SliderColour" Minimum ="0"  Maximum="255" TickFrequency="2" Width="150" Value="127" ValueChanged="SliderColour_ValueChanged">
+            <!--<Slider x:Name="SliderColour" Minimum ="0"  Maximum="255" TickFrequency="2" Width="150" Value="127" ValueChanged="SliderColour_ValueChanged">-->
                 
-                </Slider>
+                <!--</Slider>-->
             <StatusBarItem>
                 <Separator/>
             </StatusBarItem>

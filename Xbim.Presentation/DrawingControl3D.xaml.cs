@@ -71,10 +71,9 @@ namespace Xbim.Presentation
            
             Viewport = Canvas;
             Canvas.MouseDown+=Canvas_MouseDown;
-
+           
         }
 
-        
 
         #region Statics
 
@@ -121,10 +120,11 @@ namespace Xbim.Presentation
 
 
         private int? _currentProduct;
-        protected HelixToolkit.Wpf.Viewport3DHelper.HitResult _selectedVisual;
+        protected HelixToolkit.Wpf.Viewport3DHelper.HitResult _hitResult;
         protected Material _selectedVisualMaterial;
         protected Material _selectedVisualPreviousMaterial;
-
+        private Rect3D _boundingBox;
+        private Transform3DGroup modelTransform = new Transform3DGroup();
    
         private event ProgressChangedEventHandler _progressChanged;
 
@@ -167,9 +167,7 @@ namespace Xbim.Presentation
 
         private void Canvas_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            PropertiesBillBoard.IsRendering = false;
-            this.Canvas.Children.Remove(PropertiesBillBoard);
-           
+
             var pos = e.GetPosition(Canvas);
             foreach (var hit in Viewport3DHelper.FindHits(Canvas.Viewport, pos))
             {
@@ -179,31 +177,22 @@ namespace Xbim.Presentation
                     IList remove;
                     if (_currentProduct.HasValue)
                     {
-                        GeometryModel3D geom = _selectedVisual.Model as GeometryModel3D;
-                        if (geom != null)
-                            geom.Material = _selectedVisualPreviousMaterial;
+                        GeometryModel3D geom = _hitResult.Model as GeometryModel3D;
+                        //if (geom != null)
+                        //    geom.Material = _selectedVisualPreviousMaterial;
                         remove = new int[] { _currentProduct.Value };
-        }
+                    }
                     else
                         remove = new int[] { };
-                    _selectedVisual = hit;
-                    GeometryModel3D selGeom = _selectedVisual.Model as GeometryModel3D;
+                    _hitResult = hit;
+                    GeometryModel3D selGeom = _hitResult.Model as GeometryModel3D;
                     if (selGeom != null)
                     {
-                        _selectedVisualPreviousMaterial = selGeom.Material;
-                        selGeom.Material = _selectedVisualMaterial;
-                    }
-                    this.Canvas.Children.Add(PropertiesBillBoard);
-                    PropertiesBillBoard.IsRendering = true;
-                    _currentProduct = (int)id;
-
-                    PropertiesBillBoard.Text = Model.Instances[_currentProduct.Value].SummaryString().EnumerateToString(null,"\n");
-                    PropertiesBillBoard.Position = hit.RayHit.PointHit;
-
-                    
-                    IList add = new int[] { _currentProduct.Value };
-                    SelectionChangedEventArgs selEv = new SelectionChangedEventArgs(SelectionChangedEvent, remove, add);
-                    RaiseEvent(selEv);
+                        //_selectedVisualPreviousMaterial = selGeom.Material;
+                        //selGeom.Material = _selectedVisualMaterial;
+                    } 
+                    _currentProduct=(int)id; 
+                    SelectedItem =    _currentProduct.Value   ;           
                     return;
                 }
             }
@@ -252,64 +241,134 @@ namespace Xbim.Presentation
 
         
 
-        public IfcProduct SelectedItem
+        public int? SelectedItem
         {
-            get { return (IfcProduct) GetValue(SelectedItemProperty); }
-            set { SetValue(SelectedItemProperty, value); }
+            get { return (int?) GetValue(SelectedItemProperty); }
+            set
+            { 
+                SetValue(SelectedItemProperty, value);
+            }
         }
 
         // Using a DependencyProperty as the backing store for SelectedItem.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty SelectedItemProperty =
-            DependencyProperty.Register("SelectedItem", typeof (IfcProduct), typeof (DrawingControl3D),
+            DependencyProperty.Register("SelectedItem", typeof (int?), typeof (DrawingControl3D),
                                         new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.Inherits,
                                                                       new PropertyChangedCallback(OnSelectedItemChanged)));
 
         private static void OnSelectedItemChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        
         {
-            //DrawingControl3D d3d = d as DrawingControl3D;
-            //if (d3d != null)
+            if (d is DrawingControl3D) 
+            {
+                DrawingControl3D d3d = d as DrawingControl3D;
+                if (e.OldValue is int) //there is an old value to deselect
+                { 
+                    int oldVal = (int)e.OldValue;
+                    d3d.Deselect(oldVal);
+                   
+                }
+                if (e.NewValue is int)
+                {
+                    int newVal = (int) e.NewValue;
+                    d3d.Select(newVal);
+                }
+      
+
+            }
+            //PropertiesBillBoard.IsRendering = false;
+            //this.Canvas.Children.Remove(PropertiesBillBoard);
+
+            //var pos = e.GetPosition(Canvas);
+            //foreach (var hit in Viewport3DHelper.FindHits(Canvas.Viewport, pos))
             //{
-            //    int? oldProd = e.OldValue as int?;
-            //    int? newProd = e.NewValue as int?;
-            //    if (oldProd.HasValue) //unhighlight last one
+            //    object id = hit.Visual.GetValue(TagProperty);
+            //    if (id is int)
             //    {
-            //        ModelVisual3D item;
-            //        if (d3d._items.TryGetValue(oldProd.Value, out item))
+            //        IList remove;
+            //        if (_currentProduct.HasValue)
             //        {
-            //            Material oldMat = null;
-            //            d3d._selectedVisual = item;
-            //            d3d.SwapMaterial(item.Content, d3d._selectedVisualPreviousMaterial, ref oldMat);
+            //            GeometryModel3D geom = _selectedVisual.Model as GeometryModel3D;
+            //            if (geom != null)
+            //                geom.Material = _selectedVisualPreviousMaterial;
+            //            remove = new int[] { _currentProduct.Value };
             //        }
-            //    }
-            //    if (newProd.HasValue) //highlight new one
-            //    {
-            //        ModelVisual3D item;
-            //        if (d3d._items.TryGetValue(newProd.Value, out item))
+            //        else
+            //            remove = new int[] { };
+            //        _selectedVisual = hit;
+            //        GeometryModel3D selGeom = _selectedVisual.Model as GeometryModel3D;
+            //        if (selGeom != null)
             //        {
-            //            d3d._selectedVisual = item;
-            //            d3d.SwapMaterial(item.Content, d3d._selectedVisualMaterial,
-            //                             ref d3d._selectedVisualPreviousMaterial);
+            //            _selectedVisualPreviousMaterial = selGeom.Material;
+            //            selGeom.Material = _selectedVisualMaterial;
             //        }
+            //        this.Canvas.Children.Add(PropertiesBillBoard);
+            //        PropertiesBillBoard.IsRendering = true;
+            //        _currentProduct = (int)id;
+
+            //        PropertiesBillBoard.Text = Model.Instances[_currentProduct.Value].SummaryString().EnumerateToString(null, "\n");
+            //        PropertiesBillBoard.Position = hit.RayHit.PointHit;
+
+
+            //        IList add = new int[] { _currentProduct.Value };
+            //        SelectionChangedEventArgs selEv = new SelectionChangedEventArgs(SelectionChangedEvent, remove, add);
+            //        RaiseEvent(selEv);
+            //        return;
             //    }
-            //}
+            }
+
+        private void Deselect(int oldVal)
+        {
+            ModelVisual3D mv3d;
+            if (_items.TryGetValue(oldVal, out mv3d) && mv3d.Content != null)
+            {
+
+                UnHighlight(mv3d.Content);
+            }
         }
 
+        private void Select(int newVal)
+        {
+            ModelVisual3D mv3d;
+            if (_items.TryGetValue(newVal, out mv3d) && mv3d.Content != null)
+            {
+                Highlight(mv3d.Content);
+            }
+        }
 
-        private void SwapMaterial(Model3D m3d, Material newMat, ref Material oldMat)
+        private void UnHighlight(Model3D m3d)
+        {
+            if (m3d is Model3DGroup)
+            {
+                foreach (var item in ((Model3DGroup)m3d).Children)
+                {
+                    UnHighlight(item);
+                }
+            }
+            else if (m3d is GeometryModel3D)
+            {
+                GeometryModel3D g3d = (GeometryModel3D)m3d;
+                g3d.SetValue(GeometryModel3D.BackMaterialProperty, g3d.GetValue(TagProperty));
+                g3d.SetValue(GeometryModel3D.MaterialProperty, g3d.GetValue(TagProperty));
+                m3d.ClearValue(TagProperty);
+            }
+        }
+
+        private void Highlight(Model3D m3d)
         {
             if (m3d is Model3DGroup)
             {
                 foreach (var item in ((Model3DGroup) m3d).Children)
                 {
-                    SwapMaterial(item, newMat, ref oldMat);
+                    Highlight(item);
                 }
             }
             else if (m3d is GeometryModel3D)
             {
                 GeometryModel3D g3d = (GeometryModel3D) m3d;
-                oldMat = g3d.Material;
-                g3d.Material = newMat;
-                g3d.BackMaterial = newMat;
+                m3d.SetValue(TagProperty, g3d.Material);
+                g3d.SetValue(GeometryModel3D.MaterialProperty, _selectedVisualMaterial);
+                g3d.SetValue(GeometryModel3D.BackMaterialProperty, _selectedVisualMaterial); 
             }
         }
 
@@ -365,8 +424,7 @@ namespace Xbim.Presentation
         public static readonly DependencyProperty PercentageLoadedProperty =
             DependencyProperty.Register("PercentageLoaded", typeof (double), typeof (DrawingControl3D),
                                         new UIPropertyMetadata(0.0));
-        private Rect3D _boundingBox;
-
+        
 
 
         private void ClearGraphics()
@@ -376,8 +434,11 @@ namespace Xbim.Presentation
             _hiddenTypes.Clear();
             _items.Clear();
             _meshMap.Clear();
-            _selectedVisual = null;
+            _hitResult = null;
             _currentProduct = null;
+            BuildingModel.Children.Clear();
+            Viewport.ResetCamera();
+            
         }
 
         private MeshGeometry3D MakeBoundingBox(Rect3D r3D)
@@ -484,14 +545,39 @@ namespace Xbim.Presentation
 
         private void LoadGeometry(XbimModel model)
         {
-
+            
             //reset all the visuals
             ClearGraphics();
-            
+            if (model == null) return; //nothing to do
+            double metre = 1/model.GetModelFactors.OneMetre;
+
             //get bounding box for the whole building
             _boundingBox = GetModelBounds(model);
-             Canvas.ZoomExtents(_boundingBox);
+            
+            double biggest = Math.Max(Math.Max(_boundingBox.SizeX, _boundingBox.SizeY),_boundingBox.SizeZ);
 
+            double factor = 100 / biggest;
+            double metresWide = _boundingBox.SizeY ;
+            double metresLong = _boundingBox.SizeX ;
+            modelTransform = new Transform3DGroup();
+            ScaleTransform3D s3d = new ScaleTransform3D(factor, factor, factor);
+            RotateTransform3D r3d = new RotateTransform3D(new AxisAngleRotation3D(new Vector3D(0,0,1),90));
+            Point3D p3d = _boundingBox.Centroid();
+            TranslateTransform3D t3d = new TranslateTransform3D(-p3d.X,-p3d.Y,-_boundingBox.Z);
+            modelTransform.Children.Add(t3d);
+            modelTransform.Children.Add(s3d);
+            modelTransform.Children.Add(r3d);         
+            _boundingBox = modelTransform.TransformBounds(_boundingBox);
+            long gridWidth =  Convert.ToInt64(metresWide / (metre * 10))+1;
+            long gridLen = Convert.ToInt64(metresLong / (metre * 10)) + 1;
+            this.GridLines.Width = gridWidth*10*metre;
+            this.GridLines.Length = gridLen * 10 * metre;
+            this.GridLines.MinorDistance = metre ;
+            this.GridLines.MajorDistance = metre * 10;
+            this.GridLines.Thickness = 0.1 / factor;
+            this.GridLines.Transform = s3d;
+            Viewport.ZoomExtents(_boundingBox);
+            BuildingModel.Transform = modelTransform;
             _worker = new BackgroundWorker();
             _worker.DoWork += new DoWorkEventHandler(GenerateGeometry);
 
@@ -533,7 +619,7 @@ namespace Xbim.Presentation
             //create a variable to hold visuals and avoid too many redraws
             ModelVisual3D visualsToAdd = new ModelVisual3D();
             XbimMaterialProvider mat = Model.GetRenderMaterial(StyleToDraw);
-            
+            visualsToAdd.SetValue(TagProperty, mat);
             foreach (var prodGeom in StyleToDraw.ProductGeometries)
             {
                 //Try and get the visual for the product, if not found create one
@@ -549,8 +635,10 @@ namespace Xbim.Presentation
                 //Set up the Model Geometry to hold the product geometry, this has unique material and tranform
                 //and may reuse GeometryModel3D meshes from previous renders
                 GeometryModel3D m3d = new GeometryModel3D();
-                m3d.BackMaterial = mat.BackgroundMaterial;
-                m3d.Material = mat.FaceMaterial;
+               
+                BindingOperations.SetBinding(m3d, GeometryModel3D.BackMaterialProperty,mat.BackgroundMaterialBinding);  
+                BindingOperations.SetBinding(m3d, GeometryModel3D.MaterialProperty, mat.FaceMaterialBinding);
+               
                 bool first = true;
                 foreach (var geom in prodGeom.Geometry) //create a new one don't add it to the scene yet as we may have no valid content
                 {
@@ -586,8 +674,8 @@ namespace Xbim.Presentation
                     else //add a new GeometryModel3d to the visual as we want to reference an existing mesh
                     {
                         GeometryModel3D m3dRef = new GeometryModel3D();
-                        m3dRef.BackMaterial = mat.BackgroundMaterial; //give the mesh its own materials and transform
-                        m3dRef.Material = mat.FaceMaterial;
+                        BindingOperations.SetBinding(m3dRef, GeometryModel3D.BackMaterialProperty, mat.BackgroundMaterialBinding);
+                        BindingOperations.SetBinding(m3dRef, GeometryModel3D.MaterialProperty, mat.FaceMaterialBinding);
                         m3dRef.Geometry = mesh;
                         m3dRef.Transform = m3d.Transform; //reuse the same transform
                         mv.AddGeometry(m3dRef);
@@ -607,8 +695,7 @@ namespace Xbim.Presentation
             }
             if (visualsToAdd.Children.Count > 0)
             {
-                Canvas.Items.Add(visualsToAdd);
-                Canvas.ZoomExtents();
+                BuildingModel.Children.Add(visualsToAdd);
             }
         }
 
@@ -729,8 +816,8 @@ namespace Xbim.Presentation
 
         public void ZoomExtents(int? selection)
         {
-            if(!selection.HasValue)
-                Canvas.ZoomExtents(_boundingBox,500);
+            if (!selection.HasValue)
+                Canvas.ZoomExtents(_boundingBox);//);
             else
             {
                 ModelVisual3D mv = _items[selection.Value];

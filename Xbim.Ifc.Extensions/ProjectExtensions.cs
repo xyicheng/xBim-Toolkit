@@ -174,6 +174,17 @@ namespace Xbim.Ifc2x3.Extensions
             }
         }
 
+        public static IEnumerable<IfcSpatialStructureElement> GetSpatialStructuralElements(this IfcProject project)
+        {
+            IEnumerable<IfcRelAggregates> aggregate = project.IsDecomposedBy.OfType<IfcRelAggregates>();
+            foreach (var rel in aggregate)
+            {
+                foreach (var item in rel.RelatedObjects.OfType<IfcSpatialStructureElement>())
+                     yield return item;
+            }
+        }
+
+
         public static string BuildName(this IfcProject ifcProject)
         {
             List<string> tokens = new List<string>();

@@ -557,6 +557,7 @@ namespace Xbim
 
 			// Here we need to prepare the revolution.
 			//
+		
 			TopoDS_Solid solid = Build(face,repItem->Axis, repItem->Angle, hasCurves);
 			solid.Move(XbimGeomPrim::ToLocation(repItem->Position));
 			return  solid;

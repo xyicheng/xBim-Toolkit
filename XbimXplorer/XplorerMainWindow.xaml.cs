@@ -35,7 +35,7 @@ using Xbim.XbimExtensions;
 using Xbim.ModelGeometry;
 using Xbim.ModelGeometry.Scene;
 using Xbim.XbimExtensions.Interfaces;
-
+using Xbim.Ifc2x3.Extensions;
 #endregion
 
 namespace XbimXplorer
@@ -52,16 +52,17 @@ namespace XbimXplorer
         private string _temporaryXbimFileName;
         private string _defaultFileName;
         
-
         public XplorerMainWindow()
         {
             InitializeComponent();
 
             DrawingControl.SelectionChanged += new SelectionChangedEventHandler(DrawingControl_SelectionChanged);
-            SpatialControl.SelectedItemChanged +=new RoutedPropertyChangedEventHandler<SpatialStructureTreeItem>(SpatialControl_SelectedItemChanged);
+            //SpatialControl.SelectedItemChanged +=new RoutedPropertyChangedEventHandler<SpatialStructureTreeItem>(SpatialControl_SelectedItemChanged);
             //DrawingControl.OnSetMaterial += new SetMaterialEventHandler(DrawingControl_OnSetMaterial);
             //DrawingControl.OnSetFilter += new SetFilterEventHandler(DrawingControl_OnSetFilter);
             this.Closed += new EventHandler(XplorerMainWindow_Closed);
+           
+            
         }
 
         void XplorerMainWindow_Closed(object sender, EventArgs e)
@@ -179,15 +180,7 @@ namespace XbimXplorer
             e.Handled = true;
         }
 
-        private void SpatialControl_SelectedItemChanged(object sender,
-                                                        RoutedPropertyChangedEventArgs<SpatialStructureTreeItem> e)
-        {
-            SpatialStructureTreeItem item = e.NewValue as SpatialStructureTreeItem;
-            if (item != null)
-            {
-            }
-        }
-
+      
         private void DrawingControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             foreach (var item in e.AddedItems)
@@ -395,9 +388,10 @@ namespace XbimXplorer
             if (_propertyWindow == null)
             {
                 _propertyWindow = new PropertiesWindow();
+               
                 _propertyWindow.Owner = this;
 
-                Binding b = new Binding("SelectedItem");
+                Binding b = new Binding("SelectedItem.Entity");
                 b.Source = SpatialControl;
                 _propertyWindow.SetBinding(PropertiesWindow.InstanceProperty, b);
                 _propertyWindow.Closed += new EventHandler(_propertyWindow_Closed);
@@ -412,34 +406,7 @@ namespace XbimXplorer
             _propertyWindow.Instance = _currentProduct;
         }
 
-        private void DrawingControl_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            //_currentProduct = DrawingControl.GetProductAt(e);
-            //if (_currentProduct.HasValue && Model != null)
-            //{
-            //    IPersistIfcEntity product = Model.Instances[_currentProduct.Value];
-            //    ContextMenu = new ContextMenu();
-            //    MenuItem mi = new MenuItem() { Header = string.Format("Hide this {0}", product.GetType().Name) };
-            //    mi.Click += new RoutedEventHandler(HideProduct);
-            //    ContextMenu.Items.Add(mi);
-            //    mi = new MenuItem() { Header = string.Format("Hide all {0}s", product.GetType().Name) };
-            //    mi.Click += new RoutedEventHandler(HideAllTypesOf);
-            //    ContextMenu.Items.Add(mi);
-            //    mi = new MenuItem() { Header = string.Format("Show all {0}s", product.GetType().Name) };
-            //    mi.Click += new RoutedEventHandler(ShowAllTypesOf);
-            //    ContextMenu.Items.Add(mi);
-            //    ContextMenu.Items.Add(new Separator());
-            //    mi = new MenuItem() { Header = "Show all" };
-            //    mi.Click += new RoutedEventHandler(ShowAll);
-            //    ContextMenu.Items.Add(mi);
-            //    ContextMenu.Items.Add(new Separator());
-            //    mi = new MenuItem() { Header = "Properties" };
-            //    mi.Click += new RoutedEventHandler(ShowProperties);
-            //    ContextMenu.Items.Add(mi);
-            //}
-            //else
-            //    ContextMenu = null;
-        }
+      
 
         private void ShowAll(object sender, RoutedEventArgs e)
         {
