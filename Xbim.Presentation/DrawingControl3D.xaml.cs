@@ -120,7 +120,7 @@ namespace Xbim.Presentation
 
 
         private int? _currentProduct;
-        protected HelixToolkit.Wpf.Viewport3DHelper.HitResult _hitResult;
+        protected RayMeshGeometry3DHitTestResult _hitResult;
         protected Material _selectedVisualMaterial;
         protected Material _selectedVisualPreviousMaterial;
         private Rect3D _boundingBox;
@@ -167,33 +167,24 @@ namespace Xbim.Presentation
 
         private void Canvas_MouseDown(object sender, MouseButtonEventArgs e)
         {
-
+            
             var pos = e.GetPosition(Canvas);
-            foreach (var hit in Viewport3DHelper.FindHits(Canvas.Viewport, pos))
+            var hit = FindHit(pos);
+            if(hit!=null)
             {
-                object id = hit.Visual.GetValue(TagProperty);
+                object id = hit.VisualHit.GetValue(TagProperty);
                 if (id is int)
                 {
                     IList remove;
                     if (_currentProduct.HasValue)
                     {
-                        GeometryModel3D geom = _hitResult.Model as GeometryModel3D;
-                        //if (geom != null)
-                        //    geom.Material = _selectedVisualPreviousMaterial;
                         remove = new int[] { _currentProduct.Value };
                     }
                     else
                         remove = new int[] { };
                     _hitResult = hit;
-                    GeometryModel3D selGeom = _hitResult.Model as GeometryModel3D;
-                    if (selGeom != null)
-                    {
-                        //_selectedVisualPreviousMaterial = selGeom.Material;
-                        //selGeom.Material = _selectedVisualMaterial;
-                    } 
                     _currentProduct=(int)id; 
-                    SelectedItem =    _currentProduct.Value   ;           
-                    return;
+                    SelectedItem = _currentProduct.Value   ;           
                 }
             }
         }
@@ -323,7 +314,7 @@ namespace Xbim.Presentation
             if (_items.TryGetValue(oldVal, out mv3d) && mv3d.Content != null)
             {
 
-                UnHighlight(mv3d.Content);
+                UnHighlight(mv3d);
             }
         }
 
@@ -332,12 +323,22 @@ namespace Xbim.Presentation
             ModelVisual3D mv3d;
             if (_items.TryGetValue(newVal, out mv3d) && mv3d.Content != null)
             {
-                Highlight(mv3d.Content);
+                Highlight(mv3d);
             }
         }
 
+
+        private void UnHighlight(ModelVisual3D m3d)
+        {
+           
+            if (m3d.Content != null)
+                UnHighlight(m3d.Content);
+        }
+
+
         private void UnHighlight(Model3D m3d)
         {
+
             if (m3d is Model3DGroup)
             {
                 foreach (var item in ((Model3DGroup)m3d).Children)
@@ -348,10 +349,59 @@ namespace Xbim.Presentation
             else if (m3d is GeometryModel3D)
             {
                 GeometryModel3D g3d = (GeometryModel3D)m3d;
-                g3d.SetValue(GeometryModel3D.BackMaterialProperty, g3d.GetValue(TagProperty));
-                g3d.SetValue(GeometryModel3D.MaterialProperty, g3d.GetValue(TagProperty));
-                m3d.ClearValue(TagProperty);
+                XbimMaterialProvider matProv = g3d.GetValue(TagProperty) as XbimMaterialProvider;
+                if (matProv != null)
+                {
+                    BindingOperations.SetBinding(g3d, GeometryModel3D.BackMaterialProperty, matProv.BackgroundMaterialBinding);
+                    BindingOperations.SetBinding(g3d, GeometryModel3D.MaterialProperty, matProv.FaceMaterialBinding);
+                    g3d.SetValue(TagProperty, null);
+                }
             }
+        }
+
+        private RayMeshGeometry3DHitTestResult FindHit(Point position)
+        {
+            RayMeshGeometry3DHitTestResult result=null;
+            HitTestResultCallback callback = hit =>
+            {
+                var rayHit = hit as RayMeshGeometry3DHitTestResult;
+                if (rayHit != null)
+                {
+                    if (rayHit.MeshHit != null)
+                    {
+                        result = rayHit;
+                        return HitTestResultBehavior.Stop;
+                    }
+                }
+
+                return HitTestResultBehavior.Continue;
+            };
+            var hitParams = new PointHitTestParameters(position);
+            VisualTreeHelper.HitTest(Viewport.Viewport, null, callback, hitParams);
+            return result;
+        }
+
+        private XbimMaterialModelVisual FindMaterialVisual(ModelVisual3D mv)
+        {
+
+            DependencyObject parent = mv;
+            while (parent != null)
+            {
+                var vp = parent as XbimMaterialModelVisual;
+                if (vp != null)
+                {
+                    return vp as XbimMaterialModelVisual;
+                }
+
+                parent = VisualTreeHelper.GetParent(parent);
+            }
+
+            return null;
+        }
+        private void Highlight(ModelVisual3D mv3d)
+        {
+            if (mv3d.Content != null)
+                Highlight(mv3d.Content);
         }
 
         private void Highlight(Model3D m3d)
@@ -365,8 +415,9 @@ namespace Xbim.Presentation
             }
             else if (m3d is GeometryModel3D)
             {
-                GeometryModel3D g3d = (GeometryModel3D) m3d;
-                m3d.SetValue(TagProperty, g3d.Material);
+                GeometryModel3D g3d = (GeometryModel3D) m3d; 
+                Binding b = BindingOperations.GetBinding(g3d,GeometryModel3D.MaterialProperty);
+                g3d.SetValue(TagProperty, b.Source);
                 g3d.SetValue(GeometryModel3D.MaterialProperty, _selectedVisualMaterial);
                 g3d.SetValue(GeometryModel3D.BackMaterialProperty, _selectedVisualMaterial); 
             }
@@ -528,15 +579,10 @@ namespace Xbim.Presentation
             double factor = 100 / biggest;
             double metresWide = _boundingBox.SizeY ;
             double metresLong = _boundingBox.SizeX ;
-            modelTransform = new Transform3DGroup();
-            ScaleTransform3D s3d = new ScaleTransform3D(factor, factor, factor);
-            RotateTransform3D r3d = new RotateTransform3D(new AxisAngleRotation3D(new Vector3D(0,0,1),90));
+
             Point3D p3d = _boundingBox.Centroid();
-            TranslateTransform3D t3d = new TranslateTransform3D(-p3d.X,-p3d.Y,-_boundingBox.Z);
-            modelTransform.Children.Add(t3d);
-            modelTransform.Children.Add(s3d);
-            modelTransform.Children.Add(r3d);         
-            _boundingBox = modelTransform.TransformBounds(_boundingBox);
+            TranslateTransform3D t3d = new TranslateTransform3D(p3d.X,p3d.Y,_boundingBox.Z);
+
             long gridWidth =  Convert.ToInt64(metresWide / (metre * 10))+1;
             long gridLen = Convert.ToInt64(metresLong / (metre * 10)) + 1;
             this.GridLines.Width = gridWidth*10*metre;
@@ -544,9 +590,10 @@ namespace Xbim.Presentation
             this.GridLines.MinorDistance = metre ;
             this.GridLines.MajorDistance = metre * 10;
             this.GridLines.Thickness = 0.1 / factor;
-            this.GridLines.Transform = s3d;
-            Viewport.ZoomExtents(_boundingBox);
-            BuildingModel.Transform = modelTransform;
+            this.GridLines.Transform = t3d;
+           
+            ViewHome();
+
             _worker = new BackgroundWorker();
             _worker.DoWork += new DoWorkEventHandler(GenerateGeometry);
 
@@ -562,6 +609,7 @@ namespace Xbim.Presentation
 
         private void GenerateGeometry_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
+           
             _worker = null;
             
             RoutedEventArgs ev = new RoutedEventArgs(LoadedEvent);
@@ -586,9 +634,8 @@ namespace Xbim.Presentation
         private void DrawShapes(XbimSurfaceStyle StyleToDraw)
         {
             //create a variable to hold visuals and avoid too many redraws
-            ModelVisual3D visualsToAdd = new ModelVisual3D();
-            XbimMaterialProvider mat = Model.GetRenderMaterial(StyleToDraw);
-            visualsToAdd.SetValue(TagProperty, mat);
+            XbimMaterialModelVisual visualsToAdd = new XbimMaterialModelVisual();
+            visualsToAdd.MaterialProvider=Model.GetRenderMaterial(StyleToDraw);
             foreach (var prodGeom in StyleToDraw.ProductGeometries)
             {
                 //Try and get the visual for the product, if not found create one
@@ -604,9 +651,9 @@ namespace Xbim.Presentation
                 //Set up the Model Geometry to hold the product geometry, this has unique material and tranform
                 //and may reuse GeometryModel3D meshes from previous renders
                 GeometryModel3D m3d = new GeometryModel3D();
-               
-                BindingOperations.SetBinding(m3d, GeometryModel3D.BackMaterialProperty,mat.BackgroundMaterialBinding);  
-                BindingOperations.SetBinding(m3d, GeometryModel3D.MaterialProperty, mat.FaceMaterialBinding);
+
+                BindingOperations.SetBinding(m3d, GeometryModel3D.BackMaterialProperty, visualsToAdd.MaterialProvider.BackgroundMaterialBinding);
+                BindingOperations.SetBinding(m3d, GeometryModel3D.MaterialProperty, visualsToAdd.MaterialProvider.FaceMaterialBinding);
                
                 bool first = true;
                 foreach (var geom in prodGeom.Geometry) //create a new one don't add it to the scene yet as we may have no valid content
@@ -643,8 +690,8 @@ namespace Xbim.Presentation
                     else //add a new GeometryModel3d to the visual as we want to reference an existing mesh
                     {
                         GeometryModel3D m3dRef = new GeometryModel3D();
-                        BindingOperations.SetBinding(m3dRef, GeometryModel3D.BackMaterialProperty, mat.BackgroundMaterialBinding);
-                        BindingOperations.SetBinding(m3dRef, GeometryModel3D.MaterialProperty, mat.FaceMaterialBinding);
+                        BindingOperations.SetBinding(m3dRef, GeometryModel3D.BackMaterialProperty, visualsToAdd.MaterialProvider.BackgroundMaterialBinding);
+                        BindingOperations.SetBinding(m3dRef, GeometryModel3D.MaterialProperty, visualsToAdd.MaterialProvider.FaceMaterialBinding);
                         m3dRef.Geometry = mesh;
                         m3dRef.Transform = m3d.Transform; //reuse the same transform
                         mv.AddGeometry(m3dRef);
@@ -783,14 +830,15 @@ namespace Xbim.Presentation
         }
 
 
-        public void ZoomExtents(int? selection)
+        public void ViewHome()
         {
-            if (!selection.HasValue)
-                Canvas.ZoomExtents(_boundingBox);//);
-            else
-            {
-                ModelVisual3D mv = _items[selection.Value];
-            }
+            Point3D c = _boundingBox.Centroid();
+            Viewport.Camera = Viewport.DefaultCamera;
+            CameraHelper.LookAt(Viewport.Camera, c, new Vector3D(-100, 100, -30),new Vector3D(0,0,1),0);
+            Viewport.ZoomExtents(_boundingBox);
+            double biggest = Math.Max(Math.Max(_boundingBox.SizeX, _boundingBox.SizeY),_boundingBox.SizeZ);
+           // Viewport.Camera.FarPlaneDistance = biggest * 100;
+
         }
 
 

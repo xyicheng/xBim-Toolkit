@@ -13,10 +13,14 @@
                                    CameraRotationMode="Turntable" 
                                    IsHeadLightEnabled="false" 
                                    ShowCoordinateSystem="True"
+                                   ViewCubeLeftText="F"
+                                   ViewCubeFrontText="R"
+                                   ViewCubeRightText="B"
+                                   ViewCubeBackText="L"
                                    >
         
             <HelixToolkit:HelixViewport3D.DefaultCamera>
-            <PerspectiveCamera Position="100,100,100" LookDirection="-100,-100,-100" UpDirection="0,0,1" FieldOfView="61"/>
+            <PerspectiveCamera Position="100,-100,30" LookDirection="-100,100,-30" UpDirection="0,0,1" FieldOfView="61"/>
         </HelixToolkit:HelixViewport3D.DefaultCamera>
         <ModelVisual3D x:Name="BuildingModel"></ModelVisual3D>
         <HelixToolkit:DefaultLights></HelixToolkit:DefaultLights>

@@ -17,6 +17,7 @@ namespace Xbim.Presentation
                 if (visual.Content is Model3DGroup)
                     ((Model3DGroup)visual.Content).Children.Add(geometry);
                 //it is not a group but now needs to be
+                else
                 {
                     Model3DGroup m3dGroup = new Model3DGroup();
                     m3dGroup.Children.Add(visual.Content);

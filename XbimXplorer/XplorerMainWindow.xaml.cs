@@ -501,7 +501,7 @@ namespace XbimXplorer
 
         private void MenuItem_ZoomExtents(object sender, RoutedEventArgs e)
         {
-            DrawingControl.ZoomExtents(null);
+            DrawingControl.ViewHome();
         }
 
     }

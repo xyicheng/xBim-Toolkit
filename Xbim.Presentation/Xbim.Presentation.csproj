@@ -147,6 +147,7 @@
     <Compile Include="SurfaceStyleRenderingExtensions.cs" />
     <Compile Include="SurfaceStyleShadingExtensions.cs" />
     <Compile Include="ToolTipController.cs" />
+    <Compile Include="XbimMaterialModelVisual.cs" />
     <Compile Include="XbimMaterialProvider.cs" />
     <Compile Include="XbimModelPresentationExtensions.cs" />
     <Compile Include="XbimTreeview.cs" />
