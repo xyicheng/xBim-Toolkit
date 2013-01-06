@@ -24,7 +24,7 @@ namespace Xbim.COBie.Rows
         [COBieAttributes(3, COBieKeyType.CompoundKey_ForeignKey, "PickLists.Category-Element", COBieAttributeState.Required_Reference_PickList, "Category", 255, COBieAllowedType.Text)]
         public string Category { get; set; }
 
-        [COBieAttributes(4, COBieKeyType.CompoundKey_ForeignKey, "Component.Name", COBieAttributeState.Required_Reference_ForeignKey, "ComponentNames", 255, COBieAllowedType.Text)]
+        [COBieAttributes(4, COBieKeyType.CompoundKey_ForeignKey, "Component.Name", COBieAttributeState.Required_Reference_ForeignKey, "ComponentNames", 255, COBieAllowedType.Text, COBieCardinality.ManyToMany)]
         public string ComponentNames { get; set; }
 
         [COBieAttributes(5, COBieKeyType.None, "", COBieAttributeState.Required_System, "ExtSystem", 255, COBieAllowedType.AlphaNumeric)]

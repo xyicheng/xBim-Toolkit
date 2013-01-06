@@ -27,7 +27,7 @@ namespace Xbim.COBie.Rows
         [COBieAttributes(4, COBieKeyType.ForeignKey, "Type.Name", COBieAttributeState.Required_Reference_PrimaryKey, "TypeName", 255, COBieAllowedType.Text)]
         public string TypeName { get; set; }
 
-        [COBieAttributes(5, COBieKeyType.ForeignKey, "Contact.Email", COBieAttributeState.Required_Reference_ForeignKey, "Suppliers", 255, COBieAllowedType.Email)]
+        [COBieAttributes(5, COBieKeyType.ForeignKey, "Contact.Email", COBieAttributeState.Required_Reference_ForeignKey, "Suppliers", 255, COBieAllowedType.Email, COBieCardinality.ManyToMany)]
         public string Suppliers { get; set; }
 
         [COBieAttributes(6, COBieKeyType.None, "", COBieAttributeState.Required_System, "ExtSystem", 255, COBieAllowedType.AlphaNumeric)]

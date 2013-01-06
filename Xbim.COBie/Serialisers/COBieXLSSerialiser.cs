@@ -331,7 +331,7 @@ Mismatch: {0}
         private void FormatCell(ICell excelCell, COBieCell cell)
         {
             HSSFCellStyle style;
-            if (_cellStyles.TryGetValue(cell.CobieCol.AllowedType, out style))
+            if (_cellStyles.TryGetValue(cell.COBieColumn.AllowedType, out style))
             {
                 excelCell.CellStyle = style;
             }
@@ -358,7 +358,7 @@ Mismatch: {0}
                 }
 
                 // We need to set the value in the most appropriate overload of SetCellValue, so the parsing/formatting is correct
-                switch (cell.CobieCol.AllowedType)
+                switch (cell.COBieColumn.AllowedType)
                 {
                     case COBieAllowedType.ISODateTime:
                     case COBieAllowedType.ISODate:

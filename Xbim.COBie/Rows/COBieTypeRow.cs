@@ -68,7 +68,7 @@ namespace Xbim.COBie.Rows
         [COBieAttributes(17, COBieKeyType.None, "", COBieAttributeState.Required_IfSpecified, "ExpectedLife", Constants.DOUBLE_MAXSIZE, COBieAllowedType.Numeric)]
         public string ExpectedLife { get; set; }
 
-        [COBieAttributes(18, COBieKeyType.None, "", COBieAttributeState.Required_Reference_PickList, "DurationUnit", 255, COBieAllowedType.Text)]
+        [COBieAttributes(18, COBieKeyType.ForeignKey, "PickLists.DurationUnit", COBieAttributeState.Required_Reference_PickList, "DurationUnit", 255, COBieAllowedType.Text)]
         public string DurationUnit { get; set; }
 
         [COBieAttributes(19, COBieKeyType.None, "", COBieAttributeState.Required_IfSpecified, "WarrantyDescription", 255, COBieAllowedType.AlphaNumeric)]

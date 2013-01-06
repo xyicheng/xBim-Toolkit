@@ -24,7 +24,7 @@ namespace Xbim.COBie.Rows
         [COBieAttributes(3, COBieKeyType.CompoundKey_ForeignKey, "PickLists.ConnectionType", COBieAttributeState.Required_Reference_PickList, "ConnectionType", 255, COBieAllowedType.Text)]
         public string ConnectionType { get; set; }
 
-        [COBieAttributes(4, COBieKeyType.None, "", COBieAttributeState.Required_Reference_PickList, "SheetName", 255, COBieAllowedType.Text)]
+        [COBieAttributes(4, COBieKeyType.CompoundKey_ForeignKey, "Picklists.SheetType", COBieAttributeState.Required_Reference_PickList, "SheetName", 255, COBieAllowedType.Text)]
         public string SheetName { get; set; }
 
         [COBieAttributes(5, COBieKeyType.CompoundKey_ForeignKey, "Component.Name", COBieAttributeState.Required_Reference_PrimaryKey, "RowName1", 255, COBieAllowedType.Text)]

@@ -1,24 +1,36 @@
 ﻿using System.Text.RegularExpressions;
 using System;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace Xbim.COBie
 {
     public class COBieCell
     {
 
-        public COBieCell()
-        {
-            
-        }
-
-        public COBieCell(string cellValue)
+        public COBieCell(string cellValue, COBieColumn cobieColumn)
         {
             CellValue = cellValue;
+            COBieColumn = cobieColumn;
         }
 
-        public string CellValue { get; set; }
-        public COBieColumn CobieCol { get; set; }
-        public COBieAttributeState COBieState { get; set; }
+        public string CellValue { get; private set; }
+        public List<string> CellValues 
+        {
+            get
+            {
+                if (COBieColumn.AllowsMultipleValues)
+                {
+                    return CellValue.Split(',').ToList<string>();
+                }
+                else
+                {
+                    return new List<string>() { CellValue };
+                }
+            }
+        }
+
+        public COBieColumn COBieColumn { get; private set; }
 
         public bool IsAlphaNumeric()
         {

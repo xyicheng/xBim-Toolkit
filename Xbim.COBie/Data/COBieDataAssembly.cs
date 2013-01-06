@@ -79,7 +79,7 @@ namespace Xbim.COBie.Data
 
                 //get the assembly child names of objects that make up assembly
                 ChildNamesList childNamesUnique = ExtractChildNames(ra);
-                if (childColumnLength == 0)  childColumnLength = assembly["ChildNames"].CobieCol.ColumnLength;
+                if (childColumnLength == 0)  childColumnLength = assembly["ChildNames"].COBieColumn.ColumnLength;
                 ChildNamesList childNames = ConCatChildNamesList(childNamesUnique, childColumnLength);
                 if (childNames.Count > 0)
                     AddChildRows(assemblies, assembly, childNames);
