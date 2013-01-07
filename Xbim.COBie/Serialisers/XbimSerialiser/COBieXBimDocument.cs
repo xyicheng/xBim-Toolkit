@@ -116,7 +116,10 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 if (ValidateString(row.Description)) ifcDocumentInformation.Description = row.Description;
 
                 //Add Reference
-                if (ValidateString(row.Reference)) ifcDocumentInformation.DocumentId = row.Reference;
+                if (ValidateString(row.Reference)) 
+                    ifcDocumentInformation.DocumentId = row.Reference;
+                else
+                    ifcDocumentInformation.DocumentId = ""; //required field so add blank string
                
             }
         }

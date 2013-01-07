@@ -97,6 +97,10 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 {
                     ifcOrganization.Name = row.Company;
                 }
+                else
+                {
+                    ifcOrganization.Name = "Unknown"; //is not an optional field so fill with unknown value
+                }
                 //add Phone
                 if (ValidateString(row.Phone))
                 {

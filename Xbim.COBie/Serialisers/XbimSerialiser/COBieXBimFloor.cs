@@ -69,7 +69,9 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             }
 
             IfcBuildingStorey ifcBuildingStorey = Model.New<IfcBuildingStorey>();
-            
+            //Set the CompositionType to Element as it is a required field
+            ifcBuildingStorey.CompositionType = IfcElementCompositionEnum.ELEMENT;
+
             //Add Created By, Created On and ExtSystem to Owner History. 
             if ((ValidateString(row.CreatedBy)) && (Contacts.ContainsKey(row.CreatedBy)))
                 SetNewOwnerHistory(ifcBuildingStorey, row.ExtSystem, Contacts[row.CreatedBy], row.CreatedOn);

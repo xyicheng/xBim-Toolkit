@@ -70,6 +70,8 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             }
             
             IfcSpace ifcSpace = Model.New<IfcSpace>();
+            //Set the CompositionType to Element as it is a required field
+            ifcSpace.CompositionType = IfcElementCompositionEnum.ELEMENT;
 
             //Add Created By, Created On and ExtSystem to Owner History
             if ((ValidateString(row.CreatedBy)) && (Contacts.ContainsKey(row.CreatedBy)))

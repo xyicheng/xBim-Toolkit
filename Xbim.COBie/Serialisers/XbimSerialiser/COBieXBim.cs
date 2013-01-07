@@ -130,21 +130,57 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         protected IfcOwnerHistory CreateOwnerHistory(IfcRoot ifcRoot, string externalSystem, IfcPersonAndOrganization createdBy, string createdOn)
         {
             IfcApplication ifcApplication = null;
+            IfcOrganization ifcOrganization = null;
+                
             if (ValidateString(externalSystem))
             {
+                //ApplicationIdentifier is a required field so we need a value
+                string applicationIdentifier = string.Empty;
+                string[] externalSystemSplit = externalSystem.Split(' ');
+                applicationIdentifier = externalSystemSplit.FirstOrDefault(); //assume first word in application can be used a identifier
+                if (string.IsNullOrEmpty(applicationIdentifier))
+                    applicationIdentifier = ""; //set a value as a required field
+
                 //create an organization for the external system
-                IfcOrganization ifcOrganization = null;
                 string orgName = externalSystem.Split(' ').FirstOrDefault();
                 ifcOrganization = Model.InstancesOfType<IfcOrganization>().Where(o => o.Name == orgName).FirstOrDefault();
                 if (ifcOrganization == null)
                 {
                     ifcOrganization = Model.New<IfcOrganization>();
-                    ifcOrganization.Name = orgName;
+                    if (ValidateString(orgName))
+                        ifcOrganization.Name = orgName;
+                    else
+                        ifcOrganization.Name = "Unknown"; //is not an optional field so fill with unknown value
                 }
                 ifcApplication = Model.InstancesOfType<IfcApplication>().Where(app => app.ApplicationFullName == externalSystem).FirstOrDefault();
                 if (ifcApplication == null)
-                    ifcApplication = Model.New<IfcApplication>(app => { app.ApplicationFullName = externalSystem; app.ApplicationDeveloper = ifcOrganization; app.Version = new IfcLabel(""); });
+                    ifcApplication = Model.New<IfcApplication>(app =>
+                    {
+                        app.ApplicationFullName = externalSystem;
+                        app.ApplicationDeveloper = ifcOrganization;
+                        app.Version = new IfcLabel("");
+                        app.ApplicationIdentifier = new IfcIdentifier(applicationIdentifier);
+                    });
 
+            }
+            else
+            { //Owner history OwningApplication is not an optional field so fill with unknown value
+                ifcOrganization = Model.InstancesOfType<IfcOrganization>().Where(o => o.Name == "").FirstOrDefault();
+                if (ifcOrganization == null)
+                {
+                    ifcOrganization = Model.New<IfcOrganization>();
+                    ifcOrganization.Name = "Unknown"; //is not an optional field so fill with unknown value
+                        
+                }
+                ifcApplication = Model.InstancesOfType<IfcApplication>().Where(app => app.ApplicationFullName == "").FirstOrDefault();
+                if (ifcApplication == null)
+                    ifcApplication = Model.New<IfcApplication>(app =>
+                    {
+                        app.ApplicationFullName = ""; //required field for all properties
+                        app.ApplicationDeveloper = ifcOrganization;
+                        app.Version = new IfcLabel("");
+                        app.ApplicationIdentifier = new IfcIdentifier("");
+                    });
             }
 
             IfcTimeStamp stamp = null;
@@ -156,6 +192,10 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                     stamp = IfcTimeStamp.ToTimeStamp(dateTime);
                 }
             }
+            //if (createdBy == null)
+            //{
+            //    createdBy = Model.DefaultOwningUser;
+            //}
 
             return Model.New<IfcOwnerHistory>(oh =>
             {
@@ -290,9 +330,37 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         {
             if (ValidateString(extId))
             {
+                //IfcGloballyUniqueId id = null;
+
+                //if (ValidGlobalId(extId))
+                //    id = new IfcGloballyUniqueId(extId);
+                //else
+                //    id = IfcGloballyUniqueId.NewGuid();
+
                 IfcGloballyUniqueId id = new IfcGloballyUniqueId(extId);
                 ifcRoot.GlobalId = id;
             }
+        }
+
+        /// <summary>
+        /// Validate the string as a GlobalId
+        /// </summary>
+        /// <param name="extId">string representation of the GlobalId</param>
+        /// <returns>bool</returns>
+        public static bool ValidGlobalId(string extId)
+        {
+            try
+            {
+                Guid guid = IfcGloballyUniqueId.ConvertFromBase64(extId);
+                string guidStr = IfcGloballyUniqueId.ConvertToBase64(guid);
+                if (extId != guidStr)
+                    return false;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+            return true;
         }
 
         /// <summary>
@@ -415,9 +483,15 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             {
                 ifcPropertyEnumeratedValue = Model.New<IfcPropertyEnumeratedValue>();
                 ifcPropertyEnumeratedValue.EnumerationReference = Model.New<IfcPropertyEnumeration>();
+                ifcPropertyEnumeratedValue.EnumerationReference.Name = "";
             }
             //fill values
-            ifcPropertyEnumeratedValue.Name = propertyName;
+            if (string.IsNullOrEmpty(propertyName))
+                ifcPropertyEnumeratedValue.Name = "";
+            else
+                ifcPropertyEnumeratedValue.Name = propertyName;
+            
+            
             if (!string.IsNullOrEmpty(propertyDescription))
             {
                  ifcPropertyEnumeratedValue.Description = propertyDescription;

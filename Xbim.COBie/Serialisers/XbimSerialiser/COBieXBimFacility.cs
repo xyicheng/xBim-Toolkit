@@ -65,7 +65,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                     throw;
                 }
 
-                IEnumerable<IfcOwnerHistory> xxx = Model.InstancesOfType<IfcOwnerHistory>();
+                //IEnumerable<IfcOwnerHistory> xxx = Model.InstancesOfType<IfcOwnerHistory>();
             }
         }
         /// <summary>

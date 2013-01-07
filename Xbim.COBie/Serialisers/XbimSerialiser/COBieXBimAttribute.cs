@@ -131,6 +131,13 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                             pSetName = row.ExtObject;
                         else
                             pSetName = "PSet_COBie_UnSpecified_for_" + row.Name;
+                        
+                        //check that the GlobalId is not holding the property set name
+                        //if (ValidateString(row.ExtIdentifier))
+                        //{
+                        //    if (!ValidGlobalId(row.ExtIdentifier))
+                        //        pSetName = row.ExtIdentifier;
+                        //}
 
                         IfcPropertySet ifcPropertySet = CheckIfExistOnMerge(pSetName);
                         if (ifcPropertySet == null)
