@@ -45,12 +45,13 @@ namespace Xbim.IO
         public static StringCollection SummaryString(this IPersistIfcEntity entity)
         {
             StringCollection sc = new StringCollection();
-            sc.Add("Entity #" + entity.EntityLabel);
+            sc.Add("Entity\t = #" + entity.EntityLabel);
             if (entity is IfcRoot)
             {
                 IfcRoot root = entity as IfcRoot;
-                sc.Add("Global Id \t = " + root.GlobalId);
-                sc.Add("Name\t\t = " + (root.Name.HasValue ? root.Name.Value.ToString() : ""));
+                sc.Add("Guid\t = " + root.GlobalId);
+                sc.Add("Type\t = " + root.GetType().Name);
+                sc.Add("Name\t = " + (root.Name.HasValue ? root.Name.Value.ToString() : root.ToString()));
             }
             return sc;
         }

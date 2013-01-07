@@ -48,7 +48,7 @@
         <CommandBinding Command="Close"  Executed="CommandBinding_Close" CanExecute="CommandBinding_CanExecute"/>
         <CommandBinding Command="SaveAs" Executed="CommandBinding_SaveAs"  CanExecute="CommandBinding_CanExecute"/>
         <CommandBinding Command="Open"   Executed="CommandBinding_Open"/>
-        
+       
     </Window.CommandBindings>
     <Grid Name="MainFrame" DataContext="{StaticResource ModelProvider}">
         <Grid.RowDefinitions>
@@ -62,13 +62,19 @@
                 <!--<MenuItem Header="_New Xbim File" Click="FileNew_Click"/>-->
                 <MenuItem Header="_Open" Command="Open"/>
                 <MenuItem Header="_SaveAs" Command="SaveAs"/>
-                <MenuItem Header="_Close" Command="Close" />
+                <MenuItem Header="_Close" Command="ApplicationCommands.Copy" />
                 <!--<MenuItem Header="_Import Ifc File" Click="FileImport_Click"/>
                 <MenuItem Header="_Export Ifc File" Click="FileExport_Click"/>-->
             </MenuItem>
             <MenuItem Header="View">
                 <MenuItem Header="_Zoom Extents" Click="MenuItem_ZoomExtents"/>
+                <MenuItem Header="_Copy" Command="Copy"/>
+                <MenuItem IsCheckable="True" Header="Show Spaces" IsChecked="{Binding ShowSpaces, ElementName=DrawingControl}"/>
                 <MenuItem IsCheckable="True" Header="Show Walls" IsChecked="{Binding ShowWalls, ElementName=DrawingControl}"/>
+                <MenuItem IsCheckable="True" Header="Show Slabs" IsChecked="{Binding ShowSlabs, ElementName=DrawingControl}"/>
+                <MenuItem IsCheckable="True" Header="Show Doors" IsChecked="{Binding ShowDoors, ElementName=DrawingControl}"/>
+                <MenuItem IsCheckable="True" Header="Show Windows" IsChecked="{Binding ShowWindows, ElementName=DrawingControl}"/>
+                <MenuItem IsCheckable="True" Header="Show Furniture" IsChecked="{Binding ShowFurniture, ElementName=DrawingControl}"/>
             </MenuItem>
             <MenuItem Header="Camera">
                 <MenuItem IsCheckable="True" Header="RotateAroundMouseDownPoint" IsChecked="{Binding Viewport.RotateAroundMouseDownPoint, ElementName=DrawingControl}"/>

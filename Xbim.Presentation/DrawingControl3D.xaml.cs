@@ -47,10 +47,6 @@ namespace Xbim.Presentation
 {
 
 
-    public delegate XbimMaterialProvider SetMaterialEventHandler(IfcProduct product);
-
-    public delegate Func<IfcProduct, bool> SetFilterEventHandler(int pass);
-
     /// <summary>
     ///   Interaction logic for DrawingControl3D.xaml
     /// </summary>
@@ -59,20 +55,16 @@ namespace Xbim.Presentation
         public DrawingControl3D()
         {
             InitializeComponent();
-
-            _defaultMaterial = new XbimMaterialProvider(new DiffuseMaterial(Brushes.LightGray));
             _selectedVisualMaterial = new DiffuseMaterial(Brushes.LightGreen);
-            SolidColorBrush transparentBrush = new SolidColorBrush(Colors.LightBlue);
-            transparentBrush.Opacity = 0.5;
-            MaterialGroup window = new MaterialGroup();
-            window.Children.Add(new DiffuseMaterial(transparentBrush));
-            window.Children.Add(new SpecularMaterial(transparentBrush, 40));
-            _defaultTransparentMaterial = new XbimMaterialProvider(window);
-
             Viewport = Canvas;
             Viewport.CameraChanged += Viewport_CameraChanged;
             Canvas.MouseDown += Canvas_MouseDown;
+            this.Loaded += DrawingControl3D_Loaded;
+        }
 
+        void DrawingControl3D_Loaded(object sender, RoutedEventArgs e)
+        {
+            ShowSpaces = false;
         }
 
         /// <summary>
@@ -91,57 +83,19 @@ namespace Xbim.Presentation
         }
 
 
-        #region Statics
-
-        private static Dictionary<Type, int> _zOrders;
-
-        static DrawingControl3D()
-        {
-            _zOrders = new Dictionary<Type, int>();
-            _zOrders.Add(typeof(IfcSpace), 50);
-            _zOrders.Add(typeof(IfcWall), 200);
-            _zOrders.Add(typeof(IfcWallStandardCase), 200);
-            _zOrders.Add(typeof(IfcWindow), 180);
-            _zOrders.Add(typeof(IfcDoor), 170);
-            _zOrders.Add(typeof(IfcSlab), 100);
-        }
-
-        /// <summary>
-        ///   Returns the Z order for the specified product type
-        /// </summary>
-        /// <param name = "product"></param>
-        /// <returns></returns>
-        public static int ZOrder(IfcProduct product, bool external)
-        {
-            int z;
-            if (_zOrders.TryGetValue(product.GetType(), out z))
-                return external ? z + 1000 : z;
-            else
-                return 10;
-        }
-
-        #endregion
-
         #region Fields
 
         private BackgroundWorker _worker;
         Dictionary<int, MeshGeometry3D> _meshMap = new Dictionary<int, MeshGeometry3D>();
         private Dictionary<int, ModelVisual3D> _items = new Dictionary<int, ModelVisual3D>();
         private Dictionary<Visual3D, ModelVisual3D> _hidden = new Dictionary<Visual3D, ModelVisual3D>();
-
         private List<Type> _hiddenTypes = new List<Type>();
-
-        private XbimMaterialProvider _defaultMaterial;
-        private XbimMaterialProvider _defaultTransparentMaterial;
-
 
         private int? _currentProduct;
         protected RayMeshGeometry3DHitTestResult _hitResult;
         protected Material _selectedVisualMaterial;
-        protected Material _selectedVisualPreviousMaterial;
         private Rect3D _boundingBox;
-        private Transform3DGroup modelTransform = new Transform3DGroup();
-
+       
         private event ProgressChangedEventHandler _progressChanged;
 
         public event ProgressChangedEventHandler ProgressChanged
@@ -186,6 +140,7 @@ namespace Xbim.Presentation
 
             var pos = e.GetPosition(Canvas);
             var hit = FindHit(pos);
+        
             if (hit != null)
             {
                 object h = hit.VisualHit.GetValue(TagProperty);
@@ -202,15 +157,25 @@ namespace Xbim.Presentation
                     _hitResult = hit;
                     _currentProduct = (int)id;
                     SelectedItem = _currentProduct.Value;
+                    if (!PropertiesBillBoard.IsRendering)
+                    {
+                        this.Viewport.Children.Add(PropertiesBillBoard); 
+                        PropertiesBillBoard.IsRendering = true;
+                    }                 
+                    PropertiesBillBoard.Text = Model.Instances[_currentProduct.Value].SummaryString().EnumerateToString(null, "\n");
+                    PropertiesBillBoard.Position = hit.PointHit;
                 }
+            }
+            else
+            {
+                PropertiesBillBoard.IsRendering = false;
+                this.Viewport.Children.Remove(PropertiesBillBoard);
             }
         }
 
         #endregion
 
         #region Dependency Properties
-
-
 
 
 
@@ -236,6 +201,157 @@ namespace Xbim.Presentation
 
         }
 
+
+        public bool ShowWalls
+        {
+            get { return (bool)GetValue(ShowWallsProperty); }
+            set { SetValue(ShowWallsProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for ShowWalls.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty ShowWallsProperty =
+            DependencyProperty.Register("ShowWalls", typeof(bool), typeof(DrawingControl3D), new UIPropertyMetadata(true, OnShowWallsChanged));
+
+        private static void OnShowWallsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            DrawingControl3D d3d = d as DrawingControl3D;
+            if (d3d != null)
+            {
+                if (e.NewValue is bool)
+                {
+                    bool on = (bool)e.NewValue;
+                    if (on)
+                        d3d.Show<IfcWall>();
+                    else
+                        d3d.Hide<IfcWall>();
+                }
+            }
+        }
+
+        public bool ShowDoors
+        {
+            get { return (bool)GetValue(ShowDoorsProperty); }
+            set { SetValue(ShowDoorsProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for ShowWalls.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty ShowDoorsProperty =
+            DependencyProperty.Register("ShowDoors", typeof(bool), typeof(DrawingControl3D), new UIPropertyMetadata(true, OnShowDoorsChanged));
+
+        private static void OnShowDoorsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            DrawingControl3D d3d = d as DrawingControl3D;
+            if (d3d != null)
+            {
+                if (e.NewValue is bool)
+                {
+                    bool on = (bool)e.NewValue;
+                    if (on)
+                        d3d.Show<IfcDoor>();
+                    else
+                        d3d.Hide<IfcDoor>();
+                }
+            }
+        }
+
+        public bool ShowWindows
+        {
+            get { return (bool)GetValue(ShowWindowsProperty); }
+            set { SetValue(ShowWindowsProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for ShowWalls.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty ShowWindowsProperty =
+            DependencyProperty.Register("ShowWindows", typeof(bool), typeof(DrawingControl3D), new UIPropertyMetadata(true, OnShowWindowsChanged));
+
+        private static void OnShowWindowsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            DrawingControl3D d3d = d as DrawingControl3D;
+            if (d3d != null)
+            {
+                if (e.NewValue is bool)
+                {
+                    if ((bool)e.NewValue)
+                        d3d.Show<IfcWindow>();
+                    else
+                        d3d.Hide<IfcWindow>();
+                }
+            }
+        }
+
+        public bool ShowSlabs
+        {
+            get { return (bool)GetValue(ShowSlabsProperty); }
+            set { SetValue(ShowSlabsProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for ShowWalls.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty ShowSlabsProperty =
+            DependencyProperty.Register("ShowSlabs", typeof(bool), typeof(DrawingControl3D), new UIPropertyMetadata(true, OnShowSlabsChanged));
+
+        private static void OnShowSlabsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            DrawingControl3D d3d = d as DrawingControl3D;
+            if (d3d != null)
+            {
+                if (e.NewValue is bool)
+                {
+                    if ((bool)e.NewValue)
+                        d3d.Show<IfcSlab>();
+                    else
+                        d3d.Hide<IfcSlab>();
+                }
+            }
+        }
+        public bool ShowFurniture
+        {
+            get { return (bool)GetValue(ShowFurnitureProperty); }
+            set { SetValue(ShowFurnitureProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for ShowWalls.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty ShowFurnitureProperty =
+            DependencyProperty.Register("ShowFurniture", typeof(bool), typeof(DrawingControl3D), new UIPropertyMetadata(true, OnShowFurnitureChanged));
+
+        private static void OnShowFurnitureChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            DrawingControl3D d3d = d as DrawingControl3D;
+            if (d3d != null)
+            {
+                if (e.NewValue is bool)
+                {
+                    if ((bool)e.NewValue)
+                        d3d.Show<IfcFurnishingElement>();
+                    else
+                        d3d.Hide<IfcFurnishingElement>();
+                }
+            }
+        }
+
+        public bool ShowSpaces
+        {
+            get { return (bool)GetValue(ShowSpacesProperty); }
+            set { SetValue(ShowSpacesProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for ShowWalls.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty ShowSpacesProperty =
+            DependencyProperty.Register("ShowSpaces", typeof(bool), typeof(DrawingControl3D), new UIPropertyMetadata(true, OnShowSpacesChanged));
+
+        private static void OnShowSpacesChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            DrawingControl3D d3d = d as DrawingControl3D;
+            if (d3d != null)
+            {
+                if (e.NewValue is bool)
+                {
+                    if ((bool)e.NewValue)
+                        d3d.Show<IfcSpace>();
+                    else
+                        d3d.Hide<IfcSpace>();
+                }
+            }
+        }
 
         public HelixToolkit.Wpf.HelixViewport3D Viewport
         {
@@ -745,7 +861,7 @@ namespace Xbim.Presentation
                 worker.ReportProgress(0, "Reading Geometry");
 
                 XbimGeometryHandleCollection handles = new XbimGeometryHandleCollection(model.GetGeometryHandles()
-                                                        .Exclude(IfcEntityNameEnum.IFCSPACE, IfcEntityNameEnum.IFCFEATUREELEMENT));
+                                                        .Exclude(IfcEntityNameEnum.IFCFEATUREELEMENT));
                 double total = handles.Count;
                 double processed = 0;
                 foreach (var ss in handles.GetSurfaceStyles())
@@ -882,31 +998,5 @@ namespace Xbim.Presentation
         }
 
 
-
-        public bool ShowWalls
-        {
-            get { return (bool)GetValue(ShowWallsProperty); }
-            set { SetValue(ShowWallsProperty, value); }
-        }
-
-        // Using a DependencyProperty as the backing store for ShowWalls.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty ShowWallsProperty =
-            DependencyProperty.Register("ShowWalls", typeof(bool), typeof(DrawingControl3D), new UIPropertyMetadata(true, OnShowWallsChanged));
-
-        private static void OnShowWallsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            DrawingControl3D d3d = d as DrawingControl3D;
-            if (d3d != null)
-            {
-                if (e.NewValue is bool)
-                {
-                    bool on = (bool)e.NewValue;
-                    if (on)
-                        d3d.Show<IfcWall>();
-                    else
-                        d3d.Hide<IfcWall>();
-                }
-            }
-        }
     }
 }
