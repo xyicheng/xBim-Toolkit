@@ -44,6 +44,20 @@ namespace Xbim.ModelGeometry.Scene
             return rect;
         }
 
+        static public Rect3D Inflate(this Rect3D rect, double x, double y, double z)
+        {
+            rect.X -= x; rect.Y -= y; rect.Z -= z;
+            rect.SizeX += x * 2; rect.SizeY += y * 2; rect.SizeZ += z * 2;
+            return rect;
+        }
+
+        static public Rect3D Inflate(this Rect3D rect, double d)
+        {
+            rect.X -= d; rect.Y -= d; rect.Z -= d;       
+            rect.SizeX += d * 2; rect.SizeY += d * 2; rect.SizeZ += d * 2; 
+            return rect;
+        }
+
         static public Rect3D TransformBy(this Rect3D rect, Matrix3D matrix3d)
         {
             MatrixTransform3D m3d = new MatrixTransform3D(matrix3d);

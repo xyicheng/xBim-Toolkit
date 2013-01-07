@@ -59,6 +59,7 @@ namespace Xbim.Presentation
                 {
                     case XbimViewType.SpatialStructure:
                         tv.ViewSpatialStructure();
+                        
                         break;
                     case XbimViewType.Classification:
                         break;
@@ -87,12 +88,17 @@ namespace Xbim.Presentation
             if (project != null)
             {
                 this.ChildrenBinding = new Binding("Children");
-                List<SpatialViewModel> sv = new List<SpatialViewModel>();
+                List<SpatialViewModel> svList = new List<SpatialViewModel>();
                 foreach (var item in project.GetSpatialStructuralElements())
                 {
-                    sv.Add(new SpatialViewModel(item));
+                    var sv = new SpatialViewModel(item);
+                    sv.IsExpanded = true;
+                    svList.Add(sv); 
+                    
+ 
                 }
-                this.HierarchySource = sv;
+                
+                this.HierarchySource = svList;
             }
             else //Load any spatialstructure
             {

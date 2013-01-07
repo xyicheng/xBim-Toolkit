@@ -25,7 +25,13 @@ namespace Xbim.Presentation
     {
         private Material _faceMaterial;
         private Material _backgroundMaterial;
-        private bool _transparent;
+        private bool _isTransparent;
+
+        public bool IsTransparent
+        {
+            get { return _isTransparent; }
+            set { _isTransparent = value; }
+        }
         Binding _faceMaterialBinding;
         Binding _backgroundMaterialBinding;
 
@@ -50,23 +56,17 @@ namespace Xbim.Presentation
         {
             FaceMaterial = material;
             BackgroundMaterial = material;
-            _transparent = transparent;
+            _isTransparent = transparent;
         }
 
         public XbimMaterialProvider(Material faceMaterial, Material backgroundMaterial, bool transparent = false)
         {
             FaceMaterial = faceMaterial;
             BackgroundMaterial = backgroundMaterial;
-            _transparent = transparent;
+            _isTransparent = transparent;
         }
 
-        public bool IsTransparent
-        {
-            get
-            {
-                return _transparent;
-            }
-        }
+       
 
         public Material FaceMaterial
         {

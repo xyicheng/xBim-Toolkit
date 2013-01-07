@@ -19,6 +19,29 @@ namespace Xbim.IO
             Debug.Assert(geometryData.Any()); //must be at least one
             ProductLabel = productLabel;
         }
+
+        public XbimInstanceHandle InstanceHandle
+        {
+            get
+            {
+                if (this.Any())
+                    return new XbimInstanceHandle(ProductLabel, this[0].IfcTypeId);
+                else
+                    return new XbimInstanceHandle();
+            }
+        }
+
+
+        public short IfcTypeId
+        {
+            get
+            {
+                if (this.Any())
+                    return this[0].IfcTypeId;
+                else
+                    return 0;
+            }
+        }
         public XbimGeometryType GeometryType
         {
             get

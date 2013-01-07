@@ -54,12 +54,7 @@ namespace XbimXplorer
         
         public XplorerMainWindow()
         {
-            InitializeComponent();
-
-            DrawingControl.SelectionChanged += new SelectionChangedEventHandler(DrawingControl_SelectionChanged);
-            //SpatialControl.SelectedItemChanged +=new RoutedPropertyChangedEventHandler<SpatialStructureTreeItem>(SpatialControl_SelectedItemChanged);
-            //DrawingControl.OnSetMaterial += new SetMaterialEventHandler(DrawingControl_OnSetMaterial);
-            //DrawingControl.OnSetFilter += new SetFilterEventHandler(DrawingControl_OnSetFilter);
+            InitializeComponent();    
             this.Closed += new EventHandler(XplorerMainWindow_Closed);
            
             
@@ -75,123 +70,7 @@ namespace XbimXplorer
             
         }
 
-        /// <summary>
-        ///   Set the filter to draw the products you are interested in, called multiply to allow phased drawing of products
-        /// </summary>
-        /// <param name = "pass">The count of number of calls</param>
-        /// <returns></returns>
-        private Func<IfcProduct, bool> DrawingControl_OnSetFilter(int pass)
-        {
-            switch (pass)
-            {
-                case 1:
-                    return (p => p is IfcSlab);
-                case 2:
-                    return (p => p is IfcWall);
-                case 3:
-                    return (p => p is IfcRoof);
-                case 4:
-                    return (p => p is IfcWindow);
-                case 5:
-                    return (p => p is IfcDoor);
-                case 6:
-                    return (p => !(p is IfcDoor) && !(p is IfcWindow) && !(p is IfcRoof) && !(p is IfcWall) && !(p is IfcSlab) && !(p is IfcSpace) && !(p is IfcFeatureElement));
-                default:
-                    return null;
-            }
-        }
-
-        /// <summary>
-        ///   Each product will call back once for its material and bind to a material provider
-        ///   To change the material dynamically, change it in the material provider
-        /// </summary>
-        /// <param name = "product"></param>
-        /// <returns></returns>
-        private XbimMaterialProvider DrawingControl_OnSetMaterial(IfcProduct product)
-        {
-            //set up your material list
-            //////if (_materials == null)
-            //////{
-            //////    _materials = new Dictionary<string, XbimMaterialProvider>();
-            //////    _materials.Add("201",
-            //////                   new XbimMaterialProvider(
-            //////                       new DiffuseMaterial(new SolidColorBrush(Colors.LightBlue) {Opacity = 0.7})));
-            //////    _materials.Add("202",
-            //////                   new XbimMaterialProvider(
-            //////                       new DiffuseMaterial(new SolidColorBrush(Colors.LightGreen) {Opacity = 0.7})));
-            //////    _materials.Add("211",
-            //////                   new XbimMaterialProvider(
-            //////                       new DiffuseMaterial(new SolidColorBrush(Colors.LightYellow) {Opacity = 0.7})));
-            //////}
-            //////XbimMaterialProvider mat;
-            ////////do what you need here to set materials, this is just a default behaviour
-            //////IfcSpace space = product as IfcSpace;
-            //////if (space != null)
-            //////{
-            //////    switch (product.Name.ToString())
-            //////    {
-            //////        case "201":
-            //////            mat = _materials["201"];
-            //////            break;
-            //////        case "202":
-            //////            mat = _materials["202"];
-            //////            break;
-            //////        case "211":
-            //////            mat = _materials["211"];
-            //////            break;
-            //////        default:
-            //////            ModelDataProvider modelProvider = ModelProvider;
-            //////            mat = new XbimMaterialProvider(modelProvider.GetDefaultMaterial(product));
-            //////            break;
-            //////    }
-            //////}
-            //////else
-            //////{
-            //////    ModelDataProvider modelProvider = ModelProvider;
-            //////    mat = new XbimMaterialProvider(modelProvider.GetDefaultMaterial(product));
-            //////}
-
-
-            ////////create a list of materials and then reuse them, do not create a new material for each call
-            //////return mat;
-            return null;
-        }
-
-        private void SliderColour_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            //byte nv = Convert.ToByte(e.NewValue);
-            //if (_materials != null) //change the value of the first material
-            //{
-            //    XbimMaterialProvider firstMaterial = _materials.Values.FirstOrDefault();
-            //    if (firstMaterial != null)
-            //    {
-            //        Color cl = Colors.LimeGreen;
-
-            //        cl.R = nv;
-            //        cl.G = Convert.ToByte(255 - nv);
-            //        //cl.B = nv;
-            //        //cl.A = 100;
-
-
-            //        firstMaterial.FaceMaterial = new DiffuseMaterial(new SolidColorBrush(cl) {Opacity = 0.7});
-            //        firstMaterial.BackgroundMaterial = firstMaterial.FaceMaterial; //set them both the same
-            //    }
-            //}
-            e.Handled = true;
-        }
-
       
-        private void DrawingControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            foreach (var item in e.AddedItems)
-            {
-                IfcProduct product = item as IfcProduct;
-                if (product != null)
-                {
-                    //SpatialControl.
-                }
-            }
-        }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
