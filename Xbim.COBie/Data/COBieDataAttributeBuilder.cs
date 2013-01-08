@@ -370,7 +370,10 @@ namespace Xbim.COBie.Data
                     string onDate = COBieData<COBieAttributeRow>.GetCreatedOnDate(propertySet.OwnerHistory);
                     attribute.CreatedOn = (string.IsNullOrEmpty(onDate)) ? Context.RunDate : onDate;
                     attribute.ExtSystem = (propertySet.OwnerHistory.OwningApplication != null) ? propertySet.OwnerHistory.OwningApplication.ApplicationFullName.ToString() : RowParameters["ExtSystem"];
-
+                    if (string.IsNullOrEmpty(attribute.ExtSystem))
+                    {
+                        attribute.ExtSystem = Constants.DEFAULT_STRING;
+                    }
                     value = NumberValueCheck(value, attribute);
 
                     attribute.Value = string.IsNullOrEmpty(value) ? Constants.DEFAULT_STRING : value;

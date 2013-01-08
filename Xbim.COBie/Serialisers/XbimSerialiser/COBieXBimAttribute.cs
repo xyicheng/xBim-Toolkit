@@ -124,13 +124,8 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                
                 if (CurrentObject != null)
                 {
-                    string pSetName = "";
                     if (ValidateString(row.Name)) 
                     {
-                        if (ValidateString(row.ExtObject))
-                            pSetName = row.ExtObject;
-                        else
-                            pSetName = "PSet_COBie_UnSpecified_for_" + row.Name;
                         
                         //check that the GlobalId is not holding the property set name
                         //if (ValidateString(row.ExtIdentifier))
@@ -139,14 +134,9 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                         //        pSetName = row.ExtIdentifier;
                         //}
 
-                        IfcPropertySet ifcPropertySet = CheckIfExistOnMerge(pSetName);
-                        if (ifcPropertySet == null)
-                        {
-                            return; //skip as no property set was created, or in merge property set existed on object so skip it
-                        }
-
-                        //Add GlobalId
-                        AddGlobalId(row.ExtIdentifier, ifcPropertySet);
+                        IfcPropertySet ifcPropertySet = CheckIfExistOnMerge(row.ExtObject, row.ExtIdentifier);
+                        
+                        
                         //Set Description
                         string description = "";
                         if (ValidateString(row.Description))
@@ -232,40 +222,35 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         /// </summary>
         /// <param name="pSetName">Property set name</param>
         /// <returns>IfcPropertySet</returns>
-        private IfcPropertySet CheckIfExistOnMerge(string pSetName)
+        private IfcPropertySet CheckIfExistOnMerge(string extObject, string extIdentifier )
         {
+            string pSetName;
             IfcPropertySet ifcPropertySet = null;
 
+            if (ValidateString(extObject))
+                pSetName = extObject;
+            else
+                pSetName = null;//"PSet_COBie_UnSpecified_for_" + row.Name;
+                                
+                        
             if (CurrentObject is IfcObject)
             {
-                if (XBimContext.IsMerge)
+                ifcPropertySet = (CurrentObject as IfcObject).GetPropertySet(pSetName);
+                if (ifcPropertySet == null)
                 {
-                    ifcPropertySet = (CurrentObject as IfcObject).GetPropertySet(pSetName);
-                    if (ifcPropertySet != null)
-                    {
-#if DEBUG
-                        Console.WriteLine("{0} : {1} exists on object so skip on merge", ifcPropertySet.GetType().Name, pSetName);
-#endif
-                        return null; //property already set on object
-                    }
+                    ifcPropertySet = AddPropertySet((IfcObject)CurrentObject, pSetName, "");
                 }
-                ifcPropertySet = AddPropertySet((IfcObject)CurrentObject, pSetName, "");
             }
             else if (CurrentObject is IfcTypeObject)
             {
-                if (XBimContext.IsMerge)
+                ifcPropertySet = (CurrentObject as IfcTypeObject).GetPropertySet(pSetName);
+                if (ifcPropertySet == null)
                 {
-                    ifcPropertySet = (CurrentObject as IfcTypeObject).GetPropertySet(pSetName);
-                    if (ifcPropertySet != null)
-                    {
-#if DEBUG
-                        Console.WriteLine("{0} : {1} exists on object so skip on merge", ifcPropertySet.GetType().Name, pSetName);
-#endif
-                        return null; //property already set on object
-                    }
+                    ifcPropertySet = AddPropertySet((IfcTypeObject)CurrentObject, pSetName, "");
                 }
-                ifcPropertySet = AddPropertySet((IfcTypeObject)CurrentObject, pSetName, "");
             }
+            //Add GlobalId
+            AddGlobalId(extIdentifier, ifcPropertySet);
             return ifcPropertySet;
         }
 

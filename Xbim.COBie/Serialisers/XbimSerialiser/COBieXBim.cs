@@ -90,7 +90,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         /// <param name="createdOn">Date the object was created on</param>
         protected void SetNewOwnerHistory(IfcRoot ifcRoot, string externalSystem, IfcPersonAndOrganization createdBy, string createdOn)
         { 
-            ifcRoot.OwnerHistory = CreateOwnerHistory(ifcRoot,  externalSystem, createdBy, createdOn);
+            ifcRoot.OwnerHistory = CreateOwnerHistory(null,  externalSystem, createdBy, createdOn);
         }
 
         /// <summary>
@@ -196,15 +196,25 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             //{
             //    createdBy = Model.DefaultOwningUser;
             //}
-
-            return Model.New<IfcOwnerHistory>(oh =>
+            if ((ifcRoot != null) &&
+                (ifcRoot.OwnerHistory != null)
+                )
             {
-                oh.OwningUser = createdBy;
-                oh.OwningApplication = ifcApplication;
-                oh.LastModifyingApplication = ifcApplication;
-                oh.CreationDate = stamp;
-                oh.ChangeAction = IfcChangeActionEnum.NOCHANGE;
-            });
+                ifcRoot.OwnerHistory.OwningUser = createdBy;
+                ifcRoot.OwnerHistory.OwningApplication = ifcApplication;
+                ifcRoot.OwnerHistory.CreationDate = stamp;
+                ifcRoot.OwnerHistory.ChangeAction = IfcChangeActionEnum.MODIFIED;
+                return ifcRoot.OwnerHistory;
+            }
+            else
+                return Model.New<IfcOwnerHistory>(oh =>
+                                                {
+                                                    oh.OwningUser = createdBy;
+                                                    oh.OwningApplication = ifcApplication;
+                                                    oh.LastModifyingApplication = ifcApplication;
+                                                    oh.CreationDate = stamp;
+                                                    oh.ChangeAction = IfcChangeActionEnum.NOCHANGE;
+                                                });
 
         }
 

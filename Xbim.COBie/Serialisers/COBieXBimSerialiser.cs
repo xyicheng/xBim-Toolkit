@@ -30,6 +30,10 @@ namespace Xbim.COBie.Serialisers
         /// </summary>
         public COBieXBimContext XBimContext { get; private set; }
         /// <summary>
+        /// If set to true will only merge the sheets required for Geometry
+        /// </summary>
+        public bool MergeGeometryOnly { get; set; }
+        /// <summary>
         /// COBieWorkbook to convert to XBim Model Object
         /// </summary>
         public COBieWorkbook WorkBook 
@@ -44,36 +48,58 @@ namespace Xbim.COBie.Serialisers
         {
             get { return XBimContext.Model; }
         }
+        /// <summary>
+        /// File to write too
+        /// </summary>
+        public string FileName { get; private set; }
+
         #endregion
         
         /// <summary>
         /// Constructor
         /// </summary>
-        public COBieXBimSerialiser()
+        public COBieXBimSerialiser(string filename)
         {
             XBimContext = new COBieXBimContext(new XbimMemoryModel());
             _transaction = Model.BeginTransaction("COBieXBimSerialiser transaction");
             XBimContext.IsMerge = false;
+            FileName = filename;
+            MergeGeometryOnly = true;
         }
 
         /// <summary>
         /// Constructor
         /// </summary>
-        public COBieXBimSerialiser(ReportProgressDelegate progressHandler) 
+        public COBieXBimSerialiser(string filename, ReportProgressDelegate progressHandler) 
         {
             XBimContext = new COBieXBimContext(new XbimMemoryModel(), progressHandler);
             _transaction = Model.BeginTransaction("COBieXBimSerialiser transaction");
             XBimContext.IsMerge = false;
-
+            FileName = filename;
+            MergeGeometryOnly = true;
         }
 
 
         #region Methods
+
         /// <summary>
         /// XBim Serialise
         /// </summary>
         /// <param name="workbook">COBieWorkbook to Serialise</param>
         public void Serialise(COBieWorkbook workbook)
+        {
+            Create(workbook);
+            if (!string.IsNullOrEmpty(FileName))
+            {
+                Save();
+            }
+            
+        }
+        /// <summary>
+        /// XBim Serialise
+        /// </summary>
+        /// <param name="workbook">COBieWorkbook to Serialise</param>
+        public void Create(COBieWorkbook workbook)
         {
             
             XBimContext.Reset(); //clear out the dictionaries
@@ -150,10 +176,12 @@ namespace Xbim.COBie.Serialisers
             XBimContext.WorkBook = workbook;
 
             _transaction = Model.BeginTransaction("COBieXBimSerialiser merge transaction");
-            //At this time we are trying to merge bounding box info from an architectural and MEP model, so only a part merge
-            
-            COBieXBimContact xBimContact = new COBieXBimContact(XBimContext);
-            xBimContact.SerialiseContacts((COBieSheet<COBieContactRow>)WorkBook[Constants.WORKSHEET_CONTACT]);
+
+            if (!MergeGeometryOnly)
+            {
+                COBieXBimContact xBimContact = new COBieXBimContact(XBimContext);
+                xBimContact.SerialiseContacts((COBieSheet<COBieContactRow>)WorkBook[Constants.WORKSHEET_CONTACT]);
+            }
             
             //Make the assumption we are merging on the same building
             //COBieXBimFacility xBimFacility = new COBieXBimFacility(XBimContext);
@@ -165,47 +193,55 @@ namespace Xbim.COBie.Serialisers
             COBieXBimSpace xBimSpace = new COBieXBimSpace(XBimContext);
             xBimSpace.SerialiseSpace((COBieSheet<COBieSpaceRow>)WorkBook[Constants.WORKSHEET_SPACE]);
 
-            COBieXBimZone xBimZone = new COBieXBimZone(XBimContext);
-            xBimZone.SerialiseZone((COBieSheet<COBieZoneRow>)WorkBook[Constants.WORKSHEET_ZONE]);
+            if (!MergeGeometryOnly)
+            {
+                COBieXBimZone xBimZone = new COBieXBimZone(XBimContext);
+                xBimZone.SerialiseZone((COBieSheet<COBieZoneRow>)WorkBook[Constants.WORKSHEET_ZONE]);
 
-            COBieXBimType xBimType = new COBieXBimType(XBimContext);
-            xBimType.SerialiseType((COBieSheet<COBieTypeRow>)WorkBook[Constants.WORKSHEET_TYPE]);
+                COBieXBimType xBimType = new COBieXBimType(XBimContext);
+                xBimType.SerialiseType((COBieSheet<COBieTypeRow>)WorkBook[Constants.WORKSHEET_TYPE]);
+            }
 
             COBieXBimComponent xBimComponent = new COBieXBimComponent(XBimContext);
             xBimComponent.SerialiseComponent((COBieSheet<COBieComponentRow>)WorkBook[Constants.WORKSHEET_COMPONENT]);
 
-            COBieXBimSystem xBimSystem = new COBieXBimSystem(XBimContext);
-            xBimSystem.SerialiseSystem((COBieSheet<COBieSystemRow>)WorkBook[Constants.WORKSHEET_SYSTEM]);
+            if (!MergeGeometryOnly)
+            {
+                COBieXBimSystem xBimSystem = new COBieXBimSystem(XBimContext);
+                xBimSystem.SerialiseSystem((COBieSheet<COBieSystemRow>)WorkBook[Constants.WORKSHEET_SYSTEM]);
 
-            COBieXBimAssembly xBimAssembly = new COBieXBimAssembly(XBimContext);
-            xBimAssembly.SerialiseAssembly((COBieSheet<COBieAssemblyRow>)WorkBook[Constants.WORKSHEET_ASSEMBLY]);
+                COBieXBimAssembly xBimAssembly = new COBieXBimAssembly(XBimContext);
+                xBimAssembly.SerialiseAssembly((COBieSheet<COBieAssemblyRow>)WorkBook[Constants.WORKSHEET_ASSEMBLY]);
 
-            COBieXBimConnection xBimConnection = new COBieXBimConnection(XBimContext);
-            xBimConnection.SerialiseConnection((COBieSheet<COBieConnectionRow>)WorkBook[Constants.WORKSHEET_CONNECTION]);
+                COBieXBimConnection xBimConnection = new COBieXBimConnection(XBimContext);
+                xBimConnection.SerialiseConnection((COBieSheet<COBieConnectionRow>)WorkBook[Constants.WORKSHEET_CONNECTION]);
 
-            COBieXBimSpare xBimSpare = new COBieXBimSpare(XBimContext);
-            xBimSpare.SerialiseSpare((COBieSheet<COBieSpareRow>)WorkBook[Constants.WORKSHEET_SPARE]);
+                COBieXBimSpare xBimSpare = new COBieXBimSpare(XBimContext);
+                xBimSpare.SerialiseSpare((COBieSheet<COBieSpareRow>)WorkBook[Constants.WORKSHEET_SPARE]);
 
-            COBieXBimResource xBimResource = new COBieXBimResource(XBimContext);
-            xBimResource.SerialiseResource((COBieSheet<COBieResourceRow>)WorkBook[Constants.WORKSHEET_RESOURCE]);
+                COBieXBimResource xBimResource = new COBieXBimResource(XBimContext);
+                xBimResource.SerialiseResource((COBieSheet<COBieResourceRow>)WorkBook[Constants.WORKSHEET_RESOURCE]);
 
-            COBieXBimJob xBimJob = new COBieXBimJob(XBimContext);
-            xBimJob.SerialiseJob((COBieSheet<COBieJobRow>)WorkBook[Constants.WORKSHEET_JOB]);
-            
-            COBieXBimImpact xBimImpact = new COBieXBimImpact(XBimContext);
-            xBimImpact.SerialiseImpact((COBieSheet<COBieImpactRow>)WorkBook[Constants.WORKSHEET_IMPACT]);
+                COBieXBimJob xBimJob = new COBieXBimJob(XBimContext);
+                xBimJob.SerialiseJob((COBieSheet<COBieJobRow>)WorkBook[Constants.WORKSHEET_JOB]);
 
-            COBieXBimDocument xBimDocument = new COBieXBimDocument(XBimContext);
-            xBimDocument.SerialiseDocument((COBieSheet<COBieDocumentRow>)WorkBook[Constants.WORKSHEET_DOCUMENT]);
+                COBieXBimImpact xBimImpact = new COBieXBimImpact(XBimContext);
+                xBimImpact.SerialiseImpact((COBieSheet<COBieImpactRow>)WorkBook[Constants.WORKSHEET_IMPACT]);
 
-            COBieXBimAttribute xBimAttribute = new COBieXBimAttribute(XBimContext);
-            xBimAttribute.SerialiseAttribute((COBieSheet<COBieAttributeRow>)WorkBook[Constants.WORKSHEET_ATTRIBUTE]);
-            
+                COBieXBimDocument xBimDocument = new COBieXBimDocument(XBimContext);
+                xBimDocument.SerialiseDocument((COBieSheet<COBieDocumentRow>)WorkBook[Constants.WORKSHEET_DOCUMENT]);
+
+                COBieXBimAttribute xBimAttribute = new COBieXBimAttribute(XBimContext);
+                xBimAttribute.SerialiseAttribute((COBieSheet<COBieAttributeRow>)WorkBook[Constants.WORKSHEET_ATTRIBUTE]);
+            }
+
             COBieXBimCoordinate xBimCoordinate = new COBieXBimCoordinate(XBimContext);
             xBimCoordinate.SerialiseCoordinate((COBieSheet<COBieCoordinateRow>)WorkBook[Constants.WORKSHEET_COORDINATE]);
-
-            COBieXBimIssue xBimIssue = new COBieXBimIssue(XBimContext);
-            xBimIssue.SerialiseIssue((COBieSheet<COBieIssueRow>)WorkBook[Constants.WORKSHEET_ISSUE]);
+            if (!MergeGeometryOnly)
+            {
+                COBieXBimIssue xBimIssue = new COBieXBimIssue(XBimContext);
+                xBimIssue.SerialiseIssue((COBieSheet<COBieIssueRow>)WorkBook[Constants.WORKSHEET_ISSUE]);
+            }
             
             _transaction.Commit();
             _transaction = null; //stop commit in dispose as we have finished here
@@ -284,11 +320,11 @@ namespace Xbim.COBie.Serialisers
         /// Save Model Object To A File
         /// </summary>
         /// <param name="fileName"></param>
-        public void Save(string fileName)
+        public void Save()
         {
             //string error = Validate(ValidationFlags.All);
-            Model.Header.FileName.Name = Path.GetFileName(fileName);
-            using (StreamWriter sw = new StreamWriter(fileName))
+            Model.Header.FileName.Name = Path.GetFileName(FileName);
+            using (StreamWriter sw = new StreamWriter(FileName))
             {
                 IfcOutputStream oStream = new Xbim.IO.IfcOutputStream(sw);
                 oStream.Store(Model);

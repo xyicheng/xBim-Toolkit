@@ -199,6 +199,9 @@
     <Content Include="TestSourceFiles\DuplexCOBieToXbim.xCOBie">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="TestSourceFiles\Clinic_S_20110715%28Nofilter%29.ifc">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

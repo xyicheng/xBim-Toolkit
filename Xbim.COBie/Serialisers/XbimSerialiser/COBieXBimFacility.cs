@@ -50,7 +50,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
 
                     //set up relationships
                     GetSite().AddBuilding(GetBuilding());
-                    Model.IfcProject.AddBuilding(GetBuilding());
+                    //Model.IfcProject.AddBuilding(GetBuilding());
                     Model.IfcProject.AddSite(GetSite());
 
                     ProgressIndicator.Finalise();
@@ -182,7 +182,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         {
             IfcProject ifcProject = Model.IfcProject;
             ifcProject.Initialize(ProjectUnits.SIUnitsUK);
-            SetNewOwnerHistory(ifcProject, row.ExternalSystem, Model.DefaultOwningUser, row.CreatedOn);
+            SetOwnerHistory(ifcProject, row.ExternalSystem, Model.DefaultOwningUser, row.CreatedOn);
             //using statement will set the Model.OwnerHistoryAddObject to ifcProject.OwnerHistory as OwnerHistoryAddObject is used upon any property changes, 
             //then swaps the original OwnerHistoryAddObject back in the dispose, so set any properties within the using statement
             using (COBieXBimEditScope context = new COBieXBimEditScope(Model, ifcProject.OwnerHistory))

@@ -96,16 +96,16 @@ namespace Xbim.COBie.Client
                     LogBackground("Creating main file xBim objects...");
                     Stopwatch timer = new Stopwatch();
                     timer.Start();
-                    using (COBieXBimSerialiser xBimSerialiser = new COBieXBimSerialiser(_worker.ReportProgress))
+                    outputFile = Path.GetFileNameWithoutExtension(parameters.ModelFile) + "-COBieMergeToIFC.ifc";
+                    outputFile = Path.GetDirectoryName(parameters.ModelFile) + "\\" + outputFile;
+                    using (COBieXBimSerialiser xBimSerialiser = new COBieXBimSerialiser(outputFile, _worker.ReportProgress))
                     {
-                        xBimSerialiser.Serialise(newbook);
+                        xBimSerialiser.Create(newbook);
                         xBimSerialiser.Merge(mergebook);
 
                         timer.Stop();
                         LogBackground(String.Format("Time to generate XBim COBie data = {0} seconds", timer.Elapsed.TotalSeconds.ToString("F3")));
 
-                        outputFile = Path.GetFileNameWithoutExtension(parameters.ModelFile) + "-COBieMergeToIFC.ifc";
-                        outputFile = Path.GetDirectoryName(parameters.ModelFile) + "\\" + outputFile;
                         string GCFile = Path.ChangeExtension(outputFile, "xbimGC");
                         if (File.Exists(GCFile))
                         {
@@ -120,7 +120,7 @@ namespace Xbim.COBie.Client
                         }
                         LogBackground(String.Format("Creating file {0}....", outputFile));
 
-                        xBimSerialiser.Save(outputFile);
+                        xBimSerialiser.Save();
                     }
                     LogBackground(String.Format("Finished {0} Generation", outputFile));
                     return;
@@ -135,14 +135,14 @@ namespace Xbim.COBie.Client
                     LogBackground("Creating xBim objects...");
                     Stopwatch timer = new Stopwatch();
                     timer.Start();
-                    using (COBieXBimSerialiser xBimSerialiser = new COBieXBimSerialiser(_worker.ReportProgress))
+                    outputFile = Path.GetFileNameWithoutExtension(parameters.ModelFile) + "-COBieToIFC.ifc";
+                    outputFile = Path.GetDirectoryName(parameters.ModelFile) + "\\" + outputFile;
+                    using (COBieXBimSerialiser xBimSerialiser = new COBieXBimSerialiser(outputFile, _worker.ReportProgress))
                     {
                         xBimSerialiser.Serialise(newbook);
                         timer.Stop();
                         LogBackground(String.Format("Time to generate XBim COBie data = {0} seconds", timer.Elapsed.TotalSeconds.ToString("F3")));
 
-                        outputFile = Path.GetFileNameWithoutExtension(parameters.ModelFile) + "-COBieToIFC.ifc";
-                        outputFile = Path.GetDirectoryName(parameters.ModelFile) + "\\" + outputFile;
                         string GCFile = Path.ChangeExtension(outputFile, "xbimGC");
                         if (File.Exists(GCFile))
                         {
@@ -157,7 +157,7 @@ namespace Xbim.COBie.Client
                         }
                         LogBackground(String.Format("Creating file {0}....", outputFile));
 
-                        xBimSerialiser.Save(outputFile);
+                        //xBimSerialiser.Save();
                     }
                     LogBackground(String.Format("Finished {0} Generation", outputFile));
                     return;
