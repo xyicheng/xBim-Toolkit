@@ -2,6 +2,7 @@
 #include "XbimScene.h"
 #include "IXbimGeometryModel.h"
 #include "XbimGeometryModel.h"
+#include "XbimMap.h"
 using namespace System::IO;
 using namespace System::Linq;
 
@@ -45,7 +46,7 @@ namespace Xbim
 
 			TransformGraph^ graph = gcnew TransformGraph(model);
 			//create a new dictionary to hold maps
-			Dictionary<IfcRepresentation^, IXbimGeometryModel^>^ maps = gcnew Dictionary<IfcRepresentation^, IXbimGeometryModel^>();
+			Dictionary<int, Object^>^ maps = gcnew Dictionary<int, Object^>();
 			//add everything that may have a representation
 			graph->AddProducts(toConvert); //load the products as we will be accessing their geometry
 
@@ -67,11 +68,31 @@ namespace Xbim
 						IXbimGeometryModel^ geomModel = XbimGeometryModel::CreateFrom(product, maps, false, lod,oCCout);
 						if (geomModel != nullptr)  //it has no geometry
 						{
-
-							List<XbimTriangulatedModel^>^tm = geomModel->Mesh(true);
+							List<XbimTriangulatedModel^>^tm;
+							Matrix3D m3d = node->WorldMatrix();
+							if(dynamic_cast<XbimMap^>(geomModel))
+							{
+								XbimMap^ map = (XbimMap^)geomModel;
+								m3d = Matrix3D::Multiply(map->Transform, m3d);
+								Object^ lookup;
+								int key = -map->MappedItem->GetHashCode();
+								if(maps->TryGetValue(key, lookup))
+								{
+									tm=(List<XbimTriangulatedModel^>^)lookup;
+								}
+								else
+								{
+									tm = geomModel->Mesh(true);
+									maps->Add(key,tm);
+								}
+							}
+							else
+								tm = geomModel->Mesh(true);
 							XbimBoundingBox^ bb = geomModel->GetBoundingBox(true);
 							//node->BoundingBox = bb->GetRect3D();
-							array<Byte>^ matrix = Matrix3DExtensions::ToArray(node->WorldMatrix(), true);
+							
+							array<Byte>^ matrix = Matrix3DExtensions::ToArray(m3d, true);
+
 							Nullable<short> typeId = IfcMetaData::IfcTypeId(product);
 
 							geomTable->AddGeometry(product->EntityLabel, XbimGeometryType::BoundingBox, typeId.Value, matrix, bb->ToArray(), 0 ,geomModel->SurfaceStyleLabel) ;

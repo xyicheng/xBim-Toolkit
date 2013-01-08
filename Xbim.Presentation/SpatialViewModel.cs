@@ -8,6 +8,7 @@ using Xbim.Ifc2x3.Kernel;
 using Xbim.Ifc2x3.ProductExtension;
 using Xbim.XbimExtensions.Interfaces;
 using System.Collections;
+using System.ComponentModel;
 
 namespace Xbim.Presentation
 {
@@ -15,13 +16,16 @@ namespace Xbim.Presentation
     {
         XbimModel xbimModel;
         int spatialStructureLabel;
+        private bool _isSelected;
+        private bool _isExpanded;
         private ObservableCollection<IXbimViewModel> children;
 
         public string Name
         {
             get
             {
-                return xbimModel.Instances[spatialStructureLabel].ToString();
+                IPersistIfcEntity ent = xbimModel.Instances[spatialStructureLabel];
+                return ent.ToString();
             }
             set
             {
@@ -42,7 +46,7 @@ namespace Xbim.Presentation
             IEnumerable subs = this.Children; //call this once to preload first level of hierarchy          
         }
 
-        public IEnumerable Children
+        public IEnumerable<IXbimViewModel> Children
         {
             get
             {
@@ -82,10 +86,7 @@ namespace Xbim.Presentation
             }
         }
 
-        public bool IsSelected { get; set; }
-
-        public bool IsExpanded { get; set; }
-
+       
 
 
         public int EntityLabel
@@ -98,6 +99,53 @@ namespace Xbim.Presentation
         {
             get { return xbimModel.Instances[spatialStructureLabel]; }
         }
+
+        public bool IsSelected
+        {
+            get
+            {
+                return _isSelected;
+            }
+            set
+            {
+                _isSelected = value;
+                NotifyPropertyChanged("IsSelected");
+            }
+        }
+
+        public bool IsExpanded
+        {
+            get
+            {
+                return _isExpanded;
+            }
+            set
+            {
+                _isExpanded = value;
+                NotifyPropertyChanged("IsExpanded");
+            }
+        }
+        #region INotifyPropertyChanged Members
+
+        [field: NonSerialized] //don't serialize events
+        private event PropertyChangedEventHandler PropertyChanged;
+
+
+        event PropertyChangedEventHandler INotifyPropertyChanged.PropertyChanged
+        {
+            add { PropertyChanged += value; }
+            remove { PropertyChanged -= value; }
+        }
+        void NotifyPropertyChanged(string propertyName)
+        {
+            PropertyChangedEventHandler handler = PropertyChanged;
+            if (handler != null)
+            {
+                handler(this, new PropertyChangedEventArgs(propertyName));
+            }
+        }
+        #endregion
+
     }
 
 

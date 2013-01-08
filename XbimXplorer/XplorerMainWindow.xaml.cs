@@ -46,7 +46,6 @@ namespace XbimXplorer
     public partial class XplorerMainWindow : Window
     {
         private BackgroundWorker _worker;
-        private PropertiesWindow _propertyWindow;
        
         private string _currentModelFileName;
         private string _temporaryXbimFileName;
@@ -76,9 +75,30 @@ namespace XbimXplorer
         {
         }
 
-        private void _propertyWindow_Closed(object sender, EventArgs e)
+
+
+        public int SelectedItem
         {
-            _propertyWindow = null;
+            get { return (int)GetValue(SelectedItemProperty); }
+            set { SetValue(SelectedItemProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for SelectedItem.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty SelectedItemProperty =
+            DependencyProperty.Register("SelectedItem", typeof(int), typeof(XplorerMainWindow), 
+                                        new UIPropertyMetadata(-1, new PropertyChangedCallback(OnSelectedItemChanged)));
+
+
+        private static void OnSelectedItemChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            XplorerMainWindow mw = d as XplorerMainWindow;
+            if (mw != null && e.NewValue is int)
+            {
+                int label = (int)e.NewValue;
+                mw.EntityLabel.Text = label > 0 ? "#" + label.ToString() : "";
+            }
+            else
+                mw.EntityLabel.Text = "";
         }
 
 
@@ -258,27 +278,10 @@ namespace XbimXplorer
 
         private void SpatialControl_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            DisplayPropertyWindow();
             DrawingControl.ZoomSelected();
         }
 
-        private void DisplayPropertyWindow()
-        {
-            if (_propertyWindow == null)
-            {
-                _propertyWindow = new PropertiesWindow();
-               
-                _propertyWindow.Owner = this;
-
-                Binding b = new Binding("SelectedItem.Entity");
-                b.Source = SpatialControl;
-                _propertyWindow.SetBinding(PropertiesWindow.InstanceProperty, b);
-                _propertyWindow.Closed += new EventHandler(_propertyWindow_Closed);
-                _propertyWindow.Show();
-            }
-            _propertyWindow.Focus();
-        }
-
+       
           
 
 

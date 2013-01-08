@@ -26,8 +26,8 @@
             <ModelVisual3D.Children>
                 <ModelVisual3D x:Name="Opaques">
                 </ModelVisual3D>
-                <ModelVisual3D x:Name="Transparents">
-                </ModelVisual3D>
+                <HelixToolkit:SortingVisual3D x:Name="Transparents">
+                </HelixToolkit:SortingVisual3D>
             </ModelVisual3D.Children>
         </ModelVisual3D>
        

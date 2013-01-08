@@ -57,29 +57,14 @@ namespace Xbim.Presentation
             InitializeComponent();
             _selectedVisualMaterial = new DiffuseMaterial(Brushes.LightGreen);
             Viewport = Canvas;
-            Viewport.CameraChanged += Viewport_CameraChanged;
             Canvas.MouseDown += Canvas_MouseDown;
             this.Loaded += DrawingControl3D_Loaded;
+           
         }
 
         void DrawingControl3D_Loaded(object sender, RoutedEventArgs e)
         {
             ShowSpaces = false;
-        }
-
-        /// <summary>
-        /// sorts the transparent objects for alpha rendering
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void Viewport_CameraChanged(object sender, RoutedEventArgs e)
-        {
-            var transparentObjects = new List<Visual3D>(Transparents.Children);
-            var sortedTransparentObjects = transparentObjects.OrderBy(visual => ElementSortingHelper.GetDistanceSquared(Viewport.Camera.Position, visual));
-            Transparents.Children.Clear();
-            foreach (var item in sortedTransparentObjects)
-                Transparents.Children.Add(item);
-
         }
 
 
@@ -328,6 +313,30 @@ namespace Xbim.Presentation
             }
         }
 
+        public bool ShowGridLines
+        {
+            get { return (bool)GetValue(ShowGridLinesProperty); }
+            set { SetValue(ShowGridLinesProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for ShowWalls.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty ShowGridLinesProperty =
+            DependencyProperty.Register("ShowGridLines", typeof(bool), typeof(DrawingControl3D), new UIPropertyMetadata(true, OnShowGridLinesChanged));
+
+        private static void OnShowGridLinesChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            DrawingControl3D d3d = d as DrawingControl3D;
+            if (d3d != null)
+            {
+                if (e.NewValue is bool)
+                {
+                    if ((bool)e.NewValue)
+                        d3d.Viewport.Children.Insert(0, d3d.GridLines);
+                    else
+                        d3d.Viewport.Children.Remove( d3d.GridLines);
+                }
+            }
+        }
         public bool ShowSpaces
         {
             get { return (bool)GetValue(ShowSpacesProperty); }
@@ -377,8 +386,7 @@ namespace Xbim.Presentation
         // Using a DependencyProperty as the backing store for SelectedItem.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty SelectedItemProperty =
             DependencyProperty.Register("SelectedItem", typeof(int?), typeof(DrawingControl3D),
-                                        new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.Inherits,
-                                                                      new PropertyChangedCallback(OnSelectedItemChanged)));
+                                        new UIPropertyMetadata(null, new PropertyChangedCallback(OnSelectedItemChanged)));
 
         private static void OnSelectedItemChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
@@ -715,9 +723,13 @@ namespace Xbim.Presentation
 
             long gridWidth = Convert.ToInt64(metresWide / (metre * 10));
             long gridLen = Convert.ToInt64(metresLong / (metre * 10));
+            if(gridWidth>10 || gridLen>10) 
+                this.GridLines.MinorDistance = metre * 10;
+            else
+                this.GridLines.MinorDistance = metre;
             this.GridLines.Width = (gridWidth + 1) * 10 * metre;
             this.GridLines.Length = (gridLen + 1) * 10 * metre;
-            this.GridLines.MinorDistance = metre;
+           
             this.GridLines.MajorDistance = metre * 10;
             this.GridLines.Thickness = 0.01 * metre;
             this.GridLines.Transform = t3d;
@@ -765,9 +777,9 @@ namespace Xbim.Presentation
         private void DrawShapes(XbimSurfaceStyle StyleToDraw)
         {
             //create a variable to hold visuals and avoid too many redraws
-            XbimMaterialModelVisual visualsToAdd = new XbimMaterialModelVisual();
-            visualsToAdd.MaterialProvider = Model.GetRenderMaterial(StyleToDraw);
-            visualsToAdd.MaterialProvider.IsTransparent = ElementSortingHelper.IsTransparent(visualsToAdd.MaterialProvider.FaceMaterial);
+            List<ModelVisual3D> visualsToAdd = new List<ModelVisual3D>();
+            XbimMaterialProvider mp = Model.GetRenderMaterial(StyleToDraw);
+            bool isTransparent = ElementSortingHelper.IsTransparent(mp.FaceMaterial);
             foreach (var prodGeom in StyleToDraw.ProductGeometries)
             {
                 //Try and get the visual for the product, if not found create one
@@ -784,8 +796,8 @@ namespace Xbim.Presentation
                 //and may reuse GeometryModel3D meshes from previous renders
                 GeometryModel3D m3d = new GeometryModel3D();
 
-                BindingOperations.SetBinding(m3d, GeometryModel3D.BackMaterialProperty, visualsToAdd.MaterialProvider.BackgroundMaterialBinding);
-                BindingOperations.SetBinding(m3d, GeometryModel3D.MaterialProperty, visualsToAdd.MaterialProvider.FaceMaterialBinding);
+                BindingOperations.SetBinding(m3d, GeometryModel3D.BackMaterialProperty, mp.BackgroundMaterialBinding);
+                BindingOperations.SetBinding(m3d, GeometryModel3D.MaterialProperty, mp.FaceMaterialBinding);
 
                 bool first = true;
                 foreach (var geom in prodGeom.Geometry) //create a new one don't add it to the scene yet as we may have no valid content
@@ -822,8 +834,8 @@ namespace Xbim.Presentation
                     else //add a new GeometryModel3d to the visual as we want to reference an existing mesh
                     {
                         GeometryModel3D m3dRef = new GeometryModel3D();
-                        BindingOperations.SetBinding(m3dRef, GeometryModel3D.BackMaterialProperty, visualsToAdd.MaterialProvider.BackgroundMaterialBinding);
-                        BindingOperations.SetBinding(m3dRef, GeometryModel3D.MaterialProperty, visualsToAdd.MaterialProvider.FaceMaterialBinding);
+                        BindingOperations.SetBinding(m3dRef, GeometryModel3D.BackMaterialProperty, mp.BackgroundMaterialBinding);
+                        BindingOperations.SetBinding(m3dRef, GeometryModel3D.MaterialProperty, mp.FaceMaterialBinding);
                         m3dRef.Geometry = mesh;
                         m3dRef.Transform = m3d.Transform; //reuse the same transform
                         mv.AddGeometry(m3dRef);
@@ -838,15 +850,17 @@ namespace Xbim.Presentation
                 {
                     mv.SetValue(TagProperty, prodGeom.InstanceHandle);
                     _items.Add(prodGeom.ProductLabel, mv);
-                    visualsToAdd.Children.Add(mv);
+                    visualsToAdd.Add(mv);
                 }
             }
-            if (visualsToAdd.Children.Count > 0)
+            if (visualsToAdd.Count > 0)
             {
-                if (visualsToAdd.MaterialProvider.IsTransparent)
-                    Transparents.Children.Add(visualsToAdd);
+                if (isTransparent) //add transaprents indivudually to allow sorting easily
+                    foreach (var vis in visualsToAdd)
+                        Transparents.Children.Add(vis);
                 else
-                    Opaques.Children.Add(visualsToAdd);
+                    foreach (var vis in visualsToAdd)
+                        Opaques.Children.Add(vis);    
             }
         }
 

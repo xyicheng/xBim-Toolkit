@@ -195,7 +195,13 @@ namespace Xbim.Ifc2x3.ProductExtension
 
         public override string ToString()
         {
-            return string.Format("{0}{1}", Name == null ? "" : (string)Name, LongName == null ? "" : " - " + LongName);
+            string n;
+            if (string.IsNullOrEmpty(Name))
+                n = GetType().Name.Substring(3);
+            else
+                n = Name;
+            if (!string.IsNullOrEmpty(LongName) && Name != LongName) n += " - " + LongName.ToString();
+            return n;
         }
 
         #region Inverse Relationships

@@ -133,6 +133,7 @@
     <Compile Include="ClassMaker\CodeGenerator.cs" />
     <Compile Include="ClassMaker\IfcEntityAttribute.cs" />
     <Compile Include="ColourRgbExtensions.cs" />
+    <Compile Include="ConnectedFaceSetExtensions.cs" />
     <Compile Include="CoordinatedUniversalTimeOffsetExtensions.cs" />
     <Compile Include="DataProviders\Ifc2DCompositeCurves.cs" />
     <Compile Include="DataProviders\IfcActorRoles.cs" />

@@ -7,7 +7,8 @@
     xmlns:local="clr-namespace:XbimXplorer"
     xmlns:pt="clr-namespace:PropertyTools.Wpf;assembly=PropertyTools.Wpf" 
     Title="Xbim Xplorer" Height="600" Width="800" Loaded="Window_Loaded"
-    Icon="icon.ico">
+    x:Name="MainWindow"
+        Icon="icon.ico">
     <Window.Resources>
         <ObjectDataProvider x:Key="ModelProvider"  IsInitialLoadEnabled="False" ></ObjectDataProvider>
          <DataTemplate DataType="{x:Type xbim:SpatialViewModel}">
@@ -18,7 +19,7 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <!--<Image Grid.Column="0" Source="/folder.png" Margin="0 0 4 0"/>-->
-                <TextBlock Grid.Column="1" Text="{Binding Name}"/>
+                <TextBlock Grid.Column="1" Text="{Binding Name}" FontWeight="Bold"/>
             </Grid>
         </DataTemplate>
         <DataTemplate DataType="{x:Type xbim:ContainedElementsViewModel}">
@@ -69,6 +70,7 @@
             <MenuItem Header="View">
                 <MenuItem Header="_Zoom Extents" Click="MenuItem_ZoomExtents"/>
                 <MenuItem Header="_Copy" Command="Copy"/>
+                <MenuItem IsCheckable="True" Header="Show Gridlines" IsChecked="{Binding ShowGridLines, ElementName=DrawingControl}"/>
                 <MenuItem IsCheckable="True" Header="Show Spaces" IsChecked="{Binding ShowSpaces, ElementName=DrawingControl}"/>
                 <MenuItem IsCheckable="True" Header="Show Walls" IsChecked="{Binding ShowWalls, ElementName=DrawingControl}"/>
                 <MenuItem IsCheckable="True" Header="Show Slabs" IsChecked="{Binding ShowSlabs, ElementName=DrawingControl}"/>
@@ -114,14 +116,33 @@
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition />
             </Grid.ColumnDefinitions>
-
-            <xbim:XbimTreeview x:Name="SpatialControl"
-                               SelectedValue="{Binding Path=SelectedItem, ElementName=DrawingControl}"
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height=".6*"/>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+                <xbim:XbimTreeview x:Name="SpatialControl"                             
+                               SelectedItem="{Binding Path=SelectedItem, ElementName=MainWindow, Mode=OneWay}" 
+                               SelectedValue="{Binding Path=SelectedItem, ElementName=MainWindow, Mode=OneWayToSource}"   
                                Indentation="12" 
                                Model="{Binding}"  
                                BorderThickness="0" SelectionMode="Single"
                                MouseDoubleClick="SpatialControl_MouseDoubleClick"
+                                   Grid.Row="0"
                                />
+                <GridSplitter 
+                    Grid.Row="1" 
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Center"
+                    Background="Gray" 
+                    ShowsPreview="True"
+                    Height="5"
+                    />
+                <xbim:IfcMetaDataControl x:Name="PropertiesControl" Grid.Row="2" EntityLabel="{Binding Path=SelectedItem, ElementName=MainWindow}" >
+                   
+                </xbim:IfcMetaDataControl>
+            </Grid>
             <GridSplitter 
                 Grid.Column="1" 
                 HorizontalAlignment="Center"
@@ -131,7 +152,7 @@
                 Width="5"
                 />
             <xbim:DrawingControl3D x:Name="DrawingControl" 
-                                   SelectedItem="{Binding Path=SelectedValue, ElementName=SpatialControl}"    
+                                   SelectedItem="{Binding Path=SelectedItem, ElementName=MainWindow, Mode=TwoWay}"    
                                    Model ="{Binding}" 
                                    Grid.Column="2" 
                                    Focusable="True" 
@@ -155,13 +176,10 @@
             <StatusBarItem>
                 <Separator/>
             </StatusBarItem>
-            <TextBlock Name="EntityCount"></TextBlock>
+            <TextBlock Name="EntityLabel"></TextBlock>
             <StatusBarItem>
                 <Separator/>
             </StatusBarItem>
-            <!--<Slider x:Name="SliderColour" Minimum ="0"  Maximum="255" TickFrequency="2" Width="150" Value="127" ValueChanged="SliderColour_ValueChanged">-->
-                
-                <!--</Slider>-->
             <StatusBarItem>
                 <Separator/>
             </StatusBarItem>

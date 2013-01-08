@@ -66,6 +66,12 @@ namespace Xbim.Presentation
                                   new DiffuseMaterial(new SolidColorBrush(Colors.WhiteSmoke) {Opacity = 0.7}));
             _defaultMaterials.Add("IfcDistributionFlowElement",
                                   new DiffuseMaterial(new SolidColorBrush(Colors.AntiqueWhite) {Opacity = 1.0}));
+            _defaultMaterials.Add("IfcFlowFitting",
+                                  new DiffuseMaterial(new SolidColorBrush(Colors.PaleGoldenrod) { Opacity = 1.0 }));
+            _defaultMaterials.Add("IfcFlowSegment",
+                                  new DiffuseMaterial(new SolidColorBrush(Colors.PaleVioletRed) { Opacity = 1.0 }));
+            _defaultMaterials.Add("IfcFlowTerminal",
+                                  new DiffuseMaterial(new SolidColorBrush(Colors.IndianRed) { Opacity = 1.0 }));
             _defaultMaterials.Add("IfcSpace", new DiffuseMaterial(new SolidColorBrush(Colors.Red) {Opacity = 0.4}));
     
             _defaultMaterials.Add("IfcRailing", new DiffuseMaterial(new SolidColorBrush(Colors.Goldenrod) {  }));

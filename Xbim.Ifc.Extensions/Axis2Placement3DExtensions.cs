@@ -12,6 +12,8 @@
 
 #region Directives
 
+using System;
+using System.Collections.Generic;
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
 using Xbim.Ifc2x3.GeometryResource;
@@ -53,8 +55,11 @@ namespace Xbim.Ifc2x3.Extensions
         /// </summary>
         /// <param name = "axis3"></param>
         /// <returns></returns>
-        public static Matrix3D ToMatrix3D(this IfcAxis2Placement3D axis3)
+        public static Matrix3D ToMatrix3D(this IfcAxis2Placement3D axis3, Dictionary<int, Object> maps = null)
         {
+            object transform;
+            if (maps != null && maps.TryGetValue(Math.Abs(axis3.EntityLabel), out transform)) //already converted it just return cached
+                return (Matrix3D)transform;
             if (axis3.RefDirection != null && axis3.Axis != null)
             {
                 Vector3D za = axis3.Axis.WVector3D();
@@ -63,12 +68,15 @@ namespace Xbim.Ifc2x3.Extensions
                 xa.Normalize();
                 Vector3D ya = Vector3D.CrossProduct(za, xa);
                 ya.Normalize();
-                return new Matrix3D(xa.X, xa.Y, xa.Z, 0, ya.X, ya.Y, ya.Z, 0, za.X, za.Y, za.Z, 0, axis3.Location.X,
+                transform = new Matrix3D(xa.X, xa.Y, xa.Z, 0, ya.X, ya.Y, ya.Z, 0, za.X, za.Y, za.Z, 0, axis3.Location.X,
                                     axis3.Location.Y, axis3.Location.Z, 1);
             }
             else
-                return new Matrix3D(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, axis3.Location.X, axis3.Location.Y,
+                transform = new Matrix3D(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, axis3.Location.X, axis3.Location.Y,
                                     axis3.Location.Z, 1);
+
+            if (maps != null) maps.Add(Math.Abs(axis3.EntityLabel), transform);
+            return (Matrix3D)transform;
         }
 
         /// <summary>

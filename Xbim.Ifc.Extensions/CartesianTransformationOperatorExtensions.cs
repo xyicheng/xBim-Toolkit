@@ -13,6 +13,7 @@
 #region Directives
 
 using System;
+using System.Collections.Generic;
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
 using Xbim.Ifc2x3.GeometryResource;
@@ -24,13 +25,14 @@ namespace Xbim.Ifc2x3.Extensions
 {
     public static class CartesianTransformationOperatorExtensions
     {
-        public static Matrix3D ToMatrix3D(this IfcCartesianTransformationOperator ct)
+        public static Matrix3D ToMatrix3D(this IfcCartesianTransformationOperator ct, Dictionary<int, Object> maps = null)
         {
             if (ct is IfcCartesianTransformationOperator3DnonUniform)
-                return ((IfcCartesianTransformationOperator3DnonUniform) ct).ToMatrix3D();
+               return ((IfcCartesianTransformationOperator3DnonUniform) ct).ToMatrix3D(maps);
             else if (ct is IfcCartesianTransformationOperator3D)
-                return ((IfcCartesianTransformationOperator3D) ct).ToMatrix3D();
+                return ((IfcCartesianTransformationOperator3D) ct).ToMatrix3D(maps);
             else throw new ArgumentException("ToMatrix3D", "Unsupported CartesianTransformationOperator3D");
+            
         }
 
         /// <summary>
@@ -85,8 +87,11 @@ namespace Xbim.Ifc2x3.Extensions
         /// </summary>
         /// <param name = "ct3D"></param>
         /// <returns></returns>
-        public static Matrix3D ToMatrix3D(this IfcCartesianTransformationOperator3D ct3D)
+        public static Matrix3D ToMatrix3D(this IfcCartesianTransformationOperator3D ct3D, Dictionary<int, Object> maps = null)
         {
+            object transform;
+            if (maps!=null && maps.TryGetValue(Math.Abs(ct3D.EntityLabel), out transform)) //already converted it just return cached
+                return (Matrix3D)transform;
             Vector3D u3; //Z Axis Direction
             Vector3D u2; //X Axis Direction
             Vector3D u1; //Y axis direction
@@ -135,10 +140,13 @@ namespace Xbim.Ifc2x3.Extensions
             if (ct3D.Scale.HasValue)
                 s = ct3D.Scale.Value;
 
-            return new Matrix3D(u1.X, u1.Y, u1.Z, 0,
-                                u2.X, u2.Y, u2.Z, 0,
-                                u3.X, u3.Y, u3.Z, 0,
-                                lo.X, lo.Y, lo.Z, s);
+            Matrix3D matrix = new Matrix3D(u1.X, u1.Y, u1.Z, 0,
+                               u2.X, u2.Y, u2.Z, 0,
+                               u3.X, u3.Y, u3.Z, 0,
+                               lo.X, lo.Y, lo.Z, 1);
+            matrix.Scale(new Vector3D(ct3D.Scl, ct3D.Scl, ct3D.Scl));
+            if (maps != null) maps.Add(Math.Abs(ct3D.EntityLabel), matrix);
+            return matrix;
         }
 
         /// <summary>
@@ -146,8 +154,11 @@ namespace Xbim.Ifc2x3.Extensions
         /// </summary>
         /// <param name = "ct3D"></param>
         /// <returns></returns>
-        public static Matrix3D ToMatrix3D(this IfcCartesianTransformationOperator3DnonUniform ct3D)
+        public static Matrix3D ToMatrix3D(this IfcCartesianTransformationOperator3DnonUniform ct3D, Dictionary<int, Object> maps = null)
         {
+            object transform;
+            if (maps != null && maps.TryGetValue(Math.Abs(ct3D.EntityLabel), out transform)) //already converted it just return cached
+                return (Matrix3D)transform;
             Vector3D u3; //Z Axis Direction
             Vector3D u2; //X Axis Direction
             Vector3D u1; //Y axis direction
@@ -198,6 +209,7 @@ namespace Xbim.Ifc2x3.Extensions
                                            u3.X, u3.Y, u3.Z, 0,
                                            lo.X, lo.Y, lo.Z, 1);
             matrix.Scale(new Vector3D(ct3D.Scl, ct3D.Scl2, ct3D.Scl3));
+            if(maps!=null)  maps.Add(Math.Abs(ct3D.EntityLabel), matrix);
             return matrix;
         }
     }

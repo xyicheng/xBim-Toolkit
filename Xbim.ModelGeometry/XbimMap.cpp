@@ -14,23 +14,26 @@ namespace Xbim
 	{
 
 
-		XbimMap::XbimMap(IXbimGeometryModel^ item, IfcAxis2Placement^ origin, IfcCartesianTransformationOperator^ transform)
+		XbimMap::XbimMap(IXbimGeometryModel^ item, IfcAxis2Placement^ origin, IfcCartesianTransformationOperator^ transform, Dictionary<int,Object^>^ maps)
 		{
 			_mappedItem = item;
 			 _representationLabel = item->RepresentationLabel;
 			_surfaceStyleLabel = item->SurfaceStyleLabel;
+
+
 			if(origin !=nullptr)
 			{
 				if(dynamic_cast<IfcAxis2Placement3D^>(origin))
-					_transform = Axis2Placement3DExtensions::ToMatrix3D((IfcAxis2Placement3D^)origin);
+					_transform = Axis2Placement3DExtensions::ToMatrix3D((IfcAxis2Placement3D^)origin,maps);
 				else if(dynamic_cast<IfcAxis2Placement2D^>(origin))
-					_transform = Axis2Placement2DExtensions::ToMatrix3D((IfcAxis2Placement2D^)origin);
+					_transform = Axis2Placement2DExtensions::ToMatrix3D((IfcAxis2Placement2D^)origin,maps);
 				else
 					throw gcnew XbimGeometryException("Invalid IfcAxis2Placement argument");
 					
 			}
+	
 			if(transform!=nullptr)
-				_transform= Matrix3D::Multiply(_transform, CartesianTransformationOperatorExtensions::ToMatrix3D(transform));
+				_transform= Matrix3D::Multiply(_transform, CartesianTransformationOperatorExtensions::ToMatrix3D(transform, maps));
 
 		}
 		
@@ -56,24 +59,21 @@ namespace Xbim
 
 		List<XbimTriangulatedModel^>^XbimMap::Mesh()
 		{
-			return Mesh(true, XbimGeometryModel::DefaultDeflection,_transform);
+			return Mesh(true, XbimGeometryModel::DefaultDeflection,Matrix3D::Identity);
 		}
 
 		List<XbimTriangulatedModel^>^XbimMap::Mesh( bool withNormals )
 		{
-			return Mesh(withNormals, XbimGeometryModel::DefaultDeflection, _transform);
+			return Mesh(withNormals, XbimGeometryModel::DefaultDeflection, Matrix3D::Identity);
 		}
 		List<XbimTriangulatedModel^>^XbimMap::Mesh(bool withNormals, double deflection )
 		{
-			return _mappedItem->Mesh(withNormals, deflection, _transform);
+			return _mappedItem->Mesh(withNormals, deflection, Matrix3D::Identity);
 		}
 
 		List<XbimTriangulatedModel^>^XbimMap::Mesh(bool withNormals, double deflection, Matrix3D transform )
 		{
-			if(Matrix3D::Identity==transform)
-				return _mappedItem->Mesh(withNormals, deflection, _transform);
-			else
-				return _mappedItem->Mesh(withNormals, deflection, Matrix3D::Multiply(_transform,transform));
+			return _mappedItem->Mesh(withNormals, deflection, Matrix3D::Identity);
 		}
 	}
 }

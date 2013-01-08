@@ -100,7 +100,7 @@ namespace Xbim
 		Products.ProductRepresentation that is within the specified GeometricRepresentationContext, if the Representation 
 		context is null the first "Body" ShapeRepresentation is used. Returns null if their is no valid geometric definition
 		*/
-		IXbimGeometryModel^ XbimGeometryModel::CreateFrom(IfcProduct^ product, IfcGeometricRepresentationContext^ repContext, Dictionary<IfcRepresentation^, IXbimGeometryModel^>^ maps, bool forceSolid, XbimLOD lod, bool occOut)
+		IXbimGeometryModel^ XbimGeometryModel::CreateFrom(IfcProduct^ product, IfcGeometricRepresentationContext^ repContext, Dictionary<int, Object^>^ maps, bool forceSolid, XbimLOD lod, bool occOut)
 		{
 			try
 			{
@@ -235,7 +235,7 @@ namespace Xbim
 			return nullptr;
 		}
 
-		IXbimGeometryModel^ XbimGeometryModel::CreateFrom(IfcProduct^ product, Dictionary<IfcRepresentation^, IXbimGeometryModel^>^ maps, bool forceSolid, XbimLOD lod, bool occOut)
+		IXbimGeometryModel^ XbimGeometryModel::CreateFrom(IfcProduct^ product, Dictionary<int, Object^>^ maps, bool forceSolid, XbimLOD lod, bool occOut)
 		{
 			return CreateFrom(product, nullptr, maps, forceSolid, lod, occOut);
 		}
@@ -246,7 +246,7 @@ namespace Xbim
 			// Upstream callers should ideally terminate the application ASAP.
 			__try
 			{
-				return CreateFrom(product, nullptr, gcnew Dictionary<IfcRepresentation^, IXbimGeometryModel^>(), forceSolid,lod,occOut);
+				return CreateFrom(product, nullptr, gcnew Dictionary<int, Object^>(), forceSolid,lod,occOut);
 			}
 			__except(GetExceptionCode() == EXCEPTION_ACCESS_VIOLATION)
 			{
@@ -335,7 +335,7 @@ namespace Xbim
 		/*
 		Create a model geometry for a given shape
 		*/
-		IXbimGeometryModel^ XbimGeometryModel::CreateFrom(IfcRepresentation^ rep, Dictionary<IfcRepresentation^, IXbimGeometryModel^>^ maps, bool forceSolid, XbimLOD lod, bool occOut)
+		IXbimGeometryModel^ XbimGeometryModel::CreateFrom(IfcRepresentation^ rep, Dictionary<int, Object^>^ maps, bool forceSolid, XbimLOD lod, bool occOut)
 		{
 
 			if(rep->Items->Count == 0) //we have nothing to do
@@ -385,15 +385,15 @@ namespace Xbim
 
 		IXbimGeometryModel^ XbimGeometryModel::CreateFrom(IfcRepresentation^ rep, bool forceSolid, XbimLOD lod, bool occOut)
 		{
-			return CreateFrom(rep, gcnew Dictionary<IfcRepresentation^, IXbimGeometryModel^>(), forceSolid,lod, occOut);
+			return CreateFrom(rep, gcnew Dictionary<int, Object^>(), forceSolid,lod, occOut);
 		}
 
 		IXbimGeometryModel^ XbimGeometryModel::CreateFrom(IfcRepresentationItem^ repItem, bool forceSolid, XbimLOD lod, bool occOut)
 		{
-			return CreateFrom(repItem, gcnew Dictionary<IfcRepresentation^, IXbimGeometryModel^>(), forceSolid,lod, occOut);
+			return CreateFrom(repItem, gcnew Dictionary<int, Object^>(), forceSolid,lod, occOut);
 		}
 
-		IXbimGeometryModel^ XbimGeometryModel::CreateFrom(IfcRepresentationItem^ repItem, Dictionary<IfcRepresentation^, IXbimGeometryModel^>^ maps, bool forceSolid,XbimLOD lod, bool occOut)
+		IXbimGeometryModel^ XbimGeometryModel::CreateFrom(IfcRepresentationItem^ repItem, Dictionary<int, Object^>^ maps, bool forceSolid,XbimLOD lod, bool occOut)
 		{
 			if(!forceSolid && dynamic_cast<IfcFacetedBrep^>(repItem))
 			{
@@ -422,11 +422,14 @@ namespace Xbim
 				IfcMappedItem^ map = (IfcMappedItem^) repItem;
 				IfcRepresentationMap^ repMap = map->MappingSource;
 				IXbimGeometryModel^ mg;
-				if(!maps->TryGetValue(repMap->MappedRepresentation, mg)) //look it up
+				Object ^ lookup;
+				if(!maps->TryGetValue(Math::Abs(repMap->MappedRepresentation->EntityLabel), lookup)) //look it up
 				{
 					mg =  CreateFrom(repMap->MappedRepresentation,maps, forceSolid,lod, occOut); //make the first one
-					maps->Add(repMap->MappedRepresentation, mg);
+					maps->Add(Math::Abs(repMap->MappedRepresentation->EntityLabel), mg);
 				}
+				else
+					mg= (IXbimGeometryModel^)lookup;
 
 				//need to transform all the geometries as below
 				if(mg!=nullptr)
@@ -449,7 +452,7 @@ namespace Xbim
 			return nullptr;
 		}
 
-		IXbimGeometryModel^ XbimGeometryModel::CreateMap(IXbimGeometryModel^ item, IfcAxis2Placement^ origin, IfcCartesianTransformationOperator^ transform, Dictionary<IfcRepresentation^, IXbimGeometryModel^>^ maps, bool forceSolid)
+		IXbimGeometryModel^ XbimGeometryModel::CreateMap(IXbimGeometryModel^ item, IfcAxis2Placement^ origin, IfcCartesianTransformationOperator^ transform, Dictionary<int, Object^>^ maps, bool forceSolid)
 		{
 			if(dynamic_cast<XbimSolid^>(item))
 			{
@@ -461,7 +464,7 @@ namespace Xbim
 			}
 			else if(dynamic_cast<XbimFacetedShell^>(item))
 			{
-				IXbimGeometryModel^ geom = gcnew XbimMap(item,origin,transform);
+				IXbimGeometryModel^ geom = gcnew XbimMap(item,origin,transform, maps);
 				geom->RepresentationLabel = item->RepresentationLabel;
 				geom->SurfaceStyleLabel=item->SurfaceStyleLabel;
 				return geom;
@@ -479,11 +482,11 @@ namespace Xbim
 				throw(gcnew ArgumentOutOfRangeException("XbimGeometryModel.CreateMap Unsupported IXbimGeometryModel type"));
 		}
 
-		IXbimGeometryModel^ XbimGeometryModel::CreateMap(IXbimGeometryModel^ item, IfcAxis2Placement^ origin, Dictionary<IfcRepresentation^, IXbimGeometryModel^>^ maps, bool forceSolid)
+		IXbimGeometryModel^ XbimGeometryModel::CreateMap(IXbimGeometryModel^ item, IfcAxis2Placement^ origin, Dictionary<int, Object^>^ maps, bool forceSolid)
 		{
 			return CreateMap(item, origin, nullptr, maps, forceSolid);
 		}
-		IXbimGeometryModel^ XbimGeometryModel::CreateMap(IXbimGeometryModel^ item, Dictionary<IfcRepresentation^, IXbimGeometryModel^>^ maps, bool forceSolid)
+		IXbimGeometryModel^ XbimGeometryModel::CreateMap(IXbimGeometryModel^ item, Dictionary<int, Object^>^ maps, bool forceSolid)
 		{
 			return CreateMap(item, nullptr, nullptr, maps, forceSolid);
 		}

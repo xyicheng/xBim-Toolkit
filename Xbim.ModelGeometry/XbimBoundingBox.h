@@ -4,7 +4,7 @@
 #include <gp_Pnt.hxx>
 using namespace System;
 using namespace System::IO;
-
+using namespace Xbim::Ifc2x3::TopologyResource;
 namespace Xbim
 {
 	namespace ModelGeometry
@@ -19,6 +19,8 @@ namespace Xbim
 			{		
 				pBox = box;
 			}
+			XbimBoundingBox(IfcConnectedFaceSet^ faces);
+			
 			XbimBoundingBox()
 			{		
 				pBox = new Bnd_Box();

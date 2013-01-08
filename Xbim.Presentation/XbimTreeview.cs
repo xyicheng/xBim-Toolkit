@@ -9,17 +9,79 @@ using Xbim.Ifc2x3.Kernel;
 using System.Windows.Data;
 using Xbim.Ifc2x3.Extensions;
 using Xbim.Ifc2x3.ExternalReferenceResource;
+using System.Windows.Controls.Primitives;
+using System.Diagnostics;
 
 namespace Xbim.Presentation
 {
     public class XbimTreeview : TreeListBox
     {
-        
+
         public XbimTreeview()
         {
             SelectionMode = System.Windows.Controls.SelectionMode.Single; //always use single selection mode
             SelectedValuePath = "EntityLabel";
-           
+        }
+
+
+
+        new public int SelectedItem
+        {
+            get { return (int)GetValue(SelectedItemProperty); }
+            set { SetValue(SelectedItemProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for SelectedItem.  This enables animation, styling, binding, etc...
+        new public static readonly DependencyProperty SelectedItemProperty =
+            DependencyProperty.Register("SelectedItem", typeof(int), typeof(XbimTreeview), new UIPropertyMetadata(-1, new PropertyChangedCallback(OnSelectedItemChanged)));
+
+        private static void OnSelectedItemChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            XbimTreeview view = d as XbimTreeview;
+            if (view != null && e.NewValue is int)
+            {
+                int newVal = (int)(e.NewValue);
+                view.Select(newVal);
+                return;
+                
+           }
+        }
+
+        private void Select(int newVal)
+        {
+            foreach (var item in HierarchySource.OfType<IXbimViewModel>())
+            {
+                IXbimViewModel toSelect = FindItem(item, newVal);
+                if (toSelect != null)
+                {
+                    item.IsExpanded = true;
+
+                    UpdateLayout();
+                    ScrollIntoView(toSelect);
+                    toSelect.IsSelected = true; ;
+                    return;
+                }
+            }
+        }
+
+        public IXbimViewModel FindItem(IXbimViewModel node, int entitylabel)
+        {
+            if (node.EntityLabel == entitylabel)
+            {
+                node.IsExpanded = true;
+                return node;
+            }
+
+            foreach (var child in node.Children)
+            {
+                IXbimViewModel res = FindItem(child, entitylabel);
+                if (res != null)
+                {
+                    node.IsExpanded = true; //it is here so expand parent
+                    return res;
+                }
+            }
+            return null;
         }
 
         public XbimViewType ViewDefinition
@@ -92,16 +154,21 @@ namespace Xbim.Presentation
                 foreach (var item in project.GetSpatialStructuralElements())
                 {
                     var sv = new SpatialViewModel(item);
-                    sv.IsExpanded = true;
                     svList.Add(sv); 
-                    
- 
                 }
                 
                 this.HierarchySource = svList;
             }
             else //Load any spatialstructure
             {
+            }
+        }
+        private void Expand(IXbimViewModel treeitem)
+        {
+            treeitem.IsExpanded = true;
+            foreach (var child in treeitem.Children)
+            {
+                Expand(child);
             }
         }
 

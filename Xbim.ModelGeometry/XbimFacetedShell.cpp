@@ -15,22 +15,22 @@ namespace Xbim
 		XbimFacetedShell::XbimFacetedShell(IfcConnectedFaceSet^ shell)
 		{
 			_faceSet=shell;
-			_boundingBox = gcnew XbimBoundingBox();
+			_boundingBox = gcnew XbimBoundingBox(shell);
 		}
 		XbimFacetedShell::XbimFacetedShell(IfcOpenShell^ shell)
 		{
 			_faceSet=shell;
-			_boundingBox = gcnew XbimBoundingBox();
+			_boundingBox = gcnew XbimBoundingBox(shell);
 		}
 		XbimFacetedShell::XbimFacetedShell(IfcClosedShell^ shell)
 		{
 			_faceSet=shell;
-			_boundingBox = gcnew XbimBoundingBox();
+			_boundingBox = gcnew XbimBoundingBox(shell);
 		}
 
 		XbimFacetedShell::XbimFacetedShell(IfcShell^ shell)
 		{
-			_boundingBox = gcnew XbimBoundingBox();
+			
 			if(dynamic_cast<IfcOpenShell^>(shell))
 				_faceSet=(IfcOpenShell^)shell;
 			else if(dynamic_cast<IfcClosedShell^>(shell))
@@ -40,7 +40,7 @@ namespace Xbim
 				Type^ type = shell->GetType();
 				throw gcnew XbimGeometryException("Error buiding shell from type " + type->Name);
 			}
-
+			_boundingBox = gcnew XbimBoundingBox(_faceSet);
 		}
 
 		

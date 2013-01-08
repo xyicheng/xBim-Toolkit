@@ -16,7 +16,7 @@ namespace Xbim
 			Int32 _representationLabel;
 			Int32 _surfaceStyleLabel;
 		public:
-			XbimMap(IXbimGeometryModel^ item, IfcAxis2Placement^ origin, IfcCartesianTransformationOperator^ transform);
+			XbimMap(IXbimGeometryModel^ item, IfcAxis2Placement^ origin, IfcCartesianTransformationOperator^ transform, Dictionary<int,Object^>^ maps);
 			virtual IXbimGeometryModel^ Cut(IXbimGeometryModel^ shape);
 			virtual IXbimGeometryModel^ Union(IXbimGeometryModel^ shape);
 			virtual IXbimGeometryModel^ Intersection(IXbimGeometryModel^ shape);
@@ -50,6 +50,14 @@ namespace Xbim
 				Matrix3D get()
 				{
 					return _transform;
+				}
+			}
+			
+			property IXbimGeometryModel^ MappedItem
+			{
+				IXbimGeometryModel^ get()
+				{
+					return _mappedItem;
 				}
 			}
 			virtual List<XbimTriangulatedModel^>^Mesh(bool withNormals, double deflection, Matrix3D transform);
