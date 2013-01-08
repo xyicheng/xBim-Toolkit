@@ -197,10 +197,9 @@ namespace Xbim.COBie.Serialisers
             {
                 COBieXBimZone xBimZone = new COBieXBimZone(XBimContext);
                 xBimZone.SerialiseZone((COBieSheet<COBieZoneRow>)WorkBook[Constants.WORKSHEET_ZONE]);
-
-                COBieXBimType xBimType = new COBieXBimType(XBimContext);
-                xBimType.SerialiseType((COBieSheet<COBieTypeRow>)WorkBook[Constants.WORKSHEET_TYPE]);
-            }
+            } 
+            COBieXBimType xBimType = new COBieXBimType(XBimContext);
+            xBimType.SerialiseType((COBieSheet<COBieTypeRow>)WorkBook[Constants.WORKSHEET_TYPE]);
 
             COBieXBimComponent xBimComponent = new COBieXBimComponent(XBimContext);
             xBimComponent.SerialiseComponent((COBieSheet<COBieComponentRow>)WorkBook[Constants.WORKSHEET_COMPONENT]);
