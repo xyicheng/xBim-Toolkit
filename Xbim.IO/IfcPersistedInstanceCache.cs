@@ -91,6 +91,12 @@ namespace Xbim.IO
 
         static void CurrentDomain_ProcessExit(object sender, EventArgs e)
         {
+            if (_jetInstance != null)
+            {
+                _jetInstance.Term();
+                _jetInstance=null;
+            }
+
             if (Directory.Exists(SystemPath))
                 Directory.Delete(SystemPath);
         }
