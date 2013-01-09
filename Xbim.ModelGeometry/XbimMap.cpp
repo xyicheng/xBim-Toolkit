@@ -33,7 +33,7 @@ namespace Xbim
 			}
 	
 			if(transform!=nullptr)
-				_transform= Matrix3D::Multiply(_transform, CartesianTransformationOperatorExtensions::ToMatrix3D(transform, maps));
+				_transform= Matrix3D::Multiply( CartesianTransformationOperatorExtensions::ToMatrix3D(transform, maps),_transform);
 
 		}
 		

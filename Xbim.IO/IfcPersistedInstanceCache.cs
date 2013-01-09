@@ -43,7 +43,7 @@ namespace Xbim.IO
         private const int MaxCachedEntityTables = 32;
         private const int MaxCachedGeometryTables = 32;
         private XbimDBAccess _accessMode;
-       
+        static private string SystemPath;
 
         const int _transactionBatchSize = 100;
 
@@ -86,6 +86,13 @@ namespace Xbim.IO
             SystemParameters.CacheSizeMin = cacheSizeInBytes / SystemParameters.DatabasePageSize;
             SystemParameters.CacheSizeMax = cacheSizeInBytes / SystemParameters.DatabasePageSize;
             _jetInstance = CreateInstance("XbimInstance", XbimModel.XbimTempDirectory);
+            AppDomain.CurrentDomain.ProcessExit += CurrentDomain_ProcessExit;
+        }
+
+        static void CurrentDomain_ProcessExit(object sender, EventArgs e)
+        {
+            if (Directory.Exists(SystemPath))
+                Directory.Delete(SystemPath);
         }
 
         public IfcPersistedInstanceCache(XbimModel model)
@@ -533,10 +540,12 @@ namespace Xbim.IO
 
         static private Instance CreateInstance(string instanceName, string tempDirectory = null,  bool recovery = false)
         {
- 
-            var jetInstance = new Instance(instanceName+Guid.NewGuid().ToString());
+            string guid = Guid.NewGuid().ToString();
+            var jetInstance = new Instance(instanceName+guid);
+            guid += "\\"; //add a backslash to make valid path
             if (string.IsNullOrWhiteSpace(tempDirectory))
-                tempDirectory = GetXbimTempDirectory();
+                SystemPath = GetXbimTempDirectory();
+            SystemPath = Path.Combine(SystemPath, guid); //ensure unique dir per instance
             jetInstance.Parameters.BaseName = "XBM";
             jetInstance.Parameters.SystemDirectory = tempDirectory;
             jetInstance.Parameters.LogFileDirectory = tempDirectory;
@@ -548,7 +557,7 @@ namespace Xbim.IO
             jetInstance.Parameters.CheckpointDepthMax = cacheSizeInBytes;
             jetInstance.Parameters.LogFileSize = 1024;    // 1MB logs
             jetInstance.Parameters.LogBuffers = 1024;     // buffers = 1/2 of logfile
-            jetInstance.Parameters.MaxTemporaryTables = 20;
+            jetInstance.Parameters.MaxTemporaryTables = 0; //ensures no temporary files are created
             jetInstance.Parameters.MaxVerPages = 2048;
             jetInstance.Parameters.NoInformationEvent = true;
             jetInstance.Parameters.WaypointLatency = 1;

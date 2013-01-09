@@ -344,14 +344,15 @@ namespace Xbim
 			{
 				IfcRepresentationItem^ repItem = rep->Items->First;
 				IXbimGeometryModel^ geom = CreateFrom(repItem,maps, forceSolid,lod,occOut);
-				geom->RepresentationLabel = repItem->EntityLabel;
+				if(geom->RepresentationLabel==0) geom->RepresentationLabel = repItem->EntityLabel; //only set if we haven't further down
 				IfcSurfaceStyle^ surfaceStyle = IfcRepresentationItemExtensions::SurfaceStyle(repItem);
 				if(surfaceStyle!=nullptr) geom->SurfaceStyleLabel=Math::Abs(surfaceStyle->EntityLabel);
 				return geom;
 			}
 			else // we have a compound shape
 			{
-				XbimGeometryModelCollection^ gms = gcnew XbimGeometryModelCollection();
+				XbimGeometryModelCollection^ gms = gcnew XbimGeometryModelCollection(false);
+				gms->RepresentationLabel = rep->EntityLabel;
 				bool first = true;
 				for each (IfcRepresentationItem^ repItem in rep->Items)
 				{
@@ -471,11 +472,12 @@ namespace Xbim
 			}
 			else if(dynamic_cast<XbimGeometryModelCollection^>(item))
 			{
-				XbimGeometryModelCollection^ mapColl = gcnew XbimGeometryModelCollection();
-				mapColl->SurfaceStyleLabel=item->SurfaceStyleLabel;
+				XbimGeometryModelCollection^ mapColl = gcnew XbimGeometryModelCollection(origin,transform, maps);
+				mapColl->RepresentationLabel = item->RepresentationLabel;
+				mapColl->SurfaceStyleLabel = item->SurfaceStyleLabel;
 				XbimGeometryModelCollection^ toMap = (XbimGeometryModelCollection^) item;
 				for each(IXbimGeometryModel^ model in toMap)
-					mapColl->Add(CreateMap(model,origin,transform, maps, forceSolid));
+					mapColl->Add(model);
 				return mapColl;
 			}
 			else
@@ -532,7 +534,7 @@ namespace Xbim
 
 			else
 			{
-				XbimGeometryModelCollection^ gms = gcnew XbimGeometryModelCollection();	
+				XbimGeometryModelCollection^ gms = gcnew XbimGeometryModelCollection(false);	
 				if(forceSolid)
 				{
 					for each(IfcConnectedFaceSet^ fbmsFaces in repItem->FbsmFaces)
@@ -583,7 +585,7 @@ namespace Xbim
 			}
 			else
 			{
-				XbimGeometryModelCollection^ gms = gcnew XbimGeometryModelCollection();		
+				XbimGeometryModelCollection^ gms = gcnew XbimGeometryModelCollection(false);		
 				for each(IfcShell^ sbms in repItem->SbsmBoundary)
 				{
 					if(dynamic_cast<IfcClosedShell^>(sbms)) 

@@ -63,7 +63,7 @@
                 <!--<MenuItem Header="_New Xbim File" Click="FileNew_Click"/>-->
                 <MenuItem Header="_Open" Command="Open"/>
                 <MenuItem Header="_SaveAs" Command="SaveAs"/>
-                <MenuItem Header="_Close" Command="ApplicationCommands.Copy" />
+                <MenuItem Header="_Close" Command="Close" />
                 <!--<MenuItem Header="_Import Ifc File" Click="FileImport_Click"/>
                 <MenuItem Header="_Export Ifc File" Click="FileExport_Click"/>-->
             </MenuItem>
@@ -118,18 +118,19 @@
             </Grid.ColumnDefinitions>
             <Grid>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height=".6*"/>
-                    <RowDefinition Height="Auto" />
                     <RowDefinition />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height=".3*"/>
                 </Grid.RowDefinitions>
                 <xbim:XbimTreeview x:Name="SpatialControl"                             
                                SelectedItem="{Binding Path=SelectedItem, ElementName=MainWindow, Mode=OneWay}" 
                                SelectedValue="{Binding Path=SelectedItem, ElementName=MainWindow, Mode=OneWayToSource}"   
-                               Indentation="12" 
+                               Indentation="12"
+                               BorderThickness="1"
                                Model="{Binding}"  
-                               BorderThickness="0" SelectionMode="Single"
+                               SelectionMode="Single"
                                MouseDoubleClick="SpatialControl_MouseDoubleClick"
-                                   Grid.Row="0"
+                               Grid.Row="0"
                                />
                 <GridSplitter 
                     Grid.Row="1" 
@@ -139,7 +140,7 @@
                     ShowsPreview="True"
                     Height="5"
                     />
-                <xbim:IfcMetaDataControl x:Name="PropertiesControl" Grid.Row="2" EntityLabel="{Binding Path=SelectedItem, ElementName=MainWindow}" >
+                <xbim:IfcMetaDataControl x:Name="PropertiesControl" BorderThickness="1" Grid.Row="2" EntityLabel="{Binding Path=SelectedItem, ElementName=MainWindow}" >
                    
                 </xbim:IfcMetaDataControl>
             </Grid>

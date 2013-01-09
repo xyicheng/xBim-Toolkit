@@ -1,12 +1,14 @@
 #pragma once
 #include "XbimGeometryModel.h"
-
+#include "IXbimGeometryModel.h"
 #include "TopoDS_Compound.hxx"
 #include "XbimBoundingBox.h"
 #include <BRep_Builder.hxx>
 #include <BRepGProp.hxx>
 #include <GProp_GProps.hxx> 
 using namespace System::Collections::Generic;
+using namespace  Xbim::Ifc2x3::Extensions;
+using namespace Xbim::Common::Exceptions;
 namespace Xbim
 {
 	namespace ModelGeometry
@@ -16,33 +18,55 @@ namespace Xbim
 			TopoDS_Compound* pCompound;
 			List<IXbimGeometryModel^>^ shapes;
 			bool _hasCurvedEdges;
+			bool _isMap;
 			Int32 _representationLabel;
 			Int32 _surfaceStyleLabel;
+			Matrix3D _transform;
 		public:
 			
-			XbimGeometryModelCollection()
+			XbimGeometryModelCollection(bool isMap)
 			{
-				/*pCompound = new TopoDS_Compound();
-				BRep_Builder b;
-				b.MakeCompound(*pCompound);*/
+
 				shapes = gcnew List<IXbimGeometryModel^>();
+				_isMap=isMap;
+				_hasCurvedEdges = false;
+			};
 			
+			XbimGeometryModelCollection(IfcAxis2Placement^ origin, IfcCartesianTransformationOperator^ transform, Dictionary<int,Object^>^ maps)
+			{
+				shapes = gcnew List<IXbimGeometryModel^>();
+				_isMap=true;
+				_hasCurvedEdges = false;
+
+				if(origin !=nullptr)
+				{
+					if(dynamic_cast<IfcAxis2Placement3D^>(origin))
+						_transform = Axis2Placement3DExtensions::ToMatrix3D((IfcAxis2Placement3D^)origin,maps);
+					else if(dynamic_cast<IfcAxis2Placement2D^>(origin))
+						_transform = Axis2Placement2DExtensions::ToMatrix3D((IfcAxis2Placement2D^)origin,maps);
+					else
+						throw gcnew XbimGeometryException("Invalid IfcAxis2Placement argument");
+
+				}
+
+			if(transform!=nullptr)
+				_transform= Matrix3D::Multiply( CartesianTransformationOperatorExtensions::ToMatrix3D(transform, maps),_transform);
 			};
 
-			XbimGeometryModelCollection(const TopoDS_Compound & pComp, bool hasCurves)
+
+			XbimGeometryModelCollection(const TopoDS_Compound & pComp, bool hasCurves,bool isMap)
 			{
-				/*pCompound = new TopoDS_Compound();
-				*pCompound = pComp;*/
+
 				shapes = gcnew List<IXbimGeometryModel^>();
 				_hasCurvedEdges = hasCurves;
+				_isMap=isMap;
 			
 			};
-			XbimGeometryModelCollection(const TopoDS_Compound & pComp, List<IXbimGeometryModel^>^ features, bool hasCurves)
+			XbimGeometryModelCollection(const TopoDS_Compound & pComp, List<IXbimGeometryModel^>^ features, bool hasCurves,bool isMap)
 			{
-				/*pCompound = new TopoDS_Compound();
-				*pCompound = pComp;*/
 				shapes = gcnew List<IXbimGeometryModel^>(features);
 			    _hasCurvedEdges = hasCurves;
+				_isMap=isMap;
 			};
 
 			~XbimGeometryModelCollection()
@@ -68,6 +92,13 @@ namespace Xbim
 				}
 			}
 
+			property Matrix3D Transform
+			{
+				Matrix3D get()
+				{
+					return _transform;
+				}
+			}
 			// IEnumerable<IXbimGeometryModel^> Members
 			
 virtual property XbimLocation ^ Location 
@@ -147,7 +178,14 @@ virtual property XbimLocation ^ Location
 					return false;
 				}
 			}
-			
+
+			property bool IsMap
+			{
+				bool get()
+				{
+					return _isMap;
+				}
+			}
 			void Add(IXbimGeometryModel^ shape)
 			{
 				shapes->Add(shape);

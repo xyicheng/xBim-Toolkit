@@ -2,6 +2,7 @@
 #include "XbimScene.h"
 #include "IXbimGeometryModel.h"
 #include "XbimGeometryModel.h"
+#include "XbimGeometryModelCollection.h"
 #include "XbimMap.h"
 using namespace System::IO;
 using namespace System::Linq;
@@ -43,7 +44,7 @@ namespace Xbim
 			if(p == nullptr) //nothing to do
 				return;
 			XbimModel^ model = (XbimModel^)p->ModelOf;
-
+			Dictionary<int,List<XbimTriangulatedModel^>^>^ mappedModels = gcnew Dictionary<int,List<XbimTriangulatedModel^>^>();
 			TransformGraph^ graph = gcnew TransformGraph(model);
 			//create a new dictionary to hold maps
 			Dictionary<int, Object^>^ maps = gcnew Dictionary<int, Object^>();
@@ -74,16 +75,33 @@ namespace Xbim
 							{
 								XbimMap^ map = (XbimMap^)geomModel;
 								m3d = Matrix3D::Multiply(map->Transform, m3d);
-								Object^ lookup;
-								int key = -map->MappedItem->GetHashCode();
-								if(maps->TryGetValue(key, lookup))
+								List<XbimTriangulatedModel^>^ lookup;
+								int key = map->MappedItem->GetHashCode();
+								if(mappedModels->TryGetValue(key, lookup))
 								{
-									tm=(List<XbimTriangulatedModel^>^)lookup;
+									tm=lookup;
 								}
 								else
 								{
 									tm = geomModel->Mesh(true);
-									maps->Add(key,tm);
+									mappedModels->Add(key,tm);
+								}
+							}
+							else if(dynamic_cast<XbimGeometryModelCollection^>(geomModel) && ((XbimGeometryModelCollection^)geomModel)->IsMap)
+							{
+								XbimGeometryModelCollection^ mapColl=(XbimGeometryModelCollection^)geomModel;
+								
+								m3d = Matrix3D::Multiply(mapColl->Transform, m3d);
+								List<XbimTriangulatedModel^>^ lookup;
+								int key = mapColl->RepresentationLabel;
+								if(mappedModels->TryGetValue(key, lookup))
+								{
+									tm=lookup;
+								}
+								else
+								{
+									tm = geomModel->Mesh(true);
+									mappedModels->Add(key,tm);
 								}
 							}
 							else
@@ -94,7 +112,6 @@ namespace Xbim
 							array<Byte>^ matrix = Matrix3DExtensions::ToArray(m3d, true);
 
 							Nullable<short> typeId = IfcMetaData::IfcTypeId(product);
-
 							geomTable->AddGeometry(product->EntityLabel, XbimGeometryType::BoundingBox, typeId.Value, matrix, bb->ToArray(), 0 ,geomModel->SurfaceStyleLabel) ;
 							int subPart = 0;
 							for each(XbimTriangulatedModel^ b in tm)

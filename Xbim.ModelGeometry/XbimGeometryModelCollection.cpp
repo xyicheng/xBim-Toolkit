@@ -167,7 +167,7 @@ namespace Xbim
 
 		IXbimGeometryModel^ XbimGeometryModelCollection::CopyTo(IfcObjectPlacement^ placement)
 		{
-			XbimGeometryModelCollection^ newColl = gcnew XbimGeometryModelCollection();
+			XbimGeometryModelCollection^ newColl = gcnew XbimGeometryModelCollection(_isMap);
 			for each(IXbimGeometryModel^ shape in shapes)
 			{
 				newColl->Add(shape->CopyTo(placement));
