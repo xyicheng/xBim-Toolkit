@@ -7,6 +7,7 @@ using Xbim.Common.Exceptions;
 using Xbim.Ifc2x3.Kernel;
 using Xbim.XbimExtensions;
 using Microsoft.Isam.Esent.Interop.Windows7;
+using System.Threading;
 
 namespace Xbim.IO
 {
@@ -414,6 +415,6 @@ namespace Xbim.IO
             }
         }
 
-       
+
     }
 }

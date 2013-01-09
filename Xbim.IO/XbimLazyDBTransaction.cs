@@ -9,7 +9,7 @@ namespace Xbim.IO
     /// <summary>
     /// Used for wrapping a Database Lazy Transaction, if commit is not called the Dispose function rolls back the transaction
     /// </summary>
-    internal struct  XbimLazyDBTransaction : IDisposable
+    public struct  XbimLazyDBTransaction : IDisposable
     {
             /// <summary>
             /// The session that has the transaction.

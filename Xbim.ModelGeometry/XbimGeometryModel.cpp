@@ -39,7 +39,11 @@ using namespace System::Linq;
 using namespace Xbim::Ifc2x3::PresentationAppearanceResource;
 using namespace Xbim::Common::Exceptions;
 class Message_ProgressIndicator {};
+#include <msclr/lock.h>
 
+using namespace System;
+using namespace System::Threading;
+using namespace msclr;
 
 void CALLBACK XMS_BeginTessellate(GLenum type, void *pPolygonData)
 {
@@ -424,14 +428,18 @@ namespace Xbim
 				IfcRepresentationMap^ repMap = map->MappingSource;
 				IXbimGeometryModel^ mg;
 				Object ^ lookup;
-				if(!maps->TryGetValue(Math::Abs(repMap->MappedRepresentation->EntityLabel), lookup)) //look it up
-				{
-					mg =  CreateFrom(repMap->MappedRepresentation,maps, forceSolid,lod, occOut); //make the first one
-					maps->Add(Math::Abs(repMap->MappedRepresentation->EntityLabel), mg);
-				}
-				else
-					mg= (IXbimGeometryModel^)lookup;
+				
+				{ //stop parallel additions
+					lock l(maps);
+					if(!maps->TryGetValue(Math::Abs(repMap->MappedRepresentation->EntityLabel), lookup)) //look it up
+					{
+						mg =  CreateFrom(repMap->MappedRepresentation,maps, forceSolid,lod, occOut); //make the first one
 
+						maps->Add(Math::Abs(repMap->MappedRepresentation->EntityLabel), mg);
+					}
+					else
+						mg= (IXbimGeometryModel^)lookup;
+				}
 				//need to transform all the geometries as below
 				if(mg!=nullptr)
 					return CreateMap(mg, repMap->MappingOrigin, map->MappingTarget,maps, forceSolid);

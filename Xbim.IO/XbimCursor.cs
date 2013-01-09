@@ -147,7 +147,7 @@ namespace Xbim.IO
 
        
 
-        internal XbimLazyDBTransaction BeginLazyTransaction()
+        public XbimLazyDBTransaction BeginLazyTransaction()
         {
             return new XbimLazyDBTransaction(this.sesid);
         }

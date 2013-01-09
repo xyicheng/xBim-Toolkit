@@ -56,12 +56,16 @@ namespace Xbim.IO
         {
             get
             {
-                if (_nonAbstractSubTypes == null)
+                lock (this)
                 {
-                    _nonAbstractSubTypes = new List<Type>();
-                    AddNonAbstractTypes(this, _nonAbstractSubTypes);
+                    if (_nonAbstractSubTypes == null)
+                    {
+                        _nonAbstractSubTypes = new List<Type>();
+                        AddNonAbstractTypes(this, _nonAbstractSubTypes);
+                    }
+                    return _nonAbstractSubTypes;
                 }
-                return _nonAbstractSubTypes;
+               
             }
         }
         /// <summary>

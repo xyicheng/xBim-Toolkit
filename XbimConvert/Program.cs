@@ -16,6 +16,10 @@ using Xbim.Ifc2x3.ProductExtension;
 using Xbim.XbimExtensions;
 using Xbim.Ifc2x3.Extensions;
 using Xbim.Ifc2x3.MeasureResource;
+using System.Threading.Tasks;
+using System.Windows.Media.Media3D;
+using Xbim.XbimExtensions.Interfaces;
+
 namespace XbimConvert
 {
     class Program
@@ -53,7 +57,11 @@ namespace XbimConvert
                         watch.Start();
 
                         model.Open(xbimFileName, XbimDBAccess.ReadWrite);
-                        GenerateGeometry( model);
+                        //using (var txn = model.BeginTransaction())
+                        //{
+                            GenerateGeometry( model);
+                        //}
+                        
                         model.Close();
 
                     }
@@ -111,18 +119,163 @@ namespace XbimConvert
         {
             //now convert the geometry
 
-            IEnumerable<IfcProduct> toDraw = GetProducts(model);
+            List<IfcProduct> toDraw = GetProducts(model).ToList();
+            if (!toDraw.Any()) return; //nothing to do
+            TransformGraph graph = new TransformGraph(model);
+            //create a new dictionary to hold maps
+            Dictionary<int, Object> maps = new Dictionary<int, Object>();
+            //add everything that may have a representation
+            graph.AddProducts(toDraw); //load the products as we will be accessing their geometry
 
-            XbimScene.ConvertGeometry(toDraw, delegate(int percentProgress, object userState)
-            {
-                if (!arguments.IsQuiet)
-                {
-                    Console.Write(string.Format("{0:D5} Converted", percentProgress));
-                    ResetCursor(Console.CursorTop);
-                }
-            }, arguments.OCC);
+            Dictionary<int, List<XbimTriangulatedModel>> mappedModels = new Dictionary<int, List<XbimTriangulatedModel>>();
+
             
+           
+            int tally = 0;
+            int percentageParsed = 0;
+            int total = toDraw.Count();
+            
+            ReportProgressDelegate progDelegate = delegate(int percentProgress, object userState)
+                {
+                    if (!arguments.IsQuiet)
+                    {
+                        Console.Write(string.Format("{0:D5} Converted", percentProgress));
+                        ResetCursor(Console.CursorTop);
+                    }
+                };
+            try
+            {
+                XbimLOD lod = XbimLOD.LOD_Unspecified;
+                Parallel.ForEach<TransformNode>(graph.ProductNodes.Values, node=>{ //go over every node that represents a product
+                
+                    IfcProduct product = node.Product;
+                    try
+                    {
+                        
+                        IXbimGeometryModel geomModel = XbimGeometryModel.CreateFrom(product, maps, false, lod, arguments.OCC);
+                        if (geomModel != null)  //it has geometry
+                        {
+                            List<XbimTriangulatedModel> tm;
+                            Matrix3D m3d = node.WorldMatrix();
+                            if (geomModel is XbimMap)
+                            {
+                                XbimMap map = (XbimMap)geomModel;
+                                m3d = Matrix3D.Multiply(map.Transform, m3d);
+                                List<XbimTriangulatedModel> lookup;
+                                int key = map.MappedItem.RepresentationLabel;
+
+                                lock (mappedModels)
+                                {
+                                    if (mappedModels.TryGetValue(key, out lookup))
+                                    {
+                                        tm = lookup;
+                                    }
+                                    else
+                                    {
+                                        tm = geomModel.Mesh(true);
+                                        mappedModels.Add(key, tm);
+                                    }
+                                }
+                            }
+                            else if (geomModel is XbimGeometryModelCollection && ((XbimGeometryModelCollection)geomModel).IsMap)
+                            {
+                                XbimGeometryModelCollection mapColl = (XbimGeometryModelCollection)geomModel;
+
+                                m3d = Matrix3D.Multiply(mapColl.Transform, m3d);
+                                List<XbimTriangulatedModel> lookup;
+                                int key = mapColl.RepresentationLabel;
+
+                                lock (mappedModels)
+                                {
+                                    {
+                                        if (mappedModels.TryGetValue(key, out lookup))
+                                        {
+                                            tm = lookup;
+                                        }
+                                        else
+                                        {
+                                            tm = geomModel.Mesh(true);
+                                            mappedModels.Add(key, tm);
+                                        }
+                                    }
+                                }
+                            }
+                            else
+                                tm = geomModel.Mesh(true);
+
+
+                            XbimBoundingBox bb = geomModel.GetBoundingBox(true);
+                            
+                            byte[] matrix = Matrix3DExtensions.ToArray(m3d, true);
+
+                            short? typeId = IfcMetaData.IfcTypeId(product);
+                            XbimGeometryCursor geomTable = model.GetGeometryTable();
+
+                            XbimLazyDBTransaction transaction = geomTable.BeginLazyTransaction();
+                            geomTable.AddGeometry(product.EntityLabel, XbimGeometryType.BoundingBox, typeId.Value, matrix, bb.ToArray(), 0, geomModel.SurfaceStyleLabel);
+                            short subPart = 0;
+                            foreach (XbimTriangulatedModel b in tm)
+                            {
+                                geomTable.AddGeometry(product.EntityLabel, XbimGeometryType.TriangulatedMesh, typeId.Value, matrix, b.Triangles, subPart, b.SurfaceStyleLabel);
+                                subPart++;
+                            } transaction.Commit();
+                            model.FreeTable(geomTable); 
+                        }
+                        lock (product) //lock anything
+                        {
+                            tally++;
+                            if (progDelegate != null)
+                            {
+                                int newPercentage = Convert.ToInt32((double)tally / total * 100.0);
+                                if (newPercentage > percentageParsed)
+                                {
+                                    percentageParsed = newPercentage;
+                                    progDelegate(percentageParsed, "Converted");
+                                }
+                            }
+
+                        }
+                    }
+                    catch (Exception e1)
+                    {
+                        String message = String.Format("Error Triangulating product geometry of entity {0} - {1}",
+                            product.EntityLabel,
+                            product.ToString());
+                        Logger.Warn(message, e1);
+                    }
+                });
+                
+            }
+            catch (Exception e2)
+            {
+                Logger.Warn("General Error Triangulating geometry", e2);
+            }
+            finally
+            {
+                
+            }
         }
+
+
+            
+
+
+
+
+           
+
+
+
+                //XbimScene.ConvertGeometry(toDraw, delegate(int percentProgress, object userState)
+                //{
+                //    if (!arguments.IsQuiet)
+                //    {
+                //        Console.Write(string.Format("{0:D5} Converted", percentProgress));
+                //        ResetCursor(Console.CursorTop);
+                //    }
+                //}, arguments.OCC);
+            
+
 
         private static IEnumerable<IfcProduct> GetProducts(XbimModel model)
         {

@@ -57,9 +57,26 @@ namespace Xbim.Ifc2x3.Extensions
         /// <returns></returns>
         public static Matrix3D ToMatrix3D(this IfcAxis2Placement3D axis3, Dictionary<int, Object> maps = null)
         {
-            object transform;
-            if (maps != null && maps.TryGetValue(Math.Abs(axis3.EntityLabel), out transform)) //already converted it just return cached
-                return (Matrix3D)transform;
+            if (maps == null)
+                return ConvertAxis3D(axis3);
+            else
+            {
+                lock (maps)
+                {
+                    object transform;
+                    if (maps != null && maps.TryGetValue(Math.Abs(axis3.EntityLabel), out transform)) //already converted it just return cached
+                        return (Matrix3D)transform;
+                    transform = ConvertAxis3D(axis3);
+                    if (maps != null) maps.Add(Math.Abs(axis3.EntityLabel), transform);
+                    return (Matrix3D) transform;
+                }
+            }
+            
+        }
+
+        private static Matrix3D ConvertAxis3D(IfcAxis2Placement3D axis3)
+        {
+
             if (axis3.RefDirection != null && axis3.Axis != null)
             {
                 Vector3D za = axis3.Axis.WVector3D();
@@ -68,15 +85,13 @@ namespace Xbim.Ifc2x3.Extensions
                 xa.Normalize();
                 Vector3D ya = Vector3D.CrossProduct(za, xa);
                 ya.Normalize();
-                transform = new Matrix3D(xa.X, xa.Y, xa.Z, 0, ya.X, ya.Y, ya.Z, 0, za.X, za.Y, za.Z, 0, axis3.Location.X,
+                return new Matrix3D(xa.X, xa.Y, xa.Z, 0, ya.X, ya.Y, ya.Z, 0, za.X, za.Y, za.Z, 0, axis3.Location.X,
                                     axis3.Location.Y, axis3.Location.Z, 1);
             }
             else
-                transform = new Matrix3D(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, axis3.Location.X, axis3.Location.Y,
+                return new Matrix3D(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, axis3.Location.X, axis3.Location.Y,
                                     axis3.Location.Z, 1);
 
-            if (maps != null) maps.Add(Math.Abs(axis3.EntityLabel), transform);
-            return (Matrix3D)transform;
         }
 
         /// <summary>

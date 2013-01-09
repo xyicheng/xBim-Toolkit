@@ -89,64 +89,27 @@ namespace Xbim.Ifc2x3.Extensions
         /// <returns></returns>
         public static Matrix3D ToMatrix3D(this IfcCartesianTransformationOperator3D ct3D, Dictionary<int, Object> maps = null)
         {
-            object transform;
-            if (maps!=null && maps.TryGetValue(Math.Abs(ct3D.EntityLabel), out transform)) //already converted it just return cached
-                return (Matrix3D)transform;
-            Vector3D u3; //Z Axis Direction
-            Vector3D u2; //X Axis Direction
-            Vector3D u1; //Y axis direction
-            if (ct3D.Axis3 != null)
-            {
-                IfcDirection dir = ct3D.Axis3;
-                u3 = new Vector3D(dir.DirectionRatios[0], dir.DirectionRatios[1], dir.DirectionRatios[2]);
-                u3.Normalize();
-            }
-            else
-                u3 = new Vector3D(0, 0, 1);
-            if (ct3D.Axis1 != null)
-            {
-                IfcDirection dir = ct3D.Axis1;
-                u1 = new Vector3D(dir.DirectionRatios[0], dir.DirectionRatios[1], dir.DirectionRatios[2]);
-                u1.Normalize();
-            }
+            if (maps == null)
+                return ConvertCartesianTranformOperator3D(ct3D);
             else
             {
-                Vector3D defXDir = new Vector3D(1, 0, 0);
-                u1 = u3 != defXDir ? defXDir : new Vector3D(0, 1, 0);
+                lock (maps)
+                {
+                    object transform;
+                    if (maps.TryGetValue(Math.Abs(ct3D.EntityLabel), out transform)) //already converted it just return cached
+                        return (Matrix3D)transform;
+                    Matrix3D matrix = ConvertCartesianTranformOperator3D(ct3D);
+                    maps.Add(Math.Abs(ct3D.EntityLabel), matrix);
+                    return matrix;
+                }
             }
-            Vector3D xVec = Vector3D.Multiply(Vector3D.DotProduct(u1, u3), u3);
-            Vector3D xAxis = Vector3D.Subtract(u1, xVec);
-            xAxis.Normalize();
+        }
 
-            if (ct3D.Axis2 != null)
-            {
-                IfcDirection dir = ct3D.Axis2;
-                u2 = new Vector3D(dir.DirectionRatios[0], dir.DirectionRatios[1], dir.DirectionRatios[2]);
-                u2.Normalize();
-            }
-            else
-                u2 = new Vector3D(0, 1, 0);
-
-            Vector3D tmp = Vector3D.Multiply(Vector3D.DotProduct(u2, u3), u3);
-            Vector3D yAxis = Vector3D.Subtract(u2, tmp);
-            tmp = Vector3D.Multiply(Vector3D.DotProduct(u2, xAxis), xAxis);
-            yAxis = Vector3D.Subtract(yAxis, tmp);
-            yAxis.Normalize();
-            u2 = yAxis;
-            u1 = xAxis;
-
-            Point3D lo = ct3D.LocalOrigin.WPoint3D(); //local origin
-            double s = 1;
-            if (ct3D.Scale.HasValue)
-                s = ct3D.Scale.Value;
-
-            Matrix3D matrix = new Matrix3D(u1.X, u1.Y, u1.Z, 0,
-                               u2.X, u2.Y, u2.Z, 0,
-                               u3.X, u3.Y, u3.Z, 0,
-                               lo.X, lo.Y, lo.Z, 1);
-            matrix.Scale(new Vector3D(ct3D.Scl, ct3D.Scl, ct3D.Scl));
-            if (maps != null) maps.Add(Math.Abs(ct3D.EntityLabel), matrix);
-            return matrix;
+        private static Matrix3D ConvertCartesianTranformOperator3D(IfcCartesianTransformationOperator3D ct3D)
+        {
+            Matrix3D m3d = ConvertCartesianTransform3D(ct3D);
+            m3d.Scale(new Vector3D(ct3D.Scl, ct3D.Scl, ct3D.Scl));
+            return m3d;
         }
 
         /// <summary>
@@ -156,9 +119,31 @@ namespace Xbim.Ifc2x3.Extensions
         /// <returns></returns>
         public static Matrix3D ToMatrix3D(this IfcCartesianTransformationOperator3DnonUniform ct3D, Dictionary<int, Object> maps = null)
         {
-            object transform;
-            if (maps != null && maps.TryGetValue(Math.Abs(ct3D.EntityLabel), out transform)) //already converted it just return cached
-                return (Matrix3D)transform;
+            if (maps == null)
+                return ConvertCartesianTransformationOperator3DnonUniform(ct3D);
+            else
+            {
+                lock (maps)
+                {
+                    object transform;
+                    if (maps.TryGetValue(Math.Abs(ct3D.EntityLabel), out transform)) //already converted it just return cached
+                        return (Matrix3D)transform;
+                    Matrix3D matrix = ConvertCartesianTransformationOperator3DnonUniform(ct3D);
+                    maps.Add(Math.Abs(ct3D.EntityLabel), matrix);
+                    return matrix;
+                }
+            }
+        }
+
+        private static Matrix3D ConvertCartesianTransformationOperator3DnonUniform(IfcCartesianTransformationOperator3DnonUniform ct3D)
+        {
+            Matrix3D m3d =  ConvertCartesianTransform3D(ct3D);
+            m3d.Scale(new Vector3D(ct3D.Scl, ct3D.Scl2, ct3D.Scl3));
+            return m3d;
+        }
+
+        private static Matrix3D ConvertCartesianTransform3D(IfcCartesianTransformationOperator3D ct3D)
+        {
             Vector3D u3; //Z Axis Direction
             Vector3D u2; //X Axis Direction
             Vector3D u1; //Y axis direction
@@ -204,13 +189,11 @@ namespace Xbim.Ifc2x3.Extensions
 
             Point3D lo = ct3D.LocalOrigin.WPoint3D(); //local origin
 
-            Matrix3D matrix = new Matrix3D(u1.X, u1.Y, u1.Z, 0,
+            return new Matrix3D(u1.X, u1.Y, u1.Z, 0,
                                            u2.X, u2.Y, u2.Z, 0,
                                            u3.X, u3.Y, u3.Z, 0,
                                            lo.X, lo.Y, lo.Z, 1);
-            matrix.Scale(new Vector3D(ct3D.Scl, ct3D.Scl2, ct3D.Scl3));
-            if(maps!=null)  maps.Add(Math.Abs(ct3D.EntityLabel), matrix);
-            return matrix;
+           
         }
     }
 }

@@ -152,7 +152,7 @@ namespace Xbim.IO
         /// Starts a transaction to allow bulk updates on the geometry table, FreeGeometry Table should be called when no longer required
         /// </summary>
         /// <returns></returns>
-        internal XbimGeometryCursor GetGeometryTable()
+        public XbimGeometryCursor GetGeometryTable()
         {
             return cache.GetGeometryTable();
         }
@@ -161,7 +161,7 @@ namespace Xbim.IO
         /// Returns the table to the cache for reuse
         /// </summary>
         /// <param name="table"></param>
-        internal void FreeTable(XbimGeometryCursor table)
+        public void FreeTable(XbimGeometryCursor table)
         {
             cache.FreeTable(table);
         }

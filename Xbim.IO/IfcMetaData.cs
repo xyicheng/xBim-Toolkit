@@ -289,5 +289,13 @@ namespace Xbim.IO
             IfcType ifcType = IfcType(entityTypeName);
             return ifcType.IsIndexedIfcAttribute(attributeIndex);
         }
+
+        public static void Load()
+        {
+            foreach (var item in TypeNameToIfcTypeLookup.Values)
+            {
+                IList<Type> l =  item.NonAbstractSubTypes;
+            }
+        }
     }
 }
