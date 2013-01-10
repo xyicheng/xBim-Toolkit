@@ -47,10 +47,12 @@ namespace Xbim.Presentation
                     try
                     {
                         IXbimGeometryModel geomModel = XbimGeometryModel.CreateFrom(product, maps, false, lod, false);
+                        
                         if (geomModel != null)  //it has geometry
                         {
                             Matrix3D m3d = node.WorldMatrix();
-                            List<XbimTriangulatedModel> tm;
+
+                            List<XbimTriangulatedModel> tm = null;
                             lock (mappedModels)
                             {
                                 if (geomModel is XbimMap)
@@ -60,18 +62,22 @@ namespace Xbim.Presentation
                                     List<XbimTriangulatedModel> lookup;
                                     int key = map.MappedItem.RepresentationLabel;
 
-                                    lock (mappedModels)
+                                    if (mappedModels.TryGetValue(key, out lookup))
+                                        tm = lookup;
+
+                                    if (tm == null)
                                     {
-                                        if (mappedModels.TryGetValue(key, out lookup))
+                                        tm = geomModel.Mesh(true);
+                                        lock (mappedModels)
                                         {
-                                            tm = lookup;
+                                            if (mappedModels.TryGetValue(key, out lookup))
+                                                tm = lookup;
+                                            else
+                                                mappedModels.Add(key, tm);
                                         }
-                                        else
-                                        {
-                                            tm = geomModel.Mesh(true);
-                                            mappedModels.Add(key, tm);
-                                        }
+
                                     }
+
                                 }
                                 else if (geomModel is XbimGeometryModelCollection && ((XbimGeometryModelCollection)geomModel).IsMap)
                                 {
@@ -81,26 +87,30 @@ namespace Xbim.Presentation
                                     List<XbimTriangulatedModel> lookup;
                                     int key = mapColl.RepresentationLabel;
 
-                                    lock (mappedModels)
+                                    if (mappedModels.TryGetValue(key, out lookup))
+                                        tm = lookup;
+
+                                    if (tm == null)
                                     {
+                                        tm = geomModel.Mesh(true);
+                                        lock (mappedModels)
                                         {
                                             if (mappedModels.TryGetValue(key, out lookup))
-                                            {
                                                 tm = lookup;
-                                            }
                                             else
-                                            {
-                                                tm = geomModel.Mesh(true);
                                                 mappedModels.Add(key, tm);
-                                            }
                                         }
                                     }
                                 }
                                 else
                                     tm = geomModel.Mesh(true);
 
-                                lock (tm)
+                                //if (!(geomModel is XbimMap))
                                 {
+                                    //tm = geomModel.Mesh(true);
+
+                                    //lock (tm)
+                                    //{
                                     XbimBoundingBox bb = geomModel.GetBoundingBox(true);
 
                                     byte[] matrix = Matrix3DExtensions.ToArray(m3d, true);
@@ -115,9 +125,11 @@ namespace Xbim.Presentation
                                     {
                                         geomTable.AddGeometry(product.EntityLabel, XbimGeometryType.TriangulatedMesh, typeId.Value, matrix, b.Triangles, subPart, b.SurfaceStyleLabel);
                                         subPart++;
-                                    } transaction.Commit();
+                                    }
+                                    transaction.Commit();
                                     model.FreeTable(geomTable);
                                 }
+                                //}
                             }
                         }
 

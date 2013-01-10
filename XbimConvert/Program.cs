@@ -158,62 +158,84 @@ namespace XbimConvert
                         {
                             Matrix3D m3d = node.WorldMatrix();
                             
-                            List<XbimTriangulatedModel> tm ;
+                            List<XbimTriangulatedModel> tm=null ;
                             lock (mappedModels)
                             {
-                                if (geomModel is XbimMap)
-                                {
-                                    XbimMap map = (XbimMap)geomModel;
-                                    m3d = Matrix3D.Multiply(map.Transform, m3d);
-                                    List<XbimTriangulatedModel> lookup;
-                                    int key = map.MappedItem.RepresentationLabel;
-                                    if (mappedModels.TryGetValue(key, out lookup))
-                                        tm = lookup;
-                                    else
-                                    {
-                                        tm = geomModel.Mesh(true);
-                                        mappedModels.Add(key, tm);
-                                    }
+                            if (geomModel is XbimMap)
+                            {
+                                XbimMap map = (XbimMap)geomModel;
+                                m3d = Matrix3D.Multiply(map.Transform, m3d);
+                                List<XbimTriangulatedModel> lookup;
+                                int key = map.MappedItem.RepresentationLabel;
 
-                                }
-                                else if (geomModel is XbimGeometryModelCollection && ((XbimGeometryModelCollection)geomModel).IsMap)
-                                {
-                                    XbimGeometryModelCollection mapColl = (XbimGeometryModelCollection)geomModel;
+                                if (mappedModels.TryGetValue(key, out lookup))
+                                    tm = lookup;
 
-                                    m3d = Matrix3D.Multiply(mapColl.Transform, m3d);
-                                    List<XbimTriangulatedModel> lookup;
-                                    int key = mapColl.RepresentationLabel;
-                                    if (mappedModels.TryGetValue(key, out lookup))
-                                        tm = lookup;
-                                    else
-                                    {
-                                        tm = geomModel.Mesh(true);
-                                        mappedModels.Add(key, tm);
-                                    }
-                                }
-                                else
+                                if(tm==null)
+                                {   
                                     tm = geomModel.Mesh(true);
-
-                                lock (tm)
-                                {
-                                    XbimBoundingBox bb = geomModel.GetBoundingBox(true);
-
-                                    byte[] matrix = Matrix3DExtensions.ToArray(m3d, true);
-
-                                    short? typeId = IfcMetaData.IfcTypeId(product);
-                                    XbimGeometryCursor geomTable = model.GetGeometryTable();
-
-                                    XbimLazyDBTransaction transaction = geomTable.BeginLazyTransaction();
-                                    geomTable.AddGeometry(product.EntityLabel, XbimGeometryType.BoundingBox, typeId.Value, matrix, bb.ToArray(), 0, geomModel.SurfaceStyleLabel);
-                                    short subPart = 0;
-                                    foreach (XbimTriangulatedModel b in tm)
+                                    lock (mappedModels)
                                     {
-                                        geomTable.AddGeometry(product.EntityLabel, XbimGeometryType.TriangulatedMesh, typeId.Value, matrix, b.Triangles, subPart, b.SurfaceStyleLabel);
-                                        subPart++;
+                                        if (mappedModels.TryGetValue(key, out lookup))
+                                            tm = lookup;
+                                        else
+                                            mappedModels.Add(key, tm);
                                     }
-                                    transaction.Commit();
-                                    model.FreeTable(geomTable);
+                                    
                                 }
+
+                            }
+                            else if (geomModel is XbimGeometryModelCollection && ((XbimGeometryModelCollection)geomModel).IsMap)
+                            {
+                                XbimGeometryModelCollection mapColl = (XbimGeometryModelCollection)geomModel;
+
+                                m3d = Matrix3D.Multiply(mapColl.Transform, m3d);
+                                List<XbimTriangulatedModel> lookup;
+                                int key = mapColl.RepresentationLabel;
+
+                                if (mappedModels.TryGetValue(key, out lookup))
+                                    tm = lookup;
+
+                                if (tm == null)
+                                {
+                                    tm = geomModel.Mesh(true);
+                                    lock (mappedModels)
+                                    {
+                                        if (mappedModels.TryGetValue(key, out lookup))
+                                            tm = lookup;
+                                        else
+                                            mappedModels.Add(key, tm);
+                                    }
+                                }
+                            }
+                            else
+                                tm = geomModel.Mesh(true);
+
+                            //if (!(geomModel is XbimMap))
+                            {
+                                //tm = geomModel.Mesh(true);
+
+                                //lock (tm)
+                                //{
+                                XbimBoundingBox bb = geomModel.GetBoundingBox(true);
+
+                                byte[] matrix = Matrix3DExtensions.ToArray(m3d, true);
+
+                                short? typeId = IfcMetaData.IfcTypeId(product);
+                                XbimGeometryCursor geomTable = model.GetGeometryTable();
+
+                                XbimLazyDBTransaction transaction = geomTable.BeginLazyTransaction();
+                                geomTable.AddGeometry(product.EntityLabel, XbimGeometryType.BoundingBox, typeId.Value, matrix, bb.ToArray(), 0, geomModel.SurfaceStyleLabel);
+                                short subPart = 0;
+                                foreach (XbimTriangulatedModel b in tm)
+                                {
+                                    geomTable.AddGeometry(product.EntityLabel, XbimGeometryType.TriangulatedMesh, typeId.Value, matrix, b.Triangles, subPart, b.SurfaceStyleLabel);
+                                    subPart++;
+                                }
+                                transaction.Commit();
+                                model.FreeTable(geomTable);
+                            }
+                                //}
                             }
                         }
                         Interlocked.Increment(ref tally);
