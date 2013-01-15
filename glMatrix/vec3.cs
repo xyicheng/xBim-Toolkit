@@ -13,7 +13,7 @@ namespace glMatrix
         {
             return new vec3();
         }
-        public static vec3 create(Single[] vec)
+        public static vec3 create(Double[] vec)
         {
             if (vec == null) throw new ArgumentNullException("vec");
 
@@ -25,7 +25,15 @@ namespace glMatrix
             v[2] = vec[2];
             return v;
         }
-        public static vec3 create(Single x, Single y, Single z)
+        public static vec3 create(Single[] vec)
+        {
+            if (vec == null) throw new ArgumentNullException("vec");
+
+            if (vec.Length != 3) throw new ArgumentOutOfRangeException("vec", "vec must have a length of 3");
+
+            return vec3.create(Array.ConvertAll<Single, Double>(vec, Convert.ToDouble));
+        }
+        public static vec3 create(Double x, Double y, Double z)
         {
             vec3 v = new vec3();
             v[0] = x;
@@ -33,22 +41,22 @@ namespace glMatrix
             v[2] = z;
             return v;
         }
-        private static vec3 createFrom(Single p1, Single p2, Single p3)
+        private static vec3 createFrom(Double p1, Double p2, Double p3)
         {
             return vec3.create(p1, p2, p3);
         }
         #endregion
 
         #region members
-        private Single[] vals = new Single[3];
-        private const Single FLOAT_EPSILON = 0.000001f;
-        public Single X { get { return vals[0]; } set { vals[0] = value; } }
-        public Single Y { get { return vals[1]; } set { vals[1] = value; } }
-        public Single Z { get { return vals[2]; } set { vals[2] = value; } }
+        private Double[] vals = new Double[3];
+        private const Double FLOAT_EPSILON = 0.000001f;
+        public Double X { get { return vals[0]; } set { vals[0] = value; } }
+        public Double Y { get { return vals[1]; } set { vals[1] = value; } }
+        public Double Z { get { return vals[2]; } set { vals[2] = value; } }
         #endregion
 
         #region Operators
-        public Single this[int key]
+        public Double this[int key]
         {
             get
             {
@@ -59,11 +67,15 @@ namespace glMatrix
                 vals[key] = value;
             }
         }
-        public static explicit operator Single[](vec3 a)
+        public static explicit operator Double[](vec3 a)
         {
             return a.vals;
         }
-        public static explicit operator vec3(Single[] a)
+        public static explicit operator Single[](vec3 a)
+        {
+            return Array.ConvertAll<Double, Single>(a.vals, Convert.ToSingle);
+        }
+        public static explicit operator vec3(Double[] a)
         {
             return vec3.create(a);
         }
@@ -112,7 +124,7 @@ namespace glMatrix
             dest[2] = vec[2] + vec2[2];
             return dest;
         }
-        public static vec3 add(vec3 a, Single b)
+        public static vec3 add(vec3 a, Double b)
         {
             throw new NotImplementedException();
         }
@@ -165,7 +177,7 @@ namespace glMatrix
 
             return dest;
         }
-        public static vec3 scale(vec3 vec, Single val, vec3 dest)
+        public static vec3 scale(vec3 vec, Double val, vec3 dest)
         {
             if (dest == null || vec == dest)
             {
@@ -183,9 +195,9 @@ namespace glMatrix
         public static Boolean equal(vec3 a, vec3 b)
         {
             return a == b || (
-                (Single)Math.Abs(a[0] - b[0]) < FLOAT_EPSILON &&
-                (Single)Math.Abs(a[1] - b[1]) < FLOAT_EPSILON &&
-                (Single)Math.Abs(a[2] - b[2]) < FLOAT_EPSILON);
+                (Double)Math.Abs(a[0] - b[0]) < FLOAT_EPSILON &&
+                (Double)Math.Abs(a[1] - b[1]) < FLOAT_EPSILON &&
+                (Double)Math.Abs(a[2] - b[2]) < FLOAT_EPSILON);
         }
         public static vec3 normalize(vec3 vec, vec3 dest = null)
         {
@@ -194,7 +206,7 @@ namespace glMatrix
             var x = vec[0];
             var y = vec[1];
             var z = vec[2];
-            var len = (Single)Math.Sqrt(x * x + y * y + z * z);
+            var len = (Double)Math.Sqrt(x * x + y * y + z * z);
 
             if (len == 0)
             {
@@ -234,15 +246,15 @@ namespace glMatrix
             return dest;
         }
 
-        public static Single length(vec3 vec)
+        public static Double length(vec3 vec)
         {
             var x = vec[0];
             var y = vec[1];
             var z = vec[2];
-            return (Single)Math.Sqrt(x * x + y * y + z * z);
+            return (Double)Math.Sqrt(x * x + y * y + z * z);
         }
 
-        public static Single squaredLength(vec3 vec)
+        public static Double squaredLength(vec3 vec)
         {
             var x = vec[0];
             var y = vec[1];
@@ -250,7 +262,7 @@ namespace glMatrix
             return x * x + y * y + z * z;
         }
 
-        public static Single dot(vec3 vec, vec3 vec2)
+        public static Double dot(vec3 vec, vec3 vec2)
         {
             return vec[0] * vec2[0] + vec[1] * vec2[1] + vec[2] * vec2[2];
         }
@@ -262,7 +274,7 @@ namespace glMatrix
             var x = vec[0] - vec2[0];
             var y = vec[1] - vec2[1];
             var z = vec[2] - vec2[2];
-            var len = (Single)Math.Sqrt(x * x + y * y + z * z);
+            var len = (Double)Math.Sqrt(x * x + y * y + z * z);
 
             if (len == 0)
             {
@@ -279,7 +291,7 @@ namespace glMatrix
             return dest;
         }
 
-        public static vec3 lerp(vec3 vec, vec3 vec2, Single lerp, vec3 dest = null)
+        public static vec3 lerp(vec3 vec, vec3 vec2, Double lerp, vec3 dest = null)
         {
             if (dest == null) { dest = vec; }
 
@@ -290,21 +302,21 @@ namespace glMatrix
             return dest;
         }
 
-        public static Single dist(vec3 vec, vec3 vec2)
+        public static Double dist(vec3 vec, vec3 vec2)
         {
             var x = vec2[0] - vec[0];
             var y = vec2[1] - vec[1];
             var z = vec2[2] - vec[2];
 
-            return (Single)Math.Sqrt(x * x + y * y + z * z);
+            return (Double)Math.Sqrt(x * x + y * y + z * z);
         }
 
-        public static vec3 unproject(vec3 vec, mat4 view, mat4 proj, Single[] viewport, vec3 dest)
+        public static vec3 unproject(vec3 vec, mat4 view, mat4 proj, Double[] viewport, vec3 dest)
         {
             if (dest == null) { dest = vec; }
 
             var unprojectMat = mat4.create();
-            var unprojectVec = new Single[4];
+            var unprojectVec = new Double[4];
 
             var m = unprojectMat;
             var v = unprojectVec;
@@ -349,7 +361,7 @@ namespace glMatrix
         //        vec3.normalize(axis);
         //        quat4.fromAngleAxis(Math.PI, axis, dest);
         //    } else {
-        //        var s = (Single)Math.sqrt((1.0 + d) * 2.0);
+        //        var s = (Double)Math.sqrt((1.0 + d) * 2.0);
         //        var sInv = 1.0 / s;
         //        vec3.cross(a, b, axis);
         //        dest[0] = axis[0] * sInv;

@@ -15,14 +15,14 @@ namespace glMatrix
         /// <returns>New mat4</returns>
         public static mat4 create()
         {
-            return new mat4();
+            return mat4.identity();
         }
         /// <summary>
         /// Creates a new instance of a mat4
         /// </summary>
-        /// <param name="mat">Single[16] containing values to initialize with</param>
+        /// <param name="mat">Double[16] containing values to initialize with</param>
         /// <returns>New mat4New mat4</returns>
-        public static mat4 create(Single[] mat)
+        public static mat4 create(Double[] mat)
         {
             if (mat == null) throw new ArgumentNullException("mat");
 
@@ -33,10 +33,23 @@ namespace glMatrix
             return v;
         }
         /// <summary>
+        /// Creates a new instance of a mat4
+        /// </summary>
+        /// <param name="mat">Double[16] containing values to initialize with</param>
+        /// <returns>New mat4New mat4</returns>
+        public static mat4 create(Single[] mat)
+        {
+            if (mat == null) throw new ArgumentNullException("mat");
+
+            if (mat.Length != 16) throw new ArgumentOutOfRangeException("mat", "mat must have a length of 16");
+
+            return mat4.create(Array.ConvertAll<Single, Double>(mat, Convert.ToDouble));
+        }
+        /// <summary>
         /// Creates a new instance of a mat4, initializing it with the given arguments
         /// </summary>
         /// <returns>New mat4</returns>
-        public static mat4 createFrom(Single m00, Single m01, Single m02, Single m03, Single m10, Single m11, Single m12, Single m13, Single m20, Single m21, Single m22, Single m23, Single m30, Single m31, Single m32, Single m33)
+        public static mat4 createFrom(Double m00, Double m01, Double m02, Double m03, Double m10, Double m11, Double m12, Double m13, Double m20, Double m21, Double m22, Double m23, Double m30, Double m31, Double m32, Double m33)
         {
             var dest = new mat4();
 
@@ -62,29 +75,28 @@ namespace glMatrix
         #endregion
 
         #region members
-        private Single[] vals = new Single[16];
-        private static Single[] _identity = new Single[] { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
-        public Single m00 { get { return this[0]; } set { this[0] = value; } }
-        public Single m01 { get { return this[1]; } set { this[1] = value; } }
-        public Single m02 { get { return this[2]; } set { this[2] = value; } }
-        public Single m03 { get { return this[3]; } set { this[3] = value; } }
-        public Single m10 { get { return this[4]; } set { this[4] = value; } }
-        public Single m11 { get { return this[5]; } set { this[5] = value; } }
-        public Single m12 { get { return this[6]; } set { this[6] = value; } }
-        public Single m13 { get { return this[7]; } set { this[7] = value; } }
-        public Single m20 { get { return this[8]; } set { this[8] = value; } }
-        public Single m21 { get { return this[9]; } set { this[9] = value; } }
-        public Single m22 { get { return this[10]; } set { this[10] = value; } }
-        public Single m23 { get { return this[11]; } set { this[11] = value; } }
-        public Single m30 { get { return this[12]; } set { this[12] = value; } }
-        public Single m31 { get { return this[13]; } set { this[13] = value; } }
-        public Single m32 { get { return this[14]; } set { this[14] = value; } }
-        public Single m33 { get { return this[15]; } set { this[15] = value; } }
-        private const Single FLOAT_EPSILON = 0.000001f;
+        private Double[] vals = new Double[16];
+        public Double m00 { get { return this[0]; } set { this[0] = value; } }
+        public Double m01 { get { return this[1]; } set { this[1] = value; } }
+        public Double m02 { get { return this[2]; } set { this[2] = value; } }
+        public Double m03 { get { return this[3]; } set { this[3] = value; } }
+        public Double m10 { get { return this[4]; } set { this[4] = value; } }
+        public Double m11 { get { return this[5]; } set { this[5] = value; } }
+        public Double m12 { get { return this[6]; } set { this[6] = value; } }
+        public Double m13 { get { return this[7]; } set { this[7] = value; } }
+        public Double m20 { get { return this[8]; } set { this[8] = value; } }
+        public Double m21 { get { return this[9]; } set { this[9] = value; } }
+        public Double m22 { get { return this[10]; } set { this[10] = value; } }
+        public Double m23 { get { return this[11]; } set { this[11] = value; } }
+        public Double m30 { get { return this[12]; } set { this[12] = value; } }
+        public Double m31 { get { return this[13]; } set { this[13] = value; } }
+        public Double m32 { get { return this[14]; } set { this[14] = value; } }
+        public Double m33 { get { return this[15]; } set { this[15] = value; } }
+        private const Double FLOAT_EPSILON = 0.000001f;
         #endregion
 
         #region Operators
-        public Single this[int key]
+        public Double this[int key]
         {
             get
             {
@@ -97,9 +109,13 @@ namespace glMatrix
         }
         public static explicit operator Single[](mat4 a)
         {
+            return Array.ConvertAll<Double, Single>(a.vals, Convert.ToSingle);
+        }
+        public static explicit operator Double[](mat4 a)
+        {
             return a.vals;
         }
-        public static explicit operator mat4(Single[] a)
+        public static explicit operator mat4(Double[] a)
         {
             return mat4.create(a);
         }
@@ -161,7 +177,22 @@ namespace glMatrix
         public static mat4 identity(mat4 dest = null)
         {
             if (dest == null) dest = new mat4();
-            dest.vals = mat4._identity;
+            dest[0] = 1;
+            dest[1] = 0;
+            dest[2] = 0;
+            dest[3] = 0;
+            dest[4] = 0;
+            dest[5] = 1;
+            dest[6] = 0;
+            dest[7] = 0;
+            dest[8] = 0;
+            dest[9] = 0;
+            dest[10] = 1;
+            dest[11] = 0;
+            dest[12] = 0;
+            dest[13] = 0;
+            dest[14] = 0;
+            dest[15] = 1;
             return dest;
         }
 
@@ -172,10 +203,10 @@ namespace glMatrix
         /// <param name="angle">angle Angle (in radians) to rotate</param>
         /// <param name="dest">mat4 receiving operation result. If not specified result is written to mat</param>
         /// <returns>dest if specified, mat otherwise</returns>
-        public static mat4 rotateX(mat4 mat, Single angle, mat4 dest = null)
+        public static mat4 rotateX(mat4 mat, Double angle, mat4 dest = null)
         {
-            Single s = (Single)(Single)Math.Sin(angle),
-            c = (Single)(Single)Math.Cos(angle),
+            Double s = (Double)Math.Sin(angle),
+            c = (Double)Math.Cos(angle),
             a10 = mat[4],
             a11 = mat[5],
             a12 = mat[6],
@@ -222,10 +253,10 @@ namespace glMatrix
         /// <param name="angle">angle Angle (in radians) to rotate</param>
         /// <param name="dest">mat4 receiving operation result. If not specified result is written to mat</param>
         /// <returns>dest if specified, mat otherwise</returns>
-        public static mat4 rotateZ(mat4 mat, Single angle, mat4 dest = null)
+        public static mat4 rotateZ(mat4 mat, Double angle, mat4 dest = null)
         {
-            Single s = (Single)Math.Sin(angle),
-            c = (Single)Math.Cos(angle),
+            Double s = (Double)Math.Sin(angle),
+            c = (Double)Math.Cos(angle),
             a00 = mat[0],
             a01 = mat[1],
             a02 = mat[2],
@@ -273,10 +304,10 @@ namespace glMatrix
         /// <param name="angle">angle Angle (in radians) to rotate</param>
         /// <param name="dest">mat4 receiving operation result. If not specified result is written to mat</param>
         /// <returns>dest if specified, mat otherwise</returns>
-        public static mat4 rotateY(mat4 mat, Single angle, mat4 dest = null)
+        public static mat4 rotateY(mat4 mat, Double angle, mat4 dest = null)
         {
-            Single s = (Single)Math.Sin(angle),
-            c = (Single)Math.Cos(angle),
+            Double s = (Double)Math.Sin(angle),
+            c = (Double)Math.Cos(angle),
             a00 = mat[0],
             a01 = mat[1],
             a02 = mat[2],
@@ -325,10 +356,10 @@ namespace glMatrix
         /// <param name="axis">axis vec3 representing the axis to rotate around</param>
         /// <param name="dest">mat4 receiving operation result. If not specified result is written to mat</param>
         /// <returns>dest if specified, mat otherwise</returns>
-        public static mat4 rotate(mat4 mat, Single angle, vec3 axis, mat4 dest = null)
+        public static mat4 rotate(mat4 mat, Double angle, vec3 axis, mat4 dest = null)
         {
-            Single x = axis[0], y = axis[1], z = axis[2],
-                len = (Single)Math.Sqrt(x * x + y * y + z * z),
+            Double x = axis[0], y = axis[1], z = axis[2],
+                len = (Double)Math.Sqrt(x * x + y * y + z * z),
                 s, c, t,
                 a00, a01, a02, a03,
                 a10, a11, a12, a13,
@@ -346,8 +377,8 @@ namespace glMatrix
                 z *= len;
             }
 
-            s = (Single)Math.Sin(angle);
-            c = (Single)Math.Cos(angle);
+            s = (Double)Math.Sin(angle);
+            c = (Double)Math.Cos(angle);
             t = 1 - c;
 
             a00 = mat[0]; a01 = mat[1]; a02 = mat[2]; a03 = mat[3];
@@ -401,7 +432,7 @@ namespace glMatrix
             var x = vec[0];
             var y = vec[1];
             var z = vec[2];
-            Single a00, a01, a02, a03,
+            Double a00, a01, a02, a03,
             a10, a11, a12, a13,
             a20, a21, a22, a23;
 
@@ -440,7 +471,7 @@ namespace glMatrix
             if (dest == null) { dest = mat; }
 
             // Cache the matrix values (makes for huge speed increases!)
-            Single a00 = mat[0], a01 = mat[1], a02 = mat[2], a03 = mat[3],
+            Double a00 = mat[0], a01 = mat[1], a02 = mat[2], a03 = mat[3],
                 a10 = mat[4], a11 = mat[5], a12 = mat[6], a13 = mat[7],
                 a20 = mat[8], a21 = mat[9], a22 = mat[10], a23 = mat[11],
                 a30 = mat[12], a31 = mat[13], a32 = mat[14], a33 = mat[15],
@@ -496,10 +527,11 @@ namespace glMatrix
         /// <param name="far">far Far bound of the frustum</param>
         /// <param name="dest">mat4 frustum matrix will be written into</param>
         /// <returns>dest if specified, a new mat4 otherwise</returns>
-        public static mat4 frustum(Single left, Single right, Single bottom, Single top, Single near, Single far, mat4 dest = null)
+        public static mat4 frustum(Double left, Double right, Double bottom, Double top, Double near, Double far, mat4 dest = null)
         {
             if (dest == null) { dest = mat4.create(); }
-            Single rl = (right - left),
+
+            Double rl = (right - left),
                 tb = (top - bottom),
                 fn = (far - near);
             dest[0] = (near * 2) / rl;
@@ -530,9 +562,10 @@ namespace glMatrix
         /// <param name="far">far Far bound of the frustum</param>
         /// <param name="dest">mat4 frustum matrix will be written into</param>
         /// <returns>dest if specified, a new mat4 otherwise</returns>
-        public static mat4 perspective(Single fovy, Single aspect, Single near, Single far, mat4 dest = null)
+        public static mat4 perspective(Double fovy, Double aspect, Double near, Double far, mat4 dest = null)
         {
-            Single top = near * (Single)Math.Tan(fovy * (Single)Math.PI / 360.0), right = top * aspect;
+            if (dest == null) dest = mat4.create();
+            Double top = near * (Double)Math.Tan(fovy * (Double)Math.PI / 360.0), right = top * aspect;
             return mat4.frustum(-right, right, -top, top, near, far, dest);
         }
 
@@ -547,10 +580,10 @@ namespace glMatrix
         /// <param name="far">far Far bound of the frustum</param>
         /// <param name="dest">mat4 frustum matrix will be written into</param>
         /// <returns>dest if specified, a new mat4 otherwise</returns>
-        public static mat4 ortho(Single left, Single right, Single bottom, Single top, Single near, Single far, mat4 dest = null)
+        public static mat4 ortho(Double left, Double right, Double bottom, Double top, Double near, Double far, mat4 dest = null)
         {
             if (dest == null) { dest = mat4.create(); }
-            Single rl = (right - left),
+            Double rl = (right - left),
                 tb = (top - bottom),
                 fn = (far - near);
             dest[0] = 2 / rl;
@@ -584,7 +617,7 @@ namespace glMatrix
         {
             if (dest == null) { dest = mat4.create(); }
 
-            Single x0, x1, x2, y0, y1, y2, z0, z1, z2, len,
+            Double x0, x1, x2, y0, y1, y2, z0, z1, z2, len,
                 eyex = eye[0],
                 eyey = eye[1],
                 eyez = eye[2],
@@ -606,7 +639,7 @@ namespace glMatrix
             z2 = eyez - centerz;
 
             // normalize (no check needed for 0 because of early return)
-            len = (Single)(1 / Math.Sqrt(z0 * z0 + z1 * z1 + z2 * z2));
+            len = (Double)(1 / Math.Sqrt(z0 * z0 + z1 * z1 + z2 * z2));
             z0 *= len;
             z1 *= len;
             z2 *= len;
@@ -615,7 +648,7 @@ namespace glMatrix
             x0 = upy * z2 - upz * z1;
             x1 = upz * z0 - upx * z2;
             x2 = upx * z1 - upy * z0;
-            len = (Single)Math.Sqrt(x0 * x0 + x1 * x1 + x2 * x2);
+            len = (Double)Math.Sqrt(x0 * x0 + x1 * x1 + x2 * x2);
             if (len == 0)
             {
                 x0 = 0;
@@ -635,7 +668,7 @@ namespace glMatrix
             y1 = z2 * x0 - z0 * x2;
             y2 = z0 * x1 - z1 * x0;
 
-            len = (Single)Math.Sqrt(y0 * y0 + y1 * y1 + y2 * y2);
+            len = (Double)Math.Sqrt(y0 * y0 + y1 * y1 + y2 * y2);
             if (len == 0)
             {
                 y0 = 0;
@@ -699,7 +732,7 @@ namespace glMatrix
         /// <param name="vec">vec vec4 to transform</param>
         /// <param name="dest">vec4 receiving operation result. If not specified result is written to vec</param>
         /// <returns>dest if specified, vec otherwise</returns>
-        public static Single[] multiplyVec4(mat4 mat, Single[] vec, Single[] dest = null)
+        public static Double[] multiplyVec4(mat4 mat, Double[] vec, Double[] dest = null)
         {
             if (dest == null) { dest = vec; }
 
@@ -882,10 +915,10 @@ namespace glMatrix
         /// </summary>
         /// <param name="mat">mat mat4 to calculate determinant of</param>
         /// <returns>determinant of mat</returns>
-        public static Single determinant(mat4 mat)
+        public static Double determinant(mat4 mat)
         {
             // Cache the matrix values (makes for huge speed increases!)
-            Single a00 = mat[0], a01 = mat[1], a02 = mat[2], a03 = mat[3],
+            Double a00 = mat[0], a01 = mat[1], a02 = mat[2], a03 = mat[3],
                 a10 = mat[4], a11 = mat[5], a12 = mat[6], a13 = mat[7],
                 a20 = mat[8], a21 = mat[9], a22 = mat[10], a23 = mat[11],
                 a30 = mat[12], a31 = mat[13], a32 = mat[14], a33 = mat[15];
@@ -909,7 +942,7 @@ namespace glMatrix
             // If we are transposing ourselves we can skip a few steps but have to cache some values
             if (dest == null || mat == dest)
             {
-                Single a01 = mat[1], a02 = mat[2], a03 = mat[3],
+                Double a01 = mat[1], a02 = mat[2], a03 = mat[3],
                     a12 = mat[6], a13 = mat[7],
                     a23 = mat[11];
 
