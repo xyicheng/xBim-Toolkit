@@ -142,12 +142,7 @@ namespace Xbim.COBie.Client
                     default:
                         break;
                 }
-                //set the UI language to get correct resource file for template
-                if (Path.GetFileName(parameters.TemplateFile).Contains("-UK-"))
-                {
-                    ChangeUILanguage("en-GB"); //have to set as default is from install language which is en-US
-                    context.TemplateCulture = "en-GB";
-                }
+                
 
                 //Create Scene, required for Coordinates sheet
                 string cacheFile = Path.ChangeExtension(parameters.ModelFile, ".xbimGC");
@@ -197,21 +192,6 @@ namespace Xbim.COBie.Client
                 timer.Stop();
                 LogBackground(String.Format("Time to generate XBim COBie data = {0} seconds", timer.Elapsed.TotalSeconds.ToString("F3")));
 
-                
-                string GCFile = Path.ChangeExtension(outputFile, "xbimGC");
-                if (File.Exists(GCFile))
-                {
-                    try
-                    {
-                        File.Delete(GCFile);
-                    }
-                    catch (Exception ex)
-                    {
-                        LogBackground(String.Format("Failed to delete file {0} - ", GCFile, ex.Message));
-                    }
-                }
-                LogBackground(String.Format("Creating file {0}....", outputFile));
-
             }
             LogBackground(String.Format("Finished {0} Generation", outputFile));
             return outputFile;
@@ -251,18 +231,6 @@ namespace Xbim.COBie.Client
                 LogBackground(String.Format("Time to generate XBim COBie data = {0} seconds", timer.Elapsed.TotalSeconds.ToString("F3")));
 
                 
-                string GCFile = Path.ChangeExtension(outputFile, "xbimGC");
-                if (File.Exists(GCFile))
-                {
-                    try
-                    {
-                        File.Delete(GCFile);
-                    }
-                    catch (Exception ex)
-                    {
-                        LogBackground(String.Format("Failed to delete file {0} - ", GCFile, ex.Message));
-                    }
-                }
                 LogBackground(String.Format("Creating file {0}....", outputFile));
 
                 xBimSerialiser.Save();
@@ -300,25 +268,9 @@ namespace Xbim.COBie.Client
             
         }
 
-        /// <summary>
-        /// set resource file culture via CurrentUICulture
-        /// </summary>
-        /// <param name="languageKey"></param>
-        public void ChangeUILanguage(string languageKey)
-        {
-            try
-            {
-                System.Globalization.CultureInfo ci = new System.Globalization.CultureInfo(languageKey);
-                System.Threading.Thread.CurrentThread.CurrentUICulture = ci;
-            }
-            catch (Exception)
-            {
-                //to nothing Default culture will still be used
-                Log("Default User Interface Culture used");
-            }
-        }
 
-        private void Log(string text)
+
+        private void AppendLog(string text)
         {
             txtOutput.AppendText(text + Environment.NewLine);
             txtOutput.ScrollToCaret();
@@ -399,7 +351,7 @@ namespace Xbim.COBie.Client
                 StatusMsg.Text = (string)args.UserState;
                 if (args.ProgressPercentage == 0)
                 {
-                    Log(args.UserState.ToString());
+                    AppendLog(args.UserState.ToString());
                 }
                 else
                 {
@@ -411,7 +363,7 @@ namespace Xbim.COBie.Client
             {
                 string errMsg = args.Result as String;
                 if (!string.IsNullOrEmpty(errMsg))
-                    Log(errMsg);
+                    AppendLog(errMsg);
 
                 if (args.Result is Exception)
                 {
@@ -425,7 +377,7 @@ namespace Xbim.COBie.Client
                         ex = ex.InnerException;
                         indent += "\t";
                     }
-                    Log(sb.ToString());
+                    AppendLog(sb.ToString());
                 }
 
             };
@@ -440,16 +392,6 @@ namespace Xbim.COBie.Client
         private class MergeParams : Params
         {
             public string FileToMerge { get; set; }
-        }
-
-        private void txtTemplate_TextChanged(object sender, EventArgs e)
-        {
-            
-            //set the UI language to get correct resource file for template
-            if (txtTemplate.Text.Contains("-UK-"))
-                ChangeUILanguage("en-GB"); //have to set as default is from install language which is en-US
-            else if (txtTemplate.Text.Contains("-US-"))
-                ChangeUILanguage("en-US"); //have to set as default is from install language which is en-US
         }
 
         private void MergeChkBox_CheckedChanged(object sender, EventArgs e)

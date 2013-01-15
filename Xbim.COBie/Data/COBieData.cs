@@ -387,19 +387,19 @@ namespace Xbim.COBie.Data
 
             if (ifcRAC != null)
             {
-                string conCatChar;
-                if (Context.TemplateCulture == "en-GB")
-                    conCatChar = " : ";
-                else
-                    conCatChar = ": ";
+                // TODO: Needs a refactor. We should handle whitespace before/after the separator (and map to the picklist values)
+                // i.e. this whole routine should just map an IfcClassificationReference to the best row in the picklist.
+                string conCatChar = " : "; 
 
                 //need to use split as sometime the whole category is stored in both ItemReference and Name
                 IfcClassificationReference ifcCR = (IfcClassificationReference)ifcRAC.RelatingClassification;
                 //holders for first and last part of category
                 string itemReference = ifcCR.ItemReference;
                 string name = ifcCR.Name;
-                //lets hope the user does not use ":" more than once, We split here as sometimes the whole category(13-15 11 34 11: Office) is place in itemReference and Name
-                if (!string.IsNullOrEmpty(itemReference)) itemReference = itemReference.Split(':').First().Trim();
+                //lets hope the user does not use ":" more than once, We split here as sometimes the whole category(13-15 11 34 11: Office) 
+                //is place in itemReference and Name
+                if (!string.IsNullOrEmpty(itemReference)) 
+                    itemReference = itemReference.Split(':').First().Trim();
                 string[] nameSplit = name.Split(':');
                 //just in case we have more than one ":"
                 if (itemReference.ToLower().Trim() == nameSplit.First().ToLower().Trim())
