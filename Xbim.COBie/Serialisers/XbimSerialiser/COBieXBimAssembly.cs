@@ -109,10 +109,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                                                     });
 
                         //Add Created By, Created On and ExtSystem to Owner History. 
-                        if ((ValidateString(row.CreatedBy)) && (Contacts.ContainsKey(row.CreatedBy)))
-                            SetNewOwnerHistory(ifcRelAssociatesMaterial, row.ExtSystem, Contacts[row.CreatedBy], row.CreatedOn);
-                        else
-                            SetNewOwnerHistory(ifcRelAssociatesMaterial, row.ExtSystem, Model.DefaultOwningUser, row.CreatedOn);
+                        SetUserHistory(ifcRelAssociatesMaterial, row.ExtSystem, row.CreatedBy, row.CreatedOn);
                     }
                 }
 
@@ -182,10 +179,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
 
 
                         //Add Created By, Created On and ExtSystem to Owner History. 
-                        if ((ValidateString(row.CreatedBy)) && (Contacts.ContainsKey(row.CreatedBy)))
-                            SetNewOwnerHistory(ifcRelDecomposes, row.ExtSystem, Contacts[row.CreatedBy], row.CreatedOn);
-                        else
-                            SetNewOwnerHistory(ifcRelDecomposes, row.ExtSystem, Model.DefaultOwningUser, row.CreatedOn);
+                        SetUserHistory(ifcRelDecomposes, row.ExtSystem, row.CreatedBy, row.CreatedOn);
                     }
                 }
 

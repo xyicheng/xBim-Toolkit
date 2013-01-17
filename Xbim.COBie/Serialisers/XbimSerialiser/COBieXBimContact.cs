@@ -29,6 +29,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             {
                 try
                 {
+                    SetEmailUser(Constants.DEFAULT_EMAIL); //add Unknown.Unknown@Unknown.com PersonAndOrganization to use for nulls
                     SetDefaultUser();
                     ProgressIndicator.ReportMessage("Starting Contacts...");
                     ProgressIndicator.Initialise("Creating Contacts", cOBieSheet.RowCount);
@@ -179,5 +180,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
 
             }
         }
+
+        
     }
 }

@@ -213,7 +213,7 @@ namespace Xbim.COBie
                                 COBieError.ErrorTypes errorType = isPickList == true ? COBieError.ErrorTypes.PickList_Violation : COBieError.ErrorTypes.ForeignKey_Violation;
 
                                 COBieError error = new COBieError(SheetName, foreignKeyColumn.ColumnName, errorDescription, errorType, 
-                                    row.InitialRowHashValue, foreignKeyColumn.ColumnOrder, rowIndex);
+                                     COBieError.ErrorLevels.Error, row.InitialRowHashValue, foreignKeyColumn.ColumnOrder, rowIndex);
                                 _errors.Add(error);
                             }
                         }
@@ -305,9 +305,18 @@ namespace Xbim.COBie
                 r++;
                 for(int col = 0 ; col < row.RowCount ; col++)
                 {
-                    COBieError err = GetCobieError(row[col], SheetName, r, col, row.InitialRowHashValue);
-                    if (err != null)
-                        _errors.Add(err);
+                    COBieError errNull = GetCobieFieldNullError(row[col], SheetName, r, col, row.InitialRowHashValue);
+                    if (errNull != null)
+                        _errors.Add(errNull);
+                    else //passed null check so check format
+                    {
+                        errNull = GetCOBieFieldOutOfBoundsError(row[col], SheetName, r, col, row.InitialRowHashValue);
+                        if (errNull != null)
+                            _errors.Add(errNull);
+                        errNull = GetCOBieFieldFormatError(row[col], SheetName, r, col, row.InitialRowHashValue);
+                        if (errNull != null)
+                            _errors.Add(errNull);
+                    }
                 }
             }
         }
@@ -341,8 +350,8 @@ namespace Xbim.COBie
                 foreach (var row in dupe.rows)
                 {
                     string errorDescription = String.Format(ErrorDescription.PrimaryKey_Violation, keyCols, rowIndexList);
-                    COBieError error = new COBieError(SheetName, keyCols, errorDescription, COBieError.ErrorTypes.PrimaryKey_Violation, 
-                        row.row.InitialRowHashValue, KeyColumns.First().ColumnOrder, (row.index + 1));
+                    COBieError error = new COBieError(SheetName, keyCols, errorDescription, COBieError.ErrorTypes.PrimaryKey_Violation,
+                        COBieError.ErrorLevels.Error, row.row.InitialRowHashValue, KeyColumns.First().ColumnOrder, (row.index + 1));
                     _errors.Add(error);
                    
                 }
@@ -351,101 +360,219 @@ namespace Xbim.COBie
             }
 
         }
-
+        /// <summary>
+        /// Validating of the column COBieAttributeState attributes for null or n/a values
+        /// </summary>
+        /// <param name="cell">COBieCell</param>
+        /// <param name="sheetName">Sheet name</param>
+        /// <param name="row">Row index</param>
+        /// <param name="col">Column index</param>
+        /// <param name="initialRowHash">Initial row hash value</param>
+        /// <returns>COBieError or null</returns>
+        private COBieError GetCobieFieldNullError(COBieCell cell, string sheetName, int row, int col, string initialRowHash)
+        {
+            COBieError err = new COBieError(sheetName, cell.COBieColumn.ColumnName, "", COBieError.ErrorTypes.None, COBieError.ErrorLevels.None, initialRowHash, col, row);
+      
+            if ((string.IsNullOrEmpty(cell.CellValue)) ||
+                (cell.CellValue == Constants.DEFAULT_STRING)
+                )
+            {
+                switch (cell.COBieColumn.AttributeState)
+                {
+                    case COBieAttributeState.Required_PrimaryKey:
+                    case COBieAttributeState.Required_CompoundKeyPart:
+                        err.ErrorDescription = ErrorDescription.PrimaryKey_Violation;
+                        err.ErrorType = COBieError.ErrorTypes.PrimaryKey_Violation;
+                        err.ErrorLevel = COBieError.ErrorLevels.Error;
+                        break;
+                    case COBieAttributeState.Required_Information:
+                        switch (cell.COBieColumn.AllowedType)
+                        {
+                            case COBieAllowedType.AlphaNumeric:
+                                err.ErrorDescription = ErrorDescription.AlphaNumeric_Value_Expected;
+                                err.ErrorType = COBieError.ErrorTypes.AlphaNumeric_Value_Expected;
+                                break;
+                            case COBieAllowedType.Email:
+                                err.ErrorDescription = ErrorDescription.Email_Value_Expected;
+                                err.ErrorType = COBieError.ErrorTypes.Email_Value_Expected;
+                                break;
+                            case COBieAllowedType.ISODateTime:
+                            case COBieAllowedType.ISODate:
+                                err.ErrorDescription = ErrorDescription.ISODate_Value_Expected;
+                                err.ErrorType = COBieError.ErrorTypes.ISODate_Value_Expected;
+                                break;
+                            case COBieAllowedType.Numeric:
+                                err.ErrorDescription = ErrorDescription.Numeric_Value_Expected;
+                                err.ErrorType = COBieError.ErrorTypes.Numeric_Value_Expected;
+                                break;
+                            case COBieAllowedType.AnyType:
+                            case COBieAllowedType.Text:
+                                err.ErrorDescription = ErrorDescription.Text_Value_Expected;
+                                err.ErrorType = COBieError.ErrorTypes.Text_Value_Expected;
+                                break;
+                            default:
+                                err.ErrorDescription = ErrorDescription.Text_Value_Expected;
+                                err.ErrorType = COBieError.ErrorTypes.Text_Value_Expected;
+                                break;
+                        }
+                        err.ErrorLevel = COBieError.ErrorLevels.Warning; //set as a warning
+                        break;
+                    case COBieAttributeState.Required_Reference_PrimaryKey:
+                    case COBieAttributeState.Required_Reference_PickList:
+                    case COBieAttributeState.Required_Reference_ForeignKey:
+                        err.ErrorDescription = ErrorDescription.Null_ForeignKey_Value;
+                        err.ErrorType = COBieError.ErrorTypes.Null_ForeignKey_Value;
+                        err.ErrorLevel = COBieError.ErrorLevels.Error;
+                        break;
+                    case COBieAttributeState.Required_IfSpecified:
+                    case COBieAttributeState.Required_System:
+                        if (cell.CellValue == Constants.DEFAULT_STRING)
+                            return null; //if a required value but marked as n/a then do not class as error
+                        break;
+                    default:
+                        return null;
+                }
+                if (err.ErrorType != COBieError.ErrorTypes.None)
+                {
+                    err.FieldValue = cell.CellValue;
+                    return err;
+                }
+            }
+           return null;
+        }
 
         /// <summary>
-        /// Validating of the column attributes
+        /// check for Field format Error in passed cell
         /// </summary>
-        /// <param name="cell"></param>
-        /// <param name="sheetName"></param>
-        /// <param name="row"></param>
-        /// <param name="col"></param>
-        /// <returns>COBieError object</returns>
-        private COBieError GetCobieError(COBieCell cell, string sheetName, int row, int col, string initialRowHash)
+        /// <param name="cell">COBieCell</param>
+        /// <param name="sheetName">Sheet name</param>
+        /// <param name="row">Row index</param>
+        /// <param name="col">Column index</param>
+        /// <param name="initialRowHash">Initial row hash value</param>
+        /// <returns>COBieError or null</returns>
+        public COBieError GetCOBieFieldFormatError(COBieCell cell, string sheetName, int row, int col, string initialRowHash)
         {
+            COBieError err = new COBieError(sheetName, cell.COBieColumn.ColumnName, "", COBieError.ErrorTypes.None, COBieError.ErrorLevels.None, initialRowHash, col, row);
+      
+
             int maxLength = cell.COBieColumn.ColumnLength;
             COBieAllowedType allowedType = cell.COBieColumn.AllowedType;
             COBieAttributeState state = cell.COBieColumn.AttributeState;
-            COBieError err = new COBieError(sheetName, cell.COBieColumn.ColumnName, "", COBieError.ErrorTypes.None, initialRowHash, col, row);
-      
-            // If field is required and cell value is empty
-            if (string.IsNullOrEmpty(cell.CellValue) && 
-                    (state == COBieAttributeState.Required_PrimaryKey || 
-                     state == COBieAttributeState.Required_CompoundKeyPart ||
-                     state == COBieAttributeState.Required_Information))
+            
+            if ((state == COBieAttributeState.Required_IfSpecified) ||
+                (state == COBieAttributeState.Required_System)
+                ) //if a required value but marked as n/a then do not class as error
             {
-                err.ErrorDescription = ErrorDescription.Text_Value_Expected;
-                err.ErrorType = COBieError.ErrorTypes.Text_Value_Expected;
-            }
-            // Required Referenced values should have values
-            else if (string.IsNullOrEmpty(cell.CellValue) && 
-                    (state == COBieAttributeState.Required_Reference_ForeignKey || 
-                     state == COBieAttributeState.Required_Reference_PickList ||
-                     state == COBieAttributeState.Required_Reference_PrimaryKey))
-            {
-                err.ErrorDescription = ErrorDescription.Null_ForeignKey_Value;
-                err.ErrorType = COBieError.ErrorTypes.Null_ForeignKey_Value;
-            }
-            else if (( (state == COBieAttributeState.Required_Information) || 
-                       (state == COBieAttributeState.Required_IfSpecified) ) &&
-                     (cell.CellValue == Constants.DEFAULT_STRING)
-                    ) //if a required value but marked as n/a then do not class as error
-            {
-                return null;
-            }
-            else if (cell.CellValue.Length > maxLength)
-            {
-                err.ErrorDescription = String.Format(ErrorDescription.Value_Out_of_Bounds, maxLength);
-                err.ErrorType = COBieError.ErrorTypes.Value_Out_of_Bounds;
-            }
-            else if (allowedType == COBieAllowedType.AlphaNumeric && !cell.IsAlphaNumeric())
-            {
-                err.ErrorDescription = ErrorDescription.AlphaNumeric_Value_Expected;
-                err.ErrorType = COBieError.ErrorTypes.AlphaNumeric_Value_Expected;
-            }
-            else if (allowedType == COBieAllowedType.Email && !cell.IsEmailAddress())
-            {
-                err.ErrorDescription = ErrorDescription.Email_Value_Expected;
-                err.ErrorType = COBieError.ErrorTypes.Email_Value_Expected;
+                if (cell.CellValue == Constants.DEFAULT_STRING)
+                    return null;
             }
 
-            else if ((allowedType == COBieAllowedType.ISODate) ||
-                    (allowedType == COBieAllowedType.ISODateTime) 
-                    )
+            //check cell.COBieColumn.AllowedType for format errors
+            switch (allowedType)
             {
-                DateTime dt;
-                
-                if (DateTime.TryParse(cell.CellValue, out dt) == false)
-                {
-                    err.ErrorDescription = ErrorDescription.ISODate_Value_Expected;
-                    err.ErrorType = COBieError.ErrorTypes.ISODate_Value_Expected;
-                }
+                case COBieAllowedType.AlphaNumeric:
+                    if (!cell.IsAlphaNumeric())
+                    {
+                        err.ErrorDescription = ErrorDescription.AlphaNumeric_Value_Expected;
+                        err.ErrorType = COBieError.ErrorTypes.AlphaNumeric_Value_Expected;
+                    }
+                    break;
+                case COBieAllowedType.Email:
+                    if (!cell.IsEmailAddress())
+                    {
+                        err.ErrorDescription = ErrorDescription.ISODate_Value_Expected;
+                        err.ErrorType = COBieError.ErrorTypes.ISODate_Value_Expected;
+                    }
+                    break;
+                case COBieAllowedType.ISODate:
+                case COBieAllowedType.ISODateTime:
+                    if (!cell.IsDateTime())
+                    {
+                        err.ErrorDescription = ErrorDescription.ISODate_Value_Expected;
+                        err.ErrorType = COBieError.ErrorTypes.ISODate_Value_Expected;
+                    }
+                    break;
+                case COBieAllowedType.Numeric:
+                    if (!cell.IsNumeric())
+                    {
+                        err.ErrorDescription = ErrorDescription.Numeric_Value_Expected;
+                        err.ErrorType = COBieError.ErrorTypes.Numeric_Value_Expected;
+                    }
+                    break;
+                case COBieAllowedType.AnyType:
+                case COBieAllowedType.Text:
+                    if (!cell.IsText())
+                    {
+                        err.ErrorDescription = ErrorDescription.Text_Value_Expected;
+                        err.ErrorType = COBieError.ErrorTypes.Text_Value_Expected;
+                    }
+                    break;
+                default: 
+                    break;
             }
-
-            if (allowedType == COBieAllowedType.Numeric)
-            { 
-                double d;
-                
-                if (double.TryParse(cell.CellValue, out d) == false)
-                {
-                    err.ErrorDescription = ErrorDescription.Numeric_Value_Expected;
-                    err.ErrorType = COBieError.ErrorTypes.Numeric_Value_Expected;
-                }
-            }
-
             if (err.ErrorType != COBieError.ErrorTypes.None)
             {
                 err.FieldValue = cell.CellValue;
+                if (err.ErrorLevel == COBieError.ErrorLevels.None) //if set above, just in case we do set above
+                    err.ErrorLevel = GetErroLevel(state);
+                return err;
+            } 
+            return null;
+        }
+
+        /// <summary>
+        /// Check for Field format length
+        /// </summary>
+        /// <param name="cell">COBieCell</param>
+        /// <param name="sheetName">Sheet name</param>
+        /// <param name="row">Row index</param>
+        /// <param name="col">Column index</param>
+        /// <param name="initialRowHash">Initial row hash value</param>
+        /// <returns>COBieError or null</returns>
+        public COBieError GetCOBieFieldOutOfBoundsError(COBieCell cell, string sheetName, int row, int col, string initialRowHash)
+        {
+            COBieError err = new COBieError(sheetName, cell.COBieColumn.ColumnName, "", COBieError.ErrorTypes.None, COBieError.ErrorLevels.None, initialRowHash, col, row);
+
+            int maxLength = cell.COBieColumn.ColumnLength;
+
+            if (cell.CellValue.Length > maxLength)
+            {
+                err.ErrorDescription = String.Format(ErrorDescription.Value_Out_of_Bounds, maxLength);
+                err.ErrorType = COBieError.ErrorTypes.Value_Out_of_Bounds;
+                err.ErrorLevel = GetErroLevel(cell.COBieColumn.AttributeState); 
+                err.FieldValue = cell.CellValue;
                 return err;
             }
-            else
+            return null;
+        }
+
+        /// <summary>
+        /// Get ErrorLevel base on the COBieAttributeState Attribute
+        /// </summary>
+        /// <param name="state">COBieAttributeState</param>
+        /// <returns>COBieError.ErrorLevels enumeration</returns>
+        public COBieError.ErrorLevels GetErroLevel(COBieAttributeState state)
+        {
+            switch (state)
             {
-                return null;
+                case COBieAttributeState.Required_PrimaryKey:
+                case COBieAttributeState.Required_CompoundKeyPart:
+                case COBieAttributeState.Required_Reference_ForeignKey:
+                case COBieAttributeState.Required_Reference_PrimaryKey:
+                case COBieAttributeState.Required_Reference_PickList:
+                case COBieAttributeState.Required_Information:
+                    return COBieError.ErrorLevels.Error;
+                case COBieAttributeState.Required_System:
+                case COBieAttributeState.Required_IfSpecified:
+                    return COBieError.ErrorLevels.Warning;
+                default:
+                    break;
             }
+            return COBieError.ErrorLevels.None;
         }
         #endregion
 
        
-    }  
+    } 
 
 }

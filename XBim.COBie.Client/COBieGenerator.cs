@@ -81,11 +81,7 @@ namespace Xbim.COBie.Client
         {
             try
             {
-
-
                 Params parameters = args.Argument as Params;
-
-                
                 
                 if (!File.Exists(parameters.ModelFile))
                 {
@@ -225,6 +221,7 @@ namespace Xbim.COBie.Client
             using (COBieXBimSerialiser xBimSerialiser = new COBieXBimSerialiser(outputFile, _worker.ReportProgress))
             {
                 xBimSerialiser.Create(newbook);
+ 				xBimSerialiser.MergeGeometryOnly = GeoOnlyChkBox.Checked;
                 xBimSerialiser.Merge(mergebook);
 
                 timer.Stop();
@@ -400,11 +397,13 @@ namespace Xbim.COBie.Client
             {
                 label1.Text = "Merge Into:";
                 label2.Text = "Merge From:";
+                GeoOnlyChkBox.Enabled = true;
             }
             else
             {
                 label1.Text = "Select File:";
                 label2.Text = "Template:";
+                GeoOnlyChkBox.Enabled = false;
             }
         }
     }

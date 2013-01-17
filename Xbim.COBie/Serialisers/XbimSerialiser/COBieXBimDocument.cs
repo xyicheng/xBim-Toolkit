@@ -73,13 +73,10 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             IfcDocumentInformation ifcDocumentInformation = Model.New<IfcDocumentInformation>();
             IfcRelAssociatesDocument ifcRelAssociatesDocument = Model.New<IfcRelAssociatesDocument>();
             //Add Created By, Created On and ExtSystem to Owner History. 
-            if ((ValidateString(row.CreatedBy)) && (Contacts.ContainsKey(row.CreatedBy)))
-            {
-                SetNewOwnerHistory(ifcRelAssociatesDocument, row.ExtSystem, Contacts[row.CreatedBy], row.CreatedOn);
+            SetUserHistory(ifcRelAssociatesDocument, row.ExtSystem, row.CreatedBy, row.CreatedOn );
+            
+            if (Contacts.ContainsKey(row.CreatedBy))
                 ifcDocumentInformation.DocumentOwner = Contacts[row.CreatedBy];
-            }
-            else
-                SetNewOwnerHistory(ifcRelAssociatesDocument, row.ExtSystem, Model.DefaultOwningUser, row.CreatedOn);
 
             //using statement will set the Model.OwnerHistoryAddObject to IfcConstructionProductResource.OwnerHistory as OwnerHistoryAddObject is used upon any property changes, 
             //then swaps the original OwnerHistoryAddObject back in the dispose, so set any properties within the using statement
@@ -124,6 +121,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             }
         }
 
+        
         /// <summary>
         /// Check if the document information is already within the model
         /// </summary>

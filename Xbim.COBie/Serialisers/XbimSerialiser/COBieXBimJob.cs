@@ -110,12 +110,10 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
 
             //no match on task    
             ifcTask = Model.New<IfcTask>();
+            
             //Add Created By, Created On and ExtSystem to Owner History. 
-            if ((ValidateString(row.CreatedBy)) && (Contacts.ContainsKey(row.CreatedBy)))
-                SetNewOwnerHistory(ifcTask, row.ExtSystem, Contacts[row.CreatedBy], row.CreatedOn);
-            else
-                SetNewOwnerHistory(ifcTask, row.ExtSystem, Model.DefaultOwningUser, row.CreatedOn);
-
+            SetUserHistory(ifcTask, row.ExtSystem, row.CreatedBy, row.CreatedOn);
+            
             //using statement will set the Model.OwnerHistoryAddObject to ifcConstructionEquipmentResource.OwnerHistory as OwnerHistoryAddObject is used upon any property changes, 
             //then swaps the original OwnerHistoryAddObject back in the dispose, so set any properties within the using statement
             using (COBieXBimEditScope context = new COBieXBimEditScope(Model, ifcTask.OwnerHistory))

@@ -397,18 +397,22 @@ namespace Xbim.COBie
             {   "MethodOfMeasurement",  "Omniclass Number",     "Assembly Code",                "Assembly Description",     "Uniclass Description",     "Uniclass Code", 
                 "Category Code",    "Category Description",     "Classification Description",   "Classification Code",      "Name",                     "Description", 
                 "Hot Water Radius", "Host",                     "Limit Offset",                 "Recepticles",              "Mark",     "Workset",  "Keynote",  "VisibleOnPlan",
-                "Edited by", "Elevation Base"
+                "Edited by", "Elevation Base", "Phase", "Phase Created", "Window Inset", "Symbol" , "Line Pattern",
+                "Roomtag", "Upper Limit", "Base Offset"
+
                 //"Zone Base Offset", "Upper Limit",   "Line Pattern", "Symbol","Window Inset", "Radius", "Phase Created","Phase", //old ones might need to put back in
             };
 
             //List of field names that are to be excluded from Attributes sheet with start with compare
             AttributesStartWith = new List<string>()
-            {   "Omniclass Title",  "Half Oval",    "Level",    "Outside Diameter", "Outside Radius", "Moves With"
+            {   "Omniclass Title",  "Half Oval",    "Level",    "Outside Diameter", "Outside Radius", 
+                "Moves With", "Width"
             };
 
             // List of property names that are to be excluded from Attributes sheet with contains with compare
             AttributesContain = new List<string>()
-            {   "AssetAccountingType",  "GSA BIM Area",     "Height",   "Length",   "Size",     "Lighting Calculation Workplan",    "Offset",   "Omniclass"
+            {   "AssetAccountingType",  "GSA BIM Area",     "Height",   "Length",   "Size",     "Lighting Calculation Workplan",    
+                "Offset",   "Omniclass", "Radius", "Zone"
             };
             
         }

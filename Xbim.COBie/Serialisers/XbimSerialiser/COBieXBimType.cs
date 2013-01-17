@@ -111,12 +111,9 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
 
             if (ifcTypeObject != null)
             {
-                //Add Created By, Created On and ExtSystem to Owner History
-                if ((ValidateString(row.CreatedBy)) && (Contacts.ContainsKey(row.CreatedBy)))
-                    SetNewOwnerHistory(ifcTypeObject, row.ExtSystem, Contacts[row.CreatedBy], row.CreatedOn);
-                else
-                    SetNewOwnerHistory(ifcTypeObject, row.ExtSystem, Model.DefaultOwningUser, row.CreatedOn);
-
+                //Add Created By, Created On and ExtSystem to Owner History. 
+                SetUserHistory(ifcTypeObject, row.ExtSystem, row.CreatedBy, row.CreatedOn);
+            
                 //using statement will set the Model.OwnerHistoryAddObject to ifcTypeObject.OwnerHistory as OwnerHistoryAddObject is used upon any property changes, 
                 //then swaps the original OwnerHistoryAddObject back in the dispose, so set any properties within the using statement
                 using (COBieXBimEditScope context = new COBieXBimEditScope(Model, ifcTypeObject.OwnerHistory))

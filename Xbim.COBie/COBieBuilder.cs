@@ -74,7 +74,7 @@ namespace Xbim.COBie
             {
                 COBieXLSDeserialiser deSerialiser = new COBieXLSDeserialiser(Context.TemplateFileName, Constants.WORKSHEET_PICKLISTS);
                 COBieWorkbook wbook = deSerialiser.Deserialise();
-                if (wbook.Count > 0) CobiePickLists = (COBieSheet<COBiePickListsRow>)wbook.First();
+                if (wbook.Count > 0) CobiePickLists = (COBieSheet<COBiePickListsRow>)wbook.FirstOrDefault();
 
                 
             }

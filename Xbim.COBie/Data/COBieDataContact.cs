@@ -46,11 +46,19 @@ namespace Xbim.COBie.Data
             foreach (IfcPersonAndOrganization ifcPersonAndOrganization in ifcPersonAndOrganizations)
             {
                 ProgressIndicator.IncrementAndUpdate();
+                
+                //check we do not have a default email address, if skip it as we want the validation warning
+                string email = GetTelecomEmailAddress(ifcPersonAndOrganization);
+                if (email == Constants.DEFAULT_EMAIL)
+                {
+                    continue;
+                }
+
                 COBieContactRow contact = new COBieContactRow(contacts);
                 // get person and organization
                 IfcOrganization ifcOrganization = ifcPersonAndOrganization.TheOrganization;
                 IfcPerson ifcPerson = ifcPersonAndOrganization.ThePerson;
-                contact.Email = GetTelecomEmailAddress(ifcPersonAndOrganization);
+                contact.Email = email;
 
                 //lets default the creator to that user who created the project for now, no direct link to OwnerHistory on IfcPersonAndOrganization, IfcPerson or IfcOrganization
                 contact.CreatedBy = GetTelecomEmailAddress(Model.IfcProject.OwnerHistory);

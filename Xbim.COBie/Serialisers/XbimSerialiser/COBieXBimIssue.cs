@@ -90,10 +90,9 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             ifcPropertySet.Description = "An indication of exposure to mischance, peril, menace, hazard or loss";
            
 
-            if ((ValidateString(row.CreatedBy)) && (Contacts.ContainsKey(row.CreatedBy)))
-                SetNewOwnerHistory(ifcPropertySet, row.ExtSystem, Contacts[row.CreatedBy], row.CreatedOn);
-                    else
-                SetNewOwnerHistory(ifcPropertySet, row.ExtSystem, Model.DefaultOwningUser, row.CreatedOn);
+            //Add Created By, Created On and ExtSystem to Owner History. 
+            SetUserHistory(ifcPropertySet, row.ExtSystem, row.CreatedBy, row.CreatedOn);
+            
             //using statement will set the Model.OwnerHistoryAddObject to ifcPropertySet.OwnerHistory as OwnerHistoryAddObject is used upon any property changes, 
             //then swaps the original OwnerHistoryAddObject back in the dispose, so set any properties within the using statement
             using (COBieXBimEditScope context = new COBieXBimEditScope(Model, ifcPropertySet.OwnerHistory))

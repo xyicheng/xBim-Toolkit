@@ -69,12 +69,10 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             }
 
             IfcConstructionProductResource ifcConstructionProductResource = Model.New<IfcConstructionProductResource>();
+            
             //Add Created By, Created On and ExtSystem to Owner History. 
-            if ((ValidateString(row.CreatedBy)) && (Contacts.ContainsKey(row.CreatedBy)))
-                SetNewOwnerHistory(ifcConstructionProductResource, row.ExtSystem, Contacts[row.CreatedBy], row.CreatedOn);
-            else
-                SetNewOwnerHistory(ifcConstructionProductResource, row.ExtSystem, Model.DefaultOwningUser, row.CreatedOn);
-
+            SetUserHistory(ifcConstructionProductResource, row.ExtSystem, row.CreatedBy, row.CreatedOn);
+            
             //using statement will set the Model.OwnerHistoryAddObject to IfcConstructionProductResource.OwnerHistory as OwnerHistoryAddObject is used upon any property changes, 
             //then swaps the original OwnerHistoryAddObject back in the dispose, so set any properties within the using statement
             using (COBieXBimEditScope context = new COBieXBimEditScope(Model, ifcConstructionProductResource.OwnerHistory)) 

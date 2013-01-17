@@ -82,12 +82,10 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
 
             if (ifcRelConnectsElements == null)
                 ifcRelConnectsElements = Model.New<IfcRelConnectsElements>();
+            
             //Add Created By, Created On and ExtSystem to Owner History. 
-            if ((ValidateString(row.CreatedBy)) && (Contacts.ContainsKey(row.CreatedBy)))
-                SetNewOwnerHistory(ifcRelConnectsElements, row.ExtSystem, Contacts[row.CreatedBy], row.CreatedOn);
-            else
-                SetNewOwnerHistory(ifcRelConnectsElements, row.ExtSystem, Model.DefaultOwningUser, row.CreatedOn);
-
+            SetUserHistory(ifcRelConnectsElements, row.ExtSystem, row.CreatedBy, row.CreatedOn);
+                    
             //using statement will set the Model.OwnerHistoryAddObject to ifcRelConnectsElements.OwnerHistory as OwnerHistoryAddObject is used upon any property changes, 
             //then swaps the original OwnerHistoryAddObject back in the dispose, so set any properties within the using statement
             using (COBieXBimEditScope context = new COBieXBimEditScope(Model, ifcRelConnectsElements.OwnerHistory))

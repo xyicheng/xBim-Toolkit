@@ -37,6 +37,23 @@ namespace Xbim.COBie
             return RegExAlphaNumeric.IsMatch(this.CellValue);
         }
 
+        public bool IsDateTime()
+        {
+            DateTime dt;
+            return DateTime.TryParse(this.CellValue, out dt);
+        }
+
+        public bool IsNumeric()
+        {
+            double d;
+            return double.TryParse(this.CellValue, out d);
+        }
+
+        public bool IsText()
+        {
+            return !string.IsNullOrWhiteSpace(this.CellValue);
+        }
+
         public bool IsEmailAddress()
         {
             bool isEmail = false;

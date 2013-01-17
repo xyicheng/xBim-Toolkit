@@ -74,7 +74,7 @@ namespace Xbim.COBie.Data
 
                     zone.SpaceNames = sp.Name;
 
-                    zone.ExtSystem = GetExternalSystem(sp);
+                    zone.ExtSystem = GetExternalSystem(zn);
                     zone.ExtObject = zn.GetType().Name;
                     zone.ExtIdentifier = zn.GlobalId;
                     zone.Description = (string.IsNullOrEmpty(zn.Description)) ? zn.Name.ToString() : zn.Description.ToString(); //if IsNullOrEmpty on Description then output Name

@@ -29,6 +29,8 @@
         private void InitializeComponent()
         {
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.GeoOnlyChkBox = new System.Windows.Forms.CheckBox();
+            this.MergeChkBox = new System.Windows.Forms.CheckBox();
             this.btnBrowseTemplate = new System.Windows.Forms.Button();
             this.txtTemplate = new System.Windows.Forms.ComboBox();
             this.label2 = new System.Windows.Forms.Label();
@@ -45,7 +47,6 @@
             this.rbNoFilters = new System.Windows.Forms.RadioButton();
             this.rbPickList = new System.Windows.Forms.RadioButton();
             this.rbDefault = new System.Windows.Forms.RadioButton();
-            this.MergeChkBox = new System.Windows.Forms.CheckBox();
             this.groupBox1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             this.gbFilter.SuspendLayout();
@@ -55,6 +56,7 @@
             // 
             this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox1.Controls.Add(this.GeoOnlyChkBox);
             this.groupBox1.Controls.Add(this.MergeChkBox);
             this.groupBox1.Controls.Add(this.btnBrowseTemplate);
             this.groupBox1.Controls.Add(this.txtTemplate);
@@ -64,10 +66,34 @@
             this.groupBox1.Controls.Add(this.label1);
             this.groupBox1.Location = new System.Drawing.Point(13, 13);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(498, 96);
+            this.groupBox1.Size = new System.Drawing.Size(498, 115);
             this.groupBox1.TabIndex = 0;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "IFC File Location";
+            // 
+            // GeoOnlyChkBox
+            // 
+            this.GeoOnlyChkBox.AutoSize = true;
+            this.GeoOnlyChkBox.Checked = true;
+            this.GeoOnlyChkBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.GeoOnlyChkBox.Enabled = false;
+            this.GeoOnlyChkBox.Location = new System.Drawing.Point(9, 92);
+            this.GeoOnlyChkBox.Name = "GeoOnlyChkBox";
+            this.GeoOnlyChkBox.Size = new System.Drawing.Size(148, 17);
+            this.GeoOnlyChkBox.TabIndex = 6;
+            this.GeoOnlyChkBox.Text = "Merge geometry data only";
+            this.GeoOnlyChkBox.UseVisualStyleBackColor = true;
+            // 
+            // MergeChkBox
+            // 
+            this.MergeChkBox.AutoSize = true;
+            this.MergeChkBox.Location = new System.Drawing.Point(9, 73);
+            this.MergeChkBox.Name = "MergeChkBox";
+            this.MergeChkBox.Size = new System.Drawing.Size(196, 17);
+            this.MergeChkBox.TabIndex = 5;
+            this.MergeChkBox.Text = "Merge two XLS files into one IFC file";
+            this.MergeChkBox.UseVisualStyleBackColor = true;
+            this.MergeChkBox.CheckedChanged += new System.EventHandler(this.MergeChkBox_CheckedChanged);
             // 
             // btnBrowseTemplate
             // 
@@ -165,10 +191,10 @@
             this.txtOutput.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtOutput.Location = new System.Drawing.Point(13, 115);
+            this.txtOutput.Location = new System.Drawing.Point(13, 134);
             this.txtOutput.Name = "txtOutput";
             this.txtOutput.ReadOnly = true;
-            this.txtOutput.Size = new System.Drawing.Size(400, 229);
+            this.txtOutput.Size = new System.Drawing.Size(400, 210);
             this.txtOutput.TabIndex = 5;
             this.txtOutput.Text = "";
             // 
@@ -196,10 +222,11 @@
             // 
             // gbFilter
             // 
+            this.gbFilter.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.gbFilter.Controls.Add(this.rbNoFilters);
             this.gbFilter.Controls.Add(this.rbPickList);
             this.gbFilter.Controls.Add(this.rbDefault);
-            this.gbFilter.Location = new System.Drawing.Point(424, 115);
+            this.gbFilter.Location = new System.Drawing.Point(424, 134);
             this.gbFilter.Name = "gbFilter";
             this.gbFilter.Size = new System.Drawing.Size(87, 98);
             this.gbFilter.TabIndex = 9;
@@ -237,17 +264,6 @@
             this.rbDefault.TabStop = true;
             this.rbDefault.Text = "Default";
             this.rbDefault.UseVisualStyleBackColor = true;
-            // 
-            // MergeChkBox
-            // 
-            this.MergeChkBox.AutoSize = true;
-            this.MergeChkBox.Location = new System.Drawing.Point(9, 73);
-            this.MergeChkBox.Name = "MergeChkBox";
-            this.MergeChkBox.Size = new System.Drawing.Size(196, 17);
-            this.MergeChkBox.TabIndex = 5;
-            this.MergeChkBox.Text = "Merge two XLS files into one IFC file";
-            this.MergeChkBox.UseVisualStyleBackColor = true;
-            this.MergeChkBox.CheckedChanged += new System.EventHandler(this.MergeChkBox_CheckedChanged);
             // 
             // COBieGenerator
             // 
@@ -293,6 +309,7 @@
         private System.Windows.Forms.RadioButton rbPickList;
         private System.Windows.Forms.RadioButton rbDefault;
         private System.Windows.Forms.CheckBox MergeChkBox;
+        private System.Windows.Forms.CheckBox GeoOnlyChkBox;
     }
 }
 
