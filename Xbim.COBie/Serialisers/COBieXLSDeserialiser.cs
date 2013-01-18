@@ -222,7 +222,7 @@ namespace Xbim.COBie.Serialisers
             {
                 throw;
             }
-
+            WorkBook.CreateIndices();
             return WorkBook;
         }
         #endregion

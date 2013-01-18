@@ -152,10 +152,6 @@ namespace Xbim.COBie.Data
             if (el != null && el.ContainedInStructure.Count() > 0)
             {
                 IEnumerable<IfcRoot> owningObjects = el.ContainedInStructure.Select(cis => cis.RelatingStructure).OfType<IfcSpace>(); //only one or zero held in ContainedInStructure
-                if (!owningObjects.Any())
-                    owningObjects = el.ContainedInStructure.Select(cis => cis.RelatingStructure).OfType<IfcBuildingStorey>(); //only one or zero held in ContainedInStructure
-                if (!owningObjects.Any()) 
-                    owningObjects = el.ContainedInStructure.Select(cis => cis.RelatingStructure).OfType<IfcBuilding>(); //only one or zero held in ContainedInStructure
                 if (owningObjects.Any())
                 {
                     List<string> names = new List<string>();

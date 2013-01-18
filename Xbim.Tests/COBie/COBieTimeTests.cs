@@ -15,7 +15,7 @@ namespace Xbim.Tests.COBie
     public class COBieTimeTests
     {
         private const string Root = "TestSourceFiles";
-        private const string SourceModelLeaf = "Clinic-Handover.xbim";
+        private const string SourceModelLeaf = "Clinic-CutDown.xbim";
         private const string SourceFile = Root + @"\" + SourceModelLeaf;
         
         static COBieContext _cobieContext = new COBieContext();

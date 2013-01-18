@@ -248,8 +248,11 @@ namespace Xbim.COBie.Serialisers
 
         private void ReportErrors(COBieWorkbook workbook)
         {
-            ISheet errorsSheet = XlsWorkbook.GetSheet(ErrorsSheet) ?? XlsWorkbook.CreateSheet(ErrorsSheet); 
+            ISheet errorsSheet = XlsWorkbook.GetSheet(ErrorsSheet) ?? XlsWorkbook.CreateSheet(ErrorsSheet);
 
+            //if we are validating here then ensure we have Indices on each sheet
+            //workbook.CreateIndices();
+                
             foreach(var sheet in workbook.OrderBy(w=>w.SheetName))
             {
                 if(sheet.SheetName != Constants.WORKSHEET_PICKLISTS)

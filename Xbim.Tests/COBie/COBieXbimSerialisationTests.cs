@@ -31,7 +31,7 @@ namespace Xbim.Tests.COBie
     public class COBieXbimSerialisationTests
     {
         private const string Root = "TestSourceFiles";
-        private const string SourceModelLeaf = "Clinic-Handover.xbim"; //"Clinic_A.xbim";//"2012-03-23-Duplex-Handover.xbim";
+        private const string SourceModelLeaf = "Clinic-CutDown.xbim"; //"Clinic_A.xbim";//"2012-03-23-Duplex-Handover.xbim";
         private const string PickListLeaf = "PickLists.xml";
         private const string SourceBinaryFile = "COBieToXbim.xCOBie";
         private const string ExcelTemplateLeaf = "COBie-US-2_4-template.xls";
@@ -81,7 +81,7 @@ namespace Xbim.Tests.COBie
             string excelFile = Path.ChangeExtension(SourceBinaryFile, ".xls");
             ICOBieSerialiser formatter = new COBieXLSSerialiser(excelFile, ExcelTemplateFile);
             builder.Export(formatter);
-            Process.Start(excelFile);
+            //Process.Start(excelFile);
 
             // Assert
             //Assert.AreEqual(19, newBook.Count);
@@ -96,7 +96,6 @@ namespace Xbim.Tests.COBie
             COBieContext context;
             IModel model;
             COBieBuilder builder;
-            
             string cacheFile = Path.ChangeExtension(DuplexFile, ".xbimGC");
 
             if (true)//(!File.Exists(DuplexBinaryFile))
@@ -147,7 +146,7 @@ namespace Xbim.Tests.COBie
             string excelFile = Path.ChangeExtension(SourceBinaryFile, ".xls");
             ICOBieSerialiser formatter = new COBieXLSSerialiser(excelFile, ExcelTemplateFile);
             builder.Export(formatter);
-            Process.Start(excelFile);
+            //Process.Start(excelFile);
 
             // Assert
             //Assert.AreEqual(19, newBook.Count);

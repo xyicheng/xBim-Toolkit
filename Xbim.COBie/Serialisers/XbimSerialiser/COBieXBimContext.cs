@@ -118,7 +118,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         /// <summary>
         /// World Coordinates System for the Model
         /// </summary>
-        public IfcAxis2Placement3D WCS { get;  private set; }
+        public IfcAxis2Placement3D WCS { get;  set; }
 
 
         #endregion
@@ -133,7 +133,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         {
             Model = model;
             Contacts = new Dictionary<string, IfcPersonAndOrganization>();
-            WCS = Model.New<IfcAxis2Placement3D>();
+            
         }
 
         public COBieXBimContext(IModel model, ReportProgressDelegate progressHandler = null)

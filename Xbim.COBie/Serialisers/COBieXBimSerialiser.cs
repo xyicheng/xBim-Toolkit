@@ -15,6 +15,7 @@ using Xbim.XbimExtensions.Transactions;
 using Xbim.Ifc.ProductExtension;
 using Xbim.Ifc.UtilityResource;
 using Xbim.XbimExtensions.Parser;
+using Xbim.Ifc.GeometryResource;
 
 namespace Xbim.COBie.Serialisers
 {
@@ -269,6 +270,7 @@ namespace Xbim.COBie.Serialisers
                 Model.Header.FileName.AuthorizationName = "4Projects";
                 IfcProject project = Model.New<IfcProject>();
                 //set world coordinate system
+                XBimContext.WCS = Model.New<IfcAxis2Placement3D>();
                 XBimContext.WCS.SetNewDirectionOf_XZ(1, 0, 0, 0, 0, 1);
                 XBimContext.WCS.SetNewLocation(0, 0, 0);
                 trans.Commit();

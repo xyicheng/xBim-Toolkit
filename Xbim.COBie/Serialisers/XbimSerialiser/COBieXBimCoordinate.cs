@@ -91,7 +91,10 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                             else
                             {
 #if DEBUG
-                                Console.WriteLine("Failed to find pair {0} : {1} != {2} : {3} ", row.SheetName, row.RowName, rowNext.SheetName, rowNext.RowName);
+                                if (rowNext == null)
+                                    Console.WriteLine("Failed to find pair {0} : {1} != {2} : {3} ", row.SheetName, row.RowName, "Null", "Null");
+                                else
+                                    Console.WriteLine("Failed to find pair {0} : {1} != {2} : {3} ", row.SheetName, row.RowName, rowNext.SheetName, rowNext.RowName);
 #endif
                                 i--; //set back in case next is point, as two box points failed
                             }
