@@ -10,6 +10,7 @@ using Xbim.Ifc.UtilityResource;
 using Xbim.Ifc.Extensions;
 using Xbim.XbimExtensions;
 using System.Reflection;
+using Xbim.Ifc.PropertyResource;
 
 namespace Xbim.COBie.Serialisers.XbimSerialiser
 {
@@ -17,7 +18,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
     {
         #region Properties
         public IfcSystem IfcSystemObj { get; set; }
-        private int UnknownCount { get; set; }
+        int SystemProdutIndex { get; set; }
         #endregion
         
 
@@ -25,7 +26,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             : base(xBimContext)
         {
             IfcSystemObj = null;
-            UnknownCount = 1;
+            
         }
 
         #region Methods
@@ -54,11 +55,12 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                                 )
                             {
                                 AddSystem(row);
-                                AddProducts(row.ComponentNames);
+                                AddProducts(row);
+                                SystemProdutIndex = 1;
                             }
                             else
                             {
-                                AddProducts(row.ComponentNames);
+                                AddProducts(row);
                             }
                         }
                     }
@@ -82,13 +84,20 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         /// <param name="row">COBieSystemRow holding the data</param>
         private void AddSystem(COBieSystemRow row)
         {
+            //we are merging so check for an existing item name, assume the same item as should be the same building
+            if (CheckIfExistOnMerge<IfcSystem>(row.Name))
+            {
+                string testName = row.Name.ToLower().Trim();
+                IfcSystemObj = Model.InstancesWhere<IfcSystem>(bs => bs.Name.ToString().ToLower().Trim() == testName).FirstOrDefault();
+                return;//we have it so no need to create
+            }
+
             IfcSystemObj = GetGroupInstance(row.ExtObject);//Model.New<IfcSystem>();
             IfcSystemObj.Name = row.Name;
+            
             //Add Created By, Created On and ExtSystem to Owner History. 
-            if ((ValidateString(row.CreatedBy)) && (Contacts.ContainsKey(row.CreatedBy)))
-                SetNewOwnerHistory(IfcSystemObj, row.ExtSystem, Contacts[row.CreatedBy], row.CreatedOn);
-            else
-                SetNewOwnerHistory(IfcSystemObj, row.ExtSystem, Model.DefaultOwningUser, row.CreatedOn);
+            SetUserHistory(IfcSystemObj, row.ExtSystem, row.CreatedBy, row.CreatedOn);
+            
             //using statement will set the Model.OwnerHistoryAddObject to IfcSystemObj.OwnerHistory as OwnerHistoryAddObject is used upon any property changes, 
             //then swaps the original OwnerHistoryAddObject back in the dispose, so set any properties within the using statement
             using (COBieXBimEditScope context = new COBieXBimEditScope(Model, IfcSystemObj.OwnerHistory))
@@ -106,7 +115,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         /// <summary>
         /// Create an instance of an group object via a string name
         /// </summary>
-        /// <param name="groupTypeName">String holding object type name we eant to create</param>
+        /// <param name="groupTypeName">String holding object type name we want to create</param>
         /// <param name="model">Model object</param>
         /// <returns></returns>
         public IfcSystem GetGroupInstance(string groupTypeName)
@@ -114,7 +123,9 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             groupTypeName = groupTypeName.Trim().ToUpper();
             IfcType ifcType;
             IfcSystem ifcSystem = null;
-            if (IfcInstances.IfcTypeLookup.TryGetValue(groupTypeName, out ifcType))
+            if ((IfcInstances.IfcTypeLookup.TryGetValue(groupTypeName, out ifcType)) &&
+                (typeof(IfcSystem).IsAssignableFrom(ifcType.Type)) //check it is a system class name
+                )
             {
                 MethodInfo method = typeof(IModel).GetMethod("New", Type.EmptyTypes);
                 MethodInfo generic = method.MakeGenericMethod(ifcType.Type);
@@ -133,37 +144,68 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         /// Add products to system group and fill with data from COBieSystemRow
         /// </summary>
         /// <param name="componentName">COBieSystemRow holding the data</param>
-        private void AddProducts(string componentNames)
+        private void AddProducts(COBieSystemRow row)
         {
+            string componentNames = row.ComponentNames;
             using (COBieXBimEditScope context = new COBieXBimEditScope(Model, IfcSystemObj.OwnerHistory))
             {
+                
+                List<IfcProduct> ifcProductList = new List<IfcProduct>();
+
                 foreach (string componentName in SplitTheString(componentNames))
                 {
                     IfcProduct ifcProduct = null;
-                    if ((ifcProduct == null) && (ValidateString(componentName)))
+                    if (ValidateString(componentName))
                     {
                         string compName = componentName.ToLower().Trim();
                         ifcProduct = Model.InstancesOfType<IfcProduct>().Where(p => p.Name.ToString().ToLower().Trim() == compName).FirstOrDefault();
+                        if (ifcProduct != null)
+                            ifcProductList.Add(ifcProduct);
                     }
                     if (ifcProduct == null)
                     {
                         string elementTypeName = GetPrefixType(componentName);
-                        ifcProduct = COBieXBimComponent.GetElementInstance(elementTypeName, Model);
-                        if (string.IsNullOrEmpty(componentName) || (componentName == Constants.DEFAULT_STRING))
+                        if (string.IsNullOrEmpty(elementTypeName))
                         {
-                            ifcProduct.Name = "Name Unknown SYS-OUT" + UnknownCount.ToString();
-                            UnknownCount++;
+                            elementTypeName = "IfcDistributionElement";
                         }
-                        else   
-                            ifcProduct.Name = componentName;
-                        ifcProduct.Description = "Created to maintain relationship with System object from COBie information";
+                        ifcProduct = COBieXBimComponent.GetElementInstance(elementTypeName, Model);
+                        if (ifcProduct != null)
+                        {
+                            if (string.IsNullOrEmpty(componentName) || (componentName == Constants.DEFAULT_STRING))
+                            {
+                                ifcProduct.Name = ""; //row.Name + " " + SystemProdutIndex.ToString();
+                                SystemProdutIndex++;
+                            }
+                            else
+                                ifcProduct.Name = componentName;
+                            ifcProduct.Description = "Created to maintain relationship with System object from COBie information";
+                            ifcProductList.Add(ifcProduct); 
+                        }
 
                     }
-                    //if we have found product then add to the IfcSystem group
+                }
+                if (ifcProductList.Count == 0) //no products created so create an IfcDistributionElement as place holder
+                {
+                    IfcProduct ifcProduct = COBieXBimComponent.GetElementInstance("IfcDistributionElement", Model);
                     if (ifcProduct != null)
                     {
-                        IfcSystemObj.AddObjectToGroup(ifcProduct);
+                        ifcProduct.Name = ""; // row.Name + " " + SystemProdutIndex.ToString(); ;
+                        ifcProduct.Description = "Created to maintain relationship with System object from COBie information";
+                        ifcProductList.Add(ifcProduct);
                     }
+                }
+               
+                //if we have found product then add to the IfcSystem group
+                foreach (IfcProduct ifcProd in ifcProductList)
+                {
+                    if (IfcSystemObj.IsGroupedBy != null) //if we already have a IfcRelAssignsToGroup assigned to IsGroupedBy
+                    {
+                        if (!IfcSystemObj.IsGroupedBy.RelatedObjects.Contains(ifcProd)) //check to see if product already exists in group
+                            IfcSystemObj.AddObjectToGroup(ifcProd);//if not add
+                    }
+                    else
+                        IfcSystemObj.AddObjectToGroup(ifcProd);
                 }
             }
         }
@@ -181,7 +223,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                     }
                 }
             }
-            return "IFCVIRTUALELEMENT"; //default type
+            return null; //default type
             
         }
 

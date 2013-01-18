@@ -165,7 +165,6 @@
       <Link>TestSourceFiles\PickLists.xml</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <None Include="TestSourceFiles\2012-03-23-Duplex-Handover.ifc" />
     <Content Include="TestSourceFiles\Ref.ifc">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -181,13 +180,7 @@
     <Content Include="TestSourceFiles\Test.ifc">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="TestSourceFiles\Clinic-Handover.xbim">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="TestSourceFiles\COBie-US-2_4-template.xls">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="TestSourceFiles\Clinic_A.xbim">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="TestSourceFiles\COBieToXbim.xCOBie">
@@ -197,6 +190,12 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="TestSourceFiles\DuplexCOBieToXbim.xCOBie">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestSourceFiles\Clinic-CutDown2.xbim">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestSourceFiles\Clinic-CutDown.xbim">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

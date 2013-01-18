@@ -15,6 +15,7 @@ using Xbim.ModelGeometry.Scene;
 using Xbim.Ifc.Kernel;
 using Xbim.ModelGeometry;
 using Xbim.COBie.Serialisers.XbimSerialiser;
+using Xbim.IO.Tree;
 
 namespace Xbim.Tests.COBie
 {
@@ -24,12 +25,13 @@ namespace Xbim.Tests.COBie
     [DeploymentItem(BinaryFile, Root)]
     [DeploymentItem(DuplexFile, Root)]
     [DeploymentItem(DuplexBinaryFile, Root)]
+    //[DeploymentItem(TestFailFile, Root)]
     [DeploymentItem(DLLFiles)]
     [TestClass]
     public class COBieXbimSerialisationTests
     {
         private const string Root = "TestSourceFiles";
-        private const string SourceModelLeaf = "Clinic-Handover.xbim"; //"Clinic_A.xbim";//"2012-03-23-Duplex-Handover.xbim";
+        private const string SourceModelLeaf = "Clinic-CutDown.xbim"; //"Clinic_A.xbim";//"2012-03-23-Duplex-Handover.xbim";
         private const string PickListLeaf = "PickLists.xml";
         private const string SourceBinaryFile = "COBieToXbim.xCOBie";
         private const string ExcelTemplateLeaf = "COBie-US-2_4-template.xls";
@@ -45,6 +47,8 @@ namespace Xbim.Tests.COBie
         private const string ExcelTemplateFile = Root + @"\" + ExcelTemplateLeaf;
         private const string BinaryFile = Root + @"\" + SourceBinaryFile;
 
+        //private const string TestFailFile = Root + @"\Clinic_S_20110715(Nofilter).ifc";
+
         private const string DLLFiles = @"C:\Xbim\XbimFramework\Dev\COBie\Xbim.ModelGeometry\OpenCascade\Win32\Bin";
 
         [TestMethod]
@@ -58,8 +62,8 @@ namespace Xbim.Tests.COBie
             COBieBinaryDeserialiser deserialiser = new COBieBinaryDeserialiser(BinaryFile);
             workBook = deserialiser.Deserialise();
 
-            COBieXBimSerialiser xBimSerialiser = new COBieXBimSerialiser();
-            xBimSerialiser.Serialise(workBook);
+            COBieXBimSerialiser xBimSerialiser = new COBieXBimSerialiser(null);
+            xBimSerialiser.Create(workBook);
 
             
             context = new COBieContext(null);
@@ -77,7 +81,7 @@ namespace Xbim.Tests.COBie
             string excelFile = Path.ChangeExtension(SourceBinaryFile, ".xls");
             ICOBieSerialiser formatter = new COBieXLSSerialiser(excelFile, ExcelTemplateFile);
             builder.Export(formatter);
-            Process.Start(excelFile);
+            //Process.Start(excelFile);
 
             // Assert
             //Assert.AreEqual(19, newBook.Count);
@@ -92,7 +96,6 @@ namespace Xbim.Tests.COBie
             COBieContext context;
             IModel model;
             COBieBuilder builder;
-            
             string cacheFile = Path.ChangeExtension(DuplexFile, ".xbimGC");
 
             if (true)//(!File.Exists(DuplexBinaryFile))
@@ -122,8 +125,8 @@ namespace Xbim.Tests.COBie
             //    workBook = deserialiser.Deserialise();
             //}
 
-            COBieXBimSerialiser xBimSerialiser = new COBieXBimSerialiser();
-            xBimSerialiser.Serialise(workBook);
+            COBieXBimSerialiser xBimSerialiser = new COBieXBimSerialiser(null);
+            xBimSerialiser.Create(workBook);
 
 
             context = new COBieContext(null);
@@ -143,7 +146,7 @@ namespace Xbim.Tests.COBie
             string excelFile = Path.ChangeExtension(SourceBinaryFile, ".xls");
             ICOBieSerialiser formatter = new COBieXLSSerialiser(excelFile, ExcelTemplateFile);
             builder.Export(formatter);
-            Process.Start(excelFile);
+            //Process.Start(excelFile);
 
             // Assert
             //Assert.AreEqual(19, newBook.Count);
@@ -174,6 +177,19 @@ namespace Xbim.Tests.COBie
             Assert.AreEqual(test4, delimitesStrings[3]);
             
         }
+        //[TestMethod]
+        //public void TreeTest()
+        //{
+        //    IModel model;
+        //    model = new XbimFileModelServer();
+        //    model.Open(TestFailFile, delegate(int percentProgress, object userState)
+        //    {
+        //        Console.Write("\rReading File {1} {0}", percentProgress, DuplexFile);
+        //    });
+        //    TreeContainmentStrategy strategy = new TreeContainmentStrategy(model);
+        //    TreeNodes treeNodes = TreeBuilder.BuildTreeStructure(strategy);
+        //    model.Close();
+        //}
         /// <summary>
         /// Create the xbimGC file
         /// </summary>

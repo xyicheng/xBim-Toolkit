@@ -62,14 +62,19 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         /// <param name="row">COBieFloorRow holding the data</param>
         private void AddBuildingStory(COBieFloorRow row)
         {
-            IfcBuildingStorey ifcBuildingStorey = Model.New<IfcBuildingStorey>();
-            
-            //Add Created By, Created On and ExtSystem to Owner History. 
-            if ((ValidateString(row.CreatedBy)) && (Contacts.ContainsKey(row.CreatedBy)))
-                SetNewOwnerHistory(ifcBuildingStorey, row.ExtSystem, Contacts[row.CreatedBy], row.CreatedOn);
-            else
-                SetNewOwnerHistory(ifcBuildingStorey, row.ExtSystem, Model.DefaultOwningUser, row.CreatedOn);
+            //we are merging so check for an existing item name, assume the same item as should be the same building, maybe should do a check on that
+            if (CheckIfExistOnMerge<IfcBuildingStorey>(row.Name))
+            {
+                return;//we have it so no need to create
+            }
 
+            IfcBuildingStorey ifcBuildingStorey = Model.New<IfcBuildingStorey>();
+            //Set the CompositionType to Element as it is a required field
+            ifcBuildingStorey.CompositionType = IfcElementCompositionEnum.ELEMENT;
+
+            //Add Created By, Created On and ExtSystem to Owner History. 
+            SetUserHistory(ifcBuildingStorey, row.ExtSystem, row.CreatedBy, row.CreatedOn);
+            
             //using statement will set the Model.OwnerHistoryAddObject to ifcBuildingStorey.OwnerHistory as OwnerHistoryAddObject is used upon any property changes, 
             //then swaps the original OwnerHistoryAddObject back in the dispose, so set any properties within the using statement
             using (COBieXBimEditScope context = new COBieXBimEditScope(Model, ifcBuildingStorey.OwnerHistory)) 

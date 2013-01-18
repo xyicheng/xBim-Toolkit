@@ -74,7 +74,7 @@ namespace Xbim.COBie
             {
                 COBieXLSDeserialiser deSerialiser = new COBieXLSDeserialiser(Context.TemplateFileName, Constants.WORKSHEET_PICKLISTS);
                 COBieWorkbook wbook = deSerialiser.Deserialise();
-                if (wbook.Count > 0) CobiePickLists = (COBieSheet<COBiePickListsRow>)wbook.First();
+                if (wbook.Count > 0) CobiePickLists = (COBieSheet<COBiePickListsRow>)wbook.FirstOrDefault();
 
                 
             }
@@ -195,7 +195,6 @@ namespace Xbim.COBie
                 });
                 progress.ReportMessage("Finished Validation");
 
-                //ValidateForeignKeys(progress);
                 progress.Finalise();
             }
             catch (Exception)
@@ -231,13 +230,8 @@ namespace Xbim.COBie
         public void Export(ICOBieSerialiser serialiser)
 		{
 			if (serialiser == null) { throw new ArgumentNullException("formatter", "Parameter passed to COBieReader.Export(ICOBieFormatter) must not be null."); }
-            
-            //remove the pick list sheet
-            ICOBieSheet<COBieRow> PickList = Workbook.Where(wb => wb.SheetName == "PickLists").FirstOrDefault();
-            if (PickList != null)
-                Workbook.Remove(PickList);
 
-            // Passes this 
+
 			serialiser.Serialise(Workbook);
 		}
 

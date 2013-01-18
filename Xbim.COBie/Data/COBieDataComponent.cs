@@ -134,8 +134,9 @@ namespace Xbim.COBie.Data
             DateTime frmDate;
             if (DateTime.TryParse(startData, out frmDate))
                 startData = frmDate.ToString(Constants.DATE_FORMAT);
-            else
+            else if (string.IsNullOrEmpty(startData))
                 startData = Constants.DEFAULT_STRING;//Context.RunDate;
+            
             return startData;
         }
         
@@ -151,10 +152,6 @@ namespace Xbim.COBie.Data
             if (el != null && el.ContainedInStructure.Count() > 0)
             {
                 IEnumerable<IfcRoot> owningObjects = el.ContainedInStructure.Select(cis => cis.RelatingStructure).OfType<IfcSpace>(); //only one or zero held in ContainedInStructure
-                if (!owningObjects.Any())
-                    owningObjects = el.ContainedInStructure.Select(cis => cis.RelatingStructure).OfType<IfcBuildingStorey>(); //only one or zero held in ContainedInStructure
-                if (!owningObjects.Any()) 
-                    owningObjects = el.ContainedInStructure.Select(cis => cis.RelatingStructure).OfType<IfcBuilding>(); //only one or zero held in ContainedInStructure
                 if (owningObjects.Any())
                 {
                     List<string> names = new List<string>();

@@ -73,7 +73,7 @@ namespace Xbim.COBie.Data
                     sys.Category = GetCategory(ifcGroup);
                     if (string.IsNullOrEmpty(product.Name) || (product.Name == Constants.DEFAULT_STRING))
                     {
-                        product.Name = product.GetType().Name + " Name Unknown SYS-IN" + UnknownCount.ToString();
+                        product.Name = product.GetType().Name + " Name Unknown " + UnknownCount.ToString();
                         UnknownCount++;
                     }
                     sys.ComponentNames = product.Name;

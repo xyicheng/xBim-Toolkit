@@ -72,8 +72,12 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         /// <param name="row">COBieComponentRow holding the data</param>
         private void AddComponent(COBieComponentRow row)
         {
-           
 
+            //we are merging so check for an existing item name, assume the same item as should be the same building
+            if (CheckIfExistOnMerge<IfcElement>(row.Name))
+            {
+                return;//we have it so no need to create
+            }
             //we need the ExtObject to exist to create the object
             if (ValidateString(row.ExtObject))
             {
@@ -83,10 +87,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 if(ifcElement != null)
                 {
                     //Add Created By, Created On and ExtSystem to Owner History. 
-                    if ((ValidateString(row.CreatedBy)) && (Contacts.ContainsKey(row.CreatedBy)))
-                        SetNewOwnerHistory(ifcElement, row.ExtSystem, Contacts[row.CreatedBy], row.CreatedOn);
-                    else
-                        SetNewOwnerHistory(ifcElement, row.ExtSystem, Model.DefaultOwningUser, row.CreatedOn);
+                    SetUserHistory(ifcElement, row.ExtSystem, row.CreatedBy, row.CreatedOn);
                     //using statement will set the Model.OwnerHistoryAddObject to ifcElement.OwnerHistory as OwnerHistoryAddObject is used upon any property changes, 
                     //then swaps the original OwnerHistoryAddObject back in the dispose, so set any properties within the using statement
                     using (COBieXBimEditScope context = new COBieXBimEditScope(Model, ifcElement.OwnerHistory))

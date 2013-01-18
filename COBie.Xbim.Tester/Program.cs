@@ -63,18 +63,19 @@ namespace COBie.Xbim.Tester
             //    COBieBinaryDeserialiser deserialiser = new COBieBinaryDeserialiser(binaryFile);
             //    workBook = deserialiser.Deserialise();
             //}
+            string output = Path.GetFileNameWithoutExtension(sourceFile) + "COBieToIFC.ifc";
+
             Stopwatch sWatch = new Stopwatch();
             sWatch.Start();
-            
-            COBieXBimSerialiser xBimSerialiser = new COBieXBimSerialiser();
+
+            COBieXBimSerialiser xBimSerialiser = new COBieXBimSerialiser(output);
             xBimSerialiser.Serialise(workBook);
 
 
             sWatch.Stop();
             Console.WriteLine("Time = {0}", sWatch.Elapsed.Seconds);
-            string output = Path.GetFileNameWithoutExtension(sourceFile) + "COBieToIFC.ifc";
-
-            xBimSerialiser.Save(output);
+            
+            //xBimSerialiser.Save();
             Console.WriteLine("Press any key...");
             Console.ReadKey();
         }

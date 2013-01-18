@@ -29,6 +29,8 @@
         private void InitializeComponent()
         {
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.GeoOnlyChkBox = new System.Windows.Forms.CheckBox();
+            this.MergeChkBox = new System.Windows.Forms.CheckBox();
             this.btnBrowseTemplate = new System.Windows.Forms.Button();
             this.txtTemplate = new System.Windows.Forms.ComboBox();
             this.label2 = new System.Windows.Forms.Label();
@@ -42,9 +44,9 @@
             this.ProgressBar = new System.Windows.Forms.ToolStripProgressBar();
             this.StatusMsg = new System.Windows.Forms.ToolStripStatusLabel();
             this.gbFilter = new System.Windows.Forms.GroupBox();
-            this.rbDefault = new System.Windows.Forms.RadioButton();
-            this.rbPickList = new System.Windows.Forms.RadioButton();
             this.rbNoFilters = new System.Windows.Forms.RadioButton();
+            this.rbPickList = new System.Windows.Forms.RadioButton();
+            this.rbDefault = new System.Windows.Forms.RadioButton();
             this.groupBox1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             this.gbFilter.SuspendLayout();
@@ -54,6 +56,8 @@
             // 
             this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox1.Controls.Add(this.GeoOnlyChkBox);
+            this.groupBox1.Controls.Add(this.MergeChkBox);
             this.groupBox1.Controls.Add(this.btnBrowseTemplate);
             this.groupBox1.Controls.Add(this.txtTemplate);
             this.groupBox1.Controls.Add(this.label2);
@@ -62,10 +66,34 @@
             this.groupBox1.Controls.Add(this.label1);
             this.groupBox1.Location = new System.Drawing.Point(13, 13);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(498, 77);
+            this.groupBox1.Size = new System.Drawing.Size(498, 115);
             this.groupBox1.TabIndex = 0;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "IFC File Location";
+            // 
+            // GeoOnlyChkBox
+            // 
+            this.GeoOnlyChkBox.AutoSize = true;
+            this.GeoOnlyChkBox.Checked = true;
+            this.GeoOnlyChkBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.GeoOnlyChkBox.Enabled = false;
+            this.GeoOnlyChkBox.Location = new System.Drawing.Point(9, 92);
+            this.GeoOnlyChkBox.Name = "GeoOnlyChkBox";
+            this.GeoOnlyChkBox.Size = new System.Drawing.Size(148, 17);
+            this.GeoOnlyChkBox.TabIndex = 6;
+            this.GeoOnlyChkBox.Text = "Merge geometry data only";
+            this.GeoOnlyChkBox.UseVisualStyleBackColor = true;
+            // 
+            // MergeChkBox
+            // 
+            this.MergeChkBox.AutoSize = true;
+            this.MergeChkBox.Location = new System.Drawing.Point(9, 73);
+            this.MergeChkBox.Name = "MergeChkBox";
+            this.MergeChkBox.Size = new System.Drawing.Size(196, 17);
+            this.MergeChkBox.TabIndex = 5;
+            this.MergeChkBox.Text = "Merge two XLS files into one IFC file";
+            this.MergeChkBox.UseVisualStyleBackColor = true;
+            this.MergeChkBox.CheckedChanged += new System.EventHandler(this.MergeChkBox_CheckedChanged);
             // 
             // btnBrowseTemplate
             // 
@@ -84,12 +112,11 @@
             this.txtTemplate.Items.AddRange(new object[] {
             "COBie-UK-2012-template.xls",
             "COBie-US-2_4-template.xls"});
-            this.txtTemplate.Location = new System.Drawing.Point(68, 46);
+            this.txtTemplate.Location = new System.Drawing.Point(79, 46);
             this.txtTemplate.Name = "txtTemplate";
-            this.txtTemplate.Size = new System.Drawing.Size(337, 21);
+            this.txtTemplate.Size = new System.Drawing.Size(326, 21);
             this.txtTemplate.TabIndex = 3;
             this.txtTemplate.Text = "COBie-UK-2012-template.xls";
-            this.txtTemplate.TextChanged += new System.EventHandler(this.txtTemplate_TextChanged);
             // 
             // label2
             // 
@@ -111,9 +138,9 @@
             "2012-09-03-Clinic-Handover.ifc",
             "2012-09-03-Clinic-Handover.xbim",
             "BCU-XX-XX-A-VCUK-M3-00-0001.Xbim"});
-            this.txtPath.Location = new System.Drawing.Point(68, 20);
+            this.txtPath.Location = new System.Drawing.Point(79, 20);
             this.txtPath.Name = "txtPath";
-            this.txtPath.Size = new System.Drawing.Size(337, 21);
+            this.txtPath.Size = new System.Drawing.Size(326, 21);
             this.txtPath.TabIndex = 0;
             this.txtPath.Text = "2012-03-23-Duplex-Design.ifc";
             // 
@@ -140,7 +167,7 @@
             // btnGenerate
             // 
             this.btnGenerate.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnGenerate.Location = new System.Drawing.Point(430, 289);
+            this.btnGenerate.Location = new System.Drawing.Point(430, 321);
             this.btnGenerate.Name = "btnGenerate";
             this.btnGenerate.Size = new System.Drawing.Size(75, 23);
             this.btnGenerate.TabIndex = 2;
@@ -151,7 +178,7 @@
             // btnClear
             // 
             this.btnClear.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnClear.Location = new System.Drawing.Point(430, 259);
+            this.btnClear.Location = new System.Drawing.Point(430, 291);
             this.btnClear.Name = "btnClear";
             this.btnClear.Size = new System.Drawing.Size(75, 23);
             this.btnClear.TabIndex = 4;
@@ -164,10 +191,10 @@
             this.txtOutput.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtOutput.Location = new System.Drawing.Point(13, 96);
+            this.txtOutput.Location = new System.Drawing.Point(13, 134);
             this.txtOutput.Name = "txtOutput";
             this.txtOutput.ReadOnly = true;
-            this.txtOutput.Size = new System.Drawing.Size(400, 216);
+            this.txtOutput.Size = new System.Drawing.Size(400, 210);
             this.txtOutput.TabIndex = 5;
             this.txtOutput.Text = "";
             // 
@@ -176,7 +203,7 @@
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.ProgressBar,
             this.StatusMsg});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 321);
+            this.statusStrip1.Location = new System.Drawing.Point(0, 353);
             this.statusStrip1.Name = "statusStrip1";
             this.statusStrip1.Size = new System.Drawing.Size(523, 22);
             this.statusStrip1.TabIndex = 7;
@@ -195,15 +222,36 @@
             // 
             // gbFilter
             // 
+            this.gbFilter.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.gbFilter.Controls.Add(this.rbNoFilters);
             this.gbFilter.Controls.Add(this.rbPickList);
             this.gbFilter.Controls.Add(this.rbDefault);
-            this.gbFilter.Location = new System.Drawing.Point(424, 96);
+            this.gbFilter.Location = new System.Drawing.Point(424, 134);
             this.gbFilter.Name = "gbFilter";
             this.gbFilter.Size = new System.Drawing.Size(87, 98);
             this.gbFilter.TabIndex = 9;
             this.gbFilter.TabStop = false;
             this.gbFilter.Text = "Class Filter ";
+            // 
+            // rbNoFilters
+            // 
+            this.rbNoFilters.AutoSize = true;
+            this.rbNoFilters.Location = new System.Drawing.Point(6, 75);
+            this.rbNoFilters.Name = "rbNoFilters";
+            this.rbNoFilters.Size = new System.Drawing.Size(69, 17);
+            this.rbNoFilters.TabIndex = 2;
+            this.rbNoFilters.Text = "No Filters";
+            this.rbNoFilters.UseVisualStyleBackColor = true;
+            // 
+            // rbPickList
+            // 
+            this.rbPickList.AutoSize = true;
+            this.rbPickList.Location = new System.Drawing.Point(6, 47);
+            this.rbPickList.Name = "rbPickList";
+            this.rbPickList.Size = new System.Drawing.Size(65, 17);
+            this.rbPickList.TabIndex = 1;
+            this.rbPickList.Text = "Pick List";
+            this.rbPickList.UseVisualStyleBackColor = true;
             // 
             // rbDefault
             // 
@@ -217,31 +265,11 @@
             this.rbDefault.Text = "Default";
             this.rbDefault.UseVisualStyleBackColor = true;
             // 
-            // rbPickList
-            // 
-            this.rbPickList.AutoSize = true;
-            this.rbPickList.Location = new System.Drawing.Point(6, 47);
-            this.rbPickList.Name = "rbPickList";
-            this.rbPickList.Size = new System.Drawing.Size(65, 17);
-            this.rbPickList.TabIndex = 1;
-            this.rbPickList.Text = "Pick List";
-            this.rbPickList.UseVisualStyleBackColor = true;
-            // 
-            // rbNoFilters
-            // 
-            this.rbNoFilters.AutoSize = true;
-            this.rbNoFilters.Location = new System.Drawing.Point(6, 75);
-            this.rbNoFilters.Name = "rbNoFilters";
-            this.rbNoFilters.Size = new System.Drawing.Size(69, 17);
-            this.rbNoFilters.TabIndex = 2;
-            this.rbNoFilters.Text = "No Filters";
-            this.rbNoFilters.UseVisualStyleBackColor = true;
-            // 
             // COBieGenerator
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(523, 343);
+            this.ClientSize = new System.Drawing.Size(523, 375);
             this.Controls.Add(this.gbFilter);
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.txtOutput);
@@ -280,6 +308,8 @@
         private System.Windows.Forms.RadioButton rbNoFilters;
         private System.Windows.Forms.RadioButton rbPickList;
         private System.Windows.Forms.RadioButton rbDefault;
+        private System.Windows.Forms.CheckBox MergeChkBox;
+        private System.Windows.Forms.CheckBox GeoOnlyChkBox;
     }
 }
 

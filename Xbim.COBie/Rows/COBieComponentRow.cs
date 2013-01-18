@@ -29,7 +29,7 @@ namespace Xbim.COBie.Rows
         [COBieAttributes(3, COBieKeyType.ForeignKey, "Type.Name", COBieAttributeState.Required_Reference_PrimaryKey, "TypeName", 255, COBieAllowedType.AlphaNumeric)]
         public string TypeName { get; set; }
 
-        [COBieAttributes(4, COBieKeyType.ForeignKey, "Space.Name", COBieAttributeState.Required_Reference_PrimaryKey, "Space", 255, COBieAllowedType.AlphaNumeric)]
+        [COBieAttributes(4, COBieKeyType.ForeignKey, "Space.Name", COBieAttributeState.Required_Reference_PrimaryKey, "Space", 255, COBieAllowedType.AlphaNumeric, COBieCardinality.ManyToMany)]
         public string Space { get; set; }
 
         [COBieAttributes(5, COBieKeyType.None, "", COBieAttributeState.Required_Information, "Description", 255, COBieAllowedType.AlphaNumeric)]

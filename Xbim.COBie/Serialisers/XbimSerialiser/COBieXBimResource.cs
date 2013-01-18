@@ -53,13 +53,16 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         /// <param name="row">COBieResourceRow holding the data</param>
         private void AddResource(COBieResourceRow row)
         {
+            //we are merging so check for an existing item name, assume the same item as should be the same building
+            if (CheckIfExistOnMerge<IfcConstructionEquipmentResource>(row.Name))
+            {
+                return;//we have it so no need to create
+            }
             IfcConstructionEquipmentResource ifcConstructionEquipmentResource = Model.New<IfcConstructionEquipmentResource>();
+            
             //Add Created By, Created On and ExtSystem to Owner History. 
-            if ((ValidateString(row.CreatedBy)) && (Contacts.ContainsKey(row.CreatedBy)))
-                SetNewOwnerHistory(ifcConstructionEquipmentResource, row.ExtSystem, Contacts[row.CreatedBy], row.CreatedOn);
-            else
-                SetNewOwnerHistory(ifcConstructionEquipmentResource, row.ExtSystem, Model.DefaultOwningUser, row.CreatedOn);
-
+            SetUserHistory(ifcConstructionEquipmentResource, row.ExtSystem, row.CreatedBy, row.CreatedOn);
+            
             //using statement will set the Model.OwnerHistoryAddObject to ifcConstructionEquipmentResource.OwnerHistory as OwnerHistoryAddObject is used upon any property changes, 
             //then swaps the original OwnerHistoryAddObject back in the dispose, so set any properties within the using statement
             using (COBieXBimEditScope context = new COBieXBimEditScope(Model, ifcConstructionEquipmentResource.OwnerHistory))

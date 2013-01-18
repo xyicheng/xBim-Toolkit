@@ -38,11 +38,16 @@ namespace Xbim.COBie.Serialisers
         {
             FileName = fileName;
             TemplateFileName = templateFileName;
+            hasErrorLevel = typeof(COBieError).GetProperties().Where(prop => prop.Name == "ErrorLevel").Any();
         }
 
         public string FileName { get; set; }
         public string TemplateFileName { get; set; }
         public HSSFWorkbook XlsWorkbook { get; private set; }
+        /// <summary>
+        /// COBeError has the ErrorLevel property
+        /// </summary>
+        private bool hasErrorLevel { get;  set; }
 
         /// <summary>
         /// Formats the COBie data into an Excel XLS file
@@ -134,7 +139,7 @@ namespace Xbim.COBie.Serialisers
         {
             // The patriarch is a container for comments on a sheet
             HSSFPatriarch patr = (HSSFPatriarch)excelSheet.CreateDrawingPatriarch();
-
+            
             foreach (var error in sheet.Errors)
             {
                 if (error.Row > 0 && error.Column >= 0)
@@ -145,18 +150,28 @@ namespace Xbim.COBie.Serialisers
                         ICell excelCell = excelRow.GetCell(error.Column);
                         if (excelCell != null)
                         {
+                            string description = error.ErrorDescription;
+                            if(hasErrorLevel)
+                            {
+                                if (error.ErrorLevel == COBieError.ErrorLevels.Warning)
+                                    description = "Warning: " + description;
+                                else
+                                    description = "Error: " + description;
+                            }
+                            
+
                             if (excelCell.CellComment == null)
                             {
                                 // A client anchor is attached to an excel worksheet. It anchors against a top-left and bottom-right cell.
                                 // Create a comment 3 columns wide and 3 rows height
                                 IComment comment = patr.CreateCellComment(new HSSFClientAnchor(0, 0, 0, 0, error.Column, error.Row, error.Column + 3, error.Row + 3));
-                                comment.String = new HSSFRichTextString(error.ErrorDescription);
+                                comment.String = new HSSFRichTextString(description);
                                 comment.Author = "XBim";
                                 excelCell.CellComment = comment;
                             }
                             else
                             {
-                                excelCell.CellComment.String = new HSSFRichTextString(excelCell.CellComment.String.ToString() + " Also " + error.ErrorDescription);
+                                excelCell.CellComment.String = new HSSFRichTextString(excelCell.CellComment.String.ToString() + " Also " + description);
                             }
                             
                             
@@ -233,8 +248,11 @@ namespace Xbim.COBie.Serialisers
 
         private void ReportErrors(COBieWorkbook workbook)
         {
-            ISheet errorsSheet = XlsWorkbook.GetSheet(ErrorsSheet) ?? XlsWorkbook.CreateSheet(ErrorsSheet); 
+            ISheet errorsSheet = XlsWorkbook.GetSheet(ErrorsSheet) ?? XlsWorkbook.CreateSheet(ErrorsSheet);
 
+            //if we are validating here then ensure we have Indices on each sheet
+            //workbook.CreateIndices();
+                
             foreach(var sheet in workbook.OrderBy(w=>w.SheetName))
             {
                 if(sheet.SheetName != Constants.WORKSHEET_PICKLISTS)
@@ -252,16 +270,53 @@ namespace Xbim.COBie.Serialisers
         private void WriteErrors(ISheet errorsSheet, COBieErrorCollection errorCollection)
         {
             // Write Header
-
             var summary = errorCollection
-                          .GroupBy(row => new {row.SheetName, row.FieldName, row.ErrorType} )
-                          .Select(grp => new { grp.Key.SheetName, grp.Key.ErrorType, grp.Key.FieldName, Count = grp.Count() })
+                          .GroupBy(row => new { row.SheetName, row.FieldName, row.ErrorType })
+                          .Select(grp => new { grp.Key.SheetName, grp.Key.ErrorType, grp.Key.FieldName, CountError = grp.Count(err => err.ErrorLevel == COBieError.ErrorLevels.Error), CountWarning = grp.Count(err => err.ErrorLevel == COBieError.ErrorLevels.Warning) })
                           .OrderBy(r => r.SheetName);
+            
+            //just in case we do not have ErrorLevel property in sheet COBieErrorCollection COBieError
+            if (!hasErrorLevel)
+            {
+                summary = errorCollection
+                          .GroupBy(row => new { row.SheetName, row.FieldName, row.ErrorType })
+                          .Select(grp => new { grp.Key.SheetName, grp.Key.ErrorType, grp.Key.FieldName, CountError = grp.Count(), CountWarning = 0 })
+                          .OrderBy(r => r.SheetName);
+            }
 
+            
+            //Add Header
+            if (_row == 0)
+            {
+                IRow excelRow = errorsSheet.GetRow(0) ?? errorsSheet.CreateRow(0);
+                int col = 0;
 
+                ICell excelCell = excelRow.GetCell(col) ?? excelRow.CreateCell(col);
+                excelCell.SetCellValue("Sheet Name");
+                col++;
+
+                excelCell = excelRow.GetCell(col) ?? excelRow.CreateCell(col);
+                excelCell.SetCellValue("Field Name");
+                col++;
+
+                excelCell = excelRow.GetCell(col) ?? excelRow.CreateCell(col);
+                excelCell.SetCellValue("Error Type");
+                col++;
+
+                excelCell = excelRow.GetCell(col) ?? excelRow.CreateCell(col);
+                excelCell.SetCellValue("Error Count");
+                col++;
+
+                excelCell = excelRow.GetCell(col) ?? excelRow.CreateCell(col);
+                excelCell.SetCellValue("Warning Count");
+                col++;
+
+                _row++; 
+            }
+            
             foreach(var error in summary)
             {
-                
+
                 IRow excelRow = errorsSheet.GetRow(_row + 1) ?? errorsSheet.CreateRow(_row + 1);
                 int col = 0;
 
@@ -278,17 +333,23 @@ namespace Xbim.COBie.Serialisers
                 col++;
 
                 excelCell = excelRow.GetCell(col) ?? excelRow.CreateCell(col);
-                excelCell.SetCellValue(error.Count);
+                excelCell.SetCellValue(error.CountError);
+                col++;
+
+                excelCell = excelRow.GetCell(col) ?? excelRow.CreateCell(col);
+                excelCell.SetCellValue(error.CountWarning);
                 col++;
                 
                 _row++;
             }
-            for (int c = 0 ; c < 3 ; c++)
+            for (int c = 0 ; c < 5 ; c++)
             {
                 errorsSheet.AutoSizeColumn(c);
             }
 
         }
+
+        
 
         private void ValidateHeaders(List<COBieColumn> columns, List<string> sheetHeaders, string sheetName)
         {
@@ -331,7 +392,7 @@ Mismatch: {0}
         private void FormatCell(ICell excelCell, COBieCell cell)
         {
             HSSFCellStyle style;
-            if (_cellStyles.TryGetValue(cell.CobieCol.AllowedType, out style))
+            if (_cellStyles.TryGetValue(cell.COBieColumn.AllowedType, out style))
             {
                 excelCell.CellStyle = style;
             }
@@ -358,7 +419,7 @@ Mismatch: {0}
                 }
 
                 // We need to set the value in the most appropriate overload of SetCellValue, so the parsing/formatting is correct
-                switch (cell.CobieCol.AllowedType)
+                switch (cell.COBieColumn.AllowedType)
                 {
                     case COBieAllowedType.ISODateTime:
                     case COBieAllowedType.ISODate:

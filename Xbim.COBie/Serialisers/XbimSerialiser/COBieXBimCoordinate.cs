@@ -91,7 +91,10 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                             else
                             {
 #if DEBUG
-                                Console.WriteLine("Failed to find pair {0} : {1} != {2} : {3} ", row.SheetName, row.RowName, rowNext.SheetName, rowNext.RowName);
+                                if (rowNext == null)
+                                    Console.WriteLine("Failed to find pair {0} : {1} != {2} : {3} ", row.SheetName, row.RowName, "Null", "Null");
+                                else
+                                    Console.WriteLine("Failed to find pair {0} : {1} != {2} : {3} ", row.SheetName, row.RowName, rowNext.SheetName, rowNext.RowName);
 #endif
                                 i--; //set back in case next is point, as two box points failed
                             }
@@ -176,6 +179,8 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
 
                 if (ifcSpace != null)
                 {
+                    if (ifcSpace.Representation != null) //check it has no graphics attached, if it has then skip
+                        return;
                     //using statement will set the Model.OwnerHistoryAddObject to IfcRoot.OwnerHistory as OwnerHistoryAddObject is used upon any property changes, 
                     //then swaps the original OwnerHistoryAddObject back in the dispose, so set any properties within the using statement
                     using (COBieXBimEditScope context = new COBieXBimEditScope(Model, ifcSpace.OwnerHistory))
@@ -211,6 +216,9 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
 
                 if (ifcElement != null)
                 {
+                    if (ifcElement.Representation != null) //check it has no graphics attached, if it has then skip
+                        return;
+
                     //using statement will set the Model.OwnerHistoryAddObject to IfcRoot.OwnerHistory as OwnerHistoryAddObject is used upon any property changes, 
                     //then swaps the original OwnerHistoryAddObject back in the dispose, so set any properties within the using statement
                     using (COBieXBimEditScope context = new COBieXBimEditScope(Model, ifcElement.OwnerHistory))
