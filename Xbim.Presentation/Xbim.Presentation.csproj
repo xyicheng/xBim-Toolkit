@@ -126,6 +126,9 @@
     <Compile Include="DrawingItem3D.cs" />
     <Compile Include="DrawingView3D.cs" />
     <Compile Include="DrawingViewport3D.cs" />
+    <Compile Include="DynamicProductSelectionControl.xaml.cs">
+      <DependentUpon>DynamicProductSelectionControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="IfcMetaDataControl.xaml.cs">
       <DependentUpon>IfcMetaDataControl.xaml</DependentUpon>
     </Compile>
@@ -157,6 +160,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="DynamicProductSelectionControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="IfcMetaDataControl.xaml">
       <Generator>MSBuild:Compile</Generator>

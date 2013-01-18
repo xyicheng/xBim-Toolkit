@@ -15,6 +15,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
@@ -32,6 +33,7 @@ using Xbim.ModelGeometry;
 using Xbim.ModelGeometry.Scene;
 using Xbim.XbimExtensions;
 using Xbim.Ifc.SharedComponentElements;
+using System.Collections.Specialized;
 
 #endregion
 
@@ -72,7 +74,7 @@ namespace Xbim.Presentation
             _defaultTransparentMaterial = new XbimMaterialProvider(new DiffuseMaterial(transparentBrush));
 
             this.DataContextChanged += new DependencyPropertyChangedEventHandler(DrawingControl3D_DataContextChanged);
-           
+            SetValue(SelectedItemsProperty, new ObservableCollection<IfcProduct>());           
         }
 
         void DrawingControl3D_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
@@ -217,49 +219,155 @@ namespace Xbim.Presentation
             }
 
         }
-        
 
-        public IfcProduct SelectedItem
+        #region Selection infrastructure
+        public ObservableCollection<IfcProduct> SelectedItems
         {
-            get { return (IfcProduct) GetValue(SelectedItemProperty); }
-            set { SetValue(SelectedItemProperty, value); }
+            get { return (ObservableCollection<IfcProduct>)GetValue(SelectedItemsProperty); }
         }
 
-        // Using a DependencyProperty as the backing store for SelectedItem.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty SelectedItemProperty =
-            DependencyProperty.Register("SelectedItem", typeof (IfcProduct), typeof (DrawingControl3D),
-                                        new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.Inherits,
-                                                                      new PropertyChangedCallback(OnSelectedItemChanged)));
+        // Using a DependencyProperty as the backing store for SelectedItems.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty SelectedItemsProperty =
+            DependencyProperty.Register("SelectedItems", typeof(ObservableCollection<IfcProduct>), typeof(DrawingControl3D), new UIPropertyMetadata(null, new PropertyChangedCallback(OnSelectedItemsChanged)));
 
-        private static void OnSelectedItemChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static void OnSelectedItemsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             DrawingControl3D d3d = d as DrawingControl3D;
             if (d3d != null)
             {
-                IfcProduct oldProd = e.OldValue as IfcProduct;
-                IfcProduct newProd = e.NewValue as IfcProduct;
-                if (oldProd != null) //unhighlight last one
-                {
-                    DrawingControl3DItem item;
-                    if (d3d._items.TryGetValue(oldProd, out item))
+                ObservableCollection<IfcProduct> sellection = e.NewValue as ObservableCollection<IfcProduct>;
+                sellection.CollectionChanged += delegate(object sender, NotifyCollectionChangedEventArgs arg) {
+
+                    IEnumerable<IfcProduct> newItems = arg.NewItems != null ? arg.NewItems.Cast<IfcProduct>() : new List<IfcProduct>();
+                    IEnumerable<IfcProduct> oldItems = arg.OldItems != null ? arg.OldItems.Cast<IfcProduct>() : new List<IfcProduct>();
+
+                    switch (arg.Action)
                     {
-                        Material oldMat = null;
-                        d3d._selectedVisual = item.ModelVisual;
-                        d3d.SwapMaterial(item.ModelVisual.Content, d3d._selectedVisualPreviousMaterial, ref oldMat);
+                        case NotifyCollectionChangedAction.Add:
+                            d3d.SelectItems(newItems);
+                            break;
+                        case NotifyCollectionChangedAction.Remove:
+                            d3d.UnselectItems(oldItems);
+                            break;
+                        case NotifyCollectionChangedAction.Replace:
+                            d3d.UnselectItems(oldItems);
+                            d3d.SelectItems(newItems);
+                            break;
+                        case NotifyCollectionChangedAction.Reset:
+                            d3d.ResetSelection();
+                            break;
+                        default:
+                            break;
                     }
-                }
-                if (newProd != null) //highlight new one
+                };
+            }
+        }
+
+        private Dictionary<IfcProduct, Material> _originalMaterials = new Dictionary<IfcProduct, Material>();
+
+        private void SelectItems(IEnumerable<IfcProduct> prods)
+        {
+            foreach (var item in prods)
+            {
+                //swap material and get the old one
+                Model3D m3d = GetModel3D(item);
+                if (m3d == null) return;
+                Material originalMaterial = null;
+                SwapMaterial(m3d, _selectedVisualMaterial, ref originalMaterial);
+
+                if (!_originalMaterials.ContainsKey(item) && originalMaterial != null)
+                    _originalMaterials.Add(item, originalMaterial);
+            }
+        }
+
+        private void UnselectItems(IEnumerable<IfcProduct> prods)
+        {
+            foreach (var item in prods)
+            {
+                //swap material and get the old one
+                Model3D m3d = GetModel3D(item);
+                if (m3d == null) return;
+                Material originalMaterial = null;
+                if (_originalMaterials.TryGetValue(item, out originalMaterial))
                 {
-                    DrawingControl3DItem item;
-                    if (d3d._items.TryGetValue(newProd, out item))
-                    {
-                        d3d._selectedVisual = item.ModelVisual;
-                        d3d.SwapMaterial(item.ModelVisual.Content, d3d._selectedVisualMaterial,
-                                         ref d3d._selectedVisualPreviousMaterial);
-                    }
+                    Material dummy = null;
+                    SwapMaterial(m3d, originalMaterial, ref dummy);
+
+                    //remove item from the dictionary
+                    _originalMaterials.Remove(item);
                 }
             }
         }
+
+        private void ResetSelection()
+        {
+            foreach (var item in _originalMaterials.Keys)
+            {
+                //swap material and get the old one
+                Model3D m3d = GetModel3D(item);
+                if (m3d == null) return;
+                Material originalMaterial = null;
+                if (_originalMaterials.TryGetValue(item, out originalMaterial))
+                {
+                    Material dummy = null;
+                    SwapMaterial(m3d, originalMaterial, ref dummy);
+                }
+            }
+
+            _originalMaterials = new Dictionary<IfcProduct, Material>();
+        }
+
+        private Model3D GetModel3D(IfcProduct product)
+        {
+            DrawingControl3DItem item;
+            if (_items.TryGetValue(product, out item))
+            {
+                return item.ModelVisual.Content;
+            }
+            return null;
+        }
+
+        //public IfcProduct SelectedItem
+        //{
+        //    get { return (IfcProduct) GetValue(SelectedItemProperty); }
+        //    set { SetValue(SelectedItemProperty, value); }
+        //}
+
+        //// Using a DependencyProperty as the backing store for SelectedItem.  This enables animation, styling, binding, etc...
+        //public static readonly DependencyProperty SelectedItemProperty =
+        //    DependencyProperty.Register("SelectedItem", typeof (IfcProduct), typeof (DrawingControl3D),
+        //                                new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.Inherits,
+        //                                                              new PropertyChangedCallback(OnSelectedItemChanged)));
+
+        //private static void OnSelectedItemChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        //{
+        //    DrawingControl3D d3d = d as DrawingControl3D;
+        //    if (d3d != null)
+        //    {
+        //        IfcProduct oldProd = e.OldValue as IfcProduct;
+        //        IfcProduct newProd = e.NewValue as IfcProduct;
+        //        if (oldProd != null) //unhighlight last one
+        //        {
+        //            DrawingControl3DItem item;
+        //            if (d3d._items.TryGetValue(oldProd, out item))
+        //            {
+        //                Material oldMat = null;
+        //                d3d._selectedVisual = item.ModelVisual;
+        //                d3d.SwapMaterial(item.ModelVisual.Content, d3d._selectedVisualPreviousMaterial, ref oldMat);
+        //            }
+        //        }
+        //        if (newProd != null) //highlight new one
+        //        {
+        //            DrawingControl3DItem item;
+        //            if (d3d._items.TryGetValue(newProd, out item))
+        //            {
+        //                d3d._selectedVisual = item.ModelVisual;
+        //                d3d.SwapMaterial(item.ModelVisual.Content, d3d._selectedVisualMaterial,
+        //                                 ref d3d._selectedVisualPreviousMaterial);
+        //            }
+        //        }
+        //    }
+        //}
 
 
         private void SwapMaterial(Model3D m3d, Material newMat, ref Material oldMat)
@@ -279,7 +387,7 @@ namespace Xbim.Presentation
                 g3d.BackMaterial = newMat;
             }
         }
-
+        #endregion
 
         //public double Transparency
         //{
@@ -778,6 +886,41 @@ namespace Xbim.Presentation
                     parent.Children.Remove(item.ModelVisual);
                 }
                 return;
+            }
+        }
+
+        public void HideAll()
+        {
+            foreach (IfcProduct hideProduct in _items.Keys)
+            {
+                DrawingControl3DItem item;
+                if (_items.TryGetValue(hideProduct, out item))
+                {
+                    ModelVisual3D parent = VisualTreeHelper.GetParent(item.ModelVisual) as ModelVisual3D;
+                    if (parent != null)
+                    {
+                        _hidden.Add(item.ModelVisual, parent);
+                        parent.Children.Remove(item.ModelVisual);
+                    }
+                }    
+            }
+        }
+
+        public void Show(IfcProduct product)
+        {
+            List<ModelVisual3D> alive = new List<ModelVisual3D>();
+            foreach (var item in _hidden)
+            {
+                IfcProduct prod = item.Key.GetValue(TagProperty) as IfcProduct;
+                if (prod == product)
+                {
+                    item.Value.Children.Add(item.Key);
+                    alive.Add(item.Key);
+                }
+            }
+            foreach (var bornAgain in alive)
+            {
+                _hidden.Remove(bornAgain);
             }
         }
 

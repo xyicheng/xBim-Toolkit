@@ -32,11 +32,27 @@
         </Menu>
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width=".3*"/>
+                <ColumnDefinition Width=".5*"/>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition />
             </Grid.ColumnDefinitions>
-            <xbim:SpatialStructureControl Name="SpatialControl" FontSize="10" FontWeight="normal" Grid.Column="0" Project ="{Binding Path=Model.IfcProject}" Background="#114682D4" MouseDoubleClick="SpatialControl_MouseDoubleClick"/>
+            <Grid Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <xbim:SpatialStructureControl Grid.Row="0"  Name="SpatialControl" FontSize="10" FontWeight="normal" Project ="{Binding Path=Model.IfcProject}" Background="#114682D4" MouseDoubleClick="SpatialControl_MouseDoubleClick"/>
+                <GridSplitter 
+                Grid.Row="1" 
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Center"
+                Background="Gray" 
+                ShowsPreview="True"
+                Height="5"
+                />
+                <xbim:DynamicProductSelectionControl Grid.Row="2"  Model="{Binding Path=Model}" Name="DynamicProductSelector"/>
+            </Grid>
             <!--<ListBox  Name="Lister" MouseDoubleClick="Lister_MouseDoubleClick">
                
             </ListBox>-->

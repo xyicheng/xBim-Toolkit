@@ -57,9 +57,30 @@ namespace XbimXplorer
             DrawingControl.SelectionChanged += new SelectionChangedEventHandler(DrawingControl_SelectionChanged);
             SpatialControl.SelectedItemChanged +=new RoutedPropertyChangedEventHandler<SpatialStructureTreeItem>(SpatialControl_SelectedItemChanged);
             DrawingControl.OnSetMaterial += new SetMaterialEventHandler(DrawingControl_OnSetMaterial);
+            DynamicProductSelector.ProductSelectionChanged += new DynamicProductSelectionControl.ProductSelectionChangedEventHandler(DynamicProductSelector_ProductSelectionChanged);
+            DynamicProductSelector.ProductVisibilityChanged += new DynamicProductSelectionControl.ProductVisibilityChangedEventHandler(DynamicProductSelector_ProductVisibilityChanged);
             //DrawingControl.OnSetFilter += new SetFilterEventHandler(DrawingControl_OnSetFilter);
            
         }
+
+        void DynamicProductSelector_ProductVisibilityChanged(object sender, DynamicProductSelectionControl.ProductVisibilityChangedEventArgs a)
+        {
+            DrawingControl.HideAll();
+            foreach (var product in a.Selection)
+            {
+                DrawingControl.Show(product.GetType());
+            }
+        }
+
+        void DynamicProductSelector_ProductSelectionChanged(object sender, DynamicProductSelectionControl.ProductSelectionChangedEventArgs a)
+        {
+            DrawingControl.SelectedItems.Clear();
+            foreach (var product in a.Selection)
+            {
+                DrawingControl.SelectedItems.Add(product);
+            }
+        }
+
 
         void DrawingControl_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
