@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Xbim.Ifc.SharedBldgElements;
+using Xbim.Ifc2x3.SharedBldgElements;
 using Xbim.DOM.PropertiesQuantities;
 
 namespace Xbim.DOM
@@ -14,7 +14,7 @@ namespace Xbim.DOM
         internal XbimCurtainWallType(XbimDocument document, string name) 
             : base(document)
         {
-            IfcCurtainWallType = _document.Model.New<IfcCurtainWallType>();
+            IfcCurtainWallType = _document.Model.Instances.New<IfcCurtainWallType>();
             IfcCurtainWallType.Name = name;
             _document.CurtainWallTypes.Add(this);
             IfcCurtainWallType.PredefinedType = IfcCurtainWallTypeEnum.NOTDEFINED;

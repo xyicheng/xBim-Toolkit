@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -18,6 +19,11 @@
     <SccLocalPath>SAK</SccLocalPath>
     <SccAuxPath>SAK</SccAuxPath>
     <SccProvider>SAK</SccProvider>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <OldToolsVersion>4.0</OldToolsVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -198,10 +204,22 @@
     <Content Include="Content\themes\base\minified\jquery.ui.slider.min.css" />
     <Content Include="Content\themes\base\minified\jquery.ui.tabs.min.css" />
     <Content Include="Content\themes\base\minified\jquery.ui.theme.min.css" />
+    <Content Include="model01.aspx" />
+    <Content Include="model02.aspx" />
+    <Content Include="model03.aspx" />
+    <Content Include="model04.aspx" />
+    <Content Include="model05.aspx" />
+    <Content Include="model06.aspx" />
+    <Content Include="MultiFiles.aspx" />
     <Content Include="Readme.txt" />
     <Content Include="Scripts\ajaxfileupload.js" />
     <Content Include="Scripts\basescenedefinition.js" />
     <Content Include="Scripts\camera.js" />
+    <Content Include="Scripts\model04.js" />
+    <Content Include="Scripts\model05.js" />
+    <Content Include="Scripts\model06.js" />
+    <Content Include="Scripts\model03.js" />
+    <Content Include="Scripts\model02.js" />
     <Content Include="Scripts\icim-app-init.js" />
     <Content Include="Scripts\icim-console.js" />
     <Content Include="Scripts\icim-elementTypePanel.js" />
@@ -221,13 +239,17 @@
     <Content Include="Scripts\jquery.viewport.mini.js" />
     <Content Include="Scripts\key_status.js" />
     <Content Include="Scripts\menus.js" />
+    <Content Include="Scripts\model01.js" />
     <Content Include="Scripts\modelbuilder.js" />
     <Content Include="Scripts\modelstreamer.js" />
+    <Content Include="Scripts\multifiles.js" />
     <Content Include="Scripts\orbit.js" />
     <Content Include="Scripts\quaternion.js" />
     <Content Include="Scripts\scenejs.js" />
+    <Content Include="Scripts\Viewer Memory And UI Structure.txt" />
     <Content Include="Scripts\viewer-mesh.js" />
     <Content Include="Scripts\viewer.js" />
+    <Content Include="Scripts\xbim3dviewer.js" />
     <Content Include="Styles\icons.gif" />
     <Content Include="Styles\loading.gif" />
     <Content Include="Styles\modelloading.gif" />
@@ -236,7 +258,9 @@
     <Content Include="Global.asax" />
     <Content Include="Styles\ui.dynatree.css" />
     <Content Include="Styles\vline.gif" />
-    <Content Include="Web.config" />
+    <Content Include="Web.config">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </Content>
@@ -296,22 +320,71 @@
       <DependentUpon>Default.aspx</DependentUpon>
     </Compile>
     <Compile Include="DefaultMaterials.cs" />
-    <Compile Include="DynamicGrouping\GroupingByXml.cs" />
-    <Compile Include="DynamicGrouping\GroupsFromXml.cs" />
-    <Compile Include="DynamicGrouping\XbimQueryBuilder.cs" />
-    <Compile Include="DynamicGrouping\XbimQueryFactory.cs" />
+    <Compile Include="Content\DynamicGrouping\GroupingByXml.cs" />
+    <Compile Include="Content\DynamicGrouping\GroupsFromXml.cs" />
+    <Compile Include="Content\DynamicGrouping\XbimQueryBuilder.cs" />
+    <Compile Include="Content\DynamicGrouping\XbimQueryFactory.cs" />
     <Compile Include="DynamicJsonConverter.cs" />
     <Compile Include="FileUpload.ashx.cs">
       <DependentUpon>FileUpload.ashx</DependentUpon>
     </Compile>
     <Compile Include="GeometryData.cs" />
-    <Compile Include="GeometryLabel.cs" />
+    <Compile Include="GeometryHeader.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="IModelStream.cs" />
     <Compile Include="Material.cs" />
+    <Compile Include="model01.aspx.cs">
+      <DependentUpon>model01.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="model01.aspx.designer.cs">
+      <DependentUpon>model01.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="model02.aspx.cs">
+      <DependentUpon>model02.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="model02.aspx.designer.cs">
+      <DependentUpon>model02.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="model03.aspx.cs">
+      <DependentUpon>model03.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="model03.aspx.designer.cs">
+      <DependentUpon>model03.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="model04.aspx.cs">
+      <DependentUpon>model04.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="model04.aspx.designer.cs">
+      <DependentUpon>model04.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="model05.aspx.cs">
+      <DependentUpon>model05.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="model05.aspx.designer.cs">
+      <DependentUpon>model05.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="model06.aspx.cs">
+      <DependentUpon>model06.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="model06.aspx.designer.cs">
+      <DependentUpon>model06.aspx</DependentUpon>
+    </Compile>
     <Compile Include="ModelStreamer.cs" />
+    <Compile Include="MultiFiles.aspx.cs">
+      <DependentUpon>MultiFiles.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="MultiFiles.aspx.designer.cs">
+      <DependentUpon>MultiFiles.aspx</DependentUpon>
+    </Compile>
     <Compile Include="ObjectDataProviders\SimpleBuildingElementType.cs" />
     <Compile Include="ObjectDataProviders\SimpleGroup.cs" />
     <Compile Include="ObjectDataProviders\SimpleGroupHierarchyEnumerable.cs" />
@@ -341,13 +414,13 @@
       <Project>{6745F5AC-AF3C-4372-81AA-A75E7B1FA03B}</Project>
       <Name>Xbim.Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Xbim.Ifc.Extensions\Xbim.Ifc.Extensions.csproj">
+    <ProjectReference Include="..\Xbim.Ifc.Extensions\Xbim.Ifc2x3.Extensions.csproj">
       <Project>{09870F18-1796-4A3E-A66D-68DB3DA60B24}</Project>
-      <Name>Xbim.Ifc.Extensions</Name>
+      <Name>Xbim.Ifc2x3.Extensions</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Xbim.Ifc\Xbim.Ifc.csproj">
+    <ProjectReference Include="..\Xbim.Ifc2x3\Xbim.Ifc2x3.csproj">
       <Project>{5D4C907D-1293-4E5F-9642-D0862AE4741C}</Project>
-      <Name>Xbim.Ifc</Name>
+      <Name>Xbim.Ifc2x3</Name>
     </ProjectReference>
     <ProjectReference Include="..\Xbim.IO\Xbim.IO.csproj">
       <Project>{85856DF2-C8AB-4120-8A8D-AE05D2696B51}</Project>
@@ -356,19 +429,30 @@
     <ProjectReference Include="..\Xbim.ModelGeometry.Scene\Xbim.ModelGeometry.Scene.csproj">
       <Project>{3D9D37DE-A254-4433-B172-7590CBD84C69}</Project>
       <Name>Xbim.ModelGeometry.Scene</Name>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\Xbim.ModelGeometry\Xbim.ModelGeometry.vcxproj">
+      <Project>{CBCA1EFC-7459-4A0E-A42D-55D4F58051BF}</Project>
+      <Name>Xbim.ModelGeometry</Name>
+      <Private>False</Private>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Content Include="FileUpload.ashx" />
+    <Content Include="models\Clinic_A_20110906.ifc" />
     <None Include="models\Clinic_A_20110906.xbim" />
-    <None Include="models\Clinic_A_20110906.xbimGC" />
+    <Content Include="models\Duplex_A_20110907.ifc" />
     <None Include="models\Duplex_A_20110907.xbim" />
-    <None Include="models\Duplex_A_20110907.xbimGC" />
+    <Content Include="models\Office_A_20110811.ifc" />
     <None Include="models\Office_A_20110811.xbim" />
-    <None Include="models\Office_A_20110811.xbimGC" />
   </ItemGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
-  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" />
+  <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" Condition="false" />
   <ProjectExtensions>
     <VisualStudio>
       <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">

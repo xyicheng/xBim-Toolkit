@@ -14,11 +14,11 @@ using System.Windows.Shapes;
 using Microsoft.CSharp;
 using System.CodeDom.Compiler;
 using System.Reflection;
-using Xbim.XbimExtensions;
 using Xbim.IO;
-using Xbim.Ifc.Kernel;
+using Xbim.Ifc2x3.Kernel;
 using Microsoft.Win32;
 using System.IO;
+using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Presentation
 {
@@ -45,56 +45,54 @@ using Microsoft.CSharp;
 using System.Reflection;
 
 using Xbim.XbimExtensions;
-using Xbim.Ifc.SelectTypes;
-using Xbim.Ifc.RepresentationResource;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.ExternalReferenceResource;
-using Xbim.Ifc.DateTimeResource;
-using Xbim.Ifc.SharedBldgElements;
-using Xbim.Ifc.ProductExtension;
-using Xbim.Ifc.GeometryResource;
-using Xbim.Ifc.PresentationAppearanceResource;
+using Xbim.XbimExtensions.SelectTypes;
+using Xbim.Ifc2x3.RepresentationResource;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.ExternalReferenceResource;
+using Xbim.Ifc2x3.DateTimeResource;
+using Xbim.Ifc2x3.SharedBldgElements;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.Ifc2x3.GeometryResource;
+using Xbim.Ifc2x3.PresentationAppearanceResource;
 using Xbim.XbimExtensions.Interfaces;
-using Xbim.XbimExtensions.DataProviders;
-using Xbim.Ifc.StructuralLoadResource;
-using Xbim.Ifc.StructuralElementsDomain;
-using Xbim.Ifc.StructuralAnalysisDomain;
-using Xbim.Ifc.SharedBldgServiceElements;
-using Xbim.Ifc.HVACDomain;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.PlumbingFireProtectionDomain;
-using Xbim.Ifc.GeometricConstraintResource;
-using Xbim.Ifc.ElectricalDomain;
-using Xbim.Ifc.ConstructionMgmtDomain;
-using Xbim.Ifc.ConstraintResource;
-using Xbim.Ifc.BuildingControlsDomain;
-using Xbim.Ifc.ApprovalResource;
-using Xbim.Ifc.UtilityResource;
-using Xbim.Ifc.ActorResource;
-using Xbim.Ifc.TopologyResource;
-using Xbim.Ifc.ProfileResource;
-using Xbim.Ifc.PropertySetDefinitions;
-using Xbim.Ifc.ProfilePropertyResource;
-using Xbim.Ifc.ProcessExtensions;
-using Xbim.Ifc.GeometricModelResource;
+using Xbim.Ifc2x3.StructuralLoadResource;
+using Xbim.Ifc2x3.StructuralElementsDomain;
+using Xbim.Ifc2x3.StructuralAnalysisDomain;
+using Xbim.Ifc2x3.SharedBldgServiceElements;
+using Xbim.Ifc2x3.HVACDomain;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.Ifc2x3.PlumbingFireProtectionDomain;
+using Xbim.Ifc2x3.GeometricConstraintResource;
+using Xbim.Ifc2x3.ElectricalDomain;
+using Xbim.Ifc2x3.ConstructionMgmtDomain;
+using Xbim.Ifc2x3.ConstraintResource;
+using Xbim.Ifc2x3.BuildingControlsDomain;
+using Xbim.Ifc2x3.ApprovalResource;
+using Xbim.Ifc2x3.UtilityResource;
+using Xbim.Ifc2x3.ActorResource;
+using Xbim.Ifc2x3.TopologyResource;
+using Xbim.Ifc2x3.ProfileResource;
+using Xbim.Ifc2x3.PropertySetDefinitions;
+using Xbim.Ifc2x3.ProfilePropertyResource;
+using Xbim.Ifc2x3.ProcessExtensions;
+using Xbim.Ifc2x3.GeometricModelResource;
 using Xbim.XbimExtensions.Transactions;
-using Xbim.Ifc.PresentationResource;
-using Xbim.Ifc.PresentationDefinitionResource;
-using Xbim.Ifc.CostResource;
-using Xbim.Ifc.PropertyResource;
-using Xbim.Ifc.MaterialResource;
-using Xbim.XbimExtensions.Parser;
-using Xbim.Ifc.MaterialPropertyResource;
-using Xbim.Ifc.FacilitiesMgmtDomain;
-using Xbim.Ifc.ControlExtension;
-using Xbim.Ifc.TimeSeriesResource;
-using Xbim.Ifc.SharedFacilitiesElements;
-using Xbim.Ifc.SharedComponentElements;
-using Xbim.Ifc.PresentationOrganizationResource;
-using Xbim.Ifc.QuantityResource;
-using Xbim.XbimExtensions.Helpers;
+using Xbim.Ifc2x3.PresentationResource;
+using Xbim.Ifc2x3.PresentationDefinitionResource;
+using Xbim.Ifc2x3.CostResource;
+using Xbim.Ifc2x3.PropertyResource;
+using Xbim.Ifc2x3.MaterialResource;
+using Xbim.Ifc2x3.MaterialPropertyResource;
+using Xbim.Ifc2x3.FacilitiesMgmtDomain;
+using Xbim.Ifc2x3.ControlExtension;
+using Xbim.Ifc2x3.TimeSeriesResource;
+using Xbim.Ifc2x3.SharedFacilitiesElements;
+using Xbim.Ifc2x3.SharedComponentElements;
+using Xbim.Ifc2x3.PresentationOrganizationResource;
+using Xbim.Ifc2x3.QuantityResource;
 using Xbim.XbimExtensions.Transactions.Extensions;
-using Xbim.Ifc.Extensions;
+using Xbim.Ifc2x3.Extensions;
+
 
 
 namespace DynamicQuery
@@ -115,20 +113,20 @@ namespace DynamicQuery
 public IEnumerable<IfcProduct> Select(IModel model)
 {
     Output.WriteLine(""Hello selected products"");
-    return model.InstancesOfType<IfcWall>();
+    return model.Instances.OfType<IfcWall>();
 }
 
 //This will hide all objects except for the returned ones
 public IEnumerable<IfcProduct> ShowOnly(IModel model)
 {
     Output.WriteLine(""Hello visible products!"");
-    return model.InstancesWhere<IfcProduct>(p => p.Name != null &&  ((string)p.Name).ToLower().Contains(""wall""));
+    return model.Instances.Where<IfcProduct>(p => p.Name != null &&  ((string)p.Name).ToLower().Contains(""wall""));
 }
 
 //This will execute arbitrary code with no return value
 public void Execute(IModel model)
 {
-    IEnumerable<IfcSpace> spaces = model.InstancesOfType<IfcSpace>();
+    IEnumerable<IfcSpace> spaces = model.Instances.OfType<IfcSpace>();
     foreach (IfcSpace space in spaces)
     {
         Output.WriteLine(space.Name + "" - "" + space.LongName);
@@ -259,7 +257,7 @@ public void Execute(IModel model)
             compilerParams.ReferencedAssemblies.Add("System.Xml.dll");
             compilerParams.ReferencedAssemblies.Add("System.Xml.Linq.dll");
             compilerParams.ReferencedAssemblies.Add("Xbim.Common.dll");
-            compilerParams.ReferencedAssemblies.Add("Xbim.Ifc.dll");
+            compilerParams.ReferencedAssemblies.Add("Xbim.Ifc2x3.dll");
             compilerParams.ReferencedAssemblies.Add("Xbim.Ifc.Extensions.dll");
 
             //get the code together

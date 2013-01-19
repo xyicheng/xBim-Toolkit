@@ -9,6 +9,7 @@ using System.Diagnostics;
 
 namespace Xbim.COBie
 {
+    [Serializable()]
     public class COBieSheet<T> : ICOBieSheet<T> where T : COBieRow
     {
         
@@ -77,6 +78,22 @@ namespace Xbim.COBie
 
         #region Methods
         
+        /// <summary>
+        /// Create a COBieRow of the correct type for this sheet, not it is not added to the Rows list
+        /// </summary>
+        /// <returns>Correct COBieRow type for this COBieSheet</returns>
+        public T AddNewRow()
+        {
+           Object[] args = {this};
+           AddRow((T)Activator.CreateInstance(typeof(T), args));
+           return Rows.Last();
+        }
+
+        public void AddRow(T cOBieRow)
+        {
+            cOBieRow.RowNumber = Rows.Count() + 1;
+            Rows.Add(cOBieRow);
+        }
 
         /// <summary>
         /// Get the alias attribute name values and add to a list of strings
@@ -94,6 +111,18 @@ namespace Xbim.COBie
         }
 
         /// <summary>
+        /// Set the initial hash code for each row in the sheet, i.e when the workbook is created
+        /// </summary>
+        public void SetRowsHashCode()
+        {
+            foreach (COBieRow row in Rows)
+            {
+                //SetThe initial has vale for each row
+                row.SetInitialRowHash();
+            }
+        }
+
+        /// <summary>
         /// Build  Dictionary of Keyed to HashSet lists, where key = field name and HashSet hold the row values for that field
         /// </summary>
         public void BuildIndices()
@@ -105,19 +134,22 @@ namespace Xbim.COBie
                     string columnName = cobieColumn.ColumnName;
                     if (!string.IsNullOrEmpty(columnName))
                     {
-                        string columnValue = cobieColumn.PropertyInfo.GetValue(row, null).ToString(); //value in this sheets row foreign key column
-
-                        if (!string.IsNullOrEmpty(columnValue))
+                        var columnData = cobieColumn.PropertyInfo.GetValue(row, null);
+                        if (columnData != null)
                         {
-                            if (!_indices.ContainsKey(columnName)) //no column key so add to dictionary
-                                _indices.Add(columnName, new HashSet<string>());
+                            string columnValue = columnData.ToString(); //value in this sheets row foreign key column
 
-                            if (!_indices[columnName].Contains(columnValue)) //add value to HashSet, if not existing
-                                _indices[columnName].Add(columnValue);
+                            if (!string.IsNullOrEmpty(columnValue))
+                            {
+                                if (!_indices.ContainsKey(columnName)) //no column key so add to dictionary
+                                    _indices.Add(columnName, new HashSet<string>());
+
+                                if (!_indices[columnName].Contains(columnValue)) //add value to HashSet, if not existing
+                                    _indices[columnName].Add(columnValue);
+                            } 
                         }
                     }
                 }
-                
             }
         }
 
@@ -127,10 +159,11 @@ namespace Xbim.COBie
         /// <param name="workbook"></param>
         public void Validate(COBieWorkbook workbook)
         {
-            ValidateFields();
-            ValidatePrimaryKeys();
-            ValidateForeignKeys(workbook);
+            _errors.Clear();
 
+            ValidatePrimaryKeys();
+            ValidateFields();
+            ValidateForeignKeys(workbook);
         }
 
         /// <summary>
@@ -149,34 +182,36 @@ namespace Xbim.COBie
                         string[] sheetRefInfo = column.ReferenceColumnName.Split('.');
                         string sheetName = sheetRefInfo.First();
                         string fieldName = sheetRefInfo.Last();
-                        string foreignKeyValue = column.PropertyInfo.GetValue(row, null).ToString(); //value in this sheets row foreign key column
+                        object obj = column.PropertyInfo.GetValue(row, null);
+                        string foreignKeyValue = (obj != null) ? obj.ToString() : ""; //value in this sheets row foreign key column
 
                         if ((!string.IsNullOrEmpty(foreignKeyValue))  //will be reported by the Foreign Key null value check, so just skip here if null or empty here
+                            && (workbook[sheetName] != null)
                             && (workbook[sheetName].Indices.ContainsKey(fieldName))
                             )
                         {
-                            bool isPickList ;
-                            if (sheetName == Constants.WORKSHEET_PICKLISTS)
-                                isPickList = true;
-                            else
-                                isPickList = false;
+                            bool isPickList = (sheetName == Constants.WORKSHEET_PICKLISTS);
 
                             //report no match
-                            if ((isPickList//(sheetName == Constants.WORKSHEET_PICKLISTS)
-                                  && (!PickListMatch(workbook[sheetName].Indices[fieldName], foreignKeyValue))) 
-                                || (!workbook[sheetName].Indices[fieldName].Contains(foreignKeyValue))
+                            if (( isPickList //is a pick list so do PickListMatch function test
+                                  && (!PickListMatch(workbook[sheetName].Indices[fieldName], foreignKeyValue))
+                                  ) 
+                                || 
+                                ( !isPickList //not a pick list so do Contains test
+                                  && (!workbook[sheetName].Indices[fieldName].Contains(foreignKeyValue, StringComparer.OrdinalIgnoreCase))
+                                  )
                                 )
                             {
                                 //get the correct Pick list column name depending on template for the category columns only, for now
                                 string errFieldName = fieldName;
-                                if ((fieldName.Contains("Category")) && (sheetName == "PickLists"))
+                                if ((fieldName.Contains("Category")) && isPickList)
                                     errFieldName = ErrorDescription.ResourceManager.GetString(fieldName.Replace("-", "")); //strip out the "-" to get the resource, (resource did not like the '-' in the name)
                                 if (string.IsNullOrEmpty(errFieldName)) //if resource not found then reset back to field name
                                     errFieldName = fieldName;
                                
                                 string errorDescription = "";
                                 errorDescription = String.Format(ErrorDescription.PickList_Violation, sheetName, errFieldName);
-                                COBieError error = new COBieError(SheetName, column.ColumnName, errorDescription, COBieError.ErrorTypes.PickList_Violation, column.ColumnOrder, rowIndex);
+                                COBieError error = new COBieError(SheetName, column.ColumnName, errorDescription, COBieError.ErrorTypes.PickList_Violation, row.InitialRowHashValue, column.ColumnOrder, rowIndex);
                                 _errors.Add(error);
                             }
                         }
@@ -198,12 +233,27 @@ namespace Xbim.COBie
         /// <returns>true if a match, false if none</returns>
         private bool PickListMatch(HashSet<string> hashSet, string foreignKeyValue)
         {
-            if (hashSet.Contains(foreignKeyValue))  return true;
+            if (foreignKeyValue == Constants.DEFAULT_STRING) return false;
+            if (hashSet.Contains(foreignKeyValue, StringComparer.OrdinalIgnoreCase)) return true;
 
-            //create anonymous method in linq statement so we only do Split once
-            return hashSet.Where(s => { var split = s.Split(':'); return ((split.Last() == foreignKeyValue) || (split.First() == foreignKeyValue)); }
-                                ).Any();
-        
+            foreignKeyValue = foreignKeyValue.ToLower().Trim();
+            if (foreignKeyValue.Contains(":")) //assume category split
+            {
+                //check both sides of : for match
+                string[] catKeys = foreignKeyValue.Split(':');
+                string first = catKeys.First().Trim();
+                string last = catKeys.Last().Trim();
+                var match = hashSet.Where(s => { var split = s.Split(':'); return ((split.Last().ToLower().Trim() == last)  && (split.First().ToLower().Trim() == first)); });
+                if (match.Any()) 
+                    return true;
+
+                //check if either side matched whole foreignKeyValue
+                //create anonymous method in linq statement so we only do Split once
+                return hashSet.Where(s => { var split = s.Split(':'); return ((split.Last().ToLower().Trim() == foreignKeyValue) || (split.First().ToLower().Trim() == foreignKeyValue)); }
+                                    ).Any();
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -217,7 +267,7 @@ namespace Xbim.COBie
                 r++;
                 for(int col = 0 ; col < row.RowCount ; col++)
                 {
-                    COBieError err = GetCobieError(row[col], SheetName, r, col);
+                    COBieError err = GetCobieError(row[col], SheetName, r, col, row.InitialRowHashValue);
                     if (err != null)
                         _errors.Add(err);
                 }
@@ -230,16 +280,35 @@ namespace Xbim.COBie
         private void ValidatePrimaryKeys()
         {
             var dupes = Rows
-                        .GroupBy(r => r.GetPrimaryKeyValue)
-                        .Where(grp => grp.Count() > 1)
-                        .SelectMany(grp => grp);
+                    .Select((v, i) => new { row = v, index = i }) //get COBieRow and its index in the list
+                    .GroupBy(r => r.row.GetPrimaryKeyValue.ToLower().Trim(), (key, group) => new {rowkey = key, rows = group }) //group by the primary key value(s) joint as a delimited string
+                    .Where(grp => grp.rows.Count() > 1); 
+                 
+
+            List<string> keyColList = new List<string>();
+            foreach (COBieColumn col in KeyColumns)
+	        {
+                keyColList.Add(col.ColumnName);
+	        }
+            string keyCols = string.Join(",", keyColList);
 
             foreach (var dupe in dupes)
             {
-                // TODO: need to identify the row number so we can assign error message
-                string description = ErrorDescription.PrimaryKey_Violation + ": " + dupe.GetPrimaryKeyValue;
-                    COBieError error = new COBieError(SheetName, string.Join(";", KeyColumns.Select(s=>s.PropertyInfo.Name)), description, COBieError.ErrorTypes.PrimaryKey_Violation);
+                List<string> indexList = new List<string>();
+                foreach (var row in dupe.rows)
+                {
+                    indexList.Add((row.index + 2).ToString());
+                }
+                string rowIndexList = string.Join(",", indexList);
+                foreach (var row in dupe.rows)
+                {
+                    string errorDescription = String.Format(ErrorDescription.PrimaryKey_Violation, keyCols, rowIndexList);
+                    COBieError error = new COBieError(SheetName, keyCols, errorDescription, COBieError.ErrorTypes.PrimaryKey_Violation, row.row.InitialRowHashValue, KeyColumns.First().ColumnOrder, (row.index + 1));
                     _errors.Add(error);
+                   
+                }
+                
+                
             }
 
         }
@@ -253,18 +322,28 @@ namespace Xbim.COBie
         /// <param name="row"></param>
         /// <param name="col"></param>
         /// <returns>COBieError object</returns>
-        private COBieError GetCobieError(COBieCell cell, string sheetName, int row, int col)
+        private COBieError GetCobieError(COBieCell cell, string sheetName, int row, int col, string initialRowHash)
         {
             int maxLength = cell.CobieCol.ColumnLength;
             COBieAllowedType allowedType = cell.CobieCol.AllowedType;
             COBieAttributeState state = cell.COBieState;
-            COBieError err = new COBieError(sheetName, cell.CobieCol.ColumnName, "", COBieError.ErrorTypes.None, col, row);
+            COBieError err = new COBieError(sheetName, cell.CobieCol.ColumnName, "", COBieError.ErrorTypes.None, initialRowHash, col, row);
       
-
-            if (state == COBieAttributeState.Required && string.IsNullOrEmpty(cell.CellValue))
+            // If field is required and cell value is empty
+            if (string.IsNullOrEmpty(cell.CellValue) && 
+                    (state == COBieAttributeState.Required_PrimaryKey || 
+                     state == COBieAttributeState.Required_CompoundKeyPart ||
+                     state == COBieAttributeState.Required_Information))
             {
                 err.ErrorDescription = ErrorDescription.Text_Value_Expected;
                 err.ErrorType = COBieError.ErrorTypes.Text_Value_Expected;
+            }
+            else if (( (state == COBieAttributeState.Required_Information) || 
+                       (state == COBieAttributeState.Required_IfSpecified) ) &&
+                     (cell.CellValue == Constants.DEFAULT_STRING)
+                    ) //if a required value but marked as n/a then do not class as error
+            {
+                return null;
             }
             else if (cell.CellValue.Length > maxLength)
             {
@@ -282,7 +361,9 @@ namespace Xbim.COBie
                 err.ErrorType = COBieError.ErrorTypes.Email_Value_Expected;
             }
 
-            else if (allowedType == COBieAllowedType.ISODate)
+            else if ((allowedType == COBieAllowedType.ISODate) ||
+                    (allowedType == COBieAllowedType.ISODateTime) 
+                    )
             {
                 DateTime dt;
                 

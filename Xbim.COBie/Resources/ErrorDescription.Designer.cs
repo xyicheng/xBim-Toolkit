@@ -133,7 +133,7 @@ namespace Xbim.COBie.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Value must be unique.
+        ///   Looks up a localized string similar to Value must be unique in column(s) {0} in rows {1} .
         /// </summary>
         internal static string PrimaryKey_Violation {
             get {

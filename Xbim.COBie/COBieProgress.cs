@@ -14,7 +14,7 @@ namespace Xbim.COBie
 
         private COBieProgress() {}
 
-        public COBieProgress(COBieContext context)
+        public COBieProgress(ICOBieContext context)
         {
             Context = context;
         }
@@ -28,7 +28,7 @@ namespace Xbim.COBie
 
         #endregion
 
-        COBieContext Context
+        ICOBieContext Context
         {
             get;
             set;

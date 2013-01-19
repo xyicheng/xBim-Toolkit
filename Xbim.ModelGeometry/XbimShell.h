@@ -7,9 +7,9 @@
 #include <BRepGProp.hxx>
 #include <GProp_GProps.hxx> 
 
-using namespace Xbim::Ifc::TopologyResource;
-using namespace Xbim::Ifc::GeometryResource;
-using namespace Xbim::Ifc::SelectTypes;
+using namespace Xbim::Ifc2x3::TopologyResource;
+using namespace Xbim::Ifc2x3::GeometryResource;
+using namespace Xbim::XbimExtensions::SelectTypes;
 using namespace Xbim::XbimExtensions::Interfaces;
 using namespace System::Collections::Generic;
 using namespace System::IO;
@@ -25,6 +25,8 @@ namespace Xbim
 			TopoDS_Shape * pShell;
 			bool _hasCurvedEdges;
 			static ILogger^ Logger = LoggerFactory::GetLogger();
+			Int32 _representationLabel;
+			Int32 _surfaceStyleLabel;
 		public:
 			XbimShell(IfcConnectedFaceSet^ faceSet);
 			XbimShell(IfcClosedShell^ shell);
@@ -89,6 +91,18 @@ namespace Xbim
 			{
 				return XbimGeometryModel::GetBoundingBox(this, precise);
 			};
+			
+			virtual property Int32 RepresentationLabel
+			{
+				Int32 get(){return _representationLabel; }
+				void set(Int32 value){ _representationLabel=value; }
+			}
+
+			virtual property Int32 SurfaceStyleLabel
+			{
+				Int32 get(){return _surfaceStyleLabel; }
+				void set(Int32 value){ _surfaceStyleLabel=value; }
+			}
 
 			virtual property TopoDS_Shape* Handle
 			{
@@ -117,10 +131,10 @@ namespace Xbim
 				return gcnew XbimFaceEnumerator(*(pShell));
 			}
 
-			virtual XbimTriangulatedModelStream^ Mesh(bool withNormals, double deflection, Matrix3D transform);
-			virtual XbimTriangulatedModelStream^ Mesh(bool withNormals, double deflection);
-			virtual XbimTriangulatedModelStream^ Mesh(bool withNormals);
-			virtual XbimTriangulatedModelStream^ Mesh();
+			virtual List<XbimTriangulatedModel^>^Mesh(bool withNormals, double deflection, Matrix3D transform);
+			virtual List<XbimTriangulatedModel^>^Mesh(bool withNormals, double deflection);
+			virtual List<XbimTriangulatedModel^>^Mesh(bool withNormals);
+			virtual List<XbimTriangulatedModel^>^Mesh();
 
 		
 			//Builds a TopoDS_Shell from an ClosedShell

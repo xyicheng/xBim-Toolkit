@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.PropertyResource;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.PropertyResource;
 
 
 
@@ -67,7 +67,7 @@ namespace Xbim.COBie.Data
         /// <param name="sourceRows"></param>
         public COBieDataPropertySetValues(IEnumerable<IfcObject> sourceRows)
         {
-            _propSetsValuesObjects = sourceRows.ToDictionary(el => el, el => el.PropertySets
+            _propSetsValuesObjects = sourceRows.Where(el => (el != null)).ToDictionary(el => el, el => el.PropertySets
                 .ToDictionary(ps => ps, ps => ps.HasProperties.OfType<IfcSimpleProperty>().ToList()));
             
         }
@@ -83,7 +83,7 @@ namespace Xbim.COBie.Data
             //===========get related properties==================
 
             //Get the first related object and property sets and property single values for the IfcTypeObject
-            _propSetsValuesTypeObjectsFirstRelatedObject = sourceRows.ToDictionary(tObj => tObj, tObj => tObj.ObjectTypeOf.First().RelatedObjects.First().IsDefinedByProperties.Select(ps => ps.RelatingPropertyDefinition).OfType<IfcPropertySet>()
+            _propSetsValuesTypeObjectsFirstRelatedObject = sourceRows.Where(tObjT => (tObjT.ObjectTypeOf.Count() > 0) && (tObjT.ObjectTypeOf.First().RelatedObjects.Count() > 0)).ToDictionary(tObj => tObj, tObj => tObj.ObjectTypeOf.First().RelatedObjects.First().IsDefinedByProperties.Select(ps => ps.RelatingPropertyDefinition).OfType<IfcPropertySet>()
                                                                                                                        .ToDictionary(ps => ps, ps => ps.HasProperties.OfType<IfcSimpleProperty>().ToList()));
             //set up property value list
             _ifcPropertySingleValues = new List<IfcSimpleProperty>();
@@ -130,7 +130,10 @@ namespace Xbim.COBie.Data
         /// <returns>Dictionary of IfcPropertySet keyed to List of IfcPropertySingleValue</returns>
         public Dictionary<IfcPropertySet, List<IfcSimpleProperty>> GetRelatedProperties(IfcTypeObject ifcTypeObject)
         {
-            if (_propSetsValuesTypeObjectsFirstRelatedObject.ContainsKey(ifcTypeObject))
+
+            if ( (_propSetsValuesTypeObjectsFirstRelatedObject.Any()) && 
+                (_propSetsValuesTypeObjectsFirstRelatedObject.ContainsKey(ifcTypeObject))
+                )
              return _propSetsValuesTypeObjectsFirstRelatedObject[ifcTypeObject];
             else
              return null;
@@ -242,13 +245,19 @@ namespace Xbim.COBie.Data
         /// <param name="ifcTypeObject">Object to get related object from</param>
         private void GetRelatedObjectProperties(IfcTypeObject ifcTypeObject)
         {
-            List<IfcSimpleProperty> RelObjValues = new List<IfcSimpleProperty>();
+            if (_propSetsValuesTypeObjectsFirstRelatedObject.Any())
+            {
+                List<IfcSimpleProperty> RelObjValues = new List<IfcSimpleProperty>();
+                if (_propSetsValuesTypeObjectsFirstRelatedObject.ContainsKey(ifcTypeObject))
+                {
+                    RelObjValues = (from dic in _propSetsValuesTypeObjectsFirstRelatedObject[ifcTypeObject]
+                                from psetval in dic.Value //list of IfcPropertySingleValue
+                                select psetval).ToList();
 
-            RelObjValues = (from dic in _propSetsValuesTypeObjectsFirstRelatedObject[ifcTypeObject]
-                            from psetval in dic.Value //list of IfcPropertySingleValue
-                            select psetval).ToList();
-
-            _ifcPropertySingleValues.AddRange(RelObjValues);
+                    _ifcPropertySingleValues.AddRange(RelObjValues);
+                }
+                
+            }
         }
         
         #endregion

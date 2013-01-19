@@ -2,8 +2,9 @@
 var connection = $.connection('xbim');
 
 $(window).load(function () {
+    
     $(document).ready(function () {
-
+        
         //setup our received data handler
         connection.received(function (buffer) {
             // Write the bytes of the received string to an ArrayBuffer (as we need to convert from base64 to bytes)
@@ -64,8 +65,11 @@ $(window).load(function () {
 
         camera = new Camera(SceneJS.scene("Scene").findNode("zoom"));
         camera.SetAspectRatio($("#scenejsCanvas").width(), $("#scenejsCanvas").height());
+        
+        InitScene("scenejsCanvas", "Scene");
 
-        InitScene();
+
+
     });
 });
 function toggleantialias() {
@@ -283,9 +287,10 @@ function changeControlMethod(newmethod) {
     controlMethod = newmethod;
     controlMethod.init();
 }
-function InitScene() {
-    canvas = document.getElementById("scenejsCanvas");
-
+function InitScene(scenejsCanvasId, sceneId) {
+    
+    canvas = document.getElementById(scenejsCanvasId);
+    
     orbitcontrol.fullscreenelement = canvas;
 
     //Enable scene graph compilation to speed things up
@@ -294,7 +299,6 @@ function InitScene() {
             enabled: true
         }
     });
-
     //mouse movement variables
     var dragging = false;
     var leftDown = false;
@@ -302,7 +306,7 @@ function InitScene() {
     var mouseDownTime = 0;
 
     //setup the rendering function
-    SceneJS.scene("Scene").start(SceneStarter);
+    SceneJS.scene(sceneId).start(SceneStarter);
 
     //Handler for mouse down
     function mouseDown(event) {
@@ -330,7 +334,7 @@ function InitScene() {
         if (controlMethod.mousedown)
             controlMethod.mousedown(event);
     }
-
+    
     //Handler for mouse up (if mouse was clicked quickly it's a pick, otherwise we are stopping a drag)
     function mouseUp(event) {
 
@@ -340,14 +344,14 @@ function InitScene() {
         var mouseTop = (event.pageY - canvas.offsetTop);
         lastX = mouseLeft;
         lastY = mouseTop;
-
+        
         //check whether the mouseup occurred within 1/4 sec of mousedown - indicates a click rather than a drag
         var now = new Date();
         if (now.getTime() - mouseDownTime < 250) {
 
             //if its just a left mouse click, then its a pick
             if (leftDown && !rightDown) {
-                var item = SceneJS.scene("Scene").pick(mouseLeft, mouseTop);
+                var item = SceneJS.scene(sceneId).pick(mouseLeft, mouseTop);
 
                 if (item) {  //check if we found an item
                     ClickPickItem(item);
@@ -471,15 +475,34 @@ function InitScene() {
 //all the tags in the scene
 var tags = [];
 
-function DynamicLoad(modelid) {
-    ModelID = modelid;  
+function DynamicLoadMultiFiles(modelid) {
+
+    ModelID = modelid;
+
     if (SceneJS.scene("Scene").findNode("materialNode") == null) {
         var sce = SceneJS.scene("Scene");
         var node = SceneJS.scene("Scene").findNode("offset");
 
+        
+
+        StartLoadingDynamicModel(sce, node, ModelID);
+        $("#types").hide();
+        //addClassification(modelid);
+        //setGrouping(modelid);
+    }
+}
+
+function DynamicLoad(modelid) {
+    
+    ModelID = modelid;
+    
+    if (SceneJS.scene("Scene").findNode("materialNode") == null) {
+        var sce = SceneJS.scene("Scene");
+        var node = SceneJS.scene("Scene").findNode("offset");
+        
         $("#types").show();
         $("#modelmenu").hide();
-
+        
         StartLoadingDynamicModel(sce, node, ModelID);
 
         //addClassification(modelid);
@@ -518,9 +541,10 @@ function ajaxFileUpload() {
    .ajaxComplete(function () {
        $(this).hide();
    });
-
+   alert('uploading');
    $.ajaxFileUpload
    (
+
        {
            url: 'FileUpload.ashx',
            secureuri: false,
@@ -537,18 +561,18 @@ function ajaxFileUpload() {
 
                        $("#linkLoadAnotherFile").show();
                        $("#uploadCtlInner").hide();
-
+                       //alert(data.modelid);
                        ModelID = data.modelid;
 
-                       // convert ifc file to xbim and xbimGC
-                       //convertToxBim(ModelID);
+
                        if (SceneJS.scene("Scene").findNode("materialNode") == null) {
+                          
                            var sce = SceneJS.scene("Scene");
                            var node = SceneJS.scene("Scene").findNode("offset");
 
                            $("#types").show();
                            $("#modelmenu").hide();
-
+                           
                            //addClassification(ModelID);
                            StartLoadingDynamicModel(sce, node, ModelID);
 

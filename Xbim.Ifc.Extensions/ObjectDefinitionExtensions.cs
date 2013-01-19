@@ -12,14 +12,15 @@
 
 using System;
 using System.Linq;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.MaterialResource;
-using Xbim.Ifc.SelectTypes;
-using Xbim.Ifc.ProductExtension;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.MaterialResource;
+using Xbim.XbimExtensions.SelectTypes;
+using Xbim.Ifc2x3.ProductExtension;
 using Xbim.XbimExtensions;
+using Xbim.XbimExtensions.Interfaces;
 
 
-namespace Xbim.Ifc.Extensions
+namespace Xbim.Ifc2x3.Extensions
 {
     public static class ObjectDefinitionExtensions
     {
@@ -27,8 +28,8 @@ namespace Xbim.Ifc.Extensions
                                                                  IfcObjectDefinition decomposingObject)
         {
             IfcRelAggregates rel =
-                model.InstancesWhere<IfcRelAggregates>(r => r.RelatingObject == obj).FirstOrDefault() ??
-                model.New<IfcRelAggregates>(r => r.RelatingObject = obj);
+                model.Instances.Where<IfcRelAggregates>(r => r.RelatingObject == obj).FirstOrDefault() ??
+                model.Instances.New<IfcRelAggregates>(r => r.RelatingObject = obj);
 
             rel.RelatedObjects.Add_Reversible(decomposingObject);
         }

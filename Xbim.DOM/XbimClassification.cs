@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Xbim.Ifc.ExternalReferenceResource;
+using Xbim.Ifc2x3.ExternalReferenceResource;
 using Xbim.XbimExtensions;
 
 namespace Xbim.DOM
@@ -21,7 +21,7 @@ namespace Xbim.DOM
       
         public XbimClassification(XbimDocument document, string publisherId, string name, string edition, DateTime? date)
         {
-            IfcClassification _classification =  document.Model.New<IfcClassification>();
+            IfcClassification _classification =  document.Model.Instances.New<IfcClassification>();
             _classification.Source = publisherId;
             _classification.Name = name;
             _classification.Edition = edition;

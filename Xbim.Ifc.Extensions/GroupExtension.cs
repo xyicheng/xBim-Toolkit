@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Xbim.Ifc.Kernel;
+using Xbim.Ifc2x3.Kernel;
 using Xbim.XbimExtensions;
+using Xbim.XbimExtensions.Interfaces;
 
-namespace Xbim.Ifc.Extensions
+namespace Xbim.Ifc2x3.Extensions
 {
     public static class GroupExtension
     {
@@ -14,7 +15,7 @@ namespace Xbim.Ifc.Extensions
             IModel model = null;
             IPersistIfcEntity persist = root as IPersistIfcEntity;
             if (persist != null) model = persist.ModelOf;
-            if (model == null) model = ModelManager.ModelOf(root);
+            if (model == null) model = root.ModelOf;
 
             return model;
         }
@@ -24,7 +25,7 @@ namespace Xbim.Ifc.Extensions
             IModel model = GetModel(gr);
 
             IfcRelAssignsToGroup relation = gr.IsGroupedBy;
-            if (gr.IsGroupedBy == null) relation = model.New<IfcRelAssignsToGroup>(rel => rel.RelatingGroup = gr);
+            if (gr.IsGroupedBy == null) relation = model.Instances.New<IfcRelAssignsToGroup>(rel => rel.RelatingGroup = gr);
             relation.RelatedObjects.Add_Reversible(obj);
         }
 
@@ -33,7 +34,7 @@ namespace Xbim.Ifc.Extensions
             IModel model = GetModel(gr);
 
             IfcRelAssignsToGroup relation = gr.IsGroupedBy;
-            if (gr.IsGroupedBy == null) relation = model.New<IfcRelAssignsToGroup>(rel => rel.RelatingGroup = gr);
+            if (gr.IsGroupedBy == null) relation = model.Instances.New<IfcRelAssignsToGroup>(rel => rel.RelatingGroup = gr);
             foreach (var item in objects)
             {
                 relation.RelatedObjects.Add_Reversible(item);
@@ -58,7 +59,7 @@ namespace Xbim.Ifc.Extensions
         {
             IModel model = GetModel(gr);
 
-            IEnumerable<IfcRelAssignsToGroup> relations = model.InstancesWhere<IfcRelAssignsToGroup>(rel => rel.RelatedObjects.Contains(gr));
+            IEnumerable<IfcRelAssignsToGroup> relations = model.Instances.Where<IfcRelAssignsToGroup>(rel => rel.RelatedObjects.Contains(gr));
             foreach (IfcRelAssignsToGroup rel in relations)
             {
                 yield return rel.RelatingGroup;

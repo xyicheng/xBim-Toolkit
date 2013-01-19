@@ -12,14 +12,16 @@
 
 #region Directives
 
+using System;
+using System.Collections.Generic;
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
-using Xbim.Ifc.GeometryResource;
+using Xbim.Ifc2x3.GeometryResource;
 using WVector = System.Windows.Vector;
 
 #endregion
 
-namespace Xbim.Ifc.Extensions
+namespace Xbim.Ifc2x3.Extensions
 {
     public static class Axis2Placement2DExtensions
     {
@@ -46,17 +48,22 @@ namespace Xbim.Ifc.Extensions
                 return new Matrix(1, 0, 0, 1, axis2.Location.X, axis2.Location.Y);
         }
 
-        public static Matrix3D ToMatrix3D(this IfcAxis2Placement2D axis2)
+        public static Matrix3D ToMatrix3D(this IfcAxis2Placement2D axis2, Dictionary<int, Object> maps = null)
         {
+            object transform;
+            if (maps != null && maps.TryGetValue(Math.Abs(axis2.EntityLabel), out transform)) //already converted it just return cached
+                return (Matrix3D)transform;
             if (axis2.RefDirection != null)
             {
                 WVector v = axis2.RefDirection.WVector();
                 v.Normalize();
-                return new Matrix3D(v.X, v.Y, 0, 0, v.Y, v.X, 0, 0, 0, 0, 1, 0, axis2.Location.X, axis2.Location.Y, 0, 1);
+                transform = new Matrix3D(v.X, v.Y, 0, 0, v.Y, v.X, 0, 0, 0, 0, 1, 0, axis2.Location.X, axis2.Location.Y, 0, 1);
             }
             else
-                return new Matrix3D(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, axis2.Location.X, axis2.Location.Y,
+                transform = new Matrix3D(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, axis2.Location.X, axis2.Location.Y,
                                     axis2.Location.Z, 1);
+            if (maps != null) maps.Add(Math.Abs(axis2.EntityLabel), transform);
+            return (Matrix3D)transform;
         }
     }
 }

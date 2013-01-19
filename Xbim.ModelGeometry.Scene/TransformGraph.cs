@@ -19,13 +19,13 @@ using System.IO;
 using System.Linq;
 using System.Windows.Media.Media3D;
 using Xbim.IO;
-using Xbim.Ifc.Extensions;
-using Xbim.Ifc.GeometricConstraintResource;
-using Xbim.Ifc.GeometryResource;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.RepresentationResource;
+using Xbim.Ifc2x3.Extensions;
+using Xbim.Ifc2x3.GeometricConstraintResource;
+using Xbim.Ifc2x3.GeometryResource;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.RepresentationResource;
 using Xbim.XbimExtensions;
-using Xbim.XbimExtensions.Parser;
+using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
@@ -87,49 +87,8 @@ namespace Xbim.ModelGeometry.Scene
             _model.Close();
         }
 
-        public bool ReOpen()
-        {
-            
-            return _model.ReOpen();
-        }
+       
 
-
-        /// <summary>
-        ///   Converts all solid geoemetry to a tesselated model and stores on the stream
-        /// </summary>
-        /// <param name = "strm"></param>
-        /// <returns></returns>
-        public void Write(BinaryWriter strm, ReportProgressDelegate progressStatus = null)
-        {
-            strm.Write((long) -1);
-            double total = _productNodes.Values.Count;
-            double current = 0;
-            int percentageParsed = 0;
-            if(progressStatus != null)
-                progressStatus(0, "Geometry Converted");
-            foreach (var node in _productNodes.Values)
-            {
-                node.FilePosition = strm.BaseStream.Position;
-                node.TriangulatedModel.Write(strm);
-                node.TriangulatedModel = null; //delete data to save memory, can always get back fro the stream later
-                if (progressStatus != null)
-                {
-                    current++;
-                    int newPercentage = Convert.ToInt32(current / total * 100.0);
-                    if (newPercentage > percentageParsed)
-                    {
-                        percentageParsed = newPercentage;
-                        progressStatus(percentageParsed, "Geometry Converted");
-                    }
-                }
-            }
-            long pos = strm.BaseStream.Position;
-            _root.Write(strm);
-            strm.BaseStream.Seek(0, SeekOrigin.Begin);
-            strm.Write(pos);
-            if (progressStatus != null)
-                progressStatus(100, "Geometry Conversion Complete");
-        }
 
 
         public void Read(BinaryReader strm)

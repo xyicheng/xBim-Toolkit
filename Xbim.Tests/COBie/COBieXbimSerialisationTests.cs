@@ -1,0 +1,177 @@
+﻿using System;
+using System.Text;
+using System.Collections.Generic;
+using System.Linq;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xbim.COBie;
+using Xbim.XbimExtensions;
+using Xbim.IO;
+using Xbim.COBie.Serialisers;
+using System.IO;
+using System.Diagnostics;
+using Xbim.COBie.Contracts;
+using Xbim.Ifc2x3.UtilityResource;
+using Xbim.ModelGeometry.Scene;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.ModelGeometry;
+using Xbim.COBie.Serialisers.XbimSerialiser;
+
+namespace Xbim.Tests.COBie
+{
+    //[DeploymentItem(SourceFile, Root)]
+    //[DeploymentItem(PickListFile, Root)]
+    [DeploymentItem(ExcelTemplateFile, Root)]
+    [DeploymentItem(BinaryFile, Root)]
+    [DeploymentItem(DuplexFile, Root)]
+    [DeploymentItem(DuplexBinaryFile, Root)]
+    [DeploymentItem(DLLFiles)]
+    [TestClass]
+    public class COBieXbimSerialisationTests
+    {
+        private const string Root = "TestSourceFiles";
+        private const string SourceBinaryFile = "COBieToXbim.xCOBie";
+        private const string ExcelTemplateLeaf = "COBie-US-2_4-template.xls";
+
+        private const string DuplexModelLeaf = "Duplex_A_Co-ord.xbim"; //"Clinic_A.xbim";//"2012-03-23-Duplex-Handover.xbim";
+        private const string DuplexFile = Root + @"\" + DuplexModelLeaf;
+        private const string DuplexBinaryLeaf = "DuplexCOBieToXbim.xCOBie";
+        private const string DuplexBinaryFile = Root + @"\" + DuplexBinaryLeaf;
+        
+        private const string ExcelTemplateFile = Root + @"\" + ExcelTemplateLeaf;
+        private const string BinaryFile = Root + @"\" + SourceBinaryFile;
+
+        private const string DLLFiles = @"C:\Xbim\XbimFramework\Dev\COBie\Xbim.ModelGeometry\OpenCascade\Win32\Bin";
+
+        [TestMethod]
+        public void Contacts_XBimSerialise()
+        {
+            COBieWorkbook workBook;
+            COBieContext context;
+            COBieBuilder builder;
+            COBieWorkbook book;
+
+            COBieBinaryDeserialiser deserialiser = new COBieBinaryDeserialiser(BinaryFile);
+            workBook = deserialiser.Deserialise();
+
+            using (COBieXBimSerialiser xBimSerialiser = new COBieXBimSerialiser(Path.ChangeExtension(BinaryFile, ".xBIM")))
+            {
+                xBimSerialiser.Serialise(workBook);
+
+                context = new COBieContext(null);
+                context.TemplateFileName = ExcelTemplateFile;
+                context.Model = xBimSerialiser.Model;
+
+                builder = new COBieBuilder(context);
+                book = builder.Workbook;
+            }
+            
+            
+            //create excel file
+            string excelFile = Path.ChangeExtension(SourceBinaryFile, ".xls");
+            ICOBieSerialiser formatter = new COBieXLSSerialiser(excelFile, ExcelTemplateFile);
+            builder.Export(formatter);
+            Process.Start(excelFile);
+            
+        }
+
+        [TestMethod]
+        public void Contacts_XBimSerialise_Duplex()
+        {
+            COBieWorkbook workBook;
+            COBieContext context;
+            COBieBuilder builder;
+            COBieWorkbook book;
+            
+            //string cacheFile = Path.ChangeExtension(DuplexFile, ".xbimGC");
+
+            context = new COBieContext(null);
+            context.TemplateFileName = ExcelTemplateFile;
+
+            using (XbimModel model = new XbimModel())
+            {
+                model.Open(DuplexFile, XbimDBAccess.ReadWrite, delegate(int percentProgress, object userState)
+                {
+                    Console.Write("\rReading File {1} {0}", percentProgress, DuplexFile);
+                });
+                context.Model = model;
+                
+                //Create Scene, required for Coordinates sheet
+                GenerateGeometry(context); //we want to generate each run
+                //context.Scene = new XbimSceneStream(model, cacheFile);
+
+                builder = new COBieBuilder(context);
+                workBook = builder.Workbook;
+                COBieBinarySerialiser serialiser = new COBieBinarySerialiser(DuplexBinaryFile);
+                serialiser.Serialise(workBook);
+
+            }
+            
+            
+
+            using (COBieXBimSerialiser xBimSerialiser = new COBieXBimSerialiser(Path.ChangeExtension(DuplexBinaryFile, ".xBIM")))
+            {
+                xBimSerialiser.Serialise(workBook);
+
+
+                context = new COBieContext(null);
+                context.TemplateFileName = ExcelTemplateFile;
+                context.Model = xBimSerialiser.Model;
+                
+                GenerateGeometry(context); //we want to generate each run
+                
+                builder = new COBieBuilder(context);
+
+                book = builder.Workbook;
+
+            }
+
+            //create excel file
+            string excelFile = Path.ChangeExtension(SourceBinaryFile, ".xls");
+            ICOBieSerialiser formatter = new COBieXLSSerialiser(excelFile, ExcelTemplateFile);
+            builder.Export(formatter);
+            Process.Start(excelFile);
+
+            
+        }
+        [TestMethod]
+        public void Delimited_Strings()
+        {
+            string test1 = "This is split : here and , here and : again";
+            string test2 = "This is not split";
+            string test3 = "This is also not split";
+            string test4 = "This is split , here and , here and , again";
+            List<string> strList = new List<string>() { test1, test2, test3, test4 };
+
+            string delimited = COBieXBim.JoinStrings(':', strList);
+            List<string> delimitesStrings = COBieXBim.SplitString(delimited, ':');
+
+            Debug.WriteLine(string.Format("\"{0}\"", delimited));
+            Debug.WriteLine(string.Format("\"{0}\" \"{1}\"", test1, delimitesStrings[0]));
+            Debug.WriteLine(string.Format("\"{0}\" \"{1}\"", test2, delimitesStrings[1]));
+            Debug.WriteLine(string.Format("\"{0}\" \"{1}\"", test3, delimitesStrings[2]));
+            Debug.WriteLine(string.Format("\"{0}\" \"{1}\"", test4, delimitesStrings[3]));
+
+            Assert.AreEqual(test1, delimitesStrings[0]);
+            Assert.AreEqual(test2, delimitesStrings[1]);
+            Assert.AreEqual(test3, delimitesStrings[2]);
+            Assert.AreEqual(test4, delimitesStrings[3]);
+            
+        }
+        /// <summary>
+        /// Create the xbimGC file
+        /// </summary>
+        /// <param name="model">IModel object</param>
+        /// <param name="context">Context object</param>
+        private static void GenerateGeometry(COBieContext context)
+        {
+            //now convert the geometry
+            IEnumerable<IfcProduct> toDraw = context.Model.IfcProducts.Cast<IfcProduct>(); //get all products for this model to place in return graph
+            int total = toDraw.Count();
+            XbimScene.ConvertGeometry(toDraw, delegate(int percentProgress, object userState)
+            {
+                context.UpdateStatus("Creating Geometry", total, (total * percentProgress / 100));
+            }, false);
+
+        }
+    }
+}

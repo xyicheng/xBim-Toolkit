@@ -1,5 +1,5 @@
 ﻿using Xbim.XbimExtensions;
-using Xbim.Ifc.ProductExtension;
+using Xbim.Ifc2x3.ProductExtension;
 using System.Xml;
 using Xbim.COBie.Rows;
 using Xbim.COBie.Data;
@@ -147,6 +147,7 @@ namespace Xbim.COBie
         public COBieSheet<COBieSpareRow> GetCOBieSpareSheet()
         {
             COBieDataSpare spares = new COBieDataSpare(Context);
+            (spares as IAttributeProvider).InitialiseAttributes(ref _attributes);
             return spares.Fill();
         }
 

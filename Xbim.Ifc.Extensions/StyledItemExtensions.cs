@@ -13,11 +13,11 @@
 #region Directives
 
 using System.Linq;
-using Xbim.Ifc.PresentationAppearanceResource;
+using Xbim.Ifc2x3.PresentationAppearanceResource;
 
 #endregion
 
-namespace Xbim.Ifc.Extensions
+namespace Xbim.Ifc2x3.Extensions
 {
     public static class StyledItemExtensions
     {

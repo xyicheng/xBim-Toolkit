@@ -4,11 +4,12 @@
 #include <TopoDS_Shape.hxx>
 #include "XbimLocation.h"
 #include "XbimBoundingBox.h"
-using namespace Xbim::Ifc::GeometryResource;
-using namespace Xbim::Ifc::GeometricConstraintResource;
-using namespace Xbim::Ifc::SelectTypes;
+using namespace Xbim::Ifc2x3::GeometryResource;
+using namespace Xbim::Ifc2x3::GeometricConstraintResource;
+using namespace Xbim::XbimExtensions::SelectTypes;
 using namespace Xbim::ModelGeometry::Scene;
 using namespace System::Windows::Media::Media3D;
+using namespace System::Collections::Generic;
 namespace Xbim
 {
 	namespace ModelGeometry
@@ -17,14 +18,16 @@ namespace Xbim
 
 		public interface class IXbimGeometryModel
 		{
+			property Int32 RepresentationLabel{Int32 get();void set(Int32 value);}
+			property Int32 SurfaceStyleLabel{Int32 get();void set(Int32 value);}
 			property TopoDS_Shape* Handle{ TopoDS_Shape* get();};
 			IXbimGeometryModel^ Cut(IXbimGeometryModel^ shape);
 			IXbimGeometryModel^ Union(IXbimGeometryModel^ shape);
 			IXbimGeometryModel^ Intersection(IXbimGeometryModel^ shape);
-			XbimTriangulatedModelStream^ Mesh(bool withNormals, double deflection, Matrix3D transform );
-			XbimTriangulatedModelStream^ Mesh(bool withNormals, double deflection );
-			XbimTriangulatedModelStream^ Mesh(bool withNormals);
-			XbimTriangulatedModelStream^ Mesh();
+			List<XbimTriangulatedModel^>^Mesh(bool withNormals, double deflection, Matrix3D transform );
+			List<XbimTriangulatedModel^>^Mesh(bool withNormals, double deflection );
+			List<XbimTriangulatedModel^>^Mesh(bool withNormals);
+			List<XbimTriangulatedModel^>^Mesh();
 			IXbimGeometryModel^ CopyTo(IfcObjectPlacement^ placement);
 			property XbimLocation ^ Location {XbimLocation ^ get(); void set(XbimLocation ^ location);};
 			XbimBoundingBox^ GetBoundingBox(bool precise);

@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Xbim.COBie.Rows;
-using Xbim.Ifc.ActorResource;
-using Xbim.Ifc.ExternalReferenceResource;
-using Xbim.Ifc.ProductExtension;
-using Xbim.Ifc.UtilityResource;
+using Xbim.Ifc2x3.ActorResource;
+using Xbim.Ifc2x3.ExternalReferenceResource;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.Ifc2x3.UtilityResource;
 using Xbim.XbimExtensions;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.MeasureResource;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.COBie.Serialisers.XbimSerialiser;
 
 namespace Xbim.COBie.Data
 {
@@ -39,10 +40,7 @@ namespace Xbim.COBie.Data
             COBieSheet<COBieDocumentRow> documents = new COBieSheet<COBieDocumentRow>(Constants.WORKSHEET_DOCUMENT);
 
             // get all IfcBuildingStory objects from IFC file
-            IEnumerable<IfcDocumentInformation> docInfos = Model.InstancesOfType<IfcDocumentInformation>();
-            //get the owner history
-            IfcOwnerHistory ifcOwnerHistory = Model.InstancesOfType<IfcOwnerHistory>().FirstOrDefault();
-
+            IEnumerable<IfcDocumentInformation> docInfos = Model.Instances.OfType<IfcDocumentInformation>();
             ProgressIndicator.Initialise("Creating Documents", docInfos.Count());
 
             foreach (IfcDocumentInformation di in docInfos)
@@ -53,35 +51,38 @@ namespace Xbim.COBie.Data
                 
                 
                 doc.Name = (di == null) ? "" : di.Name.ToString();
-
-                //no IfcOwnerHistory so take the project OwnerHistory as default
-                if (di.DocumentOwner != null)
-                {
-                    if (di.DocumentOwner is IfcPersonAndOrganization)
-                        doc.CreatedBy = GetTelecomEmailAddress(di.DocumentOwner as IfcPersonAndOrganization);
-                    else if (di.DocumentOwner is IfcPerson)
-                        GetEmail(null, di.DocumentOwner as IfcPerson);
-                    else if (di.DocumentOwner is IfcOrganization)
-                        GetEmail(di.DocumentOwner as IfcOrganization, null);
-                }
-                else if (Model.IfcProject.OwnerHistory != null)
-                    doc.CreatedBy = GetTelecomEmailAddress(Model.IfcProject.OwnerHistory);
-
-                if (di.CreationTime != null)
-                    doc.CreatedOn = di.CreationTime.ToString();
-                else if (Model.IfcProject.OwnerHistory != null)
-                    doc.CreatedOn = Context.COBieGlobalValues["DEFAULTDATE"];
-
-                
-                //IfcRelAssociatesClassification ifcRAC = di.HasAssociations.OfType<IfcRelAssociatesClassification>().FirstOrDefault();
-                //IfcClassificationReference ifcCR = (IfcClassificationReference)ifcRAC.RelatingClassification;
-                doc.Category = di.Purpose.ToString();
-
-                doc.ApprovalBy = di.IntendedUse.ToString();
-                doc.Stage = di.Scope.ToString();
-
                 //get the first associated document to extract the objects the document refers to
                 IfcRelAssociatesDocument ifcRelAssociatesDocument = DocumentInformationForObjects(di).FirstOrDefault();
+                
+                
+                if ((ifcRelAssociatesDocument != null) && (ifcRelAssociatesDocument.OwnerHistory != null))
+                    doc.CreatedBy = GetTelecomEmailAddress(ifcRelAssociatesDocument.OwnerHistory);
+                else if (di.DocumentOwner != null)
+                {
+                   if (di.DocumentOwner is IfcPersonAndOrganization)
+                        doc.CreatedBy = GetTelecomEmailAddress(di.DocumentOwner as IfcPersonAndOrganization);
+                    else if (di.DocumentOwner is IfcPerson)
+                        doc.CreatedBy = GetEmail(null, di.DocumentOwner as IfcPerson);
+                    else if (di.DocumentOwner is IfcOrganization)
+                        doc.CreatedBy = GetEmail(di.DocumentOwner as IfcOrganization, null);
+                }
+                else if ((Model.IfcProject as IfcRoot).OwnerHistory != null)
+                    doc.CreatedBy = GetTelecomEmailAddress((Model.IfcProject as IfcRoot).OwnerHistory);
+
+
+                if ((ifcRelAssociatesDocument != null) && (ifcRelAssociatesDocument.OwnerHistory != null))
+                    doc.CreatedOn = GetCreatedOnDateAsFmtString(ifcRelAssociatesDocument.OwnerHistory);
+                else if (di.CreationTime != null)
+                    doc.CreatedOn = di.CreationTime.ToString();
+                else if ((Model.IfcProject as IfcRoot).OwnerHistory != null)
+                    doc.CreatedOn = Context.RunDate;
+
+                
+                doc.Category = (string.IsNullOrEmpty(di.Purpose.ToString()) ) ? DEFAULT_STRING :di.Purpose.ToString();
+
+                doc.ApprovalBy = (string.IsNullOrEmpty(di.IntendedUse.ToString())) ? DEFAULT_STRING : di.IntendedUse.ToString();
+                doc.Stage = (string.IsNullOrEmpty(di.Scope.ToString())) ? DEFAULT_STRING : di.Scope.ToString();
+
                 
                 RelatedObjectInformation relatedObjectInfo = GetRelatedObjectInformation(ifcRelAssociatesDocument);
                 doc.SheetName = relatedObjectInfo.SheetName;
@@ -89,21 +90,32 @@ namespace Xbim.COBie.Data
                 doc.ExtObject = relatedObjectInfo.ExtObject;
                 doc.ExtIdentifier = relatedObjectInfo.ExtIdentifier;
                 doc.ExtSystem = relatedObjectInfo.ExtSystem;
-                //doc.CreatedBy = relatedObjectInfo.CreatedBy;
-                //doc.CreatedOn = relatedObjectInfo.CreatedOn;
+                
                 FileInformation fileInfo = GetFileInformation(ifcRelAssociatesDocument);
                 doc.File = fileInfo.Name;
-                doc.Directory = fileInfo.Location;
+                doc.Directory = GetDirectory(fileInfo.Location);
 
                 
-                doc.Description = di.Description.ToString();
-                doc.Reference = di.Name.ToString();
+                doc.Description = (string.IsNullOrEmpty(di.Description)) ? DEFAULT_STRING : di.Description.ToString();
+                doc.Reference = (di.DocumentId.Value != null) ? di.DocumentId.Value.ToString() : DEFAULT_STRING;
 
-                documents.Rows.Add(doc);
+                documents.AddRow(doc);
             }
 
             ProgressIndicator.Finalise();
             return documents;
+        }
+
+        private string GetDirectory(string dir)
+        {
+            if (!Uri.IsWellFormedUriString(dir, UriKind.Absolute))
+            {
+                if (dir.Last() != '/')
+                {
+                    dir = dir + "/";
+                }
+            }
+            return dir;
         }
 
         /// <summary>
@@ -120,8 +132,9 @@ namespace Xbim.COBie.Data
             {
                 //test for single document
                 IfcDocumentReference ifcDocumentReference = ifcRelAssociatesDocument.RelatingDocument as IfcDocumentReference;
-                if (ifcDocumentReference != null)
+                if (ifcDocumentReference != null) 
                 {
+                    //this is possibly incorrect, think it references information within a document
                     value = ifcDocumentReference.ItemReference.ToString();
                     if (!string.IsNullOrEmpty(value)) DocInfo.Name = value;
                     value = ifcDocumentReference.Location.ToString();
@@ -133,28 +146,31 @@ namespace Xbim.COBie.Data
                     if (ifcDocumentInformation != null)
                     {
                         IEnumerable<IfcDocumentReference> ifcDocumentReferences = ifcDocumentInformation.DocumentReferences;
-                        List<string> strNameValues = new List<string>();
-                        List<string> strLocationValues = new List<string>();
-                        foreach (IfcDocumentReference docRef in ifcDocumentReferences)
+                        if (ifcDocumentReferences != null)
                         {
-                            //get file name
-                            value = docRef.ItemReference.ToString();
-                            if (!string.IsNullOrEmpty(value))
-                                strNameValues.Add(value);
-                            else
+                            List<string> strNameValues = new List<string>();
+                            List<string> strLocationValues = new List<string>();
+                            foreach (IfcDocumentReference docRef in ifcDocumentReferences)
                             {
-                                value = docRef.Name.ToString();
-                                if (!string.IsNullOrEmpty(value)) 
+                                //get file name
+                                value = docRef.ItemReference.ToString();
+                                if (!string.IsNullOrEmpty(value))
                                     strNameValues.Add(value);
+                                else
+                                {
+                                    value = docRef.Name.ToString();
+                                    if (!string.IsNullOrEmpty(value))
+                                        strNameValues.Add(value);
+                                }
+                                //get file location
+                                value = docRef.Location.ToString();
+                                if ((!string.IsNullOrEmpty(value)) && (!strNameValues.Contains(value))) strLocationValues.Add(value);
                             }
-                            //get file location
-                            value = docRef.Location.ToString();
-                            if ((!string.IsNullOrEmpty(value)) && (!strNameValues.Contains(value))) strLocationValues.Add(value);
+                            //set values to return
+                            if (strNameValues.Count > 0) DocInfo.Name = COBieXBim.JoinStrings(':', strNameValues);
+                            if (strLocationValues.Count > 0) DocInfo.Location = COBieXBim.JoinStrings(':', strLocationValues);
+                            
                         }
-                        //set values to return
-                        if (strNameValues.Count > 0) DocInfo.Name = string.Join(" : ", strNameValues);
-                        if (strLocationValues.Count > 0) DocInfo.Location = string.Join(" : ", strLocationValues);
-                        
                        
                     }
                 }
@@ -175,24 +191,22 @@ namespace Xbim.COBie.Data
                 IfcRoot relatedObject = ifcRelAssociatesDocument.RelatedObjects.FirstOrDefault();
                 if (relatedObject != null)
                 {
-                    string value = GetSheetByObjectType(relatedObject);
+                    string value = GetSheetByObjectType(relatedObject.GetType());
                     
                     if (!string.IsNullOrEmpty(value)) objectInfo.SheetName = value;
                     value = relatedObject.Name.ToString();
                     if (!string.IsNullOrEmpty(value)) objectInfo.Name = value;
                     objectInfo.ExtObject = relatedObject.GetType().Name;
-                    objectInfo.ExtIdentifier = relatedObject.GlobalId;
-                    objectInfo.ExtSystem = GetExternalSystem(relatedObject);
+                    objectInfo.ExtIdentifier = ifcRelAssociatesDocument.GlobalId;
+                    objectInfo.ExtSystem = GetExternalSystem(ifcRelAssociatesDocument.OwnerHistory); 
 
-                    objectInfo.CreatedBy = GetTelecomEmailAddress(relatedObject.OwnerHistory);
-                    objectInfo.CreatedOn = GetCreatedOnDateAsFmtString(relatedObject.OwnerHistory);
+                    objectInfo.CreatedBy = GetTelecomEmailAddress(ifcRelAssociatesDocument.OwnerHistory);
+                    objectInfo.CreatedOn = GetCreatedOnDateAsFmtString(ifcRelAssociatesDocument.OwnerHistory);
                 }
             }
             return objectInfo;
         }
 
-
-        
 
         /// <summary>
         /// Missing Inverse method on  IfcDocumentInformation, need to be implemented on IfcDocumentInformation class
@@ -201,27 +215,10 @@ namespace Xbim.COBie.Data
         /// <returns>IEnumerable of IfcRelAssociatesDocument objects</returns>
         public  IEnumerable<IfcRelAssociatesDocument> DocumentInformationForObjects (IfcDocumentInformation ifcDocumentInformation )
         {
-            return Model.InstancesWhere<IfcRelAssociatesDocument>(irad => irad.RelatingDocument == ifcDocumentInformation);
+            return Model.Instances.Where<IfcRelAssociatesDocument>(irad => (irad.RelatingDocument as IfcDocumentInformation) == ifcDocumentInformation);
         }
 
 
-        //private string GetDocumentCategory(IfcBuildingStorey bs)
-        //{
-        //    return (bs.LongName == null) ? "Category" : bs.LongName.ToString();
-        //}
-
-        //private string GetDocumentDescription(IfcBuildingStorey bs)
-        //{
-        //    if (bs != null)
-        //    {
-        //        if (!string.IsNullOrEmpty(bs.LongName)) return bs.LongName;
-        //        else if (!string.IsNullOrEmpty(bs.Description)) return bs.Description;
-        //        else if (!string.IsNullOrEmpty(bs.Name)) return bs.Name;
-        //    }
-        //    return DEFAULT_VAL;
-        //}
-
-        
         #endregion
 
         public struct FileInformation

@@ -7,6 +7,7 @@ using Xbim.IO;
 using Xbim.ModelGeometry.Scene;
 using System.Reflection;
 using Xbim.XbimExtensions;
+using Xbim.XbimExtensions.Interfaces;
 
 
 namespace XbimRegression
@@ -139,7 +140,24 @@ namespace XbimRegression
 
             try
             {
-                GetXbimData(ifcFile, result);
+                if (exitCode >= 0) //don't try and read incomplete or corrupt files
+                    GetXbimData(ifcFile, result);
+                else //tidy up failed file
+                {
+                    // We're appending the xbim extension to avoid clashes between ifc, ifcxml and ifczips with the same leafname
+                    String xbimFile = BuildFileName(ifcFile, ".xbim");
+                    try
+                    {
+                        if (File.Exists(xbimFile))
+                            File.Delete(xbimFile);
+                    }
+                    catch (Exception)
+                    {
+                      
+                    }
+
+                }
+
             }
             catch (Exception e)
             {
@@ -153,25 +171,26 @@ namespace XbimRegression
         {
             // We're appending the xbim extension to avoid clashes between ifc, ifcxml and ifczips with the same leafname
             String xbimFile = BuildFileName(ifcFile, ".xbim");
-            String xbimGCFile = BuildFileName(ifcFile, ".xbimgc");
             if (!File.Exists(xbimFile))
                 return;
-            XbimFileModelServer model=null;
-            IXbimScene scene=null;
+            XbimModel model=null;
+          
             try
             {
+                XbimModel.Initialize();
                 result.IfcLength = ReadFileLength(ifcFile);
                 result.XbimLength = ReadFileLength(xbimFile);
-                result.XbimGCLength = ReadFileLength(xbimGCFile);
 
                 try
                 {
-                    model = new XbimFileModelServer(xbimFile, FileAccess.Read);
-                    result.Entities = model.InstancesCount;
+                    model = new XbimModel();
+					model.Open(xbimFile,XbimDBAccess.Read);
+                    result.Entities = model.Instances.Count;
 
-                    IfcFileHeader header = model.Header;
+                    IIfcFileHeader header = model.Header;
                     result.IfcSchema = header.FileSchema.Schemas.FirstOrDefault();
                     result.IfcDescription = String.Format("{0}, {1}", header.FileDescription.Description.FirstOrDefault(), header.FileDescription.ImplementationLevel);
+                    result.GeometryEntries = model.GeometriesCount;
                     // TODO: Ifc Name
                 }
                 catch (IOException)
@@ -180,35 +199,16 @@ namespace XbimRegression
                     // XBIM corrupt - usually due to timeout before completion
                 }
 
-                if (!File.Exists(xbimGCFile))
-                    return;
-
-                try
-                {
-                    scene = new XbimSceneStream(model, xbimGCFile);
-                    // TODO: verify if there is a better metric
-                    result.GeometryEntries = scene.Graph.ProductNodes.Count();
-                }
-                catch (IOException)
-                {
-                    Logger.Debug("XBimGC file was corrupt");
-                    // XBIMGC corrupt - usually due to timeout before completion
-                }
             }
             finally
             {
-                if (scene != null)
-                {
-                    scene.Close();
-                    scene = null;
-                }
+               
                 if (model != null)
                 {
                     model.Close();
-                    model.Dispose();
                     model = null;
                 }
-
+                XbimModel.Terminate();
             }
         }
 

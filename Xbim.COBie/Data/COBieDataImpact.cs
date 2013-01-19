@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Xbim.COBie.Rows;
-using Xbim.Ifc.Kernel;
+using Xbim.Ifc2x3.Kernel;
 using Xbim.XbimExtensions;
+using Xbim.Ifc2x3.PropertyResource;
 
 namespace Xbim.COBie.Data
 {
@@ -36,42 +37,82 @@ namespace Xbim.COBie.Data
 
             // get all IfcPropertySet objects from IFC file
 
-            IEnumerable<IfcPropertySet> ifcProperties = Model.InstancesOfType<IfcPropertySet>().Where(ps => ps.Name.ToString() == "Pset_EnvironmentalImpactValues");
+            IEnumerable<IfcPropertySet> ifcProperties = Model.Instances.OfType<IfcPropertySet>().Where(ps => ps.Name.ToString() == "Pset_EnvironmentalImpactValues");
 
             ProgressIndicator.Initialise("Creating Impacts", ifcProperties.Count());
 
-            foreach (IfcPropertySet ppt in ifcProperties)
+            foreach (IfcPropertySet propSet in ifcProperties)
             {
                 ProgressIndicator.IncrementAndUpdate();
 
                 COBieImpactRow impact = new COBieImpactRow(impacts);
-
-                impact.Name = ppt.Name;
-
-                impact.CreatedBy = GetTelecomEmailAddress(ppt.OwnerHistory);
-                impact.CreatedOn = GetCreatedOnDateAsFmtString(ppt.OwnerHistory);
-
-                impact.ImpactType = DEFAULT_STRING;
-                impact.ImpactStage = DEFAULT_STRING;
-                impact.SheetName = DEFAULT_STRING;
+                List<IfcSimpleProperty> propertyList = propSet.HasProperties.OfType<IfcSimpleProperty>().ToList();
                 
-                impact.RowName = DEFAULT_STRING;
-                impact.Value = DEFAULT_STRING;
-                impact.ImpactUnit = DEFAULT_STRING;
-                impact.LeadInTime = DEFAULT_STRING;
-                impact.Duration = DEFAULT_STRING;
-                impact.LeadOutTime = DEFAULT_STRING;
-                impact.ExtSystem = GetExternalSystem(ppt);
-                impact.ExtObject = impact.GetType().Name;
-                impact.ExtIdentifier = ppt.GlobalId;
-                impact.Description = (ppt.Description == null) ? DEFAULT_STRING : ppt.Description.ToString();
+                Interval propValues = GetPropertyValue(propertyList, "ImpactName");
+                impact.Name = (propValues.Value == DEFAULT_STRING) ? propSet.Name.ToString() : propValues.Value.ToString();
 
-                impacts.Rows.Add(impact);
+                impact.CreatedBy = GetTelecomEmailAddress(propSet.OwnerHistory);
+                impact.CreatedOn = GetCreatedOnDateAsFmtString(propSet.OwnerHistory);
+
+                propValues = GetPropertyValue(propertyList, "ImpactType");
+                impact.ImpactType = propValues.Value;
+
+                propValues = GetPropertyValue(propertyList, "ImpactStage");
+                impact.ImpactStage = propValues.Value;
+
+                IfcRoot ifcRoot = GetAssociatedObject(propSet);
+                impact.SheetName = GetSheetByObjectType(ifcRoot.GetType());
+                impact.RowName = (!string.IsNullOrEmpty(ifcRoot.Name.ToString())) ? ifcRoot.Name.ToString() : DEFAULT_STRING;
+
+                propValues = GetPropertyValue(propertyList, "Value");
+                impact.Value = propValues.Value;
+                impact.ImpactUnit = propValues.Unit;
+
+                propValues = GetPropertyValue(propertyList, "LeadInTime");
+                impact.LeadInTime = propValues.Value;
+
+                propValues = GetPropertyValue(propertyList, "Duration");
+                impact.Duration = propValues.Value;
+
+                propValues = GetPropertyValue(propertyList, "LeadOutTime");
+                impact.LeadOutTime = propValues.Value;
+
+                impact.ExtSystem = GetExternalSystem(propSet);
+                impact.ExtObject = propSet.GetType().Name;
+                impact.ExtIdentifier = propSet.GlobalId;
+
+                impact.Description = (propSet.Description != null) ? propSet.Description.ToString() : DEFAULT_STRING;
+
+                impacts.AddRow(impact);
             }
             ProgressIndicator.Finalise();
 
             return impacts;
         }
+
+        
+
+        /// <summary>
+        /// Get IfcPropertySet first associated object
+        /// </summary>
+        /// <param name="ps"></param>
+        /// <returns></returns>
+        private IfcRoot GetAssociatedObject (IfcPropertySet ps)
+        {
+            if ((ps.PropertyDefinitionOf.FirstOrDefault() != null) &&
+                (ps.PropertyDefinitionOf.First().RelatedObjects.FirstOrDefault() != null)
+                )
+            {
+                return ps.PropertyDefinitionOf.First().RelatedObjects.First();
+            }
+            if (ps.DefinesType.FirstOrDefault() != null) 
+            {
+                return ps.DefinesType.FirstOrDefault();
+            }
+
+            return null;
+        }
+        
         #endregion
     }
 }

@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Xbim.Ifc.ProductExtension;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.SelectTypes;
-using Xbim.Ifc.Extensions;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.XbimExtensions.SelectTypes;
+using Xbim.Ifc2x3.Extensions;
 using Xbim.DOM.PropertiesQuantities;
 
 namespace Xbim.DOM
@@ -24,7 +24,7 @@ namespace Xbim.DOM
 
         //internal constructor for creation from XbimObjectCreator
         internal XbimBuildingStorey(XbimDocument document, string name, XbimSpatialStructureElement parentElement, XbimElementCompositionEnum compositionEnum)
-            : base(document, document.Model.New<IfcBuildingStorey>())
+            : base(document, document.Model.Instances.New<IfcBuildingStorey>())
         {
             Storey.Name = name;
             Storey.CompositionType = GeIfcElementCompositionEnum(compositionEnum);

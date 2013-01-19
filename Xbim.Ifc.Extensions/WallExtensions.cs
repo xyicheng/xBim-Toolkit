@@ -12,15 +12,15 @@
 
 #region Directives
 
-using Xbim.Ifc.MaterialResource;
-using Xbim.Ifc.SharedBldgElements;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.QuantityResource;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.MaterialResource;
+using Xbim.Ifc2x3.SharedBldgElements;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.Ifc2x3.QuantityResource;
+using Xbim.XbimExtensions.SelectTypes;
 
 #endregion
 
-namespace Xbim.Ifc.Extensions
+namespace Xbim.Ifc2x3.Extensions
 {
     public static class WallExtensions
     {

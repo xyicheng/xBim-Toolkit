@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Xbim.Ifc.SharedBldgElements;
-using Xbim.Ifc.Extensions;
+using Xbim.Ifc2x3.SharedBldgElements;
+using Xbim.Ifc2x3.Extensions;
 using Xbim.DOM.PropertiesQuantities;
 
 namespace Xbim.DOM
@@ -42,7 +42,7 @@ namespace Xbim.DOM
 
         private void BaseInit(string name)
         {
-            _ifcTypeProduct = _document.Model.New<IfcSlabType>();
+            _ifcTypeProduct = _document.Model.Instances.New<IfcSlabType>();
             _ifcTypeProduct.Name = name;
         }
         #endregion

@@ -36,9 +36,9 @@
 #include <BRepCheck_Analyzer.hxx>
 #include <ShapeFix_ShapeTolerance.hxx>
 #include <BOPTools_DSFiller.hxx>
-
+#include <Geom_Curve.hxx>
 using namespace Xbim::XbimExtensions;
-using namespace Xbim::Ifc::Extensions;
+using namespace Xbim::Ifc2x3::Extensions;
 using namespace System::Windows::Media::Media3D;
 using namespace System::Diagnostics;
 using namespace Xbim::Common::Exceptions;
@@ -105,6 +105,8 @@ namespace Xbim
 
 		XbimSolid::XbimSolid(XbimSolid^ solid, IfcAxis2Placement^ origin, IfcCartesianTransformationOperator^ transform, bool hasCurves)
 		{
+			_representationLabel = solid->RepresentationLabel;
+			_surfaceStyleLabel = solid->SurfaceStyleLabel;
 			TopoDS_Solid temp = *(((TopoDS_Solid*)solid->Handle));
 			nativeHandle = new TopoDS_Solid();
 			_hasCurvedEdges = solid->HasCurvedEdges;
@@ -131,6 +133,12 @@ namespace Xbim
 		XbimSolid::XbimSolid(IfcExtrudedAreaSolid^ repItem)
 		{
 
+			nativeHandle = new TopoDS_Solid();
+			*nativeHandle = Build(repItem, _hasCurvedEdges);
+		};
+
+		XbimSolid::XbimSolid(IfcBooleanResult^ repItem)
+		{
 			nativeHandle = new TopoDS_Solid();
 			*nativeHandle = Build(repItem, _hasCurvedEdges);
 		};
@@ -203,23 +211,23 @@ namespace Xbim
 			return gcnew XbimMeshedFaceEnumerable(*nativeHandle);
 		}
 
-		XbimTriangulatedModelStream^ XbimSolid::Mesh()
+		List<XbimTriangulatedModel^>^XbimSolid::Mesh()
 		{
 			return Mesh(true, XbimGeometryModel::DefaultDeflection, Matrix3D::Identity);
 		}
 
-		XbimTriangulatedModelStream^ XbimSolid::Mesh(bool withNormals )
+		List<XbimTriangulatedModel^>^XbimSolid::Mesh(bool withNormals )
 		{
 			return Mesh(withNormals, XbimGeometryModel::DefaultDeflection, Matrix3D::Identity);
 		}
 
-		XbimTriangulatedModelStream^ XbimSolid::Mesh( bool withNormals, double deflection )
+		List<XbimTriangulatedModel^>^XbimSolid::Mesh( bool withNormals, double deflection )
 		{
 			return XbimGeometryModel::Mesh(this,withNormals,deflection, Matrix3D::Identity);
 			
 		}
 
-		XbimTriangulatedModelStream^ XbimSolid::Mesh(bool withNormals, double deflection, Matrix3D transform )
+		List<XbimTriangulatedModel^>^XbimSolid::Mesh(bool withNormals, double deflection, Matrix3D transform )
 		{
 			return XbimGeometryModel::Mesh(this,withNormals,deflection, transform);
 			
@@ -232,8 +240,6 @@ namespace Xbim
 			try
 			{
 		
-
-				
 				BRepAlgoAPI_Cut boolOp(*nativeHandle,*(shape->Handle));
 				if(boolOp.ErrorStatus() == 0)
 				{
@@ -265,7 +271,10 @@ namespace Xbim
 						}
 					}
 					else
+					{
+
 						return gcnew XbimSolid(boolOp.Shape(), hasCurves);
+					}
 				}
 			}
 			catch(...) //some internal cascade failure
@@ -369,10 +378,115 @@ namespace Xbim
 			throw gcnew NotImplementedException("Build::IfcManifoldSolidBrep subtype is not implemented");
 		}
 
-		TopoDS_Solid XbimSolid::Build(IfcCsgSolid^ csgSolid, bool% hasCurves)
+		TopoDS_Shape XbimSolid::Build(IfcCsgSolid^ csgSolid, bool% hasCurves)
 		{
-			throw gcnew NotImplementedException("Build::IfcCsgSolid is not implemented");
+			if(dynamic_cast<IfcBooleanResult^>(csgSolid->TreeRootExpression)) 
+			{
+				IfcBooleanResult^ br = (IfcBooleanResult^)csgSolid->TreeRootExpression;
+				return Build(br, hasCurves);
+				
+			}
+			else
+				throw gcnew NotImplementedException("Build::IfcCsgSolid is not implemented");
 		}
+
+		TopoDS_Shape XbimSolid::Build(IfcBooleanResult^ repItem, bool% hasCurves)
+		{
+			IfcBooleanOperand^ fOp= repItem->FirstOperand;
+			IfcBooleanOperand^ sOp= repItem->SecondOperand;
+			IXbimGeometryModel^ shape1;
+			IXbimGeometryModel^ shape2;
+			System::Nullable<bool> _shape1IsSolid;
+			if(dynamic_cast<IfcBooleanResult^>(fOp))
+				shape1 = gcnew XbimSolid((IfcBooleanResult^)fOp);
+			else if(dynamic_cast<IfcSolidModel^>(fOp))
+				shape1 = gcnew XbimSolid((IfcSolidModel^)fOp);
+			else if(dynamic_cast<IfcHalfSpaceSolid^>(fOp))
+			{
+				shape1 = gcnew XbimSolid((IfcHalfSpaceSolid^)fOp);
+				if(dynamic_cast<IfcBoxedHalfSpace^>(fOp))
+					_shape1IsSolid = false;
+			}
+			else if(dynamic_cast<IfcCsgPrimitive3D^>(fOp))
+				shape1 = gcnew XbimSolid((IfcCsgPrimitive3D^)fOp);
+			else
+				throw(gcnew XbimException("XbimGeometryModel. Build(BooleanResult) FirstOperand must be a valid IfcBooleanOperand"));
+
+
+			try
+			{
+
+				if(dynamic_cast<IfcBooleanResult^>(sOp))
+					shape2 = gcnew XbimSolid((IfcBooleanResult^)sOp);
+				else if(dynamic_cast<IfcSolidModel^>(sOp))
+					shape2 = gcnew XbimSolid((IfcSolidModel^)sOp);
+				else if(dynamic_cast<IfcHalfSpaceSolid^>(sOp))
+				{
+					shape2 = gcnew XbimSolid((IfcHalfSpaceSolid^)sOp);
+					if(dynamic_cast<IfcBoxedHalfSpace^>(sOp))
+						_shape1IsSolid = true;
+				}
+				else if(dynamic_cast<IfcCsgPrimitive3D^>(sOp))
+					shape2 = gcnew XbimSolid((IfcCsgPrimitive3D^)sOp);
+				else
+					throw(gcnew XbimException("XbimGeometryModel. Build(BooleanResult) FirstOperand must be a valid IfcBooleanOperand"));
+
+				//check if we have boxed half spaces then see if there is any intersect
+				if(_shape1IsSolid.HasValue)
+				{
+
+					if(!shape1->GetBoundingBox(false)->Intersects(shape2->GetBoundingBox(false)))
+					{
+						if(_shape1IsSolid.Value == true)
+						{
+							hasCurves = shape1->HasCurvedEdges;
+							return TopoDS_Shape(*shape1->Handle); 
+						}
+						else
+						{
+							hasCurves = shape2->HasCurvedEdges;
+							return TopoDS_Shape(*shape2->Handle);
+						}
+					}
+
+				}
+
+				if((*(shape2->Handle)).IsNull())
+				{
+					hasCurves = shape1->HasCurvedEdges;
+					return TopoDS::Solid(*shape1->Handle); //nothing to subtract
+				}
+				switch(repItem->Operator)
+				{
+				case IfcBooleanOperator::Union:
+					{	
+						IXbimGeometryModel^ m = shape1->Union(shape2);
+						hasCurves = m->HasCurvedEdges;
+						return TopoDS_Shape(*m->Handle);  
+					}
+				case IfcBooleanOperator::Intersection:
+					{	
+						IXbimGeometryModel^ m = shape1->Intersection(shape2);
+						hasCurves = m->HasCurvedEdges;
+						return TopoDS_Shape(*m->Handle);  
+					}
+				case IfcBooleanOperator::Difference:
+					{	
+						IXbimGeometryModel^ m = shape1->Cut(shape2);
+						hasCurves = m->HasCurvedEdges;
+						return TopoDS_Shape(*m->Handle);  
+					}
+				default:
+					throw(gcnew InvalidOperationException("XbimGeometryModel. Build(BooleanClippingResult) Unsupported Operation"));
+				}
+			}
+			catch(XbimGeometryException^ xbimE)
+			{
+				Logger->WarnFormat("Error performing boolean operation for entity #{0}={1}\n{2}\nA simplified version has been used",repItem->EntityLabel,repItem->GetType()->Name,xbimE->Message);
+				return TopoDS_Shape(*shape1->Handle);  ;
+			}
+		}
+
 
 		TopoDS_Solid XbimSolid::Build(IfcSweptDiskSolid^ swdSolid, bool% hasCurves)
 		{
@@ -398,6 +512,7 @@ namespace Xbim
 		TopoDS_Solid XbimSolid::Build(IfcExtrudedAreaSolid^ repItem, bool% hasCurves)
 		{
 			TopoDS_Face face = XbimFace::Build(repItem->SweptArea,hasCurves);
+
 			if(!face.IsNull() &&repItem->Depth<=0)
 			{
 				XbimModelFactors^ mf = ((IPersistIfcEntity^)repItem)->ModelOf->GetModelFactors;
@@ -410,6 +525,7 @@ namespace Xbim
 			}
 			if(!face.IsNull())
 			{
+
 				TopoDS_Solid solid = Build(face,repItem->ExtrudedDirection , repItem->Depth, hasCurves);
 				solid.Move(XbimGeomPrim::ToLocation(repItem->Position));
 				return  solid;
@@ -441,6 +557,7 @@ namespace Xbim
 
 			// Here we need to prepare the revolution.
 			//
+		
 			TopoDS_Solid solid = Build(face,repItem->Axis, repItem->Angle, hasCurves);
 			solid.Move(XbimGeomPrim::ToLocation(repItem->Position));
 			return  solid;
@@ -457,8 +574,6 @@ namespace Xbim
 				profile = XbimFaceBound::Build((IfcRectangleProfileDef^)repItem->SweptArea, hasCurves);	
 			else if(dynamic_cast<IfcCircleProfileDef^>(repItem->SweptArea))
 				profile = XbimFaceBound::Build((IfcCircleProfileDef^)repItem->SweptArea, hasCurves);	
-			else if(dynamic_cast<IfcCurve^>(repItem->SweptArea))
-				profile = XbimFaceBound::Build((IfcCurve^)(repItem->SweptArea), hasCurves);	
 			else
 			{
 				Type ^ type = repItem->SweptArea->GetType();
@@ -467,21 +582,36 @@ namespace Xbim
 			}
 						//profile.Move(XbimGeomPrim::ToLocation(repItem->Position));
 			TopoDS_Wire sweep = XbimFaceBound::Build(repItem->Directrix, hasCurves);
-			
 			BRepOffsetAPI_MakePipeShell pipeMaker(sweep);
-			pipeMaker.Add(profile,Standard_False, Standard_True);
+			
 			if(dynamic_cast<IfcPlane^>(repItem->ReferenceSurface))
 			{
 				IfcPlane^ ifcPlane = (IfcPlane^)repItem->ReferenceSurface;
 				gp_Ax3 ax3 = XbimGeomPrim::ToAx3(ifcPlane->Position);
 				pipeMaker.SetMode(ax3.Direction());
+				//find the start position of the sweep
+				BRepTools_WireExplorer wExp(sweep);
+				Standard_Real start = 0;
+				Standard_Real end = 1;
+				Handle_Geom_Curve curve = BRep_Tool::Curve(wExp.Current(),start, end);
+				gp_Pnt p1;
+				gp_Vec tangent;
+				curve->D1(0, p1, tangent);
+				const TopoDS_Vertex firstPoint = wExp.CurrentVertex();
+				gp_Ax3 toAx3(BRep_Tool::Pnt(firstPoint),tangent, ax3.Direction());	//rotate so normal of profile is tangental and X axis 
+				gp_Trsf trsf;
+				trsf.SetTransformation(toAx3,gp_Ax3());
+				TopLoc_Location topLoc(trsf);			
+				profile.Location(topLoc);
+				pipeMaker.Add(profile,Standard_False, Standard_False);
 			}
 			else
 			{
 				Logger->WarnFormat( "Entity #" + repItem->EntityLabel.ToString() + ", IfcSurfaceCurveSweptAreaSolid has a Non-Planar surface");
 				pipeMaker.SetMode(Standard_False); //use auto calculation of tangent and binormal
+				pipeMaker.Add(profile,Standard_False, Standard_True);
 			}
-			
+
 			pipeMaker.SetTransitionMode(BRepBuilderAPI_RightCorner);
 			pipeMaker.Build();
 			if(pipeMaker.IsDone() && pipeMaker.MakeSolid())

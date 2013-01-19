@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Xbim.Ifc.MaterialResource;
-using Xbim.Ifc.Extensions;
-using Xbim.Ifc.SharedBldgElements;
+using Xbim.Ifc2x3.MaterialResource;
+using Xbim.Ifc2x3.Extensions;
+using Xbim.Ifc2x3.SharedBldgElements;
 using Xbim.DOM.PropertiesQuantities;
 
 namespace Xbim.DOM
@@ -43,7 +43,7 @@ namespace Xbim.DOM
         private void BaseInit(XbimPlateType xbimPlateType)
         {
             _document.Plates.Add(this);
-            _ifcBuildingElement = _document.Model.New<IfcPlate>();
+            _ifcBuildingElement = _document.Model.Instances.New<IfcPlate>();
             _ifcBuildingElement.SetDefiningType(xbimPlateType.IfcTypeProduct, _document.Model);
         }
         #endregion

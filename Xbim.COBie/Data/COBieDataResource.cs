@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Xbim.COBie.Rows;
-using Xbim.Ifc.ConstructionMgmtDomain;
+using Xbim.Ifc2x3.ConstructionMgmtDomain;
 using Xbim.XbimExtensions;
 
 namespace Xbim.COBie.Data
@@ -35,7 +35,7 @@ namespace Xbim.COBie.Data
             COBieSheet<COBieResourceRow> resources = new COBieSheet<COBieResourceRow>(Constants.WORKSHEET_RESOURCE);
 
             // get all IfcConstructionEquipmentResource objects from IFC file
-            IEnumerable<IfcConstructionEquipmentResource> ifcCer = Model.InstancesOfType<IfcConstructionEquipmentResource>();
+            IEnumerable<IfcConstructionEquipmentResource> ifcCer = Model.Instances.OfType<IfcConstructionEquipmentResource>();
 
             ProgressIndicator.Initialise("Creating Resources", ifcCer.Count());
 
@@ -55,7 +55,7 @@ namespace Xbim.COBie.Data
                 resource.ExtIdentifier = ifcConstructionEquipmentResource.GlobalId;
                 resource.Description = (string.IsNullOrEmpty(ifcConstructionEquipmentResource.Description)) ? DEFAULT_STRING : ifcConstructionEquipmentResource.Description.ToString();
 
-                resources.Rows.Add(resource);
+                resources.AddRow(resource);
             }
             ProgressIndicator.Finalise();
             return resources;

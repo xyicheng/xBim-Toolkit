@@ -3,13 +3,56 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:ifc="http://schemas.Xbim.com/ifc"
     xmlns:xbim="http://schemas.Xbim.com/Presentation"
+    xmlns:xbimIO="clr-namespace:Xbim.IO;assembly=Xbim.IO"
     xmlns:local="clr-namespace:XbimXplorer"
-    Title="Xbim Xplorer" Height="600" Width="800" Loaded="Window_Loaded">
+    xmlns:pt="clr-namespace:PropertyTools.Wpf;assembly=PropertyTools.Wpf" 
+    Title="Xbim Xplorer" Height="600" Width="800" Loaded="Window_Loaded"
+    x:Name="MainWindow"
+        WindowState="Maximized"
+        Icon="icon.ico">
     <Window.Resources>
-        <ObjectDataProvider x:Key="ModelProvider" ObjectType="{x:Type xbim:ModelDataProvider}"></ObjectDataProvider>
-
+        <ObjectDataProvider x:Key="ModelProvider"  IsInitialLoadEnabled="False" ></ObjectDataProvider>
+         <DataTemplate DataType="{x:Type xbim:SpatialViewModel}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <!--<Image Grid.Column="0" Source="/folder.png" Margin="0 0 4 0"/>-->
+                <TextBlock Grid.Column="1" Text="{Binding Name}" FontWeight="Bold"/>
+            </Grid>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type xbim:ContainedElementsViewModel}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <!--<Image Grid.Column="0" Source="/folder.png" Margin="0 0 4 0"/>-->
+                <TextBlock Grid.Column="1" Text="{Binding Name}"/>
+            </Grid>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type xbim:IfcProductModelView}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <!--<Image Grid.Column="0" Source="/folder.png" Margin="0 0 4 0"/>-->
+                <TextBlock Grid.Column="1" Text="{Binding Name}"/>
+            </Grid>
+        </DataTemplate>
     </Window.Resources>
-    <Grid DataContext="{StaticResource ModelProvider}">
+    <Window.CommandBindings>
+        <CommandBinding Command="Close"  Executed="CommandBinding_Close" CanExecute="CommandBinding_CanExecute"/>
+        <CommandBinding Command="SaveAs" Executed="CommandBinding_SaveAs"  CanExecute="CommandBinding_CanExecute"/>
+        <CommandBinding Command="Open"   Executed="CommandBinding_Open"/>
+       
+    </Window.CommandBindings>
+    <Grid Name="MainFrame" DataContext="{StaticResource ModelProvider}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" MinHeight="24" />
             <RowDefinition />
@@ -19,43 +62,92 @@
         <Menu Grid.Row="0" >
             <MenuItem Header="_File">
                 <!--<MenuItem Header="_New Xbim File" Click="FileNew_Click"/>-->
-                <MenuItem Header="_Open" Click="FileOpen_Click"/>
-                <MenuItem Header="_Import" Click="FileImport_Click"/>
-                <MenuItem Header="_SaveAs">
-                    <MenuItem Header="Ifc File" Click="SaveAsIfcClick"/>
-                    <MenuItem Header="IfcZip File" Click="SaveAsIfcZipClick"/>
-                    <MenuItem Header="IfcXml File" Click="SaveAsIfcXmlClick"/>
-                </MenuItem>
+                <MenuItem Header="_Open" Command="Open"/>
+                <MenuItem Header="_SaveAs" Command="SaveAs"/>
+                <MenuItem Header="_Close" Command="Close" />
                 <!--<MenuItem Header="_Import Ifc File" Click="FileImport_Click"/>
                 <MenuItem Header="_Export Ifc File" Click="FileExport_Click"/>-->
             </MenuItem>
+            <MenuItem Header="View">
+                <MenuItem Header="_Zoom Extents" Click="MenuItem_ZoomExtents"/>
+                <MenuItem Header="_Copy" Command="Copy"/>
+                <MenuItem IsCheckable="True" Header="Show code dialog" Name="mnShowCodeDialod" Click="mnShowCodeDialod_Click" IsChecked="{Binding IsEnabled, ElementName=DynamicProductSelection, Mode=TwoWay}" />
+                <MenuItem IsCheckable="True" Header="Show Gridlines" IsChecked="{Binding ShowGridLines, ElementName=DrawingControl}"/>
+                <MenuItem IsCheckable="True" Header="Show Spaces" IsChecked="{Binding ShowSpaces, ElementName=DrawingControl}"/>
+                <MenuItem IsCheckable="True" Header="Show Walls" IsChecked="{Binding ShowWalls, ElementName=DrawingControl}"/>
+                <MenuItem IsCheckable="True" Header="Show Slabs" IsChecked="{Binding ShowSlabs, ElementName=DrawingControl}"/>
+                <MenuItem IsCheckable="True" Header="Show Doors" IsChecked="{Binding ShowDoors, ElementName=DrawingControl}"/>
+                <MenuItem IsCheckable="True" Header="Show Windows" IsChecked="{Binding ShowWindows, ElementName=DrawingControl}"/>
+                <MenuItem IsCheckable="True" Header="Show Furniture" IsChecked="{Binding ShowFurniture, ElementName=DrawingControl}"/>
+            </MenuItem>
+            <MenuItem Header="Camera">
+                <MenuItem IsCheckable="True" Header="RotateAroundMouseDownPoint" IsChecked="{Binding Viewport.RotateAroundMouseDownPoint, ElementName=DrawingControl}"/>
+                <MenuItem IsCheckable="True" Header="ZoomAroundMouseDownPoint" IsChecked="{Binding Viewport.ZoomAroundMouseDownPoint, ElementName=DrawingControl}"/>
+                <MenuItem IsCheckable="True" Header="Orthographic" IsChecked="{Binding Viewport.Orthographic, ElementName=DrawingControl}"/>
+                <MenuItem IsCheckable="True" Header="InfiniteSpin" IsChecked="{Binding Viewport.InfiniteSpin, ElementName=DrawingControl}"/>
+                <MenuItem IsCheckable="True" Header="IsPanEnabled" IsChecked="{Binding Viewport.IsPanEnabled, ElementName=DrawingControl}"/>
+                <MenuItem IsCheckable="True" Header="IsRotationEnabled" IsChecked="{Binding Viewport.IsRotationEnabled, ElementName=DrawingControl}"/>
+                <MenuItem IsCheckable="True" Header="IsZoomEnabled" IsChecked="{Binding Viewport.IsZoomEnabled, ElementName=DrawingControl}"/>
+                <MenuItem IsCheckable="True" Header="IsChangeFovEnabled" IsChecked="{Binding Viewport.IsChangeFieldOfViewEnabled, ElementName=DrawingControl}"/>
+                <MenuItem Header="RotationSensitivity">
+                    <StackPanel Orientation="Horizontal">
+                        <Slider Value="{Binding Viewport.RotationSensitivity, ElementName=DrawingControl}" Minimum="0.1" Maximum="5" Width="200"/>
+                        <TextBlock Text="{Binding Viewport.RotationSensitivity, StringFormat='{}{0:0.0}', ElementName=DrawingControl}"/>
+                    </StackPanel>
+                </MenuItem>
+                <MenuItem Header="ZoomSensitivity">
+                    <StackPanel Orientation="Horizontal">
+                        <Slider Value="{Binding Viewport.ZoomSensitivity, ElementName=DrawingControl}" Minimum="0.1" Maximum="5" Width="200"/>
+                        <TextBlock Text="{Binding Viewport.ZoomSensitivity, StringFormat='{}{0:0.0}', ElementName=DrawingControl}"/>
+                    </StackPanel>
+                </MenuItem>
+                <MenuItem Header="CameraInertiaFactor">
+                    <StackPanel Orientation="Horizontal">
+                        <Slider Value="{Binding Viewport.CameraInertiaFactor, ElementName=DrawingControl}" Minimum="0.7" Maximum="1" Width="200"/>
+                        <TextBlock Text="{Binding Viewport.CameraInertiaFactor, StringFormat='{}{0:0.000}', ElementName=DrawingControl}"/>
+                    </StackPanel>
+                </MenuItem>
+            </MenuItem>
+            <pt:EnumMenuItem SelectedValue="{Binding Viewport.CameraRotationMode, ElementName=DrawingControl}" Header="CameraRotationMode"/>
+            <pt:EnumMenuItem SelectedValue="{Binding Viewport.CameraMode, ElementName=DrawingControl}" Header="CameraMode" />
         </Menu>
+       
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width=".5*"/>
+                <ColumnDefinition Width=".3*"/>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition />
+                <ColumnDefinition Width="Auto" Name="RightSeparator"/>
+                <ColumnDefinition Width=".3*" Name="RightColumn"/>
             </Grid.ColumnDefinitions>
-            <Grid Grid.Column="0">
+            <Grid>
                 <Grid.RowDefinitions>
-                    <RowDefinition/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition/>
+                    <RowDefinition />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height=".3*"/>
                 </Grid.RowDefinitions>
-                <xbim:SpatialStructureControl Grid.Row="0"  Name="SpatialControl" FontSize="10" FontWeight="normal" Project ="{Binding Path=Model.IfcProject}" Background="#114682D4" MouseDoubleClick="SpatialControl_MouseDoubleClick"/>
+                <xbim:XbimTreeview x:Name="SpatialControl"                             
+                               SelectedItem="{Binding Path=SelectedItem, ElementName=MainWindow, Mode=OneWay}" 
+                               SelectedValue="{Binding Path=SelectedItem, ElementName=MainWindow, Mode=OneWayToSource}"   
+                               Indentation="12"
+                               BorderThickness="1"
+                               Model="{Binding}"  
+                               SelectionMode="Single"
+                               MouseDoubleClick="SpatialControl_MouseDoubleClick"
+                               Grid.Row="0"
+                               />
                 <GridSplitter 
-                Grid.Row="1" 
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Center"
-                Background="Gray" 
-                ShowsPreview="True"
-                Height="5"
-                />
-                <xbim:DynamicProductSelectionControl Grid.Row="2"  Model="{Binding Path=Model}" Name="DynamicProductSelector"/>
+                    Grid.Row="1" 
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Center"
+                    Background="Gray" 
+                    ShowsPreview="True"
+                    Height="5"
+                    />
+                <xbim:IfcMetaDataControl x:Name="PropertiesControl" BorderThickness="1" Grid.Row="2" EntityLabel="{Binding Path=SelectedItem, ElementName=MainWindow}" >
+                   
+                </xbim:IfcMetaDataControl>
             </Grid>
-            <!--<ListBox  Name="Lister" MouseDoubleClick="Lister_MouseDoubleClick">
-               
-            </ListBox>-->
             <GridSplitter 
                 Grid.Column="1" 
                 HorizontalAlignment="Center"
@@ -64,8 +156,32 @@
                 ShowsPreview="True"
                 Width="5"
                 />
-            <xbim:DrawingControl3D x:Name="DrawingControl" MouseRightButtonDown="DrawingControl_MouseRightButtonDown" Scene ="{Binding Path=Scene}" Grid.Column="2"  Focusable="True" Background="#FF7F7FA0" Width="Auto" Height="Auto" ProgressChanged="ProgressChanged" />
-        
+            <xbim:DrawingControl3D x:Name="DrawingControl" 
+                                   SelectedItem="{Binding Path=SelectedItem, ElementName=MainWindow, Mode=TwoWay}"    
+                                   Model ="{Binding}" 
+                                   Grid.Column="2" 
+                                   Focusable="True" 
+                                   Width="Auto" 
+                                   Height="Auto" 
+                                   ProgressChanged="ProgressChanged" 
+                                   MouseDoubleClick="SpatialControl_MouseDoubleClick"
+                                   >
+                <xbim:DrawingControl3D.Background>
+                    <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
+                        <GradientStop Color="Black" Offset="1"/>
+                        <GradientStop Color="#FF9286BD"/>
+                    </LinearGradientBrush>
+                </xbim:DrawingControl3D.Background>
+            </xbim:DrawingControl3D>
+            <GridSplitter 
+                Grid.Column="3" 
+                HorizontalAlignment="Center"
+                VerticalAlignment="Stretch"
+                Background="Gray" 
+                ShowsPreview="True"
+                Width="5"
+                />
+            <xbim:DynamicProductSelectionControl Model ="{Binding}" Name="DynamicProductSelection" Grid.Column="4" />
         </Grid>
         <StatusBar Grid.Row="2" Height="23"  Name="statusBar" VerticalAlignment="Top" >
             <StatusBarItem>
@@ -74,13 +190,10 @@
             <StatusBarItem>
                 <Separator/>
             </StatusBarItem>
-            <TextBlock Name="EntityCount"></TextBlock>
+            <TextBlock Name="EntityLabel"></TextBlock>
             <StatusBarItem>
                 <Separator/>
             </StatusBarItem>
-            <Slider x:Name="SliderColour" Minimum ="0"  Maximum="255" TickFrequency="2" Width="150" Value="127" ValueChanged="SliderColour_ValueChanged">
-                
-            </Slider>
             <StatusBarItem>
                 <Separator/>
             </StatusBarItem>

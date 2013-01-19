@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 namespace Xbim.COBie
 {
-
+    [Serializable()]
     [DebuggerDisplay("{SheetName}.{FieldName} : {ErrorDescription} - '{FieldValue}' [{Row},{Column}]")]
     public class COBieError
     {
@@ -24,7 +24,7 @@ namespace Xbim.COBie
             ErrorDescription = errorDescription;
         }
 
-        public COBieError(string sheetName, string fieldName, string errorDescription, ErrorTypes errorType, int column = 0, int row = 0)
+        public COBieError(string sheetName, string fieldName, string errorDescription, ErrorTypes errorType, string initialRowHash, int column = 0, int row = 0)
         {
             SheetName = sheetName;
             FieldName = fieldName;
@@ -32,6 +32,7 @@ namespace Xbim.COBie
             ErrorType = errorType;
             Column = column;
             Row = row;
+            InitialRowHash = initialRowHash;
         }
 
         public COBieError(string fieldName, string errorDescription)
@@ -49,6 +50,7 @@ namespace Xbim.COBie
         public int Column { get; set;}
         public int Row { get; set ;}
 
+        public string InitialRowHash { get; private set; }
 
         public enum ErrorTypes
         {

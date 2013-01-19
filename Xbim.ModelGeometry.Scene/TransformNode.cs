@@ -19,9 +19,10 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Windows.Media.Media3D;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.SharedBldgElements;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.SharedBldgElements;
 using Xbim.XbimExtensions;
+using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
@@ -33,14 +34,13 @@ namespace Xbim.ModelGeometry.Scene
         private Matrix3D _localMatrix;
         private HashSet<TransformNode> _children;
         private long _filePosition = -2;
-        private long? _productId;
+        private int? _productId;
         private Rect3D _boundingBox;
         TransformGraph _transformGraph;
         
 
     
-        //non stored data
-        XbimTriangulatedModelStream _triangulatedModel;
+       
         private bool _visible;
         private TransformNode _parent;
 
@@ -51,22 +51,7 @@ namespace Xbim.ModelGeometry.Scene
         }
 
          
-        public XbimTriangulatedModelStream TriangulatedModel
-        {
-            get
-            {
-                if (_triangulatedModel == null)
-                {
-                    _triangulatedModel = _transformGraph.Scene.Triangulate(this);
-                }
-                return _triangulatedModel;
-            }
-            set 
-            {
-                _triangulatedModel = value; 
-            }
-        }
-
+       
         public Rect3D BoundingBox
         {
             get { return _boundingBox; }
@@ -83,7 +68,7 @@ namespace Xbim.ModelGeometry.Scene
             set { _filePosition = value; }
         }
 
-        public long ProductId
+        public int ProductId
         {
             get { return _productId ?? 0; }
             set { _productId = value; }
@@ -117,7 +102,7 @@ namespace Xbim.ModelGeometry.Scene
         internal void Read(BinaryReader strm, TransformGraph graph)
         {
             _transformGraph = graph;
-            _productId = strm.ReadInt64();
+            _productId = strm.ReadInt32();
             if (_productId == 0) 
                 _productId = null;
             else
@@ -186,7 +171,7 @@ namespace Xbim.ModelGeometry.Scene
             {
                 if (_productId.HasValue)
                 {
-                    IPersistIfcEntity ent = _transformGraph.Model.GetInstance(_productId.Value);
+                    IPersistIfcEntity ent = _transformGraph.Model.Instances[_productId.Value];
                     return ent as IfcProduct;
                 }
                 else

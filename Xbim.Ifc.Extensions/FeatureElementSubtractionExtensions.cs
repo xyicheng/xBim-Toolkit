@@ -13,12 +13,13 @@
 #region Directives
 
 using System.Linq;
-using Xbim.Ifc.ProductExtension;
+using Xbim.Ifc2x3.ProductExtension;
 using Xbim.XbimExtensions;
+using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.Extensions
+namespace Xbim.Ifc2x3.Extensions
 {
     public static class FeatureElementSubtractionExtensions
     {
@@ -31,7 +32,7 @@ namespace Xbim.Ifc.Extensions
         public static IfcElement GetFeatureElement(this IfcFeatureElement elem, IModel model)
         {
             IfcRelVoidsElement rel =
-                model.InstancesWhere<IfcRelVoidsElement>(r => r.RelatedOpeningElement == elem).FirstOrDefault();
+                model.Instances.Where<IfcRelVoidsElement>(r => r.RelatedOpeningElement == elem).FirstOrDefault();
             return rel != null ? rel.RelatingBuildingElement : null;
         }
     }

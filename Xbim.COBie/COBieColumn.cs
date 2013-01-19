@@ -7,7 +7,7 @@ using System.Reflection;
 
 namespace Xbim.COBie
 {
-    
+    [Serializable()]
     public class COBieColumn
     {
         #region Properties

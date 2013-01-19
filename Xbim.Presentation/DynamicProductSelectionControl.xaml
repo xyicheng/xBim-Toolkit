@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
-             d:DesignHeight="297" d:DesignWidth="433">
+             d:DesignHeight="400" d:DesignWidth="453">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition/>
@@ -17,7 +17,7 @@
                 <Button Content="Save to file" Name="btnSave" Click="btnSave_Click" Margin="5"/>
                 <Button Content="Default code" Name="btnDefault" Click="btnDefault_Click" Margin="5"/>
                 <Button Content="Save output" Name="btnSaveOutput" Click="btnSaveOutput_Click" Margin="5"/>
-                <Button Content="Perform" Name="btnPerform" Click="btnPerform_Click" Margin="5" FontWeight="Bold" FontSize="13" Padding="3" />
+                <Button Content="Perform" Name="btnPerform" Click="btnPerform_Click" Margin="5" FontWeight="Bold" FontSize="13" />
             </StackPanel>
             <TextBox  Name="txtCode"  AcceptsReturn="True" TextWrapping="Wrap" Foreground="#FF0000C3" ScrollViewer.VerticalScrollBarVisibility="Auto" AcceptsTab="True" />
         </DockPanel>

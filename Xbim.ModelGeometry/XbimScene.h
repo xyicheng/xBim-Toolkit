@@ -5,9 +5,11 @@ using namespace System;
 using namespace System::IO;
 using namespace System::Collections::Generic;
 using namespace Xbim::ModelGeometry::Scene;
-using namespace Xbim::Ifc::Kernel;
+using namespace Xbim::Ifc2x3::Kernel;
 using namespace Xbim::XbimExtensions;
 using namespace Xbim::Common::Logging;
+#using  <Xbim.IO.dll> as_friend
+using namespace Xbim::IO;
 namespace Xbim
 {
 	namespace ModelGeometry
@@ -16,6 +18,9 @@ namespace Xbim
 
 		public ref class XbimScene :  IXbimScene
 		{
+
+		public:
+			static void ConvertGeometry(IEnumerable<IfcProduct^>^ toConvert, ReportProgressDelegate^ progDelegate, bool oCCout );
 		private:
 			XbimLOD _lod;
 			TransformGraph^ _graph;
@@ -24,24 +29,21 @@ namespace Xbim
 			Dictionary<IfcRepresentation^, IXbimGeometryModel^>^ _maps;
 			bool _occOut;
 			static ILogger^ Logger = LoggerFactory::GetLogger();
-			void ImportIfc(String ^ ifcFileName,String ^ xBimFileName,String ^ xBimGeometryFileName, bool removeIfcGeometry, ProcessModel ^ processingDelegate);
-
+			
 			void Initialise(void)
 			{
 				Standard::SetReentrant(Standard_True);
 			}
 		public:
-			XbimScene(IModel^ model);
-			XbimScene(IModel^ model, IEnumerable<IfcProduct^>^ toDraw);
-			XbimScene(IModel^ model, IEnumerable<IfcProduct^>^ toDraw, bool OCCout);
-			XbimScene(String ^ ifcFileName, String ^ xbimFileName,String ^ xBimGeometryFileName, bool removeIfcGeoemtry);
-			XbimScene(String ^ ifcFileName,String ^ xBimFileName,String ^ xBimGeometryFileName, bool removeIfcGeometry, ProcessModel ^ processingDelegate);
+			XbimScene(XbimModel^ model);
+			XbimScene(XbimModel^ model, IEnumerable<IfcProduct^>^ toDraw, bool oCCout );
+
 			!XbimScene();
 			~XbimScene();
 			virtual void Close();
-			virtual bool ReOpen();
-			XbimSceneStream^ AsSceneStream();
-			virtual XbimTriangulatedModelStream^ Triangulate(TransformNode^ node);
+
+			
+			
 			virtual property TransformGraph^ Graph
 			{
 				TransformGraph^ get()

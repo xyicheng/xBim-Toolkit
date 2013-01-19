@@ -38,7 +38,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\x86\Debug\</OutputPath>
+    <OutputPath>..\bin\x86\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>x86</PlatformTarget>
@@ -53,7 +53,7 @@
     <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
-    <OutputPath>bin\x86\Release\</OutputPath>
+    <OutputPath>..\bin\x86\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
@@ -85,7 +85,7 @@
     <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
-    <OutputPath>bin\x64\Release\</OutputPath>
+    <OutputPath>..\bin\x64\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
@@ -101,11 +101,19 @@
     <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Ionic.Zip, Version=1.9.1.5, Culture=neutral, PublicKeyToken=edbe51ad942a3f5c, processorArchitecture=MSIL">
+      <HintPath>..\packages\NPOI.1.2.5\lib\net40\Ionic.Zip.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
     <CodeAnalysisDependentAssemblyPaths Condition=" '$(VS100COMNTOOLS)' != '' " Include="$(VS100COMNTOOLS)..\IDE\PrivateAssemblies">
@@ -114,30 +122,55 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="COBie\COBieQueriesTests.cs" />
+    <Compile Include="COBie\COBieSerialisationTests.cs" />
+    <Compile Include="COBie\COBieTimeTests.cs" />
+    <Compile Include="COBie\COBieXbimSerialisationTests.cs" />
     <Compile Include="InternationalisationTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="XbimFileModelServerTest.cs" />
+    <Compile Include="AssemblySettings.cs" />
+    <Compile Include="XbimModelDatabaseTests.cs" />
+    <Compile Include="XbimModelTest.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\XBim.COBie.Client\Xbim.COBie.Client.csproj">
+      <Project>{FB5A1829-7B34-4DE9-94A9-AF3AD36320BB}</Project>
+      <Name>Xbim.COBie.Client</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Xbim.COBie\Xbim.COBie.csproj">
       <Project>{7DA8C61A-ACCA-45CB-B688-93A4982FA44C}</Project>
       <Name>Xbim.COBie</Name>
+      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\Xbim.Common\Xbim.Common.csproj">
       <Project>{6745F5AC-AF3C-4372-81AA-A75E7B1FA03B}</Project>
       <Name>Xbim.Common</Name>
+      <Private>False</Private>
     </ProjectReference>
-    <ProjectReference Include="..\Xbim.Ifc.Extensions\Xbim.Ifc.Extensions.csproj">
+    <ProjectReference Include="..\Xbim.Ifc.Extensions\Xbim.Ifc2x3.Extensions.csproj">
       <Project>{09870F18-1796-4A3E-A66D-68DB3DA60B24}</Project>
-      <Name>Xbim.Ifc.Extensions</Name>
+      <Name>Xbim.Ifc2x3.Extensions</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Xbim.Ifc\Xbim.Ifc.csproj">
+    <ProjectReference Include="..\Xbim.Ifc2x3\Xbim.Ifc2x3.csproj">
       <Project>{5D4C907D-1293-4E5F-9642-D0862AE4741C}</Project>
-      <Name>Xbim.Ifc</Name>
+      <Name>Xbim.Ifc2x3</Name>
     </ProjectReference>
     <ProjectReference Include="..\Xbim.IO\Xbim.IO.csproj">
       <Project>{85856DF2-C8AB-4120-8A8D-AE05D2696B51}</Project>
       <Name>Xbim.IO</Name>
+      <Private>False</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\Xbim.ModelGeometry.Scene\Xbim.ModelGeometry.Scene.csproj">
+      <Project>{3D9D37DE-A254-4433-B172-7590CBD84C69}</Project>
+      <Name>Xbim.ModelGeometry.Scene</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Xbim.ModelGeometry\Xbim.ModelGeometry.vcxproj">
+      <Project>{CBCA1EFC-7459-4A0E-A42D-55D4F58051BF}</Project>
+      <Name>Xbim.ModelGeometry %28Visual Studio 2010%29</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Xbim.ModelGeometry\Xbim.ModelGeometry.vcxproj">
+      <Project>{CBCA1EFC-7459-4A0E-A42D-55D4F58051BF}</Project>
+      <Name>Xbim.ModelGeometry</Name>
+      <Private>False</Private>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -153,9 +186,6 @@
     <Content Include="TestSourceFiles\Ref.ifc">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="TestSourceFiles\2012-03-23-Duplex-Handover.xbim">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="TestSourceFiles\Ref_Xbim.xbim">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -165,8 +195,44 @@
     <Content Include="TestSourceFiles\Test.ifc">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="TestSourceFiles\COBie-US-2_4-template.xls">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestSourceFiles\Clinic_A.xbim">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestSourceFiles\COBieToXbim.xCOBie">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestSourceFiles\DuplexCOBieToXbim.xCOBie">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestSourceFiles\Clinic_Handover.ifc">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestSourceFiles\2012-03-23-Duplex-Handover.xBIM">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestSourceFiles\Duplex_A_Co-ord.xBIM">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestSourceFiles\Clinic_Handover.xBIM">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Include="TestSourceFiles\BIM Logo - Coordination View 2 - No M.xBIM">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="TestSourceFiles\BIM Logo-Complete, fully schema compliant.ifc" />
+    <None Include="TestSourceFiles\BIM Logo-Complete, fully schema compliant.xBIM">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="TestSourceFiles\BIM Logo-Coordination View 2 - No M.ifc" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
