@@ -45,6 +45,7 @@
                 <TextBlock Grid.Column="1" Text="{Binding Name}"/>
             </Grid>
         </DataTemplate>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
     </Window.Resources>
     <Window.CommandBindings>
         <CommandBinding Command="Close"  Executed="CommandBinding_Close" CanExecute="CommandBinding_CanExecute"/>
@@ -173,6 +174,10 @@
                     </LinearGradientBrush>
                 </xbim:DrawingControl3D.Background>
             </xbim:DrawingControl3D>
+            <StackPanel Name="stckBrowseButtons" Grid.Column="2" HorizontalAlignment="Right" Orientation="Horizontal" VerticalAlignment="Top" Visibility="{Binding ElementName=DrawingControl, Path=MultiselectionNotEmpty, Converter={StaticResource BooleanToVisibilityConverter}}" IsVisibleChanged="stckBrowseButtons_IsVisibleChanged">
+                <Button Content=" &lt;&lt; Previous " Height="30" Name="btnZoomToPrevious" Click="btnZoomToPrevious_Click"/>
+                <Button Content="     Next &gt;&gt; " Height="30" Name="btnZoomToNext" Click="btnZoomToNext_Click"/>
+            </StackPanel>
             <GridSplitter 
                 Grid.Column="3" 
                 HorizontalAlignment="Center"

@@ -429,5 +429,24 @@ namespace XbimXplorer
             
         }
 
+        private int _currentZoomProduct = 0;
+
+        private void btnZoomToNext_Click(object sender, RoutedEventArgs e)
+        {
+            _currentZoomProduct = ++_currentZoomProduct % DrawingControl.SelectedItems.Count;
+            DrawingControl.ZoomToProduct(DrawingControl.SelectedItems[_currentZoomProduct]);
+        }
+
+        private void btnZoomToPrevious_Click(object sender, RoutedEventArgs e)
+        {
+            if (--_currentZoomProduct < 0) _currentZoomProduct += DrawingControl.SelectedItems.Count;
+            DrawingControl.ZoomToProduct(DrawingControl.SelectedItems[_currentZoomProduct]);
+        }
+
+        private void stckBrowseButtons_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if ((bool)e.NewValue) _currentZoomProduct = 0;
+        }
+
     }
 }

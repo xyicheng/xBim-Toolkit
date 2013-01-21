@@ -42,6 +42,7 @@ using Xbim.Ifc2x3;
 using HelixToolkit.Wpf;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Globalization;
 
 #endregion
 
@@ -407,6 +408,7 @@ namespace Xbim.Presentation
                 {
                     int newVal = (int)e.NewValue;
                     d3d.Select(newVal);
+                    d3d.SelectedItems.Clear();
                 }
 
 
@@ -1037,7 +1039,8 @@ namespace Xbim.Presentation
 
                     IEnumerable<IfcProduct> newItems = arg.NewItems != null ? arg.NewItems.Cast<IfcProduct>() : new List<IfcProduct>();
                     IEnumerable<IfcProduct> oldItems = arg.OldItems != null ? arg.OldItems.Cast<IfcProduct>() : new List<IfcProduct>();
-
+                    d3d.SetValue(MultiselectionNotEmptyProperty, sellection.Count != 0);
+                    
                     switch (arg.Action)
                     {
                         case NotifyCollectionChangedAction.Add:
@@ -1060,6 +1063,17 @@ namespace Xbim.Presentation
             }
         }
 
+        public bool MultiselectionNotEmpty
+        {
+            get { return (bool)GetValue(MultiselectionNotEmptyProperty); }
+            set { SetValue(MultiselectionNotEmptyProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for MultiselectionNotEmpty.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty MultiselectionNotEmptyProperty =
+            DependencyProperty.Register("MultiselectionNotEmpty", typeof(bool), typeof(DrawingControl3D), new UIPropertyMetadata(false));
+
+        
         private List<int> _currentSelection = new List<int>();
 
         private void SelectItems(IEnumerable<IfcProduct> prods)
@@ -1127,6 +1141,20 @@ namespace Xbim.Presentation
             }
         }
 
+        public void ZoomToProduct(IfcProduct product)
+        {
+            ModelVisual3D selVis;
+            int label = Math.Abs(product.EntityLabel);
+            if (_items.TryGetValue(label, out selVis))
+            {
+                Rect3D bounds = VisualTreeHelper.GetDescendantBounds(selVis);
+                if (!bounds.IsEmpty)
+                {
+                    bounds = bounds.Inflate(bounds.SizeX / 2, bounds.SizeY / 2, bounds.SizeZ / 2);
+                    Viewport.ZoomExtents(bounds);
+                }
+            }
+        }
         #endregion
 
     }
