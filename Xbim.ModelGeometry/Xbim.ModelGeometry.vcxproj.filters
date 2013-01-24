@@ -78,9 +78,6 @@
     <ClCompile Include="XbimBoundingBox.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="XbimScene.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="XbimFacetedShell.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -180,9 +177,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Stdafx.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="XbimScene.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="XbimFacetedShell.h">

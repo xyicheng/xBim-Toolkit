@@ -254,11 +254,7 @@ namespace Xbim.SceneJSWebViewer
                 );
         }
 
-        private Func<TransformNode, bool> FilterByType(Type t)
-        {
-            return p => (p.Product.GetType() == t || p.Product.GetType().IsSubclassOf(t));
-        }
-
+       
 
         // ok, cleaned up
         public void Init(string model)

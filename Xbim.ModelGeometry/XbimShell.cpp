@@ -169,6 +169,11 @@ namespace Xbim
 
 		}
 
+		void XbimShell::Move(TopLoc_Location location)
+		{
+			(*pShell).Move(location);		
+		}
+
 		TopoDS_Shape XbimShell::Build(IfcOpenShell^ shell, bool% hasCurves)
 		{
 			return Build((IfcConnectedFaceSet^)shell, hasCurves);
@@ -186,29 +191,34 @@ namespace Xbim
 		{
 			int facesAdded=0;
 			XbimModelFactors^ mf = ((IPersistIfcEntity^)faceSet)->ModelOf->GetModelFactors;
-			
+			ShapeFix_ShapeTolerance fTol;
 			BRepOffsetAPI_Sewing seamstress;
-			seamstress.SetMaxTolerance(mf->OneMilliMetre/10);
-			seamstress.SetMinTolerance(mf->OneMilliMetre/100);
+			double mm = mf->OneMilliMetre;
+			seamstress.SetMinTolerance(mm/10);
+			seamstress.SetMaxTolerance(mm);
+			seamstress.SetTolerance(mm/10);
+			
 			for each ( IfcFace^ fc in  faceSet->CfsFaces)
 			{
 				IfcFaceBound^ outerBound = Enumerable::FirstOrDefault(Enumerable::OfType<IfcFaceOuterBound^>(fc->Bounds)); //get the outer bound
 				if(outerBound == nullptr) outerBound = Enumerable::FirstOrDefault(fc->Bounds); //if one not defined explicitly use first found
 				if(outerBound == nullptr ) break; //invalid face
 				bool sense = outerBound->Orientation; //we are going to ignore this and calc the orientation as some BIM Ifc exporters do not respect
-				ShapeFix_ShapeTolerance fTol;
+				
 				if(dynamic_cast<IfcPolyLoop^>(outerBound->Bound))
 				{
 					IfcPolyLoop^ polyLoop=(IfcPolyLoop^)outerBound->Bound;
 					bool hasCurves;
 					
 					TopoDS_Wire wire = XbimFaceBound::Build(polyLoop,hasCurves);
+					
 					if(wire.IsNull()) continue;
+					fTol.SetTolerance(wire, mm/10 , TopAbs_WIRE);
 					BRepBuilderAPI_MakeFace* faceBuilder=new BRepBuilderAPI_MakeFace(wire, Standard_True);
 					BRepBuilderAPI_FaceError err = faceBuilder->Error();
 					if ( err == BRepBuilderAPI_NotPlanar )
 					{
-						fTol.SetTolerance(wire, mf->OneMilliMetre/100, TopAbs_WIRE); //drop the tolerance as some BIM tools have easy fitting planes
+						fTol.SetTolerance(wire, mm , TopAbs_WIRE); //drop the tolerance as some BIM tools have easy fitting planes
 						delete faceBuilder;
 						faceBuilder = new BRepBuilderAPI_MakeFace(wire);
 						err = faceBuilder->Error();
@@ -263,6 +273,7 @@ namespace Xbim
 							face.Orientation(o == TopAbs_FORWARD ? TopAbs_REVERSED : TopAbs_FORWARD);
 						}
 						seamstress.Add(face);
+						
 						facesAdded++;
 					}
 					delete faceBuilder;
@@ -277,13 +288,15 @@ namespace Xbim
 			if(facesAdded>0)
 			{
 				seamstress.Perform();
-				ShapeFix_Shape sfs(seamstress.SewedShape());
-				sfs.SetPrecision(BRepLib::Precision());
-				sfs.SetMaxTolerance(BRepLib::Precision());
-				sfs.SetMinTolerance(BRepLib::Precision());
-				sfs.Perform();	
 				
+				ShapeFix_Shape sfs(seamstress.SewedShape());
+				sfs.SetPrecision(mm/10);
+				sfs.SetMaxTolerance(mm);
+				sfs.SetMinTolerance(mm/10);
+				sfs.Perform();	
+				//BRepTools::Write(sfs.Shape(),"s3");
 				return sfs.Shape();
+				//return seamstress.SewedShape();
 			}
 			else
 			{

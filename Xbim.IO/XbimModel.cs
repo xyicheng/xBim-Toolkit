@@ -91,7 +91,7 @@ namespace Xbim.IO
 
         }
 
-       
+
         public XbimModelFactors GetModelFactors
         {
             get
@@ -261,6 +261,20 @@ namespace Xbim.IO
         {
             get { return instances.DefaultOwningUser; }
         }
+
+        /// <summary>
+        /// Performs a set of actions on a collection of entities inside a single read only transaction
+        /// This improves database  performance for retrieving and accessing complex and deep objects
+        /// </summary>
+        /// <typeparam name="TSource"></typeparam>
+        /// <param name="source"></param>
+        /// <param name="body"></param>
+        public void ForEach<TSource>(IEnumerable<TSource> source, Action<TSource> body) where TSource : IPersistIfcEntity
+        {
+            cache.ForEach(source, body);
+        }
+
+
         #endregion
 
         #region IModel interface implementation
@@ -318,7 +332,7 @@ namespace Xbim.IO
         /// If null the contents are loaded into memory and are not persistent
         /// </param>
         /// <returns></returns>
-        public bool CreateFrom(string importFrom, string xbimDbName = null, ReportProgressDelegate progDelegate = null)
+        public bool CreateFrom(string importFrom, string xbimDbName = null, ReportProgressDelegate progDelegate = null, bool keepOpen = false)
         {
             Close();
             string fullPath = Path.GetFullPath(importFrom);
@@ -336,7 +350,7 @@ namespace Xbim.IO
                     cache.ImportIfcXml(xbimDbName, importFrom, progDelegate);
                     break;
                 case XbimStorageType.IFC:
-                    cache.ImportIfc(xbimDbName, importFrom, progDelegate);
+                    cache.ImportIfc(xbimDbName, importFrom, progDelegate, keepOpen);
                     break;
                 case XbimStorageType.IFCZIP:
                     cache.ImportIfcZip(xbimDbName, importFrom, progDelegate);
@@ -674,25 +688,25 @@ namespace Xbim.IO
                     else
                         throw new XbimException("Invalid file type ." + ext.ToUpper() + " in file " + outputFileName);
                 }
-                if (storageType.Value == XbimStorageType.XBIM) //make a compacted copy
+                if (storageType.Value == XbimStorageType.XBIM) //make a copy
                 {
                     string srcFile = this.DatabaseName;
                     if(string.Compare(srcFile, outputFileName, true, CultureInfo.InvariantCulture) == 0)
                         throw new XbimException("Cannot save file to the same name, " + outputFileName);
                     try
                     {
-                        this.Close();
-                        string errMsg;
-                        if (!XbimModel.Compact(srcFile, outputFileName, out errMsg))
-                            throw new XbimException(errMsg);
-                        else
-                            srcFile = outputFileName;
+                        this.Close(); 
+                        File.Copy(srcFile, outputFileName);
+                        srcFile = outputFileName;
                         return true;
+                    }
+                    catch (Exception e)
+                    {
+                        throw new XbimException("Failed to save file as outputFileName" , e);
                     }
                     finally
                     {
                         Open(srcFile);
-                       
                     }
                 }
                 else

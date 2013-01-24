@@ -207,13 +207,14 @@ namespace Xbim.COBie.Client
         /// <param name="context">Context object</param>
         private void GenerateGeometry(COBieContext context)
         {
+            //need to resolve generate geometry
             //now convert the geometry
-            IEnumerable<IfcProduct> toDraw = context.Model.IfcProducts.Cast<IfcProduct>(); //get all products for this model to place in return graph
-            int total = toDraw.Count();
-            XbimScene.ConvertGeometry(toDraw, delegate(int percentProgress, object userState)
-            {
-                context.UpdateStatus("Creating Geometry File", total, (total * percentProgress / 100));
-            }, false);
+            //IEnumerable<IfcProduct> toDraw = context.Model.IfcProducts.Cast<IfcProduct>(); //get all products for this model to place in return graph
+            //int total = toDraw.Count();
+            //XbimScene.ConvertGeometry(toDraw, delegate(int percentProgress, object userState)
+            //{
+            //    context.UpdateStatus("Creating Geometry File", total, (total * percentProgress / 100));
+            //}, false);
         }
 
         /// <summary>

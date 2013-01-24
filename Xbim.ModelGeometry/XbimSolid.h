@@ -100,7 +100,8 @@ namespace Xbim
 			XbimSolid(const TopoDS_Shell&  shell, bool hasCurves);
 			XbimSolid(const TopoDS_Shape&  shape);
 			XbimSolid(const TopoDS_Shape&  shape, bool hasCurves);
-
+			XbimSolid(IXbimGeometryModel^ solid, Matrix3D transform);
+			XbimSolid(IXbimGeometryModel^ solid, bool hasCurves);
 			virtual property XbimLocation ^ Location 
 			{
 				XbimLocation ^ get()
@@ -142,6 +143,8 @@ namespace Xbim
 			XbimSolid(IfcConnectedFaceSet^ repItem);
 			XbimSolid(IfcBooleanResult^ repItem);
 			XbimSolid(IfcCsgPrimitive3D^ repItem);
+			XbimSolid(IfcVertexPoint^ pt);
+			XbimSolid(IfcEdge^ edge);
 			void Print();
 			~XbimSolid()
 			{
@@ -230,6 +233,7 @@ namespace Xbim
 			//solid operations
 
 			virtual IXbimGeometryModel^ CopyTo(IfcObjectPlacement^ placement);
+			virtual void Move(TopLoc_Location location);
 			///static builders 
 
 			static TopoDS_Shape Build(IfcCsgSolid^ csgSolid, bool% hasCurves);

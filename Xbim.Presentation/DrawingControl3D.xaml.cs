@@ -692,6 +692,7 @@ namespace Xbim.Presentation
         {
             Rect3D box = new Rect3D();
             if (model == null) return box;
+            bool first = true;
             foreach (XbimGeometryData shape in model.GetGeometryData(XbimGeometryType.BoundingBox))
             {
                 Matrix3D matrix3d = new Matrix3D();
@@ -699,7 +700,8 @@ namespace Xbim.Presentation
                 Rect3D bb = new Rect3D();
                 bb = bb.FromArray(shape.ShapeData);
                 bb = bb.TransformBy(matrix3d);
-                box.Union(bb);
+                if (first) { box = bb; first = false; }
+                else box.Union(bb);
             }
             return box;
         }
@@ -710,7 +712,7 @@ namespace Xbim.Presentation
             //reset all the visuals
             ClearGraphics();
             if (model == null) return; //nothing to do
-            double metre = 1 / model.GetModelFactors.OneMetre;
+            double metre =  model.GetModelFactors.OneMetre;
 
             //get bounding box for the whole building
             _boundingBox = GetModelBounds(model);

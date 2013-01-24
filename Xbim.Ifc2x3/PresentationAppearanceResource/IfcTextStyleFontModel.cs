@@ -43,7 +43,7 @@ namespace Xbim.Ifc2x3.PresentationAppearanceResource
         ///   The first list entry has the highest priority, if this font fails, the next list item shall be used. 
         ///   The last list item should (if possible) be a generic family.
         /// </summary>
-        [IfcAttribute(2, IfcAttributeState.Optional)]
+        [IfcAttribute(2, IfcAttributeState.Optional, IfcAttributeType.List)]
         public XbimList<IfcTextFontName> FontFamily
         {
             get
@@ -122,7 +122,11 @@ namespace Xbim.Ifc2x3.PresentationAppearanceResource
                     break;
                 case 1:
                     if (_fontFamily == null) _fontFamily = new XbimList<IfcTextFontName>(this);
-                    _fontFamily.Add(value.StringVal);
+                    if (value.Type == IfcParserType.String)
+                        _fontFamily.Add(new IfcTextFontName(value.StringVal));
+                    else
+
+                        _fontFamily.Add((IfcTextFontName)value.EntityVal);
                     break;
                 case 2:
                     _fontStyle = value.StringVal;

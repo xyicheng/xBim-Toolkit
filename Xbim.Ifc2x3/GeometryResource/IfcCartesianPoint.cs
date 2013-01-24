@@ -217,6 +217,7 @@ namespace Xbim.Ifc2x3.GeometryResource
         {
             if (propIndex == 0)
             {
+               
                 ((ICoordinateList) this).Add(value.RealVal);
             }
             else

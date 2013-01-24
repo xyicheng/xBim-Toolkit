@@ -19,7 +19,7 @@ namespace Xbim
 			{		
 				pBox = box;
 			}
-			XbimBoundingBox(IfcConnectedFaceSet^ faces);
+			XbimBoundingBox(double Xmin, double Ymin, double Zmin, double Xmax, double Ymax,  double Zmax);
 			
 			XbimBoundingBox()
 			{		

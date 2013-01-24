@@ -392,6 +392,7 @@
     <Compile Include="ProfilePropertyResource\IfcSectionReinforcementProperties.cs" />
     <Compile Include="ProfilePropertyResource\IfcSectionTypeEnum.cs" />
     <Compile Include="ProfilePropertyResource\IfcStructuralProfileProperties.cs" />
+    <Compile Include="ProfilePropertyResource\IfcStructuralSteelProfileProperties.cs" />
     <Compile Include="SharedBldgServiceElements\IfcSoundProperties.cs" />
     <Compile Include="MeasureResource\IfcAccelerationMeasure.cs" />
     <Compile Include="MeasureResource\IfcAmountOfSubstanceMeasure.cs" />

@@ -24,15 +24,15 @@ namespace Xbim
 			Matrix3D _transform;
 		public:
 			
-			XbimGeometryModelCollection(bool isMap)
+			XbimGeometryModelCollection(bool isMap, bool hasCurvedEdges)
 			{
 
 				shapes = gcnew List<IXbimGeometryModel^>();
 				_isMap=isMap;
-				_hasCurvedEdges = false;
+				_hasCurvedEdges = hasCurvedEdges;
 			};
 			
-			XbimGeometryModelCollection(IfcAxis2Placement^ origin, IfcCartesianTransformationOperator^ transform, Dictionary<int,Object^>^ maps)
+			XbimGeometryModelCollection(IfcAxis2Placement^ origin, IfcCartesianTransformationOperator^ transform, ConcurrentDictionary<int,Object^>^ maps)
 			{
 				shapes = gcnew List<IXbimGeometryModel^>();
 				_isMap=true;
@@ -225,7 +225,7 @@ virtual property XbimLocation ^ Location
 			virtual List<XbimTriangulatedModel^>^Mesh(bool withNormals);
 			virtual List<XbimTriangulatedModel^>^Mesh();
 			virtual IXbimGeometryModel^ CopyTo(IfcObjectPlacement^ placement);
-			
+			virtual void Move(TopLoc_Location location);
 		};
 
 	}

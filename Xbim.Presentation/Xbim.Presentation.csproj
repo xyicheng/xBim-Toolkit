@@ -149,7 +149,6 @@
     <Compile Include="ToolTipController.cs" />
     <Compile Include="XbimMaterialModelVisual.cs" />
     <Compile Include="XbimMaterialProvider.cs" />
-    <Compile Include="XbimModelExtensions.cs" />
     <Compile Include="XbimModelPresentationExtensions.cs" />
     <Compile Include="XbimTreeview.cs" />
     <Compile Include="XbimViewType.cs" />

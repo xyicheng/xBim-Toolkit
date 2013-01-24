@@ -22,6 +22,10 @@
 #include <BRepBndLib.hxx> 
 #include <BRepLib.hxx> 
 #include <BRepCheck_Analyzer.hxx> 
+#include <Bnd_BoundSortBox.hxx> 
+#include <TColStd_ListOfInteger.hxx> 
+#include <Bnd_HArray1OfBox.hxx>
+#include <TopTools_HArray1OfShape.hxx> 
 using namespace System::Linq;
 using namespace Xbim::Common::Exceptions;
 
@@ -56,38 +60,24 @@ namespace Xbim
 		}
 
 		// cuts a shape from the result shape and updates thre result shape if it was successful
-		bool XbimFeaturedShape::DoCut(const TopoDS_Shape& toCut, bool tryToRepair)
+		bool XbimFeaturedShape::DoCut(const TopoDS_Shape& toCut)
 		{	
 			TopoDS_Shape res;
 			if(LowLevelCut(*(mResultShape->Handle),toCut,res))
 			{		
-				
-				if( BRepCheck_Analyzer(res, Standard_False).IsValid() == 0) 
-				{
-					
-					if(!tryToRepair) return false; //sometimes repairing can alter the tolerances of shapes and cause problems
-					//try and fix it
-					
-					//BRepTools::Write(res,"r");
-					ShapeFix_Shape fixer(res);
-					fixer.SetPrecision(BRepLib::Precision());
-					fixer.SetMinTolerance(BRepLib::Precision());
-					fixer.SetMaxTolerance(BRepLib::Precision());
-					fixer.Perform();
-
-					if(BRepCheck_Analyzer(fixer.Shape(), Standard_False).IsValid() == 0) 
-						return false;//messed up try individual cutting or throw an error
-					else
-						*(mResultShape->Handle) = fixer.Shape();
-				}
-				else
+				/*if( BRepCheck_Analyzer(res, Standard_False).IsValid() == Standard_True) 
+				{*/
 					*(mResultShape->Handle) = res;
-				return true;
+					return true;
+				//}
 			}
-			else
-				return false;
+			return false;
 		}
 
+		static int  CompareSize(KeyValuePair<double, IXbimGeometryModel^> x,KeyValuePair<double, IXbimGeometryModel^> y)
+		{
+			return x.Key.CompareTo(y.Key);
+		}
 		// unions a shape from the result shape and updates thre result shape if it was successful
 		bool XbimFeaturedShape::DoUnion(const TopoDS_Shape& toUnion)
 		{
@@ -112,13 +102,54 @@ namespace Xbim
 				Logger->Warn("Undefined base shape passed to XbimFeaturedShape");
 				return;
 			}
-			mBaseShape = baseShape;
-			mResultShape =  mBaseShape;
+			mBaseShape = baseShape;	
 			_representationLabel= baseShape->RepresentationLabel;
 			_surfaceStyleLabel=baseShape->SurfaceStyleLabel;
-			if(projections!=nullptr && Enumerable::Count<IXbimGeometryModel^>(projections) > 0)
+			_hasCurves = false;
+
+			if(openings!=nullptr)	
 			{
-				mProjections = gcnew List<IXbimGeometryModel^>(projections);
+				//sort each opening in terms of the distance from the top left of the base bb and the bottom right of the opening
+				mOpenings = gcnew List<IXbimGeometryModel^>();	
+				for each (IXbimGeometryModel^ o in openings)
+				{
+					//expand collections to avoid clash
+					if(dynamic_cast<XbimGeometryModelCollection^>(o))
+					{
+						for each (IXbimGeometryModel^ sub in (XbimGeometryModelCollection^)o)
+						{
+							if(sub->HasCurvedEdges) _hasCurves=true;
+							mOpenings->Add(sub);
+						}
+					}
+					else
+					{
+						if(o->HasCurvedEdges) _hasCurves=true;
+						mOpenings->Add(o);
+					}
+				}
+			}
+
+			////check to see if the result will have curved edges
+			if(projections!=nullptr)	
+			{
+				//sort each opening in terms of the distance from the top left of the base bb and the bottom right of the opening
+				mProjections = gcnew List<IXbimGeometryModel^>();	
+				for each (IXbimGeometryModel^ p in projections)
+				{
+					if(p->HasCurvedEdges) _hasCurves=true;
+					mProjections->Add(p);
+				}
+			}
+
+			//make sure result shape is consistent
+			mResultShape =  gcnew XbimSolid( mBaseShape, _hasCurves);
+			double tenthMM = product->ModelOf->GetModelFactors->OneMilliMetre/10; //work to an accuracy of 1/10 millimeter
+			ShapeFix_ShapeTolerance fTol;
+
+
+			if(mProjections->Count>0)
+			{
 				TopoDS_Compound c;
 				BRep_Builder b;
 				b.MakeCompound(c);
@@ -127,13 +158,13 @@ namespace Xbim
 				try
 				{
 					DoUnion(c);
-					
+
 				}
 				catch(...)
 				{
 					try
 					{
-						mResultShape =  mBaseShape; //go back to start
+						mResultShape =  gcnew XbimSolid( mBaseShape, _hasCurves);//go back to start
 						//try each cut separately
 						for each(IXbimGeometryModel^ projection in mProjections) //one by one joinung for tricky geometries, opencascade is less likely to fail
 						{
@@ -146,72 +177,102 @@ namespace Xbim
 					}
 				}
 			}
-			if(openings!=nullptr && Enumerable::Count<IXbimGeometryModel^>(openings) > 0)
+			//sort them and hit test them
+			if(mOpenings->Count>0)
 			{
-				mOpenings = gcnew List<IXbimGeometryModel^>(openings);
-				
-				BRep_Builder b;
-				TopoDS_Shape c;
-				if(mOpenings->Count>1)
-				{
-					TopoDS_Compound comp;
-					b.MakeCompound(comp);
-					for each(IXbimGeometryModel^ opening in mOpenings) // quick cutting 
-						b.Add(comp,*(opening->Handle));
-					c = comp;
-				}
-				else
-					c =  *(mOpenings[0]->Handle);
-				try
-				{
 
-					/*BRepTools::Write(c, "c");
-					BRepTools::Write(*(mResultShape->Handle), "b");*/
-					if(!DoCut(c,false) ) //try the fast option first if it is not a shell, if more than one opening try slow
-					{
-						//increase the tolerances and try again
-						ShapeFix_ShapeTolerance fTol;
-						double prec = Math::Max(1e-5,BRepLib::Precision()*1000 );
-						//double prec = BRepLib::Precision();
-						fTol.SetTolerance(*(mResultShape->Handle), prec);
-						fTol.SetTolerance(c,prec);
-						if(!DoCut(c,false) )
+				BRep_Builder b;
+				List<IXbimGeometryModel^>^ unprocessed = gcnew List<IXbimGeometryModel^>(mOpenings);
+
+				while(unprocessed->Count>0)
+				{	
+					List<IXbimGeometryModel^>^ toProcess = gcnew List<IXbimGeometryModel^>(unprocessed);
+					TopoDS_Compound comp;
+					b.MakeCompound(comp); //make a compound to hold all the cuts
+					bool first = true;
+					//make a compound of all the openings that do not intersect and process in batch 
+					int total = toProcess->Count+1;
+					Handle(Bnd_HArray1OfBox) HBnd = new  Bnd_HArray1OfBox(1,total);		
+					int boxArraySize = 0;
+					for each(IXbimGeometryModel^ opening in toProcess) // quick cutting 
+					{	
+						if(first)
 						{
-							//try each cut separately
-							bool failed = false;
-							for each(IXbimGeometryModel^ opening in mOpenings) //one by one cutting for tricky geometries. opencascade is less likely to fail
+							Bnd_Box openingBB;
+							BRepBndLib::Add(*(opening->Handle), openingBB);
+							HBnd->SetValue(++boxArraySize,openingBB);
+							b.Add(comp,*(opening->Handle));
+							first=false;
+							unprocessed->Remove(opening);
+						}
+						else
+						{
+							Bnd_Box openingBB;
+							BRepBndLib::Add(*(opening->Handle), openingBB);
+							int hit = 0;
+							for (int i = 1; i <= boxArraySize; i++) //try and find a cut that intersects with this one
 							{
-								//BRepTools::Write(*(opening->Handle),"h");
-								if(mOpenings->Count==1 || !DoCut(*(opening->Handle),false)) //if only one opening just do sub parts, else try each opening before doing sub parts
+								if(!openingBB.IsOut(HBnd->Value(i)))
 								{
-									//getting harder, the geometry is most likley badly defined try each of the sub shells
-									for (TopExp_Explorer ex(*(opening->Handle),TopAbs_SHELL) ; ex.More(); ex.Next())  
-									{
-										try 
-										{
-											ShapeFix_Solid sf_solid;
-											sf_solid.SetPrecision(BRepLib::Precision());
-											sf_solid.LimitTolerance(BRepLib::Precision());
-											TopoDS_Solid solid = sf_solid.SolidFromShell(TopoDS::Shell(ex.Current()));
-											/*BRepTools::Write(solid,"s");*/
-											if(!DoCut(solid,true))
-												failed=true;
-										} catch(...) {failed=true;}
-									}
+									hit=i;
+									break;
 								}
 							}
-							if(failed)
-								Logger->WarnFormat("Failed cut an opening in entity #{0}={1}\nA simplified representation for the shape has been used",product->EntityLabel,product->GetType()->Name);
+							if(hit==0) //if no intersection process it first time
+							{
+								HBnd->SetValue(++boxArraySize,openingBB);
+								b.Add(comp,*(opening->Handle));
+								unprocessed->Remove(opening);
+							}		
 						}
 					}
-				}
-				catch(...)
-				{
-					Logger->ErrorFormat("Failed cut all openings in entity #{0}={1}\nA simplified representation for the shape has been used",product->EntityLabel,product->GetType()->Name);
 
+					try
+					{
+
+						//try with reasonably fine tolerances
+						fTol.SetTolerance(*(mResultShape->Handle), tenthMM);
+						fTol.LimitTolerance(*(mResultShape->Handle), tenthMM,tenthMM*10); //   1/10 mmm
+						fTol.SetTolerance(comp, tenthMM);					//1mm
+						fTol.LimitTolerance(comp, tenthMM,tenthMM*10);	
+						
+						/*BRepTools::Write(comp, "c");
+						BRepTools::Write(*(mResultShape->Handle), "b");*/
+						if(!DoCut(comp) ) //try the fast option first if it is not a shell, if more than one opening try slow
+						{
+							//try more relaxed tolerances
+							fTol.LimitTolerance(*(mResultShape->Handle), tenthMM,tenthMM*50); //   1/2 mmm
+						    fTol.LimitTolerance(comp, tenthMM,tenthMM*50);					//5mm
+							if(!DoCut(comp) ) //try again
+							{
+								//now try individual cutting of shells to get what we can
+								bool failed = false;
+								//getting harder, the geometry is most likley badly defined try each of the sub solids
+								for (TopExp_Explorer ex(comp,TopAbs_SOLID) ; ex.More(); ex.Next())  
+								{
+									try 
+									{	
+										if(!DoCut(ex.Current()))
+											failed=true;
+									} catch(...) {failed=true;}
+								}
+								if(failed)
+									Logger->WarnFormat("Failed cut an opening in entity #{0}={1}\nA simplified representation for the shape has been used",product->EntityLabel,product->GetType()->Name);
+							}
+						}
+						
+					}
+					catch(...)
+					{
+						Logger->ErrorFormat("Failed cut all openings in entity #{0}={1}\nA simplified representation for the shape has been used",product->EntityLabel,product->GetType()->Name);
+					}
 				}
 			}
+			/*BRepTools::Write(*(mResultShape->Handle), "x");
+			product->ModelOf->Close();*/
 		}
+
+
 
 		IXbimGeometryModel^ XbimFeaturedShape::Cut(IXbimGeometryModel^ shape)
 		{
@@ -293,6 +354,7 @@ namespace Xbim
 				mBaseShape = copy->mBaseShape;
 				mOpenings = copy->mOpenings;
 				mProjections = copy->mProjections;
+				_hasCurves = copy->HasCurvedEdges;
 				if(mResultShape == nullptr)
 					throw(gcnew XbimGeometryException("XbimFeaturedShape::CopyTo has failed to move shape"));
 			}
@@ -304,6 +366,12 @@ namespace Xbim
 		{
 			return gcnew XbimFeaturedShape(this,placement);
 		}
+
+		void XbimFeaturedShape::Move(TopLoc_Location location)
+		{
+			mResultShape->Move(location);
+		}
+
 
 		List<XbimTriangulatedModel^>^XbimFeaturedShape::Mesh()
 		{

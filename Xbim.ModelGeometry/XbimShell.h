@@ -114,7 +114,7 @@ namespace Xbim
 			virtual IXbimGeometryModel^ Union(IXbimGeometryModel^ shape);
 			virtual IXbimGeometryModel^ Intersection(IXbimGeometryModel^ shape);
 			virtual IXbimGeometryModel^ CopyTo(IfcObjectPlacement^ placement);
-
+			virtual void Move(TopLoc_Location location);
 			// IEnumerable<IIfcFace^> Members
 			virtual property IEnumerable<XbimFace^>^ CfsFaces
 			{

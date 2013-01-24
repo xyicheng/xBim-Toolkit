@@ -19,6 +19,8 @@ using namespace System::Collections::Generic;
 using namespace Xbim::ModelGeometry::Scene;
 using namespace Xbim::Common::Logging;
 using namespace Xbim::Ifc2x3::SharedBldgElements;
+using namespace System::Collections::Concurrent;
+
 #pragma unmanaged
 
 void CALLBACK XMS_BeginTessellate(GLenum type, void *pPolygonData);
@@ -70,21 +72,17 @@ namespace Xbim
 			virtual IXbimGeometryModel^ CopyTo(IfcObjectPlacement^ placement) abstract;
 			property XbimLocation^ Location {virtual XbimLocation ^ get() abstract; virtual void set(XbimLocation ^ location) abstract;};
 
-			static IXbimGeometryModel^ CreateFrom(IfcProduct^ product, IfcGeometricRepresentationContext^ repContext, Dictionary<int, Object^>^ maps, bool forceSolid, XbimLOD lod, bool occOut);
-			static IXbimGeometryModel^ CreateFrom(IfcProduct^ product, Dictionary<int, Object^>^ maps, bool forceSolid, XbimLOD lod, bool occOut);
+			static IXbimGeometryModel^ CreateFrom(IfcProduct^ product, IfcGeometricRepresentationContext^ repContext, ConcurrentDictionary<int, Object^>^ maps, bool forceSolid, XbimLOD lod, bool occOut);
+			static IXbimGeometryModel^ CreateFrom(IfcProduct^ product, ConcurrentDictionary<int, Object^>^ maps, bool forceSolid, XbimLOD lod, bool occOut);
 			static IXbimGeometryModel^ CreateFrom(IfcProduct^ product, bool forceSolid, XbimLOD lod, bool occOut);
 
 
 			static IXbimGeometryModel^ CreateFrom(IfcRepresentationItem^ repItem, bool forceSolid, XbimLOD lod, bool occOut);
-			static IXbimGeometryModel^ CreateFrom(IfcRepresentationItem^ repItem, Dictionary<int, Object^>^ maps, bool forceSolid, XbimLOD lod, bool occOut);
-			static IXbimGeometryModel^ CreateFrom(IfcRepresentation^ shape, Dictionary<int, Object^>^ maps, bool forceSolid, XbimLOD lod, bool occOut);
+			static IXbimGeometryModel^ CreateFrom(IfcRepresentationItem^ repItem, ConcurrentDictionary<int, Object^>^ maps, bool forceSolid, XbimLOD lod, bool occOut);
+			static IXbimGeometryModel^ CreateFrom(IfcRepresentation^ shape, ConcurrentDictionary<int, Object^>^ maps, bool forceSolid, XbimLOD lod, bool occOut);
 			static IXbimGeometryModel^ CreateFrom(IfcRepresentation^ shape, bool forceSolid, XbimLOD lod, bool occOut);
 			
-
-			static IXbimGeometryModel^ CreateMap(IXbimGeometryModel^ item, IfcAxis2Placement^ origin, IfcCartesianTransformationOperator^ transform, Dictionary<int, Object^>^ maps, bool forceSolid);
-			static IXbimGeometryModel^ CreateMap(IXbimGeometryModel^ item, IfcAxis2Placement^ origin, Dictionary<int, Object^>^ maps, bool forceSolid);
-			static IXbimGeometryModel^ CreateMap(IXbimGeometryModel^ item, Dictionary<int, Object^>^ maps, bool forceSolid);
-
+			
 			static IXbimGeometryModel^ Fix(IXbimGeometryModel^ shape);
 			static List<XbimTriangulatedModel^>^Mesh(IXbimGeometryModel^ shape,  bool withNormals, double deflection, Matrix3D transform );
 			virtual XbimBoundingBox^ GetBoundingBox(bool precise) abstract;

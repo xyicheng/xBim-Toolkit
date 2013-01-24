@@ -1,7 +1,7 @@
 #pragma once
 #include "IXbimGeometryModel.h"
 #include "XbimGeometryModel.h"
-
+#include "XbimSolid.h"
 using namespace Xbim::Ifc2x3::GeometryResource;
 using namespace Xbim::Ifc2x3::TopologyResource;
 namespace Xbim
@@ -16,16 +16,17 @@ namespace Xbim
 			Int32 _representationLabel;
 			Int32 _surfaceStyleLabel;
 		public:
-			XbimMap(IXbimGeometryModel^ item, IfcAxis2Placement^ origin, IfcCartesianTransformationOperator^ transform, Dictionary<int,Object^>^ maps);
+			XbimMap(IXbimGeometryModel^ item, IfcAxis2Placement^ origin, IfcCartesianTransformationOperator^ transform, ConcurrentDictionary<int,Object^>^ maps);
 			virtual IXbimGeometryModel^ Cut(IXbimGeometryModel^ shape);
 			virtual IXbimGeometryModel^ Union(IXbimGeometryModel^ shape);
 			virtual IXbimGeometryModel^ Intersection(IXbimGeometryModel^ shape);
 			virtual IXbimGeometryModel^ CopyTo(IfcObjectPlacement^ placement);
+			virtual void Move(TopLoc_Location location);
 			virtual property bool HasCurvedEdges
 			{
-				virtual bool get() //this geometry never has curved edges
+				virtual bool get() //this geometry has the same curved edges as the object it maps
 				{
-					return false;
+					return _mappedItem->HasCurvedEdges;
 				}
 			}
 			virtual XbimBoundingBox^ GetBoundingBox(bool precise)
@@ -68,7 +69,7 @@ namespace Xbim
 			{
 				double get()
 				{
-					throw gcnew NotImplementedException("Volume needs to be implemented");
+					return _mappedItem->Volume;
 				}
 			}
 
@@ -88,9 +89,15 @@ namespace Xbim
 			{
 				TopoDS_Shape* get()
 				{
-					throw gcnew NotImplementedException("Handle needs to be implemented");
+					
+					if(!_transform.IsIdentity) //see if we need to map
+					{
+						XbimSolid^ solid = gcnew XbimSolid(_mappedItem,_transform);
+						_transform = Matrix3D::Identity; //Matrix no longer should be applied it has been applied to the mapped geometry
+						_mappedItem=solid;
+					}
+					return _mappedItem->Handle;
 				}
-
 			}
 
 			
