@@ -447,7 +447,22 @@ namespace Xbim.IO
 
 
         #region Validation
-                       
+
+        /// <summary>
+        /// Validates all entities in the model
+        /// </summary>
+        /// <param name="tw"></param>
+        /// <param name="validateLevel"></param>
+        /// <returns></returns>
+        public int Validate(TextWriter tw, ValidationFlags validateLevel = ValidationFlags.Properties)
+        {
+            int errors = 0;
+            foreach (var handle in instances)
+            {
+                errors += Validate(Instances[handle], tw, validateLevel);
+            }
+            return errors;
+        }
 
         public int Validate(IEnumerable<IPersistIfcEntity> entities, TextWriter tw, ValidationFlags validateLevel = ValidationFlags.Properties)
         {
