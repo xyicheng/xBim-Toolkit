@@ -38,7 +38,7 @@ namespace Xbim.Presentation
             m3d.TriangleIndices = new Int32Collection(addTo.TriangleIndices.Count + toAdd.TriangleIndices.Count);
             foreach (var i in addTo.TriangleIndices) m3d.TriangleIndices.Add(i);
             foreach (var i in toAdd.TriangleIndices) m3d.TriangleIndices.Add(i + maxIndices);
-            m3d.Freeze();
+           // m3d.Freeze();
             return m3d;
         }   
 
