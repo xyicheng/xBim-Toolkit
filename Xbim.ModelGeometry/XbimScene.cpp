@@ -2,12 +2,17 @@
 #include "XbimScene.h"
 #include "IXbimGeometryModel.h"
 #include "XbimGeometryModel.h"
+#include "XbimGeometryModelCollection.h"
+#include "XbimMap.h"
 using namespace System::IO;
-using namespace Xbim::IO;
+using namespace System::Linq;
+
 using namespace Xbim::ModelGeometry::Scene;
 using namespace Xbim::Common::Exceptions;
 using namespace Xbim::XbimExtensions;
 using namespace Xbim::Common;
+
+
 namespace Xbim
 {
 	namespace ModelGeometry
@@ -21,34 +26,149 @@ namespace Xbim
 			_maps = gcnew Dictionary<IfcRepresentation^, IXbimGeometryModel^>();
 		}
 
-		XbimScene::XbimScene(IModel^ model)
+		XbimScene::XbimScene(XbimModel^ model)
 		{
 
 			Initialise();
 			Logger->Debug("Creating Geometry from IModel..."); 
-			 _graph = gcnew TransformGraph(model, this);
-			 _maps = gcnew Dictionary<IfcRepresentation^, IXbimGeometryModel^>();
-			 _graph->AddProducts(model->IfcProducts->Items);
+			_graph = gcnew TransformGraph(model, this);
+			_maps = gcnew Dictionary<IfcRepresentation^, IXbimGeometryModel^>();
+			_graph->AddProducts(Enumerable::Cast<IfcProduct^>(model->IfcProducts));
 		}
 
-		XbimScene::XbimScene(IModel^ model, IEnumerable<IfcProduct^>^ toDraw )
+
+
+		void XbimScene::ConvertGeometry( IEnumerable<IfcProduct^>^ toConvert, ReportProgressDelegate^ progDelegate, bool oCCout)
 		{
-			Initialise();
-			Logger->Debug("Creating Geometry from IModel..."); 
-			 _graph = gcnew TransformGraph(model, this);
-			 _maps = gcnew Dictionary<IfcRepresentation^, IXbimGeometryModel^>();
-			 _graph->AddProducts(toDraw);
-			
+			IfcProduct^ p = Enumerable::FirstOrDefault(toConvert);
+			if(p == nullptr) //nothing to do
+				return;
+			XbimModel^ model = (XbimModel^)p->ModelOf;
+			Dictionary<int,List<XbimTriangulatedModel^>^>^ mappedModels = gcnew Dictionary<int,List<XbimTriangulatedModel^>^>();
+			TransformGraph^ graph = gcnew TransformGraph(model);
+			//create a new dictionary to hold maps
+			Dictionary<int, Object^>^ maps = gcnew Dictionary<int, Object^>();
+			//add everything that may have a representation
+			graph->AddProducts(toConvert); //load the products as we will be accessing their geometry
+
+			XbimGeometryCursor^ geomTable = model->GetGeometryTable();
+
+
+			int tally = 0;
+			int percentageParsed=0;
+			int total = Enumerable::Count(toConvert);
+			XbimLazyDBTransaction transaction = geomTable->BeginLazyTransaction();
+			try
+			{
+				for each(TransformNode^ node in graph->ProductNodes->Values) //go over every node that represents a product
+				{
+					IfcProduct^ product = node->Product;
+					try
+					{
+						XbimLOD lod = XbimLOD::LOD_Unspecified;
+						IXbimGeometryModel^ geomModel = XbimGeometryModel::CreateFrom(product, maps, false, lod,oCCout);
+						if (geomModel != nullptr)  //it has no geometry
+						{
+							List<XbimTriangulatedModel^>^tm;
+							Matrix3D m3d = node->WorldMatrix();
+							if(dynamic_cast<XbimMap^>(geomModel))
+							{
+								XbimMap^ map = (XbimMap^)geomModel;
+								m3d = Matrix3D::Multiply(map->Transform, m3d);
+								List<XbimTriangulatedModel^>^ lookup;
+								int key = map->MappedItem->GetHashCode();
+								if(mappedModels->TryGetValue(key, lookup))
+								{
+									tm=lookup;
+								}
+								else
+								{
+									tm = geomModel->Mesh(true);
+									mappedModels->Add(key,tm);
+								}
+							}
+							else if(dynamic_cast<XbimGeometryModelCollection^>(geomModel) && ((XbimGeometryModelCollection^)geomModel)->IsMap)
+							{
+								XbimGeometryModelCollection^ mapColl=(XbimGeometryModelCollection^)geomModel;
+								
+								m3d = Matrix3D::Multiply(mapColl->Transform, m3d);
+								List<XbimTriangulatedModel^>^ lookup;
+								int key = mapColl->RepresentationLabel;
+								if(mappedModels->TryGetValue(key, lookup))
+								{
+									tm=lookup;
+								}
+								else
+								{
+									tm = geomModel->Mesh(true);
+									mappedModels->Add(key,tm);
+								}
+							}
+							else
+								tm = geomModel->Mesh(true);
+							XbimBoundingBox^ bb = geomModel->GetBoundingBox(true);
+							//node->BoundingBox = bb->GetRect3D();
+							
+							array<Byte>^ matrix = Matrix3DExtensions::ToArray(m3d, true);
+
+							Nullable<short> typeId = IfcMetaData::IfcTypeId(product);
+							geomTable->AddGeometry(product->EntityLabel, XbimGeometryType::BoundingBox, typeId.Value, matrix, bb->ToArray(), 0 ,geomModel->SurfaceStyleLabel) ;
+							int subPart = 0;
+							for each(XbimTriangulatedModel^ b in tm)
+							{
+								geomTable->AddGeometry(product->EntityLabel, XbimGeometryType::TriangulatedMesh, typeId.Value, matrix, b->Triangles , subPart, b->SurfaceStyleLabel) ;
+								subPart++;
+							}
+							tally++;
+							if(progDelegate!=nullptr)
+							{
+								int newPercentage = Convert::ToInt32((double)tally / total * 100.0);
+								if (newPercentage > percentageParsed)
+								{
+									percentageParsed = newPercentage;
+									progDelegate(percentageParsed, "Converted");
+								}
+							}
+
+							if (tally % 100 == (100 - 1))
+							{
+								transaction.Commit();
+								transaction.Begin();
+							}
+						}
+					}
+					catch(Exception^ e1)
+					{
+						String^ message = String::Format("Error Triangulating product geometry of entity {0} - {1}", 
+							product->EntityLabel,
+							product->ToString());
+						Logger->Warn(message, e1);
+					}
+				}
+				transaction.Commit();
+			}
+			catch(Exception^ e2)
+			{
+				Logger->Warn("General Error Triangulating geometry", e2);
+			}
+			finally
+			{
+				model->FreeTable(geomTable);
+			}
+
+
+
 		}
-		XbimScene::XbimScene(IModel^ model, IEnumerable<IfcProduct^>^ toDraw, bool OCCout)
+		XbimScene::XbimScene(XbimModel^ model, IEnumerable<IfcProduct^>^ toDraw, bool OCCout)
 		{
 			Initialise();
 			_occOut = OCCout;
 			Logger->Debug("Creating Geometry from IModel..."); 
-			 _graph = gcnew TransformGraph(model, this);
-			 _maps = gcnew Dictionary<IfcRepresentation^, IXbimGeometryModel^>();
-			 _graph->AddProducts(toDraw);
+			_graph = gcnew TransformGraph(model, this);
+			_maps = gcnew Dictionary<IfcRepresentation^, IXbimGeometryModel^>();
+			_graph->AddProducts(toDraw);
 		}
+
 
 		void XbimScene::Close()
 		{
@@ -56,127 +176,7 @@ namespace Xbim
 			_graph->Close();
 		}
 
-		bool XbimScene::ReOpen()
-		{
-			try
-			{
-				_sceneStream = gcnew FileStream(_sceneStreamFileName, FileMode::Open, FileAccess::Read);
-				return _graph->ReOpen();
-			}
-			catch(...)
-			{
-				Logger->Error("Failed to Reopen Scene");
-				return false;
-			}
-		}
-
-		XbimScene::XbimScene(String ^ ifcFileName,String ^ xBimFileName,String ^ xBimGeometryFileName, bool removeIfcGeometry, ProcessModel ^ processingDelegate)
-		{
-			ImportIfc(ifcFileName, xBimFileName, xBimGeometryFileName, removeIfcGeometry, processingDelegate);
-		}
-
-
-		/*Imports an Ifc file and creates an Xbim file, geometry is optionally removed*/
-		XbimScene::XbimScene(String ^ ifcFileName,String ^ xBimFileName,String ^ xBimGeometryFileName, bool removeIfcGeometry)
-		{
-			ImportIfc(ifcFileName, xBimFileName, xBimGeometryFileName, removeIfcGeometry, nullptr);
-		}
-
-		void XbimScene::ImportIfc(String ^ ifcFileName,String ^ xBimFileName,String ^ xBimGeometryFileName, bool removeIfcGeometry, 
-			ProcessModel ^ processingDelegate)
-		{
-			Initialise();
-
-			Logger->InfoFormat("Importing IFC model {0}.", ifcFileName);
-			
-			XbimFileModelServer^ model = gcnew XbimFileModelServer();
-			_maps = gcnew Dictionary<IfcRepresentation^, IXbimGeometryModel^>();
-			try
-			{
-				String^ tmpFileName = Path::GetTempFileName();
-				//create a binary xbim file
-
-				if(removeIfcGeometry)
-					tmpFileName = model->ImportIfc(ifcFileName, tmpFileName);
-				else
-					tmpFileName = model->ImportIfc(ifcFileName);
-
-				Logger->DebugFormat("Ifc parsed and generated XBIM file, {0}", tmpFileName);
-				_graph = gcnew TransformGraph(model, this);
-				//add everything with a representation
-				_graph->AddProducts(model->IfcProducts->Items);
-				Logger->Debug("Geometry Created. Saving GC file..."); 
-				_sceneStreamFileName = xBimGeometryFileName;
-				_sceneStream = gcnew FileStream(_sceneStreamFileName, FileMode::Create, FileAccess::ReadWrite);
-				BinaryWriter^ bw = gcnew BinaryWriter(_sceneStream);
-				{
-					_graph->Write(bw, nullptr);
-					bw->Flush();
-					Close();
-					ReOpen();
-				}
-				Logger->DebugFormat("Geometry persisted to {0}", _sceneStreamFileName);
-
-				if(removeIfcGeometry)
-				{
-					Logger->Debug("Removing Geometry");
-					if(processingDelegate != nullptr)
-					{
-						processingDelegate->Invoke(model);
-					}
-					model->ExtractSemantic(xBimFileName);
-
-				}
-				Logger->InfoFormat("Completed import of Ifc File {0}", ifcFileName);
-			}
-			catch(XbimGeometryException^ e)
-			{
-				String^ message = String::Format("A geometry error ocurred while importing Ifc File, {0}",e->Message);
-				Logger->Error(message, e);
-				throw;
-			}
-			catch(Exception^ e)
-			{
-				String^ message = String::Format("An error ocurred while importing Ifc File, {0}",e->Message);
-				Logger->Error(message, e);
-				throw gcnew XbimGeometryException(message, e);
-			}
-		}
-
-		XbimSceneStream^ XbimScene::AsSceneStream()
-		{
-			return gcnew XbimSceneStream(_graph->Model, _sceneStreamFileName);
-		}
-
-		XbimTriangulatedModelStream^ XbimScene::Triangulate(TransformNode^ node)
-		{
-			
-			IfcProduct^ product = node->Product;
-			XbimModelFactors^ mf = ((IPersistIfcEntity^)product)->ModelOf->GetModelFactors;
-			if(product!=nullptr) //there is no product at this node
-			{
-				try
-				{
-					IXbimGeometryModel^ geomModel = XbimGeometryModel::CreateFrom(product, _maps, false, _lod, _occOut);
-					
-					if (geomModel != nullptr)  //it has no geometry
-					{
-						XbimTriangulatedModelStream^ tm = geomModel->Mesh(true,mf->DeflectionTolerance);
-						XbimBoundingBox^ bb = geomModel->GetBoundingBox(true);
-						node->BoundingBox = bb->GetRect3D();
-						return tm;
-					}
-				}
-				catch(Exception^ e)
-				{
-					String^ message = String::Format("Error Triangulating product geometry of entity {0} - {1}", 
-						product->EntityLabel,
-						product->ToString());
-					Logger->Warn(message, e);
-				}
-			}
-
-			return XbimTriangulatedModelStream::Empty;
-		}
 	}
+
+
 }

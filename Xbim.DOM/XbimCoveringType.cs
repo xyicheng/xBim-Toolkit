@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Xbim.Ifc.ProductExtension;
+using Xbim.Ifc2x3.ProductExtension;
 
 namespace Xbim.DOM
 {
@@ -36,7 +36,7 @@ namespace Xbim.DOM
 
         private void BaseInit(string name)
         {
-            _ifcTypeProduct = _document.Model.New<IfcCoveringType>();
+            _ifcTypeProduct = _document.Model.Instances.New<IfcCoveringType>();
             _ifcTypeProduct.Name = name;
         }
         #endregion

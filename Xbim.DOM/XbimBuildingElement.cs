@@ -2,20 +2,20 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Xbim.Ifc.ProductExtension;
-using Xbim.Ifc.MaterialResource;
-using Xbim.Ifc.Extensions;
-using Xbim.Ifc.GeometryResource;
-using Xbim.Ifc.RepresentationResource;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.Ifc2x3.MaterialResource;
+using Xbim.Ifc2x3.Extensions;
+using Xbim.Ifc2x3.GeometryResource;
+using Xbim.Ifc2x3.RepresentationResource;
 using Xbim.XbimExtensions;
 using System.Diagnostics;
-using Xbim.Ifc.SelectTypes;
-using Xbim.Ifc.PropertyResource;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.UtilityResource;
+using Xbim.XbimExtensions.SelectTypes;
+using Xbim.Ifc2x3.PropertyResource;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.Ifc2x3.UtilityResource;
 using Xbim.DOM.PropertiesQuantities;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.GeometricConstraintResource;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.GeometricConstraintResource;
 
 namespace Xbim.DOM
 {
@@ -41,7 +41,7 @@ namespace Xbim.DOM
         }
 
         public XbimDocument Document { get { return _document; } }
-        public Ifc.Kernel.IfcRoot AsRoot { get { return _ifcBuildingElement; } }
+        public Ifc2x3.Kernel.IfcRoot AsRoot { get { return _ifcBuildingElement; } }
         public XbimMaterialQuantities MaterialQuantities { get { return new XbimMaterialQuantities(_ifcBuildingElement, _document); } }
         public XbimSingleProperties SingleProperties { get { return new XbimSingleProperties(_ifcBuildingElement); } }
         public string GlobalId { get { return _ifcBuildingElement.GlobalId; } set { _ifcBuildingElement.GlobalId = new IfcGloballyUniqueId(value); } }
@@ -71,7 +71,7 @@ namespace Xbim.DOM
                 Debug.WriteLine("XbimBuildingElement: No geometry to be set.");
                 return;
             }
-            IfcShapeRepresentation shape = _ifcBuildingElement.GetOrCreateSweptSolidShapeRepresentation(_document.IfcModel().IfcProject.ModelContext());
+            IfcShapeRepresentation shape = _ifcBuildingElement.GetOrCreateSweptSolidShapeRepresentation(((IfcProject)_document.IfcModel().IfcProject).ModelContext());
             shape.Items.Add_Reversible(ifcGeometry);
         }
 
@@ -125,7 +125,7 @@ namespace Xbim.DOM
 
         public void SetGlobalId(Guid guid)
         {
-            _ifcBuildingElement.GlobalId = new Ifc.UtilityResource.IfcGloballyUniqueId(guid);
+            _ifcBuildingElement.GlobalId = new Ifc2x3.UtilityResource.IfcGloballyUniqueId(guid);
         }
 
         public bool IsPartOfOtherBuildingElement

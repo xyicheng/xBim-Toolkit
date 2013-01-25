@@ -4,12 +4,14 @@ using System.Linq;
 using System.Text;
 using Xbim.COBie.Rows;
 using Xbim.XbimExtensions.Transactions;
-using Xbim.Ifc.Kernel;
+using Xbim.Ifc2x3.Kernel;
 using Xbim.XbimExtensions;
 using System.Reflection;
-using Xbim.Ifc.ProductExtension;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.Extensions;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.Ifc2x3.Extensions;
+using Xbim.XbimExtensions.Interfaces;
+using Xbim.IO;
 
 namespace Xbim.COBie.Serialisers.XbimSerialiser
 {
@@ -36,18 +38,21 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         /// <param name="cOBieSheet">COBieSheet of COBieComponentRow to read data from</param>
         public void SerialiseComponent(COBieSheet<COBieComponentRow> cOBieSheet)
         {
-            using (Transaction trans = Model.BeginTransaction("Add Component"))
+            using (XbimReadWriteTransaction trans = Model.BeginTransaction("Add Component"))
             {
 
                 try
                 {
-                    IfcTypeObjects = Model.InstancesOfType<IfcTypeObject>();
-                    IfcSpaces = Model.InstancesOfType<IfcSpace>();
-                    IfcBuildingStoreys = Model.InstancesOfType<IfcBuildingStorey>();
+                    int count = 1;
+                    IfcTypeObjects = Model.Instances.OfType<IfcTypeObject>();
+                    IfcSpaces = Model.Instances.OfType<IfcSpace>();
+                    IfcBuildingStoreys = Model.Instances.OfType<IfcBuildingStorey>();
                     ProgressIndicator.ReportMessage("Starting Components...");
                     ProgressIndicator.Initialise("Creating Components", cOBieSheet.RowCount);
                     for (int i = 0; i < cOBieSheet.RowCount; i++)
                     {
+                        BumpTransaction(trans, count);
+                        count++;
                         ProgressIndicator.IncrementAndUpdate();
                         COBieComponentRow row = cOBieSheet[i]; 
                         AddComponent(row);
@@ -59,7 +64,6 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 }
                 catch (Exception)
                 {
-                    trans.Rollback();
                     //TODO: Catch with logger?
                     throw;
                 }
@@ -206,18 +210,18 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             elementTypeName = elementTypeName.Trim().ToUpper();
             IfcType ifcType;
             IfcElement ifcElement = null;
-            if (IfcInstances.IfcTypeLookup.TryGetValue(elementTypeName, out ifcType))
+            if (IfcMetaData.TryGetIfcType(elementTypeName, out ifcType))
             {
-                MethodInfo method = typeof(IModel).GetMethod("New", Type.EmptyTypes);
+                MethodInfo method = typeof(IXbimInstanceCollection).GetMethod("New", Type.EmptyTypes);
                 MethodInfo generic = method.MakeGenericMethod(ifcType.Type);
-                var eleObj = generic.Invoke(model, null);
+                var eleObj = generic.Invoke(model.Instances, null);
                 if (eleObj is IfcElement)
                     ifcElement = (IfcElement)eleObj;
             }
 
 
             if (ifcElement == null)
-                ifcElement = model.New<IfcVirtualElement>();
+                ifcElement = model.Instances.New<IfcVirtualElement>();
             return ifcElement;
         }
         #endregion

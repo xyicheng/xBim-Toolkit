@@ -114,8 +114,8 @@ namespace Xbim
 			}
 			mBaseShape = baseShape;
 			mResultShape =  mBaseShape;
-			
-
+			_representationLabel= baseShape->RepresentationLabel;
+			_surfaceStyleLabel=baseShape->SurfaceStyleLabel;
 			if(projections!=nullptr && Enumerable::Count<IXbimGeometryModel^>(projections) > 0)
 			{
 				mProjections = gcnew List<IXbimGeometryModel^>(projections);
@@ -172,6 +172,7 @@ namespace Xbim
 						//increase the tolerances and try again
 						ShapeFix_ShapeTolerance fTol;
 						double prec = Math::Max(1e-5,BRepLib::Precision()*1000 );
+						//double prec = BRepLib::Precision();
 						fTol.SetTolerance(*(mResultShape->Handle), prec);
 						fTol.SetTolerance(c,prec);
 						if(!DoCut(c,false) )
@@ -271,6 +272,8 @@ namespace Xbim
 
 		XbimFeaturedShape::XbimFeaturedShape(XbimFeaturedShape^ copy, IfcObjectPlacement^ location)
 		{
+			_representationLabel = copy->RepresentationLabel;
+			_surfaceStyleLabel = copy->SurfaceStyleLabel;
 			if(dynamic_cast<IfcLocalPlacement^>(location))
 			{
 				TopoDS_Shape movedShape = *(copy->mResultShape->Handle);
@@ -302,23 +305,23 @@ namespace Xbim
 			return gcnew XbimFeaturedShape(this,placement);
 		}
 
-		XbimTriangulatedModelStream^ XbimFeaturedShape::Mesh()
+		List<XbimTriangulatedModel^>^XbimFeaturedShape::Mesh()
 		{
 			return Mesh( true, XbimGeometryModel::DefaultDeflection);
 		}
 
-		XbimTriangulatedModelStream^ XbimFeaturedShape::Mesh(bool withNormals )
+		List<XbimTriangulatedModel^>^XbimFeaturedShape::Mesh(bool withNormals )
 		{
 			return Mesh(withNormals, XbimGeometryModel::DefaultDeflection);
 		}
 
-		XbimTriangulatedModelStream^ XbimFeaturedShape::Mesh(bool withNormals, double deflection )
+		List<XbimTriangulatedModel^>^XbimFeaturedShape::Mesh(bool withNormals, double deflection )
 		{
 			return XbimGeometryModel::Mesh(mResultShape,withNormals,deflection, Matrix3D::Identity);
 			
 		}
 		
-		XbimTriangulatedModelStream^ XbimFeaturedShape::Mesh(bool withNormals, double deflection, Matrix3D transform )
+		List<XbimTriangulatedModel^>^XbimFeaturedShape::Mesh(bool withNormals, double deflection, Matrix3D transform )
 		{
 			return XbimGeometryModel::Mesh(mResultShape,withNormals,deflection, transform);
 			

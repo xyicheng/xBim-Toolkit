@@ -16,7 +16,8 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using Xbim.XbimExtensions;
-using Xbim.XbimExtensions.Parser;
+using Xbim.IO.Parser;
+
 
 #endregion
 

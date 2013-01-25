@@ -3,15 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Xbim.COBie.Rows;
-using Xbim.Ifc.Extensions;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.ProductExtension;
-using Xbim.Ifc.QuantityResource;
+using Xbim.Ifc2x3.Extensions;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.Ifc2x3.QuantityResource;
 using Xbim.XbimExtensions;
 using System.Collections;
-using Xbim.Ifc.PropertyResource;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.ExternalReferenceResource;
+using Xbim.Ifc2x3.PropertyResource;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.ExternalReferenceResource;
 
 namespace Xbim.COBie.Data
 {
@@ -41,13 +41,11 @@ namespace Xbim.COBie.Data
             COBieSheet<COBieSpaceRow> spaces = new COBieSheet<COBieSpaceRow>(Constants.WORKSHEET_SPACE);
             
             // get all IfcBuildingStory objects from IFC file
-            List<IfcSpace> ifcSpaces = Model.InstancesOfType<IfcSpace>().OrderBy(ifcSpace => ifcSpace.Name, new CompareIfcLabel()).ToList();
+            List<IfcSpace> ifcSpaces = Model.Instances.OfType<IfcSpace>().OrderBy(ifcSpace => ifcSpace.Name, new CompareIfcLabel()).ToList();
             
             COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(ifcSpaces); //properties helper class
             COBieDataAttributeBuilder attributeBuilder = new COBieDataAttributeBuilder(Context, allPropertyValues);
             attributeBuilder.InitialiseAttributes(ref _attributes);
-
-
 
             if (Context.DepartmentsUsedAsZones)
                 attributeBuilder.ExcludeAttributePropertyNames.Add("Department"); //remove the department property from selection

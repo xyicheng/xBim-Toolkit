@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.mergeBtn = new System.Windows.Forms.Button();
             this.GeoOnlyChkBox = new System.Windows.Forms.CheckBox();
             this.MergeChkBox = new System.Windows.Forms.CheckBox();
             this.btnBrowseTemplate = new System.Windows.Forms.Button();
@@ -56,8 +57,6 @@
             // 
             this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.groupBox1.Controls.Add(this.GeoOnlyChkBox);
-            this.groupBox1.Controls.Add(this.MergeChkBox);
             this.groupBox1.Controls.Add(this.btnBrowseTemplate);
             this.groupBox1.Controls.Add(this.txtTemplate);
             this.groupBox1.Controls.Add(this.label2);
@@ -66,10 +65,21 @@
             this.groupBox1.Controls.Add(this.label1);
             this.groupBox1.Location = new System.Drawing.Point(13, 13);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(498, 115);
+            this.groupBox1.Size = new System.Drawing.Size(498, 81);
             this.groupBox1.TabIndex = 0;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "IFC File Location";
+            // 
+            // mergeBtn
+            // 
+            this.mergeBtn.Enabled = false;
+            this.mergeBtn.Location = new System.Drawing.Point(229, 96);
+            this.mergeBtn.Name = "mergeBtn";
+            this.mergeBtn.Size = new System.Drawing.Size(130, 23);
+            this.mergeBtn.TabIndex = 7;
+            this.mergeBtn.Text = "Select &Merge Files...";
+            this.mergeBtn.UseVisualStyleBackColor = true;
+            this.mergeBtn.Click += new System.EventHandler(this.mergeBtn_Click);
             // 
             // GeoOnlyChkBox
             // 
@@ -77,7 +87,7 @@
             this.GeoOnlyChkBox.Checked = true;
             this.GeoOnlyChkBox.CheckState = System.Windows.Forms.CheckState.Checked;
             this.GeoOnlyChkBox.Enabled = false;
-            this.GeoOnlyChkBox.Location = new System.Drawing.Point(9, 92);
+            this.GeoOnlyChkBox.Location = new System.Drawing.Point(13, 119);
             this.GeoOnlyChkBox.Name = "GeoOnlyChkBox";
             this.GeoOnlyChkBox.Size = new System.Drawing.Size(148, 17);
             this.GeoOnlyChkBox.TabIndex = 6;
@@ -87,11 +97,11 @@
             // MergeChkBox
             // 
             this.MergeChkBox.AutoSize = true;
-            this.MergeChkBox.Location = new System.Drawing.Point(9, 73);
+            this.MergeChkBox.Location = new System.Drawing.Point(13, 100);
             this.MergeChkBox.Name = "MergeChkBox";
-            this.MergeChkBox.Size = new System.Drawing.Size(196, 17);
+            this.MergeChkBox.Size = new System.Drawing.Size(210, 17);
             this.MergeChkBox.TabIndex = 5;
-            this.MergeChkBox.Text = "Merge two XLS files into one IFC file";
+            this.MergeChkBox.Text = "Merge files COBie data into one IFC file";
             this.MergeChkBox.UseVisualStyleBackColor = true;
             this.MergeChkBox.CheckedChanged += new System.EventHandler(this.MergeChkBox_CheckedChanged);
             // 
@@ -108,6 +118,8 @@
             // 
             // txtTemplate
             // 
+            this.txtTemplate.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.txtTemplate.FormattingEnabled = true;
             this.txtTemplate.Items.AddRange(new object[] {
             "COBie-UK-2012-template.xls",
@@ -129,6 +141,8 @@
             // 
             // txtPath
             // 
+            this.txtPath.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.txtPath.FormattingEnabled = true;
             this.txtPath.Items.AddRange(new object[] {
             "2012-03-23-Duplex-Design.ifc",
@@ -167,7 +181,7 @@
             // btnGenerate
             // 
             this.btnGenerate.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnGenerate.Location = new System.Drawing.Point(430, 321);
+            this.btnGenerate.Location = new System.Drawing.Point(430, 383);
             this.btnGenerate.Name = "btnGenerate";
             this.btnGenerate.Size = new System.Drawing.Size(75, 23);
             this.btnGenerate.TabIndex = 2;
@@ -178,7 +192,7 @@
             // btnClear
             // 
             this.btnClear.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnClear.Location = new System.Drawing.Point(430, 291);
+            this.btnClear.Location = new System.Drawing.Point(430, 353);
             this.btnClear.Name = "btnClear";
             this.btnClear.Size = new System.Drawing.Size(75, 23);
             this.btnClear.TabIndex = 4;
@@ -191,10 +205,10 @@
             this.txtOutput.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtOutput.Location = new System.Drawing.Point(13, 134);
+            this.txtOutput.Location = new System.Drawing.Point(13, 142);
             this.txtOutput.Name = "txtOutput";
             this.txtOutput.ReadOnly = true;
-            this.txtOutput.Size = new System.Drawing.Size(400, 210);
+            this.txtOutput.Size = new System.Drawing.Size(400, 264);
             this.txtOutput.TabIndex = 5;
             this.txtOutput.Text = "";
             // 
@@ -203,7 +217,7 @@
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.ProgressBar,
             this.StatusMsg});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 353);
+            this.statusStrip1.Location = new System.Drawing.Point(0, 415);
             this.statusStrip1.Name = "statusStrip1";
             this.statusStrip1.Size = new System.Drawing.Size(523, 22);
             this.statusStrip1.TabIndex = 7;
@@ -218,7 +232,9 @@
             // StatusMsg
             // 
             this.StatusMsg.Name = "StatusMsg";
-            this.StatusMsg.Size = new System.Drawing.Size(0, 17);
+            this.StatusMsg.Size = new System.Drawing.Size(325, 17);
+            this.StatusMsg.Spring = true;
+            this.StatusMsg.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // gbFilter
             // 
@@ -269,8 +285,11 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(523, 375);
+            this.ClientSize = new System.Drawing.Size(523, 437);
+            this.Controls.Add(this.mergeBtn);
+            this.Controls.Add(this.GeoOnlyChkBox);
             this.Controls.Add(this.gbFilter);
+            this.Controls.Add(this.MergeChkBox);
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.txtOutput);
             this.Controls.Add(this.btnClear);
@@ -310,6 +329,7 @@
         private System.Windows.Forms.RadioButton rbDefault;
         private System.Windows.Forms.CheckBox MergeChkBox;
         private System.Windows.Forms.CheckBox GeoOnlyChkBox;
+        private System.Windows.Forms.Button mergeBtn;
     }
 }
 

@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using Xbim.XbimExtensions;
 using Xbim.COBie.Rows;
-using Xbim.Ifc.ProductExtension;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.ExternalReferenceResource;
-using Xbim.Ifc.ElectricalDomain;
-using Xbim.Ifc.PropertyResource;
-using Xbim.Ifc.MeasureResource;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.ExternalReferenceResource;
+using Xbim.Ifc2x3.ElectricalDomain;
+using Xbim.Ifc2x3.PropertyResource;
+using Xbim.Ifc2x3.MeasureResource;
 
 namespace Xbim.COBie.Data
 {
@@ -39,16 +39,16 @@ namespace Xbim.COBie.Data
             COBieSheet<COBieSystemRow> systems = new COBieSheet<COBieSystemRow>(Constants.WORKSHEET_SYSTEM);
 
             // get all IfcSystem, IfcGroup and IfcElectricalCircuit objects from IFC file
-            IEnumerable<IfcGroup> ifcGroups = Model.InstancesOfType<IfcGroup>().Where(ifcg => ifcg is IfcSystem); //get anything that is IfcSystem or derived from it eg IfcElectricalCircuit
-            //IEnumerable<IfcSystem> ifcSystems = Model.InstancesOfType<IfcSystem>();
-            //IEnumerable<IfcElectricalCircuit> ifcElectricalCircuits = Model.InstancesOfType<IfcElectricalCircuit>();
+            IEnumerable<IfcGroup> ifcGroups = Model.Instances.OfType<IfcGroup>().Where(ifcg => ifcg is IfcSystem); //get anything that is IfcSystem or derived from it eg IfcElectricalCircuit
+            //IEnumerable<IfcSystem> ifcSystems = Model.Instances.OfType<IfcSystem>();
+            //IEnumerable<IfcElectricalCircuit> ifcElectricalCircuits = Model.Instances.OfType<IfcElectricalCircuit>();
             //ifcGroups = ifcGroups.Union(ifcSystems);
             //ifcGroups = ifcGroups.Union(ifcElectricalCircuits);
 
             //Alternative method of extraction
             List<string> PropertyNames = new List<string> { "Circuit Number", "System Name" };
 
-            IEnumerable<IfcPropertySet> ifcPropertySets = from ps in Model.InstancesOfType<IfcPropertySet>()
+            IEnumerable<IfcPropertySet> ifcPropertySets = from ps in Model.Instances.OfType<IfcPropertySet>()
                                                           from psv in ps.HasProperties.OfType<IfcPropertySingleValue>()
                                                           where PropertyNames.Contains(psv.Name)
                                                           select ps;
@@ -71,9 +71,10 @@ namespace Xbim.COBie.Data
                     sys.CreatedOn = GetCreatedOnDateAsFmtString(ifcGroup.OwnerHistory);
 
                     sys.Category = GetCategory(ifcGroup);
+                    string name = product.Name;
                     if (string.IsNullOrEmpty(product.Name) || (product.Name == Constants.DEFAULT_STRING))
                     {
-                        product.Name = product.GetType().Name + " Name Unknown " + UnknownCount.ToString();
+                        name = product.GetType().Name + " Name Unknown " + UnknownCount.ToString();
                         UnknownCount++;
                     }
                     sys.ComponentNames = product.Name;

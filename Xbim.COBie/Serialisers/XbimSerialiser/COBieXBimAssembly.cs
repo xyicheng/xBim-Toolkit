@@ -4,9 +4,10 @@ using System.Linq;
 using System.Text;
 using Xbim.COBie.Rows;
 using Xbim.XbimExtensions.Transactions;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.ProductExtension;
-using Xbim.Ifc.MaterialResource;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.Ifc2x3.MaterialResource;
+using Xbim.IO;
 
 namespace Xbim.COBie.Serialisers.XbimSerialiser
 {
@@ -34,18 +35,21 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         public void SerialiseAssembly(COBieSheet<COBieAssemblyRow> cOBieSheet)
         {
 
-            using (Transaction trans = Model.BeginTransaction("Add Assembly"))
+            using (XbimReadWriteTransaction trans = Model.BeginTransaction("Add Assembly"))
             {
                 try
                 {
-                    IfcElements = Model.InstancesOfType<IfcElement>();
-                    IfcTypeObjects = Model.InstancesOfType<IfcTypeObject>();
-                    IfcMaterialLayers = Model.InstancesOfType<IfcMaterialLayer>();
+                    int count = 1;
+                    IfcElements = Model.Instances.OfType<IfcElement>();
+                    IfcTypeObjects = Model.Instances.OfType<IfcTypeObject>();
+                    IfcMaterialLayers = Model.Instances.OfType<IfcMaterialLayer>();
 
                     ProgressIndicator.ReportMessage("Starting Assemblies...");
                     ProgressIndicator.Initialise("Creating Assemblies", cOBieSheet.RowCount);
                     for (int i = 0; i < cOBieSheet.RowCount; i++)
                     {
+                        BumpTransaction(trans, count);
+                        count++;
                         ProgressIndicator.IncrementAndUpdate();
                         COBieAssemblyRow row = cOBieSheet[i];
                         string objType = row.ExtObject.ToLower().Trim();
@@ -63,7 +67,6 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 }
                 catch (Exception)
                 {
-                    trans.Rollback();
                     throw;
                 }
             }
@@ -87,22 +90,22 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                     ifcMaterialLayerSet = LastIfcMaterialLayerSet;
                 else
                 {
-                    ifcMaterialLayerSet = Model.InstancesWhere<IfcMaterialLayerSet>(mls => mls.LayerSetName == row.ParentName).FirstOrDefault();
+                    ifcMaterialLayerSet = Model.Instances.Where<IfcMaterialLayerSet>(mls => mls.LayerSetName == row.ParentName).FirstOrDefault();
                     if (ifcMaterialLayerSet == null)
-                        ifcMaterialLayerSet = Model.New<IfcMaterialLayerSet>(mls => { mls.LayerSetName = row.ParentName; });
+                        ifcMaterialLayerSet = Model.Instances.New<IfcMaterialLayerSet>(mls => { mls.LayerSetName = row.ParentName; });
 
-                    ifcMaterialLayerSetUsage = Model.InstancesWhere<IfcMaterialLayerSetUsage>(mlsu => mlsu.ForLayerSet == ifcMaterialLayerSet).FirstOrDefault();
+                    ifcMaterialLayerSetUsage = Model.Instances.Where<IfcMaterialLayerSetUsage>(mlsu => mlsu.ForLayerSet == ifcMaterialLayerSet).FirstOrDefault();
                     if (ifcMaterialLayerSetUsage == null)
-                        ifcMaterialLayerSetUsage = Model.New<IfcMaterialLayerSetUsage>(mlsu => { mlsu.ForLayerSet = ifcMaterialLayerSet; });
+                        ifcMaterialLayerSetUsage = Model.Instances.New<IfcMaterialLayerSetUsage>(mlsu => { mlsu.ForLayerSet = ifcMaterialLayerSet; });
                     
                     string placeholderText = "Place holder for material layer Set " + row.ParentName;
-                    ifcBuildingElementProxy = Model.InstancesWhere<IfcBuildingElementProxy>(bep =>  bep.Name == placeholderText).FirstOrDefault();
+                    ifcBuildingElementProxy = Model.Instances.Where<IfcBuildingElementProxy>(bep =>  bep.Name == placeholderText).FirstOrDefault();
                     if (ifcBuildingElementProxy == null)
-                        ifcBuildingElementProxy = Model.New<IfcBuildingElementProxy>(bep => { bep.Name = placeholderText; });
-                    ifcRelAssociatesMaterial = Model.InstancesWhere<IfcRelAssociatesMaterial>(ras => (ras.RelatingMaterial == ifcMaterialLayerSetUsage) ).FirstOrDefault();
+                        ifcBuildingElementProxy = Model.Instances.New<IfcBuildingElementProxy>(bep => { bep.Name = placeholderText; });
+                    ifcRelAssociatesMaterial = Model.Instances.Where<IfcRelAssociatesMaterial>(ras => ((ras.RelatingMaterial as IfcMaterialLayerSetUsage)  == ifcMaterialLayerSetUsage) ).FirstOrDefault();
                     if (ifcRelAssociatesMaterial == null)
                     {
-                        ifcRelAssociatesMaterial = Model.New<IfcRelAssociatesMaterial>(ras =>
+                        ifcRelAssociatesMaterial = Model.Instances.New<IfcRelAssociatesMaterial>(ras =>
                                                     {
                                                         ras.RelatingMaterial = ifcMaterialLayerSetUsage;
                                                         ras.RelatedObjects.Add_Reversible(ifcBuildingElementProxy);
@@ -167,15 +170,15 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                     {
                         string testName = row.Name.ToLower().Trim();
                         IfcObjectDefinition relatingObject = GetParentObject(row.ParentName);
-                        ifcRelDecomposes = Model.InstancesWhere<IfcRelDecomposes>(rc => (rc.Name.ToString().ToLower().Trim() == testName) && (rc.RelatingObject == relatingObject)).FirstOrDefault();
+                        ifcRelDecomposes = Model.Instances.Where<IfcRelDecomposes>(rc => (rc.Name.ToString().ToLower().Trim() == testName) && (rc.RelatingObject == relatingObject)).FirstOrDefault();
                     }
 
                     if (ifcRelDecomposes == null)
                     {
                         if (row.ExtObject.ToLower().Trim() == "ifcrelnests")
-                            ifcRelDecomposes = Model.New<IfcRelNests>();
+                            ifcRelDecomposes = Model.Instances.New<IfcRelNests>();
                         else
-                            ifcRelDecomposes = Model.New<IfcRelAggregates>();
+                            ifcRelDecomposes = Model.Instances.New<IfcRelAggregates>();
 
 
                         //Add Created By, Created On and ExtSystem to Owner History. 
@@ -190,6 +193,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 {
                     if (ValidateString(row.Name)) ifcRelDecomposes.Name = row.Name;
                     if (ValidateString(row.Description)) ifcRelDecomposes.Description = row.Description;
+
                     if (! (AddParentObject(ifcRelDecomposes, row.ParentName) &&
                            AddChildObjects(ifcRelDecomposes, row.SheetName, row.ChildNames)
                            )
@@ -198,7 +202,15 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                         //Add GlobalId
                         AddGlobalId(row.ExtIdentifier, ifcRelDecomposes);
                         //failed to add parent or child so remove as not a valid IfcRelDecomposes object
-		                Model.Delete(ifcRelDecomposes);
+                        try
+                        {
+                            Model.Delete(ifcRelDecomposes);
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine(string.Format("Failed to delete ifcRelDecomposes in AddAssembly() - {0}", ex.Message));
+                            
+                        }
                         ifcRelDecomposes = null;
                     }
                     

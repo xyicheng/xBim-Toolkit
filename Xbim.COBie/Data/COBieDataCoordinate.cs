@@ -4,15 +4,15 @@ using System.Linq;
 using System.Text;
 using Xbim.XbimExtensions;
 using Xbim.COBie.Rows;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.ProductExtension;
-using Xbim.Ifc.UtilityResource;
-using Xbim.Ifc.ExternalReferenceResource;
-using Xbim.Ifc.GeometryResource;
-using Xbim.Ifc.GeometricConstraintResource;
-using Xbim.Ifc.RepresentationResource;
-using Xbim.Ifc.GeometricModelResource;
-using Xbim.Ifc.ProfileResource;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.Ifc2x3.UtilityResource;
+using Xbim.Ifc2x3.ExternalReferenceResource;
+using Xbim.Ifc2x3.GeometryResource;
+using Xbim.Ifc2x3.GeometricConstraintResource;
+using Xbim.Ifc2x3.RepresentationResource;
+using Xbim.Ifc2x3.GeometricModelResource;
+using Xbim.Ifc2x3.ProfileResource;
 using WVector = System.Windows.Vector;
 
 using Xbim.ModelGeometry.Scene;
@@ -47,24 +47,25 @@ namespace Xbim.COBie.Data
         /// <returns>COBieSheet<COBieCoordinateRow></returns>
         public override COBieSheet<COBieCoordinateRow> Fill()
         {
-            TransformGraph transGraph = GetTransformGraph();
+            //IEnumerable<XbimGeometryData> transGraph = GetTransformGraph();
+            
             COBieSheet<COBieCoordinateRow> coordinates = new COBieSheet<COBieCoordinateRow>(Constants.WORKSHEET_COORDINATE);
-
-            if (transGraph != null)
-            {
+            int count = 0;
+            //if (transGraph.Any())
+            //{
                 ProgressIndicator.ReportMessage("Starting Coordinates...");
 
 
                 //Create new sheet
                 
                 //Get buildings and spaces
-                IEnumerable<IfcBuildingStorey> ifcBuildingStoreys = Model.InstancesOfType<IfcBuildingStorey>();
-                IEnumerable<IfcSpace> ifcSpaces = Model.InstancesOfType<IfcSpace>().OrderBy(ifcSpace => ifcSpace.Name, new CompareIfcLabel());
+                IEnumerable<IfcBuildingStorey> ifcBuildingStoreys = Model.Instances.OfType<IfcBuildingStorey>();
+                IEnumerable<IfcSpace> ifcSpaces = Model.Instances.OfType<IfcSpace>().OrderBy(ifcSpace => ifcSpace.Name, new CompareIfcLabel());
                 IEnumerable<IfcProduct> ifcProducts = ifcBuildingStoreys.Union<IfcProduct>(ifcSpaces); //add spaces
 
                 //get component products as shown in Component sheet
-                IEnumerable<IfcRelAggregates> relAggregates = Model.InstancesOfType<IfcRelAggregates>();
-                IEnumerable<IfcRelContainedInSpatialStructure> relSpatial = Model.InstancesOfType<IfcRelContainedInSpatialStructure>();
+                IEnumerable<IfcRelAggregates> relAggregates = Model.Instances.OfType<IfcRelAggregates>();
+                IEnumerable<IfcRelContainedInSpatialStructure> relSpatial = Model.Instances.OfType<IfcRelContainedInSpatialStructure>();
                 IEnumerable<IfcProduct> ifcElements = ((from x in relAggregates
                                                         from y in x.RelatedObjects
                                                         where !Context.Exclude.ObjectType.Component.Contains(y.GetType())
@@ -75,9 +76,16 @@ namespace Xbim.COBie.Data
                 ifcProducts = ifcProducts.Union(ifcElements);
 
                 ProgressIndicator.Initialise("Creating Coordinates", ifcProducts.Count());
-
+            //TEST CODE
+            //foreach (XbimGeometryData item in GetTransformGraph())
+            //{
+            //    IfcProduct prod = ifcProducts.Where(p => p.EntityLabel == item.IfcProductLabel).FirstOrDefault(); 
+                
+            //}
+            //END TEST
                 foreach (IfcProduct ifcProduct in ifcProducts)
                 {
+                    count++;
                     ProgressIndicator.IncrementAndUpdate();
                     //if no name to link the row name too skip it, as no way to link back to the parent object
                     if (string.IsNullOrEmpty(ifcProduct.Name))
@@ -100,11 +108,11 @@ namespace Xbim.COBie.Data
 
                     if (ifcProduct is IfcBuildingStorey)
                     {
-                        if ((transGraph != null) &&
-                            transGraph.ProductNodes.ContainsKey(ifcProduct.EntityLabel)
-                            )
+                        XbimGeometryData geoData = Model.GetGeometryData(ifcProduct, XbimGeometryType.BoundingBox).FirstOrDefault();
+                        
+                        if (geoData != null)
                         {
-                            Matrix3D worldMatrix = transGraph.ProductNodes[ifcProduct.EntityLabel].WorldMatrix();
+                            Matrix3D worldMatrix = new Matrix3D().FromArray(geoData.TransformData);
                             ifcCartesianPointLower = new IfcCartesianPoint(worldMatrix.OffsetX, worldMatrix.OffsetY, worldMatrix.OffsetZ); //get the offset from the world coordinates system 0,0,0 point, i.e. origin point of this object in world space
                         }
                         //we will allow to add 0,0,0 as if components then it can place themselves relative to the 0,0,0 point
@@ -118,12 +126,16 @@ namespace Xbim.COBie.Data
                     }
                     else
                     {
-                        if ((transGraph != null) &&
-                            transGraph.ProductNodes.ContainsKey(ifcProduct.EntityLabel)
-                            )
+                        XbimGeometryData geoData = Model.GetGeometryData(ifcProduct, XbimGeometryType.BoundingBox).FirstOrDefault();
+                        //if (transGraph.Any())
+                        //{
+                        //    geoData = Model.GetGeometryData(ifcProduct, XbimGeometryType.BoundingBox).FirstOrDefault();
+                        //    //geoData = transGraph.Where(gd => gd.IfcProductLabel == ifcProduct.EntityLabel).FirstOrDefault();
+                        //}
+                        if (geoData != null)
                         {
-                            Rect3D boundBox = transGraph.ProductNodes[ifcProduct.EntityLabel].BoundingBox;
-                            Matrix3D worldMatrix = transGraph.ProductNodes[ifcProduct.EntityLabel].WorldMatrix();
+                            Rect3D boundBox = new Rect3D().FromArray(geoData.ShapeData);
+                            Matrix3D worldMatrix = new Matrix3D().FromArray(geoData.TransformData);
                             //do the transform in the next call to the structure TransformedBoundingBox constructor
                             TransformedBoundingBox tranBox = new TransformedBoundingBox(boundBox, worldMatrix);
                             ClockwiseRotation = tranBox.ClockwiseRotation;
@@ -183,11 +195,11 @@ namespace Xbim.COBie.Data
                     }
                 }
                 ProgressIndicator.Finalise();
-            }
-            else
-            {
-                ProgressIndicator.ReportMessage("Skipping Coordinates, no graphics tree...");return coordinates;
-            }
+            //}
+            //else
+            //{
+            //    ProgressIndicator.ReportMessage("Skipping Coordinates, no graphics tree...");return coordinates;
+            //}
             return coordinates;
         }
 
@@ -196,26 +208,11 @@ namespace Xbim.COBie.Data
         /// Get the Transform Graph for this model
         /// </summary>
         /// <returns>TransformGraph object</returns>
-        private TransformGraph GetTransformGraph()
+        private IEnumerable<XbimGeometryData> GetTransformGraph()
         {
-            TransformGraph graph = null;
-
-            if (Context.Scene != null)
-            {
-                //IXbimScene scene = new XbimSceneStream(Model, cacheFile);
-                graph = Context.Scene.Graph; //the graph holds product boundary box's so we will return it
-                
-            }
-            return graph;
-
-            //No xbimGC required but no bounding boxes returned, might use if speed is required
-            //Xbim.ModelGeometry.Scene.TransformGraph graph = new Xbim.ModelGeometry.Scene.TransformGraph(Model);
-            //graph.AddProducts(Model.InstancesOfType<IfcProduct>());
-            //System.Windows.Media.Media3D.Matrix3D m3d = graph.ProductNodes[5260].WorldMatrix();
-           
-
+            //get the Transform Graph which holds bounding boxes and Triangulated Geometry
+            return Model.GetGeometryData(XbimGeometryType.BoundingBox);
         }
- 
         #endregion
     }
 
@@ -227,14 +224,15 @@ namespace Xbim.COBie.Data
         public TransformedBoundingBox(Rect3D boundBox, Matrix3D matrix) : this()
 	    {
             //Object space values
+            
             MinPt = new Point3D(boundBox.X, boundBox.Y, boundBox.Z);
             MaxPt = new Point3D(boundBox.X + boundBox.SizeX, boundBox.Y + boundBox.SizeY, boundBox.Z + boundBox.SizeZ);
             //make assumption that the X direction will be the longer length hence the orientation will be along the x axis
-           
             //transformed values, no longer a valid bounding box in the new space if any Pitch or Yaw
             MinPt = matrix.Transform(MinPt);
             MaxPt = matrix.Transform(MaxPt);
-           
+
+            
             //--------Calculate rotations from matrix-------
             //rotation around X,Y,Z axis
             double rotationZ, rotationY, rotationX;
@@ -312,6 +310,9 @@ namespace Xbim.COBie.Data
         /// Yaw rotation of the IfcProduct
         /// </summary>
         public double YawRotation { get; set; }
+
+        
+        
         
     }
 }

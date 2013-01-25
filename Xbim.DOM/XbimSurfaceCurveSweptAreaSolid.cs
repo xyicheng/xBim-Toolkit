@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Xbim.Ifc.GeometricModelResource;
-using Xbim.Ifc.GeometryResource;
+using Xbim.Ifc2x3.GeometricModelResource;
+using Xbim.Ifc2x3.GeometryResource;
 
 namespace Xbim.DOM
 {
@@ -20,7 +20,7 @@ namespace Xbim.DOM
 
         public void DefineReferenceSurfacePlane(XbimAxis2Placement3D position)
         {
-            IfcPlane plane = Document.Model.New<IfcPlane>(pla => pla.Position = position._ifcAxis2Placement);
+            IfcPlane plane = Document.Model.Instances.New<IfcPlane>(pla => pla.Position = position._ifcAxis2Placement);
             // IfcSurfaceCurveSweptAreaSolid.ReferenceSurface = plane;
         }
     }

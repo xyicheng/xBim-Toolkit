@@ -14,17 +14,17 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.ProductExtension;
-using Xbim.Ifc.RepresentationResource;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.Ifc2x3.RepresentationResource;
 using Xbim.XbimExtensions;
-using Xbim.Ifc.PropertyResource;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.QuantityResource;
+using Xbim.Ifc2x3.PropertyResource;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.Ifc2x3.QuantityResource;
 
 #endregion
 
-namespace Xbim.Ifc.Extensions
+namespace Xbim.Ifc2x3.Extensions
 {
     public static class SiteExtensions
     {
@@ -76,7 +76,7 @@ namespace Xbim.Ifc.Extensions
             IEnumerable<IfcRelDecomposes> decomposition = site.IsDecomposedBy;
             if (decomposition.Count() == 0) //none defined create the relationship
             {
-                IfcRelAggregates relSub = ModelManager.ModelOf(site).New<IfcRelAggregates>();
+                IfcRelAggregates relSub = site.ModelOf.Instances.New<IfcRelAggregates>();
                 relSub.RelatingObject = site;
                 relSub.RelatedObjects.Add_Reversible(building);
             }
@@ -91,7 +91,7 @@ namespace Xbim.Ifc.Extensions
             IEnumerable<IfcRelDecomposes> decomposition = site.IsDecomposedBy;
             if (decomposition.Count() == 0) //none defined create the relationship
             {
-                IfcRelAggregates relSub = ModelManager.ModelOf(site).New<IfcRelAggregates>();
+                IfcRelAggregates relSub = site.ModelOf.Instances.New<IfcRelAggregates>();
                 relSub.RelatingObject = site;
                 relSub.RelatedObjects.Add_Reversible(subSite);
             }
@@ -107,7 +107,7 @@ namespace Xbim.Ifc.Extensions
             if (relatedElements.Count() == 0) //none defined create the relationship
             {
                 IfcRelContainedInSpatialStructure relSe =
-                    ModelManager.ModelOf(site).New<IfcRelContainedInSpatialStructure>();
+                    site.ModelOf.Instances.New<IfcRelContainedInSpatialStructure>();
                 relSe.RelatingStructure = site;
                 relSe.RelatedElements.Add_Reversible(element);
             }

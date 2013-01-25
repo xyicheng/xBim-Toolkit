@@ -41,7 +41,7 @@ namespace Xbim.Tests.COBie
             string output = Path.GetTempFileName();
             COBieBinarySerialiser serialiser = new COBieBinarySerialiser(output);
             serialiser.Serialise(_book);
-            
+
             // Deserialiser into a new workbook.
             Stopwatch timer = new Stopwatch();
             timer.Start();
@@ -49,9 +49,9 @@ namespace Xbim.Tests.COBie
             COBieWorkbook newBook = deserialiser.Deserialise();
             timer.Stop();
             Debug.WriteLine(string.Format("COBieBinaryDeserialiser Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
-
-            // Assert
-            Assert.AreEqual(19, newBook.Count);
+                                
+            
+            Assert.AreEqual(19, _book.Count);
 
         }
 
@@ -103,7 +103,6 @@ namespace Xbim.Tests.COBie
 
             string newOutputFile = Root + @"\" + "RoundTrip" + Path.ChangeExtension(SourceBinaryFile, ".xls"); 
             ICOBieSerialiser serialiserTest = new COBieXLSSerialiser(newOutputFile, ExcelTemplateFile);
-            serialiserTest.Serialise(newbook);
 
             // Assert
             Assert.AreEqual(19, newbook.Count); //with picklist

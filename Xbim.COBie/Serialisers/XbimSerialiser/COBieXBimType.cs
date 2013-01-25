@@ -4,13 +4,15 @@ using System.Linq;
 using System.Text;
 using Xbim.COBie.Rows;
 using Xbim.XbimExtensions.Transactions;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.PropertyResource;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.Ifc2x3.PropertyResource;
 using Xbim.XbimExtensions;
 using System.Reflection;
-using Xbim.Ifc.MaterialResource;
-using Xbim.Ifc.SharedBldgServiceElements;
+using Xbim.Ifc2x3.MaterialResource;
+using Xbim.Ifc2x3.SharedBldgServiceElements;
+using Xbim.IO;
+using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.COBie.Serialisers.XbimSerialiser
 {
@@ -29,14 +31,17 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         /// <param name="cOBieSheet">COBieSheet of COBieTypeRow to read data from</param>
         public void SerialiseType(COBieSheet<COBieTypeRow> cOBieSheet)
         {
-            using (Transaction trans = Model.BeginTransaction("Add Type"))
+            using (XbimReadWriteTransaction trans = Model.BeginTransaction("Add Type"))
             {
                 try
                 {
+                    int count = 1;
                     ProgressIndicator.ReportMessage("Starting Types...");
                     ProgressIndicator.Initialise("Creating Types", cOBieSheet.RowCount);
                     for (int i = 0; i < cOBieSheet.RowCount; i++)
                     {
+                        BumpTransaction(trans, count);
+                        count++;
                         ProgressIndicator.IncrementAndUpdate();
                         COBieTypeRow row = cOBieSheet[i];
                         if ((ValidateString(row.ExtObject)) &&
@@ -52,7 +57,6 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 }
                 catch (Exception)
                 {
-                    trans.Rollback();
                     //TODO: Catch with logger?
                     throw;
                 }
@@ -76,9 +80,9 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                     )
                 {
                     string name = GetMaterialName(row.Name);
-                    ifcMaterial = Model.InstancesWhere<IfcMaterial>(m => m.Name.ToString().ToLower() == name.ToLower()).FirstOrDefault();
+                    ifcMaterial = Model.Instances.Where<IfcMaterial>(m => m.Name.ToString().ToLower() == name.ToLower()).FirstOrDefault();
                     if (ifcMaterial == null)
-                        ifcMaterial = Model.New<IfcMaterial>(m => { m.Name = name; });
+                        ifcMaterial = Model.Instances.New<IfcMaterial>(m => { m.Name = name; });
                 }
                 if ((ifcMaterial != null) && (row.ExtObject.ToLower() == "ifcmateriallayer"))
                 {
@@ -88,9 +92,9 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                         (!double.TryParse(row.NominalWidth, out matThick))
                         )
                         matThick = 0.0;
-                    ifcMaterialLayer = Model.InstancesWhere<IfcMaterialLayer>(ml => ml.Material == ifcMaterial && ml.LayerThickness == matThick).FirstOrDefault();
+                    ifcMaterialLayer = Model.Instances.Where<IfcMaterialLayer>(ml => ml.Material == ifcMaterial && ml.LayerThickness == matThick).FirstOrDefault();
                     if (ifcMaterialLayer == null) 
-                        ifcMaterialLayer = Model.New<IfcMaterialLayer>(ml => { ml.Material = ifcMaterial; ml.LayerThickness = matThick; });
+                        ifcMaterialLayer = Model.Instances.New<IfcMaterialLayer>(ml => { ml.Material = ifcMaterial; ml.LayerThickness = matThick; });
                 } 
             }
         }
@@ -247,16 +251,16 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             
             IfcType ifcType;
             IfcTypeObject ifcTypeObject = null;
-            if (IfcInstances.IfcTypeLookup.TryGetValue(typeName, out ifcType))
+            if (IfcMetaData.TryGetIfcType(typeName, out ifcType))
             {
-                MethodInfo method = typeof(IModel).GetMethod("New", Type.EmptyTypes);
+                MethodInfo method = typeof(IXbimInstanceCollection).GetMethod("New", Type.EmptyTypes);
                 MethodInfo generic = method.MakeGenericMethod(ifcType.Type);
-                var newObj = generic.Invoke(model, null);
+                var newObj = generic.Invoke(model.Instances, null);
                 if (newObj is IfcTypeObject)
                     ifcTypeObject = (IfcTypeObject)newObj;
             }
             if (ifcTypeObject == null) //if we cannot make a object assume base IfcTypeObject
-                ifcTypeObject = model.New<IfcTypeObject>();
+                ifcTypeObject = model.Instances.New<IfcTypeObject>();
             return ifcTypeObject;
         }
 

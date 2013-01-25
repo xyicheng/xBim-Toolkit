@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Xbim.Ifc.Extensions;
-using Xbim.Ifc.ProductExtension;
+using Xbim.Ifc2x3.Extensions;
+using Xbim.Ifc2x3.ProductExtension;
 
 namespace Xbim.DOM.PropertiesQuantities
 {

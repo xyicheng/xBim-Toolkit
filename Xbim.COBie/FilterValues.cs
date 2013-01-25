@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using Xbim.Ifc.ElectricalDomain;
-using Xbim.Ifc.HVACDomain;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.ProductExtension;
-using Xbim.Ifc.SharedBldgElements;
-using Xbim.Ifc.SharedBldgServiceElements;
-using Xbim.Ifc.SharedComponentElements;
-using Xbim.Ifc.StructuralElementsDomain;
+using Xbim.Ifc2x3.ElectricalDomain;
+using Xbim.Ifc2x3.HVACDomain;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.Ifc2x3.SharedBldgElements;
+using Xbim.Ifc2x3.SharedBldgServiceElements;
+using Xbim.Ifc2x3.SharedComponentElements;
+using Xbim.Ifc2x3.StructuralElementsDomain;
 
 namespace Xbim.COBie
 {

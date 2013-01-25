@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using Xbim.COBie.Rows;
 using Xbim.XbimExtensions.Transactions;
-using Xbim.Ifc.ProductExtension;
-using Xbim.Ifc.Extensions;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.QuantityResource;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.Ifc2x3.Extensions;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.Ifc2x3.QuantityResource;
+using Xbim.IO;
 
 namespace Xbim.COBie.Serialisers.XbimSerialiser
 {
@@ -30,15 +31,18 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         /// <param name="cOBieSheet">COBieSheet of COBieSpaceRows to read data from</param>
         public void SerialiseSpace(COBieSheet<COBieSpaceRow> cOBieSheet)
         {
-            using (Transaction trans = Model.BeginTransaction("Add Space"))
+            using (XbimReadWriteTransaction trans = Model.BeginTransaction("Add Space"))
             {
                 try
                 {
 
+                    int count = 1;
                     ProgressIndicator.ReportMessage("Starting Spaces...");
                     ProgressIndicator.Initialise("Creating Spaces", cOBieSheet.RowCount);
                     for (int i = 0; i < cOBieSheet.RowCount; i++)
                     {
+                        BumpTransaction(trans, count);
+                        count++;
                         ProgressIndicator.IncrementAndUpdate();
                         COBieSpaceRow row = cOBieSheet[i]; 
                         AddSpace(row);
@@ -50,7 +54,6 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 }
                 catch (Exception)
                 {
-                    trans.Rollback();
                     //TODO: Catch with logger?
                     throw;
                 }
@@ -69,7 +72,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 return;//we have it so no need to create
             }
             
-            IfcSpace ifcSpace = Model.New<IfcSpace>();
+            IfcSpace ifcSpace = Model.Instances.New<IfcSpace>();
             //Set the CompositionType to Element as it is a required field
             ifcSpace.CompositionType = IfcElementCompositionEnum.ELEMENT;
 
@@ -123,7 +126,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 double? area = GetDoubleFromString(areaValue);
                 if (area != null)
                 {
-                    IfcQuantityArea ifcQuantityArea = Model.New<IfcQuantityArea>(qa => { qa.Name = "NetFloorArea"; qa.Description = "Net Floor Area"; qa.AreaValue = new IfcAreaMeasure((double)area); });
+                    IfcQuantityArea ifcQuantityArea = Model.Instances.New<IfcQuantityArea>(qa => { qa.Name = "NetFloorArea"; qa.Description = "Net Floor Area"; qa.AreaValue = new IfcAreaMeasure((double)area); });
                     string appname = "";
                     if (ifcSpace.OwnerHistory.OwningApplication != null)
                         appname = ifcSpace.OwnerHistory.OwningApplication.ApplicationFullName.ToString();
@@ -145,7 +148,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 double? area = GetDoubleFromString(areaValue);
                 if (area != null)
                 {
-                    IfcQuantityArea ifcQuantityArea = Model.New<IfcQuantityArea>(qa => { qa.Name = "GrossFloorArea"; qa.Description = "Gross Floor Area"; qa.AreaValue = new IfcAreaMeasure((double)area); });
+                    IfcQuantityArea ifcQuantityArea = Model.Instances.New<IfcQuantityArea>(qa => { qa.Name = "GrossFloorArea"; qa.Description = "Gross Floor Area"; qa.AreaValue = new IfcAreaMeasure((double)area); });
                     string appname = "";
                     if (ifcSpace.OwnerHistory.OwningApplication != null)
                         appname = ifcSpace.OwnerHistory.OwningApplication.ApplicationFullName.ToString();
@@ -190,7 +193,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 }
                 else
                 {
-                    spaceBuildingStory = Model.InstancesOfType<IfcBuildingStorey>().Where(bs => bs.Name.ToString().ToLower().Trim() == floorName.ToLower().Trim()).FirstOrDefault();
+                    spaceBuildingStory = Model.Instances.OfType<IfcBuildingStorey>().Where(bs => bs.Name.ToString().ToLower().Trim() == floorName.ToLower().Trim()).FirstOrDefault();
                     if (spaceBuildingStory != null)
                         Floors.Add(floorName, spaceBuildingStory);
                 }

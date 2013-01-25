@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Xbim.COBie.Rows;
-using Xbim.Ifc.Extensions;
-using Xbim.Ifc.ExternalReferenceResource;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.ProductExtension;
-using Xbim.Ifc.PropertyResource;
+using Xbim.Ifc2x3.Extensions;
+using Xbim.Ifc2x3.ExternalReferenceResource;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.Ifc2x3.PropertyResource;
 using Xbim.XbimExtensions;
 
 namespace Xbim.COBie.Data
@@ -39,7 +39,7 @@ namespace Xbim.COBie.Data
 
            
             // get all IfcBuildingStory objects from IFC file
-            IEnumerable<IfcZone> ifcZones = Model.InstancesOfType<IfcZone>();
+            IEnumerable<IfcZone> ifcZones = Model.Instances.OfType<IfcZone>();
 
             COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(ifcZones); //properties helper class
             COBieDataAttributeBuilder attributeBuilder = new COBieDataAttributeBuilder(Context, allPropertyValues);
@@ -50,7 +50,7 @@ namespace Xbim.COBie.Data
             attributeBuilder.RowParameters["Sheet"] = "Zone";
             
             //Also check to see if we have any zones within the spaces
-            IEnumerable<IfcSpace> ifcSpaces = Model.InstancesOfType<IfcSpace>();//.OrderBy(ifcSpace => ifcSpace.Name, new CompareIfcLabel());
+            IEnumerable<IfcSpace> ifcSpaces = Model.Instances.OfType<IfcSpace>();//.OrderBy(ifcSpace => ifcSpace.Name, new CompareIfcLabel());
 
             ProgressIndicator.Initialise("Creating Zones", ifcZones.Count() + ifcSpaces.Count());
 

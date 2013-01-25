@@ -19,11 +19,14 @@ using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using Xbim.Ifc.Extensions;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.ProductExtension;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.Extensions;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.XbimExtensions.SelectTypes;
 using Xbim.XbimExtensions;
+using Xbim.XbimExtensions.Interfaces;
+using Xbim.IO;
+using System.Windows.Data;
 
 #endregion
 
@@ -108,29 +111,51 @@ namespace Xbim.Presentation
             get { return _typePropertySets; }
         }
 
-        public object IfcInstance
+        public int EntityLabel
         {
-            get { return (object) GetValue(IfcInstanceProperty); }
-            set { SetValue(IfcInstanceProperty, value); }
+            get { return (int)GetValue(EntityLabelProperty); }
+            set { SetValue(EntityLabelProperty, value); }
         }
 
         // Using a DependencyProperty as the backing store for IfcInstance.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty IfcInstanceProperty =
-            DependencyProperty.Register("IfcInstance", typeof (object), typeof (IfcMetaDataControl),
-                                        new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.Inherits,
-                                                                      new PropertyChangedCallback(OnIfcInstanceChanged)));
+        public static readonly DependencyProperty EntityLabelProperty =
+            DependencyProperty.Register("EntityLabel", typeof(int), typeof(IfcMetaDataControl),
+                                        new UIPropertyMetadata(-1, new PropertyChangedCallback(OnEntityLabelChanged)));
 
 
-        private static void OnIfcInstanceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static void OnEntityLabelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             IfcMetaDataControl ctrl = d as IfcMetaDataControl;
-            if (ctrl != null && e.NewValue != null && e.NewValue is IPersistIfc)
-                ctrl.LoadMetaData((IPersistIfcEntity) e.NewValue);
+            if (ctrl != null && e.NewValue != null && e.NewValue is int)
+            {
+                int entityLabel = (int)e.NewValue;
+                ObjectDataProvider dp = ctrl.DataContext as ObjectDataProvider;
+                if (ctrl.Model == null &&  dp!=null &&  dp.ObjectInstance is XbimModel)
+                    ctrl.Model = dp.ObjectInstance as XbimModel;
+                if (ctrl.Model != null && entityLabel>0)
+                {
+                    IPersistIfcEntity ent = ctrl.Model.Instances[entityLabel] as IPersistIfcEntity;
+                    ctrl.LoadMetaData(ent);
+                }
+            }
+           
         }
+
+        public XbimModel Model
+        {
+            get { return (XbimModel)GetValue(ModelProperty); }
+            set { SetValue(ModelProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for Model.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty ModelProperty =
+            DependencyProperty.Register("Model", typeof(XbimModel), typeof(IfcMetaDataControl), new PropertyMetadata(null));
+
+        
 
         private void LoadMetaData(IPersistIfcEntity item)
         {
-            IfcType ifcType = IfcInstances.IfcEntities[item];
+            IfcType ifcType = item.IfcType();
 
             List<PropertyItem> pis = new List<PropertyItem>(ifcType.IfcProperties.Count());
             PropertyItem plabel = new PropertyItem()
@@ -167,11 +192,12 @@ namespace Xbim.Presentation
             //now deal with PropertySets
             _propertySets.Clear();
             _typePropertySets.Clear();
+            _materials.Clear();
             IfcObject ifcObj = item as IfcObject;
             //ModelDataProvider mdp = DataContext as ModelDataProvider;
             if (ifcObj != null)
             {
-                IModel m = ModelManager.ModelOf(ifcObj);
+                IModel m = ifcObj.ModelOf;
                 //write out any material layers
                 IEnumerable<IfcRelAssociatesMaterial> matRels =
                     ifcObj.HasAssociations.OfType<IfcRelAssociatesMaterial>();

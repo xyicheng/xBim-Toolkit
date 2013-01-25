@@ -13,13 +13,14 @@
 #region Directives
 
 using System.Linq;
-using Xbim.Ifc.MeasureResource;
+using Xbim.Ifc2x3.MeasureResource;
 using Xbim.XbimExtensions;
-using Xbim.Ifc.SelectTypes;
+using Xbim.XbimExtensions.SelectTypes;
+using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.Extensions
+namespace Xbim.Ifc2x3.Extensions
 {
     public static class UnitAssignmentExtensions
     {
@@ -116,7 +117,7 @@ namespace Xbim.Ifc.Extensions
         public static void SetOrChangeSIUnit(this IfcUnitAssignment ua, IfcUnitEnum unitType, IfcSIUnitName siUnitName,
                                              IfcSIPrefix? siUnitPrefix)
         {
-            IModel model = ModelManager.ModelOf(ua);
+            IModel model = ua.ModelOf;
             IfcSIUnit si = ua.Units.OfType<IfcSIUnit>().FirstOrDefault(u => u.UnitType == unitType);
             if (si != null)
             {
@@ -125,7 +126,7 @@ namespace Xbim.Ifc.Extensions
             }
             else
             {
-                ua.Units.Add_Reversible(model.New<IfcSIUnit>(s =>
+                ua.Units.Add_Reversible(model.Instances.New<IfcSIUnit>(s =>
                                                                  {
                                                                      s.UnitType = unitType;
                                                                      s.Name = siUnitName;
@@ -185,7 +186,7 @@ namespace Xbim.Ifc.Extensions
         public static void SetOrChangeConversionUnit(this IfcUnitAssignment ua, IfcUnitEnum unitType,
                                                      ConversionBasedUnit unit)
         {
-            IModel model = ModelManager.ModelOf(ua);
+            IModel model = ua.ModelOf;
             IfcSIUnit si = ua.Units.OfType<IfcSIUnit>().FirstOrDefault(u => u.UnitType == unitType);
             if (si != null)
             {
@@ -198,7 +199,7 @@ namespace Xbim.Ifc.Extensions
         private static IfcConversionBasedUnit GetNewConversionUnit(IModel model, IfcUnitEnum unitType,
                                                                    ConversionBasedUnit unitEnum)
         {
-            IfcConversionBasedUnit unit = model.New<IfcConversionBasedUnit>();
+            IfcConversionBasedUnit unit = model.Instances.New<IfcConversionBasedUnit>();
             unit.UnitType = unitType;
 
             switch (unitEnum)
@@ -269,9 +270,9 @@ namespace Xbim.Ifc.Extensions
                                                          IfcSIPrefix? siUnitPrefix, IfcDimensionalExponents dimensions)
         {
             unit.Name = name;
-            unit.ConversionFactor = model.New<IfcMeasureWithUnit>();
+            unit.ConversionFactor = model.Instances.New<IfcMeasureWithUnit>();
             unit.ConversionFactor.ValueComponent = ratio;
-            unit.ConversionFactor.UnitComponent = model.New<IfcSIUnit>(s =>
+            unit.ConversionFactor.UnitComponent = model.Instances.New<IfcSIUnit>(s =>
                                                                            {
                                                                                s.UnitType = unitType;
                                                                                s.Name = siUnitName;
@@ -282,7 +283,7 @@ namespace Xbim.Ifc.Extensions
 
         private static IfcDimensionalExponents GetLengthDimension(IModel model)
         {
-            IfcDimensionalExponents dimension = model.New<IfcDimensionalExponents>();
+            IfcDimensionalExponents dimension = model.Instances.New<IfcDimensionalExponents>();
             dimension.AmountOfSubstanceExponent = 0;
             dimension.ElectricCurrentExponent = 0;
             dimension.LengthExponent = 1;
@@ -296,7 +297,7 @@ namespace Xbim.Ifc.Extensions
 
         private static IfcDimensionalExponents GetVolumeDimension(IModel model)
         {
-            IfcDimensionalExponents dimension = model.New<IfcDimensionalExponents>();
+            IfcDimensionalExponents dimension = model.Instances.New<IfcDimensionalExponents>();
             dimension.AmountOfSubstanceExponent = 0;
             dimension.ElectricCurrentExponent = 0;
             dimension.LengthExponent = 3;
@@ -311,7 +312,7 @@ namespace Xbim.Ifc.Extensions
       
         private static IfcDimensionalExponents GetAreaDimension(IModel model)
         {
-            IfcDimensionalExponents dimension = model.New<IfcDimensionalExponents>();
+            IfcDimensionalExponents dimension = model.Instances.New<IfcDimensionalExponents>();
             dimension.AmountOfSubstanceExponent = 0;
             dimension.ElectricCurrentExponent = 0;
             dimension.LengthExponent = 2;
@@ -325,7 +326,7 @@ namespace Xbim.Ifc.Extensions
 
         private static IfcDimensionalExponents GetMassDimension(IModel model)
         {
-            IfcDimensionalExponents dimension = model.New<IfcDimensionalExponents>();
+            IfcDimensionalExponents dimension = model.Instances.New<IfcDimensionalExponents>();
             dimension.AmountOfSubstanceExponent = 0;
             dimension.ElectricCurrentExponent = 0;
             dimension.LengthExponent = 0;

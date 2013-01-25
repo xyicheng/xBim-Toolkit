@@ -6,12 +6,14 @@ using System.Xml;
 using System.Xml.Serialization;
 using Xbim.COBie.Rows;
 using Xbim.XbimExtensions;
+using Xbim.Ifc2x3.Extensions;
 using System.Linq;
 using System.Reflection;
 using Xbim.COBie.Contracts;
 using Xbim.COBie.Serialisers;
-using Xbim.Ifc.ProductExtension;
-using Xbim.Ifc.Kernel;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.IO;
 
 
 
@@ -109,7 +111,9 @@ namespace Xbim.COBie
             Workbook.Add(cq.GetCOBieImpactSheet());
             Workbook.Add(cq.GetCOBieDocumentSheet());
             Workbook.Add(cq.GetCOBieAttributeSheet());//we need to fill attributes here as it is populated by Components, Type, Space, Zone, Floors, Facility etc
+//#if GEOMETRY_IMPLEMENTED
             Workbook.Add(cq.GetCOBieCoordinateSheet());
+//#endif
             Workbook.Add(cq.GetCOBieIssueSheet());
             if (CobiePickLists != null) 
                 Workbook.Add(CobiePickLists); 
@@ -168,7 +172,7 @@ namespace Xbim.COBie
                         )
                     {
                         IfcType ifcType;
-                        if (IfcInstances.IfcTypeLookup.TryGetValue(colvalue.CellValue.Trim().ToUpper(), out ifcType))
+                        if (IfcMetaData.TryGetIfcType(colvalue.CellValue.Trim().ToUpper(), out ifcType))
                             classTypes.Remove(ifcType.Type);
                     }
                 }
@@ -224,12 +228,12 @@ namespace Xbim.COBie
         }
 
 		/// <summary>
-		/// Passes this instance of the COBieReader into the provided ICOBieFormatter
+        /// Passes this instance of the COBieReader into the provided ICOBieSerialiser
 		/// </summary>
-		/// <param name="serialiser">The object implementing the ICOBieFormatter interface.</param>
+        /// <param name="serialiser">The object implementing the ICOBieSerialiser interface.</param>
         public void Export(ICOBieSerialiser serialiser)
 		{
-			if (serialiser == null) { throw new ArgumentNullException("formatter", "Parameter passed to COBieReader.Export(ICOBieFormatter) must not be null."); }
+            if (serialiser == null) { throw new ArgumentNullException("formatter", "Parameter passed to COBieReader.Export(ICOBieSerialiser) must not be null."); }
 
 
 			serialiser.Serialise(Workbook);

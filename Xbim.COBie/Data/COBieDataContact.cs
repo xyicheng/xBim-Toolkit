@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Xbim.COBie.Rows;
-using Xbim.Ifc.ActorResource;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.UtilityResource;
+using Xbim.Ifc2x3.ActorResource;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.Ifc2x3.UtilityResource;
 using Xbim.XbimExtensions;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.XbimExtensions.SelectTypes;
 
 namespace Xbim.COBie.Data
 {
@@ -40,7 +40,7 @@ namespace Xbim.COBie.Data
             //create new sheet
             COBieSheet<COBieContactRow> contacts = new COBieSheet<COBieContactRow>(Constants.WORKSHEET_CONTACT);
 
-            IEnumerable<IfcPersonAndOrganization> ifcPersonAndOrganizations = Model.InstancesOfType<IfcPersonAndOrganization>();
+            IEnumerable<IfcPersonAndOrganization> ifcPersonAndOrganizations = Model.Instances.OfType<IfcPersonAndOrganization>();
             ProgressIndicator.Initialise("Creating Contacts", ifcPersonAndOrganizations.Count());
 
             foreach (IfcPersonAndOrganization ifcPersonAndOrganization in ifcPersonAndOrganizations)
@@ -90,7 +90,7 @@ namespace Xbim.COBie.Data
                 }
                 if (string.IsNullOrEmpty(department))
                 {
-                    IfcOrganization ifcRelOrganization = Model.InstancesOfType<IfcOrganizationRelationship>()
+                    IfcOrganization ifcRelOrganization = Model.Instances.OfType<IfcOrganizationRelationship>()
                                                         .Where(Or => Or.RelatingOrganization.EntityLabel == ifcOrganization.EntityLabel && Or.RelatedOrganizations.Last() != null)
                                                         .Select(Or => Or.RelatedOrganizations.Last())
                                                         .LastOrDefault();
@@ -121,7 +121,7 @@ namespace Xbim.COBie.Data
             if ((addresses != null) && (addresses.PostalAddresses  != null))
             {
                 IfcPostalAddress ifcPostalAddress = addresses.PostalAddresses.FirstOrDefault();
-                if (ifcPostalAddress != null)
+                if (ifcPostalAddress != null) 
                 {
                     List<string> street = new List<string>();
                     if (ifcPostalAddress.AddressLines != null)

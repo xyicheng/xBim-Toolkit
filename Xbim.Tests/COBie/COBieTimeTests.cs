@@ -2,11 +2,13 @@
 using System.Text;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Xbim.COBie;
 using Xbim.XbimExtensions;
 using Xbim.IO;
 using System.Diagnostics;
+using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Tests.COBie
 {
@@ -18,161 +20,187 @@ namespace Xbim.Tests.COBie
         private const string SourceModelLeaf = "Clinic-CutDown.xbim";
         private const string SourceFile = Root + @"\" + SourceModelLeaf;
         
-        static COBieContext _cobieContext = new COBieContext();
-        COBieQueries cobieEngine = new COBieQueries(_cobieContext);
-        static IModel _model;
+        private static COBieContext _cobieContext = null;
+        private static COBieQueries _cobieEngine = null;
+        private static XbimModel _model = null;
 
         [ClassInitialize]
         public static void LoadModel(TestContext context)
         {
-
-            _model = new XbimFileModelServer();
+            
+            if (!File.Exists(SourceFile)) throw new Exception("Cannot find file");
+            _model = new XbimModel();
             _model.Open(SourceFile);
             _cobieContext = new COBieContext();
             _cobieContext.Model = _model;
-            COBieQueries cobieEngine = new COBieQueries(_cobieContext);
+           
         }
 
         [ClassCleanup]
         public static void CloseModel()
         {
             if (_model != null)
-                _model.Dispose();
+                _model.Close();
             _model = null;
             _cobieContext = null;
+            
         }
         
-        [TestMethod]
-        [Ignore]
+        //[TestMethod]
         public void Time_On_All()
         {
-            ContactTime();
-            FacilityTime();
-            FloorTime();
-            SpaceTime();
-            ZoneTime();
-            TypeTime();
-            ComponentTime();
-            SystemTime();
-            AssemblyTime();
-            ConnectionTime();
-            SpareTime();
-            ResourceTime();
-            JobTime();
-            ImpactTime();
-            DocumentTime();
-            AttributeTime();
-            //CoordinateTime();
-            IssueTime();
+            
+                _cobieEngine = new COBieQueries(_cobieContext);
+
+                ContactTime();
+                FacilityTime();
+                FloorTime();
+                SpaceTime();
+                ZoneTime();
+                TypeTime();
+                ComponentTime();
+                SystemTime();
+                AssemblyTime();
+                ConnectionTime();
+                SpareTime();
+                ResourceTime();
+                JobTime();
+                ImpactTime();
+                DocumentTime();
+                AttributeTime();
+                //CoordinateTime();
+                IssueTime();
+            
         }
 
         [TestMethod]
         public void Time_On_Contacts()
         {
-            Assert.IsTrue(ContactTime() < new TimeSpan(0,0,2));
+            _cobieEngine = new COBieQueries(_cobieContext);
+            Assert.IsTrue(ContactTime() < new TimeSpan(0, 0, 1));
+
         }
 
         [TestMethod]
         public void Time_On_Facility()
         {
-            Assert.IsTrue(FacilityTime() < new TimeSpan(0, 0, 2));
+            _cobieEngine = new COBieQueries(_cobieContext);
+            Assert.IsTrue(FacilityTime() < new TimeSpan(0, 0, 1));
         }
+
 
         [TestMethod]
         public void Time_On_Floor()
         {
-            Assert.IsTrue(FloorTime() < new TimeSpan(0, 0, 2));
+            _cobieEngine = new COBieQueries(_cobieContext);
+            Assert.IsTrue(FloorTime() < new TimeSpan(0, 0, 1));
         }
 
         [TestMethod]
         public void Time_On_Space()
         {
-            Assert.IsTrue(SpaceTime()  < new TimeSpan(0, 0, 4));
+            _cobieEngine = new COBieQueries(_cobieContext);
+            Assert.IsTrue(SpaceTime() < new TimeSpan(0, 0, 3));
         }
 
         [TestMethod]
         public void Time_On_Zone()
         {
+            _cobieEngine = new COBieQueries(_cobieContext);
             Assert.IsTrue(ZoneTime() < new TimeSpan(0, 0, 2));
         }
 
         [TestMethod]
         public void Time_On_Type()
         {
-            Assert.IsTrue(TypeTime() < new TimeSpan(0, 0, 2));
+            _cobieEngine = new COBieQueries(_cobieContext);
+            Assert.IsTrue(TypeTime() < new TimeSpan(0, 0, 3));
         }
 
         [TestMethod]
         public void Time_On_Component()
         {
-            Assert.IsTrue(ComponentTime() < new TimeSpan(0, 0, 30));
+
+            _cobieEngine = new COBieQueries(_cobieContext);
+            Assert.IsTrue(ComponentTime() < new TimeSpan(0, 0, 5));
         }
 
         [TestMethod]
         public void Time_On_System()
         {
-            Assert.IsTrue(SystemTime() < new TimeSpan(0, 0, 2));
+            _cobieEngine = new COBieQueries(_cobieContext);
+            Assert.IsTrue(SystemTime() < new TimeSpan(0, 0, 1));
         }
 
         [TestMethod]
         public void Time_On_Assembly()
         {
-            Assert.IsTrue(AssemblyTime() < new TimeSpan(0, 0, 2));
+            _cobieEngine = new COBieQueries(_cobieContext);
+            Assert.IsTrue(AssemblyTime() < new TimeSpan(0, 0, 1));
         }
 
         [TestMethod]
         public void Time_On_Connection()
         {
-            Assert.IsTrue(ConnectionTime() < new TimeSpan(0, 0, 2));
+            _cobieEngine = new COBieQueries(_cobieContext);
+            Assert.IsTrue(ConnectionTime() < new TimeSpan(0, 0, 1));
         }
 
         [TestMethod]
         public void Time_On_Spare()
         {
-            Assert.IsTrue(SpareTime() < new TimeSpan(0, 0, 2));
+            _cobieEngine = new COBieQueries(_cobieContext);
+            Assert.IsTrue(SpareTime() < new TimeSpan(0, 0, 1));
         }
 
         [TestMethod]
         public void Time_On_Resource()
         {
-            Assert.IsTrue(ResourceTime() < new TimeSpan(0, 0, 2));
+            _cobieEngine = new COBieQueries(_cobieContext);
+            Assert.IsTrue(ResourceTime() < new TimeSpan(0, 0, 1));
         }
 
         [TestMethod]
         public void Time_On_Job()
         {
-            Assert.IsTrue(JobTime() < new TimeSpan(0, 0, 2));
+            _cobieEngine = new COBieQueries(_cobieContext);
+            Assert.IsTrue(JobTime() < new TimeSpan(0, 0, 1));
         }
 
         [TestMethod]
         public void Time_On_Impact()
         {
-            Assert.IsTrue(ImpactTime() < new TimeSpan(0, 0, 2));
+            _cobieEngine = new COBieQueries(_cobieContext);
+            Assert.IsTrue(ImpactTime() < new TimeSpan(0, 0, 1));
         }
 
         [TestMethod]
         public void Time_On_Document()
         {
-            Assert.IsTrue(DocumentTime() < new TimeSpan(0, 0, 2));
+            _cobieEngine = new COBieQueries(_cobieContext);
+            Assert.IsTrue(DocumentTime() < new TimeSpan(0, 0, 1));
         }
 
         [TestMethod]
         public void Time_On_Attribute()
         {
-            Assert.IsTrue(AttributeTime() < new TimeSpan(0, 0, 2));
+            _cobieEngine = new COBieQueries(_cobieContext);
+            Assert.IsTrue(AttributeTime() < new TimeSpan(0, 0, 7));
         }
 
         [TestMethod]
         [Ignore]
         public void Time_On_Coordinate()
         {
+            _cobieEngine = new COBieQueries(_cobieContext);
             Assert.IsTrue(CoordinateTime() < new TimeSpan(0, 0, 2));
         }
 
         [TestMethod]
         public void Time_On_Issue()
         {
-            Assert.IsTrue(IssueTime() < new TimeSpan(0, 0, 2));
+            _cobieEngine = new COBieQueries(_cobieContext);
+            Assert.IsTrue(IssueTime() < new TimeSpan(0, 0, 1));
         }
 
         //---------------------------------------------------------------------------
@@ -180,42 +208,39 @@ namespace Xbim.Tests.COBie
         {
             Stopwatch timer = new Stopwatch();
             timer.Start();
-            cobieEngine.GetCOBieContactSheet();
+            _cobieEngine.GetCOBieContactSheet();
             timer.Stop();
-            Debug.WriteLine(string.Format("Contact Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
+            Console.WriteLine(string.Format("Contact Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
             return timer.Elapsed;
         }
 
         private TimeSpan FacilityTime()
         {
-            //COBieQueries cobieEngine = new COBieQueries(_cobieContext);
             Stopwatch timer = new Stopwatch();
             timer.Start();
-            cobieEngine.GetCOBieFacilitySheet();
+            _cobieEngine.GetCOBieFacilitySheet();
             timer.Stop();
-            Debug.WriteLine(string.Format("Facility Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
+            Console.WriteLine(string.Format("Facility Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
             return timer.Elapsed;
         }
 
         private TimeSpan FloorTime()
         {
-            //COBieQueries cobieEngine = new COBieQueries(_cobieContext);
             Stopwatch timer = new Stopwatch();
             timer.Start();
-            cobieEngine.GetCOBieFloorSheet();
+            _cobieEngine.GetCOBieFloorSheet();
             timer.Stop();
-            Debug.WriteLine(string.Format("Floor Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
+            Console.WriteLine(string.Format("Floor Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
             return timer.Elapsed;
         }
 
         private TimeSpan SpaceTime()
         {
-            //COBieQueries cobieEngine = new COBieQueries(_cobieContext);
             Stopwatch timer = new Stopwatch();
             timer.Start();
-            cobieEngine.GetCOBieSpaceSheet();
+            _cobieEngine.GetCOBieSpaceSheet();
             timer.Stop();
-            Debug.WriteLine(string.Format("Space Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
+            Console.WriteLine(string.Format("Space Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
             return timer.Elapsed;
         }
 
@@ -223,9 +248,9 @@ namespace Xbim.Tests.COBie
         {
             Stopwatch timer = new Stopwatch();
             timer.Start();
-            cobieEngine.GetCOBieZoneSheet();
+            _cobieEngine.GetCOBieZoneSheet();
             timer.Stop();
-            Debug.WriteLine(string.Format("Zone Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
+            Console.WriteLine(string.Format("Zone Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
             return timer.Elapsed;
         }
 
@@ -233,9 +258,9 @@ namespace Xbim.Tests.COBie
         {
             Stopwatch timer = new Stopwatch();
             timer.Start();
-            cobieEngine.GetCOBieTypeSheet();
+            _cobieEngine.GetCOBieTypeSheet();
             timer.Stop();
-            Debug.WriteLine(string.Format("Type Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
+            Console.WriteLine(string.Format("Type Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
             return timer.Elapsed;
         }
 
@@ -243,9 +268,9 @@ namespace Xbim.Tests.COBie
         {
             Stopwatch timer = new Stopwatch();
             timer.Start();
-            cobieEngine.GetCOBieComponentSheet();
+            _cobieEngine.GetCOBieComponentSheet();
             timer.Stop();
-            Debug.WriteLine(string.Format("Component Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
+            Console.WriteLine(string.Format("Component Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
             return timer.Elapsed;
         }
 
@@ -253,9 +278,9 @@ namespace Xbim.Tests.COBie
         {
             Stopwatch timer = new Stopwatch();
             timer.Start();
-            cobieEngine.GetCOBieSystemSheet();
+            _cobieEngine.GetCOBieSystemSheet();
             timer.Stop();
-            Debug.WriteLine(string.Format("System Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
+            Console.WriteLine(string.Format("System Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
             return timer.Elapsed;
         }
 
@@ -263,9 +288,9 @@ namespace Xbim.Tests.COBie
         {
             Stopwatch timer = new Stopwatch();
             timer.Start();
-            cobieEngine.GetCOBieAssemblySheet();
+            _cobieEngine.GetCOBieAssemblySheet();
             timer.Stop();
-            Debug.WriteLine(string.Format("Assembly Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
+            Console.WriteLine(string.Format("Assembly Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
             return timer.Elapsed;
         }
 
@@ -273,9 +298,9 @@ namespace Xbim.Tests.COBie
         {
             Stopwatch timer = new Stopwatch();
             timer.Start();
-            cobieEngine.GetCOBieConnectionSheet();
+            _cobieEngine.GetCOBieConnectionSheet();
             timer.Stop();
-            Debug.WriteLine(string.Format("Connection Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
+            Console.WriteLine(string.Format("Connection Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
             return timer.Elapsed;
         }
 
@@ -283,9 +308,9 @@ namespace Xbim.Tests.COBie
         {
             Stopwatch timer = new Stopwatch();
             timer.Start();
-            cobieEngine.GetCOBieSpareSheet();
+            _cobieEngine.GetCOBieSpareSheet();
             timer.Stop();
-            Debug.WriteLine(string.Format("Spare Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
+            Console.WriteLine(string.Format("Spare Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
             return timer.Elapsed;
         }
 
@@ -293,9 +318,9 @@ namespace Xbim.Tests.COBie
         {
             Stopwatch timer = new Stopwatch();
             timer.Start();
-            cobieEngine.GetCOBieResourceSheet();
+            _cobieEngine.GetCOBieResourceSheet();
             timer.Stop();
-            Debug.WriteLine(string.Format("Resource Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
+            Console.WriteLine(string.Format("Resource Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
             return timer.Elapsed;
         }
 
@@ -303,9 +328,9 @@ namespace Xbim.Tests.COBie
         {
             Stopwatch timer = new Stopwatch();
             timer.Start();
-            cobieEngine.GetCOBieJobSheet();
+            _cobieEngine.GetCOBieJobSheet();
             timer.Stop();
-            Debug.WriteLine(string.Format("Job Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
+            Console.WriteLine(string.Format("Job Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
             return timer.Elapsed;
         }
 
@@ -313,9 +338,9 @@ namespace Xbim.Tests.COBie
         {
             Stopwatch timer = new Stopwatch();
             timer.Start();
-            cobieEngine.GetCOBieImpactSheet();
+            _cobieEngine.GetCOBieImpactSheet();
             timer.Stop();
-            Debug.WriteLine(string.Format("Impact Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
+            Console.WriteLine(string.Format("Impact Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
             return timer.Elapsed;
         }
 
@@ -323,9 +348,9 @@ namespace Xbim.Tests.COBie
         {
             Stopwatch timer = new Stopwatch();
             timer.Start();
-            cobieEngine.GetCOBieDocumentSheet();
+            _cobieEngine.GetCOBieDocumentSheet();
             timer.Stop();
-            Debug.WriteLine(string.Format("Document Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
+            Console.WriteLine(string.Format("Document Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
             return timer.Elapsed;
         }
 
@@ -333,9 +358,9 @@ namespace Xbim.Tests.COBie
         {
             Stopwatch timer = new Stopwatch();
             timer.Start();
-            cobieEngine.GetCOBieAttributeSheet();
+            _cobieEngine.GetCOBieAttributeSheet();
             timer.Stop();
-            Debug.WriteLine(string.Format("Attribute Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
+            Console.WriteLine(string.Format("Attribute Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
             return timer.Elapsed;
         }
 
@@ -343,9 +368,9 @@ namespace Xbim.Tests.COBie
         {
             Stopwatch timer = new Stopwatch();
             timer.Start();
-            cobieEngine.GetCOBieCoordinateSheet();
+            _cobieEngine.GetCOBieCoordinateSheet();
             timer.Stop();
-            Debug.WriteLine(string.Format("Coordinate Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
+            Console.WriteLine(string.Format("Coordinate Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
             return timer.Elapsed;
         }
 
@@ -353,9 +378,9 @@ namespace Xbim.Tests.COBie
         {
             Stopwatch timer = new Stopwatch();
             timer.Start();
-            cobieEngine.GetCOBieIssueSheet();
+            _cobieEngine.GetCOBieIssueSheet();
             timer.Stop();
-            Debug.WriteLine(string.Format("Issue Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
+            Console.WriteLine(string.Format("Issue Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
             return timer.Elapsed;
         }
 

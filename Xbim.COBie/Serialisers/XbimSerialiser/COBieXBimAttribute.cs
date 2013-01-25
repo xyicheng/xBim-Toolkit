@@ -4,15 +4,17 @@ using System.Linq;
 using System.Text;
 using Xbim.COBie.Rows;
 using Xbim.XbimExtensions.Transactions;
-using Xbim.Ifc.Extensions;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.ProductExtension;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.PropertyResource;
+using Xbim.Ifc2x3.Extensions;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.Ifc2x3.PropertyResource;
 using Xbim.Ifc.SelectTypes;
-using Xbim.Ifc.UtilityResource;
-using Xbim.Ifc.ExternalReferenceResource;
-using Xbim.Ifc.ConstructionMgmtDomain;
+using Xbim.Ifc2x3.UtilityResource;
+using Xbim.Ifc2x3.ExternalReferenceResource;
+using Xbim.Ifc2x3.ConstructionMgmtDomain;
+using Xbim.XbimExtensions.SelectTypes;
+using Xbim.IO;
 
 namespace Xbim.COBie.Serialisers.XbimSerialiser
 {
@@ -46,15 +48,18 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         /// <param name="cOBieSheet">COBieSheet of COBieAttributeRow to read data from</param>
         public void SerialiseAttribute(COBieSheet<COBieAttributeRow> cOBieSheet)
         {
-            using (Transaction trans = Model.BeginTransaction("Add Attribute"))
+            using (XbimReadWriteTransaction trans = Model.BeginTransaction("Add Attribute"))
             {
                 try
                 {
-                    var sortedRows =  cOBieSheet.Rows.OrderBy(r => r.SheetName).ThenBy(r => r.RowName);
+                    int count = 1;
+                    var sortedRows = cOBieSheet.Rows.OrderBy(r => r.SheetName).ThenBy(r => r.RowName);
                     ProgressIndicator.ReportMessage("Starting Attributes...");
                     ProgressIndicator.Initialise("Creating Attributes", cOBieSheet.RowCount);
                     foreach (COBieAttributeRow row in sortedRows)
                     {
+                        BumpTransaction(trans, count);
+                        count++;
                         ProgressIndicator.IncrementAndUpdate();
                         AddAttribute(row);
                         
@@ -64,7 +69,6 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 }
                 catch (Exception)
                 {
-                    trans.Rollback();
                     //TODO: Catch with logger?
                     throw;
                 }
@@ -83,37 +87,37 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 {
                     case "facility":
                         //set list if first time
-                        if (IfcBuildings == null) IfcBuildings = Model.InstancesOfType<IfcBuilding>();
+                        if (IfcBuildings == null) IfcBuildings = Model.Instances.OfType<IfcBuilding>();
                         if (!((CurrentObject is IfcBuilding) && (CurrentObject.Name == row.RowName)))
                             CurrentObject = IfcBuildings.Where(b => b.Name.ToString().ToLower() == row.RowName.ToLower()).FirstOrDefault();
                         break;
                     case "floor":
-                        if (IfcBuildingStoreys == null) IfcBuildingStoreys = Model.InstancesOfType<IfcBuildingStorey>();
+                        if (IfcBuildingStoreys == null) IfcBuildingStoreys = Model.Instances.OfType<IfcBuildingStorey>();
                         if (!((CurrentObject is IfcBuildingStorey) && (CurrentObject.Name == row.RowName)))
                             CurrentObject = IfcBuildingStoreys.Where(b => b.Name.ToString().ToLower() == row.RowName.ToLower()).FirstOrDefault();
                         break;
                     case "space":
-                        if (IfcSpaces == null) IfcSpaces = Model.InstancesOfType<IfcSpace>();
+                        if (IfcSpaces == null) IfcSpaces = Model.Instances.OfType<IfcSpace>();
                         if (!((CurrentObject is IfcSpace) && (CurrentObject.Name == row.RowName)))
                             CurrentObject = IfcSpaces.Where(b => b.Name.ToString().ToLower() == row.RowName.ToLower()).FirstOrDefault();
                         break;
                     case "type":
-                        if (IfcTypeObjects == null) IfcTypeObjects = Model.InstancesOfType<IfcTypeObject>();
+                        if (IfcTypeObjects == null) IfcTypeObjects = Model.Instances.OfType<IfcTypeObject>();
                         if (!((CurrentObject is IfcTypeObject) && (CurrentObject.Name == row.RowName)))
                             CurrentObject = IfcTypeObjects.Where(b => b.Name.ToString().ToLower() == row.RowName.ToLower()).FirstOrDefault();
                         break;
                     case "spare":
-                        if (IfcConstructionProductResources == null) IfcConstructionProductResources = Model.InstancesOfType<IfcConstructionProductResource>();
+                        if (IfcConstructionProductResources == null) IfcConstructionProductResources = Model.Instances.OfType<IfcConstructionProductResource>();
                         if (!((CurrentObject is IfcConstructionProductResource) && (CurrentObject.Name == row.RowName)))
                             CurrentObject = IfcConstructionProductResources.Where(b => b.Name.ToString().ToLower() == row.RowName.ToLower()).FirstOrDefault();
                         break;
                     case "component":
-                        if (IfcElements == null) IfcElements = Model.InstancesOfType<IfcElement>();
+                        if (IfcElements == null) IfcElements = Model.Instances.OfType<IfcElement>();
                         if (!((CurrentObject is IfcElement) && (CurrentObject.Name == row.RowName)))
                             CurrentObject = IfcElements.Where(b => b.Name.ToString().ToLower() == row.RowName.ToLower()).FirstOrDefault();
                         break;
                     case "zone":
-                        if (IfcZones == null) IfcZones = Model.InstancesOfType<IfcZone>();
+                        if (IfcZones == null) IfcZones = Model.Instances.OfType<IfcZone>();
                         if (!((CurrentObject is IfcZone) && (CurrentObject.Name == row.RowName)))
                             CurrentObject = IfcZones.Where(b => b.Name.ToString().ToLower() == row.RowName.ToLower()).FirstOrDefault();
                         break;
@@ -165,8 +169,10 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                             double number;
                             if (double.TryParse(row.Value, out number))
                                 ifcValue = new IfcReal((double)number);
-                            else
+                            else if (ValidateString(row.Value))
                                 ifcValue = new IfcLabel(row.Value);
+                            else
+                                ifcValue = new IfcLabel("");
                             IfcUnit ifcUnit = GetIfcUnit(row.Unit);
                             AddPropertySingleValue(ifcPropertySet, row.Name, description, ifcValue, ifcUnit);
                         }
@@ -266,12 +272,12 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         /// <param name="category">string, category Name</param>
         private void SetCategory(IfcRoot ifcRoot, string category)
         {
-            IfcRelAssociatesClassification ifcRelAssociatesClassification = Model.InstancesWhere<IfcRelAssociatesClassification>(r => (r.RelatingClassification is IfcClassificationReference) && ((IfcClassificationReference)r.RelatingClassification).Name.ToString().ToLower() == category.ToLower()).FirstOrDefault();
+            IfcRelAssociatesClassification ifcRelAssociatesClassification = Model.Instances.Where<IfcRelAssociatesClassification>(r => (r.RelatingClassification is IfcClassificationReference) && ((IfcClassificationReference)r.RelatingClassification).Name.ToString().ToLower() == category.ToLower()).FirstOrDefault();
             //create if none found
             if (ifcRelAssociatesClassification == null)
             {
-                ifcRelAssociatesClassification = Model.New<IfcRelAssociatesClassification>();
-                IfcClassificationReference ifcClassificationReference = Model.New<IfcClassificationReference>();
+                ifcRelAssociatesClassification = Model.Instances.New<IfcRelAssociatesClassification>();
+                IfcClassificationReference ifcClassificationReference = Model.Instances.New<IfcClassificationReference>();
                 ifcClassificationReference.Name = category;
                 ifcRelAssociatesClassification.RelatingClassification = ifcClassificationReference;
             }

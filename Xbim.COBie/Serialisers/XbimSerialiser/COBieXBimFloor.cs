@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Xbim.XbimExtensions;
-using Xbim.Ifc.Extensions;
+using Xbim.Ifc2x3.Extensions;
 using Xbim.XbimExtensions.Transactions;
 using Xbim.COBie.Rows;
-using Xbim.Ifc.ProductExtension;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.PropertyResource;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.Ifc2x3.PropertyResource;
+using Xbim.IO;
 
 namespace Xbim.COBie.Serialisers.XbimSerialiser
 {
@@ -27,16 +28,19 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         /// <param name="cOBieSheet">COBieSheet of COBieFloorRows to read data from</param>
         public void SerialiseFloor(COBieSheet<COBieFloorRow> cOBieSheet)
         {
-            using (Transaction trans = Model.BeginTransaction("Add Floor"))
+            using (XbimReadWriteTransaction trans = Model.BeginTransaction("Add Floor"))
             {
 
                 try
                 {
 
+                    int count = 1;
                     ProgressIndicator.ReportMessage("Starting Floors...");
                     ProgressIndicator.Initialise("Creating Floors", cOBieSheet.RowCount);
                     for (int i = 0; i < cOBieSheet.RowCount; i++)
                     {
+                        BumpTransaction(trans, count);
+                        count++;
                         ProgressIndicator.IncrementAndUpdate();
                         COBieFloorRow row = cOBieSheet[i]; 
                         AddBuildingStory(row);
@@ -48,7 +52,6 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 }
                 catch (Exception)
                 {
-                    trans.Rollback();
                     //TODO: Catch with logger?
                     throw;
                 }
@@ -68,7 +71,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 return;//we have it so no need to create
             }
 
-            IfcBuildingStorey ifcBuildingStorey = Model.New<IfcBuildingStorey>();
+            IfcBuildingStorey ifcBuildingStorey = Model.Instances.New<IfcBuildingStorey>();
             //Set the CompositionType to Element as it is a required field
             ifcBuildingStorey.CompositionType = IfcElementCompositionEnum.ELEMENT;
 

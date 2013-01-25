@@ -4,11 +4,13 @@ using System.Linq;
 using System.Text;
 using Xbim.COBie.Rows;
 using Xbim.XbimExtensions.Transactions;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.ProductExtension;
-using Xbim.Ifc.MeasureResource;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.Ifc2x3.MeasureResource;
 using Xbim.Ifc.SelectTypes;
-using Xbim.Ifc.Extensions;
+using Xbim.XbimExtensions.SelectTypes;
+using Xbim.IO;
+using Xbim.Ifc2x3.Extensions;
 
 
 
@@ -34,14 +36,17 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         /// <param name="cOBieSheet">COBieSheet of COBieImpactRow to read data from</param>
         public void SerialiseImpact(COBieSheet<COBieImpactRow> cOBieSheet)
         {
-            using (Transaction trans = Model.BeginTransaction("Add Impact"))
+            using (XbimReadWriteTransaction trans = Model.BeginTransaction("Add Impact"))
             {
                 try
                 {
+                    int count = 1;
                     ProgressIndicator.ReportMessage("Starting Impacts...");
                     ProgressIndicator.Initialise("Creating Impacts", cOBieSheet.RowCount);
                     for (int i = 0; i < cOBieSheet.RowCount; i++)
                     {
+                        BumpTransaction(trans, count);
+                        count++;
                         ProgressIndicator.IncrementAndUpdate();
                         COBieImpactRow row = cOBieSheet[i];
                         AddImpact(row);
@@ -53,7 +58,6 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 }
                 catch (Exception)
                 {
-                    trans.Rollback();
                     //TODO: Catch with logger?
                     throw;
                 }
@@ -75,7 +79,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             if (row.SheetName.ToLower().Trim() == "type")
             {
                 if (IfcTypeObjects == null)
-                            IfcTypeObjects = Model.InstancesOfType<IfcTypeObject>();
+                            IfcTypeObjects = Model.Instances.OfType<IfcTypeObject>();
                 IfcTypeObject ifcTypeObject = IfcTypeObjects.Where(to => to.Name.ToString().ToLower() == row.RowName.ToLower()).FirstOrDefault();
                 if (ifcTypeObject != null)
                 {
@@ -97,7 +101,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             else
             {
                 if (IfcProducts == null)
-                    IfcProducts = Model.InstancesOfType<IfcProduct>();
+                    IfcProducts = Model.Instances.OfType<IfcProduct>();
                 IfcProduct ifcProduct = IfcProducts.Where(to => to.Name.ToString().ToLower() == row.RowName.ToLower()).FirstOrDefault();
                 if (ifcProduct != null)
                 {

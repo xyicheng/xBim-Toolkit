@@ -15,6 +15,7 @@
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Windows.Markup;
+using System.Runtime.CompilerServices;
 
 #endregion
 
@@ -30,6 +31,7 @@ using System.Windows.Markup;
 // COM, set the ComVisible attribute to true on that type.
 
 [assembly: ComVisible(false)]
+[assembly: InternalsVisibleTo("Xbim.ModelGeometry")]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 

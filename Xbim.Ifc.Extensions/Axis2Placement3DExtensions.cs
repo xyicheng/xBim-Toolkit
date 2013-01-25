@@ -12,14 +12,17 @@
 
 #region Directives
 
+using System;
+using System.Collections.Generic;
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
-using Xbim.Ifc.GeometryResource;
+using Xbim.Ifc2x3.GeometryResource;
 using Xbim.XbimExtensions;
+using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.Extensions
+namespace Xbim.Ifc2x3.Extensions
 {
     public static class Axis2Placement3DExtensions
     {
@@ -52,8 +55,28 @@ namespace Xbim.Ifc.Extensions
         /// </summary>
         /// <param name = "axis3"></param>
         /// <returns></returns>
-        public static Matrix3D ToMatrix3D(this IfcAxis2Placement3D axis3)
+        public static Matrix3D ToMatrix3D(this IfcAxis2Placement3D axis3, Dictionary<int, Object> maps = null)
         {
+            if (maps == null)
+                return ConvertAxis3D(axis3);
+            else
+            {
+                lock (maps)
+                {
+                    object transform;
+                    if (maps != null && maps.TryGetValue(Math.Abs(axis3.EntityLabel), out transform)) //already converted it just return cached
+                        return (Matrix3D)transform;
+                    transform = ConvertAxis3D(axis3);
+                    if (maps != null) maps.Add(Math.Abs(axis3.EntityLabel), transform);
+                    return (Matrix3D) transform;
+                }
+            }
+            
+        }
+
+        private static Matrix3D ConvertAxis3D(IfcAxis2Placement3D axis3)
+        {
+
             if (axis3.RefDirection != null && axis3.Axis != null)
             {
                 Vector3D za = axis3.Axis.WVector3D();
@@ -68,6 +91,7 @@ namespace Xbim.Ifc.Extensions
             else
                 return new Matrix3D(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, axis3.Location.X, axis3.Location.Y,
                                     axis3.Location.Z, 1);
+
         }
 
         /// <summary>
@@ -92,8 +116,8 @@ namespace Xbim.Ifc.Extensions
 
         public static void SetNewLocation(this IfcAxis2Placement3D axis3, double x, double y, double z)
         {
-            IModel model = ModelManager.ModelOf(axis3);
-            IfcCartesianPoint location = model.New<IfcCartesianPoint>();
+            IModel model = axis3.ModelOf;
+            IfcCartesianPoint location = model.Instances.New<IfcCartesianPoint>();
             location.X = x;
             location.Y = y;
             location.Z = z;
@@ -115,15 +139,15 @@ namespace Xbim.Ifc.Extensions
                                                 double xAxisDirectionY, double xAxisDirectionZ, double zAxisDirectionX,
                                                 double zAxisDirectionY, double zAxisDirectionZ)
         {
-            IModel model = ModelManager.ModelOf(axis3);
-            IfcDirection zDirection = model.New<IfcDirection>();
+            IModel model = axis3.ModelOf;
+            IfcDirection zDirection = model.Instances.New<IfcDirection>();
             zDirection.DirectionRatios[0] = zAxisDirectionX;
             zDirection.DirectionRatios[1] = zAxisDirectionY;
             zDirection.DirectionRatios[2] = zAxisDirectionZ;
             zDirection.Normalise();
             axis3.Axis = zDirection;
 
-            IfcDirection xDirection = model.New<IfcDirection>();
+            IfcDirection xDirection = model.Instances.New<IfcDirection>();
             xDirection.DirectionRatios[0] = xAxisDirectionX;
             xDirection.DirectionRatios[1] = xAxisDirectionY;
             xDirection.DirectionRatios[2] = xAxisDirectionZ;

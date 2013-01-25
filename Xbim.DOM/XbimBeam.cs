@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Xbim.Ifc.SharedBldgElements;
-using Xbim.Ifc.MaterialResource;
-using Xbim.Ifc.Extensions;
+using Xbim.Ifc2x3.SharedBldgElements;
+using Xbim.Ifc2x3.MaterialResource;
+using Xbim.Ifc2x3.Extensions;
 
 namespace Xbim.DOM
 {
@@ -27,7 +27,7 @@ namespace Xbim.DOM
         private void BaseInit(XbimBeamType xbimBeamType)
         {
             _document.Beams.Add(this);
-            _ifcBuildingElement = _document.Model.New<IfcBeam>();
+            _ifcBuildingElement = _document.Model.Instances.New<IfcBeam>();
             _ifcBuildingElement.SetDefiningType(xbimBeamType.IfcTypeProduct, _document.Model);
         }
         #endregion

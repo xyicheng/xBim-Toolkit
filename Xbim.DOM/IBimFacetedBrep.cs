@@ -11,6 +11,6 @@ namespace Xbim.DOM
         void AddPolyLoopBoundedFace();
         void AddPolyLoopBoundedFace(bool orientation);
         void AddTriangleFace(XbimXYZ point1, XbimXYZ point2, XbimXYZ point3);
-        Xbim.Ifc.GeometryResource.IfcGeometricRepresentationItem GetIfcGeometricRepresentation();
+        Xbim.Ifc2x3.GeometryResource.IfcGeometricRepresentationItem GetIfcGeometricRepresentation();
     }
 }

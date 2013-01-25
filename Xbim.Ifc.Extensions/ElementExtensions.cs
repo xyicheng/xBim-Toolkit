@@ -14,12 +14,13 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using Xbim.Ifc.ProductExtension;
+using Xbim.Ifc2x3.ProductExtension;
 using Xbim.XbimExtensions;
+using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.Extensions
+namespace Xbim.Ifc2x3.Extensions
 {
     public class ElementSort : IComparer<IfcElement>
     {
@@ -40,7 +41,7 @@ namespace Xbim.Ifc.Extensions
         public static IfcElement GetFilledElement(this IfcElement elem, IModel model)
         {
             IfcRelFillsElement rel =
-                model.InstancesWhere<IfcRelFillsElement>(r => r.RelatedBuildingElement == elem).FirstOrDefault();
+                model.Instances.Where<IfcRelFillsElement>(r => r.RelatedBuildingElement == elem).FirstOrDefault();
             return rel != null ? rel.RelatingOpeningElement.GetFeatureElement(model) : null;
         }
 
@@ -48,7 +49,7 @@ namespace Xbim.Ifc.Extensions
                                                                                               IModel model)
         {
             IEnumerable<IfcRelVoidsElement> subs =
-                model.InstancesWhere<IfcRelVoidsElement>(r => r.RelatingBuildingElement == elem);
+                model.Instances.Where<IfcRelVoidsElement>(r => r.RelatingBuildingElement == elem);
             return subs.Select(rv => rv.RelatedOpeningElement);
         }
     }

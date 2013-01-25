@@ -111,9 +111,14 @@ var SceneStarter;
             checkbox: true,
             selectMode: 3,
             onSelect: function (select, node) {
+                // search for key and _name first
                 var scenenode = SceneJS.scene(settings.sceneId).findNode(node.data.key + "_name");
-                if (!scenenode) scenenode = SceneJS.scene(settings.sceneId).findNode(node.data.key);
-                if (scenenode) ChangeVisibility(scenenode, select);
+                if (!scenenode) {
+                    // search for key only otherwise
+                    scenenode = SceneJS.scene(settings.sceneId).findNode(node.data.key);
+                    }
+                if (scenenode) 
+                    ChangeVisibility(scenenode, select);
             },
             onClick: function (node, event) {
                 if (node.getEventTargetType(event) == 'title') {
@@ -527,56 +532,6 @@ var SceneStarter;
 
             SceneJS.scene(settings.sceneId).set("tagMask", tags);
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        /*
-        return this.each(function () {
-            var dts = $(this).children('dt');
-            dts.click(onClick);
-            dts.each(reset);
-            if (settings.open) $(this).children('dt:first-child').next().show();
-        });
-
-        function onClick() {
-            $(this).siblings('dt').each(hide);
-            $(this).next().slideDown('fast');
-            return false;
-        }
-
-        function hide() {
-            $(this).next().slideUp('fast');
-        }
-
-        function reset() {
-            $(this).next().hide();
-        }
-        */
     }
 })(jQuery);
 

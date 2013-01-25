@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using Xbim.Ifc.ProductExtension;
+using Xbim.Ifc2x3.ProductExtension;
 using Xbim.COBie.Rows;
 using Xbim.XbimExtensions.Transactions;
-using Xbim.Ifc.Extensions;
+using Xbim.Ifc2x3.Extensions;
+using Xbim.IO;
 
 namespace Xbim.COBie.Serialisers.XbimSerialiser
 {
@@ -29,15 +30,18 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         /// <param name="cOBieSheet">COBieSheet of COBieZoneRow to read data from</param>
         public void SerialiseZone(COBieSheet<COBieZoneRow> cOBieSheet)
         {
-            using (Transaction trans = Model.BeginTransaction("Add Zone"))
+            using (XbimReadWriteTransaction trans = Model.BeginTransaction("Add Zone"))
             {
                 try
                 {
 
+                    int count = 1;
                     ProgressIndicator.ReportMessage("Starting Zones...");
                     ProgressIndicator.Initialise("Creating Zones", cOBieSheet.RowCount);
                     for (int i = 0; i < cOBieSheet.RowCount; i++)
                     {
+                        BumpTransaction(trans, count);
+                        count++;
                         ProgressIndicator.IncrementAndUpdate();
                         COBieZoneRow row = cOBieSheet[i];
                         AddZone(row);
@@ -49,7 +53,6 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 }
                 catch (Exception)
                 {
-                    trans.Rollback();
                     //TODO: Catch with logger?
                     throw;
                 }
@@ -67,8 +70,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             {
                 return;//we have it so no need to create
             }
-
-            IfcZone ifcZone = Model.New<IfcZone>();
+            IfcZone ifcZone = Model.Instances.New<IfcZone>();
             
             //Add Created By, Created On and ExtSystem to Owner History. 
             SetUserHistory(ifcZone, row.ExtSystem, row.CreatedBy, row.CreatedOn);
@@ -111,7 +113,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 }
                 else
                 {
-                    space = Model.InstancesOfType<IfcSpace>().Where(sp => sp.Name == spaceName).FirstOrDefault();
+                    space = Model.Instances.OfType<IfcSpace>().Where(sp => sp.Name == spaceName).FirstOrDefault();
                     if (space != null)
                         Spaces.Add(spaceName, space);
                 }

@@ -3,18 +3,30 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Xbim.COBie.Rows;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.ProductExtension;
-using Xbim.Ifc.SharedBldgElements;
-using Xbim.Ifc.SharedBldgServiceElements;
-using Xbim.Ifc.Extensions;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.Ifc2x3.SharedBldgElements;
+using Xbim.Ifc2x3.SharedBldgServiceElements;
+using Xbim.Ifc2x3.Extensions;
 using Xbim.XbimExtensions;
-using Xbim.Ifc.PropertyResource;
-using Xbim.Ifc.StructuralElementsDomain;
-using Xbim.Ifc.SharedComponentElements;
+using Xbim.Ifc2x3.PropertyResource;
+using Xbim.Ifc2x3.StructuralElementsDomain;
+using Xbim.Ifc2x3.SharedComponentElements;
+using Xbim.IO;
+using System.Windows.Media.Media3D;
+using Xbim.ModelGeometry.Scene;
 
 namespace Xbim.COBie.Data
 {
+    /// <summary>
+    /// Holds Geometry information for the space objects
+    /// </summary>
+    public struct SpaceInfo
+    {
+        public string Name { get; set; }
+        public Rect3D Rectangle { get; set; }
+        public Matrix3D Matrix { get; set; }
+    }
     
     /// <summary>
     /// Class to input data into excel worksheets for the the Component tab.
@@ -31,6 +43,7 @@ namespace Xbim.COBie.Data
             
         }
 
+        public List<SpaceInfo> SpaceBoundingBoxInfo { get; set; }
 
         #region Methods
 
@@ -44,8 +57,18 @@ namespace Xbim.COBie.Data
             //Create new sheet
             COBieSheet<COBieComponentRow> components = new COBieSheet<COBieComponentRow>(Constants.WORKSHEET_COMPONENT);
          
-            IEnumerable<IfcRelAggregates> relAggregates = Model.InstancesOfType<IfcRelAggregates>();
-            IEnumerable<IfcRelContainedInSpatialStructure> relSpatial = Model.InstancesOfType<IfcRelContainedInSpatialStructure>();
+            //get Geometry for spaces 
+             SpaceBoundingBoxInfo = Model.GetGeometryData(XbimGeometryType.BoundingBox)
+                .Where(bb => bb.IfcTypeId == IfcMetaData.IfcTypeId(typeof(IfcSpace)))
+                .Select(bb => new SpaceInfo
+                {
+                    Rectangle = new Rect3D().FromArray(bb.ShapeData),
+                    Matrix = new Matrix3D().FromArray(bb.TransformData),
+                    Name = Model.Instances.OfType<IfcSpace>().Where(sp => (Math.Abs(sp.EntityLabel) == Math.Abs(bb.IfcProductLabel))).Select(sp => sp.Name.ToString()).FirstOrDefault()
+                }).ToList();
+
+            IEnumerable<IfcRelAggregates> relAggregates = Model.Instances.OfType<IfcRelAggregates>();
+            IEnumerable<IfcRelContainedInSpatialStructure> relSpatial = Model.Instances.OfType<IfcRelContainedInSpatialStructure>();
 
             IEnumerable<IfcObject> ifcElements = ((from x in relAggregates
                                             from y in x.RelatedObjects
@@ -69,22 +92,20 @@ namespace Xbim.COBie.Data
             foreach (var obj in ifcElements)
             {
                 ProgressIndicator.IncrementAndUpdate();
-                //var xxx = obj.Decomposes.OfType<IfcRelAggregates>().Where(ra => Context.Exclude.ObjectType.Component.Contains(ra.RelatingObject.GetType()));
-                //if (xxx.Count() > 0)
-                //    continue;
-
+                
                 COBieComponentRow component = new COBieComponentRow(components);
 
                 IfcElement el = obj as IfcElement;
                 if (el == null)
                     continue;
+                string name = el.Name;
                 if (string.IsNullOrEmpty(el.Name))
                 {
-                    el.Name = "Name Unknown " + UnknownCount.ToString();
+                    name = "Name Unknown " + UnknownCount.ToString();
                     UnknownCount++;
                 }
-                
-                component.Name = el.Name;
+
+                component.Name = name;
                 component.CreatedBy = GetTelecomEmailAddress(el.OwnerHistory);
                 component.CreatedOn = GetCreatedOnDateAsFmtString(el.OwnerHistory);
                 
@@ -149,6 +170,7 @@ namespace Xbim.COBie.Data
         internal string GetComponentRelatedSpace(IfcElement el)
         {
             string value = "";
+            
             if (el != null && el.ContainedInStructure.Count() > 0)
             {
                 IEnumerable<IfcRoot> owningObjects = el.ContainedInStructure.Select(cis => cis.RelatingStructure).OfType<IfcSpace>(); //only one or zero held in ContainedInStructure
@@ -163,9 +185,203 @@ namespace Xbim.COBie.Data
                     value = string.Join(", ", names);
                 }
             }
-            
+            //if no space is saved with the element then get from the geometry 
+            if (string.IsNullOrEmpty(value))
+            { 
+                value = GetSpaceHoldingElement(el);
+            }
+           
+
             return string.IsNullOrEmpty(value) ? Constants.DEFAULT_STRING : value;
         }
+
+        /// <summary>
+        /// Get the space name holding the element
+        /// </summary>
+        /// <param name="el">IfcElement to get containing space for</param>
+        /// <returns>Space name</returns>
+        internal string GetSpaceHoldingElement(IfcElement el)
+        {
+            string spaceName = string.Empty;
+            //find the IfcElement Bounding Box and To WCS Matrix
+            XbimGeometryData elGeoData = Model.GetGeometryData(el, XbimGeometryType.BoundingBox).FirstOrDefault();
+            //check to see if we have any geometry within the file
+            if (elGeoData == null)
+                return string.Empty; //No geometry
+
+            Rect3D elBoundBox = new Rect3D().FromArray(elGeoData.ShapeData);
+            Matrix3D elWorldMatrix = new Matrix3D().FromArray(elGeoData.TransformData);
+            //Get object space top and bottom points of the bounding box
+            List<Point3D> elBoxPts = new List<Point3D>();
+            elBoxPts.Add(new Point3D(elBoundBox.X, elBoundBox.Y, elBoundBox.Z));
+            elBoxPts.Add(new Point3D(elBoundBox.X + elBoundBox.SizeX, elBoundBox.Y + elBoundBox.SizeY, elBoundBox.Z + elBoundBox.SizeZ));
+            elBoxPts.Add(elBoundBox.Centroid());
+
+            //convert points of the bounding box to WCS
+            IEnumerable<Point3D> elBoxPtsWCS = elBoxPts.Select(pt => elWorldMatrix.Transform(pt));
+            //see if we hit any spaces
+            spaceName = GetSpaceFromPoints(elBoxPtsWCS);
+            //if we failed to get space on min points then use the remaining corner points
+            if (string.IsNullOrEmpty(spaceName))
+            {
+                Point3D elMinPt = elBoxPts[0];
+                Point3D elMaxPt = elBoxPts[1];
+                //elBoxPts.Clear(); //already tested points in list so clear them
+
+                //Extra testing on remaining corner points on the top and bottom plains
+                elBoxPts.Add(new Point3D(elMaxPt.X, elMaxPt.Y, elMinPt.Z));
+                elBoxPts.Add(new Point3D(elMaxPt.X, elMinPt.Y, elMinPt.Z));
+                elBoxPts.Add(new Point3D(elMinPt.X, elMaxPt.Y, elMinPt.Z));
+                elBoxPts.Add(new Point3D((elMaxPt.X - elMinPt.X) / 2.0, (elMaxPt.Y - elMinPt.Y) / 2.0, elMinPt.Z)); //centre face point
+
+                elBoxPts.Add(new Point3D(elMinPt.X, elMinPt.Y, elMaxPt.Z));
+                elBoxPts.Add(new Point3D(elMaxPt.X, elMinPt.Y, elMaxPt.Z));
+                elBoxPts.Add(new Point3D(elMinPt.X, elMaxPt.Y, elMaxPt.Z));
+                elBoxPts.Add(new Point3D((elMaxPt.X - elMinPt.X) / 2.0, (elMaxPt.Y - elMinPt.Y) / 2.0, elMaxPt.Z)); //centre face point
+                //convert points of the bounding box to WCS
+                elBoxPtsWCS = elBoxPts.Select(pt => elWorldMatrix.Transform(pt));
+                //see if we hit any spaces
+                spaceName = GetSpaceFromPoints(elBoxPtsWCS);
+            }
+            if (string.IsNullOrEmpty(spaceName))
+            {
+                //Get tolerance size from element, 1% of smallest side size
+                double tol = elBoundBox.SizeX * 0.001;
+                if ((elBoundBox.SizeY * 0.001) < tol)
+                    tol = elBoundBox.SizeY * 0.001;
+                if ((elBoundBox.SizeZ * 0.001) < tol)
+                    tol = elBoundBox.SizeZ * 0.001;
+                if ((tol == 0.0) && //if tol 0.0
+                    ((Context.WorkBookUnits.LengthUnit.Equals("meters", StringComparison.OrdinalIgnoreCase)) ||
+                     (Context.WorkBookUnits.LengthUnit.Equals("metres", StringComparison.OrdinalIgnoreCase))
+                    )
+                   )
+                    tol = 0.001;
+               
+                spaceName = GetSpaceFromClosestPoints(elBoxPtsWCS, tol);
+            }
+
+            return spaceName;
+        }
+
+        /// <summary>
+        /// Get the space name if any of the points are within the space
+        /// </summary>
+        /// <param name="PtsWCS">list of points</param>
+        /// <returns>Space name</returns>
+        internal string GetSpaceFromPoints(IEnumerable<Point3D> PtsWCS)
+        {
+            //holder for space names, could be more then one so a list is used
+            List<string> spaceNames = new List<string>();
+
+            foreach (SpaceInfo spGeoData in SpaceBoundingBoxInfo)
+            {
+                //get each space bounding box and To WCS Matrix
+                Rect3D spBoundBox = spGeoData.Rectangle;
+                Matrix3D spWorldMatrix = spGeoData.Matrix;
+                String spName = spGeoData.Name;
+                //we need to transform the element max and min points back into the spaces Object Space so we can test on Bounding Box rectangle
+                spWorldMatrix.Invert();
+                IEnumerable<Point3D> elBoxPtsOCS = PtsWCS.Select(pt => spWorldMatrix.Transform(pt));
+                //check if element space object points are contained fully within the space bounding box rectangle
+                IEnumerable<Point3D> hitPts = elBoxPtsOCS.Where(pt => spBoundBox.Contains(pt));
+                if ( hitPts.Any() &&
+                    (hitPts.Count() == elBoxPtsOCS.Count())
+                    )
+                {
+                    spaceNames.Add(spName);
+                    break; //all element point are contained in one space so kill loop
+                }
+                else if (hitPts.Any())//one or more point is contained in space and continue in case we have an element over several spaces
+                {
+                    if (!spaceNames.Contains(spName))
+                        spaceNames.Add(spName);
+                }
+            }
+            if (spaceNames.Count > 0)
+                return string.Join(", ", spaceNames);
+            else
+                return string.Empty;
+        }
+
+        /// <summary>
+        /// Get the space name if any of the points are within the space
+        /// </summary>
+        /// <param name="PtsWCS">list of points</param>
+        /// <param name="hitTotarance">Distance the point is outside the space but considered still usable to reference the space</param>
+        /// <returns>Space name</returns>
+        internal string GetSpaceFromClosestPoints(IEnumerable<Point3D> PtsWCS, double hitTotarance)
+        {
+            //holder for space names, could be more then one so a list is used
+            List<string> spaceNames = new List<string>();
+
+            foreach (SpaceInfo spGeoData in SpaceBoundingBoxInfo)
+            {
+                //get each space bounding box and To WCS Matrix
+                Rect3D spBoundBox = spGeoData.Rectangle;
+                Matrix3D spWorldMatrix = spGeoData.Matrix;
+                String spName = spGeoData.Name;
+                //we need to transform the element max and min points back into the spaces Object Space so we can test on Bounding Box rectangle
+                spWorldMatrix.Invert();
+                IEnumerable<Point3D> elBoxPtsOCS = PtsWCS.Select(pt => spWorldMatrix.Transform(pt));
+                //check if element space object points are contained fully within the space bounding box rectangle
+                IEnumerable<double> hitPts = elBoxPtsOCS.Select(pt => DistanceFromSpace(pt, spBoundBox)).Where(d => d <= hitTotarance);
+                if (hitPts.Any())//one or more point is contained in space and continue in case we have an element over several spaces
+                {
+                    if (!spaceNames.Contains(spName))
+                        spaceNames.Add(spName);
+                }
+            }
+            if (spaceNames.Count > 0)
+                return string.Join(", ", spaceNames);
+            else
+                return string.Empty;
+        }
+
+        /// <summary>
+        /// Closet point on a axially aligned bounding boxes (usually in object space)
+        /// REF: 3D Math Primer for Graphics and Game Development. page 720.
+        /// </summary>
+        /// <param name="pt">Point to get closet point on bounding box from</param>
+        /// <param name="boundBox">Bounding Box as Rect3D</param>
+        /// <returns>Point3D (note: if return point == pt point then point inside box</returns>
+        internal Point3D ClosetPointOnBoundingBox(Point3D pt, Rect3D boundBox)
+        {
+            Point3D retPt = new Point3D();
+            Point3D MinPt = new Point3D(boundBox.X, boundBox.Y, boundBox.Z);
+            Point3D MaxPt = new Point3D(boundBox.X + boundBox.SizeX, boundBox.Y + boundBox.SizeY, boundBox.Z + boundBox.SizeZ);
+            
+            if ( pt.X < MinPt.X ) 
+                retPt.X = MinPt.X;
+            else if ( pt.X > MaxPt.X) 
+                retPt.X = MaxPt.X;
+
+            if (pt.Y < MinPt.Y)
+                retPt.Y = MinPt.Y;
+            else if (pt.Y > MaxPt.Y)
+                retPt.Y = MaxPt.Y; 
+            
+            if (pt.Z < MinPt.Z)
+                retPt.Z = MinPt.Z;
+            else if (pt.Z > MaxPt.Z)
+                retPt.Z = MaxPt.Z;
+
+            return retPt;
+        }
+
+        /// <summary>
+        /// distance point is from the axially aligned bounding boxes (usually in object space)
+        /// </summary>
+        /// <param name="pt">Point to get closet point on bounding box from</param>
+        /// <param name="boundBox">Bounding Box as Rect3D</param>
+        /// <returns>Distance from the box edge</returns>
+        internal double DistanceFromSpace(Point3D pt, Rect3D boundBox)
+        {
+            Point3D hitPt = ClosetPointOnBoundingBox(pt, boundBox);
+            Vector3D vect = Point3D.Subtract(pt, hitPt);
+            return vect.Length;
+        }
+        
 
         /// <summary>
         /// Get Description for passed in IfcElement

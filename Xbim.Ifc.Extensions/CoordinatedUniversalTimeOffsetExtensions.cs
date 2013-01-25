@@ -13,11 +13,11 @@
 #region Directives
 
 using System;
-using Xbim.Ifc.DateTimeResource;
+using Xbim.Ifc2x3.DateTimeResource;
 
 #endregion
 
-namespace Xbim.Ifc.Extensions
+namespace Xbim.Ifc2x3.Extensions
 {
     public static class CoordinatedUniversalTimeOffsetExtensions
     {

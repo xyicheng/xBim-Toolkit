@@ -6,9 +6,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Globalization;
 using System.Threading;
 using Xbim.IO;
-using Xbim.Ifc.GeometryResource;
+using Xbim.Ifc2x3.GeometryResource;
 using Xbim.XbimExtensions;
 using System.IO;
+using Xbim.XbimExtensions.Interfaces;
+using System.Reflection;
 
 namespace Xbim.Tests
 {
@@ -21,8 +23,8 @@ namespace Xbim.Tests
     {
         const string Root = "TestSourceFiles";
         const string Temp = "Temp";
-
-        const string TestSourceFileIfc = Root + "/Test.ifc";
+        const string TestFile = "Test.ifc";
+        const string TestSourceFileIfc = Root + "\\" + TestFile;
 
         public InternationalisationTests()
         {
@@ -51,15 +53,17 @@ namespace Xbim.Tests
 
         CultureInfo _originalCulture;
 
-        XbimFileModelServer _systemUnderTest;
+        XbimModel _systemUnderTest;
         List<string> _toDelete;
 
         [TestInitialize()]
         public void BeforeEachTest() 
         {
             _originalCulture = Thread.CurrentThread.CurrentCulture;
-            _systemUnderTest = new XbimFileModelServer();
+            
+            _systemUnderTest = new XbimModel();
             _toDelete = new List<string>();
+            
         }
           
         [TestCleanup()]
@@ -81,7 +85,7 @@ namespace Xbim.Tests
             }
         }
 
-        public XbimFileModelServer SuT
+        public XbimModel SuT
         {
             get { return _systemUnderTest; }
         }
@@ -98,12 +102,12 @@ namespace Xbim.Tests
             // Use Dutch culture: where commas = decimals, & vice versa
             // 12.345 in Dutch = 12,345 in UK/US & Invariant cultures
             SetCulture("nl");
-
-            SuT.ImportIfc(TestSourceFileIfc);
-
+            string fullPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), TestSourceFileIfc);
+            Assert.IsTrue(SuT.CreateFrom(fullPath));
+            SuT.Open(Path.ChangeExtension(fullPath,"xBIM"), XbimDBAccess.Read);
             // Entity #3 is a cartesian point entity with the value of:
             // #3=IFCCARTESIANPOINT((0.,123.456789,-1.E-006));
-            var entity = SuT.GetInstance(3);
+            var entity = SuT.Instances[3];
 
             Assert.IsInstanceOfType(entity, typeof(IfcCartesianPoint));
             IfcCartesianPoint point = entity as IfcCartesianPoint;
@@ -123,11 +127,16 @@ namespace Xbim.Tests
             
             LoadModelForWriting();
             // Add a point
-            IfcCartesianPoint point = SuT.New<IfcCartesianPoint>(cp => { cp.X = 345.6789012; cp.Y = -0.000001; cp.Z = 0.0; });
+            using (XbimReadWriteTransaction txn = SuT.BeginTransaction())
+            {
+                IfcCartesianPoint point = SuT.Instances.New<IfcCartesianPoint>(cp => { cp.X = 345.6789012; cp.Y = -0.000001; cp.Z = 0.0; });
+                txn.Commit();
+            }
+            
 
             string tempFile = GetTempIfcFile();
             // Act
-            SuT.ExportIfc(tempFile);
+            SuT.SaveAs(tempFile,XbimStorageType.IFC);
 
             // Assert
 
@@ -147,11 +156,15 @@ namespace Xbim.Tests
 
         private string LoadModelForWriting()
         {
+            string fullPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), TestSourceFileIfc);
+           
             // Start with a baseline IFC, convert to Xbim and open for exit.
-            String xbimFile = SuT.ImportIfc(TestSourceFileIfc);
-            SuT.Close();
-            SuT.Open(xbimFile, System.IO.FileAccess.ReadWrite);
-            SuT.BeginTransaction("CultureTest");
+            if (!SuT.CreateFrom(fullPath))
+                return null;
+            String xbimFile = Path.ChangeExtension(fullPath,"xBIM");
+           
+            SuT.Open(xbimFile, XbimDBAccess.ReadWrite);
+            
             EnsureDeleted(xbimFile);
             return xbimFile;
         }

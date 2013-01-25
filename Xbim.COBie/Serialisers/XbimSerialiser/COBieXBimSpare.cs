@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using Xbim.COBie.Rows;
 using Xbim.XbimExtensions.Transactions;
-using Xbim.Ifc.ConstructionMgmtDomain;
-using Xbim.Ifc.Extensions;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.MeasureResource;
+using Xbim.Ifc2x3.ConstructionMgmtDomain;
+using Xbim.Ifc2x3.Extensions;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.IO;
 
 namespace Xbim.COBie.Serialisers.XbimSerialiser
 {
@@ -31,16 +32,19 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         public void SerialiseSpare(COBieSheet<COBieSpareRow> cOBieSheet)
         {
 
-            using (Transaction trans = Model.BeginTransaction("Add Spare"))
+            using (XbimReadWriteTransaction trans = Model.BeginTransaction("Add Spare"))
             {
                 try
                 {
-                    IfcTypeObjects = Model.InstancesOfType<IfcTypeObject>();
+                    int count = 1;
+                    IfcTypeObjects = Model.Instances.OfType<IfcTypeObject>();
 
                     ProgressIndicator.ReportMessage("Starting Spares...");
                     ProgressIndicator.Initialise("Creating Spares", cOBieSheet.RowCount);
                     for (int i = 0; i < cOBieSheet.RowCount; i++)
                     {
+                        BumpTransaction(trans, count);
+                        count++;
                         ProgressIndicator.IncrementAndUpdate();
                         COBieSpareRow row = cOBieSheet[i];
                         AddSpare(row);
@@ -50,7 +54,6 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 }
                 catch (Exception)
                 {
-                    trans.Rollback();
                     throw;
                 }
             }
@@ -68,7 +71,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 return;//we have it so no need to create
             }
 
-            IfcConstructionProductResource ifcConstructionProductResource = Model.New<IfcConstructionProductResource>();
+            IfcConstructionProductResource ifcConstructionProductResource = Model.Instances.New<IfcConstructionProductResource>();
             
             //Add Created By, Created On and ExtSystem to Owner History. 
             SetUserHistory(ifcConstructionProductResource, row.ExtSystem, row.CreatedBy, row.CreatedOn);
@@ -116,10 +119,10 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         public void SetRelAssignsToResource(IfcResource resourceObj, IEnumerable<IfcTypeObject> typeObjs)
         {
             //find any existing relationships to this type
-            IfcRelAssignsToResource processRel = Model.InstancesWhere<IfcRelAssignsToResource>(rd => rd.RelatingResource == resourceObj).FirstOrDefault();
+            IfcRelAssignsToResource processRel = Model.Instances.Where<IfcRelAssignsToResource>(rd => rd.RelatingResource == resourceObj).FirstOrDefault();
             if (processRel == null) //none defined create the relationship
             {
-                processRel = Model.New<IfcRelAssignsToResource>();
+                processRel = Model.Instances.New<IfcRelAssignsToResource>();
                 processRel.RelatingResource = resourceObj;
                 
                 

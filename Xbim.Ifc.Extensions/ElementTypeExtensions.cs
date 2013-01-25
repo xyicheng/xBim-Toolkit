@@ -14,14 +14,15 @@
 
 using System;
 using System.Linq;
-using Xbim.Ifc.MaterialResource;
-using Xbim.Ifc.ProductExtension;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.MaterialResource;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.XbimExtensions.SelectTypes;
 using Xbim.XbimExtensions;
+using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.Extensions
+namespace Xbim.Ifc2x3.Extensions
 {
     public static class ElementTypeExtensions
     {
@@ -49,12 +50,12 @@ namespace Xbim.Ifc.Extensions
                 elemType.HasAssociations.OfType<IfcRelAssociatesMaterial>().FirstOrDefault();
             if (relMat == null)
             {
-                IModel model = ModelManager.ModelOf(elemType);
+                IModel model = elemType.ModelOf;
                 if (model == null)
                     throw new Exception("IfcElementType is not contained in a valid model");
                 else
                 {
-                    relMat = model.New<IfcRelAssociatesMaterial>();
+                    relMat = model.Instances.New<IfcRelAssociatesMaterial>();
                     relMat.RelatedObjects.Add_Reversible(elemType);
                 }
             }

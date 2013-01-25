@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Xbim.XbimExtensions;
-using Xbim.Ifc.ProductExtension;
+using Xbim.Ifc2x3.ProductExtension;
 using System.Reflection;
 
 namespace Xbim.COBie.Rows

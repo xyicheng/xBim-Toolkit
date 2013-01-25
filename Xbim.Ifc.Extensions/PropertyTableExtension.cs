@@ -14,13 +14,13 @@
 
 using System;
 using System.Collections.Generic;
-using Xbim.Ifc.PropertyResource;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.PropertyResource;
+using Xbim.XbimExtensions.SelectTypes;
 using Xbim.XbimExtensions;
 
 #endregion
 
-namespace Xbim.Ifc.Extensions
+namespace Xbim.Ifc2x3.Extensions
 {
     public static class PropertyTableExtension
     {
