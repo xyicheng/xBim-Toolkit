@@ -43,6 +43,7 @@ namespace Xbim.IO
         private const int MaxCachedEntityTables = 32;
         private const int MaxCachedGeometryTables = 32;
         private XbimDBAccess _accessMode;
+
         static private string SystemPath;
 
         const int _transactionBatchSize = 100;
@@ -104,8 +105,14 @@ namespace Xbim.IO
             _entityTables = new XbimEntityCursor[MaxCachedEntityTables];
             _geometryTables = new XbimGeometryCursor[MaxCachedGeometryTables];
         }
-        
-       
+
+
+        public XbimDBAccess AccessMode
+        {
+            get { return _accessMode; }
+        }
+
+
         /// <summary>
         /// Creates an empty xbim file, overwrites any existing file of the same name
         /// throw a create failed exception if unsuccessful
@@ -322,20 +329,21 @@ namespace Xbim.IO
             EndCaching();
 
 
-            if (_session != null)
+            if (_session != null )
             {
-                Api.JetCloseDatabase(_session, _databaseId, CloseDatabaseGrbit.None);
-                try
+                if (_databaseId != null)
                 {
-                    Api.JetDetachDatabase(_session, _databaseName);
+                    Api.JetCloseDatabase(_session, _databaseId, CloseDatabaseGrbit.None);
+                    try
+                    {
+                        Api.JetDetachDatabase(_session, _databaseName);
+                    }
+                    catch (Microsoft.Isam.Esent.Interop.EsentDatabaseInUseException) //Databases can be attached many times and detached just once, ignore failed detaches
+                    {
+
+                    }
                 }
-                catch (Microsoft.Isam.Esent.Interop.EsentDatabaseInUseException) //Databases can be attached many times and detached just once, ignore failed detaches
-                {      
-                  
-                }
-                
-                this._databaseName = null;
-                
+                this._databaseName = null;   
                 _session.Dispose();
                 _session = null;
             }
@@ -1565,21 +1573,24 @@ namespace Xbim.IO
             }
         }
 
-      
+        
 
         internal T InsertCopy<T>(T toCopy, XbimInstanceHandleMap mappings, bool includeInverses) where T : IPersistIfcEntity
         {
-            XbimInstanceHandle toCopyHandle;
-            if (mappings.TryGetValue(toCopy.GetHandle(), out toCopyHandle))
-                return (T)this.GetInstance(toCopyHandle);
+            XbimInstanceHandle toCopyHandle=toCopy.GetHandle();
+            XbimInstanceHandle copyHandle;
+            if (mappings.TryGetValue(toCopyHandle, out copyHandle))
+                return (T)this.GetInstance(copyHandle);
            
             IfcType ifcType = IfcMetaData.IfcType(toCopy);
             int copyLabel = Math.Abs(toCopy.EntityLabel);
-            XbimInstanceHandle copyHandle = InsertNew(ifcType.Type);
+            copyHandle = InsertNew(ifcType.Type);
             mappings.Add(toCopyHandle, copyHandle);
             if (typeof(IfcCartesianPoint) == ifcType.Type || typeof(IfcDirection) == ifcType.Type)//special cases for cartesian point and direction for efficiency
             {
-                IPersistIfcEntity v = (IPersistIfcEntity)Activator.CreateInstance(ifcType.Type, new object[] { toCopy });  
+                IPersistIfcEntity v = (IPersistIfcEntity)Activator.CreateInstance(ifcType.Type, new object[] { toCopy });      
+                v.Bind(_model, copyHandle.EntityLabel);
+                v.Activate(true);
                 return (T)v;
             }
             else
@@ -1591,6 +1602,7 @@ namespace Xbim.IO
                 IEnumerable<IfcMetaProperty> props = ifcType.IfcProperties.Values.Where(p => !p.IfcAttribute.IsDerivedOverride);
                 if (includeInverses)
                     props = props.Union(ifcType.IfcInverses);
+                if (rt != null) rt.OwnerHistory = _model.OwnerHistoryAddObject;
                 foreach (IfcMetaProperty prop in props)
                 {
                     if (rt != null && prop.PropertyInfo.Name == "OwnerHistory") //don't add the owner history in as this will be changed later
@@ -1656,32 +1668,15 @@ namespace Xbim.IO
             return GetInstance(map.EntityLabel);
         }
 
-
+        /// <summary>
+        /// This function can only be called once the model is in a transaction
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
         private XbimInstanceHandle InsertNew(Type type)
         {
-
-            XbimEntityCursor table = GetEntityTable();
-
-            try
-            {
-                using (var txn = table.BeginLazyTransaction())
-                {
-                    XbimInstanceHandle handle = table.AddEntity(type);
-                    txn.Commit();
-                    return handle;
-                }
-
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-            finally
-            {
-
-                FreeTable(table);
-            }
-            
+            return _model.GetTransactingCursor().AddEntity(type);
+          
         }
 
         private int NextLabel()
