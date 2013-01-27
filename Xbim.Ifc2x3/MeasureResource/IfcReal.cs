@@ -69,7 +69,7 @@ namespace Xbim.Ifc2x3.MeasureResource
 
             // if compiler flag, only then do the following 3 lines
             string rDoubleStr = dArg.ToString("R", CultureInfo.CreateSpecificCulture("en-US"));
-            double fixedDbl = double.Parse(rDoubleStr);
+            double fixedDbl = double.Parse(rDoubleStr, CultureInfo.CreateSpecificCulture("en-US"));
             result = fixedDbl.ToString("R", CultureInfo.CreateSpecificCulture("en-US"));
 
             if (!result.Contains("."))
