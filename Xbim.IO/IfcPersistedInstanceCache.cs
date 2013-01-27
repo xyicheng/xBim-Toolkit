@@ -101,6 +101,29 @@ namespace Xbim.IO
                 Directory.Delete(SystemPath);
         }
 
+        #region Martin 
+        /// <summary>
+        /// This is necessary to use after Model.Close() when <strong> DEBUGGING </strong>Revit plugins and similar applications.
+        /// Microsoft.Isam.Esent.Interop assembly is loaded for all the time as it is unchanged whereas development
+        /// assemblies are loaded multiple times. Microsoft.Isam.Esent.Interop assembly holds the resources than
+        /// and it crashes when new instance of THIS object is created. This is not a problem when deploying the
+        /// application because scope of all the assemblies and the application (Revit) are the same.
+        /// 
+        /// The code is the same as in CurrentDomain_ProcessExit()
+        /// </summary>
+        public static void FreeResources() 
+        {
+            if (_jetInstance != null)
+            {
+                _jetInstance.Term();
+                _jetInstance = null;
+            }
+
+            if (Directory.Exists(SystemPath))
+                Directory.Delete(SystemPath);
+        }
+        #endregion
+
         public IfcPersistedInstanceCache(XbimModel model)
         {
             this.lockObject = new Object();
