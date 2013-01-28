@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
+using Xbim.XbimExtensions.SelectTypes;
 
 namespace Xbim.IO.Parser
 {
@@ -133,6 +134,8 @@ namespace Xbim.IO.Parser
                     //        "A Real parameter has been illegally written into the Ifc File as an Integer, it has been converted to a Real without loss of data");
                     return Convert.ToDouble(_strVal);
                 }
+                else if (_ifcParserType == IfcParserType.Entity && _entityVal is ExpressType && typeof(double).IsAssignableFrom(((ExpressType)_entityVal).UnderlyingSystemType))
+                    return (double)(((ExpressType)_entityVal).Value);
                 else
                     throw new Exception(string.Format("Wrong parameter type, found {0}, expected {1}",
                                                       _ifcParserType.ToString(), "Real"));

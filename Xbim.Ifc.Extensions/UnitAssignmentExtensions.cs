@@ -143,6 +143,13 @@ namespace Xbim.Ifc2x3.Extensions
             return nu;
         }
 
+        public static IfcNamedUnit GetLengthUnit(this IfcUnitAssignment ua)
+        {
+            IfcNamedUnit nu = ua.Units.OfType<IfcSIUnit>().FirstOrDefault(u => u.UnitType == IfcUnitEnum.LENGTHUNIT);
+            if (nu == null)
+                nu = ua.Units.OfType<IfcConversionBasedUnit>().FirstOrDefault(u => u.UnitType == IfcUnitEnum.LENGTHUNIT);
+            return nu;
+        }
         public static IfcNamedUnit GetVolumeUnit(this IfcUnitAssignment ua)
         {
             IfcNamedUnit nu = ua.Units.OfType<IfcSIUnit>().FirstOrDefault(u => u.UnitType == IfcUnitEnum.VOLUMEUNIT);

@@ -28,6 +28,7 @@
 #include <TopExp_Explorer.hxx> 
 #include <BRepLib_MakePolygon.hxx> 
 #include <BRepBuilderAPI_WireError.hxx> 
+#include <BRepBuilderApi.hxx>
 using namespace System;
 using namespace Xbim::XbimExtensions;
 using namespace Xbim::Common;
@@ -544,7 +545,7 @@ namespace Xbim
 			for(int i=0; i<nbPoints; i++) 
 			{
 				gp_Pnt p2(loop->Polygon[i]->X,loop->Polygon[i]->Y,is3D ? loop->Polygon[i]->Z : 0);
-				if ( i>0 &&  !p1.IsEqual(p2,BRepLib::Precision()))
+				if ( i>0 &&  !p1.IsEqual(p2,BRepBuilderAPI::Precision()))
 				{
 					w.Add(BRepBuilderAPI_MakeEdge(p1,p2));
 					count ++;
@@ -553,7 +554,7 @@ namespace Xbim
 					first = p2;		
 				p1 = p2;
 			}
-			if ( !p1.IsEqual(first,BRepLib::Precision()) ) {
+			if ( !p1.IsEqual(first,BRepBuilderAPI::Precision()) ) {
 				w.Add(BRepBuilderAPI_MakeEdge(p1,first));
 				count ++;
 
@@ -564,7 +565,7 @@ namespace Xbim
 
 			// set the tolerance for this shape.
 			ShapeFix_ShapeTolerance FTol;	
-			FTol.SetTolerance(result, BRepLib::Precision() ,TopAbs_WIRE);
+			FTol.SetTolerance(result, BRepBuilderAPI::Precision() ,TopAbs_WIRE);
 			return result;
 		}
 
@@ -586,7 +587,7 @@ namespace Xbim
 			TopoDS_Wire wire = rect.Wire(); 
 			ShapeFix_ShapeTolerance FTol;
 			// set the tolerance for this shape.
-			FTol.SetTolerance(wire, BRepLib::Precision() ,TopAbs_WIRE);
+			FTol.SetTolerance(wire, BRepBuilderAPI::Precision() ,TopAbs_WIRE);
 
 			//apply the position transformation
 			wire.Move(XbimGeomPrim::ToLocation(rectProfile->Position));
@@ -659,7 +660,7 @@ namespace Xbim
 			TopoDS_Wire result = w.Wire();
 			// set the tolerance for this shape.
 			ShapeFix_ShapeTolerance FTol;	
-			FTol.SetTolerance(result, BRepLib::Precision() ,TopAbs_WIRE);
+			FTol.SetTolerance(result, BRepBuilderAPI::Precision() ,TopAbs_WIRE);
 			return result;
 		}
 
@@ -672,14 +673,14 @@ namespace Xbim
 			for(int i=0; i<nbPoints; i++) 
 			{
 				gp_Pnt p2(pLine->Points[i]->X,pLine->Points[i]->Y,is3D ? pLine->Points[i]->Z : 0);
-				if ( i>0 &&  !p1.IsEqual(p2,BRepLib::Precision()))
+				if ( i>0 &&  !p1.IsEqual(p2,BRepBuilderAPI::Precision()))
 					w.Add(BRepBuilderAPI_MakeEdge(p1,p2));
 				p1 = p2;
 			}			
 			TopoDS_Wire result = w.Wire();
 			// set the tolerance for this shape.
 			ShapeFix_ShapeTolerance FTol;	
-			FTol.SetTolerance(result, BRepLib::Precision() ,TopAbs_WIRE);
+			FTol.SetTolerance(result, BRepBuilderAPI::Precision() ,TopAbs_WIRE);
 			return result;
 		}
 
@@ -727,9 +728,22 @@ namespace Xbim
 				if(dynamic_cast<IfcAxis2Placement2D^>(c->Position))
 				{
 					IfcAxis2Placement2D^ ax2 = (IfcAxis2Placement2D^)c->Position;
-					c->SemiAxis1;
-					gp_Ax2 gpax2(gp_Pnt(ax2->Location->X, ax2->Location->Y,0), gp_Dir(0,0,1),gp_Dir(ax2->P[0]->X, ax2->P[0]->Y,0.));			
-					gp_Elips gc(gpax2,c->SemiAxis1, c->SemiAxis2);
+					double s1;
+					double s2;
+					if( c->SemiAxis1 > c->SemiAxis2)
+					{
+						s1=c->SemiAxis1;
+						s2=c->SemiAxis2;
+					}
+					else //either same or two is larger than 1
+					{
+						s1=c->SemiAxis2;
+						s2=c->SemiAxis1;
+					}
+
+					gp_Ax2 gpax2(gp_Pnt(ax2->Location->X, ax2->Location->Y,0), gp_Dir(0,0,1),gp_Dir(ax2->P[0]->X, ax2->P[0]->Y,0.));	
+					
+					gp_Elips gc(gpax2,s1, s2);
 					curve = GC_MakeEllipse(gc);
 				}
 				else if(dynamic_cast<IfcAxis2Placement3D^>(c->Position))
@@ -797,7 +811,7 @@ namespace Xbim
 					IfcCartesianPoint^ cp = (IfcCartesianPoint^)trim; 
 					cp->XYZ( x, y, z);
 					gp_Pnt pnt2(x,y,z);
-					if(!pnt1.IsEqual(pnt2, BRepLib::Precision()))
+					if(!pnt1.IsEqual(pnt2, BRepBuilderAPI::Precision()))
 					{
 						BRepBuilderAPI_MakeEdge e (curve,sense_agreement ? pnt1 : pnt2,sense_agreement ? pnt2 : pnt1);
 						if ( ! e.IsDone() ) 
@@ -820,7 +834,7 @@ namespace Xbim
 					IfcParameterValue^ pv = (IfcParameterValue^)trim; 
 					const double value = (double)(pv->Value);
 					double flt2 = value * parameterFactor;
-					if ( isConic && Math::Abs(Math::IEEERemainder(flt2-flt1,(double)(Math::PI*2.0))-0.0f) < BRepLib::Precision()) 
+					if ( isConic && Math::Abs(Math::IEEERemainder(flt2-flt1,(double)(Math::PI*2.0))-0.0f) < BRepBuilderAPI::Precision()) 
 					{
 						w.Add(BRepBuilderAPI_MakeEdge(curve));
 					} 

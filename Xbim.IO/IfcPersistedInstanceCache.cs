@@ -33,7 +33,7 @@ namespace Xbim.IO
         private static Instance _jetInstance;
         private Session _session;
         private JET_DBID _databaseId;
-        static int cacheSizeInBytes = 64 * 1024 * 1024;
+        static int cacheSizeInBytes = 128 * 1024 * 1024 * 4;
         /// <summary>
         /// Holds the session and transaction state
         /// </summary>
@@ -54,11 +54,6 @@ namespace Xbim.IO
         protected Dictionary<int, IPersistIfcEntity> read = new Dictionary<int, IPersistIfcEntity>();
         protected Dictionary<int, IPersistIfcEntity> modified = new Dictionary<int, IPersistIfcEntity>();
         protected Dictionary<int, IPersistIfcEntity> createdNew = new Dictionary<int, IPersistIfcEntity>();
-       
-        //protected HashSet<IPersistIfcEntity> ToDelete = new HashSet<IPersistIfcEntity>();
-        //protected HashSet<IPersistIfcEntity> ToCreate = new HashSet<IPersistIfcEntity>();
-        protected int CacheDefaultSize = 5000;
-
         #endregion
 
         private string _databaseName;
@@ -87,6 +82,7 @@ namespace Xbim.IO
             SystemParameters.CacheSizeMax = cacheSizeInBytes / SystemParameters.DatabasePageSize;
             _jetInstance = CreateInstance("XbimInstance", XbimModel.XbimTempDirectory);
             AppDomain.CurrentDomain.ProcessExit += CurrentDomain_ProcessExit;
+             
         }
 
         static void CurrentDomain_ProcessExit(object sender, EventArgs e)
@@ -345,15 +341,37 @@ namespace Xbim.IO
             }
         }
 
+        /// <summary>
+        /// Performs a set of actions on a collection of entities inside a single read only transaction
+        /// This improves database  performance for retrieving and accessing complex and deep objects
+        /// </summary>
+        /// <typeparam name="TSource"></typeparam>
+        /// <param name="source"></param>
+        /// <param name="body"></param>
+        public void ForEach<TSource>(IEnumerable<TSource> source, Action<TSource> body) where TSource : IPersistIfcEntity
+        {
+            var table = GetEntityTable();
+            try
+            {
+                using (var txn = table.BeginReadOnlyTransaction())
+                {
+                    foreach (var item in source)
+                    body(item);
+                } 
+            }
+            finally
+            {
+                FreeTable(table);
+            }
 
-        
+        }
 
         /// <summary>
         /// Imports the contents of the ifc file into the named database, the resulting database is closed after success, use Open to access
         /// </summary>
         /// <param name="progressHandler"></param>
         /// <returns></returns>
-        public void ImportIfc(string xbimDbName, string toImportIfcFilename, ReportProgressDelegate progressHandler = null)
+        public void ImportIfc(string xbimDbName, string toImportIfcFilename, ReportProgressDelegate progressHandler = null, bool keepOpen = false)
         {
             CreateDatabase(xbimDbName);
             Open(xbimDbName, XbimDBAccess.Exclusive);
@@ -376,7 +394,7 @@ namespace Xbim.IO
                     transaction.Commit();
                 }
                 FreeTable(table);
-                Close();
+                if(!keepOpen) Close();
             }
             catch (Exception e)
             {
@@ -391,7 +409,7 @@ namespace Xbim.IO
         /// </summary>
         /// <param name="toImportFilename"></param>
         /// <param name="progressHandler"></param>
-        public void ImportIfcZip(string xbimDbName, string toImportFilename, ReportProgressDelegate progressHandler = null)
+        public void ImportIfcZip(string xbimDbName, string toImportFilename, ReportProgressDelegate progressHandler = null, bool keepOpen = false)
         {
             CreateDatabase(xbimDbName);
             Open(xbimDbName, XbimDBAccess.Exclusive);
@@ -431,7 +449,7 @@ namespace Xbim.IO
                                         transaction.Commit();
                                     }
                                     FreeTable(table);
-                                    Close();
+                                    if(!keepOpen) Close();
                                     return; // we only want the first file
                                 }
                             }
@@ -454,7 +472,7 @@ namespace Xbim.IO
                                         transaction.Commit();
                                     }
                                     FreeTable(table);
-                                    Close();
+                                    if (!keepOpen) Close();
                                     return;
                                 }
                             }
@@ -567,7 +585,7 @@ namespace Xbim.IO
             jetInstance.Parameters.MaxVerPages = 2048;
             jetInstance.Parameters.NoInformationEvent = true;
             jetInstance.Parameters.WaypointLatency = 1;
-            jetInstance.Parameters.MaxSessions = 256;
+            jetInstance.Parameters.MaxSessions = 512;
             jetInstance.Parameters.MaxOpenTables = 256;
            
             InitGrbit grbit = EsentVersion.SupportsWindows7Features
@@ -582,7 +600,7 @@ namespace Xbim.IO
         /// <summary>
         ///   Imports an Xml file memory model into the model server, only call when the database instances table is empty
         /// </summary>
-        public void ImportIfcXml(string xbimDbName, string xmlFilename, ReportProgressDelegate progressHandler = null)
+        public void ImportIfcXml(string xbimDbName, string xmlFilename, ReportProgressDelegate progressHandler = null, bool keepOpen = false)
         {
             CreateDatabase(xbimDbName);
             Open(xbimDbName, XbimDBAccess.Exclusive);
@@ -591,20 +609,26 @@ namespace Xbim.IO
             {
                 using (var transaction = table.BeginLazyTransaction())
                 {
-                    //XmlReaderSettings settings = new XmlReaderSettings() { IgnoreComments = true, IgnoreWhitespace = false };
-                    using (Stream xmlInStream = new FileStream(xmlFilename, FileMode.Open, FileAccess.Read))
+                   
+                    using (StreamReader xmlInStream = new StreamReader(xmlFilename,Encoding.GetEncoding("ISO-8859-9"))) //this is a work around to ensure latin character sets are read
                     {
-                        using (XmlTextReader xmlReader = new XmlTextReader(xmlInStream))
+                        using (XmlTextReader xmlTextReader = new XmlTextReader(xmlInStream))
                         {
+                            XmlReaderSettings settings = new XmlReaderSettings();
+                            settings.CheckCharacters = false; //has no impact
+                       
+                            XmlReader xmlReader = XmlReader.Create(xmlTextReader, settings);
+                            settings.CheckCharacters = false;
                             IfcXmlReader reader = new IfcXmlReader();
                             _model.Header = reader.Read(this, table, xmlReader);
                             table.WriteHeader(_model.Header);
+
                         }
                     }
                     transaction.Commit();
                 }
                 FreeTable(table);
-                Close();
+                if(!keepOpen) Close();
             }
             catch (Exception e)
             {
@@ -863,9 +887,8 @@ namespace Xbim.IO
                     if (entityTable.TrySeekEntityType(typeId, out ih))
                     {
                         yield return ih;
-                        while (entityTable.TryMoveNext())
+                        while (entityTable.TryMoveNextEntityType(out ih))
                         {
-                            ih = entityTable.GetInstanceHandle();
                             yield return ih;
                         }
                     }

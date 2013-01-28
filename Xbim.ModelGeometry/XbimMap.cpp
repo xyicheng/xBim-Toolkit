@@ -14,7 +14,7 @@ namespace Xbim
 	{
 
 
-		XbimMap::XbimMap(IXbimGeometryModel^ item, IfcAxis2Placement^ origin, IfcCartesianTransformationOperator^ transform, Dictionary<int,Object^>^ maps)
+		XbimMap::XbimMap(IXbimGeometryModel^ item, IfcAxis2Placement^ origin, IfcCartesianTransformationOperator^ transform, ConcurrentDictionary<int,Object^>^ maps)
 		{
 			_mappedItem = item;
 			 _representationLabel = item->RepresentationLabel;
@@ -55,6 +55,11 @@ namespace Xbim
 		IXbimGeometryModel^ XbimMap::CopyTo(IfcObjectPlacement^ placement)
 		{
 			throw gcnew NotImplementedException("CopyTo needs to be implemented");
+		}
+
+		void XbimMap::Move(TopLoc_Location location)
+		{
+			_mappedItem->Move(location);
 		}
 
 		List<XbimTriangulatedModel^>^XbimMap::Mesh()

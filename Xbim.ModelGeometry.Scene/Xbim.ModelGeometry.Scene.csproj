@@ -106,7 +106,6 @@
     <Compile Include="TransformNode.cs" />
     <Compile Include="XbimLOD.cs" />
     <Compile Include="XbimMeshGeometry3D.cs" />
-    <Compile Include="XbimSceneStream.cs" />
     <Compile Include="XbimTriangulatedModel.cs" />
     <Compile Include="XbimTriangulatedModelCollection.cs" />
     <Compile Include="XbimTriangulatedModelStream.cs" />

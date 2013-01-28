@@ -104,7 +104,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>.\OpenCascade\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;WNT;%(PreprocessorDefinitions);</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;WNT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
@@ -146,6 +146,7 @@
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
       <DelayLoadDLLs>
       </DelayLoadDLLs>
+      <Profile>true</Profile>
     </Link>
     <PostBuildEvent>
       <Command>xcopy .\OpenCascade\win64\bin "$(OutDir)" /D</Command>
@@ -232,6 +233,7 @@
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
       <DelayLoadDLLs>
       </DelayLoadDLLs>
+      <Profile>false</Profile>
     </Link>
     <PostBuildEvent>
       <Command>xcopy .\OpenCascade\win32\bin "$(OutDir)" /D /Y /R</Command>
@@ -337,7 +339,6 @@
       <ShowIncludes Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ShowIncludes>
     </ClCompile>
     <ClCompile Include="XbimMap.cpp" />
-    <ClCompile Include="XbimScene.cpp" />
     <ClCompile Include="XbimGeometryModel.cpp">
       <ShowIncludes Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ShowIncludes>
     </ClCompile>
@@ -391,7 +392,6 @@
     <ClInclude Include="XbimFacetedShell.h" />
     <ClInclude Include="XbimFeaturedShape.h" />
     <ClInclude Include="XbimMap.h" />
-    <ClInclude Include="XbimScene.h" />
     <ClInclude Include="XbimGeometryModel.h" />
     <ClInclude Include="XbimGeometryModelCollection.h" />
     <ClInclude Include="XbimGeomPrim.h" />

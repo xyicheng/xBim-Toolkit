@@ -15,17 +15,17 @@ namespace Xbim
 		XbimFacetedShell::XbimFacetedShell(IfcConnectedFaceSet^ shell)
 		{
 			_faceSet=shell;
-			_boundingBox = gcnew XbimBoundingBox(shell);
+			
 		}
 		XbimFacetedShell::XbimFacetedShell(IfcOpenShell^ shell)
 		{
 			_faceSet=shell;
-			_boundingBox = gcnew XbimBoundingBox(shell);
+			
 		}
 		XbimFacetedShell::XbimFacetedShell(IfcClosedShell^ shell)
 		{
 			_faceSet=shell;
-			_boundingBox = gcnew XbimBoundingBox(shell);
+			
 		}
 
 		XbimFacetedShell::XbimFacetedShell(IfcShell^ shell)
@@ -40,7 +40,7 @@ namespace Xbim
 				Type^ type = shell->GetType();
 				throw gcnew XbimGeometryException("Error buiding shell from type " + type->Name);
 			}
-			_boundingBox = gcnew XbimBoundingBox(_faceSet);
+			
 		}
 
 		
@@ -65,6 +65,11 @@ namespace Xbim
 		{
 			throw gcnew NotImplementedException("CopyTo needs to be implemented");
 		}
+			
+		void XbimFacetedShell::Move(TopLoc_Location location)
+		{
+			throw gcnew NotImplementedException("Move needs to be implemented");
+		}
 
 		List<XbimTriangulatedModel^>^XbimFacetedShell::Mesh()
 		{
@@ -87,7 +92,8 @@ namespace Xbim
 			bool doTransform = (transform!=Matrix3D::Identity);
 			XbimTriangularMeshStreamer tms (this->RepresentationLabel, this->SurfaceStyleLabel);
 			// XbimTriangularMeshStreamer* m = &tms;
-
+			double xmin = 0; double ymin = 0; double zmin = 0; double xmax = 0; double ymax = 0; double zmax = 0;
+			bool first = true;
 			// OPENGL TESSELLATION
 			//
 			GLUtesselator *ActiveTss = gluNewTess();
@@ -153,6 +159,27 @@ namespace Xbim
 						glPt3D[1] = p3D.Y;
 						glPt3D[2] = p3D.Z;
 						void * pIndex = (void *)tms.WritePoint((float)p3D.X, (float)p3D.Y, (float)p3D.Z);
+						
+						//get the bounding box as we go
+						if (first)
+                        {
+                            xmin = glPt3D[0];
+                            ymin = glPt3D[1];
+                            zmin = glPt3D[2];
+                            xmax = glPt3D[0];
+                            ymax = glPt3D[1];
+                            zmax = glPt3D[2];
+                            first = false;
+                        }
+                        else
+                        {
+                            xmin = Math::Min(xmin,glPt3D[0]);
+                            ymin = Math::Min(ymin,glPt3D[1]);
+                            zmin = Math::Min(zmin, glPt3D[2]);
+                            xmax = Math::Max(xmax,glPt3D[0]);
+                            ymax = Math::Max(ymax,glPt3D[1]);
+                            zmax = Math::Max(zmax, glPt3D[2]);
+                        }
 						gluTessVertex(ActiveTss, glPt3D, pIndex); 
 					}
 					gluTessEndContour(ActiveTss);
@@ -180,6 +207,8 @@ namespace Xbim
 			Marshal::FreeHGlobal(BonghiUnManMem);
 			List<XbimTriangulatedModel^>^list = gcnew List<XbimTriangulatedModel^>();
 			list->Add(gcnew XbimTriangulatedModel(BmanagedArray,this->RepresentationLabel, this->SurfaceStyleLabel));
+			//set bounding box
+			_boundingBox = gcnew XbimBoundingBox(xmin,ymin,zmin,xmax,ymax,zmax);
 			return list;
 			
 		}

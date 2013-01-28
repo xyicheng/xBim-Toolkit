@@ -30,6 +30,7 @@ namespace Xbim
 			virtual IXbimGeometryModel^ Union(IXbimGeometryModel^ shape);
 			virtual IXbimGeometryModel^ Intersection(IXbimGeometryModel^ shape);
 			virtual IXbimGeometryModel^ CopyTo(IfcObjectPlacement^ placement);
+			virtual void Move(TopLoc_Location location);
 			virtual property bool HasCurvedEdges
 			{
 				virtual bool get() //this geometry never has curved edges

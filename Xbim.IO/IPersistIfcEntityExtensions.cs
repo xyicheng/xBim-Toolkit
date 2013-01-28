@@ -536,8 +536,15 @@ namespace Xbim.IO
             }
             else if (pInfoType == typeof(Boolean))
             {
-                entityWriter.Write(Convert.ToByte(P21ParseAction.SetBooleanValue));
-                entityWriter.Write((bool)pVal);
+                if (pVal == null) //we have a logical
+                {
+                    entityWriter.Write(Convert.ToByte(P21ParseAction.SetNonDefinedValue));
+                }
+                else
+                {
+                    entityWriter.Write(Convert.ToByte(P21ParseAction.SetBooleanValue));
+                    entityWriter.Write((bool)pVal);
+                }
             }
 
             else if (pInfoType == typeof(DateTime)) //convert  TimeStamp

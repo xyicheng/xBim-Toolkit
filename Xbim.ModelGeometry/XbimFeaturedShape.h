@@ -18,13 +18,14 @@ namespace Xbim
 			static ILogger^ Logger = LoggerFactory::GetLogger();
 			Int32 _representationLabel;
 			Int32 _surfaceStyleLabel;
+			bool _hasCurves;
 		protected:
 			IXbimGeometryModel^ mResultShape;
 			IXbimGeometryModel^ mBaseShape;
 			List<IXbimGeometryModel^>^ mOpenings;
 			List<IXbimGeometryModel^>^ mProjections;
 			XbimFeaturedShape(XbimFeaturedShape^ copy, IfcObjectPlacement^ location);
-			bool DoCut(const TopoDS_Shape& shape, bool tryRepair);
+			bool DoCut(const TopoDS_Shape& shape);
 			bool DoUnion(const TopoDS_Shape& shape);
 		public:
 			XbimFeaturedShape(IfcProduct^ product, IXbimGeometryModel^ baseShape, IEnumerable<IXbimGeometryModel^>^ openings, IEnumerable<IXbimGeometryModel^>^ projections);
@@ -62,21 +63,8 @@ namespace Xbim
 			virtual property bool HasCurvedEdges
 			{
 				virtual bool get()
-				{
-					bool hasCurves = false;
-					if(mResultShape!=nullptr)
-						hasCurves = mResultShape->HasCurvedEdges;
-					if(mOpenings!=nullptr)
-					{
-						for each(IXbimGeometryModel^ opening in mOpenings)
-							if(opening->HasCurvedEdges) hasCurves = true;
-					}
-					if(mProjections!=nullptr)
-					{
-						for each(IXbimGeometryModel^ projection in mProjections)
-							if(projection->HasCurvedEdges) hasCurves = true;
-					}
-					return hasCurves;
+				{					
+					return _hasCurves;
 				}
 			}
 			virtual XbimBoundingBox^ GetBoundingBox(bool precise)
@@ -88,6 +76,8 @@ namespace Xbim
 			virtual IXbimGeometryModel^ Union(IXbimGeometryModel^ shape);
 			virtual IXbimGeometryModel^ Intersection(IXbimGeometryModel^ shape);
 			virtual IXbimGeometryModel^ CopyTo(IfcObjectPlacement^ placement);
+			virtual void Move(TopLoc_Location location);
+
 			virtual List<XbimTriangulatedModel^>^Mesh(bool withNormals, double deflection, Matrix3D transform);
 			virtual List<XbimTriangulatedModel^>^Mesh(bool withNormals, double deflection);
 			virtual List<XbimTriangulatedModel^>^Mesh(bool withNormals);

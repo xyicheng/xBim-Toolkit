@@ -324,13 +324,14 @@ namespace Xbim.COBie.Client
         /// <param name="context">Context object</param>
         private void GenerateGeometry(COBieContext context)
         {
+            //need to resolve generate geometry
             //now convert the geometry
-            IEnumerable<IfcProduct> toDraw = context.Model.IfcProducts.Cast<IfcProduct>(); //get all products for this model to place in return graph
-            int total = toDraw.Count();
-            XbimScene.ConvertGeometry(toDraw, delegate(int percentProgress, object userState)
-            {
-                context.UpdateStatus("Creating Geometry File", total, (total * percentProgress / 100));
-            }, false);
+            //IEnumerable<IfcProduct> toDraw = context.Model.IfcProducts.Cast<IfcProduct>(); //get all products for this model to place in return graph
+            //int total = toDraw.Count();
+            //XbimScene.ConvertGeometry(toDraw, delegate(int percentProgress, object userState)
+            //{
+            //    context.UpdateStatus("Creating Geometry File", total, (total * percentProgress / 100));
+            //}, false);
         }
 
 
@@ -349,16 +350,8 @@ namespace Xbim.COBie.Client
         private void btnBrowse_Click(object sender, EventArgs e)
         {
             OpenFileDialog dlg = new OpenFileDialog();
-            if (MergeChkBox.Checked)
-            {
-                dlg.Filter = "XLS Files|*.xls";
-                dlg.Title = "Choose a excel file to merge into (Main File)";
-            }
-            else
-            {
-                dlg.Filter = "IFC Files|*.ifc;*.ifcxml;*.ifczip|Xbim Files|*.xbim|XLS Files|*.xls";
-                dlg.Title = "Choose a source model file";
-            }
+            dlg.Filter = "IFC Files|*.ifc;*.ifcxml;*.ifczip|Xbim Files|*.xbim|XLS Files|*.xls";
+            dlg.Title = "Choose a source model file";
             
             dlg.CheckFileExists = true;
             // Show open file dialog box 
@@ -383,10 +376,7 @@ namespace Xbim.COBie.Client
         private void btnBrowseTemplate_Click(object sender, EventArgs e)
         {
             OpenFileDialog dlg = new OpenFileDialog();
-            if (MergeChkBox.Checked)
-                dlg.Title = "Choose an excel file to merge from";
-            else
-                dlg.Title = "Choose a COBie template file";
+            dlg.Title = "Choose a COBie template file";
             dlg.Filter = "XLS Files|*.xls";
             
             dlg.CheckFileExists = true;
@@ -464,16 +454,12 @@ namespace Xbim.COBie.Client
         {
             if (MergeChkBox.Checked)
             {
-                //label1.Text = "Merge Into:";
-                //label2.Text = "Merge From:";
                 GeoOnlyChkBox.Enabled = true;
                 mergeBtn.Enabled = true;
                 groupBox1.Enabled = false;
             }
             else
             {
-                //label1.Text = "Select File:";
-                //label2.Text = "Template:";
                 GeoOnlyChkBox.Enabled = false;
                 mergeBtn.Enabled = false;
                 groupBox1.Enabled = true;

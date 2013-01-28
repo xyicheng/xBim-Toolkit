@@ -12,6 +12,7 @@ namespace Xbim.Common
         readonly public double DeflectionTolerance;    
         readonly public double AngleToRadiansConversionFactor;
         readonly public double LengthToMetresConversionFactor;
+        readonly public double VertxPointDiameter;
         /// <summary>
         /// Returns the value for one metre in the units of the model
         /// </summary>
@@ -24,10 +25,12 @@ namespace Xbim.Common
         {
             AngleToRadiansConversionFactor = angToRads;
             LengthToMetresConversionFactor = lenToMeter;
-            WireTolerance = 0.000001 / lenToMeter; //0.001mm
-            DeflectionTolerance = 0.01 / lenToMeter; //10mm deflection
-            OneMetre = lenToMeter;
-            OneMilliMetre = 1000 * lenToMeter;
+           
+            OneMetre = 1/lenToMeter;
+            OneMilliMetre = OneMetre / 1000;
+            DeflectionTolerance = OneMilliMetre*10; //10mm deflection
+            WireTolerance = OneMilliMetre / 1000; //0.001mm
+            VertxPointDiameter = OneMilliMetre * 10; //1 cm
         }
     }
 }

@@ -83,7 +83,7 @@ namespace Xbim.Tests
             CompareXbimFiles(Ref_Xbim, Ref_Xbim_IfcXml_Xbim);
             CompareXbimFiles(Ref_Xbim_IfcXml_Xbim, Ref_Xbim_IfcXml_Xbim_ifc_Xbim);
             CompareXbimFiles(Ref_Xbim_IfcXml_Xbim_ifc_Xbim, Ref_Xbim);
-            CreateGeometry(Ref_Xbim);
+            //CreateGeometry(Ref_Xbim);
             Assert.IsTrue(true);
         }
 
@@ -169,23 +169,11 @@ namespace Xbim.Tests
                 //srl to fix throw new Exception("To Fix");
                 // modelServer.ExtractSemantic(nonGeomXbimFileName, XbimStorageType.XBIM, null);
                 modelServer.Close();
-                
 
                 return nonGeomXbimFileName;
             }
 
-            private string CreateGeometry(string xbimSourceFile)
-            {
-                string xbimFilePath = Path.GetDirectoryName(xbimSourceFile);
-
-                XbimModel modelServer = new XbimModel();
-                modelServer.Open(xbimSourceFile,XbimDBAccess.ReadWrite);
-                IEnumerable<IfcProduct> toDraw = modelServer.IfcProducts.Cast<IfcProduct>();
-                XbimScene.ConvertGeometry(toDraw, null,false);
-                modelServer.Close();
-
-                return xbimSourceFile;
-            }
+          
 
             private static string CreateXbimFile(string sourceFilePath, string targetPath = null)
             {

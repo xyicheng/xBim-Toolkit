@@ -157,17 +157,35 @@ namespace Xbim
 			{
 				List<XbimTriangulatedModel^>^tm = gcnew List<XbimTriangulatedModel^>();
 				for each(IXbimGeometryModel^ gm in shapes)
-					tm->AddRange(gm->Mesh(withNormals, deflection, transform));
+				{
+					List<XbimTriangulatedModel^>^ mm = gm->Mesh(withNormals, deflection, transform);
+					if(mm!=nullptr)
+						tm->AddRange(mm);
+				}
 				return tm;
 			}
 			else
 				return gcnew List<XbimTriangulatedModel^>();
 			
 		}
+		
+		void XbimGeometryModelCollection::Move(TopLoc_Location location)
+		{	
+			
+			for each(IXbimGeometryModel^ shape in shapes)
+				shape->Move(location);
+			if (pCompound) //remove anyy cached compund data
+			{
+				delete pCompound;
+				pCompound=0;
+			}
+		}
 
 		IXbimGeometryModel^ XbimGeometryModelCollection::CopyTo(IfcObjectPlacement^ placement)
 		{
-			XbimGeometryModelCollection^ newColl = gcnew XbimGeometryModelCollection(_isMap);
+			XbimGeometryModelCollection^ newColl = gcnew XbimGeometryModelCollection(_isMap, HasCurvedEdges);
+			newColl->RepresentationLabel=RepresentationLabel;
+			newColl->SurfaceStyleLabel=SurfaceStyleLabel;
 			for each(IXbimGeometryModel^ shape in shapes)
 			{
 				newColl->Add(shape->CopyTo(placement));

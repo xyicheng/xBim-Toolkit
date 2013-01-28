@@ -13,6 +13,7 @@
 #region Directives
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
@@ -48,7 +49,7 @@ namespace Xbim.Ifc2x3.Extensions
                 return new Matrix(1, 0, 0, 1, axis2.Location.X, axis2.Location.Y);
         }
 
-        public static Matrix3D ToMatrix3D(this IfcAxis2Placement2D axis2, Dictionary<int, Object> maps = null)
+        public static Matrix3D ToMatrix3D(this IfcAxis2Placement2D axis2, ConcurrentDictionary<int, Object> maps = null)
         {
             object transform;
             if (maps != null && maps.TryGetValue(Math.Abs(axis2.EntityLabel), out transform)) //already converted it just return cached
@@ -62,7 +63,7 @@ namespace Xbim.Ifc2x3.Extensions
             else
                 transform = new Matrix3D(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, axis2.Location.X, axis2.Location.Y,
                                     axis2.Location.Z, 1);
-            if (maps != null) maps.Add(Math.Abs(axis2.EntityLabel), transform);
+            if (maps != null) maps.TryAdd(Math.Abs(axis2.EntityLabel), transform);
             return (Matrix3D)transform;
         }
     }

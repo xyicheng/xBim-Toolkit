@@ -4,6 +4,7 @@
 #include <TopoDS_Shape.hxx>
 #include "XbimLocation.h"
 #include "XbimBoundingBox.h"
+#include <BRepBuilderApi.hxx>
 using namespace Xbim::Ifc2x3::GeometryResource;
 using namespace Xbim::Ifc2x3::GeometricConstraintResource;
 using namespace Xbim::XbimExtensions::SelectTypes;
@@ -29,6 +30,7 @@ namespace Xbim
 			List<XbimTriangulatedModel^>^Mesh(bool withNormals);
 			List<XbimTriangulatedModel^>^Mesh();
 			IXbimGeometryModel^ CopyTo(IfcObjectPlacement^ placement);
+			void Move(TopLoc_Location location);
 			property XbimLocation ^ Location {XbimLocation ^ get(); void set(XbimLocation ^ location);};
 			XbimBoundingBox^ GetBoundingBox(bool precise);
 			property double Volume {double get();};
