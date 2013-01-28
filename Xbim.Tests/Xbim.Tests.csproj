@@ -183,7 +183,6 @@
       <Link>TestSourceFiles\PickLists.xml</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <None Include="TestSourceFiles\2012-03-23-Duplex-Handover.ifc" />
     <Content Include="TestSourceFiles\Ref.ifc">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -199,26 +198,20 @@
     <Content Include="TestSourceFiles\COBie-US-2_4-template.xls">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="TestSourceFiles\Clinic_A.xbim">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="TestSourceFiles\COBieToXbim.xCOBie">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="TestSourceFiles\DuplexCOBieToXbim.xCOBie">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="TestSourceFiles\Clinic_Handover.ifc">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="TestSourceFiles\2012-03-23-Duplex-Handover.xBIM">
+    <Content Include="TestSourceFiles\Clinic-CutDown.xbim">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="TestSourceFiles\Duplex_A_Co-ord.xBIM">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="TestSourceFiles\Clinic_Handover.xBIM">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestSourceFiles\Duplex-Handover.xbim">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <None Include="TestSourceFiles\BIM Logo - Coordination View 2 - No M.xBIM">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -228,6 +221,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="TestSourceFiles\BIM Logo-Coordination View 2 - No M.ifc" />
+    <Content Include="TestSourceFiles\DuplexCOBieToXbim.xCOBie">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

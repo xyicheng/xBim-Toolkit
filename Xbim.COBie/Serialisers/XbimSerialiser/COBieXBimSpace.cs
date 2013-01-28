@@ -66,14 +66,19 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         /// <param name="row">COBieSpaceRow holding the data</param>
         private void AddSpace(COBieSpaceRow row)
         {
+            //we are merging so check for an existing item name, assume the same item as should be the same building
+            if (CheckIfExistOnMerge<IfcSpace>(row.Name))
+            {
+                return;//we have it so no need to create
+            }
+            
             IfcSpace ifcSpace = Model.Instances.New<IfcSpace>();
+            //Set the CompositionType to Element as it is a required field
+            ifcSpace.CompositionType = IfcElementCompositionEnum.ELEMENT;
 
-            //Add Created By, Created On and ExtSystem to Owner History
-            if ((ValidateString(row.CreatedBy)) && (Contacts.ContainsKey(row.CreatedBy)))
-                SetNewOwnerHistory(ifcSpace, row.ExtSystem, Contacts[row.CreatedBy], row.CreatedOn);
-            else
-                SetNewOwnerHistory(ifcSpace, row.ExtSystem, Model.DefaultOwningUser, row.CreatedOn);
-
+            //Add Created By, Created On and ExtSystem to Owner History. 
+            SetUserHistory(ifcSpace, row.ExtSystem, row.CreatedBy, row.CreatedOn);
+            
             //using statement will set the Model.OwnerHistoryAddObject to ifcSpace.OwnerHistory as OwnerHistoryAddObject is used upon any property changes, 
             //then swaps the original OwnerHistoryAddObject back in the dispose, so set any properties within the using statement
             using (COBieXBimEditScope context = new COBieXBimEditScope(Model, ifcSpace.OwnerHistory))

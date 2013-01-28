@@ -13,6 +13,7 @@ namespace Xbim.COBie
         private string _columnName;
         private COBieKeyType _keyType;
         private string _referenceColumnName;
+        private COBieCardinality _cardinality;
 
         public COBieAttributeState State
         {
@@ -55,7 +56,17 @@ namespace Xbim.COBie
             get { return _referenceColumnName; }
         }
 
-        public COBieAttributes(int order, COBieKeyType keyType, string referenceColumnName, COBieAttributeState state, string columnName, int maxLength, COBieAllowedType allowedType)
+        public COBieCardinality Cardinality
+        {
+            get { return _cardinality; }
+        }
+
+        public bool AllowedMultipleValues
+        {
+            get { return Cardinality == COBieCardinality.ManyToMany; }
+        }
+
+        public COBieAttributes(int order, COBieKeyType keyType, string referenceColumnName, COBieAttributeState state, string columnName, int maxLength, COBieAllowedType allowedType, COBieCardinality cardinality = COBieCardinality.OneToMany)
         {
             _state = state;
             _maxLength = maxLength;
@@ -64,6 +75,7 @@ namespace Xbim.COBie
             _columnName = columnName;
             _keyType = keyType;
             _referenceColumnName = referenceColumnName;
+            _cardinality = cardinality;
         }
     }
 }

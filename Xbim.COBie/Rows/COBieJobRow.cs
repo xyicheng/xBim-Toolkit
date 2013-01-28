@@ -63,10 +63,10 @@ namespace Xbim.COBie.Rows
         [COBieAttributes(16, COBieKeyType.CompoundKey, "", COBieAttributeState.Required_IfSpecified, "TaskNumber", 255, COBieAllowedType.AlphaNumeric)]
         public string TaskNumber { get; set; }
 
-        [COBieAttributes(17, COBieKeyType.ForeignKey, "Job.TaskNumber", COBieAttributeState.Required_Reference_PrimaryKey, "Priors", 255, COBieAllowedType.Text)]
+        [COBieAttributes(17, COBieKeyType.ForeignKey, "Job.TaskNumber", COBieAttributeState.Required_IfSpecified, "Priors", 255, COBieAllowedType.Text, COBieCardinality.ManyToMany)]
         public string Priors { get; set; }
 
-        [COBieAttributes(18, COBieKeyType.ForeignKey, "Resource.Name", COBieAttributeState.Required_Reference_PrimaryKey, "ResourceNames", 255, COBieAllowedType.Text)]
+        [COBieAttributes(18, COBieKeyType.ForeignKey, "Resource.Name", COBieAttributeState.Required_IfSpecified, "ResourceNames", 255, COBieAllowedType.Text, COBieCardinality.ManyToMany)]
         public string ResourceNames { get; set; }
     }
 }

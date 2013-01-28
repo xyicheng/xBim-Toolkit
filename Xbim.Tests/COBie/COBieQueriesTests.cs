@@ -16,7 +16,7 @@ namespace Xbim.Tests.COBie
     public class COBieQueriesTests
     {
         private const string Root = "TestSourceFiles";
-        private const string SourceModelLeaf = "2012-03-23-Duplex-Handover.xbim";
+        private const string SourceModelLeaf = "Duplex-Handover.xBIM";
         private const string PickListLeaf = "PickLists.xml";
 
         private const string SourceFile =  Root + @"\" + SourceModelLeaf;

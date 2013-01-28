@@ -17,44 +17,39 @@ namespace Xbim.Tests.COBie
     public class COBieTimeTests
     {
         private const string Root = "TestSourceFiles";
-        private const string SourceModelLeaf = "Clinic_Handover.xBIM";
+        private const string SourceModelLeaf = "Clinic-CutDown.xbim";
         private const string SourceFile = Root + @"\" + SourceModelLeaf;
         
-        private COBieContext _cobieContext = null;
-        private COBieQueries _cobieEngine = null;
-        private XbimModel _model = null;
+        private static COBieContext _cobieContext = null;
+        private static COBieQueries _cobieEngine = null;
+        private static XbimModel _model = null;
 
         [ClassInitialize]
         public static void LoadModel(TestContext context)
         {
             
-            //_model = new XbimModel();
-            //if (!File.Exists(SourceFile)) throw new Exception("Cannot find file");
-            //_model.Open(SourceFile);C:\Xbim\XbimFramework\Dev\Steve\Xbim.Tests\TestSourceFiles\Clinic-Handover.xBIM
-            //_cobieContext = new COBieContext();C:\Xbim\XbimFramework\Dev\Steve\Xbim.Tests\TestSourceFiles\Clinic-Handover.xBIM
-            //_cobieContext.Model = _model;
-            //COBieQueries cobieEngine = new COBieQueries(_cobieContext);
+            if (!File.Exists(SourceFile)) throw new Exception("Cannot find file");
+            _model = new XbimModel();
+            _model.Open(SourceFile);
+            _cobieContext = new COBieContext();
+            _cobieContext.Model = _model;
+           
         }
 
         [ClassCleanup]
         public static void CloseModel()
         {
-            //if (_model != null)
-            //    _model.Close();
-            //_model = null;
-            //_cobieContext = null;
+            if (_model != null)
+                _model.Close();
+            _model = null;
+            _cobieContext = null;
             
         }
         
         //[TestMethod]
         public void Time_On_All()
         {
-            if (!File.Exists(SourceFile)) throw new Exception("Cannot find file");
-            using (_model = new XbimModel())
-            {
-                _model.Open(SourceFile);
-                _cobieContext = new COBieContext();
-                _cobieContext.Model = _model;
+            
                 _cobieEngine = new COBieQueries(_cobieContext);
 
                 ContactTime();
@@ -75,259 +70,137 @@ namespace Xbim.Tests.COBie
                 AttributeTime();
                 //CoordinateTime();
                 IssueTime();
-            }
+            
         }
 
         [TestMethod]
         public void Time_On_Contacts()
         {
-            if (!File.Exists(SourceFile)) throw new Exception("Cannot find file");
-            using (_model = new XbimModel())
-            {
-                _model.Open(SourceFile);
-                _cobieContext = new COBieContext();
-                _cobieContext.Model = _model;
-                _cobieEngine = new COBieQueries(_cobieContext);
-                Assert.IsTrue(ContactTime() < new TimeSpan(0, 0, 2));
-            }
+            _cobieEngine = new COBieQueries(_cobieContext);
+            Assert.IsTrue(ContactTime() < new TimeSpan(0, 0, 1));
+
         }
 
         [TestMethod]
         public void Time_On_Facility()
         {
-            if (!File.Exists(SourceFile)) throw new Exception("Cannot find file");
-            using (_model = new XbimModel())
-            {
-                _model.Open(SourceFile);
-                _cobieContext = new COBieContext();
-                _cobieContext.Model = _model;
-                _cobieEngine = new COBieQueries(_cobieContext);
-                Assert.IsTrue(FacilityTime() < new TimeSpan(0, 0, 2));
-            }
+            _cobieEngine = new COBieQueries(_cobieContext);
+            Assert.IsTrue(FacilityTime() < new TimeSpan(0, 0, 1));
         }
+
 
         [TestMethod]
         public void Time_On_Floor()
         {
-            using (_model = new XbimModel())
-            {
-                _model.Open(SourceFile);
-                _cobieContext = new COBieContext();
-                _cobieContext.Model = _model;
-                _cobieEngine = new COBieQueries(_cobieContext);
-                Assert.IsTrue(FloorTime() < new TimeSpan(0, 0, 2));
-            }
+            _cobieEngine = new COBieQueries(_cobieContext);
+            Assert.IsTrue(FloorTime() < new TimeSpan(0, 0, 1));
         }
 
         [TestMethod]
         public void Time_On_Space()
         {
-            if (!File.Exists(SourceFile)) throw new Exception("Cannot find file");
-            using (_model = new XbimModel())
-            {
-                _model.Open(SourceFile);
-                _cobieContext = new COBieContext();
-                _cobieContext.Model = _model;
-                _cobieEngine = new COBieQueries(_cobieContext);
-                Assert.IsTrue(SpaceTime() < new TimeSpan(0, 0, 18));
-            }
+            _cobieEngine = new COBieQueries(_cobieContext);
+            Assert.IsTrue(SpaceTime() < new TimeSpan(0, 0, 3));
         }
 
         [TestMethod]
         public void Time_On_Zone()
         {
-            if (!File.Exists(SourceFile)) throw new Exception("Cannot find file");
-            using (_model = new XbimModel())
-            {
-                _model.Open(SourceFile);
-                _cobieContext = new COBieContext();
-                _cobieContext.Model = _model;
-                _cobieEngine = new COBieQueries(_cobieContext);
-                Assert.IsTrue(ZoneTime() < new TimeSpan(0, 0, 2));
-            }
+            _cobieEngine = new COBieQueries(_cobieContext);
+            Assert.IsTrue(ZoneTime() < new TimeSpan(0, 0, 2));
         }
 
         [TestMethod]
         public void Time_On_Type()
         {
-            if (!File.Exists(SourceFile)) throw new Exception("Cannot find file");
-            using (_model = new XbimModel())
-            {
-                _model.Open(SourceFile);
-                _cobieContext = new COBieContext();
-                _cobieContext.Model = _model;
-                _cobieEngine = new COBieQueries(_cobieContext);
-                Assert.IsTrue(TypeTime() < new TimeSpan(0, 0, 2));
-            }
+            _cobieEngine = new COBieQueries(_cobieContext);
+            Assert.IsTrue(TypeTime() < new TimeSpan(0, 0, 3));
         }
 
         [TestMethod]
         public void Time_On_Component()
         {
-            if (!File.Exists(SourceFile)) throw new Exception("Cannot find file");
-            using (_model = new XbimModel())
-            {
-                _model.Open(SourceFile);
-                _cobieContext = new COBieContext();
-                _cobieContext.Model = _model;
-                _cobieEngine = new COBieQueries(_cobieContext);
-                Assert.IsTrue(ComponentTime() < new TimeSpan(0, 0, 34));
-            }
+
+            _cobieEngine = new COBieQueries(_cobieContext);
+            Assert.IsTrue(ComponentTime() < new TimeSpan(0, 0, 5));
         }
 
         [TestMethod]
         public void Time_On_System()
         {
-            if (!File.Exists(SourceFile)) throw new Exception("Cannot find file");
-            using (_model = new XbimModel())
-            {
-                _model.Open(SourceFile);
-                _cobieContext = new COBieContext();
-                _cobieContext.Model = _model;
-                _cobieEngine = new COBieQueries(_cobieContext);
-                Assert.IsTrue(SystemTime() < new TimeSpan(0, 0, 10));
-            }
+            _cobieEngine = new COBieQueries(_cobieContext);
+            Assert.IsTrue(SystemTime() < new TimeSpan(0, 0, 1));
         }
 
         [TestMethod]
         public void Time_On_Assembly()
         {
-            if (!File.Exists(SourceFile)) throw new Exception("Cannot find file");
-            using (_model = new XbimModel())
-            {
-                _model.Open(SourceFile);
-                _cobieContext = new COBieContext();
-                _cobieContext.Model = _model;
-                _cobieEngine = new COBieQueries(_cobieContext);
-                Assert.IsTrue(AssemblyTime() < new TimeSpan(0, 0, 2));
-            }
+            _cobieEngine = new COBieQueries(_cobieContext);
+            Assert.IsTrue(AssemblyTime() < new TimeSpan(0, 0, 1));
         }
 
         [TestMethod]
         public void Time_On_Connection()
         {
-            if (!File.Exists(SourceFile)) throw new Exception("Cannot find file");
-            using (_model = new XbimModel())
-            {
-                _model.Open(SourceFile);
-                _cobieContext = new COBieContext();
-                _cobieContext.Model = _model;
-                _cobieEngine = new COBieQueries(_cobieContext);
-                Assert.IsTrue(ConnectionTime() < new TimeSpan(0, 0, 2));
-            }
+            _cobieEngine = new COBieQueries(_cobieContext);
+            Assert.IsTrue(ConnectionTime() < new TimeSpan(0, 0, 1));
         }
 
         [TestMethod]
         public void Time_On_Spare()
         {
-            if (!File.Exists(SourceFile)) throw new Exception("Cannot find file");
-            using (_model = new XbimModel())
-            {
-                _model.Open(SourceFile);
-                _cobieContext = new COBieContext();
-                _cobieContext.Model = _model;
-                _cobieEngine = new COBieQueries(_cobieContext);
-                Assert.IsTrue(SpareTime() < new TimeSpan(0, 0, 2));
-            }
+            _cobieEngine = new COBieQueries(_cobieContext);
+            Assert.IsTrue(SpareTime() < new TimeSpan(0, 0, 1));
         }
 
         [TestMethod]
         public void Time_On_Resource()
         {
-            if (!File.Exists(SourceFile)) throw new Exception("Cannot find file");
-            using (_model = new XbimModel())
-            {
-                _model.Open(SourceFile);
-                _cobieContext = new COBieContext();
-                _cobieContext.Model = _model;
-                _cobieEngine = new COBieQueries(_cobieContext);
-                Assert.IsTrue(ResourceTime() < new TimeSpan(0, 0, 2));
-            }
+            _cobieEngine = new COBieQueries(_cobieContext);
+            Assert.IsTrue(ResourceTime() < new TimeSpan(0, 0, 1));
         }
 
         [TestMethod]
         public void Time_On_Job()
         {
-            if (!File.Exists(SourceFile)) throw new Exception("Cannot find file");
-            using (_model = new XbimModel())
-            {
-                _model.Open(SourceFile);
-                _cobieContext = new COBieContext();
-                _cobieContext.Model = _model;
-                _cobieEngine = new COBieQueries(_cobieContext);
-                Assert.IsTrue(JobTime() < new TimeSpan(0, 0, 2));
-            }
+            _cobieEngine = new COBieQueries(_cobieContext);
+            Assert.IsTrue(JobTime() < new TimeSpan(0, 0, 1));
         }
 
         [TestMethod]
         public void Time_On_Impact()
         {
-            if (!File.Exists(SourceFile)) throw new Exception("Cannot find file");
-            using (_model = new XbimModel())
-            {
-                _model.Open(SourceFile);
-                _cobieContext = new COBieContext();
-                _cobieContext.Model = _model;
-                _cobieEngine = new COBieQueries(_cobieContext);
-                Assert.IsTrue(ImpactTime() < new TimeSpan(0, 0, 2));
-            }
+            _cobieEngine = new COBieQueries(_cobieContext);
+            Assert.IsTrue(ImpactTime() < new TimeSpan(0, 0, 1));
         }
 
         [TestMethod]
         public void Time_On_Document()
         {
-            if (!File.Exists(SourceFile)) throw new Exception("Cannot find file");
-            using (_model = new XbimModel())
-            {
-                _model.Open(SourceFile);
-                _cobieContext = new COBieContext();
-                _cobieContext.Model = _model;
-                _cobieEngine = new COBieQueries(_cobieContext);
-                Assert.IsTrue(DocumentTime() < new TimeSpan(0, 0, 2));
-            }
+            _cobieEngine = new COBieQueries(_cobieContext);
+            Assert.IsTrue(DocumentTime() < new TimeSpan(0, 0, 1));
         }
 
         [TestMethod]
         public void Time_On_Attribute()
         {
-            if (!File.Exists(SourceFile)) throw new Exception("Cannot find file");
-            using (_model = new XbimModel())
-            {
-                _model.Open(SourceFile);
-                _cobieContext = new COBieContext();
-                _cobieContext.Model = _model;
-                _cobieEngine = new COBieQueries(_cobieContext);
-                Assert.IsTrue(AttributeTime() < new TimeSpan(0, 0, 2));
-            }
+            _cobieEngine = new COBieQueries(_cobieContext);
+            Assert.IsTrue(AttributeTime() < new TimeSpan(0, 0, 7));
         }
 
         [TestMethod]
         [Ignore]
         public void Time_On_Coordinate()
         {
-            if (!File.Exists(SourceFile)) throw new Exception("Cannot find file");
-            using (_model = new XbimModel())
-            {
-                _model.Open(SourceFile);
-                _cobieContext = new COBieContext();
-                _cobieContext.Model = _model;
-                _cobieEngine = new COBieQueries(_cobieContext);
-                Assert.IsTrue(CoordinateTime() < new TimeSpan(0, 0, 2));
-            }
+            _cobieEngine = new COBieQueries(_cobieContext);
+            Assert.IsTrue(CoordinateTime() < new TimeSpan(0, 0, 2));
         }
 
         [TestMethod]
         public void Time_On_Issue()
         {
-            if (!File.Exists(SourceFile)) throw new Exception("Cannot find file");
-            using (_model = new XbimModel())
-            {
-                _model.Open(SourceFile);
-                _cobieContext = new COBieContext();
-                _cobieContext.Model = _model;
-                _cobieEngine = new COBieQueries(_cobieContext);
-                Assert.IsTrue(IssueTime() < new TimeSpan(0, 0, 2));
-            }
+            _cobieEngine = new COBieQueries(_cobieContext);
+            Assert.IsTrue(IssueTime() < new TimeSpan(0, 0, 1));
         }
 
         //---------------------------------------------------------------------------

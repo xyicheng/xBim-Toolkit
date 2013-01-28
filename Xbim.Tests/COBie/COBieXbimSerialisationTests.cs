@@ -22,13 +22,11 @@ using System.Threading.Tasks;
 using System.Threading;
 using Xbim.Common.Exceptions;
 using System.Windows.Media.Media3D;
+//using Xbim.IO.Tree;
 
 namespace Xbim.Tests.COBie
 {
-    //[DeploymentItem(SourceFile, Root)]
-    //[DeploymentItem(PickListFile, Root)]
     [DeploymentItem(ExcelTemplateFile, Root)]
-    [DeploymentItem(BinaryFile, Root)]
     [DeploymentItem(DuplexFile, Root)]
     [DeploymentItem(DuplexBinaryFile, Root)]
     [DeploymentItem(DLLFiles)]
@@ -36,60 +34,27 @@ namespace Xbim.Tests.COBie
     public class COBieXbimSerialisationTests
     {
         private const string Root = "TestSourceFiles";
-        private const string SourceBinaryFile = "COBieToXbim.xCOBie";
-        private const string ExcelTemplateLeaf = "COBie-US-2_4-template.xls";
 
-        private const string DuplexModelLeaf = "Duplex_A_Co-ord.xbim"; //"Clinic_A.xbim";//"2012-03-23-Duplex-Handover.xbim";
-        private const string DuplexFile = Root + @"\" + DuplexModelLeaf;
+        private const string ExcelTemplateLeaf = "COBie-US-2_4-template.xls";
+        private const string DuplexModelLeaf = "Duplex_A_Co-ord.xbim"; 
         private const string DuplexBinaryLeaf = "DuplexCOBieToXbim.xCOBie";
-        private const string DuplexBinaryFile = Root + @"\" + DuplexBinaryLeaf;
         
         private const string ExcelTemplateFile = Root + @"\" + ExcelTemplateLeaf;
-        private const string BinaryFile = Root + @"\" + SourceBinaryFile;
-
+        private const string DuplexFile = Root + @"\" + DuplexModelLeaf;
+        private const string DuplexBinaryFile = Root + @"\" + DuplexBinaryLeaf;
+        
         private const string DLLFiles = @"C:\Xbim\XbimFramework\Dev\COBie\Xbim.ModelGeometry\OpenCascade\Win32\Bin";
 
+        /// <summary>
+        /// Test to Create Binary file from workbook 
+        /// </summary>
         [TestMethod]
-        public void Contacts_XBimSerialise()
+        public void Should_BinarySerialiser()
         {
             COBieWorkbook workBook;
             COBieContext context;
             COBieBuilder builder;
-            COBieWorkbook book;
 
-            COBieBinaryDeserialiser deserialiser = new COBieBinaryDeserialiser(BinaryFile);
-            workBook = deserialiser.Deserialise();
-
-            using (COBieXBimSerialiser xBimSerialiser = new COBieXBimSerialiser(Path.ChangeExtension(BinaryFile, ".xBIM")))
-            {
-                xBimSerialiser.Serialise(workBook);
-
-                context = new COBieContext(null);
-                context.TemplateFileName = ExcelTemplateFile;
-                context.Model = xBimSerialiser.Model;
-
-                builder = new COBieBuilder(context);
-                book = builder.Workbook;
-            }
-            
-            
-            //create excel file
-            string excelFile = Path.ChangeExtension(SourceBinaryFile, ".xls");
-            ICOBieSerialiser formatter = new COBieXLSSerialiser(excelFile, ExcelTemplateFile);
-            builder.Export(formatter);
-            Process.Start(excelFile);
-            
-        }
-
-        [TestMethod]
-        public void Contacts_XBimSerialise_Duplex()
-        {
-            COBieWorkbook workBook;
-            COBieContext context;
-            COBieBuilder builder;
-            COBieWorkbook book;
-            
-            //string cacheFile = Path.ChangeExtension(DuplexFile, ".xbimGC");
 
             context = new COBieContext(null);
             context.TemplateFileName = ExcelTemplateFile;
@@ -101,10 +66,7 @@ namespace Xbim.Tests.COBie
                     Console.Write("\rReading File {1} {0}", percentProgress, DuplexFile);
                 });
                 context.Model = model;
-                
-                //Create Scene, required for Coordinates sheet
-                GenerateGeometry(context); //we want to generate each run
-                //context.Scene = new XbimSceneStream(model, cacheFile);
+
 
                 builder = new COBieBuilder(context);
                 workBook = builder.Workbook;
@@ -112,34 +74,51 @@ namespace Xbim.Tests.COBie
                 serialiser.Serialise(workBook);
 
             }
-            
-            
+            double bytes = 0;
+            if (File.Exists(DuplexBinaryFile))
+            {
+                FileInfo fileInfo = new FileInfo(DuplexBinaryFile);
+                bytes = fileInfo.Length;
+            }
 
-            using (COBieXBimSerialiser xBimSerialiser = new COBieXBimSerialiser(Path.ChangeExtension(DuplexBinaryFile, ".xBIM")))
+            Assert.IsTrue(bytes == 1937869.0);
+
+        }
+
+        /// <summary>
+        /// Test to create Ifc File from Workbook
+        /// </summary>
+        [TestMethod]
+        public void Should_XBimSerialise()
+        {
+            COBieWorkbook workBook;
+            COBieContext context;
+            COBieBuilder builder;
+            COBieWorkbook book;
+
+            COBieBinaryDeserialiser deserialiser = new COBieBinaryDeserialiser(DuplexBinaryFile);
+            workBook = deserialiser.Deserialise();
+
+            using (COBieXBimSerialiser xBimSerialiser = new COBieXBimSerialiser(Path.ChangeExtension(DuplexBinaryFile, ".Ifc")))//Path.ChangeExtension(Path.GetFullPath(BinaryFile), ".Ifc")
             {
                 xBimSerialiser.Serialise(workBook);
-
 
                 context = new COBieContext(null);
                 context.TemplateFileName = ExcelTemplateFile;
                 context.Model = xBimSerialiser.Model;
-                
-                GenerateGeometry(context); //we want to generate each run
-                
+
                 builder = new COBieBuilder(context);
-
                 book = builder.Workbook;
-
             }
 
-            //create excel file
-            string excelFile = Path.ChangeExtension(SourceBinaryFile, ".xls");
-            ICOBieSerialiser formatter = new COBieXLSSerialiser(excelFile, ExcelTemplateFile);
-            builder.Export(formatter);
-            Process.Start(excelFile);
-
+            // Assert
+            Assert.AreEqual(19, book.Count);
             
         }
+
+        /// <summary>
+        /// Test on Delimited Strings
+        /// </summary>
         [TestMethod]
         public void Delimited_Strings()
         {

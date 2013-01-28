@@ -65,13 +65,16 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         /// <param name="row">COBieZoneRow holding the data</param>
         private void AddZone(COBieZoneRow row)
         {
+            //we are merging so check for an existing item name, assume the same item as should be the same building
+            if (CheckIfExistOnMerge<IfcZone>(row.Name))
+            {
+                return;//we have it so no need to create
+            }
             IfcZone ifcZone = Model.Instances.New<IfcZone>();
-            //Add Created By, Created On and ExtSystem to Owner History
-            if ((ValidateString(row.CreatedBy)) && (Contacts.ContainsKey(row.CreatedBy)))
-                SetNewOwnerHistory(ifcZone, row.ExtSystem, Contacts[row.CreatedBy], row.CreatedOn);
-            else
-                SetNewOwnerHistory(ifcZone, row.ExtSystem, Model.DefaultOwningUser, row.CreatedOn);
-
+            
+            //Add Created By, Created On and ExtSystem to Owner History. 
+            SetUserHistory(ifcZone, row.ExtSystem, row.CreatedBy, row.CreatedOn);
+            
             //using statement will set the Model.OwnerHistoryAddObject to ifcZone.OwnerHistory as OwnerHistoryAddObject is used upon any property changes, 
             //then swaps the original OwnerHistoryAddObject back in the dispose, so set any properties within the using statement
             using (COBieXBimEditScope context = new COBieXBimEditScope(Model, ifcZone.OwnerHistory))

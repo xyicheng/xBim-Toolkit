@@ -128,50 +128,39 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                
                 if (CurrentObject != null)
                 {
-                    string pSetName = "";
                     if (ValidateString(row.Name)) 
                     {
-                        if (ValidateString(row.ExtObject))
-                            pSetName = row.ExtObject;
-                        else
-                            pSetName = "PSet_COBie_UnSpecified_for_" + row.Name;
+                        IfcPropertySet ifcPropertySet = CheckIfExistOnMerge(row.ExtObject, row.ExtIdentifier);
 
-                        //if (!pSetName.ToLower().Contains("pset_")) pSetName = "PSet_" + pSetName;
-                        IfcPropertySet ifcPropertySet = null;
+                        if (ifcPropertySet == null)
+                        {
+                            return;
+                        }
 
-                        if (CurrentObject is IfcObject)
-                            ifcPropertySet = AddPropertySet((IfcObject)CurrentObject, pSetName, "");
-                        else if (CurrentObject is IfcTypeObject)
-                            ifcPropertySet = AddPropertySet((IfcTypeObject)CurrentObject, pSetName, "");
-
-                        //Add GlobalId
-                        AddGlobalId(row.ExtIdentifier, ifcPropertySet);
                         //Set Description
                         string description = "";
                         if (ValidateString(row.Description))
                             description = row.Description;
 
-                        //set the unit used for property
-                        IfcUnit ifcUnit = null;
-                        if (ValidateString(row.Unit))
-                        {
-                            ifcUnit = GetDurationUnit(row.Unit); //see if time unit
-                            //see if we can convert to a IfcSIUnit
-                            if (ifcUnit == null)
-                                ifcUnit = GetSIUnit(row.Unit);
-                            //OK set as a user defined
-                            if (ifcUnit == null)
-                                ifcUnit = SetContextDependentUnit(row.Unit);
-                        }
 
-                        if ((ValidateString(row.AllowedValues)) &&
-                            (row.AllowedValues.Contains(":") ||
-                            row.AllowedValues.Contains(",")
-                            )
-                            )//have a IfcPropertyEnumeratedValue
+                        if ((ValidateString(row.Value)) &&
+                            row.Value.Contains(":") &&
+                            row.Value.Contains("(") &&
+                            row.Value.Contains(")") 
+                            )//only if we have a IfcPropertyTableValue defined by COBieDataAttributeBuilder
+                        {
+                            AddPropertyTableValue(ifcPropertySet , row.Name, description, row.Value, row.AllowedValues, row.Unit);
+                        }
+                        else if ((ValidateString(row.AllowedValues)) &&
+                                //row.Value.Contains(":") && can be single value
+                                (row.AllowedValues.Contains(":") ||
+                                row.AllowedValues.Contains(",")
+                                )
+                                )//have a IfcPropertyEnumeratedValue
                         {
                             IfcValue[] ifcValues = GetValueArray(row.Value);
                             IfcValue[] ifcValueEnums = GetValueArray(row.AllowedValues);
+                            IfcUnit ifcUnit = GetIfcUnit(row.Unit);
                             AddPropertyEnumeratedValue(ifcPropertySet, row.Name, description, ifcValues, ifcValueEnums, ifcUnit);
                         }
                         else
@@ -180,8 +169,11 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                             double number;
                             if (double.TryParse(row.Value, out number))
                                 ifcValue = new IfcReal((double)number);
-                            else
+                            else if (ValidateString(row.Value))
                                 ifcValue = new IfcLabel(row.Value);
+                            else
+                                ifcValue = new IfcLabel("");
+                            IfcUnit ifcUnit = GetIfcUnit(row.Unit);
                             AddPropertySingleValue(ifcPropertySet, row.Name, description, ifcValue, ifcUnit);
                         }
 
@@ -194,10 +186,8 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                         //****************Note need this as last call Add OwnerHistory*************
                         if (ifcPropertySet != null)
                         {
-                            if ((ValidateString(row.CreatedBy)) && (Contacts.ContainsKey(row.CreatedBy)))
-                            {
-                                SetOwnerHistory(ifcPropertySet, row.ExtSystem, Contacts[row.CreatedBy], row.CreatedOn);
-                            }
+                            //Add Created By, Created On and ExtSystem to Owner History. 
+                            SetUserHistory(ifcPropertySet, row.ExtSystem, row.CreatedBy, row.CreatedOn);
                         }
                         //****************Note need SetOwnerHistory above to be last call, as XBim changes to default on any property set or changed, cannot use edit context as property set used more than once per row******
                     }
@@ -224,6 +214,53 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
 #endif
             }
             
+        }
+
+        
+
+        /// <summary>
+        /// Check if property set exists on object when in merge, if not merge just create property set
+        /// </summary>
+        /// <param name="pSetName">Property set name</param>
+        /// <returns>IfcPropertySet</returns>
+        private IfcPropertySet CheckIfExistOnMerge(string extObject, string extIdentifier )
+        {
+            string pSetName = string.Empty;
+            IfcPropertySet ifcPropertySet = null;
+
+            //check that the GlobalId is not holding the property set name
+            if ((ValidateString(extIdentifier)) &&
+                (!ValidGlobalId(extIdentifier))
+                )
+            {
+                pSetName = extIdentifier;
+                extIdentifier = null; //force new Guid
+            } 
+            else if (ValidateString(extObject)) //check we have a valid string
+                pSetName = extObject;
+            else
+                pSetName = null;
+                        
+            if (CurrentObject is IfcObject)
+            {
+                ifcPropertySet = (CurrentObject as IfcObject).GetPropertySet(pSetName);
+                if (ifcPropertySet == null)
+                {
+                    ifcPropertySet = AddPropertySet((IfcObject)CurrentObject, pSetName, "");
+                }
+            }
+            else if (CurrentObject is IfcTypeObject)
+            {
+                ifcPropertySet = (CurrentObject as IfcTypeObject).GetPropertySet(pSetName);
+                if (ifcPropertySet == null)
+                {
+                    ifcPropertySet = AddPropertySet((IfcTypeObject)CurrentObject, pSetName, "");
+                }
+            }
+            //Add GlobalId
+
+            AddGlobalId(extIdentifier, ifcPropertySet);
+            return ifcPropertySet;
         }
 
         
