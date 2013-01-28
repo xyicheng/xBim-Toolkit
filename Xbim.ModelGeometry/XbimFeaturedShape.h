@@ -19,6 +19,7 @@ namespace Xbim
 			Int32 _representationLabel;
 			Int32 _surfaceStyleLabel;
 			bool _hasCurves;
+			bool LowLevelCut(const TopoDS_Shape & from, const TopoDS_Shape & toCut, TopoDS_Shape & result);
 		protected:
 			IXbimGeometryModel^ mResultShape;
 			IXbimGeometryModel^ mBaseShape;
