@@ -141,6 +141,12 @@
     <Compile Include="GeometryCache\SpaceTriangulatedModel.cs" />
     <Compile Include="IfcFileHeader.cs" />
     <Compile Include="IfcRepresentationItemExtensions.cs" />
+    <Compile Include="Tree\TreeBuilder.cs" />
+    <Compile Include="Tree\TreeComponentStrategy.cs" />
+    <Compile Include="Tree\TreeContainmentStrategy.cs" />
+    <Compile Include="Tree\TreeNode.cs" />
+    <Compile Include="Tree\TreeNodes.cs" />
+    <Compile Include="Tree\TreeQueryStrategy.cs" />
     <Compile Include="XbimGeometryHandle.cs" />
     <Compile Include="XbimGeometryHandleCollection.cs" />
     <Compile Include="XbimGeometrySort.cs" />
