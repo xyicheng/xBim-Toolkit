@@ -13,12 +13,17 @@ namespace Xbim.SceneJSWebViewer
     using System.Text;
     using System.Threading;
     using System.Windows.Media.Media3D;
-    using Xbim.Ifc.PresentationAppearanceResource;
-    using Xbim.Ifc.ProductExtension;
-    using Xbim.Ifc.SharedBldgElements;
+    using Xbim.Ifc2x3.PresentationAppearanceResource;
+    using Xbim.Ifc2x3.ProductExtension;
+    using Xbim.Ifc2x3.SharedBldgElements;
     using Xbim.IO;
     using Xbim.ModelGeometry.Scene;
     using Xbim.Common.Logging;
+    using Xbim.XbimExtensions;
+    using Xbim.XbimExtensions.Interfaces;
+    using Xbim.Ifc2x3.Kernel;
+    using System.Diagnostics;
+    using Xbim.Ifc2x3;
 
     /// <summary>
     /// An XBim implementation of an <see cref="IModelStream"/>. 
@@ -27,6 +32,17 @@ namespace Xbim.SceneJSWebViewer
     /// using the XBIM.IFC library</remarks>
     public class XBimModelStream : IModelStream
     {
+        #region private members
+        private List<XbimSurfaceStyle> SurfaceStyleList;
+        private List<String> TypeList = new List<string>();
+        private List<GeometryHeader> ProductsList = new List<GeometryHeader>();
+        private Camera DefaultCamera = new Camera();
+        private XbimModel _model;
+
+        private string _modelId;
+        #endregion
+
+
         #region Static / Factory Members
         /// <summary>
         /// A Factory method to acquire a <see cref="IModelStream"/> for the requested model file.
@@ -80,35 +96,31 @@ namespace Xbim.SceneJSWebViewer
         private XBimModelStream(String model)
         {
             string xbimFile = model + ".xbim";
-            string gcFile = model + ".xbimGC";
+           
 
-            if ((!File.Exists(xbimFile) || !File.Exists(gcFile)))
+            if (!File.Exists(xbimFile))
             {
                 Logger.WarnFormat("Timed out waiting for XBIM files to become available for model : {0}", model);
                 throw new System.TimeoutException("Model Stream Timed Out Waiting for Model Caching");
             }
 
             _modelId = model;
-            _model = new XbimFileModelServer();
+            _model = new XbimModel();
             _model.Open(xbimFile);
-            _scene = new XbimSceneStream(_model, gcFile); // opens the pre-calculated Geometry file
-            Init(model);
+             Init(model);
         }
 
         #endregion
 
-        /// <summary>
-        /// Gets the XBim Geometry scene, containing Graphs and Triangulated Meshes.
-        /// </summary>
-        public IXbimScene Scene { get { return _scene; } }
+       
 
 
         #region SceneJSTest.IModelStream
         public void Close()
         {
-            _scene.Close();
-            _model.Close();
-            _scene = null;
+            
+            _model.Dispose();
+            
             _model = null;
         }
 
@@ -116,114 +128,101 @@ namespace Xbim.SceneJSWebViewer
         {
             BoundingBox box = new BoundingBox();
 
-            foreach (var item in Scene.Graph.ProductNodes)
+            foreach (XbimGeometryData shape in _model.GetGeometryData(XbimGeometryType.BoundingBox))
             {
-                XbimTriangulatedModelStream tm = null;
-                try
-                {
-                    tm = Scene.Triangulate(item.Value);
-                }
-                catch (Exception) { continue; }
-
-                if (tm != null)
-                {
-                    if (item.Value != null)
-                    {
-                        if (item.Value.BoundingBox != null)
-                        {
-                            if (item.Value.BoundingBox.SizeX + item.Value.BoundingBox.SizeY + item.Value.BoundingBox.SizeZ != 0)
-                            {
-                                BoundingBox bb = new BoundingBox();
-                                Point3D min = new Point3D(item.Value.BoundingBox.X, item.Value.BoundingBox.Y, item.Value.BoundingBox.Z);
-                                Point3D max = new Point3D(item.Value.BoundingBox.X + item.Value.BoundingBox.SizeX,
-                                    item.Value.BoundingBox.Y + item.Value.BoundingBox.SizeY,
-                                    item.Value.BoundingBox.Z + item.Value.BoundingBox.SizeZ);
-                                bb.IncludePoint(min);
-                                bb.IncludePoint(max);
-                                box.IncludeBoundingBox(bb.TransformBy(item.Value.WorldMatrix()));
-                            }
-                        }
-                    }
-                }
+                
+                Matrix3D matrix3d = new Matrix3D().FromArray(shape.TransformData);
+                BoundingBox bb = BoundingBox.FromArray(shape.ShapeData);
+                bb.TransformBy(matrix3d);
+                box.IncludeBoundingBox(bb);
             }
             return box;
         }
-        public Camera GetCamera()
+        public Camera GetBoundingBox()
         {
             //get the model boundaries
             BoundingBox box = GetModelBounds();
             return new Camera(box.PointMin.X, box.PointMin.Y, box.PointMin.Z, box.PointMax.X, box.PointMax.Y, box.PointMax.Z);
         }
 
-        public GeometryData GetGeometryData(String entityId)
+        public MemoryStream GetPNIGeometryData(int geometryId)
         {
-            Int64 id = Convert.ToInt64(entityId);
+           
+            MemoryStream ms = new MemoryStream();
+            // BinaryWriter bw = new BinaryWriter(ms);
+            // ushort tally = 0;
+            // byte[] wm = null;
+            // ms.Write()
 
-            //check item exists
-            if (!Scene.Graph.ProductNodes.ContainsKey(id))
-                return new GeometryData();
-
-            TransformNode tn = Scene.Graph.ProductNodes[id];
-            XbimTriangulatedModelStream tm = Scene.Triangulate(tn);
-
-
-            if (!tm.IsEmpty)
+            // bool TransformMatrixInitialised = false;
+            if (geometryId == 610)
             {
-                if (!tn.Product.GetType().IsSubclassOf(typeof(IfcFeatureElementSubtraction)) && !(tn.Product.GetType() == typeof(IfcSpace)))
-                {
-                    try
-                    {
-                        if (tn.Product.EntityLabel != 0)
-                        {
-                            //get transform matrix
-                            Double[] dWorldMatrix = new Double[16];
-                            Matrix3D worldMatrix = tn.WorldMatrix();
-                            if (!worldMatrix.IsIdentity)
-                            {
-                                dWorldMatrix[0] = worldMatrix.M11;
-                                dWorldMatrix[1] = worldMatrix.M12;
-                                dWorldMatrix[2] = worldMatrix.M13;
-                                dWorldMatrix[3] = worldMatrix.M14;
 
-                                dWorldMatrix[4] = worldMatrix.M21;
-                                dWorldMatrix[5] = worldMatrix.M22;
-                                dWorldMatrix[6] = worldMatrix.M23;
-                                dWorldMatrix[7] = worldMatrix.M24;
-
-                                dWorldMatrix[8] = worldMatrix.M31;
-                                dWorldMatrix[9] = worldMatrix.M32;
-                                dWorldMatrix[10] = worldMatrix.M33;
-                                dWorldMatrix[11] = worldMatrix.M34;
-
-                                dWorldMatrix[12] = worldMatrix.OffsetX;
-                                dWorldMatrix[13] = worldMatrix.OffsetY;
-                                dWorldMatrix[14] = worldMatrix.OffsetZ;
-                                dWorldMatrix[15] = worldMatrix.M44;
-                            }
-                            return new GeometryData(Convert.ToInt32(id), tm.DataStream.ToArray(), tm.HasData, tm.NumChildren, dWorldMatrix);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.Warn(
-                            String.Format("Failed to get geometry data for entity #{0} {1) in model {2}.", entityId, tn.Product.ToString(), _modelId),
-                            ex);
-                        return null;
-                    }
-                }
             }
-            Logger.InfoFormat("No geometry available for entity {0} - {1} in model {2}.", entityId, tn.Product.ToString(), _modelId);
-            return null;
+
+            XbimGeometryHandle handle = _model.GetGeometryHandle(geometryId);
+            IEnumerable<XbimGeometryData> geometries = _model.GetGeometryData(handle.ProductLabel, handle.GeometryType).Where(gd => gd.StyleLabel == handle.SurfaceStyleLabel);
+            
+            if (geometries.Count() == 1)
+            {
+                XbimGeometryData geom = geometries.First();
+                PositionsNormalsIndicesBinaryStreamWriter PNI_SW = new PositionsNormalsIndicesBinaryStreamWriter(geom.ShapeData);
+                if (PNI_SW.Stream.Length > 0)
+                {
+                    ms.Write(geom.TransformData, 0, geom.TransformData.Length); // send transform 
+                    ms.Flush();
+                }
+                // write the geometry
+                PNI_SW.Stream.WriteTo(ms);
+
+                // used for debugging
+                //PositionsNormalsIndicesBinaryStreamMerger mrger = new PositionsNormalsIndicesBinaryStreamMerger();
+                //mrger.Merge(PNI_SW.Stream.ToArray(), geom.TransformData);
+                //MemoryStream merged = new MemoryStream();
+                //mrger.WriteTo(merged);
+
+                //byte[] rght = PNI_SW.Stream.ToArray();
+                //byte[] wrong = merged.ToArray();
+
+                //for (int i = 0; i < rght.Length; i++)
+                //{
+                //    if (rght[i] != wrong[i])
+                //    {
+
+                //    }
+                //}
+            }
+            else
+            {
+                PositionsNormalsIndicesBinaryStreamMerger mrger = new PositionsNormalsIndicesBinaryStreamMerger();
+                foreach (XbimGeometryData geom in geometries)
+                {
+                    PositionsNormalsIndicesBinaryStreamWriter PNI_SW = new PositionsNormalsIndicesBinaryStreamWriter(geom.ShapeData);
+                    // PositionsNormalsIndicesBinaryStreamWriter.DebugStream(PNI_SW.Stream.ToArray(), false, "merge geom source " + geom.GeometryLabel);
+                    mrger.Merge(PNI_SW.Stream.ToArray(), geom.TransformData);
+                }
+
+                if (mrger.iTotPosNormals > 0)
+                {
+                    ms.Write(mrger.TransformData, 0, mrger.TransformData.Length); // send transform matrix only once
+                    ms.Flush();
+                }
+                mrger.WriteTo(ms);
+                ms.Flush();
+            }
+            // PositionsNormalsIndicesBinaryStreamWriter.DebugStream(ms.ToArray(), true, "Completed " + entityId.ToString());
+            ms.Seek(0, SeekOrigin.Begin);
+            return ms;
         }
 
-        public List<GeometryLabel> GetGeometryHeaders()
+        public List<GeometryHeader> GetGeometryHeaders()
         {
             return ProductsList;
         }
 
-        public List<Material> GetMaterials()
+        public List<XbimSurfaceStyle> GetMaterials()
         {
-            return MaterialList;
+            return SurfaceStyleList;
         }
 
         public List<String> GetTypes()
@@ -231,174 +230,94 @@ namespace Xbim.SceneJSWebViewer
             return TypeList;
         }
 
-        private void AddProduct(TransformNode node)
+  
+        private static Material GetMaterialFromSurfaceStyle(IfcSurfaceStyle surfaceStyle)
         {
-            if (node.ChildCount > 0 || (node.TriangulatedModel.HasData == 1 || node.TriangulatedModel.NumChildren > 0))
-            {
-                //try to get any material defined in the model
-                Material definedMaterial = GetDefinedMaterial(node); ;
+            
+            if (surfaceStyle == null || surfaceStyle.Styles.Count == 0) 
+                return null;
+            IfcSurfaceStyleRendering rgb = surfaceStyle.Styles.First as IfcSurfaceStyleRendering;
+            if (rgb == null) 
+                return null;
 
-                String materialName = String.Empty;
-                Material material = null;
+            // defines the material name from a property or from the enetity label of the surfacestyle
 
-                if (definedMaterial != null)
-                {
-                    materialName = definedMaterial.Name;
-                    material = definedMaterial;
-                }
-                else
-                {
-                    material = DefaultMaterials.LookupMaterial(node.Product);
-
-                    if (material == null)
-                    {
-                        Logger.WarnFormat("Could not locate default material for entity #{0} in model {1}", node.ProductId, _modelId);
-                        // set null material as SHOCKING PINK
-                        material = new Material(DefaultMaterials.StripString(node.ProductId.GetType().ToString()), 0.98823529411764705882352941176471d, 0.05882352941176470588235294117647d, 0.75294117647058823529411764705882d, 1.0d, 0.0d);
-                    }
-
-                    materialName = material.Name;
-                }
-
-                //check if the material already exists, if not - add it
-                if (!TypeList.Contains(material.Name))
-                {
-                    materialName = AddMaterialType(materialName, material);
-                }
-
-                //add the product to the correct header now we are sure to have the material in the list
-                GeometryLabel label = ProductsList.First(s => s.Type == materialName);
-                label.Geometries.Add(node.ProductId.ToString());
-            }
-            else
-            {
-                Logger.DebugFormat("No mesh available for entity #{0} - {1}", node.ProductId, node.Product.ToString());
-            }
+            string materialName = surfaceStyle.Name.HasValue ? surfaceStyle.Name.Value.ToString() : surfaceStyle.EntityLabel.ToString();
+            
+            return new Material(
+                materialName + "Material",  //name
+                rgb.SurfaceColour.Red,
+                rgb.SurfaceColour.Green,
+                rgb.SurfaceColour.Blue,
+                1.0 - (double)rgb.Transparency.Value.Value, // alpha
+                0.0  // emit
+                );
         }
 
-        private String AddMaterialType(String materialName, Material material)
-        {
-            materialName = material.Name;
-            TypeList.Add(materialName);
-            GeometryLabel g = new GeometryLabel();
-            g.Type = materialName;
-            g.Material = materialName;
-            if (material.Alpha < 1)
-            {
-                g.LayerPriority = 1;
-            }
-            MaterialList.Add(material);
-            ProductsList.Add(g);
-            return materialName;
-        }
+       
 
-        private static Material GetDefinedMaterial(TransformNode node)
-        {
-            try
-            {
-                if (node.Product.Representation == null)
-                    return null;
-
-                var representation = node.Product.Representation.Representations.First();
-
-                //if we dont have any representation, return
-                if (representation == null || representation.Items.Count == 0) return null;
-                var styledBy = representation.Items.First();
-                if (styledBy == null || styledBy.StyledByItem.Count() == 0) return null;
-                var styleByItem = styledBy.StyledByItem.First();
-                if(styleByItem == null || styleByItem.Styles.Count == 0) return null;
-                var firstStyle = styleByItem.Styles.First;
-                if (firstStyle == null || firstStyle.Styles.Count == 0) return null;
-                IfcSurfaceStyle surfaceStyle = firstStyle.Styles.First as IfcSurfaceStyle;
-                if (surfaceStyle == null || surfaceStyle.Styles.Count == 0) return null;
-                IfcSurfaceStyleRendering rgb = surfaceStyle.Styles.First as IfcSurfaceStyleRendering;
-                if (rgb == null) return null;
-                    
-                return new Material(surfaceStyle.Name.Value + "Material",
-                    rgb.SurfaceColour.Red,
-                    rgb.SurfaceColour.Green,
-                    rgb.SurfaceColour.Blue,
-                    (1.0 - (double)rgb.Transparency.Value.Value),
-                    0.0);
-                
-            }
-            catch (Exception ex)
-            {
-                Logger.Warn(String.Format("Failed to get Representation and Material for entity #{0}", node.ProductId),
-                    ex);
-            }
-            return null;
-        }
-
-        private Func<TransformNode, bool> FilterByType(Type t)
-        {
-            return p => (p.Product.GetType() == t || p.Product.GetType().IsSubclassOf(t));
-        }
-
+        // ok, cleaned up
         public void Init(string model)
         {
-            //prepare temp collections of the different types we want to prioritise
-            IEnumerable<TransformNode> Slabs = Scene.Graph.ProductNodes.Values.Where(FilterByType(typeof(IfcSlab)));
-            IEnumerable<TransformNode> Walls = Scene.Graph.ProductNodes.Values.Where(FilterByType(typeof(IfcWall)));
-            IEnumerable<TransformNode> Roofs = Scene.Graph.ProductNodes.Values.Where(FilterByType(typeof(IfcRoof)));
-            IEnumerable<TransformNode> Windows = Scene.Graph.ProductNodes.Values.Where(FilterByType(typeof(IfcWindow)));
-            IEnumerable<TransformNode> Doors = Scene.Graph.ProductNodes.Values.Where(FilterByType(typeof(IfcDoor)));
-            IEnumerable<TransformNode> Plates = Scene.Graph.ProductNodes.Values.Where(FilterByType(typeof(IfcPlate)));
-            IEnumerable<TransformNode> Beams = Scene.Graph.ProductNodes.Values.Where(FilterByType(typeof(IfcBeam)));
-            IEnumerable<TransformNode> Columns = Scene.Graph.ProductNodes.Values.Where(FilterByType(typeof(IfcColumn)));
-            IEnumerable<TransformNode> Others = Scene.Graph.ProductNodes.Values.Except(Slabs).Except(Walls).Except(Roofs).Except(Windows).Except(Doors).Except(Plates).Except(Beams).Except(Columns);
+          
+            // surface styles are taken starting from the geometryhandles
+            //
+            XbimGeometryHandleCollection handles = new XbimGeometryHandleCollection(_model.GetGeometryHandles().Exclude(IfcEntityNameEnum.IFCSPACE, IfcEntityNameEnum.IFCFEATUREELEMENT));
+            SurfaceStyleList = handles.GetSurfaceStyles().ToList();
+            TypeList = new List<string>();
+            ProductsList = new List<GeometryHeader>();
 
-            //Add the types we want to load first (in reverse order as client pops from top of list)
-            foreach (TransformNode tn in Others)
+            HashSet<int> alreadysent = new HashSet<int>();
+                        
+            foreach (XbimSurfaceStyle surfaceStyle in SurfaceStyleList)
             {
-                if (!tn.Product.GetType().IsSubclassOf(typeof(IfcFeatureElementSubtraction)) && !(tn.Product.GetType() == typeof(IfcSpace)))
+                 //try to get any material defined in the model
+                Material SurfaceStyleMaterial = GetMaterialFromSurfaceStyle(surfaceStyle.IfcSurfaceStyle(_model));
+                
+                if (SurfaceStyleMaterial == null)
                 {
-                    AddProduct(tn);
+                    SurfaceStyleMaterial = DefaultMaterials.LookupMaterial(surfaceStyle.IfcTypeId);
+                    if (SurfaceStyleMaterial == null)
+                    {
+                        Logger.WarnFormat("Could not locate default material for entity type #{0} in model {1}", surfaceStyle.IfcType.Name, _modelId);
+                        // set null material as SHOCKING PINK
+                        SurfaceStyleMaterial = new Material(
+                            surfaceStyle.IfcType.Name, 
+                            0.98823529411764705882352941176471d, 
+                            0.05882352941176470588235294117647d, 
+                            0.75294117647058823529411764705882d, 
+                            1.0d, 
+                            0.0d);
+                    }
                 }
-                else
+                SurfaceStyleMaterial.Name = SurfaceStyleMaterial.Name.Replace(' ', '_');
+                SurfaceStyleMaterial.Name = SurfaceStyleMaterial.Name.Replace(',', '_');
+                //prepare geometry header to send to client
+                //
+                GeometryHeader geomHeader = new GeometryHeader();
+                geomHeader.Type = SurfaceStyleMaterial.Name;
+                geomHeader.Material = SurfaceStyleMaterial.Name;
+                if (SurfaceStyleMaterial.Alpha < 1)
+                    geomHeader.LayerPriority = 1;
+                foreach (var geomHandle in handles.GetGeometryHandles(surfaceStyle).Distinct(new CompareDistinctGeometryHandles()))
                 {
-                    Logger.DebugFormat("Skipping non-visible entity #{0} - {1}", tn.ProductId, tn.Product.ToString());
+                    if (!alreadysent.Contains(geomHandle.GeometryLabel))
+                    {
+                        string label = geomHandle.GeometryLabel.ToString();
+                        geomHeader.Geometries.Add(label);
+                        alreadysent.Add(geomHandle.GeometryLabel);
+                    }
                 }
-            }
 
-            foreach (TransformNode tn in Beams)
-            {
-                AddProduct(tn);
-            }
-            foreach (TransformNode tn in Columns)
-            {
-                AddProduct(tn);
-            }
-            foreach (TransformNode tn in Plates)
-            {
-                AddProduct(tn);
-            }
-            foreach (TransformNode tn in Doors)
-            {
-                AddProduct(tn);
-            }
-            foreach (TransformNode tn in Windows)
-            {
-                AddProduct(tn);
-            }
-            foreach (TransformNode tn in Roofs)
-            {
-                AddProduct(tn);
-            }
+                // populate lists
+                ProductsList.Add(geomHeader);
+                TypeList.Add(SurfaceStyleMaterial.Name);
 
-            foreach (TransformNode tn in Walls)
-            {
-                AddProduct(tn);
+                //store the material
+                //the code below makes no sense, it is constantly overriding the surface style
+                //surfaceStyle.TagRenderMaterial = SurfaceStyleMaterial; 
             }
-            foreach (TransformNode tn in Slabs)
-            {
-                AddProduct(tn);
-            }
-
-            if (Logger.IsDebugEnabled)
-            {
-                DumpProducts();
-            }
+            // DumpProducts();
         }
 
         private void DumpProducts()
@@ -414,12 +333,12 @@ namespace Xbim.SceneJSWebViewer
             }
 
             sb.AppendLine();
-            sb.AppendFormat("-- Materials: {0}", MaterialList.Count);
+            sb.AppendFormat("-- Materials: {0}", SurfaceStyleList.Count);
             sb.AppendLine();
-            foreach (var material in MaterialList)
+            foreach (var material in SurfaceStyleList)
             {
                 sb.Append("\t");
-                sb.AppendLine(material.Name);
+                sb.AppendLine(material.TagRenderMaterial.ToString());
             }
 
             sb.AppendLine();
@@ -434,56 +353,57 @@ namespace Xbim.SceneJSWebViewer
                 sb.Append(" - ");
                 sb.Append(product.Material);
                 sb.AppendFormat(": {0} entities", product.Geometries.Count);
+                sb.AppendFormat(" [{0}]", string.Join(",", product.Geometries.ToArray()));
+
                 sb.AppendLine();
                 totalEntities += product.Geometries.Count;
             }
             sb.AppendFormat("-- Total Entities: {0}", totalEntities);
+            Debug.WriteLine(sb.ToString());
             Logger.DebugFormat("- Model Manifest for: {0}\n\n{1}", _modelId, sb);
         }
 
         public string QueryData(string id, string query)
         {
-            //foreach (var item in Scene.Graph.ProductNodes)
-            //{
-            TransformNode tn = null;
-            if (Scene.Graph.ProductNodes.TryGetValue(Convert.ToInt64(id), out tn))
-            {
-                StringBuilder sb = new StringBuilder();
-                sb.Append("ID " + id);
-                sb.Append(" Name: ");
-                try
+            try
+            {       
+                IfcProduct product = _model.Instances.GetFromGeometryLabel(Convert.ToInt32(id)) as IfcProduct;
+                if (product != null)
                 {
-                    sb.Append(tn.Product.ToString());
-                    //sb.Append(" " + tn.Product.OwnerHistory.LastModifyingUser.ThePerson.FamilyName.Value.ToPart21);
+                    StringBuilder sb = new StringBuilder();
+                    sb.Append("ID " + product.EntityLabel + "/" + id);
+                    sb.Append(" Name: ");
+                    sb.Append(product.ToString());
+                    sb.Append(", IFC Type: " + product.GetType().Name);
+                    Logger.DebugFormat("Query result: ", sb);
+                    return sb.ToString();
                 }
-                catch { }
-                //sb.Append(" min: ");
-                //sb.Append(tn.BoundingBox.X); sb.Append(", ");
-                //sb.Append(tn.BoundingBox.Y); sb.Append(", ");
-                //sb.Append(tn.BoundingBox.Z);
-                //sb.Append(" max: ");
-                //sb.Append(tn.BoundingBox.X + tn.BoundingBox.SizeX); sb.Append(", ");
-                //sb.Append(tn.BoundingBox.Y + tn.BoundingBox.SizeY); sb.Append(", ");
-                //sb.Append(tn.BoundingBox.Z + tn.BoundingBox.SizeZ);
-                sb.Append(", IFC Type: " + DefaultMaterials.StripString(tn.Product.GetType().ToString()));
-
-                Logger.DebugFormat("Query result: ", sb);
-                return sb.ToString();
+                else
+                    return "You sent a query of: '" + query + "' for id: '" + id + "'";
             }
-            //}
-            return "You sent a query of: '" + query + "' for id: '" + id + "'";
+            catch (Exception)
+            {
+                return "You sent a query of: '" + query + "' for id: '" + id + "'";
+            }
         }
 
         #endregion SceneJSTest.IModelStream
 
-        #region private members
-        private List<Material> MaterialList = new List<Material>();
-        private List<String> TypeList = new List<string>();
-        private List<GeometryLabel> ProductsList = new List<GeometryLabel>();
-        private Camera DefaultCamera = new Camera();
-        private XbimFileModelServer _model;
-        private IXbimScene _scene;
-        private string _modelId;
-        #endregion
+        /// <summary>
+        /// Comapres two geometry handles to be distinct per surace style render
+        /// </summary>
+        private class CompareDistinctGeometryHandles : IEqualityComparer<XbimGeometryHandle>
+        {
+
+            public bool Equals(XbimGeometryHandle x, XbimGeometryHandle y)
+            {
+                return x.ProductLabel == y.ProductLabel && x.SurfaceStyleLabel == y.SurfaceStyleLabel;
+            }
+
+            public int GetHashCode(XbimGeometryHandle obj)
+            {
+                return obj.ProductLabel ^ obj.SurfaceStyleLabel;
+            }
+        }
     }
 }

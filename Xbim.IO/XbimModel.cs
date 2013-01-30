@@ -64,7 +64,7 @@ namespace Xbim.IO
         private XbimModelFactors _modelFactors;
         private XbimInstanceCollection instances;
         private XbimEntityCursor editTransactionEntityCursor;
-
+        private bool _deleteOnClose;
         
         private static string xbimTempDirectory;
         const string refDocument = "XbimReferencedModel";
@@ -388,6 +388,31 @@ namespace Xbim.IO
         }
 
         /// <summary>
+        /// Creates an empty model using a temporary filename, the model will be deleted on close, unless SaveAs is called
+        /// It will be returned open for read write operations
+        /// </summary>
+        /// <returns></returns>
+        static public XbimModel CreateTemporaryModel()
+        {
+            
+            string tmpFileName = Path.GetTempFileName();
+            try
+            {
+                IfcPersistedInstanceCache.CreateDatabase(tmpFileName);
+                XbimModel model = new XbimModel();
+                model.Open(tmpFileName, XbimDBAccess.ReadWrite, true);
+                model.Header = new IfcFileHeader();
+                return model;
+            }
+            catch (Exception e)
+            {
+
+                throw new XbimException("Failed to create and open temporary xBIM file \'" + tmpFileName + "\'\n" + e.Message, e);
+            }
+           
+        }
+
+        /// <summary>
         ///  Creates and opens a new Xbim Database
         /// </summary>
         /// <param name="dbFileName">Name of the Xbim file</param>
@@ -400,7 +425,7 @@ namespace Xbim.IO
                     dbFileName += ".xBIM";
                 IfcPersistedInstanceCache.CreateDatabase(dbFileName);
                 XbimModel model = new XbimModel();
-                model.Open(dbFileName, access);
+                model.Open(dbFileName, access,null);
                 return model;
             }
             catch (Exception e)
@@ -447,7 +472,22 @@ namespace Xbim.IO
 
 
         #region Validation
-                       
+
+        /// <summary>
+        /// Validates all entities in the model
+        /// </summary>
+        /// <param name="tw"></param>
+        /// <param name="validateLevel"></param>
+        /// <returns></returns>
+        public int Validate(TextWriter tw, ValidationFlags validateLevel = ValidationFlags.Properties)
+        {
+            int errors = 0;
+            foreach (var handle in instances)
+            {
+                errors += Validate(Instances[handle], tw, validateLevel);
+            }
+            return errors;
+        }
 
         public int Validate(IEnumerable<IPersistIfcEntity> entities, TextWriter tw, ValidationFlags validateLevel = ValidationFlags.Properties)
         {
@@ -633,6 +673,7 @@ namespace Xbim.IO
         /// </summary>
         public void Close()
         {
+            string dbName = DatabaseName;
             this._modelFactors = null;          
             this.header = null;
             foreach (var refModel in _referencedModels)
@@ -641,13 +682,27 @@ namespace Xbim.IO
             if (editTransactionEntityCursor != null)
                 EndTransaction();
             cache.Close();
+            try //try and tidy up if required
+            {
+                if (_deleteOnClose && File.Exists(dbName))
+                    File.Delete(dbName);
+            }
+            catch (Exception)
+            {                     
+            }
+            _deleteOnClose = false;
         }
 
 
 
         #endregion
 
-
+        private bool Open(string fileName, XbimDBAccess accessMode, bool deleteOnClose)
+        {      
+            bool ok =  Open(fileName, accessMode);
+            _deleteOnClose = deleteOnClose;
+            return ok;
+        }
 
 
         /// <summary>
@@ -693,10 +748,17 @@ namespace Xbim.IO
                     string srcFile = this.DatabaseName;
                     if(string.Compare(srcFile, outputFileName, true, CultureInfo.InvariantCulture) == 0)
                         throw new XbimException("Cannot save file to the same name, " + outputFileName);
+                    bool deleteOnClose = _deleteOnClose;
+                    XbimDBAccess accessMode = cache.AccessMode;
                     try
                     {
+                       
+                        _deleteOnClose = false; //regardless we need to keep it to copy it
                         this.Close(); 
                         File.Copy(srcFile, outputFileName);
+                        
+                        if (deleteOnClose)
+                            File.Delete(srcFile);
                         srcFile = outputFileName;
                         return true;
                     }
@@ -706,7 +768,8 @@ namespace Xbim.IO
                     }
                     finally
                     {
-                        Open(srcFile);
+
+                        Open(srcFile, accessMode, null);
                     }
                 }
                 else
@@ -1178,6 +1241,8 @@ namespace Xbim.IO
                 yield return item;
         }
 
-        
+
+
+
     }
 }

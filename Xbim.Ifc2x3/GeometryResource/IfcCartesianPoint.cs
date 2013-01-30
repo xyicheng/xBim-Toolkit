@@ -158,9 +158,9 @@ namespace Xbim.Ifc2x3.GeometryResource
 
         public IfcCartesianPoint(IfcCartesianPoint cp)
         {
-            _x = cp._x;
-            _y = cp._y;
-            _z = cp._z;
+            _x = cp.X;
+            _y = cp.Y;
+            _z = cp.Z;
         }
 
         public IfcCartesianPoint(double x, double y, double z)

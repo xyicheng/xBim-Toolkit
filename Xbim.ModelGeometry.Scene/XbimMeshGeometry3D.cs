@@ -3,19 +3,24 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Windows.Media.Media3D;
+using Xbim.Common.Exceptions;
+using Xbim.IO;
+using Xbim.XbimExtensions;
 
 namespace Xbim.ModelGeometry.Scene
 {
     /// <summary>
     /// This class provide support for geoemtry triangulated neshes
     /// </summary>
-    public class XbimMeshGeometry3D : IXbimTriangulatesToPositionsIndices, IXbimTriangulatesToPositionsNormalsIndices
+    public class XbimMeshGeometry3D : IXbimMeshGeometry3D, IXbimTriangulatesToPositionsIndices, IXbimTriangulatesToPositionsNormalsIndices
     {
 
         const int defaultSize = 0x4000;
         public List<Point3D> Positions;
         public List<Vector3D> Normals;
         public List<Int32> TriangleIndices;
+
+        XbimMeshFragmentCollection meshes = new XbimMeshFragmentCollection();
         List<Point3D> _points;
         TriangleType _meshType;
         uint _previousToLastIndex;
@@ -23,7 +28,7 @@ namespace Xbim.ModelGeometry.Scene
         uint _pointTally;
         uint _fanStartIndex;
         uint indexOffset;
-        private int p;
+       
 
         public XbimMeshGeometry3D(int size)
         {
@@ -340,11 +345,111 @@ namespace Xbim.ModelGeometry.Scene
         #endregion
 
         //adds the content of the toAdd to this
-        public void Add(XbimMeshGeometry3D toAdd)
+        public void Add(XbimMeshGeometry3D toAdd, int entityLabel, Type ifcType)
         {
+            int startPosition = Positions.Count;
+            XbimMeshFragment fragment = new XbimMeshFragment(startPosition, TriangleIndexCount);
             Positions.AddRange(toAdd.Positions);
             Normals.AddRange(toAdd.Normals);
-            TriangleIndices.AddRange(toAdd.TriangleIndices);      
+            foreach (var idx in toAdd.TriangleIndices)
+                 TriangleIndices.Add(idx+startPosition);
+            fragment.EndPosition = PositionCount - 1;
+            fragment.EndTriangleIndex = TriangleIndexCount - 1;
+            fragment.EntityLabel = entityLabel;
+            fragment.EntityType = ifcType;
+            meshes.Add(fragment);
+        }
+
+
+        public int PositionCount
+        {
+            get { return Positions.Count; }
+        }
+
+        public int TriangleIndexCount
+        {
+            get { return TriangleIndices.Count; }
+        }
+
+        IList<Point3D> IXbimMeshGeometry3D.Positions
+        {
+            get { return Positions; }
+            set { Positions = new List<Point3D>(value); }
+        }
+
+        IList<Vector3D> IXbimMeshGeometry3D.Normals
+        {
+            get { return Normals; } 
+            set { Normals = new List<Vector3D>(value); }
+        }
+       
+
+        IList<int> IXbimMeshGeometry3D.TriangleIndices
+        {
+            get { return TriangleIndices; }
+            set { TriangleIndices = new List<int>(value); }
+        }
+
+
+        public XbimMeshFragmentCollection Meshes
+        {
+            get { return meshes; }
+            set
+            {
+                meshes = new XbimMeshFragmentCollection(value);
+            }
+        }
+
+        /// <summary>
+        /// Appends a geometry data object to the Mesh
+        /// </summary>
+        /// <param name="geometryMeshData"></param>
+        public void Append(XbimGeometryData geometryMeshData)
+        { 
+            Matrix3D transform = new Matrix3D().FromArray(geometryMeshData.TransformData);
+            if (geometryMeshData.GeometryType == XbimGeometryType.TriangulatedMesh)
+            {
+                XbimTriangulatedModelStream strm = new XbimTriangulatedModelStream(geometryMeshData.ShapeData);
+                XbimMeshFragment fragment = strm.BuildWithNormals(this, transform);
+                fragment.EntityLabel = geometryMeshData.IfcProductLabel;
+                fragment.EntityType = IfcMetaData.GetType(geometryMeshData.IfcTypeId);
+                meshes.Add(fragment);
+            }
+            else if (geometryMeshData.GeometryType == XbimGeometryType.BoundingBox)
+            {
+                Rect3D r3d = new Rect3D().FromArray(geometryMeshData.ShapeData);
+                this.Add(XbimMeshGeometry3D.MakeBoundingBox(r3d, transform), geometryMeshData.IfcProductLabel, IfcMetaData.GetType(geometryMeshData.IfcTypeId));
+            }
+            else
+                throw new XbimException("Illegal geometry type found");
+        }
+
+        /// <summary>
+        /// Moves the content of this mesh to the other
+        /// </summary>
+        /// <param name="toMesh"></param>
+        public void MoveTo(IXbimMeshGeometry3D toMesh)
+        {
+            if (meshes.Any()) //if no meshes nothing to move
+            {
+                toMesh.BeginUpdate();
+                toMesh.Positions = this.Positions; this.Positions.Clear();
+                toMesh.Normals = this.Normals; this.Normals.Clear();
+                toMesh.TriangleIndices = this.TriangleIndices; this.TriangleIndices.Clear();
+                toMesh.Meshes = this.Meshes; this.meshes.Clear();
+                toMesh.EndUpdate();
+            }
+        }
+
+
+        public void BeginUpdate()
+        {
+            
+        }
+
+        public void EndUpdate()
+        {
+            
         }
     }
 }

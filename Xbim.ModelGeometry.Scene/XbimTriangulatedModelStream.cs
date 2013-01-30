@@ -430,24 +430,36 @@ namespace Xbim.ModelGeometry.Scene
 		}
 
 		
-		// conversion to IXbimTriangulatesToPositionsIndices
-		//
-		public void BuildWithNormals<TGeomType>(TGeomType builder, Matrix3D transform) where TGeomType : IXbimTriangulatesToPositionsNormalsIndices, new()
+		/// <summary>
+		/// Builds a triangulated mesh with normals, appends points etc t the end of the existing mesh
+		/// </summary>
+		/// <typeparam name="TGeomType"></typeparam>
+		/// <param name="builder"></param>
+		/// <param name="transform"></param>
+		/// <returns>The fragment defining the piece of the mesg built with this operation</returns>
+		public XbimMeshFragment BuildWithNormals<TGeomType>(TGeomType builder, Matrix3D transform) where TGeomType : IXbimTriangulatesToPositionsNormalsIndices, new()
+        {
+            _dataStream.Seek(0, SeekOrigin.Begin);
+            BinaryReader br = new BinaryReader(_dataStream);
+            if (!IsEmpty) // has data 
+            {
+                builder.BeginBuild();
+                XbimMeshFragment fragment = new XbimMeshFragment(builder.PositionCount,builder.TriangleIndexCount); 
+                BuildWithNormals(builder, br, transform);
+                fragment.EndPosition = builder.PositionCount-1;
+                fragment.EndTriangleIndex = builder.TriangleIndexCount-1;
+                builder.EndBuild();
+                return fragment;
+            } 
+            else
+                return default(XbimMeshFragment);
+        }
+
+
+
+        private void BuildWithNormals<TGeomType>(TGeomType builder, BinaryReader br, Matrix3D transform) where TGeomType : IXbimTriangulatesToPositionsNormalsIndices, new()
 		{
-			_dataStream.Seek(0, SeekOrigin.Begin);
-			BinaryReader br = new BinaryReader(_dataStream);
-
-			builder.BeginBuild();
-			if (!IsEmpty) //has data 
-				BuildWithNormals(builder, br, transform);
-
-			builder.EndBuild();
-		}
-
-
-
-		private void BuildWithNormals<TGeomType>(TGeomType builder, BinaryReader br, Matrix3D transform) where TGeomType : IXbimTriangulatesToPositionsNormalsIndices, new()
-		{
+           
 			uint numPositions = br.ReadUInt32();
 			uint numNormals = br.ReadUInt32();
 			uint numUniques = br.ReadUInt32();
@@ -468,7 +480,7 @@ namespace Xbim.ModelGeometry.Scene
 			{
 				return;
 			}
-			
+           
 			// coordinates of positions
 			//
 			for (uint i = 0; i < numPositions; i++)
@@ -496,6 +508,13 @@ namespace Xbim.ModelGeometry.Scene
                     builder.AddPosition(
                         new Point3D(pos[readpositionI, 0], pos[readpositionI, 1], pos[readpositionI, 2]));
                 }
+                for (uint i = 0; i < numUniques; i++)
+                {
+                    uint readnormalI = NormalsReader.ReadIndex();
+                    builder.AddNormal(
+                        new Vector3D(nrm[readnormalI, 0], nrm[readnormalI, 1], nrm[readnormalI, 2])
+                        );
+                }
             }
             else
             {
@@ -505,14 +524,15 @@ namespace Xbim.ModelGeometry.Scene
                     builder.AddPosition(
                         transform.Transform(new Point3D(pos[readpositionI, 0], pos[readpositionI, 1], pos[readpositionI, 2])));
                 }
+                for (uint i = 0; i < numUniques; i++)
+                {
+                    uint readnormalI = NormalsReader.ReadIndex();
+                    Vector3D v = transform.Transform(new Vector3D(nrm[readnormalI, 0], nrm[readnormalI, 1], nrm[readnormalI, 2]));
+                    v.Normalize();
+                    builder.AddNormal(v);
+                }
             }
-			for (uint i = 0; i < numUniques; i++)
-			{
-				uint readnormalI = NormalsReader.ReadIndex();
-				builder.AddNormal(
-					new Vector3D(nrm[readnormalI, 0], nrm[readnormalI, 1], nrm[readnormalI, 2])
-					);
-			}
+           
 			builder.EndPoints(); //point/normal combinations completed
 
 			builder.BeginPolygons(numTriangles, numPolygons);

@@ -27,7 +27,7 @@ namespace Xbim.IO
 
         public override int GetHashCode()
         {
-            return (EntityLabel << sizeof(int) + EntityTypeId).GetHashCode();
+            return EntityLabel;
         }
         public override bool Equals(object b)
         {

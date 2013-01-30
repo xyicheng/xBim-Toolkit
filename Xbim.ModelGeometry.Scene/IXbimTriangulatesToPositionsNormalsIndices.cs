@@ -54,5 +54,8 @@ namespace Xbim.ModelGeometry.Scene
         /// Model build complete
         /// </summary>
         void EndBuild();
+
+        int PositionCount { get; }
+        int TriangleIndexCount { get; }
     }
 }

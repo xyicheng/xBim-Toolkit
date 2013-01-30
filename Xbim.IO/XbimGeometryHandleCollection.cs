@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Xbim.Ifc2x3;
+using Xbim.Ifc2x3.ProductExtension;
 
 namespace Xbim.IO
 {
@@ -35,6 +36,19 @@ namespace Xbim.IO
                 uniqueStyles.Add(item.SurfaceStyle);
             }
             return uniqueStyles;
+        }
+
+        public Dictionary<string, XbimGeometryHandleCollection> FilterByBuildingElementTypes()
+        {
+            Dictionary<string, XbimGeometryHandleCollection> result = new Dictionary<string, XbimGeometryHandleCollection>();
+            IfcType baseType = IfcMetaData.IfcType(typeof(IfcBuildingElement));
+            foreach (var subType in baseType.NonAbstractSubTypes)
+            {
+                short ifcTypeId = IfcMetaData.IfcTypeId(subType);
+                XbimGeometryHandleCollection handles = new XbimGeometryHandleCollection(this.Where(g=>g.IfcTypeId==ifcTypeId));
+                if (handles.Count > 0) result.Add(subType.Name, handles);
+            }
+            return result;
         }
 
         /// <summary>
