@@ -28,12 +28,13 @@
 #include <TopTools_HArray1OfShape.hxx> 
 using namespace System::Linq;
 using namespace Xbim::Common::Exceptions;
-
+using namespace  System::Runtime::ExceptionServices;
 namespace Xbim
 {
 	namespace ModelGeometry
 	{
-		bool LowLevelCut(const TopoDS_Shape & from, const TopoDS_Shape & toCut, TopoDS_Shape & result)
+		[HandleProcessCorruptedStateExceptionsAttribute]
+		bool XbimFeaturedShape::LowLevelCut(const TopoDS_Shape & from, const TopoDS_Shape & toCut, TopoDS_Shape & result)
 		{
 			bool ok = false;
 
@@ -45,12 +46,6 @@ namespace Xbim
 				Standard_Integer err = boolOp.ErrorStatus();
 				ok = (err==0);
 				if(ok) result = boolOp.Shape();
-				/*else
-				{
-					BRepAlgo_Cut boolOp2(from,toCut);
-					ok = boolOp2.IsDone();
-					if(ok) result = boolOp2.Shape();
-				}*/
 
 			}
 			catch(... )
