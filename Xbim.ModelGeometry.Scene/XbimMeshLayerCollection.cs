@@ -6,6 +6,7 @@ using System.Text;
 
 namespace Xbim.ModelGeometry.Scene
 {
+   
     public class XbimMeshLayerCollection<TVISIBLE, TMATERIAL> : KeyedCollection<string, XbimMeshLayer<TVISIBLE, TMATERIAL>> 
         where TVISIBLE : IXbimMeshGeometry3D, new()
         where TMATERIAL : IXbimRenderMaterial, new()

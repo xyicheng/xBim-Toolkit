@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Xml.Serialization;
 using Xbim.Ifc2x3.PresentationAppearanceResource;
 using Xbim.Ifc2x3.PresentationResource;
 using Xbim.IO;
@@ -68,11 +69,13 @@ namespace Xbim.ModelGeometry.Scene
         /// <summary>
         /// A mesh that are currently rendered typically on the graphics adaptor
         /// </summary>
+        [XmlIgnore]
         public IXbimMeshGeometry3D Visible = new TVISIBLE() ;
 
         /// <summary>
         /// The native graphic engine render material
         /// </summary>
+        [XmlIgnore]
         public IXbimRenderMaterial Material = new TMATERIAL();
         /// <summary>
         /// A mesh that is loaded but not visible on the graphics display

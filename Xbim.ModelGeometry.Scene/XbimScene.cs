@@ -1,15 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
+using System.Xml.Serialization;
 
 namespace Xbim.ModelGeometry.Scene
 {
+    [Serializable]
     public class XbimScene<TVISIBLE, TMATERIAL>
         where TVISIBLE : IXbimMeshGeometry3D, new()
         where TMATERIAL : IXbimRenderMaterial, new()
     {
+        [XmlIgnore]
         XbimMeshLayerCollection<TVISIBLE, TMATERIAL> layers = new XbimMeshLayerCollection<TVISIBLE, TMATERIAL>();
+
+        public XbimMeshLayerCollection<TVISIBLE, TMATERIAL> SubLayers
+        {
+            get { return layers; }
+            set { layers = value; }
+        }
+
         XbimColourMap layerColourMap;
 
         /// <summary>
@@ -36,6 +47,7 @@ namespace Xbim.ModelGeometry.Scene
             this.layerColourMap = colourMap;
         }
 
+        [XmlIgnore]
         public IEnumerable<XbimMeshLayer<TVISIBLE, TMATERIAL>> Layers
         {
             get
@@ -54,6 +66,7 @@ namespace Xbim.ModelGeometry.Scene
         /// <summary>
         /// Returns all layers and sublayers that have got some graphic content that is visible
         /// </summary>
+        [XmlIgnore]
         public IEnumerable<XbimMeshLayer<TVISIBLE, TMATERIAL>> VisibleLayers
         {
             get
@@ -94,7 +107,27 @@ namespace Xbim.ModelGeometry.Scene
             foreach (var layer in layers)
                 layer.ShowAll();
         }
+        
+        public void Save(TextWriter writeTo)
+        {
+            XmlSerializer serializer = new XmlSerializer(typeof(XbimScene<TVISIBLE, TMATERIAL>));
+            serializer.Serialize(writeTo, this);      
+        }
 
-       
+        public bool Save(string fileName)
+        {
+            try
+            {
+                TextWriter textWriter = new StreamWriter(fileName);
+                Save(textWriter);
+                textWriter.Close();
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+
+        }
     }
 }

@@ -643,7 +643,7 @@ namespace Xbim.Presentation
                 }
                 scene.Add(layer);
             }
-
+            scene.Save("scene.xml");
             DrawShapes();
             
 
