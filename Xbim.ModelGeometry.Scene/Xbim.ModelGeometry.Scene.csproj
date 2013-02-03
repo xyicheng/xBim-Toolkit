@@ -98,7 +98,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TransformGraph.cs" />
     <Compile Include="TransformNode.cs" />
-    <Compile Include="XbimBoundingBox.cs" />
     <Compile Include="XbimColour.cs" />
     <Compile Include="XbimColourMap.cs" />
     <Compile Include="XbimLOD.cs" />

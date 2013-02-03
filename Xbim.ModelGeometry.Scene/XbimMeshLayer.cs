@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
+using Xbim.Common.Geometry;
 using Xbim.Ifc2x3.PresentationAppearanceResource;
 using Xbim.Ifc2x3.PresentationResource;
 using Xbim.IO;
@@ -21,12 +22,12 @@ namespace Xbim.ModelGeometry.Scene
         string name;
         XbimMeshLayerCollection<TVISIBLE, TMATERIAL> subLayerMap = new XbimMeshLayerCollection<TVISIBLE, TMATERIAL>();
         XbimColourMap layerColourMap;
-        XbimBoundingBox boundingBox;
+        XbimRect3D boundingBox;
 
         /// <summary>
         /// Bounding box, aligned to the XYZ axis, containing all points in this mesh
         /// </summary>
-        public XbimBoundingBox BoundingBox
+        public XbimRect3D BoundingBox
         {
             get { return boundingBox; }
             set { boundingBox = value; }
@@ -172,11 +173,7 @@ namespace Xbim.ModelGeometry.Scene
             }
         }
 
-        void subLayer_LayersChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            
-        }
-
+       
         public XbimMeshLayerCollection<TVISIBLE, TMATERIAL> SubLayers 
         {
             get
