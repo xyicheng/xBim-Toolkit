@@ -12,40 +12,48 @@
 
 #region Directives
 
-using System.Windows.Media;
-using System.Windows.Media.Media3D;
-using Xbim.Ifc.GeometryResource;
-using WVector = System.Windows.Vector;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using Xbim.Common.Geometry;
+using Xbim.Ifc2x3.GeometryResource;
+
 
 #endregion
 
-namespace Xbim.Ifc.Extensions
+namespace Xbim.Ifc2x3.Extensions
 {
     public static class Axis2Placement2DExtensions
     {
-        public static Matrix ToMatrix(this IfcAxis2Placement2D axis2)
+
+        static public IfcAxis2Placement2D Create(this IfcAxis2Placement2D ax, IfcCartesianPoint centre, IfcDirection xAxisDirection)
         {
-            if (axis2.RefDirection != null)
+            IfcAxis2Placement2D ax2 = new IfcAxis2Placement2D()
             {
-                WVector v = axis2.RefDirection.WVector();
-                v.Normalize();
-                return new Matrix(v.X, v.Y, v.Y, v.X, axis2.Location.X, axis2.Location.Y);
-            }
-            else
-                return new Matrix(1, 0, 0, 1, axis2.Location.X, axis2.Location.Y);
+                RefDirection = xAxisDirection,
+                Location = centre
+            };
+            return ax2;
         }
 
-        public static Matrix3D ToMatrix3D(this IfcAxis2Placement2D axis2)
+      
+
+        public static XbimMatrix3D ToMatrix3D(this IfcAxis2Placement2D axis2, ConcurrentDictionary<int, Object> maps = null)
         {
+            object transform;
+            if (maps != null && maps.TryGetValue(Math.Abs(axis2.EntityLabel), out transform)) //already converted it just return cached
+                return (XbimMatrix3D)transform;
             if (axis2.RefDirection != null)
             {
-                WVector v = axis2.RefDirection.WVector();
+                XbimVector3D v = axis2.RefDirection.XbimVector3D();
                 v.Normalize();
-                return new Matrix3D(v.X, v.Y, 0, 0, v.Y, v.X, 0, 0, 0, 0, 1, 0, axis2.Location.X, axis2.Location.Y, 0, 1);
+                transform = new XbimMatrix3D(v.X, v.Y, 0, 0, v.Y, v.X, 0, 0, 0, 0, 1, 0, axis2.Location.X, axis2.Location.Y, 0, 1);
             }
             else
-                return new Matrix3D(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, axis2.Location.X, axis2.Location.Y,
+                transform = new XbimMatrix3D(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, axis2.Location.X, axis2.Location.Y,
                                     axis2.Location.Z, 1);
+            if (maps != null) maps.TryAdd(Math.Abs(axis2.EntityLabel), transform);
+            return (XbimMatrix3D)transform;
         }
     }
 }

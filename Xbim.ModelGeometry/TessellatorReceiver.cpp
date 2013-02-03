@@ -8,9 +8,9 @@ namespace Xbim
 	{
 		TessellatorReceiver::TessellatorReceiver(void)
 		{
-			_points = gcnew List<Point3D>();
+			_points = gcnew List<XbimPoint3D>();
 			_indices = gcnew List<Int32>();
-			_normals = gcnew List<Vector3D>();
+			_normals = gcnew List<XbimVector3D>();
 
 		}
 
@@ -46,12 +46,12 @@ namespace Xbim
 
 		void TessellatorReceiver::AddPoint(double X, double Y, double Z)
 		{
-			_points->Add(Point3D(X,Y,Z));
+			_points->Add(XbimPoint3D(X,Y,Z));
 		}
 
 		void TessellatorReceiver::AddNormal(double X, double Y, double Z)
 		{
-			_normals->Add(Vector3D(X,Y,Z));
+			_normals->Add(XbimVector3D(X,Y,Z));
 		}
 
 		void TessellatorReceiver::AddTriangleIndices(int a, int b, int c)

@@ -18,13 +18,11 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.Runtime.Serialization;
-using System.Windows.Media;
-using System.Xml.Serialization;
+
 using Xbim.XbimExtensions.SelectTypes;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
-using WinVector = System.Windows.Vector;
-using WinVector3D = System.Windows.Media.Media3D.Vector3D;
+using Xbim.Common.Geometry;
 
 #endregion
 
@@ -44,7 +42,7 @@ namespace Xbim.Ifc2x3.GeometryResource
     ///   NOTE: Corresponding STEP entity: direction. Please refer to ISO/IS 10303-42:1994, p.26 for the final definition of the formal standard. The derived attribute Dim has been added (see also note at IfcGeometricRepresentationItem). 
     ///   HISTORY: New entity in IFC Release 1.0
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcDirection : IfcGeometricRepresentationItem, IfcOrientationSelect, IDirectionRatioList<double>, IVector3D
     {
         #region Fields
@@ -143,7 +141,7 @@ namespace Xbim.Ifc2x3.GeometryResource
             _z = double.NaN;
         }
 
-        public IfcDirection(WinVector3D vect3D)
+        public IfcDirection(XbimVector3D vect3D)
             : this(vect3D.X, vect3D.Y, vect3D.Z)
         {
         }
@@ -211,20 +209,12 @@ namespace Xbim.Ifc2x3.GeometryResource
 
         #endregion
 
-        /// <summary>
-        ///   Returns a non-normalized Windows Vector
-        /// </summary>
-        /// <returns></returns>
-        public WinVector WVector()
-        {
-            ((IPersistIfcEntity) this).Activate(false);
-            return new WinVector(_x, _y);
-        }
 
-        public WinVector3D WVector3D()
+
+        public XbimVector3D XbimVector3D()
         {
             ((IPersistIfcEntity) this).Activate(false);
-            return new WinVector3D(_x, _y, _z);
+            return new XbimVector3D(_x, _y, _z);
         }
 
         public double this[int axis]
@@ -269,7 +259,7 @@ namespace Xbim.Ifc2x3.GeometryResource
         /// <summary>
         ///   Derived. The space dimensionality of this class, defined by the number of real in the list of DirectionRatios.
         /// </summary>
-        [XmlIgnore]
+        
         public IfcDimensionCount Dim
         {
             get
@@ -354,25 +344,19 @@ namespace Xbim.Ifc2x3.GeometryResource
 
             if (Dim == 3)
             {
-                WinVector3D v3D = new WinVector3D(_x, _y, _z);
+                XbimVector3D v3D = new XbimVector3D(_x, _y, _z);
                 v3D.Normalize();
                 return new IfcDirection(v3D.X, v3D.Y, v3D.Z);
             }
-            if (Dim == 2)
-            {
-                WinVector v2D = new WinVector(_x, _y);
-                v2D.Normalize();
-                return new IfcDirection(v2D.X, v2D.Y);
-            }
             else
-                throw new ArgumentException("Only 2D and 3D Directions can be normalised");
+                throw new ArgumentException("Only 3D Directions are supported for normalised at present");
         }
 
         public static IfcVector CrossProduct(IfcDirection d1, IfcDirection d2)
         {
             if (d1.Dim == 3 && d2.Dim == 3)
             {
-                WinVector3D v3D = WinVector3D.CrossProduct(d1.WVector3D(), d2.WVector3D());
+                XbimVector3D v3D = d1.XbimVector3D().CrossProduct(d2.XbimVector3D());
                 return new IfcVector(v3D.X, v3D.Y, v3D.Z, v3D.Length);
             }
             else
@@ -507,55 +491,5 @@ namespace Xbim.Ifc2x3.GeometryResource
         #endregion
     }
 
-    #region Converter
-
-    public class DirectionConverter : TypeConverter
-    {
-        public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
-        {
-            if (destinationType == typeof (string))
-                return true;
-            else
-                return base.CanConvertTo(context, destinationType);
-        }
-
-        public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value,
-                                         Type destinationType)
-        {
-            IfcDirection dir = value as IfcDirection;
-            if (dir != null && destinationType == typeof (string))
-            {
-                return dir.ToString();
-            }
-            else
-                return base.ConvertTo(context, culture, value, destinationType);
-        }
-
-        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
-        {
-            if (sourceType == typeof (string))
-                return true;
-            else
-                return base.CanConvertFrom(context, sourceType);
-        }
-
-        public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
-        {
-            string str = value as string;
-            if (str != null)
-            {
-                DoubleCollection dbls = DoubleCollection.Parse(str);
-                if (dbls.Count == 2)
-                    return new IfcDirection(dbls[0], dbls[1]);
-                else if (dbls.Count == 3)
-                    return new IfcDirection(dbls[0], dbls[1], dbls[2]);
-                else
-                    return new IfcDirection();
-            }
-            else
-                return base.ConvertFrom(context, culture, value);
-        }
-    }
-
-    #endregion
+  
 }

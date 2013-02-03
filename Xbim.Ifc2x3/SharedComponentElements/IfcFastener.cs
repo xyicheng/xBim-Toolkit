@@ -19,7 +19,7 @@ using Xbim.XbimExtensions;
 
 namespace Xbim.Ifc2x3.SharedComponentElements
 {
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcFastener : IfcElementComponent
     {
     }

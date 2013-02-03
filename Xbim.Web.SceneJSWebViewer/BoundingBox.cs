@@ -7,9 +7,10 @@ namespace Xbim.SceneJSWebViewer
 {
     using System;
     using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
     using System.Text;
-    using System.Windows.Media.Media3D;
+    using Xbim.Common.Geometry;
 
     /// <summary>
     /// TODO: Update summary.
@@ -17,15 +18,51 @@ namespace Xbim.SceneJSWebViewer
     public class BoundingBox
     {
         public bool IsValid = false;
-        public Point3D PointMin = new Point3D();
-        public Point3D PointMax = new Point3D();
+        public XbimPoint3D PointMin = new XbimPoint3D();
+        public XbimPoint3D PointMax = new XbimPoint3D();
 
+        public BoundingBox()
+        {
+
+        }
+
+        public BoundingBox(XbimPoint3D pMin, XbimPoint3D pMax)
+        {
+            PointMin = pMin;
+            PointMax = pMax;
+            IsValid = true;
+        }
+        public BoundingBox(double srXmin, double srYmin, double srZmin, double srXmax, double srYmax, double srZmax )
+        {
+            PointMin = new XbimPoint3D(srXmin, srYmin, srZmin);
+            PointMax = new XbimPoint3D(srXmax, srYmax, srZmax);
+            IsValid = true;
+        }
+        /// <summary>
+        /// Returns a bounding box from the byte array
+        /// </summary>
+        /// <returns></returns>
+        public static BoundingBox FromArray(byte[] array)
+        {
+            MemoryStream ms = new MemoryStream(array);
+            BinaryReader bw = new BinaryReader(ms);
+
+            double minX = bw.ReadDouble();
+            double minY = bw.ReadDouble();
+            double minZ = bw.ReadDouble();
+            double maxX = bw.ReadDouble();
+            double maxY = bw.ReadDouble();
+            double maxZ = bw.ReadDouble();
+
+            return new BoundingBox(minX, minY, minZ, maxX, maxY, maxZ);
+
+        }
         /// <summary>
         /// Extends to include the specified point; returns true if boundaries were changed.
         /// </summary>
         /// <param name="Point"></param>
         /// <returns></returns>
-        internal bool IncludePoint(Point3D Point)
+        internal bool IncludePoint(XbimPoint3D Point)
         {
             if (!IsValid)
             {
@@ -62,26 +99,15 @@ namespace Xbim.SceneJSWebViewer
             this.IncludePoint(childBB.PointMin);
             this.IncludePoint(childBB.PointMax);
         }
-
-        public BoundingBox TransformBy(Matrix3D Matrix)
+        
+        public BoundingBox TransformBy(XbimMatrix3D m)
         {
-            BoundingBox newBB = new BoundingBox();
-            // include all 8 vertices of the box.
-            newBB.IncludePoint(new Point3D(PointMin.X, PointMin.Y, PointMin.Z), Matrix);
-            newBB.IncludePoint(new Point3D(PointMin.X, PointMin.Y, PointMax.Z), Matrix);
-            newBB.IncludePoint(new Point3D(PointMin.X, PointMax.Y, PointMin.Z), Matrix);
-            newBB.IncludePoint(new Point3D(PointMin.X, PointMax.Y, PointMax.Z), Matrix);
-
-            newBB.IncludePoint(new Point3D(PointMax.X, PointMin.Y, PointMin.Z), Matrix);
-            newBB.IncludePoint(new Point3D(PointMax.X, PointMin.Y, PointMax.Z), Matrix);
-            newBB.IncludePoint(new Point3D(PointMax.X, PointMax.Y, PointMin.Z), Matrix);
-            newBB.IncludePoint(new Point3D(PointMax.X, PointMax.Y, PointMax.Z), Matrix);
-            return newBB;
+            return new BoundingBox(m.Transform(PointMin), m.Transform(PointMax));
         }
 
-        private bool IncludePoint(Point3D Point, Matrix3D Matrix)
+        private bool IncludePoint(XbimPoint3D Point, XbimMatrix3D Matrix)
         {
-            Point3D t = Point3D.Multiply(Point, Matrix);
+            XbimPoint3D t = XbimPoint3D.Multiply(Point, Matrix);
             return IncludePoint(t);
         }
     }

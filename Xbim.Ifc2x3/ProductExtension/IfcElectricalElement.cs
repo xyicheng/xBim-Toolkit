@@ -40,7 +40,7 @@ namespace Xbim.Ifc2x3.ProductExtension
     ///   MappedRepresentation
     ///   The new mapped item, IfcMappedItem, should be used if appropriate as it allows for reusing the geometry definition of the equipment type at occurrences of the same equipement type. In this case the IfcShapeRepresentation.RepresentationType = MappedRepresentation is used.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcElectricalElement : IfcElement
     {
     }

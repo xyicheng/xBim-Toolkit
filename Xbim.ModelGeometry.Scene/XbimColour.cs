@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Xbim.Ifc2x3.PresentationAppearanceResource;
+using Xbim.Ifc2x3.PresentationResource;
 
 namespace Xbim.ModelGeometry.Scene
 {
@@ -11,6 +13,16 @@ namespace Xbim.ModelGeometry.Scene
     /// </summary>
     public class XbimColour
     {
+        /// <summary>
+        /// True if the cuolour is not opaque
+        /// </summary>
+        public bool IsTransparent
+        {
+            get
+            {
+                return Alpha < 1;
+            }
+        }
         /// <summary>
         /// Default constructor
         /// </summary>
@@ -26,19 +38,18 @@ namespace Xbim.ModelGeometry.Scene
         /// <param name="green">Green Value</param>
         /// <param name="blue">Blue Value</param>
         /// <param name="alpha">Alpha Value</param>
-        /// <param name="emit">Emit Value</param>
-        public XbimColour(String name, float red, float green, float blue, float alpha = 1, float emit = 0)
+        public XbimColour(String name, float red, float green, float blue, float alpha = 1)
         {
             this.Name = name;
             this.Red = red;
             this.Green = green;
             this.Blue = blue;
             this.Alpha = alpha;
-            this.Emit = emit;
+           
         }
 
-        public XbimColour(String name, double red, double green, double blue, double alpha = 1, double emit = 0)
-            : this(name, (float)red, (float)green, (float)blue, (float)alpha, (float)emit)
+        public XbimColour(String name, double red, double green, double blue, double alpha = 1.0)
+            : this(name, (float)red, (float)green, (float)blue, (float)alpha)
         {
         }
 
@@ -78,14 +89,11 @@ namespace Xbim.ModelGeometry.Scene
             set;
         }
 
-        /// <summary>
-        /// Gets or sets Emit Value
-        /// </summary>
-        public float Emit
-        {
-            get;
-            set;
-        }
+        public float DiffuseFactor;
+        public float TransmissionFactor;
+        public float DiffuseTransmissionFactor;
+        public float ReflectionFactor;
+        public float SpecularFactor;
 
         /// <summary>
         /// Gets or sets Material Name
@@ -104,16 +112,42 @@ namespace Xbim.ModelGeometry.Scene
         /// </returns>
         public override string ToString()
         {
-            return String.Format("R:{0} G:{1} B:{2} A:{3} E:{4}", Red, Green, Blue, Alpha, Emit);
+            return String.Format("R:{0} G:{1} B:{2} A:{3}", Red, Green, Blue, Alpha);
         }
 
         static XbimColour _default;
-
+       
+        
         static XbimColour()
         {
             _default = new XbimColour("Default", 1, 1, 1);
         }
 
+        public XbimColour(IfcSurfaceStyle style)
+        {
+           
+        }
+        internal XbimColour(IfcColourRgb rgbColour)
+        {
+           
+            this.Red = (float)(double)rgbColour.Red;
+            this.Green = (float)(double)rgbColour.Green;
+            this.Blue = (float)(double)rgbColour.Blue;
+            this.Name=rgbColour.Name;
+            
+        }
+
+        public XbimColour(IfcColourRgb ifcColourRgb, double opacity = 1.0, double diffuseFactor = 1.0 , double specularFactor = 0.0, double transmissionFactor = 1.0, double reflectanceFactor = 0.0)
+            :this(ifcColourRgb)
+        {
+            this.Alpha = (float)opacity;
+            this.DiffuseFactor = (float)diffuseFactor;
+            this.SpecularFactor = (float)specularFactor;
+            this.TransmissionFactor = (float)transmissionFactor;
+            this.ReflectionFactor = (float)reflectanceFactor;
+        }
+
+        
         public static XbimColour Default 
         {
             get

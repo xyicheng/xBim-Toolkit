@@ -21,7 +21,7 @@ using Xbim.XbimExtensions;
 
 namespace Xbim.Ifc2x3.PresentationDefinitionResource
 {
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcPreDefinedSymbol : IfcPreDefinedItem, IfcDefinedSymbolSelect
     {
         #region Fields

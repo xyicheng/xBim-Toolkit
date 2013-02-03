@@ -24,7 +24,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc2x3.ActorResource
 {
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class ActorRoleCollection : XbimList<IfcActorRole>, IFormattable
     {
         internal ActorRoleCollection(IPersistIfcEntity owner)
@@ -103,7 +103,7 @@ namespace Xbim.Ifc2x3.ActorResource
     ///   Therefore using enumeration value USERDEFINED, the user can provide his/her own role as a value of the attribute UserDefinedRole. 
     ///   NOTE Corresponds to STEP names: organization_role and person_role, please refer to ISO/IS 10303-41:1994 for the final definition of the formal standard.
     /// </summary>
-    [IfcPersistedEntityAttribute, Serializable, IndexedClass]
+    [IfcPersistedEntityAttribute, IndexedClass]
     public class IfcActorRole : IFormattable, IPersistIfcEntity, ISupportChangeNotification, INotifyPropertyChanged,
                                 INotifyPropertyChanging
     {

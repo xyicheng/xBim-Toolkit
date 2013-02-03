@@ -16,20 +16,19 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
-using System.Windows;
-using System.Windows.Media.Media3D;
-using System.Xml.Serialization;
+
 using Xbim.Ifc2x3.MeasureResource;
 using Xbim.XbimExtensions.SelectTypes;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
+using Xbim.Common.Geometry;
 
 
 #endregion
 
 namespace Xbim.Ifc2x3.GeometryResource
 {
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class CartesianPointList : XbimList<IfcCartesianPoint>
     {
         public CartesianPointList(IPersistIfcEntity owner)
@@ -74,7 +73,7 @@ namespace Xbim.Ifc2x3.GeometryResource
     ///   Formal Propositions:
     ///   WR1   :   Only two or three dimensional points shall be used for the purpose of defining geometry in this IFC Resource
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcCartesianPoint : IfcPoint, IfcTrimmingSelect, IVertex3D, ICoordinateList, IIfcCartesianPoint
     {
         #region Fields
@@ -82,7 +81,7 @@ namespace Xbim.Ifc2x3.GeometryResource
         private double _x;
         private double _y;
         private double _z;
-
+       
         #endregion
 
         private class CoordinateListEnumerator : IEnumerator<IfcLengthMeasure>
@@ -146,15 +145,11 @@ namespace Xbim.Ifc2x3.GeometryResource
         }
 
 
-        public IfcCartesianPoint(Point3D pt3D)
+        public IfcCartesianPoint(XbimPoint3D pt3D)
             : this(pt3D.X, pt3D.Y, pt3D.Z)
         {
         }
 
-        public IfcCartesianPoint(Point pt2D)
-            : this(pt2D.X, pt2D.Y)
-        {
-        }
 
         public IfcCartesianPoint(IfcCartesianPoint cp)
         {
@@ -176,6 +171,8 @@ namespace Xbim.Ifc2x3.GeometryResource
             _y = y;
             _z = double.NaN;
         }
+
+
 
         #endregion
 
@@ -229,7 +226,7 @@ namespace Xbim.Ifc2x3.GeometryResource
         /// <summary>
         ///   Derived. The space dimensionality of this class, determined by the number of coordinates in the List of Coordinates.
         /// </summary>
-        [XmlIgnore]
+        
         public override IfcDimensionCount Dim
         {
             get
@@ -243,21 +240,12 @@ namespace Xbim.Ifc2x3.GeometryResource
         }
 
         /// <summary>
-        ///   Returns the point as an X Y 2 dimensional point, the Z coordinate is ignored, this does not map a 3D point into 2D space
-        /// </summary>
-        public Point WPoint2D()
-        {
-            ((IPersistIfcEntity) this).Activate(false);
-            return new Point(_x, _y);
-        }
-
-        /// <summary>
         ///   If the cartesian is 3D then returns Point3D or throws exception
         /// </summary>
-        public Point3D WPoint3D()
+        public XbimPoint3D XbimPoint3D()
         {
             ((IPersistIfcEntity) this).Activate(false);
-            return new Point3D(_x, _y, _z);
+            return new XbimPoint3D(_x, _y, _z);
         }
 
 

@@ -21,7 +21,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc2x3.Kernel
 {
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public abstract class IfcRelAssigns : IfcRelationship
     {
         public IfcRelAssigns()

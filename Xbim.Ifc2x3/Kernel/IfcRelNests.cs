@@ -31,7 +31,7 @@ namespace Xbim.Ifc2x3.Kernel
     ///   Formal Propositions:
     ///   WR1   :   The type of the RelatingObject shall always be the same as the type of each RelatedObject, i.e. the RelatingObject and all RelatedObject's are of the same type.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcRelNests : IfcRelDecomposes
     {
         public override string WhereRule()

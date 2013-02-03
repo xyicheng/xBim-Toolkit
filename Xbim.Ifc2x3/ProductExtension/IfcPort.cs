@@ -30,7 +30,7 @@ namespace Xbim.Ifc2x3.ProductExtension
     ///   Use Definitions
     ///   An instance of IfcElement may have one or more points at which it connects to other instances of IfcElement. An instance of IfcPort is located at a point where a connection can occur. The location of the port is determined in the context of the local coordinate system of the element to which it belongs.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public abstract class IfcPort : IfcProduct
     {
         /// <summary>

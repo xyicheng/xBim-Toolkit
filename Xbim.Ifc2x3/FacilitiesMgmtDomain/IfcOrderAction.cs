@@ -22,7 +22,7 @@ namespace Xbim.Ifc2x3.FacilitiesMgmtDomain
     /// IfcRelAssignsToControl is used to relate one or more instances of IfcOrderAction to an IfcProjectOrder or one 
     /// of its subtypes including maintenance work order.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntity]
     public class IfcOrderAction : IfcTask
     {
 

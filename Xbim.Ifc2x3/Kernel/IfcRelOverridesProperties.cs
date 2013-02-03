@@ -36,7 +36,7 @@ namespace Xbim.Ifc2x3.Kernel
     ///   Formal Propositions:
     ///   WR1   :   The overriding is only applicable as an occurrence property set - i.e. it can only be assigned to a single occurrence of IfcObject.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcRelOverridesProperties : IfcRelDefinesByProperties
     {
         public IfcRelOverridesProperties()

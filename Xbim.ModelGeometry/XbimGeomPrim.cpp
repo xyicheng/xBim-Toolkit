@@ -16,8 +16,7 @@
 #include <gp_Mat2d.hxx>
 
 using namespace System;
-using namespace System::Windows::Media::Media3D;
-
+using namespace Xbim::Common::Geometry;
 namespace Xbim
 {
 	namespace ModelGeometry
@@ -67,7 +66,7 @@ namespace Xbim
 			}
 
 		}
-
+		
 
 		TopLoc_Location XbimGeomPrim::ToLocation(IfcAxis2Placement3D^ axis3D)
 		{
@@ -125,12 +124,22 @@ namespace Xbim
 		{
 			return gp_Pln(ToAx3(axis3D));
 		}
+		
+		
+		gp_Trsf XbimGeomPrim::ToTransform(IfcAxis2Placement3D^ axis3D)
+		{
+			gp_Trsf trsf;
+			trsf.SetTransformation(ToAx3(axis3D),gp_Ax3(gp_Pnt(),gp_Dir(0,0,1),gp_Dir(1,0,0)));	
+			return trsf;
+		}
 
 		gp_Trsf XbimGeomPrim::ToTransform(IfcCartesianTransformationOperator^ tForm)
 		{
-
 			if(dynamic_cast<IfcCartesianTransformationOperator3DnonUniform^>(tForm))
-				return ToTransform((IfcCartesianTransformationOperator3DnonUniform^) tForm);
+				//Call the special case method for non uniform transforms and use BRepBuilderAPI_GTransform
+				//instead of BRepBuilderAPI_Transform,  see opencascade issue
+				// http://www.opencascade.org/org/forum/thread_300/?forum=3
+				throw (gcnew XbimGeometryException("XbimGeomPrim. IfcCartesianTransformationOperator3DnonUniform require a specific call"));
 			else if(dynamic_cast<IfcCartesianTransformationOperator3D^>(tForm))
 				return ToTransform((IfcCartesianTransformationOperator3D^) tForm);
 			else if(dynamic_cast<IfcCartesianTransformationOperator2D^>(tForm))
@@ -143,53 +152,53 @@ namespace Xbim
 
 		gp_Trsf XbimGeomPrim::ToTransform(IfcCartesianTransformationOperator3D^ ct3D)
 		{
-			Vector3D U3; //Z Axis Direction
-			Vector3D U2; //X Axis Direction
-			Vector3D U1; //Y axis direction
+			XbimVector3D U3; //Z Axis Direction
+			XbimVector3D U2; //X Axis Direction
+			XbimVector3D U1; //Y axis direction
 			if(ct3D->Axis3!=nullptr)
 			{
 				IfcDirection% dir = (IfcDirection%)ct3D->Axis3;
-				U3 = Vector3D(dir.DirectionRatios[0],dir.DirectionRatios[1],dir.DirectionRatios[2]); 
+				U3 = XbimVector3D(dir.DirectionRatios[0],dir.DirectionRatios[1],dir.DirectionRatios[2]); 
 				U3.Normalize();
 			}
 			else
-				U3 = Vector3D(0.,0.,1.); 
+				U3 = XbimVector3D(0.,0.,1.); 
 			if(ct3D->Axis1!=nullptr)
 			{
 				IfcDirection% dir = (IfcDirection%)ct3D->Axis1;
-				U1 = Vector3D(dir.DirectionRatios[0],dir.DirectionRatios[1],dir.DirectionRatios[2]); 
+				U1 = XbimVector3D(dir.DirectionRatios[0],dir.DirectionRatios[1],dir.DirectionRatios[2]); 
 				U1.Normalize();
 			}
 			else
 			{
-				Vector3D defXDir(1.,0.,0.);
+				XbimVector3D defXDir(1.,0.,0.);
 				if(U3 != defXDir)
 					U1 = defXDir;
 				else
-					U1 = Vector3D(0.,1.,0.);
+					U1 = XbimVector3D(0.,1.,0.);
 			}
-			Vector3D xVec = Vector3D::Multiply(Vector3D::DotProduct(U1,U3),U3);
-			Vector3D xAxis = Vector3D::Subtract(U1,xVec);
+			XbimVector3D xVec = XbimVector3D::Multiply(XbimVector3D::DotProduct(U1,U3),U3);
+			XbimVector3D xAxis = XbimVector3D::Subtract(U1,xVec);
 			xAxis.Normalize();
 
 			if(ct3D->Axis2!=nullptr)
 			{
 				IfcDirection% dir = (IfcDirection%)ct3D->Axis2;
-				U2 = Vector3D(dir.DirectionRatios[0],dir.DirectionRatios[1],dir.DirectionRatios[2]); 
+				U2 = XbimVector3D(dir.DirectionRatios[0],dir.DirectionRatios[1],dir.DirectionRatios[2]); 
 				U2.Normalize();
 			}
 			else
-				U2 = Vector3D(0.,1.,0.); 
+				U2 = XbimVector3D(0.,1.,0.); 
 
-			Vector3D tmp = Vector3D::Multiply(Vector3D::DotProduct(U2,U3),U3);
-			Vector3D yAxis = Vector3D::Subtract(U2,tmp);
-			tmp = Vector3D::Multiply(Vector3D::DotProduct(U2,xAxis),xAxis);
-			yAxis = Vector3D::Subtract(yAxis,tmp);
+			XbimVector3D tmp = XbimVector3D::Multiply(XbimVector3D::DotProduct(U2,U3),U3);
+			XbimVector3D yAxis = XbimVector3D::Subtract(U2,tmp);
+			tmp = XbimVector3D::Multiply(XbimVector3D::DotProduct(U2,xAxis),xAxis);
+			yAxis = XbimVector3D::Subtract(yAxis,tmp);
 			yAxis.Normalize();
 			U2 = yAxis;
 			U1 = xAxis;
 
-			Point3D% LO = ct3D->LocalOrigin->WPoint3D(); //local origin
+			XbimPoint3D LO = ct3D->LocalOrigin->XbimPoint3D(); //local origin
 
 			gp_Trsf trsf;
 			trsf.SetValues(	U1.X, U1.Y, U1.Z, 0,
@@ -202,68 +211,70 @@ namespace Xbim
 			return trsf;
 		}
 
-		gp_Trsf XbimGeomPrim::ToTransform(IfcCartesianTransformationOperator3DnonUniform^ ct3D)
+		gp_GTrsf XbimGeomPrim::ToTransform(IfcCartesianTransformationOperator3DnonUniform^ ct3D)
 		{
-			Vector3D U3; //Z Axis Direction
-			Vector3D U2; //X Axis Direction
-			Vector3D U1; //Y axis direction
+			XbimVector3D U3; //Z Axis Direction
+			XbimVector3D U2; //X Axis Direction
+			XbimVector3D U1; //Y axis direction
 			if(ct3D->Axis3!=nullptr)
 			{
 				IfcDirection% dir = (IfcDirection%)ct3D->Axis3;
-				U3 = Vector3D(dir.DirectionRatios[0],dir.DirectionRatios[1],dir.DirectionRatios[2]); 
+				U3 = XbimVector3D(dir.DirectionRatios[0],dir.DirectionRatios[1],dir.DirectionRatios[2]); 
 				U3.Normalize();
 			}
 			else
-				U3 = Vector3D(0.,0.,1.); 
+				U3 = XbimVector3D(0.,0.,1.); 
 			if(ct3D->Axis1!=nullptr)
 			{
 				IfcDirection% dir = (IfcDirection%)ct3D->Axis1;
-				U1 = Vector3D(dir.DirectionRatios[0],dir.DirectionRatios[1],dir.DirectionRatios[2]); 
+				U1 = XbimVector3D(dir.DirectionRatios[0],dir.DirectionRatios[1],dir.DirectionRatios[2]); 
 				U1.Normalize();
 			}
 			else
 			{
-				Vector3D defXDir(1.,0.,0.);
+				XbimVector3D defXDir(1.,0.,0.);
 				if(U3 != defXDir)
 					U1 = defXDir;
 				else
-					U1 = Vector3D(0.,1.,0.);
+					U1 = XbimVector3D(0.,1.,0.);
 			}
-			Vector3D xVec = Vector3D::Multiply(Vector3D::DotProduct(U1,U3),U3);
-			Vector3D xAxis = Vector3D::Subtract(U1,xVec);
+			XbimVector3D xVec = XbimVector3D::Multiply(XbimVector3D::DotProduct(U1,U3),U3);
+			XbimVector3D xAxis = XbimVector3D::Subtract(U1,xVec);
 			xAxis.Normalize();
 
 			if(ct3D->Axis2!=nullptr)
 			{
 				IfcDirection% dir = (IfcDirection%)ct3D->Axis2;
-				U2 = Vector3D(dir.DirectionRatios[0],dir.DirectionRatios[1],dir.DirectionRatios[2]); 
+				U2 = XbimVector3D(dir.DirectionRatios[0],dir.DirectionRatios[1],dir.DirectionRatios[2]); 
 				U2.Normalize();
 			}
 			else
-				U2 = Vector3D(0.,1.,0.); 
+				U2 = XbimVector3D(0.,1.,0.); 
 
-			Vector3D tmp = Vector3D::Multiply(Vector3D::DotProduct(U2,U3),U3);
-			Vector3D yAxis = Vector3D::Subtract(U2,tmp);
-			tmp = Vector3D::Multiply(Vector3D::DotProduct(U2,xAxis),xAxis);
-			yAxis = Vector3D::Subtract(yAxis,tmp);
+			XbimVector3D tmp = XbimVector3D::Multiply(XbimVector3D::DotProduct(U2,U3),U3);
+			XbimVector3D yAxis = XbimVector3D::Subtract(U2,tmp);
+			tmp = XbimVector3D::Multiply(XbimVector3D::DotProduct(U2,xAxis),xAxis);
+			yAxis = XbimVector3D::Subtract(yAxis,tmp);
 			yAxis.Normalize();
 			U2 = yAxis;
 			U1 = xAxis;
 
-			Point3D% LO = ct3D->LocalOrigin->WPoint3D(); //local origin
+			XbimPoint3D LO = ct3D->LocalOrigin->XbimPoint3D(); //local origin
 
-			gp_Trsf trsf;
-			trsf.SetValues(	ct3D->Scl *U1.X, U1.Y, U1.Z, 0,
-				U2.X, ct3D->Scl2 * U2.Y, U2.Z, 0,
-				U3.X, U3.Y, ct3D->Scl3 * U3.Z, 0, 
-				Precision::Angular() ,Precision::Approximation());
+			double s1=ct3D->Scl*U1.X;
+			double s2=ct3D->Scl2* U2.Y;
+			double s3=ct3D->Scl3* U3.Z;
+			gp_GTrsf trsf(
+				gp_Mat(	s1, U1.Y, U1.Z,
+				U2.X, s2 , U2.Z,
+				U3.X, U3.Y, s3 
+				),
+				gp_XYZ(LO.X, LO.Y, LO.Z));
 
-			trsf.SetTranslationPart(gp_Vec(LO.X, LO.Y, LO.Z));
-			
 			return trsf;
 		}
 
-		gp_Trsf XbimGeomPrim::ToTransform(Matrix3D m3D)
+		gp_Trsf XbimGeomPrim::ToTransform(XbimMatrix3D m3D)
 		{
 			gp_Trsf trsf;
 			trsf.SetValues(	m3D.M11, m3D.M12, m3D.M13, 0,
@@ -276,6 +287,7 @@ namespace Xbim
 
 		gp_Trsf XbimGeomPrim::ToTransform(IfcCartesianTransformationOperator2D^ ct)
 		{
+			throw gcnew NotImplementedException("2D transformation not implemented");
 			gp_Trsf2d m;
 			IfcDirection^ axis1 = ct->Axis1;
 			IfcDirection^ axis2 = ct->Axis2;
@@ -284,7 +296,8 @@ namespace Xbim
 			gp_Mat2d mat = m.HVectorialPart();
 			if (axis1 != nullptr)
 			{
-				System::Windows::Vector d1 = axis1->WVector();
+				
+				/*System::Windows::Vector d1 = axis1->XbimPoint3D();
 				d1.Normalize();
 
 
@@ -302,10 +315,10 @@ namespace Xbim
 						mat.SetValue(2,1,d1.Y);
 						mat.SetValue(2,2,-d1.X);
 					}
-				}
+				}*/
 			}
 			else
-			{
+			{/*
 				if (axis2 != nullptr)
 				{
 					System::Windows::Vector d1 = axis2->WVector();
@@ -314,7 +327,7 @@ namespace Xbim
 					mat.SetValue(1,2,-d1.X);
 					mat.SetValue(2,1,d1.X);
 					mat.SetValue(2,2,d1.X);
-				}
+				}*/
 			}
 
 			m.SetScaleFactor(scale);

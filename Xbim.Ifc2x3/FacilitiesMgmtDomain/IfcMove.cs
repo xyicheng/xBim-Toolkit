@@ -30,7 +30,7 @@ namespace Xbim.Ifc2x3.FacilitiesMgmtDomain
     /// pointing (with RelatingObject) to the containing move and (with RelatedObjects) to the contained (sub)moves.
     /// Moves are assigned to a move schedule (represented as IfcWorkSchedule with Purpose attribute 'Move') by using the IfcRelAssignsTask relationship.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntity]
     public class IfcMove : IfcTask
     {
 

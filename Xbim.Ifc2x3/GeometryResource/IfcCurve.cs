@@ -21,7 +21,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc2x3.GeometryResource
 {
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class CurveSet : XbimSet<IfcCurve>
     {
         internal CurveSet(IPersistIfcEntity owner)
@@ -30,7 +30,7 @@ namespace Xbim.Ifc2x3.GeometryResource
         }
     }
 
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public abstract class IfcCurve : IfcGeometricRepresentationItem, IfcGeometricSetSelect
     {
         /// <summary>

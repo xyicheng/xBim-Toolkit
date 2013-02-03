@@ -31,6 +31,7 @@
 #include <BRepBuilderAPI_Transform.hxx>
 #include <GeomLProp_SLProps.hxx>
 #include <BRepLib.hxx>
+#include <Poly.hxx>
 
 #using  <Xbim.IO.dll> as_friend
 using namespace Xbim::IO;
@@ -756,7 +757,7 @@ namespace Xbim
 #pragma managed
 
 
-		List<XbimTriangulatedModel^>^XbimGeometryModel::Mesh(IXbimGeometryModel^ shape, bool withNormals, double deflection, Matrix3D transform )
+		List<XbimTriangulatedModel^>^XbimGeometryModel::Mesh(IXbimGeometryModel^ shape, bool withNormals, double deflection, XbimMatrix3D transform )
 		{
 			
 //Build the Mesh

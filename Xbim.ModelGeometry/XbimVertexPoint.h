@@ -1,8 +1,8 @@
 #pragma once
 #include <TopoDS_Vertex.hxx>
 using namespace Xbim::XbimExtensions::Interfaces;
-using namespace Xbim::Ifc::GeometryResource;
-using namespace System::Windows::Media::Media3D;
+using namespace Xbim::Ifc2x3::GeometryResource;
+using namespace Xbim::Common::Geometry;
 
 namespace Xbim
 {
@@ -50,9 +50,9 @@ namespace Xbim
 			{
 				IfcCartesianPoint^ get();
 			}
-			virtual property System::Windows::Media::Media3D::Point3D Point3D
+			virtual property XbimPoint3D Point3D
 			{
-				System::Windows::Media::Media3D::Point3D get();
+				XbimPoint3D get();
 			}
 
 			property TopoDS_Vertex * Handle

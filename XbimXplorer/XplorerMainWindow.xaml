@@ -6,7 +6,7 @@
     xmlns:xbimIO="clr-namespace:Xbim.IO;assembly=Xbim.IO"
     xmlns:local="clr-namespace:XbimXplorer"
     xmlns:pt="clr-namespace:PropertyTools.Wpf;assembly=PropertyTools.Wpf" 
-    Title="Xbim Xplorer" Height="600" Width="800" Loaded="Window_Loaded"
+    Title="Xbim Xplorer" Height="600" Width="800" 
     x:Name="MainWindow"
         Icon="icon.ico">
     <Window.Resources>
@@ -46,10 +46,12 @@
         </DataTemplate>
     </Window.Resources>
     <Window.CommandBindings>
+        <CommandBinding Command="New"  Executed="CommandBinding_New" />
         <CommandBinding Command="Close"  Executed="CommandBinding_Close" CanExecute="CommandBinding_CanExecute"/>
         <CommandBinding Command="SaveAs" Executed="CommandBinding_SaveAs"  CanExecute="CommandBinding_CanExecute"/>
         <CommandBinding Command="Open"   Executed="CommandBinding_Open"/>
-       
+        
+
     </Window.CommandBindings>
     <Grid Name="MainFrame" DataContext="{StaticResource ModelProvider}">
         <Grid.RowDefinitions>
@@ -59,17 +61,18 @@
         </Grid.RowDefinitions>
        
         <Menu Grid.Row="0" >
-            <MenuItem Header="_File">
+            <MenuItem Header="_Model">
                 <!--<MenuItem Header="_New Xbim File" Click="FileNew_Click"/>-->
                 <MenuItem Header="_Open" Command="Open"/>
+                <MenuItem Header="_New" Command="New" />
+                <MenuItem Header="_Insert" Click="InsertModel" />
                 <MenuItem Header="_SaveAs" Command="SaveAs"/>
                 <MenuItem Header="_Close" Command="Close" />
-                <!--<MenuItem Header="_Import Ifc File" Click="FileImport_Click"/>
-                <MenuItem Header="_Export Ifc File" Click="FileExport_Click"/>-->
             </MenuItem>
             <MenuItem Header="View">
                 <MenuItem Header="_Zoom Extents" Click="MenuItem_ZoomExtents"/>
                 <MenuItem Header="_Copy" Command="Copy"/>
+              
                 <MenuItem IsCheckable="True" Header="Show Gridlines" IsChecked="{Binding ShowGridLines, ElementName=DrawingControl}"/>
                 <MenuItem IsCheckable="True" Header="Show Spaces" IsChecked="{Binding ShowSpaces, ElementName=DrawingControl}"/>
                 <MenuItem IsCheckable="True" Header="Show Walls" IsChecked="{Binding ShowWalls, ElementName=DrawingControl}"/>
@@ -105,9 +108,10 @@
                         <TextBlock Text="{Binding Viewport.CameraInertiaFactor, StringFormat='{}{0:0.000}', ElementName=DrawingControl}"/>
                     </StackPanel>
                 </MenuItem>
+                <pt:EnumMenuItem SelectedValue="{Binding Viewport.CameraRotationMode, ElementName=DrawingControl}" Header="CameraRotationMode"/>
+                <pt:EnumMenuItem SelectedValue="{Binding Viewport.CameraMode, ElementName=DrawingControl}" Header="CameraMode" />
             </MenuItem>
-            <pt:EnumMenuItem SelectedValue="{Binding Viewport.CameraRotationMode, ElementName=DrawingControl}" Header="CameraRotationMode"/>
-            <pt:EnumMenuItem SelectedValue="{Binding Viewport.CameraMode, ElementName=DrawingControl}" Header="CameraMode" />
+            
         </Menu>
        
         <Grid Grid.Row="1">

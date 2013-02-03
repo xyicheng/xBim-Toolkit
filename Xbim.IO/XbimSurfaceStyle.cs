@@ -89,17 +89,6 @@ namespace Xbim.IO
            
         }
 
-        ///// <summary>
-        ///// Returns a list of XbimProduct Geometry objects
-        ///// </summary>
-        //public IEnumerable<XbimProductGeometry> ProductGeometries
-        //{
-        //    get
-        //    {
-        //        foreach (var geomGroup in GeometryData.GroupBy(g => g.IfcProductLabel))
-        //            yield return new XbimProductGeometry(geomGroup.Key, geomGroup);
-                   
-        //    }
-        //}
+
     }
 }

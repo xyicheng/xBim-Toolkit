@@ -34,7 +34,7 @@ namespace Xbim.Ifc2x3.GeometryResource
     ///   WR3   :   The inherited Axis2 should have (if given) the dimensionality of 3.  
     ///   WR4   :   The Axis3 should have (if given) the dimensionality of 3.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcCartesianTransformationOperator3D : IfcCartesianTransformationOperator
     {
         #region Fields

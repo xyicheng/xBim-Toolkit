@@ -165,7 +165,10 @@ namespace Xbim.XbimExtensions
                                 new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, removed,
                                                                      index, index));
                 else
+                {
                     collChanged(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item));
+                    NotifyCountChanged(Count-1);
+                }
             }
         }
 

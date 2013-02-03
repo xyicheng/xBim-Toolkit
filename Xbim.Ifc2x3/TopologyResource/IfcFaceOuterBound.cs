@@ -19,7 +19,7 @@ using Xbim.XbimExtensions;
 
 namespace Xbim.Ifc2x3.TopologyResource
 {
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcFaceOuterBound : IfcFaceBound
     {
     }

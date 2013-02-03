@@ -15,7 +15,6 @@
 using System;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Windows.Markup;
 using System.Runtime.CompilerServices;
 
 #endregion
@@ -39,14 +38,4 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("Xbim.IO")]
 
 [assembly: CLSCompliant(true)]
-[assembly: XmlnsDefinition("http://schemas.Xbim.com/ifc", "Xbim.Ifc2x3.ActorResource")]
-[assembly: XmlnsDefinition("http://schemas.Xbim.com/ifc", "Xbim.Ifc2x3.GeometricConstraintResource")]
-[assembly: XmlnsDefinition("http://schemas.Xbim.com/ifc", "Xbim.Ifc2x3.GeometricModelResource")]
-[assembly: XmlnsDefinition("http://schemas.Xbim.com/ifc", "Xbim.Ifc2x3.GeometryResource")]
-[assembly: XmlnsDefinition("http://schemas.Xbim.com/ifc", "Xbim.Ifc2x3.Kernel")]
-[assembly: XmlnsDefinition("http://schemas.Xbim.com/ifc", "Xbim.Ifc2x3.MaterialResource")]
-[assembly: XmlnsDefinition("http://schemas.Xbim.com/ifc", "Xbim.Ifc2x3.PresentationAppearanceResource")]
-[assembly: XmlnsDefinition("http://schemas.Xbim.com/ifc", "Xbim.Ifc2x3.ProductExtension")]
-[assembly: XmlnsDefinition("http://schemas.Xbim.com/ifc", "Xbim.Ifc2x3.RepresentationResource")]
-[assembly: XmlnsDefinition("http://schemas.Xbim.com/ifc", "Xbim.Ifc2x3.SharedBldgElements")]
-[assembly: XmlnsDefinition("http://schemas.Xbim.com/ifc", "Xbim.Ifc2x3.ExternalReferenceResource")]
+

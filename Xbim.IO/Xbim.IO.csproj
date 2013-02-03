@@ -69,6 +69,7 @@
     <ErrorReport>prompt</ErrorReport>
     <DocumentationFile>..\bin\x86\Debug\Xbim.IO.XML</DocumentationFile>
     <NoWarn>1591,1573</NoWarn>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <OutputPath>..\bin\x86\Release\</OutputPath>
@@ -97,48 +98,74 @@
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Esent.Collections">
+      <HintPath>..\packages\ManagedEsent.1.6\lib\net20\Esent.Collections.dll</HintPath>
+    </Reference>
+    <Reference Include="Esent.Interop">
+      <HintPath>..\packages\ManagedEsent.1.6\lib\net20\Esent.Interop.dll</HintPath>
+    </Reference>
     <Reference Include="ICSharpCode.SharpZipLib">
       <HintPath>..\packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
     </Reference>
-    <Reference Include="PresentationCore">
-      <RequiredTargetFramework>3.0</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="PresentationFramework">
-      <RequiredTargetFramework>3.0</RequiredTargetFramework>
-    </Reference>
     <Reference Include="System" />
+    <Reference Include="System.configuration" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
-    <Reference Include="System.Xaml" />
-    <Reference Include="System.Xml.Linq">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="System.Data.DataSetExtensions">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="WindowsBase">
-      <RequiredTargetFramework>3.0</RequiredTargetFramework>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="GeometryCache\GeometryCacheFile.cs" />
-    <Compile Include="GeometryCache\MeshGeometry.cs" />
-    <Compile Include="GeometryCache\SpaceTriangulatedModel.cs" />
-    <Compile Include="IfcInputStream.cs" />
-    <Compile Include="IfcOutputStream.cs" />
+    <Compile Include="IfcFileHeader.cs" />
+    <Compile Include="IfcRepresentationItemExtensions.cs" />
+    <Compile Include="XbimGeometryHandle.cs" />
+    <Compile Include="XbimGeometryHandleCollection.cs" />
+    <Compile Include="XbimGeometrySort.cs" />
+    <Compile Include="XbimInstanceCollection.cs" />
+    <Compile Include="XbimInstanceHandle.cs" />
+    <Compile Include="IfcMetaData.cs" />
+    <Compile Include="IfcPersistedInstanceCache.cs" />
+    <Compile Include="IfcProductExtensions.cs" />
+    <Compile Include="IfcType.cs" />
+    <Compile Include="IfcTypeDictionary.cs" />
+    <Compile Include="IfcXmlReader.cs" />
+    <Compile Include="IfcXmlWriter.cs" />
+    <Compile Include="IPersistIfcEntityExtensions.cs" />
+    <Compile Include="Parser\IndexPropertyValue.cs" />
+    <Compile Include="Parser\IStepP21Parser.cs" />
+    <Compile Include="Parser\PropertyValue.cs" />
+    <Compile Include="Parser\XbimP21Indexer.cs" />
+    <Compile Include="Parser\XbimP21Parser.cs" />
+    <Compile Include="Parser\Parser.cs" />
+    <Compile Include="Parser\ShiftReduceParserCode.cs" />
+    <Compile Include="Parser\StepP21Entity.cs" />
+    <Compile Include="Parser\StepP21Lex.cs" />
+    <Compile Include="Parser\StepP21Parser.cs" />
+    <Compile Include="Part21FileWriter.cs" />
+    <Compile Include="Part21Formatter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="XbimFileModelServer.cs" />
-    <Compile Include="XbimMemoryModel.cs" />
-    <Compile Include="XbimModelServer.cs" />
+    <Compile Include="TypeExtensions.cs" />
+    <Compile Include="XbimCursor.cs" />
+    <Compile Include="XbimEntityCursor.cs" />
+    <Compile Include="XbimGeometryCursor.cs" />
+    <Compile Include="XbimInstanceHandleMap.cs" />
+    <Compile Include="XbimLazyDBTransaction.cs" />
+    <Compile Include="XbimModel.cs" />
     <Compile Include="XbimInputStream.cs" />
     <Compile Include="XbimOutputStream.cs" />
     <Compile Include="XbimPackage.cs" />
+    <Compile Include="XbimParserState.cs" />
+    <Compile Include="XbimProductGeometry.cs" />
+    <Compile Include="XbimReadOnlyDBTransaction.cs" />
+    <Compile Include="XbimReadTransaction.cs" />
+    <Compile Include="XbimReadWriteTransaction.cs" />
+    <Compile Include="XbimReferencedModel.cs" />
+    <Compile Include="XbimReferencedModelCollection.cs" />
+    <Compile Include="XbimSurfaceStyle.cs" />
+    <Compile Include="XbimSurfaceStyleMap.cs" />
+    <Compile Include="XbimViewDefinition.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
@@ -162,19 +189,34 @@
       <Project>{6745F5AC-AF3C-4372-81AA-A75E7B1FA03B}</Project>
       <Name>Xbim.Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Xbim.Ifc.Extensions\Xbim.Ifc.Extensions.csproj">
+    <ProjectReference Include="..\Xbim.Ifc.Extensions\Xbim.Ifc2x3.Extensions.csproj">
       <Project>{09870F18-1796-4A3E-A66D-68DB3DA60B24}</Project>
-      <Name>Xbim.Ifc.Extensions</Name>
+      <Name>Xbim.Ifc2x3.Extensions</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Xbim.Ifc\Xbim.Ifc.csproj">
+    <ProjectReference Include="..\Xbim.Ifc2x3\Xbim.Ifc2x3.csproj">
       <Project>{5D4C907D-1293-4E5F-9642-D0862AE4741C}</Project>
-      <Name>Xbim.Ifc</Name>
+      <Name>Xbim.Ifc2x3</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="Models.cd" />
     <None Include="packages.config" />
+    <None Include="Parser\MAKEPARSER.BAT" />
+    <None Include="Parser\StepP21IndexerLex.lex" />
+    <None Include="Parser\StepP21Lex.lex" />
+    <None Include="Parser\StepP21Parser.y" />
+    <None Include="Parser\XbimViewerKey.pfx" />
+    <None Include="README.rtf" />
     <None Include="XbimIfcKey.pfx" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Parser\gplex.exe" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Parser\gppg.exe" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Parser\Readme.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

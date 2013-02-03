@@ -15,9 +15,7 @@
 using System;
 using System.ComponentModel;
 using System.Globalization;
-using System.Windows;
-using System.Windows.Media;
-using System.Windows.Media.Media3D;
+using Xbim.Common.Geometry;
 using Xbim.Ifc2x3.MeasureResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
@@ -26,8 +24,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc2x3.GeometryResource
 {
-    [IfcPersistedEntityAttribute, Serializable]
-    [TypeConverter(typeof (VectorConverter))]
+    [IfcPersistedEntityAttribute]
     public class IfcVector : IfcGeometricRepresentationItem
     {
         #region Fields
@@ -120,25 +117,20 @@ namespace Xbim.Ifc2x3.GeometryResource
 
         #endregion
 
-        /// <summary>
-        ///   Converts a 2D Vector to a Windows Vector
-        /// </summary>
-        /// <returns></returns>
-        public Vector WVector()
-        {
-            Vector vec = new Vector(Orientation.X, Orientation.Y);
-            vec.Normalize(); //orientation is not normalized
-            vec *= Magnitude;
-            return vec;
-        }
 
         /// <summary>
-        ///   Converts a 3D vector to Windows Vector3D
+        ///   Converts an Ifc 3D vector to an Xbim Vector3D
         /// </summary>
         /// <returns></returns>
-        public Vector3D WVector3D()
+        public XbimVector3D XbimVector3D()
         {
-            Vector3D vec = new Vector3D(Orientation.X, Orientation.Y, Orientation.Z);
+            XbimVector3D vec;
+            if (Orientation.Dim > 2)
+                vec = new XbimVector3D(Orientation.X, Orientation.Y, Orientation.Z);
+            else if (Orientation.Dim == 2)
+                vec = new XbimVector3D(Orientation.X, Orientation.Y, 0);
+            else
+                vec = new XbimVector3D();
             vec.Normalize(); //orientation is not normalized
             vec *= Magnitude;
             return vec;
@@ -149,29 +141,7 @@ namespace Xbim.Ifc2x3.GeometryResource
             return string.Format("{0},{1}", Magnitude, Orientation);
         }
 
-        /// <summary>
-        /// returns the x, y z values of the vector, if invalid all values are set to NAN
-        /// </summary>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        /// <param name="z"></param>
-        public void XYZ(out double x, out double y, out double z)
-        {
-            if (Dim == 3)
-            {
-                Vector3D v3d = WVector3D();
-                x = v3d.X; y = v3d.Y; z = v3d.Z;
-            }
-            else if (Dim == 2)
-            {
-                Vector v3d = WVector();
-                x = v3d.X; y = v3d.Y; z = 0;
-            }
-            else 
-            {
-                z = y = x = double.NaN;
-            }
-        }
+        
         public override string WhereRule()
         {
             if (Magnitude < 0)
@@ -185,7 +155,7 @@ namespace Xbim.Ifc2x3.GeometryResource
         {
             if (v1.Dim == 3 && v2.Dim == 3)
             {
-                Vector3D v3D = Vector3D.CrossProduct(v1.WVector3D(), v2.WVector3D());
+                XbimVector3D v3D = v1.XbimVector3D().CrossProduct(v2.XbimVector3D());
                 return new IfcVector(v3D.X, v3D.Y, v3D.Z, v3D.Length);
             }
             else
@@ -195,57 +165,5 @@ namespace Xbim.Ifc2x3.GeometryResource
         }
     }
 
-    #region Converter
-
-    public class VectorConverter : TypeConverter
-    {
-        public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
-        {
-            if (destinationType == typeof (string))
-                return true;
-            else
-                return base.CanConvertTo(context, destinationType);
-        }
-
-        public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value,
-                                         Type destinationType)
-        {
-            IfcVector vec = value as IfcVector;
-            if (vec != null && destinationType == typeof (string))
-            {
-                return vec.ToString();
-            }
-            else
-                return base.ConvertTo(context, culture, value, destinationType);
-        }
-
-        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
-        {
-            if (sourceType == typeof (string))
-                return true;
-            else
-                return base.CanConvertFrom(context, sourceType);
-        }
-
-        public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
-        {
-            string str = value as string;
-            if (str != null)
-            {
-                DoubleCollection dbls = DoubleCollection.Parse(str);
-                if (dbls.Count == 3) //2 Dimensional vector
-                {
-                    return new IfcVector(dbls[1], dbls[2], dbls[0]);
-                }
-                else if (dbls.Count == 4) //3 Dimensional vector
-                    return new IfcVector(dbls[1], dbls[2], dbls[3], dbls[0]);
-                else
-                    return new IfcDirection();
-            }
-            else
-                return base.ConvertFrom(context, culture, value);
-        }
-    }
-
-    #endregion
+   
 }

@@ -13,7 +13,7 @@
 #region Directives
 
 using System;
-using System.Xml.Serialization;
+
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
@@ -21,7 +21,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc2x3.GeometryResource
 {
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcCurveBoundedPlane : IfcBoundedSurface, IPlacement3D
     {
         public IfcCurveBoundedPlane()
@@ -106,7 +106,7 @@ namespace Xbim.Ifc2x3.GeometryResource
         }
 
 
-        [XmlIgnore]
+        
         public override IfcDimensionCount Dim
         {
 			get { return BasisSurface == null ? (IfcDimensionCount)0 : BasisSurface.Dim; }

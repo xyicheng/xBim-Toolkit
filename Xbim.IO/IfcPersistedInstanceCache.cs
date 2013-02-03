@@ -1859,7 +1859,10 @@ namespace Xbim.IO
             XbimGeometryCursor geometryTable = GetGeometryTable();
             try
             {
-                return geometryTable.GetGeometryData(handles);
+                foreach (var item in geometryTable.GetGeometryData(handles))
+                {
+                    yield return item;
+                } 
             }
             finally
             {

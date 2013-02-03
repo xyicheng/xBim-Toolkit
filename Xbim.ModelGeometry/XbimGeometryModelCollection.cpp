@@ -2,12 +2,16 @@
 #include "XbimSolid.h"
 #include "XbimShell.h"
 #include "XbimGeometryModelCollection.h"
-#include "XbimMeshGeometry.h"
+
 #include "XbimGeomPrim.h"
 #include <BRepAlgoAPI_Cut.hxx>
 #include <BRepAlgoAPI_Common.hxx>
 #include <BRepAlgoAPI_Fuse.hxx>
-
+#include <BRepOffsetAPI_Sewing.hxx>
+#include <BRepLib.hxx>
+#include <ShapeUpgrade_ShellSewing.hxx>
+#include <BRepAlgoAPI_Fuse.hxx>
+#include <BRepTools.hxx>
 using namespace System::Linq;
 using namespace Xbim::Common::Exceptions;
 
@@ -132,55 +136,78 @@ namespace Xbim
 			//	return nullptr;
 			//}
 		}
-		XbimTriangulatedModelStream^ XbimGeometryModelCollection::Mesh( )
+		List<XbimTriangulatedModel^>^XbimGeometryModelCollection::Mesh( )
 		{
-			return Mesh(true, XbimGeometryModel::DefaultDeflection, Matrix3D::Identity);
+			return Mesh(true, XbimGeometryModel::DefaultDeflection, XbimMatrix3D::Identity);
 		}
 
-		XbimTriangulatedModelStream^ XbimGeometryModelCollection::Mesh(bool withNormals )
+		List<XbimTriangulatedModel^>^XbimGeometryModelCollection::Mesh(bool withNormals )
 		{
-			return Mesh(withNormals, XbimGeometryModel::DefaultDeflection, Matrix3D::Identity);
+			return Mesh(withNormals, XbimGeometryModel::DefaultDeflection, XbimMatrix3D::Identity);
 		}
-		XbimTriangulatedModelStream^ XbimGeometryModelCollection::Mesh(bool withNormals, double deflection )
+		List<XbimTriangulatedModel^>^XbimGeometryModelCollection::Mesh(bool withNormals, double deflection )
 		{ 
-			return Mesh(withNormals, deflection, Matrix3D::Identity);
+			return Mesh(withNormals, deflection, XbimMatrix3D::Identity);
 		}
 
-		XbimTriangulatedModelStream^ XbimGeometryModelCollection::Mesh(bool withNormals, double deflection, Matrix3D transform )
+		List<XbimTriangulatedModel^>^ XbimGeometryModelCollection::Mesh(bool withNormals, double deflection, XbimMatrix3D transform )
 		{ 
 			
 			if(shapes->Count > 0) //we have children that need special materials etc
 			{
-				XbimTriangulatedModelStream^ tm = gcnew XbimTriangulatedModelStream();
+				List<XbimTriangulatedModel^>^tm = gcnew List<XbimTriangulatedModel^>();
 				for each(IXbimGeometryModel^ gm in shapes)
-					tm->AddChild(gm->Mesh(withNormals, deflection, transform));
+				{
+					List<XbimTriangulatedModel^>^ mm = gm->Mesh(withNormals, deflection, transform);
+					if(mm!=nullptr)
+						tm->AddRange(mm);
+				}
 				return tm;
 			}
 			else
-				return XbimTriangulatedModelStream::Empty;
+				return gcnew List<XbimTriangulatedModel^>();
 			
+		}
+		
+		void XbimGeometryModelCollection::Move(TopLoc_Location location)
+		{	
+			
+			for each(IXbimGeometryModel^ shape in shapes)
+				shape->Move(location);
+			if (pCompound) //remove anyy cached compund data
+			{
+				delete pCompound;
+				pCompound=0;
+			}
 		}
 
 		IXbimGeometryModel^ XbimGeometryModelCollection::CopyTo(IfcObjectPlacement^ placement)
 		{
-			throw gcnew XbimGeometryException("A copyto operation has been applied to a collection of model object this is illegal according to schema");
-			/*if(dynamic_cast<IfcLocalPlacement^>(placement))
+			XbimGeometryModelCollection^ newColl = gcnew XbimGeometryModelCollection(_isMap, HasCurvedEdges);
+			newColl->RepresentationLabel=RepresentationLabel;
+			newColl->SurfaceStyleLabel=SurfaceStyleLabel;
+			for each(IXbimGeometryModel^ shape in shapes)
 			{
-				TopoDS_Compound movedShape = *pCompound;
-				IfcLocalPlacement^ lp = (IfcLocalPlacement^)placement;
-				movedShape.Move(XbimGeomPrim::ToLocation(lp->RelativePlacement));
-				return gcnew XbimGeometryModelCollection(movedShape, shapes, HasCurvedEdges);
+				newColl->Add(shape->CopyTo(placement));
 			}
-			else
-				throw(gcnew InvalidOperationException("XbimSolid::CopyTo only supports IfcLocalPlacement type"));*/
-
+			return newColl;
 		}
-
+		///Every element should be a solid bedore this is called. returns a compound solid
 		IXbimGeometryModel^ XbimGeometryModelCollection::Solidify()
 		{
-
-			return XbimGeometryModel::Fix(this);
-
+			IXbimGeometryModel^ a;
+			for each(IXbimGeometryModel^ b in shapes)
+			{
+				if(a==nullptr) a=b;
+				else
+				{
+					BRepAlgoAPI_Fuse fuse(*(a->Handle),*(b->Handle));
+					if(fuse.IsDone() && !fuse.Shape().IsNull())
+						a=gcnew XbimSolid(fuse.Shape());
+				}
+			}
+			return a;
+			
 		}
 	}
 }

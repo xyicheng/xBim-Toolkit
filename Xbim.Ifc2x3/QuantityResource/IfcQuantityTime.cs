@@ -32,7 +32,7 @@ namespace Xbim.Ifc2x3.QuantityResource
     ///   WR21   :   If a unit is given, the unit type shall be time unit.  
     ///   WR22   :   A valid weight quantity shall be greater than or equal to zero.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcQuantityTime : IfcPhysicalSimpleQuantity
     {
         #region Fields

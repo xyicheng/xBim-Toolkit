@@ -33,7 +33,7 @@ namespace Xbim.Ifc2x3.PropertyResource
     ///   WR21   :   The IfcComplexProperty should not reference itself within the list of HasProperties.  
     ///   WR22   :   Each property within the complex property shall have a unique name attribute.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcComplexProperty : IfcProperty
     {
         public IfcComplexProperty()

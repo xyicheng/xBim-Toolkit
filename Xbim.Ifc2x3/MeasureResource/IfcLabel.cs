@@ -23,7 +23,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc2x3.MeasureResource
 {
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class LabelCollection : XbimList<IfcLabel>, IFormattable
     {
         internal LabelCollection(IPersistIfcEntity owner)

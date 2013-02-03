@@ -28,7 +28,7 @@ namespace Xbim.Ifc2x3.GeometryResource
     ///   NOTE Corresponding STEP entity: elementary_surface. Only the subtype plane is incorporated as IfcPlane. The derived attribute Dim has been added (see also note at IfcGeometricRepresentationItem). Please refer to ISO/IS 10303-42:1994, p. 69 for the final definition of the formal standard. 
     ///   HISTORY New class in IFC Release 1.5
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public abstract class IfcElementarySurface : IfcSurface, IPlacement3D
     {
         #region Fields

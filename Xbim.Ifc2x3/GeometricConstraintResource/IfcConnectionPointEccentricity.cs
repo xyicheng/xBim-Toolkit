@@ -14,7 +14,7 @@ namespace Xbim.Ifc2x3.GeometricConstraintResource
     /// of two objects at a point or vertex point with associated point coordinates. There is a physical distance, or eccentricity, 
     /// between the connection points of both object
     /// </summary>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntity]
     public class IfcConnectionPointEccentricity : IfcConnectionPointGeometry
     {
         #region Fields

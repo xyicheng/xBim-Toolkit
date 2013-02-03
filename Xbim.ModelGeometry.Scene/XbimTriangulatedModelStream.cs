@@ -84,8 +84,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
-using System.Windows.Media.Media3D;
 using System.Diagnostics;
+using Xbim.Common.Geometry;
 
 namespace Xbim.ModelGeometry.Scene
 {
@@ -138,10 +138,7 @@ namespace Xbim.ModelGeometry.Scene
 			_dataStream.Write(data, 0, data.Length);
 		}
 
-		public Rect3D BoundingBox
-		{
-			get { throw new NotImplementedException(); }
-		}
+
 
 		// writes the data to the xbimGC cache stream 
 		//
@@ -392,7 +389,7 @@ namespace Xbim.ModelGeometry.Scene
 				double x = br.ReadSingle();
 				double y = br.ReadSingle();
 				double z = br.ReadSingle();
-				builder.AddPosition(new Point3D(x, y, z));
+				builder.AddPosition(new XbimPoint3D(x, y, z));
 			}
 			builder.EndPositions();
 
@@ -437,7 +434,7 @@ namespace Xbim.ModelGeometry.Scene
 		/// <param name="builder"></param>
 		/// <param name="transform"></param>
 		/// <returns>The fragment defining the piece of the mesg built with this operation</returns>
-		public XbimMeshFragment BuildWithNormals<TGeomType>(TGeomType builder, Matrix3D transform) where TGeomType : IXbimTriangulatesToPositionsNormalsIndices, new()
+		public XbimMeshFragment BuildWithNormals<TGeomType>(TGeomType builder, XbimMatrix3D transform) where TGeomType : IXbimTriangulatesToPositionsNormalsIndices, new()
         {
             _dataStream.Seek(0, SeekOrigin.Begin);
             BinaryReader br = new BinaryReader(_dataStream);
@@ -457,7 +454,7 @@ namespace Xbim.ModelGeometry.Scene
 
 
 
-        private void BuildWithNormals<TGeomType>(TGeomType builder, BinaryReader br, Matrix3D transform) where TGeomType : IXbimTriangulatesToPositionsNormalsIndices, new()
+        private void BuildWithNormals<TGeomType>(TGeomType builder, BinaryReader br, XbimMatrix3D transform) where TGeomType : IXbimTriangulatesToPositionsNormalsIndices, new()
 		{
            
 			uint numPositions = br.ReadUInt32();
@@ -506,13 +503,13 @@ namespace Xbim.ModelGeometry.Scene
                 {
                     uint readpositionI = PositionReader.ReadIndex();
                     builder.AddPosition(
-                        new Point3D(pos[readpositionI, 0], pos[readpositionI, 1], pos[readpositionI, 2]));
+                        new XbimPoint3D(pos[readpositionI, 0], pos[readpositionI, 1], pos[readpositionI, 2]));
                 }
                 for (uint i = 0; i < numUniques; i++)
                 {
                     uint readnormalI = NormalsReader.ReadIndex();
                     builder.AddNormal(
-                        new Vector3D(nrm[readnormalI, 0], nrm[readnormalI, 1], nrm[readnormalI, 2])
+                        new XbimVector3D(nrm[readnormalI, 0], nrm[readnormalI, 1], nrm[readnormalI, 2])
                         );
                 }
             }
@@ -522,12 +519,12 @@ namespace Xbim.ModelGeometry.Scene
                 {
                     uint readpositionI = PositionReader.ReadIndex();
                     builder.AddPosition(
-                        transform.Transform(new Point3D(pos[readpositionI, 0], pos[readpositionI, 1], pos[readpositionI, 2])));
+                        transform.Transform(new XbimPoint3D(pos[readpositionI, 0], pos[readpositionI, 1], pos[readpositionI, 2])));
                 }
                 for (uint i = 0; i < numUniques; i++)
                 {
                     uint readnormalI = NormalsReader.ReadIndex();
-                    Vector3D v = transform.Transform(new Vector3D(nrm[readnormalI, 0], nrm[readnormalI, 1], nrm[readnormalI, 2]));
+                    XbimVector3D v = transform.Transform(new XbimVector3D(nrm[readnormalI, 0], nrm[readnormalI, 1], nrm[readnormalI, 2]));
                     v.Normalize();
                     builder.AddNormal(v);
                 }

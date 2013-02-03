@@ -138,7 +138,6 @@
     </Compile>
     <Compile Include="IfcProductModelView.cs" />
     <Compile Include="IXbimViewModel.cs" />
-    <Compile Include="MeshGeometry3DExtensions.cs" />
     <Compile Include="ModelDataProvider.cs" />
     <Compile Include="ModelVisual3DExtensions.cs" />
     <Compile Include="ContainedElementsViewModel.cs" />
@@ -149,6 +148,9 @@
     <Compile Include="SurfaceStyleShadingExtensions.cs" />
     <Compile Include="ToolTipController.cs" />
     <Compile Include="WpfMaterial.cs" />
+    <Compile Include="WpfMeshGeometry3D.cs" />
+    <Compile Include="WpfPoint3DCollection.cs" />
+    <Compile Include="WpfVector3DCollection.cs" />
     <Compile Include="XbimMaterialModelVisual.cs" />
     <Compile Include="XbimMaterialProvider.cs" />
     <Compile Include="XbimModelPresentationExtensions.cs" />

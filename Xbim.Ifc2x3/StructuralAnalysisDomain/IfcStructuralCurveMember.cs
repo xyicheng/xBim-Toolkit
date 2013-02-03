@@ -27,7 +27,7 @@ namespace Xbim.Ifc2x3.StructuralAnalysisDomain
     ///   The profile properties are defined by IfcMechanicalProfileProperties (and subtypes), they are connected through 
     ///   IfcRelAssociatesProfileProperties and are accessible via the inherited inverse relationship HasAssociations.
     /// </summary>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcStructuralCurveMember : IfcStructuralMember
     {
         #region Fields

@@ -2,8 +2,6 @@
 #include "IXbimGeometryModel.h"
 #include "XbimFaceEnumerator.h"
 #include "XbimShell.h"
-#include "XbimMeshedFace.h"
-#include "XbimMeshedFaceEnumerator.h"
 #include "IXbimMeshGeometry.h"
 #include "XbimGeometryModel.h"
 #include <TopoDS_Solid.hxx>
@@ -14,78 +12,26 @@
 using namespace Xbim::XbimExtensions::Interfaces;
 using namespace System::Collections::Generic;
 
-using namespace Xbim::Ifc::SelectTypes;
-using namespace Xbim::Ifc::GeometricModelResource;
-using namespace Xbim::Ifc::GeometricConstraintResource;
+using namespace Xbim::XbimExtensions::SelectTypes;
+using namespace Xbim::Ifc2x3::GeometricModelResource;
+using namespace Xbim::Ifc2x3::GeometricConstraintResource;
 using namespace Xbim::Common::Logging;
 
 namespace Xbim
 {
 	namespace ModelGeometry
 	{
-		public ref class XbimMeshedFaceEnumerable: IEnumerable<XbimMeshedFace^>
-		{
-		private:
-			TopoDS_Shape* pSolid;
-			
-		public:
-			XbimMeshedFaceEnumerable(const TopoDS_Solid&  solid)
-			{
-				pSolid = new TopoDS_Solid();
-				*pSolid = solid;
-			}
-			
-			XbimMeshedFaceEnumerable(const TopoDS_Shape&  solid)
-			{
-				TopoDS_Compound * pComp = new TopoDS_Compound();
-				BRep_Builder b;
-				b.MakeCompound(*pComp);
-				b.Add(*pComp, solid);
-				pSolid=pComp;
-				
-			}
-			virtual System::Collections::Generic::IEnumerator<XbimMeshedFace^>^ GetEnumerator()
-			{
-
-				return gcnew XbimMeshedFaceEnumerator(*pSolid, 1);
-			}
-			virtual System::Collections::IEnumerator^ GetEnumerator2()  sealed = System::Collections::IEnumerable::GetEnumerator
-			{
-				return gcnew XbimMeshedFaceEnumerator(*pSolid, 1);
-			}
-
-			~XbimMeshedFaceEnumerable()
-			{
-				InstanceCleanup();
-			}
-
-			!XbimMeshedFaceEnumerable()
-			{
-				InstanceCleanup();
-			}
-			void InstanceCleanup()
-			{   
-				int temp = System::Threading::Interlocked::Exchange((int)(void*)pSolid, 0);
-				if(temp!=0)
-				{
-					if (pSolid)
-					{
-						delete pSolid;
-						pSolid=0;
-						System::GC::SuppressFinalize(this);
-					}
-				}
-			}
-		};
-
+		
 
 		public ref class XbimSolid  : IXbimGeometryModel,  IEnumerable<XbimFace^>
 		{
 		protected:
 			TopoDS_Shape* nativeHandle;
 			static ILogger^ Logger = LoggerFactory::GetLogger();
-		private:
 			
+		private:
+			Int32 _representationLabel;
+			Int32 _surfaceStyleLabel;
 			bool _hasCurvedEdges;
 				
 			
@@ -98,7 +44,8 @@ namespace Xbim
 			XbimSolid(const TopoDS_Shell&  shell, bool hasCurves);
 			XbimSolid(const TopoDS_Shape&  shape);
 			XbimSolid(const TopoDS_Shape&  shape, bool hasCurves);
-
+			XbimSolid(IXbimGeometryModel^ solid, XbimMatrix3D transform);
+			XbimSolid(IXbimGeometryModel^ solid, bool hasCurves);
 			virtual property XbimLocation ^ Location 
 			{
 				XbimLocation ^ get()
@@ -137,7 +84,11 @@ namespace Xbim
 
 			XbimSolid(IfcClosedShell^ repItem);
 
+			XbimSolid(IfcConnectedFaceSet^ repItem);
+			XbimSolid(IfcBooleanResult^ repItem);
 			XbimSolid(IfcCsgPrimitive3D^ repItem);
+			XbimSolid(IfcVertexPoint^ pt);
+			XbimSolid(IfcEdge^ edge);
 			void Print();
 			~XbimSolid()
 			{
@@ -177,6 +128,18 @@ namespace Xbim
 				}
 			}
 
+			virtual property Int32 RepresentationLabel
+			{
+				Int32 get(){return _representationLabel; }
+				void set(Int32 value){ _representationLabel=value; }
+			}
+
+			virtual property Int32 SurfaceStyleLabel
+			{
+				Int32 get(){return _surfaceStyleLabel; }
+				void set(Int32 value){ _surfaceStyleLabel=value; }
+			}
+
 			/*Interfaces*/
 
 
@@ -200,24 +163,21 @@ namespace Xbim
 				return gcnew XbimFaceEnumerator(*nativeHandle);
 			}
 
-			// IEnumerable<XbimMeshedFace^> Members
-			property System::Collections::Generic::IEnumerable<XbimMeshedFace^>^ MeshedFaces
-			{
-				System::Collections::Generic::IEnumerable<XbimMeshedFace^>^ get();
-			}
-			virtual XbimTriangulatedModelStream^ Mesh(bool withNormals, double deflection, Matrix3D transform);
-			virtual XbimTriangulatedModelStream^ Mesh(bool withNormals, double deflection);
-			virtual XbimTriangulatedModelStream^ Mesh(bool withNormals);
-			virtual XbimTriangulatedModelStream^ Mesh();
+			
+			virtual List<XbimTriangulatedModel^>^Mesh(bool withNormals, double deflection, XbimMatrix3D transform);
+			virtual List<XbimTriangulatedModel^>^Mesh(bool withNormals, double deflection);
+			virtual List<XbimTriangulatedModel^>^Mesh(bool withNormals);
+			virtual List<XbimTriangulatedModel^>^Mesh();
 
 
 			//solid operations
 
 			virtual IXbimGeometryModel^ CopyTo(IfcObjectPlacement^ placement);
+			virtual void Move(TopLoc_Location location);
 			///static builders 
 
-			static TopoDS_Solid Build(IfcCsgSolid^ csgSolid, bool% hasCurves);
-			static TopoDS_Solid Build(IfcManifoldSolidBrep^ manifold, bool% hasCurves);
+			static TopoDS_Shape Build(IfcCsgSolid^ csgSolid, bool% hasCurves);
+			static TopoDS_Shape Build(IfcManifoldSolidBrep^ manifold, bool% hasCurves);
 			
 			static TopoDS_Solid Build(IfcSweptDiskSolid^ swdSolid, bool% hasCurves);
 
@@ -225,18 +185,19 @@ namespace Xbim
 			static TopoDS_Solid Build(IfcExtrudedAreaSolid^ repItem, bool% hasCurves);
 			static TopoDS_Solid Build(IfcRevolvedAreaSolid^ repItem, bool% hasCurves);
 			static TopoDS_Solid Build(IfcSurfaceCurveSweptAreaSolid^ repItem, bool% hasCurves);
-			static TopoDS_Solid Build(IfcFacetedBrep^ repItem, bool% hasCurves);
+			static TopoDS_Shape Build(IfcFacetedBrep^ repItem, bool% hasCurves);
 			static TopoDS_Solid Build(IfcBoxedHalfSpace^ bhs, bool% hasCurves);
-			static TopoDS_Solid Build(IfcClosedShell^ cShell, bool% hasCurves);
+			static TopoDS_Shape Build(IfcClosedShell^ cShell, bool% hasCurves);
+			static TopoDS_Shape Build(IfcConnectedFaceSet^ cFaces, bool% hasCurves);
 			static TopoDS_Solid Build(IfcHalfSpaceSolid^ repItem, bool% hasCurves);
 			static TopoDS_Solid Build(IfcPolygonalBoundedHalfSpace^ pbhs, bool% hasCurves);
-			
+			static TopoDS_Shape Build(IfcBooleanResult^ repItem, bool% hasCurves);
 		private:
 			static TopoDS_Shell Build(const TopoDS_Wire & wire, IfcDirection^ dir, double depth, bool% hasCurves);
 			static TopoDS_Solid Build(const TopoDS_Face & face, IfcDirection^ dir, double depth, bool% hasCurves);
 			static TopoDS_Solid Build(const TopoDS_Wire & wire, gp_Dir dir, bool% hasCurves);
 			static TopoDS_Solid Build(const TopoDS_Face & face, IfcAxis1Placement^ revolaxis, double angle, bool% hasCurves);
-			
+			static TopoDS_Solid MakeHalfSpace(IfcHalfSpaceSolid^ hs, bool% hasCurves, bool shift);
 			//IXbimGeometryModel interface
 		
 

@@ -35,7 +35,7 @@ namespace Xbim.Ifc2x3.GeometryResource
     ///   Definition of the IfcAxis2Placement2D within the two-dimensional coordinate system. 
     ///   EXPRESS specification:
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcAxis2Placement2D : IfcPlacement, IfcAxis2Placement
     {
         #region Fields

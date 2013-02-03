@@ -16,6 +16,7 @@ using Xbim.Ifc2x3.ProfileResource;
 using Xbim.Ifc2x3.GeometricModelResource;
 using Xbim.Ifc2x3.UtilityResource;
 using Xbim.IO;
+using Xbim.Common.Geometry;
 
 namespace Xbim.COBie.Serialisers.XbimSerialiser
 {
@@ -276,11 +277,11 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                     ifcProduct.ObjectPlacement = objectPlacement;
 
                     //get matrix to the space placement
-                    Matrix3D matrix3D = ConvertMatrix3D(objectPlacement);
+                    XbimMatrix3D matrix3D = ConvertMatrix3D(objectPlacement);
                     //invert matrix so we can convert row points back to the object space
                     matrix3D.Invert();
                     //lets get the points from the two rows
-                    Point3D lowpt, highpt;
+                    XbimPoint3D lowpt, highpt;
                     if ((GetPointFromRow(upperRightRow, out highpt)) &&
                          (GetPointFromRow(lowerLeftRow, out lowpt))
                         )
@@ -289,7 +290,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                         lowpt = matrix3D.Transform(lowpt);
                         highpt = matrix3D.Transform(highpt);
                         //in object space so we can use Rect3D as this will be aligned with coordinates systems X and Y
-                        Rect3D bBox = new Rect3D();
+                        XbimRect3D bBox = new XbimRect3D();
                         bBox.Location = lowpt;
                         bBox.Union(highpt);
                         if ((double.NaN.CompareTo(bBox.SizeX) != 0) && (double.NaN.CompareTo(bBox.SizeY) != 0))
@@ -348,7 +349,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         /// <returns></returns>
         private IfcLocalPlacement CalcObjectPlacement(COBieCoordinateRow row, IfcProduct placementRelToIfcProduct)
         {
-            Point3D locationPt;
+            XbimPoint3D locationPt;
             bool havePoint = GetPointFromRow(row, out locationPt);
             if (havePoint)
             {
@@ -357,7 +358,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                     //TEST, change the building position to see if the same point comes out in Excel sheet, it should be, and in test was.
                     //((IfcAxis2Placement3D)((IfcLocalPlacement)placementRelToIfcProduct.ObjectPlacement).RelativePlacement).SetNewLocation(10.0, 10.0, 0.0);
                     IfcLocalPlacement placementRelTo = (IfcLocalPlacement)placementRelToIfcProduct.ObjectPlacement;
-                    Matrix3D matrix3D = ConvertMatrix3D(placementRelTo);
+                    XbimMatrix3D matrix3D = ConvertMatrix3D(placementRelTo);
                     //we want to take off the translations and rotations caused by IfcLocalPlacement of the parent objects as we will add these to the new IfcLocalPlacement for this floor
                     matrix3D.Invert(); //so invert matrix to remove the translations to give the origin for the next IfcLocalPlacement
                     locationPt = matrix3D.Transform(locationPt); //get the point with relation to the last IfcLocalPlacement i.e the parent element
@@ -421,7 +422,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
            
         }
 
-        private bool GetPointFromRow(COBieCoordinateRow row, out Point3D point)
+        private bool GetPointFromRow(COBieCoordinateRow row, out XbimPoint3D point)
         {
             double x, y, z;
             if ((double.TryParse(row.CoordinateXAxis, out x)) &&
@@ -429,12 +430,12 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 (double.TryParse(row.CoordinateZAxis, out z))
                 )
             {
-                point = new Point3D(x, y, z);
+                point = new XbimPoint3D(x, y, z);
                 return true;
             }
             else
             {
-                point = new Point3D();
+                point = new XbimPoint3D();
                 return false;
             }
         }
@@ -445,7 +446,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         /// </summary>
         /// <param name="objPlacement">IfcObjectPlacement object</param>
         /// <returns>Matrix3D</returns>
-		protected Matrix3D ConvertMatrix3D(IfcObjectPlacement objPlacement)
+		protected XbimMatrix3D ConvertMatrix3D(IfcObjectPlacement objPlacement)
 		{
 			if(objPlacement is IfcLocalPlacement)
 			{
@@ -453,21 +454,21 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
 				if (locPlacement.RelativePlacement is IfcAxis2Placement3D)
 				{
 					IfcAxis2Placement3D axis3D = (IfcAxis2Placement3D)locPlacement.RelativePlacement;
-					Vector3D ucsXAxis = new Vector3D(axis3D.RefDirection.DirectionRatios[0], axis3D.RefDirection.DirectionRatios[1], axis3D.RefDirection.DirectionRatios[2]);
-					Vector3D ucsZAxis = new Vector3D(axis3D.Axis.DirectionRatios[0], axis3D.Axis.DirectionRatios[1], axis3D.Axis.DirectionRatios[2]);
+                    XbimVector3D ucsXAxis = new XbimVector3D(axis3D.RefDirection.DirectionRatios[0], axis3D.RefDirection.DirectionRatios[1], axis3D.RefDirection.DirectionRatios[2]);
+                    XbimVector3D ucsZAxis = new XbimVector3D(axis3D.Axis.DirectionRatios[0], axis3D.Axis.DirectionRatios[1], axis3D.Axis.DirectionRatios[2]);
 					ucsXAxis.Normalize();
 					ucsZAxis.Normalize();
-					Vector3D ucsYAxis = Vector3D.CrossProduct(ucsZAxis, ucsXAxis);
+                    XbimVector3D ucsYAxis = XbimVector3D.CrossProduct(ucsZAxis, ucsXAxis);
 					ucsYAxis.Normalize();
-					Point3D ucsCentre = axis3D.Location.WPoint3D();
+					XbimPoint3D ucsCentre = axis3D.Location.XbimPoint3D();
 
-					Matrix3D ucsTowcs = new Matrix3D(	ucsXAxis.X, ucsXAxis.Y, ucsXAxis.Z, 0,
+                    XbimMatrix3D ucsTowcs = new XbimMatrix3D(ucsXAxis.X, ucsXAxis.Y, ucsXAxis.Z, 0,
 						ucsYAxis.X, ucsYAxis.Y, ucsYAxis.Z, 0,
 						ucsZAxis.X, ucsZAxis.Y, ucsZAxis.Z, 0,
 						ucsCentre.X, ucsCentre.Y, ucsCentre.Z , 1);
 					if (locPlacement.PlacementRelTo != null)
 					{
-						return Matrix3D.Multiply(ucsTowcs, ConvertMatrix3D(locPlacement.PlacementRelTo));
+                        return XbimMatrix3D.Multiply(ucsTowcs, ConvertMatrix3D(locPlacement.PlacementRelTo));
 					}
 					else
 						return ucsTowcs;

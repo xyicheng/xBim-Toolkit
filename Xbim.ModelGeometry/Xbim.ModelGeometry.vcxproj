@@ -111,8 +111,8 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>TKBool.lib;TKernel.lib;TKMath.lib;TKTopAlgo.lib;TKGeomAlgo.lib;TKBRep.lib;TKMesh.lib;TKPrim.lib;TKBO.lib;TKG3D.lib;TKG2D.lib;TKGeomBase.lib;TKShHealing.lib;OpenGL32.Lib;Glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>.\OpenCascade\win32\libd;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>TKBool.lib;TKernel.lib;TKMath.lib;TKTopAlgo.lib;TKGeomAlgo.lib;TKBRep.lib;TKMesh.lib;TKPrim.lib;TKBO.lib;TKG3D.lib;TKG2D.lib;TKGeomBase.lib;TKShHealing.lib;TKFillet.lib;TKOffset.lib;OpenGL32.Lib;Glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>.\OpenCascade\win32\lib;$(SolutionDir)bin\$(PlatformShortName)\$(Configuration)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AssemblyDebug>true</AssemblyDebug>
       <TargetMachine>MachineX86</TargetMachine>
@@ -135,16 +135,22 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>TKBool.lib;TKernel.lib;TKMath.lib;TKTopAlgo.lib;TKBRep.lib;TKMesh.lib;TKPrim.lib;TKBO.lib;TKG3D.lib;TKG2D.lib;TKGeomBase.lib;TKGeomAlgo.lib;TKShHealing.lib;OpenGL32.Lib;Glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>TKBool.lib;TKernel.lib;TKMath.lib;TKTopAlgo.lib;TKBRep.lib;TKMesh.lib;TKPrim.lib;TKBO.lib;TKG3D.lib;TKG2D.lib;TKGeomBase.lib;TKGeomAlgo.lib;TKShHealing.lib;TKFillet.lib;TKOffset.lib;OpenGL32.Lib;Glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(SolutionDir)bin\x64\$(Configuration)\$(TargetName)$(TargetExt)</OutputFile>
-      <AdditionalLibraryDirectories>.\OpenCascade\win64\libd;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>.\OpenCascade\win64\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AssemblyDebug>true</AssemblyDebug>
       <TargetMachine>MachineX64</TargetMachine>
       <KeyFile>
       </KeyFile>
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
+      <DelayLoadDLLs>
+      </DelayLoadDLLs>
+      <Profile>true</Profile>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy .\OpenCascade\win64\bin "$(OutDir)" /D</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -155,9 +161,10 @@
       <GenerateXMLDocumentationFiles>true</GenerateXMLDocumentationFiles>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalUsingDirectories>$(SolutionDir)bin\$(PlatformShortName)\$(Configuration)\;%(AdditionalUsingDirectories)</AdditionalUsingDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>TKBool.lib;TKernel.lib;TKMath.lib;TKTopAlgo.lib;TKGeomAlgo.lib;TKBRep.lib;TKMesh.lib;TKPrim.lib;TKBO.lib;TKG3D.lib;TKG2D.lib;TKGeomBase.lib;TKShHealing.lib;OpenGL32.Lib;Glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>TKBool.lib;TKernel.lib;TKMath.lib;TKTopAlgo.lib;TKGeomAlgo.lib;TKBRep.lib;TKMesh.lib;TKPrim.lib;TKBO.lib;TKG3D.lib;TKG2D.lib;TKGeomBase.lib;TKShHealing.lib;TKFillet.lib;TKOffset.lib;OpenGL32.Lib;Glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(SolutionDir)bin\$(PlatformShortName)\$(Configuration)\$(TargetName)$(TargetExt)</OutputFile>
       <AdditionalLibraryDirectories>.\OpenCascade\win32\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -169,6 +176,9 @@
     <Xdcmake>
       <OutputFile>$(OutDir)$(TargetName).xml</OutputFile>
     </Xdcmake>
+    <PostBuildEvent>
+      <Command>xcopy .\OpenCascade\win32\bin "$(OutDir)" /D /Y /R</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Midl>
@@ -183,7 +193,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>TKBool.lib;TKernel.lib;TKMath.lib;TKTopAlgo.lib;TKBRep.lib;TKMesh.lib;TKPrim.lib;TKBO.lib;TKG3D.lib;TKG2D.lib;TKGeomBase.lib;TKGeomAlgo.lib;TKShHealing.lib;OpenGL32.Lib;Glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>TKBool.lib;TKernel.lib;TKMath.lib;TKTopAlgo.lib;TKBRep.lib;TKMesh.lib;TKPrim.lib;TKBO.lib;TKG3D.lib;TKG2D.lib;TKGeomBase.lib;TKGeomAlgo.lib;TKShHealing.lib;TKFillet.lib;TKOffset.lib;OpenGL32.Lib;Glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(SolutionDir)bin\x64\$(Configuration)\$(TargetName)$(TargetExt)</OutputFile>
       <AdditionalLibraryDirectories>.\OpenCascade\win64\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -191,7 +201,12 @@
       <KeyFile>
       </KeyFile>
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
+      <DelayLoadDLLs>
+      </DelayLoadDLLs>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy .\OpenCascade\win64\bin "$(OutDir)" /D</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
     <Link>
@@ -216,7 +231,16 @@
     </Xdcmake>
     <Link>
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
+      <DelayLoadDLLs>
+      </DelayLoadDLLs>
+      <Profile>false</Profile>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy .\OpenCascade\win32\bin "$(OutDir)" /D /Y /R</Command>
+    </PostBuildEvent>
+    <ClCompile>
+      <AdditionalUsingDirectories>$(SolutionDir)bin\$(PlatformShortName)\$(Configuration)\;%(AdditionalUsingDirectories)</AdditionalUsingDirectories>
+    </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
     <ClCompile>
@@ -231,27 +255,6 @@
       <CopyLocalSatelliteAssemblies>true</CopyLocalSatelliteAssemblies>
       <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
     </Reference>
-    <Reference Include="System.Data">
-      <CopyLocalSatelliteAssemblies>true</CopyLocalSatelliteAssemblies>
-      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
-    </Reference>
-    <Reference Include="System.Xml">
-      <CopyLocalSatelliteAssemblies>true</CopyLocalSatelliteAssemblies>
-      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
-    </Reference>
-    <Reference Include="PresentationCore">
-      <Private>false</Private>
-      <CopyLocalSatelliteAssemblies>true</CopyLocalSatelliteAssemblies>
-      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
-    </Reference>
-    <Reference Include="PresentationFramework">
-      <CopyLocalSatelliteAssemblies>true</CopyLocalSatelliteAssemblies>
-      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
-    </Reference>
-    <Reference Include="WindowsBase">
-      <CopyLocalSatelliteAssemblies>true</CopyLocalSatelliteAssemblies>
-      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
-    </Reference>
     <Reference Include="System.Core">
       <CopyLocalSatelliteAssemblies>true</CopyLocalSatelliteAssemblies>
       <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
@@ -261,23 +264,19 @@
     <ProjectReference Include="..\Xbim.Common\Xbim.Common.csproj">
       <Project>{6745f5ac-af3c-4372-81aa-a75e7b1fa03b}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\Xbim.Ifc\Xbim.Ifc.csproj">
-      <Project>{5d4c907d-1293-4e5f-9642-d0862ae4741c}</Project>
-      <Private>false</Private>
-      <CopyLocalSatelliteAssemblies>true</CopyLocalSatelliteAssemblies>
-      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
-    </ProjectReference>
-    <ProjectReference Include="..\Xbim.Ifc.Extensions\Xbim.Ifc.Extensions.csproj">
+    <ProjectReference Include="..\Xbim.Ifc.Extensions\Xbim.Ifc2x3.Extensions.csproj">
       <Project>{09870f18-1796-4a3e-a66d-68db3da60b24}</Project>
-      <Private>false</Private>
-      <CopyLocalSatelliteAssemblies>true</CopyLocalSatelliteAssemblies>
-      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
     </ProjectReference>
-    <ProjectReference Include="..\Xbim.IO\Xbim.IO.csproj">
-      <Project>{85856df2-c8ab-4120-8a8d-ae05d2696b51}</Project>
+    <ProjectReference Include="..\Xbim.Ifc2x3\Xbim.Ifc2x3.csproj">
+      <Project>{5d4c907d-1293-4e5f-9642-d0862ae4741c}</Project>
     </ProjectReference>
     <ProjectReference Include="..\Xbim.ModelGeometry.Scene\Xbim.ModelGeometry.Scene.csproj">
       <Project>{3d9d37de-a254-4433-b172-7590cbd84c69}</Project>
+      <Private>false</Private>
+      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+      <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -319,7 +318,6 @@
       <ShowIncludes Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ShowIncludes>
     </ClCompile>
     <ClCompile Include="XbimMap.cpp" />
-    <ClCompile Include="XbimScene.cpp" />
     <ClCompile Include="XbimGeometryModel.cpp">
       <ShowIncludes Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ShowIncludes>
     </ClCompile>
@@ -332,12 +330,6 @@
     <ClCompile Include="XbimLocation.cpp">
       <ShowIncludes Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ShowIncludes>
     </ClCompile>
-    <ClCompile Include="XbimMeshedFace.cpp">
-      <ShowIncludes Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ShowIncludes>
-    </ClCompile>
-    <ClCompile Include="XbimMeshGeometry.cpp">
-      <ShowIncludes Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ShowIncludes>
-    </ClCompile>
     <ClCompile Include="XbimOrientedEdge.cpp">
       <ShowIncludes Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ShowIncludes>
     </ClCompile>
@@ -347,6 +339,7 @@
     <ClCompile Include="XbimSolid.cpp">
       <ShowIncludes Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ShowIncludes>
     </ClCompile>
+    <ClCompile Include="XbimTriangularMeshStreamer.cpp" />
     <ClCompile Include="XbimVertexPoint.cpp">
       <ShowIncludes Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ShowIncludes>
     </ClCompile>
@@ -372,18 +365,15 @@
     <ClInclude Include="XbimFacetedShell.h" />
     <ClInclude Include="XbimFeaturedShape.h" />
     <ClInclude Include="XbimMap.h" />
-    <ClInclude Include="XbimScene.h" />
     <ClInclude Include="XbimGeometryModel.h" />
     <ClInclude Include="XbimGeometryModelCollection.h" />
     <ClInclude Include="XbimGeomPrim.h" />
     <ClInclude Include="XbimLocation.h" />
-    <ClInclude Include="XbimMeshedFace.h" />
-    <ClInclude Include="XbimMeshedFaceEnumerator.h" />
-    <ClInclude Include="XbimMeshGeometry.h" />
     <ClInclude Include="XbimOrientedEdge.h" />
     <ClInclude Include="XbimShell.h" />
     <ClInclude Include="XbimShellEnumerator.h" />
     <ClInclude Include="XbimSolid.h" />
+    <ClInclude Include="XbimTriangularMeshStreamer.h" />
     <ClInclude Include="XbimVertexPoint.h" />
   </ItemGroup>
   <ItemGroup>

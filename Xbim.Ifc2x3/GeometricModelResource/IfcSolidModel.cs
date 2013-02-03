@@ -29,7 +29,7 @@ namespace Xbim.Ifc2x3.GeometricModelResource
     ///   NOTE: Corresponding STEP entity: solid_model, only three subtypes have been incorporated into the current IFC Release - subset of manifold_solid_brep (IfcManifoldSolidBrep, constraint to faceted B-rep), swept_area_solid (IfcSweptAreaSolid), the swept_disk_solid (IfcSweptDiskSolid) and subset of csg_solid (IfcCsgSolid). The derived attribute Dim has been added at this level and was therefore demoted from the geometric_representation_item. Please refer to ISO/IS 10303-42:1994, p. 170 for the final definition of the formal standard. 
     ///   HISTORY: New entity in IFC Release 1.5
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public abstract class IfcSolidModel : IfcGeometricRepresentationItem, IfcBooleanOperand
     {
         /// <summary>

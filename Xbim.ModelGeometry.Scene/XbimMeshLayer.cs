@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
-using System.Xml.Serialization;
 using Xbim.Ifc2x3.PresentationAppearanceResource;
 using Xbim.Ifc2x3.PresentationResource;
 using Xbim.IO;
@@ -19,11 +19,44 @@ namespace Xbim.ModelGeometry.Scene
         where TMATERIAL : IXbimRenderMaterial, new()
     {
         string name;
-        XbimMeshLayerMap<TVISIBLE, TMATERIAL> subLayerMap = new XbimMeshLayerMap<TVISIBLE, TMATERIAL>();
+        XbimMeshLayerCollection<TVISIBLE, TMATERIAL> subLayerMap = new XbimMeshLayerCollection<TVISIBLE, TMATERIAL>();
+        XbimColourMap layerColourMap;
+        XbimBoundingBox boundingBox;
+
+        /// <summary>
+        /// Bounding box, aligned to the XYZ axis, containing all points in this mesh
+        /// </summary>
+        public XbimBoundingBox BoundingBox
+        {
+            get { return boundingBox; }
+            set { boundingBox = value; }
+        }
        
+        /// <summary>
+        /// The colour map for this scene
+        /// </summary>
+        public XbimColourMap LayerColourMap
+        {
+            get { return layerColourMap; }
+        }
 
-        public XbimSurfaceStyle Style { get; set; }
+        public XbimTexture Style { get; set; }
+        
+        /// <summary>
+        /// A mesh that are currently rendered typically on the graphics adaptor
+        /// </summary>
+        
+        public IXbimMeshGeometry3D Visible = new TVISIBLE();
 
+        /// <summary>
+        /// The native graphic engine render material
+        /// </summary>
+        
+        public IXbimRenderMaterial Material = new TMATERIAL();
+        /// <summary>
+        /// A mesh that is loaded but not visible on the graphics display
+        /// </summary>
+        public IXbimMeshGeometry3D Hidden = new XbimMeshGeometry3D();
         public string Name
         {
             get { return name; }
@@ -34,11 +67,12 @@ namespace Xbim.ModelGeometry.Scene
         /// Creates a mesh using the default colour (typically white)
         /// </summary>
         public XbimMeshLayer()
+            :this(XbimColour.Default)
         {
-            Material.CreateMaterial(XbimColour.Default);
             
         }
 
+        
 
         /// <summary>
         /// Create a new layer that will display meshes in the specified colour
@@ -47,40 +81,29 @@ namespace Xbim.ModelGeometry.Scene
         /// <param name="colour"></param>
         public XbimMeshLayer(XbimColour colour)
         {
-            Material.CreateMaterial(colour);
-           
+            Style = new XbimTexture().CreateTexture(colour);
+            
         }
 
+       
+
         public XbimMeshLayer(XbimColour colour, XbimColourMap subCategoryColourMap)
+            :this(colour)
         {
-            Material.CreateMaterial(colour);
-           
+            layerColourMap = subCategoryColourMap;
         }
 
         public XbimMeshLayer(IfcSurfaceStyle style)
         {
-            Material.CreateMaterial(style);
+            Style = new XbimTexture().CreateTexture(style);
+           
         }
 
         public static implicit operator TVISIBLE(XbimMeshLayer<TVISIBLE, TMATERIAL> layer)
         {
             return (TVISIBLE)layer.Visible;
         }
-        /// <summary>
-        /// A mesh that are currently rendered typically on the graphics adaptor
-        /// </summary>
-        [XmlIgnore]
-        public IXbimMeshGeometry3D Visible = new TVISIBLE() ;
-
-        /// <summary>
-        /// The native graphic engine render material
-        /// </summary>
-        [XmlIgnore]
-        public IXbimRenderMaterial Material = new TMATERIAL();
-        /// <summary>
-        /// A mesh that is loaded but not visible on the graphics display
-        /// </summary>
-        public IXbimMeshGeometry3D Hidden = new XbimMeshGeometry3D();
+        
 
         /// <summary>
         /// Returns true if the layer has any geometric content
@@ -99,8 +122,8 @@ namespace Xbim.ModelGeometry.Scene
         /// </summary>
         public void ShowAll()
         {
-            Hidden.MoveTo(Visible);
-            foreach (var subLayer in subLayerMap.Values)
+           
+            foreach (var subLayer in subLayerMap)
             {
                 subLayer.ShowAll();
             }
@@ -112,7 +135,7 @@ namespace Xbim.ModelGeometry.Scene
         public void HideAll()
         {
             Visible.MoveTo(Hidden);
-            foreach (var subLayer in subLayerMap.Values)
+            foreach (var subLayer in subLayerMap)
             {
                 subLayer.HideAll();
             }
@@ -130,13 +153,17 @@ namespace Xbim.ModelGeometry.Scene
             if (model != null && geomData.StyleLabel > 0) //check if we need to put this item on a sub layer
             {
                 XbimMeshLayer<TVISIBLE, TMATERIAL> subLayer;
-                if (!subLayerMap.TryGetValue(geomData.StyleLabel, out subLayer))
+                string layerName = geomData.StyleLabel.ToString();
+                if (!subLayerMap.Contains(layerName))
                 {
                     IfcSurfaceStyle style = model.Instances[geomData.StyleLabel] as IfcSurfaceStyle;
                     //create a sub layer
-                    subLayer = new XbimMeshLayer<TVISIBLE,TMATERIAL>(style);
-                    subLayerMap.Add(geomData.StyleLabel, subLayer);
+                    subLayer = new XbimMeshLayer<TVISIBLE, TMATERIAL>(style);
+                    subLayer.Name = layerName;
+                    subLayerMap.Add(subLayer);
                 }
+                else
+                    subLayer = subLayerMap[layerName];
                 subLayer.Hidden.Append(geomData);
             }
             else
@@ -145,12 +172,23 @@ namespace Xbim.ModelGeometry.Scene
             }
         }
 
-        public IEnumerable<XbimMeshLayer<TVISIBLE, TMATERIAL>> SubLayers 
+        void subLayer_LayersChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            
+        }
+
+        public XbimMeshLayerCollection<TVISIBLE, TMATERIAL> SubLayers 
         {
             get
             {
-                return subLayerMap.Values;
+                return subLayerMap;
             }
+        }
+
+        public void Show()
+        {
+            if (!Material.IsCreated) Material.CreateMaterial(Style);
+            Hidden.MoveTo(Visible);
         }
     }
 }

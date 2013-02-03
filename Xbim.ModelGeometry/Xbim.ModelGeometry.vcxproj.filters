@@ -51,12 +51,6 @@
     <ClCompile Include="XbimGeomPrim.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="XbimMeshedFace.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="XbimMeshGeometry.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="XbimOrientedEdge.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -78,9 +72,6 @@
     <ClCompile Include="XbimBoundingBox.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="XbimScene.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="XbimFacetedShell.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -88,6 +79,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\SharedAssemblyInfo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="XbimTriangularMeshStreamer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -137,15 +131,6 @@
     <ClInclude Include="XbimGeomPrim.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="XbimMeshedFace.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="XbimMeshedFaceEnumerator.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="XbimMeshGeometry.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="XbimOrientedEdge.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -179,9 +164,6 @@
     <ClInclude Include="Stdafx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="XbimScene.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="XbimFacetedShell.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -189,6 +171,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Version.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="XbimTriangularMeshStreamer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

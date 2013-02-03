@@ -40,7 +40,7 @@ namespace Xbim.Ifc2x3.Kernel
     ///   WR33   :   Only object occurrences shall be valid instances for an object decomposition. 
     ///   NOTE  This restriction might be lifted in future releases of the IFC object model.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public abstract class IfcRelDecomposes : IfcRelationship
     {
         public IfcRelDecomposes()

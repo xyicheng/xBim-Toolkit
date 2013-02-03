@@ -35,7 +35,7 @@ namespace Xbim.Ifc2x3.Kernel
     ///   Formal Propositions:
     ///   WR1   :   The instance to which the relation points (RelatingProduct) shall not be contained in the list of RelatedObjects.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcRelAssignsToProduct : IfcRelAssigns
     {
         #region Fields

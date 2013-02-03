@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Xml.Serialization;
+using Xbim.IO;
 
 namespace Xbim.ModelGeometry.Scene
 {
@@ -12,7 +13,7 @@ namespace Xbim.ModelGeometry.Scene
         where TVISIBLE : IXbimMeshGeometry3D, new()
         where TMATERIAL : IXbimRenderMaterial, new()
     {
-        [XmlIgnore]
+        
         XbimMeshLayerCollection<TVISIBLE, TMATERIAL> layers = new XbimMeshLayerCollection<TVISIBLE, TMATERIAL>();
 
         public XbimMeshLayerCollection<TVISIBLE, TMATERIAL> SubLayers
@@ -20,8 +21,10 @@ namespace Xbim.ModelGeometry.Scene
             get { return layers; }
             set { layers = value; }
         }
+       
 
         XbimColourMap layerColourMap;
+        private XbimModel model;
 
         /// <summary>
         /// The colour map for this scene
@@ -33,21 +36,26 @@ namespace Xbim.ModelGeometry.Scene
         /// <summary>
         /// Constructs a scene using the default IfcProductType colour map
         /// </summary>
-        public XbimScene()
+        public XbimScene(XbimModel model)
+            :this(model,new XbimColourMap())
         {
-            layerColourMap = new XbimColourMap();
+          
         }
 
         /// <summary>
         /// Constructs a scene, using the specfified colourmap
         /// </summary>
         /// <param name="colourMap"></param>
-        public XbimScene(XbimColourMap colourMap)
+        public XbimScene(XbimModel model, XbimColourMap colourMap)
         {
             this.layerColourMap = colourMap;
+            this.model = model;
+           
         }
 
-        [XmlIgnore]
+       
+
+        
         public IEnumerable<XbimMeshLayer<TVISIBLE, TMATERIAL>> Layers
         {
             get
@@ -66,7 +74,7 @@ namespace Xbim.ModelGeometry.Scene
         /// <summary>
         /// Returns all layers and sublayers that have got some graphic content that is visible
         /// </summary>
-        [XmlIgnore]
+        
         public IEnumerable<XbimMeshLayer<TVISIBLE, TMATERIAL>> VisibleLayers
         {
             get
@@ -91,7 +99,9 @@ namespace Xbim.ModelGeometry.Scene
             if (string.IsNullOrEmpty(layer.Name)) //ensure a layer has a unique name if the user has not defined one
                 layer.Name = "Layer " + layers.Count();
             layers.Add(layer);
+            
         }
+
 
         /// <summary>
         /// Makes all meshes in all layers in the scene Hidden
@@ -108,26 +118,7 @@ namespace Xbim.ModelGeometry.Scene
                 layer.ShowAll();
         }
         
-        public void Save(TextWriter writeTo)
-        {
-            XmlSerializer serializer = new XmlSerializer(typeof(XbimScene<TVISIBLE, TMATERIAL>));
-            serializer.Serialize(writeTo, this);      
-        }
 
-        public bool Save(string fileName)
-        {
-            try
-            {
-                TextWriter textWriter = new StreamWriter(fileName);
-                Save(textWriter);
-                textWriter.Close();
-                return true;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-
-        }
+       
     }
 }

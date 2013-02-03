@@ -202,6 +202,13 @@ namespace Xbim.IO
             return this.BeginTransaction(null);
         }
 
+        public bool IsTransacting
+        {
+            get
+            {
+                return editTransactionEntityCursor != null;
+            }
+        }
 
         public XbimReadWriteTransaction BeginTransaction(string operationName)
         {
@@ -1184,25 +1191,65 @@ namespace Xbim.IO
         }
 
         #region Model Group functions
+        /// <summary>
+        /// Adds a model as a reference or federated model, do not call inside a transaction
+        /// </summary>
+        /// <param name="refModelPath"></param>
+        /// <param name="organisationName"></param>
+        /// <param name="organisationRole"></param>
+        /// <returns></returns>
+        public IfcIdentifier AddModelReference(string refModelPath, string organisationName, IfcRole organisationRole)
+        {
+            using (var txn = BeginTransaction())
+            {
+                //create an author of the referenced model
+                IfcOrganization org = Instances.New<IfcOrganization>();
+                IfcActorRole role = Instances.New<IfcActorRole>();
+                role.Role = organisationRole;
+                org.Name = organisationName;
+                org.AddRole(role);
+                IfcIdentifier docId = AddModelReference(refModelPath, org);
+                txn.Commit();
+                return docId;
+            }
+        }
 
        /// <summary>
-        /// adds a model as a reference model, a valid transaction must be running
+        /// adds a model as a reference model can be called inside a transaction
        /// </summary>
         /// <param name="refModelPath">the file path of the xbim model to reference, this must be an xbim file</param>
        /// <param name="owner">the actor who supplied the model</param>
        /// <returns></returns>
         public IfcIdentifier AddModelReference(string refModelPath, IfcActorSelect owner)
         {
-            Debug.Assert(editTransactionEntityCursor != null);
             XbimModel refModel = new XbimModel();
             refModel.Open(refModelPath);
-            var docInfo = Instances.New<IfcDocumentInformation>();
-            docInfo.DocumentId = _referencedModels.NextIdentifer();
-            docInfo.Name = refModelPath;
-            docInfo.DocumentOwner = owner;
-            docInfo.IntendedUse = refDocument;
-            _referencedModels.Add(new XbimReferencedModel(docInfo, refModel));
-            return docInfo.DocumentId;
+            if (!IsTransacting)
+            {
+                using (var txn = BeginTransaction())
+                {
+                    var docInfo = Instances.New<IfcDocumentInformation>();
+                    docInfo.DocumentId = _referencedModels.NextIdentifer();
+                    docInfo.Name = refModelPath;
+                    docInfo.DocumentOwner = owner;
+                    docInfo.IntendedUse = refDocument;
+                    _referencedModels.Add(new XbimReferencedModel(docInfo, refModel));
+                    txn.Commit();
+                    return docInfo.DocumentId;
+                }
+            }
+            else
+            {
+                var docInfo = Instances.New<IfcDocumentInformation>();
+                docInfo.DocumentId = _referencedModels.NextIdentifer();
+                docInfo.Name = refModelPath;
+                docInfo.DocumentOwner = owner;
+                docInfo.IntendedUse = refDocument;
+                _referencedModels.Add(new XbimReferencedModel(docInfo, refModel));
+                return docInfo.DocumentId;
+            }
+                
+                
         }
 
         private void LoadReferenceModels()
@@ -1221,7 +1268,7 @@ namespace Xbim.IO
         #endregion
 
 
-        public IEnumerable<XbimReferencedModel> RefencedModels
+        public XbimReferencedModelCollection RefencedModels
         {
             get
             {
@@ -1241,6 +1288,30 @@ namespace Xbim.IO
                 yield return item;
         }
 
+        public void Initialise(string userName = "User 1", string organisationName = "Organisation X", string applicationName = "Application 1.0", string developerName = "Developer 1", string version = "1.0")
+        {
+            //Begin a transaction as all changes to a model are transacted
+            using (XbimReadWriteTransaction txn = BeginTransaction("Initialise Model"))
+            {
+                //do once only initialisation of model application and editor values
+                DefaultOwningUser.ThePerson.FamilyName = userName;
+                DefaultOwningUser.TheOrganization.Name = organisationName;
+                DefaultOwningApplication.ApplicationIdentifier = applicationName;
+                DefaultOwningApplication.ApplicationDeveloper.Name = developerName;
+                DefaultOwningApplication.ApplicationFullName = applicationName;
+                DefaultOwningApplication.Version = "2.0.1";
+
+                //set up a project and initialise the defaults
+
+                IfcProject project = Instances.New<IfcProject>();
+                project.Initialize(ProjectUnits.SIUnitsUK);
+                project.Name = "testProject";
+                project.OwnerHistory.OwningUser = DefaultOwningUser;
+                project.OwnerHistory.OwningApplication = DefaultOwningApplication;
+                txn.Commit();
+            }
+            
+        }
 
 
 

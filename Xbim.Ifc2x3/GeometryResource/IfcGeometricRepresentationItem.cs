@@ -35,7 +35,7 @@ namespace Xbim.Ifc2x3.GeometryResource
     ///   NOTE: Corresponding STEP entity: geometric_representation_item. Please refer to ISO/IS 10303-42:1994, p. 22 for the final definition of the formal standard. The following changes have been made: It does not inherit from ISO/IS 10303-43:1994 entity representation_item. The derived attribute Dim is demoted to the appropriate subtypes. The WR1 has not been incorporated. Not all subtypes that are in ISO/IS 10303-42:1994 have been added to the current IFC Release . 
     ///   HISTORY: New entity in IFC Release 1.5
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public abstract class IfcGeometricRepresentationItem : IfcRepresentationItem
     {
     }

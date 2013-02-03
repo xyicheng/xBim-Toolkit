@@ -22,7 +22,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc2x3.DateTimeResource
 {
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcDateAndTime : IfcDateTimeSelect, INotifyPropertyChanged, ISupportChangeNotification,
                                   IPersistIfcEntity, IfcObjectReferenceSelect, INotifyPropertyChanging
     {

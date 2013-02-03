@@ -36,7 +36,7 @@ namespace Xbim.Ifc2x3.SharedBldgElements
     ///   See geometry use definitions at IfcDoorStyleOperationTypeEnum for the correct usage of opening symbols for different operation types. 
     ///   EXPRESS specification
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcDoorStyle : IfcTypeProduct
     {
         #region Fields

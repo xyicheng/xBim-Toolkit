@@ -1,8 +1,9 @@
 #pragma once
 
-using namespace System::Windows::Media::Media3D;
-using namespace Xbim::Ifc::GeometryResource;
-using namespace Xbim::Ifc::GeometricConstraintResource;
+
+using namespace Xbim::Ifc2x3::GeometryResource;
+using namespace Xbim::Ifc2x3::GeometricConstraintResource;
+using namespace Xbim::Common::Geometry;
 namespace Xbim
 {	
 	namespace ModelGeometry
@@ -12,8 +13,8 @@ namespace Xbim
 		public:
 
 			// Builds a windows Matrix3D from a CartesianTransformationOperator3D
-			static Matrix3D ConvertMatrix3D(IfcCartesianTransformationOperator3D ^ stepTransform);
-			static Matrix3D ConvertMatrix3D(IfcObjectPlacement ^ placement);
+			static XbimMatrix3D ConvertMatrix3D(IfcCartesianTransformationOperator3D ^ stepTransform);
+			static XbimMatrix3D ConvertMatrix3D(IfcObjectPlacement ^ placement);
 		};
 	}
 }

@@ -26,7 +26,7 @@ namespace Xbim.Ifc2x3.Kernel
     ///   Property definitions define information that is shared among multiple instances of objects. 
     ///   The assignment of the shared information to objects is handled by the IfcRelDefines relationship.
     /// </summary>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public abstract class IfcPropertyDefinition : IfcRoot
     {
         #region Inverse Relationships

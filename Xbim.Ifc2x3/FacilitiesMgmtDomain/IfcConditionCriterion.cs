@@ -22,7 +22,7 @@ namespace Xbim.Ifc2x3.FacilitiesMgmtDomain
     /// Each criterion must be named and optionally, may also have a description. A description used for a condition should be persistent 
     /// so that there is absolute consistency in condition recording.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntity]
     public class IfcConditionCriterion : IfcControl
     {
 

@@ -20,7 +20,7 @@ using Xbim.XbimExtensions;
 
 namespace Xbim.Ifc2x3.PresentationResource
 {
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public abstract class IfcPreDefinedTextFont : IfcPreDefinedItem, IfcTextFontSelect
     {
     }

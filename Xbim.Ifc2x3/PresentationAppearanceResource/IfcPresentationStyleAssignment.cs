@@ -30,7 +30,7 @@ namespace Xbim.Ifc2x3.PresentationAppearanceResource
     ///   NOTE Corresponding STEP name: presentation_style_assignment. Please refer to ISO/IS 10303-46:1994 for the final definition of the formal standard. 
     ///   HISTORY New entity in Release IFC2x 2nd Edition.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable, IndexedClass]
+    [IfcPersistedEntityAttribute, IndexedClass]
     public class IfcPresentationStyleAssignment : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                                   INotifyPropertyChanging
     {

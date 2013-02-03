@@ -43,7 +43,7 @@ namespace Xbim.Ifc2x3.CostResource
     ///   Labor   
     ///   In the absence of any well-defined standard, it is recommended that local agreements should be made to define allowable and understandable cost value types within a project or region
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcCostValue : IfcAppliedValue, IfcMetricValueSelect
     {
         #region Fields

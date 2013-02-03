@@ -44,7 +44,7 @@ namespace Xbim.Ifc2x3.PropertyResource
     /// <summary>
     ///   Set Of Properties, the Name of each property in the set must be unique
     /// </summary>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class SetOfProperty : XbimSet<IfcProperty>
     {
         internal SetOfProperty(IPersistIfcEntity owner)
@@ -56,7 +56,7 @@ namespace Xbim.Ifc2x3.PropertyResource
     /// <summary>
     ///   Definition from IAI: An abstract generalization for all types of properties that can be associated with IFC objects through the property set mechanism.
     /// </summary>
-    [IfcPersistedEntityAttribute, Serializable, IndexedClass]
+    [IfcPersistedEntityAttribute, IndexedClass]
     public abstract class IfcProperty : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                         INotifyPropertyChanging
     {

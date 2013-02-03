@@ -24,7 +24,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc2x3.GeometryResource
 {
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class RepresentationMapList : XbimListUnique<IfcRepresentationMap>
     {
         internal RepresentationMapList(IPersistIfcEntity owner)
@@ -34,7 +34,7 @@ namespace Xbim.Ifc2x3.GeometryResource
     }
 
 
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcRepresentationMap : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                         INotifyPropertyChanging
     {

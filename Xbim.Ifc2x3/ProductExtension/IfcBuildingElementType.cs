@@ -19,7 +19,7 @@ using Xbim.XbimExtensions;
 
 namespace Xbim.Ifc2x3.ProductExtension
 {
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public abstract class IfcBuildingElementType : IfcElementType
     {
     }

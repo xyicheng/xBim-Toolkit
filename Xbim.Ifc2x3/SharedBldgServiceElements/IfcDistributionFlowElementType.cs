@@ -20,7 +20,7 @@ using Xbim.XbimExtensions;
 
 namespace Xbim.Ifc2x3.SharedBldgServiceElements
 {
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public abstract class IfcDistributionFlowElementType : IfcDistributionElementType
     {
     }

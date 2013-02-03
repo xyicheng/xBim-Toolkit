@@ -29,7 +29,7 @@ namespace Xbim.Ifc2x3.ProductExtension
     ///   EXAMPLE  The insertion of a window into a wall is represented by two separate relationships. First the window opening is created within the wall by IfcWall(StandardCase) o-- IfcRelVoidsElement --o IfcOpeningElement, then the window is inserted within the opening by IfcOpeningElement o-- IfcRelFillsElement --o IfcWindow. 
     ///   HISTORY New entity in IFC Release 1.0
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcRelFillsElement : IfcRelConnects
     {
         #region Fields

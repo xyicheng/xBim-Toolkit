@@ -12,7 +12,7 @@ namespace Xbim.Ifc2x3.SharedFacilitiesElements
     /// to a relationship between occupants (IfcOccupant) and either a space (IfcSpace), a collection of spaces (IfcZone), 
     /// a building storey (IfcBuildingStorey), or a building (IfcBuilding).
     /// </summary>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntity]
     public class IfcRelOccupiesSpaces : IfcRelAssignsToActor
     {
 

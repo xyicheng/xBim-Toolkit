@@ -35,25 +35,7 @@ namespace Xbim.ModelGeometry.Scene
             return StartPosition <= vertexIndex && EndPosition >= vertexIndex;
         }
 
-        /// <summary>
-        /// Returns a mesh of the fragment
-        /// </summary>
-        /// <param name="mainMesh"></param>
-        /// <returns></returns>
-        public XbimMeshGeometry3D GetMeshGeometry3D(IXbimMeshGeometry3D mainMesh)
-        {
-            XbimMeshGeometry3D mesh = new XbimMeshGeometry3D(PositionCount);
-            for (int i = StartPosition; i <= EndPosition; i++)
-            {
-                mesh.Positions.Add(mainMesh.Positions[i]);
-                mesh.Normals.Add(mainMesh.Normals[i]);
-            }
-            for (int i = StartTriangleIndex; i <= EndTriangleIndex; i++)
-            {
-                mesh.TriangleIndices.Add(mainMesh.TriangleIndices[i] - StartPosition);
-            }
-            return mesh;
-        }
+
 
         public int PositionCount 
         {

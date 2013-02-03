@@ -15,7 +15,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Xml.Serialization;
+
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
@@ -23,7 +23,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc2x3.RepresentationResource
 {
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class ShapeModelList : XbimList<IfcShapeModel>
     {
         internal ShapeModelList(IPersistIfcEntity owner)
@@ -58,7 +58,7 @@ namespace Xbim.Ifc2x3.RepresentationResource
     ///   Formal Propositions:
     ///   WR11   :   The IfcShapeModel shall either be used by an IfcProductRepresentation, an IfcRepresentationMap or by an IfcShapeAspect
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public abstract class IfcShapeModel : IfcRepresentation
     {
         #region Inverse Relationships
@@ -66,7 +66,7 @@ namespace Xbim.Ifc2x3.RepresentationResource
         /// <summary>
         ///   Reference to the shape aspect, for which it is the shape representation.
         /// </summary>
-        [XmlIgnore]
+        
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class, 0, 1)]
         public IEnumerable<IfcShapeAspect> OfShapeAspect
         {

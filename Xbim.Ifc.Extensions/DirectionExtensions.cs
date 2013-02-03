@@ -13,28 +13,15 @@
 #region Directives
 
 using System;
-using Xbim.Ifc.GeometryResource;
-using WVector = System.Windows.Vector;
+using Xbim.Ifc2x3.GeometryResource;
+
 
 #endregion
 
-namespace Xbim.Ifc.Extensions
+namespace Xbim.Ifc2x3.Extensions
 {
     public static class DirectionExtensions
     {
-        public static IfcDirection OrthogonalComplement(this IfcDirection dir)
-        {
-            if (dir.Dim == 2)
-            {
-                WVector v = dir.WVector();
-                v.Normalize();
-                return new IfcDirection(-v.Y, v.X);
-            }
-            else
-            {
-                throw new NotImplementedException("OrthogonalComplement");
-            }
-        }
 
         public static double DotProduct(this IfcDirection dir, IfcCartesianPoint pt)
         {

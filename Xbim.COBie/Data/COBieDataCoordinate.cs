@@ -19,6 +19,7 @@ using Xbim.ModelGeometry.Scene;
 using Xbim.ModelGeometry;
 using System.IO;
 using System.Windows.Media.Media3D;
+using Xbim.Common.Geometry;
 
 
 
@@ -112,7 +113,7 @@ namespace Xbim.COBie.Data
                         
                         if (geoData != null)
                         {
-                            Matrix3D worldMatrix = new Matrix3D().FromArray(geoData.TransformData);
+                            XbimMatrix3D worldMatrix = XbimMatrix3D.FromArray(geoData.TransformData);
                             ifcCartesianPointLower = new IfcCartesianPoint(worldMatrix.OffsetX, worldMatrix.OffsetY, worldMatrix.OffsetZ); //get the offset from the world coordinates system 0,0,0 point, i.e. origin point of this object in world space
                         }
                         //we will allow to add 0,0,0 as if components then it can place themselves relative to the 0,0,0 point
@@ -134,8 +135,8 @@ namespace Xbim.COBie.Data
                         //}
                         if (geoData != null)
                         {
-                            Rect3D boundBox = new Rect3D().FromArray(geoData.ShapeData);
-                            Matrix3D worldMatrix = new Matrix3D().FromArray(geoData.TransformData);
+                            XbimRect3D boundBox = XbimRect3D.FromArray(geoData.ShapeData);
+                            XbimMatrix3D worldMatrix = XbimMatrix3D.FromArray(geoData.TransformData);
                             //do the transform in the next call to the structure TransformedBoundingBox constructor
                             TransformedBoundingBox tranBox = new TransformedBoundingBox(boundBox, worldMatrix);
                             ClockwiseRotation = tranBox.ClockwiseRotation;
@@ -221,11 +222,11 @@ namespace Xbim.COBie.Data
     /// </summary>
     struct TransformedBoundingBox 
     {
-        public TransformedBoundingBox(Rect3D boundBox, Matrix3D matrix) : this()
+        public TransformedBoundingBox(XbimRect3D boundBox, XbimMatrix3D matrix) : this()
 	    {
             //Object space values
-            MinPt = new Point3D(boundBox.X, boundBox.Y, boundBox.Z);
-            MaxPt = new Point3D(boundBox.X + boundBox.SizeX, boundBox.Y + boundBox.SizeY, boundBox.Z + boundBox.SizeZ);
+            MinPt = new XbimPoint3D(boundBox.X, boundBox.Y, boundBox.Z);
+            MaxPt = new XbimPoint3D(boundBox.X + boundBox.SizeX, boundBox.Y + boundBox.SizeY, boundBox.Z + boundBox.SizeZ);
             //make assumption that the X direction will be the longer length hence the orientation will be along the x axis
            
             //transformed values, no longer a valid bounding box in the new space if any Pitch or Yaw
@@ -271,13 +272,13 @@ namespace Xbim.COBie.Data
         /// <param name="rotationX">Rotation around the X axis</param>
         /// <param name="rotationY">Rotation around the Y axis</param>
         /// <param name="rotationZ">Rotation around the Z axis</param>
-        public static void GetMatrixRotations(Matrix3D matrix, out double rotationX, out double rotationY, out double rotationZ)
+        public static void GetMatrixRotations(XbimMatrix3D matrix, out double rotationX, out double rotationY, out double rotationZ)
         {
             //calculations from http://forums.codeguru.com/archive/index.php/t-329530.html and http://planning.cs.uiuc.edu/node103.html#eqn:angfrommat and http://nghiaho.com/?page_id=846
             //rotation around Z axis
-            rotationZ = Math.Atan2(matrix.M21, matrix.M11);
-            rotationY = -Math.Asin(matrix.M31);  //Math.Atan2(-matrix.M31, (Math.Sqrt(Math.Pow(matrix.M32, 2) + Math.Pow(matrix.M33, 2))))
-            rotationX = Math.Atan2(matrix.M32, matrix.M33);
+            rotationZ = Math.Atan2(matrix.M22, matrix.M12);
+            rotationY = -Math.Asin(matrix.M32);  //Math.Atan2(-matrix.M31, (Math.Sqrt(Math.Pow(matrix.M32, 2) + Math.Pow(matrix.M33, 2))))
+            rotationX = Math.Atan2(matrix.M33, matrix.M34);
         }
 
         /// <summary>
@@ -292,11 +293,11 @@ namespace Xbim.COBie.Data
         /// <summary>
         /// Minimum point, classed as origin point
         /// </summary>
-        public Point3D MinPt { get; set; }
+        public XbimPoint3D MinPt { get; set; }
         /// <summary>
         /// Maximum point of the rectangle
         /// </summary>
-        public Point3D MaxPt { get; set; }
+        public XbimPoint3D MaxPt { get; set; }
         /// <summary>
         /// Clockwise rotation of the IfcProduct
         /// </summary>

@@ -35,7 +35,7 @@ namespace Xbim.Ifc2x3.GeometricConstraintResource
     ///   HISTORY  New entity in IFC Release 1.5. 
     ///   IFC2x Edition 3 CHANGE  The definition of the subtypes has been enhanced by allowing either geometric representation items (point | curve | surface) or topological representation items with associated geometry (vertex point | edge curve | face  surface).
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public abstract class IfcConnectionGeometry : ISupportChangeNotification, INotifyPropertyChanged, IPersistIfcEntity,
                                                   INotifyPropertyChanging
     {

@@ -19,7 +19,7 @@ using Xbim.XbimExtensions;
 
 namespace Xbim.Ifc2x3.ProfileResource
 {
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcAsymmetricIShapeProfileDef : IfcIShapeProfileDef
     {
     }

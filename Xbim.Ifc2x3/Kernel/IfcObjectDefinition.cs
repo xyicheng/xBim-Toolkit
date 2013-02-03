@@ -14,7 +14,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Xml.Serialization;
+
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
@@ -22,7 +22,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc2x3.Kernel
 {
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class ObjectDefinitionSet : XbimSet<IfcObjectDefinition>
     {
         internal ObjectDefinitionSet(IPersistIfcEntity owner)
@@ -50,7 +50,7 @@ namespace Xbim.Ifc2x3.Kernel
     ///   HISTORY  New abstract entity in Release IFC2x Edition 3. 
     ///   IFC2x Edition 3 CHANGE  The abstract entity IfcObjectDefinition has been added. Upward compatibility for file based exchange is guaranteed.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public abstract class IfcObjectDefinition : IfcRoot
     {
         #region Fields and Events
@@ -62,7 +62,7 @@ namespace Xbim.Ifc2x3.Kernel
         /// <summary>
         ///   Inverse. Reference to the relationship objects, that assign (by an association relationship) other subtypes of IfcObject to this object instance. Examples are the association to products, processes, controls, resources or groups.
         /// </summary>
-        [XmlIgnore]
+        
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class)]
         public IEnumerable<IfcRelAssigns> HasAssignments
         {
@@ -76,7 +76,7 @@ namespace Xbim.Ifc2x3.Kernel
         /// <summary>
         ///   Reference to the decomposition relationship, that allows this object to be the composition of other objects. An object can be decomposed by several other objects.
         /// </summary>
-        [XmlIgnore]
+        
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class)]
         public IEnumerable<IfcRelDecomposes> IsDecomposedBy
         {
@@ -86,7 +86,7 @@ namespace Xbim.Ifc2x3.Kernel
         /// <summary>
         ///   References to the decomposition relationship, that allows this object to be a part of the decomposition. An object can only be part of a single decomposition (to allow hierarchical strutures only).
         /// </summary>
-        [XmlIgnore]
+        
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class, 0, 1)]
         public IEnumerable<IfcRelDecomposes> Decomposes
         {
@@ -100,7 +100,7 @@ namespace Xbim.Ifc2x3.Kernel
         /// <summary>
         ///   Reference to the relationship objects, that associates external references or other resource definitions to the object.. Examples are the association to library, documentation or classification.
         /// </summary>
-        [XmlIgnore]
+        
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class)]
         public IEnumerable<IfcRelAssociates> HasAssociations
         {

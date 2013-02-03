@@ -25,7 +25,7 @@ namespace Xbim.Ifc2x3.Kernel
     ///   The IfcRelDefinesByType is a 1-to-N relationship, as it allows for the assignment of one type information to a single or to many objects. 
     ///   Those objects then share the same object type.
     /// </summary>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcRelDefinesByType : IfcRelDefines
     {
         #region Fields and Events

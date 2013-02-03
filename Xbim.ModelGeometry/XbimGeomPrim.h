@@ -5,9 +5,10 @@
 #include <gp_Pln.hxx> 
 
 
-using namespace Xbim::Ifc::GeometryResource;
-using namespace Xbim::Ifc::SelectTypes;
-using namespace System::Windows::Media::Media3D;
+using namespace Xbim::Ifc2x3::GeometryResource;
+using namespace Xbim::XbimExtensions::SelectTypes;
+using namespace Xbim::Common::Exceptions;
+using namespace Xbim::Common::Geometry;
 namespace Xbim
 {
 	namespace ModelGeometry
@@ -33,14 +34,15 @@ namespace Xbim
 			// Converts an CartesianTransformationOperator3D into a gp_GTrsf
 			static gp_Trsf ToTransform(IfcCartesianTransformationOperator3D^ ct3D);
 			// Converts an CartesianTransformationOperator3DnonUniform into a gp_GTrsf
-			static gp_Trsf ToTransform(IfcCartesianTransformationOperator3DnonUniform^ ct3D);
+			static gp_GTrsf ToTransform(IfcCartesianTransformationOperator3DnonUniform^ ct3D);
 			// Converts an CartesianTransformationOperator2D into a gp_GTrsf
 			static gp_Trsf ToTransform(IfcCartesianTransformationOperator2D^ ct2D);
 			// Converts an Matrix3D into a gp_GTrsf
-			static gp_Trsf ToTransform(Matrix3D m3D);
+			static gp_Trsf ToTransform(XbimMatrix3D m3D);
 			// Converts an Axis2Placement3D to a Plane
 			static gp_Pln ToPlane(IfcAxis2Placement3D^ axis3D);
-
+			//converts an Axis2Placement2D into a Transform matrix
+			static gp_Trsf ToTransform(IfcAxis2Placement3D^ axis3D);
 		};
 	}
 }

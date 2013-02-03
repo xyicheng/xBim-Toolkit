@@ -24,7 +24,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc2x3.ActorResource
 {
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class TelecomAddressCollection : ReadOnlyObservableCollection<IfcTelecomAddress>
     {
         internal TelecomAddressCollection(ObservableCollection<IfcTelecomAddress> tcAddresses)
@@ -53,7 +53,7 @@ namespace Xbim.Ifc2x3.ActorResource
         }
     }
 
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcTelecomAddress : IfcAddress
     {
         #region Fields

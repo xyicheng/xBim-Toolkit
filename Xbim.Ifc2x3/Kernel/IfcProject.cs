@@ -15,7 +15,7 @@
 using System;
 using System.Linq;
 using System.Runtime.Serialization;
-using System.Xml.Serialization;
+
 using Xbim.Ifc2x3.MeasureResource;
 using Xbim.Ifc2x3.RepresentationResource;
 using Xbim.XbimExtensions;
@@ -51,7 +51,7 @@ namespace Xbim.Ifc2x3.Kernel
     ///   WR32   :   There shall be no instance of IfcGeometricRepresentationSubContext directly included in the set of RepresentationContexts.  
     ///   WR33   :   The IfcProject represents the root of the any decomposition tree. It shall therefore not be used to decompose any other object definition.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcProject : IfcObject
     {
         public IfcProject()
@@ -104,8 +104,7 @@ namespace Xbim.Ifc2x3.Kernel
         ///   Context of the representations used within the project. When the project includes shape representations for its components, one or several geometric representation contexts need to be included that define e.g. the world coordinate system, the coordinate space dimensions, and/or the precision factor.
         /// </summary>
 
-        [XmlArrayItem(typeof (IfcGeometricRepresentationContext)),
-         XmlArrayItem(typeof (IfcGeometricRepresentationSubContext))]
+
         [IfcAttribute(8, IfcAttributeState.Mandatory, IfcAttributeType.Set, 1)]
         public RepresentationContextSet RepresentationContexts
         {

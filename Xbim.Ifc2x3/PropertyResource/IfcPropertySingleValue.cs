@@ -40,7 +40,7 @@ namespace Xbim.Ifc2x3.PropertyResource
     ///   ThermalTransmittance 2.6 IfcThermalTransmittanceMeasure W/(m2K) 
     ///   HISTORY: New entity in IFC Release 1.0. The entity has been renamed from IfcSimpleProperty in IFC Release 2x
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcPropertySingleValue : IfcSimpleProperty
     {
         #region Fields

@@ -14,7 +14,7 @@
 
 using System;
 using System.Runtime.Serialization;
-using System.Xml.Serialization;
+
 using Xbim.Ifc2x3.GeometryResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
@@ -56,7 +56,7 @@ namespace Xbim.Ifc2x3.GeometricConstraintResource
     ///   Formal Propositions:
     ///   WR21   :   Ensures that a 3D local placement can only be relative (if exists) to a 3D parent local placement (and not to a 2D parent local placement).
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable,IndexedClass]
+    [IfcPersistedEntityAttribute,IndexedClass]
     public class IfcLocalPlacement : IfcObjectPlacement
     {
         #region Fields
@@ -97,7 +97,7 @@ namespace Xbim.Ifc2x3.GeometricConstraintResource
         ///   Optional. Reference to Object that provides the relative placement by its local coordinate system. If it is omitted, then the local placement is given to the WCS, established by the geometric representation context.
         /// </summary>
 
-        [XmlElement(typeof (IfcLocalPlacement)), XmlElement(typeof (IfcGridPlacement))]
+        
         [IfcAttribute(1, IfcAttributeState.Optional),IndexedProperty]
         public IfcObjectPlacement PlacementRelTo
         {
@@ -113,8 +113,7 @@ namespace Xbim.Ifc2x3.GeometricConstraintResource
         ///   Geometric placement that defines the transformation from the related coordinate system into the relating. The placement can be either 2D or 3D, depending on the dimension count of the coordinate system.
         /// </summary>
 
-        [XmlElement(typeof (IfcAxis1Placement)), XmlElement(typeof (IfcAxis2Placement2D)),
-         XmlElement(typeof (IfcAxis2Placement3D))]
+       
         [IfcAttribute(2, IfcAttributeState.Mandatory)]
         public IfcPlacement RelativePlacement
         {

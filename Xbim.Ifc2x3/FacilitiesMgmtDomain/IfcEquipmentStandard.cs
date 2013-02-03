@@ -21,7 +21,7 @@ namespace Xbim.Ifc2x3.FacilitiesMgmtDomain
     /// An equipment standard is assigned to one or several persons or organizations (like a work group or department) through the IfcRelAssignsToControl 
     /// relationship via the Controls inverse attribute.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntity]
     public class IfcEquipmentStandard : IfcControl
     {
         public override void IfcParse(int propIndex, IPropertyValue value)

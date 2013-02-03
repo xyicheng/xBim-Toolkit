@@ -14,150 +14,46 @@ namespace Xbim.Presentation
     public class WpfMaterial : IXbimRenderMaterial
     {
         Material Material;
-        bool isTransparent = false;
-        bool renderBothFaces = true;
-        bool switchFrontAndRearFaces = false;
+        
         public static implicit operator Material(WpfMaterial wpfMaterial)
         {
             return wpfMaterial.Material;
         }
-        public void CreateMaterial(IfcSurfaceStyle surfaceStyle)
+       
+        public void CreateMaterial(XbimTexture texture)
         {
-            //set render one or both faces
-            renderBothFaces = (surfaceStyle.Side == IfcSurfaceSide.BOTH);
-            //switch if required
-            switchFrontAndRearFaces = (surfaceStyle.Side == IfcSurfaceSide.NEGATIVE);
-            //need to change this to return a material group that considers combinations of Styles
-            IfcSurfaceStyleRendering rendering = surfaceStyle.Styles.OfType<IfcSurfaceStyleRendering>().FirstOrDefault();
-            if (rendering != null) 
-                CreateMaterial(rendering);
-            else //try the shading
+            if (texture.ColourMap.Count > 1)
             {
-                IfcSurfaceStyleShading shading = surfaceStyle.Styles.OfType<IfcSurfaceStyleShading>().FirstOrDefault();
-                if (shading != null) CreateMaterial(rendering);
+                Material = new MaterialGroup();
+                foreach (var colour in texture.ColourMap)
+                {
+                    ((MaterialGroup)Material).Children.Add(CreateMaterial(colour));
+                }
             }
-            ///no luck
-        }
-
-        public void CreateMaterial(IfcSurfaceStyleRendering rendering)
-        { 
-            MaterialGroup grp = new MaterialGroup();
-            if (rendering.DiffuseColour is IfcNormalisedRatioMeasure)
+            else if(texture.ColourMap.Count == 1)
             {
-                Brush brush = new SolidColorBrush(rendering.SurfaceColour.ToColor((IfcNormalisedRatioMeasure)rendering.DiffuseColour));
-                brush.Opacity = rendering.Transparency.HasValue ? 1.0 - rendering.Transparency.Value : 1.0;
-                grp.Children.Add(new DiffuseMaterial(brush));
-                isTransparent |= brush.Opacity < 1.0;
-            }
-            else if (rendering.DiffuseColour is IfcColourRgb)
-            {
-                Brush brush = new SolidColorBrush(((IfcColourRgb)rendering.DiffuseColour).ToColor());
-                brush.Opacity = rendering.Transparency.HasValue ? 1.0 - rendering.Transparency.Value : 1.0;
-                grp.Children.Add(new DiffuseMaterial(brush));
-                isTransparent |= brush.Opacity < 1.0;
-            }
-            else if (rendering.DiffuseColour == null)
-            {
-                Brush brush = new SolidColorBrush(rendering.SurfaceColour.ToColor());
-                brush.Opacity = rendering.Transparency.HasValue ? 1.0 - rendering.Transparency.Value : 1.0;
-                grp.Children.Add(new DiffuseMaterial(brush));
-                isTransparent |= brush.Opacity < 1.0;
-            }
-
-            if (rendering.SpecularColour is IfcNormalisedRatioMeasure)
-            {
-                Brush brush = new SolidColorBrush(rendering.SurfaceColour.ToColor());
-                brush.Opacity = rendering.Transparency.HasValue ? 1.0 - rendering.Transparency.Value : 1.0;
-                grp.Children.Add(new SpecularMaterial(brush, (IfcNormalisedRatioMeasure)(rendering.SpecularColour)));
-                isTransparent |= brush.Opacity < 1.0;
-            }
-            if (rendering.SpecularColour is IfcColourRgb)
-            {
-                Brush brush = new SolidColorBrush(((IfcColourRgb)rendering.SpecularColour).ToColor());
-                brush.Opacity = rendering.Transparency.HasValue ? 1.0 - rendering.Transparency.Value : 1.0;
-                grp.Children.Add(new SpecularMaterial(brush, 100.0));
-                isTransparent |= brush.Opacity < 1.0;
-            }
-
-            if (grp.Children.Count == 1)
-            {
-                Material = grp.Children[0];
-            }
-            else
-            {
-                Material = grp;
+                XbimColour colour = texture.ColourMap[0];
+                Material = CreateMaterial(colour);
             }
         }
 
-        public void CreateMaterial(IfcSurfaceStyleShading shading)
+        private Material CreateMaterial(XbimColour colour)
         {
-            if (shading is IfcSurfaceStyleRendering)
-                CreateMaterial((IfcSurfaceStyleRendering)shading);
-            else
-            {
-                CreateMaterial(shading.SurfaceColour);
-            }
-        }
-
-        public void CreateMaterial(IfcColourRgb colourRGB)
-        {
-            byte red = Convert.ToByte(colourRGB.Red * 255);
-            byte green = Convert.ToByte(colourRGB.Green * 255);
-            byte blue = Convert.ToByte(colourRGB.Blue * 255);
-            CreateMaterial(red, green, blue);
-        }
-
-
-        public void CreateMaterial(byte red, byte green, byte blue, byte alpha = 255)
-        {
-            Color col = Color.FromArgb(alpha, red, green, blue);
+            Color col = Color.FromScRgb(colour.Alpha, colour.Red, colour.Green, colour.Blue);
             Brush brush = new SolidColorBrush(col);
-            Material = new DiffuseMaterial(brush);
-            isTransparent = alpha < 255;
-        }
-
-        /// <summary>
-        /// creates a material from SC RGB data
-        /// </summary>
-        /// <param name="red"></param>
-        /// <param name="green"></param>
-        /// <param name="blue"></param>
-        /// <param name="alpha"></param>
-        public void CreateMaterial(float red, float green, float blue, float alpha = 1, float emit = 0)
-        {
-            Color col = Color.FromScRgb(alpha, red, green, blue);
-            Brush brush = new SolidColorBrush(col);
-            if (emit > 0)
-                Material = new EmissiveMaterial(brush);        
+            if (colour.SpecularFactor > 0)
+                return new SpecularMaterial(brush, colour.SpecularFactor * 100);
+            else if (colour.ReflectionFactor > 0)
+                return new EmissiveMaterial(brush);
             else
-                Material = new DiffuseMaterial(brush);
-            isTransparent = alpha < 1;
+                return new DiffuseMaterial(brush);
+            
         }
 
 
-        public void CreateMaterial(XbimColour colour)
+        public bool IsCreated
         {
-            CreateMaterial(colour.Red, colour.Green, colour.Blue, colour.Alpha, colour.Emit);
+            get { return Material != null; }
         }
-
-        public bool IsTransparent
-        {
-            get { return isTransparent; }
-            set { isTransparent = value; }
-        }
-
-        public bool RenderBothFaces
-        {
-            get { return renderBothFaces; }
-            set { renderBothFaces = value; }
-        }
-
-        public bool SwitchFrontAndRearFaces
-        {
-            get { return switchFrontAndRearFaces; }
-            set { switchFrontAndRearFaces = value; }
-        }
-
-
     }
 }

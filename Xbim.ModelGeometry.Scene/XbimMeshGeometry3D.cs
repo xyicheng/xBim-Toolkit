@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Windows.Media.Media3D;
 using Xbim.Common.Exceptions;
+using Xbim.Common.Geometry;
 using Xbim.IO;
 using Xbim.XbimExtensions;
 
@@ -16,12 +16,12 @@ namespace Xbim.ModelGeometry.Scene
     {
 
         const int defaultSize = 0x4000;
-        public List<Point3D> Positions;
-        public List<Vector3D> Normals;
+        public List<XbimPoint3D> Positions;
+        public List<XbimVector3D> Normals;
         public List<Int32> TriangleIndices;
 
         XbimMeshFragmentCollection meshes = new XbimMeshFragmentCollection();
-        List<Point3D> _points;
+        List<XbimPoint3D> _points;
         TriangleType _meshType;
         uint _previousToLastIndex;
         uint _lastIndex;
@@ -32,8 +32,8 @@ namespace Xbim.ModelGeometry.Scene
 
         public XbimMeshGeometry3D(int size)
         {
-            Positions = new List<Point3D>(size);
-            Normals = new List<Vector3D>(size);
+            Positions = new List<XbimPoint3D>(size);
+            Normals = new List<XbimVector3D>(size);
             TriangleIndices = new List<Int32>(size * 3);
         }
 
@@ -42,23 +42,23 @@ namespace Xbim.ModelGeometry.Scene
 
         }
 
-        static public XbimMeshGeometry3D MakeBoundingBox(Rect3D r3D, Matrix3D transform)
+        static public XbimMeshGeometry3D MakeBoundingBox(XbimRect3D r3D, XbimMatrix3D transform)
         {
             XbimMeshGeometry3D mesh = new XbimMeshGeometry3D(8);
-            Point3D p0 = transform.Transform(r3D.Location);
-            Point3D p1 = p0;
+            XbimPoint3D p0 = transform.Transform(r3D.Location);
+            XbimPoint3D p1 = p0;
             p1.X += r3D.SizeX;
-            Point3D p2 = p1;
+            XbimPoint3D p2 = p1;
             p2.Z += r3D.SizeZ;
-            Point3D p3 = p2;
+            XbimPoint3D p3 = p2;
             p3.X -= r3D.SizeX;
-            Point3D p4 = p3;
+            XbimPoint3D p4 = p3;
             p4.Y += r3D.SizeY;
-            Point3D p5 = p4;
+            XbimPoint3D p5 = p4;
             p5.Z -= r3D.SizeZ;
-            Point3D p6 = p5;
+            XbimPoint3D p6 = p5;
             p6.X += r3D.SizeX;
-            Point3D p7 = p6;
+            XbimPoint3D p7 = p6;
             p7.Z += r3D.SizeZ;
 
 
@@ -150,12 +150,12 @@ namespace Xbim.ModelGeometry.Scene
 
         void IXbimTriangulatesToPositionsIndices.BeginPositions(uint numPoints)
         {
-            _points = new List<Point3D>((int)numPoints);
+            _points = new List<XbimPoint3D>((int)numPoints);
         }
 
-        void IXbimTriangulatesToPositionsIndices.AddPosition(Point3D point3D)
+        void IXbimTriangulatesToPositionsIndices.AddPosition(XbimPoint3D XbimPoint3D)
         {
-            _points.Add(point3D);
+            _points.Add(XbimPoint3D);
         }
 
         void IXbimTriangulatesToPositionsIndices.EndPositions()
@@ -165,7 +165,7 @@ namespace Xbim.ModelGeometry.Scene
         void IXbimTriangulatesToPositionsIndices.BeginPolygons(uint totalNumberTriangles, uint numPolygons)
         {
             // three position for each triangle
-            //_meshGeometry.Positions = new Point3DCollection((int)(totalNumberTriangles * 3));
+            //_meshGeometry.Positions = new XbimPoint3DCollection((int)(totalNumberTriangles * 3));
             //_meshGeometry.TriangleIndices = new System.Windows.Media.Int32Collection((int)(totalNumberTriangles * 3));
         }
 
@@ -254,12 +254,12 @@ namespace Xbim.ModelGeometry.Scene
            
         }
 
-        void IXbimTriangulatesToPositionsNormalsIndices.AddPosition(Point3D point3D)
+        void IXbimTriangulatesToPositionsNormalsIndices.AddPosition(XbimPoint3D XbimPoint3D)
         {
-            Positions.Add(point3D);
+            Positions.Add(XbimPoint3D);
         }
 
-        void IXbimTriangulatesToPositionsNormalsIndices.AddNormal(Vector3D normal)
+        void IXbimTriangulatesToPositionsNormalsIndices.AddNormal(XbimVector3D normal)
         {
             Normals.Add(normal);
         }
@@ -371,16 +371,16 @@ namespace Xbim.ModelGeometry.Scene
             get { return TriangleIndices.Count; }
         }
 
-        IList<Point3D> IXbimMeshGeometry3D.Positions
+        IEnumerable<XbimPoint3D> IXbimMeshGeometry3D.Positions
         {
             get { return Positions; }
-            set { Positions = new List<Point3D>(value); }
+            set { Positions = new List<XbimPoint3D>(value); }
         }
 
-        IList<Vector3D> IXbimMeshGeometry3D.Normals
+        IEnumerable<XbimVector3D> IXbimMeshGeometry3D.Normals
         {
             get { return Normals; } 
-            set { Normals = new List<Vector3D>(value); }
+            set { Normals = new List<XbimVector3D>(value); }
         }
        
 
@@ -405,8 +405,8 @@ namespace Xbim.ModelGeometry.Scene
         /// </summary>
         /// <param name="geometryMeshData"></param>
         public void Append(XbimGeometryData geometryMeshData)
-        { 
-            Matrix3D transform = new Matrix3D().FromArray(geometryMeshData.TransformData);
+        {
+            XbimMatrix3D transform = XbimMatrix3D.FromArray(geometryMeshData.TransformData);
             if (geometryMeshData.GeometryType == XbimGeometryType.TriangulatedMesh)
             {
                 XbimTriangulatedModelStream strm = new XbimTriangulatedModelStream(geometryMeshData.ShapeData);
@@ -417,7 +417,7 @@ namespace Xbim.ModelGeometry.Scene
             }
             else if (geometryMeshData.GeometryType == XbimGeometryType.BoundingBox)
             {
-                Rect3D r3d = new Rect3D().FromArray(geometryMeshData.ShapeData);
+                XbimRect3D r3d = XbimRect3D.FromArray(geometryMeshData.ShapeData);
                 this.Add(XbimMeshGeometry3D.MakeBoundingBox(r3d, transform), geometryMeshData.IfcProductLabel, IfcMetaData.GetType(geometryMeshData.IfcTypeId));
             }
             else

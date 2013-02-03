@@ -29,7 +29,7 @@ namespace Xbim.Ifc2x3.GeometricModelResource
     ///   The circular disk may, optionally, have a central hole, in this case the resulting solid has a through hole, 
     ///   or, an internal void when the directrix forms a close curve.
     /// </summary>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcSweptDiskSolid : IfcSolidModel
     {
         #region Fields

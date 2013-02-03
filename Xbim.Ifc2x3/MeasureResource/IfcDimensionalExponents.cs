@@ -23,7 +23,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc2x3.MeasureResource
 {
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcDimensionalExponents : IPersistIfcEntity, ISupportChangeNotification, INotifyPropertyChanged,
                                            INotifyPropertyChanging
     {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Xbim.Ifc2x3;
+using Xbim.Ifc2x3.Kernel;
 using Xbim.Ifc2x3.ProductExtension;
 
 namespace Xbim.IO
@@ -41,7 +42,7 @@ namespace Xbim.IO
         public Dictionary<string, XbimGeometryHandleCollection> FilterByBuildingElementTypes()
         {
             Dictionary<string, XbimGeometryHandleCollection> result = new Dictionary<string, XbimGeometryHandleCollection>();
-            IfcType baseType = IfcMetaData.IfcType(typeof(IfcBuildingElement));
+            IfcType baseType = IfcMetaData.IfcType(typeof(IfcProduct));
             foreach (var subType in baseType.NonAbstractSubTypes)
             {
                 short ifcTypeId = IfcMetaData.IfcTypeId(subType);

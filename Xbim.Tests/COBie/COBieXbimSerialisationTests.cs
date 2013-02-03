@@ -22,6 +22,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using Xbim.Common.Exceptions;
 using System.Windows.Media.Media3D;
+using Xbim.Common.Geometry;
 
 namespace Xbim.Tests.COBie
 {
@@ -191,8 +192,8 @@ namespace Xbim.Tests.COBie
             //add everything that may have a representation
             graph.AddProducts(toDraw); //load the products as we will be accessing their geometry
 
-            ConcurrentDictionary<int, Tuple<IXbimGeometryModel, Matrix3D, IfcProduct>> mappedModels = new ConcurrentDictionary<int, Tuple<IXbimGeometryModel, Matrix3D, IfcProduct>>();
-            ConcurrentQueue<Tuple<IXbimGeometryModel, Matrix3D, IfcProduct>> mapRefs = new ConcurrentQueue<Tuple<IXbimGeometryModel, Matrix3D, IfcProduct>>();
+            ConcurrentDictionary<int, Tuple<IXbimGeometryModel, XbimMatrix3D, IfcProduct>> mappedModels = new ConcurrentDictionary<int, Tuple<IXbimGeometryModel, XbimMatrix3D, IfcProduct>>();
+            ConcurrentQueue<Tuple<IXbimGeometryModel, XbimMatrix3D, IfcProduct>> mapRefs = new ConcurrentQueue<Tuple<IXbimGeometryModel, XbimMatrix3D, IfcProduct>>();
             ConcurrentDictionary<int, int[]> written = new ConcurrentDictionary<int, int[]>();
 
             int tally = 0;
@@ -212,10 +213,10 @@ namespace Xbim.Tests.COBie
                         IXbimGeometryModel geomModel = XbimGeometryModel.CreateFrom(product, maps, false, lod, false);
                         if (geomModel != null)  //it has geometry
                         {
-                            Matrix3D m3d = node.WorldMatrix();
+                            XbimMatrix3D m3d = node.WorldMatrix();
                             if (geomModel is XbimMap) //do not process maps now
                             {
-                                Tuple<IXbimGeometryModel, Matrix3D, IfcProduct> toAdd = new Tuple<IXbimGeometryModel, Matrix3D, IfcProduct>(geomModel, m3d, product);
+                                Tuple<IXbimGeometryModel, XbimMatrix3D, IfcProduct> toAdd = new Tuple<IXbimGeometryModel, XbimMatrix3D, IfcProduct>(geomModel, m3d, product);
                                 if (!mappedModels.TryAdd(geomModel.RepresentationLabel, toAdd)) //get unique rep
                                     mapRefs.Enqueue(toAdd); //add ref
                             }
@@ -227,7 +228,7 @@ namespace Xbim.Tests.COBie
                                 XbimLazyDBTransaction transaction = geomTable.BeginLazyTransaction();
                                 if (written.TryGetValue(geomModel.RepresentationLabel, out geomIds))
                                 {
-                                    byte[] matrix = Matrix3DExtensions.ToArray(m3d, true);
+                                    byte[] matrix = m3d.ToArray(true);
                                     short? typeId = IfcMetaData.IfcTypeId(product);
                                     foreach (var geomId in geomIds)
                                     {
@@ -237,9 +238,9 @@ namespace Xbim.Tests.COBie
                                 else
                                 {
                                     List<XbimTriangulatedModel> tm = geomModel.Mesh(true);
-                                    XbimBoundingBox bb = geomModel.GetBoundingBox(true);
+                                    Xbim.ModelGeometry.XbimBoundingBox bb = geomModel.GetBoundingBox(true);
 
-                                    byte[] matrix = Matrix3DExtensions.ToArray(m3d, true);
+                                    byte[] matrix = m3d.ToArray(true);
                                     short? typeId = IfcMetaData.IfcTypeId(product);
 
                                     geomIds = new int[tm.Count + 1];
@@ -285,11 +286,11 @@ namespace Xbim.Tests.COBie
                  );
                 // Debug.WriteLine(tally);
                 //now sort out maps again in parallel
-                Parallel.ForEach<KeyValuePair<int, Tuple<IXbimGeometryModel, Matrix3D, IfcProduct>>>(mappedModels, map =>
+                Parallel.ForEach<KeyValuePair<int, Tuple<IXbimGeometryModel, XbimMatrix3D, IfcProduct>>>(mappedModels, map =>
                 //  foreach (var map in mappedModels)
                 {
                     IXbimGeometryModel geomModel = map.Value.Item1;
-                    Matrix3D m3d = map.Value.Item2;
+                    XbimMatrix3D m3d = map.Value.Item2;
                     IfcProduct product = map.Value.Item3;
 
                     //have we already written it?
@@ -297,7 +298,7 @@ namespace Xbim.Tests.COBie
                     if (written.TryGetValue(geomModel.RepresentationLabel, out writtenGeomids))
                     {
                         //make maps
-                        Tuple<IXbimGeometryModel, Matrix3D, IfcProduct> toAdd = new Tuple<IXbimGeometryModel, Matrix3D, IfcProduct>(geomModel, m3d, product);
+                        Tuple<IXbimGeometryModel, XbimMatrix3D, IfcProduct> toAdd = new Tuple<IXbimGeometryModel, XbimMatrix3D, IfcProduct>(geomModel, m3d, product);
                         mapRefs.Enqueue(toAdd); //add ref
                     }
                     else
@@ -321,7 +322,7 @@ namespace Xbim.Tests.COBie
                 foreach (var map in mapRefs) //don't do this in parallel to avoid database thrashing as it is very fast
                 {
                     IXbimGeometryModel geomModel = map.Item1;
-                    Matrix3D m3d = map.Item2;
+                    XbimMatrix3D m3d = map.Item2;
                     IfcProduct product = map.Item3;
                     int[] geomIds;
                     if (!written.TryGetValue(geomModel.RepresentationLabel, out geomIds))
@@ -332,7 +333,7 @@ namespace Xbim.Tests.COBie
                     else
                     {
 
-                        byte[] matrix = Matrix3DExtensions.ToArray(m3d, true);
+                        byte[] matrix = m3d.ToArray(true);
                         short? typeId = IfcMetaData.IfcTypeId(product);
                         foreach (var geomId in geomIds)
                         {
@@ -372,11 +373,11 @@ namespace Xbim.Tests.COBie
             }
         }
 
-        private static void WriteGeometry(XbimModel model, ConcurrentDictionary<int, int[]> written, IXbimGeometryModel geomModel, Matrix3D m3d, IfcProduct product)
+        private static void WriteGeometry(XbimModel model, ConcurrentDictionary<int, int[]> written, IXbimGeometryModel geomModel, XbimMatrix3D m3d, IfcProduct product)
         {
             List<XbimTriangulatedModel> tm = geomModel.Mesh(true);
-            XbimBoundingBox bb = geomModel.GetBoundingBox(true);
-            byte[] matrix = Matrix3DExtensions.ToArray(m3d, true);
+            Xbim.ModelGeometry.XbimBoundingBox bb = geomModel.GetBoundingBox(true);
+            byte[] matrix = m3d.ToArray(true);
             short? typeId = IfcMetaData.IfcTypeId(product);
             XbimGeometryCursor geomTable = model.GetGeometryTable();
 

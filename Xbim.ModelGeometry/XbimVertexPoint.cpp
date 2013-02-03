@@ -29,10 +29,10 @@ namespace Xbim
 
 		}
 
-		System::Windows::Media::Media3D::Point3D XbimVertexPoint::Point3D::get() 
+		XbimPoint3D XbimVertexPoint::Point3D::get() 
 		{
 			gp_Pnt p = BRep_Tool::Pnt(*pVertex);
-			return  System::Windows::Media::Media3D::Point3D(p.X(),p.Y(),p.Z());
+			return  XbimPoint3D(p.X(),p.Y(),p.Z());
 
 		}
 

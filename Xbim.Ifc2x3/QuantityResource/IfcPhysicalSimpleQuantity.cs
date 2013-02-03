@@ -31,7 +31,7 @@ namespace Xbim.Ifc2x3.QuantityResource
     ///   HISTORY New entity in IFC Release 2x2 Addendum 1. 
     ///   IFC2x2 ADDENDUM 1 CHANGE The abstract entity IfcPhysicalSimpleQuantity has been added. Upward compatibility for file based exchange is guaranteed.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public abstract class IfcPhysicalSimpleQuantity : IfcPhysicalQuantity
     {
         #region Fields
