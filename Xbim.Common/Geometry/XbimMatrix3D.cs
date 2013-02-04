@@ -11,26 +11,234 @@ namespace Xbim.Common.Geometry
     {
         #region members
 
-        private static XbimMatrix3D _identity = new XbimMatrix3D(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
-        public Single M11;
-        public Single M12;
-        public Single M13;
-        public Single M14;
-        public Single M21;
-        public Single M22;
-        public Single M23;
-        public Single M24;
-        public Single M31;
-        public Single M32;
-        public Single M33;
-        public Single M34;
-        public Single OffsetX;
-        public Single OffsetY;
-        public Single OffsetZ;
-        public Single M44;
+        private static readonly XbimMatrix3D _identity;
+        private Single _m11;
+        private Single _m12;
+        private Single _m13;
+        private Single _m14;
+        private Single _m21;
+        private Single _m22;
+        private Single _m23;
+        private Single _m24;
+        private Single _m31;
+        private Single _m32;
+        private Single _m33;
+        private Single _m34;
+        private Single _offsetX;
+        private Single _offsetY;
+        private Single _offsetZ;
+        private Single _m44;
         private const Single FLOAT_EPSILON = 0.000001f;
+        private bool _isNotDefaultInitialised;
 
+
+        public Single M11
+        {
+            get
+            {
+                if(!_isNotDefaultInitialised) this = _identity;
+                return _m11;
+            }
+            set
+            {
+                if (!_isNotDefaultInitialised) this = _identity;
+                this._m11 = value;
+            }
+        }
+        public Single M12
+        {
+            get
+            {
+                return _m12;
+            }
+            set
+            {
+                if (!_isNotDefaultInitialised) this = _identity;
+                this._m12 = value;
+            }
+        }
+        public Single M13
+        {
+            get
+            {
+                return _m13;
+            }
+            set
+            {
+                if (!_isNotDefaultInitialised) this = _identity;
+                this._m13 = value;
+            }
+        }
+        public Single M14
+        {
+            get
+            {
+                return _m14;
+            }
+            set
+            {
+                if (!_isNotDefaultInitialised) this = _identity;
+                this._m14 = value;
+            }
+        }
+        public Single M21
+        {
+            get
+            {
+                return _m21;
+            }
+            set
+            {
+                if (!_isNotDefaultInitialised) this = _identity;
+                this._m21 = value;
+            }
+        }
+        public Single M22
+        {
+            get
+            {
+                if (!_isNotDefaultInitialised) this = _identity;
+                return _m22;
+            }
+            set
+            {
+                if (!_isNotDefaultInitialised) this = _identity;
+                this._m22 = value;
+            }
+        }
+        public Single M23
+        {
+            get
+            {
+                return _m23;
+            }
+            set
+            {
+                if (!_isNotDefaultInitialised) this = _identity;
+                this._m23 = value;
+            }
+        }
+        public Single M24
+        {
+            get
+            {
+                return _m24;
+            }
+            set
+            {
+                if (!_isNotDefaultInitialised) this = _identity;
+                this._m24 = value;
+            }
+        }
+        public Single M31
+        {
+            get
+            {
+                return _m31;
+            }
+            set
+            {
+                if (!_isNotDefaultInitialised) this = _identity;
+                this._m31 = value;
+            }
+        }
+        public Single M32
+        {
+            get
+            {
+                return _m32;
+            }
+            set
+            {
+                if (!_isNotDefaultInitialised) this = _identity;
+                this._m32 = value;
+            }
+        }
+        public Single M33
+        {
+            get
+            {
+                if (!_isNotDefaultInitialised) this = _identity;
+                return _m33;
+            }
+            set
+            {
+                if (!_isNotDefaultInitialised) this = _identity;
+                this._m33 = value;
+            }
+        }
+        public Single M34
+        {
+            get
+            {
+                return _m34;
+            }
+            set
+            {
+                if (!_isNotDefaultInitialised) this = _identity;
+                this._m34 = value;
+            }
+        }
+        public Single OffsetX
+        {
+            get
+            {
+                if (!_isNotDefaultInitialised) this = _identity;
+                return _offsetX;
+            }
+            set
+            {
+                if (!_isNotDefaultInitialised) this = _identity;
+                this._offsetX = value;
+            }
+        }
+        public Single OffsetY
+        {
+            get
+            {
+                if (!_isNotDefaultInitialised) this = _identity;
+                return _offsetY;
+            }
+            set
+            {
+                if (!_isNotDefaultInitialised) this = _identity;
+                this._offsetY = value;
+            }
+        }
+        public Single OffsetZ
+        {
+            get
+            {
+                if (!_isNotDefaultInitialised) this = _identity;
+                return _offsetZ;
+            }
+            set
+            {
+                if (!_isNotDefaultInitialised) this = _identity;
+                this._offsetZ = value;
+            }
+        }
+        public Single M44
+        {
+            get
+            {
+                if (!_isNotDefaultInitialised) this = _identity;
+                return _m44;
+            }
+            set
+            {
+                if (!_isNotDefaultInitialised) this = _identity;
+                this._m44 = value;
+            }
+        }
+       
         #endregion
+
+        static XbimMatrix3D()
+        {
+            _identity = new XbimMatrix3D(1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0);
+            _identity._isNotDefaultInitialised = true;
+        }
 
         public static XbimMatrix3D Identity
         {
@@ -44,32 +252,38 @@ namespace Xbim.Common.Geometry
         {
             get
             {
-                return XbimMatrix3D.Equal(this, _identity);
+                if (!_isNotDefaultInitialised)
+                {
+                    this = _identity;
+                    return true;
+                }
+                else return XbimMatrix3D.Equal(this, _identity);
             }
         }
-
+      
         /// <summary>
         /// Creates a new instance of a XbimMatrix3D, initializing it with the given arguments
         /// </summary>
         public XbimMatrix3D(Single m00, Single m01, Single m02, Single m03, Single m10, Single m11, Single m12, Single m13, Single m20, Single m21, Single m22, Single m23, Single m30, Single m31, Single m32, Single m33)
         {    
               
-            this.M11 = m00;
-            this.M12 = m01;
-            this.M13 = m02;
-            this.M14 = m03;
-            this.M21 = m10;
-            this.M22 = m11;
-            this.M23 = m12;
-            this.M24 = m13;
-            this.M31 = m20;
-            this.M32 = m21;
-            this.M33 = m22;
-            this.M34 = m23;
-            this.OffsetX = m30;
-            this.OffsetY = m31;
-            this.OffsetZ = m32;
-            this.M44 = m33;
+            _m11 = m00;
+            _m12 = m01;
+            _m13 = m02;
+            _m14 = m03;
+            _m21 = m10;
+            _m22 = m11;
+            _m23 = m12;
+            _m24 = m13;
+            _m31 = m20;
+            _m32 = m21;
+            _m33 = m22;
+            _m34 = m23;
+            _offsetX = m30;
+            _offsetY = m31;
+            _offsetZ = m32;
+            _m44 = m33;
+             _isNotDefaultInitialised=true;
         }
         /// <summary>
         /// Initialises with doubles, there is a possible loss of data as this matrix uses floats internally
@@ -93,22 +307,23 @@ namespace Xbim.Common.Geometry
         public XbimMatrix3D(double m00, double m01, double m02, double m03, double m10, double m11, double m12, double m13, double m20, double m21, double m22, double m23, double m30, double m31, double m32, double m33)
         {
 
-            this.M11 = (float)m00;
-            this.M12 = (float)m01;
-            this.M13 = (float)m02;
-            this.M14 = (float)m03;
-            this.M21 = (float)m10;
-            this.M22 = (float)m11;
-            this.M23 = (float)m12;
-            this.M24 = (float)m13;
-            this.M31 = (float)m20;
-            this.M32 = (float)m21;
-            this.M33 = (float)m22;
-            this.M34 = (float)m23;
-            this.OffsetX = (float)m30;
-            this.OffsetY = (float)m31;
-            this.OffsetZ = (float)m32;
-            this.M44 = (float)m33;
+            _m11 = (float)m00;
+            _m12 = (float)m01;
+            _m13 = (float)m02;
+            _m14 = (float)m03;
+            _m21 = (float)m10;
+            _m22 = (float)m11;
+            _m23 = (float)m12;
+            _m24 = (float)m13;
+            _m31 = (float)m20;
+            _m32 = (float)m21;
+            _m33 = (float)m22;
+            _m34 = (float)m23;
+            _offsetX = (float)m30;
+            _offsetY = (float)m31;
+            _offsetZ = (float)m32;
+            _m44 = (float)m33;
+            _isNotDefaultInitialised = true;
         }
 
         public static XbimMatrix3D FromArray(byte[] array, bool useDouble = true)
@@ -197,66 +412,34 @@ namespace Xbim.Common.Geometry
         /// <param name="mat">mat First operand</param>
         /// <param name="mat2">mat2 Second operand</param>
         /// <returns>dest if specified, mat otherwise</returns>
-        public static XbimMatrix3D Multiply(XbimMatrix3D mat, XbimMatrix3D mat2)
+        public static XbimMatrix3D Multiply(XbimMatrix3D mat1, XbimMatrix3D mat2)
         {
-            XbimMatrix3D dest = new XbimMatrix3D();
+            if (mat1.IsIdentity)
+            {
+                return mat2;
+            }
+            else if (mat2.IsIdentity)
+            {
+                return mat1;
+            }
+            else
+            return new XbimMatrix3D((((mat1._m11 * mat2._m11) + (mat1._m12 * mat2._m21)) + (mat1._m13 * mat2._m31)) + (mat1._m14 * mat2._offsetX),
+          (((mat1._m11 * mat2._m12) + (mat1._m12 * mat2._m22)) + (mat1._m13 * mat2._m32)) + (mat1._m14 * mat2._offsetY),
+          (((mat1._m11 * mat2._m13) + (mat1._m12 * mat2._m23)) + (mat1._m13 * mat2._m33)) + (mat1._m14 * mat2._offsetZ),
+          (((mat1._m11 * mat2._m14) + (mat1._m12 * mat2._m24)) + (mat1._m13 * mat2._m34)) + (mat1._m14 * mat2._m44),
+          (((mat1._m21 * mat2._m11) + (mat1._m22 * mat2._m21)) + (mat1._m23 * mat2._m31)) + (mat1._m24 * mat2._offsetX),
+          (((mat1._m21 * mat2._m12) + (mat1._m22 * mat2._m22)) + (mat1._m23 * mat2._m32)) + (mat1._m24 * mat2._offsetY),
+          (((mat1._m21 * mat2._m13) + (mat1._m22 * mat2._m23)) + (mat1._m23 * mat2._m33)) + (mat1._m24 * mat2._offsetZ),
+          (((mat1._m21 * mat2._m14) + (mat1._m22 * mat2._m24)) + (mat1._m23 * mat2._m34)) + (mat1._m24 * mat2._m44),
+          (((mat1._m31 * mat2._m11) + (mat1._m32 * mat2._m21)) + (mat1._m33 * mat2._m31)) + (mat1._m34 * mat2._offsetX),
+          (((mat1._m31 * mat2._m12) + (mat1._m32 * mat2._m22)) + (mat1._m33 * mat2._m32)) + (mat1._m34 * mat2._offsetY),
+          (((mat1._m31 * mat2._m13) + (mat1._m32 * mat2._m23)) + (mat1._m33 * mat2._m33)) + (mat1._m34 * mat2._offsetZ),
+          (((mat1._m31 * mat2._m14) + (mat1._m32 * mat2._m24)) + (mat1._m33 * mat2._m34)) + (mat1._m34 * mat2._m44),
+          (((mat1._offsetX * mat2._m11) + (mat1._offsetY * mat2._m21)) + (mat1._offsetZ * mat2._m31)) + (mat1._m44 * mat2._offsetX),
+          (((mat1._offsetX * mat2._m12) + (mat1._offsetY * mat2._m22)) + (mat1._offsetZ * mat2._m32)) + (mat1._m44 * mat2._offsetY),
+          (((mat1._offsetX * mat2._m13) + (mat1._offsetY * mat2._m23)) + (mat1._offsetZ * mat2._m33)) + (mat1._m44 * mat2._offsetZ),
+          (((mat1._offsetX * mat2._m14) + (mat1._offsetY * mat2._m24)) + (mat1._offsetZ * mat2._m34)) + (mat1._m44 * mat2._m44));
 
-            // Cache the matrix values (makes for huge speed increases!)
-            var a00 = mat.M11;
-            var a01 = mat.M12;
-            var a02 = mat.M13;
-            var a03 = mat.M14;
-            var a10 = mat.M21;
-            var a11 = mat.M22;
-            var a12 = mat.M23;
-            var a13 = mat.M24;
-            var a20 = mat.M31;
-            var a21 = mat.M32;
-            var a22 = mat.M33;
-            var a23 = mat.M34;
-            var a30 = mat.OffsetX;
-            var a31 = mat.OffsetY;
-            var a32 = mat.OffsetZ;
-            var a33 = mat.M44;
-
-            // Cache only the current line of the second matrix
-            var b0 = mat2.M11;
-            var b1 = mat2.M12;
-            var b2 = mat2.M13;
-            var b3 = mat2.M14;
-            dest.M11 = b0 * a00 + b1 * a10 + b2 * a20 + b3 * a30;
-            dest.M12 = b0 * a01 + b1 * a11 + b2 * a21 + b3 * a31;
-            dest.M13 = b0 * a02 + b1 * a12 + b2 * a22 + b3 * a32;
-            dest.M14 = b0 * a03 + b1 * a13 + b2 * a23 + b3 * a33;
-
-            b0 = mat2.M21;
-            b1 = mat2.M22;
-            b2 = mat2.M23;
-            b3 = mat2.M24;
-            dest.M21 = b0 * a00 + b1 * a10 + b2 * a20 + b3 * a30;
-            dest.M22 = b0 * a01 + b1 * a11 + b2 * a21 + b3 * a31;
-            dest.M23 = b0 * a02 + b1 * a12 + b2 * a22 + b3 * a32;
-            dest.M24 = b0 * a03 + b1 * a13 + b2 * a23 + b3 * a33;
-
-            b0 = mat2.M31;
-            b1 = mat2.M32;
-            b2 = mat2.M33;
-            b3 = mat2.M34;
-            dest.M31 = b0 * a00 + b1 * a10 + b2 * a20 + b3 * a30;
-            dest.M32 = b0 * a01 + b1 * a11 + b2 * a21 + b3 * a31;
-            dest.M33 = b0 * a02 + b1 * a12 + b2 * a22 + b3 * a32;
-            dest.M34 = b0 * a03 + b1 * a13 + b2 * a23 + b3 * a33;
-
-            b0 = mat2.OffsetX;
-            b1 = mat2.OffsetY;
-            b2 = mat2.OffsetZ;
-            b3 = mat2.M44;
-            dest.OffsetX = b0 * a00 + b1 * a10 + b2 * a20 + b3 * a30;
-            dest.OffsetY = b0 * a01 + b1 * a11 + b2 * a21 + b3 * a31;
-            dest.OffsetZ = b0 * a02 + b1 * a12 + b2 * a22 + b3 * a32;
-            dest.M44 = b0 * a03 + b1 * a13 + b2 * a23 + b3 * a33;
-
-            return dest;
         }
         /// <summary>
         /// Compares two matrices for equality within a certain margin of error

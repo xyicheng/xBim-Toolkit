@@ -631,6 +631,7 @@ namespace Xbim.Presentation
        
         private void DrawLayer(XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial> layer)
         {
+            
             //move it to the visual element
             layer.Show();
             GeometryModel3D m3d = (WpfMeshGeometry3D)layer.Visible;
@@ -660,7 +661,7 @@ namespace Xbim.Presentation
 
                 XbimScene<WpfMeshGeometry3D, WpfMaterial> scene = BuildScene(refModel.Model);
                 scenes.Add(scene);
-                DrawScene(scene);
+                //DrawScene(scene);
             }
         }
 
@@ -685,9 +686,12 @@ namespace Xbim.Presentation
                     processed++;
                     int progress = Convert.ToInt32(100.0 * processed / total);
                 }
-                scene.Add(layer);
-                this.Dispatcher.BeginInvoke( new Action(() => { DrawLayer(layer); }),System.Windows.Threading.DispatcherPriority.Background);
 
+                this.Dispatcher.BeginInvoke(new Action(() => { DrawLayer(layer); }), System.Windows.Threading.DispatcherPriority.Background);
+                lock (scene)
+                {
+                    scene.Add(layer);
+                }
             }
             );
             return scene;
