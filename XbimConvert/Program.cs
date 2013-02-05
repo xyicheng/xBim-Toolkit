@@ -149,10 +149,8 @@ namespace XbimConvert
                 opts.MaxDegreeOfParallelism = 16;
                
                 double deflection = 4;// model.GetModelFactors.DeflectionTolerance;
-              //  Parallel.ForEach<TransformNode>(graph.ProductNodes.Values, opts, node => //go over every node that represents a product
-              //
-                
-                foreach (var node in graph.ProductNodes.Values)
+                Parallel.ForEach<TransformNode>(graph.ProductNodes.Values, opts, node => //go over every node that represents a product
+               // foreach (var node in graph.ProductNodes.Values)
                 {
                     IfcProduct product = node.Product(model);
                     try
@@ -232,7 +230,7 @@ namespace XbimConvert
                         Logger.Warn(message, e1);
                     }
                 }
-            //   );
+               );
                // Debug.WriteLine(tally);
                 //now sort out maps again in parallel
                // Parallel.ForEach<KeyValuePair<int,Tuple<IXbimGeometryModel, XbimMatrix3D, IfcProduct>> >(mappedModels,opts, map =>
@@ -265,7 +263,7 @@ namespace XbimConvert
                         }
                     }
                 }
-              //  );
+                );
                 XbimGeometryCursor geomMapTable = model.GetGeometryTable();
                 XbimLazyDBTransaction mapTrans = geomMapTable.BeginLazyTransaction();
                 foreach(var map in mapRefs) //don't do this in parallel to avoid database thrashing as it is very fast
