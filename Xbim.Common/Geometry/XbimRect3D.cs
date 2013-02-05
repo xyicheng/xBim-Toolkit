@@ -9,43 +9,81 @@ namespace Xbim.Common.Geometry
     public struct XbimRect3D
     {
 
+        private static readonly XbimRect3D _empty;
+        private float _x;
+        private float _y;
+        private float _z;
+        private float _sizeX;
+        private float _sizeY;
+        private float _sizeZ;
 
-        public XbimPoint3D Location;
-        public float SizeX ; 
-        public float SizeZ ;
-        public float SizeY;
 
+        public float SizeX
+        {
+            get { return _sizeX; }
+            set { _sizeX = value; }
+        }
+
+
+        public float SizeY
+        {
+            get { return _sizeY; }
+            set { _sizeY = value; }
+        }
+        
+        public float SizeZ
+        {
+            get { return _sizeZ; }
+            set { _sizeZ = value; }
+        }
+      
+
+        public XbimPoint3D Location
+        {
+            get
+            {
+                return new XbimPoint3D(_x, _y, _z);
+            }
+            set
+            {
+                this._x = value.X;
+                this._y = value.Y;
+                this._z = value.Z;
+            }
+        }
+        
+        
         public float X
         {
             get
             {
-                return Location.X;
+                return _x;
             }
             set
             {
-                Location.X = value;
+                _x = value;
             }
         }
         public float Y
         {
             get
             {
-                return Location.Y;
+                return _y;
             }
             set
             {
-                Location.Y = value;
+                _y = value;
             }
         }
         public float Z
         {
             get
             {
-                return Location.Z;
+                return _z;
             }
             set
             {
-                Location.Z = value;
+                _z = value;
             }
         }
 
@@ -59,18 +97,37 @@ namespace Xbim.Common.Geometry
 
         public XbimRect3D(float x, float y, float z, float sizeX, float sizeY, float sizeZ)
         {
-            Location = new XbimPoint3D(x, y, z);
-            SizeX = sizeX;
-            SizeY = sizeY;
-            SizeZ = sizeZ;
+            _x = x;
+            _y = y;
+            _z = z;
+            _sizeX = sizeX;
+            _sizeY = sizeY;
+            _sizeZ = sizeZ;
+        }
+
+        public XbimRect3D(XbimPoint3D p1, XbimPoint3D p2)
+        {
+            this._x = Math.Min(p1.X, p2.X);
+            this._y = Math.Min(p1.Y, p2.Y);
+            this._z = Math.Min(p1.Z, p2.Z);
+            this._sizeX = Math.Max(p1.X, p2.X) - this._x;
+            this._sizeY = Math.Max(p1.Y, p2.Y) - this._y;
+            this._sizeZ = Math.Max(p1.Z, p2.Z) - this._z;
+        }
+
+        static  XbimRect3D()
+        {
+            _empty = new XbimRect3D { _x = float.PositiveInfinity, _y = float.PositiveInfinity, _z = float.PositiveInfinity, _sizeX = float.NegativeInfinity, _sizeY = float.NegativeInfinity, _sizeZ = float.NegativeInfinity };
         }
 
         public XbimRect3D(XbimPoint3D highpt)
         {
-            Location = highpt;
-            SizeX = (float)0.0;
-            SizeY = (float)0.0;
-            SizeZ = (float)0.0;
+            _x = highpt.X;
+            _y = highpt.Y;
+            _z = highpt.Z;
+            _sizeX = (float)0.0;
+            _sizeY = (float)0.0;
+            _sizeZ = (float)0.0;
         }
         /// <summary>
         /// Reinitialises the rectangle 3d from the byte array
@@ -166,7 +223,7 @@ namespace Xbim.Common.Geometry
 
         public void Union(XbimPoint3D highpt)
         {
-            Union(new XbimRect3D(highpt));
+            Union(new XbimRect3D(highpt, highpt));
         }
     }
 }

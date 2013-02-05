@@ -32,7 +32,13 @@ namespace Xbim.ModelGeometry.Scene
             get { return boundingBox; }
             set { boundingBox = value; }
         }
-       
+
+        public void CalculateBoundingBox()
+        {
+
+        }
+
+
         /// <summary>
         /// The colour map for this scene
         /// </summary>

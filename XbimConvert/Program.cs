@@ -150,7 +150,7 @@ namespace XbimConvert
                
                 double deflection = 4;// model.GetModelFactors.DeflectionTolerance;
                 Parallel.ForEach<TransformNode>(graph.ProductNodes.Values, opts, node => //go over every node that represents a product
-               // foreach (var node in graph.ProductNodes.Values)
+              //  foreach (var node in graph.ProductNodes.Values)
                 {
                     IfcProduct product = node.Product(model);
                     try
@@ -233,8 +233,8 @@ namespace XbimConvert
                );
                // Debug.WriteLine(tally);
                 //now sort out maps again in parallel
-               // Parallel.ForEach<KeyValuePair<int,Tuple<IXbimGeometryModel, XbimMatrix3D, IfcProduct>> >(mappedModels,opts, map =>
-                foreach (var map in mappedModels)
+                Parallel.ForEach<KeyValuePair<int,Tuple<IXbimGeometryModel, XbimMatrix3D, IfcProduct>> >(mappedModels,opts, map =>
+                //foreach (var map in mappedModels)
                 {
                     IXbimGeometryModel geomModel=map.Value.Item1;
                     XbimMatrix3D m3d =  map.Value.Item2;
