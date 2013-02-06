@@ -157,7 +157,7 @@ namespace XbimXplorer
                 model.Open(_temporaryXbimFileName, XbimDBAccess.ReadWrite);
                 model.GenerateGeometry(worker.ReportProgress);
                 model.Close();
-                model.Open(_temporaryXbimFileName, XbimDBAccess.Read, worker.ReportProgress);
+                model.Open(_temporaryXbimFileName, XbimDBAccess.ReadWrite, worker.ReportProgress);
                 args.Result = model;
                 
             }
@@ -193,7 +193,7 @@ namespace XbimXplorer
             try
             {
                 _currentModelFileName = fileName.ToLower();
-                model.Open(fileName, XbimDBAccess.Read, worker.ReportProgress); //load entities into the model
+                model.Open(fileName, XbimDBAccess.ReadWrite, worker.ReportProgress); //load entities into the model
                 args.Result = model;
             }
             catch (Exception ex)

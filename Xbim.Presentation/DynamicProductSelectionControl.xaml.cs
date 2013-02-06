@@ -258,6 +258,7 @@ public void Execute(IModel model)
             compilerParams.ReferencedAssemblies.Add("System.Xml.Linq.dll");
             compilerParams.ReferencedAssemblies.Add("Xbim.Common.dll");
             compilerParams.ReferencedAssemblies.Add("Xbim.Ifc2x3.dll");
+            compilerParams.ReferencedAssemblies.Add("Xbim.IO.dll");
             compilerParams.ReferencedAssemblies.Add("Xbim.Ifc.Extensions.dll");
 
             //get the code together
@@ -309,6 +310,16 @@ public void Execute(IModel model)
                 }
                 if (miExecute != null)
                 {
+                    XbimModel m = Model as XbimModel;
+                    if (m != null)
+                    {
+                        using (var txn = m.BeginTransaction())
+                        {
+                            miExecute.Invoke(o, new object[] { Model });
+                            txn.Commit();
+                        }
+                    }
+                    else
                         miExecute.Invoke(o, new object[] { Model });
                 }
             }
