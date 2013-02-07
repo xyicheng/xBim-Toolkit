@@ -380,14 +380,12 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                     {
                         rotationX = (rotationX - lastRotationX) * -1; //switch rotation direction to match original direction on extracted xls sheet
                         Quaternion q = new Quaternion(new Vector3D(1, 0, 0), rotationX);
-                        //matrixRotation3D.Rotate(q);
                         matrixRotation3D.RotatePrepend(q);
                     }
                     if (double.TryParse(row.ElevationalRotation, out rotationY))
                     {
                         rotationY = (rotationY - lastRotationY) * -1; //switch rotation direction to match original direction on extracted xls sheet, 
                         Quaternion q = new Quaternion(new Vector3D(0, 1, 0), rotationY);
-                        //matrixRotation3D.Rotate(q);
                         matrixRotation3D.RotatePrepend(q);
                     }
                     if (double.TryParse(row.ClockwiseRotation, out rotationZ))
@@ -395,7 +393,6 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                         rotationZ = rotationZ - lastRotationZ;
                         rotationZ = 360.0 - rotationZ; //if anticlockwise rotation required, see TransformedBoundingBox structure for why
                         Quaternion q = new Quaternion(new Vector3D(0, 0, 1), rotationZ);
-                        //matrixRotation3D.Rotate(q);
                         matrixRotation3D.RotatePrepend(q);
                     }
 
@@ -441,11 +438,11 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         }
 
         /// <summary>
-        /// Builds a windows Matrix3D from an ObjectPlacement
+        /// Builds a XbimMatrix3D from an ObjectPlacement
         /// Conversion fo c++ function CartesianTransform::ConvertMatrix3D from CartesianTransform.cpp
         /// </summary>
         /// <param name="objPlacement">IfcObjectPlacement object</param>
-        /// <returns>Matrix3D</returns>
+        /// <returns>XbimMatrix3D</returns>
 		protected XbimMatrix3D ConvertMatrix3D(IfcObjectPlacement objPlacement)
 		{
 			if(objPlacement is IfcLocalPlacement)

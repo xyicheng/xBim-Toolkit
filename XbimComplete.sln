@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 2010
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{B5EDEE8A-69B9-47E5-8455-E1A9A7ED8969}"
 	ProjectSection(SolutionItems) = preProject
 		Xbim.ModelGeometry\Version.rc = Xbim.ModelGeometry\Version.rc
@@ -66,8 +66,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.COBie.Client", "XBim.C
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeExamples", "CodeExamples\CodeExamples.csproj", "{9FD894A7-6637-4BF0-A0EA-D654CEB0E234}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "COBie.Xbim.Tester", "COBie.Xbim.Tester\COBie.Xbim.Tester.csproj", "{823FEDA5-EEE3-4583-82CE-E51CE88BCF44}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "glMatrix", "glMatrix\glMatrix.csproj", "{4B8F7099-19FA-4510-9698-CCFD89B5D4D2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.Ifc2x3", "Xbim.Ifc2x3\Xbim.Ifc2x3.csproj", "{5D4C907D-1293-4E5F-9642-D0862AE4741C}"
@@ -76,7 +74,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.Ifc2x3.Extensions", "X
 EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 19
+		SccNumberOfProjects = 18
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://tfs.codeplex.com/tfs/tfs13
 		SccLocalPath0 = .
@@ -129,20 +127,16 @@ Global
 		SccProjectTopLevelParentUniqueName14 = XbimComplete.sln
 		SccProjectName14 = CodeExamples
 		SccLocalPath14 = CodeExamples
-		SccProjectUniqueName15 = COBie.Xbim.Tester\\COBie.Xbim.Tester.csproj
+		SccProjectUniqueName15 = glMatrix\\glMatrix.csproj
 		SccProjectTopLevelParentUniqueName15 = XbimComplete.sln
-		SccProjectName15 = COBie.Xbim.Tester
-		SccLocalPath15 = COBie.Xbim.Tester
-		SccProjectUniqueName16 = glMatrix\\glMatrix.csproj
-		SccProjectTopLevelParentUniqueName16 = XbimComplete.sln
-		SccProjectName16 = glMatrix
-		SccLocalPath16 = glMatrix
-		SccProjectUniqueName17 = Xbim.Ifc2x3\\Xbim.Ifc2x3.csproj
-		SccProjectName17 = Xbim.Ifc2x3
-		SccLocalPath17 = Xbim.Ifc2x3
-		SccProjectUniqueName18 = Xbim.Ifc.Extensions\\Xbim.Ifc2x3.Extensions.csproj
-		SccProjectName18 = Xbim.Ifc.Extensions
-		SccLocalPath18 = Xbim.Ifc.Extensions
+		SccProjectName15 = glMatrix
+		SccLocalPath15 = glMatrix
+		SccProjectUniqueName16 = Xbim.Ifc2x3\\Xbim.Ifc2x3.csproj
+		SccProjectName16 = Xbim.Ifc2x3
+		SccLocalPath16 = Xbim.Ifc2x3
+		SccProjectUniqueName17 = Xbim.Ifc.Extensions\\Xbim.Ifc2x3.Extensions.csproj
+		SccProjectName17 = Xbim.Ifc.Extensions
+		SccLocalPath17 = Xbim.Ifc.Extensions
 	EndGlobalSection
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = XbimComplete.vsmdi
@@ -313,15 +307,6 @@ Global
 		{9FD894A7-6637-4BF0-A0EA-D654CEB0E234}.Release|x64.Build.0 = Release|x64
 		{9FD894A7-6637-4BF0-A0EA-D654CEB0E234}.Release|x86.ActiveCfg = Release|x86
 		{9FD894A7-6637-4BF0-A0EA-D654CEB0E234}.Release|x86.Build.0 = Release|x86
-		{823FEDA5-EEE3-4583-82CE-E51CE88BCF44}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{823FEDA5-EEE3-4583-82CE-E51CE88BCF44}.Debug|x64.ActiveCfg = Debug|x86
-		{823FEDA5-EEE3-4583-82CE-E51CE88BCF44}.Debug|x86.ActiveCfg = Debug|x86
-		{823FEDA5-EEE3-4583-82CE-E51CE88BCF44}.Debug|x86.Build.0 = Debug|x86
-		{823FEDA5-EEE3-4583-82CE-E51CE88BCF44}.Release|Any CPU.ActiveCfg = Release|x86
-		{823FEDA5-EEE3-4583-82CE-E51CE88BCF44}.Release|x64.ActiveCfg = Release|x64
-		{823FEDA5-EEE3-4583-82CE-E51CE88BCF44}.Release|x64.Build.0 = Release|x64
-		{823FEDA5-EEE3-4583-82CE-E51CE88BCF44}.Release|x86.ActiveCfg = Release|x86
-		{823FEDA5-EEE3-4583-82CE-E51CE88BCF44}.Release|x86.Build.0 = Release|x86
 		{4B8F7099-19FA-4510-9698-CCFD89B5D4D2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{4B8F7099-19FA-4510-9698-CCFD89B5D4D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4B8F7099-19FA-4510-9698-CCFD89B5D4D2}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -367,7 +352,6 @@ Global
 		{5B6AC153-AC56-4B01-8734-88EAB805A6DB} = {0DA6263B-5A69-401E-99D0-391644EF4709}
 		{FB5A1829-7B34-4DE9-94A9-AF3AD36320BB} = {0DA6263B-5A69-401E-99D0-391644EF4709}
 		{9FD894A7-6637-4BF0-A0EA-D654CEB0E234} = {0DA6263B-5A69-401E-99D0-391644EF4709}
-		{823FEDA5-EEE3-4583-82CE-E51CE88BCF44} = {0DA6263B-5A69-401E-99D0-391644EF4709}
 		{8729CDD1-B493-48EC-A867-61ABAF3E93D2} = {7ECDCF15-95BB-4D2B-8C0D-8615D6E3BAB1}
 		{6EF22FB8-7048-4E6A-9B2F-AC2570A998A9} = {7ECDCF15-95BB-4D2B-8C0D-8615D6E3BAB1}
 		{10A2F674-DB37-41FF-AB71-9D54C8F0A5B6} = {E9E301F2-FE7D-4410-B88D-F83D684A8E62}

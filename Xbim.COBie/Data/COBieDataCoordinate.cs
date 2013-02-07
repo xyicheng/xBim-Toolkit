@@ -13,7 +13,7 @@ using Xbim.Ifc2x3.GeometricConstraintResource;
 using Xbim.Ifc2x3.RepresentationResource;
 using Xbim.Ifc2x3.GeometricModelResource;
 using Xbim.Ifc2x3.ProfileResource;
-using WVector = System.Windows.Vector;
+//using WVector = System.Windows.Vector;
 
 using Xbim.ModelGeometry.Scene;
 using Xbim.ModelGeometry;

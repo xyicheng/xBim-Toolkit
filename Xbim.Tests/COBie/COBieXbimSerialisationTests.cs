@@ -51,6 +51,27 @@ namespace Xbim.Tests.COBie
         private const string DLLFiles = @"C:\Xbim\XbimFramework\Dev\COBie\Xbim.ModelGeometry\OpenCascade\Win32\Bin";
 
         [TestMethod]
+        public void Clinic_COBieBinary()
+        {
+            COBieWorkbook workBook;
+            Stopwatch sWatch = new Stopwatch();
+            sWatch.Start();
+            COBieBinaryDeserialiser deserialiser = new COBieBinaryDeserialiser(BinaryFile);
+            workBook = deserialiser.Deserialise();
+            sWatch.Stop();
+            Console.WriteLine("Deserialise Time = {0}ms", sWatch.Elapsed.Milliseconds);
+
+            string output = "Output_" + SourceBinaryFile;
+            output = Root + @"\" + output;
+            sWatch.Reset();
+            sWatch.Start();
+            COBieBinarySerialiser serialiser = new COBieBinarySerialiser(output);
+            serialiser.Serialise(workBook);
+            sWatch.Stop();
+            Console.WriteLine("Serialise Time = {0}ms", sWatch.Elapsed.Milliseconds);
+        }
+
+        [TestMethod]
         public void Contacts_XBimSerialise()
         {
             COBieWorkbook workBook;
