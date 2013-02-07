@@ -168,7 +168,7 @@ namespace Xbim.ModelGeometry.Scene
         /// </summary>
         public void ShowAll()
         {
-           
+            Hidden.MoveTo(Visible);
             foreach (var subLayer in subLayerMap)
             {
                 subLayer.ShowAll();

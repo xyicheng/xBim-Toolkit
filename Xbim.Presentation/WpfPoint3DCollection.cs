@@ -10,7 +10,7 @@ namespace Xbim.Presentation
     public class WpfPoint3DCollectionEnumerator : IEnumerator<XbimPoint3D>
     {
         Point3DCollection wpfPoints;
-        int currentPos;
+        int currentPos=-1;
         
         public WpfPoint3DCollectionEnumerator(Point3DCollection wpfPoints)
         {
@@ -55,7 +55,7 @@ namespace Xbim.Presentation
 
         public void Reset()
         {
-            currentPos = 0;
+            currentPos = -1;
         }
     }
 

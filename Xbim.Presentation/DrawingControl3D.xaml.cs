@@ -680,7 +680,7 @@ namespace Xbim.Presentation
                 XbimGeometryHandleCollection layerHandles = layerContent.Value;
                 IEnumerable<XbimGeometryData> geomColl = model.GetGeometryData(layerHandles);
                 XbimColour colour = scene.LayerColourMap[elementTypeName];
-                XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial> layer = new XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial>(colour);              
+                XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial> layer = new XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial>(colour) { Name = elementTypeName };              
                 //add all content initially into the hidden field
                 foreach (var geomData in geomColl)
                 {
@@ -778,58 +778,14 @@ namespace Xbim.Presentation
         /// </summary>
         public void Hide<T>()
         {
-            //scene.HideAll();
-        //   Type typeToHide = typeof(T);
-        //    foreach (var v3d in Opaques.Children.OfType<ModelVisual3D>().Concat(Transparents.Children.OfType<ModelVisual3D>()))
-        //    {
-        //        GeometryModel3D g3d = v3d.Content as GeometryModel3D;
-        //        if (g3d != null)
-        //        {
-        //            XbimMeshLayer layer = g3d.GetValue(TagProperty) as XbimMeshLayer;
-        //            if (layer != null && layer.Rendered.Contains<T>())
-        //            {
-        //                MeshGeometry3D m3d = g3d.Geometry as MeshGeometry3D;
-        //                if (m3d != null)
-        //                {
-        //                    XbimMeshFragmentCollection toCopy = level.Excluding<T>();
-        //                    if (toCopy.Count == 0) //just clear whole mesh
-        //                    {
-        //                        g3d.Geometry = null;
-        //                    }
-        //                    else if (toCopy.Count != fragments.Count) //WE HAVE SOMETHING TO REMOVE
-        //                    {
-        //                        List<XbimMeshGeometry3D> toSave;
-        //                        XbimMeshGeometry3D copy = m3d.Copy(toCopy, out toSave);
-        //                        MeshGeometry3D meshgeom = new MeshGeometry3D();
-        //                        meshgeom.Positions = new Point3DCollection(copy.Positions);
-        //                        meshgeom.Normals = new Vector3DCollection(copy.Normals);
-        //                        meshgeom.TriangleIndices = new Int32Collection(copy.TriangleIndices);
-        //                        meshgeom.Freeze();
-        //                        g3d.Geometry = meshgeom;
-        //                    }
-        //                }
-        //            }
-        //        }
-        //    }
-
-        //    //foreach (var vis in  _items.Values)
-        //    //{
-        //    //    object h = vis.GetValue(TagProperty);
-        //    //    if (h is XbimInstanceHandle)
-        //    //    {
-
-        //    //        if (typeToHide.IsAssignableFrom(((XbimInstanceHandle)h).EntityType))
-        //    //        {
-        //    //            ModelVisual3D parent = VisualTreeHelper.GetParent(vis) as ModelVisual3D;
-        //    //            if (parent != null)
-        //    //            {
-        //    //                _hidden.Add(vis, parent);
-        //    //                parent.Children.Remove(vis);
-        //    //            }
-        //    //        }
-        //    //    }
-        //    //}
-        //    //_hiddenTypes.Add(typeToHide);
+            IfcType ifcType = IfcMetaData.IfcType(typeof(T));
+            string toHide = ifcType.Name + ";";
+            foreach (var subType in ifcType.NonAbstractSubTypes)
+                toHide += subType.Name + ";";
+            foreach (var scene in scenes)
+                foreach (var layer in scene.SubLayers) //go over top level layers only
+                    if (toHide.Contains(layer.Name + ";"))
+                        layer.HideAll();
         }
 
         public void Hide(int hideProduct)
@@ -849,8 +805,14 @@ namespace Xbim.Presentation
 
         private void Show<T>()
         {
-           Type typeToShow = typeof(T);
-          // scene.ShowAll(typeToShow.Name);
+            IfcType ifcType = IfcMetaData.IfcType(typeof(T));
+            string toShow = ifcType.Name + ";";
+            foreach (var subType in ifcType.NonAbstractSubTypes)
+                toShow += subType.Name + ";";
+            foreach (var scene in scenes)
+                foreach (var layer in scene.SubLayers) //go over top level layers only
+                    if (toShow.Contains(layer.Name + ";"))
+                        layer.ShowAll();
         }
 
         public void ShowAll()

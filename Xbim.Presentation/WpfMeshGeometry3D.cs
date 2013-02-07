@@ -97,10 +97,11 @@ namespace Xbim.Presentation
             {
                 toMesh.BeginUpdate();
                 
-                toMesh.Positions = this.Positions; 
-                toMesh.Normals = this.Normals; 
-                toMesh.TriangleIndices = this.TriangleIndices; 
-                toMesh.Meshes = this.Meshes; this.meshes.Clear();
+                toMesh.Positions = new List<XbimPoint3D>(this.Positions); 
+                toMesh.Normals = new List<XbimVector3D>(this.Normals); 
+                toMesh.TriangleIndices = new List<int>(this.TriangleIndices);
+
+                toMesh.Meshes = new XbimMeshFragmentCollection(this.Meshes); this.meshes.Clear();
                 WpfMesh.Geometry = new MeshGeometry3D();
                 toMesh.EndUpdate();
             }

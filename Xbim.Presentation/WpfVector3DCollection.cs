@@ -11,7 +11,7 @@ namespace Xbim.Presentation
     public class WpfVector3DCollectionEnumerator : IEnumerator<XbimVector3D>
     {
         Vector3DCollection wpfVectors;
-        int currentPos;
+        int currentPos = -1;
 
         public WpfVector3DCollectionEnumerator(Vector3DCollection wpfVectors)
         {
@@ -56,7 +56,7 @@ namespace Xbim.Presentation
 
         public void Reset()
         {
-            currentPos = 0;
+            currentPos = -1;
         }
     }
 
