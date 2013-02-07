@@ -111,7 +111,10 @@
                 <pt:EnumMenuItem SelectedValue="{Binding Viewport.CameraRotationMode, ElementName=DrawingControl}" Header="CameraRotationMode"/>
                 <pt:EnumMenuItem SelectedValue="{Binding Viewport.CameraMode, ElementName=DrawingControl}" Header="CameraMode" />
             </MenuItem>
-            
+            <MenuItem Header="CoBie">
+                <MenuItem Header="_Export" Click="ExportCoBie" />
+            </MenuItem>
+
         </Menu>
        
         <Grid Grid.Row="1">

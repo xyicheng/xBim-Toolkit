@@ -43,6 +43,9 @@ using Xbim.Common.Exceptions;
 using System.Diagnostics;
 using Xbim.Ifc2x3.ActorResource;
 using Xbim.Common.Geometry;
+using Xbim.COBie.Serialisers;
+using Xbim.COBie;
+using Xbim.COBie.Contracts;
 #endregion
 
 namespace XbimXplorer
@@ -421,7 +424,7 @@ namespace XbimXplorer
 
         private void dlg_InsertXbimFile(object sender, CancelEventArgs e)
         {
-            OpenFileDialog dlg = sender as OpenFileDialog;
+             OpenFileDialog dlg = sender as OpenFileDialog;
             if (dlg != null)
             {
                 FileInfo fInfo = new FileInfo(dlg.FileName);
@@ -659,6 +662,51 @@ namespace XbimXplorer
             dlg.Filter = "Xbim Files|*.xbim;*.ifc;*.ifcxml;*.ifczip"; // Filter files by extension 
             dlg.FileOk += new CancelEventHandler(dlg_InsertXbimFile);
             dlg.ShowDialog(this);
+        }
+
+        private void ExportCoBie(object sender, RoutedEventArgs e)
+        {
+
+            string outputFile = Path.ChangeExtension(Model.DatabaseName, ".xls");
+
+            // Build context
+            COBieContext context = new COBieContext();
+            context.TemplateFileName = "COBie-UK-2012-template.xls";
+            context.Model = Model;
+            //set filter option
+
+            //switch (chckBtn.Name)
+            //{
+            //    case "rbDefault":
+            //        break;
+            //    case "rbPickList":
+            //        context.ExcludeFromPickList = true;
+            //        break;
+            //    case "rbNoFilters":
+            //        context.Exclude.Clear();
+            //        break;
+            //    default:
+            //        break;
+            //}
+            //set the UI language to get correct resource file for template
+            //if (Path.GetFileName(parameters.TemplateFile).Contains("-UK-"))
+            //{
+            try
+            {
+                System.Globalization.CultureInfo ci = new System.Globalization.CultureInfo("en-GB");
+                System.Threading.Thread.CurrentThread.CurrentUICulture = ci;
+            }
+            catch (Exception)
+            {
+                //to nothing Default culture will still be used
+
+            }
+            context.TemplateCulture = "en-GB";
+            COBieBuilder builder = new COBieBuilder(context);
+            ICOBieSerialiser serialiser = new COBieXLSSerialiser(outputFile, context.TemplateFileName);
+            builder.Export(serialiser);
+            Process.Start(outputFile);
+
         }
 
     }

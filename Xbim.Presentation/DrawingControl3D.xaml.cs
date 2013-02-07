@@ -80,8 +80,8 @@ namespace Xbim.Presentation
        
         protected RayMeshGeometry3DHitTestResult _hitResult;
         protected Material _selectedVisualMaterial;
-        private XbimRect3D _boundingBox;
-       
+        private XbimRect3D modelBounds;
+        private XbimRect3D viewBounds;
         private event ProgressChangedEventHandler _progressChanged;
 
         public event ProgressChangedEventHandler ProgressChanged
@@ -560,6 +560,8 @@ namespace Xbim.Presentation
             _hitResult = null;
             Opaques.Children.Clear();
             Transparents.Children.Clear();
+            modelBounds = XbimRect3D.Empty;
+            viewBounds = new XbimRect3D(0, 0, 0, 10000, 10000, 5000);    
             scenes = new List<XbimScene<WpfMeshGeometry3D, WpfMaterial>>();
             Viewport.ResetCamera();
             PropertiesBillBoard.IsRendering = false;
@@ -592,17 +594,22 @@ namespace Xbim.Presentation
             ClearGraphics();
             if (model == null) return; //nothing to do
             model.RefencedModels.CollectionChanged += RefencedModels_CollectionChanged;
+            //build the geometric scene and render as we go
+            XbimScene<WpfMeshGeometry3D, WpfMaterial> scene = BuildScene(model);
             
+            scenes.Add(scene);
+            if (!modelBounds.IsEmpty) //we have  geometry so create view box
+                viewBounds = modelBounds;
 
+            //adjust for the units of the model
             double metre =  model.GetModelFactors.OneMetre;
+            Viewport.DefaultCamera.NearPlaneDistance = 0.125 * metre;
+            Viewport.Camera.NearPlaneDistance = 0.125 * metre;
 
-            //get bounding box for the whole building
-            _boundingBox = GetModelBounds(model);
+            //get bounding box for the whole scene and adapt gridlines to the model units
 
-            double metresWide = _boundingBox.SizeY;
-            double metresLong = _boundingBox.SizeX;
-
-           
+            double metresWide = viewBounds.SizeY;
+            double metresLong = viewBounds.SizeX;
             long gridWidth = Convert.ToInt64(metresWide / (metre * 10));
             long gridLen = Convert.ToInt64(metresLong / (metre * 10));
             if(gridWidth>10 || gridLen>10) 
@@ -614,18 +621,12 @@ namespace Xbim.Presentation
            
             this.GridLines.MajorDistance = metre * 10;
             this.GridLines.Thickness = 0.01 * metre;
-            XbimPoint3D p3d = _boundingBox.Centroid();
-            TranslateTransform3D t3d = new TranslateTransform3D(p3d.X, p3d.Y, _boundingBox.Z);
-
+            XbimPoint3D p3d = viewBounds.Centroid();
+            TranslateTransform3D t3d = new TranslateTransform3D(p3d.X, p3d.Y, viewBounds.Z);
             this.GridLines.Transform = t3d;
 
+            //make sure whole scene is visible
             ViewHome();
-            Viewport.DefaultCamera.NearPlaneDistance = 0.125 * metre;
-            Viewport.Camera.NearPlaneDistance = 0.125 * metre;
-
-            XbimScene<WpfMeshGeometry3D, WpfMaterial> scene = BuildScene(model); 
-            scenes.Add(scene);
-            
         }
 
        
@@ -634,6 +635,7 @@ namespace Xbim.Presentation
             
             //move it to the visual element
             layer.Show();
+            
             GeometryModel3D m3d = (WpfMeshGeometry3D)layer.Visible;
             m3d.SetValue(TagProperty, layer.Name);
             //sort out materials and bind
@@ -669,7 +671,7 @@ namespace Xbim.Presentation
         {
             XbimScene<WpfMeshGeometry3D, WpfMaterial> scene = new XbimScene<WpfMeshGeometry3D, WpfMaterial>(model);
             XbimGeometryHandleCollection handles = new XbimGeometryHandleCollection(model.GetGeometryHandles()
-                                                       .Exclude(IfcEntityNameEnum.IFCFEATUREELEMENT));
+                                                       .Exclude(IfcEntityNameEnum.IFCFEATUREELEMENT|IfcEntityNameEnum.IFCSPACE));
             double total = handles.Count;
             double processed = 0;
             Parallel.ForEach<KeyValuePair<string,XbimGeometryHandleCollection>>(handles.FilterByBuildingElementTypes(), layerContent =>
@@ -691,6 +693,8 @@ namespace Xbim.Presentation
                 lock (scene)
                 {
                     scene.Add(layer);
+                    if (modelBounds.IsEmpty) modelBounds = layer.BoundingBoxHidden();
+                    else modelBounds.Union(layer.BoundingBoxHidden());
                 }
             }
             );
@@ -862,15 +866,13 @@ namespace Xbim.Presentation
 
         public void ViewHome()
         {
-            XbimPoint3D c = _boundingBox.Centroid();
+            XbimPoint3D c = viewBounds.Centroid();
             Point3D p = new Point3D(c.X, c.Y, c.Z);
             Viewport.Camera = Viewport.DefaultCamera;
-            CameraHelper.LookAt(Viewport.Camera, p, new Vector3D(-100, 100, -30), new Vector3D(0, 0, 1), 0);
-            Rect3D r3d = new Rect3D(_boundingBox.X, _boundingBox.Y,_boundingBox.Z,_boundingBox.SizeX, _boundingBox.SizeY, _boundingBox.SizeZ);
+            CameraHelper.LookAt(Viewport.Camera, p, new Vector3D(-1, 1, -0.5), new Vector3D(0, 0, 1), 0);
+            Rect3D r3d = new Rect3D(viewBounds.X, viewBounds.Y, viewBounds.Z, viewBounds.SizeX, viewBounds.SizeY, viewBounds.SizeZ);
             Viewport.ZoomExtents(r3d);
-            double biggest = Math.Max(Math.Max(_boundingBox.SizeX, _boundingBox.SizeY), _boundingBox.SizeZ);
-            Viewport.Camera.FarPlaneDistance = biggest * 100;
-
+            
         }
 
 

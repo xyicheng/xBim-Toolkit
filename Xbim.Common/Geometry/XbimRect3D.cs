@@ -10,6 +10,12 @@ namespace Xbim.Common.Geometry
     {
 
         private static readonly XbimRect3D _empty;
+
+        public static XbimRect3D Empty
+        {
+            get { return XbimRect3D._empty; }
+        } 
+
         private float _x;
         private float _y;
         private float _z;
@@ -212,9 +218,9 @@ namespace Xbim.Common.Geometry
                 float numX = Math.Min(X, bb.X);
                 float numY = Math.Min(Y, bb.Y);
                 float numZ = Math.Min(Z, bb.Z);
-                SizeX = Math.Max((float)(X + SizeX), (float)(bb.X + bb.SizeX)) - numX;
-                SizeY = Math.Max((float)(Y + SizeY), (float)(bb.Y + bb.SizeY)) - numY;
-                SizeZ = Math.Max((float)(Z + SizeZ), (float)(bb.Z + bb.SizeZ)) - numZ;
+                _sizeX = Math.Max((float)(X + _sizeX), (float)(bb.X + bb._sizeX)) - numX;
+                _sizeY = Math.Max((float)(Y + _sizeY), (float)(bb.Y + bb._sizeY)) - numY;
+                _sizeZ = Math.Max((float)(Z + _sizeZ), (float)(bb.Z + bb._sizeZ)) - numZ;
                 X = numX;
                 Y = numY;
                 Z = numZ;

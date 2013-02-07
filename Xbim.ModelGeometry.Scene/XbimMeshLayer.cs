@@ -22,21 +22,60 @@ namespace Xbim.ModelGeometry.Scene
         string name;
         XbimMeshLayerCollection<TVISIBLE, TMATERIAL> subLayerMap = new XbimMeshLayerCollection<TVISIBLE, TMATERIAL>();
         XbimColourMap layerColourMap;
-        XbimRect3D boundingBox;
+        XbimRect3D boundingBoxVisible = XbimRect3D.Empty;
+        XbimRect3D boundingBoxHidden = XbimRect3D.Empty;
 
         /// <summary>
-        /// Bounding box, aligned to the XYZ axis, containing all points in this mesh
+        /// Bounding box of all visible elements, aligned to the XYZ axis, containing all points in this mesh
         /// </summary>
-        public XbimRect3D BoundingBox
+        /// <param name="forceRecalculation">if true the bounding box is recalculated, if false the previous cached version is returned</param>
+        /// <returns></returns>
+        public XbimRect3D BoundingBoxVisible(bool forceRecalculation = false)
         {
-            get { return boundingBox; }
-            set { boundingBox = value; }
+            if (forceRecalculation || boundingBoxVisible.IsEmpty)
+            {
+                bool first = true;
+                foreach (var pos in Hidden.Positions)
+                {
+                    if (first)
+                    {
+                        boundingBoxVisible = new XbimRect3D(pos);
+                        first = false;
+                    }
+                    else
+                        boundingBoxVisible.Union(pos);
+
+                }
+            }
+            return boundingBoxVisible; 
         }
 
-        public void CalculateBoundingBox()
+        /// <summary>
+        /// Bounding box of all hidden elements, aligned to the XYZ axis, containing all points in this mesh
+        /// </summary>
+        /// <param name="forceRecalculation">if true the bounding box is recalculated, if false the previous cached version is returned</param>
+        /// <returns></returns>
+        public XbimRect3D BoundingBoxHidden(bool forceRecalculation = false)
         {
+            if (forceRecalculation || boundingBoxHidden.IsEmpty)
+            {
+                bool first = true;
+                foreach (var pos in Hidden.Positions)
+                {
+                    if (first)
+                    {
+                        boundingBoxHidden = new XbimRect3D(pos);
+                        first = false;
+                    }
+                    else
+                        boundingBoxHidden.Union(pos);
 
+                }
+            }
+            return boundingBoxHidden; 
         }
+
+     
 
 
         /// <summary>
