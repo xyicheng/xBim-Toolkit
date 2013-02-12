@@ -107,8 +107,8 @@ namespace Xbim.COBie
                                         typeof(IfcStairFlight),
                                         typeof(IfcWall),
                                         typeof(IfcWallStandardCase),
-                                        typeof(IfcFlowFitting),
-                                        typeof(IfcFlowSegment),
+                                        //typeof(IfcFlowFitting),
+                                        //typeof(IfcFlowSegment),
                                         typeof(IfcElementAssembly),
                                         typeof(IfcBuildingElementPart),
                                         typeof(IfcFastener),
@@ -158,16 +158,16 @@ namespace Xbim.COBie
                                                             typeof(IfcSlabType),
                                                             typeof(IfcStairFlightType),
                                                             typeof(IfcWallType),
-                                                            typeof(IfcDuctFittingType ),
+                                                            //typeof(IfcDuctFittingType ),
                                                             typeof(IfcJunctionBoxType ),
                                                             typeof(IfcPipeFittingType),
                                                             typeof(IfcCableCarrierSegmentType),
                                                             typeof(IfcCableSegmentType),
-                                                            typeof(IfcDuctSegmentType),
+                                                            //typeof(IfcDuctSegmentType),
                                                             typeof(IfcPipeSegmentType),
                                                             typeof(IfcFastenerType),
-                                                            typeof(IfcSpaceType),
-                                                            typeof(IfcBuildingElementProxyType)
+                                                            typeof(IfcSpaceType)
+                                                            //typeof(IfcBuildingElementProxyType)
                                                             //typeof(Xbim.Ifc.SharedBldgElements.IfcRampType), //IFC2x Edition 4.
                                                             //typeof(IfcStairType), //IFC2x Edition 4.
                                                              };
