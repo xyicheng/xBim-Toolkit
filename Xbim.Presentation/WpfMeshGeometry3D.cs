@@ -14,6 +14,20 @@ namespace Xbim.Presentation
     {
         public GeometryModel3D WpfMesh;
         XbimMeshFragmentCollection meshes = new XbimMeshFragmentCollection();
+
+        public WpfMeshGeometry3D()
+        {
+
+        }
+        public WpfMeshGeometry3D(IXbimMeshGeometry3D mesh)
+        {
+            WpfMesh = new GeometryModel3D();
+            WpfMesh.Geometry = new MeshGeometry3D();
+            Mesh.Positions = new WpfPoint3DCollection(mesh.Positions);
+            Mesh.Normals = new WpfVector3DCollection(mesh.Normals);
+            Mesh.TriangleIndices = new Int32Collection (mesh.TriangleIndices);
+            meshes = new XbimMeshFragmentCollection(mesh.Meshes);
+        }
         
         public static implicit operator GeometryModel3D(WpfMeshGeometry3D mesh)
         {
@@ -22,7 +36,7 @@ namespace Xbim.Presentation
              return mesh.WpfMesh;
         }
 
-        private MeshGeometry3D Mesh
+        public MeshGeometry3D Mesh
         {
             get
             { 
@@ -56,10 +70,10 @@ namespace Xbim.Presentation
         }
 
         /// <summary>
-        /// Do not use this rather create a XbimMeshGeometry3D first and construc this from it, appending WPF collections is slow
+        /// Do not use this rather create a XbimMeshGeometry3D first and construct this from it, appending WPF collections is slow
         /// </summary>
         /// <param name="geometryMeshData"></param>
-        public void Append(XbimGeometryData geometryMeshData)
+        public bool Add(XbimGeometryData geometryMeshData)
         {
             throw new NotImplementedException();
         }
@@ -125,6 +139,54 @@ namespace Xbim.Presentation
         public GeometryModel3D ToGeometryModel3D()
         {
             return WpfMesh;
+        }
+
+        public MeshGeometry3D GetWpfMeshGeometry3D(XbimMeshFragment frag)
+        {
+            MeshGeometry3D m3d = new MeshGeometry3D();
+            var m = Mesh;
+            if (m != null)
+            {
+                for (int i = frag.StartPosition; i <= frag.EndPosition; i++)
+                {
+                    Point3D p = m.Positions[i];
+                    Vector3D v = m.Normals[i];
+                    m3d.Positions.Add(p);
+                    m3d.Normals.Add(v);
+                }
+                for (int i = frag.StartTriangleIndex; i <= frag.EndTriangleIndex; i++)
+                {
+                    m3d.TriangleIndices.Add(m.TriangleIndices[i] - frag.StartPosition);
+                }
+            }
+            return m3d;
+        }
+
+        public IXbimMeshGeometry3D GetMeshGeometry3D(XbimMeshFragment frag)
+        { XbimMeshGeometry3D m3d = new XbimMeshGeometry3D();
+            var m = Mesh;
+            if (m != null)
+            {
+                for (int i = frag.StartPosition; i <= frag.EndPosition; i++)
+                {
+                    Point3D p = m.Positions[i];
+                    Vector3D v = m.Normals[i];
+                    m3d.Positions.Add(new XbimPoint3D (p.X,p.Y,p.Z));
+                    m3d.Normals.Add(new XbimVector3D(v.X, v.Y, v.Z));
+                }
+                for (int i = frag.StartTriangleIndex; i <= frag.EndTriangleIndex; i++)
+                {
+                    m3d.TriangleIndices.Add(m.TriangleIndices[i] - frag.StartPosition);
+                }
+                m3d.Meshes.Add(new XbimMeshFragment(0,0)
+                {
+                    EndPosition=m3d.PositionCount-1, 
+                    StartTriangleIndex = frag.StartTriangleIndex-m3d.PositionCount-1,
+                    EndTriangleIndex = frag.EndTriangleIndex-m3d.PositionCount-1
+                });
+            }
+            return m3d;
+           
         }
     }
 }

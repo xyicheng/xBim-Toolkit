@@ -43,5 +43,21 @@ namespace Xbim.ModelGeometry.Scene
             results.AddRange(this.Where(frag => !(typeof(T).IsAssignableFrom(frag.EntityType))));
             return results;
         }
+
+        /// <summary>
+        /// returns the mesh fragment that contains the specified vertex index
+        /// an empty fragment is returned if one is not found
+        /// uses binary search for speed
+        /// </summary>
+        /// <param name="vertexIndex"></param>
+        /// <returns></returns>
+        public XbimMeshFragment Find(int vertexIndex)
+        {
+            int found = this.BinarySearch(new XbimMeshFragment(vertexIndex,0), new XbimMeshComparer());
+            if(found >=0)
+                return this[found];
+            else
+                return default(XbimMeshFragment);
+        }
     }
 }

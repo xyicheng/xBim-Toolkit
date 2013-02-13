@@ -19,7 +19,7 @@ namespace Xbim.Presentation
         private bool _isSelected;
         private bool _isExpanded;
 
-        private ObservableCollection<IXbimViewModel> children;
+        private List<IXbimViewModel> children;
 
         public string Name
         {
@@ -51,7 +51,7 @@ namespace Xbim.Presentation
             {
                 if (children == null)
                 {
-                    children = new ObservableCollection<IXbimViewModel>();
+                    children = new List<IXbimViewModel>();
                     IfcSpatialStructureElement space = xbimModel.Instances[spatialContainerLabel] as IfcSpatialStructureElement;
                     foreach (var rel in space.ContainsElements)
                     {

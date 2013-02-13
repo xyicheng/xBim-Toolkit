@@ -433,16 +433,21 @@ namespace Xbim.ModelGeometry.Scene
 		/// <typeparam name="TGeomType"></typeparam>
 		/// <param name="builder"></param>
 		/// <param name="transform"></param>
-		/// <returns>The fragment defining the piece of the mesg built with this operation</returns>
+		/// <returns>The fragment defining the piece of the mesh built with this operation
+        /// If there is no data an empty fragment is returned, if the mesh is goinng to excees the size of a an unsigned short
+        /// then the data is not added and a fragement with zero number of points is returned and 
+        /// a start position that is equal to the length of the mesh. The Entity Label is also sent to int.MinValue</returns>
 		public XbimMeshFragment BuildWithNormals<TGeomType>(TGeomType builder, XbimMatrix3D transform) where TGeomType : IXbimTriangulatesToPositionsNormalsIndices, new()
         {
             _dataStream.Seek(0, SeekOrigin.Begin);
             BinaryReader br = new BinaryReader(_dataStream);
+           
             if (!IsEmpty) // has data 
             {
                 builder.BeginBuild();
-                XbimMeshFragment fragment = new XbimMeshFragment(builder.PositionCount,builder.TriangleIndexCount); 
-                BuildWithNormals(builder, br, transform);
+                XbimMeshFragment fragment = new XbimMeshFragment(builder.PositionCount,builder.TriangleIndexCount);
+                if (!BuildWithNormals(builder, br, transform))
+                    fragment.EntityLabel = int.MinValue; //set the entity label to indicate failure
                 fragment.EndPosition = builder.PositionCount-1;
                 fragment.EndTriangleIndex = builder.TriangleIndexCount-1;
                 builder.EndBuild();
@@ -453,11 +458,21 @@ namespace Xbim.ModelGeometry.Scene
         }
 
 
-
-        private void BuildWithNormals<TGeomType>(TGeomType builder, BinaryReader br, XbimMatrix3D transform) where TGeomType : IXbimTriangulatesToPositionsNormalsIndices, new()
+        /// <summary>
+        /// If adding the data to the mesh causes the mesh to exceed the max size of ushort.MaxSize
+        /// the data is not added and false is returned.
+        /// </summary>
+        /// <typeparam name="TGeomType"></typeparam>
+        /// <param name="builder"></param>
+        /// <param name="br"></param>
+        /// <param name="transform"></param>
+        /// <returns></returns>
+        private bool BuildWithNormals<TGeomType>(TGeomType builder, BinaryReader br, XbimMatrix3D transform) where TGeomType : IXbimTriangulatesToPositionsNormalsIndices, new()
 		{
            
 			uint numPositions = br.ReadUInt32();
+            if (builder.PositionCount> 0 && (builder.PositionCount + numPositions >= ushort.MaxValue)) //we cannot build meshes bigger than this and pass them through to standard graphics buffers
+                return false;        
 			uint numNormals = br.ReadUInt32();
 			uint numUniques = br.ReadUInt32();
 			uint numTriangles = br.ReadUInt32();
@@ -468,16 +483,9 @@ namespace Xbim.ModelGeometry.Scene
 			IndexReader UniquesReader = new IndexReader(numUniques, br);
 
 			float[,] pos = new float[numPositions,3];
-			float[,] nrm;
-			try
-			{
-				nrm = new float[numNormals, 3];
-			}
-			catch (Exception)
-			{
-				return;
-			}
-           
+			float[,] nrm;	
+			nrm = new float[numNormals, 3];
+			
 			// coordinates of positions
 			//
 			for (uint i = 0; i < numPositions; i++)
@@ -547,6 +555,7 @@ namespace Xbim.ModelGeometry.Scene
 				builder.EndPolygon();
 			}
 			builder.EndPolygons();
+            return true;
 		}
 
 		public void BuildPNI<TGeomType>(TGeomType builder) where TGeomType : IXbimTriangulatesToSimplePositionsNormalsIndices, new()

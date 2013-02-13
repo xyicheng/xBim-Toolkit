@@ -103,6 +103,7 @@ namespace Xbim.ModelGeometry.Scene
         /// A mesh that is loaded but not visible on the graphics display
         /// </summary>
         public IXbimMeshGeometry3D Hidden = new XbimMeshGeometry3D();
+      
         public string Name
         {
             get { return name; }
@@ -143,6 +144,11 @@ namespace Xbim.ModelGeometry.Scene
         {
             Style = new XbimTexture().CreateTexture(style);
            
+        }
+
+        public XbimMeshLayer(XbimTexture xbimTexture)
+        {
+            Style = xbimTexture;
         }
 
         public static implicit operator TVISIBLE(XbimMeshLayer<TVISIBLE, TMATERIAL> layer)
@@ -210,11 +216,30 @@ namespace Xbim.ModelGeometry.Scene
                 }
                 else
                     subLayer = subLayerMap[layerName];
-                subLayer.Hidden.Append(geomData);
+                
+                subLayer.AddToHidden(geomData);
             }
             else
             {
-                Hidden.Append(geomData); //just add it to the main layer
+                if(!Hidden.Add(geomData)) //just add it to the main layer, if the main layer is too big split it.
+                {
+                    //try and find a sublayer that is a split of this, i.e. has the same texture
+                    foreach (var sublayer in subLayerMap.Reverse())
+                    {
+                        if (sublayer.Style == this.Style) //FOUND THE LAST ONE WITH THE SAME STYLE
+                        {
+                            if (sublayer.Hidden.Add(geomData)) //try and add the data to this mesh
+                                return; //succeeded so return
+                            else
+                                break; //failed so create a new sub layer and add to that
+                        }
+                    }
+                    //didn't find a layer to add it to so create a new one
+                    XbimMeshLayer<TVISIBLE, TMATERIAL> subLayer = new XbimMeshLayer<TVISIBLE, TMATERIAL>(this.Style);
+                    subLayer.Name = this.Name + "-" + subLayerMap.Count;
+                    subLayerMap.Add(subLayer);
+                    subLayer.Hidden.Add(geomData); //this should always pass as it is a new mesh and ifc geom rarely exceeds max mesh size, graphics cards will truncate anyway
+                }
             }
         }
 
@@ -231,6 +256,71 @@ namespace Xbim.ModelGeometry.Scene
         {
             if (!Material.IsCreated) Material.CreateMaterial(Style);
             Hidden.MoveTo(Visible);
+        }
+
+       /// <summary>
+        ///  Returns a collection of fragments for this layer, does not traverse sub layers or hidden layers unless arguments are true
+       /// </summary>
+       /// <param name="entityLabel">the ifc entity label</param>
+       /// <param name="includeHidden">Include fragments in hidden layers</param>
+       /// <param name="includSublayers">Recurse into sub layers</param>
+       /// <returns></returns>
+        internal IEnumerable<XbimMeshFragment> GetMeshFragments(int entityLabel, bool includeHidden = false, bool includSublayers = false)
+        {
+            foreach (var mf in Visible.Meshes.Where(m => m.EntityLabel == entityLabel))
+                yield return mf;
+            if (includeHidden)
+                foreach (var mf in Hidden.Meshes.Where(m => m.EntityLabel == entityLabel))
+                    yield return mf;
+            if (includSublayers)
+                foreach (var layer in SubLayers)
+                    foreach (var mf in layer.GetMeshFragments(entityLabel, includeHidden, includSublayers))
+                        yield return mf;
+        }
+
+        public IXbimMeshGeometry3D GetVisibleMeshGeometry3D(int entityLabel)
+        {
+            IEnumerable<XbimMeshFragment> fragments = GetMeshFragments(entityLabel); //get all the fragments for this entity in the visible layer
+            int maxSize = fragments.Sum(f => f.PositionCount);
+            XbimMeshGeometry3D geometry = new XbimMeshGeometry3D(maxSize);
+            foreach (var fragment in fragments)
+            {
+                IXbimMeshGeometry3D geom = Visible.GetMeshGeometry3D(fragment);
+                geometry.Add(geom, fragment.EntityLabel, fragment.EntityType);
+            } 
+            return geometry;
+        }
+        /// <summary>
+        /// Returns all the layers including sub layers of this layer
+        /// </summary>
+        public IEnumerable<XbimMeshLayer<TVISIBLE, TMATERIAL>> Layers
+        {
+            get
+            {
+                foreach (var layer in SubLayers)
+                {
+                    yield return layer;
+                    foreach (var subLayer in layer.Layers)
+                    {
+                        yield return subLayer;
+                    }
+                }
+
+            }
+        }
+        /// <summary>
+        /// Resizes the layers so that noe has more than USHORT number of indices
+        /// </summary>
+        public void Balance()
+        {
+            if (Hidden.TriangleIndices.Count >= ushort.MaxValue) //split the layer
+            {
+                System.Diagnostics.Debug.WriteLine("Too big");
+            }
+            foreach (var layer in SubLayers)
+            {
+                layer.Balance();
+            }
         }
     }
 }

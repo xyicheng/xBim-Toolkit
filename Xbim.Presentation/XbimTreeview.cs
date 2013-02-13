@@ -11,6 +11,7 @@ using Xbim.Ifc2x3.Extensions;
 using Xbim.Ifc2x3.ExternalReferenceResource;
 using System.Windows.Controls.Primitives;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace Xbim.Presentation
 {
@@ -40,10 +41,10 @@ namespace Xbim.Presentation
             XbimTreeview view = d as XbimTreeview;
             if (view != null && e.NewValue is int)
             {
+                view.UnselectAll();
                 int newVal = (int)(e.NewValue);
-                view.Select(newVal);
+                if(newVal>0) view.Select(newVal);
                 return;
-                
            }
         }
 
@@ -158,11 +159,27 @@ namespace Xbim.Presentation
                 }
                 
                 this.HierarchySource = svList;
+                foreach (var child in svList)
+                {
+                    LazyLoadAll(child);
+                }
             }
             else //Load any spatialstructure
             {
             }
         }
+
+        private void LazyLoadAll(IXbimViewModel parent)
+        {
+
+            foreach (var child in parent.Children)
+            {
+                LazyLoadAll(child);
+            }
+            
+        }
+
+
         private void Expand(IXbimViewModel treeitem)
         {
             treeitem.IsExpanded = true;

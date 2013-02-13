@@ -26,6 +26,12 @@ namespace Xbim.ModelGeometry.Scene
         XbimColourMap layerColourMap;
         private XbimModel model;
 
+        public XbimModel Model
+        {
+            get { return model; }
+            set { model = value; }
+        }
+
         /// <summary>
         /// The colour map for this scene
         /// </summary>
@@ -55,15 +61,17 @@ namespace Xbim.ModelGeometry.Scene
 
        
 
-        
+        /// <summary>
+        /// Returns all the layers including sub layers of this scene
+        /// </summary>
         public IEnumerable<XbimMeshLayer<TVISIBLE, TMATERIAL>> Layers
         {
             get
             {
-                foreach (var layer in layers)
+                foreach (var layer in SubLayers)
                 {
                     yield return layer;
-                    foreach (var subLayer in layer.SubLayers)
+                    foreach (var subLayer in layer.Layers)
                     {
                         yield return subLayer;
                     }
@@ -117,8 +125,36 @@ namespace Xbim.ModelGeometry.Scene
             foreach (var layer in layers)
                 layer.ShowAll();
         }
-        
 
-       
+        /// <summary>
+        /// Retrieves all the mesh fragments for the specified entity in this scene
+        /// </summary>
+        /// <param name="entityLabel"></param>
+        /// <returns></returns>
+        public XbimMeshFragmentCollection GetMeshFragments(int entityLabel)
+        {
+            XbimMeshFragmentCollection fragments = new XbimMeshFragmentCollection();
+            foreach (var layer in Layers)
+                fragments.AddRange(layer.GetMeshFragments(entityLabel));
+            return fragments;
+        }
+
+
+
+        public IXbimMeshGeometry3D GetMeshGeometry3D(int entityLabel)
+        {
+            XbimMeshGeometry3D geometry = new XbimMeshGeometry3D();
+            foreach (var layer in Layers)
+                geometry.Add(layer.GetVisibleMeshGeometry3D(entityLabel));
+            return geometry;
+        }
+
+        public void Balance()
+        {
+            foreach (var layer in SubLayers)
+            {
+                layer.Balance();
+            }
+        }
     }
 }

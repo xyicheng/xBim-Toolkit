@@ -15,7 +15,7 @@ namespace Xbim.Presentation
         private IfcProduct product;
         private bool _isSelected;
         private bool _isExpanded;
-        private ObservableCollection<IXbimViewModel> children;
+        private List<IXbimViewModel> children;
 
         public IfcProductModelView(IfcProduct prod)
         { 
@@ -28,7 +28,7 @@ namespace Xbim.Presentation
             {
                 if (children == null)
                 {
-                    children = new ObservableCollection<IXbimViewModel>();
+                    children = new List<IXbimViewModel>();
                     List<IfcRelDecomposes> breakdown = product.IsDecomposedBy.ToList();
                     if (breakdown.Any())
                         foreach (var rel in breakdown)

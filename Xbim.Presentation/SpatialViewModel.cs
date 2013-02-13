@@ -18,7 +18,7 @@ namespace Xbim.Presentation
         int spatialStructureLabel;
         private bool _isSelected;
         private bool _isExpanded;
-        private ObservableCollection<IXbimViewModel> children;
+        private List<IXbimViewModel> children;
 
         public string Name
         {
@@ -52,7 +52,7 @@ namespace Xbim.Presentation
             {
                 if (children == null)
                 {
-                    children = new ObservableCollection<IXbimViewModel>();
+                    children = new List<IXbimViewModel>();
                     IfcObjectDefinition space = xbimModel.Instances[spatialStructureLabel] as IfcObjectDefinition;
                     if (space != null)
                     {

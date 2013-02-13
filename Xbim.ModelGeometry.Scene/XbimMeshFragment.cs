@@ -1,10 +1,24 @@
 ﻿using System;
+
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
 namespace Xbim.ModelGeometry.Scene
 {
+    public class XbimMeshComparer : Comparer<XbimMeshFragment>
+    {
+        public override int Compare(XbimMeshFragment x, XbimMeshFragment y)
+        {
+            if (x.EndPosition < y.StartPosition) //x is less than y
+                return -1;
+            else if (x.StartPosition > y.EndPosition) //x is greater than y
+                return 1;
+            else //x and y overlap
+                return 0;
+        }
+    }
+
     public struct XbimMeshFragment
     {
         public int StartPosition;
@@ -26,15 +40,17 @@ namespace Xbim.ModelGeometry.Scene
         {
             get
             {
-                return StartPosition == EndPosition;
+                return StartPosition >= EndPosition;
             }
         }
+
 
         public bool Contains(int vertexIndex)
         {
             return StartPosition <= vertexIndex && EndPosition >= vertexIndex;
         }
 
+        
 
 
         public int PositionCount 
@@ -43,6 +59,20 @@ namespace Xbim.ModelGeometry.Scene
             {
                 return EndPosition - StartPosition;
             }
+        }
+
+
+        /// <summary>
+        /// Offsets the start of the fragment positions and triangle indices 
+        /// </summary>
+        /// <param name="startPos"></param>
+        internal void Offset(int startPos, int startIndex)
+        {
+            StartPosition += startPos;
+            EndPosition += startPos;
+            StartTriangleIndex += startIndex;
+            EndTriangleIndex += startIndex;
+
         }
     }
 }

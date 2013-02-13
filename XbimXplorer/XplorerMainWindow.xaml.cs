@@ -624,6 +624,7 @@ namespace XbimXplorer
             try
             {
                 XbimModel model = ModelProvider.ObjectInstance as XbimModel;
+                _currentModelFileName = null;
                 if (model != null)
                 {
                     model.Close();

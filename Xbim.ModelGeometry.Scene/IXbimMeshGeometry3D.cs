@@ -15,7 +15,7 @@ namespace Xbim.ModelGeometry.Scene
         XbimMeshFragmentCollection Meshes { get; set; }
       
 
-        void Append(XbimGeometryData geometryMeshData);
+        bool Add(XbimGeometryData geometryMeshData);
 
 
         void MoveTo(IXbimMeshGeometry3D toMesh);
@@ -23,5 +23,11 @@ namespace Xbim.ModelGeometry.Scene
         void BeginUpdate();
 
         void EndUpdate();
+        /// <summary>
+        /// Returns the part of the mesh described in the fragment
+        /// </summary>
+        /// <param name="frag"></param>
+        /// <returns></returns>
+        IXbimMeshGeometry3D GetMeshGeometry3D(XbimMeshFragment frag);
     }
 }

@@ -344,8 +344,8 @@ namespace Xbim.ModelGeometry.Scene
         }
         #endregion
 
-        //adds the content of the toAdd to this
-        public void Add(XbimMeshGeometry3D toAdd, int entityLabel, Type ifcType)
+        //adds the content of the toAdd to this, it is added as a single mesh fragment, any meshes in toAdd are lost
+        public void Add(IXbimMeshGeometry3D toAdd, int entityLabel, Type ifcType)
         {
             int startPosition = Positions.Count;
             XbimMeshFragment fragment = new XbimMeshFragment(startPosition, TriangleIndexCount);
@@ -401,19 +401,24 @@ namespace Xbim.ModelGeometry.Scene
         }
 
         /// <summary>
-        /// Appends a geometry data object to the Mesh
+        /// Appends a geometry data object to the Mesh, returns false if the mesh would become too big and needs splitting
         /// </summary>
         /// <param name="geometryMeshData"></param>
-        public void Append(XbimGeometryData geometryMeshData)
+        public bool Add(XbimGeometryData geometryMeshData)
         {
             XbimMatrix3D transform = XbimMatrix3D.FromArray(geometryMeshData.TransformData);
             if (geometryMeshData.GeometryType == XbimGeometryType.TriangulatedMesh)
             {
                 XbimTriangulatedModelStream strm = new XbimTriangulatedModelStream(geometryMeshData.ShapeData);
                 XbimMeshFragment fragment = strm.BuildWithNormals(this, transform);
-                fragment.EntityLabel = geometryMeshData.IfcProductLabel;
-                fragment.EntityType = IfcMetaData.GetType(geometryMeshData.IfcTypeId);
-                meshes.Add(fragment);
+                if (fragment.IsEmpty && fragment.StartPosition > 0) //nothing was added due to size being exceeded
+                    return false;
+                else //added ok
+                {
+                    fragment.EntityLabel = geometryMeshData.IfcProductLabel;
+                    fragment.EntityType = IfcMetaData.GetType(geometryMeshData.IfcTypeId);
+                    meshes.Add(fragment);
+                }
             }
             else if (geometryMeshData.GeometryType == XbimGeometryType.BoundingBox)
             {
@@ -422,6 +427,7 @@ namespace Xbim.ModelGeometry.Scene
             }
             else
                 throw new XbimException("Illegal geometry type found");
+            return true;
         }
 
         /// <summary>
@@ -450,6 +456,47 @@ namespace Xbim.ModelGeometry.Scene
         public void EndUpdate()
         {
             
+        }
+
+
+        public IXbimMeshGeometry3D GetMeshGeometry3D(XbimMeshFragment frag)
+        {
+            XbimMeshGeometry3D m3d = new XbimMeshGeometry3D();
+            for (int i = frag.StartPosition; i <= frag.EndPosition; i++)
+            {
+                m3d.Positions.Add(this.Positions[i]);
+                m3d.Normals.Add(this.Normals[i]);
+            }
+            for (int i = frag.StartTriangleIndex; i <= frag.EndTriangleIndex; i++)
+            {
+                m3d.TriangleIndices.Add(this.TriangleIndices[i] - frag.StartPosition);
+            }
+            return m3d;
+        }
+
+        /// <summary>
+        /// Adds a geometry mesh to this, includes all mesh fragments
+        /// </summary>
+        /// <param name="geom"></param>
+        public void Add(IXbimMeshGeometry3D geom)
+        {
+            if (geom.Positions.Any()) //if no positions nothing to add
+            {
+                this.BeginUpdate();
+                int startPos = Positions.Count;
+                int startIndices = TriangleIndices.Count;
+                Positions.AddRange(geom.Positions);
+                Normals.AddRange(geom.Normals);
+                foreach (var indices in geom.TriangleIndices)
+                    TriangleIndices.Add(indices + startPos);
+                foreach (var fragment in geom.Meshes)
+                {
+                    fragment.Offset(startPos, startIndices);
+                    Meshes.Add(fragment);
+                }
+
+                this.EndUpdate();
+            }
         }
     }
 }
