@@ -32,7 +32,13 @@ namespace COBie.Xbim.Tester
 
             string sourceFile = _duplexSourceFile;
             string binaryFile = _duplexBinaryFile;
+            string binTest = "C:\\Xbim\\Temp_Export_Vent_Model.xcobie";
+            // Deserialiser into a new workbook.
+            COBieBinaryDeserialiser deserialiser = new COBieBinaryDeserialiser(binTest);
+            COBieWorkbook newBook = deserialiser.Deserialise();
+            newBook.Validate();
 
+            string xxx = "";
             COBieWorkbook workBook;
             if (true) //we want a geometry file (!File.Exists(binaryFile))
             {
