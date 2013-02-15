@@ -20,6 +20,12 @@ namespace Xbim.ModelGeometry.Scene
         public List<XbimVector3D> Normals;
         public List<Int32> TriangleIndices;
 
+        public TriangleType MeshType
+        {
+            get { return _meshType; }
+        }
+        
+
         XbimMeshFragmentCollection meshes = new XbimMeshFragmentCollection();
         List<XbimPoint3D> _points;
         TriangleType _meshType;
@@ -29,6 +35,7 @@ namespace Xbim.ModelGeometry.Scene
         uint _fanStartIndex;
         uint indexOffset;
        
+
 
         public XbimMeshGeometry3D(int size)
         {
