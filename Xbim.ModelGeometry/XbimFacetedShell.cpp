@@ -191,10 +191,10 @@ namespace Xbim
 
 			// END OPENGL TESSELLATION
 
-			unsigned int uiCalcSize = tms.StreamSize();
-			IntPtr BonghiUnManMem = Marshal::AllocHGlobal(uiCalcSize);
+			size_t uiCalcSize = tms.StreamSize();
+			IntPtr BonghiUnManMem = Marshal::AllocHGlobal((int)uiCalcSize);
 			unsigned char* BonghiUnManMemBuf = (unsigned char*)BonghiUnManMem.ToPointer();
-			unsigned int controlSize = tms.StreamTo(BonghiUnManMemBuf);
+			size_t controlSize = tms.StreamTo(BonghiUnManMemBuf);
 
 			if (uiCalcSize != controlSize)
 			{
@@ -202,8 +202,8 @@ namespace Xbim
 				iError++;
 			}
 
-			array<unsigned char>^ BmanagedArray = gcnew array<unsigned char>(uiCalcSize);
-			Marshal::Copy(BonghiUnManMem, BmanagedArray, 0, uiCalcSize);
+			array<unsigned char>^ BmanagedArray = gcnew array<unsigned char>((int)uiCalcSize);
+			Marshal::Copy(BonghiUnManMem, BmanagedArray, 0, (int)uiCalcSize);
 			Marshal::FreeHGlobal(BonghiUnManMem);
 			List<XbimTriangulatedModel^>^list = gcnew List<XbimTriangulatedModel^>();
 			list->Add(gcnew XbimTriangulatedModel(BmanagedArray,this->RepresentationLabel, this->SurfaceStyleLabel));

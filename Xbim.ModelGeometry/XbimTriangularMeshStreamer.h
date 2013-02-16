@@ -53,8 +53,8 @@ struct Float3D
 };
 
 struct UIntegerPair {
-	unsigned int PositionIndex;
-	unsigned int NormalIndex;
+	size_t PositionIndex;
+	size_t NormalIndex;
 
 	bool operator<(const UIntegerPair& A) const
 	{
@@ -79,7 +79,7 @@ struct PolygonInfo {
 	int IndexCount;
 };
 
-typedef std::pair <Float3D,unsigned int> Float3DUInt_Pair;
+typedef std::pair <Float3D,size_t> Float3DUInt_Pair;
 // Class to receive the calls that create the memory stream of the geometry cache files. (CB)
 //
 public class XbimTriangularMeshStreamer
@@ -93,33 +93,33 @@ public:
 	void BeginPolygon(GLenum type);
 	void EndPolygon();
 	void SetNormal(float x, float y, float z);
-	unsigned int WritePoint(float x, float y, float z);
-	void WriteTriangleIndex(unsigned int index);
+	size_t WritePoint(float x, float y, float z);
+	void WriteTriangleIndex(size_t index);
 	void info(char string);
 	void info(int Number);
-	unsigned int StreamSize();
-	unsigned int StreamTo(unsigned char* pStream);
+	size_t StreamSize();
+	size_t StreamTo(unsigned char* pStream);
 private:
 	
 
-	unsigned int getUniquePoint(unsigned int pointIndex, unsigned int normalIndex);
-	int sizeOptimised(unsigned int maxIndex);
-	unsigned int _currentNormalIndex;
-	unsigned int _facePointIndex;
+	size_t getUniquePoint(size_t pointIndex, size_t normalIndex);
+	size_t sizeOptimised(size_t maxIndex);
+	size_t _currentNormalIndex;
+	size_t _facePointIndex;
 
-	std::unordered_map<Float3D,unsigned int> _pointsMap;
+	std::unordered_map<Float3D,size_t> _pointsMap;
 	std::list<Float3D> _points;
 
-	std::unordered_map<Float3D,unsigned int> _normalsMap;
+	std::unordered_map<Float3D,size_t> _normalsMap;
 	std::list<Float3D> _normals;
 
-	std::unordered_map<UIntegerPair,unsigned int> _uniquePNMap;
+	std::unordered_map<UIntegerPair,size_t> _uniquePNMap;
 	std::list<UIntegerPair> _uniquePN;	// unique point and normal combination
 
 	std::list<PolygonInfo> _polygons;	// polygon informations
-	std::list<unsigned int> _indices;	
+	std::list<size_t> _indices;	
 	unsigned int _currentPolygonCount;
-	unsigned int * _faceIndexMap;       // we're removing duplicates for the points; this array contains the mapping of non-optimised to optimised indices for a face
+	size_t * _faceIndexMap;       // we're removing duplicates for the points; this array contains the mapping of non-optimised to optimised indices for a face
 	bool _useFaceIndexMap;
 	int WriteByte(unsigned char* pStream, unsigned int value);
 	int WriteShort(unsigned char* pStream, unsigned int value);
