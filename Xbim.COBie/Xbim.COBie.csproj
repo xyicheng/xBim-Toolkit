@@ -100,6 +100,7 @@
     <Compile Include="COBieCell.cs" />
     <Compile Include="COBieContext.cs" />
     <Compile Include="COBieErrorCollection.cs" />
+    <Compile Include="COBieColumnRelationship.cs" />
     <Compile Include="COBieWorkbook.cs" />
     <Compile Include="Contracts\ICOBieDeserialiser.cs" />
     <Compile Include="Contracts\ICOBieSerialiser.cs" />
@@ -147,7 +148,6 @@
     <Compile Include="Rows\COBieAssemblyRow.cs" />
     <Compile Include="Rows\COBieAttributeRow.cs" />
     <Compile Include="COBieColumn.cs" />
-    <Compile Include="COBieColumnCollection.cs" />
     <Compile Include="Rows\COBieComponentRow.cs" />
     <Compile Include="Rows\COBieConnectionRow.cs" />
     <Compile Include="Rows\COBieContactRow.cs" />

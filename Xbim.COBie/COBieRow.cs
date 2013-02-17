@@ -63,10 +63,9 @@ namespace Xbim.COBie
                 if (cobieColumn != null)
                 {
                     object pVal = cobieColumn.PropertyInfo.GetValue(this, null);
-                    COBieCell thiscell = new COBieCell();
-                    thiscell.CellValue = (pVal != null) ? pVal.ToString() : Constants.DEFAULT_STRING;
-                    thiscell.COBieState = cobieColumn.AttributeState;
-                    thiscell.CobieCol = cobieColumn;
+
+                    string cellValue = (pVal != null) ? pVal.ToString() : Constants.DEFAULT_STRING;
+                    COBieCell thiscell = new COBieCell(cellValue, cobieColumn);
                     return thiscell;
                 }
                 
@@ -93,10 +92,8 @@ namespace Xbim.COBie
                 if (cobieColumn != null)
                 {
                     object pVal = cobieColumn.PropertyInfo.GetValue(this, null);
-                    COBieCell thiscell = new COBieCell();
-                    thiscell.CellValue = (pVal != null) ? pVal.ToString() : Constants.DEFAULT_STRING ;
-                    thiscell.COBieState = cobieColumn.AttributeState;
-                    thiscell.CobieCol = cobieColumn;
+                    string cellValue = (pVal != null) ? pVal.ToString() : Constants.DEFAULT_STRING;
+                    COBieCell thiscell = new COBieCell(cellValue, cobieColumn);
                     return thiscell;
                 }
                 return null;

@@ -66,13 +66,14 @@ namespace Xbim.COBie.Data
                 ProgressIndicator.IncrementAndUpdate();
 
                 COBieFloorRow floor = new COBieFloorRow(floors);
+                string name = ifcBuildingStorey.Name;
                 if (string.IsNullOrEmpty(ifcBuildingStorey.Name))
                 {
                     ifcBuildingStorey.Name = "Name Unknown " + UnknownCount.ToString();
                     UnknownCount++;
                 }
 
-                floor.Name = ifcBuildingStorey.Name.ToString();
+                floor.Name = name;
 
                 floor.CreatedBy = GetTelecomEmailAddress(ifcBuildingStorey.OwnerHistory);
                 floor.CreatedOn = GetCreatedOnDateAsFmtString(ifcBuildingStorey.OwnerHistory);

@@ -96,7 +96,9 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                             else
                             {
 #if DEBUG
-                                if (rowNext != null)
+                                if (rowNext == null)
+                                    Console.WriteLine("Failed to find pair {0} : {1} != {2} : {3} ", row.SheetName, row.RowName, "Null", "Null");
+                                else
                                     Console.WriteLine("Failed to find pair {0} : {1} != {2} : {3} ", row.SheetName, row.RowName, rowNext.SheetName, rowNext.RowName);
 #endif
                                 i--; //set back in case next is point, as two box points failed
@@ -181,6 +183,8 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
 
                 if (ifcSpace != null)
                 {
+                    if (ifcSpace.Representation != null) //check it has no graphics attached, if it has then skip
+                        return;
                     //using statement will set the Model.OwnerHistoryAddObject to IfcRoot.OwnerHistory as OwnerHistoryAddObject is used upon any property changes, 
                     //then swaps the original OwnerHistoryAddObject back in the dispose, so set any properties within the using statement
                     using (COBieXBimEditScope context = new COBieXBimEditScope(Model, ifcSpace.OwnerHistory))
@@ -216,6 +220,9 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
 
                 if (ifcElement != null)
                 {
+                    if (ifcElement.Representation != null) //check it has no graphics attached, if it has then skip
+                        return;
+
                     //using statement will set the Model.OwnerHistoryAddObject to IfcRoot.OwnerHistory as OwnerHistoryAddObject is used upon any property changes, 
                     //then swaps the original OwnerHistoryAddObject back in the dispose, so set any properties within the using statement
                     using (COBieXBimEditScope context = new COBieXBimEditScope(Model, ifcElement.OwnerHistory))
@@ -380,12 +387,14 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                     {
                         rotationX = (rotationX - lastRotationX) * -1; //switch rotation direction to match original direction on extracted xls sheet
                         Quaternion q = new Quaternion(new Vector3D(1, 0, 0), rotationX);
+                        //matrixRotation3D.Rotate(q);
                         matrixRotation3D.RotatePrepend(q);
                     }
                     if (double.TryParse(row.ElevationalRotation, out rotationY))
                     {
                         rotationY = (rotationY - lastRotationY) * -1; //switch rotation direction to match original direction on extracted xls sheet, 
                         Quaternion q = new Quaternion(new Vector3D(0, 1, 0), rotationY);
+                        //matrixRotation3D.Rotate(q);
                         matrixRotation3D.RotatePrepend(q);
                     }
                     if (double.TryParse(row.ClockwiseRotation, out rotationZ))
@@ -393,6 +402,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                         rotationZ = rotationZ - lastRotationZ;
                         rotationZ = 360.0 - rotationZ; //if anticlockwise rotation required, see TransformedBoundingBox structure for why
                         Quaternion q = new Quaternion(new Vector3D(0, 0, 1), rotationZ);
+                        //matrixRotation3D.Rotate(q);
                         matrixRotation3D.RotatePrepend(q);
                     }
 
@@ -438,11 +448,11 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         }
 
         /// <summary>
-        /// Builds a XbimMatrix3D from an ObjectPlacement
+        /// Builds a windows Matrix3D from an ObjectPlacement
         /// Conversion fo c++ function CartesianTransform::ConvertMatrix3D from CartesianTransform.cpp
         /// </summary>
         /// <param name="objPlacement">IfcObjectPlacement object</param>
-        /// <returns>XbimMatrix3D</returns>
+        /// <returns>Matrix3D</returns>
 		protected XbimMatrix3D ConvertMatrix3D(IfcObjectPlacement objPlacement)
 		{
 			if(objPlacement is IfcLocalPlacement)

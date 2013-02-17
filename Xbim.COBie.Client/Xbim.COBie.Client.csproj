@@ -123,6 +123,7 @@
     <Reference Include="NPOI, Version=1.2.5.0, Culture=neutral, PublicKeyToken=0df73ec7942b34e1, processorArchitecture=MSIL">
       <HintPath>..\packages\NPOI.1.2.5\lib\net40\NPOI.dll</HintPath>
     </Reference>
+    <Reference Include="PresentationCore" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -144,10 +145,19 @@
     <Compile Include="COBieGenerator.Designer.cs">
       <DependentUpon>COBieGenerator.cs</DependentUpon>
     </Compile>
+    <Compile Include="MergeSelect.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MergeSelect.Designer.cs">
+      <DependentUpon>MergeSelect.cs</DependentUpon>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="COBieGenerator.resx">
       <DependentUpon>COBieGenerator.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MergeSelect.resx">
+      <DependentUpon>MergeSelect.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

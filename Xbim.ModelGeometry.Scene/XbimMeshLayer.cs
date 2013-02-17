@@ -228,10 +228,8 @@ namespace Xbim.ModelGeometry.Scene
                     {
                         if (sublayer.Style == this.Style) //FOUND THE LAST ONE WITH THE SAME STYLE
                         {
-                            if (sublayer.Hidden.Add(geomData)) //try and add the data to this mesh
-                                return; //succeeded so return
-                            else
-                                break; //failed so create a new sub layer and add to that
+                            sublayer.AddToHidden(geomData);//try and add the data to this mesh
+                            return; //succeeded so return
                         }
                     }
                     //didn't find a layer to add it to so create a new one

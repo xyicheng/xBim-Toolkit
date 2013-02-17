@@ -31,6 +31,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 try
                 {
                     int count = 1;
+                    SetEmailUser(Constants.DEFAULT_EMAIL); //add Unknown.Unknown@Unknown.com PersonAndOrganization to use for nulls
                     SetDefaultUser();
                     ProgressIndicator.ReportMessage("Starting Contacts...");
                     ProgressIndicator.Initialise("Creating Contacts", cOBieSheet.RowCount);
@@ -65,7 +66,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
 
         public void CreatePersonAndOrganization(COBieContactRow row, IfcPersonAndOrganization ifcPersonAndOrganization = null)
         {
-            if (!Contacts.ContainsKey(row.Email))
+            if (!Contacts.ContainsKey(row.Email)) //should filter on merge also unless Contacts is reset
             {
                 IfcPerson ifcPerson = Model.Instances.New<IfcPerson>();
                 IfcOrganization ifcOrganization = Model.Instances.New<IfcOrganization>();
@@ -99,6 +100,10 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 if (ValidateString(row.Company))
                 {
                     ifcOrganization.Name = row.Company;
+                }
+                else
+                {
+                    ifcOrganization.Name = "Unknown"; //is not an optional field so fill with unknown value
                 }
                 //add Phone
                 if (ValidateString(row.Phone))
@@ -178,5 +183,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
 
             }
         }
+
+        
     }
 }

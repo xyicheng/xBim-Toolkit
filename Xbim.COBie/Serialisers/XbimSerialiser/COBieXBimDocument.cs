@@ -63,22 +63,23 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             }
         }
 
+        
+
         /// <summary>
         /// Add the data to the Document Information object
         /// </summary>
         /// <param name="row">COBieDocumentRow holding the data</param>
         private void AddDocument(COBieDocumentRow row)
         {
+            if (CheckIfExistOnMerge(row)) 
+                return; //already in document
             IfcDocumentInformation ifcDocumentInformation = Model.Instances.New<IfcDocumentInformation>();
             IfcRelAssociatesDocument ifcRelAssociatesDocument = Model.Instances.New<IfcRelAssociatesDocument>();
             //Add Created By, Created On and ExtSystem to Owner History. 
-            if ((ValidateString(row.CreatedBy)) && (Contacts.ContainsKey(row.CreatedBy)))
-            {
-                SetNewOwnerHistory(ifcRelAssociatesDocument, row.ExtSystem, Contacts[row.CreatedBy], row.CreatedOn);
+            SetUserHistory(ifcRelAssociatesDocument, row.ExtSystem, row.CreatedBy, row.CreatedOn );
+            
+            if (Contacts.ContainsKey(row.CreatedBy))
                 ifcDocumentInformation.DocumentOwner = Contacts[row.CreatedBy];
-            }
-            else
-                SetNewOwnerHistory(ifcRelAssociatesDocument, row.ExtSystem, Model.DefaultOwningUser, row.CreatedOn);
 
             //using statement will set the Model.OwnerHistoryAddObject to IfcConstructionProductResource.OwnerHistory as OwnerHistoryAddObject is used upon any property changes, 
             //then swaps the original OwnerHistoryAddObject back in the dispose, so set any properties within the using statement
@@ -102,7 +103,11 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 AddGlobalId(row.ExtIdentifier, ifcRelAssociatesDocument);
 
                 //Add Object Relationship
-                AddObjectRelationship(row, ifcRelAssociatesDocument);
+                IfcRoot ifcRoot = GetObjectRelationship(row);
+                //add to the document relationship object
+                if (ifcRoot != null)
+                    ifcRelAssociatesDocument.RelatedObjects.Add_Reversible(ifcRoot);
+                
 
                 //Add Document reference
                 AddDocumentReference(row, ifcDocumentInformation);
@@ -111,9 +116,47 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 if (ValidateString(row.Description)) ifcDocumentInformation.Description = row.Description;
 
                 //Add Reference
-                if (ValidateString(row.Reference)) ifcDocumentInformation.DocumentId = row.Reference;
+                if (ValidateString(row.Reference)) 
+                    ifcDocumentInformation.DocumentId = row.Reference;
+                else
+                    ifcDocumentInformation.DocumentId = ""; //required field so add blank string
                
             }
+        }
+
+        
+        /// <summary>
+        /// Check if the document information is already within the model
+        /// </summary>
+        /// <param name="row">COBieDocumentRow data</param>
+        /// <returns>bool</returns>
+        private bool CheckIfExistOnMerge(COBieDocumentRow row)
+        {
+            if (XBimContext.IsMerge)
+            {
+                if (ValidateString(row.Name)) //we have a primary key to check
+                {
+                    IfcRoot ifcRoot = GetObjectRelationship(row);
+                    if (ifcRoot != null)
+                    {
+                        IfcRelAssociatesDocument ifcRelAssociatesDocument = Model.Instances.Where<IfcRelAssociatesDocument>(di => di.RelatedObjects.Contains(ifcRoot)).FirstOrDefault();
+                        if (ifcRelAssociatesDocument != null)
+                        {
+                            string testName = row.Name.ToLower().Trim();
+                            if ((ifcRelAssociatesDocument.RelatingDocument is IfcDocumentInformation) &&
+                                ((ifcRelAssociatesDocument.RelatingDocument as IfcDocumentInformation).Name.ToString().ToLower().Trim() == testName)
+                                )
+                            {
+#if DEBUG
+                                Console.WriteLine("{0} : with document {1} attached to {2} exists so skip on merge", ifcRelAssociatesDocument.GetType().Name, row.Name, ifcRoot.Name);
+#endif
+                                return true; //we have it so no need to create
+                            }
+                        }
+                    }
+                }
+            }
+            return false;
         }
 
         /// <summary>
@@ -157,8 +200,10 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         /// </summary>
         /// <param name="row">COBieDocumentRow holding row data</param>
         /// <param name="ifcRelAssociatesDocument">IfcRelAssociatesDocument object to hold relationship</param>
-        private void AddObjectRelationship(COBieDocumentRow row, IfcRelAssociatesDocument ifcRelAssociatesDocument)
+        private IfcRoot GetObjectRelationship(COBieDocumentRow row)
         {
+            IfcRoot ifcRoot = null;
+                
             if ((ValidateString(row.SheetName)) &&  (ValidateString(row.RowName)))
             {
                 string sheetName = row.SheetName.ToLower().Trim();
@@ -170,7 +215,6 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 if (ValidateString(row.ExtObject)) //if valid change to correct type
                     extObject = row.ExtObject.Trim().ToUpper();
 
-                IfcRoot ifcRoot = null;
                 switch (sheetName)
                 {
                     case Constants.WORKSHEET_TYPE:
@@ -272,12 +316,8 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                     default:
                         break;
                 }
-
-                //add to the document relationship object
-                if (ifcRoot != null)
-                    ifcRelAssociatesDocument.RelatedObjects.Add_Reversible(ifcRoot);
-
             }
+            return ifcRoot;
         }
         
         #endregion

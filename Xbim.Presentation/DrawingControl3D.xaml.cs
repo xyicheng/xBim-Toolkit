@@ -617,6 +617,8 @@ namespace Xbim.Presentation
             double processed = 0;
           
             Parallel.ForEach<KeyValuePair<string,XbimGeometryHandleCollection>>(handles.FilterByBuildingElementTypes(), layerContent =>
+       //  foreach (var layerContent in handles.FilterByBuildingElementTypes())
+	
             {
                 string elementTypeName = layerContent.Key;
                 XbimGeometryHandleCollection layerHandles = layerContent.Value;

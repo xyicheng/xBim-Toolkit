@@ -27,9 +27,9 @@ namespace Xbim.IO.Tree
         {
             TreeNodes tree = new TreeNodes();
 
-            var types = from t in FamilyTypes orderby t.Name select t;
+            var familyTypes = from t in GetFamilyElements() orderby t.Name select t;
 
-            foreach (Type type in types)
+            foreach (Type type in familyTypes)
             {
                 FamilyNode family = new FamilyNode();
                 family.Name = type.Name;

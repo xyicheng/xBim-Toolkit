@@ -513,7 +513,7 @@ namespace Xbim
 					}
 				}
 			}
-
+			
 			if ( wire.IsDone()) 
 				return wire.Wire();
 			else

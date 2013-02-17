@@ -698,7 +698,7 @@ namespace Xbim
 				tms->EndPolygon();
 				tms->EndFace();
 			}
-			int iSize = tms->StreamSize();
+			size_t iSize = tms->StreamSize();
 			return 0;
 		}
 
@@ -763,6 +763,7 @@ namespace Xbim
 //Build the Mesh
 			try
 			{
+				
 				bool hasCurvedEdges = shape->HasCurvedEdges;
 
 				// transformed shape is the shape placed according to the transform matrix
@@ -788,11 +789,11 @@ namespace Xbim
 					}
 					else
 						OpenGLShapeStreamerFeed(transformedShape, m);
-					unsigned int uiCalcSize = m->StreamSize();
+					size_t uiCalcSize = m->StreamSize();
 
-					IntPtr BonghiUnManMem = Marshal::AllocHGlobal(uiCalcSize);
+					IntPtr BonghiUnManMem = Marshal::AllocHGlobal((int)uiCalcSize);
 					unsigned char* BonghiUnManMemBuf = (unsigned char*)BonghiUnManMem.ToPointer();
-					unsigned int controlSize = m->StreamTo(BonghiUnManMemBuf);
+					size_t controlSize = m->StreamTo(BonghiUnManMemBuf);
 
 					if (uiCalcSize != controlSize)
 					{
@@ -800,8 +801,8 @@ namespace Xbim
 						iError++;
 					}
 
-					array<unsigned char>^ BmanagedArray = gcnew array<unsigned char>(uiCalcSize);
-					Marshal::Copy(BonghiUnManMem, BmanagedArray, 0, uiCalcSize);
+					array<unsigned char>^ BmanagedArray = gcnew array<unsigned char>((int)uiCalcSize);
+					Marshal::Copy(BonghiUnManMem, BmanagedArray, 0, (int)uiCalcSize);
 					Marshal::FreeHGlobal(BonghiUnManMem);
 					List<XbimTriangulatedModel^>^list = gcnew List<XbimTriangulatedModel^>();
 					list->Add(gcnew XbimTriangulatedModel(BmanagedArray, shape->RepresentationLabel, shape->SurfaceStyleLabel) );
@@ -833,6 +834,7 @@ namespace Xbim
 			}
 			else
 			{
+			
 				BRepBndLib::AddClose(*(shape->Handle), *pBox);
 			}
 			return gcnew XbimBoundingBox(pBox);

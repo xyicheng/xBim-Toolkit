@@ -86,13 +86,15 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 }
                 if ((ifcMaterial != null) && (row.ExtObject.ToLower() == "ifcmateriallayer"))
                 {
+                    IfcMaterialLayer ifcMaterialLayer = null;
                     double matThick = 0.0;
                     if ((ValidateString(row.NominalWidth)) &&
                         (!double.TryParse(row.NominalWidth, out matThick))
                         )
                         matThick = 0.0;
-
-                    IfcMaterialLayer ifcMaterialLayer = Model.Instances.New<IfcMaterialLayer>(ml => { ml.Material = ifcMaterial; ml.LayerThickness = matThick; });
+                    ifcMaterialLayer = Model.Instances.Where<IfcMaterialLayer>(ml => ml.Material == ifcMaterial && ml.LayerThickness == matThick).FirstOrDefault();
+                    if (ifcMaterialLayer == null) 
+                        ifcMaterialLayer = Model.Instances.New<IfcMaterialLayer>(ml => { ml.Material = ifcMaterial; ml.LayerThickness = matThick; });
                 } 
             }
         }
@@ -103,17 +105,19 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         /// <param name="row">COBieTypeRow holding the data</param>
         private void AddType(COBieTypeRow row)
         {
-            //IfcTypeObject ifcTypeObject = Model.Instances.New<IfcTypeObject>();
+            //we are merging so check for an existing item name, assume the same item as should be the same building
+            if (CheckIfExistOnMerge<IfcTypeObject>(row.Name))
+            {
+                return;//we have it so no need to create
+            }
+
             IfcTypeObject ifcTypeObject = GetTypeInstance(row.ExtObject, Model);
 
             if (ifcTypeObject != null)
             {
-                //Add Created By, Created On and ExtSystem to Owner History
-                if ((ValidateString(row.CreatedBy)) && (Contacts.ContainsKey(row.CreatedBy)))
-                    SetNewOwnerHistory(ifcTypeObject, row.ExtSystem, Contacts[row.CreatedBy], row.CreatedOn);
-                else
-                    SetNewOwnerHistory(ifcTypeObject, row.ExtSystem, Model.DefaultOwningUser, row.CreatedOn);
-
+                //Add Created By, Created On and ExtSystem to Owner History. 
+                SetUserHistory(ifcTypeObject, row.ExtSystem, row.CreatedBy, row.CreatedOn);
+            
                 //using statement will set the Model.OwnerHistoryAddObject to ifcTypeObject.OwnerHistory as OwnerHistoryAddObject is used upon any property changes, 
                 //then swaps the original OwnerHistoryAddObject back in the dispose, so set any properties within the using statement
                 using (COBieXBimEditScope context = new COBieXBimEditScope(Model, ifcTypeObject.OwnerHistory))

@@ -176,9 +176,9 @@ namespace Xbim.COBie.Serialisers
                                                     cellValue = cell.StringCellValue;
                                                     break;
                                                 case CellType.NUMERIC:
-                                                    if (sheetRow[i].CobieCol.AllowedType == COBieAllowedType.ISODate)
+                                                    if (sheetRow[i].COBieColumn.AllowedType == COBieAllowedType.ISODate)
                                                         cellValue = cell.DateCellValue.ToString(Constants.DATE_FORMAT);
-                                                    else if (sheetRow[i].CobieCol.AllowedType == COBieAllowedType.ISODateTime)
+                                                    else if (sheetRow[i].COBieColumn.AllowedType == COBieAllowedType.ISODateTime)
                                                         cellValue = cell.DateCellValue.ToString(Constants.DATETIME_FORMAT);
                                                     else
                                                         cellValue = cell.NumericCellValue.ToString();
@@ -199,7 +199,10 @@ namespace Xbim.COBie.Serialisers
                                             }
 
                                         if (i < COBieColumnCount) //check we are in the column range of the COBieRow and add value
-                                            sheetRow[i] = new COBieCell(cellValue);
+                                        {
+                                            COBieColumn cobieColumn = thisSheet.Columns.Where(idxcol => idxcol.Key == i).Select(idxcol => idxcol.Value).FirstOrDefault();
+                                            sheetRow[i] = new COBieCell(cellValue, cobieColumn);
+                                        }
                                     }
                                 }
                             }
@@ -219,7 +222,7 @@ namespace Xbim.COBie.Serialisers
             {
                 throw;
             }
-
+            WorkBook.CreateIndices();
             return WorkBook;
         }
         #endregion

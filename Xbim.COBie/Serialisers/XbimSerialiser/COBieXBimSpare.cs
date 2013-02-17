@@ -65,13 +65,17 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         /// <param name="row">COBieSpareRow holding the data</param>
         private void AddSpare(COBieSpareRow row)
         {
-            IfcConstructionProductResource ifcConstructionProductResource = Model.Instances.New<IfcConstructionProductResource>();
-            //Add Created By, Created On and ExtSystem to Owner History. 
-            if ((ValidateString(row.CreatedBy)) && (Contacts.ContainsKey(row.CreatedBy)))
-                SetNewOwnerHistory(ifcConstructionProductResource, row.ExtSystem, Contacts[row.CreatedBy], row.CreatedOn);
-            else
-                SetNewOwnerHistory(ifcConstructionProductResource, row.ExtSystem, Model.DefaultOwningUser, row.CreatedOn);
+            //we are merging so check for an existing item name, assume the same item as should be the same building
+            if (CheckIfExistOnMerge<IfcConstructionProductResource>(row.Name))
+            {
+                return;//we have it so no need to create
+            }
 
+            IfcConstructionProductResource ifcConstructionProductResource = Model.Instances.New<IfcConstructionProductResource>();
+            
+            //Add Created By, Created On and ExtSystem to Owner History. 
+            SetUserHistory(ifcConstructionProductResource, row.ExtSystem, row.CreatedBy, row.CreatedOn);
+            
             //using statement will set the Model.OwnerHistoryAddObject to IfcConstructionProductResource.OwnerHistory as OwnerHistoryAddObject is used upon any property changes, 
             //then swaps the original OwnerHistoryAddObject back in the dispose, so set any properties within the using statement
             using (COBieXBimEditScope context = new COBieXBimEditScope(Model, ifcConstructionProductResource.OwnerHistory)) 

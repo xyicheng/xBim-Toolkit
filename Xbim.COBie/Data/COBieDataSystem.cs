@@ -71,9 +71,10 @@ namespace Xbim.COBie.Data
                     sys.CreatedOn = GetCreatedOnDateAsFmtString(ifcGroup.OwnerHistory);
 
                     sys.Category = GetCategory(ifcGroup);
+                    string name = product.Name;
                     if (string.IsNullOrEmpty(product.Name) || (product.Name == Constants.DEFAULT_STRING))
                     {
-                        product.Name = product.GetType().Name + " Name Unknown SYS-IN" + UnknownCount.ToString();
+                        name = product.GetType().Name + " Name Unknown " + UnknownCount.ToString();
                         UnknownCount++;
                     }
                     sys.ComponentNames = product.Name;

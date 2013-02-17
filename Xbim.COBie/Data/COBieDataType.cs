@@ -68,12 +68,13 @@ namespace Xbim.COBie.Data
                 COBieTypeRow typeRow = new COBieTypeRow(types);
                 
                 // TODO: Investigate centralising this common code.
+                string name = type.Name;
                 if (string.IsNullOrEmpty(type.Name))
                 {
                     type.Name = "Name Unknown " + UnknownCount.ToString();
                     UnknownCount++;
                 }
-                typeRow.Name = type.Name;
+                typeRow.Name = name;
                 typeRow.CreatedBy = GetTelecomEmailAddress(type.OwnerHistory);
                 typeRow.CreatedOn = GetCreatedOnDateAsFmtString(type.OwnerHistory);
                 typeRow.Category = GetCategory(type, allPropertyValues);
@@ -842,11 +843,7 @@ namespace Xbim.COBie.Data
             string value = "";
             if (properties.Any())
             {
-                string conCatChar;
-                if (Context.TemplateCulture == "en-GB")
-                    conCatChar = " : ";
-                else
-                    conCatChar = ": ";
+                string conCatChar = " : ";
 
                 string code = properties.Where(p => p.NominalValue != null && categoriesCode.Contains(p.Name)).Select(p => p.NominalValue.ToString()).FirstOrDefault();
                 string description = properties.Where(p => p.NominalValue != null && categoriesDesc.Contains(p.Name)).Select(p => p.NominalValue.ToString()).FirstOrDefault();

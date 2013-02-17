@@ -70,18 +70,10 @@ namespace COBie.Xbim.Tester
             //////////}
             ////////Stopwatch sWatch = new Stopwatch();
             ////////sWatch.Start();
-            
             ////////COBieXBimSerialiser xBimSerialiser = new COBieXBimSerialiser();
             ////////xBimSerialiser.Serialise(workBook);
 
 
-            ////////sWatch.Stop();
-            ////////Console.WriteLine("Time = {0}", sWatch.Elapsed.Seconds);
-            ////////string output = Path.GetFileNameWithoutExtension(sourceFile) + "COBieToIFC.ifc";
-
-            ////////xBimSerialiser.Save(output);
-            ////////Console.WriteLine("Press any key...");
-            ////////Console.ReadKey();
         }
 
         /// <summary>

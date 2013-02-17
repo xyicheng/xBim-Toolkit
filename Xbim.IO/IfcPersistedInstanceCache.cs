@@ -33,7 +33,7 @@ namespace Xbim.IO
         private static Instance _jetInstance;
         private Session _session;
         private JET_DBID _databaseId;
-        static int cacheSizeInBytes = 128 * 1024 * 1024 * 4;
+        static int cacheSizeInBytes = 1024 * 1024 * 16;
         /// <summary>
         /// Holds the session and transaction state
         /// </summary>

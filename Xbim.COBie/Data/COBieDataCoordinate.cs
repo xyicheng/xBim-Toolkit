@@ -13,12 +13,11 @@ using Xbim.Ifc2x3.GeometricConstraintResource;
 using Xbim.Ifc2x3.RepresentationResource;
 using Xbim.Ifc2x3.GeometricModelResource;
 using Xbim.Ifc2x3.ProfileResource;
-//using WVector = System.Windows.Vector;
+
 
 using Xbim.ModelGeometry.Scene;
 using Xbim.ModelGeometry;
 using System.IO;
-using System.Windows.Media.Media3D;
 using Xbim.Common.Geometry;
 
 
@@ -222,17 +221,19 @@ namespace Xbim.COBie.Data
     /// </summary>
     struct TransformedBoundingBox 
     {
-        public TransformedBoundingBox(XbimRect3D boundBox, XbimMatrix3D matrix) : this()
+        public TransformedBoundingBox(XbimRect3D boundBox, XbimMatrix3D matrix)
+            : this()
 	    {
             //Object space values
+            
             MinPt = new XbimPoint3D(boundBox.X, boundBox.Y, boundBox.Z);
             MaxPt = new XbimPoint3D(boundBox.X + boundBox.SizeX, boundBox.Y + boundBox.SizeY, boundBox.Z + boundBox.SizeZ);
             //make assumption that the X direction will be the longer length hence the orientation will be along the x axis
-           
             //transformed values, no longer a valid bounding box in the new space if any Pitch or Yaw
             MinPt = matrix.Transform(MinPt);
             MaxPt = matrix.Transform(MaxPt);
-           
+
+            
             //--------Calculate rotations from matrix-------
             //rotation around X,Y,Z axis
             double rotationZ, rotationY, rotationX;
@@ -276,9 +277,9 @@ namespace Xbim.COBie.Data
         {
             //calculations from http://forums.codeguru.com/archive/index.php/t-329530.html and http://planning.cs.uiuc.edu/node103.html#eqn:angfrommat and http://nghiaho.com/?page_id=846
             //rotation around Z axis
-            rotationZ = Math.Atan2(matrix.M22, matrix.M12);
-            rotationY = -Math.Asin(matrix.M32);  //Math.Atan2(-matrix.M31, (Math.Sqrt(Math.Pow(matrix.M32, 2) + Math.Pow(matrix.M33, 2))))
-            rotationX = Math.Atan2(matrix.M33, matrix.M34);
+            rotationZ = Math.Atan2(matrix.M21, matrix.M11);
+            rotationY = -Math.Asin(matrix.M31);  //Math.Atan2(-matrix.M31, (Math.Sqrt(Math.Pow(matrix.M32, 2) + Math.Pow(matrix.M33, 2))))
+            rotationX = Math.Atan2(matrix.M32, matrix.M33);
         }
 
         /// <summary>
@@ -310,6 +311,9 @@ namespace Xbim.COBie.Data
         /// Yaw rotation of the IfcProduct
         /// </summary>
         public double YawRotation { get; set; }
+
+        
+        
         
     }
 }

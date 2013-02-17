@@ -30,7 +30,6 @@ namespace Xbim.ModelGeometry.Scene
         uint indexOffset;
        
 
-
         public XbimMeshGeometry3D(int size)
         {
             Positions = new List<XbimPoint3D>(size);
@@ -412,7 +411,7 @@ namespace Xbim.ModelGeometry.Scene
             {
                 XbimTriangulatedModelStream strm = new XbimTriangulatedModelStream(geometryMeshData.ShapeData);
                 XbimMeshFragment fragment = strm.BuildWithNormals(this, transform);
-                if (fragment.IsEmpty && fragment.StartPosition > 0) //nothing was added due to size being exceeded
+                if (fragment.EntityLabel==int.MinValue) //nothing was added due to size being exceeded
                     return false;
                 else //added ok
                 {

@@ -185,7 +185,7 @@ namespace XbimConvert
                                 else
                                 {
                                     List<XbimTriangulatedModel> tm = geomModel.Mesh(true, deflection);
-                                    Xbim.ModelGeometry.XbimBoundingBox bb = geomModel.GetBoundingBox(true);
+                                    Xbim.ModelGeometry.XbimBoundingBox bb = geomModel.GetBoundingBox(false);
 
                                     byte[] matrix = m3d.ToArray(true);
                                     short? typeId = IfcMetaData.IfcTypeId(product);
@@ -234,7 +234,7 @@ namespace XbimConvert
                // Debug.WriteLine(tally);
                 //now sort out maps again in parallel
                 Parallel.ForEach<KeyValuePair<int,Tuple<IXbimGeometryModel, XbimMatrix3D, IfcProduct>> >(mappedModels,opts, map =>
-                //foreach (var map in mappedModels)
+               // foreach (var map in mappedModels)
                 {
                     IXbimGeometryModel geomModel=map.Value.Item1;
                     XbimMatrix3D m3d =  map.Value.Item2;

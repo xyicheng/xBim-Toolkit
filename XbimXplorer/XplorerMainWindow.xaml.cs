@@ -702,7 +702,7 @@ namespace XbimXplorer
                 //to nothing Default culture will still be used
 
             }
-            context.TemplateCulture = "en-GB";
+            
             COBieBuilder builder = new COBieBuilder(context);
             ICOBieSerialiser serialiser = new COBieXLSSerialiser(outputFile, context.TemplateFileName);
             builder.Export(serialiser);

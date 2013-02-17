@@ -471,8 +471,9 @@ namespace Xbim.ModelGeometry.Scene
 		{
            
 			uint numPositions = br.ReadUInt32();
-            if (builder.PositionCount> 0 && (builder.PositionCount + numPositions >= ushort.MaxValue)) //we cannot build meshes bigger than this and pass them through to standard graphics buffers
-                return false;        
+            //if we the mesh is smaller that 64K then try and add it to this mesh, if it is bigger than 65K we just have to stake what we can
+            //if (numPositions < ushort.MaxValue && builder.PositionCount > 0 && (builder.PositionCount + numPositions >= ushort.MaxValue)) //we cannot build meshes bigger than this and pass them through to standard graphics buffers
+            //    return false;        
 			uint numNormals = br.ReadUInt32();
 			uint numUniques = br.ReadUInt32();
 			uint numTriangles = br.ReadUInt32();
