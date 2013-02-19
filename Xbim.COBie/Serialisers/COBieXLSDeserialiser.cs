@@ -165,7 +165,7 @@ namespace Xbim.COBie.Serialisers
                                 if (addRow)
                                 {
                                     COBieRow sheetRow = thisSheet.AddNewRow(); //add a new empty COBie row to the sheet
-                                    for (int i = 0; i < columnCount; i++)
+                                    for (int i = 0; i < thisSheet.Columns.Count(); i++) //changed from columnCount to supported column count of the sheet
                                     {
                                         string cellValue = ""; //default value
                                         ICell cell = row.GetCell(i);

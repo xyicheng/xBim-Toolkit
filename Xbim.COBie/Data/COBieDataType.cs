@@ -71,7 +71,7 @@ namespace Xbim.COBie.Data
                 string name = type.Name;
                 if (string.IsNullOrEmpty(type.Name))
                 {
-                    type.Name = "Name Unknown " + UnknownCount.ToString();
+                    name = "Name Unknown " + UnknownCount.ToString();
                     UnknownCount++;
                 }
                 typeRow.Name = name;

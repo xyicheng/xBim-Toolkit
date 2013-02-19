@@ -326,7 +326,8 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             }
             else //ok nothing found for the full string so assume delimited string
             {
-                List<string> splitChildNames = SplitString(childNames, ':');
+                char splitChar = GetSplitChar(childNames);
+                List<string> splitChildNames = SplitString(childNames, splitChar);
 
                 foreach (string item in splitChildNames)
                 {
