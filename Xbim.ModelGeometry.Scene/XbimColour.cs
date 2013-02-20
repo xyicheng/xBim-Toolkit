@@ -133,6 +133,7 @@ namespace Xbim.ModelGeometry.Scene
             this.Red = (float)(double)rgbColour.Red;
             this.Green = (float)(double)rgbColour.Green;
             this.Blue = (float)(double)rgbColour.Blue;
+            this.Alpha = 1;
             this.Name=rgbColour.Name;
             
         }

@@ -81,6 +81,7 @@ namespace Xbim.ModelGeometry.Scene
             Add(new XbimColour(typeof(IfcWallStandardCase).Name, 0.98, 0.92, 0.74, 1));
             Add(new XbimColour(typeof(IfcRoof).Name, 0.28, 0.24, 0.55, 1));
             Add(new XbimColour(typeof(IfcBeam).Name, 0.0, 0.0, 0.55, 1));
+            Add(new XbimColour(typeof(IfcBuildingElementProxy).Name, 0.95, 0.94, 0.74, 1));
             Add(new XbimColour(typeof(IfcColumn).Name, 0.0, 0.0, 0.55, 1));
             Add(new XbimColour(typeof(IfcSlab).Name, 0.47, 0.53, 0.60, 1));
             Add(new XbimColour(typeof(IfcWindow).Name, 0.68, 0.85, 0.90, 0.2));
