@@ -533,11 +533,18 @@ namespace Xbim.Presentation
             XbimScene<WpfMeshGeometry3D, WpfMaterial> scene = BuildScene(model);
             
             scenes.Add(scene);
+            ShowSpaces = false;
+            RecalculateView(model);
+           
+        }
+
+        private void RecalculateView(XbimModel model)
+        {
             if (!modelBounds.IsEmpty) //we have  geometry so create view box
                 viewBounds = modelBounds;
 
             //adjust for the units of the model
-            double metre =  model.GetModelFactors.OneMetre;
+            double metre = model.GetModelFactors.OneMetre;
             Viewport.DefaultCamera.NearPlaneDistance = 0.125 * metre;
             Viewport.Camera.NearPlaneDistance = 0.125 * metre;
             Viewport.DefaultCamera.FarPlaneDistance = Math.Max(Math.Max(
@@ -545,26 +552,26 @@ namespace Xbim.Presentation
                                                                 viewBounds.SizeY),
                                                                 viewBounds.SizeY) * 3;
             Viewport.Camera.FarPlaneDistance = Viewport.DefaultCamera.FarPlaneDistance;
-           
+
             //get bounding box for the whole scene and adapt gridlines to the model units
 
             double metresWide = viewBounds.SizeY;
             double metresLong = viewBounds.SizeX;
             long gridWidth = Convert.ToInt64(metresWide / (metre * 10));
             long gridLen = Convert.ToInt64(metresLong / (metre * 10));
-            if(gridWidth>10 || gridLen>10) 
+            if (gridWidth > 10 || gridLen > 10)
                 this.GridLines.MinorDistance = metre * 10;
             else
                 this.GridLines.MinorDistance = metre;
             this.GridLines.Width = (gridWidth + 1) * 10 * metre;
             this.GridLines.Length = (gridLen + 1) * 10 * metre;
-           
+
             this.GridLines.MajorDistance = metre * 10;
             this.GridLines.Thickness = 0.01 * metre;
             XbimPoint3D p3d = viewBounds.Centroid();
             TranslateTransform3D t3d = new TranslateTransform3D(p3d.X, p3d.Y, viewBounds.Z);
             this.GridLines.Transform = t3d;
-            ShowSpaces = false;
+           
             //make sure whole scene is visible
             ViewHome();
         }
@@ -601,10 +608,9 @@ namespace Xbim.Presentation
             if (e.Action == NotifyCollectionChangedAction.Add && e.NewItems.Count > 0)
             {
                 XbimReferencedModel refModel = e.NewItems[0] as XbimReferencedModel;
-
                 XbimScene<WpfMeshGeometry3D, WpfMaterial> scene = BuildScene(refModel.Model);
                 scenes.Add(scene);
-                DrawScene(scene);
+                RecalculateView(Model);
             }
         }
 
@@ -642,7 +648,7 @@ namespace Xbim.Presentation
             }
             );
             this.Dispatcher.BeginInvoke(new Action(() => { Hide<IfcSpace>(); }), System.Windows.Threading.DispatcherPriority.Background);
-            scene.Balance();   
+            //scene.Balance();   
             return scene;
         }
 

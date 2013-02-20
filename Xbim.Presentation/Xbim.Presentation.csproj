@@ -154,6 +154,7 @@
     <Compile Include="XbimMaterialModelVisual.cs" />
     <Compile Include="XbimMaterialProvider.cs" />
     <Compile Include="XbimModelPresentationExtensions.cs" />
+    <Compile Include="XbimModelViewModel.cs" />
     <Compile Include="XbimTreeview.cs" />
     <Compile Include="XbimViewType.cs" />
   </ItemGroup>

@@ -1305,7 +1305,7 @@ namespace Xbim.IO
 
                 IfcProject project = Instances.New<IfcProject>();
                 project.Initialize(ProjectUnits.SIUnitsUK);
-                project.Name = "testProject";
+                project.Name = "Empty Project";
                 project.OwnerHistory.OwningUser = DefaultOwningUser;
                 project.OwnerHistory.OwningApplication = DefaultOwningApplication;
                 txn.Commit();

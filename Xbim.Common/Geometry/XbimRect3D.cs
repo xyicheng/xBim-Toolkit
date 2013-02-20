@@ -231,5 +231,29 @@ namespace Xbim.Common.Geometry
         {
             Union(new XbimRect3D(highpt, highpt));
         }
+
+        public bool Contains(double x, double y, double z)
+        {
+            if (this.IsEmpty)
+            {
+                return false;
+            }
+            return this.ContainsCoords((float)x, (float)y, (float)z);
+        }
+
+        public bool Contains(XbimPoint3D pt)
+        {
+            if (this.IsEmpty)
+            {
+                return false;
+            }
+            return this.ContainsCoords(pt.X, pt.Y, pt.Z);
+        }
+
+        private bool ContainsCoords(float x, float y, float z)
+        {
+            return (((((x >= this._x) && (x <= (this._x + this._sizeX))) && ((y >= this._y) && (y <= (this._y + this._sizeY)))) && (z >= this._z)) && (z <= (this._z + this._sizeZ)));
+  
+        }
     }
 }

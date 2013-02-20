@@ -12,6 +12,7 @@ using Xbim.Ifc2x3.ExternalReferenceResource;
 using System.Windows.Controls.Primitives;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using System.Collections.Specialized;
 
 namespace Xbim.Presentation
 {
@@ -116,12 +117,14 @@ namespace Xbim.Presentation
         {
             XbimTreeview tv = d as XbimTreeview;
             XbimModel model = e.NewValue as XbimModel;
+            
             if (tv != null && model != null)
             {
+                model.RefencedModels.CollectionChanged += tv.RefencedModels_CollectionChanged;
                 switch (tv.ViewDefinition)
                 {
                     case XbimViewType.SpatialStructure:
-                        tv.ViewSpatialStructure();
+                        tv.ViewModel();
                         
                         break;
                     case XbimViewType.Classification:
@@ -141,6 +144,19 @@ namespace Xbim.Presentation
                 if (tv != null) //unbind
                 {
                     tv.HierarchySource = null;
+                }
+            }
+        }
+
+        void RefencedModels_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (e.Action == NotifyCollectionChangedAction.Add && e.NewItems.Count > 0)
+            {  
+                XbimReferencedModel refModel = e.NewItems[0] as XbimReferencedModel;
+                XbimModelViewModel vm = HierarchySource.Cast<XbimModelViewModel>().FirstOrDefault();
+                if(vm!=null)
+                {
+                    vm.AddRefModel(new XbimModelViewModel(refModel.Model.IfcProject));
                 }
             }
         }
@@ -168,7 +184,17 @@ namespace Xbim.Presentation
             {
             }
         }
-
+        private void ViewModel()
+        {
+            IfcProject project = Model.IfcProject as IfcProject;
+            if (project != null)
+            {
+                this.ChildrenBinding = new Binding("Children");
+                List<XbimModelViewModel> svList = new List<XbimModelViewModel>();  
+                svList.Add(new XbimModelViewModel(project));
+                this.HierarchySource = svList;
+            }
+        }
         private void LazyLoadAll(IXbimViewModel parent)
         {
 

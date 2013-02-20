@@ -91,7 +91,7 @@ namespace Xbim.Common.Geometry
             return XbimPoint3D.Subtract(a, b);
         }
 
-        private static XbimVector3D Subtract(XbimPoint3D a, XbimPoint3D b)
+        public static XbimVector3D Subtract(XbimPoint3D a, XbimPoint3D b)
         {
             return new XbimVector3D(a.X - b.X,
                                     a.Y - b.Y,

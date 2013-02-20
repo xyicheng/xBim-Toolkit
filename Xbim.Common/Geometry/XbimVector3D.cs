@@ -21,7 +21,7 @@ namespace Xbim.Common.Geometry
 
         private float length()
         {
-            throw new NotImplementedException();
+           return (Single)Math.Sqrt(X * X + Y * Y + Z * Z);
         }
 
         public XbimVector3D(float vx, float vy, float vz)
@@ -102,9 +102,9 @@ namespace Xbim.Common.Geometry
             var x = vec.X;
             var y = vec.Y;
             var z = vec.Z;
-            return new XbimVector3D (m.M11 * x + m.M21 * y + m.M31 * z + m.OffsetX,
-                                     m.M12 * x + m.M22 * y + m.M32 * z + m.OffsetY,
-                                     m.M13 * x + m.M23 * y + m.M33 * z + m.OffsetZ
+            return new XbimVector3D (m.M11 * x + m.M21 * y + m.M31 * z ,
+                                     m.M12 * x + m.M22 * y + m.M32 * z ,
+                                     m.M13 * x + m.M23 * y + m.M33 * z 
                                     );
         }
 

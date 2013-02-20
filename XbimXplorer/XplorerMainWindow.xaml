@@ -11,7 +11,17 @@
         Icon="icon.ico">
     <Window.Resources>
         <ObjectDataProvider x:Key="ModelProvider"  IsInitialLoadEnabled="False" ></ObjectDataProvider>
-         <DataTemplate DataType="{x:Type xbim:SpatialViewModel}">
+        <DataTemplate DataType="{x:Type xbim:XbimModelViewModel}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <!--<Image Grid.Column="0" Source="/folder.png" Margin="0 0 4 0"/>-->
+                <TextBlock Grid.Column="1" Text="{Binding Name}" FontWeight="Bold"/>
+            </Grid>
+        </DataTemplate> <DataTemplate DataType="{x:Type xbim:SpatialViewModel}">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -111,7 +121,7 @@
                 <pt:EnumMenuItem SelectedValue="{Binding Viewport.CameraRotationMode, ElementName=DrawingControl}" Header="CameraRotationMode"/>
                 <pt:EnumMenuItem SelectedValue="{Binding Viewport.CameraMode, ElementName=DrawingControl}" Header="CameraMode" />
             </MenuItem>
-            <MenuItem Header="CoBie">
+            <MenuItem Header="COBie">
                 <MenuItem Header="_Export" Click="ExportCoBie" />
             </MenuItem>
 

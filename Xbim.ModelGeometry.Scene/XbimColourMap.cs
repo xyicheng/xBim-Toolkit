@@ -99,8 +99,8 @@ namespace Xbim.ModelGeometry.Scene
             Add(new XbimColour(typeof(IfcDistributionFlowElement).Name, 0.95, 0.94, 0.74, 1));
             Add(new XbimColour(typeof(IfcFlowFitting).Name, 0.95, 0.94, 0.74, 1));
             Add(new XbimColour(typeof(IfcRailing).Name, 0.95, 0.94, 0.74, 1));
-            foreach (var col in this)
-                col.SpecularFactor = 100;
+            //foreach (var col in this)
+            //    col.SpecularFactor = 1;
         }
 
         

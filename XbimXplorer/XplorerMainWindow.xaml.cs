@@ -603,7 +603,8 @@ namespace XbimXplorer
             CloseAndDeleteTemporaryFiles();
             XbimModel model=   XbimModel.CreateTemporaryModel();
             model.Initialise();
-            ModelProvider.ObjectInstance = Model;
+            ModelProvider.ObjectInstance = model;
+            ModelProvider.Refresh();
         }
         
        
@@ -634,7 +635,7 @@ namespace XbimXplorer
             }
             finally
             {
-                if (!string.IsNullOrWhiteSpace(_temporaryXbimFileName))
+                if (!string.IsNullOrWhiteSpace(_temporaryXbimFileName) && File.Exists(_temporaryXbimFileName))
                     File.Delete(_temporaryXbimFileName);
                 _temporaryXbimFileName = null;
                 _defaultFileName = null;
