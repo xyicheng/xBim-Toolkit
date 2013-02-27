@@ -144,6 +144,11 @@ namespace Xbim.COBie.Serialisers
             {
                 if (error.Row > 0 && error.Column >= 0)
                 {
+                    if ((error.Row + 3) > 65280)//UInt16.MaxValue some reason the CreateCellComment has 65280 as the max row number
+                    {
+                        // TODO: Warn overflow of XLS 2003 worksheet
+                        break;
+                    }
                     IRow excelRow = excelSheet.GetRow(error.Row);
                     if (excelRow != null)
                     {

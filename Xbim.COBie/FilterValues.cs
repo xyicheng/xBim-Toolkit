@@ -107,8 +107,8 @@ namespace Xbim.COBie
                                         typeof(IfcStairFlight),
                                         typeof(IfcWall),
                                         typeof(IfcWallStandardCase),
-                                        //typeof(IfcFlowFitting),
-                                        //typeof(IfcFlowSegment),
+                                        typeof(IfcFlowFitting),
+                                        typeof(IfcFlowSegment),
                                         typeof(IfcElementAssembly),
                                         typeof(IfcBuildingElementPart),
                                         typeof(IfcFastener),
@@ -124,11 +124,11 @@ namespace Xbim.COBie
                                         typeof(IfcBuildingStorey),
                                         typeof(IfcSite),
                                         typeof(IfcSpace),
-                                        typeof(IfcProject),
-                                        typeof(IfcTendon),
-                                        typeof(IfcTendonAnchor),
-                                        typeof(IfcFooting),
-                                        typeof(IfcCovering)
+                                        typeof(IfcProject)
+                                        //typeof(IfcTendon),
+                                        //typeof(IfcTendonAnchor),
+                                        //typeof(IfcFooting),
+                                        //typeof(IfcCovering)
                                         //typeof(IfcColumnStandardCase), //IFC2x Edition 4.
                                         //typeof(IfcMemberStandardCase), //IFC2x Edition 4.
                                         //typeof(IfcPlateStandardCase), //IFC2x Edition 4.
@@ -158,16 +158,16 @@ namespace Xbim.COBie
                                                             typeof(IfcSlabType),
                                                             typeof(IfcStairFlightType),
                                                             typeof(IfcWallType),
-                                                            //typeof(IfcDuctFittingType ),
+                                                            typeof(IfcDuctFittingType ),
                                                             typeof(IfcJunctionBoxType ),
                                                             typeof(IfcPipeFittingType),
                                                             typeof(IfcCableCarrierSegmentType),
                                                             typeof(IfcCableSegmentType),
-                                                            //typeof(IfcDuctSegmentType),
+                                                            typeof(IfcDuctSegmentType),
                                                             typeof(IfcPipeSegmentType),
                                                             typeof(IfcFastenerType),
-                                                            typeof(IfcSpaceType)
-                                                            //typeof(IfcBuildingElementProxyType)
+                                                            typeof(IfcSpaceType),
+                                                            typeof(IfcBuildingElementProxyType)
                                                             //typeof(Xbim.Ifc.SharedBldgElements.IfcRampType), //IFC2x Edition 4.
                                                             //typeof(IfcStairType), //IFC2x Edition 4.
                                                              };
@@ -233,8 +233,8 @@ namespace Xbim.COBie
                                     "Finish",   "Color",    "Size",     "Shape",    "ModelReference",   "NominalHeight",    "NominalWidth", "NominalLength",    "WarrantyName",
                                     "WarrantyDescription",  "DurationUnit",         "ServiceLifeType",  "ServiceLifeDuration",  "ExpectedLife",     "LifeCyclePhase",   "Cost",
                                     "ReplacementCost",  "WarrantyDurationUnit", "WarrantyDurationLabor",    "WarrantyGuarantorLabor",   "WarrantyDurationParts",    
-                                    "WarrantyGuarantorParts",   "ModelLabel",   "ModelNumber",  "Manufacturer", "IsFixed",  "AssetType", "CodePerformance", "SustainabilityPerformance"
-        
+                                    "WarrantyGuarantorParts",   "ModelLabel",   "ModelNumber",  "Manufacturer", "IsFixed",  "AssetType", "CodePerformance", "SustainabilityPerformance",
+                                    "PointOfContact", "Colour", "Regulation", "Environmental"
                                 };
 
             AttributesContain = new List<string>() { "Roomtag", "RoomTag", "GSA BIM Area" }; //"Tag",
@@ -264,9 +264,9 @@ namespace Xbim.COBie
         
         public SpaceValues()
         {
-            AttributesEqualTo = new List<string> { "Area", "Number", "UsableHeight", "RoomTag", "Room Tag" }; 
+            AttributesEqualTo = new List<string> { "Area", "Number", "UsableHeight", "RoomTag", "Room Tag", "Tag", "Room_Tag", "FinishCeilingHeight" };
 
-            AttributesContain = new List<string> { "ZoneName", "Category", "Length", "Width" };
+            AttributesContain = new List<string> { "ZoneName", "Category", "Length", "Width", "GrossFloorArea", "GSA", "NetFloorArea" };
 
             PropertySetsEqualTo = new List<string>() { "BaseQuantities" }; 
         }
