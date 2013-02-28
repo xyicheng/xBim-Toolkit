@@ -284,7 +284,7 @@
       <Project>{6745f5ac-af3c-4372-81aa-a75e7b1fa03b}</Project>
     </ProjectReference>
     <ProjectReference Include="..\Xbim.Ifc.Extensions\Xbim.Ifc2x3.Extensions.csproj">
-      <Project>{09870f18-1796-4a3e-a66d-68db3da60b24}</Project>
+      <Project>{6df47d23-8f4d-4069-a44b-bbdacd3f9aea}</Project>
     </ProjectReference>
     <ProjectReference Include="..\Xbim.Ifc2x3\Xbim.Ifc2x3.csproj">
       <Project>{5d4c907d-1293-4e5f-9642-d0862ae4741c}</Project>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+        <title>Xbim Web Spatial</title>
+        <script type="text/javascript" src="scripts/jquery.js"></script>
+        <script type="text/javascript" src="scripts/jquery-ui.js"></script>
+        <script type="text/javascript" src="scripts/jquery.shortcuts.js"></script>
+        <script type="text/javascript" src="scripts/xs-console.js"></script>
+        <script type="text/javascript" src="scripts/xs-msgbox.js"></script>
+        <script type="text/javascript" src="scripts/xs-shortcuts.js"></script>
+        <script type="text/javascript" src="scripts/xs-library-element.js"></script>
+        <script type="text/javascript" src="scripts/xs-library-folder.js"></script>
+        <script type="text/javascript" src="scripts/xs-query-builder.js"></script>
+        <script type="text/javascript" src="scripts/xs-library.js"></script>
+        <script type="text/javascript" src="scripts/xs-bin.js"></script>
+        <script type="text/javascript" src="scripts/xs-query.js"></script>
+        <script type="text/javascript" src="scripts/xs-query-manager.js"></script>
+        
+
+        <script type="text/javascript" src="scripts/xs-init.js"></script>
+        <link href="styles/jquery-ui.css" rel="stylesheet" type="text/css" />
+        <link href="styles/site.css" rel="stylesheet" type="text/css" />
+        <link href="styles/overrides.css" rel="stylesheet" type="text/css" />
+
+    </head>
+    <body class=".ui-widget .ui-widget-content">
+        <div id="Left" class="ui-corner-all">
+            <div id="QueriesContainer"></div>
+            <div id="Buttons">
+                <span id="btnNewQuery" class="button">New Query</span>
+                <span id="btnSaveQuery" class="button">Save rules</span>
+                <span id="btnLoadRules" class="button">Load rules</span>
+                <span id="btnClear" class="button">Clear all</span>
+                <span id="btnModelManager" class="button">Model manager</span>
+            </div>
+        </div>
+        <div id="Middle">
+            <div id="Viewer" class="ui-corner-all"></div>
+            <div id="Tabs">
+                <ul>
+                    <li><a href="#Query-tab">Query builder</a></li>
+                    <li><a href="#Results-tab">Results</a></li>
+                </ul>
+                <div id="Results-tab">
+                    <table id="ResultTable">
+                        <thead>
+                            <tr>
+                                <td>Name</td>
+                                <td>Description</td>
+                                <td>Type name</td>
+                                <td>Type description</td>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+                <div id="Query-tab">
+                    Name: <input type="text" id="txtQueryName"/>
+                    <div id="Query" class="ui-corner-all"></div>
+                    <img id="Bin" src="img/bin.png" alt="bin"/>
+                </div>
+            </div>
+        </div>
+        <div id="Right">
+            <h3><a href="#">Elements</a></h3>
+            <div id="Elements">
+
+            </div>
+            <h3><a href="#">Element types</a></h3>
+            <div id="ElementTypes">
+
+            </div>
+            <h3><a href="#">Spatial structure</a></h3>
+            <div id="SpatialStructure">
+
+            </div>
+            <h3><a href="#">Materials</a></h3>
+            <div id="Materials">
+
+            </div>
+            <h3><a href="#">Attributes</a></h3>
+            <div id="Attributes">
+
+            </div>
+            <h3><a href="#">Spatial relations</a></h3>
+            <div id="SpatialRelations">
+
+            </div>
+        </div>
+            
+
+    </body>
+</html>

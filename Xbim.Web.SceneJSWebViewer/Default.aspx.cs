@@ -7,7 +7,7 @@ using System.Web.UI.WebControls;
 using System.IO;
 using Xbim.XbimExtensions;
 using Xbim.IO;
-using Xbim.DynamicGrouping;
+using Xbim.Dynamic;
 using Xbim.Ifc2x3.Kernel;
 using Xbim.Ifc2x3.Extensions;
 using System.Xml;

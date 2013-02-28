@@ -15,14 +15,7 @@ namespace XbimXplorer
 {
     class Sample
     {
-        public IEnumerable<IfcProduct> ShowOnly(IModel model)
-        {
-            //Select walls where property like "external" is TRUE. 
-            IEnumerable<IfcWall> externalWalls = model.Instances.Where<IfcWall>(w => HasPropertyLikeExternalTrue(w));
-
-            return externalWalls;
-        }
-
+       
         bool HasPropertyLikeExternalTrue(IfcWall wall)
 {
     //get relations property
