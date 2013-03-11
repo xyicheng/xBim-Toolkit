@@ -646,6 +646,224 @@ namespace Xbim.Common.Geometry
             M34 *= z;
         }
 
+        /// <summary>
+        /// Apply a X-Axis rotation to the matrix
+        /// </summary>
+        /// <param name="radAngle">Angle in radians</param>
+        public void RotateAroundXAxis(double radAngle)
+        {
+            //get trig values
+            double sinValue = Math.Sin(radAngle);
+            double cosValue = Math.Cos(radAngle);
+
+            //save values for matrix as it now stands
+            float m21 = _m21;
+            float m22 = _m22;
+            float m23 = _m23;
+            float m24 = _m24;
+            float m31 = _m31;
+            float m32 = _m32;
+            float m33 = _m33;
+            float m34 = _m34;
+
+            //Amend value to suit X axis rotation
+
+            //Perform X axis-specific matrix multiplication (right hand rule)
+            //| 1    0               0               0  |
+            //| 0    cos(radAngle)   sin(radAngle)   0  |
+            //| 0    -sin(radAngle)  cos(radAngle)   0  |
+            //| 0    0               0               1  |
+            if (this.IsIdentity)
+            {
+                _m22 = (float)cosValue;
+                _m23 = (float)sinValue;
+                _m32 = (float)-sinValue;
+                _m33 = (float)cosValue;
+            }
+            else
+            {
+                _m21 = (float)((m21 * cosValue) + (m31 * sinValue));
+                _m22 = (float)((m22 * cosValue) + (m32 * sinValue));
+                _m23 = (float)((m23 * cosValue) + (m33 * sinValue));
+                _m24 = (float)((m24 * cosValue) + (m34 * sinValue));
+
+                _m31 = (float)((m21 * -sinValue) + (m31 * cosValue));
+                _m32 = (float)((m22 * -sinValue) + (m32 * cosValue));
+                _m33 = (float)((m23 * -sinValue) + (m33 * cosValue));
+                _m34 = (float)((m24 * -sinValue) + (m34 * cosValue));
+            }
+
+            //Perform X axis-specific matrix multiplication (left hand rule)
+            //| 1    0               0               0  |
+            //| 0    cos(radAngle)   -sin(radAngle)  0  |
+            //| 0    sin(radAngle)   cos(radAngle)   0  |
+            //| 0    0               0               1  |
+            //if (this.IsIdentity)
+            //{
+            //    _m22 = (float)cosValue;
+            //    _m23 = (float)-sinValue;
+            //    _m32 = (float)sinValue;
+            //    _m33 = (float)cosValue;
+            //}
+            //else
+            //{
+            //    _m21 = (float)((m21 * cosValue) + (m31 * -sinValue));
+            //    _m22 = (float)((m22 * cosValue) + (m32 * -sinValue));
+            //    _m23 = (float)((m23 * cosValue) + (m33 * -sinValue));
+            //    _m24 = (float)((m24 * cosValue) + (m34 * -sinValue));
+
+            //    _m31 = (float)((m21 * sinValue) + (m31 * cosValue));
+            //    _m32 = (float)((m22 * sinValue) + (m32 * cosValue));
+            //    _m33 = (float)((m23 * sinValue) + (m33 * cosValue));
+            //    _m34 = (float)((m24 * sinValue) + (m34 * cosValue));
+            //}
+        }
+
+        /// <summary>
+        /// Apply a Y-Axis rotation to the matrix
+        /// </summary>
+        /// <param name="radAngle">Angle in radians</param>
+        public void RotateAroundYAxis(double radAngle)
+        {
+            //get trig values
+            double sinValue = Math.Sin(radAngle);
+            double cosValue = Math.Cos(radAngle);
+
+            //save values for matrix as it now stands
+            float m11 = _m11;
+            float m12 = _m12;
+            float m13 = _m13;
+            float m14 = _m14;
+            float m31 = _m31;
+            float m32 = _m32;
+            float m33 = _m33;
+            float m34 = _m34;
+
+            //Amend value to suit Y axis rotation
+
+            //Perform Y axis-specific matrix multiplication (right hand rule)
+            //| cos(radAngle)   0   -sin(radAngle)  0  |
+            //| 0               1   0               0  |
+            //| sin(radAngle)   0   cos(radAngle)   0  |
+            //| 0               0   0               1  |
+            if (this.IsIdentity)
+            {
+                _m11 = (float)cosValue;
+                _m13 = (float)-sinValue;
+                _m31 = (float)sinValue;
+                _m33 = (float)cosValue;
+            }
+            else
+            {
+                _m11 = (float)((m11 * cosValue) + (m31 * -sinValue));
+                _m12 = (float)((m12 * cosValue) + (m32 * -sinValue));
+                _m13 = (float)((m13 * cosValue) + (m33 * -sinValue));
+                _m14 = (float)((m14 * cosValue) + (m34 * -sinValue));
+
+                _m31 = (float)((m11 * sinValue) + (m31 * cosValue));
+                _m32 = (float)((m12 * sinValue) + (m32 * cosValue));
+                _m33 = (float)((m13 * sinValue) + (m33 * cosValue));
+                _m34 = (float)((m14 * sinValue) + (m34 * cosValue));
+            }
+
+            //Perform Y axis-specific matrix multiplication (left hand rule)
+            //| cos(radAngle)   0   -sin(radAngle)  0  |
+            //| 0               1   0               0  |
+            //| sin(radAngle)   0   cos(radAngle)   0  |
+            //| 0               0   0               1  |
+            //if (this.IsIdentity)
+            //{
+            //    _m11 = (float)cosValue;
+            //    _m13 = (float)sinValue;
+            //    _m31 = (float)-sinValue;
+            //    _m33 = (float)cosValue;
+            //}
+            //else
+            //{
+            //    _m11 = (float)((m11 * cosValue) + (m31 * sinValue));
+            //    _m12 = (float)((m12 * cosValue) + (m32 * sinValue));
+            //    _m13 = (float)((m13 * cosValue) + (m33 * sinValue));
+            //    _m14 = (float)((m14 * cosValue) + (m34 * sinValue));
+
+            //    _m31 = (float)((m11 * -sinValue) + (m31 * cosValue));
+            //    _m32 = (float)((m12 * -sinValue) + (m32 * cosValue));
+            //    _m33 = (float)((m13 * -sinValue) + (m33 * cosValue));
+            //    _m34 = (float)((m14 * -sinValue) + (m34 * cosValue));
+            //}
+        }
+
+        /// <summary>
+        /// Apply a Z-Axis rotation to the matrix
+        /// </summary>
+        /// <param name="radAngle">Angle in radians</param>
+        public void RotateAroundZAxis(double radAngle)
+        {
+            //get trig values
+            double sinValue = Math.Sin(radAngle);
+            double cosValue = Math.Cos(radAngle);
+
+            //save values for matrix as it now stands
+            float m11 = _m11;
+            float m12 = _m12;
+            float m13 = _m13;
+            float m14 = _m14;
+            float m21 = _m21;
+            float m22 = _m22;
+            float m23 = _m23;
+            float m24 = _m24;
+
+            //Amend value to suit Z axis rotation
+
+            //Perform Z axis-specific matrix multiplication (right hand rule)
+            //| cos(radAngle)   sin(radAngle)  0    0  |
+            //| -sin(radAngle)   cos(radAngle) 0    0  |
+            //| 0               0              1    0  |
+            //| 0               0              0    1  |
+            if (this.IsIdentity)
+            {
+                _m11 = (float)cosValue;
+                _m12 = (float)sinValue;
+                _m21 = (float)-sinValue;
+                _m22 = (float)cosValue;
+            }
+            else
+            {
+                _m11 = (float)((m11 * cosValue) + (m21 * sinValue));
+                _m12 = (float)((m12 * cosValue) + (m22 * sinValue));
+                _m13 = (float)((m13 * cosValue) + (m23 * sinValue));
+                _m14 = (float)((m14 * cosValue) + (m24 * sinValue));
+
+                _m21 = (float)((m11 * -sinValue) + (m21 * cosValue));
+                _m22 = (float)((m12 * -sinValue) + (m22 * cosValue));
+                _m23 = (float)((m13 * -sinValue) + (m23 * cosValue));
+                _m24 = (float)((m14 * -sinValue) + (m24 * cosValue));
+            }
+
+            //Perform Z axis-specific matrix multiplication (left hand rule)
+            //| cos(radAngle)   -sin(radAngle) 0    0  |
+            //| sin(radAngle)   cos(radAngle)  0    0  |
+            //| 0               0              1    0  |
+            //| 0               0              0    1  |
+            //if (this.IsIdentity)
+            //{
+            //    _m11 = (float)cosValue;
+            //    _m12 = (float)-sinValue;
+            //    _m21 = (float)sinValue;
+            //    _m22 = (float)cosValue;
+            //}
+            //else
+            //{
+            //    _m11 = (float)((m11 * cosValue) + (m21 * -sinValue));
+            //    _m12 = (float)((m12 * cosValue) + (m22 * -sinValue));
+            //    _m13 = (float)((m13 * cosValue) + (m23 * -sinValue));
+            //    _m14 = (float)((m14 * cosValue) + (m24 * -sinValue));
+
+            //    _m21 = (float)((m11 * sinValue) + (m21 * cosValue));
+            //    _m22 = (float)((m12 * sinValue) + (m22 * cosValue));
+            //    _m23 = (float)((m13 * sinValue) + (m23 * cosValue));
+            //    _m24 = (float)((m14 * sinValue) + (m24 * cosValue));
+            //}
+        }
        
     }
 }

@@ -6,7 +6,6 @@ using Xbim.XbimExtensions.Transactions;
 using Xbim.COBie.Rows;
 using Xbim.Ifc2x3.GeometricConstraintResource;
 using Xbim.Ifc2x3.RepresentationResource;
-using System.Windows.Media.Media3D;
 using Xbim.Ifc2x3.GeometryResource;
 using Xbim.Ifc2x3.Kernel;
 using Xbim.Ifc2x3.ProductExtension;
@@ -17,6 +16,7 @@ using Xbim.Ifc2x3.GeometricModelResource;
 using Xbim.Ifc2x3.UtilityResource;
 using Xbim.IO;
 using Xbim.Common.Geometry;
+
 
 namespace Xbim.COBie.Serialisers.XbimSerialiser
 {
@@ -75,9 +75,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                                 (ValidateString(rowNext.Category)) && 
                                 (rowNext.Category.Contains("box-")) &&
                                 (ValidateString(row.SheetName)) && 
-                                (ValidateString(row.RowName)) &&
                                 (ValidateString(rowNext.SheetName)) &&
-                                (ValidateString(rowNext.RowName)) &&
                                 (row.SheetName == rowNext.SheetName) &&
                                 (row.RowName == rowNext.RowName)
                                 )
@@ -302,7 +300,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                         bBox.Union(highpt);
                         if ((double.NaN.CompareTo(bBox.SizeX) != 0) && (double.NaN.CompareTo(bBox.SizeY) != 0))
                         {
-                            Point3D ctrPt = new Point3D(bBox.X + (bBox.SizeX / 2.0), bBox.Y + (bBox.SizeY / 2.0), bBox.Z + (bBox.SizeZ / 2.0));
+                            XbimPoint3D ctrPt = new XbimPoint3D(bBox.X + (bBox.SizeX / 2.0), bBox.Y + (bBox.SizeY / 2.0), bBox.Z + (bBox.SizeZ / 2.0));
 
                             //Create IfcRectangleProfileDef
                             IfcCartesianPoint IfcCartesianPointCtr = Model.Instances.New<IfcCartesianPoint>(cp => { cp.X = ctrPt.X; cp.Y = ctrPt.Y; cp.Z = 0.0; }); //centre point of 2D box
@@ -366,58 +364,53 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                     //((IfcAxis2Placement3D)((IfcLocalPlacement)placementRelToIfcProduct.ObjectPlacement).RelativePlacement).SetNewLocation(10.0, 10.0, 0.0);
                     IfcLocalPlacement placementRelTo = (IfcLocalPlacement)placementRelToIfcProduct.ObjectPlacement;
                     XbimMatrix3D matrix3D = ConvertMatrix3D(placementRelTo);
+                    
                     //we want to take off the translations and rotations caused by IfcLocalPlacement of the parent objects as we will add these to the new IfcLocalPlacement for this floor
                     matrix3D.Invert(); //so invert matrix to remove the translations to give the origin for the next IfcLocalPlacement
                     locationPt = matrix3D.Transform(locationPt); //get the point with relation to the last IfcLocalPlacement i.e the parent element
                     
-                    //rotation around X,Y,Z axis for the matrix at the placementRelTo IfcLocalPlacement, we need to remove this from the row value so the object placement + this placement will equal the row rotation
-                    double lastRotationZ, lastRotationY, lastRotationX;
-                    matrix3D.Invert(); //invert matrix back to original to get rotations
-                    TransformedBoundingBox.GetMatrixRotations(matrix3D, out lastRotationX, out lastRotationY, out lastRotationZ);
-                    //convert to degrees
-                    lastRotationZ = TransformedBoundingBox.RTD(lastRotationZ);
-                    lastRotationZ = TransformedBoundingBox.MakeZRotationClockwise(lastRotationZ);//make clockwise
-                    lastRotationY = TransformedBoundingBox.RTD(lastRotationY);
-                    lastRotationX = TransformedBoundingBox.RTD(lastRotationX);
+                    //Get the WCS matrix values
+                    double rotX, rotY, rotZ;
+                    if (!(double.TryParse(row.YawRotation, out rotX) && (double.NaN.CompareTo(rotX) != 0)))
+                        rotX = 0.0;
 
-                    //lets account for the rotations obtained from the original matrix on the point extraction to the excel sheet
-                    Matrix3D matrixRotation3D = new Matrix3D();
-                    double rotationX, rotationY, rotationZ;
-                    if (double.TryParse(row.YawRotation, out rotationX))
-                    {
-                        rotationX = (rotationX - lastRotationX) * -1; //switch rotation direction to match original direction on extracted xls sheet
-                        Quaternion q = new Quaternion(new Vector3D(1, 0, 0), rotationX);
-                        //matrixRotation3D.Rotate(q);
-                        matrixRotation3D.RotatePrepend(q);
-                    }
-                    if (double.TryParse(row.ElevationalRotation, out rotationY))
-                    {
-                        rotationY = (rotationY - lastRotationY) * -1; //switch rotation direction to match original direction on extracted xls sheet, 
-                        Quaternion q = new Quaternion(new Vector3D(0, 1, 0), rotationY);
-                        //matrixRotation3D.Rotate(q);
-                        matrixRotation3D.RotatePrepend(q);
-                    }
-                    if (double.TryParse(row.ClockwiseRotation, out rotationZ))
-                    {
-                        rotationZ = rotationZ - lastRotationZ;
-                        rotationZ = 360.0 - rotationZ; //if anticlockwise rotation required, see TransformedBoundingBox structure for why
-                        Quaternion q = new Quaternion(new Vector3D(0, 0, 1), rotationZ);
-                        //matrixRotation3D.Rotate(q);
-                        matrixRotation3D.RotatePrepend(q);
-                    }
+                    if (!(double.TryParse(row.ElevationalRotation, out rotY) && (double.NaN.CompareTo(rotY) != 0)))
+                        rotY = 0.0;
 
-                    //set up the coordinates directions for this local placement, might need to look at the rotations of the parent placementRelTo on a merge, but for straight extraction we should be OK here
-                    Vector3D ucsXAxis = matrixRotation3D.Transform(new Vector3D(1, 0, 0));
-                    Vector3D ucsZAxis = matrixRotation3D.Transform(new Vector3D(0, 0, 1));
-                    ucsXAxis.Normalize();
-                    ucsZAxis.Normalize();
+                    if (double.TryParse(row.ClockwiseRotation, out rotZ) && (double.NaN.CompareTo(rotZ) != 0))
+                        rotZ = rotZ * -1; //convert back from clockwise to anti clockwise
+                    else
+                        rotZ = 0.0;
+
+                    //apply the WCS rotation from COBie Coordinates stored values
+                    XbimMatrix3D matrixNewRot3D = new XbimMatrix3D();
+                    if (rotX != 0.0)
+                        matrixNewRot3D.RotateAroundXAxis(TransformedBoundingBox.DTR(rotX));
+                    if (rotY != 0.0)
+                        matrixNewRot3D.RotateAroundYAxis(TransformedBoundingBox.DTR(rotY));
+                    if (rotZ != 0.0)
+                        matrixNewRot3D.RotateAroundZAxis(TransformedBoundingBox.DTR(rotZ));
                     
-                    //set up AxisPlacment
+                    //remove any displacement from the matrix which moved/rotated us to the object space
+                    matrix3D.OffsetX = 0.0F;
+                    matrix3D.OffsetY = 0.0F;
+                    matrix3D.OffsetZ = 0.0F;
+                    
+                    //remove the matrix that got use to the object space from the WCS location of this object
+                    XbimMatrix3D matrixRot3D = matrixNewRot3D * matrix3D;
+                    
+                    //get the rotation vectors to place in the new IfcAxis2Placement3D for the new IfcLocalPlacement for this object
+                    XbimVector3D ucsAxisX = matrixRot3D.Transform(new XbimVector3D(1, 0, 0));
+                    XbimVector3D ucsAxisZ = matrixRot3D.Transform(new XbimVector3D(0, 0, 1));
+                    ucsAxisX.Normalize();
+                    ucsAxisZ.Normalize();
+
+                    //create the new IfcAxis2Placement3D 
                     IfcAxis2Placement3D relativePlacemant = Model.Instances.New<IfcAxis2Placement3D>();
-                    relativePlacemant.SetNewDirectionOf_XZ(ucsXAxis.X, ucsXAxis.Y, ucsXAxis.Z, ucsZAxis.X, ucsZAxis.Y, ucsZAxis.Z);
+                    relativePlacemant.SetNewDirectionOf_XZ(ucsAxisX.X, ucsAxisX.Y, ucsAxisX.Z, ucsAxisZ.X, ucsAxisZ.Y, ucsAxisZ.Z);
                     relativePlacemant.SetNewLocation(locationPt.X, locationPt.Y, locationPt.Z);
-                    
-                    //Set up Local Placement
+
+                    //Set up IfcLocalPlacement
                     IfcLocalPlacement objectPlacement = Model.Instances.New<IfcLocalPlacement>();
                     objectPlacement.PlacementRelTo = placementRelTo;
                     objectPlacement.RelativePlacement = relativePlacemant;
@@ -428,6 +421,8 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             return null;
            
         }
+
+        
 
         private bool GetPointFromRow(COBieCoordinateRow row, out XbimPoint3D point)
         {
@@ -483,13 +478,13 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
 				}
 				else //must be 2D
 				{
-					throw new NotImplementedException("Support for Placements other than 3D not implemented");
+                    throw new NotImplementedException("Support for Placements other than 3D not implemented");
 				}
 
 			}
 			else //probably a Grid
 			{
-				throw new NotImplementedException("Support for Placements other than Local not implemented");
+                throw new NotImplementedException("Support for Placements other than Local not implemented");
 			}
         }
         #endregion

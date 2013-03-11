@@ -96,7 +96,6 @@ namespace Xbim.COBie.Data
                     name = "Name Unknown " + UnknownCount.ToString();
                     UnknownCount++;
                 }
-
                 component.Name = name;
                 component.CreatedBy = GetTelecomEmailAddress(el.OwnerHistory);
                 component.CreatedOn = GetCreatedOnDateAsFmtString(el.OwnerHistory);
