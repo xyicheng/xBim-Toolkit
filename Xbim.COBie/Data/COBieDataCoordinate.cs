@@ -88,8 +88,8 @@ namespace Xbim.COBie.Data
                     count++;
                     ProgressIndicator.IncrementAndUpdate();
                     //if no name to link the row name too skip it, as no way to link back to the parent object
-                    if (string.IsNullOrEmpty(ifcProduct.Name))
-                        continue;
+                    //if (string.IsNullOrEmpty(ifcProduct.Name))
+                    //    continue;
 
                     COBieCoordinateRow coordinate = new COBieCoordinateRow(coordinates);
                     

@@ -165,15 +165,15 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 }
                 else
                 {
+                    IfcObjectDefinition relatingObject = GetParentObject(row.ParentName);
                     //check on merge we have not already created using name and parent object as check
                     if (ValidateString(row.Name))
                     {
                         string testName = row.Name.ToLower().Trim();
-                        IfcObjectDefinition relatingObject = GetParentObject(row.ParentName);
                         ifcRelDecomposes = Model.Instances.Where<IfcRelDecomposes>(rc => (rc.Name.ToString().ToLower().Trim() == testName) && (rc.RelatingObject == relatingObject)).FirstOrDefault();
                     }
 
-                    if (ifcRelDecomposes == null)
+                    if ((ifcRelDecomposes == null) && (relatingObject != null))
                     {
                         if (row.ExtObject.ToLower().Trim() == "ifcrelnests")
                             ifcRelDecomposes = Model.Instances.New<IfcRelNests>();
@@ -184,8 +184,14 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                         //Add Created By, Created On and ExtSystem to Owner History. 
                         SetUserHistory(ifcRelDecomposes, row.ExtSystem, row.CreatedBy, row.CreatedOn);
                     }
+                    if (relatingObject == null)
+                    {
+                        Console.WriteLine(string.Format("Failed to find ifcRelDecomposes parent object in AddAssembly() for {0}", row.Name.ToString()));
+                        return;
+                    }
                 }
 
+                
 
                 //using statement will set the Model.OwnerHistoryAddObject to IfcConstructionProductResource.OwnerHistory as OwnerHistoryAddObject is used upon any property changes, 
                 //then swaps the original OwnerHistoryAddObject back in the dispose, so set any properties within the using statement
@@ -194,13 +200,14 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                     if (ValidateString(row.Name)) ifcRelDecomposes.Name = row.Name;
                     if (ValidateString(row.Description)) ifcRelDecomposes.Description = row.Description;
 
+                    //Add GlobalId
+                    AddGlobalId(row.ExtIdentifier, ifcRelDecomposes);
+                        
                     if (! (AddParentObject(ifcRelDecomposes, row.ParentName) &&
                            AddChildObjects(ifcRelDecomposes, row.SheetName, row.ChildNames)
                            )
                         )
                     {
-                        //Add GlobalId
-                        AddGlobalId(row.ExtIdentifier, ifcRelDecomposes);
                         //failed to add parent or child so remove as not a valid IfcRelDecomposes object
                         try
                         {

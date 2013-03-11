@@ -421,9 +421,10 @@ namespace Xbim.COBie.Data
                     //passed properties from the sheet
                     attribute.SheetName = RowParameters["Sheet"];
                     attribute.RowName = RowParameters["Name"];
-                    attribute.CreatedBy = COBieData<COBieAttributeRow>.GetEmail( propertySet.OwnerHistory.OwningUser.TheOrganization, propertySet.OwnerHistory.OwningUser.ThePerson);
+                    string createdBy = COBieData<COBieAttributeRow>.GetEmail( propertySet.OwnerHistory.OwningUser.TheOrganization, propertySet.OwnerHistory.OwningUser.ThePerson);
+                    attribute.CreatedBy = (createdBy.Contains("unknown")) ? RowParameters["CreatedBy"] : createdBy; //check for incorrect made up email, if so then use parent CreatedBy
                     string onDate = COBieData<COBieAttributeRow>.GetCreatedOnDate(propertySet.OwnerHistory);
-                    attribute.CreatedOn = (string.IsNullOrEmpty(onDate)) ? Context.RunDate : onDate;
+                    attribute.CreatedOn = (string.IsNullOrEmpty(onDate)) ? RowParameters["CreatedOn"] : onDate;
                     attribute.ExtSystem = (propertySet.OwnerHistory.OwningApplication != null) ? propertySet.OwnerHistory.OwningApplication.ApplicationFullName.ToString() : RowParameters["ExtSystem"];
                     if (string.IsNullOrEmpty(attribute.ExtSystem))
                         attribute.ExtSystem = Constants.DEFAULT_STRING;

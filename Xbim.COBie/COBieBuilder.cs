@@ -102,7 +102,7 @@ namespace Xbim.COBie
             Workbook.Add(cq.GetCOBieZoneSheet()); 
             Workbook.Add(cq.GetCOBieTypeSheet());
             Workbook.Add(cq.GetCOBieComponentSheet());
-            Workbook.Add(cq.GetCOBieSystemSheet());
+            Workbook.Add(cq.GetCOBieSystemSheet( Workbook[Constants.WORKSHEET_COMPONENT].Indices)); //pass component names 
             Workbook.Add(cq.GetCOBieAssemblySheet());
             Workbook.Add(cq.GetCOBieConnectionSheet());
             Workbook.Add(cq.GetCOBieSpareSheet());

@@ -63,17 +63,23 @@ namespace Xbim.COBie.Data
                 ProgressIndicator.IncrementAndUpdate();
 
                 COBieSpaceRow space = new COBieSpaceRow(spaces);
-
+                //set allPropertyValues to this element
+                allPropertyValues.SetAllPropertySingleValues(ifcSpace); //set the internal filtered IfcPropertySingleValues List in allPropertyValues
+                
                 space.Name = ifcSpace.Name;
 
-                space.CreatedBy = GetTelecomEmailAddress(ifcSpace.OwnerHistory);
-                space.CreatedOn = GetCreatedOnDateAsFmtString(ifcSpace.OwnerHistory);
+                string createBy = allPropertyValues.GetPropertySingleValueValue("COBieCreatedBy", false); //support for COBie Toolkit for Autodesk Revit
+                space.CreatedBy = ValidateString(createBy) ? createBy : GetTelecomEmailAddress(ifcSpace.OwnerHistory);
+                string createdOn = allPropertyValues.GetPropertySingleValueValue("COBieCreatedOn", false);//support for COBie Toolkit for Autodesk Revit
+                space.CreatedOn = ValidateString(createdOn) ? createdOn : GetCreatedOnDateAsFmtString(ifcSpace.OwnerHistory);
 
                 space.Category = GetCategory(ifcSpace);
 
                 space.FloorName = ((ifcSpace.SpatialStructuralElementParent != null) && (!string.IsNullOrEmpty(ifcSpace.SpatialStructuralElementParent.Name))) ? ifcSpace.SpatialStructuralElementParent.Name.ToString() : DEFAULT_STRING;
-                space.Description = GetSpaceDescription(ifcSpace);
-                space.ExtSystem = GetExternalSystem(ifcSpace);
+                string description = allPropertyValues.GetPropertySingleValueValue("COBieDescription", false);//support for COBie Toolkit for Autodesk Revit
+                space.Description = ValidateString(description) ? description : GetSpaceDescription(ifcSpace);
+                string extSystem = allPropertyValues.GetPropertySingleValueValue("COBieExtSystem", false);//support for COBie Toolkit for Autodesk Revit
+                space.ExtSystem = ValidateString(extSystem) ? extSystem : GetExternalSystem(ifcSpace);
                 space.ExtObject = ifcSpace.GetType().Name;
                 space.ExtIdentifier = ifcSpace.GlobalId;
                 space.RoomTag = GetRoomTag(ifcSpace, allPropertyValues);

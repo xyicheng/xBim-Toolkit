@@ -4,6 +4,7 @@ using System.Xml;
 using Xbim.COBie.Rows;
 using Xbim.COBie.Data;
 using System;
+using System.Collections.Generic;
 
 namespace Xbim.COBie
 {
@@ -195,10 +196,10 @@ namespace Xbim.COBie
         /// </summary>
         /// <param name="model">IModel to read data from</param>
         /// <returns>COBieSheet<COBieSystemRow></returns>
-        public COBieSheet<COBieSystemRow> GetCOBieSystemSheet()
+        public COBieSheet<COBieSystemRow> GetCOBieSystemSheet(Dictionary<string, HashSet<string>> compIndices)
         {
             COBieDataSystem systems = new COBieDataSystem(Context);
-            return systems.Fill();
+            return systems.Fill(compIndices);
         }
 
         

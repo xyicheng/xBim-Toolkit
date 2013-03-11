@@ -74,13 +74,21 @@ namespace Xbim.COBie.Data
                     name = "Name Unknown " + UnknownCount.ToString();
                     UnknownCount++;
                 }
-                typeRow.Name = name;
-                typeRow.CreatedBy = GetTelecomEmailAddress(type.OwnerHistory);
-                typeRow.CreatedOn = GetCreatedOnDateAsFmtString(type.OwnerHistory);
-                typeRow.Category = GetCategory(type, allPropertyValues);
-                typeRow.Description = GetTypeObjDescription(type);
 
-                typeRow.ExtSystem = GetExternalSystem(type);
+                //set allPropertyValues to this element
+                allPropertyValues.SetAllPropertySingleValues(type); //set the internal filtered IfcPropertySingleValues List in allPropertyValues
+                
+                typeRow.Name = name;
+                string create_By = allPropertyValues.GetPropertySingleValueValue("COBieTypeCreatedBy", false); //support for COBie Toolkit for Autodesk Revit
+                typeRow.CreatedBy = ValidateString(create_By) ? create_By : GetTelecomEmailAddress(type.OwnerHistory);
+                string created_On = allPropertyValues.GetPropertySingleValueValue("COBieTypeCreatedOn", false);//support for COBie Toolkit for Autodesk Revit
+                typeRow.CreatedOn = ValidateString(created_On) ? created_On : GetCreatedOnDateAsFmtString(type.OwnerHistory);
+                typeRow.Category = GetCategory(type, allPropertyValues);
+                string description = allPropertyValues.GetPropertySingleValueValue("COBieDescription", false);//support for COBie Toolkit for Autodesk Revit
+                typeRow.Description = ValidateString(description) ? description : GetTypeObjDescription(type);
+
+                string ext_System = allPropertyValues.GetPropertySingleValueValue("COBieTypeExtSystem", false);//support for COBie Toolkit for Autodesk Revit
+                typeRow.ExtSystem = ValidateString(ext_System) ? ext_System : GetExternalSystem(type);
                 typeRow.ExtObject = type.GetType().Name;
                 typeRow.ExtIdentifier = type.GlobalId;
 
