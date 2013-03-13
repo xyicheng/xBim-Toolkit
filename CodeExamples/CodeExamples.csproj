@@ -99,10 +99,6 @@
       <Project>{85856df2-c8ab-4120-8a8d-ae05d2696b51}</Project>
       <Name>Xbim.IO</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Xbim.ModelGeometry.Converter\Xbim.ModelGeometry.Converter.csproj">
-      <Project>{97dff14e-add7-4ed3-b8c3-0d3d3e6cdee8}</Project>
-      <Name>Xbim.ModelGeometry.Converter</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Xbim.ModelGeometry.Scene\Xbim.ModelGeometry.Scene.csproj">
       <Project>{3d9d37de-a254-4433-b172-7590cbd84c69}</Project>
       <Name>Xbim.ModelGeometry.Scene</Name>

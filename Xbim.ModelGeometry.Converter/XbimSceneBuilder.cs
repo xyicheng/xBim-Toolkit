@@ -46,7 +46,6 @@ namespace Xbim.ModelGeometry.Converter
             //create the meta data table
             db.CreateTable("CREATE TABLE IF NOT EXISTS 'Meta' (" +
                     "'Meta_ID' INTEGER PRIMARY KEY," +
-                    "'Meta_SceneName' text," +
                     "'Meta_type' text not null," +
                     "'Meta_key' text," +
                     "'Meta_Value' text not null" +
@@ -79,7 +78,7 @@ namespace Xbim.ModelGeometry.Converter
                         modelBounds.Union(layer.BoundingBoxHidden());
                    
                     // add  top level layers
-                    layerid = AddLayer(connection, layer, layerid);
+                    layerid = AddLayer(connection, layer, layerid, -1);
                     layerid++;
                 }
                 // setup bounding box SizeX, SizeY, SizeZ, X, Y, Z
@@ -122,7 +121,7 @@ namespace Xbim.ModelGeometry.Converter
             }
         }
 
-        private int AddLayer(SQLiteConnection mDBcon, XbimMeshLayer<XbimMeshGeometry3D, XbimRenderMaterial> layer, int layerid)
+        private int AddLayer(SQLiteConnection mDBcon, XbimMeshLayer<XbimMeshGeometry3D, XbimRenderMaterial> layer, int layerid, int parentLayerId)
         {
              try
              {
@@ -172,7 +171,7 @@ namespace Xbim.ModelGeometry.Converter
                          cmd.Parameters.Add("@SceneName", DbType.String).Value = "MainScene";
                          cmd.Parameters.Add("@LayerName", DbType.String).Value = layer.Name;
                          cmd.Parameters.Add("@LayerId", DbType.Int32).Value = layerid;
-                         cmd.Parameters.Add("@ParentLayerId", DbType.Int32).Value = "-1";
+                         cmd.Parameters.Add("@ParentLayerId", DbType.Int32).Value = parentLayerId;
                          cmd.Parameters.Add("@Meshes", DbType.Binary).Value = vbo;
                          cmd.Parameters.Add("@XbimTexture", DbType.Binary).Value = colour;
                          cmd.Parameters.Add("@BoundingBox", DbType.Binary).Value = bbArray;
@@ -182,10 +181,11 @@ namespace Xbim.ModelGeometry.Converter
                      SQLiteTrans.Commit();
                  }
 
+                 int myParent = layerid;
                  foreach (var subLayer in layer.SubLayers)
                  {
                      layerid++;
-                     layerid = AddLayer(mDBcon, subLayer, layerid);
+                     layerid = AddLayer(mDBcon, subLayer, layerid, myParent);
                  }
                  return layerid;
 

@@ -11,6 +11,10 @@
     <AssemblyName>Xbim.ModelGeometry.Converter</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -72,11 +76,9 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data.SQLite, Version=1.0.84.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\System.Data.SQLite.1.0.84.0\lib\net40\System.Data.SQLite.dll</HintPath>
     </Reference>
     <Reference Include="System.Data.SQLite.Linq, Version=1.0.84.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\System.Data.SQLite.1.0.84.0\lib\net40\System.Data.SQLite.Linq.dll</HintPath>
     </Reference>
     <Reference Include="System.Xml.Linq" />
@@ -104,8 +106,8 @@
       <Name>Xbim.IO</Name>
     </ProjectReference>
     <ProjectReference Include="..\Xbim.ModelGeometry.OCC\Xbim.ModelGeometry.OCC.vcxproj">
-      <Project>{cbca1efc-7459-4a0e-a42d-55d4f58051bf}</Project>
-      <Name>Xbim.ModelGeometry.OCC %28Visual Studio 2010%29</Name>
+      <Project>{CBCA1EFC-7459-4A0E-A42D-55D4F58051BF}</Project>
+      <Name>Xbim.ModelGeometry.OCC</Name>
     </ProjectReference>
     <ProjectReference Include="..\Xbim.ModelGeometry.Scene\Xbim.ModelGeometry.Scene.csproj">
       <Project>{3d9d37de-a254-4433-b172-7590cbd84c69}</Project>
