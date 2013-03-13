@@ -581,7 +581,7 @@ namespace Xbim.Presentation
         {
             
             //move it to the visual element
-           
+           // byte[] bytes = ((XbimMeshGeometry3D)layer.Hidden).ToByteArray();
             layer.Show();
             
             GeometryModel3D m3d = (WpfMeshGeometry3D)layer.Visible;
@@ -621,7 +621,8 @@ namespace Xbim.Presentation
                                                        .Exclude(IfcEntityNameEnum.IFCFEATUREELEMENT));
             double total = handles.Count;
             double processed = 0;
-          
+
+            
             Parallel.ForEach<KeyValuePair<string,XbimGeometryHandleCollection>>(handles.FilterByBuildingElementTypes(), layerContent =>
        //  foreach (var layerContent in handles.FilterByBuildingElementTypes())
 	
@@ -638,6 +639,7 @@ namespace Xbim.Presentation
                     processed++;
                     int progress = Convert.ToInt32(100.0 * processed / total);
                 }
+                
                 this.Dispatcher.BeginInvoke(new Action(() => { DrawLayer(layer); }), System.Windows.Threading.DispatcherPriority.Background);
                 lock (scene)
                 {

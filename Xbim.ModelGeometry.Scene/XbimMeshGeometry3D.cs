@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using Xbim.Common.Exceptions;
@@ -497,6 +498,31 @@ namespace Xbim.ModelGeometry.Scene
 
                 this.EndUpdate();
             }
+        }
+
+        public byte[] ToByteArray()
+        {
+            //calculate the indices count
+            int pointCount = 0;
+            foreach (var mesh in meshes)
+                pointCount += mesh.EndTriangleIndex - mesh.StartTriangleIndex + 1;
+            byte[] bytes = new byte[pointCount * ((6 * sizeof(float)) + sizeof(int))]; //max size of data stream
+            MemoryStream ms = new MemoryStream(bytes);
+            BinaryWriter bw = new BinaryWriter(ms);
+            foreach (var mesh in meshes)
+            {
+                int label = mesh.EntityLabel;
+                label =  ((label & 0xff) << 24) + ((label & 0xff00) << 8) + ((label & 0xff0000) >> 8) + ((label >> 24) & 0xff);
+                for (int i = mesh.StartTriangleIndex; i <= mesh.EndTriangleIndex; i++)
+                {
+                    XbimPoint3D pt = Positions[TriangleIndices[i]];
+                    XbimVector3D n = Normals[TriangleIndices[i]];
+                    bw.Write(pt.X); bw.Write(pt.Y); bw.Write(pt.Z);
+                    bw.Write(n.X); bw.Write(n.Y); bw.Write(n.Z);
+                    bw.Write(label); 
+                }
+            }
+            return bytes;
         }
     }
 }

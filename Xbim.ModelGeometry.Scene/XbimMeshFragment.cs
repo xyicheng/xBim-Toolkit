@@ -57,7 +57,7 @@ namespace Xbim.ModelGeometry.Scene
         {
             get
             {
-                return EndPosition - StartPosition;
+                return EndPosition - StartPosition +1 ;
             }
         }
 

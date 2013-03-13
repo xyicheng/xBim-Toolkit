@@ -207,7 +207,7 @@ namespace Xbim.IO
         /// <summary>
         /// Returns the IfcType with the specified type
         /// </summary>
-        /// <param name="typeName">The name of the type in uppercase</param>
+        /// <param name="type">The type</param>
         /// <returns></returns>
         public static IfcType IfcType(Type type)
         {

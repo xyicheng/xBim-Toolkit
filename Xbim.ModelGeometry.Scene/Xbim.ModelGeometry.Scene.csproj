@@ -81,6 +81,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\SharedAssemblyInfo.cs">
@@ -106,7 +107,9 @@
     <Compile Include="XbimMeshGeometry3D.cs" />
     <Compile Include="XbimMeshLayer.cs" />
     <Compile Include="XbimMeshLayerCollection.cs" />
+    <Compile Include="XbimRenderMaterial.cs" />
     <Compile Include="XbimScene.cs" />
+    <Compile Include="XbimSceneDefinition.cs" />
     <Compile Include="XbimTexture.cs" />
     <Compile Include="XbimTriangulatedModel.cs" />
     <Compile Include="XbimTriangulatedModelCollection.cs" />
