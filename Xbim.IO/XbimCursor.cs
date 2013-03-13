@@ -215,6 +215,7 @@ namespace Xbim.IO
             Api.JetCloseTable(sesid, table);
             Api.JetCloseTable(sesid, globalsTable);
             Api.JetCloseDatabase(this.sesid, this.dbId, CloseDatabaseGrbit.None);
+            Api.JetEndSession(this.sesid,EndSessionGrbit.None);
         }
     }
 }
