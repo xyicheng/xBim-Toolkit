@@ -1,22 +1,16 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{3D9D37DE-A254-4433-B172-7590CBD84C69}</ProjectGuid>
+    <ProjectGuid>{97DFF14E-ADD7-4ED3-B8C3-0D3D3E6CDEE8}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Xbim.ModelGeometry.Scene</RootNamespace>
-    <AssemblyName>Xbim.ModelGeometry.Scene</AssemblyName>
+    <RootNamespace>Xbim.ModelGeometry.Converter</RootNamespace>
+    <AssemblyName>Xbim.ModelGeometry.Converter</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
-    <SccProjectName>SAK</SccProjectName>
-    <SccLocalPath>SAK</SccLocalPath>
-    <SccAuxPath>SAK</SccAuxPath>
-    <SccProvider>SAK</SccProvider>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -26,6 +20,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -34,6 +29,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <DebugSymbols>true</DebugSymbols>
@@ -42,7 +38,7 @@
     <DebugType>full</DebugType>
     <PlatformTarget>x64</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisIgnoreBuiltInRuleSets>false</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
     <OutputPath>..\bin\x64\Release\</OutputPath>
@@ -51,8 +47,7 @@
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>x64</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisIgnoreBuiltInRuleSets>false</CodeAnalysisIgnoreBuiltInRuleSets>
-    <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
@@ -61,11 +56,7 @@
     <DebugType>full</DebugType>
     <PlatformTarget>x86</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisIgnoreBuiltInRuleSets>false</CodeAnalysisIgnoreBuiltInRuleSets>
-    <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
-    <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
-    <DocumentationFile>..\bin\x86\Debug\Xbim.ModelGeometry.Scene.XML</DocumentationFile>
-    <NoWarn>1591,1573</NoWarn>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
     <OutputPath>..\bin\x86\Release\</OutputPath>
@@ -74,8 +65,7 @@
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>x86</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisIgnoreBuiltInRuleSets>false</CodeAnalysisIgnoreBuiltInRuleSets>
-    <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="PresentationCore" />
@@ -83,61 +73,35 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\SharedAssemblyInfo.cs">
-      <Link>Properties\SharedAssemblyInfo.cs</Link>
-    </Compile>
-    <Compile Include="CoPlanarComparer.cs" />
-    <Compile Include="IXbimTriangulatedModelBuilder.cs" />
-    <Compile Include="IXbimScene.cs" />
-    <Compile Include="IXbimTriangulatesToPositionsIndices.cs" />
-    <Compile Include="IXbimTriangulatesToPositionsNormalsIndices.cs" />
-    <Compile Include="IXbimTriangulatesToSimplePositionsNormalsIndices.cs" />
-    <Compile Include="Matrix3DExtensions.cs" />
-    <Compile Include="PositionsNormalsIndicesBinaryStreamMerger.cs" />
-    <Compile Include="PositionsNormalsIndicesBinaryStreamWriter.cs" />
+    <Compile Include="XbimMesher.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Rect3DExtensions.cs" />
-    <Compile Include="TransformGraph.cs" />
-    <Compile Include="TransformNode.cs" />
-    <Compile Include="XbimLOD.cs" />
-    <Compile Include="XbimMeshGeometry3D.cs" />
-    <Compile Include="XbimTriangulatedModel.cs" />
-    <Compile Include="XbimTriangulatedModelCollection.cs" />
-    <Compile Include="XbimTriangulatedModelStream.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Xbim.Common\Xbim.Common.csproj">
-      <Project>{6745F5AC-AF3C-4372-81AA-A75E7B1FA03B}</Project>
+      <Project>{6745f5ac-af3c-4372-81aa-a75e7b1fa03b}</Project>
       <Name>Xbim.Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Xbim.Ifc.Extensions\Xbim.Ifc2x3.Extensions.csproj">
-      <Project>{09870F18-1796-4A3E-A66D-68DB3DA60B24}</Project>
-      <Name>Xbim.Ifc2x3.Extensions</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Xbim.Ifc2x3\Xbim.Ifc2x3.csproj">
-      <Project>{5D4C907D-1293-4E5F-9642-D0862AE4741C}</Project>
+      <Project>{5d4c907d-1293-4e5f-9642-d0862ae4741c}</Project>
       <Name>Xbim.Ifc2x3</Name>
     </ProjectReference>
     <ProjectReference Include="..\Xbim.IO\Xbim.IO.csproj">
-      <Project>{85856DF2-C8AB-4120-8A8D-AE05D2696B51}</Project>
+      <Project>{85856df2-c8ab-4120-8a8d-ae05d2696b51}</Project>
       <Name>Xbim.IO</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="x64\SQLite.Interop.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="x86\SQLite.Interop.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
+    <ProjectReference Include="..\Xbim.ModelGeometry.OCC\Xbim.ModelGeometry.OCC.vcxproj">
+      <Project>{cbca1efc-7459-4a0e-a42d-55d4f58051bf}</Project>
+      <Name>Xbim.ModelGeometry.OCC %28Visual Studio 2010%29</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Xbim.ModelGeometry.Scene\Xbim.ModelGeometry.Scene.csproj">
+      <Project>{3d9d37de-a254-4433-b172-7590cbd84c69}</Project>
+      <Name>Xbim.ModelGeometry.Scene</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
