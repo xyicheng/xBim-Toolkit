@@ -85,8 +85,6 @@ namespace Xbim.COBie.Data
                 ChildNamesList childNames = ConCatChildNamesList(childNamesUnique, childColumnLength);
                 if (childNames.Count > 0)
                     AddChildRows(assemblies, assembly, childNames);
-                else
-                    assemblies.AddRow(assembly);
             }
 
             //--------------Loop all IfcMaterialLayerSet-----------------------------
@@ -131,8 +129,6 @@ namespace Xbim.COBie.Data
                 ChildNamesList childNames = ConCatChildNamesList(childNamesUnique, childColumnLength); //childColumnLength is max number of chars for the ChildNames cell
                 if (childNames.Count > 0)
                     AddChildRows(assemblies, assembly, childNames);
-                else
-                    assemblies.AddRow(assembly);
             }
             ProgressIndicator.Finalise();
             return assemblies;
@@ -267,6 +263,12 @@ namespace Xbim.COBie.Data
             ChildNamesList childNamesFilter = new ChildNamesList();
             foreach (IfcObjectDefinition obj in ra.RelatedObjects)
             {
+                //filter on type filters used for component and type sheet
+                if (Context.Exclude.ObjectType.Component.Contains(obj.GetType()))
+                    break;
+                if (Context.Exclude.ObjectType.Types.Contains(obj.GetType()))
+                    break;
+
                 if (!string.IsNullOrEmpty(obj.Name))
                 {
                     //if (!childNamesFilter.Contains(obj.Name))//removed the filter as we should recode all elements of the assembly

@@ -102,21 +102,21 @@ namespace Xbim.COBie
             Workbook.Add(cq.GetCOBieZoneSheet()); 
             Workbook.Add(cq.GetCOBieTypeSheet());
             Workbook.Add(cq.GetCOBieComponentSheet());
-            Workbook.Add(cq.GetCOBieSystemSheet( Workbook[Constants.WORKSHEET_COMPONENT].Indices)); //pass component names 
+            Workbook.Add(cq.GetCOBieSystemSheet(Workbook[Constants.WORKSHEET_COMPONENT].Indices)); //pass component names 
             Workbook.Add(cq.GetCOBieAssemblySheet());
             Workbook.Add(cq.GetCOBieConnectionSheet());
             Workbook.Add(cq.GetCOBieSpareSheet());
             Workbook.Add(cq.GetCOBieResourceSheet());
-            Workbook.Add(cq.GetCOBieJobSheet());            
+            Workbook.Add(cq.GetCOBieJobSheet());
             Workbook.Add(cq.GetCOBieImpactSheet());
             Workbook.Add(cq.GetCOBieDocumentSheet());
             Workbook.Add(cq.GetCOBieAttributeSheet());//we need to fill attributes here as it is populated by Components, Type, Space, Zone, Floors, Facility etc
-//#if GEOMETRY_IMPLEMENTED
+            //#if GEOMETRY_IMPLEMENTED
             Workbook.Add(cq.GetCOBieCoordinateSheet());
-//#endif
+            //#endif
             Workbook.Add(cq.GetCOBieIssueSheet());
-            if (CobiePickLists != null) 
-                Workbook.Add(CobiePickLists); 
+            if (CobiePickLists != null)
+                Workbook.Add(CobiePickLists);
             else
                 Workbook.Add(new COBieSheet<COBiePickListsRow>(Constants.WORKSHEET_PICKLISTS)); //add empty pick list
            

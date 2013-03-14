@@ -177,18 +177,7 @@ namespace Xbim.COBie
                                                 typeof(IfcBuilding),
                                                 typeof(IfcBuildingStorey)
                                                 };
-            //Assemblies should only be shown from the components and type sheets so add there exclusions 
-            Assembly.AddRange(Types);
-            Assembly.AddRange(Component);
-            
-
         }
-
-      
-               
-        
-
-        
     }
 
     /// <summary>

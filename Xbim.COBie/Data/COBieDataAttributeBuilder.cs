@@ -252,7 +252,7 @@ namespace Xbim.COBie.Data
                     {
                         if (ifcPropertySingleValue.NominalValue != null)
                         {
-                            value = ifcPropertySingleValue.NominalValue.Value.ToString();
+                            value = ifcPropertySingleValue.NominalValue.Value != null ? ifcPropertySingleValue.NominalValue.Value.ToString() : string.Empty;
                             double num;
                             if (double.TryParse(value, out num)) value = num.ToString("F3");
                             if ((string.IsNullOrEmpty(value)) || (string.Compare(value, ifcPropertySingleValue.Name.ToString(), true) == 0) || (string.Compare(value, "default", true) == 0))

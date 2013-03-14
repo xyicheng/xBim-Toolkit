@@ -29,15 +29,15 @@
         private void InitializeComponent()
         {
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.mergeBtn = new System.Windows.Forms.Button();
-            this.GeoOnlyChkBox = new System.Windows.Forms.CheckBox();
-            this.MergeChkBox = new System.Windows.Forms.CheckBox();
             this.btnBrowseTemplate = new System.Windows.Forms.Button();
             this.txtTemplate = new System.Windows.Forms.ComboBox();
             this.label2 = new System.Windows.Forms.Label();
             this.txtPath = new System.Windows.Forms.ComboBox();
             this.btnBrowse = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
+            this.mergeBtn = new System.Windows.Forms.Button();
+            this.GeoOnlyChkBox = new System.Windows.Forms.CheckBox();
+            this.MergeChkBox = new System.Windows.Forms.CheckBox();
             this.btnGenerate = new System.Windows.Forms.Button();
             this.btnClear = new System.Windows.Forms.Button();
             this.txtOutput = new System.Windows.Forms.RichTextBox();
@@ -48,6 +48,7 @@
             this.rbNoFilters = new System.Windows.Forms.RadioButton();
             this.rbPickList = new System.Windows.Forms.RadioButton();
             this.rbDefault = new System.Windows.Forms.RadioButton();
+            this.ValidateChkBox = new System.Windows.Forms.CheckBox();
             this.groupBox1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             this.gbFilter.SuspendLayout();
@@ -69,41 +70,6 @@
             this.groupBox1.TabIndex = 0;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "IFC File Location";
-            // 
-            // mergeBtn
-            // 
-            this.mergeBtn.Enabled = false;
-            this.mergeBtn.Location = new System.Drawing.Point(229, 96);
-            this.mergeBtn.Name = "mergeBtn";
-            this.mergeBtn.Size = new System.Drawing.Size(130, 23);
-            this.mergeBtn.TabIndex = 7;
-            this.mergeBtn.Text = "Select &Merge Files...";
-            this.mergeBtn.UseVisualStyleBackColor = true;
-            this.mergeBtn.Click += new System.EventHandler(this.mergeBtn_Click);
-            // 
-            // GeoOnlyChkBox
-            // 
-            this.GeoOnlyChkBox.AutoSize = true;
-            this.GeoOnlyChkBox.Checked = true;
-            this.GeoOnlyChkBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.GeoOnlyChkBox.Enabled = false;
-            this.GeoOnlyChkBox.Location = new System.Drawing.Point(13, 119);
-            this.GeoOnlyChkBox.Name = "GeoOnlyChkBox";
-            this.GeoOnlyChkBox.Size = new System.Drawing.Size(148, 17);
-            this.GeoOnlyChkBox.TabIndex = 6;
-            this.GeoOnlyChkBox.Text = "Merge geometry data only";
-            this.GeoOnlyChkBox.UseVisualStyleBackColor = true;
-            // 
-            // MergeChkBox
-            // 
-            this.MergeChkBox.AutoSize = true;
-            this.MergeChkBox.Location = new System.Drawing.Point(13, 100);
-            this.MergeChkBox.Name = "MergeChkBox";
-            this.MergeChkBox.Size = new System.Drawing.Size(210, 17);
-            this.MergeChkBox.TabIndex = 5;
-            this.MergeChkBox.Text = "Merge files COBie data into one IFC file";
-            this.MergeChkBox.UseVisualStyleBackColor = true;
-            this.MergeChkBox.CheckedChanged += new System.EventHandler(this.MergeChkBox_CheckedChanged);
             // 
             // btnBrowseTemplate
             // 
@@ -178,6 +144,41 @@
             this.label1.TabIndex = 0;
             this.label1.Text = "Select file:";
             // 
+            // mergeBtn
+            // 
+            this.mergeBtn.Enabled = false;
+            this.mergeBtn.Location = new System.Drawing.Point(229, 96);
+            this.mergeBtn.Name = "mergeBtn";
+            this.mergeBtn.Size = new System.Drawing.Size(130, 23);
+            this.mergeBtn.TabIndex = 7;
+            this.mergeBtn.Text = "Select &Merge Files...";
+            this.mergeBtn.UseVisualStyleBackColor = true;
+            this.mergeBtn.Click += new System.EventHandler(this.mergeBtn_Click);
+            // 
+            // GeoOnlyChkBox
+            // 
+            this.GeoOnlyChkBox.AutoSize = true;
+            this.GeoOnlyChkBox.Checked = true;
+            this.GeoOnlyChkBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.GeoOnlyChkBox.Enabled = false;
+            this.GeoOnlyChkBox.Location = new System.Drawing.Point(13, 119);
+            this.GeoOnlyChkBox.Name = "GeoOnlyChkBox";
+            this.GeoOnlyChkBox.Size = new System.Drawing.Size(148, 17);
+            this.GeoOnlyChkBox.TabIndex = 6;
+            this.GeoOnlyChkBox.Text = "Merge geometry data only";
+            this.GeoOnlyChkBox.UseVisualStyleBackColor = true;
+            // 
+            // MergeChkBox
+            // 
+            this.MergeChkBox.AutoSize = true;
+            this.MergeChkBox.Location = new System.Drawing.Point(13, 100);
+            this.MergeChkBox.Name = "MergeChkBox";
+            this.MergeChkBox.Size = new System.Drawing.Size(210, 17);
+            this.MergeChkBox.TabIndex = 5;
+            this.MergeChkBox.Text = "Merge files COBie data into one IFC file";
+            this.MergeChkBox.UseVisualStyleBackColor = true;
+            this.MergeChkBox.CheckedChanged += new System.EventHandler(this.MergeChkBox_CheckedChanged);
+            // 
             // btnGenerate
             // 
             this.btnGenerate.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
@@ -232,7 +233,7 @@
             // StatusMsg
             // 
             this.StatusMsg.Name = "StatusMsg";
-            this.StatusMsg.Size = new System.Drawing.Size(325, 17);
+            this.StatusMsg.Size = new System.Drawing.Size(356, 17);
             this.StatusMsg.Spring = true;
             this.StatusMsg.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -281,11 +282,25 @@
             this.rbDefault.Text = "Default";
             this.rbDefault.UseVisualStyleBackColor = true;
             // 
+            // ValidateChkBox
+            // 
+            this.ValidateChkBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.ValidateChkBox.AutoSize = true;
+            this.ValidateChkBox.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.ValidateChkBox.Enabled = false;
+            this.ValidateChkBox.Location = new System.Drawing.Point(410, 102);
+            this.ValidateChkBox.Name = "ValidateChkBox";
+            this.ValidateChkBox.Size = new System.Drawing.Size(95, 17);
+            this.ValidateChkBox.TabIndex = 10;
+            this.ValidateChkBox.Text = "Validate xls file";
+            this.ValidateChkBox.UseVisualStyleBackColor = true;
+            // 
             // COBieGenerator
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(523, 437);
+            this.Controls.Add(this.ValidateChkBox);
             this.Controls.Add(this.mergeBtn);
             this.Controls.Add(this.GeoOnlyChkBox);
             this.Controls.Add(this.gbFilter);
@@ -330,6 +345,7 @@
         private System.Windows.Forms.CheckBox MergeChkBox;
         private System.Windows.Forms.CheckBox GeoOnlyChkBox;
         private System.Windows.Forms.Button mergeBtn;
+        private System.Windows.Forms.CheckBox ValidateChkBox;
     }
 }
 
