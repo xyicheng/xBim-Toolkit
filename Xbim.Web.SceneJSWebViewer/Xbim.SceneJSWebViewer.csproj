@@ -431,11 +431,6 @@
       <Name>Xbim.ModelGeometry.Scene</Name>
       <Private>True</Private>
     </ProjectReference>
-    <ProjectReference Include="..\Xbim.ModelGeometry\Xbim.ModelGeometry.vcxproj">
-      <Project>{CBCA1EFC-7459-4A0E-A42D-55D4F58051BF}</Project>
-      <Name>Xbim.ModelGeometry</Name>
-      <Private>False</Private>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Content Include="FileUpload.ashx" />
@@ -467,7 +462,7 @@
     </PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PreBuildEvent>xcopy /d /v /f /y "$(SolutionDir)\Xbim.ModelGeometry\OpenCascade\Win32\bin\*.*" "$(TargetDir)"</PreBuildEvent>
+    <PreBuildEvent>xcopy /d /v /f /y "$(SolutionDir)\Xbim.ModelGeometry.OCC\OpenCascade\Win32\bin\*.*" "$(TargetDir)"</PreBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
