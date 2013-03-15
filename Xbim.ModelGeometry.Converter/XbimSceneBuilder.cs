@@ -114,6 +114,18 @@ namespace Xbim.ModelGeometry.Converter
                 {
                     AddMetaData(connection,space.GetType().Name,space.Name,space.EntityLabel.ToString());
                 }
+
+
+                var storeys = model.Instances.OfType<IfcBuildingStorey>().OrderBy(t => Convert.ToDouble(t.Elevation.Value)).ToArray();
+                foreach (var storey in storeys)
+                {
+                    string cleanName = storey.Name.Value.ToString().Replace(';', ' ');
+                    AddMetaData(
+                        connection,
+                        "Storey",
+                        string.Format("Name:{0};Elevation:{1};", cleanName, Convert.ToDouble(storey.Elevation.Value)),
+                        cleanName);
+                }
             }
             finally
             {
