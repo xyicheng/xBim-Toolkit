@@ -11,7 +11,7 @@ namespace Xbim.Ifc.Extensions
         public static string Name(this IfcNamedUnit namedUnit)
         {
             if (namedUnit is IfcSIUnit)
-                return ((IfcSIUnit)namedUnit).Name.ToString();
+                return ((IfcSIUnit)namedUnit).ToString();
             else if(namedUnit is IfcConversionBasedUnit)
                 return ((IfcConversionBasedUnit)namedUnit).Name;
             else if(namedUnit is IfcContextDependentUnit)
