@@ -36,7 +36,7 @@ namespace Xbim.DOM
         private XbimModel _model;
         private XbimObjectCreator _creator;
         //xbim transatcion on the model
-        private XbimReadWriteTransaction _transaction;
+        
         public XbimModelView ModelView = XbimModelView.CoordinationView;
         private IfcAxis2Placement3D _wcs;
 

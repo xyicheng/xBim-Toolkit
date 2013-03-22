@@ -66,7 +66,7 @@ namespace Xbim.DOM
         }
         #endregion
 
-        public void AddMaterialLayer(XbimMaterial material, double thickness, bool isVentilated, XbimMaterialFunctionEnum function)
+        public new void AddMaterialLayer(XbimMaterial material, double thickness, bool isVentilated, XbimMaterialFunctionEnum function)
         {
             if (!CanHaveOwnGeometry) throw new Exception("Roof has decomposing elements so it can not have its own material layers specified");
 
