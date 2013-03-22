@@ -164,36 +164,6 @@ namespace Xbim.Ifc.MeasureResource
         #endregion
 
 
-        /// <summary>
-        /// return the culture name of the currency
-        /// </summary>
-        /// <returns></returns>
-        public override string ToString()
-        {
-            string value = CultureInfo.GetCultures(CultureTypes.SpecificCultures)
-               .Where(c => new RegionInfo(c.LCID).ISOCurrencySymbol == this.Currency.ToString())
-               .Select(c => new RegionInfo(c.LCID).CurrencyEnglishName)
-               .FirstOrDefault();
-            return string.IsNullOrEmpty(value) ? this.Currency.ToString() : value;
-        }
-
-        /// <summary>
-        /// ToString with parameter to get Symbol string
-        /// </summary>
-        /// <param name="sym">bool sym - true for symbol, false for name</param>
-        /// <returns></returns>
-        public string ToString(bool sym)
-        {
-            if (sym)
-            {
-                string value = CultureInfo.GetCultures(CultureTypes.SpecificCultures)
-               .Where(c => new RegionInfo(c.LCID).ISOCurrencySymbol == this.Currency.ToString())
-               .Select(c => new RegionInfo(c.LCID).CurrencySymbol)
-               .FirstOrDefault();
-                return string.IsNullOrEmpty(value) ? this.Currency.ToString() : value;
-            }
-            else
-                return this.ToString();
-        }
+       
     }
 }

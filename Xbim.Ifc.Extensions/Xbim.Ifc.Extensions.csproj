@@ -122,6 +122,8 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="AddressExtensions.cs" />
+    <Compile Include="AppliedValueExtensions.cs" />
     <Compile Include="Axis2Placement2DExtensions.cs" />
     <Compile Include="Axis2Placement3DExtensions.cs" />
     <Compile Include="BuildingElementExtension.cs" />
@@ -132,6 +134,7 @@
     <Compile Include="CartesianTransformationOperatorExtensions.cs" />
     <Compile Include="ColourRgbExtensions.cs" />
     <Compile Include="CoordinatedUniversalTimeOffsetExtensions.cs" />
+    <Compile Include="DateTimeSelectExtensions.cs" />
     <Compile Include="DirectionExtensions.cs" />
     <Compile Include="DistributionControlElementExtensions.cs" />
     <Compile Include="DoorExtensions.cs" />
@@ -148,10 +151,13 @@
     <Compile Include="LocalTimeExtensions.cs" />
     <Compile Include="MaterialExtension.cs" />
     <Compile Include="ModelExtension.cs" />
+    <Compile Include="MonetaryUnitExtensions.cs" />
     <Compile Include="NamedUnitExtensions.cs" />
     <Compile Include="ObjectDefinitionExtensions.cs" />
     <Compile Include="ObjectExtensions.cs" />
     <Compile Include="ObjectPlacementExtensions.cs" />
+    <Compile Include="ObjectReferenceSelectExtensions.cs" />
+    <Compile Include="PersonExtensions.cs" />
     <Compile Include="PolyLoopExtensions.cs" />
     <Compile Include="PresentationStyleAssignmentExtension.cs" />
     <Compile Include="ProductExtensions.cs" />
@@ -174,8 +180,10 @@
     <Compile Include="SpatialStructureElementExtensions.cs" />
     <Compile Include="StyledItemExtensions.cs" />
     <Compile Include="SurfaceExtensions.cs" />
+    <Compile Include="TimeSeriesExtensions.cs" />
     <Compile Include="TypeObjectExtensions.cs" />
     <Compile Include="UnitAssignmentExtensions.cs" />
+    <Compile Include="UnitExtensions.cs" />
     <Compile Include="WallExtensions.cs" />
     <Compile Include="WindowExtensions.cs" />
   </ItemGroup>

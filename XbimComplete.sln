@@ -70,13 +70,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3rd Party", "3rd Party", "{
 		Licences\OPEN CASCADE Public Licence.txt = Licences\OPEN CASCADE Public Licence.txt
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "COBie.Xbim.Tester", "COBie.Xbim.Tester\COBie.Xbim.Tester.csproj", "{823FEDA5-EEE3-4583-82CE-E51CE88BCF44}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NewFolder1", "NewFolder1", "{C8E7C08C-2AC0-4386-9F08-34A5607C53D3}"
 EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 18
+		SccNumberOfProjects = 17
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://tfs.codeplex.com/tfs/tfs13
 		SccLocalPath0 = .
@@ -135,10 +133,6 @@ Global
 		SccProjectTopLevelParentUniqueName16 = XbimComplete.sln
 		SccProjectName16 = CodeExamples
 		SccLocalPath16 = CodeExamples
-		SccProjectUniqueName17 = COBie.Xbim.Tester\\COBie.Xbim.Tester.csproj
-		SccProjectTopLevelParentUniqueName17 = XbimComplete.sln
-		SccProjectName17 = COBie.Xbim.Tester
-		SccLocalPath17 = COBie.Xbim.Tester
 	EndGlobalSection
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = XbimComplete.vsmdi
@@ -398,18 +392,6 @@ Global
 		{9FD894A7-6637-4BF0-A0EA-D654CEB0E234}.Release|x64.ActiveCfg = Release|x86
 		{9FD894A7-6637-4BF0-A0EA-D654CEB0E234}.Release|x86.ActiveCfg = Release|x86
 		{9FD894A7-6637-4BF0-A0EA-D654CEB0E234}.Release|x86.Build.0 = Release|x86
-		{823FEDA5-EEE3-4583-82CE-E51CE88BCF44}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{823FEDA5-EEE3-4583-82CE-E51CE88BCF44}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
-		{823FEDA5-EEE3-4583-82CE-E51CE88BCF44}.Debug|Mixed Platforms.Build.0 = Debug|x86
-		{823FEDA5-EEE3-4583-82CE-E51CE88BCF44}.Debug|x64.ActiveCfg = Debug|x86
-		{823FEDA5-EEE3-4583-82CE-E51CE88BCF44}.Debug|x86.ActiveCfg = Debug|x86
-		{823FEDA5-EEE3-4583-82CE-E51CE88BCF44}.Debug|x86.Build.0 = Debug|x86
-		{823FEDA5-EEE3-4583-82CE-E51CE88BCF44}.Release|Any CPU.ActiveCfg = Release|x86
-		{823FEDA5-EEE3-4583-82CE-E51CE88BCF44}.Release|Mixed Platforms.ActiveCfg = Release|x86
-		{823FEDA5-EEE3-4583-82CE-E51CE88BCF44}.Release|Mixed Platforms.Build.0 = Release|x86
-		{823FEDA5-EEE3-4583-82CE-E51CE88BCF44}.Release|x64.ActiveCfg = Release|x86
-		{823FEDA5-EEE3-4583-82CE-E51CE88BCF44}.Release|x86.ActiveCfg = Release|x86
-		{823FEDA5-EEE3-4583-82CE-E51CE88BCF44}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -420,7 +402,6 @@ Global
 		{FB5A1829-7B34-4DE9-94A9-AF3AD36320BB} = {0DA6263B-5A69-401E-99D0-391644EF4709}
 		{D6CED5D7-BE37-4A32-90A5-1444C9FFDD91} = {0DA6263B-5A69-401E-99D0-391644EF4709}
 		{9FD894A7-6637-4BF0-A0EA-D654CEB0E234} = {0DA6263B-5A69-401E-99D0-391644EF4709}
-		{823FEDA5-EEE3-4583-82CE-E51CE88BCF44} = {0DA6263B-5A69-401E-99D0-391644EF4709}
 		{6EF22FB8-7048-4E6A-9B2F-AC2570A998A9} = {7ECDCF15-95BB-4D2B-8C0D-8615D6E3BAB1}
 		{8729CDD1-B493-48EC-A867-61ABAF3E93D2} = {7ECDCF15-95BB-4D2B-8C0D-8615D6E3BAB1}
 		{10A2F674-DB37-41FF-AB71-9D54C8F0A5B6} = {E9E301F2-FE7D-4410-B88D-F83D684A8E62}

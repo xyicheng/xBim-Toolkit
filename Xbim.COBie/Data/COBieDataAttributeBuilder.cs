@@ -248,7 +248,9 @@ namespace Xbim.COBie.Data
                     //get value
                     if (ifcPropertySingleValue != null)
                     {
-                        if (ifcPropertySingleValue.NominalValue != null)
+                        if ((ifcPropertySingleValue.NominalValue != null) &&
+                            (ifcPropertySingleValue.NominalValue.Value != null)
+                            )
                         {
                             value = ifcPropertySingleValue.NominalValue.Value.ToString();
                             double num;

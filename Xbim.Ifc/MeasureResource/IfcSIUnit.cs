@@ -109,69 +109,9 @@ namespace Xbim.Ifc.MeasureResource
         /// <returns>string</returns>
         public override string ToString()
         {
-            string prefixUnit = (_prefix.HasValue) ? _prefix.ToString() : "";  //see IfcSIPrefix
-            string value = _name.ToString();                                   //see IfcSIUnitName
-            //Handle the "_" in _name value, should work for lengths, but might have to look at other values later
-            if (!string.IsNullOrEmpty(value))
-            {
-                if (value.Contains("_"))
-                    return value = value.Replace("_", prefixUnit);
-                else
-                    return value = prefixUnit + value; //combine to give length name
-            }
-            else
-                return string.Format("{0}{1}", _prefix.HasValue ? _prefix.Value.ToString() : "", _name.ToString());
+            return string.Format("{0}{1}", _prefix.HasValue ? _prefix.Value.ToString() : "", _name.ToString());
         }
 
-        /// <summary>
-        /// Return the Symbol string or full name string 
-        /// </summary>
-        /// <param name="sym">bool sym - true = symbol name</param>
-        /// <returns>string</returns>
-        public string ToString(bool sym)
-        {
-            if (sym)
-            {
-                IfcSIUnitName ifcSIUnitName = this.Name;
-                IfcSIPrefix ifcSIPrefix;
-                string value = string.Empty;
-                string prefix = string.Empty;
-                if (this.Prefix != null)
-                {
-                    ifcSIPrefix = (IfcSIPrefix)this.Prefix;
-                    switch (ifcSIPrefix)
-                    {
-                        case IfcSIPrefix.CENTI:
-                            prefix = "c";
-                            break;
-                        case IfcSIPrefix.MILLI:
-                            prefix = "m";
-                            break;
-                        default: //TODO: the other values of IfcSIPrefix
-                            prefix = ifcSIPrefix.ToString();
-                            break;
-                    }
-                }
-
-                switch (ifcSIUnitName)
-                {
-                    case IfcSIUnitName.METRE:
-                        value = prefix + "m";
-                        break;
-                    case IfcSIUnitName.SQUARE_METRE:
-                        value = prefix + "m" + ((char)0x00B2);
-                        break;
-                    case IfcSIUnitName.CUBIC_METRE:
-                        value = prefix + "m" + ((char)0x00B3);
-                        break;
-                    default://TODO: the other values of IfcSIUnitName
-                        value = this.ToString();
-                        break;
-                }
-                return value;
-            }
-            else
-                return this.ToString();
-        }
+        
     }
 }
