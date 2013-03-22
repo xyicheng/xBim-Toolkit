@@ -140,5 +140,12 @@ namespace Xbim.DOM.PropertiesQuantities
                     break;
             }
         }
+
+
+        public void SetProperty(string propertySetName, string propertyName, IfcValue value)
+        {
+            if (value == null) { _object.DeletePropertySingleValueValue(propertySetName, propertyName); return; }
+            _object.SetPropertySingleValue(propertySetName, propertyName, value);
+        }
     }
 }

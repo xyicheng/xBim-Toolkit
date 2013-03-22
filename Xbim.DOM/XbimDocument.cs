@@ -242,8 +242,8 @@ namespace Xbim.DOM
                 IfcPersonAndOrganization po = _model.DefaultOwningUser as IfcPersonAndOrganization;
                 if (po != null)
                 {
-                    po.ThePerson.FamilyName = "Unknown";
-                    po.TheOrganization.Name = "Unknown";
+                    po.ThePerson.FamilyName = authorName;
+                    po.TheOrganization.Name = organisationName;
                 }
                 _model.Header.FileDescription.Description.Clear();
                 _model.Header.FileDescription.Description.Add(viewDefinition);
@@ -251,8 +251,8 @@ namespace Xbim.DOM
                 _model.Header.FileName.AuthorizationName = organisationName;
                 IfcProject project = _model.Instances.New<IfcProject>();
                 project.Initialize(ProjectUnits.SIUnitsUK);
-                project.Name = "Xbim";
-               
+                project.Name = applicationName;
+
                 trans.Commit();
             }
 
@@ -264,14 +264,19 @@ namespace Xbim.DOM
             BaseInit();
         }
 
+        /// <summary>
+        /// Opens an existing Ifc file and creates the corresponding Xbim file 
+        /// </summary>
+        /// <param name="fileName"></param>
         public XbimDocument(string fileName)
         {
-            BaseInit();
-           
+            
             try
             {
                 _model = new XbimModel();
-                Model.CreateFrom(fileName);
+                string xbimFileName = Path.ChangeExtension(fileName, "xBIM");
+                Model.CreateFrom(fileName, xbimFileName);
+                Model.Open(xbimFileName);
 
             }
             catch (Exception e)
@@ -308,15 +313,21 @@ namespace Xbim.DOM
         protected virtual void BaseInit()
         {
             _creator = new XbimObjectCreator(this);
-            if (_model == null) _model = new XbimModel();
-            _transaction = _model.BeginTransaction("XbimDocument transaction");
-            _wcs = _model.Instances.New<IfcAxis2Placement3D>();
-            //set world coordinate system
-            _wcs.SetNewDirectionOf_XZ(
-                0, 0, 1,
-                0, 1, 0);
-            _wcs.SetNewLocation(0, 0, 0);
-           
+            if (_model == null) _model = XbimModel.CreateTemporaryModel();
+            using (XbimReadWriteTransaction trans = _model.BeginTransaction("Model initialization"))
+            {
+                _wcs = _model.Instances.New<IfcAxis2Placement3D>();
+                //set world coordinate system
+                _wcs.SetNewDirectionOf_XZ(
+                    0, 0, 1,
+                    0, 1, 0);
+                _wcs.SetNewLocation(0, 0, 0);
+                trans.Commit();
+            }
+
+
+
+
         }
 
         protected virtual void InitMaterials()
@@ -929,23 +940,7 @@ namespace Xbim.DOM
         {
             if (Model != null)
             {
-                //commit transaction of the xbim document
-                if (_transaction != null)
-                {
-                    _transaction.Commit();
-                }
-                //srl this code needs to be resolved due to changes to the XbimModel server
-                _model  = null;
-                Debug.Assert(false, "Code attention required below this line");
-                ////close model server if it is the case
-                //if (Model is XbimFileModelServer)
-                //{
-                //    (Model as XbimFileModelServer).Dispose(true);
-                //}
-                //if (Model is XbimMemoryModel)
-                //{
-                //    _model  = null;
-                //}
+                _model.Close();
             }
         }
 

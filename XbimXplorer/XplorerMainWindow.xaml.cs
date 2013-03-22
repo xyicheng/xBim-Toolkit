@@ -79,6 +79,32 @@ namespace XbimXplorer
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            string[] args = Environment.GetCommandLineArgs();
+            if (args.Length > 1)
+            {
+                string toOpen = args[1];
+                CreateWorker();
+                string ext = Path.GetExtension(toOpen);
+                switch (ext)
+                {
+                    case ".ifc": //it is an Ifc File
+                    case ".ifcxml": //it is an IfcXml File
+                    case ".ifczip": //it is a xip file containing xbim or ifc File
+                    case ".zip": //it is a xip file containing xbim or ifc File
+                        CloseAndDeleteTemporaryFiles();
+                        _worker.DoWork += OpenIfcFile;
+                        _worker.RunWorkerAsync(toOpen);
+                        break;
+                    case ".xbim": //it is an xbim File, just open it in the main thread
+                        CloseAndDeleteTemporaryFiles();
+                        _worker.DoWork += OpenXbimFile;
+                        _worker.RunWorkerAsync(toOpen);
+                        break;
+                    default:
+                        break;
+                }
+            }
+           
         }
 
 

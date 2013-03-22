@@ -29,10 +29,12 @@ namespace Xbim.DOM
 
         internal XbimMaterial(XbimDocument document, string materialName)
         {
+
             _ifcMaterial = document.Model.Instances.New<IfcMaterial>();
             _ifcMaterial.Name = materialName;
             _document = document;
             document.Materials.Add(this);
+           
         }
 
         internal XbimMaterial(XbimDocument document, IfcMaterial material)

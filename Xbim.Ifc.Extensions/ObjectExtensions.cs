@@ -80,6 +80,24 @@ namespace Xbim.Ifc2x3.Extensions
         }
 
         /// <summary>
+        /// Adds an existing property set to the objecty, NB no check is done for duplicate psets
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="pSet"></param>
+        public static void AddPropertySet(this IfcObject obj, IfcPropertySet pSet)
+        {
+            IModel model = obj.ModelOf;
+            IfcRelDefinesByProperties relDef = model.Instances.OfType<IfcRelDefinesByProperties>().Where(r => r.RelatingPropertyDefinition==pSet).FirstOrDefault(); ;
+            if (relDef==null)
+            {
+                
+                relDef = model.Instances.New<IfcRelDefinesByProperties>();
+                relDef.RelatingPropertyDefinition = pSet;
+            }
+            relDef.RelatedObjects.Add_Reversible(obj);
+        }
+
+        /// <summary>
         /// Returns the propertyset of the specified name, null if it does not exist
         /// </summary>
         /// <param name="obj"></param>
