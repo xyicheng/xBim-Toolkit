@@ -38,6 +38,21 @@
             The type id.
             </summary>
         </member>
+        <member name="M:PropertyTools.DataAnnotations.ColumnAttribute.#ctor(System.Int32,System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:PropertyTools.DataAnnotations.ColumnAttribute"/> class.
+            </summary>
+            <param name="columnIndex">Index of the column.</param>
+            <param name="propertyName">Name of the property.</param>
+        </member>
+        <member name="M:PropertyTools.DataAnnotations.ColumnAttribute.#ctor(System.Int32,System.String,System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:PropertyTools.DataAnnotations.ColumnAttribute"/> class.
+            </summary>
+            <param name="columnIndex">Index of the column.</param>
+            <param name="propertyName">Name of the property.</param>
+            <param name="header">The header.</param>
+        </member>
         <member name="M:PropertyTools.DataAnnotations.ColumnAttribute.#ctor(System.Int32,System.String,System.String,System.String,System.String,System.Char,System.Boolean)">
             <summary>
             Initializes a new instance of the <see cref="T:PropertyTools.DataAnnotations.ColumnAttribute"/> class.
@@ -98,7 +113,7 @@
         </member>
         <member name="P:PropertyTools.DataAnnotations.ColumnAttribute.Width">
             <summary>
-            Gets or sets the width.
+            Gets or sets the width ("Auto", "0.5*" etc. are ok).
             </summary>
             <value>The width.</value>
         </member>
@@ -145,6 +160,30 @@
             </summary>
             <value>The type of the converter.</value>
         </member>
+        <member name="T:PropertyTools.DataAnnotations.CheckableItemsAttribute">
+            <summary>
+            Specifies the name of the properties that controls the IsChecked and Content of checkable items.
+            </summary>
+        </member>
+        <member name="M:PropertyTools.DataAnnotations.CheckableItemsAttribute.#ctor(System.String,System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:PropertyTools.DataAnnotations.CheckableItemsAttribute"/> class.
+            </summary>
+            <param name="isCheckedPropertyName">Name of the IsChecked property.</param>
+            <param name="contentPropertyName">Name of the Content property.</param>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.CheckableItemsAttribute.IsCheckedPropertyName">
+            <summary>
+            Gets or sets the name of the IsChecked property.
+            </summary>
+            <value>The name of the property.</value>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.CheckableItemsAttribute.ContentPropertyName">
+            <summary>
+            Gets or sets the name of the content property.
+            </summary>
+            <value>The name of the content property.</value>
+        </member>
         <member name="T:PropertyTools.DataAnnotations.DefaultExtensionPropertyAttribute">
             <summary>
             Specifies that the decorated property should get its DefaultExtension from the specified property.
@@ -169,6 +208,23 @@
             Specifies that the property is a directory path.
             </summary>
         </member>
+        <member name="T:PropertyTools.DataAnnotations.EasyInsertAttribute">
+            <summary>
+            Specify that it should be easy to insert new items in a List property. When the ItemsGrid control is used, the EasyInsert property will be set.
+            </summary>
+        </member>
+        <member name="M:PropertyTools.DataAnnotations.EasyInsertAttribute.#ctor(System.Boolean)">
+            <summary>
+            Initializes a new instance of the <see cref="T:PropertyTools.DataAnnotations.EasyInsertAttribute"/> class.
+            </summary>
+            <param name="easyInsert">if set to <c>true</c> [easy insert].</param>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.EasyInsertAttribute.EasyInsert">
+            <summary>
+            Gets or sets a value indicating whether easy insert is enabled.
+            </summary>
+            <value><c>true</c> if [easy insert]; otherwise, <c>false</c>.</value>
+        </member>
         <member name="T:PropertyTools.DataAnnotations.EnableByAttribute">
             <summary>
             Specifies the name of property that controls the enabled/disabled state of the attributed property.
@@ -187,6 +243,11 @@
             Gets or sets the name of the property.
             </summary>
             <value>The name of the property.</value>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.EnableByAttribute.PropertyValue">
+            <summary>
+            Gets or sets the value that enables the attributed property.
+            </summary>
         </member>
         <member name="T:PropertyTools.DataAnnotations.EnumDisplayNameAttribute">
             <summary>
@@ -485,11 +546,6 @@
             </summary>
             <value>The filter.</value>
         </member>
-        <member name="T:PropertyTools.DataAnnotations.IsEditableAttribute">
-            <summary>
-            Specifies that the property is editable.
-            </summary>
-        </member>
         <member name="T:PropertyTools.DataAnnotations.ListAttribute">
             <summary>
             Specifies properties for lists.
@@ -532,6 +588,25 @@
             <value>
             The maximum number of items.
             </value>
+        </member>
+        <member name="T:PropertyTools.DataAnnotations.ListItemItemsSourcePropertyAttribute">
+            <summary>
+            Specifies the name of a property that contains values for the items in the decorated list property.
+            </summary>
+        </member>
+        <member name="M:PropertyTools.DataAnnotations.ListItemItemsSourcePropertyAttribute.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:PropertyTools.DataAnnotations.ListItemItemsSourcePropertyAttribute"/> class.
+            </summary>
+            <param name="propertyName">
+            Name of the property.
+            </param>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.ListItemItemsSourcePropertyAttribute.PropertyName">
+            <summary>
+            Gets or sets the name of the property.
+            </summary>
+            <value>The name of the property.</value>
         </member>
         <member name="T:PropertyTools.DataAnnotations.OptionalAttribute">
             <summary>
@@ -635,6 +710,31 @@
             Gets or sets the item header property.
             </summary>
             <value>The item header property.</value>
+        </member>
+        <member name="T:PropertyTools.DataAnnotations.SelectorStyle">
+            <summary>
+            Defines the style of selector controls.
+            </summary>
+        </member>
+        <member name="F:PropertyTools.DataAnnotations.SelectorStyle.Auto">
+            <summary>
+            Automatic style.
+            </summary>
+        </member>
+        <member name="F:PropertyTools.DataAnnotations.SelectorStyle.RadioButtons">
+            <summary>
+            Use radio buttons.
+            </summary>
+        </member>
+        <member name="F:PropertyTools.DataAnnotations.SelectorStyle.ComboBox">
+            <summary>
+            Use combo box.
+            </summary>
+        </member>
+        <member name="F:PropertyTools.DataAnnotations.SelectorStyle.ListBox">
+            <summary>
+            Use list box.
+            </summary>
         </member>
         <member name="T:PropertyTools.DataAnnotations.SelectorStyleAttribute">
             <summary>

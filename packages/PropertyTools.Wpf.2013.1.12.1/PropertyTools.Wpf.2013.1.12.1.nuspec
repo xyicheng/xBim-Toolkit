@@ -2,7 +2,8 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
   <metadata>
     <id>PropertyTools.Wpf</id>
-    <version>2012.4.27.1</version>
+    <version>2013.1.12.1</version>
+    <title>PropertyTools.Wpf</title>
     <authors>objo</authors>
     <owners>objo</owners>
     <licenseUrl>http://propertytools.codeplex.com/license</licenseUrl>
@@ -10,6 +11,9 @@
     <iconUrl>http://www.objo.net/codeplex/icons/propertytools.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Library of property/reflection based custom controls for WPF. The controls includes a PropertyGrid, DataGrid, ColorPicker and many other reusable controls.</description>
+    <releaseNotes />
+    <copyright />
+    <language />
     <tags>wpf controls propertygrid dataform datagrid</tags>
     <references>
       <reference file="PropertyTools.dll" />

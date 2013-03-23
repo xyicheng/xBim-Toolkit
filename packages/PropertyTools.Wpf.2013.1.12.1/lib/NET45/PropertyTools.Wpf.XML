@@ -999,10 +999,21 @@
             Represents a control that shows a check mark (not editable CheckBox without the box).
             </summary>
         </member>
+        <member name="F:PropertyTools.Wpf.CheckMark.IsCheckedProperty">
+            <summary>
+            The is checked property
+            </summary>
+        </member>
         <member name="M:PropertyTools.Wpf.CheckMark.#cctor">
             <summary>
             Initializes static members of the <see cref="T:PropertyTools.Wpf.CheckMark"/> class.
             </summary>
+        </member>
+        <member name="P:PropertyTools.Wpf.CheckMark.IsChecked">
+            <summary>
+            Gets or sets a value indicating whether this instance is checked.
+            </summary>
+            <value><c>true</c> if this instance is checked; otherwise, <c>false</c>.</value>
         </member>
         <member name="T:PropertyTools.Wpf.DockPanelSplitter">
             <summary>
@@ -2125,6 +2136,51 @@
             Gets the string to color map.
             </summary>
             <value> The color map. </value>
+        </member>
+        <member name="T:PropertyTools.Wpf.FontFamilyConverter">
+            <summary>
+            Converts <see cref="T:System.Windows.Media.FontFamily"/> instances to <see cref="T:System.String"/> instances.
+            </summary>
+        </member>
+        <member name="M:PropertyTools.Wpf.FontFamilyConverter.Convert(System.Object,System.Type,System.Object,System.Globalization.CultureInfo)">
+            <summary>
+            Converts a value.
+            </summary>
+            <param name="value">
+            The value produced by the binding source.
+            </param>
+            <param name="targetType">
+            The type of the binding target property.
+            </param>
+            <param name="parameter">
+            The converter parameter to use.
+            </param>
+            <param name="culture">
+            The culture to use in the converter.
+            </param>
+            <returns>
+            A converted value. If the method returns null, the valid null value is used.
+            </returns>
+        </member>
+        <member name="M:PropertyTools.Wpf.FontFamilyConverter.ConvertBack(System.Object,System.Type,System.Object,System.Globalization.CultureInfo)">
+            <summary>
+            Converts a value.
+            </summary>
+            <param name="value">
+            The value that is produced by the binding target.
+            </param>
+            <param name="targetType">
+            The type to convert to.
+            </param>
+            <param name="parameter">
+            The converter parameter to use.
+            </param>
+            <param name="culture">
+            The culture to use in the converter.
+            </param>
+            <returns>
+            A converted value. If the method returns null, the valid null value is used.
+            </returns>
         </member>
         <member name="T:PropertyTools.Wpf.TimeSpanToStringConverter">
             <summary>
@@ -3690,7 +3746,7 @@
             True if an item was inserted.
             </returns>
         </member>
-        <member name="M:PropertyTools.Wpf.ItemsGrid.MoveCurrentCell(System.Int32,System.Int32)">
+        <member name="M:PropertyTools.Wpf.ItemsGrid.ChangeCurrentCell(System.Int32,System.Int32)">
             <summary>
             Changes current cell with the specified delta.
             </summary>
@@ -3729,6 +3785,11 @@
         <member name="M:PropertyTools.Wpf.ItemsGrid.ShowTextBoxEditControl">
             <summary>
             Shows the text box editor.
+            </summary>
+        </member>
+        <member name="M:PropertyTools.Wpf.ItemsGrid.OpenComboBoxControl">
+            <summary>
+            Opens the combo box control.
             </summary>
         </member>
         <member name="M:PropertyTools.Wpf.ItemsGrid.ToCsv(System.String)">
@@ -4732,6 +4793,11 @@
         <member name="M:PropertyTools.Wpf.ItemsGrid.SelectedCellsChanged">
             <summary>
                 The selected cells changed, update the UI elements showing the selection.
+            </summary>
+        </member>
+        <member name="M:PropertyTools.Wpf.ItemsGrid.UpdateSelectionVisibility">
+            <summary>
+            Updates the selection visibility.
             </summary>
         </member>
         <member name="M:PropertyTools.Wpf.ItemsGrid.SelectionCellChanged">
@@ -6869,7 +6935,7 @@
             <summary>
             Finds the biggest common type of items in the list.
             </summary>
-            <param name="list">
+            <param name="items">
             The list.
             </param>
             <returns>
@@ -6984,22 +7050,6 @@
         <member name="E:PropertyTools.Wpf.DelegateCommand.CanExecuteChanged">
             <summary>
             Occurs when changes occur that affect whether or not the command should execute.
-            </summary>
-        </member>
-        <member name="T:PropertyTools.Wpf.Properties.Resources">
-            <summary>
-              A strongly-typed resource class, for looking up localized strings, etc.
-            </summary>
-        </member>
-        <member name="P:PropertyTools.Wpf.Properties.Resources.ResourceManager">
-            <summary>
-              Returns the cached ResourceManager instance used by this class.
-            </summary>
-        </member>
-        <member name="P:PropertyTools.Wpf.Properties.Resources.Culture">
-            <summary>
-              Overrides the current thread's CurrentUICulture property for all
-              resource lookups using this strongly typed resource class.
             </summary>
         </member>
         <member name="T:PropertyTools.Wpf.PropertyDialog">
@@ -7440,6 +7490,11 @@
             A element.
             </returns>
         </member>
+        <member name="F:PropertyTools.Wpf.DefaultPropertyControlFactory.FontFamilyConverter">
+            <summary>
+            The font family converter
+            </summary>
+        </member>
         <member name="F:PropertyTools.Wpf.DefaultPropertyControlFactory.cachedFontFamilies">
             <summary>
             The cached font families.
@@ -7540,6 +7595,13 @@
             <returns>
             The control.
             </returns>
+        </member>
+        <member name="M:PropertyTools.Wpf.DefaultPropertyControlFactory.IsNullable(System.Type)">
+            <summary>
+            Determines whether the specified type is nullable.
+            </summary>
+            <param name="type">The type.</param>
+            <returns><c>true</c> if the specified type is nullable; otherwise, <c>false</c>.</returns>
         </member>
         <member name="M:PropertyTools.Wpf.DefaultPropertyControlFactory.CreateDictionaryControl(PropertyTools.Wpf.PropertyItem)">
             <summary>
@@ -7698,6 +7760,13 @@
             The control.
             </returns>
         </member>
+        <member name="M:PropertyTools.Wpf.DefaultPropertyControlFactory.CreateCheckableItems(PropertyTools.Wpf.PropertyItem)">
+            <summary>
+            Creates a sequence of checkboxes.
+            </summary>
+            <param name="property">The property.</param>
+            <returns>A FrameworkElement.</returns>
+        </member>
         <member name="M:PropertyTools.Wpf.DefaultPropertyControlFactory.ConvertHorizontalAlignment(PropertyTools.DataAnnotations.HorizontalAlignment)">
             <summary>
             Converts the horizontal alignment.
@@ -7779,15 +7848,10 @@
             <summary>
             Creates a property item.
             </summary>
-            <param name="pd">
-            The property descriptor.
-            </param>
-            <param name="instance">
-            The instance.
-            </param>
-            <returns>
-            A property item.
-            </returns>
+            <param name="pd">The property descriptor.</param>
+            <param name="descriptors">The descriptors.</param>
+            <param name="instance">The instance.</param>
+            <returns>A property item.</returns>
         </member>
         <member name="M:PropertyTools.Wpf.IPropertyItemFactory.Reset">
             <summary>
@@ -7820,19 +7884,22 @@
             A list of <see cref="T:PropertyTools.Wpf.Tab"/> .
             </returns>
         </member>
+        <member name="M:PropertyTools.Wpf.DefaultPropertyItemFactory.CreatePropertyItems(System.Object,PropertyTools.Wpf.IPropertyControlOptions)">
+            <summary>
+            Creates property items for all properties in the specified object.
+            </summary>
+            <param name="instance">The object instance.</param>
+            <param name="options">The options.</param>
+            <returns>Enumeration of PropertyItem.</returns>
+        </member>
         <member name="M:PropertyTools.Wpf.DefaultPropertyItemFactory.CreatePropertyItem(System.ComponentModel.PropertyDescriptor,System.ComponentModel.PropertyDescriptorCollection,System.Object)">
             <summary>
             Creates a property item.
             </summary>
-            <param name="pd">
-            The property descriptor.
-            </param>
-            <param name="instance">
-            The instance.
-            </param>
-            <returns>
-            A property item.
-            </returns>
+            <param name="pd">The property descriptor.</param>
+            <param name="propertyDescriptors">The property descriptors.</param>
+            <param name="instance">The instance.</param>
+            <returns>A property item.</returns>
         </member>
         <member name="M:PropertyTools.Wpf.DefaultPropertyItemFactory.Reset">
             <summary>
@@ -7921,6 +7988,14 @@
             Sets the properties.
             </summary>
             <param name="pi">The property item.</param>
+            <param name="instance">The instance.</param>
+        </member>
+        <member name="M:PropertyTools.Wpf.DefaultPropertyItemFactory.SetAttribute(System.Attribute,PropertyTools.Wpf.PropertyItem,System.Object)">
+            <summary>
+            Sets the attribute.
+            </summary>
+            <param name="attribute">The attribute.</param>
+            <param name="pi">The pi.</param>
             <param name="instance">The instance.</param>
         </member>
         <member name="P:PropertyTools.Wpf.DefaultPropertyItemFactory.DefaultCategoryName">
@@ -8260,6 +8335,11 @@
             The bool to visibility converter.
             </summary>
         </member>
+        <member name="F:PropertyTools.Wpf.PropertyControl.ValueToBooleanConverter">
+            <summary>
+            The value to boolean converter.
+            </summary>
+        </member>
         <member name="F:PropertyTools.Wpf.PropertyControl.NullToBoolConverter">
             <summary>
             The null to bool converter.
@@ -8397,19 +8477,14 @@
             The e.
             </param>
         </member>
-        <member name="M:PropertyTools.Wpf.PropertyControl.AddPropertyPanel(System.Windows.Controls.Panel,PropertyTools.Wpf.PropertyItem,System.Object)">
+        <member name="M:PropertyTools.Wpf.PropertyControl.AddPropertyPanel(System.Windows.Controls.Panel,PropertyTools.Wpf.PropertyItem,System.Object,PropertyTools.Wpf.Tab)">
             <summary>
             Creates and adds the property panel.
             </summary>
-            <param name="panel">
-            The panel where the property panel should be added.
-            </param>
-            <param name="pi">
-            The property.
-            </param>
-            <param name="instance">
-            The instance.
-            </param>
+            <param name="panel">The panel where the property panel should be added.</param>
+            <param name="pi">The property.</param>
+            <param name="instance">The instance.</param>
+            <param name="tab">The tab.</param>
         </member>
         <member name="M:PropertyTools.Wpf.PropertyControl.CreateLabel(PropertyTools.Wpf.PropertyItem)">
             <summary>
@@ -8644,9 +8719,8 @@
             <summary>
             Initializes a new instance of the <see cref="T:PropertyTools.Wpf.PropertyItem"/> class.
             </summary>
-            <param name="propertyDescriptor">
-            The property descriptor.
-            </param>
+            <param name="propertyDescriptor">The property descriptor.</param>
+            <param name="propertyDescriptors">The property descriptors.</param>
         </member>
         <member name="M:PropertyTools.Wpf.PropertyItem.CreateBinding(System.Windows.Data.UpdateSourceTrigger)">
             <summary>
@@ -8709,9 +8783,15 @@
         </member>
         <member name="P:PropertyTools.Wpf.PropertyItem.InputDirection">
             <summary>
-            Gets or sets the input direction.
+            Gets or sets the input direction (for ItemsGrid control).
             </summary>
             <value>The input direction.</value>
+        </member>
+        <member name="P:PropertyTools.Wpf.PropertyItem.EasyInsert">
+            <summary>
+            Gets or sets a value indicating whether 'easy insert' is enabled in an ItemsGrid control.
+            </summary>
+            <value><c>true</c> if easy insert is enabled; otherwise, <c>false</c>.</value>
         </member>
         <member name="P:PropertyTools.Wpf.PropertyItem.AcceptsReturn">
             <summary>
@@ -8883,6 +8963,11 @@
             </summary>
             <value> The is enabled descriptor. </value>
         </member>
+        <member name="P:PropertyTools.Wpf.PropertyItem.IsEnabledValue">
+            <summary>
+            Gets or sets the value that enables the property.
+            </summary>
+        </member>
         <member name="P:PropertyTools.Wpf.PropertyItem.IsFileOpenDialog">
             <summary>
             Gets or sets a value indicating whether the property is a file open dialog.
@@ -8935,6 +9020,12 @@
             Gets or sets the values descriptor.
             </summary>
             <value> The values descriptor. </value>
+        </member>
+        <member name="P:PropertyTools.Wpf.PropertyItem.ListItemItemsSource">
+            <summary>
+            Gets or sets the items source for list items.
+            </summary>
+            <value>The items source.</value>
         </member>
         <member name="P:PropertyTools.Wpf.PropertyItem.ListCanAdd">
             <summary>
@@ -9101,6 +9192,24 @@
             </summary>
             <value> The width. </value>
         </member>
+        <member name="P:PropertyTools.Wpf.PropertyItem.PropertyName">
+            <summary>
+            Gets the name of the property.
+            </summary>
+            <value>
+            The name of the property.
+            </value>
+        </member>
+        <member name="P:PropertyTools.Wpf.PropertyItem.CheckableItemsContentPropertyName">
+            <summary>
+            Gets or sets the name of the Content property for a property of checkable items.
+            </summary>
+        </member>
+        <member name="P:PropertyTools.Wpf.PropertyItem.CheckableItemsIsCheckedPropertyName">
+            <summary>
+            Gets or sets the name of the IsChecked property for a property of checkable items.
+            </summary>
+        </member>
         <member name="T:PropertyTools.Wpf.ValidationErrorsToStringConverter">
             <summary>
             Converts <see cref="T:System.Windows.Controls.ValidationError"/> lists to <see cref="T:System.String"/> instances.
@@ -9199,11 +9308,24 @@
             Initializes a new instance of the <see cref="T:PropertyTools.Wpf.Tab"/> class.
             </summary>
         </member>
+        <member name="M:PropertyTools.Wpf.Tab.Contains(System.String)">
+            <summary>
+            Determines whether the tab contains the specified property.
+            </summary>
+            <param name="propertyName">Name of the property.</param>
+            <returns><c>true</c> if the tab contains the specified property; otherwise, <c>false</c>.</returns>
+        </member>
         <member name="M:PropertyTools.Wpf.Tab.ToString">
             <summary>
             Returns a <see cref="T:System.String"/> that represents this instance.
             </summary>
             <returns> A <see cref="T:System.String"/> that represents this instance. </returns>
+        </member>
+        <member name="M:PropertyTools.Wpf.Tab.UpdateHasErrors(System.ComponentModel.IDataErrorInfo)">
+            <summary>
+            Updates the has errors property.
+            </summary>
+            <param name="dei">The instance.</param>
         </member>
         <member name="P:PropertyTools.Wpf.Tab.Description">
             <summary>
@@ -9215,6 +9337,14 @@
             <summary>
             Gets the groups.
             </summary>
+        </member>
+        <member name="P:PropertyTools.Wpf.Tab.HasErrors">
+            <summary>
+            Gets or sets a value indicating whether this tab contains properties with errors.
+            </summary>
+            <value>
+                <c>true</c> if this tab has errors; otherwise, <c>false</c>.
+            </value>
         </member>
         <member name="P:PropertyTools.Wpf.Tab.Header">
             <summary>
