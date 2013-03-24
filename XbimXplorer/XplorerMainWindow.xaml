@@ -56,11 +56,11 @@
         </DataTemplate>
     </Window.Resources>
     <Window.CommandBindings>
-        <CommandBinding Command="New"  Executed="CommandBinding_New" />
+        <CommandBinding Command="New"  Executed="CommandBinding_New" CanExecute="CommandBinding_CanExecute"/>
         <CommandBinding Command="Close"  Executed="CommandBinding_Close" CanExecute="CommandBinding_CanExecute"/>
         <CommandBinding Command="SaveAs" Executed="CommandBinding_SaveAs"  CanExecute="CommandBinding_CanExecute"/>
-        <CommandBinding Command="Open"   Executed="CommandBinding_Open"/>
-        
+        <CommandBinding Command="Open"   Executed="CommandBinding_Open" CanExecute="CommandBinding_CanExecute"/>
+        <CommandBinding Command="{x:Static local:XplorerMainWindow.InsertCmd}" Executed="InsertCmdExecuted" CanExecute="InsertCmdCanExecute"/>
 
     </Window.CommandBindings>
     <Grid Name="MainFrame" DataContext="{StaticResource ModelProvider}">
@@ -75,7 +75,7 @@
                 <!--<MenuItem Header="_New Xbim File" Click="FileNew_Click"/>-->
                 <MenuItem Header="_Open" Command="Open"/>
                 <MenuItem Header="_New" Command="New" />
-                <MenuItem Header="_Insert" Click="InsertModel" />
+                <MenuItem Header="_Insert" Command="{x:Static local:XplorerMainWindow.InsertCmd}" />
                 <MenuItem Header="_SaveAs" Command="SaveAs"/>
                 <MenuItem Header="_Close" Command="Close" />
             </MenuItem>

@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Xbim.Ifc.Kernel;
+using Xbim.Ifc2x3.Kernel;
 using Xbim.XbimExtensions;
-using Xbim.Ifc.MeasureResource;
-using Xbim.Ifc.Extensions;
-using Xbim.Ifc.SelectTypes;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.Ifc2x3.Extensions;
+using Xbim.XbimExtensions.SelectTypes;
 
 namespace Xbim.DOM.PropertiesQuantities
 {
@@ -115,7 +115,11 @@ namespace Xbim.DOM.PropertiesQuantities
             }
         }
 
-
+        public void SetProperty(string propertySetName, string propertyName, IfcValue value)
+        {
+            if (value == null) { _object.DeletePropertySingleValueValue(propertySetName, propertyName); return; }
+            _object.SetPropertySingleValue(propertySetName, propertyName, value);
+        }
 
         public void SetProperty(IBimPropertySingleValue property)
         {
