@@ -46,6 +46,12 @@ namespace Xbim.ModelGeometry.Scene
                         boundingBoxVisible.Union(pos);
 
                 }
+                foreach (var sublayer in subLayerMap)
+                {
+                    XbimRect3D subBox = sublayer.BoundingBoxVisible(forceRecalculation);
+                    if (!subBox.IsEmpty)
+                        boundingBoxVisible.Union(subBox);
+                }
             }
             return boundingBoxVisible; 
         }
@@ -70,6 +76,12 @@ namespace Xbim.ModelGeometry.Scene
                     else
                         boundingBoxHidden.Union(pos);
 
+                }
+                foreach (var sublayer in subLayerMap)
+                {
+                    XbimRect3D subBox = sublayer.BoundingBoxHidden(forceRecalculation);
+                    if (!subBox.IsEmpty)
+                        boundingBoxHidden.Union(subBox);
                 }
             }
             return boundingBoxHidden; 

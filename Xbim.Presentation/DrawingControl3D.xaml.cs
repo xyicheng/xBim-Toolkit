@@ -555,10 +555,10 @@ namespace Xbim.Presentation
 
             //get bounding box for the whole scene and adapt gridlines to the model units
 
-            double metresWide = viewBounds.SizeY;
-            double metresLong = viewBounds.SizeX;
-            long gridWidth = Convert.ToInt64(metresWide / (metre * 10));
-            long gridLen = Convert.ToInt64(metresLong / (metre * 10));
+            double widthModelUnits = viewBounds.SizeY;
+            double lengthModelUnits = viewBounds.SizeX;
+            long gridWidth = Convert.ToInt64(widthModelUnits / (metre * 10));
+            long gridLen = Convert.ToInt64(lengthModelUnits / (metre * 10));
             if (gridWidth > 10 || gridLen > 10)
                 this.GridLines.MinorDistance = metre * 10;
             else

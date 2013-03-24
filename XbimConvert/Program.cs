@@ -65,9 +65,9 @@ namespace XbimConvert
                         watch.Start();
                         model.Open(xbimFileName, XbimDBAccess.ReadWrite);            
                         XbimMesher.GenerateGeometry(model, Logger, progDelegate);
-                        XbimSceneBuilder sb = new XbimSceneBuilder();
-                        string xbimSceneName = BuildFileName(arguments.IfcFileName, ".xbimScene");
-                        sb.BuildGlobalScene(model, xbimSceneName);
+                        //XbimSceneBuilder sb = new XbimSceneBuilder();
+                        //string xbimSceneName = BuildFileName(arguments.IfcFileName, ".xbimScene");
+                        //sb.BuildGlobalScene(model, xbimSceneName);
                         model.Close();
                         watch.Stop();
                     }
