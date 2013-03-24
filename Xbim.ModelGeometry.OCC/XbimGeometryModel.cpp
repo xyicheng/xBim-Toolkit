@@ -33,7 +33,6 @@
 #include <BRepLib.hxx>
 #include <Poly.hxx>
 
-#using  <Xbim.IO.dll> as_friend
 using namespace Xbim::IO;
 using namespace Xbim::Ifc2x3::ProductExtension;
 using namespace Xbim::Ifc2x3::SharedComponentElements;
