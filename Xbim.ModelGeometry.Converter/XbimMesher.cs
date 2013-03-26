@@ -20,6 +20,10 @@ namespace Xbim.ModelGeometry.Converter
 {
     public class XbimMesher
     {
+        static XbimMesher()
+        {
+            AssemblyResolver.HandleUnresovledAssemblies();
+        }
 
         private class MapData
         {

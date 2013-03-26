@@ -734,6 +734,13 @@ namespace Xbim.IO
             }
         }
 
+        public bool CanEdit
+        {
+            get
+            {
+                return Cache.AccessMode == XbimDBAccess.ReadWrite || Cache.AccessMode == XbimDBAccess.Exclusive;
+            }
+        }
 
         public bool SaveAs(string outputFileName, XbimStorageType? storageType = null, ReportProgressDelegate progress = null)
         {

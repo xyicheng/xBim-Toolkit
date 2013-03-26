@@ -182,7 +182,6 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="ModelGeoemetryClassDiagram.cd" />
-    <None Include="ReadMe.txt" />
     <None Include="XbimGeomKey.snk" />
   </ItemGroup>
   <ItemGroup>

@@ -17,6 +17,11 @@ namespace Xbim.ModelGeometry.Converter
 {
     public class XbimSceneBuilder
     {
+        static XbimSceneBuilder()
+        {
+            AssemblyResolver.HandleUnresovledAssemblies();
+        }
+
         /// <summary>
         /// This function builds a scene of all IfcProducts in the model, excluding the geometry of Openings
         /// It will create a scene database, overwriting any of the same name

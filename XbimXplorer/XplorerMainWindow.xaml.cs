@@ -84,6 +84,7 @@ namespace XbimXplorer
             string[] args = Environment.GetCommandLineArgs();
             if (args.Length > 1) //load one if specified
             {
+                StatusBar.Visibility = Visibility.Visible;
                 string toOpen = args[1];
                 CreateWorker();
                 string ext = Path.GetExtension(toOpen);
@@ -179,7 +180,7 @@ namespace XbimXplorer
         {
             BackgroundWorker worker = s as BackgroundWorker;
             string ifcFilename = args.Argument as string;
-            
+
             XbimModel model = new XbimModel();
             try
             {
@@ -188,27 +189,28 @@ namespace XbimXplorer
                 model.CreateFrom(ifcFilename, _temporaryXbimFileName, worker.ReportProgress);
                 model.Open(_temporaryXbimFileName, XbimDBAccess.ReadWrite);
                 XbimMesher.GenerateGeometry(model, null, worker.ReportProgress);
-                model.Close();
+               // model.Close();
                 if (worker.CancellationPending == true) //if a cancellation has been requested then don't open the resukting file
                 {
                     try
                     {
-                        if (File.Exists(_temporaryXbimFileName)) 
+                        model.Close();
+                        if (File.Exists(_temporaryXbimFileName))
                             File.Delete(_temporaryXbimFileName); //tidy up;
                         _temporaryXbimFileName = null;
                         _defaultFileName = null;
                     }
                     catch (Exception)
                     {
-                        
-                       
+
+
                     }
                     return;
                 }
-                model.Open(_temporaryXbimFileName, XbimDBAccess.Read, worker.ReportProgress);
-               
+              //  model.Open(_temporaryXbimFileName, XbimDBAccess.ReadWrite, worker.ReportProgress);
+
                 args.Result = model;
-                
+
             }
             catch (Exception ex)
             {
@@ -224,8 +226,58 @@ namespace XbimXplorer
 
                 args.Result = new Exception(sb.ToString());
 
-                          }
-                      }
+            }
+        }
+
+        private void InsertIfcFile(object s, DoWorkEventArgs args)
+        {
+            BackgroundWorker worker = s as BackgroundWorker;
+            string ifcFilename = args.Argument as string;
+
+            XbimModel model = new XbimModel();
+            try
+            {
+                _temporaryXbimFileName = Path.GetTempFileName();
+                _defaultFileName = Path.GetFileNameWithoutExtension(ifcFilename);
+                model.CreateFrom(ifcFilename, _temporaryXbimFileName, worker.ReportProgress);
+                model.Open(_temporaryXbimFileName, XbimDBAccess.ReadWrite);
+                XbimMesher.GenerateGeometry(model, null, worker.ReportProgress);
+                model.Close();
+                if (worker.CancellationPending == true) //if a cancellation has been requested then don't open the resukting file
+                {
+                    try
+                    {
+                        if (File.Exists(_temporaryXbimFileName))
+                            File.Delete(_temporaryXbimFileName); //tidy up;
+                        _temporaryXbimFileName = null;
+                        _defaultFileName = null;
+                    }
+                    catch (Exception)
+                    {
+
+
+                    }
+                    return;
+                }
+               // model.Open(_temporaryXbimFileName, XbimDBAccess.Read, worker.ReportProgress);
+                this.Dispatcher.BeginInvoke(new Action(() => { Model.AddModelReference(_temporaryXbimFileName, "Organisation X", IfcRole.BuildingOperator); }), System.Windows.Threading.DispatcherPriority.Background);
+            }
+            catch (Exception ex)
+            {
+                StringBuilder sb = new StringBuilder();
+                sb.AppendLine("Error reading " + ifcFilename);
+                string indent = "\t";
+                while (ex != null)
+                {
+                    sb.AppendLine(indent + ex.Message);
+                    ex = ex.InnerException;
+                    indent += "\t";
+                }
+
+                args.Result = new Exception(sb.ToString());
+
+            }
+        }
 
 
         /// <summary>
@@ -268,7 +320,8 @@ namespace XbimXplorer
                 FileInfo fInfo = new FileInfo(dlg.FileName);
                 string ext = fInfo.Extension.ToLower();
                 StatusBar.Visibility = Visibility.Visible;
-       
+                
+                CreateWorker();
                 if (dlg.FileName.ToLower() == _currentModelFileName) //same file do nothing
                    return;
                 switch (ext)
@@ -277,9 +330,8 @@ namespace XbimXplorer
                     case ".ifcxml": //it is an IfcXml File
                     case ".ifczip": //it is a xip file containing xbim or ifc File
                     case ".zip": //it is a xip file containing xbim or ifc File
-
-                        //_worker.DoWork += OpenIfcFile;
-                        //_worker.RunWorkerAsync(dlg.FileName);
+                        _worker.DoWork += InsertIfcFile;
+                        _worker.RunWorkerAsync(dlg.FileName);
                         break;
                     case ".xbim": //it is an xbim File, just open it in the main thread
                         Model.AddModelReference(dlg.FileName,"Organisation X",IfcRole.BuildingOperator);
@@ -522,7 +574,9 @@ namespace XbimXplorer
         // CanExecuteRoutedEventHandler for the custom color command.
         private void InsertCmdCanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
-            e.CanExecute = !(_worker != null && _worker.IsBusy);
+            XbimModel model = ModelProvider.ObjectInstance as XbimModel;
+            bool canEdit = (model!=null && model.CanEdit);       
+            e.CanExecute = canEdit && !(_worker != null && _worker.IsBusy);
         }
 
         private void ExportCoBie(object sender, RoutedEventArgs e)

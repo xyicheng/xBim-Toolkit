@@ -66,7 +66,7 @@ namespace Xbim.Presentation
 
         void DrawingControl3D_Loaded(object sender, RoutedEventArgs e)
         {
-            ShowSpaces = false;
+            ShowSpaces = false; 
         }
 
 
@@ -199,6 +199,7 @@ namespace Xbim.Presentation
             {
                 XbimModel model = e.NewValue as XbimModel;
                 d3d.LoadGeometry(model);
+                
             }
 
         }
@@ -610,7 +611,7 @@ namespace Xbim.Presentation
                 XbimReferencedModel refModel = e.NewItems[0] as XbimReferencedModel;
                 XbimScene<WpfMeshGeometry3D, WpfMaterial> scene = BuildScene(refModel.Model);
                 scenes.Add(scene);
-                RecalculateView(Model);
+                RecalculateView(refModel.Model);
             }
         }
 
