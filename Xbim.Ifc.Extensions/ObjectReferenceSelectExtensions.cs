@@ -97,7 +97,7 @@ namespace Xbim.Ifc.Extensions
             }
             if (ifcObjectReferenceSelect is IfcAppliedValue)
             {
-                IfcAppliedValue ifcAppliedValue = (ifcObjectReferenceSelect as IfcAppliedValue);
+                return (ifcObjectReferenceSelect as IfcAppliedValue).GetAsString(); 
             }
 
             return string.Empty;
