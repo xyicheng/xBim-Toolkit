@@ -255,7 +255,7 @@
       <AdditionalDependencies>TKBool.lib;TKernel.lib;TKMath.lib;TKTopAlgo.lib;TKGeomAlgo.lib;TKBRep.lib;TKMesh.lib;TKPrim.lib;TKBO.lib;TKG3D.lib;TKG2D.lib;TKGeomBase.lib;TKShHealing.lib;TKFillet.lib;TKOffset.lib;OpenGL32.Lib;Glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <AdditionalLibraryDirectories>.\OpenCascade\win32\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
       <TargetMachine>MachineX86</TargetMachine>
       <KeyFile>
       </KeyFile>
@@ -351,7 +351,7 @@
       <AdditionalDependencies>TKBool.lib;TKernel.lib;TKMath.lib;TKTopAlgo.lib;TKBRep.lib;TKMesh.lib;TKPrim.lib;TKBO.lib;TKG3D.lib;TKG2D.lib;TKGeomBase.lib;TKGeomAlgo.lib;TKShHealing.lib;TKFillet.lib;TKOffset.lib;OpenGL32.Lib;Glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <AdditionalLibraryDirectories>.\OpenCascade\win64\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
       <TargetMachine>MachineX64</TargetMachine>
       <KeyFile>
       </KeyFile>
