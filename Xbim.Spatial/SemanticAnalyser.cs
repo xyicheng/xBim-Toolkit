@@ -11,6 +11,11 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Spatial
 {
+    /// <summary>
+    /// Some of the spatial relations can be established from the semantic relations.
+    /// This applies even for the object with no geometry.
+    /// If the relation can't be established null is returned as the result is unknown but not necessarilly negative.
+    /// </summary>
     public class SemanticAnalyser: ISpatialRelationsAnalyser
     {
         IModel _model;
@@ -20,23 +25,24 @@ namespace Xbim.Spatial
             _model = model;
         }
 
-        public bool Equals(IfcProduct first, IfcProduct second)
+        public bool? Equals(IfcProduct first, IfcProduct second)
         {
             if (first == second) return true;
-            return false;
+            return null;
         }
 
-        public bool Disjoint(IfcProduct first, IfcProduct second)
+        public bool? Disjoint(IfcProduct first, IfcProduct second)
         {
-            return false;
+            if (first == second) return false; 
+            return null;
         }
         
-        public bool Intersects(IfcProduct first, IfcProduct second)
+        public bool? Intersects(IfcProduct first, IfcProduct second)
         {
-            return false;
+            return null;
         }
 
-        public bool Touches(IfcProduct first, IfcProduct second)
+        public bool? Touches(IfcProduct first, IfcProduct second)
         {
             //connects elements
             IEnumerable<IfcRelConnectsElements> connElemRels = _model.Instances.Where<IfcRelConnectsElements>
@@ -52,7 +58,29 @@ namespace Xbim.Spatial
             IEnumerable<IfcRelConnectsPortToElement> connPortElemRels = _model.Instances.Where<IfcRelConnectsPortToElement>
             (r => (r.RelatedElement == first && r.RelatingPort == second) || (r.RelatedElement == second && r.RelatingPort == first));
             if (connPortElemRels.FirstOrDefault() != null) return true;
+            
+            //two elements might be connected via ports
+            if (first is IfcElement && second is IfcElement)
+            {
+                IfcElement fElement = first as IfcElement;
+                IfcElement sElement = second as IfcElement;
+                IEnumerable<IfcRelConnectsPortToElement> connPortToElemRels = _model.Instances.Where<IfcRelConnectsPortToElement>
+                    (r => (r.RelatingPort.ConnectedTo == fElement || r.RelatingPort.ConnectedTo == sElement));
+                //get all ports
+                List<IfcPort> ports = new List<IfcPort>();
+                foreach (var relConPort in connPortToElemRels)
+                {
+                    ports.Add(relConPort.RelatingPort);
+                }
 
+                //find relations containing at least one of the ports
+                IEnumerable<IfcRelConnectsPorts> connectPorts = _model.Instances.Where<IfcRelConnectsPorts>
+                    (r => ports.Contains(r.RelatedPort) || ports.Contains(r.RelatingPort));
+
+                //if there is such a connection than two elements are connected via port (like a pipe and the basin)
+                if (connectPorts.FirstOrDefault() != null) return true;
+            }
+                
             //Connects Ports
             IEnumerable<IfcRelConnectsPorts> connPortsRels = _model.Instances.Where<IfcRelConnectsPorts>
                 (r => (r.RelatedPort == first && r.RelatingPort == second) || (r.RelatedPort == second && r.RelatingPort == first));
@@ -83,20 +111,20 @@ namespace Xbim.Spatial
                 (r => (r.RelatedBuildingElement == first && r.RelatingSpace == second) || (r.RelatedBuildingElement == second && r.RelatingSpace == first));
             if (spaceBoundRels.FirstOrDefault() != null) return true;
 
-            return false;
+            return null;
         }
 
-        public bool Crosses(IfcProduct first, IfcProduct second)
+        public bool? Crosses(IfcProduct first, IfcProduct second)
         {
-            return false;
+            return null;
         }
 
-        public bool Within(IfcProduct first, IfcProduct second)
+        public bool? Within(IfcProduct first, IfcProduct second)
         {
             return Contains(second, first);
         }
 
-        public bool Contains(IfcProduct first, IfcProduct second)
+        public bool? Contains(IfcProduct first, IfcProduct second)
         {
             //this type of relation is always recursive
             if (first == second) return true;
@@ -108,19 +136,20 @@ namespace Xbim.Spatial
                 IEnumerable<IfcProduct> prods = GetProductsInSpatStruct(spatStruct);
                 foreach (var prod in prods)
                 {
-                    if (Contains(prod, second)) return true;
+                    if (Contains(prod, second) ?? false) return true;
                 }
             }
-
+            //no else statement as it would cut off possible results
             {
-                IEnumerable<IfcProduct> prods = GetProductsInProds(first);
+                IEnumerable<IfcProduct> prods = GetProductsInProduct(first);
                 foreach (var prod in prods)
                 {
-                    if (Contains(prod, second)) return true;
+                    if (Contains(prod, second) ?? false) return true;
                 }
             }
 
-            return false;
+            //if we don't know
+            return null;
         }
 
         private IEnumerable<IfcProduct> GetProductsInSpatStruct(IfcSpatialStructureElement spatialStruct)
@@ -148,15 +177,9 @@ namespace Xbim.Spatial
             }
         }
 
-        private IEnumerable<IfcProduct> GetProductsInProds(IfcProduct prod)
+        private IEnumerable<IfcProduct> GetProductsInProduct(IfcProduct prod)
         {
-            throw new NotImplementedException("Not finished implementation");
-
-            //aggregates
-
-            //must be recursive
-
-            //decomposes
+            //decomposes is a supertype of IfcRelAggregates, IfcRelNests
             IEnumerable<IfcRelDecomposes> decompRels = _model.Instances.Where<IfcRelDecomposes>(r => r.RelatingObject == prod);
             foreach (var item in decompRels)
             {
@@ -197,21 +220,21 @@ namespace Xbim.Spatial
         /// <param name="first"></param>
         /// <param name="second"></param>
         /// <returns></returns>
-        public bool Overlaps(IfcProduct first, IfcProduct second)
+        public bool? Overlaps(IfcProduct first, IfcProduct second)
         {
-            return false;
+            return null;
         }
 
-        public bool Relate(IfcProduct first, IfcProduct second)
+        public bool? Relate(IfcProduct first, IfcProduct second)
         {
-            if (Equals(first, second)) return true;
-            if (Intersects(first, second)) return true;
-            if (Touches(first, second)) return true;
-            if (Crosses(first, second)) return true;
-            if (Contains(first, second)) return true;
-            if (Within(first, second)) return true;
-            if (Overlaps(first, second)) return true;
-            return false;
+            if (Equals(first, second) ?? false) return true;
+            if (Intersects(first, second) ?? false) return true;
+            if (Touches(first, second) ?? false) return true;
+            if (Crosses(first, second) ?? false) return true;
+            if (Contains(first, second) ?? false) return true;
+            if (Within(first, second) ?? false) return true;
+            if (Overlaps(first, second) ?? false) return true;
+            return null;
         }
 
        
