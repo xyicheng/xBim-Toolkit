@@ -76,30 +76,16 @@ namespace Xbim.SceneJSWebViewer
 
         protected override Task OnDisconnectAsync(string connectionId)
         {
-            //TODO Deal with disconnect/reconnect gracefully - possibly start a timer and close model if we havent reset it by then?
-            //for now - we just persist the modelstream as long as the webapp is running :(
+            //If you're running the built in visual studio development server, disconnect will never fire (there's a bug in the server implementation that prevents it from working). 
+            //Use IIS Express or full IIS. - from FAQ on SignalR github page https://github.com/SignalR/SignalR/wiki/Faq
 
-            //String modelid = String.Empty;
-            //bool success = usermodels.TryRemove(connectionId, out modelid);
-            //if (success && modelid != String.Empty)
-            //{
-            //    Int32 count = 0;
-            //    foreach (String key in usermodels.Keys) //go through users and work out how many are using this model
-            //    {
-            //        String modelName;
-            //        if (usermodels.TryGetValue(key, out modelName))
-            //        {
-            //            if (modelid == modelName)
-            //            {
-            //                count++;
-            //            }
-            //        }
-            //    }
-            //    if (count == 0) //if no one is using the file then close it.
-            //    {
-            //        CloseModel(modelid);
-            //    }
-            //}
+            string modelid = string.Empty;
+            if (usermodels.TryRemove(connectionId, out modelid)) //get the model file path from the usermodels
+            {
+                if (!usermodels.Values.Where(m => m == modelid).Any()) //if no other ConnectionID is linked to the model, close the model
+                    CloseModel(modelid);
+            }
+
             return base.OnDisconnectAsync(connectionId);
         }
 

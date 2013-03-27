@@ -90,18 +90,30 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                     ifcMaterialLayerSet = LastIfcMaterialLayerSet;
                 else
                 {
-                    ifcMaterialLayerSet = Model.Instances.New<IfcMaterialLayerSet>(mls => { mls.LayerSetName = row.ParentName; });
-                    ifcMaterialLayerSetUsage = Model.Instances.New<IfcMaterialLayerSetUsage>(mlsu => { mlsu.ForLayerSet = ifcMaterialLayerSet; });
-                    ifcBuildingElementProxy = Model.Instances.New<IfcBuildingElementProxy>(bep => { bep.Name = ("Place holder for material layer Set " + row.ParentName); });
-                    ifcRelAssociatesMaterial = Model.Instances.New<IfcRelAssociatesMaterial>( ras => { ras.RelatingMaterial = ifcMaterialLayerSetUsage;
-                                                                                    ras.RelatedObjects.Add_Reversible(ifcBuildingElementProxy);
-                                                                                    });
+                    ifcMaterialLayerSet = Model.Instances.Where<IfcMaterialLayerSet>(mls => mls.LayerSetName == row.ParentName).FirstOrDefault();
+                    if (ifcMaterialLayerSet == null)
+                        ifcMaterialLayerSet = Model.Instances.New<IfcMaterialLayerSet>(mls => { mls.LayerSetName = row.ParentName; });
 
-                    //Add Created By, Created On and ExtSystem to Owner History. 
-                    if ((ValidateString(row.CreatedBy)) && (Contacts.ContainsKey(row.CreatedBy)))
-                        SetNewOwnerHistory(ifcRelAssociatesMaterial, row.ExtSystem, Contacts[row.CreatedBy], row.CreatedOn);
-                    else
-                        SetNewOwnerHistory(ifcRelAssociatesMaterial, row.ExtSystem, Model.DefaultOwningUser, row.CreatedOn);
+                    ifcMaterialLayerSetUsage = Model.Instances.Where<IfcMaterialLayerSetUsage>(mlsu => mlsu.ForLayerSet == ifcMaterialLayerSet).FirstOrDefault();
+                    if (ifcMaterialLayerSetUsage == null)
+                        ifcMaterialLayerSetUsage = Model.Instances.New<IfcMaterialLayerSetUsage>(mlsu => { mlsu.ForLayerSet = ifcMaterialLayerSet; });
+                    
+                    string placeholderText = "Place holder for material layer Set " + row.ParentName;
+                    ifcBuildingElementProxy = Model.Instances.Where<IfcBuildingElementProxy>(bep =>  bep.Name == placeholderText).FirstOrDefault();
+                    if (ifcBuildingElementProxy == null)
+                        ifcBuildingElementProxy = Model.Instances.New<IfcBuildingElementProxy>(bep => { bep.Name = placeholderText; });
+                    ifcRelAssociatesMaterial = Model.Instances.Where<IfcRelAssociatesMaterial>(ras => ((ras.RelatingMaterial as IfcMaterialLayerSetUsage)  == ifcMaterialLayerSetUsage) ).FirstOrDefault();
+                    if (ifcRelAssociatesMaterial == null)
+                    {
+                        ifcRelAssociatesMaterial = Model.Instances.New<IfcRelAssociatesMaterial>(ras =>
+                                                    {
+                                                        ras.RelatingMaterial = ifcMaterialLayerSetUsage;
+                                                        ras.RelatedObjects.Add_Reversible(ifcBuildingElementProxy);
+                                                    });
+
+                        //Add Created By, Created On and ExtSystem to Owner History. 
+                        SetUserHistory(ifcRelAssociatesMaterial, row.ExtSystem, row.CreatedBy, row.CreatedOn);
+                    }
                 }
 
                 //add the child objects
@@ -153,17 +165,25 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 }
                 else
                 {
-                    if (row.ExtObject.ToLower().Trim() == "ifcrelnests")
-                        ifcRelDecomposes = Model.Instances.New<IfcRelNests>();
-                    else
-                        ifcRelDecomposes = Model.Instances.New<IfcRelAggregates>();
-                    
+                    //check on merge we have not already created using name and parent object as check
+                    if (ValidateString(row.Name))
+                    {
+                        string testName = row.Name.ToLower().Trim();
+                        IfcObjectDefinition relatingObject = GetParentObject(row.ParentName);
+                        ifcRelDecomposes = Model.Instances.Where<IfcRelDecomposes>(rc => (rc.Name.ToString().ToLower().Trim() == testName) && (rc.RelatingObject == relatingObject)).FirstOrDefault();
+                    }
 
-                    //Add Created By, Created On and ExtSystem to Owner History. 
-                    if ((ValidateString(row.CreatedBy)) && (Contacts.ContainsKey(row.CreatedBy)))
-                        SetNewOwnerHistory(ifcRelDecomposes, row.ExtSystem, Contacts[row.CreatedBy], row.CreatedOn);
-                    else
-                        SetNewOwnerHistory(ifcRelDecomposes, row.ExtSystem, Model.DefaultOwningUser, row.CreatedOn);
+                    if (ifcRelDecomposes == null)
+                    {
+                        if (row.ExtObject.ToLower().Trim() == "ifcrelnests")
+                            ifcRelDecomposes = Model.Instances.New<IfcRelNests>();
+                        else
+                            ifcRelDecomposes = Model.Instances.New<IfcRelAggregates>();
+
+
+                        //Add Created By, Created On and ExtSystem to Owner History. 
+                        SetUserHistory(ifcRelDecomposes, row.ExtSystem, row.CreatedBy, row.CreatedOn);
+                    }
                 }
 
 
@@ -258,17 +278,28 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         /// <returns></returns>
         private bool AddParentObject(IfcRelDecomposes ifcRelDecomposes, string parentName)
         {
-            string name = parentName.ToLower().Trim();
-            IfcObjectDefinition RelatingObject = IfcElements.Where(obj => obj.Name.ToString().ToLower().Trim() == name).FirstOrDefault();
-            if(RelatingObject == null) //try IfcTypeObjects
-                RelatingObject = IfcTypeObjects.Where(obj => obj.Name.ToString().ToLower().Trim() == name).FirstOrDefault();
+            IfcObjectDefinition relatingObject = GetParentObject(parentName);
 
-            if (RelatingObject != null)
+            if (relatingObject != null)
             {
-                ifcRelDecomposes.RelatingObject = RelatingObject;
+                ifcRelDecomposes.RelatingObject = relatingObject;
                 return true;
             }
             return false;
+        }
+
+        /// <summary>
+        /// Get the parent object for the ifcRelDecomposes object
+        /// </summary>
+        /// <param name="parentName">Math the Name property with this string</param>
+        /// <returns>IfcObjectDefinition </returns>
+        private IfcObjectDefinition GetParentObject(string parentName)
+        {
+            string name = parentName.ToLower().Trim();
+            IfcObjectDefinition RelatingObject = IfcElements.Where(obj => obj.Name.ToString().ToLower().Trim() == name).FirstOrDefault();
+            if (RelatingObject == null) //try IfcTypeObjects
+                RelatingObject = IfcTypeObjects.Where(obj => obj.Name.ToString().ToLower().Trim() == name).FirstOrDefault();
+            return RelatingObject;
         }
 
         /// <summary>
@@ -286,7 +317,11 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             IfcObjectDefinition RelatedObject = childObjs.Where(obj => obj.Name.ToString().ToLower().Trim() == test).FirstOrDefault();
             if (RelatedObject != null)
             {
-                ifcRelDecomposes.RelatedObjects.Add_Reversible(RelatedObject);
+                //check we have not already added as this can be a merge
+                if (!ifcRelDecomposes.RelatedObjects.Contains(RelatedObject))
+                {
+                    ifcRelDecomposes.RelatedObjects.Add_Reversible(RelatedObject);
+                }
                 returnValue = true;
             }
             else //ok nothing found for the full string so assume delimited string
@@ -299,7 +334,11 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                     RelatedObject = childObjs.Where(obj => obj.Name.ToString().ToLower().Trim() == name).FirstOrDefault();
                     if (RelatedObject != null)
                     {
-                        ifcRelDecomposes.RelatedObjects.Add_Reversible(RelatedObject);
+                        //check we have not already added as this can be a merge
+                        if (!ifcRelDecomposes.RelatedObjects.Contains(RelatedObject))
+                        {
+                            ifcRelDecomposes.RelatedObjects.Add_Reversible(RelatedObject);
+                        }
                         returnValue = true;
                     }
                 }
@@ -356,7 +395,8 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
 
                 if (ifcMaterialLayer != null)
                 {
-                    ifcMaterialLayerSet.MaterialLayers.Add_Reversible(ifcMaterialLayer);
+                    if (!ifcMaterialLayerSet.MaterialLayers.Contains(ifcMaterialLayer))
+                        ifcMaterialLayerSet.MaterialLayers.Add_Reversible(ifcMaterialLayer);
                     returnValue = true;
                 }
             }

@@ -53,7 +53,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                         ProgressIndicator.IncrementAndUpdate();
                         COBieJobRow row = cOBieSheet[i];
                         AddJob(row);
-                        count++;
+                        
                     }
                     //we need to assign IfcRelSequence relationships, but we need all tasks implemented, so loop rows again
                     IfcTasks = Model.Instances.OfType<IfcTask>(); //get new tasks
@@ -86,13 +86,41 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         /// <param name="row">COBieJobRow holding the data</param>
         private void AddJob(COBieJobRow row)
         {
-            IfcTask ifcTask = Model.Instances.New<IfcTask>();
-            //Add Created By, Created On and ExtSystem to Owner History. 
-            if ((ValidateString(row.CreatedBy)) && (Contacts.ContainsKey(row.CreatedBy)))
-                SetNewOwnerHistory(ifcTask, row.ExtSystem, Contacts[row.CreatedBy], row.CreatedOn);
-            else
-                SetNewOwnerHistory(ifcTask, row.ExtSystem, Model.DefaultOwningUser, row.CreatedOn);
+            IEnumerable<IfcTypeObject> ifcTypeObjects = Enumerable.Empty<IfcTypeObject>();
+            IfcTask ifcTask = null;
+            
+            //get the objects in the typeName cell
+            if (ValidateString(row.TypeName))
+            {
+                List<string> typeNames = SplitString(row.TypeName, ':');
+                ifcTypeObjects = IfcTypeObjects.Where(to => typeNames.Contains(to.Name.ToString().Trim()));
+            }
 
+            //if merging check for existing task
+            if (XBimContext.IsMerge)
+            {
+                string taskNo = string.Empty;
+                //get the task ID
+                if (ValidateString(row.TaskNumber)) 
+                    taskNo = row.TaskNumber;
+                //see if task matches name and task number
+                ifcTask = CheckIfObjExistOnMerge<IfcTask>(row.Name).Where(task => task.TaskId == taskNo).FirstOrDefault();
+                if (ifcTask != null)
+                {
+                    IfcRelAssignsToProcess processRel = Model.Instances.Where<IfcRelAssignsToProcess>(rd => rd.RelatingProcess == ifcTask).FirstOrDefault();
+                    int matchCount = ifcTypeObjects.Count(to => processRel.RelatedObjects.Contains(to));
+                    if (matchCount == ifcTypeObjects.Count()) //task IfcRelAssignsToProcess object hold the correct number of ifcTypeObjects objects so consider a match
+                        return; //consider a match so return
+                    
+                }
+            }
+
+            //no match on task    
+            ifcTask = Model.Instances.New<IfcTask>();
+            
+            //Add Created By, Created On and ExtSystem to Owner History. 
+            SetUserHistory(ifcTask, row.ExtSystem, row.CreatedBy, row.CreatedOn);
+            
             //using statement will set the Model.OwnerHistoryAddObject to ifcConstructionEquipmentResource.OwnerHistory as OwnerHistoryAddObject is used upon any property changes, 
             //then swaps the original OwnerHistoryAddObject back in the dispose, so set any properties within the using statement
             using (COBieXBimEditScope context = new COBieXBimEditScope(Model, ifcTask.OwnerHistory))
@@ -107,10 +135,8 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 if (ValidateString(row.Status)) ifcTask.Status = row.Status;
 
                 //Add Type Relationship
-                if (ValidateString(row.TypeName))
+                if (ifcTypeObjects.Any())
                 {
-                    List<string> typeNames = SplitString(row.TypeName, ':');
-                    IEnumerable<IfcTypeObject> ifcTypeObjects = IfcTypeObjects.Where(to => typeNames.Contains(to.Name.ToString().Trim()) );
                     SetRelAssignsToProcess(ifcTask, ifcTypeObjects);
                 }
                 //Add GlobalId
@@ -184,13 +210,14 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             {
                 processRel = Model.Instances.New<IfcRelAssignsToProcess>();
                 processRel.RelatingProcess = processObj;
-
-
             }
             //add the type objects
             foreach (IfcObjectDefinition type in typeObjs)
             {
-                processRel.RelatedObjects.Add_Reversible(type);
+                if (!processRel.RelatedObjects.Contains(type))
+                {
+                    processRel.RelatedObjects.Add_Reversible(type);
+                }
             }
         }
 

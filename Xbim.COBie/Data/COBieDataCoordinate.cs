@@ -224,14 +224,15 @@ namespace Xbim.COBie.Data
         public TransformedBoundingBox(Rect3D boundBox, Matrix3D matrix) : this()
 	    {
             //Object space values
+            
             MinPt = new Point3D(boundBox.X, boundBox.Y, boundBox.Z);
             MaxPt = new Point3D(boundBox.X + boundBox.SizeX, boundBox.Y + boundBox.SizeY, boundBox.Z + boundBox.SizeZ);
             //make assumption that the X direction will be the longer length hence the orientation will be along the x axis
-           
             //transformed values, no longer a valid bounding box in the new space if any Pitch or Yaw
             MinPt = matrix.Transform(MinPt);
             MaxPt = matrix.Transform(MaxPt);
-           
+
+            
             //--------Calculate rotations from matrix-------
             //rotation around X,Y,Z axis
             double rotationZ, rotationY, rotationX;
@@ -309,6 +310,9 @@ namespace Xbim.COBie.Data
         /// Yaw rotation of the IfcProduct
         /// </summary>
         public double YawRotation { get; set; }
+
+        
+        
         
     }
 }

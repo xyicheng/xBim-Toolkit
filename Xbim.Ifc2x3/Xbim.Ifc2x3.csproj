@@ -5,7 +5,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{0255E9D0-1087-49D4-B886-C882CA27DD10}</ProjectGuid>
+    <ProjectGuid>{5D4C907D-1293-4E5F-9642-D0862AE4741C}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Xbim.Ifc2x3</RootNamespace>
@@ -392,6 +392,7 @@
     <Compile Include="ProfilePropertyResource\IfcSectionReinforcementProperties.cs" />
     <Compile Include="ProfilePropertyResource\IfcSectionTypeEnum.cs" />
     <Compile Include="ProfilePropertyResource\IfcStructuralProfileProperties.cs" />
+    <Compile Include="ProfilePropertyResource\IfcStructuralSteelProfileProperties.cs" />
     <Compile Include="SharedBldgServiceElements\IfcSoundProperties.cs" />
     <Compile Include="MeasureResource\IfcAccelerationMeasure.cs" />
     <Compile Include="MeasureResource\IfcAmountOfSubstanceMeasure.cs" />

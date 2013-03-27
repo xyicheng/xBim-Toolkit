@@ -130,6 +130,12 @@ namespace Xbim.DOM.PropertiesQuantities
             }
         }
 
+        public void SetProperty(string propertySetName, string propertyName, IfcValue value)
+        {
+            
+            _material.SetExtendedSingleValue(propertySetName, propertyName, value);
+        }
+
         IEnumerable<IBimPropertySingleValue> IBimSingleProperties.FlatProperties
         {
             get { return FlatProperties.Cast<IBimPropertySingleValue>(); }

@@ -150,7 +150,6 @@ namespace Xbim.Ifc2x3.Extensions
                 nu = ua.Units.OfType<IfcConversionBasedUnit>().FirstOrDefault(u => u.UnitType == IfcUnitEnum.LENGTHUNIT);
             return nu;
         }
-
         public static IfcNamedUnit GetVolumeUnit(this IfcUnitAssignment ua)
         {
             IfcNamedUnit nu = ua.Units.OfType<IfcSIUnit>().FirstOrDefault(u => u.UnitType == IfcUnitEnum.VOLUMEUNIT);

@@ -47,6 +47,7 @@ namespace Xbim.DOM
         public string GlobalId { get { return _ifcBuildingElement.GlobalId; } set { _ifcBuildingElement.GlobalId = new IfcGloballyUniqueId(value); } }
         public abstract XbimBuildingElementType ElementType { get; }
         public string Name { get { return IfcBuildingElement.Name; } set { IfcBuildingElement.Name = value; } }
+        public string Description { get { return IfcBuildingElement.Description; } set { IfcBuildingElement.Description = value; } }
         public INRMQuantities NRMQuantities { get { return new NRMQuantities(this); } }
         public Guid Guid { get { return _ifcBuildingElement.GlobalId; } set { _ifcBuildingElement.GlobalId = new IfcGloballyUniqueId(value); } }
         public long EntityLabel { get { return _ifcBuildingElement.EntityLabel; } }
@@ -162,6 +163,53 @@ namespace Xbim.DOM
             }
         }
 
+        public void AddMaterialLayerSetUsage()
+        {
+            if (_ifcBuildingElement.GetMaterialLayerSetUsage(Document.Model) == null)
+            {
+                _ifcBuildingElement.SetMaterialLayerSetUsage(_ifcBuildingElement.GetMaterial() as IfcMaterialLayerSet, IfcLayerSetDirectionEnum.AXIS2, IfcDirectionSenseEnum.POSITIVE, 0);
+            }
+        }
+
+        public double GetMaterialLayerSetWidth()
+        {
+            IfcMaterialLayerSet ml = _ifcBuildingElement.GetMaterial() as IfcMaterialLayerSet;
+            if (ml == null) ml = this.ElementType.IfcMaterialLayerSet;
+            if (ml == null) return 0;
+            else
+            {
+                double result = 0;
+
+                foreach (IfcMaterialLayer layer in ml.MaterialLayers)
+                {
+                    result += layer.LayerThickness;
+                }
+                return result;
+            }
+        }
+
+        public void AddMaterialLayer(XbimMaterial material, double thickness, bool isVentilated, XbimMaterialFunctionEnum function)
+        {
+
+            IfcMaterialLayerSet materialLayerSet = _ifcBuildingElement.GetMaterial() as IfcMaterialLayerSet;
+            if (materialLayerSet == null)
+            {
+                materialLayerSet = _document.Model.Instances.New<IfcMaterialLayerSet>(/*set => set.LayerSetName = _ifcTypeProduct.Name*/);
+                _ifcBuildingElement.SetMaterial(materialLayerSet);
+            }
+            IfcMaterialLayer matLayer = _document.Model.Instances.New<IfcMaterialLayer>();
+            matLayer.LayerThickness = thickness;
+            matLayer.Material = material;
+            matLayer.IsVentilated = isVentilated;
+            materialLayerSet.MaterialLayers.Add_Reversible(matLayer);
+
+            int materialIndex = materialLayerSet.MaterialLayers.IndexOf(matLayer);
+            if (materialIndex < 0) return; //check if material exists in the material layer set
+            _ifcBuildingElement.SetPropertyTableItemValue("xbim_MaterialFunctionAssignment", "MaterialFunctionAssignment", (IfcInteger)materialIndex, (IfcLabel)Enum.GetName(typeof(XbimMaterialFunctionEnum), function));
+      
+
+        }
+
         #region IBimBuildingElement
         void IBimBuildingElement.AddDecomposingElement(IBimBuildingElement element)
         {
@@ -223,6 +271,19 @@ namespace Xbim.DOM
 
 
         #endregion
+
+
+        /// <summary>
+        /// Sets the properties of this instance to be the same as its type
+        /// </summary>
+        public void SetAllPropertySetsAsType()
+        {
+            IfcTypeObject theType = _ifcBuildingElement.GetDefiningType();
+            foreach (var set in theType.GetAllPropertySets())
+            {
+                _ifcBuildingElement.AddPropertySet(set);
+            }
+        }
     }
 
     

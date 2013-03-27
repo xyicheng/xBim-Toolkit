@@ -348,5 +348,29 @@ namespace Xbim.Tests
             }
 
         }
+
+        [TestMethod]
+        public void InsertCopyOfEntityIntoAnotherModel()
+        {
+            if (File.Exists("Test.ifc"))
+                File.Delete("Test.ifc");
+            using (XbimModel model1 = new XbimModel())
+            {
+                 model1.Open(SourceFile, XbimDBAccess.Read);
+                 using (XbimModel model2 = XbimModel.CreateTemporaryModel())
+                 {
+                     using (var txn = model2.BeginTransaction())
+                     {
+                         model2.InsertCopy(model1.IfcProject);
+                         txn.Commit();
+                     }
+                     model2.SaveAs("Test.ifc", XbimStorageType.IFC);
+                     Assert.IsTrue(model2.Instances.Count == 21);
+                 }
+            } 
+           
+            Assert.IsTrue(File.Exists("Test.ifc"));
+            
+        }
     }
 }

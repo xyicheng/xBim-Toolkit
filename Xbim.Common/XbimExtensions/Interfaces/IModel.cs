@@ -81,14 +81,14 @@ namespace Xbim.XbimExtensions.Interfaces
 
         IIfcFileHeader Header { get;}  
 
-        bool CreateFrom(string importFrom, string xbimDbName = null, ReportProgressDelegate progDelegate = null);
+        bool CreateFrom(string importFrom, string xbimDbName = null, ReportProgressDelegate progDelegate = null, bool keepOpen = false);
 
         bool SaveAs(string saveFileName, XbimStorageType? storageType = null, ReportProgressDelegate progDelegate = null);
 
         bool Open(string fileName, XbimDBAccess accessMode = XbimDBAccess.Read, ReportProgressDelegate progDelegate = null);
         
         void Close();
-
+        void ForEach<TSource>(IEnumerable<TSource> source, Action<TSource> body) where TSource:IPersistIfcEntity;
        
     }
 }

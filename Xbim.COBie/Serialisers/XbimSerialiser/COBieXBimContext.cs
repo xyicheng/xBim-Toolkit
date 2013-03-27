@@ -32,6 +32,11 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         public XbimModel Model { get; set; }
 
         /// <summary>
+        /// Flag for merging
+        /// </summary>
+        public bool IsMerge { get; set; }
+        
+        /// <summary>
         /// WorkBook holding the COBie data
         /// </summary>
         public COBieWorkbook WorkBook { get;  set; }

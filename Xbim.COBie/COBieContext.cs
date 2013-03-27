@@ -25,10 +25,9 @@ namespace Xbim.COBie
 	{
 
         //Worksheet Global
-        public Dictionary<long, string> EMails { get; private set; } //contact list<EntityLable, emailaddress>
+        public Dictionary<long, string> EMails { get; private set; } 
         public string TemplateFileName { get; set; } //template used by the workbook
-        public string RunDate { get; set; } //Date the Workbook was created on
-        public string TemplateCulture { get; set; }
+        public string RunDate { get; set; } //Date the Workbook was created 
         public bool ExcludeFromPickList { get; set; }
  
         private  GlobalUnits _workBookUnits;
@@ -57,7 +56,7 @@ namespace Xbim.COBie
         /// any IfcSpace property names "Department" in the Zone sheet
         /// </summary>
         public bool DepartmentsUsedAsZones { get; set; } //indicate if we have taken departments as Zones
-        public FilterValues Exclude { get; set; } //filter values for attribute extraction in sheets
+        public FilterValues Exclude { get; private set; } //filter values for attribute extraction in sheets
 
         public COBieContext()
         {
@@ -71,7 +70,6 @@ namespace Xbim.COBie
 
             Exclude = new FilterValues();
 
-            TemplateCulture = "en-US";
             ExcludeFromPickList = false;
             
         }

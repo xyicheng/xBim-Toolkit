@@ -1,5 +1,6 @@
 ﻿using System;
 using Xbim.DOM.PropertiesQuantities;
+using Xbim.XbimExtensions.SelectTypes;
 namespace Xbim.DOM
 {
     public interface IBimSingleProperties
@@ -14,5 +15,6 @@ namespace Xbim.DOM
         void SetProperty_long(string propertySetName, string propertyName, long? value);
         void SetProperty_string(string propertySetName, string propertyName, string value);
         void SetProperty(IBimPropertySingleValue property);
+        void SetProperty(string propertySetName, string propertyName, IfcValue value);
     }
 }

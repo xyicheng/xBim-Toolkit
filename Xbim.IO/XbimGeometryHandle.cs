@@ -28,7 +28,11 @@ namespace Xbim.IO
         /// The type of geometric representation
         /// </summary>
         public XbimGeometryType GeometryType;
-       
+
+        /// <summary>
+        /// The hash code of the geometry vertex data
+        /// </summary>
+        public int? GeometryHashCode;
         /// <summary>
         /// A handle to a geometry object
         /// </summary>
@@ -37,13 +41,18 @@ namespace Xbim.IO
         /// <param name="productLabel">The label of the Ifc Entity that the geomtry represents</param>
         /// <param name="ifcTypeId">The id of the Ifc Type of the Product represented</param>
         /// <param name="surfaceStyleLabel">The label of the Ifc Entity that holds the surface style render</param>
-        public XbimGeometryHandle(int geometryLabel, XbimGeometryType geometryType, int productLabel, short ifcTypeId, int surfaceStyleLabel)
+        public XbimGeometryHandle(int geometryLabel, XbimGeometryType geometryType, int productLabel, short ifcTypeId, int surfaceStyleLabel, int? geometryHashCode)
         {
             GeometryLabel = geometryLabel;
             SurfaceStyleLabel = surfaceStyleLabel;
             ProductLabel = productLabel;
             IfcTypeId = ifcTypeId;
             GeometryType = geometryType;
+            GeometryHashCode = geometryHashCode;
+        }
+        public XbimGeometryHandle(int geometryLabel, XbimGeometryType geometryType, int productLabel, short ifcTypeId, int surfaceStyleLabel)
+            : this(geometryLabel, geometryType, productLabel, ifcTypeId, surfaceStyleLabel, null)
+        {
         }
 
         public XbimGeometryHandle(int geometryLabel)
@@ -53,7 +62,7 @@ namespace Xbim.IO
             SurfaceStyleLabel = 0;
             ProductLabel = 0;
             IfcTypeId = 0;
-            
+            GeometryHashCode = null;
         }
 
         /// <summary>

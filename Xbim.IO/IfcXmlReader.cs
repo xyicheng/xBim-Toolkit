@@ -59,6 +59,7 @@ namespace Xbim.IO
             primitives.Add(typeof(int).Name, IfcParserType.Integer);
             primitives.Add(typeof(bool).Name, IfcParserType.Boolean);
             primitives.Add("Enum", IfcParserType.Enum);
+
         }
 
         private abstract class XmlNode 
@@ -789,7 +790,7 @@ namespace Xbim.IO
 
 
 
-        internal IfcFileHeader Read(IfcPersistedInstanceCache instanceCache, XbimEntityCursor entityTable,  XmlTextReader input)
+        internal IfcFileHeader Read(IfcPersistedInstanceCache instanceCache, XbimEntityCursor entityTable,  XmlReader input)
         {
            
             // Read until end of file
@@ -918,7 +919,7 @@ namespace Xbim.IO
             }
             catch(Exception e)
             {
-                throw new Exception(String.Format("Error reading XML, Line={0}, Position={1}, Tag='{2}'", input.LineNumber, input.LinePosition, input.LocalName), e);
+                throw new Exception(String.Format("Error reading XML, Line={0}, Position={1}, Tag='{2}'", ((IXmlLineInfo) input).LineNumber, ((IXmlLineInfo) input).LinePosition, input.LocalName), e);
             }
             return header;
         }

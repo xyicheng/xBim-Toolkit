@@ -228,7 +228,9 @@ namespace Xbim.COBie.Data
                 {
                     string value = "";
                     string name = propertySetSimpleProperty.Name.ToString();
-
+                    string extIdentifier = null;
+                    string extObject = null;
+                    
 
 
                     if (string.IsNullOrEmpty(name))
@@ -299,6 +301,9 @@ namespace Xbim.COBie.Data
                             EnumValuesHeld = COBieData<COBieAttributeRow>.GetEnumerationValues(ifcPropertyEnumeratedValue.EnumerationReference.EnumerationValues);
                             if (!string.IsNullOrEmpty(EnumValuesHeld)) attribute.AllowedValues = EnumValuesHeld;
                         }
+                        //change the extIdentifier to the property set name and extObject to the property type
+                        extIdentifier = propertySet.Name;
+                        extObject = propertySetSimpleProperty.GetType().Name;
                     }
 
                     IfcPropertyBoundedValue ifcPropertyBoundedValue = propertySetSimpleProperty as IfcPropertyBoundedValue;
@@ -319,13 +324,53 @@ namespace Xbim.COBie.Data
                         {
                             attribute.Unit = COBieData<COBieAttributeRow>.GetUnitName(ifcPropertyBoundedValue.Unit);
                         }
-
+                        //change the extIdentifier to the property set name and extObject to the property type
+                        extIdentifier = propertySet.Name;
+                        extObject = propertySetSimpleProperty.GetType().Name;
                     }
 
                     IfcPropertyTableValue ifcPropertyTableValue = propertySetSimpleProperty as IfcPropertyTableValue;
                     if (ifcPropertyTableValue != null)
                     {
-                        throw new NotImplementedException("ProcessAttributeRow: IfcPropertyTableValue not implemented");
+                        if ((ifcPropertyTableValue.DefiningValues != null) &&
+                            (ifcPropertyTableValue.DefinedValues != null) &&
+                            (ifcPropertyTableValue.DefiningValues.Count() == ifcPropertyTableValue.DefinedValues.Count())
+                            )
+                        {
+                            StringBuilder cellValue = new StringBuilder();
+                            int i = 0;
+                            foreach (var item in ifcPropertyTableValue.DefiningValues)
+                            {
+                                cellValue.Append("(");
+                                cellValue.Append(item.ToString());
+                                cellValue.Append(":");
+                                cellValue.Append(ifcPropertyTableValue.DefinedValues[i].ToString());
+                                cellValue.Append(")");
+                                i++;
+                            }
+                            value = cellValue.ToString();
+                            //get the unit definition
+                            string cellUnit = "";
+                            if (ifcPropertyTableValue.DefiningUnit != null)
+                                cellUnit = COBieData<COBieAttributeRow>.GetUnitName(ifcPropertyTableValue.DefiningUnit);
+                            else
+                                cellUnit = "Unknown";
+                            cellUnit += ":";
+                            if (ifcPropertyTableValue.DefinedUnit != null)
+                                cellUnit += COBieData<COBieAttributeRow>.GetUnitName(ifcPropertyTableValue.DefinedUnit);
+                            else
+                                cellUnit += "Unknown";
+                            attribute.Unit = cellUnit;
+                            if (!string.IsNullOrEmpty(ifcPropertyTableValue.Expression))
+                                attribute.AllowedValues = ifcPropertyTableValue.Expression;
+                        }
+                        else
+                        {
+                            throw new ArgumentException("ProcessAttributeRow: IfcPropertyTableValue has unequal column numbers");
+                        }
+                        //change the extIdentifier to the property set name and extObject to the property type
+                        extIdentifier = propertySet.Name;
+                        extObject = propertySetSimpleProperty.GetType().Name;
                     }
 
                     IfcPropertyReferenceValue ifcPropertyReferenceValue = propertySetSimpleProperty as IfcPropertyReferenceValue;
@@ -353,7 +398,9 @@ namespace Xbim.COBie.Data
                         if (ifcPropertyListValue.Unit != null)
                             attribute.Unit = COBieData<COBieAttributeRow>.GetUnitName(ifcPropertyListValue.Unit);
 
-
+                        //change the extIdentifier to the property set name and extObject to the property type
+                        extIdentifier = propertySet.Name;
+                        extObject = propertySetSimpleProperty.GetType().Name;
                     }
 
 
@@ -362,8 +409,14 @@ namespace Xbim.COBie.Data
                     //Get category
                     string cat = GetCategory(propertySet);
                     attribute.Category = (cat == Constants.DEFAULT_STRING) ? "Requirement" : cat;
-                    attribute.ExtIdentifier = propertySet.GlobalId;
-                    attribute.ExtObject = propertySet.Name;
+                    
+                    attribute.ExtIdentifier = string.IsNullOrEmpty(extIdentifier) ? propertySet.GlobalId.ToString() : extIdentifier;
+                    if (string.IsNullOrEmpty(attribute.ExtIdentifier)) 
+                        attribute.ExtIdentifier = Constants.DEFAULT_STRING;
+
+                    attribute.ExtObject = string.IsNullOrEmpty(extObject) ? propertySet.Name.ToString() : extObject;
+                    if (string.IsNullOrEmpty(attribute.ExtObject)) 
+                        attribute.ExtObject = Constants.DEFAULT_STRING;
 
                     //passed properties from the sheet
                     attribute.SheetName = RowParameters["Sheet"];
@@ -372,9 +425,10 @@ namespace Xbim.COBie.Data
                     string onDate = COBieData<COBieAttributeRow>.GetCreatedOnDate(propertySet.OwnerHistory);
                     attribute.CreatedOn = (string.IsNullOrEmpty(onDate)) ? Context.RunDate : onDate;
                     attribute.ExtSystem = (propertySet.OwnerHistory.OwningApplication != null) ? propertySet.OwnerHistory.OwningApplication.ApplicationFullName.ToString() : RowParameters["ExtSystem"];
-
+                    if (string.IsNullOrEmpty(attribute.ExtSystem))
+                        attribute.ExtSystem = Constants.DEFAULT_STRING;
+                    
                     value = NumberValueCheck(value, attribute);
-
                     attribute.Value = string.IsNullOrEmpty(value) ? Constants.DEFAULT_STRING : value;
 
                     attribute.Description = propertySetSimpleProperty.Description.ToString();

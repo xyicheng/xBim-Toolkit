@@ -40,4 +40,18 @@ namespace Xbim.COBie
         CompoundKey_ForeignKey,
         None
     }
+
+    public enum COBieCardinality
+    {
+        /// <summary>
+        /// A relationship that is 1:N 
+        /// </summary>
+        /// <remarks>e.g. Components can have only one single Type</remarks>
+        OneToMany,
+        /// <summary>
+        /// A relationship that is N:M
+        /// </summary>
+        /// <remarks>e.g. a Component can be assigned to one or more Spaces</remarks>
+        ManyToMany
+    }
 }

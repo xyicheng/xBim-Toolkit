@@ -219,7 +219,10 @@ namespace Xbim.COBie.Data
         /// <returns>string of comma delimited addresses</returns>
         protected string GetTelecomEmailAddress(IfcOwnerHistory ifcOwnerHistory)
         {
-            if (ifcOwnerHistory != null)
+            if ((ifcOwnerHistory != null) &&
+                (ifcOwnerHistory.OwningUser != null) &&
+                (ifcOwnerHistory.OwningUser.ThePerson != null)
+                )
             {
                 IfcPerson ifcPerson = ifcOwnerHistory.OwningUser.ThePerson;
                 if (Context.EMails.ContainsKey(Math.Abs(ifcPerson.EntityLabel)))
@@ -382,52 +385,62 @@ namespace Xbim.COBie.Data
         {
             //Try by relationship first
             IfcRelAssociatesClassification ifcRAC = obj.HasAssociations.OfType<IfcRelAssociatesClassification>().FirstOrDefault();
-
+            IfcClassificationReference ifcCR = null;
             if (ifcRAC != null)
-            {
-                string conCatChar;
-                if (Context.TemplateCulture == "en-GB")
-                    conCatChar = " : ";
-                else
-                    conCatChar = ": ";
+                ifcCR = ifcRAC.RelatingClassification as IfcClassificationReference;
 
-                //need to use split as sometime the whole category is stored in both ItemReference and Name
-                IfcClassificationReference ifcCR = (IfcClassificationReference)ifcRAC.RelatingClassification;
+            if (ifcCR != null)
+            {
+                // TODO: Needs a refactor. We should handle whitespace before/after the separator (and map to the picklist values)
+                // i.e. this whole routine should just map an IfcClassificationReference to the best row in the picklist.
+                string conCatChar = " : "; 
+
                 //holders for first and last part of category
                 string itemReference = ifcCR.ItemReference;
+                if (!string.IsNullOrEmpty(itemReference))
+                    itemReference = itemReference.Trim();
+                
                 string name = ifcCR.Name;
-                //lets hope the user does not use ":" more than once, We split here as sometimes the whole category(13-15 11 34 11: Office) is place in itemReference and Name
-                if (!string.IsNullOrEmpty(itemReference)) itemReference = itemReference.Split(':').First().Trim();
-                string[] nameSplit = name.Split(':');
-                //just in case we have more than one ":"
-                if (itemReference.ToLower().Trim() == nameSplit.First().ToLower().Trim())
+                if (!string.IsNullOrEmpty(name))
+                    name = name.Trim();
+
+                //need to use split as sometime the whole category is stored in both ItemReference and Name
+                //We split here as sometimes the whole category(13-15 11 34 11: Office) is place in itemReference and Name
+                if ((!string.IsNullOrEmpty(name)) &&
+                    (!string.IsNullOrEmpty(itemReference))
+                    ) 
                 {
-                    for (int i = 0; i < nameSplit.Count(); i++)
+                    itemReference = itemReference.Split(':').First().Trim();
+                    string[] nameSplit = name.Split(':');
+                    //just in case we have more than one ":"in name
+                    if (nameSplit.First().Trim().Equals(itemReference, StringComparison.OrdinalIgnoreCase))
                     {
-                        //skip first item
-                        if (i == 1) name = nameSplit[i].Trim();
-                        if (i > 1) name += conCatChar + nameSplit[i].Trim(); //add back the second, third... ": "
+                        for (int i = 0; i < nameSplit.Count(); i++)
+                        {
+                            //skip first item
+                            if (i == 1) name = nameSplit[i].Trim();
+                            if (i > 1) name += conCatChar + nameSplit[i].Trim(); //add back the second, third... ": "
+                        }
                     }
-                    
-                }
-                else //no match on first split item so just go with the whole string for both, if same filtered below
-                {
-                    itemReference = ifcCR.ItemReference;
-                    name = ifcCR.Name;
+                    else
+                        name = nameSplit.Last().Trim();
                 }
 
-                if ((!string.IsNullOrEmpty(itemReference))
-                    && (!string.IsNullOrEmpty(name))
-                    && (itemReference.ToLower() != name.ToLower())
+                //Return the Category
+                if ((!string.IsNullOrEmpty(itemReference)) &&
+                    (!string.IsNullOrEmpty(name)) &&
+                    (!itemReference.Equals(name, StringComparison.OrdinalIgnoreCase))
                     )
-                    return itemReference.Trim() + conCatChar + name.Trim();
+                    return itemReference + conCatChar + name;
                 else if (!string.IsNullOrEmpty(itemReference))
                     return itemReference;
                 else if (!string.IsNullOrEmpty(name))
                     return name;
                 else if (!string.IsNullOrEmpty(ifcCR.Location))
                     return ifcCR.Location;
-                else if ((ifcCR.ReferencedSource != null) && (!string.IsNullOrEmpty(ifcCR.ReferencedSource.Name)))
+                else if ((ifcCR.ReferencedSource != null) && 
+                         (!string.IsNullOrEmpty(ifcCR.ReferencedSource.Name))
+                        )
                     return ifcCR.ReferencedSource.Name;
             }
             return null;

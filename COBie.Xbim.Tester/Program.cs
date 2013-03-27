@@ -70,18 +70,10 @@ namespace COBie.Xbim.Tester
             //////////}
             ////////Stopwatch sWatch = new Stopwatch();
             ////////sWatch.Start();
-            
             ////////COBieXBimSerialiser xBimSerialiser = new COBieXBimSerialiser();
             ////////xBimSerialiser.Serialise(workBook);
 
 
-            ////////sWatch.Stop();
-            ////////Console.WriteLine("Time = {0}", sWatch.Elapsed.Seconds);
-            ////////string output = Path.GetFileNameWithoutExtension(sourceFile) + "COBieToIFC.ifc";
-
-            ////////xBimSerialiser.Save(output);
-            ////////Console.WriteLine("Press any key...");
-            ////////Console.ReadKey();
         }
 
         /// <summary>
@@ -92,15 +84,15 @@ namespace COBie.Xbim.Tester
         /// <param name="context">Context object</param>
         private static void GenerateGeometry(XbimModel model, string cacheFile, COBieContext context)
         {
+            //need to resolve gemerate geometry
+            //int total = (int)model.GeometriesCount;
+            ////create the geometry file
 
-            int total = (int)model.GeometriesCount;
-            //create the geometry file
-
-            IEnumerable<IfcProduct> toDraw = model.Instances.OfType<IfcProduct>().Where(t => !(t is IfcFeatureElement)); //exclude openings and additions
-            XbimScene.ConvertGeometry(toDraw, delegate(int percentProgress, object userState)
-            {
-                context.UpdateStatus("Creating Geometry File", total, (total * percentProgress / 100));
-            }, false);
+            //IEnumerable<IfcProduct> toDraw = model.Instances.OfType<IfcProduct>().Where(t => !(t is IfcFeatureElement)); //exclude openings and additions
+            //XbimScene.ConvertGeometry(toDraw, delegate(int percentProgress, object userState)
+            //{
+            //    context.UpdateStatus("Creating Geometry File", total, (total * percentProgress / 100));
+            //}, false);
           
         }
 

@@ -20,6 +20,9 @@ using System.Threading.Tasks;
 using System.Windows.Media.Media3D;
 using Xbim.XbimExtensions.Interfaces;
 using System.Threading;
+using System.Collections.Concurrent;
+using System.Diagnostics;
+using Xbim.ModelGeometry.Converter;
 
 namespace XbimConvert
 {
@@ -49,25 +52,25 @@ namespace XbimConvert
                     string xbimFileName = BuildFileName(arguments.IfcFileName, ".xbim");
                     //string xbimGeometryFileName = BuildFileName(arguments.IfcFileName, ".xbimGC");
                     System.Diagnostics.Stopwatch watch = new System.Diagnostics.Stopwatch();
-
-                    
-
-
+                    ReportProgressDelegate progDelegate = delegate(int percentProgress, object userState)
+                    {
+                        if (!arguments.IsQuiet)
+                        {
+                            Console.Write(string.Format("{0:D5} Converted", percentProgress));
+                            ResetCursor(Console.CursorTop);
+                        }
+                    };
                     using (XbimModel model = ParseModelFile(xbimFileName))
                     {
                         watch.Start();
-
                         model.Open(xbimFileName, XbimDBAccess.ReadWrite);
-                        //using (var txn = model.BeginTransaction())
-                        //{
-                            GenerateGeometry( model);
-                        //}
-                        
+                        XbimMesher.GenerateGeometry(model, Logger, progDelegate);
                         model.Close();
-
+                        watch.Stop();
                     }
-                    watch.Stop();
-                    XbimModel.Terminate();
+                   
+                   // XbimModel.Terminate();
+                    GC.Collect();
                     ResetCursor(Console.CursorTop + 1);
                     Console.WriteLine("Success. Processed in " + watch.ElapsedMilliseconds + " ms");
                     GetInput();
@@ -116,158 +119,7 @@ namespace XbimConvert
             GetInput();
         }
 
-        private static void GenerateGeometry( XbimModel model)
-        {
-            //now convert the geometry
-
-            List<IfcProduct> toDraw = GetProducts(model).ToList();
-            if (!toDraw.Any()) return; //nothing to do
-            TransformGraph graph = new TransformGraph(model);
-            //create a new dictionary to hold maps
-            Dictionary<int, Object> maps = new Dictionary<int, Object>();
-            //add everything that may have a representation
-            graph.AddProducts(toDraw); //load the products as we will be accessing their geometry
-
-            Dictionary<int, List<XbimTriangulatedModel>> mappedModels = new Dictionary<int, List<XbimTriangulatedModel>>();
-
-            
-           
-            int tally = 0;
-            int percentageParsed = 0;
-            int total = toDraw.Count();
-            
-            ReportProgressDelegate progDelegate = delegate(int percentProgress, object userState)
-                {
-                    if (!arguments.IsQuiet)
-                    {
-                        Console.Write(string.Format("{0:D5} Converted", percentProgress));
-                        ResetCursor(Console.CursorTop);
-                    }
-                };
-            try
-            {
-                XbimLOD lod = XbimLOD.LOD_Unspecified;
-                Parallel.ForEach<TransformNode>(graph.ProductNodes.Values, node=>{ //go over every node that represents a product
-                
-                    IfcProduct product = node.Product;
-                    try
-                    {
-
-                        IXbimGeometryModel geomModel = XbimGeometryModel.CreateFrom(product, maps, false, lod, arguments.OCC);
-                        if (geomModel != null)  //it has geometry
-                        {
-                            Matrix3D m3d = node.WorldMatrix();
-                            
-                            List<XbimTriangulatedModel> tm=null ;
-                            lock (mappedModels)
-                            {
-                            if (geomModel is XbimMap)
-                            {
-                                XbimMap map = (XbimMap)geomModel;
-                                m3d = Matrix3D.Multiply(map.Transform, m3d);
-                                List<XbimTriangulatedModel> lookup;
-                                int key = map.MappedItem.RepresentationLabel;
-
-                                if (mappedModels.TryGetValue(key, out lookup))
-                                    tm = lookup;
-
-                                if(tm==null)
-                                {   
-                                    tm = geomModel.Mesh(true);
-                                    lock (mappedModels)
-                                    {
-                                        if (mappedModels.TryGetValue(key, out lookup))
-                                            tm = lookup;
-                                        else
-                                            mappedModels.Add(key, tm);
-                                    }
-                                    
-                                }
-
-                            }
-                            else if (geomModel is XbimGeometryModelCollection && ((XbimGeometryModelCollection)geomModel).IsMap)
-                            {
-                                XbimGeometryModelCollection mapColl = (XbimGeometryModelCollection)geomModel;
-
-                                m3d = Matrix3D.Multiply(mapColl.Transform, m3d);
-                                List<XbimTriangulatedModel> lookup;
-                                int key = mapColl.RepresentationLabel;
-
-                                if (mappedModels.TryGetValue(key, out lookup))
-                                    tm = lookup;
-
-                                if (tm == null)
-                                {
-                                    tm = geomModel.Mesh(true);
-                                    lock (mappedModels)
-                                    {
-                                        if (mappedModels.TryGetValue(key, out lookup))
-                                            tm = lookup;
-                                        else
-                                            mappedModels.Add(key, tm);
-                                    }
-                                }
-                            }
-                            else
-                                tm = geomModel.Mesh(true);
-
-                            //if (!(geomModel is XbimMap))
-                            {
-                                //tm = geomModel.Mesh(true);
-
-                                //lock (tm)
-                                //{
-                                XbimBoundingBox bb = geomModel.GetBoundingBox(true);
-
-                                byte[] matrix = Matrix3DExtensions.ToArray(m3d, true);
-
-                                short? typeId = IfcMetaData.IfcTypeId(product);
-                                XbimGeometryCursor geomTable = model.GetGeometryTable();
-
-                                XbimLazyDBTransaction transaction = geomTable.BeginLazyTransaction();
-                                geomTable.AddGeometry(product.EntityLabel, XbimGeometryType.BoundingBox, typeId.Value, matrix, bb.ToArray(), 0, geomModel.SurfaceStyleLabel);
-                                short subPart = 0;
-                                foreach (XbimTriangulatedModel b in tm)
-                                {
-                                    geomTable.AddGeometry(product.EntityLabel, XbimGeometryType.TriangulatedMesh, typeId.Value, matrix, b.Triangles, subPart, b.SurfaceStyleLabel);
-                                    subPart++;
-                                }
-                                transaction.Commit();
-                                model.FreeTable(geomTable);
-                            }
-                                //}
-                            }
-                        }
-                        Interlocked.Increment(ref tally);
-                        if (progDelegate != null)
-                        {
-                            int newPercentage = Convert.ToInt32((double)tally / total * 100.0);
-                            if (newPercentage > percentageParsed)
-                            {
-                                percentageParsed = newPercentage;
-                                progDelegate(percentageParsed, "Converted");
-                            }
-                        }
-                    }
-                    catch (Exception e1)
-                    {
-                        String message = String.Format("Error Triangulating product geometry of entity {0} - {1}",
-                            product.EntityLabel,
-                            product.ToString());
-                        Logger.Warn(message, e1);
-                    }
-                });
-                
-            }
-            catch (Exception e2)
-            {
-                Logger.Warn("General Error Triangulating geometry", e2);
-            }
-            finally
-            {
-                
-            }
-        }
+      
 
 
             
@@ -297,7 +149,7 @@ namespace XbimConvert
             switch (arguments.FilterType)
             {
                 case FilterType.None:
-                    result = model.Instances.OfType<IfcProduct>().Where(t=>!(t is IfcFeatureElement)); //exclude openings and additions
+                    result = model.Instances.OfType<IfcProduct>(true).Where(t=>!(t is IfcFeatureElement)); //exclude openings and additions
                     Logger.Debug("All geometry items will be generated");
                     break;
 

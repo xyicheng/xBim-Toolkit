@@ -33,7 +33,7 @@ namespace Xbim.IO
         private static Instance _jetInstance;
         private Session _session;
         private JET_DBID _databaseId;
-        static int cacheSizeInBytes = 64 * 1024 * 1024;
+        static int cacheSizeInBytes = 128 * 1024 * 1024 ;
         /// <summary>
         /// Holds the session and transaction state
         /// </summary>
@@ -43,6 +43,7 @@ namespace Xbim.IO
         private const int MaxCachedEntityTables = 32;
         private const int MaxCachedGeometryTables = 32;
         private XbimDBAccess _accessMode;
+
         static private string SystemPath;
 
         const int _transactionBatchSize = 100;
@@ -54,11 +55,6 @@ namespace Xbim.IO
         protected Dictionary<int, IPersistIfcEntity> read = new Dictionary<int, IPersistIfcEntity>();
         protected Dictionary<int, IPersistIfcEntity> modified = new Dictionary<int, IPersistIfcEntity>();
         protected Dictionary<int, IPersistIfcEntity> createdNew = new Dictionary<int, IPersistIfcEntity>();
-       
-        //protected HashSet<IPersistIfcEntity> ToDelete = new HashSet<IPersistIfcEntity>();
-        //protected HashSet<IPersistIfcEntity> ToCreate = new HashSet<IPersistIfcEntity>();
-        protected int CacheDefaultSize = 5000;
-
         #endregion
 
         private string _databaseName;
@@ -87,6 +83,7 @@ namespace Xbim.IO
             SystemParameters.CacheSizeMax = cacheSizeInBytes / SystemParameters.DatabasePageSize;
             _jetInstance = CreateInstance("XbimInstance", XbimModel.XbimTempDirectory);
             AppDomain.CurrentDomain.ProcessExit += CurrentDomain_ProcessExit;
+             
         }
 
         static void CurrentDomain_ProcessExit(object sender, EventArgs e)
@@ -101,29 +98,6 @@ namespace Xbim.IO
                 Directory.Delete(SystemPath);
         }
 
-        #region Martin 
-        /// <summary>
-        /// This is necessary to use after Model.Close() when <strong> DEBUGGING </strong>Revit plugins and similar applications.
-        /// Microsoft.Isam.Esent.Interop assembly is loaded for all the time as it is unchanged whereas development
-        /// assemblies are loaded multiple times. Microsoft.Isam.Esent.Interop assembly holds the resources than
-        /// and it crashes when new instance of THIS object is created. This is not a problem when deploying the
-        /// application because scope of all the assemblies and the application (Revit) are the same.
-        /// 
-        /// The code is the same as in CurrentDomain_ProcessExit()
-        /// </summary>
-        public static void FreeResources() 
-        {
-            if (_jetInstance != null)
-            {
-                _jetInstance.Term();
-                _jetInstance = null;
-            }
-
-            if (Directory.Exists(SystemPath))
-                Directory.Delete(SystemPath);
-        }
-        #endregion
-
         public IfcPersistedInstanceCache(XbimModel model)
         {
             this.lockObject = new Object();
@@ -131,8 +105,14 @@ namespace Xbim.IO
             _entityTables = new XbimEntityCursor[MaxCachedEntityTables];
             _geometryTables = new XbimGeometryCursor[MaxCachedGeometryTables];
         }
-        
-       
+
+
+        public XbimDBAccess AccessMode
+        {
+            get { return _accessMode; }
+        }
+
+
         /// <summary>
         /// Creates an empty xbim file, overwrites any existing file of the same name
         /// throw a create failed exception if unsuccessful
@@ -349,34 +329,57 @@ namespace Xbim.IO
             EndCaching();
 
 
-            if (_session != null)
+            if (_session != null )
             {
-                Api.JetCloseDatabase(_session, _databaseId, CloseDatabaseGrbit.None);
-                try
+                if (_databaseId != null)
                 {
-                    Api.JetDetachDatabase(_session, _databaseName);
+                    Api.JetCloseDatabase(_session, _databaseId, CloseDatabaseGrbit.None);
+                    try
+                    {
+                        Api.JetDetachDatabase(_session, _databaseName);
+                    }
+                    catch (Microsoft.Isam.Esent.Interop.EsentDatabaseInUseException) //Databases can be attached many times and detached just once, ignore failed detaches
+                    {
+
+                    }
                 }
-                catch (Microsoft.Isam.Esent.Interop.EsentDatabaseInUseException) //Databases can be attached many times and detached just once, ignore failed detaches
-                {      
-                  
-                }
-                
-                this._databaseName = null;
-                
+                this._databaseName = null;   
                 _session.Dispose();
                 _session = null;
             }
         }
 
+        /// <summary>
+        /// Performs a set of actions on a collection of entities inside a single read only transaction
+        /// This improves database  performance for retrieving and accessing complex and deep objects
+        /// </summary>
+        /// <typeparam name="TSource"></typeparam>
+        /// <param name="source"></param>
+        /// <param name="body"></param>
+        public void ForEach<TSource>(IEnumerable<TSource> source, Action<TSource> body) where TSource : IPersistIfcEntity
+        {
+            var table = GetEntityTable();
+            try
+            {
+                using (var txn = table.BeginReadOnlyTransaction())
+                {
+                    foreach (var item in source)
+                    body(item);
+                } 
+            }
+            finally
+            {
+                FreeTable(table);
+            }
 
-        
+        }
 
         /// <summary>
         /// Imports the contents of the ifc file into the named database, the resulting database is closed after success, use Open to access
         /// </summary>
         /// <param name="progressHandler"></param>
         /// <returns></returns>
-        public void ImportIfc(string xbimDbName, string toImportIfcFilename, ReportProgressDelegate progressHandler = null)
+        public void ImportIfc(string xbimDbName, string toImportIfcFilename, ReportProgressDelegate progressHandler = null, bool keepOpen = false)
         {
             CreateDatabase(xbimDbName);
             Open(xbimDbName, XbimDBAccess.Exclusive);
@@ -399,7 +402,7 @@ namespace Xbim.IO
                     transaction.Commit();
                 }
                 FreeTable(table);
-                Close();
+                if(!keepOpen) Close();
             }
             catch (Exception e)
             {
@@ -414,7 +417,7 @@ namespace Xbim.IO
         /// </summary>
         /// <param name="toImportFilename"></param>
         /// <param name="progressHandler"></param>
-        public void ImportIfcZip(string xbimDbName, string toImportFilename, ReportProgressDelegate progressHandler = null)
+        public void ImportIfcZip(string xbimDbName, string toImportFilename, ReportProgressDelegate progressHandler = null, bool keepOpen = false)
         {
             CreateDatabase(xbimDbName);
             Open(xbimDbName, XbimDBAccess.Exclusive);
@@ -454,7 +457,7 @@ namespace Xbim.IO
                                         transaction.Commit();
                                     }
                                     FreeTable(table);
-                                    Close();
+                                    if(!keepOpen) Close();
                                     return; // we only want the first file
                                 }
                             }
@@ -477,7 +480,7 @@ namespace Xbim.IO
                                         transaction.Commit();
                                     }
                                     FreeTable(table);
-                                    Close();
+                                    if (!keepOpen) Close();
                                     return;
                                 }
                             }
@@ -590,7 +593,7 @@ namespace Xbim.IO
             jetInstance.Parameters.MaxVerPages = 2048;
             jetInstance.Parameters.NoInformationEvent = true;
             jetInstance.Parameters.WaypointLatency = 1;
-            jetInstance.Parameters.MaxSessions = 256;
+            jetInstance.Parameters.MaxSessions = 512;
             jetInstance.Parameters.MaxOpenTables = 256;
            
             InitGrbit grbit = EsentVersion.SupportsWindows7Features
@@ -605,7 +608,7 @@ namespace Xbim.IO
         /// <summary>
         ///   Imports an Xml file memory model into the model server, only call when the database instances table is empty
         /// </summary>
-        public void ImportIfcXml(string xbimDbName, string xmlFilename, ReportProgressDelegate progressHandler = null)
+        public void ImportIfcXml(string xbimDbName, string xmlFilename, ReportProgressDelegate progressHandler = null, bool keepOpen = false)
         {
             CreateDatabase(xbimDbName);
             Open(xbimDbName, XbimDBAccess.Exclusive);
@@ -614,20 +617,26 @@ namespace Xbim.IO
             {
                 using (var transaction = table.BeginLazyTransaction())
                 {
-                    //XmlReaderSettings settings = new XmlReaderSettings() { IgnoreComments = true, IgnoreWhitespace = false };
-                    using (Stream xmlInStream = new FileStream(xmlFilename, FileMode.Open, FileAccess.Read))
+                   
+                    using (StreamReader xmlInStream = new StreamReader(xmlFilename,Encoding.GetEncoding("ISO-8859-9"))) //this is a work around to ensure latin character sets are read
                     {
-                        using (XmlTextReader xmlReader = new XmlTextReader(xmlInStream))
+                        using (XmlTextReader xmlTextReader = new XmlTextReader(xmlInStream))
                         {
+                            XmlReaderSettings settings = new XmlReaderSettings();
+                            settings.CheckCharacters = false; //has no impact
+                       
+                            XmlReader xmlReader = XmlReader.Create(xmlTextReader, settings);
+                            settings.CheckCharacters = false;
                             IfcXmlReader reader = new IfcXmlReader();
                             _model.Header = reader.Read(this, table, xmlReader);
                             table.WriteHeader(_model.Header);
+
                         }
                     }
                     transaction.Commit();
                 }
                 FreeTable(table);
-                Close();
+                if(!keepOpen) Close();
             }
             catch (Exception e)
             {
@@ -886,9 +895,8 @@ namespace Xbim.IO
                     if (entityTable.TrySeekEntityType(typeId, out ih))
                     {
                         yield return ih;
-                        while (entityTable.TryMoveNext())
+                        while (entityTable.TryMoveNextEntityType(out ih))
                         {
-                            ih = entityTable.GetInstanceHandle();
                             yield return ih;
                         }
                     }
@@ -1565,21 +1573,24 @@ namespace Xbim.IO
             }
         }
 
-      
+        
 
         internal T InsertCopy<T>(T toCopy, XbimInstanceHandleMap mappings, bool includeInverses) where T : IPersistIfcEntity
         {
-            XbimInstanceHandle toCopyHandle;
-            if (mappings.TryGetValue(toCopy.GetHandle(), out toCopyHandle))
-                return (T)this.GetInstance(toCopyHandle);
+            XbimInstanceHandle toCopyHandle=toCopy.GetHandle();
+            XbimInstanceHandle copyHandle;
+            if (mappings.TryGetValue(toCopyHandle, out copyHandle))
+                return (T)this.GetInstance(copyHandle);
            
             IfcType ifcType = IfcMetaData.IfcType(toCopy);
             int copyLabel = Math.Abs(toCopy.EntityLabel);
-            XbimInstanceHandle copyHandle = InsertNew(ifcType.Type);
+            copyHandle = InsertNew(ifcType.Type);
             mappings.Add(toCopyHandle, copyHandle);
             if (typeof(IfcCartesianPoint) == ifcType.Type || typeof(IfcDirection) == ifcType.Type)//special cases for cartesian point and direction for efficiency
             {
-                IPersistIfcEntity v = (IPersistIfcEntity)Activator.CreateInstance(ifcType.Type, new object[] { toCopy });  
+                IPersistIfcEntity v = (IPersistIfcEntity)Activator.CreateInstance(ifcType.Type, new object[] { toCopy });      
+                v.Bind(_model, copyHandle.EntityLabel);
+                v.Activate(true);
                 return (T)v;
             }
             else
@@ -1591,6 +1602,7 @@ namespace Xbim.IO
                 IEnumerable<IfcMetaProperty> props = ifcType.IfcProperties.Values.Where(p => !p.IfcAttribute.IsDerivedOverride);
                 if (includeInverses)
                     props = props.Union(ifcType.IfcInverses);
+                if (rt != null) rt.OwnerHistory = _model.OwnerHistoryAddObject;
                 foreach (IfcMetaProperty prop in props)
                 {
                     if (rt != null && prop.PropertyInfo.Name == "OwnerHistory") //don't add the owner history in as this will be changed later
@@ -1656,32 +1668,15 @@ namespace Xbim.IO
             return GetInstance(map.EntityLabel);
         }
 
-
+        /// <summary>
+        /// This function can only be called once the model is in a transaction
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
         private XbimInstanceHandle InsertNew(Type type)
         {
-
-            XbimEntityCursor table = GetEntityTable();
-
-            try
-            {
-                using (var txn = table.BeginLazyTransaction())
-                {
-                    XbimInstanceHandle handle = table.AddEntity(type);
-                    txn.Commit();
-                    return handle;
-                }
-
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-            finally
-            {
-
-                FreeTable(table);
-            }
-            
+            return _model.GetTransactingCursor().AddEntity(type);
+          
         }
 
         private int NextLabel()
