@@ -84,9 +84,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.Spatial", "Xbim.Spatia
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XbimWebSpatial", "XbimWebSpatial\XbimWebSpatial.csproj", "{24E1E95C-C4B3-44FF-AAEC-F9D3A7CC1416}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.Spatial.Test", "Xbim.Spatial.Test\Xbim.Spatial.Test.csproj", "{A4200EFC-8B0E-4CCF-8EE8-F00773D66969}"
+EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 23
+		SccNumberOfProjects = 24
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://tfs.codeplex.com/tfs/tfs13
 		SccLocalPath0 = .
@@ -169,6 +171,10 @@ Global
 		SccProjectTopLevelParentUniqueName22 = XbimComplete.sln
 		SccProjectName22 = XbimWebSpatial
 		SccLocalPath22 = XbimWebSpatial
+		SccProjectUniqueName23 = Xbim.Spatial.Test\\Xbim.Spatial.Test.csproj
+		SccProjectTopLevelParentUniqueName23 = XbimComplete.sln
+		SccProjectName23 = Xbim.Spatial.Test
+		SccLocalPath23 = Xbim.Spatial.Test
 	EndGlobalSection
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = XbimComplete.vsmdi
@@ -471,6 +477,16 @@ Global
 		{24E1E95C-C4B3-44FF-AAEC-F9D3A7CC1416}.Release|Win32.ActiveCfg = Release|Any CPU
 		{24E1E95C-C4B3-44FF-AAEC-F9D3A7CC1416}.Release|x64.ActiveCfg = Release|Any CPU
 		{24E1E95C-C4B3-44FF-AAEC-F9D3A7CC1416}.Release|x86.ActiveCfg = Release|Any CPU
+		{A4200EFC-8B0E-4CCF-8EE8-F00773D66969}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{A4200EFC-8B0E-4CCF-8EE8-F00773D66969}.Debug|Win32.ActiveCfg = Debug|x86
+		{A4200EFC-8B0E-4CCF-8EE8-F00773D66969}.Debug|x64.ActiveCfg = Debug|x86
+		{A4200EFC-8B0E-4CCF-8EE8-F00773D66969}.Debug|x86.ActiveCfg = Debug|x86
+		{A4200EFC-8B0E-4CCF-8EE8-F00773D66969}.Debug|x86.Build.0 = Debug|x86
+		{A4200EFC-8B0E-4CCF-8EE8-F00773D66969}.Release|Any CPU.ActiveCfg = Release|x86
+		{A4200EFC-8B0E-4CCF-8EE8-F00773D66969}.Release|Win32.ActiveCfg = Release|x86
+		{A4200EFC-8B0E-4CCF-8EE8-F00773D66969}.Release|x64.ActiveCfg = Release|x86
+		{A4200EFC-8B0E-4CCF-8EE8-F00773D66969}.Release|x86.ActiveCfg = Release|x86
+		{A4200EFC-8B0E-4CCF-8EE8-F00773D66969}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -490,6 +506,7 @@ Global
 		{301257BA-8FD7-49E8-8E47-4615026F633C} = {FF615897-BD10-49C6-9F50-0D0BE7B1E8BE}
 		{DE488ADE-EE39-4FAE-957D-AF7200BB9E3B} = {FF615897-BD10-49C6-9F50-0D0BE7B1E8BE}
 		{24E1E95C-C4B3-44FF-AAEC-F9D3A7CC1416} = {FF615897-BD10-49C6-9F50-0D0BE7B1E8BE}
+		{A4200EFC-8B0E-4CCF-8EE8-F00773D66969} = {FF615897-BD10-49C6-9F50-0D0BE7B1E8BE}
 	EndGlobalSection
 	GlobalSection(JSLint) = preSolution
 		SolutionConfigurationLocation = JSLintOptions.xml
