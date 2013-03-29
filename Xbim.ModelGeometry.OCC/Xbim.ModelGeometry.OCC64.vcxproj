@@ -276,6 +276,7 @@
     <ClInclude Include="IXbimGeometryModel.h" />
     <ClInclude Include="IXbimMeshGeometry.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="resource1.h" />
     <ClInclude Include="Version.h" />
     <ClInclude Include="Stdafx.h" />
     <ClInclude Include="TessellatorReceiver.h" />
