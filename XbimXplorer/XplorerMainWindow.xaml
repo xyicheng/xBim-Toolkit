@@ -75,7 +75,7 @@
                 <!--<MenuItem Header="_New Xbim File" Click="FileNew_Click"/>-->
                 <MenuItem Header="_Open" Command="Open"/>
                 <MenuItem Header="_New" Command="New" />
-                <MenuItem Header="_Insert" Command="{x:Static local:XplorerMainWindow.InsertCmd}" />
+                <!--<MenuItem Header="_Insert" Command="{x:Static local:XplorerMainWindow.InsertCmd}" />-->
                 <MenuItem Header="_SaveAs" Command="SaveAs"/>
                 <MenuItem Header="_Close" Command="Close" />
             </MenuItem>
