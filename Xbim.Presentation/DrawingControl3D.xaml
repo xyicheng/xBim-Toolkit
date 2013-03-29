@@ -26,17 +26,17 @@
             <ModelVisual3D.Children>
                 <ModelVisual3D x:Name="Opaques">
                 </ModelVisual3D>
-                <HelixToolkit:SortingVisual3D x:Name="Transparents" CheckForOpaqueVisuals="False" IsSorting="False"   SortingFrequency="100" Method="BoundingBoxCenter">
-                </HelixToolkit:SortingVisual3D> 
+                <ModelVisual3D x:Name="Transparents" >
+                </ModelVisual3D> 
             </ModelVisual3D.Children>
         </ModelVisual3D>
        
         <HelixToolkit:DefaultLights></HelixToolkit:DefaultLights>
-        <HelixToolkit:BillboardTextVisual3D  x:Name="PropertiesBillBoard"  HorizontalAlignment="Left" Background="#FFF9F998" Foreground="DarkBlue" FontSize="12" Position="0,0,0" Text="" DepthOffset="0.01" IsRendering="False" BorderBrush="Black" Padding="5,5,5,4" />
-       
+        <!--<HelixToolkit:BillboardTextVisual3D  x:Name="PropertiesBillBoard" VerticalAlignment="Top"  HorizontalAlignment="Left" Background="#FFF9F998" Foreground="DarkBlue" FontSize="12" Position="0,0,0" Text="" DepthOffset="0.1" IsRendering="False" BorderBrush="Black" Padding="5,5,5,4" />-->
+        
         <!-- You can also add elements here in the xaml -->
         <HelixToolkit:GridLinesVisual3D x:Name="GridLines" Width="10000" Length="10000" MinorDistance="1000" MajorDistance="10000" Thickness="25"/>
-
+        <HelixToolkit:MeshVisual3D x:Name="Highlighted" EdgeDiameter="0"  VertexRadius="0"></HelixToolkit:MeshVisual3D>
     </HelixToolkit:HelixViewport3D>
    
 </UserControl>

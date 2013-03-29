@@ -15,10 +15,10 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Windows.Media;
-using System.Windows.Media.Media3D;
+
+using Xbim.Common.Geometry;
 using Xbim.Ifc2x3.GeometryResource;
-using WVector = System.Windows.Vector;
+
 
 #endregion
 
@@ -26,7 +26,7 @@ namespace Xbim.Ifc2x3.Extensions
 {
     public static class CartesianTransformationOperatorExtensions
     {
-        public static Matrix3D ToMatrix3D(this IfcCartesianTransformationOperator ct, ConcurrentDictionary<int, Object> maps = null)
+        public static XbimMatrix3D ToMatrix3D(this IfcCartesianTransformationOperator ct, ConcurrentDictionary<int, Object> maps = null)
         {
             if (ct is IfcCartesianTransformationOperator3DnonUniform)
                return ((IfcCartesianTransformationOperator3DnonUniform) ct).ToMatrix3D(maps);
@@ -37,58 +37,11 @@ namespace Xbim.Ifc2x3.Extensions
         }
 
         /// <summary>
-        ///   Converts a CartesianTransformationOperator2D to a System.Windows.Media.Matrix
-        /// </summary>
-        /// <param name = "ct"></param>
-        /// <returns></returns>
-        public static Matrix ToMatrix(this IfcCartesianTransformationOperator2D ct)
-        {
-            Matrix m;
-            IfcDirection axis1 = ct.Axis1, axis2 = ct.Axis2;
-            double scale = ct.Scale.HasValue ? ct.Scale.Value : 1.0;
-            IfcCartesianPoint o = ct.LocalOrigin;
-            if (o == null)
-                throw new ArgumentNullException("LocationOrigin", "A locationOrigin cannot be null");
-            if (axis1 != null)
-            {
-                WVector d1 = axis1.WVector();
-                d1.Normalize();
-                m = new Matrix(d1.X, d1.Y, -d1.Y, d1.X, 0, 0);
-                if (axis2 != null)
-                {
-                    double factor = WVector.Multiply(axis2.WVector(), new WVector(-d1.Y, d1.X));
-                    if (factor < 0)
-                    {
-                        m.M21 = -m.M21;
-                        m.M22 = -m.M22;
-                    }
-                }
-            }
-            else
-            {
-                if (axis2 != null)
-                {
-                    WVector d1 = axis2.WVector();
-                    d1.Normalize();
-                    m = new Matrix(-d1.Y, d1.X, d1.X, d1.Y, 0, 0);
-                    m.M11 = -m.M11;
-                    m.M12 = -m.M12;
-                }
-                else
-                    m = new Matrix();
-            }
-            m.Scale(scale, scale);
-            m.Translate(o.X, o.Y);
-            return m;
-        }
-
-
-        /// <summary>
-        ///   Builds a windows Matrix3D from a CartesianTransformationOperator3D
+        ///   Builds a windows XbimMatrix3D from a CartesianTransformationOperator3D
         /// </summary>
         /// <param name = "ct3D"></param>
         /// <returns></returns>
-        public static Matrix3D ToMatrix3D(this IfcCartesianTransformationOperator3D ct3D, ConcurrentDictionary<int, Object> maps = null)
+        public static XbimMatrix3D ToMatrix3D(this IfcCartesianTransformationOperator3D ct3D, ConcurrentDictionary<int, Object> maps = null)
         {
             if (maps == null)
                 return ConvertCartesianTranformOperator3D(ct3D);
@@ -97,26 +50,27 @@ namespace Xbim.Ifc2x3.Extensions
 
                 object transform;
                 if (maps.TryGetValue(Math.Abs(ct3D.EntityLabel), out transform)) //already converted it just return cached
-                    return (Matrix3D)transform;
-                Matrix3D matrix = ConvertCartesianTranformOperator3D(ct3D);
+                    return (XbimMatrix3D)transform;
+                XbimMatrix3D matrix = ConvertCartesianTranformOperator3D(ct3D);
                 maps.TryAdd(Math.Abs(ct3D.EntityLabel), matrix);
                 return matrix;
             }
         }
 
-        private static Matrix3D ConvertCartesianTranformOperator3D(IfcCartesianTransformationOperator3D ct3D)
+        private static XbimMatrix3D ConvertCartesianTranformOperator3D(IfcCartesianTransformationOperator3D ct3D)
         {
-            Matrix3D m3d = ConvertCartesianTransform3D(ct3D);
-            m3d.Scale(new Vector3D(ct3D.Scl, ct3D.Scl, ct3D.Scl));
+            XbimMatrix3D m3d = ConvertCartesianTransform3D(ct3D);
+
+            m3d.Scale(ct3D.Scl);
             return m3d;
         }
 
         /// <summary>
-        ///   Builds a windows Matrix3D from a CartesianTransformationOperator3DnonUniform
+        ///   Builds a windows XbimMatrix3D from a CartesianTransformationOperator3DnonUniform
         /// </summary>
         /// <param name = "ct3D"></param>
         /// <returns></returns>
-        public static Matrix3D ToMatrix3D(this IfcCartesianTransformationOperator3DnonUniform ct3D, ConcurrentDictionary<int, Object> maps = null)
+        public static XbimMatrix3D ToMatrix3D(this IfcCartesianTransformationOperator3DnonUniform ct3D, ConcurrentDictionary<int, Object> maps = null)
         {
             if (maps == null)
                 return ConvertCartesianTransformationOperator3DnonUniform(ct3D);
@@ -124,117 +78,117 @@ namespace Xbim.Ifc2x3.Extensions
             {
                 object transform;
                 if (maps.TryGetValue(Math.Abs(ct3D.EntityLabel), out transform)) //already converted it just return cached
-                    return (Matrix3D)transform;
-                Matrix3D matrix = ConvertCartesianTransformationOperator3DnonUniform(ct3D);
+                    return (XbimMatrix3D)transform;
+                XbimMatrix3D matrix = ConvertCartesianTransformationOperator3DnonUniform(ct3D);
                 maps.TryAdd(Math.Abs(ct3D.EntityLabel), matrix);
                 return matrix;
             }
         }
 
-        private static Matrix3D ConvertCartesianTransformationOperator3DnonUniform(IfcCartesianTransformationOperator3DnonUniform ct3D)
+        private static XbimMatrix3D ConvertCartesianTransformationOperator3DnonUniform(IfcCartesianTransformationOperator3DnonUniform ct3D)
         {
-            Vector3D u3; //Z Axis Direction
-            Vector3D u2; //X Axis Direction
-            Vector3D u1; //Y axis direction
+            XbimVector3D u3; //Z Axis Direction
+            XbimVector3D u2; //X Axis Direction
+            XbimVector3D u1; //Y axis direction
             if (ct3D.Axis3 != null)
             {
                 IfcDirection dir = ct3D.Axis3;
-                u3 = new Vector3D(dir.DirectionRatios[0], dir.DirectionRatios[1], dir.DirectionRatios[2]);
+                u3 = new XbimVector3D(dir.DirectionRatios[0], dir.DirectionRatios[1], dir.DirectionRatios[2]);
                 u3.Normalize();
             }
             else
-                u3 = new Vector3D(0, 0, 1);
+                u3 = new XbimVector3D(0, 0, 1);
             if (ct3D.Axis1 != null)
             {
                 IfcDirection dir = ct3D.Axis1;
-                u1 = new Vector3D(dir.DirectionRatios[0], dir.DirectionRatios[1], dir.DirectionRatios[2]);
+                u1 = new XbimVector3D(dir.DirectionRatios[0], dir.DirectionRatios[1], dir.DirectionRatios[2]);
                 u1.Normalize();
             }
             else
             {
-                Vector3D defXDir = new Vector3D(1, 0, 0);
-                u1 = u3 != defXDir ? defXDir : new Vector3D(0, 1, 0);
+                XbimVector3D defXDir = new XbimVector3D(1, 0, 0);
+                u1 = u3 != defXDir ? defXDir : new XbimVector3D(0, 1, 0);
             }
-            Vector3D xVec = Vector3D.Multiply(Vector3D.DotProduct(u1, u3), u3);
-            Vector3D xAxis = Vector3D.Subtract(u1, xVec);
+            XbimVector3D xVec = XbimVector3D.Multiply(XbimVector3D.DotProduct(u1, u3), u3);
+            XbimVector3D xAxis = XbimVector3D.Subtract(u1, xVec);
             xAxis.Normalize();
 
             if (ct3D.Axis2 != null)
             {
                 IfcDirection dir = ct3D.Axis2;
-                u2 = new Vector3D(dir.DirectionRatios[0], dir.DirectionRatios[1], dir.DirectionRatios[2]);
+                u2 = new XbimVector3D(dir.DirectionRatios[0], dir.DirectionRatios[1], dir.DirectionRatios[2]);
                 u2.Normalize();
             }
             else
-                u2 = new Vector3D(0, 1, 0);
+                u2 = new XbimVector3D(0, 1, 0);
 
-            Vector3D tmp = Vector3D.Multiply(Vector3D.DotProduct(u2, u3), u3);
-            Vector3D yAxis = Vector3D.Subtract(u2, tmp);
-            tmp = Vector3D.Multiply(Vector3D.DotProduct(u2, xAxis), xAxis);
-            yAxis = Vector3D.Subtract(yAxis, tmp);
+            XbimVector3D tmp = XbimVector3D.Multiply(XbimVector3D.DotProduct(u2, u3), u3);
+            XbimVector3D yAxis = XbimVector3D.Subtract(u2, tmp);
+            tmp = XbimVector3D.Multiply(XbimVector3D.DotProduct(u2, xAxis), xAxis);
+            yAxis = XbimVector3D.Subtract(yAxis, tmp);
             yAxis.Normalize();
             u2 = yAxis;
             u1 = xAxis;
 
-            Point3D lo = ct3D.LocalOrigin.WPoint3D(); //local origin
+            XbimPoint3D lo = ct3D.LocalOrigin.XbimPoint3D(); //local origin
 
-            Matrix3D matrix = new Matrix3D(u1.X, u1.Y, u1.Z, 0,
+            XbimMatrix3D matrix = new XbimMatrix3D(u1.X, u1.Y, u1.Z, 0,
                                            u2.X, u2.Y, u2.Z, 0,
                                            u3.X, u3.Y, u3.Z, 0,
                                            lo.X, lo.Y, lo.Z, 1);
-            matrix.Scale(new Vector3D(ct3D.Scl, ct3D.Scl2, ct3D.Scl3));
+            matrix.Scale(new XbimVector3D(ct3D.Scl, ct3D.Scl2, ct3D.Scl3));
 
             return matrix;
         }
 
-        private static Matrix3D ConvertCartesianTransform3D(IfcCartesianTransformationOperator3D ct3D)
+        private static XbimMatrix3D ConvertCartesianTransform3D(IfcCartesianTransformationOperator3D ct3D)
         {
-            Vector3D u3; //Z Axis Direction
-            Vector3D u2; //X Axis Direction
-            Vector3D u1; //Y axis direction
+            XbimVector3D u3; //Z Axis Direction
+            XbimVector3D u2; //X Axis Direction
+            XbimVector3D u1; //Y axis direction
             if (ct3D.Axis3 != null)
             {
                 IfcDirection dir = ct3D.Axis3;
-                u3 = new Vector3D(dir.DirectionRatios[0], dir.DirectionRatios[1], dir.DirectionRatios[2]);
+                u3 = new XbimVector3D(dir.DirectionRatios[0], dir.DirectionRatios[1], dir.DirectionRatios[2]);
                 u3.Normalize();
             }
             else
-                u3 = new Vector3D(0, 0, 1);
+                u3 = new XbimVector3D(0, 0, 1);
             if (ct3D.Axis1 != null)
             {
                 IfcDirection dir = ct3D.Axis1;
-                u1 = new Vector3D(dir.DirectionRatios[0], dir.DirectionRatios[1], dir.DirectionRatios[2]);
+                u1 = new XbimVector3D(dir.DirectionRatios[0], dir.DirectionRatios[1], dir.DirectionRatios[2]);
                 u1.Normalize();
             }
             else
             {
-                Vector3D defXDir = new Vector3D(1, 0, 0);
-                u1 = u3 != defXDir ? defXDir : new Vector3D(0, 1, 0);
+                XbimVector3D defXDir = new XbimVector3D(1, 0, 0);
+                u1 = u3 != defXDir ? defXDir : new XbimVector3D(0, 1, 0);
             }
-            Vector3D xVec = Vector3D.Multiply(Vector3D.DotProduct(u1, u3), u3);
-            Vector3D xAxis = Vector3D.Subtract(u1, xVec);
+            XbimVector3D xVec = XbimVector3D.Multiply(XbimVector3D.DotProduct(u1, u3), u3);
+            XbimVector3D xAxis = XbimVector3D.Subtract(u1, xVec);
             xAxis.Normalize();
 
             if (ct3D.Axis2 != null)
             {
                 IfcDirection dir = ct3D.Axis2;
-                u2 = new Vector3D(dir.DirectionRatios[0], dir.DirectionRatios[1], dir.DirectionRatios[2]);
+                u2 = new XbimVector3D(dir.DirectionRatios[0], dir.DirectionRatios[1], dir.DirectionRatios[2]);
                 u2.Normalize();
             }
             else
-                u2 = new Vector3D(0, 1, 0);
+                u2 = new XbimVector3D(0, 1, 0);
 
-            Vector3D tmp = Vector3D.Multiply(Vector3D.DotProduct(u2, u3), u3);
-            Vector3D yAxis = Vector3D.Subtract(u2, tmp);
-            tmp = Vector3D.Multiply(Vector3D.DotProduct(u2, xAxis), xAxis);
-            yAxis = Vector3D.Subtract(yAxis, tmp);
+            XbimVector3D tmp = XbimVector3D.Multiply(XbimVector3D.DotProduct(u2, u3), u3);
+            XbimVector3D yAxis = XbimVector3D.Subtract(u2, tmp);
+            tmp = XbimVector3D.Multiply(XbimVector3D.DotProduct(u2, xAxis), xAxis);
+            yAxis = XbimVector3D.Subtract(yAxis, tmp);
             yAxis.Normalize();
             u2 = yAxis;
             u1 = xAxis;
 
-            Point3D lo = ct3D.LocalOrigin.WPoint3D(); //local origin
+            XbimPoint3D lo = ct3D.LocalOrigin.XbimPoint3D(); //local origin
 
-            return new Matrix3D(u1.X, u1.Y, u1.Z, 0,
+            return new XbimMatrix3D(u1.X, u1.Y, u1.Z, 0,
                                            u2.X, u2.Y, u2.Z, 0,
                                            u3.X, u3.Y, u3.Z, 0,
                                            lo.X, lo.Y, lo.Z, 1);

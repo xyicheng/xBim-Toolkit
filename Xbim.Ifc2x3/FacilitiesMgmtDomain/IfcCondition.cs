@@ -23,7 +23,7 @@ namespace Xbim.Ifc2x3.FacilitiesMgmtDomain
     /// IfcRelAssignsToProduct is used to relate one or more instances of IfcCondition to an artifact that is an instance of a 
     /// subtype of IfcProduct. For an instance of IfcAsset, condition is related through the use of IfcRelAssignsToGroup.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntity]
     public class IfcCondition : IfcGroup
     {
         

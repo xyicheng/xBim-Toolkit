@@ -36,7 +36,7 @@ namespace Xbim.Ifc2x3.ProductExtension
     ///   Shape Representation
     ///   The geometry use definitions for the shape representation of the IfcFeatureElement is given at the level of its subtypes.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public abstract class IfcFeatureElement : IfcElement
     {
     }

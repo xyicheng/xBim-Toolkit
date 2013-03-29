@@ -48,7 +48,7 @@ namespace Xbim.Ifc2x3.SharedBldgElements
     ///   Formal Propositions:
     ///   WR1   :   Either the stair is not decomposed into its flights and landings (the stair can have independent geometry), or the geometry shall not be given at IfcStair directly.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcStair : IfcBuildingElement
     {
         #region Fields

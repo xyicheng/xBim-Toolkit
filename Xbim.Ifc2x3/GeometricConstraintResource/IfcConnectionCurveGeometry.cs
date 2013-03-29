@@ -33,7 +33,7 @@ namespace Xbim.Ifc2x3.GeometricConstraintResource
     ///   Geometry Use Definitions:
     ///   The IfcCurve (or the IfcEdgeCurve with an associated IfcCurve) at the CurveOnRelatingElement attribute defines the curve where the basic geometry items of the connected elements connects. The curve geometry and coordinates are provided within the local coordinate system of the RelatingElement, as specified at the IfcRelConnects Subtype that utilizes the IfcConnectionCurveGeometry. Optionally, the same curve geometry and coordinates can also be provided within the local coordinate system of the RelatedElement by using the CurveOnRelatedElement attribute.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable, IndexedClass]
+    [IfcPersistedEntityAttribute, IndexedClass]
     public class IfcConnectionCurveGeometry : IfcConnectionGeometry
     {
         private IfcCurveOrEdgeCurve _curveOnRelatingElement;

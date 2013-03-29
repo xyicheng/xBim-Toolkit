@@ -33,7 +33,7 @@ namespace Xbim.Ifc2x3.GeometricConstraintResource
     ///   Geometry Use Definitions: 
     ///   The IfcPoint (or the IfcVertexPoint with an associated IfcPoint) at the PointOnRelatingElement attribute defines the point where the basic geometry items of the connected elements connects. The point coordinates are provided within the local coordinate system of the RelatingElement, as specified at the IfcRelConnectsSubtype that utilizes the IfcConnectionPointGeometry. Optionally, the same point coordinates can also be provided within the local coordinate system of the RelatedElement by using the PointOnRelatedElement attribute. If both point coordinates are not identical within a common parent coordinate system (latestly within the world coordinate system), the subtype IfcConnectionPointEccentricity shall be used.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable, IndexedClass]
+    [IfcPersistedEntityAttribute, IndexedClass]
     public class IfcConnectionPointGeometry : IfcConnectionGeometry
     {
         private IfcPointOrVertexPoint _pointOnRelatingElement;

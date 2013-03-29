@@ -37,7 +37,7 @@ namespace Xbim.Ifc2x3.PresentationOrganizationResource
     ///  (e.g. by IfcCurveStyle, IfcFillAreaStyle, IfcTextStyle, IfcSurfaceStyle, IfcSymbolStyle),  
     ///  then it overrides the style provided by the IfcPresentationLayerAssignmentWithStyle.
     ///</summary>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcPresentationLayerWithStyle : IfcPresentationLayerAssignment
     {
         public IfcPresentationLayerWithStyle()

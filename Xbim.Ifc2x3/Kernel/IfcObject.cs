@@ -16,7 +16,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-using System.Xml.Serialization;
+
 using Xbim.Ifc2x3.MeasureResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
@@ -25,7 +25,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc2x3.Kernel
 {
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcObjectSet : XbimSet<IfcObject>
     {
         internal IfcObjectSet(IPersistIfcEntity owner)
@@ -52,7 +52,7 @@ namespace Xbim.Ifc2x3.Kernel
     ///   Formal Propositions:
     ///   WR1   :   Only maximum of one relationship to an underlying type (by an IfcRelDefinesByType relationship) should be given for an object instance.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public abstract class IfcObject : IfcObjectDefinition
     {
         #region Fields and Events
@@ -104,7 +104,7 @@ namespace Xbim.Ifc2x3.Kernel
         /// <summary>
         ///   Set of relationships to type or property (statically or dynamically defined) information that further define the object. In case of type information, the associated IfcTypeObject contains the specific information (or type, or style), that is common to all instances of IfcObject refering to the same type.
         /// </summary>
-        [XmlIgnore]
+        
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class)]
         public virtual IEnumerable<IfcRelDefines> IsDefinedBy
         {
@@ -117,7 +117,7 @@ namespace Xbim.Ifc2x3.Kernel
 
         /// <summary>
         /// </summary>
-        [XmlIgnore]
+        
         public IEnumerable<IfcRelDefinesByProperties> IsDefinedByProperties
         {
             get
@@ -130,7 +130,7 @@ namespace Xbim.Ifc2x3.Kernel
         /// <summary>
         ///   Returns a collection of PropertySets for the entity
         /// </summary>
-        [XmlIgnore]
+        
         public IEnumerable<IfcPropertySet> PropertySets
         {
             get

@@ -23,7 +23,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc2x3.ApprovalResource
 {
-    [IfcPersistedEntityAttribute, Serializable, IndexedClass]
+    [IfcPersistedEntityAttribute, IndexedClass]
     public class IfcApprovalActorRelationship : IPersistIfcEntity, ISupportChangeNotification, INotifyPropertyChanged,
                                                 INotifyPropertyChanging
     {

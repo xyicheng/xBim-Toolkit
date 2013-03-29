@@ -20,7 +20,7 @@ using Xbim.XbimExtensions;
 
 namespace Xbim.Ifc2x3.StructuralAnalysisDomain
 {
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcStructuralPointAction : IfcStructuralAction
     {
         public override string WhereRule()

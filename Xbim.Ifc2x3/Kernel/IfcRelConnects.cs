@@ -26,7 +26,7 @@ namespace Xbim.Ifc2x3.Kernel
     ///   Definition from IAI: A connectivity relationship (IfcRelConnects) that connects objects under some criteria. As a general connectivity it does not imply constraints, however subtypes of the relationship define the applicable object types for the connectivity relationship and the semantics of the particular connectivity.
     ///   HISTORY: New entity in IFC Release 2x.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public abstract class IfcRelConnects : IfcRelationship
     {
     }

@@ -22,7 +22,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc2x3.GeometricModelResource
 {
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class GeometricSetElementsSet : XbimSet<IfcGeometricSetSelect>
     {
         internal GeometricSetElementsSet(IPersistIfcEntity owner)
@@ -40,7 +40,7 @@ namespace Xbim.Ifc2x3.GeometricModelResource
     ///   NOTE: Corresponding STEP entity: geometric_set. The derived attribute Dim has been added at this level and was therefore demoted from the geometric_representation_item. Please refer to ISO/IS 10303-42:1994, p. 190 for the final definition of the formal standard. 
     ///   HISTORY: New entity in IFC Release 2x.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcGeometricSet : IfcGeometricRepresentationItem
     {
         public IfcGeometricSet()

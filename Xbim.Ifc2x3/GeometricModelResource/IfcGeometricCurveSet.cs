@@ -29,7 +29,7 @@ namespace Xbim.Ifc2x3.GeometricModelResource
     ///   HISTORY: New entity in IFC Release2x Edition 2.
     ///   No surface shall be included in this geometric set.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcGeometricCurveSet : IfcGeometricSet
     {
     }

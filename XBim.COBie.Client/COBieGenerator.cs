@@ -23,6 +23,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.Collections.Concurrent;
 using System.Windows.Media.Media3D;
+using Xbim.Common.Geometry;
 using Xbim.ModelGeometry.Converter;
 
 namespace Xbim.COBie.Client
@@ -342,16 +343,16 @@ namespace Xbim.COBie.Client
         private  void GenerateGeometry(COBieContext context)
         {
             //now convert the geometry
-            XbimModel model = context.Model; 
+            XbimModel model = context.Model;
             int total = (int)model.Instances.CountOf<IfcProduct>();
             ReportProgressDelegate progDelegate = delegate(int percentProgress, object userState)
             {
                 context.UpdateStatus("Creating Geometry File", total, (total * percentProgress / 100));
             };
             XbimMesher.GenerateGeometry(model, null, progDelegate);
-        }
+                                    }
 
-       
+
 
 
         private void AppendLog(string text)

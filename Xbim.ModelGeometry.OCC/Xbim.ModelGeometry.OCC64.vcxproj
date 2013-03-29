@@ -1,0 +1,324 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="NugetDistribution|x64">
+      <Configuration>NugetDistribution</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{BB0E1C7A-C255-41CB-814D-894193AB6424}</ProjectGuid>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <RootNamespace>XbimModelGeometry</RootNamespace>
+    <SccProjectName>SAK</SccProjectName>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccProvider>SAK</SccProvider>
+    <Keyword>ManagedCProj</Keyword>
+    <ProjectName>Xbim.ModelGeometry.OCC64</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Template|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <CLRSupport>true</CLRSupport>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v100</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='NugetDistribution|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <CLRSupport>true</CLRSupport>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v100</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <CLRSupport>true</CLRSupport>
+    <PlatformToolset>v100</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Template|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='NugetDistribution|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)bin\$(Configuration)\$(PlatformName)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)$(PlatformShortName)\$(Configuration)\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)bin\$(Configuration)\$(PlatformName)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='NugetDistribution|x64'">$(SolutionDir)bin\$(Configuration)\$(PlatformName)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)$(PlatformShortName)\$(Configuration)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='NugetDistribution|x64'">$(ProjectDir)$(PlatformShortName)\$(Configuration)\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkIncremental>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='NugetDistribution|x64'">false</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Template|x64'">$(SolutionDir)bin\$(PlatformShortName)\$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Template|x64'">$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <TargetExt>$(TargetExt)</TargetExt>
+    <TargetName>Xbim.ModelGeometry.OCC</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <TargetExt>$(TargetExt)</TargetExt>
+    <TargetName>Xbim.ModelGeometry.OCC</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='NugetDistribution|x64'">
+    <TargetExt>$(TargetExt)</TargetExt>
+    <TargetName>Xbim.ModelGeometry.OCC</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Midl>
+      <TargetEnvironment>X64</TargetEnvironment>
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>.\OpenCascade\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>DEB;_DEBUG;WIN64;_WINDOWS;WNT;_OCC64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalUsingDirectories>$(OutDir)\</AdditionalUsingDirectories>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>TKBool.lib;TKernel.lib;TKMath.lib;TKTopAlgo.lib;TKBRep.lib;TKMesh.lib;TKPrim.lib;TKBO.lib;TKG3D.lib;TKG2D.lib;TKGeomBase.lib;TKGeomAlgo.lib;TKShHealing.lib;TKFillet.lib;TKOffset.lib;OpenGL32.Lib;Glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+      <AdditionalLibraryDirectories>.\OpenCascade\win64\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <AssemblyDebug>true</AssemblyDebug>
+      <TargetMachine>MachineX64</TargetMachine>
+      <KeyFile>
+      </KeyFile>
+      <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
+      <DelayLoadDLLs>
+      </DelayLoadDLLs>
+      <Profile>false</Profile>
+    </Link>
+    <PostBuildEvent>
+      <Command>xcopy .\OpenCascade\win64\bin "$(OutDir)" /D /Y /R</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Midl>
+      <TargetEnvironment>X64</TargetEnvironment>
+    </Midl>
+    <ClCompile>
+      <AdditionalIncludeDirectories>.\OpenCascade\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN64;NDEBUG;WNT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalUsingDirectories>$(OutDir)\</AdditionalUsingDirectories>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>TKBool.lib;TKernel.lib;TKMath.lib;TKTopAlgo.lib;TKBRep.lib;TKMesh.lib;TKPrim.lib;TKBO.lib;TKG3D.lib;TKG2D.lib;TKGeomBase.lib;TKGeomAlgo.lib;TKShHealing.lib;TKFillet.lib;TKOffset.lib;OpenGL32.Lib;Glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+      <AdditionalLibraryDirectories>.\OpenCascade\win64\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <TargetMachine>MachineX64</TargetMachine>
+      <KeyFile>
+      </KeyFile>
+      <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
+      <DelayLoadDLLs>
+      </DelayLoadDLLs>
+    </Link>
+    <PostBuildEvent>
+      <Command>xcopy .\OpenCascade\win64\bin "$(OutDir)" /D  /Y /R</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='NugetDistribution|x64'">
+    <Midl>
+      <TargetEnvironment>X64</TargetEnvironment>
+    </Midl>
+    <ClCompile>
+      <AdditionalIncludeDirectories>.\OpenCascade\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN64;NDEBUG;WNT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalUsingDirectories>$(OutDir)\</AdditionalUsingDirectories>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>TKBool.lib;TKernel.lib;TKMath.lib;TKTopAlgo.lib;TKBRep.lib;TKMesh.lib;TKPrim.lib;TKBO.lib;TKG3D.lib;TKG2D.lib;TKGeomBase.lib;TKGeomAlgo.lib;TKShHealing.lib;TKFillet.lib;TKOffset.lib;OpenGL32.Lib;Glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+      <AdditionalLibraryDirectories>.\OpenCascade\win64\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <TargetMachine>MachineX64</TargetMachine>
+      <KeyFile>
+      </KeyFile>
+      <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
+      <DelayLoadDLLs>
+      </DelayLoadDLLs>
+    </Link>
+    <PostBuildEvent>
+      <Command>xcopy .\OpenCascade\win64\bin "$(OutDir)" /D  /Y /R</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>.\OpenCascade\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <OutputFile>$(SolutionDir)bin\$(PlatformShortName)\$(Configuration)\$(TargetName)$(TargetExt)</OutputFile>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <Reference Include="System">
+      <CopyLocalSatelliteAssemblies>true</CopyLocalSatelliteAssemblies>
+      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+    </Reference>
+    <Reference Include="System.Core">
+      <CopyLocalSatelliteAssemblies>true</CopyLocalSatelliteAssemblies>
+      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Xbim.Common\Xbim.Common.csproj">
+      <Project>{6745f5ac-af3c-4372-81aa-a75e7b1fa03b}</Project>
+      <Private>false</Private>
+      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+      <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
+    </ProjectReference>
+    <ProjectReference Include="..\Xbim.Ifc.Extensions\Xbim.Ifc2x3.Extensions.csproj">
+      <Project>{09870f18-1796-4a3e-a66d-68db3da60b24}</Project>
+      <Private>false</Private>
+      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+      <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
+    </ProjectReference>
+    <ProjectReference Include="..\Xbim.Ifc2x3\Xbim.Ifc2x3.csproj">
+      <Project>{5d4c907d-1293-4e5f-9642-d0862ae4741c}</Project>
+      <Private>false</Private>
+      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+      <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
+    </ProjectReference>
+    <ProjectReference Include="..\Xbim.IO\Xbim.IO.csproj">
+      <Project>{85856df2-c8ab-4120-8a8d-ae05d2696b51}</Project>
+      <Private>false</Private>
+      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+      <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
+    </ProjectReference>
+    <ProjectReference Include="..\Xbim.ModelGeometry.Scene\Xbim.ModelGeometry.Scene.csproj">
+      <Project>{3d9d37de-a254-4433-b172-7590cbd84c69}</Project>
+      <Private>false</Private>
+      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+      <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\SharedAssemblyInfo.cpp" />
+    <ClCompile Include="AssemblyInfo.cpp" />
+    <ClCompile Include="CartesianTransform.cpp" />
+    <ClCompile Include="Stdafx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NugetDistribution|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="TessellatorReceiver.cpp" />
+    <ClCompile Include="XbimBoundingBox.cpp" />
+    <ClCompile Include="XbimEdge.cpp" />
+    <ClCompile Include="XbimEdgeLoop.cpp" />
+    <ClCompile Include="XbimEdgeLoopEnumerator.cpp" />
+    <ClCompile Include="XbimFace.cpp" />
+    <ClCompile Include="XbimFaceBound.cpp" />
+    <ClCompile Include="XbimFacetedShell.cpp" />
+    <ClCompile Include="XbimFeaturedShape.cpp" />
+    <ClCompile Include="XbimMap.cpp" />
+    <ClCompile Include="XbimGeometryModel.cpp" />
+    <ClCompile Include="XbimGeometryModelCollection.cpp" />
+    <ClCompile Include="XbimGeomPrim.cpp" />
+    <ClCompile Include="XbimLocation.cpp" />
+    <ClCompile Include="XbimOrientedEdge.cpp" />
+    <ClCompile Include="XbimShell.cpp" />
+    <ClCompile Include="XbimSolid.cpp" />
+    <ClCompile Include="XbimTriangularMeshStreamer.cpp" />
+    <ClCompile Include="XbimVertexPoint.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="CartesianTransform.h" />
+    <ClInclude Include="ITessellatorReceiver.h" />
+    <ClInclude Include="IXbimGeometryModel.h" />
+    <ClInclude Include="IXbimMeshGeometry.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="resource1.h" />
+    <ClInclude Include="Version.h" />
+    <ClInclude Include="Stdafx.h" />
+    <ClInclude Include="TessellatorReceiver.h" />
+    <ClInclude Include="XbimBoundingBox.h" />
+    <ClInclude Include="XbimEdge.h" />
+    <ClInclude Include="XbimEdgeLoop.h" />
+    <ClInclude Include="XbimEdgeLoopEnumerator.h" />
+    <ClInclude Include="XbimFace.h" />
+    <ClInclude Include="XbimFaceBound.h" />
+    <ClInclude Include="XbimFaceBoundEnumerator.h" />
+    <ClInclude Include="XbimFaceEnumerator.h" />
+    <ClInclude Include="XbimFaceOuterBound.h" />
+    <ClInclude Include="XbimFacetedShell.h" />
+    <ClInclude Include="XbimFeaturedShape.h" />
+    <ClInclude Include="XbimMap.h" />
+    <ClInclude Include="XbimGeometryModel.h" />
+    <ClInclude Include="XbimGeometryModelCollection.h" />
+    <ClInclude Include="XbimGeomPrim.h" />
+    <ClInclude Include="XbimLocation.h" />
+    <ClInclude Include="XbimOrientedEdge.h" />
+    <ClInclude Include="XbimShell.h" />
+    <ClInclude Include="XbimShellEnumerator.h" />
+    <ClInclude Include="XbimSolid.h" />
+    <ClInclude Include="XbimTriangularMeshStreamer.h" />
+    <ClInclude Include="XbimVertexPoint.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.ico" />
+    <None Include="ModelGeoemetryClassDiagram.cd" />
+    <None Include="ReadMe.txt" />
+    <None Include="XbimGeomKey.snk" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="app.rc" />
+    <ResourceCompile Include="Version.rc" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties RESOURCE_FILE="app.rc" />
+    </VisualStudio>
+  </ProjectExtensions>
+</Project>

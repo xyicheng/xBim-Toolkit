@@ -20,7 +20,7 @@ namespace Xbim.Ifc2x3.FacilitiesMgmtDomain
     /// A furniture standard is assigned to one or several persons or organisations (like a work group or department) through the IfcRelAssignsToControl 
     /// relationship via the Controls inverse attribute.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntity]
     public class IfcFurnitureStandard : IfcControl
     {
         public override void IfcParse(int propIndex, IPropertyValue value)

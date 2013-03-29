@@ -11,6 +11,8 @@ using Xbim.Ifc2x3.Extensions;
 using Xbim.Ifc2x3.ExternalReferenceResource;
 using System.Windows.Controls.Primitives;
 using System.Diagnostics;
+using System.Threading.Tasks;
+using System.Collections.Specialized;
 
 namespace Xbim.Presentation
 {
@@ -40,10 +42,10 @@ namespace Xbim.Presentation
             XbimTreeview view = d as XbimTreeview;
             if (view != null && e.NewValue is int)
             {
+                view.UnselectAll();
                 int newVal = (int)(e.NewValue);
-                view.Select(newVal);
+                if(newVal>0) view.Select(newVal);
                 return;
-                
            }
         }
 
@@ -115,12 +117,14 @@ namespace Xbim.Presentation
         {
             XbimTreeview tv = d as XbimTreeview;
             XbimModel model = e.NewValue as XbimModel;
+            
             if (tv != null && model != null)
             {
+                model.RefencedModels.CollectionChanged += tv.RefencedModels_CollectionChanged;
                 switch (tv.ViewDefinition)
                 {
                     case XbimViewType.SpatialStructure:
-                        tv.ViewSpatialStructure();
+                        tv.ViewModel();
                         
                         break;
                     case XbimViewType.Classification:
@@ -144,6 +148,19 @@ namespace Xbim.Presentation
             }
         }
 
+        void RefencedModels_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (e.Action == NotifyCollectionChangedAction.Add && e.NewItems.Count > 0)
+            {  
+                XbimReferencedModel refModel = e.NewItems[0] as XbimReferencedModel;
+                XbimModelViewModel vm = HierarchySource.Cast<XbimModelViewModel>().FirstOrDefault();
+                if(vm!=null)
+                {
+                    vm.AddRefModel(new XbimModelViewModel(refModel.Model.IfcProject));
+                }
+            }
+        }
+
         private void ViewSpatialStructure()
         {
             IfcProject project = Model.IfcProject as IfcProject;
@@ -158,11 +175,37 @@ namespace Xbim.Presentation
                 }
                 
                 this.HierarchySource = svList;
+                foreach (var child in svList)
+                {
+                    LazyLoadAll(child);
+                }
             }
             else //Load any spatialstructure
             {
             }
         }
+        private void ViewModel()
+        {
+            IfcProject project = Model.IfcProject as IfcProject;
+            if (project != null)
+            {
+                this.ChildrenBinding = new Binding("Children");
+                List<XbimModelViewModel> svList = new List<XbimModelViewModel>();  
+                svList.Add(new XbimModelViewModel(project));
+                this.HierarchySource = svList;
+            }
+        }
+        private void LazyLoadAll(IXbimViewModel parent)
+        {
+
+            foreach (var child in parent.Children)
+            {
+                LazyLoadAll(child);
+            }
+            
+        }
+
+
         private void Expand(IXbimViewModel treeitem)
         {
             treeitem.IsExpanded = true;

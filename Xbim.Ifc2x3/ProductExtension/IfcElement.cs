@@ -14,7 +14,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Xml.Serialization;
+
 using Xbim.Ifc2x3.Kernel;
 using Xbim.Ifc2x3.MeasureResource;
 using Xbim.XbimExtensions.SelectTypes;
@@ -50,7 +50,7 @@ namespace Xbim.Ifc2x3.ProductExtension
     ///   The geometric representation of any IfcElement is given by the IfcProductDefinitionShape and IfcLocalPlacement allowing multiple geometric representations. A detailed specification for the shape representaion is introduced at the level of subtypes of IfcElement.
     ///   information is provided at the level of the subtypes.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public abstract class IfcElement : IfcProduct, IfcStructuralActivityAssignmentSelect
     {
         #region Fields
@@ -107,7 +107,7 @@ namespace Xbim.Ifc2x3.ProductExtension
         /// <summary>
         ///   Inverse. Reference to the Fills Relationship that puts the Element into the Opening within another Element.
         /// </summary>
-        [XmlIgnore]
+        
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class, 0, 1)]
         public IEnumerable<IfcRelFillsElement> FillsVoids
         {
@@ -121,7 +121,7 @@ namespace Xbim.Ifc2x3.ProductExtension
         /// <summary>
         ///   Inverse. Reference to the element connection relationship. The relationship then refers to the other element to which this element is connected to.
         /// </summary>
-        [XmlIgnore]
+        
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class)]
         public IEnumerable<IfcRelConnectsElements> ConnectedTo
         {
@@ -131,7 +131,7 @@ namespace Xbim.Ifc2x3.ProductExtension
         /// <summary>
         ///   Inverse. Reference to IfcCovering by virtue of the objectified relationship IfcRelCoversBldgElement. It defines the concept of an element having coverings attached.
         /// </summary>
-        [XmlIgnore]
+        
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class)]
         public IEnumerable<IfcRelCoversBldgElements> HasCoverings
         {
@@ -146,7 +146,7 @@ namespace Xbim.Ifc2x3.ProductExtension
         /// <summary>
         ///   Inverse. Projection relationship that adds a feature (using a Boolean union) to the IfcBuildingElement.
         /// </summary>
-        [XmlIgnore]
+        
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class)]
         public IEnumerable<IfcRelProjectsElement> HasProjections
         {
@@ -158,7 +158,7 @@ namespace Xbim.Ifc2x3.ProductExtension
         /// <remarks>
         ///   IFC2x Edition 3 CHANGE  The inverse attribute has been added with upward compatibility for file based exchange.
         /// </remarks>
-        [XmlIgnore]
+        
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class)]
         public IEnumerable<IfcRelConnectsStructuralElement> HasStructuralMember
         {
@@ -173,7 +173,7 @@ namespace Xbim.Ifc2x3.ProductExtension
         /// <summary>
         ///   Inverse. Reference relationship to the spatial structure element, to which the element is additionally associated.
         /// </summary>
-        [XmlIgnore]
+        
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class)]
         public IEnumerable<IfcRelReferencedInSpatialStructure> ReferencedInStructures
         {
@@ -187,7 +187,7 @@ namespace Xbim.Ifc2x3.ProductExtension
         /// <summary>
         ///   Inverse. Reference to the element to port connection relationship. The relationship then refers to the port which is contained in this element.
         /// </summary>
-        [XmlIgnore]
+        
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class)]
         public IEnumerable<IfcRelConnectsPortToElement> HasPorts
         {
@@ -201,7 +201,7 @@ namespace Xbim.Ifc2x3.ProductExtension
         /// <summary>
         ///   Inverse. Reference to the Voids Relationship that creates an opening in an element. An element can incorporate zero-to-many openings.
         /// </summary>
-        [XmlIgnore]
+        
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class)]
         public IEnumerable<IfcRelVoidsElement> HasOpenings
         {
@@ -216,7 +216,7 @@ namespace Xbim.Ifc2x3.ProductExtension
         /// <summary>
         ///   Inverse. Reference to the connection relationship with realizing element. The relationship then refers to the realizing element which provides the physical manifestation of the connection relationship.
         /// </summary>
-        [XmlIgnore]
+        
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class)]
         public IEnumerable<IfcRelConnectsWithRealizingElements> IsConnectionRealization
         {
@@ -230,7 +230,7 @@ namespace Xbim.Ifc2x3.ProductExtension
         /// <summary>
         ///   Inverse. Reference to Space Boundaries by virtue of the objectified relationship IfcRelSeparatesSpaces. It defines the concept of an Building Element bounding Spaces.
         /// </summary>
-        [XmlIgnore]
+        
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class)]
         public IEnumerable<IfcRelSpaceBoundary> ProvidesBoundaries
         {
@@ -244,7 +244,7 @@ namespace Xbim.Ifc2x3.ProductExtension
         /// <summary>
         ///   Inverse. Reference to the element connection relationship. The relationship then refers to the other element that is connected to this element.
         /// </summary>
-        [XmlIgnore]
+        
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class)]
         public IEnumerable<IfcRelConnectsElements> ConnectedFrom
         {
@@ -254,7 +254,7 @@ namespace Xbim.Ifc2x3.ProductExtension
         /// <summary>
         ///   Inverse. Containment relationship to the spatial structure element, to which the element is primarily associated.
         /// </summary>
-        [XmlIgnore]
+        
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class, 0, 1)]
         public IEnumerable<IfcRelContainedInSpatialStructure> ContainedInStructure
         {

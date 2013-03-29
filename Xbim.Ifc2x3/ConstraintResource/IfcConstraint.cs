@@ -28,7 +28,7 @@ namespace Xbim.Ifc2x3.ConstraintResource
     ///   Abstract class. An IfcConstraint is used to define a constraint or limiting value or boundary condition 
     ///   that may be applied to an object or to the value of a property.
     /// </summary>
-    [IfcPersistedEntityAttribute, Serializable, IndexedClass]
+    [IfcPersistedEntityAttribute, IndexedClass]
     public abstract class IfcConstraint : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                           INotifyPropertyChanging
     {

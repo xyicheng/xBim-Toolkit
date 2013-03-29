@@ -79,7 +79,7 @@ namespace Xbim.Ifc2x3.ProductExtension
     ///   IfcShapeRepresentation.RepresentationType = 'Brep' 
     ///   Since the building shape is usually described by the exterior building elements, an independent shape representation shall only be given, if the building is exposed independently from its constituting elements.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcBuilding : IfcSpatialStructureElement
     {
         #region Fields

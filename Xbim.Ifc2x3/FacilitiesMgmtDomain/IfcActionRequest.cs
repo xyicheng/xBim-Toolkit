@@ -21,7 +21,7 @@ namespace Xbim.Ifc2x3.FacilitiesMgmtDomain
     /// A request may call for several actions and an action may refer to several requests. IfcRelAssignsToControl is used to 
     /// relate one or more requests to an action.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntity]
     public class IfcActionRequest : IfcControl
     {
 

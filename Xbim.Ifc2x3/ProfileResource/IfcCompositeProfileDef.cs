@@ -22,7 +22,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc2x3.ProfileResource
 {
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcCompositeProfileDef : IfcProfileDef
     {
         public IfcCompositeProfileDef()

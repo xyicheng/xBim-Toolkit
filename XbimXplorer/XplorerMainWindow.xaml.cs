@@ -41,6 +41,11 @@ using System.Threading.Tasks;
 using System.Threading;
 using Xbim.Common.Exceptions;
 using System.Diagnostics;
+using Xbim.Ifc2x3.ActorResource;
+using Xbim.Common.Geometry;
+using Xbim.COBie.Serialisers;
+using Xbim.COBie;
+using Xbim.COBie.Contracts;
 using Xbim.ModelGeometry.Converter;
 #endregion
 
@@ -52,36 +57,34 @@ namespace XbimXplorer
     public partial class XplorerMainWindow : Window
     {
         private BackgroundWorker _worker;
-       
+        public static RoutedCommand InsertCmd = new RoutedCommand();
         private string _currentModelFileName;
         private string _temporaryXbimFileName;
         private string _defaultFileName;
-        
+
         public XplorerMainWindow()
         {
-            InitializeComponent();    
+            InitializeComponent();
             this.Closed += new EventHandler(XplorerMainWindow_Closed);
-           
-            
+            this.Loaded += XplorerMainWindow_Loaded;
+            this.Closing += new CancelEventHandler(XplorerMainWindow_Closing);
         }
 
-        void XplorerMainWindow_Closed(object sender, EventArgs e)
+        void XplorerMainWindow_Closing(object sender, CancelEventArgs e)
         {
-            CloseAndDeleteTemporaryFiles();
+            if (_worker != null && _worker.IsBusy)
+                e.Cancel = true; //do nothing if a thread is alive
+            else
+                e.Cancel = false;
+
         }
 
-        void DrawingControl_ProgressChanged(object sender, ProgressChangedEventArgs e)
-        {
-            
-        }
-
-      
-
-        private void Window_Loaded(object sender, RoutedEventArgs e)
+        void XplorerMainWindow_Loaded(object sender, RoutedEventArgs e)
         {
             string[] args = Environment.GetCommandLineArgs();
-            if (args.Length > 1)
+            if (args.Length > 1) //load one if specified
             {
+                StatusBar.Visibility = Visibility.Visible;
                 string toOpen = args[1];
                 CreateWorker();
                 string ext = Path.GetExtension(toOpen);
@@ -104,8 +107,29 @@ namespace XbimXplorer
                         break;
                 }
             }
-           
+            else //just create an empty model
+            {
+                XbimModel model = XbimModel.CreateTemporaryModel();
+                model.Initialise();
+                ModelProvider.ObjectInstance = model;
+                ModelProvider.Refresh();
+            }
         }
+
+        void XplorerMainWindow_Closed(object sender, EventArgs e)
+        {
+
+            CloseAndDeleteTemporaryFiles();
+        }
+
+        void DrawingControl_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            
+        }
+
+      
+
+     
 
 
 
@@ -156,7 +180,60 @@ namespace XbimXplorer
         {
             BackgroundWorker worker = s as BackgroundWorker;
             string ifcFilename = args.Argument as string;
-            
+
+            XbimModel model = new XbimModel();
+            try
+            {
+                _temporaryXbimFileName = Path.GetTempFileName();
+                _defaultFileName = Path.GetFileNameWithoutExtension(ifcFilename);
+                model.CreateFrom(ifcFilename, _temporaryXbimFileName, worker.ReportProgress);
+                model.Open(_temporaryXbimFileName, XbimDBAccess.ReadWrite);
+                XbimMesher.GenerateGeometry(model, null, worker.ReportProgress);
+               // model.Close();
+                if (worker.CancellationPending == true) //if a cancellation has been requested then don't open the resukting file
+                {
+                    try
+                    {
+                        model.Close();
+                        if (File.Exists(_temporaryXbimFileName))
+                            File.Delete(_temporaryXbimFileName); //tidy up;
+                        _temporaryXbimFileName = null;
+                        _defaultFileName = null;
+                    }
+                    catch (Exception)
+                    {
+
+
+                    }
+                    return;
+                }
+              //  model.Open(_temporaryXbimFileName, XbimDBAccess.ReadWrite, worker.ReportProgress);
+
+                args.Result = model;
+
+            }
+            catch (Exception ex)
+            {
+                StringBuilder sb = new StringBuilder();
+                sb.AppendLine("Error reading " + ifcFilename);
+                string indent = "\t";
+                while (ex != null)
+                {
+                    sb.AppendLine(indent + ex.Message);
+                    ex = ex.InnerException;
+                    indent += "\t";
+                }
+
+                args.Result = new Exception(sb.ToString());
+
+            }
+        }
+
+        private void InsertIfcFile(object s, DoWorkEventArgs args)
+        {
+            BackgroundWorker worker = s as BackgroundWorker;
+            string ifcFilename = args.Argument as string;
+
             XbimModel model = new XbimModel();
             try
             {
@@ -166,9 +243,24 @@ namespace XbimXplorer
                 model.Open(_temporaryXbimFileName, XbimDBAccess.ReadWrite);
                 XbimMesher.GenerateGeometry(model, null, worker.ReportProgress);
                 model.Close();
-                model.Open(_temporaryXbimFileName, XbimDBAccess.Read, worker.ReportProgress);
-                args.Result = model;
-                
+                if (worker.CancellationPending == true) //if a cancellation has been requested then don't open the resukting file
+                {
+                    try
+                    {
+                        if (File.Exists(_temporaryXbimFileName))
+                            File.Delete(_temporaryXbimFileName); //tidy up;
+                        _temporaryXbimFileName = null;
+                        _defaultFileName = null;
+                    }
+                    catch (Exception)
+                    {
+
+
+                    }
+                    return;
+                }
+               // model.Open(_temporaryXbimFileName, XbimDBAccess.Read, worker.ReportProgress);
+                this.Dispatcher.BeginInvoke(new Action(() => { Model.AddModelReference(_temporaryXbimFileName, "Organisation X", IfcRole.BuildingOperator); }), System.Windows.Threading.DispatcherPriority.Background);
             }
             catch (Exception ex)
             {
@@ -220,7 +312,35 @@ namespace XbimXplorer
             }
         }
 
-       
+        private void dlg_InsertXbimFile(object sender, CancelEventArgs e)
+        {
+             OpenFileDialog dlg = sender as OpenFileDialog;
+            if (dlg != null)
+            {
+                FileInfo fInfo = new FileInfo(dlg.FileName);
+                string ext = fInfo.Extension.ToLower();
+                StatusBar.Visibility = Visibility.Visible;
+                
+                CreateWorker();
+                if (dlg.FileName.ToLower() == _currentModelFileName) //same file do nothing
+                   return;
+                switch (ext)
+                {
+                    case ".ifc": //it is an Ifc File
+                    case ".ifcxml": //it is an IfcXml File
+                    case ".ifczip": //it is a xip file containing xbim or ifc File
+                    case ".zip": //it is a xip file containing xbim or ifc File
+                        _worker.DoWork += InsertIfcFile;
+                        _worker.RunWorkerAsync(dlg.FileName);
+                        break;
+                    case ".xbim": //it is an xbim File, just open it in the main thread
+                        Model.AddModelReference(dlg.FileName,"Organisation X",IfcRole.BuildingOperator);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
 
         private void dlg_OpenXbimFile(object sender, CancelEventArgs e)
         {
@@ -258,7 +378,7 @@ namespace XbimXplorer
         {
             _worker = new BackgroundWorker();
             _worker.WorkerReportsProgress = true;
-            _worker.WorkerSupportsCancellation = false;
+            _worker.WorkerSupportsCancellation = true;
             _worker.ProgressChanged += delegate(object s, ProgressChangedEventArgs args)
                                            {
                                                ProgressBar.Value = args.ProgressPercentage;
@@ -368,6 +488,16 @@ namespace XbimXplorer
             CloseAndDeleteTemporaryFiles();
         }
 
+        private void CommandBinding_New(object sender, ExecutedRoutedEventArgs e)
+        {
+            CloseAndDeleteTemporaryFiles();
+            XbimModel model=   XbimModel.CreateTemporaryModel();
+            model.Initialise();
+            ModelProvider.ObjectInstance = model;
+            ModelProvider.Refresh();
+        }
+        
+       
         private void CommandBinding_Open(object sender, ExecutedRoutedEventArgs e)
         {
            
@@ -382,9 +512,13 @@ namespace XbimXplorer
         /// </summary>
         private void CloseAndDeleteTemporaryFiles()
         {
+           
             try
             {
+                if (_worker != null && _worker.IsBusy)
+                    _worker.CancelAsync(); //tell it to stop
                 XbimModel model = ModelProvider.ObjectInstance as XbimModel;
+                _currentModelFileName = null;
                 if (model != null)
                 {
                     model.Close();
@@ -394,19 +528,30 @@ namespace XbimXplorer
             }
             finally
             {
-                if (!string.IsNullOrWhiteSpace(_temporaryXbimFileName))
-                    File.Delete(_temporaryXbimFileName);
-                _temporaryXbimFileName = null;
-                _defaultFileName = null;
+                if (!(_worker != null && _worker.IsBusy && _worker.CancellationPending)) //it is still busy but has been cancelled 
+                {
+             
+                    if (!string.IsNullOrWhiteSpace(_temporaryXbimFileName) && File.Exists(_temporaryXbimFileName))
+                        File.Delete(_temporaryXbimFileName);
+                    _temporaryXbimFileName = null;
+                    _defaultFileName = null;
+                } //else do nothing it will be cleared up in the worker thread
             }
         }
 
         private void CommandBinding_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
-            if (e.Command == ApplicationCommands.Close || e.Command == ApplicationCommands.SaveAs)
+            if (_worker != null && _worker.IsBusy)
+                e.CanExecute = false;
+            else
             {
-                XbimModel model = ModelProvider.ObjectInstance as XbimModel;
-                e.CanExecute = (model != null);
+                if (e.Command == ApplicationCommands.Close || e.Command == ApplicationCommands.SaveAs)
+                {
+                    XbimModel model = ModelProvider.ObjectInstance as XbimModel;
+                    e.CanExecute = (model != null);
+                }
+                else
+                    e.CanExecute = true; //for everything else
             }
 
         }
@@ -415,6 +560,68 @@ namespace XbimXplorer
         private void MenuItem_ZoomExtents(object sender, RoutedEventArgs e)
         {
             DrawingControl.ViewHome();
+        }
+
+
+        private void InsertCmdExecuted(object sender, ExecutedRoutedEventArgs e)
+        {
+            OpenFileDialog dlg = new OpenFileDialog();
+            dlg.Filter = "Xbim Files|*.xbim;*.ifc;*.ifcxml;*.ifczip"; // Filter files by extension 
+            dlg.FileOk += new CancelEventHandler(dlg_InsertXbimFile);
+            dlg.ShowDialog(this);
+        }
+
+        // CanExecuteRoutedEventHandler for the custom color command.
+        private void InsertCmdCanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            XbimModel model = ModelProvider.ObjectInstance as XbimModel;
+            bool canEdit = (model!=null && model.CanEdit);       
+            e.CanExecute = canEdit && !(_worker != null && _worker.IsBusy);
+        }
+
+        private void ExportCoBie(object sender, RoutedEventArgs e)
+        {
+
+            string outputFile = Path.ChangeExtension(Model.DatabaseName, ".xls");
+
+            // Build context
+            COBieContext context = new COBieContext();
+            context.TemplateFileName = "COBie-UK-2012-template.xls";
+            context.Model = Model;
+            //set filter option
+
+            //switch (chckBtn.Name)
+            //{
+            //    case "rbDefault":
+            //        break;
+            //    case "rbPickList":
+            //        context.ExcludeFromPickList = true;
+            //        break;
+            //    case "rbNoFilters":
+            //        context.Exclude.Clear();
+            //        break;
+            //    default:
+            //        break;
+            //}
+            //set the UI language to get correct resource file for template
+            //if (Path.GetFileName(parameters.TemplateFile).Contains("-UK-"))
+            //{
+            try
+            {
+                System.Globalization.CultureInfo ci = new System.Globalization.CultureInfo("en-GB");
+                System.Threading.Thread.CurrentThread.CurrentUICulture = ci;
+            }
+            catch (Exception)
+            {
+                //to nothing Default culture will still be used
+
+            }
+            
+            COBieBuilder builder = new COBieBuilder(context);
+            ICOBieSerialiser serialiser = new COBieXLSSerialiser(outputFile, context.TemplateFileName);
+            builder.Export(serialiser);
+            Process.Start(outputFile);
+
         }
 
     }

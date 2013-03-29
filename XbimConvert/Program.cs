@@ -17,12 +17,12 @@ using Xbim.XbimExtensions;
 using Xbim.Ifc2x3.Extensions;
 using Xbim.Ifc2x3.MeasureResource;
 using System.Threading.Tasks;
-using System.Windows.Media.Media3D;
 using Xbim.XbimExtensions.Interfaces;
 using System.Threading;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using Xbim.ModelGeometry.Converter;
+using Xbim.Common.Geometry;
 
 namespace XbimConvert
 {
@@ -63,8 +63,11 @@ namespace XbimConvert
                     using (XbimModel model = ParseModelFile(xbimFileName))
                     {
                         watch.Start();
-                        model.Open(xbimFileName, XbimDBAccess.ReadWrite);
+                        model.Open(xbimFileName, XbimDBAccess.ReadWrite);            
                         XbimMesher.GenerateGeometry(model, Logger, progDelegate);
+                        //XbimSceneBuilder sb = new XbimSceneBuilder();
+                        //string xbimSceneName = BuildFileName(arguments.IfcFileName, ".xbimScene");
+                        //sb.BuildGlobalScene(model, xbimSceneName);
                         model.Close();
                         watch.Stop();
                     }
@@ -118,8 +121,8 @@ namespace XbimConvert
             Console.WriteLine(message);
             GetInput();
         }
-
-      
+               
+                       
 
 
             

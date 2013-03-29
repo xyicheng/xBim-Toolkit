@@ -50,7 +50,7 @@ namespace Xbim.Ifc2x3.ProductExtension
     ///   Profile: IfcArbitraryOpenProfileDef 
     ///   Extrusion: The extrusion direction shall be vertically, i.e., along the positive Z Axis of the co-ordinate system of the containing spatial structure element.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcVirtualElement : IfcElement
     {
     }

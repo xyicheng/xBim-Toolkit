@@ -6,12 +6,22 @@
     xmlns:xbimIO="clr-namespace:Xbim.IO;assembly=Xbim.IO"
     xmlns:local="clr-namespace:XbimXplorer"
     xmlns:pt="clr-namespace:PropertyTools.Wpf;assembly=PropertyTools.Wpf" 
-    Title="Xbim Xplorer" Height="600" Width="800" Loaded="Window_Loaded"
+    Title="Xbim Xplorer" Height="600" Width="800" 
     x:Name="MainWindow"
         Icon="icon.ico">
     <Window.Resources>
         <ObjectDataProvider x:Key="ModelProvider"  IsInitialLoadEnabled="False" ></ObjectDataProvider>
-         <DataTemplate DataType="{x:Type xbim:SpatialViewModel}">
+        <DataTemplate DataType="{x:Type xbim:XbimModelViewModel}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <!--<Image Grid.Column="0" Source="/folder.png" Margin="0 0 4 0"/>-->
+                <TextBlock Grid.Column="1" Text="{Binding Name}" FontWeight="Bold"/>
+            </Grid>
+        </DataTemplate> <DataTemplate DataType="{x:Type xbim:SpatialViewModel}">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -46,10 +56,12 @@
         </DataTemplate>
     </Window.Resources>
     <Window.CommandBindings>
+        <CommandBinding Command="New"  Executed="CommandBinding_New" CanExecute="CommandBinding_CanExecute"/>
         <CommandBinding Command="Close"  Executed="CommandBinding_Close" CanExecute="CommandBinding_CanExecute"/>
         <CommandBinding Command="SaveAs" Executed="CommandBinding_SaveAs"  CanExecute="CommandBinding_CanExecute"/>
-        <CommandBinding Command="Open"   Executed="CommandBinding_Open"/>
-       
+        <CommandBinding Command="Open"   Executed="CommandBinding_Open" CanExecute="CommandBinding_CanExecute"/>
+        <CommandBinding Command="{x:Static local:XplorerMainWindow.InsertCmd}" Executed="InsertCmdExecuted" CanExecute="InsertCmdCanExecute"/>
+
     </Window.CommandBindings>
     <Grid Name="MainFrame" DataContext="{StaticResource ModelProvider}">
         <Grid.RowDefinitions>
@@ -59,17 +71,18 @@
         </Grid.RowDefinitions>
        
         <Menu Grid.Row="0" >
-            <MenuItem Header="_File">
+            <MenuItem Header="_Model">
                 <!--<MenuItem Header="_New Xbim File" Click="FileNew_Click"/>-->
                 <MenuItem Header="_Open" Command="Open"/>
+                <MenuItem Header="_New" Command="New" />
+                <MenuItem Header="_Insert" Command="{x:Static local:XplorerMainWindow.InsertCmd}" />
                 <MenuItem Header="_SaveAs" Command="SaveAs"/>
                 <MenuItem Header="_Close" Command="Close" />
-                <!--<MenuItem Header="_Import Ifc File" Click="FileImport_Click"/>
-                <MenuItem Header="_Export Ifc File" Click="FileExport_Click"/>-->
             </MenuItem>
             <MenuItem Header="View">
                 <MenuItem Header="_Zoom Extents" Click="MenuItem_ZoomExtents"/>
                 <MenuItem Header="_Copy" Command="Copy"/>
+              
                 <MenuItem IsCheckable="True" Header="Show Gridlines" IsChecked="{Binding ShowGridLines, ElementName=DrawingControl}"/>
                 <MenuItem IsCheckable="True" Header="Show Spaces" IsChecked="{Binding ShowSpaces, ElementName=DrawingControl}"/>
                 <MenuItem IsCheckable="True" Header="Show Walls" IsChecked="{Binding ShowWalls, ElementName=DrawingControl}"/>
@@ -83,7 +96,7 @@
                 <MenuItem IsCheckable="True" Header="ZoomAroundMouseDownPoint" IsChecked="{Binding Viewport.ZoomAroundMouseDownPoint, ElementName=DrawingControl}"/>
                 <MenuItem IsCheckable="True" Header="Orthographic" IsChecked="{Binding Viewport.Orthographic, ElementName=DrawingControl}"/>
                 <MenuItem IsCheckable="True" Header="InfiniteSpin" IsChecked="{Binding Viewport.InfiniteSpin, ElementName=DrawingControl}"/>
-                <MenuItem IsCheckable="True" Header="IsPanEnabled" IsChecked="{Binding Viewport.IsPanEnabled, ElementName=DrawingControl}"/>
+                <MenuItem IsCheckable="True" Header="IsPanEnabled" IsChecked="{Binding Viewport.IsPanEnabled, ElementName=DrawingControl}" Background="PaleGoldenrod"/>
                 <MenuItem IsCheckable="True" Header="IsRotationEnabled" IsChecked="{Binding Viewport.IsRotationEnabled, ElementName=DrawingControl}"/>
                 <MenuItem IsCheckable="True" Header="IsZoomEnabled" IsChecked="{Binding Viewport.IsZoomEnabled, ElementName=DrawingControl}"/>
                 <MenuItem IsCheckable="True" Header="IsChangeFovEnabled" IsChecked="{Binding Viewport.IsChangeFieldOfViewEnabled, ElementName=DrawingControl}"/>
@@ -105,9 +118,13 @@
                         <TextBlock Text="{Binding Viewport.CameraInertiaFactor, StringFormat='{}{0:0.000}', ElementName=DrawingControl}"/>
                     </StackPanel>
                 </MenuItem>
+                <pt:EnumMenuItem SelectedValue="{Binding Viewport.CameraRotationMode, ElementName=DrawingControl}" Header="CameraRotationMode"/>
+                <pt:EnumMenuItem SelectedValue="{Binding Viewport.CameraMode, ElementName=DrawingControl}" Header="CameraMode" />
             </MenuItem>
-            <pt:EnumMenuItem SelectedValue="{Binding Viewport.CameraRotationMode, ElementName=DrawingControl}" Header="CameraRotationMode"/>
-            <pt:EnumMenuItem SelectedValue="{Binding Viewport.CameraMode, ElementName=DrawingControl}" Header="CameraMode" />
+            <MenuItem Header="COBie">
+                <MenuItem Header="_Export" Click="ExportCoBie" />
+            </MenuItem>
+
         </Menu>
        
         <Grid Grid.Row="1">
@@ -159,7 +176,6 @@
                                    Focusable="True" 
                                    Width="Auto" 
                                    Height="Auto" 
-                                   ProgressChanged="ProgressChanged" 
                                    MouseDoubleClick="SpatialControl_MouseDoubleClick"
                                    >
                 <xbim:DrawingControl3D.Background>

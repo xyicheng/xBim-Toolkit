@@ -579,10 +579,10 @@ namespace Xbim.IO
                 SystemPath = GetXbimTempDirectory();
             SystemPath = Path.Combine(SystemPath, guid); //ensure unique dir per instance
             jetInstance.Parameters.BaseName = "XBM";
-            jetInstance.Parameters.SystemDirectory = tempDirectory;
-            jetInstance.Parameters.LogFileDirectory = tempDirectory;
-            jetInstance.Parameters.TempDirectory = tempDirectory;
-            jetInstance.Parameters.AlternateDatabaseRecoveryDirectory = tempDirectory;
+            jetInstance.Parameters.SystemDirectory = SystemPath;
+            jetInstance.Parameters.LogFileDirectory = SystemPath;
+            jetInstance.Parameters.TempDirectory = SystemPath;
+            jetInstance.Parameters.AlternateDatabaseRecoveryDirectory = SystemPath;
             jetInstance.Parameters.CreatePathIfNotExist = true;
             jetInstance.Parameters.EnableIndexChecking = false;       // TODO: fix unicode indexes
             jetInstance.Parameters.CircularLog = true;
@@ -590,7 +590,7 @@ namespace Xbim.IO
             jetInstance.Parameters.LogFileSize = 1024;    // 1MB logs
             jetInstance.Parameters.LogBuffers = 1024;     // buffers = 1/2 of logfile
             jetInstance.Parameters.MaxTemporaryTables = 0; //ensures no temporary files are created
-            jetInstance.Parameters.MaxVerPages = 2048;
+            jetInstance.Parameters.MaxVerPages = 4096;
             jetInstance.Parameters.NoInformationEvent = true;
             jetInstance.Parameters.WaypointLatency = 1;
             jetInstance.Parameters.MaxSessions = 512;
@@ -1859,7 +1859,10 @@ namespace Xbim.IO
             XbimGeometryCursor geometryTable = GetGeometryTable();
             try
             {
-                return geometryTable.GetGeometryData(handles);
+                foreach (var item in geometryTable.GetGeometryData(handles))
+                {
+                    yield return item;
+                } 
             }
             finally
             {

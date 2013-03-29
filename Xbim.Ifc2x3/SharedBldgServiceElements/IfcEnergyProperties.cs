@@ -22,7 +22,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc2x3.SharedBldgServiceElements
 {
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcEnergyProperties : IfcPropertySetDefinition
     {
         #region fields

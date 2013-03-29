@@ -33,7 +33,7 @@ namespace Xbim.Ifc2x3.ExternalReferenceResource
     ///   not defined in IFC ; instead, it can be found following the reference given to IfcDocumentReference. 
     ///   HISTORY: New entity in IFC 2x.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable, IndexedClass]
+    [IfcPersistedEntityAttribute, IndexedClass]
     public class IfcDocumentInformation : IfcDocumentSelect, INotifyPropertyChanged, ISupportChangeNotification,
                                           IPersistIfcEntity, INotifyPropertyChanging
     {

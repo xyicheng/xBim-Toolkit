@@ -19,7 +19,7 @@ using Xbim.XbimExtensions;
 
 namespace Xbim.Ifc2x3.StructuralElementsDomain
 {
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcTendonAnchor : IfcReinforcingElement
     {
     }

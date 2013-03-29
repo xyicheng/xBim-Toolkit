@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media.Media3D;
+using Xbim.Common.Geometry;
 using Xbim.Common.Logging;
 using Xbim.Ifc2x3.Kernel;
 using Xbim.Ifc2x3.ProductExtension;
@@ -19,11 +20,15 @@ namespace Xbim.ModelGeometry.Converter
 {
     public class XbimMesher
     {
+        static XbimMesher()
+        {
+            AssemblyResolver.HandleUnresovledAssemblies();
+        }
 
         private class MapData
         {
             public IXbimGeometryModel Geometry;
-            public Matrix3D Matrix;
+            public XbimMatrix3D Matrix;
             public IfcProduct Product;
 
             public void Clear()
@@ -32,7 +37,7 @@ namespace Xbim.ModelGeometry.Converter
                 this.Product = null;
             }
 
-            public MapData(IXbimGeometryModel geomModel, Matrix3D m3d, IfcProduct product)
+            public MapData(IXbimGeometryModel geomModel, XbimMatrix3D m3d, IfcProduct product)
             {
                 this.Geometry = geomModel;
                 this.Matrix = m3d;
@@ -45,7 +50,7 @@ namespace Xbim.ModelGeometry.Converter
             public int RepresentationLabel;
             public int EntityLabel;
             public short EntityTypeId;
-            public Matrix3D Matrix;
+            public XbimMatrix3D Matrix;
             public int SurfaceStyleLabel;
 
             public MapRefData(MapData toAdd)
@@ -54,7 +59,7 @@ namespace Xbim.ModelGeometry.Converter
                 EntityLabel = toAdd.Product.EntityLabel;
                 EntityTypeId = IfcMetaData.IfcTypeId(toAdd.Product);
                 SurfaceStyleLabel = toAdd.Geometry.SurfaceStyleLabel;
-                Matrix = Matrix3D.Multiply(((XbimMap)toAdd.Geometry).Transform, toAdd.Matrix);
+                Matrix = XbimMatrix3D.Multiply(((XbimMap)toAdd.Geometry).Transform, toAdd.Matrix);
             }
 
 
@@ -105,7 +110,7 @@ namespace Xbim.ModelGeometry.Converter
                         IXbimGeometryModel geomModel = XbimGeometryModel.CreateFrom(product, maps, false, lod, false);
                         if (geomModel != null)  //it has geometry
                         {
-                            Matrix3D m3d = node.WorldMatrix();
+                            XbimMatrix3D m3d = node.WorldMatrix();
                             if (geomModel is XbimMap) //do not process maps now
                             {
 
@@ -121,7 +126,7 @@ namespace Xbim.ModelGeometry.Converter
                                 XbimLazyDBTransaction transaction = geomTable.BeginLazyTransaction();
                                 if (written.TryGetValue(geomModel.RepresentationLabel, out geomIds))
                                 {
-                                    byte[] matrix = Matrix3DExtensions.ToArray(m3d, true);
+                                    byte[] matrix = m3d.ToArray(true);
                                     short? typeId = IfcMetaData.IfcTypeId(product);
                                     foreach (var geomId in geomIds)
                                     {
@@ -133,7 +138,7 @@ namespace Xbim.ModelGeometry.Converter
                                     List<XbimTriangulatedModel> tm = geomModel.Mesh(true, deflection);
                                     XbimBoundingBox bb = geomModel.GetBoundingBox(true);
 
-                                    byte[] matrix = Matrix3DExtensions.ToArray(m3d, true);
+                                    byte[] matrix = m3d.ToArray(true);
                                     short? typeId = IfcMetaData.IfcTypeId(product);
 
                                     geomIds = new int[tm.Count + 1];
@@ -186,7 +191,7 @@ namespace Xbim.ModelGeometry.Converter
                 // foreach (var map in mappedModels)
                 {
                     IXbimGeometryModel geomModel = map.Value.Geometry;
-                    Matrix3D m3d = map.Value.Matrix;
+                    XbimMatrix3D m3d = map.Value.Matrix;
                     IfcProduct product = map.Value.Product;
 
                     //have we already written it?
@@ -198,7 +203,7 @@ namespace Xbim.ModelGeometry.Converter
                     }
                     else
                     {
-                        m3d = Matrix3D.Multiply(((XbimMap)geomModel).Transform, m3d);
+                        m3d = XbimMatrix3D.Multiply(((XbimMap)geomModel).Transform, m3d);
                         WriteGeometry(model, written, geomModel, m3d, product, deflection);
 
                     }
@@ -232,7 +237,7 @@ namespace Xbim.ModelGeometry.Converter
                     else
                     {
 
-                        byte[] matrix = Matrix3DExtensions.ToArray(map.Matrix, true);
+                        byte[] matrix = map.Matrix.ToArray(true);
                         foreach (var geomId in geomIds)
                         {
                             geomMapTable.AddMapGeometry(geomId, map.EntityLabel, map.EntityTypeId, matrix, map.SurfaceStyleLabel);
@@ -271,11 +276,11 @@ namespace Xbim.ModelGeometry.Converter
             }
         }
 
-        private static void WriteGeometry(XbimModel model, ConcurrentDictionary<int, int[]> written, IXbimGeometryModel geomModel, Matrix3D m3d, IfcProduct product, double deflection)
+        private static void WriteGeometry(XbimModel model, ConcurrentDictionary<int, int[]> written, IXbimGeometryModel geomModel, XbimMatrix3D m3d, IfcProduct product, double deflection)
         {
             List<XbimTriangulatedModel> tm = geomModel.Mesh(true, deflection);
             XbimBoundingBox bb = geomModel.GetBoundingBox(true);
-            byte[] matrix = Matrix3DExtensions.ToArray(m3d, true);
+            byte[] matrix = m3d.ToArray(true);
             short? typeId = IfcMetaData.IfcTypeId(product);
             XbimGeometryCursor geomTable = model.GetGeometryTable();
 

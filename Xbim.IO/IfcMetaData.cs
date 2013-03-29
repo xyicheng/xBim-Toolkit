@@ -205,6 +205,16 @@ namespace Xbim.IO
         }
 
         /// <summary>
+        /// Returns the IfcType with the specified type
+        /// </summary>
+        /// <param name="type">The type</param>
+        /// <returns></returns>
+        public static IfcType IfcType(Type type)
+        {
+            return TypeToIfcTypeLookup[type];
+        }
+
+        /// <summary>
         /// returns the IfcType corresponding to the TypeId
         /// </summary>
         /// <param name="typeId"></param>
@@ -257,16 +267,7 @@ namespace Xbim.IO
             return TypeToIfcTypeLookup[entity.GetType()];
         }
 
-        /// <summary>
-        /// Returns the IfcType of the specified Type
-        /// </summary>
-        /// <param name="theType"></param>
-        /// <returns></returns>
-        internal static IfcType IfcType(Type theType)
-        {
-            return TypeToIfcTypeLookup[theType];
-        }
-
+    
         /// <summary>
         /// Trys to get the specified Ifc Type with the typeName, if the ifcType does not exist false is returned
         /// </summary>

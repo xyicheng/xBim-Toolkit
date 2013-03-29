@@ -25,7 +25,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc2x3.RepresentationResource
 {
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class RepresentationContextSet : XbimSet<IfcRepresentationContext>
     {
         internal RepresentationContextSet(IPersistIfcEntity owner)
@@ -83,7 +83,7 @@ namespace Xbim.Ifc2x3.RepresentationResource
     ///   HISTORY  New entity in IFC Release 1.5. 
     ///   IFC2x Edition 3 NOTE  Users should not instantiate the entity IfcRepresentationContext from IFC2x Edition 2 onwards. It will be changed into an ABSTRACT supertype in future releases of IFC.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable, IndexedClass]
+    [IfcPersistedEntityAttribute, IndexedClass]
     public class IfcRepresentationContext : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                             INotifyPropertyChanging
     {

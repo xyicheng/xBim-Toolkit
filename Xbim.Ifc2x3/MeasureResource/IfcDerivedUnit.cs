@@ -22,7 +22,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc2x3.MeasureResource
 {
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class UnitSet : XbimSet<IfcUnit>
     {
         internal UnitSet(IPersistIfcEntity owner)
@@ -31,7 +31,7 @@ namespace Xbim.Ifc2x3.MeasureResource
         }
     }
 
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcDerivedUnit : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity, IfcUnit,
                                   INotifyPropertyChanging
     {

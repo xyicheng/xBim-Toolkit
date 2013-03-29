@@ -45,7 +45,7 @@ namespace Xbim.Ifc2x3.GeometricConstraintResource
     ///   OffsetDistances[1] is a negative length measure 
     ///   the figure
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcVirtualGridIntersection : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                     INotifyPropertyChanging
     {

@@ -26,6 +26,7 @@ namespace Xbim.COBie.Serialisers
             { 
                 workBook = (COBieWorkbook) formatter.Deserialize(stream);
             }
+            workBook.CreateIndices();
             return workBook;
         }
     }

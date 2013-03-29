@@ -125,9 +125,12 @@ namespace Xbim.Presentation
 
         private static void OnEntityLabelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
+           
             IfcMetaDataControl ctrl = d as IfcMetaDataControl;
             if (ctrl != null && e.NewValue != null && e.NewValue is int)
             {
+                ctrl.Clear();
+                ctrl.ScrollView.ScrollToHome();
                 int entityLabel = (int)e.NewValue;
                 ObjectDataProvider dp = ctrl.DataContext as ObjectDataProvider;
                 if (ctrl.Model == null &&  dp!=null &&  dp.ObjectInstance is XbimModel)
@@ -151,7 +154,15 @@ namespace Xbim.Presentation
         public static readonly DependencyProperty ModelProperty =
             DependencyProperty.Register("Model", typeof(XbimModel), typeof(IfcMetaDataControl), new PropertyMetadata(null));
 
-        
+        private void Clear()
+        {
+            _properties.Clear() ;
+            _propertySets.Clear();
+            _typePropertySets.Clear();
+            _materials.Clear();
+            NotifyPropertyChanged("Properties");
+            NotifyPropertyChanged("PropertySets");
+        }
 
         private void LoadMetaData(IPersistIfcEntity item)
         {
@@ -188,13 +199,8 @@ namespace Xbim.Presentation
 
             _properties = new ObservableCollection<PropertyItem>(pis);
             NotifyPropertyChanged("Properties");
-
-            //now deal with PropertySets
-            _propertySets.Clear();
-            _typePropertySets.Clear();
-            _materials.Clear();
             IfcObject ifcObj = item as IfcObject;
-            //ModelDataProvider mdp = DataContext as ModelDataProvider;
+            
             if (ifcObj != null)
             {
                 IModel m = ifcObj.ModelOf;

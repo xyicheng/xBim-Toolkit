@@ -34,7 +34,7 @@ namespace Xbim.Ifc2x3.GeometricModelResource
     ///   The IfcBoundingBox is defined with an own location which can be used to place the IfcBoundingBox relative to the geometric coordinate system. The IfcBoundingBox is defined by the lower left corner (Corner) and the upper right corner (XDim, YDim, ZDim measured within the parent co-ordinate system). 
     ///   EXPRESS specification:
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcBoundingBox : IfcGeometricRepresentationItem
     {
         #region Fields

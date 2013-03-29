@@ -24,7 +24,6 @@ using System.Globalization;
 using System.Diagnostics;
 using System.IO;
 using Xbim.Ifc2x3.GeometryResource;
-using System.Windows.Markup;
 using Xbim.XbimExtensions;
 using Xbim.IO.Parser;
 using Microsoft.Isam.Esent.Interop;

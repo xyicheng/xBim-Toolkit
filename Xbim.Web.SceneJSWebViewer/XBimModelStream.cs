@@ -24,6 +24,7 @@ namespace Xbim.SceneJSWebViewer
     using Xbim.Ifc2x3.Kernel;
     using System.Diagnostics;
     using Xbim.Ifc2x3;
+    using Xbim.Common.Geometry;
 
     /// <summary>
     /// An XBim implementation of an <see cref="IModelStream"/>. 
@@ -130,8 +131,8 @@ namespace Xbim.SceneJSWebViewer
 
             foreach (XbimGeometryData shape in _model.GetGeometryData(XbimGeometryType.BoundingBox))
             {
-                
-                Matrix3D matrix3d = new Matrix3D().FromArray(shape.TransformData);
+
+                XbimMatrix3D matrix3d = XbimMatrix3D.FromArray(shape.TransformData);
                 BoundingBox bb = BoundingBox.FromArray(shape.ShapeData);
                 bb.TransformBy(matrix3d);
                 box.IncludeBoundingBox(bb);
@@ -314,7 +315,8 @@ namespace Xbim.SceneJSWebViewer
                 TypeList.Add(SurfaceStyleMaterial.Name);
 
                 //store the material
-                surfaceStyle.TagRenderMaterial = SurfaceStyleMaterial; 
+                //the code below makes no sense, it is constantly overriding the surface style
+                //surfaceStyle.TagRenderMaterial = SurfaceStyleMaterial; 
             }
             // DumpProducts();
         }

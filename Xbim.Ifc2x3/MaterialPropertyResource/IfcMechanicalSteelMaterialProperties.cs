@@ -12,7 +12,7 @@ namespace Xbim.Ifc2x3.MaterialPropertyResource
     /// <summary>
     /// This is a collection of mechanical properties related to steel (or other metallic and isotropic) materials. 
     /// </summary>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntity]
     public class IfcMechanicalSteelMaterialProperties : IfcMechanicalMaterialProperties 
     {
         #region Fields

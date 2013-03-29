@@ -39,7 +39,7 @@ namespace Xbim.Ifc2x3.MeasureResource
     ///   'ounce' Weight measure equal to 28.35 g 
     ///   'pound' Weight measure equal to 0.454 kg
     /// </summary>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcConversionBasedUnit : IfcNamedUnit
     {
         #region Fields

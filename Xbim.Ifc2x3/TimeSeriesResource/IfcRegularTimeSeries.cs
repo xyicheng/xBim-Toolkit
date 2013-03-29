@@ -21,7 +21,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc2x3.TimeSeriesResource
 {
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcRegularTimeSeries : IfcTimeSeries
     {
         public IfcRegularTimeSeries()

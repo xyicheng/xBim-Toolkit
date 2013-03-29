@@ -14,7 +14,7 @@
 
 using System;
 using System.Linq;
-using System.Xml.Serialization;
+
 using Xbim.XbimExtensions;
 
 #endregion
@@ -36,7 +36,7 @@ namespace Xbim.Ifc2x3.ProductExtension
     ///   Shape Representation
     ///   The geometry use definitions for the shape representation of the IfcFeatureElementSubtraction is given at the level of its subtypes.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public abstract class IfcFeatureElementSubtraction : IfcFeatureElement
     {
         #region Fields
@@ -49,7 +49,7 @@ namespace Xbim.Ifc2x3.ProductExtension
         ///   Inverse. Reference to the Voids Relationship that uses this Opening Element to create a void within an Element. 
         ///   The Opening Element can only be used to create a single void within a single Element.
         /// </summary>
-        [XmlIgnore]
+        
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class)]
         protected IfcRelVoidsElement VoidsElements
         {

@@ -24,7 +24,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc2x3.SharedBldgElements
 {
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcDoorPanelProperties : IfcPropertySetDefinition
     {
         #region Part 21 Step file Parse routines

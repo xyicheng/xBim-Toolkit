@@ -23,7 +23,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc2x3.TopologyResource
 {
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcConnectedFaceSet : IfcTopologicalRepresentationItem, IFaceBasedModel
     {
         private XbimSet<IfcFace> _cfsFaces;

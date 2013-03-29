@@ -21,7 +21,7 @@ using Xbim.XbimExtensions;
 
 namespace Xbim.Ifc2x3.PresentationAppearanceResource
 {
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcExternallyDefinedSurfaceStyle : IfcExternalReference, IfcSurfaceStyleElementSelect
     {
     }

@@ -37,7 +37,7 @@ namespace Xbim.Ifc2x3.GeometricModelResource
     ///   Illustration:
     ///   Definition of the IfcHalfSpaceSolid within a given coordinate system. The base surface is given by an unbounded
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcHalfSpaceSolid : IfcGeometricRepresentationItem, IfcBooleanOperand
     {
         #region Fields

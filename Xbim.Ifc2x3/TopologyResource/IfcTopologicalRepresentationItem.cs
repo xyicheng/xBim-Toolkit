@@ -23,7 +23,7 @@ namespace Xbim.Ifc2x3.TopologyResource
     /// <summary>
     ///   The topological representation item is the supertype for all the topological representation items in the geometry resource.
     /// </summary>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public abstract class IfcTopologicalRepresentationItem : IfcRepresentationItem
     {
     }
