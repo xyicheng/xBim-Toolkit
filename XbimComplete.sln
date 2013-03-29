@@ -11,24 +11,33 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{7ECDCF15-95BB-4D2B-8C0D-8615D6E3BAB1}"
 	ProjectSection(SolutionItems) = preProject
 		Local.testsettings = Local.testsettings
+		Readme.txt = Readme.txt
 		TraceAndTestImpact.testsettings = TraceAndTestImpact.testsettings
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{25F1A002-D766-40FD-910C-D3E9DCC6FCBF}"
 	ProjectSection(SolutionItems) = preProject
 		JSLintOptions.xml = JSLintOptions.xml
+		Local.testsettings = Local.testsettings
 		Readme.txt = Readme.txt
+		TraceAndTestImpact.testsettings = TraceAndTestImpact.testsettings
 		XbimComplete.vsmdi = XbimComplete.vsmdi
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Licences", "Licences", "{E9E301F2-FE7D-4410-B88D-F83D684A8E62}"
 	ProjectSection(SolutionItems) = preProject
+		Licences\Apache2_0.txt = Licences\Apache2_0.txt
 		Licences\CDDL Licence.txt = Licences\CDDL Licence.txt
+		Licences\MIT Licence.txt = Licences\MIT Licence.txt
+		Licences\MS Permissive Licence.txt = Licences\MS Permissive Licence.txt
+		Licences\NewBSD Licence.txt = Licences\NewBSD Licence.txt
+		Licences\OPEN CASCADE Public Licence.txt = Licences\OPEN CASCADE Public Licence.txt
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3rd Party", "3rd Party", "{10A2F674-DB37-41FF-AB71-9D54C8F0A5B6}"
 	ProjectSection(SolutionItems) = preProject
 		Licences\Apache2_0.txt = Licences\Apache2_0.txt
+		Licences\CDDL Licence.txt = Licences\CDDL Licence.txt
 		Licences\MIT Licence.txt = Licences\MIT Licence.txt
 		Licences\MS Permissive Licence.txt = Licences\MS Permissive Licence.txt
 		Licences\NewBSD Licence.txt = Licences\NewBSD Licence.txt

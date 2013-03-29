@@ -43,7 +43,7 @@
     <SuiteName>xBIM Toolkit</SuiteName>
     <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
     <WebPage>publish.htm</WebPage>
-    <ApplicationRevision>6</ApplicationRevision>
+    <ApplicationRevision>8</ApplicationRevision>
     <ApplicationVersion>2.4.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -161,6 +161,23 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <Resource Include="..\Readme.txt">
+      <Link>Readme.txt</Link>
+    </Resource>
+    <Content Include="..\Xbim.COBie.Client\Templates\COBie-UK-2012-template.xls">
+      <Link>Templates\COBie-UK-2012-template.xls</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Xbim.COBie.Client\Templates\COBie-US-2_4-template.xls">
+      <Link>Templates\COBie-US-2_4-template.xls</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Include="..\Local.testsettings">
+      <Link>Local.testsettings</Link>
+    </None>
+    <None Include="..\TraceAndTestImpact.testsettings">
+      <Link>TraceAndTestImpact.testsettings</Link>
+    </None>
     <None Include="app.config" />
     <None Include="COBie-UK-2012-template.xls">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -252,12 +269,6 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\bin\Release\x64\Xbim.ModelGeometry.OCC.dll">
-      <Link>x64\Xbim.ModelGeometry.OCC.dll</Link>
-    </Content>
-    <Content Include="..\bin\Release\x86\Xbim.ModelGeometry.OCC.dll">
-      <Link>x86\Xbim.ModelGeometry.OCC.dll</Link>
-    </Content>
     <Content Include="..\packages\System.Data.SQLite.1.0.84.0\content\net40\x64\SQLite.Interop.dll">
       <Link>x64\SQLite.Interop.dll</Link>
     </Content>
