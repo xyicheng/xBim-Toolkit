@@ -23,7 +23,7 @@
     <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'NugetDistribution|AnyCPU' ">
-    <OutputPath>..\NugetDistribution\</OutputPath>
+    <OutputPath>..\bin\NugetDistribution\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>none</DebugType>
@@ -88,10 +88,12 @@
     <ProjectReference Include="..\Xbim.ModelGeometry.OCC\Xbim.ModelGeometry.OCC32.vcxproj">
       <Project>{A0544330-3B8B-45F6-BE6B-E9A5AD661384}</Project>
       <Name>Xbim.ModelGeometry.OCC32</Name>
+      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\Xbim.ModelGeometry.OCC\Xbim.ModelGeometry.OCC64.vcxproj">
       <Project>{BB0E1C7A-C255-41CB-814D-894193AB6424}</Project>
       <Name>Xbim.ModelGeometry.OCC64</Name>
+      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\Xbim.ModelGeometry.Scene\Xbim.ModelGeometry.Scene.csproj">
       <Project>{3d9d37de-a254-4433-b172-7590cbd84c69}</Project>

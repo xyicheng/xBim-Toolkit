@@ -60,7 +60,7 @@
     </DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'NugetDistribution|AnyCPU' ">
-    <OutputPath>..\NugetDistribution\</OutputPath>
+    <OutputPath>..\bin\NugetDistribution\</OutputPath>
     <DefineConstants>TRACE;SupportActivation</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>none</DebugType>
