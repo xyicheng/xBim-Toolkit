@@ -180,14 +180,6 @@
       <Link>x86\Xbim.ModelGeometry.OCC.dll</Link>
       <IsAssembly>True</IsAssembly>
     </Content>
-    <Content Include="..\Xbim.COBie.Client\Templates\COBie-UK-2012-template.xls">
-      <Link>Templates\COBie-UK-2012-template.xls</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.COBie.Client\Templates\COBie-US-2_4-template.xls">
-      <Link>Templates\COBie-US-2_4-template.xls</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <None Include="..\Local.testsettings">
       <Link>Local.testsettings</Link>
     </None>
@@ -195,9 +187,12 @@
       <Link>TraceAndTestImpact.testsettings</Link>
     </None>
     <None Include="app.config" />
-    <None Include="COBie-UK-2012-template.xls">
+    <Content Include="COBie-UK-2012-template.xls">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    </Content>
+    <Content Include="COBie-US-2_4-template.xls">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -464,6 +459,9 @@
       <IncludeHash>True</IncludeHash>
       <FileType>Assembly</FileType>
     </PublishFile>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Templates\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
