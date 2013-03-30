@@ -61,6 +61,7 @@
         <CommandBinding Command="SaveAs" Executed="CommandBinding_SaveAs"  CanExecute="CommandBinding_CanExecute"/>
         <CommandBinding Command="Open"   Executed="CommandBinding_Open" CanExecute="CommandBinding_CanExecute"/>
         <CommandBinding Command="{x:Static local:XplorerMainWindow.InsertCmd}" Executed="InsertCmdExecuted" CanExecute="InsertCmdCanExecute"/>
+        <CommandBinding Command="{x:Static local:XplorerMainWindow.ExportCOBieCmd}"   Executed="ExportCOBieCmdExecuted" CanExecute="ExportCOBieCmdCanExecute"/>
 
     </Window.CommandBindings>
     <Grid Name="MainFrame" DataContext="{StaticResource ModelProvider}">
@@ -122,7 +123,7 @@
                 <pt:EnumMenuItem SelectedValue="{Binding Viewport.CameraMode, ElementName=DrawingControl}" Header="CameraMode" />
             </MenuItem>
             <MenuItem Header="COBie">
-                <MenuItem Header="_Export" Click="ExportCoBie" />
+                <MenuItem Header="_Export" Command="{x:Static local:XplorerMainWindow.ExportCOBieCmd}" />
             </MenuItem>
 
         </Menu>

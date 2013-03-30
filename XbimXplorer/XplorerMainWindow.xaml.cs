@@ -58,6 +58,7 @@ namespace XbimXplorer
     {
         private BackgroundWorker _worker;
         public static RoutedCommand InsertCmd = new RoutedCommand();
+        public static RoutedCommand ExportCOBieCmd = new RoutedCommand();
         private string _currentModelFileName;
         private string _temporaryXbimFileName;
         private string _defaultFileName;
@@ -562,26 +563,8 @@ namespace XbimXplorer
             DrawingControl.ViewHome();
         }
 
-
-        private void InsertCmdExecuted(object sender, ExecutedRoutedEventArgs e)
+        private void ExportCOBieCmdExecuted(object sender, ExecutedRoutedEventArgs e)
         {
-            OpenFileDialog dlg = new OpenFileDialog();
-            dlg.Filter = "Xbim Files|*.xbim;*.ifc;*.ifcxml;*.ifczip"; // Filter files by extension 
-            dlg.FileOk += new CancelEventHandler(dlg_InsertXbimFile);
-            dlg.ShowDialog(this);
-        }
-
-        // CanExecuteRoutedEventHandler for the custom color command.
-        private void InsertCmdCanExecute(object sender, CanExecuteRoutedEventArgs e)
-        {
-            XbimModel model = ModelProvider.ObjectInstance as XbimModel;
-            bool canEdit = (model!=null && model.CanEdit);       
-            e.CanExecute = canEdit && !(_worker != null && _worker.IsBusy);
-        }
-
-        private void ExportCoBie(object sender, RoutedEventArgs e)
-        {
-
             string outputFile = Path.ChangeExtension(Model.DatabaseName, ".xls");
 
             // Build context
@@ -616,13 +599,37 @@ namespace XbimXplorer
                 //to nothing Default culture will still be used
 
             }
-            
+
             COBieBuilder builder = new COBieBuilder(context);
             ICOBieSerialiser serialiser = new COBieXLSSerialiser(outputFile, context.TemplateFileName);
             builder.Export(serialiser);
             Process.Start(outputFile);
-
         }
 
+        // CanExecuteRoutedEventHandler for the custom color command.
+        private void ExportCOBieCmdCanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            XbimModel model = ModelProvider.ObjectInstance as XbimModel;
+            bool canEdit = (model!=null && model.CanEdit && model.Instances.OfType<IfcBuilding>().FirstOrDefault()!=null);       
+            e.CanExecute = canEdit && !(_worker != null && _worker.IsBusy);
+        }
+
+        private void InsertCmdExecuted(object sender, ExecutedRoutedEventArgs e)
+        {
+            OpenFileDialog dlg = new OpenFileDialog();
+            dlg.Filter = "Xbim Files|*.xbim;*.ifc;*.ifcxml;*.ifczip"; // Filter files by extension 
+            dlg.FileOk += new CancelEventHandler(dlg_InsertXbimFile);
+            dlg.ShowDialog(this);
+        }
+
+        // CanExecuteRoutedEventHandler for the custom color command.
+        private void InsertCmdCanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            XbimModel model = ModelProvider.ObjectInstance as XbimModel;
+            bool canEdit = (model!=null && model.CanEdit);       
+            e.CanExecute = canEdit && !(_worker != null && _worker.IsBusy);
+        }
+
+      
     }
 }
