@@ -577,7 +577,8 @@ namespace Xbim.IO
             guid += "\\"; //add a backslash to make valid path
             if (string.IsNullOrWhiteSpace(tempDirectory))
                 SystemPath = GetXbimTempDirectory();
-            SystemPath = Path.Combine(SystemPath, guid); //ensure unique dir per instance
+            else
+                SystemPath = tempDirectory; 
             jetInstance.Parameters.BaseName = "XBM";
             jetInstance.Parameters.SystemDirectory = SystemPath;
             jetInstance.Parameters.LogFileDirectory = SystemPath;
