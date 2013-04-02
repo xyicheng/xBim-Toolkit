@@ -62,7 +62,7 @@ namespace Xbim.Ifc2x3.QuantityResource
                     base.IfcParse(propIndex, value);
                     break;
                 case 3:
-                    _weightValue = value.RealVal;
+                    WeightValue = value.RealVal;
                     break;
                 default:
                     this.HandleUnexpectedAttribute(propIndex, value); break;
@@ -77,6 +77,11 @@ namespace Xbim.Ifc2x3.QuantityResource
             if (_weightValue < 0)
                 baseErr += "WR22 QuantityWeight : A valid mass quantity shall be greater than or equal to zero.\n";
             return baseErr;
+        }
+
+        public override string ToString()
+        {
+            return WeightValue.ToPart21;
         }
     }
 }

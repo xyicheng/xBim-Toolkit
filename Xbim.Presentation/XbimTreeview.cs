@@ -22,31 +22,37 @@ namespace Xbim.Presentation
         public XbimTreeview()
         {
             SelectionMode = System.Windows.Controls.SelectionMode.Single; //always use single selection mode
-            SelectedValuePath = "EntityLabel";
+           
         }
 
-
-
-        new public int SelectedItem
+        protected override void OnSelectionChanged(System.Windows.Controls.SelectionChangedEventArgs e)
         {
-            get { return (int)GetValue(SelectedItemProperty); }
-            set { SetValue(SelectedItemProperty, value); }
+            base.OnSelectionChanged(e);
+            if (e.AddedItems.Count > 0)
+                EntityLabel = ((IXbimViewModel)(e.AddedItems[0])).EntityLabel;
         }
 
-        // Using a DependencyProperty as the backing store for SelectedItem.  This enables animation, styling, binding, etc...
-        new public static readonly DependencyProperty SelectedItemProperty =
-            DependencyProperty.Register("SelectedItem", typeof(int), typeof(XbimTreeview), new UIPropertyMetadata(-1, new PropertyChangedCallback(OnSelectedItemChanged)));
 
-        private static void OnSelectedItemChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        public int EntityLabel
+        {
+            get { return (int)GetValue(EntityLabelProperty); }
+            set { SetValue(EntityLabelProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for EntityLabel.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty EntityLabelProperty =
+            DependencyProperty.Register("EntityLabel", typeof(int), typeof(XbimTreeview), new UIPropertyMetadata(-1, new PropertyChangedCallback(OnEntityLabelChanged)));
+
+        private static void OnEntityLabelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             XbimTreeview view = d as XbimTreeview;
             if (view != null && e.NewValue is int)
             {
                 view.UnselectAll();
                 int newVal = (int)(e.NewValue);
-                if(newVal>0) view.Select(newVal);
+                if (newVal > 0) view.Select(newVal);
                 return;
-           }
+            }
         }
 
         private void Select(int newVal)
@@ -57,7 +63,6 @@ namespace Xbim.Presentation
                 if (toSelect != null)
                 {
                     item.IsExpanded = true;
-
                     UpdateLayout();
                     ScrollIntoView(toSelect);
                     toSelect.IsSelected = true; ;

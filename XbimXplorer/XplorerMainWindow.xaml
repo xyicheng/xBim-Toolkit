@@ -8,7 +8,7 @@
     xmlns:pt="clr-namespace:PropertyTools.Wpf;assembly=PropertyTools.Wpf" 
     Title="Xbim Xplorer" Height="600" Width="800" 
     x:Name="MainWindow"
-        Icon="icon.ico">
+        Icon="xBIM.ico">
     <Window.Resources>
         <ObjectDataProvider x:Key="ModelProvider"  IsInitialLoadEnabled="False" ></ObjectDataProvider>
         <DataTemplate DataType="{x:Type xbim:XbimModelViewModel}">
@@ -140,16 +140,13 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height=".3*"/>
                 </Grid.RowDefinitions>
-                <xbim:XbimTreeview x:Name="SpatialControl"                             
-                               SelectedItem="{Binding Path=SelectedItem, ElementName=MainWindow, Mode=OneWay}" 
-                               SelectedValue="{Binding Path=SelectedItem, ElementName=MainWindow, Mode=OneWayToSource}"   
-                               Indentation="12"
-                               BorderThickness="1"
-                               Model="{Binding}"  
-                               SelectionMode="Single"
-                               MouseDoubleClick="SpatialControl_MouseDoubleClick"
-                               Grid.Row="0"
-                               />
+                <xbim:XbimTreeview x:Name="SpatialControl"   Grid.Row="0" 
+                            Indentation="10"
+                            BorderThickness="1"
+                            Model="{Binding}"  
+                            EntityLabel="{Binding Path=SelectedItem, ElementName=MainWindow, Mode=TwoWay}"
+                            SelectionMode="Single"
+                            MouseDoubleClick="SpatialControl_MouseDoubleClick"  FontSize="10" />
                 <GridSplitter 
                     Grid.Row="1" 
                     HorizontalAlignment="Stretch"

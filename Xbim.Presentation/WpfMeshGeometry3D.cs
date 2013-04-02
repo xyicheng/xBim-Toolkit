@@ -188,5 +188,23 @@ namespace Xbim.Presentation
             return m3d;
            
         }
+
+        public XbimRect3D GetBounds()
+        {
+            bool first = true;
+            XbimRect3D boundingBox = XbimRect3D.Empty;
+            foreach (var pos in Positions)
+            {
+                if (first)
+                {
+                    boundingBox = new XbimRect3D(pos);
+                    first = false;
+                }
+                else
+                    boundingBox.Union(pos);
+
+            }
+            return boundingBox;
+        }
     }
 }

@@ -541,12 +541,12 @@ namespace Xbim.Presentation
 
             //adjust for the units of the model
             double metre = model.GetModelFactors.OneMetre;
-            Viewport.DefaultCamera.NearPlaneDistance = 0.125 * metre;
-            Viewport.Camera.NearPlaneDistance = 0.125 * metre;
+            Viewport.DefaultCamera.NearPlaneDistance = 0.100 * metre;
+            Viewport.Camera.NearPlaneDistance = 0.100 * metre;
             Viewport.DefaultCamera.FarPlaneDistance = Math.Max(Math.Max(
                                                                 viewBounds.SizeX,
                                                                 viewBounds.SizeY),
-                                                                viewBounds.SizeY) * 3;
+                                                                viewBounds.SizeY) * 5;
             Viewport.Camera.FarPlaneDistance = Viewport.DefaultCamera.FarPlaneDistance;
 
             //get bounding box for the whole scene and adapt gridlines to the model units
@@ -656,6 +656,7 @@ namespace Xbim.Presentation
 
             foreach (var layer in scene.Layers.Where(l => l.HasContent))
             {
+                
                 //move it to the visual element
                 layer.ShowAll();
                 GeometryModel3D m3d = (WpfMeshGeometry3D)layer.Visible;
@@ -673,6 +674,7 @@ namespace Xbim.Presentation
                     Transparents.Children.Add(mv);
                 else
                     Opaques.Children.Add(mv);
+                
             }
         }
 
@@ -774,16 +776,14 @@ namespace Xbim.Presentation
 
         public void ZoomSelected()
         {
-            //ModelVisual3D selVis;
-            //if (SelectedItem.HasValue && _items.TryGetValue(SelectedItem.Value, out selVis))
-            //{
-            //    Rect3D bounds = VisualTreeHelper.GetDescendantBounds(selVis);
-            //    if (!bounds.IsEmpty)
-            //    {
-            //        bounds = bounds.Inflate(bounds.SizeX / 2, bounds.SizeY / 2, bounds.SizeZ / 2);
-            //        Viewport.ZoomExtents(bounds);
-            //    }
-            //}
+
+            if (SelectedItem > 0 && Highlighted != null && Highlighted.Mesh != null)
+            {
+                Rect3D r3d = Highlighted.Mesh.GetBounds();
+                if(!r3d.IsEmpty)
+                    Viewport.ZoomExtents(r3d,200);
+             
+            }
         }
 
 

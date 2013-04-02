@@ -93,9 +93,16 @@ namespace Xbim.IO
                 _jetInstance.Term();
                 _jetInstance=null;
             }
-
-            if (Directory.Exists(SystemPath))
-                Directory.Delete(SystemPath);
+            try
+            {
+                if (Directory.Exists(SystemPath))
+                    Directory.Delete(SystemPath,true);
+            }
+            catch (Exception) //just in case we cannot delete
+            {
+              
+            }
+            
         }
 
         public IfcPersistedInstanceCache(XbimModel model)
@@ -521,10 +528,10 @@ namespace Xbim.IO
             string tempDirectory = System.Configuration.ConfigurationManager.AppSettings["XbimTempDirectory"];
             if (!IsValidDirectory(ref tempDirectory))
             {
-                tempDirectory = Path.Combine(Path.GetTempPath(), "Xbim");
+                tempDirectory = Path.Combine(Path.GetTempPath(), "Xbim." + Guid.NewGuid().ToString());
                 if (!IsValidDirectory(ref tempDirectory))
                 {
-                    tempDirectory = Path.Combine(Directory.GetCurrentDirectory(),"Xbim");
+                    tempDirectory = Path.Combine(Directory.GetCurrentDirectory(),"Xbim."+ Guid.NewGuid().ToString());
                     if (!IsValidDirectory(ref tempDirectory))
                         throw new XbimException("Unable to initialise the Xbim database engine, no write access. Please set a location for the XbimTempDirectory in the config file");
                 }
@@ -573,17 +580,22 @@ namespace Xbim.IO
         static private Instance CreateInstance(string instanceName, string tempDirectory = null,  bool recovery = false)
         {
             string guid = Guid.NewGuid().ToString();
-            var jetInstance = new Instance(instanceName+guid);
-            guid += "\\"; //add a backslash to make valid path
-            if (string.IsNullOrWhiteSpace(tempDirectory))
-                SystemPath = GetXbimTempDirectory();
-            else
-                SystemPath = tempDirectory; 
+            var jetInstance = new Instance(instanceName+guid);           
+            string pathToUse;
+            if (!string.IsNullOrWhiteSpace(tempDirectory)) //we haven't specified a path so make one
+                pathToUse = tempDirectory;
+            else //we are intending to use the global System Path
+            {
+                if (string.IsNullOrWhiteSpace(SystemPath)) //check if we already done it, if not create one
+                     SystemPath = GetXbimTempDirectory();
+                pathToUse = SystemPath;
+            }
+
             jetInstance.Parameters.BaseName = "XBM";
-            jetInstance.Parameters.SystemDirectory = SystemPath;
-            jetInstance.Parameters.LogFileDirectory = SystemPath;
-            jetInstance.Parameters.TempDirectory = SystemPath;
-            jetInstance.Parameters.AlternateDatabaseRecoveryDirectory = SystemPath;
+            jetInstance.Parameters.SystemDirectory = pathToUse;
+            jetInstance.Parameters.LogFileDirectory = pathToUse;
+            jetInstance.Parameters.TempDirectory = pathToUse;
+            jetInstance.Parameters.AlternateDatabaseRecoveryDirectory = pathToUse;
             jetInstance.Parameters.CreatePathIfNotExist = true;
             jetInstance.Parameters.EnableIndexChecking = false;       // TODO: fix unicode indexes
             jetInstance.Parameters.CircularLog = true;

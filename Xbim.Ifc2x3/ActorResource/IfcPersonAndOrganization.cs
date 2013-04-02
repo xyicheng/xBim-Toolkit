@@ -73,6 +73,19 @@ namespace Xbim.Ifc2x3.ActorResource
         {
             return !(left == right);
         }
+
+        public override string ToString()
+        {
+            string person = ThePerson.ToString();
+            string org = TheOrganization.ToString();
+            if (!string.IsNullOrWhiteSpace(person) && !string.IsNullOrWhiteSpace(org))
+                return "'" + person + "' at '" + org + "'";
+            else if (!string.IsNullOrWhiteSpace(person))
+                return person;
+            else if (!string.IsNullOrWhiteSpace(org))
+                return org;
+            else return "Unknown";
+        }
         #region IPersistIfcEntity Members
 
         private int _entityLabel;

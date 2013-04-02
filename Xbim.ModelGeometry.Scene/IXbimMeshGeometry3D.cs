@@ -29,5 +29,7 @@ namespace Xbim.ModelGeometry.Scene
         /// <param name="frag"></param>
         /// <returns></returns>
         IXbimMeshGeometry3D GetMeshGeometry3D(XbimMeshFragment frag);
+
+        XbimRect3D GetBounds();
     }
 }
