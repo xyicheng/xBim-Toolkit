@@ -57,7 +57,8 @@ namespace Xbim.Ifc2x3.Extensions
             {
                 IfcPersonAndOrganization ifcPersonAndOrganization = (ifcObjectReferenceSelect as IfcPersonAndOrganization);
                 string value = ifcPersonAndOrganization.ThePerson.GetFullName();
-                value += " of " + ifcPersonAndOrganization.TheOrganization.Name.ToString();
+                value = value.Trim();
+                value += ", " + ifcPersonAndOrganization.TheOrganization.Name.ToString();
                 return value;
             }
             if (ifcObjectReferenceSelect is IfcMaterialLayer)
@@ -97,7 +98,7 @@ namespace Xbim.Ifc2x3.Extensions
             }
             if (ifcObjectReferenceSelect is IfcAppliedValue)
             {
-                IfcAppliedValue ifcAppliedValue = (ifcObjectReferenceSelect as IfcAppliedValue);
+                return (ifcObjectReferenceSelect as IfcAppliedValue).GetAsString(); 
             }
 
             return string.Empty;

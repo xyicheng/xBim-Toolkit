@@ -11,25 +11,34 @@ namespace Xbim.Ifc2x3.Extensions
         public static string GetFullName(this IfcPerson ifcPerson)
         {
             string name = string.Empty;
-            foreach (var item in ifcPerson.PrefixTitles)
+            if (ifcPerson.PrefixTitles != null)
             {
-                name += string.IsNullOrEmpty(item) ? "" : item.ToString() + " ";
+                foreach (var item in ifcPerson.PrefixTitles)
+                {
+                    name += string.IsNullOrEmpty(item) ? "" : item.ToString() + " ";
+                } 
             }
 
             if (ifcPerson.GivenName.HasValue)
                 name += ifcPerson.GivenName + " ";
 
-            foreach (var item in ifcPerson.MiddleNames)
+            if (ifcPerson.MiddleNames != null)
             {
-                name += string.IsNullOrEmpty(item) ? "" : item.ToString() + " ";
+                foreach (var item in ifcPerson.MiddleNames)
+                {
+                    name += string.IsNullOrEmpty(item) ? "" : item.ToString() + " ";
+                } 
             }
 
             if (ifcPerson.FamilyName.HasValue)
                 name += ifcPerson.FamilyName + " ";
 
-            foreach (var item in ifcPerson.SuffixTitles)
+            if (ifcPerson.SuffixTitles != null)
             {
-                name += string.IsNullOrEmpty(item) ? "" : item.ToString() + " ";
+                foreach (var item in ifcPerson.SuffixTitles)
+                {
+                    name += string.IsNullOrEmpty(item) ? "" : item.ToString() + " ";
+                } 
             }
             return name;
         }

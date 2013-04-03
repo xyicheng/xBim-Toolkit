@@ -32,14 +32,13 @@ namespace Xbim.Ifc2x3.Extensions
                 IfcRegularTimeSeries ifcRegularTimeSeries = (ifcTimeSeries as IfcRegularTimeSeries);
                 timeSeries.Append("TimeStep:");
                 timeSeries.Append(string.Format("{0,0:N2}", ifcRegularTimeSeries.TimeStep.Value));
-                timeSeries.Append(", ");
-
-                //values are private?
+               
+                //Values field is private?
 
             }
             if (ifcTimeSeries is IfcIrregularTimeSeries)
             {
-                //values are private?
+                //Values field is private?
             }
 
             return timeSeries.ToString();
