@@ -81,8 +81,9 @@ namespace Xbim.Presentation
        
         private XbimRect3D modelBounds;
         private XbimRect3D viewBounds;
-        private int? _currentProduct; 
-       
+        private int? _currentProduct;
+        private List<Material> _materials = new List<Material>();
+        private Dictionary<Material, double> _opacities = new Dictionary<Material, double>();
         /// <summary>
         /// Gets or sets the model.
         /// </summary>
@@ -175,6 +176,73 @@ namespace Xbim.Presentation
         #region Dependency Properties
 
 
+
+        public double ModelOpacity
+        {
+            get { return (double)GetValue(ModelOpacityProperty); }
+            set { SetValue(ModelOpacityProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for ModelOpacity.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty ModelOpacityProperty =
+            DependencyProperty.Register("ModelOpacity", typeof(double), typeof(DrawingControl3D), new UIPropertyMetadata(1.0, OnModelOpacityChanged));
+
+
+        private static void OnModelOpacityChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+             DrawingControl3D d3d = d as DrawingControl3D;
+             if (d3d != null && e.NewValue !=null)
+             {
+                 d3d.SetOpacity((double)e.NewValue);
+             }
+        }
+
+        private void SetOpacity( double opacityPercent)
+        {
+            double opacity = Math.Min(1, opacityPercent);
+            opacity = Math.Max(0, opacity); //bound opacity factor
+            
+            foreach (var material in _materials)
+            {
+                SetOpacityPercent(material, opacity);
+            }
+        }
+
+        private void SetOpacityPercent(Material material,  double opacity)
+        {
+            var g = material as MaterialGroup;
+            if (g != null)
+            {
+                foreach (var item in g.Children)
+                {
+                    SetOpacityPercent(item, opacity);
+                }
+                return;
+            }
+
+            var dm = material as DiffuseMaterial;
+            if (dm != null)
+            {
+                double oldValue;
+                if (!_opacities.TryGetValue(dm, out oldValue))
+                {
+                    oldValue = dm.Brush.Opacity;
+                    _opacities.Add(dm, oldValue);
+                }
+                dm.Brush.Opacity = oldValue * opacity;
+            }
+            var sm = material as SpecularMaterial;
+            if (sm != null)
+            {
+                double oldValue;
+                if (!_opacities.TryGetValue(sm, out oldValue))
+                {
+                    oldValue = sm.Brush.Opacity;
+                    _opacities.Add(sm, oldValue);
+                }
+                sm.Brush.Opacity = oldValue * opacity;
+            }
+        }
 
         public XbimModel Model
         {
@@ -522,7 +590,8 @@ namespace Xbim.Presentation
             
             //reset all the visuals
             ClearGraphics();
-            
+            _materials.Clear();
+            _opacities.Clear();
             if (model == null) return; //nothing to do
             model.RefencedModels.CollectionChanged += RefencedModels_CollectionChanged;
             //build the geometric scene and render as we go
@@ -570,6 +639,7 @@ namespace Xbim.Presentation
            
             //make sure whole scene is visible
             ViewHome();
+            
         }
 
        
@@ -589,6 +659,8 @@ namespace Xbim.Presentation
                 m3d.BackMaterial = (WpfMaterial)layer.Material;
             else
                 m3d.Material = (WpfMaterial)layer.Material;
+            _materials.Add(m3d.Material);
+            SetOpacityPercent(m3d.Material, ModelOpacity);
             ModelVisual3D mv = new ModelVisual3D();
             mv.Content = m3d;
             if (layer.Style.IsTransparent)
@@ -653,10 +725,9 @@ namespace Xbim.Presentation
 
         private void DrawScene(XbimScene<WpfMeshGeometry3D, WpfMaterial> scene)
         {
-
+           
             foreach (var layer in scene.Layers.Where(l => l.HasContent))
             {
-                
                 //move it to the visual element
                 layer.ShowAll();
                 GeometryModel3D m3d = (WpfMeshGeometry3D)layer.Visible;
@@ -674,7 +745,8 @@ namespace Xbim.Presentation
                     Transparents.Children.Add(mv);
                 else
                     Opaques.Children.Add(mv);
-                
+                //used to bind the opacity to the transparency factor
+                _materials.Add(m3d.Material);
             }
         }
 
@@ -780,8 +852,18 @@ namespace Xbim.Presentation
             if (SelectedItem > 0 && Highlighted != null && Highlighted.Mesh != null)
             {
                 Rect3D r3d = Highlighted.Mesh.GetBounds();
-                if(!r3d.IsEmpty)
-                    Viewport.ZoomExtents(r3d,200);
+                Rect3D bounds = new Rect3D(viewBounds.X, viewBounds.Y, viewBounds.Z, viewBounds.SizeX, viewBounds.SizeY, viewBounds.SizeZ);
+                r3d.Offset(-r3d.SizeX / 2, -r3d.SizeY / 2, -r3d.SizeZ / 2);
+                r3d.SizeX *= 2;
+                r3d.SizeY *= 2;
+                r3d.SizeZ *= 2;
+                if (!r3d.IsEmpty)
+                {
+                    if(r3d.Contains(bounds)) //if bigger than bounds zoom bounds
+                        Viewport.ZoomExtents(bounds, 200);
+                    else 
+                        Viewport.ZoomExtents(r3d, 200);
+                }
              
             }
         }

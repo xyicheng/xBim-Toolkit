@@ -175,6 +175,7 @@
                                    Width="Auto" 
                                    Height="Auto" 
                                    MouseDoubleClick="SpatialControl_MouseDoubleClick"
+                                   ModelOpacity="0.25"
                                    >
                 <xbim:DrawingControl3D.Background>
                     <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
@@ -196,12 +197,17 @@
                 <Separator/>
             </StatusBarItem>
             <StatusBarItem>
+                <Slider x:Name="ModelOpacity"  Minimum="0.1" Maximum="1.0" Value="{Binding Path=ModelOpacity, ElementName=DrawingControl}" Width="100" LargeChange=".01"></Slider>
+            </StatusBarItem>
+            <StatusBarItem>
                 <Separator/>
             </StatusBarItem>
             <StatusBarItem HorizontalAlignment="Right" Name="StatusBar" Visibility="Hidden">
                 <Grid>
+                    
                     <ProgressBar  Name="ProgressBar"  Height="20" Maximum="100" Minimum="0" Width="150"  HorizontalAlignment="Center" VerticalAlignment="Center"></ProgressBar>
                     <TextBlock Name="StatusMsg" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White">Parsing</TextBlock>
+                    
                 </Grid>
             </StatusBarItem>
         </StatusBar>

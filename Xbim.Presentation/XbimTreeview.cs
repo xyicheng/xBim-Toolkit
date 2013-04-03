@@ -33,6 +33,7 @@ namespace Xbim.Presentation
         }
 
 
+
         public int EntityLabel
         {
             get { return (int)GetValue(EntityLabelProperty); }
@@ -41,7 +42,11 @@ namespace Xbim.Presentation
 
         // Using a DependencyProperty as the backing store for EntityLabel.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty EntityLabelProperty =
-            DependencyProperty.Register("EntityLabel", typeof(int), typeof(XbimTreeview), new UIPropertyMetadata(-1, new PropertyChangedCallback(OnEntityLabelChanged)));
+            DependencyProperty.Register("EntityLabel", typeof(int), typeof(XbimTreeview), new FrameworkPropertyMetadata(-1, FrameworkPropertyMetadataOptions.Inherits,
+                                                                      new PropertyChangedCallback(OnEntityLabelChanged)));
+
+        
+
 
         private static void OnEntityLabelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
