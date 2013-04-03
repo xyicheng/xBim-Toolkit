@@ -24,10 +24,13 @@ namespace Xbim.Ifc.Extensions
                     address.Append(ifcPostalAddress.InternalLocation);
                     address.Append(", ");
                 }
-                foreach (var item in ifcPostalAddress.AddressLines)
+                if (ifcPostalAddress.AddressLines != null)
                 {
-                    address.Append(item);
-                    address.Append(", ");
+                    foreach (var item in ifcPostalAddress.AddressLines)
+                    {
+                        address.Append(item);
+                        address.Append(", ");
+                    } 
                 }
                 if (ifcPostalAddress.Town.HasValue)
                 {
@@ -52,23 +55,35 @@ namespace Xbim.Ifc.Extensions
             if (ifcAddress is IfcTelecomAddress)
             {
                 IfcTelecomAddress ifcTelecomAddress = (ifcAddress as IfcTelecomAddress);
-                foreach (var item in ifcTelecomAddress.TelephoneNumbers)
+                if (ifcTelecomAddress.TelephoneNumbers != null)
                 {
-                    address.Append(item);
-                    address.Append(", ");
+                    foreach (var item in ifcTelecomAddress.TelephoneNumbers)
+                    {
+                        address.Append(item);
+                        address.Append(", ");
+                    } 
                 }
-                foreach (var item in ifcTelecomAddress.FacsimileNumbers)
+
+                if (ifcTelecomAddress.FacsimileNumbers != null)
                 {
-                    address.Append("FAX:");
-                    address.Append(item);
-                    address.Append(", ");
+                    foreach (var item in ifcTelecomAddress.FacsimileNumbers)
+                    {
+                        address.Append("FAX:");
+                        address.Append(item);
+                        address.Append(", ");
+                    } 
                 }
-                foreach (var item in ifcTelecomAddress.ElectronicMailAddresses)
+
+                if (ifcTelecomAddress.ElectronicMailAddresses != null)
                 {
-                    address.Append("EMAIL:");
-                    address.Append(item);
-                    address.Append(", ");
+                    foreach (var item in ifcTelecomAddress.ElectronicMailAddresses)
+                    {
+                        address.Append("EMAIL:");
+                        address.Append(item);
+                        address.Append(", ");
+                    } 
                 }
+
                 if (ifcTelecomAddress.WWWHomePageURL.HasValue)
                 {
                     address.Append("WEB:");

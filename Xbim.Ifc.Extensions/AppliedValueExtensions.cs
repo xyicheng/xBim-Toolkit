@@ -14,7 +14,9 @@ namespace Xbim.Ifc.Extensions
         {
             
             StringBuilder value = new StringBuilder();
-            if (ifcAppliedValue.Description.HasValue)
+            if ((ifcAppliedValue.Description.HasValue) &&
+                (!string.IsNullOrEmpty(ifcAppliedValue.Description))
+                )
             {
                 value.Append(ifcAppliedValue.Description);
                 value.Append(", ");
@@ -36,9 +38,8 @@ namespace Xbim.Ifc.Extensions
                 if (ifcAppliedValue.Value is IfcMeasureWithUnit)
                 {
                     value.Append(GetMeasureWithUnitAsString((IfcMeasureWithUnit)ifcAppliedValue.Value));
-                    value.Append(", ");
                 }
-                
+                value.Append(", ");
             }
 
             if (ifcAppliedValue.UnitBasis != null) //not nullable should be?

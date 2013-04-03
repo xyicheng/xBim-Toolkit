@@ -31,7 +31,7 @@ namespace Xbim.Ifc.Extensions
             if (ifcDateTimeSelect is IfcCalendarDate)
             {
                 IfcCalendarDate date = (ifcDateTimeSelect as IfcCalendarDate);
-                return new DateTime(date.YearComponent, date.MonthComponent, date.DayComponent).Date.ToString();
+                return new DateTime(date.YearComponent, date.MonthComponent, date.DayComponent).ToString("d");
             }
             if (ifcDateTimeSelect is IfcLocalTime)
             {
