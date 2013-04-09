@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Reflection;
 using System.IO;
-using Xbim.Common.Exceptions;
 
 namespace Xbim.ModelGeometry.Converter
 {
@@ -23,7 +22,8 @@ namespace Xbim.ModelGeometry.Converter
             if (string.Compare(args.Name,0,geomModuleName,0,geomModuleName.Length,true)==0)
             {
                 var path = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-               
+
+
                 if (IntPtr.Size == 8) // or for .NET4 use Environment.Is64BitProcess
                 {
                     path = Path.Combine(path, "x64");
@@ -34,20 +34,9 @@ namespace Xbim.ModelGeometry.Converter
                 }
 
                 path = Path.Combine(path, geomModuleName + ".dll");
-                try
-                {
-                    Assembly assembly = Assembly.LoadFrom(path);
-                   // object solid = assembly.CreateInstance("XbimSolid");
-                    
-                    return assembly;
 
-                }
-                catch (Exception e)
-                {
-                    
-                    throw new XbimException("Failed to load Xbim.ModelGeometry.OCC.dll at location " + path , e);
-                }
-               
+                Assembly assembly = Assembly.LoadFrom(path);
+                return assembly;
             }
 
             return null;

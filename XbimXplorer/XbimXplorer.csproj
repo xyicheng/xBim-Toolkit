@@ -36,14 +36,14 @@
     <UpdatePeriodically>false</UpdatePeriodically>
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
-    <InstallUrl>http://xBIM.codeplex.com/releases/clickonce/</InstallUrl>
+    <InstallUrl>https://xBIM.codeplex.com/releases/clickonce/</InstallUrl>
     <SupportUrl>http://www.openBIM.org</SupportUrl>
     <ProductName>xBIM Xplorer</ProductName>
     <PublisherName>xBIM Team</PublisherName>
     <SuiteName>xBIM Toolkit</SuiteName>
     <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
     <WebPage>publish.htm</WebPage>
-    <ApplicationRevision>14</ApplicationRevision>
+    <ApplicationRevision>19</ApplicationRevision>
     <ApplicationVersion>2.4.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -194,9 +194,6 @@
     <Content Include="COBie-US-2_4-template.xls">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <None Include="BIM Logo.ifc">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
