@@ -177,7 +177,10 @@ namespace Xbim.COBie.Client
                 context.Model = model;
 
                 //Create Scene, required for Coordinates sheet
-                GenerateGeometry(context);
+                if (!SkipGeoChkBox.Checked)
+                {
+                    GenerateGeometry(context);
+                }
 
                 //set filter option
                 var chckBtn = gbFilter.Controls.OfType<RadioButton>().FirstOrDefault(rb => rb.Checked);

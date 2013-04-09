@@ -49,6 +49,7 @@
             this.rbPickList = new System.Windows.Forms.RadioButton();
             this.rbDefault = new System.Windows.Forms.RadioButton();
             this.ValidateChkBox = new System.Windows.Forms.CheckBox();
+            this.SkipGeoChkBox = new System.Windows.Forms.CheckBox();
             this.groupBox1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             this.gbFilter.SuspendLayout();
@@ -243,7 +244,7 @@
             this.gbFilter.Controls.Add(this.rbNoFilters);
             this.gbFilter.Controls.Add(this.rbPickList);
             this.gbFilter.Controls.Add(this.rbDefault);
-            this.gbFilter.Location = new System.Drawing.Point(424, 134);
+            this.gbFilter.Location = new System.Drawing.Point(419, 142);
             this.gbFilter.Name = "gbFilter";
             this.gbFilter.Size = new System.Drawing.Size(87, 98);
             this.gbFilter.TabIndex = 9;
@@ -295,11 +296,23 @@
             this.ValidateChkBox.Text = "Validate xls file";
             this.ValidateChkBox.UseVisualStyleBackColor = true;
             // 
+            // SkipGeoChkBox
+            // 
+            this.SkipGeoChkBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.SkipGeoChkBox.AutoSize = true;
+            this.SkipGeoChkBox.Location = new System.Drawing.Point(419, 248);
+            this.SkipGeoChkBox.Name = "SkipGeoChkBox";
+            this.SkipGeoChkBox.Size = new System.Drawing.Size(93, 17);
+            this.SkipGeoChkBox.TabIndex = 11;
+            this.SkipGeoChkBox.Text = "Skip geometry";
+            this.SkipGeoChkBox.UseVisualStyleBackColor = true;
+            // 
             // COBieGenerator
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(523, 437);
+            this.Controls.Add(this.SkipGeoChkBox);
             this.Controls.Add(this.ValidateChkBox);
             this.Controls.Add(this.mergeBtn);
             this.Controls.Add(this.GeoOnlyChkBox);
@@ -346,6 +359,7 @@
         private System.Windows.Forms.CheckBox GeoOnlyChkBox;
         private System.Windows.Forms.Button mergeBtn;
         private System.Windows.Forms.CheckBox ValidateChkBox;
+        private System.Windows.Forms.CheckBox SkipGeoChkBox;
     }
 }
 
