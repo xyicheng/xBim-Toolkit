@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Media.Media3D;
 using Xbim.Common.Geometry;
 using Xbim.Common.Logging;
 using Xbim.Ifc2x3.Kernel;
