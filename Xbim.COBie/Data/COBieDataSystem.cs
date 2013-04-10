@@ -156,7 +156,8 @@ namespace Xbim.COBie.Data
                             {
                                 //OK last chance, lets take the property name that is not in the filter list of strings, ie. != "Circuit Number", "System Name" or "System Classification" from above 
                                 IfcPropertySingleValue propname = ifcPropertySet.HasProperties.OfType<IfcPropertySingleValue>().Where(psv => !PropertyNames.Contains(psv.Name)).FirstOrDefault();
-                                name = propname.Name.ToString();
+                                if (propname != null)
+                                    name = propname.Name.ToString();
                             }
                             
                         }
