@@ -74,7 +74,7 @@ namespace Xbim.Ifc2x3.SharedBldgElements
     ///   Connection Geometry
     ///   The connection between two walls is represented by the IfcRelConnectsPathElements. The use of the parameter of that relationship object is defined at the level of the subtypes of IfcWall and at the IfcRelConnectsPathElements.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcWall : IfcBuildingElement
     {
         #region Constructors

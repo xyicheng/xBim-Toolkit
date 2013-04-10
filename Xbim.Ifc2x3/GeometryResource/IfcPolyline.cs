@@ -14,7 +14,7 @@
 
 using System;
 using System.Linq;
-using System.Xml.Serialization;
+
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
@@ -22,7 +22,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc2x3.GeometryResource
 {
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcPolyline : IfcBoundedCurve
     {
         public IfcPolyline()
@@ -65,14 +65,14 @@ namespace Xbim.Ifc2x3.GeometryResource
         /// <summary>
         ///   The dimensionality of all points must be the same and is equal to the forst point
         /// </summary>
-        [XmlIgnore]
+        
         public override IfcDimensionCount Dim
         {
             get { return _points.Count > 0 ? _points[0].Dim : (IfcDimensionCount) 0; }
         }
 
 
-        [XmlIgnore]
+        
         public bool IsClosed
         {
             get

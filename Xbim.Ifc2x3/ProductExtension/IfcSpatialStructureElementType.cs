@@ -30,7 +30,7 @@ namespace Xbim.Ifc2x3.ProductExtension
     ///   The occurrences of subtypes of the abstract IfcSpatialStructureElementType are represented by instances of subtypes of IfcSpatialStructureElement.
     ///   HISTORY  New entity in Release IFC2x Edition 3.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public abstract class IfcSpatialStructureElementType : IfcElementType
     {
     }

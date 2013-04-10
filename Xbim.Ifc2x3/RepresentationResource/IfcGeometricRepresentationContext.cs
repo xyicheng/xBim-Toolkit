@@ -14,7 +14,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Xml.Serialization;
+
 using Xbim.Ifc2x3.GeometryResource;
 using Xbim.Ifc2x3.MeasureResource;
 using Xbim.XbimExtensions.SelectTypes;
@@ -37,7 +37,7 @@ namespace Xbim.Ifc2x3.RepresentationResource
     ///   HISTORY New Entity in IFC Release 2.0
     ///   IFC2x Edition 3 CHANGE The attribute WorldCoordinateSystem has been made OPTIONAL Applicable values for ContextType are only 'Model',  'Plan', and  'NotDefined'. All other sub contexts are now handled by the new subtype in IFC2x Edition 2 IfcGeometricRepresentationSubContext. Upward compatibility for file based exchange is guaranteed.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcGeometricRepresentationContext : IfcRepresentationContext
     {
         #region Fields
@@ -170,7 +170,7 @@ namespace Xbim.Ifc2x3.RepresentationResource
         /// <summary>
         ///   Inverse. The set of IfcGeometricRepresentationSubContexts that refer to this IfcGeometricRepresentationContext.
         /// </summary>
-        [XmlIgnore]
+        
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class)]
         public IEnumerable<IfcGeometricRepresentationSubContext> HasSubContexts
         {

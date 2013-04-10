@@ -14,7 +14,6 @@
 
 using System;
 using System.Linq;
-using System.Windows.Markup;
 using Xbim.Ifc2x3.Kernel;
 using Xbim.Ifc2x3.MeasureResource;
 using Xbim.Ifc2x3.RepresentationResource;
@@ -73,8 +72,7 @@ namespace Xbim.Ifc2x3.SharedBldgElements
     ///  
     ///   WR35   :   The IfcDoorLiningProperties shall only be used in the context of an IfcDoorStyle.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
-    [ContentProperty("ShapeAspectStyle")]
+    [IfcPersistedEntityAttribute]
     public class IfcDoorLiningProperties : IfcPropertySetDefinition
     {
         #region Part 21 Step file Parse routines

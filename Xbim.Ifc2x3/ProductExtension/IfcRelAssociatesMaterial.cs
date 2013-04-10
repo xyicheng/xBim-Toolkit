@@ -40,7 +40,7 @@ namespace Xbim.Ifc2x3.ProductExtension
     ///   WR21   :   The material information must not be associated to a substraction feature (such as an opening) or to a virtual element.  
     ///   WR22   :   The material information, using IfcMaterialSelect should be associated to a product occurrence.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcRelAssociatesMaterial : IfcRelAssociates
     {
         #region Fields

@@ -24,7 +24,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc2x3.ConstructionMgmtDomain
 {
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcConstructionMaterialResource : IfcConstructionResource
     {
         private XbimSet<IfcActorSelect> _suppliers;

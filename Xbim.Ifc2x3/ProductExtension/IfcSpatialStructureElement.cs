@@ -16,7 +16,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-using System.Xml.Serialization;
+
 using Xbim.Ifc2x3.Kernel;
 using Xbim.Ifc2x3.MeasureResource;
 using Xbim.XbimExtensions;
@@ -51,7 +51,7 @@ namespace Xbim.Ifc2x3.ProductExtension
     ///   Formal Propositions:
     ///   WR41   :   All spatial structure elements shall be associated (using the IfcRelAggregates relationship) with another spatial structure element, or with IfcProject.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public abstract class IfcSpatialStructureElement : IfcProduct
     {
         #region Fields and Events
@@ -214,7 +214,7 @@ namespace Xbim.Ifc2x3.ProductExtension
         ///   EXAMPLE  A curtain wall maybe contained in the ground floor, but maybe referenced in all floors, it reaches.
         ///   IFC2x Edition 3 CHANGE  The inverse attribute has been added with upward compatibility for file based exchange.
         /// </remarks>
-        [XmlIgnore]
+        
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class)]
         public IEnumerable<IfcRelReferencedInSpatialStructure> ReferencesElements
         {
@@ -229,7 +229,7 @@ namespace Xbim.Ifc2x3.ProductExtension
         /// <summary>
         ///   Set of relationships to Systems, that provides a certain service to the Building. The relationship is handled by the objectified relationship IfcRelServicesBuildings.
         /// </summary>
-        [XmlIgnore]
+        
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class)]
         public IEnumerable<IfcRelServicesBuildings> ServicedBySystems
         {
@@ -247,7 +247,7 @@ namespace Xbim.Ifc2x3.ProductExtension
         /// <remarks>
         ///   NOTE  The spatial containment relationship, established by IfcRelContainedInSpatialStructure, is required to be an hierarchical relationship, i.e. each element can only be assigned to 0 or 1 spatial structure element.
         /// </remarks>
-        [XmlIgnore]
+        
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class)]
         public IEnumerable<IfcRelContainedInSpatialStructure> ContainsElements
         {
@@ -263,7 +263,7 @@ namespace Xbim.Ifc2x3.ProductExtension
         /// <summary>
         ///   returns the parent spatial structural element that this element decomposes
         /// </summary>
-        [XmlIgnore]
+        
         public IfcObjectDefinition SpatialStructuralElementParent
         {
             get
@@ -283,7 +283,7 @@ namespace Xbim.Ifc2x3.ProductExtension
         /// <summary>
         ///   returns a list of spatial structural elements which decompose this spatial object
         /// </summary>
-        [XmlIgnore]
+        
         public IEnumerable<IfcObjectDefinition> SpatialStructuralElementChildren
         {
             get

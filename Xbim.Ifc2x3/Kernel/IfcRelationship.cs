@@ -31,7 +31,7 @@ namespace Xbim.Ifc2x3.Kernel
     ///   In case of the 1-to-many relationship, the related side of the relationship shall be an aggregate SET 1:N 
     ///   HISTORY: New entitiy in IFC Release 1.0.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public abstract class IfcRelationship : IfcRoot
     {
     }

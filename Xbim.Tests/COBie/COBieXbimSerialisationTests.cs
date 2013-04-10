@@ -23,7 +23,7 @@ using System.Threading;
 using Xbim.Common.Exceptions;
 using System.Windows.Media.Media3D;
 using Xbim.ModelGeometry.Converter;
-//using Xbim.IO.Tree;
+using Xbim.Common.Geometry;
 
 namespace Xbim.Tests.COBie
 {
@@ -158,9 +158,9 @@ namespace Xbim.Tests.COBie
                 context.UpdateStatus("Creating Geometry", total, (total * percentProgress / 100));
             });
 
-        }
+                    }
 
-      
+
 
     }
 }

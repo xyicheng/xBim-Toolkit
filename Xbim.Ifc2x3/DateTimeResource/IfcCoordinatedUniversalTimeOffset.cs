@@ -21,7 +21,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc2x3.DateTimeResource
 {
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcCoordinatedUniversalTimeOffset : IPersistIfcEntity, INotifyPropertyChanged,
                                                      ISupportChangeNotification, INotifyPropertyChanging
     {

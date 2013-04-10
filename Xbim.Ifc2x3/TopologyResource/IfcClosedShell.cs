@@ -42,7 +42,7 @@ namespace Xbim.Ifc2x3.TopologyResource
     ///   The closed shell shall be an oriented arcwise connected 2-manifold. 
     ///   The Euler equation shall be satisfied. Note: Please refer to ISO/IS 10303-42:1994, p.149 for the equation.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcClosedShell : IfcConnectedFaceSet, IfcShell
     {
     }

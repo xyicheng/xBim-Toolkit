@@ -20,7 +20,7 @@ using Xbim.XbimExtensions;
 
 namespace Xbim.Ifc2x3.SharedBldgElements
 {
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcCurtainWallType : IfcBuildingElementType
     {
         public IfcCurtainWallTypeEnum PredefinedType

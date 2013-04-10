@@ -12,7 +12,7 @@ namespace Xbim.Ifc2x3.SharedFacilitiesElements
     /// <summary>
     /// AnIfcOccupant is a type of actor that defines the form of occupancy of a property.
     /// </summary>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntity]
     public class IfcOccupant : IfcActor
     {
         private IfcOccupantTypeEnum _predefinedType;

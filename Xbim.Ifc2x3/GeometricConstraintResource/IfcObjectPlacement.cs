@@ -15,7 +15,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Xml.Serialization;
+
 using Xbim.Ifc2x3.Kernel;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
@@ -24,7 +24,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc2x3.GeometricConstraintResource
 {
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public abstract class IfcObjectPlacement : ISupportChangeNotification, INotifyPropertyChanged, IPersistIfcEntity,
                                                INotifyPropertyChanging
     {
@@ -103,7 +103,7 @@ namespace Xbim.Ifc2x3.GeometricConstraintResource
         /// <summary>
         ///   Inverse. The IfcObjectPlacement shall be used to provide a placement and an object coordinate system for a single instance of IfcProduct.
         /// </summary>
-        [XmlIgnore]
+        
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class, 1, 1)]
         public IEnumerable<IfcProduct> PlacesObject
         {
@@ -113,7 +113,7 @@ namespace Xbim.Ifc2x3.GeometricConstraintResource
         /// <summary>
         ///   Inverse. Placements that are given relative to this placement of an object.
         /// </summary>
-        [XmlIgnore]
+        
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class)]
         public IEnumerable<IfcLocalPlacement> ReferencedByPlacements
         {

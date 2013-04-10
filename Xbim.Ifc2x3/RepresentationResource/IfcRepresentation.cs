@@ -15,7 +15,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Xml.Serialization;
+
 using Xbim.Ifc2x3.GeometryResource;
 using Xbim.Ifc2x3.MeasureResource;
 using Xbim.Ifc2x3.PresentationOrganizationResource;
@@ -38,7 +38,7 @@ namespace Xbim.Ifc2x3.RepresentationResource
     ///   IFC2x Edition 3 NOTE  Users should not instantiate the entity IfcRepresentation from IFC2x Edition 3 onwards. It will be changed into an ABSTRACT supertype in future releases of IFC.
     ///   IFC2x Edition 3 CHANGE  The inverse attributes LayerAssignments and RepresentationMap have been added with upward compatibility.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcRepresentation : ISupportChangeNotification, INotifyPropertyChanged, IPersistIfcEntity,
                                      IfcLayeredItem, INotifyPropertyChanging
     {
@@ -233,7 +233,7 @@ namespace Xbim.Ifc2x3.RepresentationResource
         /// <summary>
         ///   Inverse. Use of the representation within an IfcRepresentationMap. If used, this IfcRepresentation may be assigned to many representations as one of its Items using an IfcMappedItem. Using IfcRepresentationMap is the way to share one representation (often of type IfcShapeRepresentation) by many products.
         /// </summary>
-        [XmlIgnore]
+        
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class, 0, 1)]
         public IEnumerable<IfcRepresentationMap> RepresentationMap
         {
@@ -247,7 +247,7 @@ namespace Xbim.Ifc2x3.RepresentationResource
         /// <summary>
         ///   Inverse. Assignment of the whole representation to a single or multiple layer(s). The LayerAssigments can be overridden by LayerAssigments of the IfcRepresentationItem's within the list of Items.
         /// </summary>
-        [XmlIgnore]
+        
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class)]
         public IEnumerable<IfcPresentationLayerAssignment> LayerAssignments
         {
@@ -262,7 +262,7 @@ namespace Xbim.Ifc2x3.RepresentationResource
         /// <summary>
         ///   Inverse. Reference to the product shape, for which it is the shape representation.
         /// </summary>
-        [XmlIgnore]
+        
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class, 0, 1)]
         internal IEnumerable<IfcProductRepresentation> OfProductRepresentation
         {

@@ -1,0 +1,41 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+    <metadata>
+        <id>xBIM3D</id>
+        <version>2.4.7</version>
+        <title>xBIM 3D</title>
+        <authors>xBIM Team</authors>
+        <owners>Steve Lockley</owners>
+        <licenseUrl>http://xbim.codeplex.com/license</licenseUrl>
+        <projectUrl>http://xbim.codeplex.com/</projectUrl>
+        <iconUrl>http://download-codeplex.sec.s-msft.com/Download?ProjectName=xbim&amp;DownloadId=373774&amp;Build=20335</iconUrl>
+        <requireLicenseAcceptance>true</requireLicenseAcceptance>
+        <description>xBIM 3D is the full version of the xBIM toolkit. It supports  geometric operations and 3D visualisation as well as reading and writing IFC data files.. Use xBIM 3D if you are building BIM applications that need a 3D graphical user interface.
+xBIM is an Open Source Toolkit for developing IFC based applications (BuildingSmart Data model). 
+It provides full support for reading and writing geometry, topology and data in accordance with the Ifc2x3 schema.
+xBIM reads and writes Ifc, IfcXMl and IfcZip formats and will convert models to COBie spreadsheets in both UK and US cultures.
+A range of 3D viewing controls are provided for use with Windows forms, WPF, WEBGL and OpenGL platforms.
+IOS and Android versions are under development.</description>
+        <summary>The .Net toolkit for developing 3D BIM applications based on the IFC standard.</summary>
+        <releaseNotes>This version builds for Any CPU.</releaseNotes>
+        <language>en-GB</language>
+        <tags>BIM, IFC, IfcXml, IfcZip, COBie, .Net, C#, BuildingSmart, 3D</tags>
+        <dependencies>
+            <dependency id="Xbim" version="2.4.0" />
+            <dependency id="HelixToolkit" version="2013.1.10.1" />
+            <dependency id="NPOI" version="1.2.5" />
+            <dependency id="PropertyTools.Wpf" version="2013.1.12.1" />
+            <dependency id="Newtonsoft.Json" version="4.5.11" />
+        </dependencies>
+    </metadata>
+    <files>
+        <file src="..\bin\NugetDistribution\x64\TKBO.dll" target="content\net40\x64\TKBO.dll" />
+        <file src="..\bin\NugetDistribution\x86\*.dll" target="content\net40\x86\TKBO.dll" />
+        <file src="..\bin\NugetDistribution\Xbim.COBie.dll" target="lib\net40\Xbim.COBie.dll" />
+        <file src="..\bin\NugetDistribution\Xbim.ModelGeometry.Converter.dll" target="lib\net40\Xbim.ModelGeometry.Converter.dll" />
+        <file src="..\bin\NugetDistribution\Xbim.ModelGeometry.OCC.dll" target="lib\net40\Xbim.ModelGeometry.OCC.dll" />
+        <file src="..\bin\NugetDistribution\Xbim.ModelGeometry.Scene.dll" target="lib\net40\Xbim.ModelGeometry.Scene.dll" />
+        <file src="..\bin\NugetDistribution\Xbim.Presentation.dll" target="lib\net40\Xbim.Presentation.dll" />
+        <file src="install.ps1" target="tools\install.ps1" />
+    </files>
+</package>

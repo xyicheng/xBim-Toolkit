@@ -25,7 +25,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc2x3.ActorResource
 {
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class PersonCollection : XbimList<IfcPerson>
     {
         internal PersonCollection(IPersistIfcEntity owner)
@@ -54,7 +54,7 @@ namespace Xbim.Ifc2x3.ActorResource
         }
     }
 
-    [IfcPersistedEntityAttribute, Serializable, IndexedClass]
+    [IfcPersistedEntityAttribute, IndexedClass]
     public class IfcPerson : IfcActorSelect, IPersistIfcEntity, IFormattable, ISupportChangeNotification,
                              INotifyPropertyChanged, IfcObjectReferenceSelect, INotifyPropertyChanging
     {
@@ -325,7 +325,7 @@ namespace Xbim.Ifc2x3.ActorResource
         //////}
 
 
-        //////[XmlIgnore]
+        //////
         //////[Browsable(true)]
         //////public PostalAddressCollection PostalAddresses
         //////{
@@ -343,7 +343,7 @@ namespace Xbim.Ifc2x3.ActorResource
 
         //////    }
         //////}
-        //////[XmlIgnore]
+        //////
         //////[Browsable(true)]
         //////public TelecomAddressCollection TelecomAddresses
         //////{
@@ -362,7 +362,7 @@ namespace Xbim.Ifc2x3.ActorResource
         //////}
 
 
-        //////[XmlIgnore]
+        //////
         //////public string EngagedInString
         //////{
         //////    get

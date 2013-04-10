@@ -32,7 +32,7 @@ namespace Xbim.Ifc2x3.ProductExtension
     ///   Formal Propositions:
     ///   WR31   :   The instance of the relating element shall not be the same instance as the related element.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcRelConnectsElements : IfcRelConnects
     {
         #region Part 21 Step file Parse routines

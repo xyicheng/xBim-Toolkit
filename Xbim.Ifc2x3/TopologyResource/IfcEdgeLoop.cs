@@ -34,7 +34,7 @@ namespace Xbim.Ifc2x3.TopologyResource
     ///   HISTORY: New Entity in Release IFC 2x Edition 2. 
     ///   EXPRESS specification:
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcEdgeLoop : IfcLoop
     {
         public IfcEdgeLoop()

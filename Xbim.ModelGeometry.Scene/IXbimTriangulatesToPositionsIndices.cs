@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Xbim.Common.Geometry;
 
 namespace Xbim.ModelGeometry.Scene
 {
@@ -20,7 +21,7 @@ namespace Xbim.ModelGeometry.Scene
         /// Called after BeginVertices, once for each unique vertex
         /// </summary>
         /// <param name="point3D"></param>
-        void AddPosition(System.Windows.Media.Media3D.Point3D point3D);
+        void AddPosition(XbimPoint3D point3D);
         /// <summary>
         /// Called when all unique vertices have been added 
         /// </summary>

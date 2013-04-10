@@ -30,7 +30,7 @@ namespace Xbim.Ifc2x3.GeometryResource
     ///   A bounded surface has finite non-zero surface area. 
     ///   A bounded surface has boundary curves.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public abstract class IfcBoundedSurface : IfcSurface
     {
         /// <summary>

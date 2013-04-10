@@ -52,7 +52,7 @@ namespace Xbim.Ifc2x3.SharedBldgElements
     ///   GrossWeight Total gross weight of the plate without add-on parts, not taking into account possible processing features (cut-outs, etc.) or openings and recesses. IfcQuantityWeight 
     ///   NetWeight Total net weight of the plate without add-on parts, taking into account possible processing features (cut-outs, etc.) or openings and recesses. IfcQuantityWeight
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcPlateType : IfcBuildingElementType
     {
         #region Fields

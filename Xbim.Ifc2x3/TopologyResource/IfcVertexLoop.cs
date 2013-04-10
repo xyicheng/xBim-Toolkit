@@ -30,7 +30,7 @@ namespace Xbim.Ifc2x3.TopologyResource
     ///   NOTE: Corresponding STEP entity: vertex_loop. Please refer to ISO/IS 10303-42:1994, p. 121 for the final definition of the formal standard. 
     ///   HISTORY: New Entity in Release IFC 2x Edition 2.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcVertexLoop : IfcLoop
     {
         private IfcVertex _loopVertex;

@@ -59,6 +59,8 @@ namespace Xbim.COBie.Serialisers
         {
             if (workbook == null) { throw new ArgumentNullException("COBie", "COBieXLSSerialiser.Serialise does not accept null as the COBie data parameter."); }
 
+            if (!File.Exists(TemplateFileName))
+                throw new Exception("COBie creation error. Could not locate template file " + TemplateFileName);
             // Load template file
             FileStream excelFile = File.Open(TemplateFileName, FileMode.Open, FileAccess.Read);
 

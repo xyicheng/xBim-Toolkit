@@ -10,7 +10,7 @@ namespace Xbim.SceneJSWebViewer
     using System.IO;
     using System.Linq;
     using System.Text;
-    using System.Windows.Media.Media3D;
+    using Xbim.Common.Geometry;
 
     /// <summary>
     /// TODO: Update summary.
@@ -18,15 +18,15 @@ namespace Xbim.SceneJSWebViewer
     public class BoundingBox
     {
         public bool IsValid = false;
-        public Point3D PointMin = new Point3D();
-        public Point3D PointMax = new Point3D();
+        public XbimPoint3D PointMin = new XbimPoint3D();
+        public XbimPoint3D PointMax = new XbimPoint3D();
 
         public BoundingBox()
         {
 
         }
 
-        public BoundingBox(Point3D pMin, Point3D pMax)
+        public BoundingBox(XbimPoint3D pMin, XbimPoint3D pMax)
         {
             PointMin = pMin;
             PointMax = pMax;
@@ -34,8 +34,8 @@ namespace Xbim.SceneJSWebViewer
         }
         public BoundingBox(double srXmin, double srYmin, double srZmin, double srXmax, double srYmax, double srZmax )
         {
-            PointMin = new Point3D(srXmin, srYmin, srZmin);
-            PointMax = new Point3D(srXmax, srYmax, srZmax);
+            PointMin = new XbimPoint3D(srXmin, srYmin, srZmin);
+            PointMax = new XbimPoint3D(srXmax, srYmax, srZmax);
             IsValid = true;
         }
         /// <summary>
@@ -62,7 +62,7 @@ namespace Xbim.SceneJSWebViewer
         /// </summary>
         /// <param name="Point"></param>
         /// <returns></returns>
-        internal bool IncludePoint(Point3D Point)
+        internal bool IncludePoint(XbimPoint3D Point)
         {
             if (!IsValid)
             {
@@ -100,14 +100,14 @@ namespace Xbim.SceneJSWebViewer
             this.IncludePoint(childBB.PointMax);
         }
         
-        public BoundingBox TransformBy(Matrix3D Matrix)
+        public BoundingBox TransformBy(XbimMatrix3D m)
         {
-            return new BoundingBox(Matrix.Transform(PointMin), Matrix.Transform(PointMax));
+            return new BoundingBox(m.Transform(PointMin), m.Transform(PointMax));
         }
 
-        private bool IncludePoint(Point3D Point, Matrix3D Matrix)
+        private bool IncludePoint(XbimPoint3D Point, XbimMatrix3D Matrix)
         {
-            Point3D t = Point3D.Multiply(Point, Matrix);
+            XbimPoint3D t = XbimPoint3D.Multiply(Point, Matrix);
             return IncludePoint(t);
         }
     }

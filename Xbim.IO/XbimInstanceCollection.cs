@@ -188,7 +188,10 @@ namespace Xbim.IO
                 {
                     _ownerHistoryAddObject = (IfcOwnerHistory)cache.CreateNew(typeof(IfcOwnerHistory));
                     _ownerHistoryAddObject.ChangeAction = IfcChangeActionEnum.ADDED;
+                    _ownerHistoryAddObject.OwningApplication = DefaultOwningApplication;
+                    _ownerHistoryAddObject.OwningUser = DefaultOwningUser;
                 }
+          
                 ((IfcRoot)entity).OwnerHistory = _ownerHistoryAddObject;
             }
             return entity;

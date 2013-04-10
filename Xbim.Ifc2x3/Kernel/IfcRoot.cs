@@ -32,7 +32,7 @@ namespace Xbim.Ifc2x3.Kernel
     ///   The IfcRoot assigns the globally unique ID, and the ownership and history information to the entity. In addition it may provide for a name and a description about the concepts.
     ///   HISTORY New entity in IFC Release 1.0
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable, IndexedClass]
+    [IfcPersistedEntityAttribute, IndexedClass]
     public abstract class IfcRoot : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                     INotifyPropertyChanging
     {
@@ -141,6 +141,7 @@ namespace Xbim.Ifc2x3.Kernel
         /// <summary>
         ///   Assignment of a globally unique identifier within the entire software world
         /// </summary>
+        [IdentityProperty]
         [IfcAttribute(1, IfcAttributeState.Mandatory)]
         public IfcGloballyUniqueId GlobalId
         {
@@ -172,6 +173,7 @@ namespace Xbim.Ifc2x3.Kernel
         /// <summary>
         ///   Optional name for use by the participating software systems or users. For some subtypes of IfcRoot the insertion of the Name attribute may be required. This would be enforced by a where rule.
         /// </summary>
+        [IdentityComponent]
         [IfcAttribute(3, IfcAttributeState.Optional)]
         public IfcLabel? Name
         {

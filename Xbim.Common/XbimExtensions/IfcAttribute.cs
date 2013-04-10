@@ -49,8 +49,21 @@ namespace Xbim.XbimExtensions
         DerivedMeasureValue,
     }
 
+    /// <summary>
+    /// Defines that this property can be used to create an identity for the object, but it is not on its own an identity for the object
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Property,Inherited=true, AllowMultiple = true)]
+    public sealed class IdentityComponent : Attribute
+    {
+    }
 
-    
+    /// <summary>
+    /// Defines that this property is an identity property of the obejct, typically a guid or key
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Property, Inherited = true, AllowMultiple = true)]
+    public sealed class IdentityProperty : Attribute
+    {
+    }
 
     [AttributeUsage(AttributeTargets.Property,Inherited=true, AllowMultiple = false)]
     public sealed class IndexedProperty : Attribute

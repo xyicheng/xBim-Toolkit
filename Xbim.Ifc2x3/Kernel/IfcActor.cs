@@ -33,7 +33,7 @@ namespace Xbim.Ifc2x3.Kernel
     ///   The IfcActor defines all actors or human agents involved in a project during its full life cycle. 
     ///   It facilitates the use of person and organization definitions in the resource part of the IFC object model.
     /// </summary>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcActor : IfcObject
     {
         #region Constructors & Initialisers

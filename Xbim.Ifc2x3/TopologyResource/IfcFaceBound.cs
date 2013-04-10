@@ -15,7 +15,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows.Media.Media3D;
+using Xbim.Common.Geometry;
 using Xbim.Ifc2x3.GeometryResource;
 using Xbim.Ifc2x3.MeasureResource;
 using Xbim.XbimExtensions;
@@ -33,7 +33,7 @@ namespace Xbim.Ifc2x3.TopologyResource
     ///   NOTE Corresponding STEP entity: face_bound. Please refer to ISO/IS 10303-42:1994, p. 139 for the final definition of the formal standard. 
     ///   HISTORY New class in IFC Release 1.0
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcFaceBound : IfcTopologicalRepresentationItem, IBoundary
     {
         #region Fields
@@ -133,12 +133,12 @@ namespace Xbim.Ifc2x3.TopologyResource
                 int numPts = polyLoop.Polygon.Count;
                 for (int i = 1; i < polyLoop.Polygon.Count; i++)
                 {
-                    Point3D c = polyLoop.Polygon[i].WPoint3D();
-                    Point3D p = polyLoop.Polygon[i - 1].WPoint3D();
-                    Point3D n = polyLoop.Polygon[(i + 1 == numPts) ? 0 : i + 1].WPoint3D();
-                    Vector3D left = c - p;
-                    Vector3D right = n - c;
-                    Vector3D cp = Vector3D.CrossProduct(left, right);
+                    XbimPoint3D c = polyLoop.Polygon[i].XbimPoint3D();
+                    XbimPoint3D p = polyLoop.Polygon[i - 1].XbimPoint3D();
+                    XbimPoint3D n = polyLoop.Polygon[(i + 1 == numPts) ? 0 : i + 1].XbimPoint3D();
+                    XbimVector3D left = c - p;
+                    XbimVector3D right = n - c;
+                    XbimVector3D cp = XbimVector3D.CrossProduct(left, right);
                     cp.Normalize();
                     if (!double.IsNaN(cp.X)) //happens if the three points are in a straigh line
                     {

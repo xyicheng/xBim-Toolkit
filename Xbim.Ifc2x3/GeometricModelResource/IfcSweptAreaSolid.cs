@@ -14,7 +14,7 @@
 
 using System;
 using System.Runtime.Serialization;
-using System.Xml.Serialization;
+
 using Xbim.Ifc2x3.GeometryResource;
 using Xbim.Ifc2x3.ProfileResource;
 using Xbim.XbimExtensions;
@@ -24,7 +24,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc2x3.GeometricModelResource
 {
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public abstract class IfcSweptAreaSolid : IfcSolidModel
     {
         #region Fields
@@ -44,7 +44,7 @@ namespace Xbim.Ifc2x3.GeometricModelResource
         ///   The surface defining the area to be swept. It is given as a profile definition within the xy plane of the position coordinate system.
         /// </summary>
 
-        [XmlElement(typeof (IfcRectangleProfileDef))]
+        
         [IfcAttribute(1, IfcAttributeState.Mandatory)]
         public IfcProfileDef SweptArea
         {

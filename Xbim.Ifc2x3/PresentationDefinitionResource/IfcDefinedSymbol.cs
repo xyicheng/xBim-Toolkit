@@ -26,7 +26,7 @@ namespace Xbim.Ifc2x3.PresentationDefinitionResource
     ///   A defined symbol is a symbolic representation that gets its shape information by an established convention, 
     ///   either through a predefined symbol, or an externally defined symbol.
     /// </summary>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcDefinedSymbol : IfcGeometricRepresentationItem
     {
         #region Fields

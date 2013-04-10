@@ -15,8 +15,8 @@
 [assembly: AssemblyCulture("")]
 
 // AssemblyVersion is the CLR version. Change this only when making breaking changes
-[assembly: AssemblyVersion("2.3.2.0")]
+[assembly: AssemblyVersion("2.4.0.0")]
 // AssemblyFileVersion should ideally be changed with each build, and should help identify the origin of a build
-[assembly: AssemblyFileVersion("2.3.9.2")]
+[assembly: AssemblyFileVersion("2.4.0.0")]
 // AssemblyInformationVersion is a cosmetic version indicator
-[assembly: AssemblyInformationalVersion("Xbim 2.3")]
+[assembly: AssemblyInformationalVersion("Xbim 2.4")]

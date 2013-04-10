@@ -9,5 +9,7 @@ namespace Xbim.DOM
     public interface IXbimSingleProperties : IBimSingleProperties
     {
         XbimSimplePropertySets PropertySets { get; }
+
+        
     }
 }

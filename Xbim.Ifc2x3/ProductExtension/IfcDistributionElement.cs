@@ -39,7 +39,7 @@ namespace Xbim.Ifc2x3.ProductExtension
     ///   distribution flow elements with size changes (e.g. reducer) are defined by sectioned spine representations. In this case the IfcShapeRepresentation.RepresentationType = SectionedSpine. 
     ///   all complex distribution elements (e.g. Y branch or T branch) are defined using b-rep geometry. In this case the IfcShapeRepresentation.RepresentationType = Brep.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcDistributionElement : IfcElement
     {
     }

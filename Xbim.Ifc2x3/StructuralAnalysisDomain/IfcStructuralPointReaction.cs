@@ -26,7 +26,7 @@ namespace Xbim.Ifc2x3.StructuralAnalysisDomain
     ///   The structural load, defining the point action is given by the attribute AppliedLoad at the supertype IfcStructuralActivitiy. 
     ///   The coordinate system, in which the AppliedLoad is defined is given by the attribute ObjectPlacement at the supertype IfcProduct.
     /// </summary>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcStructuralPointReaction : IfcStructuralReaction
     {
         public override string WhereRule()

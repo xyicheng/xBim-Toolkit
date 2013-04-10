@@ -19,7 +19,7 @@ namespace Xbim.Ifc2x3.FacilitiesMgmtDomain
     /// The permit will identify the restrictions that apply and when access may be gained to carry out the actions.
     /// IfcRelAssignsToControl is used to identify related spaces, assets etc. upon which actions are permitted to take place.
     /// </remarks>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntity]
     public class IfcPermit : IfcControl
     {
 

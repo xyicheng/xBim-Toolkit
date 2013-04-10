@@ -18,7 +18,7 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Windows.Media.Media3D;
+using Xbim.Common.Geometry;
 using Xbim.Ifc2x3.Kernel;
 using Xbim.Ifc2x3.SharedBldgElements;
 using Xbim.IO;
@@ -32,7 +32,7 @@ namespace Xbim.ModelGeometry.Scene
     [Serializable]
     public class TransformNode
     {
-        private Matrix3D _localMatrix;
+        private XbimMatrix3D _localMatrix;
         private HashSet<TransformNode> _children;
         private int? _productLabel;
         private TransformNode _parent;
@@ -106,7 +106,7 @@ namespace Xbim.ModelGeometry.Scene
             }
         }
 
-        public Matrix3D WorldMatrix()
+        public XbimMatrix3D WorldMatrix()
         {
             if (_parent != null)
                 return _localMatrix*_parent.WorldMatrix();
@@ -115,7 +115,7 @@ namespace Xbim.ModelGeometry.Scene
         }
 
 
-        public Matrix3D LocalMatrix
+        public XbimMatrix3D LocalMatrix
         {
             get { return _localMatrix; }
             set { _localMatrix = value; }

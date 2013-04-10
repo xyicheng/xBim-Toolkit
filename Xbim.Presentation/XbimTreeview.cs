@@ -11,6 +11,8 @@ using Xbim.Ifc2x3.Extensions;
 using Xbim.Ifc2x3.ExternalReferenceResource;
 using System.Windows.Controls.Primitives;
 using System.Diagnostics;
+using System.Threading.Tasks;
+using System.Collections.Specialized;
 
 namespace Xbim.Presentation
 {
@@ -20,31 +22,42 @@ namespace Xbim.Presentation
         public XbimTreeview()
         {
             SelectionMode = System.Windows.Controls.SelectionMode.Single; //always use single selection mode
-            SelectedValuePath = "EntityLabel";
+           
         }
 
-
-
-        new public int SelectedItem
+        protected override void OnSelectionChanged(System.Windows.Controls.SelectionChangedEventArgs e)
         {
-            get { return (int)GetValue(SelectedItemProperty); }
-            set { SetValue(SelectedItemProperty, value); }
+            base.OnSelectionChanged(e);
+            if (e.AddedItems.Count > 0)
+                EntityLabel = ((IXbimViewModel)(e.AddedItems[0])).EntityLabel;
         }
 
-        // Using a DependencyProperty as the backing store for SelectedItem.  This enables animation, styling, binding, etc...
-        new public static readonly DependencyProperty SelectedItemProperty =
-            DependencyProperty.Register("SelectedItem", typeof(int), typeof(XbimTreeview), new UIPropertyMetadata(-1, new PropertyChangedCallback(OnSelectedItemChanged)));
 
-        private static void OnSelectedItemChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+
+        public int EntityLabel
+        {
+            get { return (int)GetValue(EntityLabelProperty); }
+            set { SetValue(EntityLabelProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for EntityLabel.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty EntityLabelProperty =
+            DependencyProperty.Register("EntityLabel", typeof(int), typeof(XbimTreeview), new FrameworkPropertyMetadata(-1, FrameworkPropertyMetadataOptions.Inherits,
+                                                                      new PropertyChangedCallback(OnEntityLabelChanged)));
+
+        
+
+
+        private static void OnEntityLabelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             XbimTreeview view = d as XbimTreeview;
             if (view != null && e.NewValue is int)
             {
+                view.UnselectAll();
                 int newVal = (int)(e.NewValue);
-                view.Select(newVal);
+                if (newVal > 0) view.Select(newVal);
                 return;
-                
-           }
+            }
         }
 
         private void Select(int newVal)
@@ -55,7 +68,6 @@ namespace Xbim.Presentation
                 if (toSelect != null)
                 {
                     item.IsExpanded = true;
-
                     UpdateLayout();
                     ScrollIntoView(toSelect);
                     toSelect.IsSelected = true; ;
@@ -115,12 +127,14 @@ namespace Xbim.Presentation
         {
             XbimTreeview tv = d as XbimTreeview;
             XbimModel model = e.NewValue as XbimModel;
+            
             if (tv != null && model != null)
             {
+                model.RefencedModels.CollectionChanged += tv.RefencedModels_CollectionChanged;
                 switch (tv.ViewDefinition)
                 {
                     case XbimViewType.SpatialStructure:
-                        tv.ViewSpatialStructure();
+                        tv.ViewModel();
                         
                         break;
                     case XbimViewType.Classification:
@@ -144,6 +158,19 @@ namespace Xbim.Presentation
             }
         }
 
+        void RefencedModels_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (e.Action == NotifyCollectionChangedAction.Add && e.NewItems.Count > 0)
+            {  
+                XbimReferencedModel refModel = e.NewItems[0] as XbimReferencedModel;
+                XbimModelViewModel vm = HierarchySource.Cast<XbimModelViewModel>().FirstOrDefault();
+                if(vm!=null)
+                {
+                    vm.AddRefModel(new XbimModelViewModel(refModel.Model.IfcProject));
+                }
+            }
+        }
+
         private void ViewSpatialStructure()
         {
             IfcProject project = Model.IfcProject as IfcProject;
@@ -158,11 +185,37 @@ namespace Xbim.Presentation
                 }
                 
                 this.HierarchySource = svList;
+                foreach (var child in svList)
+                {
+                    LazyLoadAll(child);
+                }
             }
             else //Load any spatialstructure
             {
             }
         }
+        private void ViewModel()
+        {
+            IfcProject project = Model.IfcProject as IfcProject;
+            if (project != null)
+            {
+                this.ChildrenBinding = new Binding("Children");
+                List<XbimModelViewModel> svList = new List<XbimModelViewModel>();  
+                svList.Add(new XbimModelViewModel(project));
+                this.HierarchySource = svList;
+            }
+        }
+        private void LazyLoadAll(IXbimViewModel parent)
+        {
+
+            foreach (var child in parent.Children)
+            {
+                LazyLoadAll(child);
+            }
+            
+        }
+
+
         private void Expand(IXbimViewModel treeitem)
         {
             treeitem.IsExpanded = true;

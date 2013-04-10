@@ -14,7 +14,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Xml.Serialization;
+
 using Xbim.Ifc2x3.MeasureResource;
 using Xbim.Ifc2x3.ProductExtension;
 using Xbim.XbimExtensions;
@@ -24,7 +24,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc2x3.SharedBldgServiceElements
 {
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcDistributionControlElement : IfcDistributionElement
     {
         #region fields
@@ -70,7 +70,7 @@ namespace Xbim.Ifc2x3.SharedBldgServiceElements
             }
         }
 
-        [XmlIgnore]
+        
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class, 0, 1)]
         public IEnumerable<IfcRelFlowControlElements> AssignedToFlowElement
         {

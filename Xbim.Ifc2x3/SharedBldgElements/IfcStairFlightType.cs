@@ -31,7 +31,7 @@ namespace Xbim.Ifc2x3.SharedBldgElements
     ///   The occurrences of the IfcStairFlightType are represented by instances of IfcStairFlight.
     ///   HISTORY: New entity in Release IFC2x Edition 2.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcStairFlightType : IfcBuildingElementType
     {
         #region Fields

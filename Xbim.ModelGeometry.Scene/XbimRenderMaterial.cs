@@ -1,0 +1,20 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+namespace Xbim.ModelGeometry.Scene
+{
+    public class XbimRenderMaterial: IXbimRenderMaterial
+    {
+        public void CreateMaterial(XbimTexture texture)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool IsCreated
+        {
+            get { throw new NotImplementedException(); }
+        }
+    }
+}

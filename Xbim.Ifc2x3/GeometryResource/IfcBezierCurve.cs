@@ -49,7 +49,7 @@ namespace Xbim.Ifc2x3.GeometryResource
     ///   NOTE: Corresponding STEP entity: bezier_curve. Please refer to ISO/IS 10303-42:1994, p. 51 for the final definition of the formal standard. Due to the constraints in the IFC architecture to not include ANDOR subtype constraints, an explicit subtype IfcRationalBezierCurve is added which holds the same information as the complex entity b_spline_curve AND bezier_curve.
     ///   HISTORY: New entity in Release IFC2x Edition 2.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcBezierCurve : IfcBSplineCurve
     {
         public override void IfcParse(int propIndex, IPropertyValue value)

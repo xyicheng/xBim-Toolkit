@@ -34,7 +34,7 @@ namespace Xbim.Ifc2x3.GeometryResource
     ///   Formal Propositions:
     ///   WR1   :   The dimensionality of the location (IfcCartesianPoint) shall be the same as of the direction (IfcVector).
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcLine : IfcCurve
     {
         #region Fields

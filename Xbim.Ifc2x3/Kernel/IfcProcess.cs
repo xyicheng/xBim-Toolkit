@@ -14,21 +14,21 @@
 
 using System;
 using Xbim.XbimExtensions;
-using System.Xml.Serialization;
+
 using System.Collections.Generic;
 
 #endregion
 
 namespace Xbim.Ifc2x3.Kernel
 {
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public abstract class IfcProcess : IfcObject
     {
         #region Inverse Relationships
         /// <summary>
         ///   Inverse. Set of Relationships to objects that are operated on by the process.
         /// </summary>
-        [XmlIgnore]
+        
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class)]
         public IEnumerable<IfcRelAssignsToProcess> OperatesOn
         {
@@ -44,7 +44,7 @@ namespace Xbim.Ifc2x3.Kernel
         /// <summary>
         ///  Inverse. Relative placement in time, refers to the previous processes for which this process is successor.
         /// </summary>
-        [XmlIgnore]
+        
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class)]
         public IEnumerable<IfcRelSequence> IsSuccessorFrom
         {
@@ -58,7 +58,7 @@ namespace Xbim.Ifc2x3.Kernel
         /// <summary>
         ///  Inverse. Relative placement in time, refers to the subsequent processes for which this process is predecessor.
         /// </summary>
-        [XmlIgnore]
+        
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class)]
         public IEnumerable<IfcRelSequence> IsPredecessorTo
         {

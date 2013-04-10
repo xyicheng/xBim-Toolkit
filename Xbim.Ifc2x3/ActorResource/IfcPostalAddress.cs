@@ -24,7 +24,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc2x3.ActorResource
 {
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class PostalAddressCollection : ReadOnlyObservableCollection<IfcPostalAddress>
     {
         internal PostalAddressCollection(ObservableCollection<IfcPostalAddress> paAddresses)
@@ -53,7 +53,7 @@ namespace Xbim.Ifc2x3.ActorResource
     }
 
 
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcPostalAddress : IfcAddress
     {
         #region Fields

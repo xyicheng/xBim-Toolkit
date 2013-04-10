@@ -30,7 +30,7 @@ namespace Xbim.Ifc2x3.StructuralLoadResource
     ///   by the activity element as its geometric representation context. The units of the displacement and rotation values are 
     ///   given within the global unit assignment (IfcUnitAssignment).
     /// </summary>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcStructuralLoadSingleDisplacementDistortion : IfcStructuralLoadSingleDisplacement
     {
         #region Fields

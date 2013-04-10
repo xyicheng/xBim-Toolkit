@@ -15,7 +15,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Xml.Serialization;
+
 using Xbim.Ifc2x3.Kernel;
 using Xbim.XbimExtensions;
 
@@ -34,7 +34,7 @@ namespace Xbim.Ifc2x3.RepresentationResource
     ///   Formal Propositions:
     ///   WR11   :   Only representations of type IfcShapeModel, i.e. either IfcShapeRepresentation or IfcTopologyRepresentation should be used to represent a product through the IfcProductDefinitionShape.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcProductDefinitionShape : IfcProductRepresentation
     {
         #region Fields
@@ -54,7 +54,7 @@ namespace Xbim.Ifc2x3.RepresentationResource
         /// <summary>
         ///   Inverse. The IfcProductDefinitionShape shall be used to provide a representation for a single instance of IfcProduct.
         /// </summary>
-        [XmlIgnore]
+       
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class, 1, 1)]
         public IEnumerable<IfcProduct> ShapeOfProduct
         {
@@ -64,7 +64,7 @@ namespace Xbim.Ifc2x3.RepresentationResource
         /// <summary>
         ///   Inverse. Reference to the shape aspect that represents part of the shape or its feature distinctively.
         /// </summary>
-        [XmlIgnore]
+        
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class)]
         public IEnumerable<IfcShapeAspect> HasShapeAspects
         {

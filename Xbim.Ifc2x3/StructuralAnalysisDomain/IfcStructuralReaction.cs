@@ -24,7 +24,7 @@ namespace Xbim.Ifc2x3.StructuralAnalysisDomain
     ///   A structural reaction is a structural activity that results from a structural action imposed to a structural item or building element.
     ///   A support is an example for a structural reaction.
     /// </summary>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public abstract class IfcStructuralReaction : IfcStructuralActivity
     {
         #region Properties

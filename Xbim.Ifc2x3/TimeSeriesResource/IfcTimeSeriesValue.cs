@@ -31,7 +31,7 @@ namespace Xbim.Ifc2x3.TimeSeriesResource
     ///   The time series example shown in the figure below contains four time points: Time "a" indicates the beginning of the time 
     ///   series and the associated datum has no relevance. Data at time points "b," "c" and "d" are associated with values 1, 2 and 3, respectively.
     /// </summary>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcTimeSeriesValue : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                       INotifyPropertyChanging
     {

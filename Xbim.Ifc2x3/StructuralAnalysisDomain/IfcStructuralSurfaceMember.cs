@@ -26,7 +26,7 @@ namespace Xbim.Ifc2x3.StructuralAnalysisDomain
     ///   The material properties are defined by IfcMechanicalMaterialProperties (and subtypes) and they are connected
     ///   through IfcMaterial and IfcRelAssociatesMaterial and are accessible via the inherited inverse relationship HasAssociations.
     /// </summary>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcStructuralSurfaceMember : IfcStructuralMember
     {
         #region Fields

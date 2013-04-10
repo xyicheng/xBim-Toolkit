@@ -14,7 +14,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Xml.Serialization;
+
 using Xbim.Ifc2x3.MeasureResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
@@ -23,7 +23,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc2x3.GeometryResource
 {
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class CompositeCurveSegmentList : XbimList<IfcCompositeCurveSegment>
     {
         internal CompositeCurveSegmentList(IPersistIfcEntity owner)
@@ -33,7 +33,7 @@ namespace Xbim.Ifc2x3.GeometryResource
     }
 
 
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcCompositeCurveSegment : IfcGeometricRepresentationItem
     {
         #region Fields
@@ -123,7 +123,7 @@ namespace Xbim.Ifc2x3.GeometryResource
         /// <summary>
         ///   Inverse.   The set of composite curves which use this composite curve segment as a segment. This set shall not be empty.
         /// </summary>
-        [XmlIgnore]
+        
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class, 1)]
         public IEnumerable<IfcCompositeCurve> UsingCurves
         {

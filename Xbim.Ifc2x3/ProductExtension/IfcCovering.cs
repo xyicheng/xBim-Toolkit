@@ -28,7 +28,7 @@ namespace Xbim.Ifc2x3.ProductExtension
         }
     }
 
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcCovering : IfcBuildingElement
     {
         #region Fields
