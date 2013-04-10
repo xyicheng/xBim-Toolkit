@@ -27,11 +27,16 @@ namespace Xbim.COBie.Data
 
         #region Methods
 
+        public override COBieSheet<COBieSystemRow> Fill()
+        {
+            return Fill(new Dictionary<string, HashSet<string>>()); //no component name check
+        }
+
         /// <summary>
         /// Fill sheet rows for System sheet
         /// </summary>
         /// <returns>COBieSheet<COBieSystemRow></returns>
-        public override COBieSheet<COBieSystemRow> Fill()
+        public  COBieSheet<COBieSystemRow> Fill(Dictionary<string, HashSet<string>> compIndices)
         {
             ProgressIndicator.ReportMessage("Starting Systems...");
 
@@ -76,6 +81,16 @@ namespace Xbim.COBie.Data
                     {
                         name = product.GetType().Name + " Name Unknown " + UnknownCount.ToString();
                         UnknownCount++;
+                    }
+                    else
+                    {
+                        if (compIndices.Count > 0) //check we have values
+                        {
+                            //check for name in components , if missing exclude from system, unknown names are listed see above
+                            if (!compIndices["Name"].Contains(name, StringComparer.OrdinalIgnoreCase))
+                                continue;
+                        }
+                        
                     }
                     sys.ComponentNames = product.Name;
                     sys.ExtSystem = GetExternalSystem(ifcGroup);
@@ -141,7 +156,8 @@ namespace Xbim.COBie.Data
                             {
                                 //OK last chance, lets take the property name that is not in the filter list of strings, ie. != "Circuit Number", "System Name" or "System Classification" from above 
                                 IfcPropertySingleValue propname = ifcPropertySet.HasProperties.OfType<IfcPropertySingleValue>().Where(psv => !PropertyNames.Contains(psv.Name)).FirstOrDefault();
-                                name = propname.Name.ToString();
+                                if (propname != null)
+                                    name = propname.Name.ToString();
                             }
                             
                         }
@@ -151,6 +167,13 @@ namespace Xbim.COBie.Data
                         sys.CreatedOn = GetCreatedOnDateAsFmtString(ifcObject.OwnerHistory);
                         
                         sys.Category = (ifcPropertySingleValue.Name == "Circuit Number") ? "circuit" : GetCategory(ifcObject); //per matrix v9
+                        //check that the element is in the component list
+                        if (compIndices.Count > 0) //check we have values
+                        {
+                            //check for name in components , if missing exclude from system, unknown names are listed see above
+                            if (!compIndices["Name"].Contains(ifcObject.Name.ToString(), StringComparer.OrdinalIgnoreCase))
+                                continue;
+                        }
                         sys.ComponentNames = ifcObject.Name;
                         sys.ExtSystem = GetExternalSystem(ifcPropertySet);
                         sys.ExtObject = ifcPropertySingleValue.GetType().Name;
@@ -175,5 +198,7 @@ namespace Xbim.COBie.Data
             return Constants.DEFAULT_STRING;
         }
         #endregion
+
+        
     }
 }

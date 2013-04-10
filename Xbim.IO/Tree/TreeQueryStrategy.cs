@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Xbim.Ifc.Kernel;
 using Xbim.XbimExtensions;
-using Xbim.Ifc.ProductExtension;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.XbimExtensions.Interfaces;
+using Xbim.Ifc2x3.Kernel;
 
 namespace Xbim.IO.Tree
 {
@@ -37,14 +38,14 @@ namespace Xbim.IO.Tree
         protected void Initialise()
         {
             _nodeMap = new Dictionary<IfcObjectDefinition, CompositionNode>
-                    (_model.InstancesOfType<IfcRelDecomposes>().Count());
+                    (_model.Instances.OfType<IfcRelDecomposes>().Count());
         }
 
         protected CompositionNode LocateProjectNode()
         {
             CompositionNode root = null;
 
-            IfcProject project = _model.InstancesOfType<IfcProject>().FirstOrDefault();
+            IfcProject project = _model.Instances.OfType<IfcProject>().FirstOrDefault();
             if (project != null)
             {
                 CompositionNode projectNode;
@@ -63,8 +64,8 @@ namespace Xbim.IO.Tree
 
         protected Type[] GetFamilyElements()
         {
-            var spaces = typeof(Xbim.Ifc.ProductExtension.IfcSpace).FullName;
-            return _model.IfcProducts.Items.Where(itm => itm.GetType().IsSubclassOf(typeof(IfcElement)) || itm.GetType().FullName == spaces)
+            var spaces = typeof(Xbim.Ifc2x3.ProductExtension.IfcSpace).FullName;
+            return _model.IfcProducts.Where(itm => itm.GetType().IsSubclassOf(typeof(IfcElement)) || itm.GetType().FullName == spaces)
                                            .Select(itm => itm.GetType())
                                            .Distinct()
                                            .ToArray();
@@ -72,7 +73,7 @@ namespace Xbim.IO.Tree
 
         protected void LoadFamilyElements(Type familyType, FamilyNode family)
         {
-            var products = from prod in _model.InstancesWhere<IfcProduct>(p => p.GetType().IsAssignableFrom(familyType))
+            var products = from prod in _model.Instances.Where<IfcProduct>(p => p.GetType().IsAssignableFrom(familyType))
                            //orderby prod.Name
                            select prod;
 
@@ -85,7 +86,7 @@ namespace Xbim.IO.Tree
 
         protected void AddRelComposes()
         {
-            foreach (IfcRelDecomposes rel in _model.InstancesOfType<IfcRelDecomposes>())
+            foreach (IfcRelDecomposes rel in _model.Instances.OfType<IfcRelDecomposes>())
             {
                 if (rel.RelatingObject != null)
                 {
@@ -127,7 +128,7 @@ namespace Xbim.IO.Tree
         {
 
             foreach (IfcRelContainedInSpatialStructure scRel in
-                _model.InstancesOfType<IfcRelContainedInSpatialStructure>())
+                _model.Instances.OfType<IfcRelContainedInSpatialStructure>())
             {
                 if (scRel.RelatingStructure != null)
                 {

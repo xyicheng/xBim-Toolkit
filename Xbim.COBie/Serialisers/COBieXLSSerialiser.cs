@@ -26,6 +26,7 @@ namespace Xbim.COBie.Serialisers
 
         Dictionary<COBieAllowedType, HSSFCellStyle> _cellStyles = new Dictionary<COBieAllowedType, HSSFCellStyle>();
         Dictionary<string, HSSFColor> _colours = new Dictionary<string, HSSFColor>();
+        public int _commentCount = 0;
 
         public COBieXLSSerialiser() : this(DefaultFileName, DefaultTemplateFileName)
         { }
@@ -39,6 +40,7 @@ namespace Xbim.COBie.Serialisers
             FileName = fileName;
             TemplateFileName = templateFileName;
             hasErrorLevel = typeof(COBieError).GetProperties().Where(prop => prop.Name == "ErrorLevel").Any();
+            _commentCount = 0;
         }
 
         public string FileName { get; set; }
@@ -126,8 +128,11 @@ namespace Xbim.COBie.Serialisers
             {
                 excelSheet.TabColorIndex = _colours["Grey"].GetIndex();
             }
+            if (sheet.SheetName != Constants.WORKSHEET_PICKLISTS)
+            {
+                HighlightErrors(excelSheet, sheet);
+            }
 
-            HighlightErrors(excelSheet, sheet);
 
             RecalculateSheet(excelSheet);
         }
@@ -139,13 +144,25 @@ namespace Xbim.COBie.Serialisers
         /// <param name="sheet"></param>
         private void HighlightErrors(ISheet excelSheet, ICOBieSheet<COBieRow> sheet)
         {
+            //sort by row then column
+            var errors = sheet.Errors.OrderBy(err => err.Row).ThenBy(err => err.Column);
+
             // The patriarch is a container for comments on a sheet
             HSSFPatriarch patr = (HSSFPatriarch)excelSheet.CreateDrawingPatriarch();
-            
-            foreach (var error in sheet.Errors)
+            int sheetCommnetCount = 0;
+            foreach (var error in errors)
             {
                 if (error.Row > 0 && error.Column >= 0)
                 {
+                    if ((error.Row + 3) > 65280)//UInt16.MaxValue some reason the CreateCellComment has 65280 as the max row number
+                    {
+                        // TODO: Warn overflow of XLS 2003 worksheet
+                        break;
+                    }
+                    //limit comments to 1000 per sheet
+                    if (sheetCommnetCount == 1000)
+                        break;
+
                     IRow excelRow = excelSheet.GetRow(error.Row);
                     if (excelRow != null)
                     {
@@ -160,7 +177,6 @@ namespace Xbim.COBie.Serialisers
                                 else
                                     description = "Error: " + description;
                             }
-                            
 
                             if (excelCell.CellComment == null)
                             {
@@ -170,6 +186,8 @@ namespace Xbim.COBie.Serialisers
                                 comment.String = new HSSFRichTextString(description);
                                 comment.Author = "XBim";
                                 excelCell.CellComment = comment;
+                                _commentCount++;
+                                sheetCommnetCount++;
                             }
                             else
                             {
@@ -405,7 +423,16 @@ Mismatch: {0}
         {
             if (SetCellTypedValue(excelCell, cell) == false)
             {
-                excelCell.SetCellValue(cell.CellValue);
+                //check text length will fit in cell
+                if (cell.CellValue.Length >= short.MaxValue)
+                { 
+                    //truncate cell text to max length
+                    excelCell.SetCellValue(cell.CellValue.Substring(0, short.MaxValue - 1));
+                }
+                else
+                {
+                    excelCell.SetCellValue(cell.CellValue);
+                }
             }
         }
 

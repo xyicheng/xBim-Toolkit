@@ -9,6 +9,7 @@ using Xbim.Ifc2x3.UtilityResource;
 using Xbim.XbimExtensions;
 using Xbim.Ifc2x3.Kernel;
 using Xbim.XbimExtensions.SelectTypes;
+using Xbim.Ifc2x3.PropertyResource;
 
 namespace Xbim.COBie.Data
 {
@@ -39,9 +40,9 @@ namespace Xbim.COBie.Data
 
             //create new sheet
             COBieSheet<COBieContactRow> contacts = new COBieSheet<COBieContactRow>(Constants.WORKSHEET_CONTACT);
-
+            IEnumerable<string> cobieContacts = Model.Instances.OfType<IfcPropertySingleValue>().Where(psv => psv.Name == "COBieCreatedBy" || psv.Name == "COBieTypeCreatedBy").GroupBy(psv => psv.NominalValue).Select(g => g.First().NominalValue.ToString());
             IEnumerable<IfcPersonAndOrganization> ifcPersonAndOrganizations = Model.Instances.OfType<IfcPersonAndOrganization>();
-            ProgressIndicator.Initialise("Creating Contacts", ifcPersonAndOrganizations.Count());
+            ProgressIndicator.Initialise("Creating Contacts", ifcPersonAndOrganizations.Count() + cobieContacts.Count());
 
             foreach (IfcPersonAndOrganization ifcPersonAndOrganization in ifcPersonAndOrganizations)
             {
@@ -110,7 +111,38 @@ namespace Xbim.COBie.Data
                     GetContactAddress(contact, ifcOrganization.Addresses);
 
                 contacts.AddRow(contact);
+                contact.Category = DEFAULT_STRING;
+            }
+
+            foreach (string email in cobieContacts)
+            {
+                ProgressIndicator.IncrementAndUpdate();
+                COBieContactRow contact = new COBieContactRow(contacts);
+                contact.Email = email;
+
+                //lets default the creator to that user who created the project for now, no direct link to OwnerHistory on IfcPersonAndOrganization, IfcPerson or IfcOrganization
+                contact.CreatedBy = GetTelecomEmailAddress(Model.IfcProject.OwnerHistory);
+                contact.CreatedOn = GetCreatedOnDateAsFmtString(Model.IfcProject.OwnerHistory);
+                contact.Category = DEFAULT_STRING;
+                contact.Company = DEFAULT_STRING;
+                contact.Phone = DEFAULT_STRING;
+                contact.ExtSystem = DEFAULT_STRING;
+
+                contact.ExtObject = "IfcPropertySingleValue";
+                contact.ExtIdentifier = DEFAULT_STRING;
+                contact.Department = DEFAULT_STRING;
+
+                contact.OrganizationCode = DEFAULT_STRING;
+                contact.GivenName = DEFAULT_STRING;
+                contact.FamilyName = DEFAULT_STRING;
+                contact.Street = DEFAULT_STRING;
+                contact.PostalBox = DEFAULT_STRING;
+                contact.Town = DEFAULT_STRING;
+                contact.StateRegion = DEFAULT_STRING;
+                contact.PostalCode = DEFAULT_STRING;
+                contact.Country = DEFAULT_STRING;
                 
+                contacts.AddRow(contact);
             }
             ProgressIndicator.Finalise();
             return contacts;
@@ -142,6 +174,8 @@ namespace Xbim.COBie.Data
             contact.StateRegion = DEFAULT_STRING;
             contact.PostalCode = DEFAULT_STRING;
             contact.Country = DEFAULT_STRING;
+
+           
         }
 
         #endregion

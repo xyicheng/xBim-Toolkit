@@ -59,6 +59,8 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             }
         }
 
+        
+
         /// <summary>
         /// Add the data to the Zone object
         /// </summary>
@@ -86,7 +88,23 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 AddCategory(row.Category, ifcZone);
 
                 //add space to the zone group
-                AddSpaceToZone(row.SpaceNames, ifcZone);
+                string spaceNames = row.SpaceNames;
+                if (ValidateString(spaceNames))
+                {
+                    char splitKey = GetSplitChar(spaceNames);
+                    //COBieCell spaceCell = row["SpaceNames"];
+                    //List<string> spaceArray = new List<string>();
+                    //if (spaceCell.COBieColumn.AllowsMultipleValues)
+                    //{
+                    //    spaceArray = spaceCell.CellValues;
+                    //}
+                    List<string> spaceArray = SplitString(spaceNames, splitKey); //uses escaped characters
+                    foreach (string spaceName in spaceArray)
+                    {
+                        AddSpaceToZone(spaceName, ifcZone);
+                    }
+                }
+                
 
                 //Add GlobalId
                 AddGlobalId(row.ExtIdentifier, ifcZone);
@@ -106,6 +124,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
         {
             if (ValidateString(spaceName))
             {
+                spaceName = spaceName.Trim().ToLower();
                 IfcSpace space = null;
                 if (Spaces.ContainsKey(spaceName))
                 {
@@ -113,7 +132,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 }
                 else
                 {
-                    space = Model.Instances.OfType<IfcSpace>().Where(sp => sp.Name == spaceName).FirstOrDefault();
+                    space = Model.Instances.OfType<IfcSpace>().Where(sp => sp.Name.ToString().ToLower() == spaceName).FirstOrDefault();
                     if (space != null)
                         Spaces.Add(spaceName, space);
                 }

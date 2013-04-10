@@ -7,6 +7,7 @@ using Xbim.Ifc2x3.ExternalReferenceResource;
 using Xbim.Ifc2x3.Kernel;
 using Xbim.Ifc2x3.MeasureResource;
 using Xbim.Ifc2x3.ProductExtension;
+using Xbim.Ifc2x3.Extensions;
 using Xbim.XbimExtensions.SelectTypes;
 using Xbim.XbimExtensions;
 using Xbim.Ifc2x3.QuantityResource;
@@ -79,8 +80,10 @@ namespace Xbim.COBie.Data
 
                 facility.Name = (string.IsNullOrEmpty(name)) ? "The Facility Name Here" : name;
 
-                facility.CreatedBy = GetTelecomEmailAddress(ifcBuilding.OwnerHistory);
-                facility.CreatedOn = GetCreatedOnDateAsFmtString(ifcBuilding.OwnerHistory);
+                IfcValue createBy = ifcBuilding.GetPropertySingleNominalValue("Other", "COBieCreatedBy");//support for COBie Toolkit for Autodesk Revit
+                facility.CreatedBy = ((createBy != null) && ValidateString(createBy.ToString())) ? createBy.ToString() : GetTelecomEmailAddress(ifcBuilding.OwnerHistory);
+                IfcValue createdOn = ifcBuilding.GetPropertySingleNominalValue("Other", "COBieCreatedOn");//support for COBie Toolkit for Autodesk Revit
+                facility.CreatedOn = ((createdOn != null) && ValidateString(createdOn.ToString())) ? createdOn.ToString() : GetCreatedOnDateAsFmtString(ifcBuilding.OwnerHistory);
 
                 facility.Category = GetCategory(ifcBuilding);
 

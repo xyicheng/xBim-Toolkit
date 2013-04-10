@@ -24,7 +24,18 @@ namespace Xbim.COBie
         public string SheetName { get; private set; }
         public List<T> Rows { get; private set; }
         public Dictionary<int, COBieColumn> Columns { get { return _columns; } }
-        public Dictionary<string, HashSet<string>> Indices {  get {  return _indices; } }
+        public Dictionary<string, HashSet<string>> Indices 
+        {  
+            get
+            {
+                //check we have built it
+                if (_indices.Count() == 0)
+                {
+                    BuildIndices();
+                }
+                return _indices; 
+            } 
+        }
         public COBieErrorCollection Errors  { get { return _errors; } }
         public IEnumerable<COBieColumn> KeyColumns
         {
@@ -124,7 +135,7 @@ namespace Xbim.COBie
         /// <summary>
         /// Build Indexed dictionaries of values in each Keyed Columns.
         /// </summary>
-        /// <remarks>Permits omptimised validation</remarks>
+        /// <remarks>Permits optimised validation</remarks>
         public void BuildIndices()
         {
             // Add Indices first. We may have no rows of data, but should still have indices

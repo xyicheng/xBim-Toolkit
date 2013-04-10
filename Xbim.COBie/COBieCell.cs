@@ -21,7 +21,7 @@ namespace Xbim.COBie
             {
                 if (COBieColumn.AllowsMultipleValues)
                 {
-                    return CellValue.Split(',').ToList<string>();
+                    return CellValue.Split(new char [] {','}, StringSplitOptions.RemoveEmptyEntries).ToList<string>();
                 }
                 else
                 {
