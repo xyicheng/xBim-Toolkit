@@ -504,8 +504,8 @@ namespace Xbim.Presentation
                 IXbimMeshGeometry3D mesh = scene.GetMeshGeometry3D(newVal);
                 WpfMeshGeometry3D wpfGeom = new WpfMeshGeometry3D(mesh);
                 Highlighted.Mesh = new Mesh3D(wpfGeom.Mesh.Positions, wpfGeom.Mesh.TriangleIndices);
-               
             }
+            
         }
 
 

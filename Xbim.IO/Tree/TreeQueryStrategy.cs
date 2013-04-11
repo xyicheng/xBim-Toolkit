@@ -65,7 +65,7 @@ namespace Xbim.IO.Tree
         protected Type[] GetFamilyElements()
         {
             var spaces = typeof(Xbim.Ifc2x3.ProductExtension.IfcSpace).FullName;
-            return _model.IfcProducts.Where(itm => itm.GetType().IsSubclassOf(typeof(IfcElement)) || itm.GetType().FullName == spaces)
+            return _model.Instances.OfType<IfcProduct>().Where(itm => itm.GetType().IsSubclassOf(typeof(IfcElement)) || itm.GetType().FullName == spaces)
                                            .Select(itm => itm.GetType())
                                            .Distinct()
                                            .ToArray();

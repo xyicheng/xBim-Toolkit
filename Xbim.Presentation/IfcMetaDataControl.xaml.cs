@@ -167,7 +167,9 @@ namespace Xbim.Presentation
         {
             IfcMetaDataControl ctrl = d as IfcMetaDataControl;
             if (ctrl != null && e.NewValue != null && e.NewValue is int)
+            {
                 ctrl.DataRebind((int)e.NewValue);
+            }
         }
 
         private void DataRebind(int entityLabel)
@@ -383,7 +385,18 @@ namespace Xbim.Presentation
 
         // Using a DependencyProperty as the backing store for Model.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty ModelProperty =
-            DependencyProperty.Register("Model", typeof(XbimModel), typeof(IfcMetaDataControl), new PropertyMetadata(null));
+            DependencyProperty.Register("Model", typeof(XbimModel), typeof(IfcMetaDataControl), new PropertyMetadata(null, new PropertyChangedCallback(OnModelChanged)));
+
+
+        private static void OnModelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            IfcMetaDataControl ctrl = d as IfcMetaDataControl;
+            if (ctrl != null)
+            {
+                ctrl.DataRebind(-1);
+            }
+        }
+
 
         private void Clear()
         {

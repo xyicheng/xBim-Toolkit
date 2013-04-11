@@ -155,7 +155,7 @@
                     ShowsPreview="True"
                     Height="5"
                     />
-                <xbim:IfcMetaDataControl x:Name="PropertiesControl" BorderThickness="1" Grid.Row="2" EntityLabel="{Binding Path=SelectedItem, ElementName=MainWindow}" >
+                <xbim:IfcMetaDataControl x:Name="PropertiesControl" BorderThickness="1" Grid.Row="2"  Model="{Binding}"   EntityLabel="{Binding Path=SelectedItem, ElementName=MainWindow}" >
                    
                 </xbim:IfcMetaDataControl>
             </Grid>
