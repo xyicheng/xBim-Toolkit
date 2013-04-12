@@ -158,6 +158,21 @@ namespace Xbim.ModelGeometry.Converter
                  bw.Write(c.Alpha);
 
                  byte[] vbo = ((XbimMeshGeometry3D)layer.Hidden).ToByteArray();
+                 
+                 MemoryStream memoryStream = new MemoryStream();
+                 using (ICSharpCode.SharpZipLib.GZip.GZipOutputStream zis = new ICSharpCode.SharpZipLib.GZip.GZipOutputStream(memoryStream))
+                 {
+                     zis.Write(vbo, 0, vbo.Length);
+                     memoryStream.Flush();
+                 }
+
+                 //using (Ionic.Zlib.GZipStream gZipStream = new Ionic.Zlib.GZipStream(memoryStream, Ionic.Zlib.CompressionMode.Compress))
+                 //{
+                 //    gZipStream.Write(vbo, 0, vbo.Length);
+                 //    memoryStream.Flush();
+                 //}
+                 vbo = memoryStream.ToArray();
+                 
 
                  XbimRect3D bb = layer.BoundingBoxHidden();
                  // setup bounding box SizeX, SizeY, SizeZ, X, Y, Z

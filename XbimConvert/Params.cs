@@ -23,7 +23,7 @@ namespace XbimConvert
             if (args.Length < 1)
             {
                 Console.WriteLine("Invalid number of Parameters, filename required");
-                Console.WriteLine("Syntax: XbimConvert source [-quiet|-q] [-keepextension|-ke] [-filter|-f <elementid|elementtype>] [-sanitiselog] [-occ]");
+                Console.WriteLine("Syntax: XbimConvert source [-quiet|-q] [-generatescene|-gs] [-keepextension|-ke] [-filter|-f <elementid|elementtype>] [-sanitiselog] [-occ]");
                 return;
             }
 
@@ -52,6 +52,12 @@ namespace XbimConvert
                             case "-keepextension":
                             case "-ke":
                                 KeepFileExtension = true;
+                                break;
+
+
+                            case "-generatescene":
+                            case "-gs":
+                                GenerateScene = true;
                                 break;
 
                             case "-filter":
@@ -110,6 +116,7 @@ namespace XbimConvert
         public String IfcFileName { get; set; }
         public bool IsQuiet { get; set; }
         public bool KeepFileExtension { get; set; }
+        public bool GenerateScene { get; set; }
         public bool IsValid { get; set; }
         public FilterType FilterType { get; set; }
         public int ElementIdFilter {get;set;}
