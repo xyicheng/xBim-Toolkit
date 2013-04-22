@@ -13,6 +13,7 @@ using Xbim.IO;
 using Xbim.ModelGeometry.Scene;
 using Xbim.XbimExtensions;
 
+
 namespace Xbim.ModelGeometry.Converter
 {
     public class XbimSceneBuilder
@@ -57,8 +58,10 @@ namespace Xbim.ModelGeometry.Converter
                     ");");
             //get a connection
             SQLiteConnection connection = db.GetConnection();
+             
             try
             {
+                short spaceId = IfcMetaData.IfcTypeId(typeof(IfcSpace));
                 XbimGeometryHandleCollection handles = new XbimGeometryHandleCollection(model.GetGeometryHandles()
                                                            .Exclude(IfcEntityNameEnum.IFCFEATUREELEMENT));
                 XbimRect3D modelBounds = XbimRect3D.Empty;
@@ -74,7 +77,10 @@ namespace Xbim.ModelGeometry.Converter
                     //add all content initially into the hidden field
                     foreach (var geomData in geomColl)
                     {
-                        layer.AddToHidden(geomData, model);
+                        if(geomData.IfcTypeId == spaceId)
+                            layer.AddToHidden(geomData);
+                        else
+                            layer.AddToHidden(geomData, model);
                     }
                     
                     if (modelBounds.IsEmpty)
@@ -135,6 +141,9 @@ namespace Xbim.ModelGeometry.Converter
             finally
             {
                 connection.Close();
+                SQLiteConnection.ClearPool(connection);
+                GC.Collect();
+                
             }
         }
 
