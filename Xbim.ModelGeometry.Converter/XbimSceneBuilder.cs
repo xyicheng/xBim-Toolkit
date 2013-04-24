@@ -12,6 +12,7 @@ using Xbim.Ifc2x3.ProductExtension;
 using Xbim.IO;
 using Xbim.ModelGeometry.Scene;
 using Xbim.XbimExtensions;
+using Xbim.Ifc2x3.Kernel;
 
 
 namespace Xbim.ModelGeometry.Converter
@@ -67,6 +68,23 @@ namespace Xbim.ModelGeometry.Converter
                 XbimRect3D modelBounds = XbimRect3D.Empty;
                 XbimColourMap cmap = new XbimColourMap();
                 int layerid = 1;
+                IfcProject project = model.IfcProject;
+                int projectId = 0;
+                if (project != null) projectId = Math.Abs(project.EntityLabel);
+                XbimGeometryData regionData = model.GetGeometryData(projectId, XbimGeometryType.Region).FirstOrDefault(); //get the region data should only be one
+                double mm = model.GetModelFactors.OneMilliMetre;
+                XbimMatrix3D wcsTransform = new XbimMatrix3D(1 / mm);
+                if (regionData != null)
+                {
+                    XbimRegionCollection regions = XbimRegionCollection.FromArray(regionData.ShapeData);
+                    XbimRegion largest = regions.MostPopulated();
+                    if (largest != null)
+                    {
+                        wcsTransform.OffsetX -= largest.Centre.X;
+                        wcsTransform.OffsetY -= largest.Centre.Y;
+                        wcsTransform.OffsetZ -= largest.Centre.Z;
+                    }
+                }
                 foreach (var layerContent in handles.FilterByBuildingElementTypes())
                 {
                     string elementTypeName = layerContent.Key;
@@ -77,6 +95,7 @@ namespace Xbim.ModelGeometry.Converter
                     //add all content initially into the hidden field
                     foreach (var geomData in geomColl)
                     {
+                        geomData.TransformBy(wcsTransform);
                         if(geomData.IfcTypeId == spaceId)
                             layer.AddToHidden(geomData);
                         else
