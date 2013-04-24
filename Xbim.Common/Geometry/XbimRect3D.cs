@@ -22,7 +22,7 @@ namespace Xbim.Common.Geometry
         private float _sizeX;
         private float _sizeY;
         private float _sizeZ;
-
+       
 
         public float SizeX
         {
@@ -134,6 +134,16 @@ namespace Xbim.Common.Geometry
             _sizeX = (float)0.0;
             _sizeY = (float)0.0;
             _sizeZ = (float)0.0;
+        }
+
+        public XbimRect3D(XbimVector3D vMin, XbimVector3D vMax)
+        {
+            this._x = Math.Min(vMin.X, vMax.X);
+            this._y = Math.Min(vMin.Y, vMax.Y);
+            this._z = Math.Min(vMin.Z, vMax.Z);
+            this._sizeX = Math.Max(vMin.X, vMax.X) - this._x;
+            this._sizeY = Math.Max(vMin.Y, vMax.Y) - this._y;
+            this._sizeZ = Math.Max(vMin.Z, vMax.Z) - this._z;
         }
         /// <summary>
         /// Reinitialises the rectangle 3d from the byte array
@@ -254,6 +264,42 @@ namespace Xbim.Common.Geometry
         {
             return (((((x >= this._x) && (x <= (this._x + this._sizeX))) && ((y >= this._y) && (y <= (this._y + this._sizeY)))) && (z >= this._z)) && (z <= (this._z + this._sizeZ)));
   
+        }
+
+       
+
+        public bool Contains(XbimRect3D rect)
+        {
+            if (this.IsEmpty)
+            {
+                return false;
+            }
+
+            return this.ContainsCoords(rect.X, rect.Y, rect.Z) && this.ContainsCoords(rect.X + rect.SizeX, rect.Y + rect.SizeY, rect.Z+rect.SizeZ);
+        }
+
+       /// <summary>
+       /// Returns the radius of the sphere that contains this bounding box rectangle 3D
+       /// </summary>
+       /// <returns></returns>
+        public float Radius()
+        {
+            XbimVector3D max = new XbimVector3D(SizeX, SizeY, SizeZ);
+            float len = max.Length;
+            if (len != 0)
+                return  len / 2;
+            else
+                return 0;
+        }
+
+        /// <summary>
+        /// Returns the length of the largest diagonal
+        /// </summary>
+        /// <returns></returns>
+        public float Length()
+        {
+            XbimVector3D max = new XbimVector3D(SizeX, SizeY, SizeZ);
+            return max.Length;
         }
     }
 }

@@ -7,9 +7,16 @@ namespace Xbim.Common.Geometry
 {
     public struct XbimVector3D
     {
+        public readonly static XbimVector3D Zero;
+
+        static XbimVector3D()
+        {
+            Zero = new XbimVector3D(0, 0, 0);
+        }
         public float X;
         public float Y;
         public float Z;
+        
         public float Length 
         {
             get
@@ -36,6 +43,13 @@ namespace Xbim.Common.Geometry
             X = (float)vx;
             Y = (float)vy;
             Z = (float)vz;
+        }
+
+        public XbimVector3D(float v)
+        {
+            X = v;
+            Y = v;
+            Z = v;
         }
 
         #region Operators
@@ -71,10 +85,31 @@ namespace Xbim.Common.Geometry
             return v1.Equals(v2);
         }
 
+        public static XbimVector3D operator +(XbimVector3D vector1, XbimVector3D vector2)
+        {
+            return new XbimVector3D(vector1.X + vector2.X, vector1.Y + vector2.Y, vector1.Z + vector2.Z);
+        }
+
+        public static XbimVector3D Add(XbimVector3D vector1, XbimVector3D vector2)
+        {
+            return new XbimVector3D(vector1.X + vector2.X, vector1.Y + vector2.Y, vector1.Z + vector2.Z);
+        }
+
+        public static XbimVector3D operator -(XbimVector3D vector1, XbimVector3D vector2)
+        {
+            return new XbimVector3D(vector1.X - vector2.X, vector1.Y - vector2.Y, vector1.Z - vector2.Z);
+        }
+
+        public static XbimVector3D Subtract(XbimVector3D vector1, XbimVector3D vector2)
+        {
+            return new XbimVector3D(vector1.X - vector2.X, vector1.Y - vector2.Y, vector1.Z - vector2.Z);
+        }
+
         public static XbimVector3D operator *(float l, XbimVector3D v1)
         {
             return XbimVector3D.Multiply(l, v1);
         }
+
         
         public static XbimVector3D operator *(XbimVector3D v1, double l)
         {
@@ -106,18 +141,6 @@ namespace Xbim.Common.Geometry
                                      m.M12 * x + m.M22 * y + m.M32 * z ,
                                      m.M13 * x + m.M23 * y + m.M33 * z 
                                     );
-        }
-
-        public static XbimVector3D operator -(XbimVector3D a, XbimVector3D b)
-        {
-            return XbimVector3D.Subtract(a, b);
-        }
-
-        public static XbimVector3D Subtract(XbimVector3D a, XbimVector3D b)
-        {
-            return new XbimVector3D(a.X - b.X,
-                                    a.Y - b.Y,
-                                    a.Z - b.Z);
         }
 
 

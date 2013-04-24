@@ -10,6 +10,7 @@ namespace Xbim.XbimExtensions
         Undefined = 0x0,
         BoundingBox = 0x01,
         MultipleBoundingBox = 0x02,
-        TriangulatedMesh = 0x03
+        TriangulatedMesh = 0x03,
+        Region = 0x4
     }
 }

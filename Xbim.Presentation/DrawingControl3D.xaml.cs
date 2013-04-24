@@ -576,7 +576,7 @@ namespace Xbim.Presentation
             bool first = true;
             foreach (XbimGeometryData shape in model.GetGeometryData(XbimGeometryType.BoundingBox))
             {
-                XbimMatrix3D matrix3d = XbimMatrix3D.FromArray(shape.TransformData);
+                XbimMatrix3D matrix3d = shape.Transform;
                 XbimRect3D bb = XbimRect3D.FromArray(shape.ShapeData);
                 bb.TransformBy(matrix3d);
                 if (first) { box = bb; first = false; }
@@ -610,12 +610,10 @@ namespace Xbim.Presentation
 
             //adjust for the units of the model
             double metre = model.GetModelFactors.OneMetre;
-            Viewport.DefaultCamera.NearPlaneDistance = 0.100 * metre;
-            Viewport.Camera.NearPlaneDistance = 0.100 * metre;
-            Viewport.DefaultCamera.FarPlaneDistance = Math.Max(Math.Max(
-                                                                viewBounds.SizeX,
-                                                                viewBounds.SizeY),
-                                                                viewBounds.SizeY) * 5;
+         
+            Viewport.DefaultCamera.NearPlaneDistance = 125; //models are always in millimetres
+            Viewport.Camera.NearPlaneDistance = 125;
+            Viewport.DefaultCamera.FarPlaneDistance = viewBounds.Length() * 3;
             Viewport.Camera.FarPlaneDistance = Viewport.DefaultCamera.FarPlaneDistance;
 
             //get bounding box for the whole scene and adapt gridlines to the model units
@@ -690,7 +688,23 @@ namespace Xbim.Presentation
             double total = handles.Count;
             double processed = 0;
 
-            
+            IfcProject project = model.IfcProject;
+            int projectId = 0;
+            if(project!=null) projectId = Math.Abs(project.EntityLabel);
+            XbimGeometryData regionData = model.GetGeometryData(projectId, XbimGeometryType.Region).FirstOrDefault(); //get the region data should only be one
+            double mm = model.GetModelFactors.OneMilliMetre;
+            XbimMatrix3D wcsTransform = new XbimMatrix3D(1/mm);
+            if (regionData != null)
+            {
+                XbimRegionCollection regions = XbimRegionCollection.FromArray(regionData.ShapeData);
+                XbimRegion largest = regions.MostPopulated();
+                if (largest != null)
+                {
+                    wcsTransform.OffsetX -= largest.Centre.X;
+                    wcsTransform.OffsetY -= largest.Centre.Y;
+                    wcsTransform.OffsetZ -= largest.Centre.Z;
+                }
+            }
             Parallel.ForEach<KeyValuePair<string,XbimGeometryHandleCollection>>(handles.FilterByBuildingElementTypes(), layerContent =>
        //  foreach (var layerContent in handles.FilterByBuildingElementTypes())
 	
@@ -703,6 +717,7 @@ namespace Xbim.Presentation
                 //add all content initially into the hidden field
                 foreach (var geomData in geomColl)
                 {
+                    geomData.TransformBy(wcsTransform);
                     layer.AddToHidden(geomData, model);
                     processed++;
                     int progress = Convert.ToInt32(100.0 * processed / total);
@@ -712,13 +727,13 @@ namespace Xbim.Presentation
                 lock (scene)
                 {
                     scene.Add(layer);
+                    
                     if (modelBounds.IsEmpty) modelBounds = layer.BoundingBoxHidden();
                     else modelBounds.Union(layer.BoundingBoxHidden());
                 }
             }
             );
             this.Dispatcher.BeginInvoke(new Action(() => { Hide<IfcSpace>(); }), System.Windows.Threading.DispatcherPriority.Background);
-            //scene.Balance();   
             return scene;
         }
 
@@ -750,33 +765,7 @@ namespace Xbim.Presentation
             }
         }
 
-        private void GenerateGeometry(object s, DoWorkEventArgs args)
-        {
-            //BackgroundWorker worker = s as BackgroundWorker;
-            //XbimModel model = args.Argument as XbimModel;
-
-            //if (worker != null && model != null)
-            //{
-            //    worker.ReportProgress(0, "Reading Geometry");
-
-            //    XbimGeometryHandleCollection handles = new XbimGeometryHandleCollection(model.GetGeometryHandles()
-            //                                            .Exclude(IfcEntityNameEnum.IFCFEATUREELEMENT));
-            //    double total = handles.Count;
-            //    double processed = 0;
-            //    foreach (var ss in handles.GetSurfaceStyles())
-            //    {
-            //        ss.GeometryData = model.GetGeometryData(handles.GetGeometryHandles(ss)).ToList();
-            //        processed += ss.GeometryData.Count;
-            //        int progress = Convert.ToInt32(100.0 * processed / total);
-            //        worker.ReportProgress(progress, ss);
-            //        Thread.Sleep(100);
-            //    }
-            //}
-            //worker.ReportProgress(-1, "Complete");
-            //args.Result = model;
-        }
-
-
+      
 
 
        
@@ -838,8 +827,7 @@ namespace Xbim.Presentation
         {
             XbimPoint3D c = viewBounds.Centroid();
             Point3D p = new Point3D(c.X, c.Y, c.Z);
-            Viewport.Camera = Viewport.DefaultCamera;
-            CameraHelper.LookAt(Viewport.Camera, p, new Vector3D(-1, 1, -0.5), new Vector3D(0, 0, 1), 0);
+            Viewport.CameraController.ResetCamera();
             Rect3D r3d = new Rect3D(viewBounds.X, viewBounds.Y, viewBounds.Z, viewBounds.SizeX, viewBounds.SizeY, viewBounds.SizeZ);
             Viewport.ZoomExtents(r3d);
             

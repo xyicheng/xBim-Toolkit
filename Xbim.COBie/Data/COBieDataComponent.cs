@@ -209,7 +209,7 @@ namespace Xbim.COBie.Data
                 .Select(bb => new SpaceInfo
                 {
                     Rectangle = XbimRect3D.FromArray(bb.ShapeData),
-                    Matrix = XbimMatrix3D.FromArray(bb.TransformData),
+                    Matrix = bb.Transform,
                     Name = Model.Instances.OfType<IfcSpace>().Where(sp => (Math.Abs(sp.EntityLabel) == Math.Abs(bb.IfcProductLabel))).Select(sp => sp.Name.ToString()).FirstOrDefault()
                 }).ToList();
             }
@@ -225,7 +225,7 @@ namespace Xbim.COBie.Data
                     return string.Empty; //No geometry
 
                 XbimRect3D elBoundBox = XbimRect3D.FromArray(elGeoData.ShapeData);
-                XbimMatrix3D elWorldMatrix = XbimMatrix3D.FromArray(elGeoData.TransformData);
+                XbimMatrix3D elWorldMatrix = elGeoData.Transform;
                 //Get object space top and bottom points of the bounding box
                 List<XbimPoint3D> elBoxPts = new List<XbimPoint3D>();
                 elBoxPts.Add(new XbimPoint3D(elBoundBox.X, elBoundBox.Y, elBoundBox.Z));

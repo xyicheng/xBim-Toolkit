@@ -14,11 +14,17 @@ using Xbim.ModelGeometry.OCC;
 using Xbim.ModelGeometry.Scene;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
+using System.Diagnostics;
 
 namespace Xbim.ModelGeometry.Converter
 {
     public class XbimMesher
     {
+        /// <summary>
+        /// Maximum size of a geoemtric region in metres
+        /// </summary>
+        private const  float MaxWorldSize = 200;
+
         static XbimMesher()
         {
             AssemblyResolver.HandleUnresovledAssemblies();
@@ -97,10 +103,11 @@ namespace Xbim.ModelGeometry.Converter
                 //use parallel as this improves the OCC geometry generation greatly
                 ParallelOptions opts = new ParallelOptions();
                 opts.MaxDegreeOfParallelism = 16;
-
+               
+                XbimRect3D bounds = XbimRect3D.Empty;
                 double deflection = 4;// model.GetModelFactors.DeflectionTolerance;
-                Parallel.ForEach<TransformNode>(graph.ProductNodes.Values, opts, node => //go over every node that represents a product
-                //   foreach (var node in graph.ProductNodes.Values)
+               Parallel.ForEach<TransformNode>(graph.ProductNodes.Values, opts, node => //go over every node that represents a product
+               //    foreach (var node in graph.ProductNodes.Values)
                 {
                     IfcProduct product = node.Product(model);
                     try
@@ -142,7 +149,12 @@ namespace Xbim.ModelGeometry.Converter
 
                                     geomIds = new int[tm.Count + 1];
                                     geomIds[0] = geomTable.AddGeometry(product.EntityLabel, XbimGeometryType.BoundingBox, typeId.Value, matrix, bb.ToArray(), 0, geomModel.SurfaceStyleLabel);
-
+                                    XbimRect3D r3d = bb.GetRect3D();
+                                    r3d.TransformBy(m3d);
+                                    if (bounds.IsEmpty)
+                                        bounds = r3d;
+                                    else
+                                        bounds.Union(r3d);
                                     short subPart = 0;
                                     foreach (XbimTriangulatedModel b in tm)
                                     {
@@ -203,7 +215,7 @@ namespace Xbim.ModelGeometry.Converter
                     else
                     {
                         m3d = XbimMatrix3D.Multiply(((XbimMap)geomModel).Transform, m3d);
-                        WriteGeometry(model, written, geomModel, m3d, product, deflection);
+                        WriteGeometry(model, written, geomModel, ref bounds, m3d, product, deflection);
 
                     }
 
@@ -262,8 +274,17 @@ namespace Xbim.ModelGeometry.Converter
                     }
 
                 }
+                XbimRegionCollection regions = PartitionWorld(model, bounds);
+                IfcProject project = model.IfcProject;
+                int projectId = 0;
+                if (project != null)
+                    projectId = Math.Abs(project.EntityLabel);
+                geomMapTable.AddGeometry(projectId, XbimGeometryType.Region, IfcMetaData.IfcTypeId(typeof(IfcProject)), XbimMatrix3D.Identity.ToArray(), regions.ToArray());
+                                        
                 mapTrans.Commit();
                 model.FreeTable(geomMapTable);
+                
+
             }
             catch (Exception e2)
             {
@@ -275,7 +296,34 @@ namespace Xbim.ModelGeometry.Converter
             }
         }
 
-        private static void WriteGeometry(XbimModel model, ConcurrentDictionary<int, int[]> written, IXbimGeometryModel geomModel, XbimMatrix3D m3d, IfcProduct product, double deflection)
+        private static XbimRegionCollection PartitionWorld(XbimModel model, XbimRect3D bounds)
+        {
+            float metre = (float)model.GetModelFactors.OneMetre;
+            XbimRegionCollection regions = new XbimRegionCollection();
+            if (bounds.Length() / metre <= MaxWorldSize)
+            {
+                regions.Add(new XbimRegion("All", bounds, -1));
+            }
+            else //need to partition the model
+            {
+                XbimOctree<int> octree = new XbimOctree<int>(bounds.Length(), MaxWorldSize * metre, 1f,bounds.Centroid());
+                foreach (var geomData in model.GetGeometryData(XbimGeometryType.BoundingBox))
+                {
+                    XbimRect3D bound = XbimRect3D.FromArray(geomData.ShapeData);
+                    XbimMatrix3D m3D = geomData.Transform;
+                    bound.TransformBy(m3D);
+                    Debug.Assert(octree.Add(geomData.GeometryLabel,bound) != null);
+                }
+                int i = 1;
+                foreach (var item in octree.Populated)
+                {
+                    regions.Add(new XbimRegion("Region " + i++, item.ContentBounds(),item.ContentIncludingChildContent().Count()));
+                }
+            }
+            return regions;
+        }
+
+        private static void WriteGeometry(XbimModel model, ConcurrentDictionary<int, int[]> written, IXbimGeometryModel geomModel, ref XbimRect3D bounds,  XbimMatrix3D m3d, IfcProduct product, double deflection)
         {
             List<XbimTriangulatedModel> tm = geomModel.Mesh(true, deflection);
             XbimBoundingBox bb = geomModel.GetBoundingBox(true);
@@ -286,6 +334,12 @@ namespace Xbim.ModelGeometry.Converter
             XbimLazyDBTransaction transaction = geomTable.BeginLazyTransaction();
             int[] geomIds = new int[tm.Count + 1];
             geomIds[0] = geomTable.AddGeometry(product.EntityLabel, XbimGeometryType.BoundingBox, typeId.Value, matrix, bb.ToArray(), 0, geomModel.SurfaceStyleLabel);
+            XbimRect3D r3d = bb.GetRect3D();
+            r3d.TransformBy(m3d);
+            if (bounds.IsEmpty)
+                bounds = r3d;
+            else
+                bounds.Union(r3d);
             short subPart = 0;
             foreach (XbimTriangulatedModel b in tm)
             {
@@ -297,5 +351,7 @@ namespace Xbim.ModelGeometry.Converter
             model.FreeTable(geomTable);
 
         }
+
+      
     }
 }
