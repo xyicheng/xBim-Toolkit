@@ -30,6 +30,7 @@ using System.Globalization;
 using Xbim.Ifc2x3.ExternalReferenceResource;
 using Xbim.Ifc.SelectTypes;
 using Xbim.Ifc2x3.PresentationAppearanceResource;
+using Xbim.IO.DynamicGrouping;
 
 
 namespace Xbim.IO
@@ -89,6 +90,17 @@ namespace Xbim.IO
         {
             get { return instances; }
 
+        }
+
+        /// <summary>
+        /// based on the XML rule definition, this creates group objects to group instances together
+        /// </summary>
+        public void AddGroups()
+        {
+            GroupsFromXml g = new GroupsFromXml(this);
+            g.CreateGroups(@"DynamicGrouping\NRM clssification.xml");
+            GroupingByXml g2 = new GroupingByXml(this);
+            g2.GroupElements(@"DynamicGrouping\NRM2IFC.xml");
         }
 
 
