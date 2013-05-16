@@ -1,21 +1,23 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Xbim.IO;
-using System.Collections.ObjectModel;
 using Xbim.Ifc2x3.Kernel;
-using Xbim.Ifc2x3.ProductExtension;
+using Xbim.IO;
+using Xbim.Ifc2x3.Extensions;
 using Xbim.XbimExtensions.Interfaces;
-using System.Collections;
 using System.ComponentModel;
 
-namespace Xbim.Presentation
+namespace Xbim.IO.TreeView
 {
-    public class SpatialViewModel : IXbimViewModel
-    {
+    /// <summary>
+    /// Model view for display top level Xbim Model contents and referenced models
+    /// </summary>
+    public class XbimModelViewModel : IXbimViewModel
+     {
         XbimModel xbimModel;
-        int spatialStructureLabel;
+        IfcProject _project;
         private bool _isSelected;
         private bool _isExpanded;
         private List<IXbimViewModel> children;
@@ -23,28 +25,19 @@ namespace Xbim.Presentation
         public string Name
         {
             get
-            {
-                IPersistIfcEntity ent = xbimModel.Instances[spatialStructureLabel];
-                return ent.ToString();
-            }
-            set
-            {
+            {                
+                return _project.Name;
             }
         }
         
-        public SpatialViewModel(IfcSpatialStructureElement spatialStructure)
+        public XbimModelViewModel(IfcProject project)
         {
-            xbimModel = spatialStructure.ModelOf as XbimModel;
-            this.spatialStructureLabel = Math.Abs(spatialStructure.EntityLabel);
+            xbimModel = project.ModelOf as XbimModel;
+            _project=project;
             IEnumerable subs = this.Children; //call this once to preload first level of hierarchy   
         }
 
-        public SpatialViewModel(IfcProject project)
-        {
-            xbimModel = project.ModelOf as XbimModel;
-            this.spatialStructureLabel = Math.Abs(project.EntityLabel);
-            IEnumerable subs = this.Children; //call this once to preload first level of hierarchy          
-        }
+
 
         public IEnumerable<IXbimViewModel> Children
         {
@@ -53,25 +46,13 @@ namespace Xbim.Presentation
                 if (children == null)
                 {
                     children = new List<IXbimViewModel>();
-                    IfcObjectDefinition space = xbimModel.Instances[spatialStructureLabel] as IfcObjectDefinition;
-                    if (space != null)
+                    foreach (var item in _project.GetSpatialStructuralElements())
                     {
-                        IEnumerable<IfcRelAggregates> aggregate = space.IsDecomposedBy.OfType<IfcRelAggregates>();
-                        foreach (IfcRelAggregates rel in aggregate)
-                        {
-                            foreach (IfcSpatialStructureElement subSpace in rel.RelatedObjects.OfType<IfcSpatialStructureElement>())
-                                children.Add(new SpatialViewModel(subSpace));
-                        }
-                        //now add any contained elements
-                        IfcSpatialStructureElement spatialElem = space as IfcSpatialStructureElement;
-                        if (spatialElem != null)
-                        {
-                            //Select all the disting type names of elements for this
-                            foreach (var type in spatialElem.ContainsElements.SelectMany(container=>container.RelatedElements).Select(r=>r.GetType()).Distinct())
-                            {
-                                children.Add(new ContainedElementsViewModel(spatialElem, type));
-                            }
-                        }
+                        children.Add(new SpatialViewModel(item));
+                    }
+                    foreach (var refModel in xbimModel.RefencedModels)
+                    {
+                        children.Add(new XbimModelViewModel(refModel.Model.IfcProject));
                     }
                 }
                 return children;
@@ -91,13 +72,13 @@ namespace Xbim.Presentation
 
         public int EntityLabel
         {
-            get { return spatialStructureLabel; }
+            get { return _project.EntityLabel; }
         }
 
 
         public IPersistIfcEntity Entity
         {
-            get { return xbimModel.Instances[spatialStructureLabel]; }
+            get { return _project; }
         }
 
         public bool IsSelected
@@ -146,7 +127,11 @@ namespace Xbim.Presentation
         }
         #endregion
 
-    }
 
-
+        public void AddRefModel(XbimModelViewModel xbimModelViewModel)
+        {
+            //children.Add(xbimModelViewModel);
+            //NotifyPropertyChanged("Children");
+        }
+     }
 }

@@ -1,42 +1,48 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Xbim.Ifc2x3.Kernel;
 using Xbim.IO;
-using Xbim.Ifc2x3.Extensions;
-using Xbim.XbimExtensions.Interfaces;
+using System.Collections.ObjectModel;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.ProductExtension;
+using System.Collections;
 using System.ComponentModel;
 
-namespace Xbim.Presentation
+namespace Xbim.IO.TreeView
 {
-    /// <summary>
-    /// Model view for display top level Xbim Model contents and referenced models
-    /// </summary>
-    public class XbimModelViewModel : IXbimViewModel
-     {
+    public class ContainedElementsViewModel:IXbimViewModel
+    {
         XbimModel xbimModel;
-        IfcProject _project;
+        Type type;
+        int spatialContainerLabel;
         private bool _isSelected;
         private bool _isExpanded;
+
         private List<IXbimViewModel> children;
 
         public string Name
         {
             get
-            {                
-                return _project.Name;
+            {
+                return type.Name;
             }
         }
-        
-        public XbimModelViewModel(IfcProject project)
+
+
+        public ContainedElementsViewModel(IfcSpatialStructureElement container)
         {
-            xbimModel = project.ModelOf as XbimModel;
-            _project=project;
-            IEnumerable subs = this.Children; //call this once to preload first level of hierarchy   
+            xbimModel = container.ModelOf as XbimModel;
+            IEnumerable subs = this.Children; //call this once to preload first level of hierarchy          
         }
 
+        public ContainedElementsViewModel(IfcSpatialStructureElement spatialElem, Type type)
+        {
+
+            this.spatialContainerLabel = Math.Abs(spatialElem.EntityLabel);
+            this.type = type;
+            this.xbimModel = (XbimModel) spatialElem.ModelOf;
+        }
 
 
         public IEnumerable<IXbimViewModel> Children
@@ -46,13 +52,11 @@ namespace Xbim.Presentation
                 if (children == null)
                 {
                     children = new List<IXbimViewModel>();
-                    foreach (var item in _project.GetSpatialStructuralElements())
+                    IfcSpatialStructureElement space = xbimModel.Instances[spatialContainerLabel] as IfcSpatialStructureElement;
+                    foreach (var rel in space.ContainsElements)
                     {
-                        children.Add(new SpatialViewModel(item));
-                    }
-                    foreach (var refModel in xbimModel.RefencedModels)
-                    {
-                        children.Add(new XbimModelViewModel(refModel.Model.IfcProject));
+                        foreach (IfcProduct prod in rel.RelatedElements.Where(e => e.GetType() == type))
+                            children.Add(new IfcProductModelView(prod));
                     }
                 }
                 return children;
@@ -67,20 +71,18 @@ namespace Xbim.Presentation
             }
         }
 
-       
-
+      
 
         public int EntityLabel
         {
-            get { return _project.EntityLabel; }
+            get { return 0; }
         }
 
 
-        public IPersistIfcEntity Entity
+        public XbimExtensions.Interfaces.IPersistIfcEntity Entity
         {
-            get { return _project; }
+            get { return xbimModel.Instances[spatialContainerLabel]; }
         }
-
         public bool IsSelected
         {
             get
@@ -126,12 +128,5 @@ namespace Xbim.Presentation
             }
         }
         #endregion
-
-
-        internal void AddRefModel(XbimModelViewModel xbimModelViewModel)
-        {
-            //children.Add(xbimModelViewModel);
-            //NotifyPropertyChanged("Children");
-        }
-     }
+    }
 }

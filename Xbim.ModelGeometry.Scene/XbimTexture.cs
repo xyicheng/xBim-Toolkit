@@ -71,8 +71,7 @@ namespace Xbim.ModelGeometry.Scene
                     rendering.Transparency.HasValue ? 1.0 - rendering.Transparency.Value : 1.0
                     ));
             }
-
-            if (rendering.SpecularColour is IfcNormalisedRatioMeasure)
+            else if (rendering.SpecularColour is IfcNormalisedRatioMeasure) //getting key duplication on some ifc models so add else if
             {
                 ColourMap.Add(new XbimColour(
                     rendering.SurfaceColour,
@@ -81,7 +80,7 @@ namespace Xbim.ModelGeometry.Scene
                     (IfcNormalisedRatioMeasure)(rendering.SpecularColour)
                     ));
             }
-            if (rendering.SpecularColour is IfcColourRgb)
+            else if (rendering.SpecularColour is IfcColourRgb)
             {
                 ColourMap.Add(new XbimColour(
                     (IfcColourRgb)rendering.SpecularColour,

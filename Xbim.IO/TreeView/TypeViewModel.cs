@@ -2,25 +2,35 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Xbim.Ifc2x3.ProductExtension;
-using System.Collections;
-using Xbim.Ifc2x3.Kernel;
 using System.ComponentModel;
-using System.Collections.ObjectModel;
+using Xbim.Ifc2x3.Kernel;
 
-namespace Xbim.Presentation
+namespace Xbim.IO.TreeView
 {
-    public class IfcProductModelView : IXbimViewModel
+    public class TypeViewModel : IXbimViewModel
     {
-        private IfcProduct product;
+        XbimModel xbimModel;
+        Type type;
+        //int spatialContainerLabel;
         private bool _isSelected;
         private bool _isExpanded;
+
         private List<IXbimViewModel> children;
 
-        public IfcProductModelView(IfcProduct prod)
-        { 
-            this.product = prod;
+        public string Name
+        {
+            get
+            {
+                return type.Name;
+            }
         }
+
+        public TypeViewModel(Type type, XbimModel model)
+        {
+            this.type = type;
+            xbimModel = model;
+        }
+
 
         public IEnumerable<IXbimViewModel> Children
         {
@@ -29,41 +39,23 @@ namespace Xbim.Presentation
                 if (children == null)
                 {
                     children = new List<IXbimViewModel>();
-                    List<IfcRelDecomposes> breakdown = product.IsDecomposedBy.ToList();
-                    if (breakdown.Any())
-                        foreach (var rel in breakdown)
-                            foreach (var prod in rel.RelatedObjects.OfType<IfcProduct>())
-                                children.Add(new IfcProductModelView(prod));
-
+                    var products = xbimModel.Instances.Where<IfcProduct>(p => p.GetType().IsAssignableFrom(this.type));
+                    foreach (IfcProduct prod in products)
+                            children.Add(new IfcProductModelView(prod));
                 }
                 return children;
             }
         }
 
-        public string Name
-        {
-            get { return product.ToString(); }
-        }
-
-        public bool HasItems
-        {
-            get
-            {
-                IEnumerable subs = this.Children; //call this once to preload first level of hierarchy          
-                return children.Count > 0;
-            }
-        }
-
-      
         public int EntityLabel
         {
-            get { return Math.Abs(product.EntityLabel); }
+            get { return 0; }
         }
 
 
         public XbimExtensions.Interfaces.IPersistIfcEntity Entity
         {
-            get { return product; }
+            get { return null; }
         }
 
         public bool IsSelected
@@ -111,5 +103,6 @@ namespace Xbim.Presentation
             }
         }
         #endregion
+
     }
 }

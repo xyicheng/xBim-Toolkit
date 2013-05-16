@@ -429,7 +429,7 @@ namespace Xbim.COBie.Data
                     if (string.IsNullOrEmpty(attribute.ExtSystem))
                         attribute.ExtSystem = Constants.DEFAULT_STRING;
                     
-                    value = NumberValueCheck(value, attribute);
+                    //value = NumberValueCheck(value, attribute);
                     attribute.Value = string.IsNullOrEmpty(value) ? Constants.DEFAULT_STRING : value;
 
                     attribute.Description = propertySetSimpleProperty.Description.ToString();
@@ -445,46 +445,46 @@ namespace Xbim.COBie.Data
 
         
 
-        private string NumberValueCheck(string value, COBieAttributeRow attribute)
-        {
-            double test;
-            if (double.TryParse(value, out test))
-            {
-                //if we have a large number and the units is millimetres then lets change to metres
-                //SquareMillemetres
-                bool uSSqmeters = attribute.Unit.ToLower().Contains("squaremillimeters");
-                bool uKSqMetres = (attribute.Unit.ToLower().Contains("squaremillimetres"));
-                if ((uSSqmeters || uKSqMetres) &&
-                    (test > 1000000) //if size is large
-                    )
-                {
-                    test = test / 1000000.0;
-                    if (uKSqMetres)
-                        attribute.Unit = "squaremetres";
-                    else
-                        attribute.Unit = "squaremeters";
+        //private string NumberValueCheck(string value, COBieAttributeRow attribute)
+        //{
+        //    double test;
+        //    if (double.TryParse(value, out test))
+        //    {
+        //        //if we have a large number and the units is millimetres then lets change to metres
+        //        //SquareMillemetres
+        //        bool uSSqmeters = attribute.Unit.ToLower().Contains("squaremillimeters");
+        //        bool uKSqMetres = (attribute.Unit.ToLower().Contains("squaremillimetres"));
+        //        if ((uSSqmeters || uKSqMetres) &&
+        //            (test > 1000000) //if size is large
+        //            )
+        //        {
+        //            test = test / 1000000.0;
+        //            if (uKSqMetres)
+        //                attribute.Unit = "squaremetres";
+        //            else
+        //                attribute.Unit = "squaremeters";
 
-                }
+        //        }
 
-                //Millimetres
-                bool uSmeters = attribute.Unit.ToLower().Contains("millimeters");
-                bool uKMetres = (attribute.Unit.ToLower().Contains("millimetres"));
-                if ((uSmeters || uKMetres) &&
-                    (test > 100000) //if size is large
-                    )
-                {
-                    test = test / 1000.0;
-                    if (uKMetres)
-                        attribute.Unit = "metres";
-                    else
-                        attribute.Unit = "meters";
+        //        //Millimetres
+        //        bool uSmeters = attribute.Unit.ToLower().Contains("millimeters");
+        //        bool uKMetres = (attribute.Unit.ToLower().Contains("millimetres"));
+        //        if ((uSmeters || uKMetres) &&
+        //            (test > 100000) //if size is large
+        //            )
+        //        {
+        //            test = test / 1000.0;
+        //            if (uKMetres)
+        //                attribute.Unit = "metres";
+        //            else
+        //                attribute.Unit = "meters";
 
-                }
+        //        }
 
-                value = string.Format("{0:F4}", test); //format the number
-            }
-            return value;
-        }
+        //        value = string.Format("{0:F4}", test); //format the number
+        //    }
+        //    return value;
+        //}
 
         
 

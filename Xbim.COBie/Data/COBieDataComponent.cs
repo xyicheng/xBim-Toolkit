@@ -168,27 +168,43 @@ namespace Xbim.COBie.Data
         internal string GetComponentRelatedSpace(IfcElement el)
         {
             string value = "";
-            
+            List<string> names = new List<string>();
+                    
             if (el != null && el.ContainedInStructure.Count() > 0)
             {
                 IEnumerable<IfcRoot> owningObjects = el.ContainedInStructure.Select(cis => cis.RelatingStructure).OfType<IfcSpace>(); //only one or zero held in ContainedInStructure
                 if (owningObjects.Any())
                 {
-                    List<string> names = new List<string>();
                     foreach (IfcRoot item in owningObjects)
                     {
                         if (item.Name != null)
                             names.Add(item.Name);
                     }
-                    value = string.Join(", ", names);
                 }
             }
+
+            //check for the element as a containing item of a space
+            IEnumerable<IfcSpace> ifcSpaces = Model.Instances.Where<IfcRelSpaceBoundary>(rsb => ((rsb.RelatedBuildingElement != null) && (rsb.RelatedBuildingElement == el))).Select(rsb => rsb.RelatingSpace);
+
+            if (ifcSpaces.Any()) 
+            {
+                foreach (IfcSpace item in ifcSpaces)
+                {
+                    if ((item.Name != null) && (!names.Contains(item.Name)))
+                        names.Add(item.Name);
+                }
+            }
+            if (names.Count > 0) //check we have some values
+            {
+                value = string.Join(", ", names);
+            }
+            
             //if no space is saved with the element then get from the geometry 
             if (string.IsNullOrEmpty(value))
             { 
                 value = GetSpaceHoldingElement(el);
             }
-           
+            
 
             return string.IsNullOrEmpty(value) ? Constants.DEFAULT_STRING : value;
         }
@@ -214,6 +230,7 @@ namespace Xbim.COBie.Data
                 }).ToList();
             }
 
+            
             string spaceName = string.Empty;
             //only if we have any space information
             if (SpaceBoundingBoxInfo.Any())

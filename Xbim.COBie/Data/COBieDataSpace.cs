@@ -126,8 +126,8 @@ namespace Xbim.COBie.Data
                 areavalue = ((double)netAreaValue);
                 if (areavalue > 0.0)
                 {
-                    if ((!string.IsNullOrEmpty(areaUnit)) && (areaUnit.ToLower().Contains("milli")) && (areavalue > 250000.0)) //we are using millimetres, and areavalue is lightly to be in mmsq if over 250000(0.5msq)
-                        areavalue = areavalue / 1000000.0;
+                    //if ((!string.IsNullOrEmpty(areaUnit)) && (areaUnit.ToLower().Contains("milli")) && (areavalue > 250000.0)) //we are using millimetres, and areavalue is lightly to be in mmsq if over 250000(0.5msq)
+                    //    areavalue = areavalue / 1000000.0;
 
                     return areavalue.ToString("F4");
                 }
@@ -148,8 +148,8 @@ namespace Xbim.COBie.Data
             {
                 if (double.TryParse(value, out areavalue))
                 {
-                    if ((!string.IsNullOrEmpty(areaUnit)) && (areaUnit.ToLower().Contains("milli")) && (areavalue > 250000.0))//we are using millimetres, and areavalue is lightly to be in mmsq if over 250000(0.5msq)
-                        areavalue = areavalue / 1000000.0;
+                    //if ((!string.IsNullOrEmpty(areaUnit)) && (areaUnit.ToLower().Contains("milli")) && (areavalue > 250000.0))//we are using millimetres, and areavalue is lightly to be in mmsq if over 250000(0.5msq)
+                    //    areavalue = areavalue / 1000000.0;
                     return areavalue.ToString("F4");
                 }
                 return value;
@@ -182,8 +182,8 @@ namespace Xbim.COBie.Data
             }
             if (areavalue > 0.0)
 	        {
-                if ((!string.IsNullOrEmpty(areaUnit)) && (areaUnit.ToLower().Contains("milli")) && (areavalue > 250000.0)) //we are using millimetres, and areavalue is lightly to be in mmsq if over 250000(0.5msq)
-                    areavalue = areavalue / 1000000.0;
+                //if ((!string.IsNullOrEmpty(areaUnit)) && (areaUnit.ToLower().Contains("milli")) && (areavalue > 250000.0)) //we are using millimetres, and areavalue is lightly to be in mmsq if over 250000(0.5msq)
+                //    areavalue = areavalue / 1000000.0;
                 
 		         return areavalue.ToString("F4");
 	        }
@@ -203,8 +203,8 @@ namespace Xbim.COBie.Data
             {
                 if (double.TryParse(value, out areavalue))
                 {
-                    if ((!string.IsNullOrEmpty(areaUnit)) && (areaUnit.ToLower().Contains("milli")) && (areavalue > 250000.0))//we are using millimetres, and areavalue is lightly to be in mmsq if over 250000(0.5msq)
-                        areavalue = areavalue / 1000000.0;
+                    //if ((!string.IsNullOrEmpty(areaUnit)) && (areaUnit.ToLower().Contains("milli")) && (areavalue > 250000.0))//we are using millimetres, and areavalue is lightly to be in mmsq if over 250000(0.5msq)
+                    //    areavalue = areavalue / 1000000.0;
                     return areavalue.ToString("F4");
                 }
                 return value; 
@@ -267,7 +267,7 @@ namespace Xbim.COBie.Data
         /// <returns>property value as string or default value</returns>
         private string GetRoomTag(IfcSpace ifcSpace, COBieDataPropertySetValues allPropertyValues)
         {
-            if (!string.IsNullOrEmpty(ifcSpace.Name)) return ifcSpace.Name;
+            //if (!string.IsNullOrEmpty(ifcSpace.Name)) return ifcSpace.Name;
 
             string value = ""; // GetSpaceDescription(ifcSpace);
             allPropertyValues.SetAllPropertySingleValues(ifcSpace);

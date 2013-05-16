@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using PropertyTools.Wpf;
 using Xbim.IO;
+using Xbim.IO.TreeView;
 using System.Windows;
 using Xbim.Ifc2x3.Kernel;
 using System.Windows.Data;
