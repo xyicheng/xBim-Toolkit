@@ -1,5 +1,5 @@
 #pragma once
-#include "IXbimGeometryModel.h"
+#include "XbimGeometryModel.h"
 #include "XbimGeometryModel.h"
 #include "XbimSolid.h"
 using namespace Xbim::Ifc2x3::GeometryResource;
@@ -10,10 +10,10 @@ namespace Xbim
 	{
 		namespace OCC
 		{
-		public ref class XbimMap : IXbimGeometryModel
+		public ref class XbimMap : XbimGeometryModel
 		{
 		private:
-			IXbimGeometryModel^ _mappedItem;
+			XbimGeometryModel^ _mappedItem;
 			XbimMatrix3D _transform;
 			Int32 _representationLabel;
 			Int32 _surfaceStyleLabel;
@@ -31,58 +31,47 @@ namespace Xbim
 				{   
 					_mappedItem=nullptr;
 				}
-			XbimMap(IXbimGeometryModel^ item, IfcAxis2Placement^ origin, IfcCartesianTransformationOperator^ transform, ConcurrentDictionary<int,Object^>^ maps);
-			virtual IXbimGeometryModel^ Cut(IXbimGeometryModel^ shape);
-			virtual IXbimGeometryModel^ Union(IXbimGeometryModel^ shape);
-			virtual IXbimGeometryModel^ Intersection(IXbimGeometryModel^ shape);
-			virtual IXbimGeometryModel^ CopyTo(IfcObjectPlacement^ placement);
-			virtual void Move(TopLoc_Location location);
+			XbimMap(XbimGeometryModel^ item, IfcAxis2Placement^ origin, IfcCartesianTransformationOperator^ transform, ConcurrentDictionary<int,Object^>^ maps);
+			virtual XbimGeometryModel^ Cut(XbimGeometryModel^ shape) override;
+			virtual XbimGeometryModel^ Union(XbimGeometryModel^ shape) override;
+			virtual XbimGeometryModel^ Intersection(XbimGeometryModel^ shape) override;
+			virtual XbimGeometryModel^ CopyTo(IfcObjectPlacement^ placement) override;
+			virtual void Move(TopLoc_Location location) override;
 			virtual property bool HasCurvedEdges
 			{
-				virtual bool get() //this geometry has the same curved edges as the object it maps
+				virtual bool get() override //this geometry has the same curved edges as the object it maps
 				{
 					return _mappedItem->HasCurvedEdges;
 				}
 			}
-			virtual XbimBoundingBox^ GetBoundingBox(bool precise)
+			
+
+			virtual XbimRect3D GetBoundingBox()  override
 			{
-				return _mappedItem->GetBoundingBox(precise);
+				return _mappedItem->GetBoundingBox();
 			};
-						
-			virtual property Int32 RepresentationLabel
-			{
-				Int32 get(){return _representationLabel; }
-				void set(Int32 value){ _representationLabel=value; }
-			}
 
-			virtual property Int32 SurfaceStyleLabel
-			{
-				Int32 get(){return _surfaceStyleLabel; }
-				void set(Int32 value){ _surfaceStyleLabel=value; }
-			}
 
-			property XbimMatrix3D Transform
+			virtual property XbimMatrix3D Transform
 			{
-				XbimMatrix3D get()
+				XbimMatrix3D get() override
 				{
 					return _transform;
 				}
 			}
 			
-			property IXbimGeometryModel^ MappedItem
+			property XbimGeometryModel^ MappedItem
 			{
-				IXbimGeometryModel^ get()
+				XbimGeometryModel^ get()
 				{
 					return _mappedItem;
 				}
 			}
-			virtual List<XbimTriangulatedModel^>^Mesh(bool withNormals, double deflection, XbimMatrix3D transform);
-			virtual List<XbimTriangulatedModel^>^Mesh(bool withNormals, double deflection);
-			virtual List<XbimTriangulatedModel^>^Mesh(bool withNormals);
-			virtual List<XbimTriangulatedModel^>^Mesh();
+			virtual List<XbimTriangulatedModel^>^Mesh(bool withNormals, double deflection) override;
+				
 			virtual property double Volume
 			{
-				double get()
+				double get() override
 				{
 					return _mappedItem->Volume;
 				}
@@ -90,11 +79,11 @@ namespace Xbim
 
 			virtual property XbimLocation ^ Location 
 			{
-				XbimLocation ^ get()
+				XbimLocation ^ get() override
 				{
 					throw gcnew NotImplementedException("Location needs to be implemented");
 				}
-				void set(XbimLocation ^ location)
+				void set(XbimLocation ^ location) override
 				{
 					throw gcnew NotImplementedException("Location needs to be implemented");
 				}
@@ -102,7 +91,7 @@ namespace Xbim
 
 			virtual property TopoDS_Shape* Handle
 			{
-				TopoDS_Shape* get()
+				TopoDS_Shape* get() override
 				{
 					
 					if(!_transform.IsIdentity) //see if we need to map

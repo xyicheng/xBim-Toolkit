@@ -13,7 +13,7 @@ namespace Xbim
 	{
 		namespace OCC
 		{
-		XbimMap::XbimMap(IXbimGeometryModel^ item, IfcAxis2Placement^ origin, IfcCartesianTransformationOperator^ transform, ConcurrentDictionary<int,Object^>^ maps)
+		XbimMap::XbimMap(XbimGeometryModel^ item, IfcAxis2Placement^ origin, IfcCartesianTransformationOperator^ transform, ConcurrentDictionary<int,Object^>^ maps)
 		{
 			_mappedItem = item;
 			 _representationLabel = item->RepresentationLabel;
@@ -36,22 +36,22 @@ namespace Xbim
 
 		}
 		
-		IXbimGeometryModel^ XbimMap::Cut(IXbimGeometryModel^ shape)
+		XbimGeometryModel^ XbimMap::Cut(XbimGeometryModel^ shape)
 		{
 			throw gcnew NotImplementedException("Cut needs to be implemented");
 		}
 
-		IXbimGeometryModel^ XbimMap::Union(IXbimGeometryModel^ shape)
+		XbimGeometryModel^ XbimMap::Union(XbimGeometryModel^ shape)
 		{
 			throw gcnew NotImplementedException("Union needs to be implemented");
 		}
 
-		IXbimGeometryModel^ XbimMap::Intersection(IXbimGeometryModel^ shape)
+		XbimGeometryModel^ XbimMap::Intersection(XbimGeometryModel^ shape)
 		{
 			throw gcnew NotImplementedException("Intersection needs to be implemented");
 		}
 
-		IXbimGeometryModel^ XbimMap::CopyTo(IfcObjectPlacement^ placement)
+		XbimGeometryModel^ XbimMap::CopyTo(IfcObjectPlacement^ placement)
 		{
 			throw gcnew NotImplementedException("CopyTo needs to be implemented");
 		}
@@ -61,23 +61,10 @@ namespace Xbim
 			_mappedItem->Move(location);
 		}
 
-		List<XbimTriangulatedModel^>^XbimMap::Mesh()
+		List<XbimTriangulatedModel^>^XbimMap::Mesh(bool withNormals, double deflection)
 		{
-			return Mesh(true, XbimGeometryModel::DefaultDeflection,XbimMatrix3D::Identity);
-		}
 
-		List<XbimTriangulatedModel^>^XbimMap::Mesh( bool withNormals )
-		{
-			return Mesh(withNormals, XbimGeometryModel::DefaultDeflection, XbimMatrix3D::Identity);
-		}
-		List<XbimTriangulatedModel^>^XbimMap::Mesh(bool withNormals, double deflection )
-		{
-			return _mappedItem->Mesh(withNormals, deflection, XbimMatrix3D::Identity);
-		}
-
-		List<XbimTriangulatedModel^>^XbimMap::Mesh(bool withNormals, double deflection, XbimMatrix3D transform )
-		{
-			return _mappedItem->Mesh(withNormals, deflection, XbimMatrix3D::Identity);
+			return _mappedItem->Mesh(withNormals, deflection);
 		}
 	}
 }

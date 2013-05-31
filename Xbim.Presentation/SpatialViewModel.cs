@@ -146,6 +146,12 @@ namespace Xbim.Presentation
         }
         #endregion
 
+
+
+        public XbimModel Model
+        {
+            get { return xbimModel; }
+        }
     }
 
 

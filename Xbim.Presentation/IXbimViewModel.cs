@@ -5,6 +5,7 @@ using System.Text;
 using System.Collections;
 using Xbim.XbimExtensions.Interfaces;
 using System.ComponentModel;
+using Xbim.IO;
 
 namespace Xbim.Presentation
 {
@@ -14,7 +15,7 @@ namespace Xbim.Presentation
         string Name {get;}
         int EntityLabel { get; }
         IPersistIfcEntity Entity { get; }
-
+        XbimModel Model { get; }
         bool IsExpanded { get; set; }
         bool IsSelected { get; set; }
     }

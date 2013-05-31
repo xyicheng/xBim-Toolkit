@@ -72,7 +72,7 @@ namespace Xbim.Tests
         #endregion
 
         [TestMethod]
-        public void TestMethod1()
+        public void TestTreeBuilding()
         {
             TreeContainmentStrategy contTreeQuery = new TreeContainmentStrategy(_model);
             TreeNodes containerTreeStructure = TreeBuilder.BuildTreeStructure(contTreeQuery);

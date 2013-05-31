@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Xbim.IO;
+using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.ModelGeometry.Scene
 {
@@ -141,11 +142,15 @@ namespace Xbim.ModelGeometry.Scene
 
 
 
-        public IXbimMeshGeometry3D GetMeshGeometry3D(int entityLabel)
+        public IXbimMeshGeometry3D GetMeshGeometry3D(IPersistIfcEntity entity)
         {
             XbimMeshGeometry3D geometry = new XbimMeshGeometry3D();
+            IModel m = entity.ModelOf;
             foreach (var layer in Layers)
-                geometry.Add(layer.GetVisibleMeshGeometry3D(entityLabel));
+            {
+                if(layer.Model == m)
+                    geometry.Add(layer.GetVisibleMeshGeometry3D(Math.Abs(entity.EntityLabel)));
+            }
             return geometry;
         }
 

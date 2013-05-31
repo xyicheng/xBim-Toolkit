@@ -70,28 +70,7 @@ namespace Xbim
 			_hasCurvedEdges = hasCurves;
 		}
 
-		List<XbimTriangulatedModel^>^XbimShell::Mesh()
-		{
-			return Mesh(true, XbimGeometryModel::DefaultDeflection, XbimMatrix3D::Identity);
-		}
-
-		List<XbimTriangulatedModel^>^XbimShell::Mesh( bool withNormals )
-		{
-			return Mesh(withNormals, XbimGeometryModel::DefaultDeflection, XbimMatrix3D::Identity);
-		}
-
-		List<XbimTriangulatedModel^>^XbimShell::Mesh(bool withNormals, double deflection )
-		{
-
-			return XbimGeometryModel::Mesh(this,withNormals,deflection, XbimMatrix3D::Identity);
-			
-		}
-
-		List<XbimTriangulatedModel^>^XbimShell::Mesh(bool withNormals, double deflection, XbimMatrix3D transform )
-		{
-			return XbimGeometryModel::Mesh(this,withNormals,deflection, transform);
-			
-		}
+		
 
 		XbimShell::XbimShell(XbimShell^ shell, IfcAxis2Placement^ origin, IfcCartesianTransformationOperator^ transform, bool hasCurves )
 		{
@@ -141,21 +120,21 @@ namespace Xbim
 		/*Interfaces*/
 
 
-		IXbimGeometryModel^ XbimShell::Cut(IXbimGeometryModel^ shape)
+		XbimGeometryModel^ XbimShell::Cut(XbimGeometryModel^ shape)
 		{
 			throw gcnew XbimGeometryException("A cut operation has been applied to a shell (non-solid) object this is illegal according to schema");
 		}
 
-		IXbimGeometryModel^ XbimShell::Union(IXbimGeometryModel^ shape)
+		XbimGeometryModel^ XbimShell::Union(XbimGeometryModel^ shape)
 		{
 			throw gcnew XbimGeometryException("A Union operation has been applied to a shell (non-solid) object this is illegal according to schema");
 		}
 
-		IXbimGeometryModel^ XbimShell::Intersection(IXbimGeometryModel^ shape)
+		XbimGeometryModel^ XbimShell::Intersection(XbimGeometryModel^ shape)
 		{
 			throw gcnew XbimGeometryException("A Intersection operation has been applied to a shell (non-solid) object this is illegal according to schema");
 		}
-		IXbimGeometryModel^ XbimShell::CopyTo(IfcObjectPlacement^ placement)
+		XbimGeometryModel^ XbimShell::CopyTo(IfcObjectPlacement^ placement)
 		{
 			if(dynamic_cast<IfcLocalPlacement^>(placement))
 			{
@@ -294,13 +273,16 @@ namespace Xbim
 				sfs.SetMaxTolerance(mm);
 				sfs.SetMinTolerance(mm/10);
 				sfs.Perform();	
-				//BRepTools::Write(sfs.Shape(),"s3");
+				/*if(faceSet->EntityLabel==341835)
+				BRepTools::Write(sfs.Shape(),"s1");
+				if(faceSet->EntityLabel==341833)
+				BRepTools::Write(sfs.Shape(),"s2");*/
 				return sfs.Shape();
 				//return seamstress.SewedShape();
 			}
 			else
 			{
-				Logger->WarnFormat("XbimShell::Build(ConnectedFaceSet) Could not build a valid shell from IfcConnectedFaceSet  #{1}", faceSet->EntityLabel);
+				Logger->WarnFormat("XbimShell::Build(ConnectedFaceSet) Could not build a valid shell from IfcConnectedFaceSet  #{0}", faceSet->EntityLabel);
 				return TopoDS_Shell();
 			}
 

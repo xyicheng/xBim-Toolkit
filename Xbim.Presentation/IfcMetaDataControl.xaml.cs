@@ -151,44 +151,45 @@ namespace Xbim.Presentation
 
     
 
-        public int EntityLabel
+        public IPersistIfcEntity SelectedEntity
         {
-            get { return (int)GetValue(EntityLabelProperty); }
-            set { SetValue(EntityLabelProperty, value); }
+            get { return (IPersistIfcEntity)GetValue(SelectedEntityProperty); }
+            set { SetValue(SelectedEntityProperty, value); }
         }
 
         // Using a DependencyProperty as the backing store for IfcInstance.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty EntityLabelProperty =
-            DependencyProperty.Register("EntityLabel", typeof(int), typeof(IfcMetaDataControl),
-                                        new UIPropertyMetadata(-1, new PropertyChangedCallback(OnEntityLabelChanged)));
+        public static readonly DependencyProperty SelectedEntityProperty =
+            DependencyProperty.Register("SelectedEntity", typeof(IPersistIfcEntity), typeof(IfcMetaDataControl),
+                                        new UIPropertyMetadata(null, new PropertyChangedCallback(OnSelectedEntityChanged)));
 
 
-        private static void OnEntityLabelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static void OnSelectedEntityChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             IfcMetaDataControl ctrl = d as IfcMetaDataControl;
-            if (ctrl != null && e.NewValue != null && e.NewValue is int)
+            if (ctrl != null && e.NewValue != null && e.NewValue is IPersistIfcEntity)
             {
-                ctrl.DataRebind((int)e.NewValue);
+                ctrl.DataRebind((IPersistIfcEntity)e.NewValue);
             }
         }
 
-        private void DataRebind(int entityLabel)
+        private void DataRebind(IPersistIfcEntity entity)
         {
             Clear(); //remove any bindings
            // ScrollView.ScrollToHome();
             _entity = null;
             ObjectDataProvider dp = DataContext as ObjectDataProvider;
-            if (Model == null && dp != null && dp.ObjectInstance is XbimModel)
-                Model = dp.ObjectInstance as XbimModel;
-            if (Model != null && entityLabel > 0)
+
+            if (entity != null)
             {
-                _entity = Model.Instances[entityLabel] as IPersistIfcEntity;
+                _entity = entity;
                 if (TheTabs.SelectedItem == ObjectTab) FillObjectData();
                 else if (TheTabs.SelectedItem == TypeTab) FillTypeData();
                 else if (TheTabs.SelectedItem == MaterialTab) FillMaterialData();
                 else if (TheTabs.SelectedItem == PropertyTab) FillPropertyData();
                 else if (TheTabs.SelectedItem == QuantityTab) FillQuantityData();
             }
+            else
+                _entity = null;
         }
 
         private void FillTypeData()
@@ -393,7 +394,7 @@ namespace Xbim.Presentation
             IfcMetaDataControl ctrl = d as IfcMetaDataControl;
             if (ctrl != null)
             {
-                ctrl.DataRebind(-1);
+                ctrl.DataRebind(null);
             }
         }
 

@@ -47,6 +47,7 @@ using Xbim.COBie.Serialisers;
 using Xbim.COBie;
 using Xbim.COBie.Contracts;
 using Xbim.ModelGeometry.Converter;
+using XbimXplorer.Dialogs;
 #endregion
 
 namespace XbimXplorer
@@ -57,6 +58,9 @@ namespace XbimXplorer
     public partial class XplorerMainWindow : Window
     {
         private BackgroundWorker _worker;
+        public static RoutedCommand CreateFederationCmd = new RoutedCommand();
+        public static RoutedCommand EditFederationCmd = new RoutedCommand();
+        public static RoutedCommand OpenFederationCmd = new RoutedCommand();
         public static RoutedCommand InsertCmd = new RoutedCommand();
         public static RoutedCommand ExportCOBieCmd = new RoutedCommand();
         private string _currentModelFileName;
@@ -99,6 +103,7 @@ namespace XbimXplorer
                         _worker.DoWork += OpenIfcFile;
                         _worker.RunWorkerAsync(toOpen);
                         break;
+                    case ".xbimf":
                     case ".xbim": //it is an xbim File, just open it in the main thread
                         CloseAndDeleteTemporaryFiles();
                         _worker.DoWork += OpenXbimFile;
@@ -134,25 +139,25 @@ namespace XbimXplorer
 
 
 
-        public int SelectedItem
+        public IPersistIfcEntity SelectedItem
         {
-            get { return (int)GetValue(SelectedItemProperty); }
+            get { return (IPersistIfcEntity)GetValue(SelectedItemProperty); }
             set { SetValue(SelectedItemProperty, value); }
         }
 
         // Using a DependencyProperty as the backing store for SelectedItem.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty SelectedItemProperty =
-            DependencyProperty.Register("SelectedItem", typeof(int), typeof(XplorerMainWindow), 
-                                        new UIPropertyMetadata(-1, new PropertyChangedCallback(OnSelectedItemChanged)));
+            DependencyProperty.Register("SelectedItem", typeof(IPersistIfcEntity), typeof(XplorerMainWindow), 
+                                        new UIPropertyMetadata(null, new PropertyChangedCallback(OnSelectedItemChanged)));
 
 
         private static void OnSelectedItemChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             XplorerMainWindow mw = d as XplorerMainWindow;
-            if (mw != null && e.NewValue is int)
+            if (mw != null && e.NewValue is IPersistIfcEntity)
             {
-                int label = (int)e.NewValue;
-                mw.EntityLabel.Text = label > 0 ? "#" + label.ToString() : "";
+                IPersistIfcEntity label = (IPersistIfcEntity)e.NewValue;
+                mw.EntityLabel.Text = label !=null ? "#" + label.EntityLabel.ToString() : "";
             }
             else
                 mw.EntityLabel.Text = "";
@@ -191,7 +196,7 @@ namespace XbimXplorer
                 model.Open(_temporaryXbimFileName, XbimDBAccess.ReadWrite);
                 XbimMesher.GenerateGeometry(model, null, worker.ReportProgress);
                // model.Close();
-                if (worker.CancellationPending == true) //if a cancellation has been requested then don't open the resukting file
+                if (worker.CancellationPending == true) //if a cancellation has been requested then don't open the resulting file
                 {
                     try
                     {
@@ -334,6 +339,7 @@ namespace XbimXplorer
                         _worker.DoWork += InsertIfcFile;
                         _worker.RunWorkerAsync(dlg.FileName);
                         break;
+                    case ".xbimf":
                     case ".xbim": //it is an xbim File, just open it in the main thread
                         Model.AddModelReference(dlg.FileName,"Organisation X",IfcRole.BuildingOperator);
                         break;
@@ -364,6 +370,7 @@ namespace XbimXplorer
                         _worker.DoWork += OpenIfcFile;
                         _worker.RunWorkerAsync(dlg.FileName);
                         break;
+                    case ".xbimf":
                     case ".xbim": //it is an xbim File, just open it in the main thread
                         CloseAndDeleteTemporaryFiles();
                         _worker.DoWork += OpenXbimFile;
@@ -496,6 +503,7 @@ namespace XbimXplorer
             model.Initialise();
             ModelProvider.ObjectInstance = model;
             ModelProvider.Refresh();
+
         }
         
        
@@ -503,7 +511,7 @@ namespace XbimXplorer
         {
            
             OpenFileDialog dlg = new OpenFileDialog();
-            dlg.Filter = "Xbim Files|*.xbim;*.ifc;*.ifcxml;*.ifczip"; // Filter files by extension 
+            dlg.Filter = "Xbim Files|*.xbim;*.xbimf;*.ifc;*.ifcxml;*.ifczip"; // Filter files by extension 
             dlg.FileOk += new CancelEventHandler(dlg_OpenXbimFile);
             dlg.ShowDialog(this);
         }
@@ -522,7 +530,7 @@ namespace XbimXplorer
                 _currentModelFileName = null;
                 if (model != null)
                 {
-                    model.Close();
+                    model.Dispose();
                     ModelProvider.ObjectInstance = null;
                     ModelProvider.Refresh();
                 }
@@ -630,6 +638,87 @@ namespace XbimXplorer
             e.CanExecute = canEdit && !(_worker != null && _worker.IsBusy);
         }
 
-      
+        private void EditFederationCmdExecuted(object sender, ExecutedRoutedEventArgs e)
+        {
+            FederatedModelDlg fdlg = new FederatedModelDlg();          
+            fdlg.DataContext = Model;
+            bool? done = fdlg.ShowDialog();
+            if (done.HasValue && done.Value == true)
+            {
+
+            }
+        }
+        private void EditFederationCmdCanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            
+            e.CanExecute = Model!=null &&  Model.IsFederation;
+        }
+
+        private void OpenFederationCmdExecuted(object sender, ExecutedRoutedEventArgs e)
+        {
+             OpenFileDialog dlg = new OpenFileDialog();
+             dlg.Filter = "Xbim Federation Files|*.xbimf"; // Filter files by extension 
+             dlg.CheckFileExists = true;
+            bool? done = dlg.ShowDialog(this);
+            if (done.HasValue && done.Value == true)
+            {
+                XbimModel fedModel = new XbimModel();
+                fedModel.Open(dlg.FileName,XbimDBAccess.ReadWrite);
+                CloseAndDeleteTemporaryFiles();
+                ModelProvider.ObjectInstance = fedModel;
+                ModelProvider.Refresh();
+            }
+        }
+
+       
+
+        private void OpenFederationCmdCanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = true;
+        }
+        private void CreateFederationCmdExecuted(object sender, ExecutedRoutedEventArgs e)
+        {
+            CreateFederationWindow fedwin = new CreateFederationWindow();
+            bool? done = fedwin.ShowDialog();
+            if (done.HasValue && done.Value == true)
+            {
+                if (File.Exists(fedwin.ModelFullPath))
+                {
+                    if (MessageBox.Show(fedwin.ModelFullPath + " Exists.\nDo you want to overwrite it?", "Overwrite file", MessageBoxButton.YesNo) == MessageBoxResult.No)
+                        return;
+                }
+                try
+                {
+                    XbimModel fedModel = XbimModel.CreateModel(fedwin.ModelFullPath);
+
+                    fedModel.Initialise(fedwin.Author, fedwin.Organisation);
+                    using (var txn = fedModel.BeginTransaction())
+                    {
+                        fedModel.IfcProject.Name = fedwin.Project;
+                        txn.Commit();
+                    }
+                    //FederatedModelDlg fdlg = new FederatedModelDlg();
+                    //fdlg.DataContext = Model;
+                    //fdlg.ShowDialog();
+                    CloseAndDeleteTemporaryFiles();
+                    ModelProvider.ObjectInstance = fedModel;
+                    ModelProvider.Refresh();
+                    //fedModel.SaveAs(Path.ChangeExtension(fedwin.ModelFullPath, ".ifc"), XbimStorageType.IFC);
+
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message, "Model Creation Failed", MessageBoxButton.OK);
+                }
+                
+              
+
+                
+            }
+        }
+        private void CreateFederationCmdCanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = true;
+        }
     }
 }

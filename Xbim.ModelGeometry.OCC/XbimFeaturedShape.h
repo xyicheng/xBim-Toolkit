@@ -1,5 +1,5 @@
 #pragma once
-#include "IXbimGeometryModel.h"
+#include "XbimGeometryModel.h"
 #include "XbimGeometryModel.h"
 
 #include <BRepGProp.hxx>
@@ -14,36 +14,37 @@ namespace Xbim
 	{
 		namespace OCC
 		{
-		public ref class XbimFeaturedShape :IXbimGeometryModel
+		public ref class XbimFeaturedShape :XbimGeometryModel
 		{
 		private:
 			static ILogger^ Logger = LoggerFactory::GetLogger();
-			Int32 _representationLabel;
-			Int32 _surfaceStyleLabel;
 			bool _hasCurves;
 			bool LowLevelCut(const TopoDS_Shape & from, const TopoDS_Shape & toCut, TopoDS_Shape & result);
 		protected:
-			IXbimGeometryModel^ mResultShape;
-			IXbimGeometryModel^ mBaseShape;
-			List<IXbimGeometryModel^>^ mOpenings;
-			List<IXbimGeometryModel^>^ mProjections;
+			XbimGeometryModel^ mResultShape;
+			XbimGeometryModel^ mBaseShape;
+			List<XbimGeometryModel^>^ mOpenings;
+			List<XbimGeometryModel^>^ mProjections;
 			XbimFeaturedShape(XbimFeaturedShape^ copy, IfcObjectPlacement^ location);
 			bool DoCut(const TopoDS_Shape& shape);
 			bool DoUnion(const TopoDS_Shape& shape);
 		public:
-			XbimFeaturedShape(IfcProduct^ product, IXbimGeometryModel^ baseShape, IEnumerable<IXbimGeometryModel^>^ openings, IEnumerable<IXbimGeometryModel^>^ projections);
+			XbimFeaturedShape(IfcProduct^ product, XbimGeometryModel^ baseShape, IEnumerable<XbimGeometryModel^>^ openings, IEnumerable<XbimGeometryModel^>^ projections);
 			
 			virtual property TopoDS_Shape* Handle
 			{
-				TopoDS_Shape* get(){if(mResultShape!=nullptr) return mResultShape->Handle; else return nullptr;};			
+				TopoDS_Shape* get() override
+				{
+					if(mResultShape!=nullptr) return mResultShape->Handle; else return nullptr;
+				};			
 			}
 			virtual property XbimLocation ^ Location 
 			{
-				XbimLocation ^ get()
+				XbimLocation ^ get() override
 				{
 					return mResultShape->Location;
 				}
-				void set(XbimLocation ^ location)
+				void set(XbimLocation ^ location) override
 				{
 					mResultShape->Location = location;
 				}
@@ -51,7 +52,7 @@ namespace Xbim
 
 			virtual property double Volume
 			{
-				double get()
+				double get() override
 				{
 					if(mResultShape!=nullptr)
 					{
@@ -65,52 +66,41 @@ namespace Xbim
 			}
 			virtual property bool HasCurvedEdges
 			{
-				virtual bool get()
+				virtual bool get() override
 				{					
 					return _hasCurves;
 				}
 			}
-			virtual XbimBoundingBox^ GetBoundingBox(bool precise)
-			{
-				return XbimGeometryModel::GetBoundingBox(mBaseShape, precise);
-			};
-
-			virtual IXbimGeometryModel^ Cut(IXbimGeometryModel^ shape);
-			virtual IXbimGeometryModel^ Union(IXbimGeometryModel^ shape);
-			virtual IXbimGeometryModel^ Intersection(IXbimGeometryModel^ shape);
-			virtual IXbimGeometryModel^ CopyTo(IfcObjectPlacement^ placement);
-			virtual void Move(TopLoc_Location location);
-
-			virtual List<XbimTriangulatedModel^>^Mesh(bool withNormals, double deflection, XbimMatrix3D transform);
-			virtual List<XbimTriangulatedModel^>^Mesh(bool withNormals, double deflection);
-			virtual List<XbimTriangulatedModel^>^Mesh(bool withNormals);
-			virtual List<XbimTriangulatedModel^>^Mesh();
-				~XbimFeaturedShape()
-				{
-					InstanceCleanup();
-				}
 			
-				!XbimFeaturedShape()
-				{
-					InstanceCleanup();
-				}
-				void InstanceCleanup()
-				{ 
-					mResultShape=nullptr;
-					mBaseShape=nullptr;
-					mOpenings=nullptr;
-					mProjections=nullptr;
-				}
-			virtual property Int32 RepresentationLabel
+
+			virtual XbimGeometryModel^ Cut(XbimGeometryModel^ shape) override;
+			virtual XbimGeometryModel^ Union(XbimGeometryModel^ shape) override;
+			virtual XbimGeometryModel^ Intersection(XbimGeometryModel^ shape) override;
+			virtual XbimGeometryModel^ CopyTo(IfcObjectPlacement^ placement) override;
+			virtual void Move(TopLoc_Location location) override;
+
+			~XbimFeaturedShape()
 			{
-				Int32 get(){return _representationLabel; }
-				void set(Int32 value){ _representationLabel=value; }
+				InstanceCleanup();
 			}
 
-			virtual property Int32 SurfaceStyleLabel
+			!XbimFeaturedShape()
 			{
-				Int32 get(){return _surfaceStyleLabel; }
-				void set(Int32 value){ _surfaceStyleLabel=value; }
+				InstanceCleanup();
+			}
+			void InstanceCleanup()
+			{ 
+				mResultShape=nullptr;
+				mBaseShape=nullptr;
+				mOpenings=nullptr;
+				mProjections=nullptr;
+			}
+			virtual property XbimMatrix3D Transform
+			{
+				XbimMatrix3D get() override
+				{
+					return XbimMatrix3D::Identity;
+				}
 			}
 		};
 	}

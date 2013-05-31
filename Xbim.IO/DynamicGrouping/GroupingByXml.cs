@@ -64,7 +64,7 @@ namespace Xbim.IO.DynamicGrouping
             }
             else
             {
-                _rootGroup = _model.Instances.New<IfcGroup>(g=> g.Name = "Root group");
+                _rootGroup = _model.Instances.New<IfcGroup>(g => g.Name = "Root group");
             }
 
 

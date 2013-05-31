@@ -3,9 +3,13 @@
 
 #include "XbimGeomPrim.h"
 #include <gp_Ax3.hxx>
+#include <gp_Circ.hxx>
+#include <GC_MakeCircle.hxx>
 #include <BRepBuilderAPI_MakeFace.hxx>
 #include <BRep_Builder.hxx>
 #include <BRepLib_FindSurface.hxx>
+#include <BRepBuilderAPI_MakeEdge.hxx>
+#include <BRepBuilderAPI_MakeWire.hxx>
 #include <BRepBuilderAPI_FindPlane.hxx>
 #include <ShapeFix_Wireframe.hxx>
 #include <BRepGProp_Face.hxx>
@@ -64,6 +68,8 @@ namespace Xbim
 				TopoDS_Face face;
 				if(dynamic_cast<IfcRectangleProfileDef^>(profile))
 					face = XbimFace::Build((IfcRectangleProfileDef^)profile,hasCurves);	
+				else if (dynamic_cast<IfcCircleHollowProfileDef^>(profile))
+					face = XbimFace::Build((IfcCircleHollowProfileDef^)profile,hasCurves);	
 				else if(dynamic_cast<IfcCircleProfileDef^>(profile))
 					face = XbimFace::Build((IfcCircleProfileDef^)profile,hasCurves);	
 				else if(dynamic_cast<IfcLShapeProfileDef^>(profile))
@@ -235,6 +241,34 @@ namespace Xbim
 				return faceBlder.Face();
 			}
 
+			//Builds a face from a CircleProfileDef
+			TopoDS_Face XbimFace::Build(IfcCircleHollowProfileDef ^ circProfile, bool% hasCurves)
+			{
+				hasCurves=true;
+				IfcAxis2Placement2D^ ax2 = (IfcAxis2Placement2D^)circProfile->Position;
+				gp_Ax2 gpax2(gp_Pnt(ax2->Location->X, ax2->Location->Y,0), gp_Dir(0,0,1),gp_Dir(ax2->P[0]->X, ax2->P[0]->Y,0.));			
+				
+				//make the outer wire
+				gp_Circ outer(gpax2,circProfile->Radius);
+				Handle(Geom_Circle) hOuter = GC_MakeCircle(outer);
+				TopoDS_Edge outerEdge = BRepBuilderAPI_MakeEdge(hOuter);
+				BRepBuilderAPI_MakeWire outerWire;
+				outerWire.Add(outerEdge);
+				double innerRadius = circProfile->Radius - circProfile->WallThickness;
+				BRepBuilderAPI_MakeFace faceBlder(outerWire);
+				//now add inner wire
+				if(innerRadius>0)
+				{
+					gp_Circ inner(gpax2,circProfile->Radius - circProfile->WallThickness);
+					Handle(Geom_Circle) hInner = GC_MakeCircle(inner);
+					TopoDS_Edge innerEdge = BRepBuilderAPI_MakeEdge(hInner);
+					BRepBuilderAPI_MakeWire innerWire;
+					innerWire.Add(innerEdge);
+					faceBlder.Add(innerWire);
+				}
+				//make the face
+				return faceBlder.Face();
+			}
 			//Builds a face from a composite curve
 			TopoDS_Face XbimFace::Build(IfcCompositeCurve ^ cCurve, bool% hasCurves)
 			{

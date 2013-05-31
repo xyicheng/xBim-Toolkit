@@ -23,7 +23,7 @@ namespace XbimConvert
             if (args.Length < 1)
             {
                 Console.WriteLine("Invalid number of Parameters, filename required");
-                Console.WriteLine("Syntax: XbimConvert source [-quiet|-q] [-generatescene|-gs] [-keepextension|-ke] [-filter|-f <elementid|elementtype>] [-sanitiselog] [-occ]");
+                Console.WriteLine("Syntax: XbimConvert source [-quiet|-q] [-generatescene|-gs] [-nogeometry|-ng] [-keepextension|-ke] [-filter|-f <elementid|elementtype>] [-sanitiselog] [-occ]");
                 return;
             }
 
@@ -59,7 +59,10 @@ namespace XbimConvert
                             case "-gs":
                                 GenerateScene = true;
                                 break;
-
+                            case "-nogeometry":
+                            case "-ng":
+                                NoGeometry = true;
+                                break;
                             case "-filter":
                             case "-f":
                                 paramType = CompoundParameter.Filter;
@@ -117,6 +120,7 @@ namespace XbimConvert
         public bool IsQuiet { get; set; }
         public bool KeepFileExtension { get; set; }
         public bool GenerateScene { get; set; }
+        public bool NoGeometry { get; set; }
         public bool IsValid { get; set; }
         public FilterType FilterType { get; set; }
         public int ElementIdFilter {get;set;}

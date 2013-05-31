@@ -48,22 +48,22 @@ namespace Xbim
 		
 
 
-		IXbimGeometryModel^ XbimFacetedShell::Cut(IXbimGeometryModel^ shape)
+		XbimGeometryModel^ XbimFacetedShell::Cut(XbimGeometryModel^ shape)
 		{
 			throw gcnew NotImplementedException("Cut needs to be implemented");
 		}
 
-		IXbimGeometryModel^ XbimFacetedShell::Union(IXbimGeometryModel^ shape)
+		XbimGeometryModel^ XbimFacetedShell::Union(XbimGeometryModel^ shape)
 		{
 			throw gcnew NotImplementedException("Union needs to be implemented");
 		}
 
-		IXbimGeometryModel^ XbimFacetedShell::Intersection(IXbimGeometryModel^ shape)
+		XbimGeometryModel^ XbimFacetedShell::Intersection(XbimGeometryModel^ shape)
 		{
 			throw gcnew NotImplementedException("Intersection needs to be implemented");
 		}
 
-		IXbimGeometryModel^ XbimFacetedShell::CopyTo(IfcObjectPlacement^ placement)
+		XbimGeometryModel^ XbimFacetedShell::CopyTo(IfcObjectPlacement^ placement)
 		{
 			throw gcnew NotImplementedException("CopyTo needs to be implemented");
 		}
@@ -73,25 +73,11 @@ namespace Xbim
 			throw gcnew NotImplementedException("Move needs to be implemented");
 		}
 
-		List<XbimTriangulatedModel^>^XbimFacetedShell::Mesh()
-		{
-			return Mesh(true, XbimGeometryModel::DefaultDeflection, XbimMatrix3D::Identity);
-		}
+	
 
-		List<XbimTriangulatedModel^>^XbimFacetedShell::Mesh( bool withNormals )
-		{
-			return Mesh(withNormals, XbimGeometryModel::DefaultDeflection, XbimMatrix3D::Identity);
-		}
-		
-		List<XbimTriangulatedModel^>^XbimFacetedShell::Mesh(bool withNormals, double deflection )
-		{
-			return Mesh(withNormals, deflection, XbimMatrix3D::Identity);
-		}
-
-		List<XbimTriangulatedModel^>^XbimFacetedShell::Mesh(bool withNormals, double deflection, XbimMatrix3D transform )
+		List<XbimTriangulatedModel^>^XbimFacetedShell::Mesh(bool withNormals, double deflection)
 		{
 			
-			bool doTransform = !transform.IsIdentity;
 			XbimTriangularMeshStreamer tms (this->RepresentationLabel, this->SurfaceStyleLabel);
 			// XbimTriangularMeshStreamer* m = &tms;
 			double xmin = 0; double ymin = 0; double zmin = 0; double xmax = 0; double ymax = 0; double zmax = 0;
@@ -105,7 +91,7 @@ namespace Xbim
 			gluTessCallback(ActiveTss, GLU_TESS_VERTEX_DATA,  (void (CALLBACK *)()) XMS_AddVertexIndex);
 				//we take a copy of the faceset to avoid loading and retaining large meshes in memory
 				//if we do not do this the model geometry object will retain all geometry data of the mesh until it is releases
-				IfcConnectedFaceSet^ faceset = (IfcConnectedFaceSet^)_faceSet->ModelOf->Instances[_faceSet->EntityLabel];
+			IfcConnectedFaceSet^ faceset = (IfcConnectedFaceSet^)_faceSet->ModelOf->Instances[_faceSet->EntityLabel];
 			GLdouble glPt3D[3];
 			// TesselateStream vertexData(pStream, points, faceCount, streamSize);
 				for each (IfcFace^ fc in  faceset->CfsFaces)
@@ -118,25 +104,11 @@ namespace Xbim
 					if(normal->IsInvalid()) 
 						break;
 					tms.BeginFace((int)-1);
-
-					if(doTransform ) 
-					{
-						XbimVector3D v(normal->X, normal->Y, normal->Z);
-						v = transform.Transform(v);
-						tms.SetNormal(
-							(float)v.X, 
-							(float)v.Y, 
-							(float)v.Z
-							);
-					}
-					else
-					{
-						tms.SetNormal(
-							(float)normal->X, 
-							(float)normal->Y, 
-							(float)normal->Z
-							);
-					}
+					tms.SetNormal(
+						(float)normal->X, 
+						(float)normal->Y, 
+						(float)normal->Z
+						);
 				}
 				gluTessBeginPolygon(ActiveTss, &tms);
 				// go over each boundary
@@ -158,7 +130,6 @@ namespace Xbim
 					for each(IfcCartesianPoint^ p in pts)
 					{
 						XbimPoint3D p3D = p->XbimPoint3D();
-						if(doTransform ) p3D = transform.Transform(p3D);
 						glPt3D[0] = p3D.X;
 						glPt3D[1] = p3D.Y;
 						glPt3D[2] = p3D.Z;
@@ -199,20 +170,16 @@ namespace Xbim
 			IntPtr BonghiUnManMem = Marshal::AllocHGlobal((int)uiCalcSize);
 			unsigned char* BonghiUnManMemBuf = (unsigned char*)BonghiUnManMem.ToPointer();
 			size_t controlSize = tms.StreamTo(BonghiUnManMemBuf);
-				/*
-			if (uiCalcSize != controlSize)
-			{
-				int iError = 0;
-				iError++;
-				}*/
+
 
 			array<unsigned char>^ BmanagedArray = gcnew array<unsigned char>((int)uiCalcSize);
 			Marshal::Copy(BonghiUnManMem, BmanagedArray, 0, (int)uiCalcSize);
 			Marshal::FreeHGlobal(BonghiUnManMem);
 			List<XbimTriangulatedModel^>^list = gcnew List<XbimTriangulatedModel^>();
+			_boundingBox = XbimRect3D((float)xmin, (float)ymin, (float)zmin, (float)(xmax-xmin),  (float)(ymax-ymin), (float)(zmax-zmin));
 			list->Add(gcnew XbimTriangulatedModel(BmanagedArray,this->RepresentationLabel, this->SurfaceStyleLabel));
 			//set bounding box
-			_boundingBox = gcnew XbimBoundingBox(xmin,ymin,zmin,xmax,ymax,zmax);
+			
 
 			return list;
 			}

@@ -3,7 +3,7 @@
 #include "XbimLocation.h"
 #include "XbimBoundingBox.h"
 #include "IXbimMeshGeometry.h"
-#include "IXbimGeometryModel.h"
+#include "XbimGeometryModel.h"
 #include <TopoDS_Shape.hxx>
 #include <TopoDS_Compound.hxx>
 #include <TopTools_DataMapOfShapeInteger.hxx>
@@ -36,68 +36,71 @@ void CALLBACK XMS_AddVertexIndex(void *pVertexData, void *pPolygonData);
 		
 #pragma managed
 
-		
-		public ref class XbimGeometryModel abstract 
+
+public ref class XbimGeometryModel abstract : IXbimGeometryModel
 		{
 			
 		private:
-			static int _callStaticConstructor; //we need this to ensure the static constructor is called
 			static ILogger^ Logger = LoggerFactory::GetLogger();
-			
+		protected:
+			Int32 _representationLabel;
+			Int32 _surfaceStyleLabel;
+			static Object^ resourceLock = gcnew Object();
 		public:
 			
 			static int DefaultDeflection = 4;
-			static XbimGeometryModel(void)
-			{
-				Init();
-				
-			}
-			static void Init()
-			{
-				Standard::SetReentrant(Standard_True);
-				
-			}
-			
-			virtual XbimTriangulatedModelStream^ Triangulate(IfcProduct^ product) abstract;
-
 			
 			XbimGeometryModel(void){};
-			virtual List<XbimTriangulatedModel^>^Mesh(bool withNormals, double deflection, XbimMatrix3D transform) abstract;
-			virtual List<XbimTriangulatedModel^>^Mesh(bool withNormals, double deflection) abstract;
-			virtual List<XbimTriangulatedModel^>^Mesh(bool withNormals) abstract;
-			virtual List<XbimTriangulatedModel^>^Mesh() abstract;
+			virtual List<XbimTriangulatedModel^>^Mesh(bool withNormals, double deflection);
+			virtual List<XbimTriangulatedModel^>^Mesh(bool withNormals);
+			virtual List<XbimTriangulatedModel^>^Mesh();
 			property TopoDS_Shape* Handle{ virtual TopoDS_Shape* get() abstract;};
-			virtual IXbimGeometryModel^ Cut(IXbimGeometryModel^ shape) abstract;
-			virtual IXbimGeometryModel^ Union(IXbimGeometryModel^ shape)abstract;
-			virtual IXbimGeometryModel^ Intersection(IXbimGeometryModel^ shape)abstract;
-			virtual IXbimGeometryModel^ CopyTo(IfcObjectPlacement^ placement) abstract;
-			property XbimLocation^ Location {virtual XbimLocation ^ get() abstract; virtual void set(XbimLocation ^ location) abstract;};
+			virtual XbimGeometryModel^ Cut(XbimGeometryModel^ shape) abstract;
+			virtual XbimGeometryModel^ Union(XbimGeometryModel^ shape)abstract;
+			virtual XbimGeometryModel^ Intersection(XbimGeometryModel^ shape)abstract;
+			virtual XbimGeometryModel^ CopyTo(IfcObjectPlacement^ placement) abstract;
+			virtual property XbimLocation^ Location 
+			{
+				XbimLocation ^ get() abstract; 
+				void set(XbimLocation ^ location) abstract;
+			};
+		    virtual property Int32 RepresentationLabel
+			{
+				Int32 get()  
+				{return _representationLabel; }
+				void set(Int32 value)  
+				{ _representationLabel=value; }
+			}
 
-			static IXbimGeometryModel^ CreateFrom(IfcProduct^ product, IfcGeometricRepresentationContext^ repContext, ConcurrentDictionary<int, Object^>^ maps, bool forceSolid, XbimLOD lod, bool occOut);
-			static IXbimGeometryModel^ CreateFrom(IfcProduct^ product, ConcurrentDictionary<int, Object^>^ maps, bool forceSolid, XbimLOD lod, bool occOut);
-			static IXbimGeometryModel^ CreateFrom(IfcProduct^ product, bool forceSolid, XbimLOD lod, bool occOut);
+			virtual property Int32 SurfaceStyleLabel
+			{
+				Int32 get()  
+				{return _surfaceStyleLabel; }
+				void set(Int32 value) 
+				{ _surfaceStyleLabel=value; }
+			}
 
+			virtual property XbimMatrix3D Transform
+			{
+				XbimMatrix3D get() abstract;
+			}
+			virtual property bool IsMap
+			{
+				bool get() ;
+			}
+			virtual void Move(TopLoc_Location location) abstract;
 
-			static IXbimGeometryModel^ CreateFrom(IfcRepresentationItem^ repItem, bool forceSolid, XbimLOD lod, bool occOut);
-			static IXbimGeometryModel^ CreateFrom(IfcRepresentationItem^ repItem, ConcurrentDictionary<int, Object^>^ maps, bool forceSolid, XbimLOD lod, bool occOut);
-			static IXbimGeometryModel^ CreateFrom(IfcRepresentation^ shape, ConcurrentDictionary<int, Object^>^ maps, bool forceSolid, XbimLOD lod, bool occOut);
-			static IXbimGeometryModel^ CreateFrom(IfcRepresentation^ shape, bool forceSolid, XbimLOD lod, bool occOut);
+			static XbimGeometryModel^ Fix(XbimGeometryModel^ shape);
 			
-			
-			static IXbimGeometryModel^ Fix(IXbimGeometryModel^ shape);
-			static List<XbimTriangulatedModel^>^Mesh(IXbimGeometryModel^ shape,  bool withNormals, double deflection, XbimMatrix3D transform );
-			virtual XbimBoundingBox^ GetBoundingBox(bool precise) abstract;
-			static XbimBoundingBox^ GetBoundingBox(IXbimGeometryModel^ shape, bool precise);
-			property double Volume {virtual double get()abstract;};
+			virtual XbimRect3D GetBoundingBox();
+			virtual bool Intersects(XbimGeometryModel^ other);
+			virtual property double Volume 
+			{
+				virtual double get() abstract;
+			};
 			property bool HasCurvedEdges{virtual bool get() abstract;};
 			
-			static bool CutOpenings(IfcProduct^ product, XbimLOD lod);
-		public:
-			//Builds a TopoDS_Compound from a ShellBasedSurfaceModel
-			static IXbimGeometryModel^ Build(IfcShellBasedSurfaceModel^ repItem, bool forceSolid);
-			static IXbimGeometryModel^ Build(IfcFaceBasedSurfaceModel^ repItem, bool forceSolid);
-			//static IXbimGeometryModel^ Build(IfcBooleanResult^ repItem);
-			
+		
 			
 		};
 	}	

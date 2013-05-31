@@ -498,10 +498,11 @@ namespace Xbim
 			ShapeFix_ShapeTolerance FTol;
 			for each(IfcCompositeCurveSegment^ seg in cCurve->Segments)
 			{
-				///TODO: Need to add support for curve segment continuity a moment only continuos supported
+				///TODO: Need to add support for curve segment continuity a moment only continuous supported
 				TopoDS_Wire wireSeg = Build(seg->ParentCurve, hasCurves);
 				if(!wireSeg.IsNull())
 				{
+					
 					if(!seg->SameSense) wireSeg.Reverse();
 					
 					FTol.SetTolerance(wireSeg, mf->WireTolerance, TopAbs_WIRE);	
@@ -513,6 +514,7 @@ namespace Xbim
 						wire.Add(wireSeg);
 						
 					}
+					
 				}
 			}
 
@@ -627,6 +629,8 @@ namespace Xbim
 				return Build((IfcBoundedCurve^) curve, hasCurves);
 			else if(dynamic_cast<IfcCircle^>(curve))
 				return Build((IfcCircle^)curve, hasCurves);
+			else if(dynamic_cast<IfcLine^>(curve))
+				return Build((IfcLine^)curve, hasCurves);
 			else
 			{
 				Type ^ type = curve->GetType();
@@ -667,6 +671,22 @@ namespace Xbim
 			return result;
 		}
 
+		TopoDS_Wire XbimFaceBound::Build(IfcLine ^ line, bool% hasCurves)
+		{
+			IfcCartesianPoint^ cp = line->Pnt;
+			IfcVector^ dir = line->Dir;
+			gp_Pnt pnt(cp->X,cp->Y,cp->Z);
+			XbimVector3D v3d = dir->XbimVector3D();
+			gp_Vec vec(v3d.X,v3d.Y,v3d.Z);
+			BRepBuilderAPI_MakeWire w;
+			w.Add(BRepBuilderAPI_MakeEdge(GC_MakeLine(pnt,vec),0,dir->Magnitude));
+			TopoDS_Wire result = w.Wire();
+			// set the tolerance for this shape.
+			ShapeFix_ShapeTolerance FTol;	
+			FTol.SetTolerance(result, BRepBuilderAPI::Precision() ,TopAbs_WIRE);
+			return result;	
+		}
+
 		TopoDS_Wire XbimFaceBound::Build(IfcPolyline ^ pLine, bool% hasCurves)
 		{
 			BRepBuilderAPI_MakeWire w;
@@ -691,8 +711,7 @@ namespace Xbim
 		TopoDS_Wire XbimFaceBound::Build(IfcTrimmedCurve ^ tCurve, bool% hasCurves)
 		{
 			bool isConic = (dynamic_cast<IfcConic^>(tCurve->BasisCurve)!=nullptr);
-			/*IModel^ model = tCurve->ModelOf;
-			double parameterFactor = isConic ? model.PlaneAngleUnit() : model.LengthUnit();*/
+
 			XbimModelFactors^ mf = ((IPersistIfcEntity^)tCurve)->ModelOf->GetModelFactors;
 
 			double parameterFactor =  isConic ? mf->AngleToRadiansConversionFactor : mf->LengthToMetresConversionFactor;

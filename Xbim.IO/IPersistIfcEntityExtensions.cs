@@ -359,7 +359,7 @@ namespace Xbim.IO
 
         public static XbimInstanceHandle GetHandle(this IPersistIfcEntity entity)
         {
-            return new XbimInstanceHandle(Math.Abs(entity.EntityLabel), IfcMetaData.IfcTypeId(entity));
+            return new XbimInstanceHandle(entity);
         }
 
         public static void WriteEntity(this IPersistIfcEntity entity, BinaryWriter entityWriter)

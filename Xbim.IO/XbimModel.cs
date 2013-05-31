@@ -43,11 +43,11 @@ namespace Xbim.IO
 
         #region Fields
 
-
+       
 
         #region Logging Fields
 
-        protected readonly static ILogger Logger = LoggerFactory.GetLogger();
+        internal readonly static ILogger Logger = LoggerFactory.GetLogger();
 
         #endregion
 
@@ -67,7 +67,7 @@ namespace Xbim.IO
         private XbimEntityCursor editTransactionEntityCursor;
         private bool _deleteOnClose;
         
-        private static string xbimTempDirectory;
+       
         const string refDocument = "XbimReferencedModel";
         private XbimReferencedModelCollection _referencedModels = new XbimReferencedModelCollection();
        
@@ -86,12 +86,33 @@ namespace Xbim.IO
             get { return cache.DatabaseName; }
         }
 
-        public IXbimInstanceCollection Instances
+        static public int ModelOpenCount
         {
-            get { return instances; }
-
+            get
+            {
+                return IfcPersistedInstanceCache.ModelOpenCount;
+            }
         }
 
+        public IXbimInstanceCollection InstancesLocal
+        {
+            get
+            {
+                return instances;
+            }
+
+        }
+        /// <summary>
+        /// Returns a collection of all instances in the model and all federated instances 
+        /// </summary>
+        public IXbimInstanceCollection Instances
+        {
+            get
+            {
+                return new XbimFederatedModelInstances(this);
+            }
+
+        }
         /// <summary>
         /// based on the XML rule definition, this creates group objects to group instances together
         /// </summary>
@@ -366,13 +387,13 @@ namespace Xbim.IO
             switch (toImportStorageType)
             {
                 case XbimStorageType.IFCXML:
-                    cache.ImportIfcXml(xbimDbName, importFrom, progDelegate);
+                    cache.ImportIfcXml(xbimDbName, importFrom, progDelegate, keepOpen);
                     break;
                 case XbimStorageType.IFC:
                     cache.ImportIfc(xbimDbName, importFrom, progDelegate, keepOpen);
                     break;
                 case XbimStorageType.IFCZIP:
-                    cache.ImportIfcZip(xbimDbName, importFrom, progDelegate);
+                    cache.ImportIfcZip(xbimDbName, importFrom, progDelegate, keepOpen);
                     break;
                 case XbimStorageType.XBIM:
                     cache.ImportXbim(importFrom, progDelegate);
@@ -387,26 +408,6 @@ namespace Xbim.IO
 
 
         /// <summary>
-        /// Compacts an Xbim file to reduce size, database must be closed before this is called
-        /// </summary>
-        /// <returns></returns>
-        public static bool Compact(string sourceFileName, string targetFileName, out string errMsg)
-        {
-            errMsg = "";
-            try
-            {
-                IfcPersistedInstanceCache.Compact(sourceFileName, targetFileName);
-                return true;
-            }
-            catch (Exception e)
-            {
-                errMsg = e.Message;
-                File.Delete(targetFileName);
-                return false;
-            }
-        }
-
-        /// <summary>
         /// Creates an empty model using a temporary filename, the model will be deleted on close, unless SaveAs is called
         /// It will be returned open for read write operations
         /// </summary>
@@ -417,8 +418,8 @@ namespace Xbim.IO
             string tmpFileName = Path.GetTempFileName();
             try
             {
-                IfcPersistedInstanceCache.CreateDatabase(tmpFileName);
                 XbimModel model = new XbimModel();
+                model.CreateDatabase(tmpFileName);  
                 model.Open(tmpFileName, XbimDBAccess.ReadWrite, true);
                 model.Header = new IfcFileHeader();
                 return model;
@@ -429,6 +430,11 @@ namespace Xbim.IO
                 throw new XbimException("Failed to create and open temporary xBIM file \'" + tmpFileName + "\'\n" + e.Message, e);
             }
            
+        }
+
+        private void CreateDatabase(string tmpFileName)
+        {
+            cache.CreateDatabase(tmpFileName);
         }
 
         /// <summary>
@@ -442,8 +448,8 @@ namespace Xbim.IO
             {
                 if (string.IsNullOrWhiteSpace(Path.GetExtension(dbFileName)))
                     dbFileName += ".xBIM";
-                IfcPersistedInstanceCache.CreateDatabase(dbFileName);
                 XbimModel model = new XbimModel();
+                model.CreateDatabase(dbFileName); 
                 model.Open(dbFileName, access,null);
                 return model;
             }
@@ -501,9 +507,9 @@ namespace Xbim.IO
         public int Validate(TextWriter tw, ValidationFlags validateLevel = ValidationFlags.Properties)
         {
             int errors = 0;
-            foreach (var handle in instances)
+            foreach (var entity in instances)
             {
-                errors += Validate(Instances[handle], tw, validateLevel);
+                errors += Validate(entity, tw, validateLevel);
             }
             return errors;
         }
@@ -696,7 +702,7 @@ namespace Xbim.IO
             this._modelFactors = null;          
             this.header = null;
             foreach (var refModel in _referencedModels)
-                refModel.Model.Close();
+                refModel.Model.Dispose();
             _referencedModels.Clear();
             if (editTransactionEntityCursor != null)
                 EndTransaction();
@@ -995,13 +1001,15 @@ namespace Xbim.IO
         {
             get
             {
-                return cache == null ? null : cache.OfType<IfcProject>().FirstOrDefault();
+                return cache == null ? null : InstancesLocal.OfType<IfcProject>().FirstOrDefault();
             }
         }
-
+        /// <summary>
+        /// Returns all products in the model, including dederated products
+        /// </summary>
         public IEnumerable<IPersistIfcEntity> IfcProducts
         {
-            get { return cache == null ? null : cache.OfType<IfcProduct>(); }
+            get { return cache == null ? null : Instances.OfType<IfcProduct>(); }
         }
 
         IPersistIfcEntity IModel.OwnerHistoryAddObject
@@ -1024,7 +1032,7 @@ namespace Xbim.IO
             get { return instances.DefaultOwningUser; }
         }
 
-       
+
 
         ~XbimModel()
         {
@@ -1047,7 +1055,12 @@ namespace Xbim.IO
                 // If disposing equals true, dispose all managed 
                 // and unmanaged resources.
                 if (disposing)
+                {
+                   //managed resources
                     Close();
+                }
+                //unmanaged, mostly esent related
+                cache.Dispose();
             }
             disposed = true;
         }
@@ -1083,9 +1096,12 @@ namespace Xbim.IO
         public IEnumerable<XbimGeometryData> GetGeometryData(int productLabel, XbimGeometryType geomType)
         {
             IPersistIfc entity = cache.GetInstance(productLabel, false, true);
-            foreach (var item in cache.GetGeometry(IfcMetaData.IfcTypeId(entity),productLabel, geomType))
+            if (entity != null)
             {
-                yield return item;
+                foreach (var item in cache.GetGeometry(IfcMetaData.IfcTypeId(entity), productLabel, geomType))
+                {
+                    yield return item;
+                }
             }
         }
 
@@ -1161,25 +1177,7 @@ namespace Xbim.IO
             cache.EndCaching();
             editTransactionEntityCursor = null;
         }
-        /// <summary>
-        /// This is the path Xbim will use to store database transactions files
-        /// Note this can only be set before an instance of XbimModel is created
-        /// </summary>
-        public static string XbimTempDirectory
-        {
-            get
-            {
-                return xbimTempDirectory;
-            }
-            set
-            {
-                if (IfcPersistedInstanceCache.HasDatabaseInstance) 
-                    Debug.Assert(false, "Attempt to set a log path after the database instance has been initialised");
-                else
-                    xbimTempDirectory = value;
-            }
-        }
-
+       
 
 
         internal void Flush()
@@ -1193,21 +1191,7 @@ namespace Xbim.IO
             return editTransactionEntityCursor;
         }
 
-        /// <summary>
-        /// Terminates the Xbim Database engine, any open operations will be lost
-        /// </summary>
-        public static void Terminate()
-        {
-            IfcPersistedInstanceCache.Terminate();
-        }
 
-        /// <summary>
-        /// Initializes the Xbim Database engine
-        /// </summary>
-        public static void Initialize()
-        {
-            IfcPersistedInstanceCache.Initialize();
-        }
 
         #region Model Group functions
         /// <summary>
@@ -1217,16 +1201,22 @@ namespace Xbim.IO
         /// <param name="organisationName"></param>
         /// <param name="organisationRole"></param>
         /// <returns></returns>
-        public IfcIdentifier AddModelReference(string refModelPath, string organisationName, IfcRole organisationRole)
+        public IfcIdentifier AddModelReference(string refModelPath, string organisationName, IfcRole organisationRole, string userDefinedRoleName = null)
         {
             using (var txn = BeginTransaction())
             {
                 //create an author of the referenced model
                 IfcOrganization org = Instances.New<IfcOrganization>();
                 IfcActorRole role = Instances.New<IfcActorRole>();
-                role.Role = organisationRole;
-                org.Name = organisationName;
-                org.AddRole(role);
+                if (userDefinedRoleName == null)
+                    role.Role = organisationRole;
+                else
+                {
+                    role.Role = IfcRole.UserDefined;
+                    role.UserDefinedRole = userDefinedRoleName;
+                }
+                org.Name = organisationName; 
+                org.AddRole(role);    
                 IfcIdentifier docId = AddModelReference(refModelPath, org);
                 txn.Commit();
                 return docId;
@@ -1332,7 +1322,67 @@ namespace Xbim.IO
             
         }
 
+        /// <summary>
+        /// Returns true if the model contains reference models or the model has extension xBIMf
+        /// </summary>
+        public bool IsFederation 
+        {
+            get
+            {
+                return _referencedModels.Any() || string.Compare(Path.GetExtension(cache.DatabaseName), ".xbimf", true) == 0;
+            }
+        }
+
+        public void AddModelReference(string fileName, string organisationName, string ownerName)
+        {
+            AddModelReference(fileName, organisationName,IfcRole.UserDefined, ownerName);
+        }
 
 
+        /// <summary>
+        /// Returns an enumerable of the handles to all entities in the model
+        /// Note this includes entities that are in any federated models
+        /// </summary>
+        public IEnumerable<XbimInstanceHandle> AllInstancesHandles 
+        {
+            get
+            {
+                foreach (var h in cache.InstanceHandles)
+                    yield return h;
+                foreach (var refModel in RefencedModels)
+                    foreach (var h in refModel.Model.InstanceHandles)
+                        yield return h;
+            }
+        }
+        /// <summary>
+        /// Returns an enumerable of the handles to only the entities in this model
+        /// Note this do NOT include entities that are in any federated models
+        /// </summary>
+        /// </summary>
+        public IEnumerable<XbimInstanceHandle> InstanceHandles 
+        {
+            get
+            {
+                foreach (var h in cache.InstanceHandles)
+                    yield return h;
+            }
+        }
+
+        internal IPersistIfcEntity GetInstanceVolatile(XbimInstanceHandle item)
+        {
+          return item.Model.GetInstanceVolatile(item.EntityLabel);
+          
+        }
+
+        public IEnumerable<XbimModel> AllModels
+        {
+            get
+            {
+                yield return this;
+                foreach (var refModel in RefencedModels)
+                    foreach (var m in refModel.Model.AllModels)
+                        yield return m;
+            }
+        }
     }
 }

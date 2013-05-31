@@ -60,22 +60,28 @@ namespace XbimConvert
                             ResetCursor(Console.CursorTop);
                         }
                     };
+                    watch.Start();
                     using (XbimModel model = ParseModelFile(xbimFileName))
                     {
-                        watch.Start();
-                        model.Open(xbimFileName, XbimDBAccess.ReadWrite);            
-                        XbimMesher.GenerateGeometry(model, Logger, progDelegate);
-                        if (arguments.GenerateScene)
+                       
+                        model.Open(xbimFileName, XbimDBAccess.ReadWrite);
+                        if (!arguments.NoGeometry)
                         {
-                            if (!arguments.IsQuiet)
-                                Console.Write("Scene generation started...");
-                            
-                            XbimSceneBuilder sb = new XbimSceneBuilder();
-                            string xbimSceneName = BuildFileName(xbimFileName, ".xbimScene");
-                            sb.BuildGlobalScene(model, xbimSceneName);
-                            if (!arguments.IsQuiet)
-                                Console.WriteLine(" Completed.");
-                            
+                            XbimMesher.GenerateGeometry(model, Logger, progDelegate);
+                            if (arguments.GenerateScene)
+                            {
+                                Stopwatch sceneTimer = new Stopwatch();
+                                if (!arguments.IsQuiet)
+                                    Console.Write("Scene generation started...");
+                                sceneTimer.Start();
+                                XbimSceneBuilder sb = new XbimSceneBuilder();
+                                string xbimSceneName = BuildFileName(xbimFileName, ".xbimScene");
+                                sb.BuildGlobalScene(model, xbimSceneName);
+                                sceneTimer.Stop();
+                                if (!arguments.IsQuiet)
+                                    Console.WriteLine(string.Format(" Completed in {0} ms", sceneTimer.ElapsedMilliseconds));
+
+                            }
                         }
                         model.Close();
                         watch.Stop();

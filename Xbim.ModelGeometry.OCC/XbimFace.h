@@ -124,6 +124,8 @@ namespace Xbim
 				//Builds a face from a CircleProfileDef
 				static TopoDS_Face Build(IfcCircleProfileDef ^ profile, bool% hasCurves);
 
+				//Builds a face from a CircleHollowProfileDef
+				static TopoDS_Face Build(IfcCircleHollowProfileDef ^ profile, bool% hasCurves);
 				//Builds a face from a Polyline
 				static TopoDS_Face Build(IfcPolyline ^ pline, bool% hasCurves);
 

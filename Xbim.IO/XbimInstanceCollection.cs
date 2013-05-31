@@ -302,14 +302,16 @@ namespace Xbim.IO
         }
 
 
-        public IEnumerator<int> GetEnumerator()
+       
+
+        IEnumerator<IPersistIfcEntity> IEnumerable<IPersistIfcEntity>.GetEnumerator()
         {
-            return new XbimInstancesEnumerator(cache);
+            return new XbimInstancesEntityEnumerator(cache);
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return new XbimInstancesEnumerator(cache);
+            return new XbimInstancesEntityEnumerator(cache);
         }
     }
 

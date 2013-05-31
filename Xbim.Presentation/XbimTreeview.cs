@@ -13,6 +13,8 @@ using System.Windows.Controls.Primitives;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Collections.Specialized;
+using Xbim.XbimExtensions.Interfaces;
+using System.Collections.ObjectModel;
 
 namespace Xbim.Presentation
 {
@@ -29,38 +31,42 @@ namespace Xbim.Presentation
         {
             base.OnSelectionChanged(e);
             if (e.AddedItems.Count > 0)
-                EntityLabel = ((IXbimViewModel)(e.AddedItems[0])).EntityLabel;
+            {
+                IPersistIfcEntity p = ((IXbimViewModel)(e.AddedItems[0])).Entity;
+                IPersistIfcEntity p2 = SelectedEntity;
+                if (p2 == null)
+                    SelectedEntity = p;
+                else if (!(p.ModelOf == p2.ModelOf && Math.Abs(p.EntityLabel)==Math.Abs(p2.EntityLabel))) 
+                    SelectedEntity = p;
+            }
         }
 
 
 
-        public int EntityLabel
+        public IPersistIfcEntity SelectedEntity
         {
-            get { return (int)GetValue(EntityLabelProperty); }
-            set { SetValue(EntityLabelProperty, value); }
+            get { return (IPersistIfcEntity)GetValue(SelectedEntityProperty); }
+            set { SetValue(SelectedEntityProperty, value); }
         }
 
-        // Using a DependencyProperty as the backing store for EntityLabel.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty EntityLabelProperty =
-            DependencyProperty.Register("EntityLabel", typeof(int), typeof(XbimTreeview), new FrameworkPropertyMetadata(-1, FrameworkPropertyMetadataOptions.Inherits,
-                                                                      new PropertyChangedCallback(OnEntityLabelChanged)));
+        // Using a DependencyProperty as the backing store for SelectedEntity.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty SelectedEntityProperty =
+            DependencyProperty.Register("SelectedEntity", typeof(IPersistIfcEntity), typeof(XbimTreeview), new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.Inherits,
+                                                                      new PropertyChangedCallback(OnSelectedEntityChanged)));
 
-        
-
-
-        private static void OnEntityLabelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static void OnSelectedEntityChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             XbimTreeview view = d as XbimTreeview;
-            if (view != null && e.NewValue is int)
+            if (view != null && e.NewValue is IPersistIfcEntity)
             {
                 view.UnselectAll();
-                int newVal = (int)(e.NewValue);
-                if (newVal > 0) view.Select(newVal);
+                IPersistIfcEntity newVal = (IPersistIfcEntity)(e.NewValue);
+                if (newVal != null) view.Select(newVal);
                 return;
             }
         }
 
-        private void Select(int newVal)
+        private void Select(IPersistIfcEntity newVal)
         {
             foreach (var item in HierarchySource.OfType<IXbimViewModel>())
             {
@@ -76,9 +82,9 @@ namespace Xbim.Presentation
             }
         }
 
-        public IXbimViewModel FindItem(IXbimViewModel node, int entitylabel)
+        public IXbimViewModel FindItem(IXbimViewModel node, IPersistIfcEntity entity)
         {
-            if (node.EntityLabel == entitylabel)
+            if (node.Model==entity.ModelOf && node.EntityLabel == Math.Abs(entity.EntityLabel))
             {
                 node.IsExpanded = true;
                 return node;
@@ -86,7 +92,7 @@ namespace Xbim.Presentation
 
             foreach (var child in node.Children)
             {
-                IXbimViewModel res = FindItem(child, entitylabel);
+                IXbimViewModel res = FindItem(child, entity);
                 if (res != null)
                 {
                     node.IsExpanded = true; //it is here so expand parent
@@ -153,7 +159,7 @@ namespace Xbim.Presentation
             {
                 if (tv != null) //unbind
                 {
-                    tv.HierarchySource = null;
+                    tv.HierarchySource = Enumerable.Empty<XbimModelViewModel>();
                 }
             }
         }
@@ -166,7 +172,7 @@ namespace Xbim.Presentation
                 XbimModelViewModel vm = HierarchySource.Cast<XbimModelViewModel>().FirstOrDefault();
                 if(vm!=null)
                 {
-                    vm.AddRefModel(new XbimModelViewModel(refModel.Model.IfcProject));
+                    vm.AddRefModel(new XbimRefModelViewModel(refModel));
                 }
             }
         }
@@ -199,8 +205,9 @@ namespace Xbim.Presentation
             IfcProject project = Model.IfcProject as IfcProject;
             if (project != null)
             {
+              
                 this.ChildrenBinding = new Binding("Children");
-                List<XbimModelViewModel> svList = new List<XbimModelViewModel>();  
+                ObservableCollection<XbimModelViewModel> svList = new ObservableCollection<XbimModelViewModel>();  
                 svList.Add(new XbimModelViewModel(project));
                 this.HierarchySource = svList;
             }

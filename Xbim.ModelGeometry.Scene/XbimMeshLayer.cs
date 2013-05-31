@@ -24,7 +24,13 @@ namespace Xbim.ModelGeometry.Scene
         XbimColourMap layerColourMap;
         XbimRect3D boundingBoxVisible = XbimRect3D.Empty;
         XbimRect3D boundingBoxHidden = XbimRect3D.Empty;
+        private XbimModel model;
 
+        public XbimModel Model
+        {
+            get { return model; }
+            set { model = value; }
+        }
         /// <summary>
         /// Bounding box of all visible elements, aligned to the XYZ axis, containing all points in this mesh
         /// </summary>
@@ -125,10 +131,10 @@ namespace Xbim.ModelGeometry.Scene
         /// <summary>
         /// Creates a mesh using the default colour (typically white)
         /// </summary>
-        public XbimMeshLayer()
-            :this(XbimColour.Default)
+        public XbimMeshLayer(XbimModel m)
+            :this(m, XbimColour.Default)
         {
-            
+           
         }
 
         
@@ -138,28 +144,31 @@ namespace Xbim.ModelGeometry.Scene
         /// If the mesh geometry item has a style specified in the IFC definition sub layers will be created for each style
         /// </summary>
         /// <param name="colour"></param>
-        public XbimMeshLayer(XbimColour colour)
+        public XbimMeshLayer(XbimModel m, XbimColour colour)
         {
+            model = m;
             Style = new XbimTexture().CreateTexture(colour);
             
         }
 
        
 
-        public XbimMeshLayer(XbimColour colour, XbimColourMap subCategoryColourMap)
-            :this(colour)
+        public XbimMeshLayer(XbimModel m, XbimColour colour, XbimColourMap subCategoryColourMap)
+            :this(m, colour)
         {
             layerColourMap = subCategoryColourMap;
         }
 
-        public XbimMeshLayer(IfcSurfaceStyle style)
+        public XbimMeshLayer(XbimModel m, IfcSurfaceStyle style)
         {
+            model = m;
             Style = new XbimTexture().CreateTexture(style);
            
         }
 
-        public XbimMeshLayer(XbimTexture xbimTexture)
+        public XbimMeshLayer(XbimModel m, XbimTexture xbimTexture)
         {
+            model = m;
             Style = xbimTexture;
         }
 
@@ -222,7 +231,7 @@ namespace Xbim.ModelGeometry.Scene
                 {
                     IfcSurfaceStyle style = model.Instances[geomData.StyleLabel] as IfcSurfaceStyle;
                     //create a sub layer
-                    subLayer = new XbimMeshLayer<TVISIBLE, TMATERIAL>(style);
+                    subLayer = new XbimMeshLayer<TVISIBLE, TMATERIAL>(model,style);
                     subLayer.Name = layerName;
                     subLayerMap.Add(subLayer);
                 }
@@ -245,7 +254,7 @@ namespace Xbim.ModelGeometry.Scene
                         }
                     }
                     //didn't find a layer to add it to so create a new one
-                    XbimMeshLayer<TVISIBLE, TMATERIAL> subLayer = new XbimMeshLayer<TVISIBLE, TMATERIAL>(this.Style);
+                    XbimMeshLayer<TVISIBLE, TMATERIAL> subLayer = new XbimMeshLayer<TVISIBLE, TMATERIAL>(model, this.Style);
                     subLayer.Name = this.Name + "-" + subLayerMap.Count;
                     subLayerMap.Add(subLayer);
                     subLayer.Hidden.Add(geomData); //this should always pass as it is a new mesh and ifc geom rarely exceeds max mesh size, graphics cards will truncate anyway

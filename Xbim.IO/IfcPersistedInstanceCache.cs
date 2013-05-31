@@ -21,6 +21,7 @@ using Microsoft.Isam.Esent.Interop.Windows7;
 using System.Globalization;
 using ICSharpCode.SharpZipLib.Zip;
 using Xbim.Ifc2x3.PresentationAppearanceResource;
+using System.Collections.Concurrent;
 
 
 namespace Xbim.IO
@@ -28,25 +29,46 @@ namespace Xbim.IO
     
     public class IfcPersistedInstanceCache : IDisposable
     {
+         /// <summary>
+        /// Holds a collection of all currently opened instances in this process
+        /// </summary>
+        static HashSet<IfcPersistedInstanceCache> openInstances;
+       
         #region ESE Database 
 
-        private static Instance _jetInstance;
+        private  Instance _jetInstance;
         private Session _session;
         private JET_DBID _databaseId;
         static int cacheSizeInBytes = 128 * 1024 * 1024 ;
+        private const int MaxCachedEntityTables = 32;
+        private const int MaxCachedGeometryTables = 32;
+        const int _transactionBatchSize = 100;
+        static IfcPersistedInstanceCache()
+        {
+            SystemParameters.DatabasePageSize = 4096;
+            SystemParameters.CacheSizeMin = cacheSizeInBytes / SystemParameters.DatabasePageSize;
+            SystemParameters.CacheSizeMax = cacheSizeInBytes / SystemParameters.DatabasePageSize;
+            SystemParameters.MaxInstances = 128; //maximum number of models that can be opened at once, the abs max is 1024
+            openInstances = new HashSet<IfcPersistedInstanceCache>();
+        }
+
+        internal static int ModelOpenCount
+        {
+            get
+            {
+                return openInstances.Count();
+            }
+        }
         /// <summary>
         /// Holds the session and transaction state
         /// </summary>
-        private readonly object lockObject;
+        private readonly object _lockObject;
         private readonly XbimEntityCursor[] _entityTables;
         private readonly XbimGeometryCursor[] _geometryTables;
-        private const int MaxCachedEntityTables = 32;
-        private const int MaxCachedGeometryTables = 32;
         private XbimDBAccess _accessMode;
+        private string _systemPath;
 
-        static private string SystemPath;
-
-        const int _transactionBatchSize = 100;
+       
 
 
        
@@ -75,39 +97,15 @@ namespace Xbim.IO
                 return obj.Name.GetHashCode();
             }
         }
+       
+       
 
-        static IfcPersistedInstanceCache()
-        {
-            SystemParameters.DatabasePageSize = 4096;
-            SystemParameters.CacheSizeMin = cacheSizeInBytes / SystemParameters.DatabasePageSize;
-            SystemParameters.CacheSizeMax = cacheSizeInBytes / SystemParameters.DatabasePageSize;
-            _jetInstance = CreateInstance("XbimInstance", XbimModel.XbimTempDirectory);
-            AppDomain.CurrentDomain.ProcessExit += CurrentDomain_ProcessExit;
-             
-        }
-
-        static void CurrentDomain_ProcessExit(object sender, EventArgs e)
-        {
-            if (_jetInstance != null)
-            {
-                _jetInstance.Term();
-                _jetInstance=null;
-            }
-            try
-            {
-                if (Directory.Exists(SystemPath))
-                    Directory.Delete(SystemPath,true);
-            }
-            catch (Exception) //just in case we cannot delete
-            {
-              
-            }
-            
-        }
+       
 
         public IfcPersistedInstanceCache(XbimModel model)
         {
-            this.lockObject = new Object();
+            _jetInstance = CreateInstance("XbimInstance");
+            this._lockObject = new Object();
             _model = model;
             _entityTables = new XbimEntityCursor[MaxCachedEntityTables];
             _geometryTables = new XbimGeometryCursor[MaxCachedGeometryTables];
@@ -125,43 +123,31 @@ namespace Xbim.IO
         /// throw a create failed exception if unsuccessful
         /// </summary>
         /// <returns></returns>
-        static internal void CreateDatabase(string fileName)
+        internal void CreateDatabase(string fileName)
         {
-            string logDirectory = Path.GetFullPath(fileName);
-            logDirectory = Path.ChangeExtension(logDirectory, Guid.NewGuid().ToString());
-            try
+            using (var session = new Session(_jetInstance))
             {
-                using (Instance createInstance = CreateInstance("XbimCreateInstance", logDirectory, false))
+                JET_DBID dbid;
+                Api.JetCreateDatabase(session, fileName, null, out dbid, CreateDatabaseGrbit.OverwriteExisting);
+                try
                 {
-                    using (var session = new Session(createInstance))
+                    XbimEntityCursor.CreateTable(session, dbid);
+                    XbimCursor.CreateGlobalsTable(session, dbid); //create the gobals table
+                    XbimGeometryCursor.CreateTable(session, dbid);
+                }
+                catch (Exception e)
+                {
+                    Api.JetCloseDatabase(session, dbid, CloseDatabaseGrbit.None);
+                    lock (openInstances)
                     {
-                        JET_DBID dbid;
-                        Api.JetCreateDatabase(session, fileName, null, out dbid, CreateDatabaseGrbit.OverwriteExisting);
-                        try
-                        {
-                            XbimEntityCursor.CreateTable(session, dbid);
-                            XbimCursor.CreateGlobalsTable(session, dbid); //create the gobals table
-                            XbimGeometryCursor.CreateTable(session, dbid);
-                        }
-                        catch (Exception e)
-                        {
-                            Api.JetCloseDatabase(session, dbid, CloseDatabaseGrbit.None);
-                            Api.JetDetachDatabase(session, fileName);
-                            File.Delete(fileName);
-                            throw e;
-                        }
+                        Api.JetDetachDatabase(session, fileName);
+                        openInstances.Remove(this);
                     }
+                    File.Delete(fileName);
+                    throw e;
                 }
             }
-            finally
-            {
-                if (Directory.Exists(logDirectory)) 
-                    Directory.Delete(logDirectory, true);
-            }
         }
-
-     
-
 
         #region Table functions
 
@@ -172,7 +158,7 @@ namespace Xbim.IO
         internal XbimEntityCursor GetEntityTable()
         {
             Debug.Assert(!string.IsNullOrEmpty(_databaseName));
-            lock (this.lockObject)
+            lock (this._lockObject)
             {
                 for (int i = 0; i < this._entityTables.Length; ++i)
                 {
@@ -184,17 +170,73 @@ namespace Xbim.IO
                     }
                 }
             }
+            OpenDatabaseGrbit openMode = AttachedDatabase();
+            return new XbimEntityCursor(this._model, _databaseName, openMode);
+        }
+
+        private OpenDatabaseGrbit AttachedDatabase()
+        {
             OpenDatabaseGrbit openMode = OpenDatabaseGrbit.None;
             if (_accessMode == XbimDBAccess.Read)
                 openMode = OpenDatabaseGrbit.ReadOnly;
             if (_session == null)
             {
-                _session = new Session(_jetInstance);
- 
-                Api.JetAttachDatabase(_session, _databaseName, openMode == OpenDatabaseGrbit.ReadOnly ? AttachDatabaseGrbit.ReadOnly : AttachDatabaseGrbit.None);
-                Api.JetOpenDatabase(_session, _databaseName, String.Empty, out _databaseId, openMode); 
+                lock (openInstances) //if a db is opened twice we use the same instance
+                {
+                    foreach (var cache in openInstances)
+                    {
+
+                        if (string.Compare(cache.DatabaseName, _databaseName, true) == 0)
+                        {
+                            _jetInstance.Term();
+                            _jetInstance = cache.JetInstance;
+                            break;
+                        }
+                    }
+                    _session = new Session(_jetInstance);
+                    try
+                    {
+                        Api.JetAttachDatabase(_session, _databaseName, openMode == OpenDatabaseGrbit.ReadOnly ? AttachDatabaseGrbit.ReadOnly : AttachDatabaseGrbit.None);
+
+                    }
+                    catch (EsentDatabaseDirtyShutdownException)
+                    {
+
+                        // try and fix the problem with the badly shutdown database
+                        ProcessStartInfo startInfo = new ProcessStartInfo("EsentUtl.exe");
+                        startInfo.WindowStyle = ProcessWindowStyle.Hidden;
+                        startInfo.UseShellExecute = false;
+                        startInfo.CreateNoWindow = true;
+                        startInfo.Arguments = String.Format("/p \"{0}\" /o ", _databaseName);
+                        using (Process proc = Process.Start(startInfo))
+                        {
+                            if (proc.WaitForExit(60000) == false) //give in if it takes more than a minute
+                            {
+                                // timed out.
+                                if (proc != null && !proc.HasExited)
+                                {
+                                    proc.Kill();
+                                    // Give the process time to die, as we'll likely be reading files it has open next.
+                                    System.Threading.Thread.Sleep(500);
+                                }
+                                XbimModel.Logger.WarnFormat("Repair failed {0} after dirty shutdown, time out", _databaseName);
+                            }
+                            else
+                            {
+                                XbimModel.Logger.WarnFormat("Repair success {0} after dirty shutdown", _databaseName);
+                                proc.Close();
+                                //try again
+                                Api.JetAttachDatabase(_session, _databaseName, openMode == OpenDatabaseGrbit.ReadOnly ? AttachDatabaseGrbit.ReadOnly : AttachDatabaseGrbit.None);
+                            }
+                        }
+
+
+                    }
+                    openInstances.Add(this);
+                    Api.JetOpenDatabase(_session, _databaseName, String.Empty, out _databaseId, openMode);
+                }
             }
-            return new XbimEntityCursor(_jetInstance, _databaseName, openMode);
+            return openMode;
         }
 
         /// <summary>
@@ -204,7 +246,7 @@ namespace Xbim.IO
         internal XbimGeometryCursor GetGeometryTable()
         {
             Debug.Assert(!string.IsNullOrEmpty(_databaseName));
-            lock (this.lockObject)
+            lock (this._lockObject)
             {
                 for (int i = 0; i < this._geometryTables.Length; ++i)
                 {
@@ -216,17 +258,8 @@ namespace Xbim.IO
                     }
                 }
             }
-            OpenDatabaseGrbit openMode = OpenDatabaseGrbit.None;
-            if (_accessMode == XbimDBAccess.Read)
-                openMode = OpenDatabaseGrbit.ReadOnly;
-            if (_session == null)
-            {
-                _session = new Session(_jetInstance);
-                Api.JetAttachDatabase(_session, _databaseName, openMode == OpenDatabaseGrbit.ReadOnly ? AttachDatabaseGrbit.ReadOnly : AttachDatabaseGrbit.None);
-                Api.JetOpenDatabase(_session, _databaseName, String.Empty, out _databaseId, openMode);
-               
-            }
-            return new XbimGeometryCursor(_jetInstance, _databaseName, openMode);
+            OpenDatabaseGrbit openMode = AttachedDatabase();
+            return new XbimGeometryCursor(this._model, _databaseName, openMode);
         }
 
         /// <summary>
@@ -238,7 +271,7 @@ namespace Xbim.IO
         {
             Debug.Assert(null != table, "Freeing a null table");
 
-            lock (this.lockObject)
+            lock (this._lockObject)
             {
                 for (int i = 0; i < this._entityTables.Length; ++i)
                 {
@@ -263,7 +296,7 @@ namespace Xbim.IO
         {
             Debug.Assert(null != table, "Freeing a null table");
 
-            lock (this.lockObject)
+            lock (this._lockObject)
             {
                 for (int i = 0; i < this._geometryTables.Length; ++i)
                 {
@@ -315,13 +348,13 @@ namespace Xbim.IO
         /// </summary>
         public void Close()
         {
-
-           
+            int refCount = openInstances.Count(c => c.JetInstance == this.JetInstance);
+            bool disposeTable = (refCount != 0); //only dispose if we have not terminated the instance
             for (int i = 0; i < this._entityTables.Length; ++i)
             {
                 if (null != this._entityTables[i])
                 {
-                    this._entityTables[i].Dispose();
+                    if(disposeTable) this._entityTables[i].Dispose();
                     this._entityTables[i] = null;
                 }
             }
@@ -329,7 +362,7 @@ namespace Xbim.IO
             {
                 if (null != this._geometryTables[i])
                 {
-                    this._geometryTables[i].Dispose();
+                    if(disposeTable) this._geometryTables[i].Dispose();
                     this._geometryTables[i] = null;
                 }
             }
@@ -341,16 +374,15 @@ namespace Xbim.IO
                 if (_databaseId != null)
                 {
                     Api.JetCloseDatabase(_session, _databaseId, CloseDatabaseGrbit.None);
-                    try
+                    lock (openInstances)
                     {
-                        Api.JetDetachDatabase(_session, _databaseName);
-                    }
-                    catch (Microsoft.Isam.Esent.Interop.EsentDatabaseInUseException) //Databases can be attached many times and detached just once, ignore failed detaches
-                    {
-
+                        openInstances.Remove(this);
+                        refCount = openInstances.Count(c => string.Compare(c.DatabaseName, this.DatabaseName, true) == 0);
+                        if (refCount == 0) //only detach if we have no more references
+                            Api.JetDetachDatabase(_session, _databaseName);
                     }
                 }
-                this._databaseName = null;   
+                this._databaseName = null;
                 _session.Dispose();
                 _session = null;
             }
@@ -521,7 +553,7 @@ namespace Xbim.IO
         /// Sets up the Esent directories, can only be call before the Init method of the instance
         /// </summary>
         
-        static string GetXbimTempDirectory()
+        internal static string GetXbimTempDirectory()
         {
             //Directories are setup using the following strategy
             //First look in the config file, then try and use windows temporary directory, then the current working directory
@@ -577,25 +609,21 @@ namespace Xbim.IO
             return false;
         }
 
-        static private Instance CreateInstance(string instanceName, string tempDirectory = null,  bool recovery = false)
+        private Instance CreateInstance(string instanceName, string tempDirectory = null,  bool recovery = false)
         {
             string guid = Guid.NewGuid().ToString();
             var jetInstance = new Instance(instanceName+guid);           
-            string pathToUse;
+           
             if (!string.IsNullOrWhiteSpace(tempDirectory)) //we haven't specified a path so make one
-                pathToUse = tempDirectory;
+                _systemPath = tempDirectory;
             else //we are intending to use the global System Path
-            {
-                if (string.IsNullOrWhiteSpace(SystemPath)) //check if we already done it, if not create one
-                     SystemPath = GetXbimTempDirectory();
-                pathToUse = SystemPath;
-            }
-
+                _systemPath = GetXbimTempDirectory();
+            
             jetInstance.Parameters.BaseName = "XBM";
-            jetInstance.Parameters.SystemDirectory = pathToUse;
-            jetInstance.Parameters.LogFileDirectory = pathToUse;
-            jetInstance.Parameters.TempDirectory = pathToUse;
-            jetInstance.Parameters.AlternateDatabaseRecoveryDirectory = pathToUse;
+            jetInstance.Parameters.SystemDirectory = _systemPath;
+            jetInstance.Parameters.LogFileDirectory = _systemPath;
+            jetInstance.Parameters.TempDirectory = _systemPath;
+            jetInstance.Parameters.AlternateDatabaseRecoveryDirectory = _systemPath;
             jetInstance.Parameters.CreatePathIfNotExist = true;
             jetInstance.Parameters.EnableIndexChecking = false;       // TODO: fix unicode indexes
             jetInstance.Parameters.CircularLog = true;
@@ -1198,6 +1226,7 @@ namespace Xbim.IO
         ~IfcPersistedInstanceCache()
         {
             Dispose(false);
+            GC.SuppressFinalize(this);
         }
 
         protected void Dispose(bool disposing)
@@ -1205,14 +1234,35 @@ namespace Xbim.IO
             // Check to see if Dispose has already been called.
             if (!this.disposed)
             {
+                string dbName = this.DatabaseName;
                 // If disposing equals true, dispose all managed 
                 // and unmanaged resources.
                 if (disposing)
                 {
                     Close();
-                    GC.SuppressFinalize(this);
+ 
                 }
+                try
+                {
 
+                    lock (openInstances)
+                    {
+                        openInstances.Remove(this);
+                        int refCount = openInstances.Count(c => c.JetInstance == this.JetInstance);
+                        if (refCount == 0) //only terminate if we have no more references
+                            _jetInstance.Term();
+                    }
+                    if (Directory.Exists(_systemPath))
+                        Directory.Delete(_systemPath, true);
+                }
+                catch (Exception) //just in case we cannot delete
+                {
+
+                }
+                finally
+                {
+                    _jetInstance = null;
+                }
             }
             disposed = true;
         }
@@ -1786,7 +1836,7 @@ namespace Xbim.IO
 
 
 
-        public static bool HasDatabaseInstance
+        public bool HasDatabaseInstance
         {
             get
             {
@@ -1794,43 +1844,6 @@ namespace Xbim.IO
             }
         }
 
-        internal static void Compact(string sourceFileName, string targetFileName)
-        {
-            using (Session sess = new Session(_jetInstance))
-            {
-                Api.JetAttachDatabase(sess, sourceFileName, AttachDatabaseGrbit.ReadOnly);
-                try
-                {
-                    Api.JetCompact(sess, sourceFileName, targetFileName, null, null, CompactGrbit.None);
-                }
-                finally
-                {
-                    Api.JetDetachDatabase(sess, sourceFileName);
-                }
-
-            }
-
-        }
-
-        internal static void Terminate()
-        {
-            try
-            {
-                if (_jetInstance != null)
-                    _jetInstance.Term();
-            }
-            finally
-            {
-                 _jetInstance = null;
-            }
-           
-        }
-
-        internal static void Initialize()
-        {            
-             if (_jetInstance == null)
-                 _jetInstance = CreateInstance("XbimInstance", XbimModel.XbimTempDirectory);
-        }
 
         internal IEnumerable<IPersistIfcEntity> Modified()
         {
@@ -1895,6 +1908,8 @@ namespace Xbim.IO
                 FreeTable(geometryTable);
             }
         }
+
+        internal Instance JetInstance { get { return _jetInstance; } }
     }
 
 }

@@ -179,6 +179,10 @@ namespace Xbim.Ifc2x3.UtilityResource
             set { this.SetModelValue(this, ref _applicationIdentifier, value, v => ApplicationIdentifier = v, "ApplicationIdentifier"); }
         }
 
+        public override string ToString()
+        {
+            return string.Format("{0}({1}) - v{2}",ApplicationFullName,ApplicationIdentifier, Version);
+        }
         #endregion
 
         #region Methods

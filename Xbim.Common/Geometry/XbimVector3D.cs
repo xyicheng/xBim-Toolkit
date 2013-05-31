@@ -52,6 +52,21 @@ namespace Xbim.Common.Geometry
             Z = v;
         }
 
+        static public XbimVector3D Min(XbimVector3D a, XbimVector3D b)
+        {
+            return new XbimVector3D(
+                (a.X < b.X) ? a.X : b.X,
+                (a.Y < b.Y) ? a.Y : b.Y,
+                (a.Z < b.Z) ? a.Z : b.Z);
+        }
+        static public XbimVector3D Max(XbimVector3D a, XbimVector3D b)
+        {
+            return new XbimVector3D(
+                (a.X > b.X) ? a.X : b.X,
+                (a.Y > b.Y) ? a.Y : b.Y,
+                (a.Z > b.Z) ? a.Z : b.Z);
+        }
+
         #region Operators
 
         public override int GetHashCode()

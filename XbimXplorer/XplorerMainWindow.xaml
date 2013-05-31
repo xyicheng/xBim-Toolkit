@@ -62,6 +62,9 @@
         <CommandBinding Command="Open"   Executed="CommandBinding_Open" CanExecute="CommandBinding_CanExecute"/>
         <CommandBinding Command="{x:Static local:XplorerMainWindow.InsertCmd}" Executed="InsertCmdExecuted" CanExecute="InsertCmdCanExecute"/>
         <CommandBinding Command="{x:Static local:XplorerMainWindow.ExportCOBieCmd}"   Executed="ExportCOBieCmdExecuted" CanExecute="ExportCOBieCmdCanExecute"/>
+        <CommandBinding Command="{x:Static local:XplorerMainWindow.EditFederationCmd}" Executed="EditFederationCmdExecuted" CanExecute="EditFederationCmdCanExecute"/>
+        <CommandBinding Command="{x:Static local:XplorerMainWindow.OpenFederationCmd}" Executed="OpenFederationCmdExecuted" CanExecute="OpenFederationCmdCanExecute"/>
+        <CommandBinding Command="{x:Static local:XplorerMainWindow.CreateFederationCmd}" Executed="CreateFederationCmdExecuted" CanExecute="CreateFederationCmdCanExecute"/>
 
     </Window.CommandBindings>
     <Grid Name="MainFrame" DataContext="{StaticResource ModelProvider}">
@@ -73,13 +76,19 @@
        
         <Menu Grid.Row="0" >
             <MenuItem Header="_Model">
-                <!--<MenuItem Header="_New Xbim File" Click="FileNew_Click"/>-->
+                
                 <MenuItem Header="_Open" Command="Open"/>
-                <MenuItem Header="_New" Command="New" />
                 <!--<MenuItem Header="_Insert" Command="{x:Static local:XplorerMainWindow.InsertCmd}" />-->
                 <MenuItem Header="_SaveAs" Command="SaveAs"/>
                 <MenuItem Header="_Close" Command="Close" />
             </MenuItem>
+            <MenuItem Header="Federate">
+                <MenuItem Header="_Create" Command="{x:Static local:XplorerMainWindow.CreateFederationCmd}" />
+                <MenuItem Header="_Open" Command="{x:Static local:XplorerMainWindow.OpenFederationCmd}" />
+                <MenuItem Header="_Edit" Command="{x:Static local:XplorerMainWindow.EditFederationCmd}" />
+                
+            </MenuItem>
+                
             <MenuItem Header="View">
                 <MenuItem Header="_Zoom Extents" Click="MenuItem_ZoomExtents"/>
                 <MenuItem Header="_Copy" Command="Copy"/>
@@ -144,7 +153,7 @@
                             Indentation="10"
                             BorderThickness="1"
                             Model="{Binding}"  
-                            EntityLabel="{Binding Path=SelectedItem, ElementName=MainWindow, Mode=TwoWay}"
+                            SelectedEntity="{Binding Path=SelectedItem, ElementName=MainWindow, Mode=TwoWay}"
                             SelectionMode="Single"
                             MouseDoubleClick="SpatialControl_MouseDoubleClick"  FontSize="10" />
                 <GridSplitter 
@@ -155,7 +164,7 @@
                     ShowsPreview="True"
                     Height="5"
                     />
-                <xbim:IfcMetaDataControl x:Name="PropertiesControl" BorderThickness="1" Grid.Row="2"  Model="{Binding}"   EntityLabel="{Binding Path=SelectedItem, ElementName=MainWindow}" >
+                <xbim:IfcMetaDataControl x:Name="PropertiesControl" BorderThickness="1" Grid.Row="2"  SelectedEntity="{Binding Path=SelectedEntity, ElementName=SpatialControl}" >
                    
                 </xbim:IfcMetaDataControl>
             </Grid>
@@ -168,7 +177,7 @@
                 Width="5"
                 />
             <xbim:DrawingControl3D x:Name="DrawingControl" 
-                                   SelectedItem="{Binding Path=SelectedItem, ElementName=MainWindow, Mode=TwoWay}"    
+                                   SelectedEntity="{Binding Path=SelectedItem, ElementName=MainWindow, Mode=TwoWay}"    
                                    Model ="{Binding}" 
                                    Grid.Column="2" 
                                    Focusable="True" 

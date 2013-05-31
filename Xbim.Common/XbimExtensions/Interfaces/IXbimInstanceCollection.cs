@@ -6,7 +6,7 @@ using System.Linq.Expressions;
 
 namespace Xbim.XbimExtensions.Interfaces
 {
-    public interface IXbimInstanceCollection : IEnumerable<int>
+    public interface IXbimInstanceCollection : IEnumerable<IPersistIfcEntity>
     {
         IEnumerable<T> Where<T>(Expression<Func<T, bool>> expr) where T : IPersistIfcEntity;
         IEnumerable<T> OfType<T>() where T : IPersistIfcEntity;

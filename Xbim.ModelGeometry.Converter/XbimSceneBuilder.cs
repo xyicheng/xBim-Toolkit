@@ -13,7 +13,7 @@ using Xbim.IO;
 using Xbim.ModelGeometry.Scene;
 using Xbim.XbimExtensions;
 using Xbim.Ifc2x3.Kernel;
-
+using Xbim.Ifc2x3.Extensions;
 
 namespace Xbim.ModelGeometry.Converter
 {
@@ -21,7 +21,7 @@ namespace Xbim.ModelGeometry.Converter
     {
         static XbimSceneBuilder()
         {
-            AssemblyResolver.HandleUnresovledAssemblies();
+            AssemblyResolver.HandleUnresolvedAssemblies();
         }
 
         /// <summary>
@@ -30,10 +30,14 @@ namespace Xbim.ModelGeometry.Converter
         /// </summary>
         /// <param name="model">Model containing the model entities</param>
         /// <param name="sceneDbName">Name of scene DB file</param>
-         public void BuildGlobalScene(XbimModel model, string sceneDbName)
+        public void BuildGlobalScene(XbimModel model, string sceneDbName)
         {
-             if(File.Exists(sceneDbName)) File.Delete(sceneDbName);
+
+            if (File.Exists(sceneDbName)) File.Delete(sceneDbName);
             XbimSqliteDB db = new XbimSqliteDB(sceneDbName);
+
+
+
             //Create the scene table
             db.CreateTable("CREATE TABLE IF NOT EXISTS 'Scenes' (" +
                     "'SceneId' INTEGER PRIMARY KEY," +
@@ -58,202 +62,220 @@ namespace Xbim.ModelGeometry.Converter
                     "'Meta_Value' text not null" +
                     ");");
             //get a connection
-            SQLiteConnection connection = db.GetConnection();
-             
-            try
+            using (SQLiteConnection connection = db.GetConnection())
             {
-                short spaceId = IfcMetaData.IfcTypeId(typeof(IfcSpace));
-                XbimGeometryHandleCollection handles = new XbimGeometryHandleCollection(model.GetGeometryHandles()
-                                                           .Exclude(IfcEntityNameEnum.IFCFEATUREELEMENT));
-                XbimRect3D modelBounds = XbimRect3D.Empty;
-                XbimColourMap cmap = new XbimColourMap();
-                int layerid = 1;
-                IfcProject project = model.IfcProject;
-                int projectId = 0;
-                if (project != null) projectId = Math.Abs(project.EntityLabel);
-                XbimGeometryData regionData = model.GetGeometryData(projectId, XbimGeometryType.Region).FirstOrDefault(); //get the region data should only be one
-                double mm = model.GetModelFactors.OneMilliMetre;
-                XbimMatrix3D wcsTransform = new XbimMatrix3D(1 / mm);
-                if (regionData != null)
+
+                try
                 {
-                    XbimRegionCollection regions = XbimRegionCollection.FromArray(regionData.ShapeData);
-                    XbimRegion largest = regions.MostPopulated();
-                    if (largest != null)
+                    short spaceId = IfcMetaData.IfcTypeId(typeof(IfcSpace));
+                    XbimGeometryHandleCollection handles = new XbimGeometryHandleCollection(model.GetGeometryHandles()
+                                                               .Exclude(IfcEntityNameEnum.IFCFEATUREELEMENT));
+                    XbimRect3D modelBounds = XbimRect3D.Empty;
+                    XbimColourMap cmap = new XbimColourMap();
+                    int layerid = 1;
+                    IfcProject project = model.IfcProject;
+                    int projectId = 0;
+                    if (project != null) projectId = Math.Abs(project.EntityLabel);
+                    XbimGeometryData regionData = model.GetGeometryData(projectId, XbimGeometryType.Region).FirstOrDefault(); //get the region data should only be one
+                    double mm = model.GetModelFactors.OneMilliMetre;
+                    XbimMatrix3D wcsTransform = new XbimMatrix3D(1 / mm);
+                    if (regionData != null)
                     {
-                        wcsTransform.OffsetX -= largest.Centre.X;
-                        wcsTransform.OffsetY -= largest.Centre.Y;
-                        wcsTransform.OffsetZ -= largest.Centre.Z;
+                        XbimRegionCollection regions = XbimRegionCollection.FromArray(regionData.ShapeData);
+                        XbimRegion largest = regions.MostPopulated();
+                        if (largest != null)
+                        {
+                            wcsTransform.OffsetX -= largest.Centre.X;
+                            wcsTransform.OffsetY -= largest.Centre.Y;
+                            wcsTransform.OffsetZ -= largest.Centre.Z;
+                        }
                     }
-                }
-                foreach (var layerContent in handles.FilterByBuildingElementTypes())
-                {
-                    string elementTypeName = layerContent.Key;
-                    XbimGeometryHandleCollection layerHandles = layerContent.Value;
-                    IEnumerable<XbimGeometryData> geomColl = model.GetGeometryData(layerHandles);
-                    XbimColour colour = cmap[elementTypeName];
-                    XbimMeshLayer<XbimMeshGeometry3D, XbimRenderMaterial> layer = new XbimMeshLayer<XbimMeshGeometry3D, XbimRenderMaterial>(colour) { Name = elementTypeName };
-                    //add all content initially into the hidden field
-                    foreach (var geomData in geomColl)
+                    foreach (var layerContent in handles.FilterByBuildingElementTypes())
                     {
-                        geomData.TransformBy(wcsTransform);
-                        if(geomData.IfcTypeId == spaceId)
-                            layer.AddToHidden(geomData);
+                        string elementTypeName = layerContent.Key;
+                        XbimGeometryHandleCollection layerHandles = layerContent.Value;
+                        IEnumerable<XbimGeometryData> geomColl = model.GetGeometryData(layerHandles);
+                        XbimColour colour = cmap[elementTypeName];
+                        XbimMeshLayer<XbimMeshGeometry3D, XbimRenderMaterial> layer = new XbimMeshLayer<XbimMeshGeometry3D, XbimRenderMaterial>(model, colour) { Name = elementTypeName };
+                        //add all content initially into the hidden field
+                        foreach (var geomData in geomColl)
+                        {
+                            geomData.TransformBy(wcsTransform);
+                            if (geomData.IfcTypeId == spaceId)
+                                layer.AddToHidden(geomData);
+                            else
+                                layer.AddToHidden(geomData, model);
+                        }
+
+                        if (modelBounds.IsEmpty)
+                            modelBounds = layer.BoundingBoxHidden();
                         else
-                            layer.AddToHidden(geomData, model);
-                    }
-                    
-                    if (modelBounds.IsEmpty)
-                        modelBounds = layer.BoundingBoxHidden();
-                    else
-                        modelBounds.Union(layer.BoundingBoxHidden());
-                   
-                    // add  top level layers
-                    layerid = AddLayer(connection, layer, layerid, -1);
-                    layerid++;
-                }
-                // setup bounding box SizeX, SizeY, SizeZ, X, Y, Z
-                byte[] boundingBoxFull = new byte[6 * sizeof(float)];
-                MemoryStream ms = new MemoryStream(boundingBoxFull);
-                BinaryWriter bw = new BinaryWriter(ms);
+                            modelBounds.Union(layer.BoundingBoxHidden());
 
-                bw.Write(modelBounds.SizeX);
-                bw.Write(modelBounds.SizeY);
-                bw.Write(modelBounds.SizeZ);
-                bw.Write(modelBounds.X);
-                bw.Write(modelBounds.Y);
-                bw.Write(modelBounds.Z);
-                
-                // create scene row in Scenes tabls
-                string str = "INSERT INTO Scenes (SceneId, SceneName, BoundingBox) ";
-                str += "VALUES (@SceneId, @SceneName, @BoundingBox) ";
-                using (SQLiteTransaction SQLiteTrans = connection.BeginTransaction())
-                {
-                    using (SQLiteCommand cmd = connection.CreateCommand())
+                        // add  top level layers
+                        layerid = AddLayer(connection, layer, layerid, -1);
+                        layerid++;
+                    }
+                    // setup bounding box SizeX, SizeY, SizeZ, X, Y, Z
+                    byte[] boundingBoxFull = new byte[6 * sizeof(float)];
+                    MemoryStream ms = new MemoryStream(boundingBoxFull);
+                    BinaryWriter bw = new BinaryWriter(ms);
+
+                    bw.Write(modelBounds.SizeX);
+                    bw.Write(modelBounds.SizeY);
+                    bw.Write(modelBounds.SizeZ);
+                    bw.Write(modelBounds.X);
+                    bw.Write(modelBounds.Y);
+                    bw.Write(modelBounds.Z);
+
+                    // create scene row in Scenes tabls
+                    string str = "INSERT INTO Scenes (SceneId, SceneName, BoundingBox) ";
+                    str += "VALUES (@SceneId, @SceneName, @BoundingBox) ";
+                    using (SQLiteTransaction SQLiteTrans = connection.BeginTransaction())
                     {
-                        cmd.CommandText = str;
-                        cmd.Parameters.Add("@SceneId", DbType.Int32).Value = 1;
-                        cmd.Parameters.Add("@SceneName", DbType.String).Value = "MainScene";
-                        cmd.Parameters.Add("@BoundingBox", DbType.Binary).Value = boundingBoxFull;
-                        cmd.ExecuteNonQuery();
+                        using (SQLiteCommand cmd = connection.CreateCommand())
+                        {
+                            cmd.CommandText = str;
+                            cmd.Parameters.Add("@SceneId", DbType.Int32).Value = 1;
+                            cmd.Parameters.Add("@SceneName", DbType.String).Value = "MainScene";
+                            cmd.Parameters.Add("@BoundingBox", DbType.Binary).Value = boundingBoxFull;
+                            cmd.ExecuteNonQuery();
+                        }
+                        SQLiteTrans.Commit();
                     }
-                    SQLiteTrans.Commit();
+
+                    //now add some meta data
+                    foreach (var space in model.Instances.OfType<IfcSpace>())
+                    {
+                        AddMetaData(connection, space.GetType().Name, space.Name??"Undefined Space", space.EntityLabel.ToString());
+                    }
+
+                    // this causes a crash if no elevation has been defined used the extension method which does not
+                    // var storeys = model.Instances.OfType<IfcBuildingStorey>().OrderBy(t => Convert.ToDouble(t.Elevation.Value)).ToArray();
+                    IfcBuilding bld = model.IfcProject.GetBuildings().FirstOrDefault();
+                    if (bld != null)
+                    {
+                        double metre = model.GetModelFactors.OneMetre;
+                        double storeyHeight = 0;//all scenes are in metres
+                        int defaultStoreyName = 0;
+                        foreach (var storey in bld.GetBuildingStoreys(true))
+                        {
+                            string cleanName;
+                            if(storey.Name.HasValue)
+                                cleanName = storey.Name.Value.ToString().Replace(';', ' ');
+                            else
+                                cleanName = "Floor " + defaultStoreyName++;
+                            if (storey.Elevation.HasValue)
+                                storeyHeight = storey.Elevation.Value / metre;//all scenes are in metres
+                            else
+                                storeyHeight += 3; //default to 3 metres
+
+                            AddMetaData(
+                                connection,
+                                "Storey",
+                                string.Format("Name:{0};Elevation:{1};", cleanName, storeyHeight),
+                                cleanName);
+                        }
+                    }
                 }
-
-                //now add some meta data
-                foreach (var space in model.Instances.OfType<IfcSpace>())
+                finally
                 {
-                    AddMetaData(connection,space.GetType().Name,space.Name,space.EntityLabel.ToString());
-                }
-
-
-                var storeys = model.Instances.OfType<IfcBuildingStorey>().OrderBy(t => Convert.ToDouble(t.Elevation.Value)).ToArray();
-                foreach (var storey in storeys)
-                {
-                    string cleanName = storey.Name.Value.ToString().Replace(';', ' ');
-                    AddMetaData(
-                        connection,
-                        "Storey",
-                        string.Format("Name:{0};Elevation:{1};", cleanName, Convert.ToDouble(storey.Elevation.Value)),
-                        cleanName);
+                    connection.Close();
+                    SQLiteConnection.ClearPool(connection);
+                    GC.Collect();
                 }
             }
-            finally
-            {
-                connection.Close();
-                SQLiteConnection.ClearPool(connection);
-                GC.Collect();
-                
-            }
+
         }
 
         private int AddLayer(SQLiteConnection mDBcon, XbimMeshLayer<XbimMeshGeometry3D, XbimRenderMaterial> layer, int layerid, int parentLayerId)
         {
-             try
-             {
+            try
+            {
 
-                 // bytes contain 6 floats and 1 int
-                 // pointX, pointY, pointZ, normalX, normalY, normalZ, entityLabel
-                 // this is the vbo.
+                // bytes contain 6 floats and 1 int
+                // pointX, pointY, pointZ, normalX, normalY, normalZ, entityLabel
+                // this is the vbo.
 
-                 XbimTexture texture = layer.Style;
-                 XbimColour c = layer.Style.ColourMap[0]; //take the first one, not perhaps correct or best practice
-                 byte[] colour = new byte[4 * sizeof(float)];
-                 MemoryStream ms = new MemoryStream(colour);
-                 BinaryWriter bw = new BinaryWriter(ms);
-                 bw.Write(c.Red);
-                 bw.Write(c.Green);
-                 bw.Write(c.Blue);
-                 bw.Write(c.Alpha);
+                XbimTexture texture = layer.Style;
+                XbimColour c = layer.Style.ColourMap[0]; //take the first one, not perhaps correct or best practice
+                byte[] colour = new byte[4 * sizeof(float)];
+                MemoryStream ms = new MemoryStream(colour);
+                BinaryWriter bw = new BinaryWriter(ms);
+                bw.Write(c.Red);
+                bw.Write(c.Green);
+                bw.Write(c.Blue);
+                bw.Write(c.Alpha);
 
-                 byte[] vbo = ((XbimMeshGeometry3D)layer.Hidden).ToByteArray();
-                 
-                 MemoryStream memoryStream = new MemoryStream();
-                 using (ICSharpCode.SharpZipLib.GZip.GZipOutputStream zis = new ICSharpCode.SharpZipLib.GZip.GZipOutputStream(memoryStream))
-                 {
-                     zis.Write(vbo, 0, vbo.Length);
-                     memoryStream.Flush();
-                 }
+                byte[] vbo = ((XbimMeshGeometry3D)layer.Hidden).ToByteArray();
 
-                 //using (Ionic.Zlib.GZipStream gZipStream = new Ionic.Zlib.GZipStream(memoryStream, Ionic.Zlib.CompressionMode.Compress))
-                 //{
-                 //    gZipStream.Write(vbo, 0, vbo.Length);
-                 //    memoryStream.Flush();
-                 //}
-                 vbo = memoryStream.ToArray();
-                 
+                MemoryStream memoryStream = new MemoryStream();
+                using (ICSharpCode.SharpZipLib.GZip.GZipOutputStream zis = new ICSharpCode.SharpZipLib.GZip.GZipOutputStream(memoryStream))
+                {
+                    zis.Write(vbo, 0, vbo.Length);
+                    memoryStream.Flush();
+                }
 
-                 XbimRect3D bb = layer.BoundingBoxHidden();
-                 // setup bounding box SizeX, SizeY, SizeZ, X, Y, Z
-                 byte[] bbArray = new byte[6 * sizeof(float)];
-                 ms = new MemoryStream(bbArray);
-                 bw = new BinaryWriter(ms);
-
-                 bw.Write(bb.SizeX);
-                 bw.Write(bb.SizeY);
-                 bw.Write(bb.SizeZ);
-                 bw.Write(bb.X);
-                 bw.Write(bb.Y);
-                 bw.Write(bb.Z);
-
-                 string str = "INSERT INTO Layers (SceneName, LayerName, LayerId, ParentLayerId, ";
-                 str += "Meshes, XbimTexture, BoundingBox) ";
-
-                 //str += "VALUES (" + "SceneName" + layer.Name + layer.Name + "-1" + positions + normals + triangleIndices + "" + "" + "" + "" + "" + colour + "" + "" + ")";
-                 str += "VALUES (@SceneName, @LayerName, @LayerId, @ParentLayerId, ";
-                 str += "@Meshes, @XbimTexture, @BoundingBox) ";
+                //using (Ionic.Zlib.GZipStream gZipStream = new Ionic.Zlib.GZipStream(memoryStream, Ionic.Zlib.CompressionMode.Compress))
+                //{
+                //    gZipStream.Write(vbo, 0, vbo.Length);
+                //    memoryStream.Flush();
+                //}
+                vbo = memoryStream.ToArray();
 
 
-                 using (SQLiteTransaction SQLiteTrans = mDBcon.BeginTransaction())
-                 {
-                     using (SQLiteCommand cmd = mDBcon.CreateCommand())
-                     {
-                         cmd.CommandText = str;
-                         cmd.Parameters.Add("@SceneName", DbType.String).Value = "MainScene";
-                         cmd.Parameters.Add("@LayerName", DbType.String).Value = layer.Name;
-                         cmd.Parameters.Add("@LayerId", DbType.Int32).Value = layerid;
-                         cmd.Parameters.Add("@ParentLayerId", DbType.Int32).Value = parentLayerId;
-                         cmd.Parameters.Add("@Meshes", DbType.Binary).Value = vbo;
-                         cmd.Parameters.Add("@XbimTexture", DbType.Binary).Value = colour;
-                         cmd.Parameters.Add("@BoundingBox", DbType.Binary).Value = bbArray;
-                         cmd.ExecuteNonQuery();
-                     }
+                XbimRect3D bb = layer.BoundingBoxHidden();
+                // setup bounding box SizeX, SizeY, SizeZ, X, Y, Z
+                byte[] bbArray = new byte[6 * sizeof(float)];
+                ms = new MemoryStream(bbArray);
+                bw = new BinaryWriter(ms);
 
-                     SQLiteTrans.Commit();
-                 }
+                bw.Write(bb.SizeX);
+                bw.Write(bb.SizeY);
+                bw.Write(bb.SizeZ);
+                bw.Write(bb.X);
+                bw.Write(bb.Y);
+                bw.Write(bb.Z);
 
-                 int myParent = layerid;
-                 foreach (var subLayer in layer.SubLayers)
-                 {
-                     layerid++;
-                     layerid = AddLayer(mDBcon, subLayer, layerid, myParent);
-                 }
-                 return layerid;
+                string str = "INSERT INTO Layers (SceneName, LayerName, LayerId, ParentLayerId, ";
+                str += "Meshes, XbimTexture, BoundingBox) ";
 
-             }
-             catch (Exception ex)
-             {
-                 throw new XbimException("Error building scene layer" , ex);
-             }
+                //str += "VALUES (" + "SceneName" + layer.Name + layer.Name + "-1" + positions + normals + triangleIndices + "" + "" + "" + "" + "" + colour + "" + "" + ")";
+                str += "VALUES (@SceneName, @LayerName, @LayerId, @ParentLayerId, ";
+                str += "@Meshes, @XbimTexture, @BoundingBox) ";
+
+
+                using (SQLiteTransaction SQLiteTrans = mDBcon.BeginTransaction())
+                {
+                    using (SQLiteCommand cmd = mDBcon.CreateCommand())
+                    {
+                        cmd.CommandText = str;
+                        cmd.Parameters.Add("@SceneName", DbType.String).Value = "MainScene";
+                        cmd.Parameters.Add("@LayerName", DbType.String).Value = layer.Name;
+                        cmd.Parameters.Add("@LayerId", DbType.Int32).Value = layerid;
+                        cmd.Parameters.Add("@ParentLayerId", DbType.Int32).Value = parentLayerId;
+                        cmd.Parameters.Add("@Meshes", DbType.Binary).Value = vbo;
+                        cmd.Parameters.Add("@XbimTexture", DbType.Binary).Value = colour;
+                        cmd.Parameters.Add("@BoundingBox", DbType.Binary).Value = bbArray;
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    SQLiteTrans.Commit();
+                }
+
+                int myParent = layerid;
+                foreach (var subLayer in layer.SubLayers)
+                {
+                    layerid++;
+                    layerid = AddLayer(mDBcon, subLayer, layerid, myParent);
+                }
+                return layerid;
+
+            }
+            catch (Exception ex)
+            {
+                throw new XbimException("Error building scene layer", ex);
+            }
         }
 
         /// <summary>

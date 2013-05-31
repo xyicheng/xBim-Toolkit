@@ -239,8 +239,14 @@ namespace Xbim.IO.Parser
                 _binaryWriter.Write((byte)P21ParseAction.EndEntity);
                 IfcType ifcType = IfcMetaData.IfcType(_currentType);
                 MemoryStream data = _binaryWriter.BaseStream as MemoryStream;
-                table.AddEntity(_currentLabel, ifcType.TypeId, _indexKeyValues, data.ToArray(),ifcType.IndexedClass);
-                if (_entityCount % _transactionBatchSize == (_transactionBatchSize - 1))
+                if (_indexKeyValues.Count > 20) //clear the cache if we have a lot of index keys
+                {
+                    transaction.Commit();
+                    transaction.Begin();
+                }
+                table.AddEntity(_currentLabel, ifcType.TypeId, _indexKeyValues, data.ToArray(), ifcType.IndexedClass, transaction);
+                long remainder =  _entityCount % _transactionBatchSize ;
+                if (remainder == _transactionBatchSize - 1)
                 {
                     transaction.Commit();
                     transaction.Begin();

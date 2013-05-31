@@ -6,7 +6,7 @@
 #include "XbimLocation.h"
 #include "XbimBoundingBox.h"
 #include "IXbimMeshGeometry.h"
-#include "IXbimGeometryModel.h"
+#include "XbimGeometryModel.h"
 #include <TopoDS_Shape.hxx>
 #include <TopoDS_Compound.hxx>
 #include <TopTools_DataMapOfShapeInteger.hxx>
