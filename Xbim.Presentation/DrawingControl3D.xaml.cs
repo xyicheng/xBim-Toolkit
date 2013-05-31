@@ -637,7 +637,8 @@ namespace Xbim.Presentation
             model.RefencedModels.CollectionChanged += RefencedModels_CollectionChanged;
             //build the geometric scene and render as we go
             XbimScene<WpfMeshGeometry3D, WpfMaterial> scene = BuildScene(model);
-            scenes.Add(scene);
+            if(scene.Layers.Count() > 0)
+                scenes.Add(scene);
             foreach (var refModel in model.RefencedModels)
             {
                 scenes.Add(BuildRefModelScene(refModel.Model, refModel.DocumentInformation));
@@ -735,6 +736,16 @@ namespace Xbim.Presentation
             if (e.Action == NotifyCollectionChangedAction.Add && e.NewItems.Count > 0)
             {
                 XbimReferencedModel refModel = e.NewItems[0] as XbimReferencedModel;
+                if (scenes.Count == 0) //need to calculate extents
+                {
+                    XbimRegion largest = GetLargestRegion(refModel.Model);
+                    XbimPoint3D c = new XbimPoint3D(0, 0, 0);
+                    XbimRect3D bb = XbimRect3D.Empty;
+                    if (largest != null)
+                        bb = new XbimRect3D(largest.Centre, largest.Centre);
+                    XbimPoint3D p = bb.Centroid();
+                    _modelTranslation = new XbimVector3D(-p.X, -p.Y, -p.Z);
+                }
                 XbimScene<WpfMeshGeometry3D, WpfMaterial> scene = BuildRefModelScene(refModel.Model, refModel.DocumentInformation);
                 scenes.Add(scene);
                 RecalculateView(refModel.Model);
@@ -785,7 +796,6 @@ namespace Xbim.Presentation
             IfcProject project = model.IfcProject;
             int projectId = 0;
             if(project!=null) projectId = Math.Abs(project.EntityLabel);
-            XbimGeometryData regionData = model.GetGeometryData(projectId, XbimGeometryType.Region).FirstOrDefault(); //get the region data should only be one
             double mm = model.GetModelFactors.OneMilliMetre;
             XbimMatrix3D wcsTransform = new XbimMatrix3D(_modelTranslation, 1/mm);
             
