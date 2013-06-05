@@ -46,7 +46,7 @@
 #include <GC_MakeLine.hxx>
 #include <BRepBuilderAPI_MakeFace.hxx>
 #include <BRepBuilderAPI_MakeEdge.hxx>
-#include <BRepOffsetAPI_MakePipe.hxx>
+
 #include <TColgp_Array1OfPnt.hxx>
 //#include <BRepPrimAPI_MakeSphere.hxx>
 //#include <BRepPrimAPI_MakeCylinder.hxx>
