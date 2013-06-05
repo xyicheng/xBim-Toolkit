@@ -44,7 +44,6 @@
 #include <GC_MakeCircle.hxx>
 #include <GC_MakeEllipse.hxx>
 #include <GC_MakeLine.hxx>
-#include <Geom_BezierCurve.hxx>
 #include <BRepBuilderAPI_MakeFace.hxx>
 #include <BRepBuilderAPI_MakeEdge.hxx>
 #include <BRepOffsetAPI_MakePipe.hxx>
