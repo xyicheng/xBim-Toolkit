@@ -83,6 +83,19 @@ namespace Xbim.Ifc2x3.StructuralAnalysisDomain
             }
             set { this.SetModelValue(this, ref _hasResults, value, v => HasResults = v, "HasResults"); }
         }
+        /// <summary>
+        /// Adds the load groups to the LoadedBy Property
+        /// </summary>
+        /// <param name="loads"></param>
+        public void SetLoadedBy(params IfcStructuralLoadGroup[] loads)
+        {
+            if (LoadedBy == null) _loadedBy = new XbimSet<IfcStructuralLoadGroup>(this);
+            foreach (var load in loads)
+            {
+                _loadedBy.Add(load);
+            }
+        }
+
 
         #endregion
 
