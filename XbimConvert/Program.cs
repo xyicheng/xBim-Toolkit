@@ -63,7 +63,6 @@ namespace XbimConvert
                     watch.Start();
                     using (XbimModel model = ParseModelFile(xbimFileName))
                     {
-                       
                         model.Open(xbimFileName, XbimDBAccess.ReadWrite);
                         if (!arguments.NoGeometry)
                         {

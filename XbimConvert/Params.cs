@@ -30,7 +30,7 @@ namespace XbimConvert
             IfcFileName = args[0];
             if (!File.Exists(IfcFileName))
             {
-                Console.WriteLine("Invalid ifc filename {0}", IfcFileName);
+                Console.WriteLine("Invalid ifc filename {0}, current directory is: {1}", IfcFileName, Directory.GetCurrentDirectory());
                 return;
             }
 

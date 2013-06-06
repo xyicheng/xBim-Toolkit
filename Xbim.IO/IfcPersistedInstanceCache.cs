@@ -1105,10 +1105,16 @@ namespace Xbim.IO
         /// <typeparam name="TIfcType"></typeparam>
         /// <param name="activate">if true loads the properties of the entity</param>
         /// <param name="indexKey">if the entity has a key object, optimises to search for this handle</param>
+        /// <param name="overrideType">if specified this parameter overrides the ifcType used internally (but not TIfcType) for filtering purposes</param>
         /// <returns></returns>
-        public IEnumerable<TIfcType> OfType<TIfcType>(bool activate = false, int indexKey = -1) where TIfcType:IPersistIfcEntity 
+        public IEnumerable<TIfcType> OfType<TIfcType>(bool activate = false, int indexKey = -1, IfcType overrideType = null) where TIfcType:IPersistIfcEntity 
         {
-            IfcType ifcType = IfcMetaData.IfcType(typeof(TIfcType));
+            IfcType ifcType;
+            if (overrideType != null)
+                ifcType = overrideType;
+            else
+                ifcType = IfcMetaData.IfcType(typeof(TIfcType));
+
             if (!ifcType.IndexedClass)
             {
                 Debug.Assert(indexKey==-1, "Trying to look a class up by index key, but the class is not indexed");
@@ -1910,8 +1916,15 @@ namespace Xbim.IO
         }
 
         internal Instance JetInstance { get { return _jetInstance; } }
-    }
 
+        internal IEnumerable<IPersistIfcEntity> OfType(string StringType, bool activate)
+        {
+            IfcType ot = IfcMetaData.IfcType(StringType.ToUpper());
+            if (ot == null)
+                return null;
+            return OfType<IPersistIfcEntity>(activate:activate, overrideType: ot);
+        }
+    }
 }
 
 

@@ -79,6 +79,23 @@ namespace Xbim.IO
     public class XbimFederatedModelInstances : IXbimInstanceCollection
     {
         XbimModel _model;
+
+        public IEnumerable<IPersistIfcEntity> OfType(string StringType, bool activate)
+        {
+            
+            foreach (var instance in _model.InstancesLocal.OfType(StringType, activate))
+                yield return instance;
+            foreach (var refModel in _model.RefencedModels)
+                foreach (var instance in refModel.Model.Instances.OfType(StringType, activate))
+                    yield return instance;
+            
+            //long[] l = new long[] { -1, 2 };
+            //foreach (var item in l)
+            //{
+            //    yield return item;    
+            //}
+        }
+
         public XbimFederatedModelInstances(XbimModel model)
         {
             _model = model;

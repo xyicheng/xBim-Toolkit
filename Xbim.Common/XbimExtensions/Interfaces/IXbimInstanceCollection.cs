@@ -11,6 +11,7 @@ namespace Xbim.XbimExtensions.Interfaces
         IEnumerable<T> Where<T>(Expression<Func<T, bool>> expr) where T : IPersistIfcEntity;
         IEnumerable<T> OfType<T>() where T : IPersistIfcEntity;
         IEnumerable<T> OfType<T>(bool activate) where T : IPersistIfcEntity;
+        IEnumerable<IPersistIfcEntity> OfType(string StringType, bool activate);
         IPersistIfcEntity New(Type t);
         T New<T>(InitProperties<T> initPropertiesFunc) where T : IPersistIfcEntity, new();
         T New<T>() where T : IPersistIfcEntity, new();

@@ -37,7 +37,11 @@ namespace Xbim.IO
         private IfcApplication _defaultOwningApplication;
         private XbimModel xbimModel;
         #endregion
-       
+
+        public IEnumerable<IPersistIfcEntity> OfType(string StringType, bool activate)
+        {
+            return cache.OfType(StringType, activate);
+        }
 
         internal XbimInstanceCollection(XbimModel xbimModel)
         {
