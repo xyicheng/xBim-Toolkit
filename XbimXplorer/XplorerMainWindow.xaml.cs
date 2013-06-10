@@ -75,6 +75,13 @@ namespace XbimXplorer
             this.Closing += new CancelEventHandler(XplorerMainWindow_Closing);
         }
 
+        void OpenQuery(object sender, RoutedEventArgs e)
+        {
+            XbimXplorer.Querying.wdwQuery qw = new Querying.wdwQuery();
+            qw.Model = this.Model;
+            qw.Show();
+        }
+
         void XplorerMainWindow_Closing(object sender, CancelEventArgs e)
         {
             if (_worker != null && _worker.IsBusy)
@@ -124,7 +131,6 @@ namespace XbimXplorer
 
         void XplorerMainWindow_Closed(object sender, EventArgs e)
         {
-
             CloseAndDeleteTemporaryFiles();
         }
 
@@ -132,12 +138,6 @@ namespace XbimXplorer
         {
             
         }
-
-      
-
-     
-
-
 
         public IPersistIfcEntity SelectedItem
         {
@@ -231,7 +231,6 @@ namespace XbimXplorer
                 }
 
                 args.Result = new Exception(sb.ToString());
-
             }
         }
 
@@ -670,12 +669,13 @@ namespace XbimXplorer
             }
         }
 
-       
+    
 
         private void OpenFederationCmdCanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
             e.CanExecute = true;
         }
+
         private void CreateFederationCmdExecuted(object sender, ExecutedRoutedEventArgs e)
         {
             CreateFederationWindow fedwin = new CreateFederationWindow();

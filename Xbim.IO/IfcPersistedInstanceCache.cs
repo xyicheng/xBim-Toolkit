@@ -1919,10 +1919,17 @@ namespace Xbim.IO
 
         internal IEnumerable<IPersistIfcEntity> OfType(string StringType, bool activate)
         {
-            IfcType ot = IfcMetaData.IfcType(StringType.ToUpper());
-            if (ot == null)
-                return null;
-            return OfType<IPersistIfcEntity>(activate:activate, overrideType: ot);
+            try
+            {
+                IfcType ot = IfcMetaData.IfcType(StringType.ToUpper());
+                if (ot == null)
+                    return null;
+                return OfType<IPersistIfcEntity>(activate: activate, overrideType: ot);
+            }
+            catch (Exception)
+            {
+                return null;   
+            }            
         }
     }
 }

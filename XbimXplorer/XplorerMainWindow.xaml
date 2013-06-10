@@ -60,6 +60,7 @@
         <CommandBinding Command="Close"  Executed="CommandBinding_Close" CanExecute="CommandBinding_CanExecute"/>
         <CommandBinding Command="SaveAs" Executed="CommandBinding_SaveAs"  CanExecute="CommandBinding_CanExecute"/>
         <CommandBinding Command="Open"   Executed="CommandBinding_Open" CanExecute="CommandBinding_CanExecute"/>
+        
         <CommandBinding Command="{x:Static local:XplorerMainWindow.InsertCmd}" Executed="InsertCmdExecuted" CanExecute="InsertCmdCanExecute"/>
         <CommandBinding Command="{x:Static local:XplorerMainWindow.ExportCOBieCmd}"   Executed="ExportCOBieCmdExecuted" CanExecute="ExportCOBieCmdCanExecute"/>
         <CommandBinding Command="{x:Static local:XplorerMainWindow.EditFederationCmd}" Executed="EditFederationCmdExecuted" CanExecute="EditFederationCmdCanExecute"/>
@@ -80,6 +81,7 @@
                 <MenuItem Header="_Open" Command="Open"/>
                 <!--<MenuItem Header="_Insert" Command="{x:Static local:XplorerMainWindow.InsertCmd}" />-->
                 <MenuItem Header="_SaveAs" Command="SaveAs"/>
+                <MenuItem Header="_Query" Click="OpenQuery" />
                 <MenuItem Header="_Close" Command="Close" />
             </MenuItem>
             <MenuItem Header="Federate">
