@@ -26,8 +26,12 @@ namespace Xbim.Presentation
         public string Name
         {
             get
-            {                
-                return _project.Name;
+            {
+                // to improve on the user interface experience the classification viewer makes up a name in case the name is empty
+                if (_project.Name != string.Empty)
+                    return _project.Name;
+                else
+                    return "Unnamed project";
             }
         }
 
