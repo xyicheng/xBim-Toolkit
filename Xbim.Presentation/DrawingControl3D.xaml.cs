@@ -671,9 +671,10 @@ namespace Xbim.Presentation
 
             //adjust for the units of the model
             double metre = model.GetModelFactors.OneMetre;
-         
-            Viewport.DefaultCamera.NearPlaneDistance = 125; //models are always in millimetres
-            Viewport.Camera.NearPlaneDistance = 125;
+
+            // Assumes a NearPlaneDistance of 1/8 of meter.
+            Viewport.DefaultCamera.NearPlaneDistance = metre * 0.125; 
+            Viewport.Camera.NearPlaneDistance = Viewport.DefaultCamera.NearPlaneDistance;
             Viewport.DefaultCamera.FarPlaneDistance = viewBounds.Length() * 3;
             Viewport.Camera.FarPlaneDistance = Viewport.DefaultCamera.FarPlaneDistance;
 
