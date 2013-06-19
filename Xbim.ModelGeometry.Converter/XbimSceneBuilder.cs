@@ -30,14 +30,11 @@ namespace Xbim.ModelGeometry.Converter
         /// </summary>
         /// <param name="model">Model containing the model entities</param>
         /// <param name="sceneDbName">Name of scene DB file</param>
-        public void BuildGlobalScene(XbimModel model, string sceneDbName)
+        /// <param name="Logger">Logging engine for detailed feedback</param>
+        public void BuildGlobalScene(XbimModel model, string sceneDbName, Common.Logging.ILogger Logger = null)
         {
-
             if (File.Exists(sceneDbName)) File.Delete(sceneDbName);
             XbimSqliteDB db = new XbimSqliteDB(sceneDbName);
-
-
-
             //Create the scene table
             db.CreateTable("CREATE TABLE IF NOT EXISTS 'Scenes' (" +
                     "'SceneId' INTEGER PRIMARY KEY," +
@@ -77,19 +74,29 @@ namespace Xbim.ModelGeometry.Converter
                     int projectId = 0;
                     if (project != null) projectId = Math.Abs(project.EntityLabel);
                     XbimGeometryData regionData = model.GetGeometryData(projectId, XbimGeometryType.Region).FirstOrDefault(); //get the region data should only be one
-                    double mm = model.GetModelFactors.OneMilliMetre;
-                    XbimMatrix3D wcsTransform = new XbimMatrix3D(1 / mm);
+                    float mScalingReference = (float)model.GetModelFactors.OneMetre;
+
+                    if (Logger != null)
+                        Logger.DebugFormat("XbimScene: Scaling reference {0}", mScalingReference);
+
+                    XbimMatrix3D translate = XbimMatrix3D.Identity;
+                    XbimMatrix3D scale = XbimMatrix3D.CreateScale(1 / mScalingReference);
+
                     if (regionData != null)
                     {
                         XbimRegionCollection regions = XbimRegionCollection.FromArray(regionData.ShapeData);
                         XbimRegion largest = regions.MostPopulated();
                         if (largest != null)
                         {
-                            wcsTransform.OffsetX -= largest.Centre.X;
-                            wcsTransform.OffsetY -= largest.Centre.Y;
-                            wcsTransform.OffsetZ -= largest.Centre.Z;
+                            translate = XbimMatrix3D.CreateTranslation(
+                                -largest.Centre.X,
+                                -largest.Centre.Y,
+                                -largest.Centre.Z
+                                );
                         }
                     }
+                    XbimMatrix3D composed = translate * scale;
+
                     foreach (var layerContent in handles.FilterByBuildingElementTypes())
                     {
                         string elementTypeName = layerContent.Key;
@@ -100,7 +107,7 @@ namespace Xbim.ModelGeometry.Converter
                         //add all content initially into the hidden field
                         foreach (var geomData in geomColl)
                         {
-                            geomData.TransformBy(wcsTransform);
+                            geomData.TransformBy(composed);
                             if (geomData.IfcTypeId == spaceId)
                                 layer.AddToHidden(geomData);
                             else
@@ -113,7 +120,7 @@ namespace Xbim.ModelGeometry.Converter
                             modelBounds.Union(layer.BoundingBoxHidden());
 
                         // add  top level layers
-                        layerid = AddLayer(connection, layer, layerid, -1);
+                        layerid = AddLayerToSceneDatabase(connection, layer, layerid, -1);
                         layerid++;
                     }
                     // setup bounding box SizeX, SizeY, SizeZ, X, Y, Z
@@ -166,14 +173,23 @@ namespace Xbim.ModelGeometry.Converter
                             else
                                 cleanName = "Floor " + defaultStoreyName++;
                             if (storey.Elevation.HasValue)
-                                storeyHeight = storey.Elevation.Value / metre;//all scenes are in metres
+                                storeyHeight = storey.Elevation.Value; // values are to be tranaformed to meters later with the wcsTransform
                             else
-                                storeyHeight += 3; //default to 3 metres
+                                storeyHeight += 3 * metre; //default to 3 metres
+
+                            // apply the transformation previously applied to the building 
+                            XbimPoint3D InTranslatedReference = composed.Transform(
+                                new XbimPoint3D(0, 0, storeyHeight)
+                                );
+
+                            double InTranslatedReferenceZ = InTranslatedReference.Z; // then express it in meters.
+                            if (Logger != null)
+                                Logger.DebugFormat("StoreyName: {0}; Model Elevation: {1}; Scene Elevation: {2}", cleanName, storeyHeight, InTranslatedReferenceZ);
 
                             AddMetaData(
                                 connection,
                                 "Storey",
-                                string.Format("Name:{0};Elevation:{1};", cleanName, storeyHeight),
+                                string.Format("Name:{0};Elevation:{1};", cleanName, InTranslatedReferenceZ), // storeyHeight),
                                 cleanName);
                         }
                     }
@@ -188,7 +204,7 @@ namespace Xbim.ModelGeometry.Converter
 
         }
 
-        private int AddLayer(SQLiteConnection mDBcon, XbimMeshLayer<XbimMeshGeometry3D, XbimRenderMaterial> layer, int layerid, int parentLayerId)
+        private int AddLayerToSceneDatabase(SQLiteConnection mDBcon, XbimMeshLayer<XbimMeshGeometry3D, XbimRenderMaterial> layer, int layerid, int parentLayerId)
         {
             try
             {
@@ -267,7 +283,7 @@ namespace Xbim.ModelGeometry.Converter
                 foreach (var subLayer in layer.SubLayers)
                 {
                     layerid++;
-                    layerid = AddLayer(mDBcon, subLayer, layerid, myParent);
+                    layerid = AddLayerToSceneDatabase(mDBcon, subLayer, layerid, myParent);
                 }
                 return layerid;
 
@@ -308,6 +324,5 @@ namespace Xbim.ModelGeometry.Converter
                 SQLiteTrans.Commit();
             }
         }
-
     }
 }

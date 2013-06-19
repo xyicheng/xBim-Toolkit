@@ -240,6 +240,14 @@ namespace Xbim.Common.Geometry
             _identity._isNotDefaultInitialised = true;
         }
 
+        public bool IsAffine
+        {
+            get
+            {
+                return (this._m14 == 0.0 && this._m24 == 0.0 && this._m34 == 0.0 && this._m44 == 1.0);
+            }
+        }
+
         public static XbimMatrix3D Identity
         {
             get
@@ -266,7 +274,6 @@ namespace Xbim.Common.Geometry
         /// </summary>
         public XbimMatrix3D(Single m00, Single m01, Single m02, Single m03, Single m10, Single m11, Single m12, Single m13, Single m20, Single m21, Single m22, Single m23, Single m30, Single m31, Single m32, Single m33)
         {    
-              
             _m11 = m00;
             _m12 = m01;
             _m13 = m02;
@@ -300,9 +307,9 @@ namespace Xbim.Common.Geometry
         /// <param name="m21"></param>
         /// <param name="m22"></param>
         /// <param name="m23"></param>
-        /// <param name="m30"></param>
-        /// <param name="m31"></param>
-        /// <param name="m32"></param>
+        /// <param name="m30">OffsetX</param>
+        /// <param name="m31">OffsetY</param>
+        /// <param name="m32">OffsetZ</param>
         /// <param name="m33"></param>
         public XbimMatrix3D(double m00, double m01, double m02, double m03, double m10, double m11, double m12, double m13, double m20, double m21, double m22, double m23, double m30, double m31, double m32, double m33)
         {
@@ -325,51 +332,7 @@ namespace Xbim.Common.Geometry
             _m44 = (float)m33;
             _isNotDefaultInitialised = true;
         }
-        /// <summary>
-        /// Creates a matrix for scaling equally in all 3 axis
-        /// </summary>
-        /// <param name="scale"></param>
-        public XbimMatrix3D(double scale)       
-        {         
-            _m11 = 1f;
-            _m12 = 0;
-            _m13 = 0;
-            _m14 = (float)scale;
-            _m21 = 0;
-            _m22 = 1f;
-            _m23 = 0;
-            _m24 = (float)scale;
-            _m31 = 0;
-            _m32 = 0;
-            _m33 = 1f;
-            _m34 = (float)scale;
-            _offsetX = 0;
-            _offsetY = 0;
-            _offsetZ = 0;
-            _m44 = 1f;
-            _isNotDefaultInitialised = true;
-        }
-        public XbimMatrix3D(XbimVector3D translation, double scale = 1)
-        {
-            _m11 = 1f;
-            _m12 = 0;
-            _m13 = 0;
-            _m14 = (float)scale;
-            _m21 = 0;
-            _m22 = 1f;
-            _m23 = 0;
-            _m24 = (float)scale;
-            _m31 = 0;
-            _m32 = 0;
-            _m33 = 1f;
-            _m34 = (float)scale;
-            _offsetX = translation.X;
-            _offsetY = translation.Y;
-            _offsetZ = translation.Z;
-            _m44 = 1f;
-            _isNotDefaultInitialised = true;
-        }
-
+        
         public static XbimMatrix3D FromArray(byte[] array, bool useDouble = true)
         {
             MemoryStream ms = new MemoryStream(array);
@@ -576,8 +539,55 @@ namespace Xbim.Common.Geometry
                   m.M21 , m.M22 , m.M23, m.M24 ,
                   m.M31 , m.M32 , m.M33, m.M34 ,
                   m.OffsetX , m.OffsetY , m.OffsetZ , m.M44);
-            
-            
+        }
+
+
+        /// <summary>
+        /// Creates a 3D scaling matrix.
+        /// </summary>
+        /// <param name="UniformScale">>The scaling factor along all axis.</param>
+        /// <returns>The new scaling matrix</returns>
+        public static XbimMatrix3D CreateScale(float UniformScale)
+        {
+            return CreateScale(UniformScale, UniformScale, UniformScale);
+        }
+
+        /// <summary>
+        /// Creates a 3D scaling matrix.
+        /// </summary>
+        /// <param name="ScaleX">>The scaling factor along the x-axis.</param>
+        /// <param name="ScaleY">>The scaling factor along the y-axis.</param>
+        /// <param name="ScaleZ">>The scaling factor along the z-axis.</param>
+        /// <returns>The new scaling matrix</returns>
+        public static XbimMatrix3D CreateScale(float ScaleX, float ScaleY, float ScaleZ)
+        {
+            return new XbimMatrix3D(
+                ScaleX, 0.0, 0.0, 0.0,
+                0.0, ScaleY, 0.0, 0.0,
+                0.0, 0.0, ScaleZ, 0.0,
+                0.0, 0.0, 0.0, 1.0
+                );
+        }
+
+        /// <summary>
+        /// Creates a 3D translation matrix.
+        /// </summary>
+        public static XbimMatrix3D CreateTranslation(float X, float Y, float Z)
+        {
+            return new XbimMatrix3D(
+                1.0, 0.0, 0.0, 0.0,
+                0.0, 1.0, 0.0, 0.0,
+                0.0, 0.0, 1.0, 0.0,
+                X, Y, Z, 1.0
+                );
+        }
+
+        /// <summary>
+        /// Creates a 3D translation matrix.
+        /// </summary>
+        public static XbimMatrix3D CreateTranslation(XbimVector3D TranslationVector)
+        {
+            return CreateTranslation(TranslationVector.X, TranslationVector.Y, TranslationVector.Z);
         }
 
         /// <summary>
@@ -960,6 +970,8 @@ namespace Xbim.Common.Geometry
             //    _m24 = (float)((m14 * sinValue) + (m24 * cosValue));
             //}
         }
-       
+
+
+        
     }
 }

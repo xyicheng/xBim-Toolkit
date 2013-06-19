@@ -653,8 +653,7 @@ namespace Xbim.Presentation
             int projectId = 0;
             if (project != null) projectId = Math.Abs(project.EntityLabel);
             XbimGeometryData regionData = model.GetGeometryData(projectId, XbimGeometryType.Region).FirstOrDefault(); //get the region data should only be one
-            double mm = model.GetModelFactors.OneMilliMetre;
-            XbimMatrix3D wcsTransform = new XbimMatrix3D(1 / mm);
+            
             if (regionData != null)
             {
                 XbimRegionCollection regions = XbimRegionCollection.FromArray(regionData.ShapeData);
@@ -761,8 +760,9 @@ namespace Xbim.Presentation
             double processed = 0;
 
             XbimColour colour = federationColours[docInfo.DocumentOwner.RoleName()];
-            double mm = model.GetModelFactors.OneMilliMetre;
-            XbimMatrix3D wcsTransform = new XbimMatrix3D(_modelTranslation, 1 / mm);
+            double mm = model.GetModelFactors.OneMetre;
+            XbimMatrix3D wcsTransform = XbimMatrix3D.CreateTranslation(_modelTranslation) * XbimMatrix3D.CreateScale(1 / (float)mm);
+                
             XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial> layer = new XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial>(model, colour) { Name = "All" };
             //add all content initially into the hidden field
             foreach (var geomData in model.GetGeometryData(handles))
@@ -797,11 +797,11 @@ namespace Xbim.Presentation
             IfcProject project = model.IfcProject;
             int projectId = 0;
             if(project!=null) projectId = Math.Abs(project.EntityLabel);
-            double mm = model.GetModelFactors.OneMilliMetre;
-            XbimMatrix3D wcsTransform = new XbimMatrix3D(_modelTranslation, 1/mm);
+            double mm = model.GetModelFactors.OneMetre;
+            XbimMatrix3D wcsTransform = XbimMatrix3D.CreateTranslation(_modelTranslation) * XbimMatrix3D.CreateScale((float)mm);
             
             Parallel.ForEach<KeyValuePair<string,XbimGeometryHandleCollection>>(handles.FilterByBuildingElementTypes(), layerContent =>
-        // foreach (var layerContent in handles.FilterByBuildingElementTypes())
+            // foreach (var layerContent in handles.FilterByBuildingElementTypes())
 	
             {
                 string elementTypeName = layerContent.Key;

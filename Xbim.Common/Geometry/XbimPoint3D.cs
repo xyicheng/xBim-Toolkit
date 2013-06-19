@@ -81,15 +81,30 @@ namespace Xbim.Common.Geometry
             return XbimPoint3D.Multiply(p, m);
         }
 
+       
+
         public static XbimPoint3D Multiply(XbimPoint3D p, XbimMatrix3D m)
         {
             var x = p.X;
             var y = p.Y; 
             var z = p.Z;
-            return new XbimPoint3D(m.M11 * x + m.M21 * y + m.M31 * z + m.OffsetX,
+            
+
+            
+            XbimPoint3D pRet = new XbimPoint3D(m.M11 * x + m.M21 * y + m.M31 * z + m.OffsetX,
                                    m.M12 * x + m.M22 * y + m.M32 * z + m.OffsetY,
                                    m.M13 * x + m.M23 * y + m.M33 * z + m.OffsetZ
                                   );
+
+            if (!m.IsAffine)
+            {
+                float AffineRatio = x * m.M14 + y * m.M24 + z * m.M34 + m.M44;
+                pRet.X /= AffineRatio;
+                pRet.Y /= AffineRatio;
+                pRet.Z /= AffineRatio;
+            }
+            return pRet;
+
         }
         public static XbimVector3D operator -(XbimPoint3D a, XbimPoint3D b)
         {

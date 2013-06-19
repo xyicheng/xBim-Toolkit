@@ -75,7 +75,9 @@ namespace XbimConvert
                                 sceneTimer.Start();
                                 XbimSceneBuilder sb = new XbimSceneBuilder();
                                 string xbimSceneName = BuildFileName(xbimFileName, ".xbimScene");
-                                sb.BuildGlobalScene(model, xbimSceneName);
+                                sb.BuildGlobalScene(model, xbimSceneName, 
+                                    !arguments.IsQuiet ? Logger : null
+                                    );
                                 sceneTimer.Stop();
                                 if (!arguments.IsQuiet)
                                     Console.WriteLine(string.Format(" Completed in {0} ms", sceneTimer.ElapsedMilliseconds));

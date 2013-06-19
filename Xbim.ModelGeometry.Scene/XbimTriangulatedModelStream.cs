@@ -527,11 +527,13 @@ namespace Xbim.ModelGeometry.Scene
                 for (uint i = 0; i < numUniques; i++)
                 {
                     uint readpositionI = PositionReader.ReadIndex();
-                    builder.AddPosition(
-                        transform.Transform(new XbimPoint3D(pos[readpositionI, 0], pos[readpositionI, 1], pos[readpositionI, 2])));
+                    var tfdPosition = transform.Transform(new XbimPoint3D(pos[readpositionI, 0], pos[readpositionI, 1], pos[readpositionI, 2]));
+                    builder.AddPosition(tfdPosition);
                 }
                 for (uint i = 0; i < numUniques; i++)
                 {
+                    // todo: use a quaternion extracted from the matrix instead
+                    //
                     uint readnormalI = NormalsReader.ReadIndex();
                     XbimVector3D v = transform.Transform(new XbimVector3D(nrm[readnormalI, 0], nrm[readnormalI, 1], nrm[readnormalI, 2]));
                     v.Normalize();
