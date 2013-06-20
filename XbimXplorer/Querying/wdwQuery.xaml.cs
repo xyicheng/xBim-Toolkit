@@ -129,22 +129,34 @@ namespace XbimXplorer.Querying
                         string start = m.Groups["start"].Value;
                         string props = m.Groups["props"].Value;
                         string count = m.Groups["count"].Value;
-                        
+
+                        int iIndex = -1;
+                        if (start.Contains('['))
+                        {
+                            string[] cut = start.Split(new char[] { '[', ']' }, StringSplitOptions.RemoveEmptyEntries);
+                            start = cut[0];
+                            int.TryParse(cut[1], out iIndex);
+                        }
 
                         int[] labels = tointarray(start, ',');
                         IEnumerable<int> ret = null;
                         if (labels.Length != 0)
                         {
-                            ret = QueryEngine.RecursiveQuery(Model, props, labels);
-                            
+                            ret = QueryEngine.RecursiveQuery(Model, props, labels);                            
                         }
                         else
                         {
+
                             var items = QueryEngine.EntititesForType(start, Model);
                             ret = QueryEngine.RecursiveQuery(Model, props, items);
                             //TreeQueryItem tq = new TreeQueryItem(items, props);
                             //ret = tq.Run(Model);
                         }
+                        //if (iIndex != -1)
+                        //{
+                        //    int iVal = ret[iIndex];
+                        //    ret = new List<int>();
+                        //}
                         if (count.ToLower() == "count ")
                         {
                             txtOut.Text += string.Format("Count: {0}\r\n", ret.Count());
