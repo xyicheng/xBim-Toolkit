@@ -668,11 +668,10 @@ namespace Xbim.Presentation
             if (!modelBounds.IsEmpty) //we have  geometry so create view box
                 viewBounds = modelBounds;
 
-            //adjust for the units of the model
-            double metre = model.GetModelFactors.OneMetre;
-
+          
             // Assumes a NearPlaneDistance of 1/8 of meter.
-            Viewport.DefaultCamera.NearPlaneDistance = metre * 0.125; 
+            //all models are now in metres
+            Viewport.DefaultCamera.NearPlaneDistance = 0.125; 
             Viewport.Camera.NearPlaneDistance = Viewport.DefaultCamera.NearPlaneDistance;
             Viewport.DefaultCamera.FarPlaneDistance = viewBounds.Length() * 3;
             Viewport.Camera.FarPlaneDistance = Viewport.DefaultCamera.FarPlaneDistance;
@@ -681,17 +680,17 @@ namespace Xbim.Presentation
 
             double widthModelUnits = viewBounds.SizeY;
             double lengthModelUnits = viewBounds.SizeX;
-            long gridWidth = Convert.ToInt64(widthModelUnits / (metre * 10));
-            long gridLen = Convert.ToInt64(lengthModelUnits / (metre * 10));
+            long gridWidth = Convert.ToInt64(widthModelUnits /  10);
+            long gridLen = Convert.ToInt64(lengthModelUnits / 10);
             if (gridWidth > 10 || gridLen > 10)
-                this.GridLines.MinorDistance = metre * 10;
+                this.GridLines.MinorDistance = 10;
             else
-                this.GridLines.MinorDistance = metre;
-            this.GridLines.Width = (gridWidth + 1) * 10 * metre;
-            this.GridLines.Length = (gridLen + 1) * 10 * metre;
+                this.GridLines.MinorDistance = 1;
+            this.GridLines.Width = (gridWidth + 1) * 10;
+            this.GridLines.Length = (gridLen + 1) * 10;
 
-            this.GridLines.MajorDistance = metre * 10;
-            this.GridLines.Thickness = 0.01 * metre;
+            this.GridLines.MajorDistance =  10;
+            this.GridLines.Thickness = 0.01;
             XbimPoint3D p3d = viewBounds.Centroid();
             TranslateTransform3D t3d = new TranslateTransform3D(p3d.X, p3d.Y, viewBounds.Z);
             this.GridLines.Transform = t3d;
@@ -760,8 +759,8 @@ namespace Xbim.Presentation
             double processed = 0;
 
             XbimColour colour = federationColours[docInfo.DocumentOwner.RoleName()];
-            double mm = model.GetModelFactors.OneMetre;
-            XbimMatrix3D wcsTransform = XbimMatrix3D.CreateTranslation(_modelTranslation) * XbimMatrix3D.CreateScale(1 / (float)mm);
+            double metre = model.GetModelFactors.OneMetre;
+            XbimMatrix3D wcsTransform = XbimMatrix3D.CreateTranslation(_modelTranslation) * XbimMatrix3D.CreateScale(1 / (float)metre);
                 
             XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial> layer = new XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial>(model, colour) { Name = "All" };
             //add all content initially into the hidden field
@@ -797,11 +796,11 @@ namespace Xbim.Presentation
             IfcProject project = model.IfcProject;
             int projectId = 0;
             if(project!=null) projectId = Math.Abs(project.EntityLabel);
-            double mm = model.GetModelFactors.OneMetre;
-            XbimMatrix3D wcsTransform = XbimMatrix3D.CreateTranslation(_modelTranslation) * XbimMatrix3D.CreateScale((float)mm);
+            double metre = model.GetModelFactors.OneMetre;
+            XbimMatrix3D wcsTransform = XbimMatrix3D.CreateTranslation(_modelTranslation) * XbimMatrix3D.CreateScale((float)(1/metre));
             
             Parallel.ForEach<KeyValuePair<string,XbimGeometryHandleCollection>>(handles.FilterByBuildingElementTypes(), layerContent =>
-            // foreach (var layerContent in handles.FilterByBuildingElementTypes())
+           //  foreach (var layerContent in handles.FilterByBuildingElementTypes())
 	
             {
                 string elementTypeName = layerContent.Key;
