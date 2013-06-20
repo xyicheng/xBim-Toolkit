@@ -135,6 +135,9 @@ namespace Xbim.ModelGeometry.Converter
                     bw.Write(modelBounds.Y);
                     bw.Write(modelBounds.Z);
 
+                    double ZBoundaryLow = modelBounds.Z;
+                    double ZBoundaryHigh = modelBounds.Z + modelBounds.SizeZ;
+
                     // create scene row in Scenes tabls
                     string str = "INSERT INTO Scenes (SceneId, SceneName, BoundingBox) ";
                     str += "VALUES (@SceneId, @SceneName, @BoundingBox) ";
@@ -162,9 +165,15 @@ namespace Xbim.ModelGeometry.Converter
                     IfcBuilding bld = model.IfcProject.GetBuildings().FirstOrDefault();
                     if (bld != null)
                     {
+                        List<StoreyInfo> Storeys = new List<StoreyInfo>();
+
                         double metre = model.GetModelFactors.OneMetre;
                         double storeyHeight = 0;//all scenes are in metres
                         int defaultStoreyName = 0;
+
+                        double MinElev = double.PositiveInfinity;
+                        double MaxElev = double.NegativeInfinity;
+
                         foreach (var storey in bld.GetBuildingStoreys(true))
                         {
                             string cleanName;
@@ -186,12 +195,30 @@ namespace Xbim.ModelGeometry.Converter
                             if (Logger != null)
                                 Logger.DebugFormat("StoreyName: {0}; Model Elevation: {1}; Scene Elevation: {2}", cleanName, storeyHeight, InTranslatedReferenceZ);
 
+                            MinElev = Math.Min(MinElev, InTranslatedReferenceZ);
+                            MaxElev = Math.Max(MaxElev, InTranslatedReferenceZ);
+                            Storeys.Add(new StoreyInfo() { Name = cleanName, Elevation = InTranslatedReferenceZ });
+                        }
+
+                        double deltaElev = 0;
+                        if (MinElev < ZBoundaryLow || MaxElev > ZBoundaryHigh)
+                        {
+                            double midFrom = (MinElev + MaxElev) / 2;
+                            double midTo = (ZBoundaryLow + ZBoundaryHigh) / 2;
+                            deltaElev = midTo - midFrom;
+                            Logger.DebugFormat("Elevation corrected by: {0}", deltaElev);
+                        }
+
+                        foreach (var Storey in Storeys)
+                        {
                             AddMetaData(
                                 connection,
                                 "Storey",
-                                string.Format("Name:{0};Elevation:{1};", cleanName, InTranslatedReferenceZ), // storeyHeight),
-                                cleanName);
+                                string.Format("Name:{0};Elevation:{1};", Storey.Name, Storey.Elevation + deltaElev), // storeyHeight),
+                                Storey.Name);    
                         }
+
+                        
                     }
                 }
                 finally
@@ -202,6 +229,12 @@ namespace Xbim.ModelGeometry.Converter
                 }
             }
 
+        }
+
+        private class StoreyInfo
+        {
+            public string Name;
+            public double Elevation;
         }
 
         private int AddLayerToSceneDatabase(SQLiteConnection mDBcon, XbimMeshLayer<XbimMeshGeometry3D, XbimRenderMaterial> layer, int layerid, int parentLayerId)

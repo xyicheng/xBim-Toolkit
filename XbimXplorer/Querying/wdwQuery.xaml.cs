@@ -208,6 +208,7 @@ namespace XbimXplorer.Querying
             txtOut.Text += "  IfcType type\r\n";
             txtOut.Text += "  clear\r\n";
             txtOut.Text += "  test\r\n";
+            txtOut.Text += "  select [count] <#startingElement> [Properties...]\r\n";
             txtOut.Text += "\r\n";
             txtOut.Text += "Commands are executed on <ctrl>+<Enter>\r\n";
         }

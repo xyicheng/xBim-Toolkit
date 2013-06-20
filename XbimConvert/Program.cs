@@ -137,29 +137,6 @@ namespace XbimConvert
             Console.WriteLine(message);
             GetInput();
         }
-               
-                       
-
-
-            
-
-
-
-
-           
-
-
-
-                //XbimScene.ConvertGeometry(toDraw, delegate(int percentProgress, object userState)
-                //{
-                //    if (!arguments.IsQuiet)
-                //    {
-                //        Console.Write(string.Format("{0:D5} Converted", percentProgress));
-                //        ResetCursor(Console.CursorTop);
-                //    }
-                //}, arguments.OCC);
-            
-
 
         private static IEnumerable<IfcProduct> GetProducts(XbimModel model)
         {

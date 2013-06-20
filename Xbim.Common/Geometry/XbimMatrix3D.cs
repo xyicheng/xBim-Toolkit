@@ -272,64 +272,47 @@ namespace Xbim.Common.Geometry
         /// <summary>
         /// Creates a new instance of a XbimMatrix3D, initializing it with the given arguments
         /// </summary>
-        public XbimMatrix3D(Single m00, Single m01, Single m02, Single m03, Single m10, Single m11, Single m12, Single m13, Single m20, Single m21, Single m22, Single m23, Single m30, Single m31, Single m32, Single m33)
+        public XbimMatrix3D(Single m11, Single m12, Single m13, Single m14, Single m21, Single m22, Single m23, Single m24, Single m31, Single m32, Single m33, Single m34, Single OffsetX, Single OffsetY, Single OffsetZ, Single m44)
         {    
-            _m11 = m00;
-            _m12 = m01;
-            _m13 = m02;
-            _m14 = m03;
-            _m21 = m10;
-            _m22 = m11;
-            _m23 = m12;
-            _m24 = m13;
-            _m31 = m20;
-            _m32 = m21;
-            _m33 = m22;
-            _m34 = m23;
-            _offsetX = m30;
-            _offsetY = m31;
-            _offsetZ = m32;
-            _m44 = m33;
+            _m11 = m11;
+            _m12 = m12;
+            _m13 = m13;
+            _m14 = m14;
+            _m21 = m21;
+            _m22 = m22;
+            _m23 = m23;
+            _m24 = m24;
+            _m31 = m31;
+            _m32 = m32;
+            _m33 = m33;
+            _m34 = m34;
+            _offsetX = OffsetX;
+            _offsetY = OffsetY;
+            _offsetZ = OffsetZ;
+            _m44 = m44;
              _isNotDefaultInitialised=true;
         }
         /// <summary>
         /// Initialises with doubles, there is a possible loss of data as this matrix uses floats internally
         /// </summary>
-        /// <param name="m00"></param>
-        /// <param name="m01"></param>
-        /// <param name="m02"></param>
-        /// <param name="m03"></param>
-        /// <param name="m10"></param>
-        /// <param name="m11"></param>
-        /// <param name="m12"></param>
-        /// <param name="m13"></param>
-        /// <param name="m20"></param>
-        /// <param name="m21"></param>
-        /// <param name="m22"></param>
-        /// <param name="m23"></param>
-        /// <param name="m30">OffsetX</param>
-        /// <param name="m31">OffsetY</param>
-        /// <param name="m32">OffsetZ</param>
-        /// <param name="m33"></param>
-        public XbimMatrix3D(double m00, double m01, double m02, double m03, double m10, double m11, double m12, double m13, double m20, double m21, double m22, double m23, double m30, double m31, double m32, double m33)
+        public XbimMatrix3D(double m11, double m12, double m13, double m14, double m21, double m22, double m23, double m24, double m31, double m32, double m33, double m34, double OffsetX, double OffsetY, double OffsetZ, double m44)
         {
-
-            _m11 = (float)m00;
-            _m12 = (float)m01;
-            _m13 = (float)m02;
-            _m14 = (float)m03;
-            _m21 = (float)m10;
-            _m22 = (float)m11;
-            _m23 = (float)m12;
-            _m24 = (float)m13;
-            _m31 = (float)m20;
-            _m32 = (float)m21;
-            _m33 = (float)m22;
-            _m34 = (float)m23;
-            _offsetX = (float)m30;
-            _offsetY = (float)m31;
-            _offsetZ = (float)m32;
-            _m44 = (float)m33;
+            _m11 = (float)m11;
+            _m12 = (float)m12;
+            _m13 = (float)m13;
+            _m14 = (float)m14;
+            _m21 = (float)m21;
+            _m22 = (float)m22;
+            _m23 = (float)m23;
+            _m24 = (float)m24;
+            _m31 = (float)m31;
+            _m32 = (float)m32;
+            _m33 = (float)m33;
+            _m34 = (float)m34;
+            _offsetX = (float)OffsetX;
+            _offsetY = (float)OffsetY;
+            _offsetZ = (float)OffsetZ;
+            _m44 = (float)m44;
             _isNotDefaultInitialised = true;
         }
         
@@ -656,12 +639,7 @@ namespace Xbim.Common.Geometry
             OffsetY = (a00 * b09 - a01 * b07 + a02 * b06) * invDet;
             OffsetZ = (-a30 * b03 + a31 * b01 - a32 * b00) * invDet;
             M44 = (a20 * b03 - a21 * b01 + a22 * b00) * invDet;
-
         }
-
-
-
-
 
         public byte[] ToArray(bool useDouble = true)
         {
