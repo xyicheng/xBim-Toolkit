@@ -72,14 +72,10 @@ namespace Xbim.Presentation
             ShowSpaces = false; 
         }
 
-
         #region Fields
         private List<XbimScene<WpfMeshGeometry3D, WpfMaterial>> scenes = new List<XbimScene<WpfMeshGeometry3D, WpfMaterial>>();
         private XbimColourMap federationColours;
 
-      
-
-       
         protected RayMeshGeometry3DHitTestResult _hitResult;
        
         private XbimRect3D modelBounds;
@@ -93,7 +89,31 @@ namespace Xbim.Presentation
         /// <value>The model.</value>
         public Model3D Model3d { get; set; }
 
+        public void SetCutPlane(double PosX, double PosY, double PosZ, double NrmX, double NrmY, double NrmZ)
+        {   
+            object p = this.FindName("cuttingGroup");
+            XbimCuttingPlaneGroup cpg = p as XbimCuttingPlaneGroup;
+            if (cpg != null)
+            {
+                cpg.CuttingPlanes.Clear();
+                cpg.CuttingPlanes.Add(
+                    new Plane3D(
+                        new Point3D(PosX, PosY, PosZ),
+                        new Vector3D(NrmX, NrmY, NrmZ)
+                        ));
+                cpg.IsEnabled = true;
+            }
+        }
 
+        public void ClearCutPlane()
+        {
+            object p = this.FindName("cuttingGroup");
+            XbimCuttingPlaneGroup cpg = p as XbimCuttingPlaneGroup;
+            if (cpg != null)
+            {
+                cpg.IsEnabled = false;
+            }
+        }
 
         #endregion
 
@@ -139,6 +159,9 @@ namespace Xbim.Presentation
                         Highlighted.Mesh = new Mesh3D(m.Positions, m.TriangleIndices);
                        
                         int id = frag.EntityLabel;
+
+                        // todo: bonghi: can't see how 'remove' is useful
+                        /*
                         IList remove;
                         if (_currentProduct.HasValue)
                         {
@@ -146,6 +169,7 @@ namespace Xbim.Presentation
                         }
                         else
                             remove = new int[] { };
+                        */
                         _hitResult = hit;
                         _currentProduct = (int)id;
                         SelectedEntity = layer.Model.Instances[_currentProduct.Value];
@@ -178,8 +202,6 @@ namespace Xbim.Presentation
         #endregion
 
         #region Dependency Properties
-
-
 
         public double ModelOpacity
         {
@@ -860,10 +882,35 @@ namespace Xbim.Presentation
             }
         }
 
-      
+        /// <summary>
+        /// Returns the list of nested visual elements.
+        /// </summary>
+        /// <param name="OfItem">Valid names are for instance: Opaques, Transparents, BuildingModel, cuttingGroup...</param>
+        /// <returns>IEnumerable names</returns>
+        public IEnumerable<string> ListItems(string OfItem)
+        {
+            foreach (var scene in scenes)
+                foreach (var layer in scene.SubLayers) //go over top level layers only
+                    yield return layer.Name;
+        }
 
 
-       
+        public void SetVisibility(string LayerName, bool visibility)
+        {
+            foreach (var scene in scenes)
+            {
+                foreach (var layer in scene.SubLayers) //go over top level layers only
+                {
+                    if (layer.Name == LayerName)
+                    {
+                        if (visibility == true)
+                            layer.ShowAll();
+                        else
+                            layer.HideAll();
+                    }
+                }
+            }
+        }
 
         /// <summary>
         ///   Hides all instances of the specified type

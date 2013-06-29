@@ -111,6 +111,7 @@
     </Compile>
     <Compile Include="ClassificationViewModel.cs" />
     <Compile Include="ColourRgbExtensions.cs" />
+    <Compile Include="XbimCuttingPlaneGroup.cs" />
     <Compile Include="DrawingControl3D.xaml.cs" />
     <Compile Include="FederatedModelItem.cs" />
     <Compile Include="FederatedModelProperties.xaml.cs">
@@ -137,6 +138,7 @@
     <Compile Include="WpfVector3DCollection.cs" />
     <Compile Include="XbimMaterialModelVisual.cs" />
     <Compile Include="XbimMaterialProvider.cs" />
+    <Compile Include="XbimMeshHelper.cs" />
     <Compile Include="XbimModelPresentationExtensions.cs" />
     <Compile Include="XbimModelViewModel.cs" />
     <Compile Include="XbimRefModelViewModel.cs" />

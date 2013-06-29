@@ -133,9 +133,6 @@ namespace Xbim.Presentation
             WpfMesh.Geometry.Freeze();
         }
 
-
-
-
         public GeometryModel3D ToGeometryModel3D()
         {
             return WpfMesh;
@@ -148,11 +145,14 @@ namespace Xbim.Presentation
             if (m != null)
             {
                 for (int i = frag.StartPosition; i <= frag.EndPosition; i++)
-                {
+                {   
                     Point3D p = m.Positions[i];
-                    Vector3D v = m.Normals[i];
                     m3d.Positions.Add(p);
-                    m3d.Normals.Add(v);
+                    if (m.Normals != null)
+                    {
+                        Vector3D v = m.Normals[i];
+                        m3d.Normals.Add(v);
+                    }
                 }
                 for (int i = frag.StartTriangleIndex; i <= frag.EndTriangleIndex; i++)
                 {
@@ -186,7 +186,6 @@ namespace Xbim.Presentation
                 });
             }
             return m3d;
-           
         }
 
         public XbimRect3D GetBounds()

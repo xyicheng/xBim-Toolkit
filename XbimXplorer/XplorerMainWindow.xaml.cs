@@ -79,6 +79,7 @@ namespace XbimXplorer
         {
             XbimXplorer.Querying.wdwQuery qw = new Querying.wdwQuery();
             qw.Model = this.Model;
+            qw.ParentWindow = this;
             qw.Show();
         }
 

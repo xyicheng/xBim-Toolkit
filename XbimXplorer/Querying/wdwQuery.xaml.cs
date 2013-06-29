@@ -30,6 +30,7 @@ namespace XbimXplorer.Querying
         }
 
         public XbimModel Model;
+        public XplorerMainWindow ParentWindow;
 
         private bool bDoClear = true; 
 
@@ -44,6 +45,8 @@ namespace XbimXplorer.Querying
                     txtOut.Text = "";
 
                 string[] CommandArray = txtCommand.Text.Split(new string[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
+                if (txtCommand.SelectedText != string.Empty)
+                    CommandArray = txtCommand.SelectedText.Split(new string[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
 
                 foreach (var cmd in CommandArray)
                 {
@@ -123,12 +126,12 @@ namespace XbimXplorer.Querying
                         continue;
                     }
 
-                    m = Regex.Match(cmd, @"(select|se) (?<count>count )*(?<start>([\d,]+|[^ ]+)) *(?<props>.*)", RegexOptions.IgnoreCase);
+                    m = Regex.Match(cmd, @"(select|se) (?<mode>(count|list|short) )*(?<start>([\d,]+|[^ ]+)) *(?<props>.*)", RegexOptions.IgnoreCase);
                     if (m.Success)
                     {
                         string start = m.Groups["start"].Value;
                         string props = m.Groups["props"].Value;
-                        string count = m.Groups["count"].Value;
+                        string mode = m.Groups["mode"].Value;
 
                         int iIndex = -1;
                         if (start.Contains('['))
@@ -146,30 +149,109 @@ namespace XbimXplorer.Querying
                         }
                         else
                         {
-
                             var items = QueryEngine.EntititesForType(start, Model);
                             ret = QueryEngine.RecursiveQuery(Model, props, items);
-                            //TreeQueryItem tq = new TreeQueryItem(items, props);
-                            //ret = tq.Run(Model);
                         }
-                        //if (iIndex != -1)
-                        //{
-                        //    int iVal = ret[iIndex];
-                        //    ret = new List<int>();
-                        //}
-                        if (count.ToLower() == "count ")
+                        if (iIndex != -1)
+                        {
+                            int iVal = ret.ElementAt(iIndex);
+                            ret = new int[] { iVal };
+                        }
+                        if (mode.ToLower() == "count ")
                         {
                             txtOut.Text += string.Format("Count: {0}\r\n", ret.Count());
                         }
-                        else
+                        else if (mode.ToLower() == "list ")
                         {
                             foreach (var item in ret)
                             {
-                                txtOut.Text += ReportEntity(item, 0) + "\r\n";
+                                txtOut.Text += item + "\r\n";
+                            }
+                        }
+                        else
+                        {
+                            bool BeVerbose = true;
+                            if (mode.ToLower() == "short ")
+                                BeVerbose = false;
+                            foreach (var item in ret)
+                            {
+                                txtOut.Text += ReportEntity(item, 0, Verbose: BeVerbose) + "\r\n";
                             }
                         }
                         continue;
                     }
+                    m = Regex.Match(cmd, @"clip (" +
+                        @"(?<elev>[-+]?([0-9]*\.)?[0-9]+) *$" +
+                        "|" +                        
+                        @"(?<px>[-+]?([0-9]*\.)?[0-9]+) *, *" +
+                        @"(?<py>[-+]?([0-9]*\.)?[0-9]+) *, *" +
+                        @"(?<pz>[-+]?([0-9]*\.)?[0-9]+) *, *" +
+                        @"(?<nx>[-+]?([0-9]*\.)?[0-9]+) *, *" +
+                        @"(?<ny>[-+]?([0-9]*\.)?[0-9]+) *, *" +
+                        @"(?<nz>[-+]?([0-9]*\.)?[0-9]+)" +
+                        ")", RegexOptions.IgnoreCase);
+                    if (m.Success)
+                    {
+                        double px = 0, py = 0, pz = 0;
+                        double nx = 0, ny = 0, nz = -1;
+
+                        if (m.Groups["elev"].Value != string.Empty)
+                        {
+                            pz = Convert.ToDouble(m.Groups["elev"].Value);
+                        }
+                        else
+                        {
+                            px = Convert.ToDouble(m.Groups["px"].Value);
+                            py = Convert.ToDouble(m.Groups["py"].Value);
+                            pz = Convert.ToDouble(m.Groups["pz"].Value);
+                            nx = Convert.ToDouble(m.Groups["nx"].Value);
+                            ny = Convert.ToDouble(m.Groups["ny"].Value);
+                            nz = Convert.ToDouble(m.Groups["nz"].Value);
+                        }
+                        
+
+                        ParentWindow.DrawingControl.ClearCutPlane();
+                        ParentWindow.DrawingControl.SetCutPlane(
+                            px, py, pz,
+                            nx, ny, nz
+                            );
+
+                        txtOut.Text += "Clip command sent\r\n";
+                        ParentWindow.Activate();
+                        continue;
+                    }
+
+                    m = Regex.Match(cmd, @"clip off", RegexOptions.IgnoreCase);
+                    if (m.Success)
+                    {
+                        ParentWindow.DrawingControl.ClearCutPlane();
+                        txtOut.Text += "Clip removed\r\n";
+                        ParentWindow.Activate(); 
+                        continue;
+                    }
+
+                    m = Regex.Match(cmd, @"Visual (?<action>list|on|off)( (?<Name>[^ ]+))*", RegexOptions.IgnoreCase);
+                    if (m.Success)
+                    {
+                        string Name = m.Groups["Name"].Value;
+                        if (m.Groups["action"].Value == "list")
+                        {
+                            foreach (var item in ParentWindow.DrawingControl.ListItems(Name))
+                            {
+                                txtOut.Text += item + "\r\n";
+                            }
+                        }
+                        else 
+                        {
+                            bool bVis = false;
+                            if (m.Groups["action"].Value == "on")
+                                bVis = true;
+                            ParentWindow.DrawingControl.SetVisibility(Name, bVis);
+                        }
+                        continue;
+                    }
+
+
 
                     m = Regex.Match(cmd, @"test", RegexOptions.IgnoreCase);
                     if (m.Success)
@@ -200,15 +282,13 @@ namespace XbimXplorer.Querying
         private string RunTestCode()
         {
             StringBuilder sb = new StringBuilder();
-            Xbim.Ifc2x3.ActorResource.IfcOrganization org = (Xbim.Ifc2x3.ActorResource.IfcOrganization)Model.Instances[50];
-            var v = org.IsRelatedBy;
-            sb.AppendLine(v.Count().ToString());
 
-            var v2 = org.Relates;
-            sb.AppendLine(v2.Count().ToString());
-
-            var v3 = org.Engages;
-            sb.AppendLine(v3.Count().ToString());
+            ParentWindow.DrawingControl.ClearCutPlane();
+            if (true)
+                ParentWindow.DrawingControl.SetCutPlane(
+                    0.0, 0.0, 0.0,
+                    0.0, 0.0, 1.0
+                    );
 
             return sb.ToString();
         }
@@ -216,13 +296,17 @@ namespace XbimXplorer.Querying
         private void DisplayHelp()
         {
             txtOut.Text += "Commands:\r\n";
+            txtOut.Text += "  select [count|list|short] <#startingElement> [Properties...]\r\n";
             txtOut.Text += "  EntityLabel label [recursion]\r\n";
             txtOut.Text += "  IfcType type\r\n";
-            txtOut.Text += "  clear\r\n";
+            txtOut.Text += "  clip [off|<Elevation>|<px>, <py>, <pz>, <nx>, <ny>, <nz>] (unstable feature)\r\n";
+            txtOut.Text += "  Visual [list|[on|off <name>]]\r\n";
+            txtOut.Text += "  clear [on|off]\r\n";
+            
             txtOut.Text += "  test\r\n";
-            txtOut.Text += "  select [count] <#startingElement> [Properties...]\r\n";
             txtOut.Text += "\r\n";
             txtOut.Text += "Commands are executed on <ctrl>+<Enter>\r\n";
+            txtOut.Text += "Lines starting with double slash are ignored\r\n";
         }
 
         private string ReportType(string type)
@@ -234,9 +318,7 @@ namespace XbimXplorer.Querying
             return sb.ToString();
         }
 
-        
-
-        private string ReportEntity(int EntityLabel, int RecursiveDepth = 0, int IndentationLevel = 0)
+        private string ReportEntity(int EntityLabel, int RecursiveDepth = 0, int IndentationLevel = 0, bool Verbose = false)
         {
             // Debug.WriteLine("EL: " + EntityLabel.ToString());
             StringBuilder sb = new StringBuilder();
@@ -253,7 +335,7 @@ namespace XbimXplorer.Querying
 
                     foreach (var prop in props)
                     {
-                        var PropLabels = ReportProp(sb, IndentationHeader, entity, prop);
+                        var PropLabels = ReportProp(sb, IndentationHeader, entity, prop, Verbose);
 
                         foreach (var PropLabel in PropLabels)
                         {
@@ -273,7 +355,7 @@ namespace XbimXplorer.Querying
                         sb.AppendFormat(IndentationHeader + "= Inverses count: {0}\r\n", Invs.Count);
                     foreach (var inverse in Invs)
                     {
-                        ReportProp(sb, IndentationHeader, entity, inverse);
+                        ReportProp(sb, IndentationHeader, entity, inverse, Verbose);
                     }
                 }
                 else
@@ -288,15 +370,29 @@ namespace XbimXplorer.Querying
             return sb.ToString();
         }
 
-        private static IEnumerable<int> ReportProp(StringBuilder sb, string IndentationHeader, IPersistIfcEntity entity, IfcMetaProperty prop)
+        private static IEnumerable<int> ReportProp(StringBuilder sb, string IndentationHeader, IPersistIfcEntity entity, IfcMetaProperty prop, bool Verbose)
         {
             List<int> RetIds = new List<int>();
 
             string propName = prop.PropertyInfo.Name;
-            if (propName == "RelatedBuildingElement")
+            if (propName == "Representation")
                 Debug.WriteLine("");
-            Debug.WriteLine(propName);
+            // Debug.WriteLine(propName);
             Type propType = prop.PropertyInfo.PropertyType;
+
+            string ShortTypeName = propType.FullName;
+            var m = Regex.Match(ShortTypeName, @"^((?<Mod>.*)`\d\[\[)*Xbim\.(?<Type>[\w\.]*)");
+            if (m.Success)
+            {
+                ShortTypeName = m.Groups["Type"].Value; // + m.Groups["Type"].Value + 
+                if (m.Groups["Mod"].Value != string.Empty)
+                {
+                    string[] GetLast =  m.Groups["Mod"].Value.Split(new string[] {"."}, StringSplitOptions.RemoveEmptyEntries);
+                    ShortTypeName += " (" + GetLast[GetLast.Length - 1] + ")";
+                }
+            }
+
+            // System.Diagnostics.Debug.WriteLine(ShortTypeName);
 
             object propVal = prop.PropertyInfo.GetValue(entity, null);
 
@@ -331,12 +427,22 @@ namespace XbimXplorer.Querying
             else
                 propVal = ReportPropValue(propVal, ref RetIds);
 
-
-            sb.AppendFormat(IndentationHeader + "{0} ({1}): {2}\r\n",
-                propName,  // 0
-                propType.Name,  // 1
-                propVal // 2
-                );
+            if (Verbose)
+                sb.AppendFormat(IndentationHeader + "{0} ({1}): {2}\r\n",
+                    propName,  // 0
+                    ShortTypeName,  // 1
+                    propVal // 2
+                    );
+            else
+            {
+                if ((string)propVal != "<null>" && (string)propVal != "<empty>")
+                {
+                    sb.AppendFormat(IndentationHeader + "{0}: {1}\r\n",
+                        propName,  // 0
+                        propVal // 1
+                        );
+                }
+            }
             return RetIds;
         }
 

@@ -43,6 +43,8 @@ namespace Xbim.Presentation
 
         public bool MoveNext()
         {
+            if (wpfVectors == null)
+                return false;
             if (currentPos < wpfVectors.Count - 1)
             {
                 currentPos++;

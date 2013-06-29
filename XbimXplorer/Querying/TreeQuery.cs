@@ -62,7 +62,12 @@ namespace XbimXplorer
                 if (entity != null)
                 {
                     IfcType ifcType = IfcMetaData.IfcType(entity);
+                    // directs first
                     var prop = ifcType.IfcProperties.Where(x => x.Value.PropertyInfo.Name == _QueryCommand).FirstOrDefault().Value;
+                    if (prop == null) // otherwise test inverses
+                    {
+                        prop = ifcType.IfcInverses.Where(x => x.PropertyInfo.Name == _QueryCommand).FirstOrDefault();
+                    }
                     if (prop != null)
                     {
                         object propVal = prop.PropertyInfo.GetValue(entity, null);
@@ -75,7 +80,7 @@ namespace XbimXplorer
                                 {
                                     foreach (var item in propCollection)
                                     {
-                                        IPersistIfcEntity pe = propVal as IPersistIfcEntity;
+                                        IPersistIfcEntity pe = item as IPersistIfcEntity;
                                         yield return pe.EntityLabel;
                                     }
                                 }

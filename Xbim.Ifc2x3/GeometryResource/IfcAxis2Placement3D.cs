@@ -138,8 +138,8 @@ namespace Xbim.Ifc2x3.GeometryResource
 
         public override string ToString()
         {
-            if (_refDirection != null && _axis != null)
-                return string.Format("L={0}, D={1}, A={2}", Location, _refDirection, _axis);
+            if (RefDirection != null && Axis != null)
+                return string.Format("L={0}, D={1}, A={2}", Location, RefDirection, Axis);
             else
                 return base.ToString();
         }

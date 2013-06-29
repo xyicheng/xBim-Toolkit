@@ -1840,8 +1840,6 @@ namespace Xbim.IO
             }
         }
 
-
-
         public bool HasDatabaseInstance
         {
             get
@@ -1850,12 +1848,10 @@ namespace Xbim.IO
             }
         }
 
-
         internal IEnumerable<IPersistIfcEntity> Modified()
         {
             return modified.Values;
         }
-
      
         internal XbimGeometryHandleCollection GetGeometryHandles(XbimGeometryType geomType=XbimGeometryType.TriangulatedMesh, XbimGeometrySort sortOrder=XbimGeometrySort.OrderByIfcSurfaceStyleThenIfcType)
         {
@@ -1923,13 +1919,18 @@ namespace Xbim.IO
             {
                 IfcType ot = IfcMetaData.IfcType(StringType.ToUpper());
                 if (ot == null)
-                    return null;
+                    return EmptyEnumerator();
                 return OfType<IPersistIfcEntity>(activate: activate, overrideType: ot);
             }
             catch (Exception)
             {
-                return null;   
+                return EmptyEnumerator();
             }            
+        }
+
+        internal IEnumerable<IPersistIfcEntity> EmptyEnumerator()
+        {
+            yield break;
         }
     }
 }

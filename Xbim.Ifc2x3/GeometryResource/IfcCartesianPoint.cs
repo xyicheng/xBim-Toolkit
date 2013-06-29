@@ -313,7 +313,7 @@ namespace Xbim.Ifc2x3.GeometryResource
 
         public override string ToString()
         {
-            return string.Format("{0}, {1}, {2}", _x, _y, _z);
+            return string.Format("{0}, {1}, {2}", X, Y, Z);
         }
 
 
