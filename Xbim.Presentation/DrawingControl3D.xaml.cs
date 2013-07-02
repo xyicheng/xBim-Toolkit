@@ -591,6 +591,7 @@ namespace Xbim.Presentation
             DependencyProperty.Register("PercentageLoaded", typeof(double), typeof(DrawingControl3D),
                                         new UIPropertyMetadata(0.0));
         private XbimVector3D _modelTranslation;
+        public XbimMatrix3D wcsTransform;
       
 
         private void ClearGraphics()
@@ -630,12 +631,13 @@ namespace Xbim.Presentation
 
         private void LoadGeometry(XbimModel model)
         {
-            
             //reset all the visuals
             ClearGraphics();
             _materials.Clear();
             _opacities.Clear();
-            if (model == null) return; //nothing to do
+            this.ClearCutPlane();
+            if (model == null) 
+                return; //nothing to show
 
             XbimRegion largest = GetLargestRegion(model);
             XbimPoint3D c = new XbimPoint3D(0,0,0);
@@ -782,7 +784,7 @@ namespace Xbim.Presentation
 
             XbimColour colour = federationColours[docInfo.DocumentOwner.RoleName()];
             double metre = model.GetModelFactors.OneMetre;
-            XbimMatrix3D wcsTransform = XbimMatrix3D.CreateTranslation(_modelTranslation) * XbimMatrix3D.CreateScale(1 / (float)metre);
+            wcsTransform = XbimMatrix3D.CreateTranslation(_modelTranslation) * XbimMatrix3D.CreateScale(1 / (float)metre);
                 
             XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial> layer = new XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial>(model, colour) { Name = "All" };
             //add all content initially into the hidden field
@@ -819,7 +821,7 @@ namespace Xbim.Presentation
             int projectId = 0;
             if(project!=null) projectId = Math.Abs(project.EntityLabel);
             double metre = model.GetModelFactors.OneMetre;
-            XbimMatrix3D wcsTransform = XbimMatrix3D.CreateTranslation(_modelTranslation) * XbimMatrix3D.CreateScale((float)(1/metre));
+            wcsTransform = XbimMatrix3D.CreateTranslation(_modelTranslation) * XbimMatrix3D.CreateScale((float)(1/metre));
             
             Parallel.ForEach<KeyValuePair<string,XbimGeometryHandleCollection>>(handles.FilterByBuildingElementTypes(), layerContent =>
            //  foreach (var layerContent in handles.FilterByBuildingElementTypes())

@@ -204,7 +204,26 @@ namespace Xbim.ModelGeometry.Converter
                         }
                         else
                         {
+                            // store a transform only if no geomtery is available
+                            XbimGeometryCursor geomTable = model.GetGeometryTable();
+                            XbimLazyDBTransaction transaction = geomTable.BeginLazyTransaction();
+                            XbimMatrix3D m3dtemp = node.WorldMatrix();
+                            byte[] matrix = m3dtemp.ToArray(true);
+                            short? typeId = IfcMetaData.IfcTypeId(product);
+                            geomTable.AddGeometry(product.EntityLabel, XbimGeometryType.TransformOnly, typeId.Value, matrix, new byte[] {});
+                            transaction.Commit();
+                            model.FreeTable(geomTable);
+
                             Interlocked.Increment(ref tally);
+                            if (progDelegate != null)
+                            {
+                                int newPercentage = Convert.ToInt32((double)tally / total * 100.0);
+                                if (newPercentage > percentageParsed)
+                                {
+                                    percentageParsed = newPercentage;
+                                    progDelegate(percentageParsed, "Converted");
+                                }
+                            }
                         }
                     }
                     catch (Exception e1)
@@ -314,6 +333,10 @@ namespace Xbim.ModelGeometry.Converter
                 mapTrans.Commit();
                 model.FreeTable(geomMapTable);
 
+                if (progDelegate != null)
+                {
+                    progDelegate(0, "Ready");
+                }
             }
             catch (Exception e2)
             {

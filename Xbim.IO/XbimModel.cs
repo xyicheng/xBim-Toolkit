@@ -1005,7 +1005,7 @@ namespace Xbim.IO
             }
         }
         /// <summary>
-        /// Returns all products in the model, including dederated products
+        /// Returns all products in the model, including federated products
         /// </summary>
         public IEnumerable<IPersistIfcEntity> IfcProducts
         {

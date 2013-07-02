@@ -11,6 +11,7 @@ namespace Xbim.XbimExtensions
         BoundingBox = 0x01,
         MultipleBoundingBox = 0x02,
         TriangulatedMesh = 0x03,
-        Region = 0x4
+        Region = 0x4,
+        TransformOnly = 0x5
     }
 }

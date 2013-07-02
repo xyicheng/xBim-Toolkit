@@ -167,13 +167,11 @@ namespace Xbim.ModelGeometry.Converter
                     {
                         List<StoreyInfo> Storeys = new List<StoreyInfo>();
 
-                        double metre = model.GetModelFactors.OneMetre;
+                        // double metre = model.GetModelFactors.OneMetre;
                         double storeyHeight = 0;//all scenes are in metres
                         int defaultStoreyName = 0;
 
-                        double MinElev = double.PositiveInfinity;
-                        double MaxElev = double.NegativeInfinity;
-
+                        
                         foreach (var storey in bld.GetBuildingStoreys(true))
                         {
                             string cleanName;
@@ -181,44 +179,29 @@ namespace Xbim.ModelGeometry.Converter
                                 cleanName = storey.Name.Value.ToString().Replace(';', ' ');
                             else
                                 cleanName = "Floor " + defaultStoreyName++;
-                            if (storey.Elevation.HasValue)
-                                storeyHeight = storey.Elevation.Value; // values are to be tranaformed to meters later with the wcsTransform
-                            else
-                                storeyHeight += 3 * metre; //default to 3 metres
 
-                            // apply the transformation previously applied to the building 
-                            XbimPoint3D InTranslatedReference = composed.Transform(
-                                new XbimPoint3D(0, 0, storeyHeight)
-                                );
+                            // Storey elevation values (in building reference system) are taken from the objectplacement through the XbimGeometryType.TransformOnly geometry type
+                            //
+                            XbimGeometryData geomdata = model.GetGeometryData(storey.EntityLabel, XbimGeometryType.TransformOnly).FirstOrDefault();
+                            if (geomdata != null)
+                            {
+                                storeyHeight = geomdata.Transform.OffsetZ;
+                                // apply the transformation previously applied to the building 
+                                XbimPoint3D InTranslatedReference = composed.Transform(
+                                    new XbimPoint3D(0, 0, storeyHeight)
+                                    );
 
-                            double InTranslatedReferenceZ = InTranslatedReference.Z; // then express it in meters.
-                            if (Logger != null)
-                                Logger.DebugFormat("StoreyName: {0}; Model Elevation: {1}; Scene Elevation: {2}", cleanName, storeyHeight, InTranslatedReferenceZ);
+                                double InTranslatedReferenceZ = InTranslatedReference.Z; // then express it in meters.
+                                if (Logger != null)
+                                    Logger.DebugFormat("StoreyName: {0}; Model Elevation: {1}; Scene Elevation: {2}", cleanName, storeyHeight, InTranslatedReferenceZ);
 
-                            MinElev = Math.Min(MinElev, InTranslatedReferenceZ);
-                            MaxElev = Math.Max(MaxElev, InTranslatedReferenceZ);
-                            Storeys.Add(new StoreyInfo() { Name = cleanName, Elevation = InTranslatedReferenceZ });
+                                AddMetaData(
+                                    connection,
+                                    "Storey",
+                                    string.Format("Name:{0};Elevation:{1};", cleanName, InTranslatedReferenceZ), // storeyHeight),
+                                    cleanName);
+                            }
                         }
-
-                        double deltaElev = 0;
-                        if (MinElev < ZBoundaryLow || MaxElev > ZBoundaryHigh)
-                        {
-                            double midFrom = (MinElev + MaxElev) / 2;
-                            double midTo = (ZBoundaryLow + ZBoundaryHigh) / 2;
-                            deltaElev = midTo - midFrom;
-                            Logger.DebugFormat("Elevation corrected by: {0}", deltaElev);
-                        }
-
-                        foreach (var Storey in Storeys)
-                        {
-                            AddMetaData(
-                                connection,
-                                "Storey",
-                                string.Format("Name:{0};Elevation:{1};", Storey.Name, Storey.Elevation + deltaElev), // storeyHeight),
-                                Storey.Name);    
-                        }
-
-                        
                     }
                 }
                 finally

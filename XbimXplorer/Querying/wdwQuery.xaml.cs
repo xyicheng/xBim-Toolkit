@@ -180,6 +180,16 @@ namespace XbimXplorer.Querying
                         }
                         continue;
                     }
+
+                    m = Regex.Match(cmd, @"clip off", RegexOptions.IgnoreCase);
+                    if (m.Success)
+                    {
+                        ParentWindow.DrawingControl.ClearCutPlane();
+                        txtOut.Text += "Clip removed\r\n";
+                        ParentWindow.Activate();
+                        continue;
+                    }
+
                     m = Regex.Match(cmd, @"clip (" +
                         @"(?<elev>[-+]?([0-9]*\.)?[0-9]+) *$" +
                         "|" +                        
@@ -189,6 +199,8 @@ namespace XbimXplorer.Querying
                         @"(?<nx>[-+]?([0-9]*\.)?[0-9]+) *, *" +
                         @"(?<ny>[-+]?([0-9]*\.)?[0-9]+) *, *" +
                         @"(?<nz>[-+]?([0-9]*\.)?[0-9]+)" +
+                        "|" +
+                        @"(?<StoreyName>.+$)" +
                         ")", RegexOptions.IgnoreCase);
                     if (m.Success)
                     {
@@ -198,6 +210,37 @@ namespace XbimXplorer.Querying
                         if (m.Groups["elev"].Value != string.Empty)
                         {
                             pz = Convert.ToDouble(m.Groups["elev"].Value);
+                        }
+                        else if (m.Groups["StoreyName"].Value != string.Empty)
+                        {
+                            string msg = "";
+                            string storName = m.Groups["StoreyName"].Value;
+                            var storey = Model.Instances.OfType<Xbim.Ifc2x3.ProductExtension.IfcBuildingStorey>().Where(x => x.Name == storName).FirstOrDefault();
+                            if (storey != null)
+                            {
+                                //get the object position data (should only be one)
+                                Xbim.XbimExtensions.XbimGeometryData geomdata = Model.GetGeometryData(storey.EntityLabel, Xbim.XbimExtensions.XbimGeometryType.TransformOnly).FirstOrDefault();
+                                if (geomdata != null)
+                                {
+                                    Xbim.Common.Geometry.XbimPoint3D pt = new Xbim.Common.Geometry.XbimPoint3D(0, 0, geomdata.Transform.OffsetZ);
+                                    Xbim.Common.Geometry.XbimMatrix3D mcp = Xbim.Common.Geometry.XbimMatrix3D.Copy(ParentWindow.DrawingControl.wcsTransform);
+                                    var transformed = mcp.Transform(pt);
+                                    msg = string.Format("Clip 1m above storey elevation {0} (height: {1})\r\n", pt.Z, transformed.Z + 1);
+                                    pz = transformed.Z + 1;
+                                }
+                            }
+                            if (msg == "")
+                            {
+                                txtOut.Text += string.Format("Something wrong with storey name: '{0}'\r\n", storName);
+                                txtOut.Text += "Names that should work are: \r\n";
+                                var strs = Model.Instances.OfType<Xbim.Ifc2x3.ProductExtension.IfcBuildingStorey>();
+                                foreach (var str in strs)
+	                            {
+                                    txtOut.Text += string.Format(" - '{0}'\r\n", str.Name);
+	                            }
+                                continue;
+                            }
+                            txtOut.Text += msg;
                         }
                         else
                         {
@@ -221,14 +264,7 @@ namespace XbimXplorer.Querying
                         continue;
                     }
 
-                    m = Regex.Match(cmd, @"clip off", RegexOptions.IgnoreCase);
-                    if (m.Success)
-                    {
-                        ParentWindow.DrawingControl.ClearCutPlane();
-                        txtOut.Text += "Clip removed\r\n";
-                        ParentWindow.Activate(); 
-                        continue;
-                    }
+                    
 
                     m = Regex.Match(cmd, @"Visual (?<action>list|on|off)( (?<Name>[^ ]+))*", RegexOptions.IgnoreCase);
                     if (m.Success)
@@ -283,13 +319,19 @@ namespace XbimXplorer.Querying
         {
             StringBuilder sb = new StringBuilder();
 
-            ParentWindow.DrawingControl.ClearCutPlane();
-            if (true)
-                ParentWindow.DrawingControl.SetCutPlane(
-                    0.0, 0.0, 0.0,
-                    0.0, 0.0, 1.0
-                    );
-
+            var storey = (Xbim.Ifc2x3.ProductExtension.IfcBuildingStorey)Model.Instances.OfType<Xbim.Ifc2x3.ProductExtension.IfcBuildingStorey>().Where(x => x.Name == "").FirstOrDefault();
+            if (storey != null)
+            {
+                //get the object position data (should only be one)
+                Xbim.XbimExtensions.XbimGeometryData geomdata = Model.GetGeometryData(65, Xbim.XbimExtensions.XbimGeometryType.TransformOnly).FirstOrDefault();
+                if (geomdata != null)
+                {
+                    Xbim.Common.Geometry.XbimPoint3D pt = new Xbim.Common.Geometry.XbimPoint3D(0, 0, geomdata.Transform.OffsetZ);
+                    Xbim.Common.Geometry.XbimMatrix3D mcp = Xbim.Common.Geometry.XbimMatrix3D.Copy(ParentWindow.DrawingControl.wcsTransform);
+                    var transformed = mcp.Transform(pt);
+                    sb.AppendFormat("{0}\r\n", transformed.Z);
+                }
+            }
             return sb.ToString();
         }
 
@@ -299,7 +341,7 @@ namespace XbimXplorer.Querying
             txtOut.Text += "  select [count|list|short] <#startingElement> [Properties...]\r\n";
             txtOut.Text += "  EntityLabel label [recursion]\r\n";
             txtOut.Text += "  IfcType type\r\n";
-            txtOut.Text += "  clip [off|<Elevation>|<px>, <py>, <pz>, <nx>, <ny>, <nz>] (unstable feature)\r\n";
+            txtOut.Text += "  clip [off|<Elevation>|<px>, <py>, <pz>, <nx>, <ny>, <nz>|<Storey name>] (unstable feature)\r\n";
             txtOut.Text += "  Visual [list|[on|off <name>]]\r\n";
             txtOut.Text += "  clear [on|off]\r\n";
             
