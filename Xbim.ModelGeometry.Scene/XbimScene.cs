@@ -60,8 +60,6 @@ namespace Xbim.ModelGeometry.Scene
            
         }
 
-       
-
         /// <summary>
         /// Returns all the layers including sub layers of this scene
         /// </summary>
@@ -80,10 +78,10 @@ namespace Xbim.ModelGeometry.Scene
                 
             }
         }
+
         /// <summary>
         /// Returns all layers and sublayers that have got some graphic content that is visible
         /// </summary>
-        
         public IEnumerable<XbimMeshLayer<TVISIBLE, TMATERIAL>> VisibleLayers
         {
             get
@@ -108,7 +106,6 @@ namespace Xbim.ModelGeometry.Scene
             if (string.IsNullOrEmpty(layer.Name)) //ensure a layer has a unique name if the user has not defined one
                 layer.Name = "Layer " + layers.Count();
             layers.Add(layer);
-            
         }
 
 
@@ -121,6 +118,9 @@ namespace Xbim.ModelGeometry.Scene
                 layer.HideAll();
         }
 
+        /// <summary>
+        /// Makes all meshes in all layers in the scene Visible
+        /// </summary>
         public void ShowAll()
         {
             foreach (var layer in layers)
@@ -141,19 +141,26 @@ namespace Xbim.ModelGeometry.Scene
         }
 
 
-
+        /// <summary>
+        /// Gets the geometry of an entity building it up from layers.
+        /// </summary>
+        /// <param name="entity">The entity instance</param>
         public IXbimMeshGeometry3D GetMeshGeometry3D(IPersistIfcEntity entity)
         {
             XbimMeshGeometry3D geometry = new XbimMeshGeometry3D();
             IModel m = entity.ModelOf;
             foreach (var layer in Layers)
             {
+                // an entity model could be spread across many layers (e.g. in case of different materials)
                 if(layer.Model == m)
                     geometry.Add(layer.GetVisibleMeshGeometry3D(Math.Abs(entity.EntityLabel)));
             }
             return geometry;
         }
 
+        /// <summary>
+        /// Resizes layers so that none has more than USHORT number of indices
+        /// </summary>
         public void Balance()
         {
             foreach (var layer in SubLayers)

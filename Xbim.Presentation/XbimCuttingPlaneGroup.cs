@@ -31,14 +31,14 @@ namespace Xbim.Presentation
         private Dictionary<Model3D, Geometry3D> CutGeometries = new Dictionary<Model3D, Geometry3D>();
 
         /// <summary>
-        /// The new cut geometries.
+        /// The cut geometries being processed.
         /// </summary>
-        private Dictionary<Model3D, Geometry3D> NewCutGeometries;
+        private Dictionary<Model3D, Geometry3D> TempCutGeometries;
 
         /// <summary>
-        /// The new original geometries.
+        /// The original geometries being processed.
         /// </summary>
-        private Dictionary<Model3D, Geometry3D> NewOriginalGeometries;
+        private Dictionary<Model3D, Geometry3D> TempOriginalGeometries;
 
         /// <summary>
         /// The original geometries.
@@ -105,12 +105,12 @@ namespace Xbim.Presentation
         {
             lock (this)
             {
-                this.NewCutGeometries = new Dictionary<Model3D, Geometry3D>();
-                this.NewOriginalGeometries = new Dictionary<Model3D, Geometry3D>();
+                this.TempCutGeometries = new Dictionary<Model3D, Geometry3D>();
+                this.TempOriginalGeometries = new Dictionary<Model3D, Geometry3D>();
                 this.forceUpdate = forceUpdate;
                 Visual3DHelper.Traverse<GeometryModel3D>(this.Children, this.ApplyCuttingPlanesToModel);
-                this.CutGeometries = this.NewCutGeometries;
-                this.OriginalGeometries = this.NewOriginalGeometries;
+                this.CutGeometries = this.TempCutGeometries;
+                this.OriginalGeometries = this.TempOriginalGeometries;
             }
         }
 
@@ -118,7 +118,7 @@ namespace Xbim.Presentation
         /// Applies the cutting planes to the model.
         /// </summary>
         /// <param name="model">
-        /// The model.
+        /// The model to be modified (it is also the key to be searched for in the dictionaries).
         /// </param>
         /// <param name="transform">
         /// The transform.
@@ -153,7 +153,7 @@ namespace Xbim.Presentation
                 updateRequired = true;
             }
 
-            this.NewOriginalGeometries.Add(model, originalGeometry);
+            this.TempOriginalGeometries.Add(model, originalGeometry);
 
             if (!updateRequired)
             {
@@ -176,9 +176,9 @@ namespace Xbim.Presentation
                     g = XbimMeshHelper.Cut(g, p, n);
                 }
             }
-
+            
             model.Geometry = g;
-            this.NewCutGeometries.Add(model, g);
+            this.TempCutGeometries.Add(model, g);
         }
 
         /// <summary>

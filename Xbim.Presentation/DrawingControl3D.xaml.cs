@@ -150,29 +150,36 @@ namespace Xbim.Presentation
                 XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial> layer = hit.ModelHit.GetValue(TagProperty) as XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial>; //get the fragments
                 if (layer!=null)
                 {
-
                     var frag = layer.Visible.Meshes.Find(hit.VertexIndex1);
                     if (!frag.IsEmpty)
-                    {
-
-                        MeshGeometry3D m = ((WpfMeshGeometry3D)(layer.Visible)).GetWpfMeshGeometry3D(frag);
-                        Highlighted.Mesh = new Mesh3D(m.Positions, m.TriangleIndices);
+                    {                        
+                        // todo: bonghi: all mesh highilighting should be moved to OnSelectedEntityChanged to avoid redundancy.
+                        if (cuttingGroup.IsEnabled)
+                        {
+                            var geomData = layer.Model.GetGeometryData(frag.EntityLabel, XbimGeometryType.TriangulatedMesh).FirstOrDefault();
+                            geomData.TransformBy(wcsTransform);
+                            XbimMeshGeometry3D m = new XbimMeshGeometry3D();
+                            m.Add(geomData);
+                            List<Point3D> ps = new List<Point3D>(m.PositionCount);
+                            foreach (var item in m.Positions)
+                            {
+                                ps.Add(new Point3D(item.X, item.Y, item.Z));
+                            }
+                            Highlighted.Mesh = new Mesh3D(ps, m.TriangleIndices);
+                        }
+                        else
+                        {
+                            MeshGeometry3D m = ((WpfMeshGeometry3D)(layer.Visible)).GetWpfMeshGeometry3D(frag); // todo: bonghi: this is where the crash happens.
+                            Highlighted.Mesh = new Mesh3D(m.Positions, m.TriangleIndices);
+                        }
+                        
                        
                         int id = frag.EntityLabel;
 
-                        // todo: bonghi: can't see how 'remove' is useful
-                        /*
-                        IList remove;
-                        if (_currentProduct.HasValue)
-                        {
-                            remove = new int[] { _currentProduct.Value };
-                        }
-                        else
-                            remove = new int[] { };
-                        */
                         _hitResult = hit;
                         _currentProduct = (int)id;
                         SelectedEntity = layer.Model.Instances[_currentProduct.Value];
+
                         //if(layer.Model != ActiveModel) ActiveModel = layer.Model;
                         //SelectedItem = _currentProduct.Value;
                         //if (!PropertiesBillBoard.IsRendering)
@@ -182,21 +189,17 @@ namespace Xbim.Presentation
                         //}
                         //PropertiesBillBoard.Text = Model.Instances[_currentProduct.Value].SummaryString().EnumerateToString(null, "\n");
                         //PropertiesBillBoard.Position = hit.PointHit;
-             
-                
+
                         return;
                     }
                 }
             }
-
             //PropertiesBillBoard.IsRendering = false;          
             //this.Viewport.Children.Remove(PropertiesBillBoard);
             
             Highlighted.Mesh = null;
             _currentProduct = null;
             SelectedEntity = null;
-
-
         }
 
         #endregion
@@ -502,11 +505,6 @@ namespace Xbim.Presentation
         // Using a DependencyProperty as the backing store for Viewport.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty ViewportProperty =
             DependencyProperty.Register("Viewport", typeof(HelixToolkit.Wpf.HelixViewport3D), typeof(DrawingControl3D), new PropertyMetadata(null));
-
-
-
-       
-
      
         private static void OnSelectedEntityChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
@@ -524,10 +522,7 @@ namespace Xbim.Presentation
                 {
                     d3d.Select(newVal);
                 }
-
-
             }
-
         }
 
         private void Deselect(IPersistIfcEntity oldVal)
@@ -535,21 +530,31 @@ namespace Xbim.Presentation
             Highlighted.Mesh = null;
         }
 
+        /// <summary>
+        /// Exectuded when a new entity is selected
+        /// </summary>
+        /// <param name="newVal"></param>
         private void Select(IPersistIfcEntity newVal)
         {
+            if (this.cuttingGroup.IsEnabled) // todo: bonghi: this return point is placed to avoid triggering a crash when an instance is selected through a click.
+                return;
+            // todo: bonghi: investigate if this always needs firing
+            // todo: bonghi: investigate why this does not cause flickering in uncut models.
+            // todo: bonghi: there seems to be two mechanisms that trigger the creation of the "Highlighed" object; one on canvas click and one here.
+            // the one on canvas click is followed by this one (probably worth removing the one there)
+
             foreach (var scene in scenes)
             {
                 IXbimMeshGeometry3D mesh = scene.GetMeshGeometry3D(newVal);
                 WpfMeshGeometry3D wpfGeom = new WpfMeshGeometry3D(mesh);
                 if (mesh.Meshes.Count() > 0)
                 {
+                    // Highlighted is defined in the XAML of drawingcontrol3d
                     Highlighted.Mesh = new Mesh3D(wpfGeom.Mesh.Positions, wpfGeom.Mesh.TriangleIndices);
                     return;
                 }
             }
-            
         }
-
 
         private RayMeshGeometry3DHitTestResult FindHit(Point position)
         {

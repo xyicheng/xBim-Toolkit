@@ -328,12 +328,13 @@ namespace Xbim.ModelGeometry.Scene
             }
         }
         /// <summary>
-        /// Resizes the layers so that noe has more than USHORT number of indices
+        /// Resizes the layers so that none has more than USHORT number of indices
         /// </summary>
         public void Balance()
         {
             if (Hidden.TriangleIndices.Count >= ushort.MaxValue) //split the layer
             {
+                // todo: needs implementation
                 System.Diagnostics.Debug.WriteLine("Too big");
             }
             foreach (var layer in SubLayers)

@@ -163,7 +163,8 @@ namespace Xbim.Presentation
         }
 
         public IXbimMeshGeometry3D GetMeshGeometry3D(XbimMeshFragment frag)
-        { XbimMeshGeometry3D m3d = new XbimMeshGeometry3D();
+        { 
+            XbimMeshGeometry3D m3d = new XbimMeshGeometry3D();
             var m = Mesh;
             if (m != null)
             {
