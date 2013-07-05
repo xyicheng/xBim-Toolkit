@@ -288,11 +288,19 @@ namespace XbimXplorer.Querying
                     }
 
 
+                    m = Regex.Match(cmd, @"SimplifyGUI", RegexOptions.IgnoreCase);
+                    if (m.Success)  
+                    {
+                        XbimXplorer.Simplify.IfcSimplify s = new Simplify.IfcSimplify();
+                        s.Show();
+                        continue;
+                    }
 
                     m = Regex.Match(cmd, @"test", RegexOptions.IgnoreCase);
                     if (m.Success)
                     {
-                        txtOut.Text = RunTestCode();
+                        int i = 200;
+                        txtOut.Text = RunTestCode(i);
                         continue;
                     }
                     txtOut.Text += string.Format("Command not understood: {0}\r\n", cmd);
@@ -315,23 +323,17 @@ namespace XbimXplorer.Querying
             return ia.ToArray();
         }
 
-        private string RunTestCode()
+        private string RunTestCode(int i)
         {
             StringBuilder sb = new StringBuilder();
 
-            var storey = (Xbim.Ifc2x3.ProductExtension.IfcBuildingStorey)Model.Instances.OfType<Xbim.Ifc2x3.ProductExtension.IfcBuildingStorey>().Where(x => x.Name == "").FirstOrDefault();
-            if (storey != null)
+            var v = Model.Instances.OfType<IfcWallStandardCase>(true).Where(ent => ent.EntityLabel != i);
+
+            foreach (var item in v)
             {
-                //get the object position data (should only be one)
-                Xbim.XbimExtensions.XbimGeometryData geomdata = Model.GetGeometryData(65, Xbim.XbimExtensions.XbimGeometryType.TransformOnly).FirstOrDefault();
-                if (geomdata != null)
-                {
-                    Xbim.Common.Geometry.XbimPoint3D pt = new Xbim.Common.Geometry.XbimPoint3D(0, 0, geomdata.Transform.OffsetZ);
-                    Xbim.Common.Geometry.XbimMatrix3D mcp = Xbim.Common.Geometry.XbimMatrix3D.Copy(ParentWindow.DrawingControl.wcsTransform);
-                    var transformed = mcp.Transform(pt);
-                    sb.AppendFormat("{0}\r\n", transformed.Z);
-                }
+                sb.AppendFormat("{0}\r\n", item.EntityLabel);
             }
+
             return sb.ToString();
         }
 
@@ -344,8 +346,8 @@ namespace XbimXplorer.Querying
             txtOut.Text += "  clip [off|<Elevation>|<px>, <py>, <pz>, <nx>, <ny>, <nz>|<Storey name>] (unstable feature)\r\n";
             txtOut.Text += "  Visual [list|[on|off <name>]]\r\n";
             txtOut.Text += "  clear [on|off]\r\n";
-            
-            txtOut.Text += "  test\r\n";
+            txtOut.Text += "  SimplifyGUI - rough GUI interface to simplify IFC files for debugging purposes.\r\n";
+            txtOut.Text += "  test - runs the current test-lab code (always changing)\r\n";
             txtOut.Text += "\r\n";
             txtOut.Text += "Commands are executed on <ctrl>+<Enter>\r\n";
             txtOut.Text += "Lines starting with double slash are ignored\r\n";

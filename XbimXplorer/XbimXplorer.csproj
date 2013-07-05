@@ -144,6 +144,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Simplify\IfcSimplify.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="XplorerMainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -169,6 +173,10 @@
     <Compile Include="Querying\TreeQuery.cs" />
     <Compile Include="Querying\wdwQuery.xaml.cs">
       <DependentUpon>wdwQuery.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Simplify\FileTextParser.cs" />
+    <Compile Include="Simplify\IfcSimplify.xaml.cs">
+      <DependentUpon>IfcSimplify.xaml</DependentUpon>
     </Compile>
     <Compile Include="XplorerMainWindow.xaml.cs">
       <DependentUpon>XplorerMainWindow.xaml</DependentUpon>
