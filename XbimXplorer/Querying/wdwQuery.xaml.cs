@@ -12,8 +12,10 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using Xbim.Common.Geometry;
 using Xbim.Ifc2x3.SharedBldgElements;
 using Xbim.IO;
+using Xbim.ModelGeometry.Scene;
 using Xbim.XbimExtensions.Interfaces;
 
 namespace XbimXplorer.Querying
@@ -181,6 +183,45 @@ namespace XbimXplorer.Querying
                         continue;
                     }
 
+                    m = Regex.Match(cmd, @"zoom (" +
+                        @"(?<RegionName>.+$)" +
+                        ")", RegexOptions.IgnoreCase);
+                    if (m.Success)
+                    {
+                        string RName = m.Groups["RegionName"].Value;
+                        var regionData = Model.GetGeometryData(Xbim.XbimExtensions.XbimGeometryType.Region).FirstOrDefault();
+                        if (regionData == null)
+                        {
+                            txtOut.Text += "data not found\r\n";
+                        }
+                        XbimRegionCollection regions = XbimRegionCollection.FromArray(regionData.ShapeData);
+                        var reg = regions.Where(x => x.Name == RName).FirstOrDefault();
+                        if (reg != null)
+                        {
+                            XbimMatrix3D mcp = XbimMatrix3D.Copy(ParentWindow.DrawingControl.wcsTransform);
+                            var bb = reg.Centre;
+                            var tC = mcp.Transform(reg.Centre);
+                            var tS = mcp.Transform(reg.Size);
+                            XbimRect3D r3d = new XbimRect3D(
+                                tC.X - tS.X / 2, tC.Y - tS.Y / 2, tC.Z - tS.Z / 2,
+                                tS.X, tS.X, tS.Z
+                                );
+                            ParentWindow.DrawingControl.ZoomTo(r3d);
+                            ParentWindow.Activate();
+                            continue;
+                        }
+                        else
+                        {
+                            txtOut.Text += string.Format("Something wrong with region name: '{0}'\r\n", RName);
+                            txtOut.Text += "Names that should work are: \r\n";
+                            foreach (var str in regions)
+                            {
+                                txtOut.Text += string.Format(" - '{0}'\r\n", str.Name);
+                            }
+                            continue;
+                        }
+                    }
+
                     m = Regex.Match(cmd, @"clip off", RegexOptions.IgnoreCase);
                     if (m.Success)
                     {
@@ -344,13 +385,14 @@ namespace XbimXplorer.Querying
             txtOut.Text += "  EntityLabel label [recursion]\r\n";
             txtOut.Text += "  IfcType type\r\n";
             txtOut.Text += "  clip [off|<Elevation>|<px>, <py>, <pz>, <nx>, <ny>, <nz>|<Storey name>] (unstable feature)\r\n";
+            txtOut.Text += "  zoom <Region name>\r\n";
             txtOut.Text += "  Visual [list|[on|off <name>]]\r\n";
             txtOut.Text += "  clear [on|off]\r\n";
             txtOut.Text += "  SimplifyGUI - rough GUI interface to simplify IFC files for debugging purposes.\r\n";
-            txtOut.Text += "  test - runs the current test-lab code (always changing)\r\n";
             txtOut.Text += "\r\n";
-            txtOut.Text += "Commands are executed on <ctrl>+<Enter>\r\n";
-            txtOut.Text += "Lines starting with double slash are ignored\r\n";
+            txtOut.Text += "Commands are executed on <ctrl>+<Enter>.\r\n";
+            txtOut.Text += "Lines starting with double slash (//) are ignored.\r\n";
+            txtOut.Text += "If a portion of text is selected, only selected text will be the executed.\r\n";
         }
 
         private string ReportType(string type)

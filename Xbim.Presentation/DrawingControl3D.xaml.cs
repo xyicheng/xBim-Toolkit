@@ -701,11 +701,9 @@ namespace Xbim.Presentation
             this.GridLines.Transform = t3d;
            
             //make sure whole scene is visible
-            ViewHome();
-            
+            ViewHome();   
         }
 
-       
         private void DrawLayer(XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial> layer)
         {
             
@@ -839,8 +837,7 @@ namespace Xbim.Presentation
 
 
         private void DrawScene(XbimScene<WpfMeshGeometry3D, WpfMaterial> scene)
-        {
-           
+        {   
             foreach (var layer in scene.Layers.Where(l => l.HasContent))
             {
                 //move it to the visual element
@@ -947,7 +944,6 @@ namespace Xbim.Presentation
             //scene.HideAll();
         }
 
-
         public void ViewHome()
         {
             XbimPoint3D c = viewBounds.Centroid();
@@ -955,35 +951,43 @@ namespace Xbim.Presentation
             Viewport.CameraController.ResetCamera();
             Rect3D r3d = new Rect3D(viewBounds.X, viewBounds.Y, viewBounds.Z, viewBounds.SizeX, viewBounds.SizeY, viewBounds.SizeZ);
             Viewport.ZoomExtents(r3d);
-            
         }
-
 
         public void ZoomSelected()
         {
-
-            if (SelectedEntity !=null && Highlighted != null && Highlighted.Mesh != null)
+            if (SelectedEntity != null && Highlighted != null && Highlighted.Mesh != null)
             {
                 Rect3D r3d = Highlighted.Mesh.GetBounds();
-                if (!r3d.IsEmpty)
-                {
-                    Rect3D bounds = new Rect3D(viewBounds.X, viewBounds.Y, viewBounds.Z, viewBounds.SizeX, viewBounds.SizeY, viewBounds.SizeZ);
-                    r3d.Offset(-r3d.SizeX / 2, -r3d.SizeY / 2, -r3d.SizeZ / 2);
-                    r3d.SizeX *= 2;
-                    r3d.SizeY *= 2;
-                    r3d.SizeZ *= 2;
-                    if (!r3d.IsEmpty)
-                    {
-                        if (r3d.Contains(bounds)) //if bigger than bounds zoom bounds
-                            Viewport.ZoomExtents(bounds, 200);
-                        else
-                            Viewport.ZoomExtents(r3d, 200);
-                    }
-                }
-             
+                ZoomTo(r3d);
             }
         }
 
+        private void ZoomTo(Rect3D r3d)
+        {
+            if (!r3d.IsEmpty)
+            {
+                Rect3D bounds = new Rect3D(viewBounds.X, viewBounds.Y, viewBounds.Z, viewBounds.SizeX, viewBounds.SizeY, viewBounds.SizeZ);
+                r3d.Offset(-r3d.SizeX / 2, -r3d.SizeY / 2, -r3d.SizeZ / 2);
+                r3d.SizeX *= 2;
+                r3d.SizeY *= 2;
+                r3d.SizeZ *= 2;
+                if (!r3d.IsEmpty)
+                {
+                    if (r3d.Contains(bounds)) //if bigger than bounds zoom bounds
+                        Viewport.ZoomExtents(bounds, 200);
+                    else
+                        Viewport.ZoomExtents(r3d, 200);
+                }
+            }
+        }
 
+        public void ZoomTo(XbimRect3D r3d)
+        {
+            ZoomTo(
+                new Rect3D(
+                    new Point3D(r3d.X, r3d.Y, r3d.Z),
+                    new Size3D(r3d.SizeX, r3d.SizeY, r3d.SizeZ)
+                    ));
+        }
     }
 }

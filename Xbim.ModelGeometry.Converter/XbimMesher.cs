@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Xbim.Common.Geometry;
@@ -11,12 +10,10 @@ using Xbim.Ifc2x3.Kernel;
 using Xbim.Ifc2x3.ProductExtension;
 using Xbim.IO;
 using Xbim.ModelGeometry.Scene;
+using Xbim.ModelGeometry.Scene.Clustering;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
-using System.Diagnostics;
 using System.Reflection;
-using Xbim.Ifc2x3.GeometricModelResource;
-using System.Runtime.InteropServices;
 
 namespace Xbim.ModelGeometry.Converter
 {
@@ -193,7 +190,7 @@ namespace Xbim.ModelGeometry.Converter
                                         if (newPercentage > percentageParsed)
                                         {
                                             percentageParsed = newPercentage;
-                                            progDelegate(percentageParsed, "Converted");
+                                            progDelegate(percentageParsed, "Meshing");
                                         }
                                     }
                                 }
@@ -221,7 +218,7 @@ namespace Xbim.ModelGeometry.Converter
                                 if (newPercentage > percentageParsed)
                                 {
                                     percentageParsed = newPercentage;
-                                    progDelegate(percentageParsed, "Converted");
+                                    progDelegate(percentageParsed, "Meshing");
                                 }
                             }
                         }
@@ -272,7 +269,7 @@ namespace Xbim.ModelGeometry.Converter
                         if (newPercentage > percentageParsed)
                         {
                             percentageParsed = newPercentage;
-                            progDelegate(percentageParsed, "Converted");
+                            progDelegate(percentageParsed, "Meshing");
                         }
                     }
                     map.Value.Clear(); //release any native memory we are finished with this
@@ -311,7 +308,7 @@ namespace Xbim.ModelGeometry.Converter
                         if (newPercentage > percentageParsed)
                         {
                             percentageParsed = newPercentage;
-                            progDelegate(percentageParsed, "Converted");
+                            progDelegate(percentageParsed, "Meshing");
                         }
                     }
                     if (tally % 100 == 100)
@@ -322,6 +319,12 @@ namespace Xbim.ModelGeometry.Converter
 
                 }
                 mapTrans.Commit();
+
+                // Store model regions in the database.
+                // all regions are stored for the project in one row and need to be desirialised to XbimRegionCollection before being enumerated on read.
+                //
+                // todo: bonghi: currently geometry labels of partitioned models are not stored, only their bounding box and count are.
+                //
                 mapTrans.Begin();
                 XbimRegionCollection regions = PartitionWorld(model, bounds);
                 IfcProject project = model.IfcProject;
@@ -329,10 +332,10 @@ namespace Xbim.ModelGeometry.Converter
                 if (project != null)
                     projectId = Math.Abs(project.EntityLabel);
                 geomMapTable.AddGeometry(projectId, XbimGeometryType.Region, IfcMetaData.IfcTypeId(typeof(IfcProject)), XbimMatrix3D.Identity.ToArray(), regions.ToArray());
-
                 mapTrans.Commit();
-                model.FreeTable(geomMapTable);
 
+
+                model.FreeTable(geomMapTable);
                 if (progDelegate != null)
                 {
                     progDelegate(0, "Ready");
@@ -358,21 +361,23 @@ namespace Xbim.ModelGeometry.Converter
             }
             else //need to partition the model
             {
-
-                XbimOctree<int> octree = new XbimOctree<int>(bounds.Length(), MaxWorldSize * metre, 1f, bounds.Centroid());
+                List<XbimBBoxClusterElement> ElementsToCluster = new List<XbimBBoxClusterElement>();
                 foreach (var geomData in model.GetGeometryData(XbimGeometryType.BoundingBox))
                 {
                     XbimRect3D bound = XbimRect3D.FromArray(geomData.ShapeData);
                     XbimMatrix3D m3D = geomData.Transform;
                     bound = XbimRect3D.TransformBy(bound, m3D);
-                    octree.Add(geomData.GeometryLabel, bound);
+                    ElementsToCluster.Add(new XbimBBoxClusterElement(geomData.GeometryLabel, bound));
                 }
+                // the XbimDBSCAN method adopted for clustering produces clusters of contiguous elements.
+                // if the maximum size is a problem they could then be split using other algorithms that divide spaces equally
+                //
+                var v = XbimDBSCAN.GetClusters(ElementsToCluster, 5 * metre); // .OrderByDescending(x => x.GeometryIds.Count);
                 int i = 1;
-                foreach (var item in octree.Populated)
+                foreach (var item in v)
                 {
-                    regions.Add(new XbimRegion("Region " + i++, item.ContentBounds(), item.ContentIncludingChildContent().Count()));
+                    regions.Add(new XbimRegion("Region " + i++, item.Bound, item.GeometryIds.Count));
                 }
-
             }
             return regions;
         }
@@ -404,13 +409,10 @@ namespace Xbim.ModelGeometry.Converter
             transaction.Commit();
             written.AddOrUpdate(geomModel.RepresentationLabel, geomIds, (k, v) => v = geomIds);
             model.FreeTable(geomTable);
-
         }
 
-        
         public static void InitGeometryEngine(string basePath)
         {
-
             Assembly assembly = AssemblyResolver.GetModelGeometryAssembly(basePath);
         }
     }

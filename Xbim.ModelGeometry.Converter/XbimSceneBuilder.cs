@@ -73,7 +73,7 @@ namespace Xbim.ModelGeometry.Converter
                     IfcProject project = model.IfcProject;
                     int projectId = 0;
                     if (project != null) projectId = Math.Abs(project.EntityLabel);
-                    XbimGeometryData regionData = model.GetGeometryData(projectId, XbimGeometryType.Region).FirstOrDefault(); //get the region data should only be one
+                    
                     float mScalingReference = (float)model.GetModelFactors.OneMetre;
 
                     if (Logger != null)
@@ -82,8 +82,11 @@ namespace Xbim.ModelGeometry.Converter
                     XbimMatrix3D translate = XbimMatrix3D.Identity;
                     XbimMatrix3D scale = XbimMatrix3D.CreateScale(1 / mScalingReference);
 
+                    XbimGeometryData regionData = model.GetGeometryData(projectId, XbimGeometryType.Region).FirstOrDefault(); //get the region data should only be one
                     if (regionData != null)
                     {
+                        // this results in zooming to the most populated area of the model
+                        //
                         XbimRegionCollection regions = XbimRegionCollection.FromArray(regionData.ShapeData);
                         XbimRegion largest = regions.MostPopulated();
                         if (largest != null)
@@ -94,6 +97,17 @@ namespace Xbim.ModelGeometry.Converter
                                 -largest.Centre.Z
                                 );
                         }
+                        // store region information in Scene
+                        foreach (var item in regions)
+                        {
+                            AddMetaData(
+                                    connection,
+                                    "Region",
+                                    string.Format("Name:{0};Box:{1};", item.Name, item.ToXbimRect3D().ToString()), // verbose, but only a few items are expected in the model
+                                    item.Name
+                                    );
+                        }
+
                     }
                     XbimMatrix3D composed = translate * scale;
 
@@ -123,24 +137,13 @@ namespace Xbim.ModelGeometry.Converter
                         layerid = AddLayerToSceneDatabase(connection, layer, layerid, -1);
                         layerid++;
                     }
-                    // setup bounding box SizeX, SizeY, SizeZ, X, Y, Z
-                    byte[] boundingBoxFull = new byte[6 * sizeof(float)];
-                    MemoryStream ms = new MemoryStream(boundingBoxFull);
-                    BinaryWriter bw = new BinaryWriter(ms);
-
-                    bw.Write(modelBounds.SizeX);
-                    bw.Write(modelBounds.SizeY);
-                    bw.Write(modelBounds.SizeZ);
-                    bw.Write(modelBounds.X);
-                    bw.Write(modelBounds.Y);
-                    bw.Write(modelBounds.Z);
-
-                    double ZBoundaryLow = modelBounds.Z;
-                    double ZBoundaryHigh = modelBounds.Z + modelBounds.SizeZ;
 
                     // create scene row in Scenes tabls
-                    string str = "INSERT INTO Scenes (SceneId, SceneName, BoundingBox) ";
-                    str += "VALUES (@SceneId, @SceneName, @BoundingBox) ";
+                    //
+                    string str = 
+                        "INSERT INTO Scenes (SceneId, SceneName, BoundingBox) " +
+                        "VALUES (@SceneId, @SceneName, @BoundingBox) ";
+                    byte[] boundingBoxFull = GetBinaryXbimRect3D(ref modelBounds);
                     using (SQLiteTransaction SQLiteTrans = connection.BeginTransaction())
                     {
                         using (SQLiteCommand cmd = connection.CreateCommand())
@@ -160,18 +163,14 @@ namespace Xbim.ModelGeometry.Converter
                         AddMetaData(connection, space.GetType().Name, space.Name??"Undefined Space", space.EntityLabel.ToString());
                     }
 
-                    // this causes a crash if no elevation has been defined used the extension method which does not
-                    // var storeys = model.Instances.OfType<IfcBuildingStorey>().OrderBy(t => Convert.ToDouble(t.Elevation.Value)).ToArray();
+                    
+                    // Add storey information with elevation.
+                    // 
                     IfcBuilding bld = model.IfcProject.GetBuildings().FirstOrDefault();
                     if (bld != null)
                     {
-                        List<StoreyInfo> Storeys = new List<StoreyInfo>();
-
-                        // double metre = model.GetModelFactors.OneMetre;
                         double storeyHeight = 0;//all scenes are in metres
-                        int defaultStoreyName = 0;
-
-                        
+                        int defaultStoreyName = 0;                        
                         foreach (var storey in bld.GetBuildingStoreys(true))
                         {
                             string cleanName;
@@ -180,7 +179,9 @@ namespace Xbim.ModelGeometry.Converter
                             else
                                 cleanName = "Floor " + defaultStoreyName++;
 
-                            // Storey elevation values (in building reference system) are taken from the objectplacement through the XbimGeometryType.TransformOnly geometry type
+                            // Storey Elevation is optional (and has been found unreliable), therefore
+                            // Storey elevation values (in building reference system) are taken from the 
+                            // objectplacement through the XbimGeometryType.TransformOnly geometry type
                             //
                             XbimGeometryData geomdata = model.GetGeometryData(storey.EntityLabel, XbimGeometryType.TransformOnly).FirstOrDefault();
                             if (geomdata != null)
@@ -214,17 +215,36 @@ namespace Xbim.ModelGeometry.Converter
 
         }
 
-        private class StoreyInfo
+
+        /// <summary>
+        /// Watch out this is in inverse order that byte[] of the XbimRect3D
+        /// </summary>
+        /// <param name="modelBounds"></param>
+        /// <returns></returns>
+        private static byte[] GetBinaryXbimRect3D(ref XbimRect3D modelBounds)
         {
-            public string Name;
-            public double Elevation;
+            // todo: Bonghi: ideally this should be removed to use the native toByteArray function, but it impacts legacy code
+            
+            // setup bounding box SizeX, SizeY, SizeZ, X, Y, Z
+            byte[] boundingBoxFull = new byte[6 * sizeof(float)];
+            MemoryStream ms = new MemoryStream(boundingBoxFull);
+            BinaryWriter bw = new BinaryWriter(ms);
+
+            bw.Write(modelBounds.SizeX);
+            bw.Write(modelBounds.SizeY);
+            bw.Write(modelBounds.SizeZ);
+            bw.Write(modelBounds.X);
+            bw.Write(modelBounds.Y);
+            bw.Write(modelBounds.Z);
+            return boundingBoxFull;
         }
+
+        
 
         private int AddLayerToSceneDatabase(SQLiteConnection mDBcon, XbimMeshLayer<XbimMeshGeometry3D, XbimRenderMaterial> layer, int layerid, int parentLayerId)
         {
             try
             {
-
                 // bytes contain 6 floats and 1 int
                 // pointX, pointY, pointZ, normalX, normalY, normalZ, entityLabel
                 // this is the vbo.

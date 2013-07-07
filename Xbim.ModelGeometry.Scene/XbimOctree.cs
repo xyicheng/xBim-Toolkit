@@ -1,84 +1,83 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using Xbim.Common.Geometry;
 
 namespace Xbim.ModelGeometry.Scene
 {
+    /// <summary>
+    /// A class to cluster spatial items in iteratively narrower space boundaries.
+    /// Formerly used in XbimMesher to split large models like this:
+    /// 
+    /// XbimOctree<int> octree = new XbimOctree<int>(bounds.Length(), MaxWorldSize * metre, 1f, bounds.Centroid());
+    /// octree.Add(geomData.GeometryLabel, bound);
+    /// then iterating over octree.Populated to retrieve the clusters.
+    /// 
+    /// Warning: If items fall across boundaries of children they stop the iterative split of the parent they fall into.
+    /// </summary>
+    /// <typeparam name="T">e.g. Int for geometry labels</typeparam>
     public class XbimOctree<T>
     {
-         /// 
+        public String Name = "R"; // for Root
 
+        /// <summary>
         /// The number of children in an octree.
-        /// 
-
+        /// </summary>
         private const int ChildCount = 8;
 
-        /// 
-
+        /// <summary>
         /// The octree's looseness value.
-        /// 
-
+        /// </summary> 
         private float looseness = 0;
-        /// 
 
+        /// <summary>
         /// The octree's depth.
-        /// 
+        /// </summary> 
+        private int depth = 0;
 
-        private int depth = 0;   
-        /// 
-
+        /// <summary> 
         /// The octree's centre coordinates.
-        /// 
-
+        /// </summary> 
         private XbimPoint3D centre = XbimPoint3D.Zero;
 
-        /// 
 
+        /// <summary>
         /// The octree's length.
-        /// 
-
+        /// </summary>
         private float length = 0f;
 
-        /// 
-       
+        ///  <summary>
         /// The bounding box that represents the octree.
-        /// 
-
+        /// </summary> 
         private XbimRect3D bounds = default(XbimRect3D);
 
-        /// 
-
+        ///  <summary>
         /// The objects in the octree.
-        /// 
+        /// </summary> 
 
         private List<T> objects = new List<T>();
 
-        /// 
-
+        /// <summary>
         /// The octree's child nodes.
-        /// 
-
+        /// </summary> 
         private XbimOctree<T>[] children = null;
 
-        /// 
-
+        ///  <summary>
         /// The octree's world size.
-        /// 
-
+        /// </summary> 
         private float worldSize = 0f;
         private float targetCanvasSize = 100000f;
 
         private XbimRect3D contentBounds = XbimRect3D.Empty;
-        /// 
-
+        
+        /// <summary>
         /// Creates a new octree.
-        /// 
-    
-        /// The octree's world size.
-        /// The octree's looseness value.
-        /// The octree recursion depth.
+        /// </summary>
+        /// <param name="worldSize">/// The octree's world size.</param>
+        /// <param name="targetCanvasSize">The octree's looseness value.</param>
+        /// <param name="looseness">The octree recursion depth.</param>
         public XbimOctree(float worldSize, float targetCanvasSize, float looseness)
             : this(worldSize, targetCanvasSize, looseness, 0, XbimPoint3D.Zero)
         {
@@ -87,16 +86,16 @@ namespace Xbim.ModelGeometry.Scene
             : this(worldSize, targetCanvasSize, looseness, 0, centre)
         {
         }
-        /// 
+        
 
+        /// <summary>
         /// Creates a new octree.
-        /// 
-    
-        /// The octree's world size.
-        /// The octree's looseness value.
-        /// The maximum depth to recurse to.
-        /// The octree recursion depth.
-        /// The octree's centre coordinates.
+        /// </summary>
+        /// <param name="worldSize">The octree's world size.</param>
+        /// <param name="targetCanvasSize"></param>
+        /// <param name="looseness">The octree's looseness value.</param>
+        /// <param name="depth">The maximum depth to recurse to.</param>
+        /// <param name="centre">The octree's centre coordinates.</param>
         private XbimOctree(float worldSize,float targetCanvasSize, float looseness, int depth, XbimPoint3D centre)
         {
             this.worldSize = worldSize;
@@ -157,8 +156,12 @@ namespace Xbim.ModelGeometry.Scene
             return b;
         }
 
+        
         private List<XbimOctree<T>> GetPopulation(List<XbimOctree<T>> population)
         {
+            // If anything has been added at any level of the tree all children are ignored
+            // this can easily happen if an object added is sitting across children and not completely within.
+            // todo: investigate looseness 
             if (this.objects != null && this.objects.Any())
                 population.Add(this);
             else if (children != null)
@@ -170,41 +173,34 @@ namespace Xbim.ModelGeometry.Scene
             }
             return population;
         }
-        /// 
-
+        
+        /// <summary>
         /// Removes the specified obj.
-        /// 
-
-        /// The obj.
+        /// </summary>
+        /// <param name="obj">the object to remove.</param>
         public void Remove(T obj)
         {
             objects.Remove(obj);
         }
 
-        /// 
-
+        /// <summary>
         /// Determines whether the specified obj has changed.
-        /// 
-
-        /// The obj.
-        /// The bBox.
-        /// 
-        ///   true if the specified obj has changed; otherwise, false.
-        /// 
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="bBox"></param>
+        /// <returns>true if the specified obj has changed; otherwise, false.</returns>
         public bool HasChanged(T obj, XbimRect3D bBox)
         {
             return this.bounds.Contains(bBox);
         }
 
        
-        /// 
-
+        /// <summary>
         /// Adds the given object to the octree.
-        /// 
-
-        /// The object to add.
-        /// The object's centre coordinates.
-        /// The object's radius.
+        /// </summary>
+        /// <param name="o">The object to add.</param>
+        /// <param name="centre">The object's centre coordinates.</param>
+        /// <param name="radius">The object's radius.</param>
         private XbimOctree<T> Add(T o, XbimPoint3D centre, float radius)
         {
             XbimPoint3D min = centre - new XbimVector3D(radius);
@@ -219,34 +215,30 @@ namespace Xbim.ModelGeometry.Scene
         }
 
 
-        /// 
-
+        /// <summary>
         /// Adds the given object to the octree.
-        /// 
-
+        /// </summary>
+        /// <param name="o"></param>
+        /// <param name="bBox"></param>
         public XbimOctree<T> Add(T o, XbimRect3D bBox)
         {
             float radius = bBox.Radius();
             XbimPoint3D centre = bBox.Centroid();
-
             if (this.bounds.Contains(bBox))
             {
                 return this.Add(o, bBox, centre, radius);
             }
-           
             return null;
         }
 
-
-        /// 
-
+        /// <summary>
         /// Adds the given object to the octree.
-        /// 
-
-        /// The object to add.
-        /// The object's bounds.
-        /// The object's centre coordinates.
-        /// The object's radius.
+        /// </summary>
+        /// <param name="o">The object to add.</param>
+        /// <param name="b">The object's bounds.</param>
+        /// <param name="centre">The object's centre coordinates.</param>
+        /// <param name="radius">The object's radius.</param>
+        /// <returns></returns>
         private XbimOctree<T> Add(T o, XbimRect3D b, XbimPoint3D centre, float radius)
         {
             lock (this.objects)
@@ -267,9 +259,9 @@ namespace Xbim.ModelGeometry.Scene
                 if (this.children[index].bounds.Contains(b))
                 {
                     return this.children[index].Add(o, b, centre, radius);
-
                 }
             }
+            // Debug.WriteLine("Addedto: " + this.Name);
             this.objects.Add(o); //otherwise add it to here
             if (contentBounds.IsEmpty) contentBounds = b;
             else contentBounds.Union(b);
@@ -279,7 +271,6 @@ namespace Xbim.ModelGeometry.Scene
         /// Returns the total content of this octree and all its children
         /// </summary>
         /// <returns></returns>
-
         public IEnumerable<T> ContentIncludingChildContent()
         {
             foreach (var o in objects)
@@ -298,12 +289,9 @@ namespace Xbim.ModelGeometry.Scene
             }
         }
        
-        /// 
-
+        /// <summary>
         /// Splits the octree into eight children.
-        /// 
-
-        /// The maximum depth to recurse to.
+        /// </summary>
         private void Split()
         {
             this.children = new XbimOctree<T>[XbimOctree<T>.ChildCount];
@@ -326,6 +314,10 @@ namespace Xbim.ModelGeometry.Scene
                  depth, this.centre + new XbimVector3D(-quarter, -quarter, quarter));
             this.children[7] = new XbimOctree<T>(this.worldSize, this.targetCanvasSize, this.looseness,
                  depth, this.centre + new XbimVector3D(quarter, -quarter, quarter));
+            for (int i = 0; i < children.Length; i++)
+            {
+                children[i].Name = this.Name + i.ToString();
+            }
         }
     }
 }

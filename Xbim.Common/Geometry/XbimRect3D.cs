@@ -8,22 +8,21 @@ namespace Xbim.Common.Geometry
 {
     public struct XbimRect3D
     {
-
         private static readonly XbimRect3D _empty;
 
         public static XbimRect3D Empty
         {
             get { return XbimRect3D._empty; }
-        } 
+        }
 
+        #region Underlying Coordinate properties
         private float _x;
         private float _y;
         private float _z;
         private float _sizeX;
         private float _sizeY;
         private float _sizeZ;
-       
-
+     
         public float SizeX
         {
             get { return _sizeX; }
@@ -100,7 +99,9 @@ namespace Xbim.Common.Geometry
                 return SizeX < 0.0;
             }
         }
+        #endregion
 
+        #region Constructors
         public XbimRect3D(float x, float y, float z, float sizeX, float sizeY, float sizeZ)
         {
             _x = x;
@@ -109,6 +110,16 @@ namespace Xbim.Common.Geometry
             _sizeX = sizeX;
             _sizeY = sizeY;
             _sizeZ = sizeZ;
+        }
+
+        public XbimRect3D(XbimPoint3D Position, XbimVector3D Size)
+        {
+            this._x = Position.X;
+            this._y = Position.Y;
+            this._z = Position.Z;
+            this._sizeX = Size.X;
+            this._sizeY = Size.Y;
+            this._sizeZ = Size.Z;
         }
 
         public XbimRect3D(XbimPoint3D p1, XbimPoint3D p2)
@@ -145,7 +156,9 @@ namespace Xbim.Common.Geometry
             this._sizeY = Math.Max(vMin.Y, vMax.Y) - this._y;
             this._sizeZ = Math.Max(vMin.Z, vMax.Z) - this._z;
         }
-        
+
+        #endregion
+
         /// <summary>
         /// Minimum vertex
         /// </summary>
@@ -166,8 +179,11 @@ namespace Xbim.Common.Geometry
                 return this.Location;
             }
         }
+
+        #region Serialisation
+
         /// <summary>
-        /// Reinitialises the rectangle 3d from the byte array
+        /// Reinitialises the rectangle 3D from the byte array
         /// </summary>
         /// <param name="rect"></param>
         /// <param name="array">6 doubles, definine, min and max values of the boudning box</param>
@@ -206,6 +222,47 @@ namespace Xbim.Common.Geometry
             return ms.ToArray();
         }
 
+        public override string ToString()
+        {
+            return string.Format(System.Globalization.CultureInfo.InvariantCulture, "{0} {1} {2} {3} {4} {5}", _x, _y, _z, _sizeX, _sizeY, _sizeZ);
+        }
+
+        /// <summary>
+        /// Imports values from a string
+        /// </summary>
+        /// <param name="Value">A space-separated string of 6 invariant-culture-formatted floats (x,y,z,sizeX,sizeY,sizeZ)</param>
+        /// <returns>True if successful.</returns>
+        public bool FromString(string Value)
+        {
+            string[] itms = Value.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+            if (itms.Length != 6)
+                return false;
+
+            double[] vals = new double[6];
+            try
+            {
+                for (int i = 0; i < 6; i++)
+                {
+                    vals[i] = Convert.ToDouble(itms[i], System.Globalization.CultureInfo.InvariantCulture);    
+                }   
+                
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+
+            _x = (float)vals[0];
+            _y = (float)vals[1];
+            _z = (float)vals[2];
+           
+            _sizeX = (float)vals[3];
+            _sizeY = (float)vals[4];
+            _sizeZ = (float)vals[5];
+
+            return true;
+        }
+        #endregion
 
         static public XbimRect3D Inflate( double x, double y, double z)
         {
@@ -239,12 +296,9 @@ namespace Xbim.Common.Geometry
             return rect;
         }
 
-
         /// <summary>
         /// Calculates the centre of the 3D rect
         /// </summary>
-        /// <param name="rect3D"></param>
-        /// <returns></returns>
         public XbimPoint3D Centroid()
         {
             if (IsEmpty) 
@@ -326,16 +380,14 @@ namespace Xbim.Common.Geometry
   
         }
 
-       
-
         public bool Contains(XbimRect3D rect)
         {
             if (this.IsEmpty)
-            {
                 return false;
-            }
-
-            return this.ContainsCoords(rect.X, rect.Y, rect.Z) && this.ContainsCoords(rect.X + rect.SizeX, rect.Y + rect.SizeY, rect.Z+rect.SizeZ);
+            return 
+                this.ContainsCoords(rect.X, rect.Y, rect.Z) 
+                && 
+                this.ContainsCoords(rect.X + rect.SizeX, rect.Y + rect.SizeY, rect.Z+rect.SizeZ);
         }
 
        /// <summary>
@@ -353,9 +405,9 @@ namespace Xbim.Common.Geometry
         }
 
         /// <summary>
-        /// Returns the length of the largest diagonal
+        /// Indicative size of the Box along all axis.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Returns the length of the diagonal</returns>
         public float Length()
         {
             XbimVector3D max = new XbimVector3D(SizeX, SizeY, SizeZ);
