@@ -962,15 +962,23 @@ namespace Xbim.Presentation
             }
         }
 
-        private void ZoomTo(Rect3D r3d)
+        /// <summary>
+        /// Zooms to a selected portion of the space.
+        /// </summary>
+        /// <param name="r3d">The box to be zoomed to</param>
+        /// <param name="DoubleRectSize">Effectively doubles the size of the bounding box so to fit more space around it.</param>
+        private void ZoomTo(Rect3D r3d, bool DoubleRectSize = true)
         {
             if (!r3d.IsEmpty)
             {
                 Rect3D bounds = new Rect3D(viewBounds.X, viewBounds.Y, viewBounds.Z, viewBounds.SizeX, viewBounds.SizeY, viewBounds.SizeZ);
-                r3d.Offset(-r3d.SizeX / 2, -r3d.SizeY / 2, -r3d.SizeZ / 2);
-                r3d.SizeX *= 2;
-                r3d.SizeY *= 2;
-                r3d.SizeZ *= 2;
+                if (DoubleRectSize)
+                {
+                    r3d.Offset(-r3d.SizeX / 2, -r3d.SizeY / 2, -r3d.SizeZ / 2);
+                    r3d.SizeX *= 2;
+                    r3d.SizeY *= 2;
+                    r3d.SizeZ *= 2;
+                }
                 if (!r3d.IsEmpty)
                 {
                     if (r3d.Contains(bounds)) //if bigger than bounds zoom bounds
@@ -983,11 +991,11 @@ namespace Xbim.Presentation
 
         public void ZoomTo(XbimRect3D r3d)
         {
-            ZoomTo(
-                new Rect3D(
-                    new Point3D(r3d.X, r3d.Y, r3d.Z),
-                    new Size3D(r3d.SizeX, r3d.SizeY, r3d.SizeZ)
-                    ));
+            ZoomTo(new Rect3D(
+                        new Point3D(r3d.X, r3d.Y, r3d.Z),
+                        new Size3D(r3d.SizeX, r3d.SizeY, r3d.SizeZ)
+                        ),
+                   false);
         }
     }
 }

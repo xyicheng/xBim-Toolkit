@@ -271,10 +271,11 @@ namespace Xbim.Presentation
                     IfcPropertySet pSet = relDef.RelatingPropertyDefinition as IfcPropertySet;
                     if (pSet != null)
                     {
-                        foreach (var item in pSet.HasProperties.OfType<IfcPropertySingleValue>()) //on;y handle simple properties
+                        foreach (var item in pSet.HasProperties.OfType<IfcPropertySingleValue>()) //only handle simple properties
                         {
                             string val="";
-                            if(item.NominalValue!=null) val = ((ExpressType)(item.NominalValue)).ToPart21;
+                            if(item.NominalValue!=null) 
+                                val = ((ExpressType)(item.NominalValue)).Value.ToString(); // value (not ToPart21) for visualisation
                             _properties.Add(new PropertyItem()
                             {
                                 PropertySetName = pSet.Name,
