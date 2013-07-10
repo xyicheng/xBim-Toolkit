@@ -50,6 +50,7 @@
     <DefineConstants>TRACE;DEBUG;SupportActivation</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>
@@ -107,6 +108,7 @@
     <Compile Include="DynamicGrouping\XbimQueryFactory.cs" />
     <Compile Include="IfcFileHeader.cs" />
     <Compile Include="IfcRepresentationItemExtensions.cs" />
+    <Compile Include="Parser\XbimP21StringDecoder.cs" />
     <Compile Include="Tree\TreeBuilder.cs" />
     <Compile Include="Tree\TreeComponentStrategy.cs" />
     <Compile Include="Tree\TreeContainmentStrategy.cs" />

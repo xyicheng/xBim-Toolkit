@@ -50,8 +50,14 @@ namespace XbimXplorer.Querying
                 if (txtCommand.SelectedText != string.Empty)
                     CommandArray = txtCommand.SelectedText.Split(new string[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
 
-                foreach (var cmd in CommandArray)
+                foreach (var cmd_f in CommandArray)
                 {
+                    var cmd = cmd_f;
+                    int i = cmd.IndexOf("//");
+                    if (i > 0)
+                    {
+                        cmd = cmd.Substring(0, i);
+                    }
                     if (cmd.TrimStart().StartsWith("//"))
                         continue;
 
@@ -87,7 +93,7 @@ namespace XbimXplorer.Querying
                             txtOut.Text += string.Format("Autoclear set to {0}\r\n", option.ToLower());
                             continue;
                         }
-                        catch (Exception ex)
+                        catch (Exception)
                         {
                         }
                         txtOut.Text = "";
@@ -112,7 +118,7 @@ namespace XbimXplorer.Querying
                         {
                             recursion = Convert.ToInt32(m.Groups["recursion"].Value);
                         }
-                        catch (Exception ex)
+                        catch (Exception)
                         {
                         }
 
@@ -340,8 +346,8 @@ namespace XbimXplorer.Querying
                     m = Regex.Match(cmd, @"test", RegexOptions.IgnoreCase);
                     if (m.Success)
                     {
-                        int i = 200;
-                        txtOut.Text = RunTestCode(i);
+                        int iPass = -728;
+                        txtOut.Text = RunTestCode(iPass);
                         continue;
                     }
                     txtOut.Text += string.Format("Command not understood: {0}\r\n", cmd);
@@ -367,13 +373,19 @@ namespace XbimXplorer.Querying
         private string RunTestCode(int i)
         {
             StringBuilder sb = new StringBuilder();
+            byte[] bval = new byte[] {196};
+            var eBase = Encoding.GetEncoding("iso-8859-1");
+            var outV = eBase.GetChars(bval, 0, 1);
 
-            var v = Model.Instances.OfType<IfcWallStandardCase>(true).Where(ent => ent.EntityLabel != i);
+            bval = new byte[] { 0, 196 };
+            var e16 = Encoding.GetEncoding("unicodeFFFE");
+            var out2 = e16.GetChars(bval, 0, 2);
 
-            foreach (var item in v)
-            {
-                sb.AppendFormat("{0}\r\n", item.EntityLabel);
-            }
+            //var v = Model.Instances.OfType<Xbim.Ifc2x3.MaterialResource.IfcMaterialLayerSetUsage>(true).Where(ent => ent.ForLayerSet.EntityLabel == i);
+            //foreach (var item in v)
+            //{
+            //    sb.AppendFormat("{0}\r\n", item.EntityLabel);
+            //}
 
             return sb.ToString();
         }

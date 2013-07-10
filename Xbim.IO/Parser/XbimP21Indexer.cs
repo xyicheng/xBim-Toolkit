@@ -325,11 +325,13 @@ namespace Xbim.IO.Parser
             else
             {
                 _binaryWriter.Write((byte)P21ParseAction.SetStringValue);
-                string res = value.Trim('\'');
-                res = PropertyValue.SpecialCharRegEx.Replace(res, PropertyValue.SpecialCharEvaluator);
-                res = res.Replace("\'\'", "\'");
-                _binaryWriter.Write(res);
-                
+                string ret = value.Substring(1, value.Length - 2); //remove the quotes
+                if (ret.Contains("\\"))
+                {
+                    XbimP21StringDecoder d = new XbimP21StringDecoder();
+                    ret = d.Unescape(ret);
+                }
+                _binaryWriter.Write(ret);
             }
             if (_listNestLevel == 0)
                 _currentInstance.CurrentParamIndex++;
