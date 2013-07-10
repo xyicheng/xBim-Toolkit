@@ -69,14 +69,14 @@ namespace Xbim.IO.Parser
         {
             string CodePageIds = "ABCDEFGHI";
             MovePast(CodeTableToken);
-            if (eof || !HasLength(2)) throw new EofException(CodeTableToken);
+            if (eof || !HasLength(2)) throw new XbimP21EofException();
             char CodePageChar = CurrentChar();
             int iAddress = CodePageIds.IndexOf(CodePageChar);
             if (iAddress == -1)
-                throw new InvalidCharacterException(String.Format("Invalid codepage character '{0}'", CodePageChar));
+                throw new XbimP21InvalidCharacterException(String.Format("Invalid codepage character '{0}'", CodePageChar));
             MoveNext();
             if (CurrentChar() != '\\')
-                throw new InvalidCharacterException(String.Format("Invalid codepage termination '{0}'", CurrentChar()));
+                throw new XbimP21InvalidCharacterException(String.Format("Invalid codepage termination '{0}'", CurrentChar()));
             iAddress++;
             Move(1); // past the last backslash
             OneByteDecoder = Encoding.GetEncoding("iso-8859-" + iAddress.ToString());
@@ -97,7 +97,7 @@ namespace Xbim.IO.Parser
         private void ParseUpperAscii()
         {
             MovePast(UpperAsciiToken);
-            if (eof) throw new EofException(UpperAsciiToken);
+            if (eof) throw new XbimP21EofException();
             byte val = (byte)(CurrentChar() + UpperAsciiShift);
             byte[] upperAscii = new byte[] { val };
             builder.Append(OneByteDecoder.GetChars(upperAscii));
@@ -107,7 +107,7 @@ namespace Xbim.IO.Parser
         private void ParseHex8()
         {
             MovePast(Hex8Token);
-            if (eof || !HasLength(2)) throw new EofException(Hex8Token);
+            if (eof || !HasLength(2)) throw new XbimP21EofException();
             byte[] byteval = GetHexLength(2);
             builder.Append(Encoding.GetEncoding("iso-8859-1").GetChars(byteval));
         }
@@ -126,7 +126,7 @@ namespace Xbim.IO.Parser
                 }
                 catch (Exception)
                 {
-                    throw new InvalidCharacterException(String.Format("Invalid hexadecimal representation '{0}'", hex));
+                    throw new XbimP21InvalidCharacterException(String.Format("Invalid hexadecimal representation '{0}'", hex));
                 }
             }
             return ret;
@@ -146,7 +146,7 @@ namespace Xbim.IO.Parser
             do
             {
                 if (eof || !HasLength(stringLenght + LongHexEndToken.Length))  
-                    throw new EofException(CurrentChar().ToString());
+                    throw new XbimP21EofException();
                 byte[] byteval = GetHexLength(stringLenght);
                 builder.Append(enc.GetChars(byteval, 0, stringLenght / 2));
             } while (!At(LongHexEndToken));
@@ -207,17 +207,17 @@ namespace Xbim.IO.Parser
         }
     }
 
-    public class EofException : Exception
+    public class XbimP21EofException : Exception
     {
-        public EofException(string token)
-            : base(String.Format("Unexpected eof after '{0}'", token))
+        public XbimP21EofException()
+            : base(String.Format("Unexpected end of buffer."))
         {
         }
     }
 
-    public class InvalidCharacterException : Exception
+    public class XbimP21InvalidCharacterException : Exception
     {
-        public InvalidCharacterException(string message)
+        public XbimP21InvalidCharacterException(string message)
             : base(message)
         {
         }
