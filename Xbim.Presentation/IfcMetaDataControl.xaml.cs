@@ -59,7 +59,6 @@ namespace Xbim.Presentation
                 set { _propertySetName = value; }
             }
 
-
             public string Name
             {
                 get { return _name; }
@@ -296,25 +295,34 @@ namespace Xbim.Presentation
             {
                 IEnumerable<IfcRelAssociatesMaterial> matRels = ifcObj.HasAssociations.OfType<IfcRelAssociatesMaterial>();
                 foreach (IfcRelAssociatesMaterial matRel in matRels)
+                {
+                    // todo: bonghi: the following loop is only temporarily here for debug purposes.
+                    //var v = Model.Instances.GetInstancesOfMaterial(matRel.RelatingMaterial);
+                    //foreach (var item in v)
+                    //{
+                    //    System.Diagnostics.Debug.WriteLine(item.EntityLabel);
+                    //}
+                    // end todo
                     AddMaterialData(matRel.RelatingMaterial, "");
+                }
             }
-
         }
 
         private void AddMaterialData(IfcMaterialSelect matSel, string setName)
         {
+
             if (matSel is IfcMaterial) //simplest just add it
                 _materials.Add(new PropertyItem()
                 {
-                    Name = ((IfcMaterial)matSel).Name,
-                    PropertySetName=setName,
-                    Value=""
+                    Name = string.Format("{0} [#{1}]", ((IfcMaterial)matSel).Name, Math.Abs(matSel.EntityLabel)),
+                    PropertySetName = setName,
+                    Value = ""
                 });
             else if (matSel is IfcMaterialLayer)
                 _materials.Add(new PropertyItem()
                 {
-                    Name = ((IfcMaterialLayer)matSel).Material.Name,
-                    Value = ((IfcMaterialLayer)matSel).LayerThickness.ToPart21,
+                    Name = string.Format("{0} [#{1}]", ((IfcMaterialLayer)matSel).Material.Name, Math.Abs(matSel.EntityLabel)),
+                    Value = ((IfcMaterialLayer)matSel).LayerThickness.Value.ToString(),
                     PropertySetName = setName
                 });
             else if (matSel is IfcMaterialList)
@@ -323,7 +331,7 @@ namespace Xbim.Presentation
                 {
                     _materials.Add(new PropertyItem()
                     {
-                        Name = mat.Name,
+                        Name = string.Format("{0} [#{1}]", mat.Name, Math.Abs(mat.EntityLabel)),
                         PropertySetName = setName,
                         Value = ""
                     });

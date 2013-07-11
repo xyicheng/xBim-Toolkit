@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows;
@@ -13,10 +14,12 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using Xbim.Common.Geometry;
+using Xbim.Ifc2x3.Kernel;
 using Xbim.Ifc2x3.SharedBldgElements;
 using Xbim.IO;
 using Xbim.ModelGeometry.Scene;
 using Xbim.XbimExtensions.Interfaces;
+using Xbim.XbimExtensions.SelectTypes;
 
 namespace XbimXplorer.Querying
 {
@@ -126,7 +129,7 @@ namespace XbimXplorer.Querying
                         continue;
                     }
 
-                    m = Regex.Match(cmd, @"(ifctype|it) (?<type>.+)", RegexOptions.IgnoreCase);
+                    m = Regex.Match(cmd, @"(IfcSchema|is) (?<type>.+)", RegexOptions.IgnoreCase);
                     if (m.Success)
                     {
                         string type = m.Groups["type"].Value;
@@ -162,8 +165,13 @@ namespace XbimXplorer.Querying
                         }
                         if (iIndex != -1)
                         {
-                            int iVal = ret.ElementAt(iIndex);
-                            ret = new int[] { iVal };
+                            if (ret.Count() > iIndex)
+                            {
+                                int iVal = ret.ElementAt(iIndex);
+                                ret = new int[] { iVal };
+                            }
+                            else
+                                ret = new int[] { };
                         }
                         if (mode.ToLower() == "count ")
                         {
@@ -395,7 +403,7 @@ namespace XbimXplorer.Querying
             txtOut.Text += "Commands:\r\n";
             txtOut.Text += "  select [count|list|short] <#startingElement> [Properties...]\r\n";
             txtOut.Text += "  EntityLabel label [recursion]\r\n";
-            txtOut.Text += "  IfcType type\r\n";
+            txtOut.Text += "  IfcSchema type\r\n";
             txtOut.Text += "  clip [off|<Elevation>|<px>, <py>, <pz>, <nx>, <ny>, <nz>|<Storey name>] (unstable feature)\r\n";
             txtOut.Text += "  zoom <Region name>\r\n";
             txtOut.Text += "  Visual [list|[on|off <name>]]\r\n";
@@ -407,12 +415,81 @@ namespace XbimXplorer.Querying
             txtOut.Text += "If a portion of text is selected, only selected text will be the executed.\r\n";
         }
 
-        private string ReportType(string type)
+        static bool IsSubclassOfRawGeneric(Type generic, Type toCheck)
+        {
+            while (toCheck != null && toCheck != typeof(object))
+            {
+                var cur = toCheck.IsGenericType ? toCheck.GetGenericTypeDefinition() : toCheck;
+                if (generic == cur)
+                {
+                    return true;
+                }
+                toCheck = toCheck.BaseType;
+            }
+            return false;
+        }
+
+        private string ReportType(string type, string indentationHeader = "")
         {
             StringBuilder sb = new StringBuilder();
             List<int> Values = QueryEngine.EntititesForType(type, Model);
-            sb.AppendFormat("=== Type: {0}, {1} items:\r\n", type, Values.Count);
-            sb.AppendFormat("EntityLabels: {0}\r\n", string.Join(",", Values.ToArray()));
+            IfcType ot = IfcMetaData.IfcType(type.ToUpper());
+            if (ot != null)
+            {
+                sb.AppendFormat(indentationHeader + "=== {0}\r\n", ot.Name);
+                // sb.AppendFormat(indentationHeader + "Xbim Type Id: {0}\r\n", ot.TypeId);
+                if (ot.IfcSuperType != null)
+                    sb.AppendFormat(indentationHeader + "Supertype: {0}\r\n", ot.IfcSuperType.Name);
+                if (ot.IfcSubTypes.Count > 0)
+                {
+                    sb.AppendFormat(indentationHeader + "Subtypes: {0}\r\n", ot.IfcSubTypes.Count);
+                    foreach (var item in ot.IfcSubTypes)
+                    {
+                        sb.AppendFormat(indentationHeader + "- {0}\r\n", item);
+                    }
+                }
+
+                sb.AppendFormat(indentationHeader + "Interfaces: {0}\r\n", ot.Type.GetInterfaces().Count());
+                foreach (var item in ot.Type.GetInterfaces())
+                {
+                    sb.AppendFormat(indentationHeader + "- {0}\r\n", item.Name);
+                }
+                sb.AppendFormat(indentationHeader + "Properties: {0}\r\n", ot.IfcProperties.Count());
+                foreach (var item in ot.IfcProperties.Values)
+                {
+                    sb.AppendFormat(indentationHeader + "- {0} ({1})\r\n", item.PropertyInfo.Name, CleanPropertyName(item.PropertyInfo.PropertyType.FullName));
+                }
+                sb.AppendFormat(indentationHeader + "Inverses: {0}\r\n", ot.IfcInverses.Count());
+                foreach (var item in ot.IfcInverses)
+                {
+                    sb.AppendFormat(indentationHeader + "- {0} ({1})\r\n", item.PropertyInfo.Name, CleanPropertyName(item.PropertyInfo.PropertyType.FullName));
+                }
+
+                sb.AppendFormat("\r\n");
+            }
+            else
+            {
+                // test to see if it's a select type...
+
+                Module ifcModule2 = typeof(IfcMaterialSelect).Module;
+                var SelectType = ifcModule2.GetTypes().Where(
+                        t => t.Name.Contains(type)
+                        ).FirstOrDefault();
+
+                if (SelectType != null)
+                {
+                    sb.AppendFormat("=== {0} is a Select type\r\n", type);
+                    Module ifcModule = typeof(IfcActor).Module;
+                    IEnumerable<Type> types = ifcModule.GetTypes().Where(
+                            t => t.GetInterfaces().Contains(SelectType)
+                            );
+                    foreach (var item in types)
+                    {
+                        sb.Append(ReportType(item.Name, indentationHeader + "  "));
+                    }
+                }
+            }
+
             return sb.ToString();
         }
 
@@ -478,17 +555,8 @@ namespace XbimXplorer.Querying
             // Debug.WriteLine(propName);
             Type propType = prop.PropertyInfo.PropertyType;
 
-            string ShortTypeName = propType.FullName;
-            var m = Regex.Match(ShortTypeName, @"^((?<Mod>.*)`\d\[\[)*Xbim\.(?<Type>[\w\.]*)");
-            if (m.Success)
-            {
-                ShortTypeName = m.Groups["Type"].Value; // + m.Groups["Type"].Value + 
-                if (m.Groups["Mod"].Value != string.Empty)
-                {
-                    string[] GetLast =  m.Groups["Mod"].Value.Split(new string[] {"."}, StringSplitOptions.RemoveEmptyEntries);
-                    ShortTypeName += " (" + GetLast[GetLast.Length - 1] + ")";
-                }
-            }
+            string ShortTypeName = CleanPropertyName(propType.FullName);
+            
 
             // System.Diagnostics.Debug.WriteLine(ShortTypeName);
 
@@ -542,6 +610,21 @@ namespace XbimXplorer.Querying
                 }
             }
             return RetIds;
+        }
+
+        private static string CleanPropertyName(string ShortTypeName)
+        {
+            var m = Regex.Match(ShortTypeName, @"^((?<Mod>.*)`\d\[\[)*Xbim\.(?<Type>[\w\.]*)");
+            if (m.Success)
+            {
+                ShortTypeName = m.Groups["Type"].Value; // + m.Groups["Type"].Value + 
+                if (m.Groups["Mod"].Value != string.Empty)
+                {
+                    string[] GetLast = m.Groups["Mod"].Value.Split(new string[] { "." }, StringSplitOptions.RemoveEmptyEntries);
+                    ShortTypeName += " (" + GetLast[GetLast.Length - 1] + ")";
+                }
+            }
+            return ShortTypeName;
         }
 
         private static string ReportPropValue(object propVal, ref List<int> RetIds)

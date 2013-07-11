@@ -105,8 +105,8 @@ namespace XbimXplorer
                 {
                     case ".ifc": //it is an Ifc File
                     case ".ifcxml": //it is an IfcXml File
-                    case ".ifczip": //it is a xip file containing xbim or ifc File
-                    case ".zip": //it is a xip file containing xbim or ifc File
+                    case ".ifczip": //it is a zip file containing xbim or ifc File
+                    case ".zip": //it is a zip file containing xbim or ifc File
                         CloseAndDeleteTemporaryFiles();
                         _worker.DoWork += OpenIfcFile;
                         _worker.RunWorkerAsync(toOpen);
@@ -398,6 +398,7 @@ namespace XbimXplorer
                                                   if (args.Result is XbimModel) //all ok
                                                   {
                                                       ModelProvider.ObjectInstance = (XbimModel)args.Result; //this Triggers the event to load the model into the views 
+                                                      PropertiesControl.Model = (XbimModel)args.Result;
                                                       ModelProvider.Refresh();
                                                   }
                                                   else //we have a problem

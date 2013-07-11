@@ -82,6 +82,7 @@ namespace Xbim.IO
                 
                 foreach (Type type in types)
                 {
+                    // Debug.WriteLine(type.ToString());
                     IfcType ifcType;
                     if (TypeToIfcTypeLookup.Contains(type))
                         ifcType = TypeToIfcTypeLookup[type];
@@ -201,7 +202,9 @@ namespace Xbim.IO
         /// <returns></returns>
         public static IfcType IfcType(string typeName)
         {
-            return TypeNameToIfcTypeLookup[typeName];
+            if (TypeNameToIfcTypeLookup.ContainsKey(typeName))
+                return TypeNameToIfcTypeLookup[typeName];
+            return null;
         }
 
         /// <summary>
