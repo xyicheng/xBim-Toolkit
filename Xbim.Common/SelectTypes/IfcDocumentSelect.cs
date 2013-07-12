@@ -1,4 +1,5 @@
-﻿#region XbimHeader
+﻿using Xbim.XbimExtensions.Interfaces;
+#region XbimHeader
 
 // The eXtensible Building Information Modelling (xBIM) Toolkit
 // Solution:    XbimComplete
@@ -12,7 +13,7 @@
 
 namespace Xbim.XbimExtensions.SelectTypes
 {
-    public interface IfcDocumentSelect : ExpressSelectType
+    public interface IfcDocumentSelect : ExpressSelectType, IPersistIfcEntity, ISupportChangeNotification
     {
     }
 }

@@ -12,7 +12,7 @@
 
 namespace Xbim.XbimExtensions.SelectTypes
 {
-    public interface IfcDraughtingCalloutElement : ExpressSelectType
+    public interface IfcDraughtingCalloutElement : IfcLayeredItem
     {
     }
 }

@@ -13,7 +13,7 @@
 using Xbim.XbimExtensions.Interfaces;
 namespace Xbim.XbimExtensions.SelectTypes
 {
-    public interface IfcPointOrVertexPoint : ExpressSelectType, IPersistIfcEntity
+    public interface IfcPointOrVertexPoint : IfcLayeredItem
     {
     }
 }

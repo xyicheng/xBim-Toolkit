@@ -129,11 +129,43 @@ namespace XbimXplorer.Querying
                         continue;
                     }
 
-                    m = Regex.Match(cmd, @"(IfcSchema|is) (?<type>.+)", RegexOptions.IgnoreCase);
+                    m = Regex.Match(cmd, @"(IfcSchema|is) (?<mode>(list|count|short) )*(?<type>.+)", RegexOptions.IgnoreCase);
                     if (m.Success)
                     {
                         string type = m.Groups["type"].Value;
-                        txtOut.Text += ReportType(type);
+                        string mode = m.Groups["mode"].Value;
+
+                        
+                        if (type == PrepareRegex(type)) // there's not a regex expression, we will prepare one assuming the search for a bare name.
+                        {
+                            type = @".*\." + type + "$"; // any character repeated then a dot then the name and the end of line
+                        }
+                        else
+                            type = PrepareRegex(type);
+
+                        var TypeList = MatchingTypes(type);
+                        
+
+                        if (mode.ToLower() == "list ")
+                        {
+                            foreach (var item in TypeList)
+                                txtOut.Text += item + "\r\n";
+                        }
+                        else if (mode.ToLower() == "count ")
+                        {
+                            txtOut.Text += "count: " + TypeList.Count() + "\r\n";
+                        }
+                        else
+                        {
+                            // report
+                            bool BeVerbose = true;
+                            if (mode.ToLower() == "short ")
+                                BeVerbose = false;
+                            foreach (var item in TypeList)
+                            {
+                                txtOut.Text += ReportType(item, BeVerbose);
+                            }
+                        }
                         continue;
                     }
 
@@ -403,7 +435,7 @@ namespace XbimXplorer.Querying
             txtOut.Text += "Commands:\r\n";
             txtOut.Text += "  select [count|list|short] <#startingElement> [Properties...]\r\n";
             txtOut.Text += "  EntityLabel label [recursion]\r\n";
-            txtOut.Text += "  IfcSchema type\r\n";
+            txtOut.Text += "  IfcSchema [list] <TypeName> - (TypeName can contain wildcards)\r\n";
             txtOut.Text += "  clip [off|<Elevation>|<px>, <py>, <pz>, <nx>, <ny>, <nz>|<Storey name>] (unstable feature)\r\n";
             txtOut.Text += "  zoom <Region name>\r\n";
             txtOut.Text += "  Visual [list|[on|off <name>]]\r\n";
@@ -429,17 +461,57 @@ namespace XbimXplorer.Querying
             return false;
         }
 
-        private string ReportType(string type, string indentationHeader = "")
+        /// <summary>
+        /// Finds relevant classes through reflection by Namespace + Name query
+        /// </summary>
+        /// <param name="RegExString">The regex string to be compared to the namespace</param>
+        /// <returns>Enumerable string of full type name, with namespace</returns>
+        private IEnumerable<string> MatchingTypes(string RegExString)
         {
+            Regex re = new Regex(RegExString, RegexOptions.IgnoreCase);
+            foreach (System.Reflection.AssemblyName an in System.Reflection.Assembly.GetExecutingAssembly().GetReferencedAssemblies())
+            {
+                System.Reflection.Assembly asm = System.Reflection.Assembly.Load(an.ToString());
+                foreach (Type type in asm.GetTypes().Where(
+                    t =>
+                        t.Namespace != null &&
+                        (
+                        t.Namespace == "Xbim.XbimExtensions.SelectTypes"
+                        ||
+                        t.Namespace.StartsWith("Xbim.Ifc2x3.")
+                        ))
+                    )
+                {
+                    if (re.IsMatch(type.FullName))
+                        yield return type.FullName;
+                }
+            }
+        }
+
+        private static string PrepareRegex(string rex)
+        {
+            rex = rex.Replace(".", @"\."); //escaped dot
+            rex = rex.Replace("*", ".*");
+            rex = rex.Replace("?", ".");
+            return rex;
+        }
+
+        private string ReportType(string type, bool beVerbose, string indentationHeader = "")
+        {
+            var tarr = type.Split(new string[] { "." }, StringSplitOptions.RemoveEmptyEntries);
+            type = tarr[tarr.Length - 1];
+
+            
             StringBuilder sb = new StringBuilder();
-            List<int> Values = QueryEngine.EntititesForType(type, Model);
+            
             IfcType ot = IfcMetaData.IfcType(type.ToUpper());
             if (ot != null)
             {
                 sb.AppendFormat(indentationHeader + "=== {0}\r\n", ot.Name);
+                sb.AppendFormat(indentationHeader + "Namespace: {0}\r\n", ot.Type.Namespace);
                 // sb.AppendFormat(indentationHeader + "Xbim Type Id: {0}\r\n", ot.TypeId);
                 if (ot.IfcSuperType != null)
-                    sb.AppendFormat(indentationHeader + "Supertype: {0}\r\n", ot.IfcSuperType.Name);
+                    sb.AppendFormat(indentationHeader + "Subtype of: {0}\r\n", ot.IfcSuperType.Name);
                 if (ot.IfcSubTypes.Count > 0)
                 {
                     sb.AppendFormat(indentationHeader + "Subtypes: {0}\r\n", ot.IfcSubTypes.Count);
@@ -448,23 +520,24 @@ namespace XbimXplorer.Querying
                         sb.AppendFormat(indentationHeader + "- {0}\r\n", item);
                     }
                 }
-
-                sb.AppendFormat(indentationHeader + "Interfaces: {0}\r\n", ot.Type.GetInterfaces().Count());
-                foreach (var item in ot.Type.GetInterfaces())
+                if (beVerbose)
                 {
-                    sb.AppendFormat(indentationHeader + "- {0}\r\n", item.Name);
+                    sb.AppendFormat(indentationHeader + "Interfaces: {0}\r\n", ot.Type.GetInterfaces().Count());
+                    foreach (var item in ot.Type.GetInterfaces())
+                    {
+                        sb.AppendFormat(indentationHeader + "- {0}\r\n", item.Name);
+                    }
+                    sb.AppendFormat(indentationHeader + "Properties: {0}\r\n", ot.IfcProperties.Count());
+                    foreach (var item in ot.IfcProperties.Values)
+                    {
+                        sb.AppendFormat(indentationHeader + "- {0} ({1})\r\n", item.PropertyInfo.Name, CleanPropertyName(item.PropertyInfo.PropertyType.FullName));
+                    }
+                    sb.AppendFormat(indentationHeader + "Inverses: {0}\r\n", ot.IfcInverses.Count());
+                    foreach (var item in ot.IfcInverses)
+                    {
+                        sb.AppendFormat(indentationHeader + "- {0} ({1})\r\n", item.PropertyInfo.Name, CleanPropertyName(item.PropertyInfo.PropertyType.FullName));
+                    }
                 }
-                sb.AppendFormat(indentationHeader + "Properties: {0}\r\n", ot.IfcProperties.Count());
-                foreach (var item in ot.IfcProperties.Values)
-                {
-                    sb.AppendFormat(indentationHeader + "- {0} ({1})\r\n", item.PropertyInfo.Name, CleanPropertyName(item.PropertyInfo.PropertyType.FullName));
-                }
-                sb.AppendFormat(indentationHeader + "Inverses: {0}\r\n", ot.IfcInverses.Count());
-                foreach (var item in ot.IfcInverses)
-                {
-                    sb.AppendFormat(indentationHeader + "- {0} ({1})\r\n", item.PropertyInfo.Name, CleanPropertyName(item.PropertyInfo.PropertyType.FullName));
-                }
-
                 sb.AppendFormat("\r\n");
             }
             else
@@ -480,13 +553,59 @@ namespace XbimXplorer.Querying
                 {
                     sb.AppendFormat("=== {0} is a Select type\r\n", type);
                     Module ifcModule = typeof(IfcActor).Module;
-                    IEnumerable<Type> types = ifcModule.GetTypes().Where(
+                    IEnumerable<Type> SelectSubTypes = ifcModule.GetTypes().Where(
                             t => t.GetInterfaces().Contains(SelectType)
                             );
-                    foreach (var item in types)
+
+                    // CommontIF sets up the infrastructure to check for common interfaces shared by the select type elements
+                    Type[] CommontIF = null;
+                    foreach (var item in SelectSubTypes)
                     {
-                        sb.Append(ReportType(item.Name, indentationHeader + "  "));
+                        if (CommontIF == null)
+                            CommontIF = item.GetInterfaces();
+                        else
+                        {
+                            var chk = item.GetInterfaces();
+                            for (int i = 0; i < CommontIF.Length; i++)
+                            {
+                                if (!chk.Contains(CommontIF[i]))
+                                {
+                                    CommontIF[i] = null;
+                                }       
+                            }
+                        }   
                     }
+                    
+                    Type[] ExistingIF = SelectType.GetInterfaces();
+                    sb.AppendFormat(indentationHeader + "Interfaces: {0}\r\n", ExistingIF.Length);
+                    foreach (var item in ExistingIF)
+                    {
+                        sb.AppendFormat(indentationHeader + "- {0}\r\n", item.Name);
+                    }
+                    // need to remove implemented interfaces from the ones shared 
+                    for (int i = 0; i < CommontIF.Length; i++)
+                    {
+                        if (CommontIF[i] == SelectType)
+                            CommontIF[i] = null;
+                        if (ExistingIF.Contains(CommontIF[i]))
+                        {
+                            CommontIF[i] = null;
+                        }
+                    }
+
+                    foreach (var item in CommontIF)
+                    {
+                        if (item != null)
+                            sb.AppendFormat(indentationHeader + "Missing Common Interface: {0}\r\n", item.Name);
+                    }
+                    if (beVerbose)
+                    {
+                        foreach (var item in SelectSubTypes)
+                        {
+                            sb.Append(ReportType(item.Name, beVerbose, indentationHeader + "  "));
+                        }
+                    }
+                    sb.AppendLine();
                 }
             }
 

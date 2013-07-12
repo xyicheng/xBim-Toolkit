@@ -13,7 +13,7 @@
 using Xbim.XbimExtensions.Interfaces;
 namespace Xbim.XbimExtensions.SelectTypes
 {
-    public interface IfcCurveOrEdgeCurve : ExpressSelectType, IPersistIfcEntity
+    public interface IfcCurveOrEdgeCurve : ExpressSelectType, IfcLayeredItem
     {
     }
 }

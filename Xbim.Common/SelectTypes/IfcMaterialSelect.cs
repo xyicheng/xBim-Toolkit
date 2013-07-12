@@ -15,7 +15,7 @@ namespace Xbim.XbimExtensions.SelectTypes
 {
     // Added IpersistIfc because all select types implement it
     //
-    public interface IfcMaterialSelect : ExpressSelectType, IPersistIfcEntity
+    public interface IfcMaterialSelect : ExpressSelectType, IPersistIfcEntity, ISupportChangeNotification
     {
         string Name { get; }
     }
