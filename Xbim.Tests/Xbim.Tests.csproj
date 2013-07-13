@@ -63,6 +63,7 @@
     <Compile Include="COBie\COBieXbimSerialisationTests.cs" />
     <Compile Include="Federation Tests.cs" />
     <Compile Include="InternationalisationTests.cs" />
+    <Compile Include="XbimInstanceCollectionTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="AssemblySettings.cs" />
     <Compile Include="P21Tests.cs" />

@@ -113,7 +113,7 @@ namespace Xbim.Tests
             Unescape_MiscStrings("Kjøkken/Stue", @"Kj\X2\00F8\X0\kken/Stue");
             Unescape_MiscStrings("Kjøøkken/Stue", @"Kj\X2\00F800F8\X0\kken/Stue");
             Unescape_MiscStrings(@"\MÆØÅ\Tæøå\Z\0", @"\M\X\C6\S\X\X\C5\T\X2\00E6\X0\\S\x\X2\00E5\X0\\Z\0");
-            Unescape_MiscStrings(@"ъет NÆÆRING is  'apostrophe' 平仮名 then 4 bytes: 𠜎 𠜱𠝹 \\OtherChars", @"\PE\\S\j\S\U\S\b N\X2\00C600C6\X0\RING is  ''apostrophe'' \X2\5E734EEE540D\X0\ then 4 bytes: \X4\0002070E\X0\ \X4\0002073100020779\X0\ \\OtherChars");
+            Unescape_MiscStrings(@"ъет NÆÆRING is  'apostrophe' 平仮名 then 4 bytes: 𠜎 𠜱𠝹 \\OtherChars", @"\PE\\S\j\S\U\S\b N\X2\00C600C6\X0\RING is  ''apostrophe'' \X2\5E734EEE540D\X0\ then 4 bytes: \X4\0002070E\X0\ \X4\0002073100020779\X0\ \\\\OtherChars");
         }
 
         public void Unescape_MiscStrings(string expected, string input)

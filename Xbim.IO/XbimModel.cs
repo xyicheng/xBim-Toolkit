@@ -5,31 +5,21 @@ using System.Text;
 using Xbim.XbimExtensions.Interfaces;
 using Xbim.Ifc2x3.ActorResource;
 using Xbim.Ifc2x3.UtilityResource;
-using Xbim.XbimExtensions.Transactions;
 using Xbim.Ifc2x3.Kernel;
-using Xbim.XbimExtensions.DataProviders;
 using System.IO;
 using Xbim.XbimExtensions;
 using Xbim.Ifc2x3.Extensions;
 using System.CodeDom.Compiler;
 using Xbim.XbimExtensions.SelectTypes;
 using System.Collections;
-using System.Xml;
 using ICSharpCode.SharpZipLib.Zip;
-using System.IO.Compression;
 using Xbim.Ifc2x3.MeasureResource;
-using Xbim.Ifc2x3.GeometryResource;
-using System.Linq.Expressions;
 using System.Diagnostics;
-using Xbim.XbimExtensions.Transactions.Extensions;
 using Xbim.Common.Logging;
-using Xbim.IO.Parser;
 using Xbim.Common;
 using Xbim.Common.Exceptions;
 using System.Globalization;
 using Xbim.Ifc2x3.ExternalReferenceResource;
-using Xbim.Ifc.SelectTypes;
-using Xbim.Ifc2x3.PresentationAppearanceResource;
 using Xbim.IO.DynamicGrouping;
 
 
@@ -40,7 +30,6 @@ namespace Xbim.IO
     /// </summary>
     public class XbimModel : IModel, IDisposable
     {
-
         #region Fields
 
        
@@ -100,7 +89,6 @@ namespace Xbim.IO
             {
                 return instances;
             }
-
         }
         /// <summary>
         /// Returns a collection of all instances in the model and all federated instances 
@@ -111,7 +99,6 @@ namespace Xbim.IO
             {
                 return new XbimFederatedModelInstances(this);
             }
-
         }
         /// <summary>
         /// based on the XML rule definition, this creates group objects to group instances together
@@ -123,7 +110,6 @@ namespace Xbim.IO
             GroupingByXml g2 = new GroupingByXml(this);
             g2.GroupElements(@"DynamicGrouping\NRM2IFC.xml");
         }
-
 
         public XbimModelFactors GetModelFactors
         {
@@ -137,7 +123,6 @@ namespace Xbim.IO
                     IfcUnitAssignment ua = Instances.OfType<IfcUnitAssignment>().FirstOrDefault();
                     if (ua != null)
                     {
-
                         foreach (var unit in ua.Units)
                         {
                             double value = 1.0;
@@ -175,7 +160,6 @@ namespace Xbim.IO
                             }
                         }
                     }
-
                     _modelFactors = new XbimModelFactors(angleToRadiansConversionFactor, lengthToMetresConversionFactor);
                 }
                 return _modelFactors;
@@ -211,7 +195,6 @@ namespace Xbim.IO
         //Loads the property data of an entity, if it is not already loaded
         int IModel.Activate(IPersistIfcEntity entity, bool write)
         {
-
             if (write) //we want to activate for reading
             {
                 //if (!Transaction.IsRollingBack)
@@ -319,8 +302,6 @@ namespace Xbim.IO
 
         #region IModel interface implementation
 
-
-
         /// <summary>
         /// Registers an entity for deletion
         /// </summary>
@@ -330,10 +311,6 @@ namespace Xbim.IO
         {
             cache.Delete_Reversable(instance);
         }
-
-
-
-
 
         /// <summary>
         /// Returns an instance from the Model with the corresponding label but does not keep a cache of it
@@ -349,8 +326,6 @@ namespace Xbim.IO
             return cache.GetInstance(label, true, true);
         }
 
-
-
         /// <summary>
         /// Returns the total number of Geometry objects in the model
         /// </summary>
@@ -361,8 +336,6 @@ namespace Xbim.IO
                 return cache.GeometriesCount();
             }
         }
-
-
 
         /// <summary>
         /// Creates a new Model and populates with instances from the specified file, Ifc, IfcXML, IfcZip and Xbim are all supported.
@@ -404,8 +377,6 @@ namespace Xbim.IO
             }
             return true;
         }
-
-
 
         /// <summary>
         /// Creates an empty model using a temporary filename, the model will be deleted on close, unless SaveAs is called
@@ -457,13 +428,9 @@ namespace Xbim.IO
             {
                 throw new XbimException("Failed to create and open xBIM file \'" + dbFileName + "\'\n" + e.Message, e);
             }
-                
         }
 
-       
-
         #endregion
-
 
         public byte[] GetEntityBinaryData(IPersistIfcEntity entity)
         {
@@ -481,20 +448,12 @@ namespace Xbim.IO
             }
         }
 
-
-
-
-
-
-
-
         public IIfcFileHeader Header
         {
 
             get { return header; }
             set { header = value; }
         }
-
 
         #region Validation
 
@@ -647,7 +606,6 @@ namespace Xbim.IO
 
         #endregion
 
-
         #region Part 21 parse functions
 
 
@@ -729,7 +687,6 @@ namespace Xbim.IO
             return ok;
         }
 
-
         /// <summary>
         /// Opens an Xbim model only, to open Ifc, IfcZip and IfcXML files use the CreatFrom method
         /// </summary>
@@ -800,7 +757,6 @@ namespace Xbim.IO
                     }
                     finally
                     {
-
                         Open(srcFile, accessMode, null);
                     }
                 }
@@ -815,10 +771,6 @@ namespace Xbim.IO
                 throw new XbimException(string.Format("Failed to Save file as {0}\n{1}", outputFileName, e.Message));
             }
         }
-
-
-      
-
 
         // Extract first ifc file from zipped file and save in the same directory
         internal string ExportZippedIfc(string inputIfcFile)
@@ -860,12 +812,7 @@ namespace Xbim.IO
             return "";
         }
 
-
-
-
-
         #region Part21 File Writer support
-
 
         /// <summary>
         /// Writes a Part 21 Header
@@ -930,7 +877,6 @@ namespace Xbim.IO
             tw.WriteLine("END-ISO-10303-21;");
         }
 
-
         #endregion
 
         #region Helpers
@@ -949,10 +895,6 @@ namespace Xbim.IO
 
         #endregion
 
-
-
-
-
         /// <summary>
         ///   Creates an Ifc Persistent Instance from an entity name string and label, this is NOT an undoable operation
         /// </summary>
@@ -969,7 +911,6 @@ namespace Xbim.IO
             {
                 throw new ArgumentException(string.Format("Error creating entity {0}, it is not a supported Xbim type, {1}", ifcEntityName, e.Message));
             }
-
         }
         /// <summary>
         /// Creates an Ifc Persistent Instance from an entity type and label, this is NOT an undoable operation
@@ -979,23 +920,14 @@ namespace Xbim.IO
         /// <returns></returns>
         internal IPersistIfc CreateInstance(Type ifcType, long? label)
         {
-
             throw new NotImplementedException("To do");
             //return instances.AddNew(this,ifcType,label.Value);
-
         }
-
-
 
         public void Print()
         {
             cache.Print();
         }
-
-
-
-
-
 
         public IfcProject IfcProject
         {
@@ -1031,8 +963,6 @@ namespace Xbim.IO
         {
             get { return instances.DefaultOwningUser; }
         }
-
-
 
         ~XbimModel()
         {
@@ -1076,13 +1006,11 @@ namespace Xbim.IO
         public XbimGeometryHandleCollection GetGeometryHandles(XbimGeometryType geomType=XbimGeometryType.TriangulatedMesh, XbimGeometrySort sortOrder=XbimGeometrySort.OrderByIfcSurfaceStyleThenIfcType)
         {
             return cache.GetGeometryHandles(geomType,sortOrder);
-          
         }
 
         public XbimGeometryHandle GetGeometryHandle(int geometryLabel)
         {
             return cache.GetGeometryHandle(geometryLabel);
-
         }
 
         /// <summary>
@@ -1130,10 +1058,7 @@ namespace Xbim.IO
             {
                 yield return shape;
             }
-
         }
-
-
 
         internal XbimEntityCursor GetEntityTable()
         {
@@ -1177,8 +1102,6 @@ namespace Xbim.IO
             cache.EndCaching();
             editTransactionEntityCursor = null;
         }
-       
-
 
         internal void Flush()
         {
@@ -1190,8 +1113,6 @@ namespace Xbim.IO
             Debug.Assert(editTransactionEntityCursor != null);
             return editTransactionEntityCursor;
         }
-
-
 
         #region Model Group functions
         /// <summary>
@@ -1282,8 +1203,7 @@ namespace Xbim.IO
             get
             {
                 return _referencedModels;
-            }
-            
+            }            
         }
 
         public XbimGeometryData GetGeometryData(XbimGeometryHandle handle)
@@ -1319,7 +1239,6 @@ namespace Xbim.IO
                 project.OwnerHistory.OwningApplication = DefaultOwningApplication;
                 txn.Commit();
             }
-            
         }
 
         /// <summary>
@@ -1337,7 +1256,6 @@ namespace Xbim.IO
         {
             AddModelReference(fileName, organisationName,IfcRole.UserDefined, ownerName);
         }
-
 
         /// <summary>
         /// Returns an enumerable of the handles to all entities in the model
@@ -1371,7 +1289,6 @@ namespace Xbim.IO
         internal IPersistIfcEntity GetInstanceVolatile(XbimInstanceHandle item)
         {
           return item.Model.GetInstanceVolatile(item.EntityLabel);
-          
         }
 
         public IEnumerable<XbimModel> AllModels

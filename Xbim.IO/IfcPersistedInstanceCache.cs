@@ -25,8 +25,7 @@ using System.Collections.Concurrent;
 
 
 namespace Xbim.IO
-{
-    
+{   
     public class IfcPersistedInstanceCache : IDisposable
     {
          /// <summary>
@@ -86,7 +85,6 @@ namespace Xbim.IO
         private bool caching = false;
         private class ComparePropertyInfo : IEqualityComparer<PropertyInfo>
         {
-
             public bool Equals(PropertyInfo x, PropertyInfo y)
             {
                 return x.Name == y.Name;
@@ -97,10 +95,6 @@ namespace Xbim.IO
                 return obj.Name.GetHashCode();
             }
         }
-       
-       
-
-       
 
         public IfcPersistedInstanceCache(XbimModel model)
         {
@@ -111,12 +105,10 @@ namespace Xbim.IO
             _geometryTables = new XbimGeometryCursor[MaxCachedGeometryTables];
         }
 
-
         public XbimDBAccess AccessMode
         {
             get { return _accessMode; }
         }
-
 
         /// <summary>
         /// Creates an empty xbim file, overwrites any existing file of the same name
@@ -197,7 +189,6 @@ namespace Xbim.IO
                     try
                     {
                         Api.JetAttachDatabase(_session, _databaseName, openMode == OpenDatabaseGrbit.ReadOnly ? AttachDatabaseGrbit.ReadOnly : AttachDatabaseGrbit.None);
-
                     }
                     catch (EsentDatabaseDirtyShutdownException)
                     {
@@ -367,7 +358,6 @@ namespace Xbim.IO
                 }
             }
             EndCaching();
-
 
             if (_session != null )
             {
@@ -539,15 +529,7 @@ namespace Xbim.IO
                 File.Delete(xbimDbName);
                 throw e;
             }
-
         }
-
-          
-                
-
-            
-           
-           
 
         /// <summary>
         /// Sets up the Esent directories, can only be call before the Init method of the instance
@@ -711,7 +693,6 @@ namespace Xbim.IO
                 }
             }
         }
-
        
        /// <summary>
         /// returns the number of instances of the specified type and its sub types
@@ -745,8 +726,6 @@ namespace Xbim.IO
                 {
                     foreach (var typeId in typeIds)
                     {
-
-
                         if (entityTable.TrySeekEntityType(typeId, out ih))
                         {
                             do
@@ -758,7 +737,6 @@ namespace Xbim.IO
                 }
                 else
                 {
-
                     entityTable.MoveBeforeFirst();
                     while (entityTable.TryMoveNext())
                     {
@@ -766,7 +744,6 @@ namespace Xbim.IO
                         if (typeIds.Contains(ih.EntityTypeId))
                             entityLabels.Add(ih.EntityLabel);
                     }
-
                 }
             }
             finally
@@ -840,7 +817,6 @@ namespace Xbim.IO
                 {
                     FreeTable(entityTable);
                 }
-                
             }
         }
 
@@ -890,7 +866,6 @@ namespace Xbim.IO
             return CountOf(t);
         }
 
-       
         /// <summary>
         /// Returns an enumeration of handles to all instances in the database and in the cache
         /// </summary>
@@ -901,7 +876,6 @@ namespace Xbim.IO
                 var entityTable = GetEntityTable();
                 try
                 {
-                    
                     if (entityTable.TryMoveFirst()) // we have something
                     {
                         do
@@ -928,7 +902,6 @@ namespace Xbim.IO
             var entityTable = GetEntityTable();
             try
             {
- 
                 foreach (Type t in ifcType.NonAbstractSubTypes)
                 {
                     short typeId = IfcMetaData.IfcTypeId(t);
@@ -1109,30 +1082,36 @@ namespace Xbim.IO
         /// <returns></returns>
         public IEnumerable<TIfcType> OfType<TIfcType>(bool activate = false, int indexKey = -1, IfcType overrideType = null) where TIfcType:IPersistIfcEntity 
         {
-            IfcType ifcType;
+            IfcType SearchingIfcType;
             if (overrideType != null)
-                ifcType = overrideType;
+                SearchingIfcType = overrideType;
             else
-                ifcType = IfcMetaData.IfcType(typeof(TIfcType));
-
-            if (!ifcType.IndexedClass)
+                SearchingIfcType = IfcMetaData.IfcType(typeof(TIfcType));
+            
+            // when searching for Interface types SearchingIfcType is null
+            //
+            IEnumerable<Type> TypesToSearch;
+            if (SearchingIfcType == null)
             {
-                Debug.Assert(indexKey==-1, "Trying to look a class up by index key, but the class is not indexed");
-                foreach (var item in OfTypeUnindexed<TIfcType>(ifcType, activate))
-                    yield return item;
+                // not found in metadata, it's probably an interface.
+                TypesToSearch = IfcMetaData.TypesImplementing(typeof(TIfcType));
             }
             else
             {
+                TypesToSearch = SearchingIfcType.NonAbstractSubTypes;
+            }
+
+            if (SearchingIfcType == null || SearchingIfcType.IndexedClass)
+            {
                 //Set the IndexedClass Attribute of this class to ensure that seeking by index will work, this is a optimisation
-                Debug.Assert(ifcType.IndexedClass, "Trying to look a class up by index that is not declared as indexeable");
+                // Trying to look a class up by index that is not declared as indexeable
                 HashSet<int> entityLabels = new HashSet<int>();
                 var entityTable = GetEntityTable();
                 try
                 {
                     using (var transaction = entityTable.BeginReadOnlyTransaction())
                     {
-
-                        foreach (Type t in ifcType.NonAbstractSubTypes)
+                        foreach (Type t in TypesToSearch)
                         {
                             short typeId = IfcMetaData.IfcTypeId(t);
                             XbimInstanceHandle ih;
@@ -1170,12 +1149,12 @@ namespace Xbim.IO
                                     }
                                 } while (entityTable.TryMoveNextEntityType(out ih) && entityTable.TrySeekEntityLabel(ih.EntityLabel));
                             }
-
                         }
                     }
+                    // todo: bonghi: check with SRL, I'm failing to understand the following behaviour when using indexkey.
+                    // 
                     if (caching) //look in the createnew cache and find the new ones only
                     {
-
                         foreach (var item in createdNew.Where(e => e.Value is TIfcType).ToList())
                         {
                             if (indexKey == -1) //get all of the type
@@ -1185,8 +1164,9 @@ namespace Xbim.IO
                             }
                             else
                             {
-                                // get all types that match the index key
-                                if (ifcType.GetIndexedValues(item.Value).Contains(indexKey))
+                                // todo: bonghi: note the following ( SearchingIfcType != null ) has been added for cases when querying interfaces, but is probably not correct
+                                //
+                                if (SearchingIfcType != null && SearchingIfcType.GetIndexedValues(item.Value).Contains(indexKey)) // get all types that match the index key
                                 {
                                     if (entityLabels.Add(item.Key))
                                         yield return (TIfcType)item.Value;
@@ -1200,18 +1180,18 @@ namespace Xbim.IO
                     FreeTable(entityTable);
                 }
             }
+            else
+            {
+                Debug.Assert(indexKey == -1, "Trying to look a class up by index key, but the class is not indexed");
+                foreach (var item in OfTypeUnindexed<TIfcType>(SearchingIfcType, activate))
+                    yield return item;
+            }
         }
-
 
         public void ImportXbim(string importFrom, ReportProgressDelegate progressHandler = null)
         {
-            
-            throw new NotImplementedException();
-           
+            throw new NotImplementedException();  
         }
-
-       
-
 
         public void Activate(IPersistIfcEntity entity)
         {
@@ -1299,9 +1279,6 @@ namespace Xbim.IO
             return null;
         }
 
-
-
-
         public void SaveAs(XbimStorageType _storageType, string _storageFileName, ReportProgressDelegate progress = null)
         {
             switch (_storageType)
@@ -1349,7 +1326,6 @@ namespace Xbim.IO
                         p21.Write(_model, tw);
                         tw.Flush();
                     }
-
                 }
             }
             catch (Exception e)
@@ -1380,8 +1356,7 @@ namespace Xbim.IO
                         Part21FileWriter p21 = new Part21FileWriter();
                         p21.Write(_model, tw);
                         tw.Flush();
-                    }
-                   
+                    }  
                 }
             }
             catch (Exception e)
@@ -1392,7 +1367,6 @@ namespace Xbim.IO
             {
                 FreeTable(entityTable);
             }
-
         }
 
         private void SaveAsIfcXml(string storageFileName)
@@ -1433,7 +1407,6 @@ namespace Xbim.IO
             {
                 throw new NotImplementedException();
             }
-
         }
         #region Support for Linq based indexed searching
 
@@ -1449,7 +1422,6 @@ namespace Xbim.IO
                     mex = call.Arguments[0] as MemberExpression;
                 }
             }
-
             return mex;
         }
 
@@ -1561,7 +1533,6 @@ namespace Xbim.IO
                         }
                     }
                 }
-               
             }
 
             //we cannot optimise so just do it
@@ -1575,37 +1546,26 @@ namespace Xbim.IO
             }
         }
 
-       
         #endregion
-
-      
-
-        
-
-
 
         public IEnumerable<XbimGeometryData> GetGeometry(short typeId, int productLabel, XbimGeometryType geomType)
         {
             XbimGeometryCursor geomTable = GetGeometryTable();
             try
             {
-            using (var transaction = geomTable.BeginReadOnlyTransaction())
-            {
-                    foreach (var item in geomTable.GeometryData(typeId, productLabel, geomType))
+                using (var transaction = geomTable.BeginReadOnlyTransaction())
                 {
-                    yield return item;
+                    foreach (var item in geomTable.GeometryData(typeId, productLabel, geomType))
+                    {
+                        yield return item;
+                    }
                 }
-            }
             }
             finally
             {
-            FreeTable(geomTable);
-
+                FreeTable(geomTable);
             }
         }
-
-
-       
 
         /// <summary>
         /// Iterates over all the shape geoemtry
@@ -1626,7 +1586,6 @@ namespace Xbim.IO
             {
                 FreeTable(geometryTable);
             }
-
         }
 
         internal long GeometriesCount()
@@ -1641,8 +1600,6 @@ namespace Xbim.IO
                 FreeTable(geomTable);
             }
         }
-
-        
 
         internal T InsertCopy<T>(T toCopy, XbimInstanceHandleMap mappings, bool includeInverses) where T : IPersistIfcEntity
         {
@@ -1663,8 +1620,7 @@ namespace Xbim.IO
                 return (T)v;
             }
             else
-            {
-                
+            {        
                 IPersistIfcEntity theCopy = (IPersistIfcEntity)Activator.CreateInstance(copyHandle.EntityType);
                 theCopy.Bind(_model, copyHandle.EntityLabel);
                 IfcRoot rt = theCopy as IfcRoot;
@@ -1745,7 +1701,6 @@ namespace Xbim.IO
         private XbimInstanceHandle InsertNew(Type type)
         {
             return _model.GetTransactingCursor().AddEntity(type);
-          
         }
 
         private int NextLabel()
@@ -1816,7 +1771,6 @@ namespace Xbim.IO
             modified.Clear();
             createdNew.Clear();
             caching = true;
-
         }
         /// <summary>
         /// Clears any cached objects and terminates further caching
@@ -1915,22 +1869,25 @@ namespace Xbim.IO
 
         internal IEnumerable<IPersistIfcEntity> OfType(string StringType, bool activate)
         {
-            try
-            {
-                IfcType ot = IfcMetaData.IfcType(StringType.ToUpper());
-                if (ot == null)
-                    return EmptyEnumerator();
-                return OfType<IPersistIfcEntity>(activate: activate, overrideType: ot);
-            }
-            catch (Exception)
-            {
-                return EmptyEnumerator();
-            }            
-        }
 
-        internal IEnumerable<IPersistIfcEntity> EmptyEnumerator()
-        {
-            yield break;
+            IfcType ot = IfcMetaData.IfcType(StringType.ToUpper());
+            if (ot == null)
+            {
+                // it could be that we're searching for an interface
+                //
+                var ImplementingTypes = IfcMetaData.TypesImplementing(StringType);
+                foreach (var ImplementingType in ImplementingTypes)
+                {
+                    foreach (var item in OfType<IPersistIfcEntity>(activate: activate, overrideType: ImplementingType))
+                        yield return item;
+                }
+            }
+            else
+            {
+                foreach (var item in OfType<IPersistIfcEntity>(activate: activate, overrideType: ot))
+                    yield return item;
+
+            }
         }
     }
 }
