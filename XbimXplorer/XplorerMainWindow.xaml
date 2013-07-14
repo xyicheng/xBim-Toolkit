@@ -166,7 +166,10 @@
                     ShowsPreview="True"
                     Height="5"
                     />
-                <xbim:IfcMetaDataControl x:Name="PropertiesControl" BorderThickness="1" Grid.Row="2"  SelectedEntity="{Binding Path=SelectedEntity, ElementName=SpatialControl}" >
+                <xbim:IfcMetaDataControl x:Name="PropertiesControl" BorderThickness="1" Grid.Row="2"  
+                                         SelectedEntity="{Binding Path=SelectedEntity, ElementName=SpatialControl}" 
+                                         Model="{Binding}"
+                                         >
                    
                 </xbim:IfcMetaDataControl>
             </Grid>

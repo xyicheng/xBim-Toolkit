@@ -792,25 +792,24 @@ namespace Xbim.Presentation
         {
             XbimScene<WpfMeshGeometry3D, WpfMaterial> scene = new XbimScene<WpfMeshGeometry3D, WpfMaterial>(model);
             XbimGeometryHandleCollection handles = new XbimGeometryHandleCollection(model.GetGeometryHandles()
-                                                       .Exclude(IfcEntityNameEnum.IFCFEATUREELEMENT|IfcEntityNameEnum.IFCSPACE));
+                                                       .Exclude(IfcEntityNameEnum.IFCFEATUREELEMENT | IfcEntityNameEnum.IFCSPACE));
             double total = handles.Count;
             double processed = 0;
 
             IfcProject project = model.IfcProject;
             int projectId = 0;
-            if(project!=null) projectId = Math.Abs(project.EntityLabel);
+            if (project != null) projectId = Math.Abs(project.EntityLabel);
             double metre = model.GetModelFactors.OneMetre;
-            wcsTransform = XbimMatrix3D.CreateTranslation(_modelTranslation) * XbimMatrix3D.CreateScale((float)(1/metre));
-            
-            Parallel.ForEach<KeyValuePair<string,XbimGeometryHandleCollection>>(handles.FilterByBuildingElementTypes(), layerContent =>
-           //  foreach (var layerContent in handles.FilterByBuildingElementTypes())
-	
+            wcsTransform = XbimMatrix3D.CreateTranslation(_modelTranslation) * XbimMatrix3D.CreateScale((float)(1 / metre));
+
+            Parallel.ForEach<KeyValuePair<string, XbimGeometryHandleCollection>>(handles.FilterByBuildingElementTypes(), layerContent =>
+            //  foreach (var layerContent in handles.FilterByBuildingElementTypes())
             {
                 string elementTypeName = layerContent.Key;
                 XbimGeometryHandleCollection layerHandles = layerContent.Value;
                 IEnumerable<XbimGeometryData> geomColl = model.GetGeometryData(layerHandles);
                 XbimColour colour = scene.LayerColourMap[elementTypeName];
-                XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial> layer = new XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial>(model, colour) { Name = elementTypeName };              
+                XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial> layer = new XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial>(model, colour) { Name = elementTypeName };
                 //add all content initially into the hidden field
                 foreach (var geomData in geomColl)
                 {
@@ -819,19 +818,19 @@ namespace Xbim.Presentation
                     processed++;
                     int progress = Convert.ToInt32(100.0 * processed / total);
                 }
-                
+
                 this.Dispatcher.BeginInvoke(new Action(() => { DrawLayer(layer); }), System.Windows.Threading.DispatcherPriority.Background);
                 lock (scene)
                 {
                     scene.Add(layer);
-                    
+
                     if (modelBounds.IsEmpty) modelBounds = layer.BoundingBoxHidden();
                     else modelBounds.Union(layer.BoundingBoxHidden());
                 }
             }
             );
             this.Dispatcher.BeginInvoke(new Action(() => { Hide<IfcSpace>(); }), System.Windows.Threading.DispatcherPriority.Background);
-           
+
             return scene;
         }
 

@@ -296,12 +296,14 @@ namespace Xbim.Presentation
                 IEnumerable<IfcRelAssociatesMaterial> matRels = ifcObj.HasAssociations.OfType<IfcRelAssociatesMaterial>();
                 foreach (IfcRelAssociatesMaterial matRel in matRels)
                 {
-                    // todo: bonghi: the following loop is only temporarily here for debug purposes.
-                    //var v = Model.Instances.GetInstancesOfMaterial(matRel.RelatingMaterial);
-                    //foreach (var item in v)
-                    //{
-                    //    System.Diagnostics.Debug.WriteLine(item.EntityLabel);
-                    //}
+                    // todo: bonghi: the following material items query is only temporary for debug purposes.
+                    // it shouldn't effect on Release because of lazy nature of yielded IEnumerables.
+                    //
+                    var v = Model.Instances.GetInstancesOfMaterial(matRel.RelatingMaterial, true);
+                    System.Diagnostics.Debug.WriteLine( 
+                        string.Format("Items: {0}",
+                            string.Join(";", v.Select(x => x.EntityLabel).ToArray())
+                        ));
                     // end todo
                     AddMaterialData(matRel.RelatingMaterial, "");
                 }
@@ -403,6 +405,10 @@ namespace Xbim.Presentation
             IfcMetaDataControl ctrl = d as IfcMetaDataControl;
             if (ctrl != null)
             {
+                if (e.NewValue == null)
+                {
+                    ctrl.Clear();
+                }
                 ctrl.DataRebind(null);
             }
         }
