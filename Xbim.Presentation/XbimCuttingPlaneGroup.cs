@@ -13,6 +13,7 @@ namespace Xbim.Presentation
     using System.Windows.Media;
     using System.Windows.Media.Media3D;
     using HelixToolkit.Wpf;
+    using Xbim.ModelGeometry.Scene;
 
     /// <summary>
     /// A visual element that applies cutting planes to all children.
@@ -114,6 +115,9 @@ namespace Xbim.Presentation
             }
         }
 
+
+
+
         /// <summary>
         /// Applies the cutting planes to the model.
         /// </summary>
@@ -125,6 +129,8 @@ namespace Xbim.Presentation
         /// </param>
         private void ApplyCuttingPlanesToModel(GeometryModel3D model, Transform3D transform)
         {
+            
+
             if (model.Geometry == null)
             {
                 return;
@@ -164,6 +170,13 @@ namespace Xbim.Presentation
 
             if (this.IsEnabled)
             {
+                XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial> layer = model.GetValue(FrameworkElement.TagProperty) as XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial>;
+                // todo: bonghi: in the click mechanism the default is to use
+                // var frag = layer.Visible.Meshes.Find(hit.VertexIndex1);
+                // but there are cases when the new indices created below are not successfully returned from that query
+                // data must be added in this stage somehow to add ways to identify the fragment.
+                //
+
                 var inverseTransform = transform.Inverse;
                 foreach (var cp in this.CuttingPlanes)
                 {
@@ -214,6 +227,5 @@ namespace Xbim.Presentation
 
             this.ApplyCuttingPlanes(true);
         }
-
     }
 }

@@ -170,6 +170,7 @@
     <Compile Include="FederatedModelDlg.xaml.cs">
       <DependentUpon>FederatedModelDlg.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Querying\TextHighliter.cs" />
     <Compile Include="Querying\TreeQuery.cs" />
     <Compile Include="Querying\wdwQuery.xaml.cs">
       <DependentUpon>wdwQuery.xaml</DependentUpon>

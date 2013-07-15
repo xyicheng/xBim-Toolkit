@@ -17,6 +17,7 @@ using Xbim.Common.Geometry;
 using Xbim.Ifc2x3.Kernel;
 using Xbim.Ifc2x3.SharedBldgElements;
 using Xbim.IO;
+using Xbim.ModelGeometry.Converter;
 using Xbim.ModelGeometry.Scene;
 using Xbim.XbimExtensions.Interfaces;
 using Xbim.XbimExtensions.SelectTypes;
@@ -34,7 +35,13 @@ namespace XbimXplorer.Querying
             DisplayHelp();
         }
 
-        public XbimModel Model;
+        private XbimModel Model
+        {
+            get
+            {
+                return ParentWindow.Model;
+            }
+        }
         public XplorerMainWindow ParentWindow;
 
         private bool bDoClear = true; 
@@ -47,7 +54,7 @@ namespace XbimXplorer.Querying
             {
                 e.Handled = true;
                 if (bDoClear)
-                    txtOut.Text = "";
+                    txtOut.Document = new FlowDocument();
 
                 string[] CommandArray = txtCommand.Text.Split(new string[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
                 if (txtCommand.SelectedText != string.Empty)
@@ -81,7 +88,7 @@ namespace XbimXplorer.Querying
 
                             if (option == "")
                             {
-                                txtOut.Text = "";
+                                txtOut.Document = new FlowDocument();
                                 continue;
                             }
                             else if (option == "on")
@@ -90,23 +97,23 @@ namespace XbimXplorer.Querying
                                 bDoClear = false;
                             else
                             {
-                                txtOut.Text += string.Format("Autoclear not changed ({0} is not a valid option).\r\n", option);
+                                ReportAdd(string.Format("Autoclear not changed ({0} is not a valid option).", option));
                                 continue;
                             }
-                            txtOut.Text += string.Format("Autoclear set to {0}\r\n", option.ToLower());
+                            ReportAdd(string.Format("Autoclear set to {0}", option.ToLower()));
                             continue;
                         }
                         catch (Exception)
                         {
                         }
-                        txtOut.Text = "";
+                        txtOut.Document = new FlowDocument();
                         continue;
                     }
 
 
                     if (Model == null)
                     {
-                        txtOut.Text = "Plaese open a database.\r\n";
+                        ReportAdd("Plaese open a database.", Brushes.Red);
                         continue;
                     }
 
@@ -125,7 +132,7 @@ namespace XbimXplorer.Querying
                         {
                         }
 
-                        txtOut.Text += ReportEntity(v, recursion) + "\r\n";
+                        ReportAdd(ReportEntity(v, recursion));
                         continue;
                     }
 
@@ -149,11 +156,11 @@ namespace XbimXplorer.Querying
                         if (mode.ToLower() == "list ")
                         {
                             foreach (var item in TypeList)
-                                txtOut.Text += item + "\r\n";
+                                ReportAdd(item);
                         }
                         else if (mode.ToLower() == "count ")
                         {
-                            txtOut.Text += "count: " + TypeList.Count() + "\r\n";
+                            ReportAdd("count: " + TypeList.Count());
                         }
                         else
                         {
@@ -163,18 +170,25 @@ namespace XbimXplorer.Querying
                                 BeVerbose = false;
                             foreach (var item in TypeList)
                             {
-                                txtOut.Text += ReportType(item, BeVerbose);
+                                ReportAdd(ReportType(item, BeVerbose));
                             }
                         }
                         continue;
                     }
 
-                    m = Regex.Match(cmd, @"(select|se) (?<mode>(count|list|short) )*(?<start>([\d,]+|[^ ]+)) *(?<props>.*)", RegexOptions.IgnoreCase);
+                    m = Regex.Match(cmd, @"(select|se) (?<mode>(count|list|short) )*(?<tt>(transverse|tt) )*(?<start>([\d,]+|[^ ]+)) *(?<props>.*)", RegexOptions.IgnoreCase);
                     if (m.Success)
                     {
                         string start = m.Groups["start"].Value;
                         string props = m.Groups["props"].Value;
                         string mode = m.Groups["mode"].Value;
+                        
+                        // transverse tree mode
+                        bool transverseT = false;
+                        string transverse = m.Groups["tt"].Value;
+                        if (transverse != "")
+                            transverseT = true;
+
 
                         int iIndex = -1;
                         if (start.Contains('['))
@@ -188,12 +202,12 @@ namespace XbimXplorer.Querying
                         IEnumerable<int> ret = null;
                         if (labels.Length != 0)
                         {
-                            ret = QueryEngine.RecursiveQuery(Model, props, labels);                            
+                            ret = QueryEngine.RecursiveQuery(Model, props, labels, transverseT);
                         }
                         else
                         {
                             var items = QueryEngine.EntititesForType(start, Model);
-                            ret = QueryEngine.RecursiveQuery(Model, props, items);
+                            ret = QueryEngine.RecursiveQuery(Model, props, items, transverseT);
                         }
                         if (iIndex != -1)
                         {
@@ -207,13 +221,13 @@ namespace XbimXplorer.Querying
                         }
                         if (mode.ToLower() == "count ")
                         {
-                            txtOut.Text += string.Format("Count: {0}\r\n", ret.Count());
+                            ReportAdd(string.Format("Count: {0}", ret.Count()));
                         }
                         else if (mode.ToLower() == "list ")
                         {
                             foreach (var item in ret)
                             {
-                                txtOut.Text += item + "\r\n";
+                                ReportAdd(item.ToString());
                             }
                         }
                         else
@@ -223,7 +237,7 @@ namespace XbimXplorer.Querying
                                 BeVerbose = false;
                             foreach (var item in ret)
                             {
-                                txtOut.Text += ReportEntity(item, 0, Verbose: BeVerbose) + "\r\n";
+                                ReportAdd(ReportEntity(item, 0, Verbose: BeVerbose));
                             }
                         }
                         continue;
@@ -238,7 +252,7 @@ namespace XbimXplorer.Querying
                         var regionData = Model.GetGeometryData(Xbim.XbimExtensions.XbimGeometryType.Region).FirstOrDefault();
                         if (regionData == null)
                         {
-                            txtOut.Text += "data not found\r\n";
+                            ReportAdd("data not found");
                         }
                         XbimRegionCollection regions = XbimRegionCollection.FromArray(regionData.ShapeData);
                         var reg = regions.Where(x => x.Name == RName).FirstOrDefault();
@@ -258,11 +272,11 @@ namespace XbimXplorer.Querying
                         }
                         else
                         {
-                            txtOut.Text += string.Format("Something wrong with region name: '{0}'\r\n", RName);
-                            txtOut.Text += "Names that should work are: \r\n";
+                            ReportAdd(string.Format("Something wrong with region name: '{0}'", RName));
+                            ReportAdd("Names that should work are: ");
                             foreach (var str in regions)
                             {
-                                txtOut.Text += string.Format(" - '{0}'\r\n", str.Name);
+                                ReportAdd(string.Format(" - '{0}'", str.Name));
                             }
                             continue;
                         }
@@ -272,7 +286,7 @@ namespace XbimXplorer.Querying
                     if (m.Success)
                     {
                         ParentWindow.DrawingControl.ClearCutPlane();
-                        txtOut.Text += "Clip removed\r\n";
+                        ReportAdd("Clip removed");
                         ParentWindow.Activate();
                         continue;
                     }
@@ -312,22 +326,22 @@ namespace XbimXplorer.Querying
                                     Xbim.Common.Geometry.XbimPoint3D pt = new Xbim.Common.Geometry.XbimPoint3D(0, 0, geomdata.Transform.OffsetZ);
                                     Xbim.Common.Geometry.XbimMatrix3D mcp = Xbim.Common.Geometry.XbimMatrix3D.Copy(ParentWindow.DrawingControl.wcsTransform);
                                     var transformed = mcp.Transform(pt);
-                                    msg = string.Format("Clip 1m above storey elevation {0} (height: {1})\r\n", pt.Z, transformed.Z + 1);
+                                    msg = string.Format("Clip 1m above storey elevation {0} (height: {1})", pt.Z, transformed.Z + 1);
                                     pz = transformed.Z + 1;
                                 }
                             }
                             if (msg == "")
                             {
-                                txtOut.Text += string.Format("Something wrong with storey name: '{0}'\r\n", storName);
-                                txtOut.Text += "Names that should work are: \r\n";
+                                ReportAdd(string.Format("Something wrong with storey name: '{0}'", storName));
+                                ReportAdd("Names that should work are: ");
                                 var strs = Model.Instances.OfType<Xbim.Ifc2x3.ProductExtension.IfcBuildingStorey>();
                                 foreach (var str in strs)
 	                            {
-                                    txtOut.Text += string.Format(" - '{0}'\r\n", str.Name);
+                                    ReportAdd(string.Format(" - '{0}'", str.Name));
 	                            }
                                 continue;
                             }
-                            txtOut.Text += msg;
+                            ReportAdd(msg);
                         }
                         else
                         {
@@ -346,7 +360,7 @@ namespace XbimXplorer.Querying
                             nx, ny, nz
                             );
 
-                        txtOut.Text += "Clip command sent\r\n";
+                        ReportAdd("Clip command sent");
                         ParentWindow.Activate();
                         continue;
                     }
@@ -361,7 +375,7 @@ namespace XbimXplorer.Querying
                         {
                             foreach (var item in ParentWindow.DrawingControl.ListItems(Name))
                             {
-                                txtOut.Text += item + "\r\n";
+                                ReportAdd(item);
                             }
                         }
                         else 
@@ -387,12 +401,28 @@ namespace XbimXplorer.Querying
                     if (m.Success)
                     {
                         int iPass = -728;
-                        txtOut.Text = RunTestCode(iPass);
+                        ReportAdd(RunTestCode(iPass));
                         continue;
                     }
-                    txtOut.Text += string.Format("Command not understood: {0}\r\n", cmd);
+                    ReportAdd(string.Format("Command not understood: {0}.", cmd));
                 }
             }
+        }
+
+        private void ReportAdd(TextHighliter TH)
+        {
+            TH.DropInto(txtOut.Document);
+            TH.Clear();
+        }
+
+        private void ReportAdd(string Text, Brush inColor = null)
+        {
+            Paragraph newP = new Paragraph(new Run(Text));
+            if (inColor != null)
+            {
+                newP.Foreground = inColor;
+            }
+            txtOut.Document.Blocks.Add(newP);
         }
 
         int[] tointarray(string value, char sep)
@@ -424,7 +454,7 @@ namespace XbimXplorer.Querying
             //var v = Model.Instances.OfType<Xbim.Ifc2x3.MaterialResource.IfcMaterialLayerSetUsage>(true).Where(ent => ent.ForLayerSet.EntityLabel == i);
             //foreach (var item in v)
             //{
-            //    sb.AppendFormat("{0}\r\n", item.EntityLabel);
+            //    sb.AppendFormat("{0}", item.EntityLabel);
             //}
 
             return sb.ToString();
@@ -432,19 +462,31 @@ namespace XbimXplorer.Querying
 
         private void DisplayHelp()
         {
-            txtOut.Text += "Commands:\r\n";
-            txtOut.Text += "  select [count|list|short] <#startingElement> [Properties...]\r\n";
-            txtOut.Text += "  EntityLabel label [recursion]\r\n";
-            txtOut.Text += "  IfcSchema [list] <TypeName> - (TypeName can contain wildcards)\r\n";
-            txtOut.Text += "  clip [off|<Elevation>|<px>, <py>, <pz>, <nx>, <ny>, <nz>|<Storey name>] (unstable feature)\r\n";
-            txtOut.Text += "  zoom <Region name>\r\n";
-            txtOut.Text += "  Visual [list|[on|off <name>]]\r\n";
-            txtOut.Text += "  clear [on|off]\r\n";
-            txtOut.Text += "  SimplifyGUI - rough GUI interface to simplify IFC files for debugging purposes.\r\n";
-            txtOut.Text += "\r\n";
-            txtOut.Text += "Commands are executed on <ctrl>+<Enter>.\r\n";
-            txtOut.Text += "Lines starting with double slash (//) are ignored.\r\n";
-            txtOut.Text += "If a portion of text is selected, only selected text will be the executed.\r\n";
+            TextHighliter t = new TextHighliter();
+
+            t.AppendFormat("Commands:");
+            t.AppendFormat("- select [count|list|short] [transverse] <startingElement> [Property [Property...]]");
+            t.Append("    <startingElement> is a either an entity label or an ifcTypeName", Brushes.Gray);
+            t.Append("    [Property] is a Property or Inverse name", Brushes.Gray);
+            t.AppendFormat("- EntityLabel label [recursion]");
+            t.Append("    [recursion] is an int representing the depth of children to report", Brushes.Gray);
+            t.AppendFormat("- IfcSchema [list] <TypeName> - (TypeName can contain wildcards)");
+            t.AppendFormat("- clip [off|<Elevation>|<px>, <py>, <pz>, <nx>, <ny>, <nz>|<Storey name>]");
+            t.Append("    Clipping the 3D model is still and unstable feature. Use with caution.", Brushes.Gray);
+            t.AppendFormat("- zoom <Region name>");
+            t.Append("    'zoom ?' provides a list of valid region names", Brushes.Gray);
+            t.AppendFormat("- Visual [list|[on|off <name>]]");
+            t.Append("    'Visual list' provides a list of valid region names", Brushes.Gray);
+            t.AppendFormat("- clear [on|off]");
+            t.AppendFormat("- SimplifyGUI");
+            t.Append("    launches the GUI interface to a rough app useful for simplifying IFC files for debugging purposes.", Brushes.Gray);
+            t.AppendFormat("");
+            t.Append("Commands are executed on <ctrl>+<Enter>.", Brushes.Blue);
+            t.AppendFormat("double slash (//) are the comments token and the remainder of lines is ignored.");
+            t.AppendFormat("If a portion of text is selected, only selected text will be executed.");
+
+            t.DropInto(txtOut.Document);
+
         }
 
         static bool IsSubclassOfRawGeneric(Type generic, Type toCheck)
@@ -496,49 +538,53 @@ namespace XbimXplorer.Querying
             return rex;
         }
 
-        private string ReportType(string type, bool beVerbose, string indentationHeader = "")
+        private TextHighliter ReportType(string type, bool beVerbose, string indentationHeader = "")
         {
             var tarr = type.Split(new string[] { "." }, StringSplitOptions.RemoveEmptyEntries);
             type = tarr[tarr.Length - 1];
 
-            
-            StringBuilder sb = new StringBuilder();
+
+            TextHighliter sb = new TextHighliter();
             
             IfcType ot = IfcMetaData.IfcType(type.ToUpper());
             if (ot != null)
             {
-                sb.AppendFormat(indentationHeader + "=== {0}\r\n", ot.Name);
-                sb.AppendFormat(indentationHeader + "Namespace: {0}\r\n", ot.Type.Namespace);
-                // sb.AppendFormat(indentationHeader + "Xbim Type Id: {0}\r\n", ot.TypeId);
+                sb.Append(
+                    string.Format(indentationHeader + "=== {0}", ot.Name),
+                    Brushes.Blue
+                    );
+
+                sb.AppendFormat(indentationHeader + "Namespace: {0}", ot.Type.Namespace);
+                // sb.AppendFormat(indentationHeader + "Xbim Type Id: {0}", ot.TypeId);
                 if (ot.IfcSuperType != null)
-                    sb.AppendFormat(indentationHeader + "Subtype of: {0}\r\n", ot.IfcSuperType.Name);
+                    sb.AppendFormat(indentationHeader + "Subtype of: {0}", ot.IfcSuperType.Name);
                 if (ot.IfcSubTypes.Count > 0)
                 {
-                    sb.AppendFormat(indentationHeader + "Subtypes: {0}\r\n", ot.IfcSubTypes.Count);
+                    sb.AppendFormat(indentationHeader + "Subtypes: {0}", ot.IfcSubTypes.Count);
                     foreach (var item in ot.IfcSubTypes)
                     {
-                        sb.AppendFormat(indentationHeader + "- {0}\r\n", item);
+                        sb.AppendFormat(indentationHeader + "- {0}", item);
                     }
                 }
                 if (beVerbose)
                 {
-                    sb.AppendFormat(indentationHeader + "Interfaces: {0}\r\n", ot.Type.GetInterfaces().Count());
+                    sb.AppendFormat(indentationHeader + "Interfaces: {0}", ot.Type.GetInterfaces().Count());
                     foreach (var item in ot.Type.GetInterfaces())
                     {
-                        sb.AppendFormat(indentationHeader + "- {0}\r\n", item.Name);
+                        sb.AppendFormat(indentationHeader + "- {0}", item.Name);
                     }
-                    sb.AppendFormat(indentationHeader + "Properties: {0}\r\n", ot.IfcProperties.Count());
+                    sb.AppendFormat(indentationHeader + "Properties: {0}", ot.IfcProperties.Count());
                     foreach (var item in ot.IfcProperties.Values)
                     {
-                        sb.AppendFormat(indentationHeader + "- {0} ({1})\r\n", item.PropertyInfo.Name, CleanPropertyName(item.PropertyInfo.PropertyType.FullName));
+                        sb.AppendFormat(indentationHeader + "- {0} ({1})", item.PropertyInfo.Name, CleanPropertyName(item.PropertyInfo.PropertyType.FullName));
                     }
-                    sb.AppendFormat(indentationHeader + "Inverses: {0}\r\n", ot.IfcInverses.Count());
+                    sb.AppendFormat(indentationHeader + "Inverses: {0}", ot.IfcInverses.Count());
                     foreach (var item in ot.IfcInverses)
                     {
-                        sb.AppendFormat(indentationHeader + "- {0} ({1})\r\n", item.PropertyInfo.Name, CleanPropertyName(item.PropertyInfo.PropertyType.FullName));
+                        sb.AppendFormat(indentationHeader + "- {0} ({1})", item.PropertyInfo.Name, CleanPropertyName(item.PropertyInfo.PropertyType.FullName));
                     }
                 }
-                sb.AppendFormat("\r\n");
+                sb.AppendFormat("");
             }
             else
             {
@@ -551,7 +597,7 @@ namespace XbimXplorer.Querying
 
                 if (SelectType != null)
                 {
-                    sb.AppendFormat("=== {0} is a Select type\r\n", type);
+                    sb.AppendFormat("=== {0} is a Select type", type);
                     Module ifcModule = typeof(IfcActor).Module;
                     IEnumerable<Type> SelectSubTypes = ifcModule.GetTypes().Where(
                             t => t.GetInterfaces().Contains(SelectType)
@@ -577,10 +623,10 @@ namespace XbimXplorer.Querying
                     }
                     
                     Type[] ExistingIF = SelectType.GetInterfaces();
-                    sb.AppendFormat(indentationHeader + "Interfaces: {0}\r\n", ExistingIF.Length);
+                    sb.AppendFormat(indentationHeader + "Interfaces: {0}", ExistingIF.Length);
                     foreach (var item in ExistingIF)
                     {
-                        sb.AppendFormat(indentationHeader + "- {0}\r\n", item.Name);
+                        sb.AppendFormat(indentationHeader + "- {0}", item.Name);
                     }
                     // need to remove implemented interfaces from the ones shared 
                     for (int i = 0; i < CommontIF.Length; i++)
@@ -596,7 +642,7 @@ namespace XbimXplorer.Querying
                     foreach (var item in CommontIF)
                     {
                         if (item != null)
-                            sb.AppendFormat(indentationHeader + "Missing Common Interface: {0}\r\n", item.Name);
+                            sb.AppendFormat(indentationHeader + "Missing Common Interface: {0}", item.Name);
                     }
                     if (beVerbose)
                     {
@@ -605,17 +651,17 @@ namespace XbimXplorer.Querying
                             sb.Append(ReportType(item.Name, beVerbose, indentationHeader + "  "));
                         }
                     }
-                    sb.AppendLine();
+                    sb.AppendFormat("");
                 }
             }
 
-            return sb.ToString();
+            return sb;
         }
 
-        private string ReportEntity(int EntityLabel, int RecursiveDepth = 0, int IndentationLevel = 0, bool Verbose = false)
+        private TextHighliter ReportEntity(int EntityLabel, int RecursiveDepth = 0, int IndentationLevel = 0, bool Verbose = false)
         {
             // Debug.WriteLine("EL: " + EntityLabel.ToString());
-            StringBuilder sb = new StringBuilder();
+            TextHighliter sb = new TextHighliter();
             string IndentationHeader = new String('\t', IndentationLevel);
             try
             {
@@ -623,10 +669,14 @@ namespace XbimXplorer.Querying
                 if (entity != null)
                 {
                     IfcType ifcType = IfcMetaData.IfcType(entity);
+                    
+                    sb.Append(
+                        string.Format(IndentationHeader + "=== {0} [#{1}]", ifcType, EntityLabel.ToString()),
+                        Brushes.Blue
+                        );
                     var props = ifcType.IfcProperties.Values;
-
-                    sb.AppendFormat(IndentationHeader + "=== {0} [#{1}]\r\n", ifcType, EntityLabel.ToString());
-
+                    if (props.Count > 0)
+                        sb.AppendFormat(IndentationHeader + "Properties: {0}", props.Count);
                     foreach (var prop in props)
                     {
                         var PropLabels = ReportProp(sb, IndentationHeader, entity, prop, Verbose);
@@ -642,46 +692,57 @@ namespace XbimXplorer.Querying
                                 sb.Append(ReportEntity(PropLabel, RecursiveDepth - 1, IndentationLevel + 1));
                             }
                         }
-
                     }
                     var Invs = ifcType.IfcInverses;
                     if (Invs.Count > 0)
-                        sb.AppendFormat(IndentationHeader + "= Inverses count: {0}\r\n", Invs.Count);
+                        sb.AppendFormat(IndentationHeader + "Inverses: {0}", Invs.Count);
                     foreach (var inverse in Invs)
                     {
                         ReportProp(sb, IndentationHeader, entity, inverse, Verbose);
                     }
+                    /*
+                     * suspended until more geomtery primitives are exposed.
+                     * 
+                    if (entity is IfcProduct)
+                    {
+                        IfcProduct p = entity as IfcProduct;
+                        IXbimGeometryModel ret = XbimMesher.GenerateGeometry(Model, p);
+                        var factorCubicMetre = Math.Pow(Model.GetModelFactors.OneMetre, 3);
+                        sb.AppendFormat("XbimVolume: {0}\r\n", ret.Volume / factorCubicMetre);
+                        
+                        // looks for the product shape without subtractions/additions
+                        // XbimMesher.GenerateGeometry(model, 
+                        foreach (var representation in p.Representation.Representations)
+	                    {
+                            if (representation.RepresentationIdentifier == "Body")
+                            {
+                                IXbimGeometryModel uncut = XbimMesher.GenerateGeometry(Model, representation);  
+                                if (uncut != null)
+                                    sb.AppendFormat("XbimUncutVolume: {0}\r\n", uncut.Volume / factorCubicMetre);
+                            }
+	                    }
+                    }
+                    */ 
                 }
                 else
                 {
-                    sb.AppendFormat(IndentationHeader + "=== Entity #{0} is null\r\n", EntityLabel);
+                    sb.AppendFormat(IndentationHeader + "=== Entity #{0} is null", EntityLabel);
                 }
             }
             catch (Exception ex)
             {
-                sb.AppendFormat(IndentationHeader + "\r\n{0}\r\n", ex.Message);
+                sb.AppendFormat(IndentationHeader + "\r\nException Thrown: {0} ({1})\r\n{2}", ex.Message, ex.GetType().ToString(), ex.StackTrace);
             }
-            return sb.ToString();
+            return sb;
         }
 
-        private static IEnumerable<int> ReportProp(StringBuilder sb, string IndentationHeader, IPersistIfcEntity entity, IfcMetaProperty prop, bool Verbose)
+        private static IEnumerable<int> ReportProp(TextHighliter sb, string IndentationHeader, IPersistIfcEntity entity, IfcMetaProperty prop, bool Verbose)
         {
             List<int> RetIds = new List<int>();
-
             string propName = prop.PropertyInfo.Name;
-            if (propName == "Representation")
-                Debug.WriteLine("");
-            // Debug.WriteLine(propName);
             Type propType = prop.PropertyInfo.PropertyType;
-
             string ShortTypeName = CleanPropertyName(propType.FullName);
-            
-
-            // System.Diagnostics.Debug.WriteLine(ShortTypeName);
-
             object propVal = prop.PropertyInfo.GetValue(entity, null);
-
-
             if (propVal == null)
                 propVal = "<null>";
 
@@ -702,9 +763,9 @@ namespace XbimXplorer.Querying
                         {
                             if (iCntProp == 2)
                             {
-                                propVal = "\r\n" + IndentationHeader + "  " + propVal;
+                                propVal = "\r\n" + IndentationHeader + "    " + propVal;
                             }
-                            propVal += "\r\n" + IndentationHeader + "  " + ReportPropValue(item, ref RetIds);
+                            propVal += "\r\n" + IndentationHeader + "    " + ReportPropValue(item, ref RetIds);
                         }
                     }
                 }
@@ -713,7 +774,7 @@ namespace XbimXplorer.Querying
                 propVal = ReportPropValue(propVal, ref RetIds);
 
             if (Verbose)
-                sb.AppendFormat(IndentationHeader + "{0} ({1}): {2}\r\n",
+                sb.AppendFormat(IndentationHeader + "- {0} ({1}): {2}",
                     propName,  // 0
                     ShortTypeName,  // 1
                     propVal // 2
@@ -722,7 +783,7 @@ namespace XbimXplorer.Querying
             {
                 if ((string)propVal != "<null>" && (string)propVal != "<empty>")
                 {
-                    sb.AppendFormat(IndentationHeader + "{0}: {1}\r\n",
+                    sb.AppendFormat(IndentationHeader + "- {0}: {1}",
                         propName,  // 0
                         propVal // 1
                         );

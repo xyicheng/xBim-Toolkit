@@ -2,13 +2,19 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Model Querying" Height="381.6" Width="603.2">
-    <Grid>
+    <Grid KeyDown="txtCommand_KeyDown" >
         <Grid.RowDefinitions>
             <RowDefinition Height="150"/>
             <RowDefinition/>
         </Grid.RowDefinitions>
-        <TextBox x:Name="txtCommand" Grid.Row="0" FontFamily="Lucida Console" KeyDown="txtCommand_KeyDown" AcceptsReturn="True" AutoWordSelection="True" />
-        <TextBox x:Name="txtOut" Grid.Row="1" FontFamily="Lucida Console" AcceptsReturn="True" AutoWordSelection="True" />
+        <TextBox x:Name="txtCommand" Grid.Row="0" FontFamily="Lucida Console" AcceptsReturn="True" AutoWordSelection="True" />
+        <RichTextBox x:Name="txtOut" Grid.Row="1" FontFamily="Lucida Console" Background="#FFFFFFE1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True">
+            <RichTextBox.Resources>
+                <Style TargetType="{x:Type Paragraph}">
+                    <Setter Property="Margin" Value="0"/>
+                </Style>
+            </RichTextBox.Resources>
+        </RichTextBox>
         <GridSplitter Height="5"  Grid.Row="0" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" />
     </Grid>
 </Window>

@@ -23,16 +23,16 @@ namespace XbimXplorer
             return Values;
         }
 
-        static public IEnumerable<int> RecursiveQuery(XbimModel Model, string Query, IEnumerable<int> StartList)
+        static public IEnumerable<int> RecursiveQuery(XbimModel Model, string Query, IEnumerable<int> StartList, bool ReturnTransverse)
         {
             var proparray = Query.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
             IEnumerable<int> runningList =  StartList;
             foreach (var StringQuery in proparray)
             {
-                TreeQueryItem qi = new TreeQueryItem(runningList, StringQuery);
+                TreeQueryItem qi = new TreeQueryItem(runningList, StringQuery, ReturnTransverse);
                 runningList = qi.Run(Model);   
             }
-            TreeQueryItem qi2 = new TreeQueryItem(runningList, "");
+            TreeQueryItem qi2 = new TreeQueryItem(runningList, "", ReturnTransverse);
             runningList = qi2.Run(Model);
             foreach (var item in runningList)
             {
@@ -45,18 +45,22 @@ namespace XbimXplorer
     {
         private IEnumerable<int> _EntityLabelsToParse;
         private String _QueryCommand;
+        private bool transverse = true;
 
-        public TreeQueryItem(IEnumerable<int> labels, string Query)
+        public TreeQueryItem(IEnumerable<int> labels, string Query, bool ReturnTransversal)
         {
             _QueryCommand = Query;
             _EntityLabelsToParse = labels;
+            transverse = ReturnTransversal;
         }
 
         public IEnumerable<int> Run(XbimModel Model)
         {
             foreach (var label in _EntityLabelsToParse)
             {
-                if (_QueryCommand.Trim() == "")
+                if (transverse)
+                    yield return label;
+                else if (_QueryCommand.Trim() == "")
                     yield return label;
                 var entity = Model.Instances[label];
                 if (entity != null)
@@ -88,7 +92,8 @@ namespace XbimXplorer
                             else
                             {
                                 IPersistIfcEntity pe = propVal as IPersistIfcEntity;
-                                yield return pe.EntityLabel;
+                                if (pe != null)
+                                    yield return pe.EntityLabel;
                             }
                         }
                     }
