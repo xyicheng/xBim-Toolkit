@@ -54,8 +54,8 @@ namespace Xbim.Ifc2x3.Extensions
         {
             if (prod.Representation != null)
                 return
-                    prod.Representation.Representations.OfType<IfcShapeRepresentation>().FirstOrDefault(
-                        r => string.Compare(r.RepresentationIdentifier.GetValueOrDefault(), "Body", true) == 0);
+                    prod.Representation.Representations.OfType<IfcShapeRepresentation>().Where(
+                        r => string.Compare(r.RepresentationIdentifier.GetValueOrDefault(), "Body", true) == 0).FirstOrDefault();
             return null;
         }
 
