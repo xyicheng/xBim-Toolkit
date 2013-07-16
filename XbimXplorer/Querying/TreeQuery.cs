@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Xbim.IO;
 using Xbim.XbimExtensions.Interfaces;
+using XbimXplorer.Querying;
 
 namespace XbimXplorer
 {
@@ -67,10 +68,12 @@ namespace XbimXplorer
                 {
                     IfcType ifcType = IfcMetaData.IfcType(entity);
                     // directs first
-                    var prop = ifcType.IfcProperties.Where(x => x.Value.PropertyInfo.Name == _QueryCommand).FirstOrDefault().Value;
+                    SquareBracketIndexer sbi = new SquareBracketIndexer(_QueryCommand);
+
+                    var prop = ifcType.IfcProperties.Where(x => x.Value.PropertyInfo.Name == sbi.Property).FirstOrDefault().Value;
                     if (prop == null) // otherwise test inverses
                     {
-                        prop = ifcType.IfcInverses.Where(x => x.PropertyInfo.Name == _QueryCommand).FirstOrDefault();
+                        prop = ifcType.IfcInverses.Where(x => x.PropertyInfo.Name == sbi.Property).FirstOrDefault();
                     }
                     if (prop != null)
                     {
@@ -82,6 +85,7 @@ namespace XbimXplorer
                                 IEnumerable<object> propCollection = propVal as IEnumerable<object>;
                                 if (propCollection != null)
                                 {
+                                    propCollection = sbi.getItem(propCollection);
                                     foreach (var item in propCollection)
                                     {
                                         IPersistIfcEntity pe = item as IPersistIfcEntity;
@@ -92,7 +96,7 @@ namespace XbimXplorer
                             else
                             {
                                 IPersistIfcEntity pe = propVal as IPersistIfcEntity;
-                                if (pe != null)
+                                if (pe != null && sbi.Index < 1) // index is negative (not specified) or 0
                                     yield return pe.EntityLabel;
                             }
                         }

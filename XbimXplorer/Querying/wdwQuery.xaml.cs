@@ -62,6 +62,7 @@ namespace XbimXplorer.Querying
 
                 foreach (var cmd_f in CommandArray)
                 {
+                    ReportAdd("> " + cmd_f, Brushes.ForestGreen);
                     var cmd = cmd_f;
                     int i = cmd.IndexOf("//");
                     if (i > 0)
@@ -187,38 +188,19 @@ namespace XbimXplorer.Querying
                         bool transverseT = false;
                         string transverse = m.Groups["tt"].Value;
                         if (transverse != "")
-                            transverseT = true;
+                            transverseT = true;                        
 
-
-                        int iIndex = -1;
-                        if (start.Contains('['))
-                        {
-                            string[] cut = start.Split(new char[] { '[', ']' }, StringSplitOptions.RemoveEmptyEntries);
-                            start = cut[0];
-                            int.TryParse(cut[1], out iIndex);
-                        }
-
-                        int[] labels = tointarray(start, ',');
+                        IEnumerable<int> labels = tointarray(start, ',');
                         IEnumerable<int> ret = null;
-                        if (labels.Length != 0)
+                        if (labels.Count() == 0)
                         {
-                            ret = QueryEngine.RecursiveQuery(Model, props, labels, transverseT);
+                            // see if it's a type string instead
+                            SquareBracketIndexer sbi = new SquareBracketIndexer(start);
+                            labels = QueryEngine.EntititesForType(sbi.Property, Model);
+                            labels = sbi.getItem(labels);
                         }
-                        else
-                        {
-                            var items = QueryEngine.EntititesForType(start, Model);
-                            ret = QueryEngine.RecursiveQuery(Model, props, items, transverseT);
-                        }
-                        if (iIndex != -1)
-                        {
-                            if (ret.Count() > iIndex)
-                            {
-                                int iVal = ret.ElementAt(iIndex);
-                                ret = new int[] { iVal };
-                            }
-                            else
-                                ret = new int[] { };
-                        }
+                        ret = QueryEngine.RecursiveQuery(Model, props, labels, transverseT);
+                        
                         if (mode.ToLower() == "count ")
                         {
                             ReportAdd(string.Format("Count: {0}", ret.Count()));
@@ -479,7 +461,7 @@ namespace XbimXplorer.Querying
             t.Append("    'Visual list' provides a list of valid region names", Brushes.Gray);
             t.AppendFormat("- clear [on|off]");
             t.AppendFormat("- SimplifyGUI");
-            t.Append("    launches the GUI interface to a rough app useful for simplifying IFC files for debugging purposes.", Brushes.Gray);
+            t.Append("    opens a GUI for simplifying IFC files (useful for debugging purposes).", Brushes.Gray);
             t.AppendFormat("");
             t.Append("Commands are executed on <ctrl>+<Enter>.", Brushes.Blue);
             t.AppendFormat("double slash (//) are the comments token and the remainder of lines is ignored.");

@@ -153,7 +153,7 @@ namespace Xbim.Presentation
                     var frag = layer.Visible.Meshes.Find(hit.VertexIndex1);
                     if (!frag.IsEmpty)
                     {
-                        // the highlighting of the selected component is triggered by the change of SelectedEntity
+                        // the highlighting of the selected component is triggered by the change of SelectedEntity (see OnSelectedEntityChanged)
                         int id = frag.EntityLabel;
                         _hitResult = hit;
                         _currentProduct = (int)id;
@@ -504,10 +504,13 @@ namespace Xbim.Presentation
             // todo: bonghi: investigate why this does not cause flickering in uncut models.
             if (cuttingGroup.IsEnabled)
             {
-                var geomData = Model.GetGeometryData(newVal.EntityLabel, XbimGeometryType.TriangulatedMesh).FirstOrDefault();
-                geomData.TransformBy(wcsTransform);
                 XbimMeshGeometry3D m = new XbimMeshGeometry3D();
-                m.Add(geomData);
+                var geomDataSet = Model.GetGeometryData(newVal.EntityLabel, XbimGeometryType.TriangulatedMesh);
+                foreach (var geomData in geomDataSet)
+                {
+                    geomData.TransformBy(wcsTransform);
+                    m.Add(geomData);    
+                }
                 List<Point3D> ps = new List<Point3D>(m.PositionCount);
                 foreach (var item in m.Positions)
                 {
