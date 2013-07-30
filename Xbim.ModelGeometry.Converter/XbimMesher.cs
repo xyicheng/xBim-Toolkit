@@ -169,7 +169,7 @@ namespace Xbim.ModelGeometry.Converter
                                     short? typeId = IfcMetaData.IfcTypeId(product);
 
                                     geomIds = new int[tm.Count + 1];
-                                    geomIds[0] = geomTable.AddGeometry(product.EntityLabel, XbimGeometryType.BoundingBox, typeId.Value, matrix, bb.ToArray(), 0, geomModel.SurfaceStyleLabel);
+                                    geomIds[0] = geomTable.AddGeometry(product.EntityLabel, XbimGeometryType.BoundingBox, typeId.Value, matrix, bb.ToDoublesArray(), 0, geomModel.SurfaceStyleLabel);
                                     bb = XbimRect3D.TransformBy(bb, m3d);
                                     if (bounds.IsEmpty)
                                         bounds = bb;
@@ -392,7 +392,7 @@ namespace Xbim.ModelGeometry.Converter
 
             XbimLazyDBTransaction transaction = geomTable.BeginLazyTransaction();
             int[] geomIds = new int[tm.Count + 1];
-            geomIds[0] = geomTable.AddGeometry(product.EntityLabel, XbimGeometryType.BoundingBox, typeId.Value, matrix, bb.ToArray(), 0, geomModel.SurfaceStyleLabel);
+            geomIds[0] = geomTable.AddGeometry(product.EntityLabel, XbimGeometryType.BoundingBox, typeId.Value, matrix, bb.ToDoublesArray(), 0, geomModel.SurfaceStyleLabel);
 
             bb = XbimRect3D.TransformBy(bb, m3d);
 

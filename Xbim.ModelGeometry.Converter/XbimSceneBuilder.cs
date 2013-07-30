@@ -33,31 +33,10 @@ namespace Xbim.ModelGeometry.Converter
         /// <param name="Logger">Logging engine for detailed feedback</param>
         public void BuildGlobalScene(XbimModel model, string sceneDbName, Common.Logging.ILogger Logger = null)
         {
-            if (File.Exists(sceneDbName)) File.Delete(sceneDbName);
+            if (File.Exists(sceneDbName)) 
+                File.Delete(sceneDbName);
             XbimSqliteDB db = new XbimSqliteDB(sceneDbName);
-            //Create the scene table
-            db.CreateTable("CREATE TABLE IF NOT EXISTS 'Scenes' (" +
-                    "'SceneId' INTEGER PRIMARY KEY," +
-                    "'SceneName' VARCHAR NOT NULL," +
-                    "'BoundingBox' BLOB" +
-                    ");");
-            //create the layer table
-            db.CreateTable("CREATE TABLE IF NOT EXISTS 'Layers' (" +
-                    "'SceneName' VARCHAR NOT NULL," +
-                    "'LayerName' VARCHAR NOT NULL," +
-                    "'LayerId' INTEGER PRIMARY KEY," +
-                    "'ParentLayerId' INTEGER, " +
-                    "'Meshes' BLOB, " +
-                    "'XbimTexture' BLOB," +
-                    "'BoundingBox' BLOB" +
-                    ");");
-            //create the meta data table
-            db.CreateTable("CREATE TABLE IF NOT EXISTS 'Meta' (" +
-                    "'Meta_ID' INTEGER PRIMARY KEY," +
-                    "'Meta_type' text not null," +
-                    "'Meta_key' text," +
-                    "'Meta_Value' text not null" +
-                    ");");
+            
             //get a connection
             using (SQLiteConnection connection = db.GetConnection())
             {
@@ -100,8 +79,7 @@ namespace Xbim.ModelGeometry.Converter
                         // store region information in Scene
                         foreach (var item in regions)
                         {
-                            AddMetaData(
-                                    connection,
+                            db.AddMetaData(
                                     "Region",
                                     string.Format("Name:{0};Box:{1};", item.Name, item.ToXbimRect3D().ToString()), // verbose, but only a few items are expected in the model
                                     item.Name
@@ -134,16 +112,16 @@ namespace Xbim.ModelGeometry.Converter
                             modelBounds.Union(layer.BoundingBoxHidden());
 
                         // add  top level layers
-                        layerid = AddLayerToSceneDatabase(connection, layer, layerid, -1);
+                        layerid = RecursivelyPersistLayer(db, layer, layerid, -1);
                         layerid++;
                     }
 
-                    // create scene row in Scenes tabls
+                    // create scene row in Scenes tables
                     //
                     string str = 
                         "INSERT INTO Scenes (SceneId, SceneName, BoundingBox) " +
                         "VALUES (@SceneId, @SceneName, @BoundingBox) ";
-                    byte[] boundingBoxFull = GetBinaryXbimRect3D(ref modelBounds);
+                    byte[] boundingBoxFull = modelBounds.ToFloatArray();
                     using (SQLiteTransaction SQLiteTrans = connection.BeginTransaction())
                     {
                         using (SQLiteCommand cmd = connection.CreateCommand())
@@ -160,7 +138,7 @@ namespace Xbim.ModelGeometry.Converter
                     //now add some meta data
                     foreach (var space in model.Instances.OfType<IfcSpace>())
                     {
-                        AddMetaData(connection, space.GetType().Name, space.Name??"Undefined Space", space.EntityLabel.ToString());
+                        db.AddMetaData(space.GetType().Name, space.Name??"Undefined Space", space.EntityLabel.ToString());
                     }
 
                     
@@ -179,6 +157,9 @@ namespace Xbim.ModelGeometry.Converter
                             else
                                 cleanName = "Floor " + defaultStoreyName++;
 
+                            var spacesCount = storey.SpatialStructuralElementChildren.OfType<IfcSpatialStructureElement>().ToList().Count(); // add for checking spaces
+
+
                             // Storey Elevation is optional (and has been found unreliable), therefore
                             // Storey elevation values (in building reference system) are taken from the 
                             // objectplacement through the XbimGeometryType.TransformOnly geometry type
@@ -196,10 +177,9 @@ namespace Xbim.ModelGeometry.Converter
                                 if (Logger != null)
                                     Logger.DebugFormat("StoreyName: {0}; Model Elevation: {1}; Scene Elevation: {2}", cleanName, storeyHeight, InTranslatedReferenceZ);
 
-                                AddMetaData(
-                                    connection,
+                                db.AddMetaData(
                                     "Storey",
-                                    string.Format("Name:{0};Elevation:{1};", cleanName, InTranslatedReferenceZ), // storeyHeight),
+                                    string.Format("Name:{0};Elevation:{1};SpaceCount:{2};", cleanName, InTranslatedReferenceZ, spacesCount), // storeyHeight),
                                     cleanName);
                             }
                         }
@@ -212,36 +192,9 @@ namespace Xbim.ModelGeometry.Converter
                     GC.Collect();
                 }
             }
-
         }
 
-
-        /// <summary>
-        /// Watch out this is in inverse order that byte[] of the XbimRect3D
-        /// </summary>
-        /// <param name="modelBounds"></param>
-        /// <returns></returns>
-        private static byte[] GetBinaryXbimRect3D(ref XbimRect3D modelBounds)
-        {
-            // todo: Bonghi: ideally this should be removed to use the native toByteArray function, but it impacts legacy code
-            
-            // setup bounding box SizeX, SizeY, SizeZ, X, Y, Z
-            byte[] boundingBoxFull = new byte[6 * sizeof(float)];
-            MemoryStream ms = new MemoryStream(boundingBoxFull);
-            BinaryWriter bw = new BinaryWriter(ms);
-
-            bw.Write(modelBounds.SizeX);
-            bw.Write(modelBounds.SizeY);
-            bw.Write(modelBounds.SizeZ);
-            bw.Write(modelBounds.X);
-            bw.Write(modelBounds.Y);
-            bw.Write(modelBounds.Z);
-            return boundingBoxFull;
-        }
-
-        
-
-        private int AddLayerToSceneDatabase(SQLiteConnection mDBcon, XbimMeshLayer<XbimMeshGeometry3D, XbimRenderMaterial> layer, int layerid, int parentLayerId)
+        private int RecursivelyPersistLayer(XbimSqliteDB db, XbimMeshLayer<XbimMeshGeometry3D, XbimRenderMaterial> layer, int layerid, int parentLayerId)
         {
             try
             {
@@ -267,59 +220,20 @@ namespace Xbim.ModelGeometry.Converter
                     zis.Write(vbo, 0, vbo.Length);
                     memoryStream.Flush();
                 }
-
-                //using (Ionic.Zlib.GZipStream gZipStream = new Ionic.Zlib.GZipStream(memoryStream, Ionic.Zlib.CompressionMode.Compress))
-                //{
-                //    gZipStream.Write(vbo, 0, vbo.Length);
-                //    memoryStream.Flush();
-                //}
                 vbo = memoryStream.ToArray();
 
 
+                // bounding box
                 XbimRect3D bb = layer.BoundingBoxHidden();
-                // setup bounding box SizeX, SizeY, SizeZ, X, Y, Z
-                byte[] bbArray = new byte[6 * sizeof(float)];
-                ms = new MemoryStream(bbArray);
-                bw = new BinaryWriter(ms);
+                byte[] bbArray = bb.ToFloatArray();
 
-                bw.Write(bb.SizeX);
-                bw.Write(bb.SizeY);
-                bw.Write(bb.SizeZ);
-                bw.Write(bb.X);
-                bw.Write(bb.Y);
-                bw.Write(bb.Z);
-
-                string str = "INSERT INTO Layers (SceneName, LayerName, LayerId, ParentLayerId, ";
-                str += "Meshes, XbimTexture, BoundingBox) ";
-
-                //str += "VALUES (" + "SceneName" + layer.Name + layer.Name + "-1" + positions + normals + triangleIndices + "" + "" + "" + "" + "" + colour + "" + "" + ")";
-                str += "VALUES (@SceneName, @LayerName, @LayerId, @ParentLayerId, ";
-                str += "@Meshes, @XbimTexture, @BoundingBox) ";
-
-
-                using (SQLiteTransaction SQLiteTrans = mDBcon.BeginTransaction())
-                {
-                    using (SQLiteCommand cmd = mDBcon.CreateCommand())
-                    {
-                        cmd.CommandText = str;
-                        cmd.Parameters.Add("@SceneName", DbType.String).Value = "MainScene";
-                        cmd.Parameters.Add("@LayerName", DbType.String).Value = layer.Name;
-                        cmd.Parameters.Add("@LayerId", DbType.Int32).Value = layerid;
-                        cmd.Parameters.Add("@ParentLayerId", DbType.Int32).Value = parentLayerId;
-                        cmd.Parameters.Add("@Meshes", DbType.Binary).Value = vbo;
-                        cmd.Parameters.Add("@XbimTexture", DbType.Binary).Value = colour;
-                        cmd.Parameters.Add("@BoundingBox", DbType.Binary).Value = bbArray;
-                        cmd.ExecuteNonQuery();
-                    }
-
-                    SQLiteTrans.Commit();
-                }
+                db.AddLayer(layer.Name, layerid, parentLayerId, colour, vbo, bbArray);
 
                 int myParent = layerid;
                 foreach (var subLayer in layer.SubLayers)
                 {
                     layerid++;
-                    layerid = AddLayerToSceneDatabase(mDBcon, subLayer, layerid, myParent);
+                    layerid = RecursivelyPersistLayer(db, subLayer, layerid, myParent);
                 }
                 return layerid;
 
@@ -330,35 +244,6 @@ namespace Xbim.ModelGeometry.Converter
             }
         }
 
-        /// <summary>
-        /// Adds a receord to the Meta table
-        /// </summary>
-        /// <param name="Type">Type of record (required)</param>
-        /// <param name="Identifier">Optional</param>
-        /// <param name="Value">Any string persistence mechanism of choice (required).</param>
-        public void AddMetaData(SQLiteConnection mDBcon, string Type, string Value, string Identifier = null)
-        {
-            string str = "INSERT INTO Meta (" +
-                "'Meta_type', 'Meta_Value', 'Meta_key' " +
-                ") values (" +
-                "@Meta_type, @Meta_Value, @Meta_key " +
-                ")";
-
-            using (SQLiteTransaction SQLiteTrans = mDBcon.BeginTransaction())
-            {
-                using (SQLiteCommand cmd = mDBcon.CreateCommand())
-                {
-                    cmd.CommandText = str;
-                    cmd.Parameters.Add("@Meta_type", DbType.String).Value = Type;
-                    cmd.Parameters.Add("@Meta_Value", DbType.String).Value = Value;
-                    if (Identifier == null)
-                        cmd.Parameters.Add("@Meta_key", DbType.String).Value = DBNull.Value;
-                    else
-                        cmd.Parameters.Add("@Meta_key", DbType.String).Value = Identifier;
-                    cmd.ExecuteNonQuery();
-                }
-                SQLiteTrans.Commit();
-            }
-        }
+        
     }
 }

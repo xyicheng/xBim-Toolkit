@@ -26,14 +26,10 @@ namespace XbimConvert
                 Console.WriteLine("Syntax: XbimConvert source [-quiet|-q] [-generatescene|-gs] [-nogeometry|-ng] [-keepextension|-ke] [-filter|-f <elementid|elementtype>] [-sanitiselog] [-occ]");
                 return;
             }
-
-            IfcFileName = args[0];
-            if (!File.Exists(IfcFileName))
-            {
-                Console.WriteLine("Invalid ifc filename {0}, current directory is: {1}", IfcFileName, Directory.GetCurrentDirectory());
-                return;
-            }
-
+            specdir = Path.GetDirectoryName(args[0]);
+            if (specdir == "")
+                specdir = Directory.GetCurrentDirectory();
+            specpart = Path.GetFileName(args[0]);
             CompoundParameter paramType = CompoundParameter.None;
 
             foreach(string arg in args.Skip(1))
@@ -116,7 +112,8 @@ namespace XbimConvert
 
         }
 
-        public String IfcFileName { get; set; }
+        public string specdir { get; set; }
+        public string specpart { get; set; }
         public bool IsQuiet { get; set; }
         public bool KeepFileExtension { get; set; }
         public bool GenerateScene { get; set; }

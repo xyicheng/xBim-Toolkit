@@ -204,11 +204,12 @@ namespace Xbim.Common.Geometry
             rect.SizeZ = srZmax - srZmin;
             return rect;
         }
+
         /// <summary>
-        /// Writes the Bounding Box as 6 doubles
+        /// Writes the Bounding Box as 6 doubles.
         /// </summary>
-        /// <returns></returns>
-        public byte[] ToArray()
+        /// <returns>An array of doubles (Position followed by Size).</returns>
+        public byte[] ToDoublesArray()
         {
             MemoryStream ms = new MemoryStream();
             BinaryWriter bw = new BinaryWriter(ms);
@@ -218,6 +219,24 @@ namespace Xbim.Common.Geometry
             bw.Write((double)_sizeX);
             bw.Write((double)_sizeY);
             bw.Write((double)_sizeZ);
+            bw.Close();
+            return ms.ToArray();
+        }
+
+        /// <summary>
+        /// Writes the Bounding Box as 6 floats.
+        /// </summary>
+        /// <returns>An array of floats (Position followed by Size).</returns>
+        public byte[] ToFloatArray()
+        {
+            MemoryStream ms = new MemoryStream();
+            BinaryWriter bw = new BinaryWriter(ms);
+            bw.Write(_x);
+            bw.Write(_y);
+            bw.Write(_z);
+            bw.Write(_sizeX);
+            bw.Write(_sizeY);
+            bw.Write(_sizeZ);
             bw.Close();
             return ms.ToArray();
         }
