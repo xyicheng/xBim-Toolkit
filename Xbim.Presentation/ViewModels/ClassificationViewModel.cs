@@ -10,7 +10,7 @@ namespace Xbim.Presentation
 {
     public class ClassificationViewModel
     {
-         XbimModel xbimModel;
+        XbimModel xbimModel;
         XbimInstanceHandle classificationHandle;
         private ObservableCollection<ClassificationViewModel> subClassifications;
 

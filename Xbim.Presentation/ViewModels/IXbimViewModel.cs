@@ -9,6 +9,7 @@ using Xbim.IO;
 
 namespace Xbim.Presentation
 {
+    // todo: bonghi: need to add Parent property to ensure efficiency in node finding for trees.
     public interface IXbimViewModel : INotifyPropertyChanged
     {
         IEnumerable<IXbimViewModel> Children { get; }

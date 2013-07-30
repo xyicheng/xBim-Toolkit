@@ -1,27 +1,49 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Xbim.Ifc2x3.ProductExtension;
-using System.Collections;
 using Xbim.Ifc2x3.Kernel;
+using Xbim.IO;
+using Xbim.Ifc2x3.Extensions;
+using Xbim.XbimExtensions.Interfaces;
 using System.ComponentModel;
 using System.Collections.ObjectModel;
-using Xbim.IO;
 
 namespace Xbim.Presentation
 {
-    public class IfcProductModelView : IXbimViewModel
+    /// <summary>
+    /// Model view for display top level Xbim Model contents and referenced models
+    /// </summary>
+    public class XbimModelViewModel : IXbimViewModel
     {
-        private IfcProduct product;
+        XbimModel xbimModel;
+        IfcProject _project;
         private bool _isSelected;
         private bool _isExpanded;
-        private List<IXbimViewModel> children;
+        private ObservableCollection<IXbimViewModel> children;
 
-        public IfcProductModelView(IfcProduct prod)
-        { 
-            this.product = prod;
+        public string Name
+        {
+            get
+            {
+                // to improve on the user interface experience the classification viewer makes up a name in case the name is empty
+                if (_project.Name != string.Empty)
+                    return _project.Name;
+                else
+                    return "Unnamed project";
+            }
         }
+
+
+        public XbimModelViewModel(IfcProject project)
+        {
+            xbimModel = project.ModelOf as XbimModel;
+            _project = project;
+            IEnumerable subs = this.Children; //call this once to preload first level of hierarchy   
+        }
+
+
 
         public IEnumerable<IXbimViewModel> Children
         {
@@ -29,23 +51,19 @@ namespace Xbim.Presentation
             {
                 if (children == null)
                 {
-                    children = new List<IXbimViewModel>();
-                    List<IfcRelDecomposes> breakdown = product.IsDecomposedBy.ToList();
-                    if (breakdown.Any())
-                        foreach (var rel in breakdown)
-                            foreach (var prod in rel.RelatedObjects.OfType<IfcProduct>())
-                                children.Add(new IfcProductModelView(prod));
-
+                    children = new ObservableCollection<IXbimViewModel>();
+                    foreach (var item in _project.GetSpatialStructuralElements())
+                    {
+                        children.Add(new SpatialViewModel(item));
+                    }
+                    foreach (var refModel in xbimModel.RefencedModels)
+                    {
+                        children.Add(new XbimRefModelViewModel(refModel));
+                    }
                 }
                 return children;
             }
         }
-
-        public string Name
-        {
-            get { return product.ToString(); }
-        }
-
         public bool HasItems
         {
             get
@@ -55,16 +73,14 @@ namespace Xbim.Presentation
             }
         }
 
-      
         public int EntityLabel
         {
-            get { return Math.Abs(product.EntityLabel); }
+            get { return _project.EntityLabel; }
         }
 
-
-        public XbimExtensions.Interfaces.IPersistIfcEntity Entity
+        public IPersistIfcEntity Entity
         {
-            get { return product; }
+            get { return _project; }
         }
 
         public bool IsSelected
@@ -114,9 +130,16 @@ namespace Xbim.Presentation
         #endregion
 
 
-        public IO.XbimModel Model
+        internal void AddRefModel(XbimRefModelViewModel xbimModelViewModel)
         {
-            get { return (XbimModel)product.ModelOf; }
+            children.Add(xbimModelViewModel);
+            NotifyPropertyChanged("Children");
+        }
+
+
+        public XbimModel Model
+        {
+            get { return xbimModel; }
         }
     }
 }

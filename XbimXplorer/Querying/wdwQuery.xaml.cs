@@ -120,7 +120,7 @@ namespace XbimXplorer.Querying
 
                     // all commands here
                     //
-                    var m = Regex.Match(cmd, @"(entitylabel|el) (?<el>\d+)(?<recursion> -*\d+)*", RegexOptions.IgnoreCase);
+                    var m = Regex.Match(cmd, @"^(entitylabel|el) (?<el>\d+)(?<recursion> -*\d+)*", RegexOptions.IgnoreCase);
                     if (m.Success)
                     {
                         int recursion = 0;
@@ -137,7 +137,46 @@ namespace XbimXplorer.Querying
                         continue;
                     }
 
-                    m = Regex.Match(cmd, @"(IfcSchema|is) (?<mode>(list|count|short) )*(?<type>.+)", RegexOptions.IgnoreCase);
+                    m = Regex.Match(cmd, @"^(Header|he)$", RegexOptions.IgnoreCase);
+                    if (m.Success)
+                    {
+                        ReportAdd("Description:");
+                        foreach (var item in Model.Header.FileDescription.Description)
+                        {
+                            ReportAdd(string.Format("- Description: {0}", item));    
+                        }
+                        ReportAdd(string.Format("- ImplementationLevel: {0}", Model.Header.FileDescription.ImplementationLevel));
+                        ReportAdd(string.Format("- EntityCount: {0}", Model.Header.FileDescription.EntityCount));
+
+                        ReportAdd("FileName:");
+                        ReportAdd(string.Format("- Name: {0}", Model.Header.FileName.Name));
+                        ReportAdd(string.Format("- TimeStamp: {0}", Model.Header.FileName.TimeStamp));
+                        foreach (var item in Model.Header.FileName.Organization)
+                        {
+                            ReportAdd(string.Format("- Organization: {0}", item));
+                        }
+                        ReportAdd(string.Format("- OriginatingSystem: {0}", Model.Header.FileName.OriginatingSystem));
+                        ReportAdd(string.Format("- PreprocessorVersion: {0}", Model.Header.FileName.PreprocessorVersion));
+                        foreach (var item in Model.Header.FileName.AuthorName)
+                        {
+                            ReportAdd(string.Format("- AuthorName: {0}", item));    
+                        }
+                        
+                        ReportAdd(string.Format("- AuthorizationName: {0}", Model.Header.FileName.AuthorizationName));
+                        foreach (var item in Model.Header.FileName.AuthorizationMailingAddress)
+                        {
+                            ReportAdd(string.Format("- AuthorizationMailingAddress: {0}", item));    
+                        }
+
+                        ReportAdd("FileSchema:");
+                        foreach (var item in Model.Header.FileSchema.Schemas)
+                        {
+                            ReportAdd(string.Format("- Schema: {0}", item));
+                        }
+                        continue;
+                    } 
+
+                    m = Regex.Match(cmd, @"^(IfcSchema|is) (?<mode>(list|count|short) )*(?<type>.+)", RegexOptions.IgnoreCase);
                     if (m.Success)
                     {
                         string type = m.Groups["type"].Value;
@@ -177,7 +216,7 @@ namespace XbimXplorer.Querying
                         continue;
                     }
 
-                    m = Regex.Match(cmd, @"(select|se) (?<mode>(count|list|short) )*(?<tt>(transverse|tt) )*(?<start>([\d,]+|[^ ]+)) *(?<props>.*)", RegexOptions.IgnoreCase);
+                    m = Regex.Match(cmd, @"^(select|se) (?<mode>(count|list|short) )*(?<tt>(transverse|tt) )*(?<start>([\d,]+|[^ ]+)) *(?<props>.*)", RegexOptions.IgnoreCase);
                     if (m.Success)
                     {
                         string start = m.Groups["start"].Value;
@@ -225,7 +264,7 @@ namespace XbimXplorer.Querying
                         continue;
                     }
 
-                    m = Regex.Match(cmd, @"zoom (" +
+                    m = Regex.Match(cmd, @"^zoom (" +
                         @"(?<RegionName>.+$)" +
                         ")", RegexOptions.IgnoreCase);
                     if (m.Success)
@@ -264,7 +303,7 @@ namespace XbimXplorer.Querying
                         }
                     }
 
-                    m = Regex.Match(cmd, @"clip off", RegexOptions.IgnoreCase);
+                    m = Regex.Match(cmd, @"^clip off$", RegexOptions.IgnoreCase);
                     if (m.Success)
                     {
                         ParentWindow.DrawingControl.ClearCutPlane();
@@ -273,7 +312,7 @@ namespace XbimXplorer.Querying
                         continue;
                     }
 
-                    m = Regex.Match(cmd, @"clip (" +
+                    m = Regex.Match(cmd, @"^clip (" +
                         @"(?<elev>[-+]?([0-9]*\.)?[0-9]+) *$" +
                         "|" +                        
                         @"(?<px>[-+]?([0-9]*\.)?[0-9]+) *, *" +
@@ -347,9 +386,7 @@ namespace XbimXplorer.Querying
                         continue;
                     }
 
-                    
-
-                    m = Regex.Match(cmd, @"Visual (?<action>list|on|off)( (?<Name>[^ ]+))*", RegexOptions.IgnoreCase);
+                    m = Regex.Match(cmd, @"^Visual (?<action>list|on|off)( (?<Name>[^ ]+))*", RegexOptions.IgnoreCase);
                     if (m.Success)
                     {
                         string Name = m.Groups["Name"].Value;
@@ -371,7 +408,7 @@ namespace XbimXplorer.Querying
                     }
 
 
-                    m = Regex.Match(cmd, @"SimplifyGUI", RegexOptions.IgnoreCase);
+                    m = Regex.Match(cmd, @"^SimplifyGUI$", RegexOptions.IgnoreCase);
                     if (m.Success)  
                     {
                         XbimXplorer.Simplify.IfcSimplify s = new Simplify.IfcSimplify();
@@ -379,7 +416,7 @@ namespace XbimXplorer.Querying
                         continue;
                     }
 
-                    m = Regex.Match(cmd, @"test", RegexOptions.IgnoreCase);
+                    m = Regex.Match(cmd, @"^test$", RegexOptions.IgnoreCase);
                     if (m.Success)
                     {
                         int iPass = -728;
