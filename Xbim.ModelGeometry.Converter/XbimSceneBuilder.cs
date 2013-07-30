@@ -60,11 +60,11 @@ namespace Xbim.ModelGeometry.Converter
 
                     XbimMatrix3D translate = XbimMatrix3D.Identity;
                     XbimMatrix3D scale = XbimMatrix3D.CreateScale(1 / mScalingReference);
-
+                    XbimMatrix3D composed = translate * scale;
                     XbimGeometryData regionData = model.GetGeometryData(projectId, XbimGeometryType.Region).FirstOrDefault(); //get the region data should only be one
                     if (regionData != null)
                     {
-                        // this results in zooming to the most populated area of the model
+                        // this results in centering the most populated area of the model
                         //
                         XbimRegionCollection regions = XbimRegionCollection.FromArray(regionData.ShapeData);
                         XbimRegion largest = regions.MostPopulated();
@@ -76,18 +76,21 @@ namespace Xbim.ModelGeometry.Converter
                                 -largest.Centre.Z
                                 );
                         }
+                        composed = translate * scale;
                         // store region information in Scene
                         foreach (var item in regions)
                         {
+                            // the bounding box needs to be moved/scaled by the transform.
+                            //
+                            XbimRect3D transformed = item.ToXbimRect3D().Transform(composed);
                             db.AddMetaData(
                                     "Region",
-                                    string.Format("Name:{0};Box:{1};", item.Name, item.ToXbimRect3D().ToString()), // verbose, but only a few items are expected in the model
+                                    string.Format("Name:{0};Box:{1};", item.Name, transformed.ToString()), // verbose, but only a few items are expected in the model
                                     item.Name
                                     );
                         }
-
                     }
-                    XbimMatrix3D composed = translate * scale;
+                    
 
                     foreach (var layerContent in handles.FilterByBuildingElementTypes())
                     {

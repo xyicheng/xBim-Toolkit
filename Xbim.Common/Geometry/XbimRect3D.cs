@@ -432,5 +432,18 @@ namespace Xbim.Common.Geometry
             XbimVector3D max = new XbimVector3D(SizeX, SizeY, SizeZ);
             return max.Length;
         }
+
+        /// <summary>
+        /// Warning: This function assumes no rotation is used for the tranform.
+        /// </summary>
+        /// <param name="composed">The NON-ROTATING transform to apply</param>
+        /// <returns>the transformed bounding box.</returns>
+        public XbimRect3D Transform(XbimMatrix3D composed)
+        {
+            var min = this.Min * composed;
+            var max = this.Max * composed;
+
+            return new XbimRect3D(min, max);
+        }
     }
 }
