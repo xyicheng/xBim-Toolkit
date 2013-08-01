@@ -3,12 +3,13 @@ using System.IO;
 using System.Linq;
 using Xbim.XbimExtensions;
 using Xbim.IO;
+using System.Globalization;
+using Xbim.ModelGeometry.Converter;
 
 namespace XbimConvert
 {
     public class Params
     {
-
         public static Params ParseParams(string[] args)
         {
             Params result = new Params(args);
@@ -18,27 +19,36 @@ namespace XbimConvert
 
         private Params(string[] args)
         {
-            
+
 
             if (args.Length < 1)
             {
                 Console.WriteLine("Invalid number of Parameters, filename required");
-                Console.WriteLine("Syntax: XbimConvert source [-quiet|-q] [-generatescene|-gs] [-nogeometry|-ng] [-keepextension|-ke] [-filter|-f <elementid|elementtype>] [-sanitiselog] [-occ]");
+                Console.WriteLine("Syntax: XbimConvert source [-quiet|-q] [-generatescene|-gs[:options]] [-nogeometry|-ng] [-keepextension|-ke] [-filter|-f <elementid|elementtype>] [-sanitiselog] [-occ]");
+                Console.Write("-generatescene options are: ");
+                foreach (var i in Enum.GetValues(typeof(GenerateSceneOption)))
+                    Console.Write(" " + i.ToString());
                 return;
             }
             specdir = Path.GetDirectoryName(args[0]);
             if (specdir == "")
                 specdir = Directory.GetCurrentDirectory();
             specpart = Path.GetFileName(args[0]);
-            CompoundParameter paramType = CompoundParameter.None;
 
-            foreach(string arg in args.Skip(1))
+            GenerateSceneOptions = 
+                        GenerateSceneOption.IncludeRegions |
+                        GenerateSceneOption.IncludeStoreys |
+                        GenerateSceneOption.IncludeSpaces;
+
+            CompoundParameter paramType = CompoundParameter.None;
+            foreach (string arg in args.Skip(1))
             {
+
                 switch (paramType)
                 {
                     case CompoundParameter.None:
-
-                        switch (arg.ToLowerInvariant())
+                        string[] argNames = arg.ToLowerInvariant().Split(new string[] { ":" }, StringSplitOptions.RemoveEmptyEntries);
+                        switch (argNames[0])
                         {
                             case "-quiet":
                             case "-q":
@@ -49,11 +59,20 @@ namespace XbimConvert
                             case "-ke":
                                 KeepFileExtension = true;
                                 break;
-
-
                             case "-generatescene":
                             case "-gs":
                                 GenerateScene = true;
+
+                                if (argNames.Length > 1)
+                                {
+                                    foreach (var i in Enum.GetValues(typeof(GenerateSceneOption)))
+                                    {
+                                        if (CultureInfo.CurrentCulture.CompareInfo.IndexOf((string)argNames[1], i.ToString(), CompareOptions.IgnoreCase) >= 0)
+                                        {
+                                            GenerateSceneOptions = GenerateSceneOptions | (GenerateSceneOption)i;
+                                        }
+                                    }
+                                }
                                 break;
                             case "-nogeometry":
                             case "-ng":
@@ -106,10 +125,8 @@ namespace XbimConvert
                 }
 
             }
-
             // Parameters are valid
             IsValid = true;
-
         }
 
         public string specdir { get; set; }
@@ -117,6 +134,8 @@ namespace XbimConvert
         public bool IsQuiet { get; set; }
         public bool KeepFileExtension { get; set; }
         public bool GenerateScene { get; set; }
+        public GenerateSceneOption GenerateSceneOptions { get; set; }
+        
         public bool NoGeometry { get; set; }
         public bool IsValid { get; set; }
         public FilterType FilterType { get; set; }
@@ -133,8 +152,6 @@ namespace XbimConvert
             None,
             Filter
         };
-
-        
     }
 
     public enum FilterType

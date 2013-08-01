@@ -17,12 +17,34 @@ using Xbim.Ifc2x3.Extensions;
 
 namespace Xbim.ModelGeometry.Converter
 {
+
+    [Flags]
+    public enum GenerateSceneOption
+    {
+        None = 0,
+        IncludeRegions = 1,
+        IncludeStoreys = 2,
+        IncludeSpaces = 4,
+        IncludeSpacesBBox = 8,
+        IncludeTransform = 16,
+        All = IncludeTransform * 2 - 1
+    }
+
     public class XbimSceneBuilder
     {
         static XbimSceneBuilder()
         {
             AssemblyResolver.HandleUnresolvedAssemblies();
         }
+
+        public XbimSceneBuilder()
+        {
+            Options = GenerateSceneOption.IncludeRegions | 
+                      GenerateSceneOption.IncludeStoreys | 
+                      GenerateSceneOption.IncludeSpaces;
+        }
+
+        public GenerateSceneOption Options { get; set; }
 
         /// <summary>
         /// This function builds a scene of all IfcProducts in the model, excluding the geometry of Openings
@@ -40,7 +62,6 @@ namespace Xbim.ModelGeometry.Converter
             //get a connection
             using (SQLiteConnection connection = db.GetConnection())
             {
-
                 try
                 {
                     short spaceId = IfcMetaData.IfcTypeId(typeof(IfcSpace));
@@ -56,7 +77,7 @@ namespace Xbim.ModelGeometry.Converter
                     float mScalingReference = (float)model.GetModelFactors.OneMetre;
 
                     if (Logger != null)
-                        Logger.DebugFormat("XbimScene: Scaling reference {0}", mScalingReference);
+                        Logger.DebugFormat("XbimScene: Scaling reference {0}\r\n", mScalingReference);
 
                     XbimMatrix3D translate = XbimMatrix3D.Identity;
                     XbimMatrix3D scale = XbimMatrix3D.CreateScale(1 / mScalingReference);
@@ -77,18 +98,35 @@ namespace Xbim.ModelGeometry.Converter
                                 );
                         }
                         composed = translate * scale;
+
                         // store region information in Scene
-                        foreach (var item in regions)
+                        if ((Options & GenerateSceneOption.IncludeRegions) == GenerateSceneOption.IncludeRegions)
                         {
-                            // the bounding box needs to be moved/scaled by the transform.
-                            //
-                            XbimRect3D transformed = item.ToXbimRect3D().Transform(composed);
-                            db.AddMetaData(
-                                    "Region",
-                                    string.Format("Name:{0};Box:{1};", item.Name, transformed.ToString()), // verbose, but only a few items are expected in the model
-                                    item.Name
-                                    );
+                            if (Logger != null)
+                                Logger.DebugFormat("XbimScene: Exporting regions.\r\n", mScalingReference);
+                            foreach (var item in regions)
+                            {
+                                // the bounding box needs to be moved/scaled by the transform.
+                                //
+                                XbimRect3D transformed = item.ToXbimRect3D().Transform(composed);
+                                db.AddMetaData(
+                                        "Region",
+                                        string.Format("Name:{0};Box:{1};", item.Name, transformed.ToString()), // verbose, but only a few items are expected in the model
+                                        item.Name
+                                        );
+                            }
                         }
+                    }
+
+                    if ((Options & GenerateSceneOption.IncludeTransform) == GenerateSceneOption.IncludeTransform)
+                    {
+                        if (Logger != null)
+                            Logger.DebugFormat("XbimScene: Exporting transform.\r\n", mScalingReference);
+                        db.AddMetaData(
+                                "Transform",
+                                composed.ToArray(false),
+                                "World"
+                                );
                     }
                     
 
@@ -138,18 +176,49 @@ namespace Xbim.ModelGeometry.Converter
                         SQLiteTrans.Commit();
                     }
 
-                    //now add some meta data
-                    foreach (var space in model.Instances.OfType<IfcSpace>())
+                    //now add some meta data about spaces
+                    if (
+                        (Options & GenerateSceneOption.IncludeSpaces) == GenerateSceneOption.IncludeSpaces
+                        ||
+                        (Options & GenerateSceneOption.IncludeSpacesBBox) == GenerateSceneOption.IncludeSpacesBBox
+                        )
                     {
-                        db.AddMetaData(space.GetType().Name, space.Name??"Undefined Space", space.EntityLabel.ToString());
+                        if (Logger != null)
+                            Logger.DebugFormat("XbimScene: Exporting spaces.\r\n", mScalingReference);
+                        foreach (var space in model.Instances.OfType<IfcSpace>())
+                        {
+                            int iEntLabel = Math.Abs( space.EntityLabel);
+                            if ((Options & GenerateSceneOption.IncludeSpaces) == GenerateSceneOption.IncludeSpaces)
+                            {
+                                db.AddMetaData(space.GetType().Name, space.Name ?? "Undefined Space", iEntLabel.ToString());
+                            }
+                            if ((Options & GenerateSceneOption.IncludeSpacesBBox) == GenerateSceneOption.IncludeSpacesBBox)
+                            {
+                                XbimGeometryData geomdata = model.GetGeometryData(iEntLabel, XbimGeometryType.BoundingBox).FirstOrDefault();
+                                if (geomdata != null)
+                                {
+                                    XbimRect3D r3d = XbimRect3D.FromArray(geomdata.ShapeData);
+                                    XbimRect3D transformed = r3d.Transform(composed);
+                                    db.AddMetaData(
+                                            "SpaceBBox",
+                                            // string.Format("Box:{1};", transformed.ToString()), // verbose, but only a few items are expected in the model
+                                            transformed.ToFloatArray(),
+                                            iEntLabel.ToString()
+                                            );
+                                }
+                                // db.AddMetaData(space.GetType().Name, space.Name ?? "Undefined Space", space.EntityLabel.ToString());
+                            }
+                        }
                     }
 
                     
                     // Add storey information with elevation.
                     // 
                     IfcBuilding bld = model.IfcProject.GetBuildings().FirstOrDefault();
-                    if (bld != null)
+                    if (bld != null && (Options & GenerateSceneOption.IncludeStoreys) == GenerateSceneOption.IncludeStoreys)
                     {
+                        if (Logger != null)
+                            Logger.DebugFormat("XbimScene: Exporting storeys.\r\n", mScalingReference);
                         double storeyHeight = 0;//all scenes are in metres
                         int defaultStoreyName = 0;                        
                         foreach (var storey in bld.GetBuildingStoreys(true))
@@ -177,8 +246,8 @@ namespace Xbim.ModelGeometry.Converter
                                     );
 
                                 double InTranslatedReferenceZ = InTranslatedReference.Z; // then express it in meters.
-                                if (Logger != null)
-                                    Logger.DebugFormat("StoreyName: {0}; Model Elevation: {1}; Scene Elevation: {2}", cleanName, storeyHeight, InTranslatedReferenceZ);
+                                
+                                // Logger.DebugFormat("StoreyName: {0}; Model Elevation: {1}; Scene Elevation: {2}", cleanName, storeyHeight, InTranslatedReferenceZ);
 
                                 db.AddMetaData(
                                     "Storey",
@@ -246,7 +315,5 @@ namespace Xbim.ModelGeometry.Converter
                 throw new XbimException("Error building scene layer", ex);
             }
         }
-
-        
     }
 }

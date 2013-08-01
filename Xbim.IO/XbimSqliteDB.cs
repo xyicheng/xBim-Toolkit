@@ -141,5 +141,39 @@ namespace Xbim.IO
                 }
             }
         }
+
+        /// <summary>
+        /// Adds a receord to the Meta table
+        /// </summary>
+        /// <param name="Type">Type of record (required)</param>
+        /// <param name="Identifier">Optional</param>
+        /// <param name="Value">Any string persistence mechanism of choice (required).</param>
+        public void AddMetaData(string Type, byte[] Value, string Identifier = null)
+        {
+            string str = "INSERT INTO Meta (" +
+                "'Meta_type', 'Meta_Value', 'Meta_key' " +
+                ") values (" +
+                "@Meta_type, @Meta_Value, @Meta_key " +
+                ")";
+
+            using (var mDBcon = this.GetConnection())
+            {
+                using (SQLiteTransaction SQLiteTrans = mDBcon.BeginTransaction())
+                {
+                    using (SQLiteCommand cmd = mDBcon.CreateCommand())
+                    {
+                        cmd.CommandText = str;
+                        cmd.Parameters.Add("@Meta_type", DbType.String).Value = Type;
+                        cmd.Parameters.Add("@Meta_Value", DbType.Binary).Value = Value;
+                        if (Identifier == null)
+                            cmd.Parameters.Add("@Meta_key", DbType.String).Value = DBNull.Value;
+                        else
+                            cmd.Parameters.Add("@Meta_key", DbType.String).Value = Identifier;
+                        cmd.ExecuteNonQuery();
+                    }
+                    SQLiteTrans.Commit();
+                }
+            }
+        }
     }
 }

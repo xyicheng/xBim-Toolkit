@@ -83,6 +83,7 @@ namespace XbimConvert
                                         Console.Write("Scene generation started...");
                                     sceneTimer.Start();
                                     XbimSceneBuilder sb = new XbimSceneBuilder();
+                                    sb.Options = arguments.GenerateSceneOptions;
                                     string xbimSceneName = BuildFileName(xbimFileName, ".xbimScene");
                                     sb.BuildGlobalScene(model, xbimSceneName,
                                         !arguments.IsQuiet ? Logger : null
@@ -140,7 +141,6 @@ namespace XbimConvert
         {
             ResetCursor(Console.CursorTop + 1);
             Console.WriteLine(message);
-            GetInput();
         }
 
         private static IEnumerable<IfcProduct> GetProducts(XbimModel model)

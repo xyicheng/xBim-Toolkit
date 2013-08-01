@@ -622,7 +622,6 @@ namespace XbimXplorer.Querying
                             topParent = topParent.IfcSuperType;
                         }
                         sb.AppendFormat(indentationHeader + "- {0}\t{1}{2}", item.PropertyInfo.Name, CleanPropertyName(item.PropertyInfo.PropertyType.FullName), sTopParent);
-                        // sb.AppendFormat(indentationHeader + "- {0} ({1})", item.PropertyInfo.Name, CleanPropertyName(item.PropertyInfo.PropertyType.FullName));
                     }
                 }
                 sb.AppendFormat("");
