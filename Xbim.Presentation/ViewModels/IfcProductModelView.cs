@@ -18,9 +18,11 @@ namespace Xbim.Presentation
         private bool _isSelected;
         private bool _isExpanded;
         private List<IXbimViewModel> children;
+        public IXbimViewModel CreatingParent { get; set; } 
 
-        public IfcProductModelView(IfcProduct prod)
-        { 
+        public IfcProductModelView(IfcProduct prod, IXbimViewModel parent)
+        {
+            CreatingParent = parent;
             this.product = prod;
         }
 
@@ -30,22 +32,19 @@ namespace Xbim.Presentation
             {
                 if (children == null)
                 {
-                    // System.Diagnostics.Stopwatch watch = new System.Diagnostics.Stopwatch();
-                    // watch.Start();
-                    
                     children = new List<IXbimViewModel>();
                     List<IfcRelDecomposes> breakdown = product.IsDecomposedBy.ToList();
-                    // todo: bonghi: this one is too slow on Architettonico_def.xBIM
+
                     if (breakdown.Any())
+                    {
                         foreach (var rel in breakdown)
                         {
                             foreach (var prod in rel.RelatedObjects.OfType<IfcProduct>())
                             {
-                                children.Add(new IfcProductModelView(prod));
-                                // if (watch.ElapsedMilliseconds > 1000)                                     System.Diagnostics.Debug.WriteLine("Slow on: " + product.EntityLabel);
+                                children.Add(new IfcProductModelView(prod, this));
                             }
                         }
-                    // watch.Stop();
+                    }
                 }
                 return children;
             }

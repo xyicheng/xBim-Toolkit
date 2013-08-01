@@ -16,10 +16,11 @@ namespace Xbim.Presentation
         private bool _isSelected;
         private bool _isExpanded;
         private List<IXbimViewModel> children;
+        public IXbimViewModel CreatingParent { get; set; } 
 
-        public XbimRefModelViewModel(IO.XbimReferencedModel refModel)
+        public XbimRefModelViewModel(IO.XbimReferencedModel refModel, IXbimViewModel parent)
         {
-           
+            this.CreatingParent = parent;
             this.refModel = refModel;
         }
 
@@ -35,7 +36,7 @@ namespace Xbim.Presentation
                     {
                         foreach (var item in project.GetSpatialStructuralElements())
                         {
-                            children.Add(new SpatialViewModel(item));
+                            children.Add(new SpatialViewModel(item, this));
                         }
                     }
                 }

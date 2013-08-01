@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 
 namespace Xbim.Presentation
 {
+    // this class does not seem to be used by any other part of the seolution.
     public class ClassificationViewModel
     {
         XbimModel xbimModel;

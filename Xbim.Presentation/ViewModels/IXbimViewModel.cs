@@ -19,5 +19,6 @@ namespace Xbim.Presentation
         XbimModel Model { get; }
         bool IsExpanded { get; set; }
         bool IsSelected { get; set; }
+        IXbimViewModel CreatingParent { get; set; } 
     }
 }

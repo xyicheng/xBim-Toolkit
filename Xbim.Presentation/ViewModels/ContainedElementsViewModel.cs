@@ -18,6 +18,7 @@ namespace Xbim.Presentation
         int spatialContainerLabel;
         private bool _isSelected;
         private bool _isExpanded;
+        public IXbimViewModel CreatingParent { get; set; } 
 
         private List<IXbimViewModel> children;
 
@@ -30,18 +31,23 @@ namespace Xbim.Presentation
         }
 
 
-        public ContainedElementsViewModel(IfcSpatialStructureElement container)
-        {
-            xbimModel = container.ModelOf as XbimModel;
-            IEnumerable subs = this.Children; //call this once to preload first level of hierarchy          
-        }
+        //public ContainedElementsViewModel(IfcSpatialStructureElement container)
+        //{
+        //    xbimModel = container.ModelOf as XbimModel;
+        //    IEnumerable subs = this.Children; //call this once to preload first level of hierarchy          
+        //}
 
-        public ContainedElementsViewModel(IfcSpatialStructureElement spatialElem, Type type)
+        public ContainedElementsViewModel(IfcSpatialStructureElement spatialElem, Type type, IXbimViewModel parent)
         {
-
             this.spatialContainerLabel = Math.Abs(spatialElem.EntityLabel);
             this.type = type;
             this.xbimModel = (XbimModel) spatialElem.ModelOf;
+            this.CreatingParent = parent;
+
+            System.Diagnostics.Debug.WriteLine(
+                string.Format("Creating: {0} for #{1} - {2}", Name, spatialContainerLabel, this.GetType().ToString())
+                );
+
         }
 
 
@@ -56,7 +62,7 @@ namespace Xbim.Presentation
                     foreach (var rel in space.ContainsElements)
                     {
                         foreach (IfcProduct prod in rel.RelatedElements.Where(e => e.GetType() == type))
-                            children.Add(new IfcProductModelView(prod));
+                            children.Add(new IfcProductModelView(prod, this));
                     }
                 }
                 return children;
@@ -70,8 +76,6 @@ namespace Xbim.Presentation
                 return children.Count > 0;
             }
         }
-
-      
 
         public int EntityLabel
         {

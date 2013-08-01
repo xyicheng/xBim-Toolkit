@@ -575,8 +575,15 @@ namespace XbimXplorer.Querying
 
                 sb.AppendFormat(indentationHeader + "Namespace: {0}", ot.Type.Namespace);
                 // sb.AppendFormat(indentationHeader + "Xbim Type Id: {0}", ot.TypeId);
+                List<string> supertypes = new List<string>();
+                var iterSuper = ot.IfcSuperType;
+                while (iterSuper != null)
+                {
+                    supertypes.Add(iterSuper.Name);
+                    iterSuper = iterSuper.IfcSuperType;
+                }
                 if (ot.IfcSuperType != null)
-                    sb.AppendFormat(indentationHeader + "Subtype of: {0}", ot.IfcSuperType.Name);
+                    sb.AppendFormat(indentationHeader + "Subtype of: {0}", string.Join(" => ", supertypes.ToArray()));
                 if (ot.IfcSubTypes.Count > 0)
                 {
                     sb.AppendFormat(indentationHeader + "Subtypes: {0}", ot.IfcSubTypes.Count);
@@ -595,12 +602,27 @@ namespace XbimXplorer.Querying
                     sb.AppendFormat(indentationHeader + "Properties: {0}", ot.IfcProperties.Count());
                     foreach (var item in ot.IfcProperties.Values)
                     {
-                        sb.AppendFormat(indentationHeader + "- {0} ({1})", item.PropertyInfo.Name, CleanPropertyName(item.PropertyInfo.PropertyType.FullName));
+                        var topParent = ot.IfcSuperType;
+                        string sTopParent = "";
+                        while (topParent != null && topParent.IfcProperties.Where(x => x.Value.PropertyInfo.Name == item.PropertyInfo.Name).Count() > 0)
+                        {
+                            sTopParent = " \tfrom: " + topParent.ToString();
+                            topParent = topParent.IfcSuperType;
+                        }
+                        sb.AppendFormat(indentationHeader + "- {0}\t{1}{2}", item.PropertyInfo.Name, CleanPropertyName(item.PropertyInfo.PropertyType.FullName), sTopParent);
                     }
                     sb.AppendFormat(indentationHeader + "Inverses: {0}", ot.IfcInverses.Count());
                     foreach (var item in ot.IfcInverses)
                     {
-                        sb.AppendFormat(indentationHeader + "- {0} ({1})", item.PropertyInfo.Name, CleanPropertyName(item.PropertyInfo.PropertyType.FullName));
+                        var topParent = ot.IfcSuperType;
+                        string sTopParent = "";
+                        while (topParent != null && topParent.IfcInverses.Where(x => x.PropertyInfo.Name == item.PropertyInfo.Name).Count() > 0)
+                        {
+                            sTopParent = " \tfrom: " + topParent.ToString();
+                            topParent = topParent.IfcSuperType;
+                        }
+                        sb.AppendFormat(indentationHeader + "- {0}\t{1}{2}", item.PropertyInfo.Name, CleanPropertyName(item.PropertyInfo.PropertyType.FullName), sTopParent);
+                        // sb.AppendFormat(indentationHeader + "- {0} ({1})", item.PropertyInfo.Name, CleanPropertyName(item.PropertyInfo.PropertyType.FullName));
                     }
                 }
                 sb.AppendFormat("");

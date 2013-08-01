@@ -22,6 +22,7 @@ namespace Xbim.Presentation
         private bool _isSelected;
         private bool _isExpanded;
         private ObservableCollection<IXbimViewModel> children;
+        public IXbimViewModel CreatingParent { get; set; } 
 
         public string Name
         {
@@ -36,10 +37,11 @@ namespace Xbim.Presentation
         }
 
 
-        public XbimModelViewModel(IfcProject project)
+        public XbimModelViewModel(IfcProject project, IXbimViewModel parent)
         {
             xbimModel = project.ModelOf as XbimModel;
             _project = project;
+            this.CreatingParent = parent;
             IEnumerable subs = this.Children; //call this once to preload first level of hierarchy   
         }
 
@@ -54,11 +56,11 @@ namespace Xbim.Presentation
                     children = new ObservableCollection<IXbimViewModel>();
                     foreach (var item in _project.GetSpatialStructuralElements())
                     {
-                        children.Add(new SpatialViewModel(item));
+                        children.Add(new SpatialViewModel(item, this));
                     }
                     foreach (var refModel in xbimModel.RefencedModels)
                     {
-                        children.Add(new XbimRefModelViewModel(refModel));
+                        children.Add(new XbimRefModelViewModel(refModel, this));
                     }
                 }
                 return children;

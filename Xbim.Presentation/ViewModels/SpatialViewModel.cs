@@ -19,6 +19,7 @@ namespace Xbim.Presentation
         private bool _isSelected;
         private bool _isExpanded;
         private List<IXbimViewModel> children;
+        public IXbimViewModel CreatingParent { get; set; } 
 
         public string Name
         {
@@ -32,10 +33,14 @@ namespace Xbim.Presentation
             }
         }
         
-        public SpatialViewModel(IfcSpatialStructureElement spatialStructure)
+        public SpatialViewModel(IfcSpatialStructureElement spatialStructure, IXbimViewModel parent)
         {
             xbimModel = spatialStructure.ModelOf as XbimModel;
             this.spatialStructureLabel = Math.Abs(spatialStructure.EntityLabel);
+            System.Diagnostics.Debug.WriteLine(
+                string.Format("Creating: {0} [#{1}] - {2}", Name, spatialStructureLabel, this.GetType().ToString())
+                );
+            CreatingParent = parent;
             IEnumerable subs = this.Children; //call this once to preload first level of hierarchy   
         }
 
@@ -43,6 +48,9 @@ namespace Xbim.Presentation
         {
             xbimModel = project.ModelOf as XbimModel;
             this.spatialStructureLabel = Math.Abs(project.EntityLabel);
+            System.Diagnostics.Debug.WriteLine(
+                string.Format("Creating: {0} [#{1}] - {2}", Name, spatialStructureLabel, this.GetType().ToString() )
+                );
             IEnumerable subs = this.Children; //call this once to preload first level of hierarchy          
         }
 
@@ -56,20 +64,23 @@ namespace Xbim.Presentation
                     IfcObjectDefinition space = xbimModel.Instances[spatialStructureLabel] as IfcObjectDefinition;
                     if (space != null)
                     {
-                        IEnumerable<IfcRelAggregates> aggregate = space.IsDecomposedBy.OfType<IfcRelAggregates>();
-                        foreach (IfcRelAggregates rel in aggregate)
+                        // list related items of type IfcSpatialStructureElement
+                        IEnumerable<IfcRelAggregates> AllAggregates = space.IsDecomposedBy.OfType<IfcRelAggregates>();
+                        foreach (IfcRelAggregates Aggregate in AllAggregates)
                         {
-                            foreach (IfcSpatialStructureElement subSpace in rel.RelatedObjects.OfType<IfcSpatialStructureElement>())
-                                children.Add(new SpatialViewModel(subSpace));
+                            foreach (IfcSpatialStructureElement subSpace in Aggregate.RelatedObjects.OfType<IfcSpatialStructureElement>())
+                                children.Add(new SpatialViewModel(subSpace, this));
                         }
-                        //now add any contained elements
+
+                        // now add any contained elements
+                        // this will not happen in case item is IfcProject
                         IfcSpatialStructureElement spatialElem = space as IfcSpatialStructureElement;
                         if (spatialElem != null)
                         {
                             //Select all the disting type names of elements for this
                             foreach (var type in spatialElem.ContainsElements.SelectMany(container=>container.RelatedElements).Select(r=>r.GetType()).Distinct())
                             {
-                                children.Add(new ContainedElementsViewModel(spatialElem, type));
+                                children.Add(new ContainedElementsViewModel(spatialElem, type, this));
                             }
                         }
                     }
@@ -77,6 +88,7 @@ namespace Xbim.Presentation
                 return children;
             }
         }
+
         public bool HasItems
         {
             get
@@ -85,9 +97,6 @@ namespace Xbim.Presentation
                 return children.Count > 0;
             }
         }
-
-       
-
 
         public int EntityLabel
         {
