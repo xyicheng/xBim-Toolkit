@@ -47,6 +47,7 @@ namespace Xbim.IO
                     "'Meta_ID' INTEGER PRIMARY KEY," +
                     "'Meta_type' text not null," +
                     "'Meta_key' text," +
+                    "'Meta_intkey' INTEGER," +
                     "'Meta_Value' text not null" +
                     ");");
         }
@@ -112,14 +113,15 @@ namespace Xbim.IO
         /// Adds a receord to the Meta table
         /// </summary>
         /// <param name="Type">Type of record (required)</param>
+        /// <param name="EntityLabel">Allows for entitylabel lookup when appropriate</param>
         /// <param name="Identifier">Optional</param>
         /// <param name="Value">Any string persistence mechanism of choice (required).</param>
-        public void AddMetaData(string Type, string Value, string Identifier = null)
+        public void AddMetaData(string Type, int EntityLabel, string Value, string Identifier = null)
         {
             string str = "INSERT INTO Meta (" +
-                "'Meta_type', 'Meta_Value', 'Meta_key' " +
+                "'Meta_type', 'Meta_Value', 'Meta_key', 'Meta_intkey' " +
                 ") values (" +
-                "@Meta_type, @Meta_Value, @Meta_key " +
+                "@Meta_type, @Meta_Value, @Meta_key, @Meta_intkey  " +
                 ")";
 
             using (var mDBcon = this.GetConnection())
@@ -135,6 +137,7 @@ namespace Xbim.IO
                             cmd.Parameters.Add("@Meta_key", DbType.String).Value = DBNull.Value;
                         else
                             cmd.Parameters.Add("@Meta_key", DbType.String).Value = Identifier;
+                        cmd.Parameters.Add("@Meta_intkey", DbType.Int32).Value = EntityLabel;
                         cmd.ExecuteNonQuery();
                     }
                     SQLiteTrans.Commit();
@@ -146,14 +149,15 @@ namespace Xbim.IO
         /// Adds a receord to the Meta table
         /// </summary>
         /// <param name="Type">Type of record (required)</param>
+        /// <param name="EntityLabel">Allows for entitylabel lookup when appropriate</param>
         /// <param name="Identifier">Optional</param>
         /// <param name="Value">Any string persistence mechanism of choice (required).</param>
-        public void AddMetaData(string Type, byte[] Value, string Identifier = null)
+        public void AddMetaData(string Type, int EntityLabel, byte[] Value, string Identifier = null)
         {
             string str = "INSERT INTO Meta (" +
-                "'Meta_type', 'Meta_Value', 'Meta_key' " +
+                "'Meta_type', 'Meta_Value', 'Meta_key', 'Meta_intkey' " +
                 ") values (" +
-                "@Meta_type, @Meta_Value, @Meta_key " +
+                "@Meta_type, @Meta_Value, @Meta_key, @Meta_intkey  " +
                 ")";
 
             using (var mDBcon = this.GetConnection())
@@ -169,6 +173,7 @@ namespace Xbim.IO
                             cmd.Parameters.Add("@Meta_key", DbType.String).Value = DBNull.Value;
                         else
                             cmd.Parameters.Add("@Meta_key", DbType.String).Value = Identifier;
+                        cmd.Parameters.Add("@Meta_intkey", DbType.Int32).Value = EntityLabel;
                         cmd.ExecuteNonQuery();
                     }
                     SQLiteTrans.Commit();

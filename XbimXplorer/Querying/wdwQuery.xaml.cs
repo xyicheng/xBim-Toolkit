@@ -140,7 +140,7 @@ namespace XbimXplorer.Querying
                     m = Regex.Match(cmd, @"^(Header|he)$", RegexOptions.IgnoreCase);
                     if (m.Success)
                     {
-                        ReportAdd("Description:");
+                        ReportAdd("FileDescription:");
                         foreach (var item in Model.Header.FileDescription.Description)
                         {
                             ReportAdd(string.Format("- Description: {0}", item));    

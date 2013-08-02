@@ -26,7 +26,8 @@ namespace Xbim.ModelGeometry.Converter
         IncludeStoreys = 2,
         IncludeSpaces = 4,
         IncludeSpacesBBox = 8,
-        IncludeTransform = 16,
+        IncludeSpacesStoreyId = 16,
+        IncludeTransform = 32,
         All = IncludeTransform * 2 - 1
     }
 
@@ -111,6 +112,7 @@ namespace Xbim.ModelGeometry.Converter
                                 XbimRect3D transformed = item.ToXbimRect3D().Transform(composed);
                                 db.AddMetaData(
                                         "Region",
+                                        -1,
                                         string.Format("Name:{0};Box:{1};", item.Name, transformed.ToString()), // verbose, but only a few items are expected in the model
                                         item.Name
                                         );
@@ -124,6 +126,7 @@ namespace Xbim.ModelGeometry.Converter
                             Logger.DebugFormat("XbimScene: Exporting transform.\r\n", mScalingReference);
                         db.AddMetaData(
                                 "Transform",
+                                -1,
                                 composed.ToArray(false),
                                 "World"
                                 );
@@ -181,6 +184,8 @@ namespace Xbim.ModelGeometry.Converter
                         (Options & GenerateSceneOption.IncludeSpaces) == GenerateSceneOption.IncludeSpaces
                         ||
                         (Options & GenerateSceneOption.IncludeSpacesBBox) == GenerateSceneOption.IncludeSpacesBBox
+                        ||
+                        (Options & GenerateSceneOption.IncludeSpacesStoreyId) == GenerateSceneOption.IncludeSpacesStoreyId
                         )
                     {
                         if (Logger != null)
@@ -190,7 +195,38 @@ namespace Xbim.ModelGeometry.Converter
                             int iEntLabel = Math.Abs( space.EntityLabel);
                             if ((Options & GenerateSceneOption.IncludeSpaces) == GenerateSceneOption.IncludeSpaces)
                             {
-                                db.AddMetaData(space.GetType().Name, space.Name ?? "Undefined Space", iEntLabel.ToString());
+                                db.AddMetaData(
+                                    space.GetType().Name, 
+                                    iEntLabel,
+                                    space.Name ?? "Unnamed Space", 
+                                    iEntLabel.ToString()
+                                    );
+                            }
+                            if ((Options & GenerateSceneOption.IncludeSpacesStoreyId) == GenerateSceneOption.IncludeSpacesStoreyId)
+                            {
+                                var parent = space.GetContainingStructuralElement();
+                                if (parent == null)
+                                {
+                                    // try with different application behaviours
+                                    foreach (var item in space.Decomposes)
+                                    {
+                                        parent = item.RelatingObject as IfcSpatialStructureElement;
+                                        if (parent != null)
+                                        {
+                                            break;
+                                        }
+                                    }
+                                    // parent = space.Decomposes.FirstOrDefault().RelatingObject;
+                                    // Decomposes RelatingObject
+                                }
+                                if (parent != null)
+                                {
+                                    db.AddMetaData(
+                                        "SpaceToStorey",
+                                        iEntLabel,
+                                        string.Format("StoreyName={0};StoreyLabel={1};", parent.Name, parent.EntityLabel),
+                                        iEntLabel.ToString());
+                                }
                             }
                             if ((Options & GenerateSceneOption.IncludeSpacesBBox) == GenerateSceneOption.IncludeSpacesBBox)
                             {
@@ -201,6 +237,7 @@ namespace Xbim.ModelGeometry.Converter
                                     XbimRect3D transformed = r3d.Transform(composed);
                                     db.AddMetaData(
                                             "SpaceBBox",
+                                            iEntLabel,
                                             // string.Format("Box:{1};", transformed.ToString()), // verbose, but only a few items are expected in the model
                                             transformed.ToFloatArray(),
                                             iEntLabel.ToString()
@@ -251,6 +288,7 @@ namespace Xbim.ModelGeometry.Converter
 
                                 db.AddMetaData(
                                     "Storey",
+                                    Math.Abs(storey.EntityLabel),
                                     string.Format("Name:{0};Elevation:{1};SpaceCount:{2};", cleanName, InTranslatedReferenceZ, spacesCount), // storeyHeight),
                                     cleanName);
                             }
