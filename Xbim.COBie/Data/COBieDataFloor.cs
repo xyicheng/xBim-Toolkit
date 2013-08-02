@@ -73,17 +73,25 @@ namespace Xbim.COBie.Data
                     UnknownCount++;
                 }
 
+                //set allPropertyValues to this element
+                allPropertyValues.SetAllPropertySingleValues(ifcBuildingStorey); //set the internal filtered IfcPropertySingleValues List in allPropertyValues
+                
+
                 floor.Name = name;
 
-                floor.CreatedBy = GetTelecomEmailAddress(ifcBuildingStorey.OwnerHistory);
-                floor.CreatedOn = GetCreatedOnDateAsFmtString(ifcBuildingStorey.OwnerHistory);
+                string createBy = allPropertyValues.GetPropertySingleValueValue("COBieCreatedBy", false); //support for COBie Toolkit for Autodesk Revit
+                floor.CreatedBy = ValidateString(createBy) ? createBy : GetTelecomEmailAddress(ifcBuildingStorey.OwnerHistory);
+                string createdOn = allPropertyValues.GetPropertySingleValueValue("COBieCreatedOn", false);//support for COBie Toolkit for Autodesk Revit
+                floor.CreatedOn = ValidateString(createdOn) ? createdOn : GetCreatedOnDateAsFmtString(ifcBuildingStorey.OwnerHistory);
 
                 floor.Category = GetCategory(ifcBuildingStorey);
 
-                floor.ExtSystem = GetExternalSystem(ifcBuildingStorey);
+                string extSystem = allPropertyValues.GetPropertySingleValueValue("COBieExtSystem", false);//support for COBie Toolkit for Autodesk Revit
+                floor.ExtSystem = ValidateString(extSystem) ? extSystem : GetExternalSystem(ifcBuildingStorey);
                 floor.ExtObject = ifcBuildingStorey.GetType().Name;
                 floor.ExtIdentifier = ifcBuildingStorey.GlobalId;
-                floor.Description = GetFloorDescription(ifcBuildingStorey);
+                string description = allPropertyValues.GetPropertySingleValueValue("COBieDescription", false);//support for COBie Toolkit for Autodesk Revit
+                floor.Description = ValidateString(description) ? description : GetFloorDescription(ifcBuildingStorey);
                 floor.Elevation = (string.IsNullOrEmpty(ifcBuildingStorey.Elevation.ToString())) ? DEFAULT_NUMERIC : string.Format("{0:F4}", (double)ifcBuildingStorey.Elevation);
 
                 floor.Height = GetFloorHeight(ifcBuildingStorey, allPropertyValues);

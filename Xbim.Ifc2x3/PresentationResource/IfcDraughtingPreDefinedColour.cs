@@ -16,7 +16,6 @@ using System;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
-using System.Windows.Media;
 using Xbim.Ifc2x3.MeasureResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
@@ -25,7 +24,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc2x3.PresentationResource
 {
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcDraughtingPreDefinedColour : IfcPreDefinedColour
     {
         #region Constructors
@@ -134,134 +133,4 @@ namespace Xbim.Ifc2x3.PresentationResource
         }
     }
 
-    #region Converter
-
-    public class DraughtingPreDefinedColourConverter : TypeConverter
-    {
-        public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
-        {
-            if (destinationType == typeof (string))
-                return true;
-            else
-                return base.CanConvertTo(context, destinationType);
-        }
-
-        public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value,
-                                         Type destinationType)
-        {
-            IfcDraughtingPreDefinedColour col = value as IfcDraughtingPreDefinedColour;
-            if (col != null && destinationType == typeof (string))
-            {
-                return col.Name;
-            }
-            else
-                return base.ConvertTo(context, culture, value, destinationType);
-        }
-
-        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
-        {
-            if (sourceType == typeof (string))
-                return true;
-            else
-                return base.CanConvertFrom(context, sourceType);
-        }
-
-        public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
-        {
-            string str = value as string;
-            if (str != null)
-            {
-                str = str.ToLower();
-                if (IfcDraughtingPreDefinedColour.ValidColourNames.Contains(str))
-                    return new IfcDraughtingPreDefinedColour {Name = str};
-            }
-            return base.ConvertFrom(context, culture, value);
-        }
-
-        public override bool GetStandardValuesSupported(ITypeDescriptorContext context)
-        {
-            return true;
-        }
-
-        public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
-        {
-            StandardValuesCollection svc = new StandardValuesCollection(IfcDraughtingPreDefinedColour.PrefinedColours);
-            return svc;
-        }
-
-        public override bool GetStandardValuesExclusive(ITypeDescriptorContext context)
-        {
-            return false;
-        }
-    }
-
-    public class ColourConverter : TypeConverter
-    {
-        public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
-        {
-            if (destinationType == typeof (string))
-                return true;
-            else
-                return base.CanConvertTo(context, destinationType);
-        }
-
-        public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value,
-                                         Type destinationType)
-        {
-            IfcDraughtingPreDefinedColour col = value as IfcDraughtingPreDefinedColour;
-            IfcColourRgb colRgb = value as IfcColourRgb;
-            if (col != null && destinationType == typeof (string))
-                return col.ToString();
-            else if (colRgb != null && destinationType == typeof (string))
-                return colRgb.ToString();
-            else
-                return base.ConvertTo(context, culture, value, destinationType);
-        }
-
-        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
-        {
-            if (sourceType == typeof (string))
-                return true;
-            else
-                return base.CanConvertFrom(context, sourceType);
-        }
-
-        public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
-        {
-            string str = value as string;
-            if (str != null)
-            {
-                str = str.ToLower();
-                if (IfcDraughtingPreDefinedColour.ValidColourNames.Contains(str))
-                    return new IfcDraughtingPreDefinedColour {Name = str};
-                else //not a predefined colour
-                {
-                    DoubleCollection dc = DoubleCollection.Parse(str);
-                    if (dc.Count == 3)
-                    {
-                        return new IfcColourRgb {Red = dc[0], Green = dc[1], Blue = dc[2]};
-                    }
-                }
-            }
-            return base.ConvertFrom(context, culture, value);
-        }
-
-        public override bool GetStandardValuesSupported(ITypeDescriptorContext context)
-        {
-            return true;
-        }
-
-        public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
-        {
-            StandardValuesCollection svc = new StandardValuesCollection(IfcDraughtingPreDefinedColour.PrefinedColours);
-            return svc;
-        }
-
-        public override bool GetStandardValuesExclusive(ITypeDescriptorContext context)
-        {
-            return false;
-        }
-    }
-
-    #endregion
 }

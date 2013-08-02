@@ -31,7 +31,7 @@ namespace Xbim.Ifc2x3.Kernel
     ///   NOTE  Use IfcRelDecomposes together with the appropriate subtypes of IfcProduct to define an hieraarchical aggregation of products. 
     ///   The group collection is handled by an instance of IfcRelAssignsToGroup, which assigns all group members to the IfcGroup.
     /// </summary>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcGroup : IfcObject
     {
         /// <summary>

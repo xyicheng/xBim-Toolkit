@@ -17,7 +17,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Windows.Media.Media3D;
 using Xbim.IO;
 using Xbim.Ifc2x3.Extensions;
 using Xbim.Ifc2x3.GeometricConstraintResource;

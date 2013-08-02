@@ -42,7 +42,7 @@ namespace Xbim.Ifc2x3.TopologyResource
     ///   Formal Propositions:
     ///   WR1   :   At most one of the bounds shall be of the type IfcFaceOuterBound
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcFace : IfcTopologicalRepresentationItem, IFace
     {
         public IfcFace()

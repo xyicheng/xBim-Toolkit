@@ -38,7 +38,7 @@ namespace Xbim.Ifc2x3.SharedBldgElements
     ///   FrameDepth 
     ///   FrameThickness
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcWindowPanelProperties : IfcPropertySetDefinition
     {
         #region Part 21 Step file Parse routines

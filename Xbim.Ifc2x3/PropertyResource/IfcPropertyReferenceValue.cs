@@ -29,7 +29,7 @@ namespace Xbim.Ifc2x3.PropertyResource
     ///   Definition from IAI: The IfcPropertyReferenceValue allows a property value to be given by referencing other entities within the resource definitions of IFC. Those other entities are regarded as predefined complex properties and can be aggregated within a property set (IfcPropertySet). The allowable entities to be used as value references are given by the IfcObjectReferenceSelect.
     ///   HISTORY: New entity in IFC Release 1.5. Entity has been renamed from IfcObjectReference in IFC Release 2x.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcPropertyReferenceValue : IfcSimpleProperty
     {
         private IfcLabel? _usageName;
@@ -52,6 +52,7 @@ namespace Xbim.Ifc2x3.PropertyResource
         /// <summary>
         ///   Optional. Description of the use of the referenced value within the property.
         /// </summary>
+        [IfcAttribute(3, IfcAttributeState.Optional)]
         public IfcLabel? UsageName
         {
             get { return _usageName; }
@@ -61,6 +62,7 @@ namespace Xbim.Ifc2x3.PropertyResource
         /// <summary>
         ///   Reference to another entity througH one of the select types in IfcObjectReferenceSelect.
         /// </summary>
+        [IfcAttribute(4, IfcAttributeState.Mandatory, IfcAttributeType.Class, 1)]
         public IfcObjectReferenceSelect PropertyReference
         {
             get { return _propertyReference; }

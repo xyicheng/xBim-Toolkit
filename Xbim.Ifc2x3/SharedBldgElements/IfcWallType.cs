@@ -34,7 +34,7 @@ namespace Xbim.Ifc2x3.SharedBldgElements
     ///   The occurrences of the IfcWallType are represented by instances of IfcWall and IfcWallStandardCase.
     ///   HISTORY: New entity in Release IFC2x Editon 2.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcWallType : IfcBuildingElementType
     {
         #region Fields

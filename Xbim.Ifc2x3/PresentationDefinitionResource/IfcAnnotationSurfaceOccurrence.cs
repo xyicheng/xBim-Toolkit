@@ -22,7 +22,7 @@ using Xbim.XbimExtensions;
 
 namespace Xbim.Ifc2x3.PresentationDefinitionResource
 {
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcAnnotationSurfaceOccurrence : IfcAnnotationOccurrence, IfcDraughtingCalloutElement
     {
         #region Fields

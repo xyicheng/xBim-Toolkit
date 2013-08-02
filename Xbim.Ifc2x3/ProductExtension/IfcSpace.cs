@@ -15,7 +15,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
-using System.Xml.Serialization;
+
 using Xbim.Ifc2x3.MeasureResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
@@ -116,7 +116,7 @@ namespace Xbim.Ifc2x3.ProductExtension
     ///   IfcShapeRepresentation.RepresentationIdentifier : 'Body' 
     ///   IfcShapeRepresentation.RepresentationType : 'Brep'
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcSpace : IfcSpatialStructureElement
     {
         #region Fields and Events
@@ -207,7 +207,7 @@ namespace Xbim.Ifc2x3.ProductExtension
         ///   NOTE  Coverings are often managed by the space, and not by the building element, which they cover.
         ///   IFC2x Edition3 CHANGE  New inverse relationship. Upward compatibility for file based exchange is guaranteed.
         /// </remarks>
-        [XmlIgnore]
+        
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class)]
         public IEnumerable<IfcRelCoversSpaces> HasCoverings
         {
@@ -217,7 +217,7 @@ namespace Xbim.Ifc2x3.ProductExtension
         /// <summary>
         ///   Inverse. Reference to Set of Space Boundaries that defines the physical or virtual delimitation of that Space.
         /// </summary>
-        [XmlIgnore]
+        
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class)]
         public IEnumerable<IfcRelSpaceBoundary> BoundedBy
         {

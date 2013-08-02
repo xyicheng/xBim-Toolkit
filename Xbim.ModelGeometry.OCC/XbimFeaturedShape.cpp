@@ -50,8 +50,10 @@ namespace Xbim
 					if(ok) result = boolOp.Shape();
 
 				}
-				catch(... )
+				catch(...)
 				{
+
+					
 				}
 				return ok;
 			}
@@ -71,7 +73,7 @@ namespace Xbim
 				return false;
 			}
 
-			static int  CompareSize(KeyValuePair<double, IXbimGeometryModel^> x,KeyValuePair<double, IXbimGeometryModel^> y)
+			static int  CompareSize(KeyValuePair<double, XbimGeometryModel^> x,KeyValuePair<double, XbimGeometryModel^> y)
 			{
 				return x.Key.CompareTo(y.Key);
 			}
@@ -92,7 +94,7 @@ namespace Xbim
 				return true;
 			}
 
-			XbimFeaturedShape::XbimFeaturedShape(IfcProduct^ product, IXbimGeometryModel^ baseShape, IEnumerable<IXbimGeometryModel^>^ openings, IEnumerable<IXbimGeometryModel^>^ projections)
+			XbimFeaturedShape::XbimFeaturedShape(IfcProduct^ product, XbimGeometryModel^ baseShape, IEnumerable<XbimGeometryModel^>^ openings, IEnumerable<XbimGeometryModel^>^ projections)
 			{
 				if(baseShape==nullptr)
 				{
@@ -100,20 +102,20 @@ namespace Xbim
 					return;
 				}
 				mBaseShape = baseShape;	
-				_representationLabel= baseShape->RepresentationLabel;
-				_surfaceStyleLabel=baseShape->SurfaceStyleLabel;
+				RepresentationLabel= baseShape->RepresentationLabel;
+				SurfaceStyleLabel=baseShape->SurfaceStyleLabel;
 				_hasCurves = false;
 
 				if(openings!=nullptr)	
 				{
 					//sort each opening in terms of the distance from the top left of the base bb and the bottom right of the opening
-					mOpenings = gcnew List<IXbimGeometryModel^>();	
-					for each (IXbimGeometryModel^ o in openings)
+					mOpenings = gcnew List<XbimGeometryModel^>();	
+					for each (XbimGeometryModel^ o in openings)
 					{
 						//expand collections to avoid clash
 						if(dynamic_cast<XbimGeometryModelCollection^>(o))
 						{
-							for each (IXbimGeometryModel^ sub in (XbimGeometryModelCollection^)o)
+							for each (XbimGeometryModel^ sub in (XbimGeometryModelCollection^)o)
 							{
 								if(sub->HasCurvedEdges) _hasCurves=true;
 								mOpenings->Add(sub);
@@ -131,8 +133,8 @@ namespace Xbim
 				if(projections!=nullptr)	
 				{
 					//sort each opening in terms of the distance from the top left of the base bb and the bottom right of the opening
-					mProjections = gcnew List<IXbimGeometryModel^>();	
-					for each (IXbimGeometryModel^ p in projections)
+					mProjections = gcnew List<XbimGeometryModel^>();	
+					for each (XbimGeometryModel^ p in projections)
 					{
 						if(p->HasCurvedEdges) _hasCurves=true;
 						mProjections->Add(p);
@@ -150,7 +152,7 @@ namespace Xbim
 					TopoDS_Compound c;
 					BRep_Builder b;
 					b.MakeCompound(c);
-					for each(IXbimGeometryModel^ projection in mProjections) // quick joinung 
+					for each(XbimGeometryModel^ projection in mProjections) // quick joinung 
 						b.Add(c,*(projection->Handle));
 					try
 					{
@@ -163,7 +165,7 @@ namespace Xbim
 						{
 							mResultShape =  gcnew XbimSolid( mBaseShape, _hasCurves);//go back to start
 							//try each cut separately
-							for each(IXbimGeometryModel^ projection in mProjections) //one by one joinung for tricky geometries, opencascade is less likely to fail
+							for each(XbimGeometryModel^ projection in mProjections) //one by one joinung for tricky geometries, opencascade is less likely to fail
 							{
 								DoUnion(*(projection->Handle));
 							}
@@ -179,11 +181,11 @@ namespace Xbim
 				{
 
 					BRep_Builder b;
-					List<IXbimGeometryModel^>^ unprocessed = gcnew List<IXbimGeometryModel^>(mOpenings);
+					List<XbimGeometryModel^>^ unprocessed = gcnew List<XbimGeometryModel^>(mOpenings);
 
 					while(unprocessed->Count>0)
 					{	
-						List<IXbimGeometryModel^>^ toProcess = gcnew List<IXbimGeometryModel^>(unprocessed);
+						List<XbimGeometryModel^>^ toProcess = gcnew List<XbimGeometryModel^>(unprocessed);
 						TopoDS_Compound comp;
 						b.MakeCompound(comp); //make a compound to hold all the cuts
 						bool first = true;
@@ -191,7 +193,7 @@ namespace Xbim
 						int total = toProcess->Count+1;
 						Handle(Bnd_HArray1OfBox) HBnd = new  Bnd_HArray1OfBox(1,total);		
 						int boxArraySize = 0;
-						for each(IXbimGeometryModel^ opening in toProcess) // quick cutting 
+						for each(XbimGeometryModel^ opening in toProcess) // quick cutting 
 						{	
 							if(first)
 							{
@@ -232,9 +234,12 @@ namespace Xbim
 							fTol.LimitTolerance(*(mResultShape->Handle), tenthMM,tenthMM*10); //   1/10 mmm
 							fTol.SetTolerance(comp, tenthMM);					//1mm
 							fTol.LimitTolerance(comp, tenthMM,tenthMM*10);	
-
-							/*BRepTools::Write(comp, "c");
-							BRepTools::Write(*(mResultShape->Handle), "b");*/
+							/*if(product->EntityLabel==149273)
+							{
+							BRepTools::Write(comp, "c");
+							BRepTools::Write(*(mResultShape->Handle), "b");
+							}*/
+							
 							if(!DoCut(comp) ) //try the fast option first if it is not a shell, if more than one opening try slow
 							{
 								//try more relaxed tolerances
@@ -271,7 +276,7 @@ namespace Xbim
 
 
 
-			IXbimGeometryModel^ XbimFeaturedShape::Cut(IXbimGeometryModel^ shape)
+			XbimGeometryModel^ XbimFeaturedShape::Cut(XbimGeometryModel^ shape)
 			{
 
 				BRepAlgoAPI_Cut boolOp(*(mResultShape->Handle),*(shape->Handle));
@@ -290,7 +295,7 @@ namespace Xbim
 				Logger->Warn("Failed to form difference between two shapes");
 				return nullptr;
 			}
-			IXbimGeometryModel^ XbimFeaturedShape::Union(IXbimGeometryModel^ shape)
+			XbimGeometryModel^ XbimFeaturedShape::Union(XbimGeometryModel^ shape)
 			{
 				BRepAlgoAPI_Fuse boolOp(*(mResultShape->Handle),*(shape->Handle));
 
@@ -309,7 +314,7 @@ namespace Xbim
 				return nullptr;
 			}
 
-			IXbimGeometryModel^ XbimFeaturedShape::Intersection(IXbimGeometryModel^ shape)
+			XbimGeometryModel^ XbimFeaturedShape::Intersection(XbimGeometryModel^ shape)
 			{
 				BRepAlgoAPI_Common boolOp(*(mResultShape->Handle),*(shape->Handle));
 
@@ -359,7 +364,7 @@ namespace Xbim
 					throw(gcnew NotImplementedException("XbimFeaturedShape::CopyTo only supports IfcLocalPlacement type"));
 			}
 
-			IXbimGeometryModel^ XbimFeaturedShape::CopyTo(IfcObjectPlacement^ placement)
+			XbimGeometryModel^ XbimFeaturedShape::CopyTo(IfcObjectPlacement^ placement)
 			{
 				return gcnew XbimFeaturedShape(this,placement);
 			}
@@ -369,28 +374,6 @@ namespace Xbim
 				mResultShape->Move(location);
 			}
 
-
-			List<XbimTriangulatedModel^>^XbimFeaturedShape::Mesh()
-			{
-				return Mesh( true, XbimGeometryModel::DefaultDeflection);
-			}
-
-			List<XbimTriangulatedModel^>^XbimFeaturedShape::Mesh(bool withNormals )
-			{
-				return Mesh(withNormals, XbimGeometryModel::DefaultDeflection);
-			}
-
-			List<XbimTriangulatedModel^>^XbimFeaturedShape::Mesh(bool withNormals, double deflection )
-			{
-				return XbimGeometryModel::Mesh(mResultShape,withNormals,deflection, Matrix3D::Identity);
-
-			}
-
-			List<XbimTriangulatedModel^>^XbimFeaturedShape::Mesh(bool withNormals, double deflection, Matrix3D transform )
-			{
-				return XbimGeometryModel::Mesh(mResultShape,withNormals,deflection, transform);
-
-			}
 		}
 	}
 }

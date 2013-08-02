@@ -35,7 +35,7 @@ namespace Xbim.Ifc2x3.StructuralAnalysisDomain
     ///   The relationship to a specific material definition is provided by the entity class IfcRelAssociatesMaterial. The instance of IfcStructuralMember is used to represent collectively its subclasses IfcStructuralCurveMember and IfcStructuralFaceMember.
     ///   Depending on the material, there are material specific subtypes of IfcMechanicalMaterialProperties, such as IfcMechanicalSteelMaterialProperties, or IfcMechanicalConcreteMaterialProperties.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public abstract class IfcStructuralMember : IfcStructuralItem
     {
         /// <summary>

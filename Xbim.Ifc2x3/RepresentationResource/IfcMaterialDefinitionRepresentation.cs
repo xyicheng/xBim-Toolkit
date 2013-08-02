@@ -33,7 +33,7 @@ namespace Xbim.Ifc2x3.RepresentationResource
     ///   Formal Propositions:
     ///   WR11   :   Only representations of type IfcStyledRepresentation should be used to represent material through the IfcMaterialRepresentation.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcMaterialDefinitionRepresentation : IfcProductRepresentation
     {
         #region Fields

@@ -31,7 +31,7 @@ namespace Xbim.Ifc2x3.ExternalReferenceResource
     ///   Formal Propositions:
     ///   WR1   :   In order to specify a valid electronic document format either the file extension or the MIME type has to be given.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable, IndexedClass]
+    [IfcPersistedEntityAttribute, IndexedClass]
     public class IfcDocumentElectronicFormat : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                                INotifyPropertyChanging
     {

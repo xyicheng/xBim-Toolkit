@@ -28,7 +28,7 @@ namespace Xbim.Ifc2x3.GeometricModelResource
     ///   NOTE: Corresponding STEP entity: faceted_brep. Please refer to ISO/IS 10303-42:1994, p. 173 for the final definition of the formal standard. In the current IFC Release faceted B-rep with voids is represented by an own subtype and not defined via an implicit ANDOR supertype constraint as in ISO/IS 10303-42:1994. This change has been made due to the fact, that only ONEOF supertype constraint is allowed within the IFC object model. 
     ///   HISTORY New class in IFC Release 1.0
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcFacetedBrep : IfcManifoldSolidBrep
     {
         public override string WhereRule()

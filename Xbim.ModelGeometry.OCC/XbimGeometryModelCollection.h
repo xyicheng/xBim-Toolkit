@@ -1,6 +1,6 @@
 #pragma once
 #include "XbimGeometryModel.h"
-#include "IXbimGeometryModel.h"
+#include "XbimGeometryModel.h"
 #include "TopoDS_Compound.hxx"
 #include "XbimBoundingBox.h"
 #include <BRep_Builder.hxx>
@@ -9,35 +9,33 @@
 using namespace System::Collections::Generic;
 using namespace  Xbim::Ifc2x3::Extensions;
 using namespace Xbim::Common::Exceptions;
+using namespace Xbim::Common::Geometry;
 namespace Xbim
 {
 	namespace ModelGeometry
 	{
 		namespace OCC
 		{
-			public ref class XbimGeometryModelCollection : IXbimGeometryModel, IEnumerable<IXbimGeometryModel^>
+			public ref class XbimGeometryModelCollection : XbimGeometryModel, IEnumerable<XbimGeometryModel^>
 			{
 				TopoDS_Compound* pCompound;
-				List<IXbimGeometryModel^>^ shapes;
+				List<XbimGeometryModel^>^ shapes;
 				bool _hasCurvedEdges;
-				bool _isMap;
-				Int32 _representationLabel;
-				Int32 _surfaceStyleLabel;
-				Matrix3D _transform;
+				XbimMatrix3D _transform;
 			public:
 
-				XbimGeometryModelCollection(bool isMap, bool hasCurvedEdges)
+				XbimGeometryModelCollection(bool hasCurvedEdges)
 				{
 
-					shapes = gcnew List<IXbimGeometryModel^>();
-					_isMap=isMap;
+					shapes = gcnew List<XbimGeometryModel^>();
+
 					_hasCurvedEdges = hasCurvedEdges;
 				};
 
 				XbimGeometryModelCollection(IfcAxis2Placement^ origin, IfcCartesianTransformationOperator^ transform, ConcurrentDictionary<int,Object^>^ maps)
 				{
-					shapes = gcnew List<IXbimGeometryModel^>();
-					_isMap=true;
+					shapes = gcnew List<XbimGeometryModel^>();
+
 					_hasCurvedEdges = false;
 
 					if(origin !=nullptr)
@@ -52,23 +50,23 @@ namespace Xbim
 					}
 
 					if(transform!=nullptr)
-						_transform= Matrix3D::Multiply( CartesianTransformationOperatorExtensions::ToMatrix3D(transform, maps),_transform);
+						_transform= XbimMatrix3D::Multiply( CartesianTransformationOperatorExtensions::ToMatrix3D(transform, maps),_transform);
 				};
 
 
 				XbimGeometryModelCollection(const TopoDS_Compound & pComp, bool hasCurves,bool isMap)
 				{
 
-					shapes = gcnew List<IXbimGeometryModel^>();
+					shapes = gcnew List<XbimGeometryModel^>();
 					_hasCurvedEdges = hasCurves;
-					_isMap=isMap;
+
 
 				};
-				XbimGeometryModelCollection(const TopoDS_Compound & pComp, List<IXbimGeometryModel^>^ features, bool hasCurves,bool isMap)
+				XbimGeometryModelCollection(const TopoDS_Compound & pComp, List<XbimGeometryModel^>^ features, bool hasCurves,bool isMap)
 				{
-					shapes = gcnew List<IXbimGeometryModel^>(features);
+					shapes = gcnew List<XbimGeometryModel^>(features);
 					_hasCurvedEdges = hasCurves;
-					_isMap=isMap;
+
 				};
 
 				~XbimGeometryModelCollection()
@@ -95,23 +93,23 @@ namespace Xbim
 					}
 				}
 
-				property Matrix3D Transform
+				virtual property XbimMatrix3D Transform
 				{
-					Matrix3D get()
+					XbimMatrix3D get() override
 					{
 						return _transform;
 					}
 				}
-				// IEnumerable<IXbimGeometryModel^> Members
+				// IEnumerable<XbimGeometryModel^> Members
 
 				virtual property XbimLocation ^ Location 
 				{
-					XbimLocation ^ get()
+					XbimLocation ^ get() override
 					{
 						//return gcnew XbimLocation(pCompound->Location());
 						throw gcnew NotImplementedException("Location needs to be implemented");
 					}
-					void set(XbimLocation ^ location)
+					void set(XbimLocation ^ location) override
 					{
 						//pCompound->Location(*(location->Handle));;
 						throw gcnew NotImplementedException("Location needs to be implemented");
@@ -120,46 +118,34 @@ namespace Xbim
 
 				virtual property double Volume
 				{
-					double get()
+					double get() override
 					{
-						/*GProp_GProps System;
-						BRepGProp::VolumeProperties(*pCompound, System, Standard_True);
-						return System.Mass();*/
 						double volume = 0;
-						for each(IXbimGeometryModel^ geom in shapes)
-							volume+=geom->Volume;
+						for each(XbimGeometryModel^ geom in shapes)
+						{
+							volume += geom->Volume;
+						}
 						return volume;
 					}
 				}
 
-				virtual property Int32 RepresentationLabel
-				{
-					Int32 get(){return _representationLabel; }
-					void set(Int32 value){ _representationLabel=value; }
-				}
 
-				virtual property Int32 SurfaceStyleLabel
-				{
-					Int32 get(){return _surfaceStyleLabel; }
-					void set(Int32 value){ _surfaceStyleLabel=value; }
-				}
-
-				virtual XbimBoundingBox^ GetBoundingBox(bool precise)
+				virtual XbimRect3D GetBoundingBox() override
 				{
 
-					XbimBoundingBox^ bb = nullptr;
-					for each(IXbimGeometryModel^ geom in shapes)
+					XbimRect3D bb = XbimRect3D::Empty;
+					for each(XbimGeometryModel^ geom in shapes)
 					{
-						if(bb == nullptr)
-							bb = geom->GetBoundingBox(precise);
+						if(bb.IsEmpty)
+							bb = geom->GetBoundingBox();
 						else
-							bb->Add(geom->GetBoundingBox(precise));
+							bb.Union(geom->GetBoundingBox());
 
 					}
 					return bb;
 				};
 
-				virtual IEnumerator<IXbimGeometryModel^>^ GetEnumerator()
+				virtual IEnumerator<XbimGeometryModel^>^ GetEnumerator()
 				{
 
 					return shapes->GetEnumerator();
@@ -171,10 +157,10 @@ namespace Xbim
 
 				virtual property bool HasCurvedEdges
 				{
-					virtual bool get()
+					virtual bool get() override
 					{
 						if(_hasCurvedEdges) return true;
-						for each(IXbimGeometryModel^ gm in this) //if any not other return false
+						for each(XbimGeometryModel^ gm in this) //if any not other return false
 						{
 							if(gm->HasCurvedEdges) return true;
 						}
@@ -182,14 +168,8 @@ namespace Xbim
 					}
 				}
 
-				property bool IsMap
-				{
-					bool get()
-					{
-						return _isMap;
-					}
-				}
-				void Add(IXbimGeometryModel^ shape)
+
+				void Add(XbimGeometryModel^ shape)
 				{
 					shapes->Add(shape);
 					if(pCompound)
@@ -199,7 +179,7 @@ namespace Xbim
 					}
 				}
 
-				IXbimGeometryModel^ Solidify();
+				XbimGeometryModel^ Solidify();
 
 
 				/*Interfaces*/
@@ -207,28 +187,28 @@ namespace Xbim
 				{
 					//
 
-					TopoDS_Shape* get()
+					TopoDS_Shape* get() override
 					{
 						if(!pCompound)
 						{
 							BRep_Builder b;
 							pCompound = new TopoDS_Compound();;
 							b.MakeCompound(*pCompound);
-							for each(IXbimGeometryModel^ shape in shapes)
-								b.Add(*pCompound, *(shape->Handle));
+							for each(XbimGeometryModel^ shape in shapes)
+							{
+								if(!shape->Handle->IsNull())
+									b.Add(*pCompound, *(shape->Handle));
+							}
 						}
 						return pCompound;
 					};
 				}
-				virtual IXbimGeometryModel^ Cut(IXbimGeometryModel^ shape);
-				virtual IXbimGeometryModel^ Union(IXbimGeometryModel^ shape);
-				virtual IXbimGeometryModel^ Intersection(IXbimGeometryModel^ shape);
-				virtual List<XbimTriangulatedModel^>^Mesh(bool withNormals, double deflection, Matrix3D transform);
-				virtual List<XbimTriangulatedModel^>^Mesh(bool withNormals, double deflection);
-				virtual List<XbimTriangulatedModel^>^Mesh(bool withNormals);
-				virtual List<XbimTriangulatedModel^>^Mesh();
-				virtual IXbimGeometryModel^ CopyTo(IfcObjectPlacement^ placement);
-				virtual void Move(TopLoc_Location location);
+				virtual XbimGeometryModel^ Cut(XbimGeometryModel^ shape) override;
+				virtual XbimGeometryModel^ Union(XbimGeometryModel^ shape) override;
+				virtual XbimGeometryModel^ Intersection(XbimGeometryModel^ shape) override;
+				virtual List<XbimTriangulatedModel^>^Mesh(bool withNormals, double deflection) override;
+				virtual XbimGeometryModel^ CopyTo(IfcObjectPlacement^ placement) override;
+				virtual void Move(TopLoc_Location location) override;
 			};
 		}
 	}

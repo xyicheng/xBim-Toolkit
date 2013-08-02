@@ -10,40 +10,70 @@ namespace XbimRegression
     /// </summary>
     public class ProcessResult
     {
+        public ProcessResult()
+        {
+            Errors = -1;
+        }
+        public bool Failed { get; set; }
         public String FileName { get; set; }
-        public int ExitCode { get; set; }
-        public long Duration { get; set; }
-
+        public int Errors { get; set; }
+        public int Warnings { get; set; }
+        public long ParseDuration { get; set; }
+        public long GeometryDuration { get; set; }
+        public long SceneDuration { get; set; }
         public long XbimLength { get; set; }
-        public long XbimGCLength { get; set; }
+        public long SceneLength { get; set; }
         public long IfcLength { get; set; }
-
         public long Entities { get; set; }
         public long GeometryEntries { get; set; }
-
         public String IfcSchema { get; set; }
         public String IfcName { get; set; }
         public String IfcDescription { get; set; }
-
-
-        public const String CsvHeader = @"IFC File, Conversion Errors, Duration (ms), IFC Size, Xbim Size, IFC Entities, Geometry Nodes, "+
-            "FILE_SCHEMA, FILE_NAME, FILE_DESCRIPTION";
+        public long IfcProductEntries { get; set; }
+        public long IfcSolidGeometries { get; set; }
+        public long IfcMappedGeometries { get; set; }
+        public String Application { get; set; }
+        public long BooleanGeometries { get; set; }
+        public const String CsvHeader = @"IFC File, Errors, Warnings, Parse Duration (ms), Geometry Conversion (ms), Scene Generation (ms), Total Duration (ms), IFC Size, Xbim Size, Scene Size, IFC Entities, Geometry Nodes, " +
+           
+            "FILE_SCHEMA, FILE_NAME, FILE_DESCRIPTION, "+
+             "Products, Solid Models, Maps, Booleans Application";
 
         public String ToCsv()
         {
-            return String.Format("\"{0}\",{1},{2},{3},{4},{5},{6},{7},\"{8}\",\"{9}\"",
+            return String.Format("\"{0}\",{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},\"{12}\",\"{13}\",\"{14}\",{15},{16},{17},{18},\"{19}\"",
                 FileName,           // 0
-                ExitCode,           // 1
-                Duration,           // 2
-                IfcLength,          // 3
-                XbimLength,         // 4
-                Entities,           // 5
-                GeometryEntries,    // 6
-                IfcSchema,          // 7
-                IfcName,            // 8
-                IfcDescription      // 9
-                     
+                Errors,             // 1
+                Warnings,           // 2
+                ParseDuration,      // 3
+                GeometryDuration,   // 4
+                SceneDuration,      // 5
+                TotalTime,          // 6
+                IfcLength,          // 7
+                XbimLength,         // 8
+                SceneLength,        // 9
+                Entities,           // 10
+                GeometryEntries,    // 11
+                IfcSchema,          // 12
+                IfcName,            // 13
+                IfcDescription,     // 14
+                IfcProductEntries,  // 15
+                IfcSolidGeometries, // 16
+                IfcMappedGeometries,// 17
+                BooleanGeometries,  // 18
+                Application         // 19
                 );
         }
+
+        public long TotalTime 
+        {
+            get
+            {
+                return ParseDuration + GeometryDuration + SceneDuration;
+            }
+        
+        }
+
+       
     }
 }

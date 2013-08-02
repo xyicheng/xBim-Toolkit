@@ -15,7 +15,6 @@ using Xbim.Ifc2x3.GeometryResource;
 using Xbim.XbimExtensions.Interfaces;
 using Xbim.IO.Parser;
 using Xbim.Ifc2x3.Kernel;
-using Xbim.ModelGeometry;
 using Xbim.ModelGeometry.Scene;
 
 
@@ -296,9 +295,8 @@ namespace Xbim.Tests
                     using (XbimModel modelServer2 = new XbimModel())
                     {
                         modelServer2.Open(fileName2);
-                        foreach (var handle in modelServer.Instances)
+                        foreach (var entity in modelServer.Instances)
                         {
-                            IPersistIfcEntity entity = modelServer.Instances[handle];
                             int entityLabel = entity.EntityLabel;
                             byte[] b1 = modelServer.GetEntityBinaryData(entity);
 

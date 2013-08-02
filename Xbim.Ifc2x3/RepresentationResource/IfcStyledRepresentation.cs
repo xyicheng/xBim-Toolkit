@@ -33,7 +33,7 @@ namespace Xbim.Ifc2x3.RepresentationResource
     ///   WR21   :   Only IfcStyledItem's (or subtypes) are allowed as members in the list of Items, inherited from IfcRepresentation. 
     ///   IFC2x Edition 3 CHANGE  New where rule to ensure the usage for material definition representations, and other non-shape representations
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcStyledRepresentation : IfcStyleModel
     {
         #region Ifc Schema Validation Methods

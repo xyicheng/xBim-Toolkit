@@ -14,7 +14,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Xml.Serialization;
+
 using Xbim.Ifc2x3.GeometricConstraintResource;
 using Xbim.Ifc2x3.RepresentationResource;
 using Xbim.XbimExtensions;
@@ -39,7 +39,7 @@ namespace Xbim.Ifc2x3.Kernel
     ///   Formal Propositions:
     ///   WR1   :   If an Representation is given, then also a LocalPlacement has to be given.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public abstract class IfcProduct : IfcObject
     {
         #region Fields and Events
@@ -134,7 +134,7 @@ namespace Xbim.Ifc2x3.Kernel
         /// <summary>
         ///   Reference to the IfcRelAssignsToProduct relationship, by which other subtypes of IfcObject can be related to the product.
         /// </summary>
-        [XmlIgnore]
+        
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class)]
         public IEnumerable<IfcRelAssignsToProduct> ReferencedBy
         {

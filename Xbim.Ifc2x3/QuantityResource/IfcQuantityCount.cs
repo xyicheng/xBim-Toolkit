@@ -31,7 +31,7 @@ namespace Xbim.Ifc2x3.QuantityResource
     ///   Formal Propositions:
     ///   WR21   :   The value of the count shall be greater than or equal to zero.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcQuantityCount : IfcPhysicalSimpleQuantity
     {
         #region Fields
@@ -71,9 +71,14 @@ namespace Xbim.Ifc2x3.QuantityResource
         public override string WhereRule()
         {
             string baseErr = base.WhereRule();
-            if (_countValue < 0)
+            if (CountValue < 0)
                 baseErr += "WR21 QuantityCount : The value of the count shall be greater than or equal to zero.\n";
             return baseErr;
+        }
+
+        public override string ToString()
+        {
+            return CountValue.ToPart21;
         }
     }
 }

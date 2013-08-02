@@ -51,12 +51,6 @@
     <ClCompile Include="XbimGeomPrim.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="XbimMeshedFace.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="XbimMeshGeometry.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="XbimOrientedEdge.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -137,15 +131,6 @@
     <ClInclude Include="XbimGeomPrim.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="XbimMeshedFace.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="XbimMeshedFaceEnumerator.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="XbimMeshGeometry.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="XbimOrientedEdge.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -197,7 +182,6 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="ModelGeoemetryClassDiagram.cd" />
-    <None Include="ReadMe.txt" />
     <None Include="XbimGeomKey.snk" />
   </ItemGroup>
   <ItemGroup>

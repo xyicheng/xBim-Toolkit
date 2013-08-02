@@ -25,7 +25,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc2x3.ActorResource
 {
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class PersonCollection : XbimList<IfcPerson>
     {
         internal PersonCollection(IPersistIfcEntity owner)
@@ -54,7 +54,7 @@ namespace Xbim.Ifc2x3.ActorResource
         }
     }
 
-    [IfcPersistedEntityAttribute, Serializable, IndexedClass]
+    [IfcPersistedEntityAttribute, IndexedClass]
     public class IfcPerson : IfcActorSelect, IPersistIfcEntity, IFormattable, ISupportChangeNotification,
                              INotifyPropertyChanged, IfcObjectReferenceSelect, INotifyPropertyChanging
     {
@@ -325,7 +325,7 @@ namespace Xbim.Ifc2x3.ActorResource
         //////}
 
 
-        //////[XmlIgnore]
+        //////
         //////[Browsable(true)]
         //////public PostalAddressCollection PostalAddresses
         //////{
@@ -343,7 +343,7 @@ namespace Xbim.Ifc2x3.ActorResource
 
         //////    }
         //////}
-        //////[XmlIgnore]
+        //////
         //////[Browsable(true)]
         //////public TelecomAddressCollection TelecomAddresses
         //////{
@@ -362,7 +362,7 @@ namespace Xbim.Ifc2x3.ActorResource
         //////}
 
 
-        //////[XmlIgnore]
+        //////
         //////public string EngagedInString
         //////{
         //////    get
@@ -437,13 +437,19 @@ namespace Xbim.Ifc2x3.ActorResource
 
         protected string MiddleNamesDelimited(string delimiter, string appendIfNotEmpty)
         {
-            string ret = MiddleNames == null ? "" : _middleNames.ToString("D" + delimiter, null);
+            string ret = MiddleNames == null ? "" : MiddleNames.ToString("D" + delimiter, null);
             //return delimited string 
             if (!string.IsNullOrEmpty(ret))
                 ret += appendIfNotEmpty;
             return ret;
         }
 
+        public string RolesString
+        {
+            get { return Roles == null ? null : Roles.ToString("D; ", null); }
+
+        }
+ 
         protected string RolesDelimited(string delimiter)
         {
             return RolesDelimited(delimiter, "");
@@ -451,7 +457,7 @@ namespace Xbim.Ifc2x3.ActorResource
 
         protected string RolesDelimited(string delimiter, string appendIfNotEmpty)
         {
-            string ret = _roles == null ? "" : _roles.ToString("D" + delimiter, null); //return delimited string
+            string ret = Roles == null ? "" : Roles.ToString("D" + delimiter, null); //return delimited string
             if (!string.IsNullOrEmpty(ret))
                 ret += appendIfNotEmpty;
             return ret;

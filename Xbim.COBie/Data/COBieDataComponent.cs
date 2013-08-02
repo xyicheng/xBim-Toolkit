@@ -13,8 +13,8 @@ using Xbim.Ifc2x3.PropertyResource;
 using Xbim.Ifc2x3.StructuralElementsDomain;
 using Xbim.Ifc2x3.SharedComponentElements;
 using Xbim.IO;
-using System.Windows.Media.Media3D;
 using Xbim.ModelGeometry.Scene;
+using Xbim.Common.Geometry;
 
 namespace Xbim.COBie.Data
 {
@@ -24,8 +24,8 @@ namespace Xbim.COBie.Data
     public struct SpaceInfo
     {
         public string Name { get; set; }
-        public Rect3D Rectangle { get; set; }
-        public Matrix3D Matrix { get; set; }
+        public XbimRect3D Rectangle { get; set; }
+        public XbimMatrix3D Matrix { get; set; }
     }
     
     /// <summary>
@@ -86,7 +86,7 @@ namespace Xbim.COBie.Data
                 ProgressIndicator.IncrementAndUpdate();
                 
                 COBieComponentRow component = new COBieComponentRow(components);
-
+                
                 IfcElement el = obj as IfcElement;
                 if (el == null)
                     continue;
@@ -96,20 +96,26 @@ namespace Xbim.COBie.Data
                     name = "Name Unknown " + UnknownCount.ToString();
                     UnknownCount++;
                 }
-
+                //set allPropertyValues to this element
+                allPropertyValues.SetAllPropertySingleValues(el); //set the internal filtered IfcPropertySingleValues List in allPropertyValues
+                
                 component.Name = name;
-                component.CreatedBy = GetTelecomEmailAddress(el.OwnerHistory);
-                component.CreatedOn = GetCreatedOnDateAsFmtString(el.OwnerHistory);
+                string createBy = allPropertyValues.GetPropertySingleValueValue("COBieCreatedBy", false); //support for COBie Toolkit for Autodesk Revit
+                component.CreatedBy = ValidateString(createBy) ? createBy : GetTelecomEmailAddress(el.OwnerHistory);
+                string createdOn = allPropertyValues.GetPropertySingleValueValue("COBieCreatedOn", false);//support for COBie Toolkit for Autodesk Revit
+                component.CreatedOn = ValidateString(createdOn) ?  createdOn : GetCreatedOnDateAsFmtString(el.OwnerHistory);
                 
                 component.TypeName = GetTypeName(el);
                 component.Space = GetComponentRelatedSpace(el);
-                component.Description = GetComponentDescription(el);
-                component.ExtSystem = GetExternalSystem(el);
+                string description = allPropertyValues.GetPropertySingleValueValue("COBieDescription", false);//support for COBie Toolkit for Autodesk Revit
+                component.Description = ValidateString(description) ? description : GetComponentDescription(el);
+                string extSystem = allPropertyValues.GetPropertySingleValueValue("COBieExtSystem", false);//support for COBie Toolkit for Autodesk Revit
+                component.ExtSystem = ValidateString(extSystem) ? extSystem : GetExternalSystem(el);
                 component.ExtObject = el.GetType().Name;
                 component.ExtIdentifier = el.GlobalId;
 
                 //set from PropertySingleValues filtered via candidateProperties
-                allPropertyValues.SetAllPropertySingleValues(el); //set the internal filtered IfcPropertySingleValues List in allPropertyValues
+                //set the internal filtered IfcPropertySingleValues List in allPropertyValues to this element set above
                 component.SerialNumber = allPropertyValues.GetPropertySingleValueValue("SerialNumber", false);
                 component.InstallationDate = GetDateFromProperty(allPropertyValues, "InstallationDate");
                 component.WarrantyStartDate = GetDateFromProperty(allPropertyValues, "WarrantyStartDate");
@@ -202,8 +208,8 @@ namespace Xbim.COBie.Data
                 .Where(bb => bb.IfcTypeId == IfcMetaData.IfcTypeId(typeof(IfcSpace)))
                 .Select(bb => new SpaceInfo
                 {
-                    Rectangle = new Rect3D().FromArray(bb.ShapeData),
-                    Matrix = new Matrix3D().FromArray(bb.TransformData),
+                    Rectangle = XbimRect3D.FromArray(bb.ShapeData),
+                    Matrix = bb.Transform,
                     Name = Model.Instances.OfType<IfcSpace>().Where(sp => (Math.Abs(sp.EntityLabel) == Math.Abs(bb.IfcProductLabel))).Select(sp => sp.Name.ToString()).FirstOrDefault()
                 }).ToList();
             }
@@ -218,35 +224,35 @@ namespace Xbim.COBie.Data
                 if (elGeoData == null)
                     return string.Empty; //No geometry
 
-                Rect3D elBoundBox = new Rect3D().FromArray(elGeoData.ShapeData);
-                Matrix3D elWorldMatrix = new Matrix3D().FromArray(elGeoData.TransformData);
+                XbimRect3D elBoundBox = XbimRect3D.FromArray(elGeoData.ShapeData);
+                XbimMatrix3D elWorldMatrix = elGeoData.Transform;
                 //Get object space top and bottom points of the bounding box
-                List<Point3D> elBoxPts = new List<Point3D>();
-                elBoxPts.Add(new Point3D(elBoundBox.X, elBoundBox.Y, elBoundBox.Z));
-                elBoxPts.Add(new Point3D(elBoundBox.X + elBoundBox.SizeX, elBoundBox.Y + elBoundBox.SizeY, elBoundBox.Z + elBoundBox.SizeZ));
+                List<XbimPoint3D> elBoxPts = new List<XbimPoint3D>();
+                elBoxPts.Add(new XbimPoint3D(elBoundBox.X, elBoundBox.Y, elBoundBox.Z));
+                elBoxPts.Add(new XbimPoint3D(elBoundBox.X + elBoundBox.SizeX, elBoundBox.Y + elBoundBox.SizeY, elBoundBox.Z + elBoundBox.SizeZ));
                 elBoxPts.Add(elBoundBox.Centroid());
 
                 //convert points of the bounding box to WCS
-                IEnumerable<Point3D> elBoxPtsWCS = elBoxPts.Select(pt => elWorldMatrix.Transform(pt));
+                IEnumerable<XbimPoint3D> elBoxPtsWCS = elBoxPts.Select(pt => elWorldMatrix.Transform(pt));
                 //see if we hit any spaces
                 spaceName = GetSpaceFromPoints(elBoxPtsWCS);
                 //if we failed to get space on min points then use the remaining corner points
                 if (string.IsNullOrEmpty(spaceName))
                 {
-                    Point3D elMinPt = elBoxPts[0];
-                    Point3D elMaxPt = elBoxPts[1];
+                    XbimPoint3D elMinPt = elBoxPts[0];
+                    XbimPoint3D elMaxPt = elBoxPts[1];
                     //elBoxPts.Clear(); //already tested points in list so clear them
 
                     //Extra testing on remaining corner points on the top and bottom plains
-                    elBoxPts.Add(new Point3D(elMaxPt.X, elMaxPt.Y, elMinPt.Z));
-                    elBoxPts.Add(new Point3D(elMaxPt.X, elMinPt.Y, elMinPt.Z));
-                    elBoxPts.Add(new Point3D(elMinPt.X, elMaxPt.Y, elMinPt.Z));
-                    elBoxPts.Add(new Point3D((elMaxPt.X - elMinPt.X) / 2.0, (elMaxPt.Y - elMinPt.Y) / 2.0, elMinPt.Z)); //centre face point
+                    elBoxPts.Add(new XbimPoint3D(elMaxPt.X, elMaxPt.Y, elMinPt.Z));
+                    elBoxPts.Add(new XbimPoint3D(elMaxPt.X, elMinPt.Y, elMinPt.Z));
+                    elBoxPts.Add(new XbimPoint3D(elMinPt.X, elMaxPt.Y, elMinPt.Z));
+                    elBoxPts.Add(new XbimPoint3D((elMaxPt.X - elMinPt.X) / 2.0, (elMaxPt.Y - elMinPt.Y) / 2.0, elMinPt.Z)); //centre face point
 
-                    elBoxPts.Add(new Point3D(elMinPt.X, elMinPt.Y, elMaxPt.Z));
-                    elBoxPts.Add(new Point3D(elMaxPt.X, elMinPt.Y, elMaxPt.Z));
-                    elBoxPts.Add(new Point3D(elMinPt.X, elMaxPt.Y, elMaxPt.Z));
-                    elBoxPts.Add(new Point3D((elMaxPt.X - elMinPt.X) / 2.0, (elMaxPt.Y - elMinPt.Y) / 2.0, elMaxPt.Z)); //centre face point
+                    elBoxPts.Add(new XbimPoint3D(elMinPt.X, elMinPt.Y, elMaxPt.Z));
+                    elBoxPts.Add(new XbimPoint3D(elMaxPt.X, elMinPt.Y, elMaxPt.Z));
+                    elBoxPts.Add(new XbimPoint3D(elMinPt.X, elMaxPt.Y, elMaxPt.Z));
+                    elBoxPts.Add(new XbimPoint3D((elMaxPt.X - elMinPt.X) / 2.0, (elMaxPt.Y - elMinPt.Y) / 2.0, elMaxPt.Z)); //centre face point
                     //convert points of the bounding box to WCS
                     elBoxPtsWCS = elBoxPts.Select(pt => elWorldMatrix.Transform(pt));
                     //see if we hit any spaces
@@ -278,7 +284,7 @@ namespace Xbim.COBie.Data
         /// </summary>
         /// <param name="PtsWCS">list of points</param>
         /// <returns>Space name</returns>
-        internal string GetSpaceFromPoints(IEnumerable<Point3D> PtsWCS)
+        internal string GetSpaceFromPoints(IEnumerable<XbimPoint3D> PtsWCS)
         {
             //holder for space names, could be more then one so a list is used
             List<string> spaceNames = new List<string>();
@@ -286,14 +292,14 @@ namespace Xbim.COBie.Data
             foreach (SpaceInfo spGeoData in SpaceBoundingBoxInfo)
             {
                 //get each space bounding box and To WCS Matrix
-                Rect3D spBoundBox = spGeoData.Rectangle;
-                Matrix3D spWorldMatrix = spGeoData.Matrix;
+                XbimRect3D spBoundBox = spGeoData.Rectangle;
+                XbimMatrix3D spWorldMatrix = spGeoData.Matrix;
                 String spName = spGeoData.Name;
                 //we need to transform the element max and min points back into the spaces Object Space so we can test on Bounding Box rectangle
                 spWorldMatrix.Invert();
-                IEnumerable<Point3D> elBoxPtsOCS = PtsWCS.Select(pt => spWorldMatrix.Transform(pt));
+                IEnumerable<XbimPoint3D> elBoxPtsOCS = PtsWCS.Select(pt => spWorldMatrix.Transform(pt));
                 //check if element space object points are contained fully within the space bounding box rectangle
-                IEnumerable<Point3D> hitPts = elBoxPtsOCS.Where(pt => spBoundBox.Contains(pt));
+                IEnumerable<XbimPoint3D> hitPts = elBoxPtsOCS.Where(pt => spBoundBox.Contains(pt));
                 if ( hitPts.Any() &&
                     (hitPts.Count() == elBoxPtsOCS.Count())
                     )
@@ -319,7 +325,7 @@ namespace Xbim.COBie.Data
         /// <param name="PtsWCS">list of points</param>
         /// <param name="hitTotarance">Distance the point is outside the space but considered still usable to reference the space</param>
         /// <returns>Space name</returns>
-        internal string GetSpaceFromClosestPoints(IEnumerable<Point3D> PtsWCS, double hitTotarance)
+        internal string GetSpaceFromClosestPoints(IEnumerable<XbimPoint3D> PtsWCS, double hitTotarance)
         {
             //holder for space names, could be more then one so a list is used
             List<string> spaceNames = new List<string>();
@@ -327,12 +333,12 @@ namespace Xbim.COBie.Data
             foreach (SpaceInfo spGeoData in SpaceBoundingBoxInfo)
             {
                 //get each space bounding box and To WCS Matrix
-                Rect3D spBoundBox = spGeoData.Rectangle;
-                Matrix3D spWorldMatrix = spGeoData.Matrix;
+                XbimRect3D spBoundBox = spGeoData.Rectangle;
+                XbimMatrix3D spWorldMatrix = spGeoData.Matrix;
                 String spName = spGeoData.Name;
                 //we need to transform the element max and min points back into the spaces Object Space so we can test on Bounding Box rectangle
                 spWorldMatrix.Invert();
-                IEnumerable<Point3D> elBoxPtsOCS = PtsWCS.Select(pt => spWorldMatrix.Transform(pt));
+                IEnumerable<XbimPoint3D> elBoxPtsOCS = PtsWCS.Select(pt => spWorldMatrix.Transform(pt));
                 //check if element space object points are contained fully within the space bounding box rectangle
                 IEnumerable<double> hitPts = elBoxPtsOCS.Select(pt => DistanceFromSpace(pt, spBoundBox)).Where(d => d <= hitTotarance);
                 if (hitPts.Any())//one or more point is contained in space and continue in case we have an element over several spaces
@@ -354,11 +360,11 @@ namespace Xbim.COBie.Data
         /// <param name="pt">Point to get closet point on bounding box from</param>
         /// <param name="boundBox">Bounding Box as Rect3D</param>
         /// <returns>Point3D (note: if return point == pt point then point inside box</returns>
-        internal Point3D ClosetPointOnBoundingBox(Point3D pt, Rect3D boundBox)
+        internal XbimPoint3D ClosetPointOnBoundingBox(XbimPoint3D pt, XbimRect3D boundBox)
         {
-            Point3D retPt = new Point3D();
-            Point3D MinPt = new Point3D(boundBox.X, boundBox.Y, boundBox.Z);
-            Point3D MaxPt = new Point3D(boundBox.X + boundBox.SizeX, boundBox.Y + boundBox.SizeY, boundBox.Z + boundBox.SizeZ);
+            XbimPoint3D retPt = new XbimPoint3D();
+            XbimPoint3D MinPt = new XbimPoint3D(boundBox.X, boundBox.Y, boundBox.Z);
+            XbimPoint3D MaxPt = new XbimPoint3D(boundBox.X + boundBox.SizeX, boundBox.Y + boundBox.SizeY, boundBox.Z + boundBox.SizeZ);
             
             if ( pt.X < MinPt.X ) 
                 retPt.X = MinPt.X;
@@ -384,10 +390,10 @@ namespace Xbim.COBie.Data
         /// <param name="pt">Point to get closet point on bounding box from</param>
         /// <param name="boundBox">Bounding Box as Rect3D</param>
         /// <returns>Distance from the box edge</returns>
-        internal double DistanceFromSpace(Point3D pt, Rect3D boundBox)
+        internal double DistanceFromSpace(XbimPoint3D pt, XbimRect3D boundBox)
         {
-            Point3D hitPt = ClosetPointOnBoundingBox(pt, boundBox);
-            Vector3D vect = Point3D.Subtract(pt, hitPt);
+            XbimPoint3D hitPt = ClosetPointOnBoundingBox(pt, boundBox);
+            XbimVector3D vect = XbimPoint3D.Subtract(pt, hitPt);
             return vect.Length;
         }
         

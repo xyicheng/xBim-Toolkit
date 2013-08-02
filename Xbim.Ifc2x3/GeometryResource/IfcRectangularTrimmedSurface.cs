@@ -13,7 +13,7 @@
 #region Directives
 
 using System;
-using System.Xml.Serialization;
+
 using Xbim.Ifc2x3.MeasureResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
@@ -22,7 +22,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc2x3.GeometryResource
 {
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcRectangularTrimmedSurface : IfcBoundedSurface, IPlacement3D
     {
         #region Fields
@@ -171,7 +171,7 @@ namespace Xbim.Ifc2x3.GeometryResource
 
         #endregion
 
-        [XmlIgnore]
+        
         public override IfcDimensionCount Dim
         {
             get { return BasisSurface == null ? (IfcDimensionCount) 0 : BasisSurface.Dim; }

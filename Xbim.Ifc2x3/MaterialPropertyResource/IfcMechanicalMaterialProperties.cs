@@ -13,7 +13,7 @@ namespace Xbim.Ifc2x3.MaterialPropertyResource
     /// This is a collection of mechanical material properties normally used for structural analysis purpose.
     /// It contains all properties which are independent of the actual material type.
     /// </summary>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntity]
     public class IfcMechanicalMaterialProperties : IfcMaterialProperties
     {
         #region Fields 

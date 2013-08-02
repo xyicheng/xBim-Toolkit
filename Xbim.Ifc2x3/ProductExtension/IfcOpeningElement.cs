@@ -82,7 +82,7 @@ namespace Xbim.Ifc2x3.ProductExtension
     ///   Brep Representation
     ///   The general b-rep geometric representation of IfcOpeningElement is defined using the Brep geometry. The Brep representation allows for the representation of complex element shape. It is ensured by assigning the value 'Brep' to the RepresentationType attribute of IfcShapeRepresentation The RepresentationIdentifier of IfcShapeRepresentation should then have the value 'Body'.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcOpeningElement : IfcFeatureElementSubtraction
     {
         #region Fields

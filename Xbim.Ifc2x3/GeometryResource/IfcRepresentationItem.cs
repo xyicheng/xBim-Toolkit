@@ -36,7 +36,7 @@ namespace Xbim.Ifc2x3.GeometryResource
     ///   IFC2x Edition 3 CHANGE  The inverse attributes StyledByItem and LayerAssignments have been added. Upward compatibility for file based exchange is guaranteed. 
     ///   EXPRESS specification:
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public abstract class IfcRepresentationItem : ISupportChangeNotification, INotifyPropertyChanged, IfcLayeredItem,
                                                   IPersistIfcEntity, INotifyPropertyChanging
     {

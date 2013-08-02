@@ -13,10 +13,12 @@
 #region Directives
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Xbim.Ifc2x3.GeometricConstraintResource;
 using Xbim.Ifc2x3.GeometryResource;
 using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.ProductExtension;
 using Xbim.Ifc2x3.RepresentationResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
@@ -35,7 +37,15 @@ namespace Xbim.Ifc2x3.Extensions
                         r => string.Compare(r.RepresentationIdentifier.GetValueOrDefault(), "Axis", true) == 0);
             return null;
         }
-
+        /// <summary>
+        /// Returns the spatial structural elements that this product is in
+        /// </summary>
+        /// <param name="prod"></param>
+        /// <returns></returns>
+        public static IEnumerable<IfcSpatialStructureElement> IsContainedIn(this IfcProduct prod)
+        {
+            return prod.ModelOf.Instances.Where<IfcRelContainedInSpatialStructure>(r => r.RelatedElements.Contains(prod)).Select(s=>s.RelatingStructure);
+        }
         /// <summary>
         ///   Returns the first Body(Solid) Representation, null if none exists
         /// </summary>
@@ -44,8 +54,8 @@ namespace Xbim.Ifc2x3.Extensions
         {
             if (prod.Representation != null)
                 return
-                    prod.Representation.Representations.OfType<IfcShapeRepresentation>().FirstOrDefault(
-                        r => string.Compare(r.RepresentationIdentifier.GetValueOrDefault(), "Body", true) == 0);
+                    prod.Representation.Representations.OfType<IfcShapeRepresentation>().Where(
+                        r => string.Compare(r.RepresentationIdentifier.GetValueOrDefault(), "Body", true) == 0).FirstOrDefault();
             return null;
         }
 

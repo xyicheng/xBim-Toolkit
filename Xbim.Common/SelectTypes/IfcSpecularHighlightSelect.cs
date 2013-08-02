@@ -12,7 +12,7 @@
 
 namespace Xbim.XbimExtensions.SelectTypes
 {
-    public interface IfcSpecularHighlightSelect : ExpressSelectType
+    public interface IfcSpecularHighlightSelect : ExpressSelectType, ExpressType
     {
     }
 }

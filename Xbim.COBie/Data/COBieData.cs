@@ -812,6 +812,17 @@ namespace Xbim.COBie.Data
             return result;
         }
 
+        /// <summary>
+        /// Check for empty, null of DEFAULT_STRING
+        /// </summary>
+        /// <param name="value">string to validate</param>
+        /// <returns></returns>
+        protected bool ValidateString(string value)
+        {
+            return ((!string.IsNullOrEmpty(value)) && (value != Constants.DEFAULT_STRING) && (value != "n\\a") && (value != "n\a")); //"n\a" cover miss types
+        }
+
+
         #endregion
 
     }

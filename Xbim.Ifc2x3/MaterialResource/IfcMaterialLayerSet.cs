@@ -33,7 +33,7 @@ namespace Xbim.Ifc2x3.MaterialResource
     ///   Geometry use
     ///   Each IfcMaterialLayerSet implicitly defines a reference line (MlsBase), to which the start of the first IfcMaterialLayer is aligned. The total thickness of a layer set is calculated from the individual layer thicknesses, the first layer starting from the reference line and following layers being placed on top of the previous (no gaps or overlaps).
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable, IndexedClass]
+    [IfcPersistedEntityAttribute, IndexedClass]
     public class IfcMaterialLayerSet : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                        IfcMaterialSelect, INotifyPropertyChanging
     {

@@ -14,7 +14,7 @@ namespace Xbim.Ifc2x3.MaterialPropertyResource
     /// Measure of the decrease in stress over long time interval resulting from plastic flow. 
     /// It describes the time dependent relative relaxation value for a given initial stress level at constant strain
     /// </summary>
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntity]
     public class IfcRelaxation : IPersistIfcEntity, IPersistIfc, 
                                  INotifyPropertyChanged, ISupportChangeNotification, INotifyPropertyChanging
     {

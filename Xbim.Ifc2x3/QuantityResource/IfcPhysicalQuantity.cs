@@ -23,7 +23,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc2x3.QuantityResource
 {
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class PhysicalQuantitySet : XbimSet<IfcPhysicalQuantity>
     {
         internal PhysicalQuantitySet(IPersistIfcEntity owner)
@@ -40,7 +40,7 @@ namespace Xbim.Ifc2x3.QuantityResource
     ///   The Name attribute defines the actual usage or kind of measure. The interpretation of the name label has to be established within the actual exchange context. In addition an informative text may be associated to each quantity by the Description attribute.
     ///   HISTORY New entity in IFC Release 2.x. It replaces the calcXxx attributes used in previous IFC Releases.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public abstract class IfcPhysicalQuantity : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                                 INotifyPropertyChanging
     {

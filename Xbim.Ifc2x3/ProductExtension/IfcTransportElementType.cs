@@ -6,7 +6,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc2x3.ProductExtension
 {
-    [IfcPersistedEntity, Serializable]
+    [IfcPersistedEntity]
     public class IfcTransportElementType : IfcElementType
     {
         private IfcTransportElementTypeEnum _predefinedType;

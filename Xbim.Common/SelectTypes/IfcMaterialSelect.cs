@@ -10,9 +10,12 @@
 
 #endregion
 
+using Xbim.XbimExtensions.Interfaces;
 namespace Xbim.XbimExtensions.SelectTypes
 {
-    public interface IfcMaterialSelect : ExpressSelectType
+    // Added IpersistIfc because all select types implement it
+    //
+    public interface IfcMaterialSelect : ExpressSelectType, IPersistIfcEntity, ISupportChangeNotification
     {
         string Name { get; }
     }

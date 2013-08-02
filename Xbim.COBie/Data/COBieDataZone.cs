@@ -65,19 +65,29 @@ namespace Xbim.COBie.Data
 
                     COBieZoneRow zone = new COBieZoneRow(zones);
 
+                    //set allPropertyValues to this element
+                    allPropertyValues.SetAllPropertySingleValues(zn); //set the internal filtered IfcPropertySingleValues List in allPropertyValues
+                
                     zone.Name = zn.Name.ToString();
 
-                    zone.CreatedBy = GetTelecomEmailAddress(zn.OwnerHistory);
-                    zone.CreatedOn = GetCreatedOnDateAsFmtString(zn.OwnerHistory);
+                    string createBy = allPropertyValues.GetPropertySingleValueValue("COBieCreatedBy", false); //support for COBie Toolkit for Autodesk Revit
+                    zone.CreatedBy = ValidateString(createBy) ? createBy : GetTelecomEmailAddress(zn.OwnerHistory);
+                    string createdOn = allPropertyValues.GetPropertySingleValueValue("COBieCreatedOn", false);//support for COBie Toolkit for Autodesk Revit
+                    zone.CreatedOn = ValidateString(createdOn) ? createdOn : GetCreatedOnDateAsFmtString(zn.OwnerHistory);
 
                     zone.Category = GetCategory(zn);
 
                     zone.SpaceNames = sp.Name;
 
-                    zone.ExtSystem = GetExternalSystem(zn);
+                    string extSystem = allPropertyValues.GetPropertySingleValueValue("COBieExtSystem", false);//support for COBie Toolkit for Autodesk Revit
+                    zone.ExtSystem = ValidateString(extSystem) ? extSystem : GetExternalSystem(zn);
                     zone.ExtObject = zn.GetType().Name;
                     zone.ExtIdentifier = zn.GlobalId;
-                    zone.Description = (string.IsNullOrEmpty(zn.Description)) ? zn.Name.ToString() : zn.Description.ToString(); //if IsNullOrEmpty on Description then output Name
+                    string description = allPropertyValues.GetPropertySingleValueValue("COBieDescription", false);//support for COBie Toolkit for Autodesk Revit
+                    if (ValidateString(extSystem))
+                        zone.Description = extSystem;
+                    else
+                        zone.Description = (string.IsNullOrEmpty(zn.Description)) ? zn.Name.ToString() : zn.Description.ToString(); //if IsNullOrEmpty on Description then output Name
                     zones.AddRow(zone);
                     
                     //fill in the attribute information

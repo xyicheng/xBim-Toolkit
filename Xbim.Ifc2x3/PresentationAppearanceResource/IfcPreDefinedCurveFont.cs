@@ -21,7 +21,7 @@ using Xbim.XbimExtensions;
 
 namespace Xbim.Ifc2x3.PresentationAppearanceResource
 {
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public abstract class IfcPreDefinedCurveFont : IfcPreDefinedItem, IfcCurveStyleFontSelect,
                                                    IfcCurveFontOrScaledCurveFontSelect
     {

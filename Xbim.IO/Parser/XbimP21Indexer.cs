@@ -239,8 +239,14 @@ namespace Xbim.IO.Parser
                 _binaryWriter.Write((byte)P21ParseAction.EndEntity);
                 IfcType ifcType = IfcMetaData.IfcType(_currentType);
                 MemoryStream data = _binaryWriter.BaseStream as MemoryStream;
-                table.AddEntity(_currentLabel, ifcType.TypeId, _indexKeyValues, data.ToArray(),ifcType.IndexedClass);
-                if (_entityCount % _transactionBatchSize == (_transactionBatchSize - 1))
+                if (_indexKeyValues.Count > 20) //clear the cache if we have a lot of index keys
+                {
+                    transaction.Commit();
+                    transaction.Begin();
+                }
+                table.AddEntity(_currentLabel, ifcType.TypeId, _indexKeyValues, data.ToArray(), ifcType.IndexedClass, transaction);
+                long remainder =  _entityCount % _transactionBatchSize ;
+                if (remainder == _transactionBatchSize - 1)
                 {
                     transaction.Commit();
                     transaction.Begin();
@@ -319,11 +325,13 @@ namespace Xbim.IO.Parser
             else
             {
                 _binaryWriter.Write((byte)P21ParseAction.SetStringValue);
-                string res = value.Trim('\'');
-                res = PropertyValue.SpecialCharRegEx.Replace(res, PropertyValue.SpecialCharEvaluator);
-                res = res.Replace("\'\'", "\'");
-                _binaryWriter.Write(res);
-                
+                string ret = value.Substring(1, value.Length - 2); //remove the quotes
+                if (ret.Contains("\\"))
+                {
+                    XbimP21StringDecoder d = new XbimP21StringDecoder();
+                    ret = d.Unescape(ret);
+                }
+                _binaryWriter.Write(ret);
             }
             if (_listNestLevel == 0)
                 _currentInstance.CurrentParamIndex++;

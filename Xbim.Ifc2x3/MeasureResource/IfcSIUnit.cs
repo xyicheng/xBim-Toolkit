@@ -13,7 +13,7 @@
 #region Directives
 
 using System;
-using System.Xml.Serialization;
+
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
@@ -21,7 +21,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc2x3.MeasureResource
 {
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcSIUnit : IfcNamedUnit
     {
         #region Fields
@@ -36,7 +36,7 @@ namespace Xbim.Ifc2x3.MeasureResource
         /// <summary>
         ///   The dimensional exponents of SI units are derived and override the NamedUnit value
         /// </summary>
-        [XmlArrayItem(typeof (Int16))]
+       
         [IfcAttribute(1, IfcAttributeState.DerivedOverride)]
         public override IfcDimensionalExponents Dimensions
         {

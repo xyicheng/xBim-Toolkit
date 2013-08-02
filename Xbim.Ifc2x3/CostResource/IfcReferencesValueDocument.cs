@@ -32,7 +32,7 @@ namespace Xbim.Ifc2x3.CostResource
     ///   Use Definitions
     ///   The purpose of this class is to be able to identify a reference source from which applied values are obtained. Since many objects may be obtain such values from the same referenced document, use of a relationship class allows the document to be identified once only when information is exchanged or shared rather than many times.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable, IndexedClass]
+    [IfcPersistedEntityAttribute, IndexedClass]
     public class IfcReferencesValueDocument : INotifyPropertyChanged, ISupportChangeNotification, IPersistIfcEntity,
                                               INotifyPropertyChanging
     {

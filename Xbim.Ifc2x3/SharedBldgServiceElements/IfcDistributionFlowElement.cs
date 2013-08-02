@@ -21,7 +21,7 @@ using Xbim.XbimExtensions;
 
 namespace Xbim.Ifc2x3.SharedBldgServiceElements
 {
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcDistributionFlowElement : IfcDistributionElement
     {
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class, 0, 1)]

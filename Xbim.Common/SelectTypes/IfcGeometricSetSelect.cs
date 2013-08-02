@@ -12,7 +12,7 @@
 
 namespace Xbim.XbimExtensions.SelectTypes
 {
-    public interface IfcGeometricSetSelect : ExpressSelectType
+    public interface IfcGeometricSetSelect : IfcLayeredItem
     {
     }
 }

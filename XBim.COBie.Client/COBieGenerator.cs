@@ -23,6 +23,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.Collections.Concurrent;
 using System.Windows.Media.Media3D;
+using Xbim.Common.Geometry;
 using Xbim.ModelGeometry.Converter;
 
 namespace Xbim.COBie.Client
@@ -105,7 +106,10 @@ namespace Xbim.COBie.Client
                 }
                 else if (Path.GetExtension(parameters.ModelFile).ToLower() == ".xls")
                 {
-                    GenerateIFCFile(parameters);
+                    if (ValidateChkBox.Checked)
+                        ValidateXLSfile(parameters);
+                    else
+                        GenerateIFCFile(parameters);
                 }
                 else
                 {
@@ -174,7 +178,10 @@ namespace Xbim.COBie.Client
                 context.Model = model;
 
                 //Create Scene, required for Coordinates sheet
-                GenerateGeometry(context);
+                if (!SkipGeoChkBox.Checked)
+                {
+                    GenerateGeometry(context);
+                }
 
                 //set filter option
                 var chckBtn = gbFilter.Controls.OfType<RadioButton>().FirstOrDefault(rb => rb.Checked);
@@ -200,6 +207,80 @@ namespace Xbim.COBie.Client
         }
 
         /// <summary>
+        /// Validate XLS file for COBie errors, also will swap templates if required
+        /// </summary>
+        /// <param name="parameters">Params</param>
+        /// <returns>Created file name</returns>
+        private void ValidateXLSfile(Params parameters)
+        {
+            
+            //read xls file
+            LogBackground(String.Format("Reading {0}....", parameters.ModelFile));
+            COBieXLSDeserialiser deSerialiser = new COBieXLSDeserialiser(parameters.ModelFile);
+            COBieWorkbook Workbook = deSerialiser.Deserialise();
+
+            //extract pick list from the template sheet and swap into workbook (US / UK)
+            LogBackground("Swapping PickList from template...");
+            COBieSheet<COBiePickListsRow> CobiePickLists = null;
+            if ((!string.IsNullOrEmpty(parameters.TemplateFile)) &&
+                File.Exists(parameters.TemplateFile)
+                )
+            {
+                //extract the pick list sheet from template
+                COBieXLSDeserialiser deSerialiserPickList = new COBieXLSDeserialiser(parameters.TemplateFile, Constants.WORKSHEET_PICKLISTS);
+                COBieWorkbook wbookPickList = deSerialiserPickList.Deserialise();
+                if (wbookPickList.Count > 0) CobiePickLists = (COBieSheet<COBiePickListsRow>)wbookPickList.FirstOrDefault();
+                //check the workbook last sheet is a pick list
+                if (Workbook.LastOrDefault() is COBieSheet<COBiePickListsRow>)
+                {
+                    //remove original pick list and replace with templates
+                    Workbook.RemoveAt(Workbook.Count - 1);
+                    Workbook.Add(CobiePickLists);
+                }
+                else
+                {
+                    LogBackground("Failed to Swap PickList from template...");
+                }
+
+            }
+
+            COBieContext context = new COBieContext(_worker.ReportProgress);
+            COBieProgress progress = new COBieProgress(context);
+
+            //Validate
+            progress.Initialise("Validating Workbooks", Workbook.Count, 0);
+            progress.ReportMessage("Building Indices...");
+            foreach (ICOBieSheet<COBieRow> item in Workbook)
+            {
+                item.BuildIndices();
+            }
+            progress.ReportMessage("Building Indices...Finished");
+                
+            // Validate the workbook
+            progress.ReportMessage("Starting Validation...");
+            Workbook.Validate((lastProcessedSheetIndex) =>
+            {
+                // When each sheet has been processed, increment the progress bar
+                progress.IncrementAndUpdate();
+            });
+            progress.ReportMessage("Finished Validation");
+            progress.Finalise();
+                
+            // Export
+            LogBackground(String.Format("Formatting as XLS using {0} template...", Path.GetFileName(parameters.TemplateFile)));
+            ICOBieSerialiser serialiser = new COBieXLSSerialiser(parameters.ModelFile, parameters.TemplateFile);
+            serialiser.Serialise(Workbook);
+
+            LogBackground(String.Format("Export Complete: {0}", parameters.ModelFile));
+            
+            Process.Start(parameters.ModelFile);
+
+            LogBackground("Finished COBie Validation");
+            
+            
+        }
+
+        /// <summary>
         /// Create IFC file from XLS file
         /// </summary>
         /// <param name="parameters">Params</param>
@@ -208,7 +289,7 @@ namespace Xbim.COBie.Client
         {
             string outputFile;
 
-            LogBackground(String.Format("Reading{0}....", parameters.ModelFile));
+            LogBackground(String.Format("Reading {0}....", parameters.ModelFile));
             COBieXLSDeserialiser deSerialiser = new COBieXLSDeserialiser(parameters.ModelFile);
             COBieWorkbook newbook = deSerialiser.Deserialise();
 
@@ -342,16 +423,16 @@ namespace Xbim.COBie.Client
         private  void GenerateGeometry(COBieContext context)
         {
             //now convert the geometry
-            XbimModel model = context.Model; 
+            XbimModel model = context.Model;
             int total = (int)model.Instances.CountOf<IfcProduct>();
             ReportProgressDelegate progDelegate = delegate(int percentProgress, object userState)
             {
                 context.UpdateStatus("Creating Geometry File", total, (total * percentProgress / 100));
             };
             XbimMesher.GenerateGeometry(model, null, progDelegate);
-        }
+                                    }
 
-       
+
 
 
         private void AppendLog(string text)
@@ -383,6 +464,10 @@ namespace Xbim.COBie.Client
             if (dlg != null)
             {
                 txtPath.Text = dlg.FileName;
+                if (Path.GetExtension(dlg.FileName).ToLower() == ".xls")
+                    ValidateChkBox.Enabled = true;
+                else
+                    ValidateChkBox.Enabled = false;
             }
         }
 

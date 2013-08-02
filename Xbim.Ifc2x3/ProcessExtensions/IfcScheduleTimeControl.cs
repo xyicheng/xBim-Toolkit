@@ -6,7 +6,7 @@ using Xbim.Ifc2x3.Kernel;
 using Xbim.XbimExtensions.SelectTypes;
 using Xbim.Ifc2x3.MeasureResource;
 using Xbim.XbimExtensions;
-using System.Xml.Serialization;
+
 using Xbim.XbimExtensions.Interfaces;
 
 
@@ -435,7 +435,7 @@ namespace Xbim.Ifc2x3.ProcessExtensions
         /// <summary>
         ///   The assigned schedule time control in the relationship.
         /// </summary>
-        [XmlIgnore]
+        
         [IfcAttribute(-1, IfcAttributeState.Mandatory, IfcAttributeType.Set, IfcAttributeType.Class, 0, 1)]
         public IEnumerable<IfcRelAssignsTasks> ScheduleTimeControlAssigned 
         {

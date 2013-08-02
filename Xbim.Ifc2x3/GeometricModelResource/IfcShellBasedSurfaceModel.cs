@@ -36,7 +36,7 @@ namespace Xbim.Ifc2x3.GeometricModelResource
     ///   The dimensionality of the shell based surface model is 2. 
     ///   The shells shall not overlap or intersect except at common faces, edges or vertices.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcShellBasedSurfaceModel : IfcGeometricRepresentationItem, IFaceBasedModelCollection
     {
         public IfcShellBasedSurfaceModel()

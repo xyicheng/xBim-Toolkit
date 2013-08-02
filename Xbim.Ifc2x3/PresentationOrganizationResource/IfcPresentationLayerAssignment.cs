@@ -23,7 +23,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc2x3.PresentationOrganizationResource
 {
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcPresentationLayerAssignment : IPersistIfcEntity, ISupportChangeNotification, INotifyPropertyChanged,
                                                   INotifyPropertyChanging
     {

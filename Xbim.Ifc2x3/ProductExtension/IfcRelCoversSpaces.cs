@@ -27,7 +27,7 @@ namespace Xbim.Ifc2x3.ProductExtension
     /// <remarks>
     ///   Definition from IAI: The objectified relationship, IfcRelCoversSpace, relates a space object to one to many coverings, which faces (or are assigned) to the space.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcRelCoversSpaces : IfcRelConnects
     {
         public IfcRelCoversSpaces()

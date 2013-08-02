@@ -10,9 +10,10 @@
 
 #endregion
 
+using Xbim.XbimExtensions.Interfaces;
 namespace Xbim.XbimExtensions.SelectTypes
 {
-    public interface IfcShell : ExpressSelectType
+    public interface IfcShell : IfcLayeredItem, IFaceBasedModel
     {
     }
 }

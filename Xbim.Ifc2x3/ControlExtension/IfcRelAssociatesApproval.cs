@@ -32,7 +32,7 @@ namespace Xbim.Ifc2x3.ControlExtension
     /// NOTE: This entity replaces the IfcApprovalUsage in IFC2x
     /// HISTORY: New entity in Release IFC2x Edition 2.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcRelAssociatesApproval : IfcRelAssociates
     {
         #region Fields

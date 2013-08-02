@@ -24,7 +24,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc2x3.PresentationAppearanceResource
 {
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcCurveStyle : IfcPresentationStyle, IfcPresentationStyleSelect
     {
         #region Statics
@@ -54,7 +54,6 @@ namespace Xbim.Ifc2x3.PresentationAppearanceResource
         ///   Both may be scaled. If not given, then the curve font should be taken from the layer assignment with style, 
         ///   if that is not given either, then the default curve font applies.
         /// </summary>
-        [TypeConverter(typeof (CurveFontConverter))]
         [IfcAttribute(2, IfcAttributeState.Optional)]
         public IfcCurveFontOrScaledCurveFontSelect CurveFont
         {
@@ -97,7 +96,6 @@ namespace Xbim.Ifc2x3.PresentationAppearanceResource
         ///   If not given, then the colour should be taken from the layer assignment with style, if that is not given either, then the default colour applies.
         /// </summary>
         [IfcAttribute(4, IfcAttributeState.Optional)]
-        [TypeConverter(typeof (ColourConverter))]
         public IfcColour CurveColour
         {
             get { return _curveColour; }

@@ -66,7 +66,7 @@ namespace Xbim.Ifc2x3.SharedBldgElements
     ///   Position number
     ///   The position number is assigned through the attribute IfcElement.Tag
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcPlate : IfcBuildingElement
     {
     }

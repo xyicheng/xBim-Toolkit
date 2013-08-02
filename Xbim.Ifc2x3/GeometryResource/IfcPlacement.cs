@@ -13,7 +13,7 @@
 #region Directives
 
 using System;
-using System.Xml.Serialization;
+
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 
@@ -31,7 +31,7 @@ namespace Xbim.Ifc2x3.GeometryResource
     ///   NOTE: Corresponding STEP entity: placement. Please refer to ISO/IS 10303-42:1994, p. 27 for the final definition of the formal standard. 
     ///   HISTORY: New entity in IFC Release 1.0
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public abstract class IfcPlacement : IfcGeometricRepresentationItem
     {
         #region Fields
@@ -71,7 +71,7 @@ namespace Xbim.Ifc2x3.GeometryResource
         /// <summary>
         ///   Derived. The space dimensionality of this class, derived from the dimensionality of the location.
         /// </summary>
-        [XmlIgnore]
+        
         public IfcDimensionCount Dim
         {
             get { return Location == null ? (short) 0 : Location.Dim; }

@@ -33,7 +33,7 @@ namespace Xbim.Ifc2x3.PropertyResource
     ///   Formal Propositions:
     ///   WR1   :   The DependingProperty shall not point to the same instance as the DependantProperty
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcPropertyDependencyRelationship : ISupportChangeNotification, INotifyPropertyChanged,
                                                      IPersistIfcEntity, INotifyPropertyChanging
     {

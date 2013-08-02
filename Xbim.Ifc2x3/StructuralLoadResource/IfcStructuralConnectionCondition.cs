@@ -22,7 +22,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc2x3.StructuralLoadResource
 {
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public abstract class IfcStructuralConnectionCondition : INotifyPropertyChanged, ISupportChangeNotification,
                                                              IPersistIfcEntity, INotifyPropertyChanging
     {

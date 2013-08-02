@@ -12,7 +12,7 @@
 
 namespace Xbim.XbimExtensions.SelectTypes
 {
-    public interface IfcColourOrFactor : ExpressSelectType
+    public interface IfcColourOrFactor : ExpressSelectType, Xbim.XbimExtensions.Interfaces.IPersistIfc
     {
     }
 }

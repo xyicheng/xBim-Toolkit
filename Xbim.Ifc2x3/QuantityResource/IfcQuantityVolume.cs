@@ -33,7 +33,7 @@ namespace Xbim.Ifc2x3.QuantityResource
     ///   WR21   :   If a unit is given, the unit type shall be volume unit.  
     ///   WR22   :   A valid volume quantity shall be greater than or equal to zero.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcQuantityVolume : IfcPhysicalSimpleQuantity
     {
         #region Fields
@@ -81,6 +81,11 @@ namespace Xbim.Ifc2x3.QuantityResource
             if (_volumeValue < 0)
                 baseErr += "WR22 QuantityVolume : A valid volume quantity shall be greater than or equal to zero.\n";
             return baseErr;
+        }
+
+        public override string ToString()
+        {
+            return VolumeValue.ToPart21;
         }
     }
 }

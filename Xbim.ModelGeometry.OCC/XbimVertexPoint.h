@@ -2,7 +2,7 @@
 #include <TopoDS_Vertex.hxx>
 using namespace Xbim::XbimExtensions::Interfaces;
 using namespace Xbim::Ifc2x3::GeometryResource;
-using namespace System::Windows::Media::Media3D;
+using namespace Xbim::Common::Geometry;
 
 namespace Xbim
 {
@@ -10,59 +10,59 @@ namespace Xbim
 	{
 		namespace OCC
 		{
-			public ref class XbimVertexPoint 
+		public ref class XbimVertexPoint 
+		{
+
+		private:
+			TopoDS_Vertex * pVertex;
+			static double _precision = 1.E-005;
+		public:
+			static property double Precision
 			{
+				double get(){return _precision;};
+				void set(double value){ _precision = value;};
+			}
 
-			private:
-				TopoDS_Vertex * pVertex;
-				static double _precision = 1.E-005;
-			public:
-				static property double Precision
-				{
-					double get(){return _precision;};
-					void set(double value){ _precision = value;};
-				}
+			XbimVertexPoint(const TopoDS_Vertex & vertex);
+			XbimVertexPoint(double x, double y, double z);
+			~XbimVertexPoint()
+			{
+				InstanceCleanup();
+			}
 
-				XbimVertexPoint(const TopoDS_Vertex & vertex);
-				XbimVertexPoint(double x, double y, double z);
-				~XbimVertexPoint()
+			!XbimVertexPoint()
+			{
+				InstanceCleanup();
+			}
+			void InstanceCleanup()
+			{   
+				int temp = System::Threading::Interlocked::Exchange((int)(void*)pVertex, 0);
+				if(temp!=0)
 				{
-					InstanceCleanup();
-				}
-
-				!XbimVertexPoint()
-				{
-					InstanceCleanup();
-				}
-				void InstanceCleanup()
-				{   
-					int temp = System::Threading::Interlocked::Exchange((int)(void*)pVertex, 0);
-					if(temp!=0)
+					if (pVertex)
 					{
-						if (pVertex)
-						{
-							delete pVertex;
-							pVertex=0;
-							System::GC::SuppressFinalize(this);
-						}
+						delete pVertex;
+						pVertex=0;
+						System::GC::SuppressFinalize(this);
 					}
 				}
+			}
 
-				virtual property IfcCartesianPoint^ VertexGeometry
-				{
-					IfcCartesianPoint^ get();
-				}
-				virtual property System::Windows::Media::Media3D::Point3D Point3D
-				{
-					System::Windows::Media::Media3D::Point3D get();
-				}
+			virtual property IfcCartesianPoint^ VertexGeometry
+			{
+				IfcCartesianPoint^ get();
+			}
+			virtual property XbimPoint3D Point3D
+			{
+				XbimPoint3D get();
+			}
 
-				property TopoDS_Vertex * Handle
-				{
-					TopoDS_Vertex* get(){return pVertex;};			
-				}
+			property TopoDS_Vertex * Handle
+			{
+				TopoDS_Vertex* get(){return pVertex;};			
+			}
 
-			};
+		};
 		}
 	}
 }

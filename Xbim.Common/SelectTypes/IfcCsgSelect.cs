@@ -12,7 +12,7 @@
 
 namespace Xbim.XbimExtensions.SelectTypes
 {
-    public interface IfcCsgSelect : ExpressSelectType
+    public interface IfcCsgSelect : IfcLayeredItem, IfcBooleanOperand
     {
     }
 }

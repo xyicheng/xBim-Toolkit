@@ -33,7 +33,7 @@ namespace Xbim.Ifc2x3.ExternalReferenceResource
     ///   The inverse relationships from IfcClassificationItem to IfcClassificationRelationship enable information about the relationship to be recovered by the items concerned so that they are also aware of the decomposition. The cardinality of the inverse relationship is that an IfcClassificationItem can be the classifying item in only one relationship and can be a classified item in only one relationship. This implies that there is no overlap of IfcClassificationItem's. This reflects typical classification approaches which use strict hierarchical decomposition (or taxonomy) and do not have matrix relationships.
     ///   EXPRESS specification
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable, IndexedClass]
+    [IfcPersistedEntityAttribute, IndexedClass]
     public class IfcClassificationItemRelationship : INotifyPropertyChanged, ISupportChangeNotification,
                                                      IPersistIfcEntity, INotifyPropertyChanging
     {

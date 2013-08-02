@@ -14,17 +14,17 @@
 
 using System;
 using System.Runtime.Serialization;
+using Xbim.Common.Geometry;
 using Xbim.Ifc2x3.GeometryResource;
 using Xbim.Ifc2x3.MeasureResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
-using WVector3D = System.Windows.Media.Media3D.Vector3D;
 
 #endregion
 
 namespace Xbim.Ifc2x3.GeometricModelResource
 {
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcExtrudedAreaSolid : IfcSweptAreaSolid
     {
         #region Fields
@@ -94,7 +94,7 @@ namespace Xbim.Ifc2x3.GeometricModelResource
         {
             string baseErr = base.WhereRule();
             if (_extrudedDirection != null &&
-                WVector3D.DotProduct(_extrudedDirection.WVector3D(), new WVector3D(0, 0, 1)) == 0)
+                XbimVector3D.DotProduct(_extrudedDirection.XbimVector3D(), new XbimVector3D(0, 0, 1)) == 0)
                 baseErr +=
                     "WR31 ExtrudedAreaSolid : The ExtrudedDirection shall not be perpendicular to the local z-axis.\n";
             return baseErr;

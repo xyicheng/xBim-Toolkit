@@ -28,7 +28,7 @@ namespace Xbim.Ifc2x3.ProductExtension
     ///   Definition from IAI: Objectified Relationship between an building element and one opening element that creates a void in the element. This relationship implies a Boolean Operation of subtraction for the geometric bodies of Element and Opening Element. 
     ///   HISTORY New entity in IFC Release 1.0
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcRelVoidsElement : IfcRelConnects
     {
         #region Fields

@@ -26,20 +26,77 @@ namespace Xbim.Ifc2x3.MeasureResource
     [Serializable]
     public struct IfcText : IFormattable, IPersistIfc, IfcSimpleValue, IfcMetricValueSelect
     {
+        private enum WriteState
+        {
+            Normal,
+            TwoBytes,
+            FourBytes
+        }
+
         public static string Escape(string source)
         {
-            StringBuilder sb = new StringBuilder(source.Length*2);
-            foreach (char c in source)
+            WriteState state = WriteState.Normal;
+            StringBuilder sb = new StringBuilder(source.Length * 2);
+            
+                        
+            for (int i = 0; i < source.Length; i++)
             {
-                if (c > 127)
-                    sb.AppendFormat(@"\X\{0:X2}",(int)c);
-                else if(c=='\'')
-                    sb.Append("\'\'");
+                int c;
+                try
+                {
+                    c = Char.ConvertToUtf32(source, i);
+                }
+                catch (Exception)
+                {
+                    c = '?';
+                }
+                if (c > 0xFFFF)
+                {
+                    state = setMode(WriteState.FourBytes, state, sb);
+                    sb.AppendFormat(@"{0:X8}", c);
+                    i++; // to skip the next surrogate
+                }
+                else if (c > 0xFF)
+                {
+                    state = setMode(WriteState.TwoBytes, state, sb);
+                    sb.AppendFormat(@"{0:X4}", c);
+                }
                 else
-                    sb.Append(c);
+                {
+                    state = setMode(WriteState.Normal, state, sb);
+                    // boundaries according to specs from http://www.buildingsmart-tech.org/downloads/accompanying-documents/guidelines/IFC2x%20Model%20Implementation%20Guide%20V2-0b.pdf
+                    if (c > 126 || c < 32) 
+                        sb.AppendFormat(@"\X\{0:X2}", c);
+                    else if ((char)c == '\'')
+                        sb.Append("''");
+                    else if ((char)c == '\\')
+                        sb.Append("\\\\");
+                    else
+                        sb.Append((char)c);
+                }
             }
-           
+            state = setMode(WriteState.Normal, state, sb);
             return sb.ToString();
+        }
+
+        private static WriteState setMode(WriteState newState, WriteState fromState, StringBuilder sb)
+        {
+            if (newState == fromState)
+                return newState;
+            if (fromState != WriteState.Normal)
+            {
+                // needs to close the old state
+                sb.Append(@"\X0\");
+            }
+            if (newState == WriteState.TwoBytes)
+            {
+                sb.Append(@"\X2\");
+            }
+            else if (newState == WriteState.FourBytes)
+            {
+                sb.Append(@"\X4\");
+            }
+            return newState;
         }
 
         #region ISupportIfcParser Members
@@ -71,8 +128,9 @@ namespace Xbim.Ifc2x3.MeasureResource
         {
             get 
             {
-              
-                return _theValue != null ? string.Format(@"'{0}'", Escape(_theValue)) : "$"; 
+                return _theValue != null ? 
+                    string.Format(@"'{0}'", Escape(_theValue)) : // if not null escape
+                    "$"; 
             }
         }
 

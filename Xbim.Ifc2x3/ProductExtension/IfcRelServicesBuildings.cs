@@ -31,7 +31,7 @@ namespace Xbim.Ifc2x3.ProductExtension
     ///   HISTORY New entity in IFC Release 1.0 
     ///   IFC2x PLATFORM CHANGE  The data type of the attributeRelatedBuildings has been changed from IfcBuilding to its supertype IfcSpatialStructureElement with upward compatibility for file based exchange. The name IfcRelServicesBuildings is a known anomaly, as the relationship is not restricted to buildings anymore.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcRelServicesBuildings : IfcRelConnects
     {
         public IfcRelServicesBuildings()

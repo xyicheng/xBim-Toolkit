@@ -30,7 +30,7 @@ namespace Xbim.Ifc2x3.Kernel
     ///   The inherited attribute RelatedObjects gives the references to the objects, which the process operates on. The RelatingProcess is the process, that operates on the object. The operation types are captured in the inherited attribute Name.
     ///   HISTORY: New entity in IFC Release 1.5. Has been renamed from IfcRelProcessOperatesOn in IFC Release 2x.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcRelAssignsToProcess : IfcRelAssigns
     {
         #region Fields

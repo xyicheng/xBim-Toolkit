@@ -86,7 +86,7 @@ namespace Xbim.Ifc2x3.ProductExtension
     ///   IfcShapeRepresentation.RepresentationIdentifier = 'Body' 
     ///   IfcShapeRepresentation.RepresentationType = 'Brep'
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcSite : IfcSpatialStructureElement
     {
         #region Fields

@@ -10,9 +10,10 @@
 
 #endregion
 
+using Xbim.XbimExtensions.Interfaces;
 namespace Xbim.XbimExtensions.SelectTypes
 {
-    public interface IfcCurveStyleFontSelect : ExpressSelectType
+    public interface IfcCurveStyleFontSelect : ExpressSelectType, IPersistIfcEntity, IfcCurveFontOrScaledCurveFontSelect, ISupportChangeNotification
     {
     }
 }

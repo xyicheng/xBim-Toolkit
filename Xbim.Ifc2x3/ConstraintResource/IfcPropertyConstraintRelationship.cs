@@ -23,7 +23,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc2x3.ConstraintResource
 {
-    [IfcPersistedEntityAttribute, Serializable, IndexedClass]
+    [IfcPersistedEntityAttribute, IndexedClass]
     public class IfcPropertyConstraintRelationship : INotifyPropertyChanged, ISupportChangeNotification,
                                                      IPersistIfcEntity, INotifyPropertyChanging
     {

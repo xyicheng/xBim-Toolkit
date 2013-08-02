@@ -27,6 +27,7 @@ namespace Xbim.IO
         /// </summary>
         protected JET_TABLEID table;
 
+        protected XbimModel model;
         /// <summary>
         /// Global Table
         /// </summary>
@@ -52,10 +53,11 @@ namespace Xbim.IO
 
 
         public bool ReadOnly { get; set; }
-        public XbimCursor(JET_INSTANCE instance, string database,  OpenDatabaseGrbit mode)
+        public XbimCursor(XbimModel model, string database,  OpenDatabaseGrbit mode)
         {
             this.lockObject = new Object();
-            this.instance = instance;
+            this.model = model;
+            this.instance = model.Cache.JetInstance;
             sesid = new Session(instance);
             Api.JetOpenDatabase(sesid, database, String.Empty, out this.dbId, mode);
             Api.JetOpenTable(this.sesid, this.dbId, globalsTableName, null, 0,  mode == OpenDatabaseGrbit.ReadOnly ? OpenTableGrbit.ReadOnly : 

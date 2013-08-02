@@ -14,11 +14,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Xml.Serialization;
+
 using Xbim.XbimExtensions.SelectTypes;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
-using WVector3D = System.Windows.Media.Media3D.Vector3D;
+
+using Xbim.Common.Geometry;
 
 #endregion
 
@@ -41,7 +42,7 @@ namespace Xbim.Ifc2x3.GeometryResource
     ///   WR4   :   The Axis and RefDirection shall not be parallel or anti-parallel.  
     ///   WR5   :   Either both (Axis and RefDirection) are not given and therefore defaulted, or both shall be given. This is a further constraint in IFC Release 1.5.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcAxis2Placement3D : IfcPlacement, IfcAxis2Placement
     {
         #region Fields
@@ -118,11 +119,11 @@ namespace Xbim.Ifc2x3.GeometryResource
                 }
                 else if (RefDirection != null && Axis != null)
                 {
-                    WVector3D za = _axis.WVector3D();
+                    XbimVector3D za = _axis.XbimVector3D();
                     za.Normalize();
-                    WVector3D xa = _refDirection.WVector3D();
+                    XbimVector3D xa = _refDirection.XbimVector3D();
                     xa.Normalize();
-                    WVector3D ya = WVector3D.CrossProduct(za, xa);
+                    XbimVector3D ya = XbimVector3D.CrossProduct(za, xa);
                     ya.Normalize();
                     p.Add(new IfcDirection(xa));
                     p.Add(new IfcDirection(ya));
@@ -137,8 +138,8 @@ namespace Xbim.Ifc2x3.GeometryResource
 
         public override string ToString()
         {
-            if (_refDirection != null && _axis != null)
-                return string.Format("L={0}, D={1}, A={2}", Location, _refDirection, _axis);
+            if (RefDirection != null && Axis != null)
+                return string.Format("L={0}, D={1}, A={2}", Location, RefDirection, Axis);
             else
                 return base.ToString();
         }

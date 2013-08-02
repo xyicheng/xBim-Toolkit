@@ -6,13 +6,22 @@
     xmlns:xbimIO="clr-namespace:Xbim.IO;assembly=Xbim.IO"
     xmlns:local="clr-namespace:XbimXplorer"
     xmlns:pt="clr-namespace:PropertyTools.Wpf;assembly=PropertyTools.Wpf" 
-    Title="Xbim Xplorer" Height="600" Width="800" Loaded="Window_Loaded"
+    Title="Xbim Xplorer" Height="600" Width="800" 
     x:Name="MainWindow"
-        WindowState="Maximized"
-        Icon="icon.ico">
+        Icon="xBIM.ico">
     <Window.Resources>
         <ObjectDataProvider x:Key="ModelProvider"  IsInitialLoadEnabled="False" ></ObjectDataProvider>
-         <DataTemplate DataType="{x:Type xbim:SpatialViewModel}">
+        <DataTemplate DataType="{x:Type xbim:XbimModelViewModel}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <!--<Image Grid.Column="0" Source="/folder.png" Margin="0 0 4 0"/>-->
+                <TextBlock Grid.Column="1" Text="{Binding Name}" FontWeight="Bold"/>
+            </Grid>
+        </DataTemplate> <DataTemplate DataType="{x:Type xbim:SpatialViewModel}">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -45,13 +54,19 @@
                 <TextBlock Grid.Column="1" Text="{Binding Name}"/>
             </Grid>
         </DataTemplate>
-        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
     </Window.Resources>
     <Window.CommandBindings>
+        <CommandBinding Command="New"  Executed="CommandBinding_New" CanExecute="CommandBinding_CanExecute"/>
         <CommandBinding Command="Close"  Executed="CommandBinding_Close" CanExecute="CommandBinding_CanExecute"/>
         <CommandBinding Command="SaveAs" Executed="CommandBinding_SaveAs"  CanExecute="CommandBinding_CanExecute"/>
-        <CommandBinding Command="Open"   Executed="CommandBinding_Open"/>
-       
+        <CommandBinding Command="Open"   Executed="CommandBinding_Open" CanExecute="CommandBinding_CanExecute"/>
+        
+        <CommandBinding Command="{x:Static local:XplorerMainWindow.InsertCmd}" Executed="InsertCmdExecuted" CanExecute="InsertCmdCanExecute"/>
+        <CommandBinding Command="{x:Static local:XplorerMainWindow.ExportCOBieCmd}"   Executed="ExportCOBieCmdExecuted" CanExecute="ExportCOBieCmdCanExecute"/>
+        <CommandBinding Command="{x:Static local:XplorerMainWindow.EditFederationCmd}" Executed="EditFederationCmdExecuted" CanExecute="EditFederationCmdCanExecute"/>
+        <CommandBinding Command="{x:Static local:XplorerMainWindow.OpenFederationCmd}" Executed="OpenFederationCmdExecuted" CanExecute="OpenFederationCmdCanExecute"/>
+        <CommandBinding Command="{x:Static local:XplorerMainWindow.CreateFederationCmd}" Executed="CreateFederationCmdExecuted" CanExecute="CreateFederationCmdCanExecute"/>
+
     </Window.CommandBindings>
     <Grid Name="MainFrame" DataContext="{StaticResource ModelProvider}">
         <Grid.RowDefinitions>
@@ -61,18 +76,25 @@
         </Grid.RowDefinitions>
        
         <Menu Grid.Row="0" >
-            <MenuItem Header="_File">
-                <!--<MenuItem Header="_New Xbim File" Click="FileNew_Click"/>-->
+            <MenuItem Header="_Model">
+                
                 <MenuItem Header="_Open" Command="Open"/>
+                <!--<MenuItem Header="_Insert" Command="{x:Static local:XplorerMainWindow.InsertCmd}" />-->
                 <MenuItem Header="_SaveAs" Command="SaveAs"/>
+                <MenuItem Header="_Query" Click="OpenQuery" />
                 <MenuItem Header="_Close" Command="Close" />
-                <!--<MenuItem Header="_Import Ifc File" Click="FileImport_Click"/>
-                <MenuItem Header="_Export Ifc File" Click="FileExport_Click"/>-->
             </MenuItem>
+            <MenuItem Header="Federate">
+                <MenuItem Header="_Create" Command="{x:Static local:XplorerMainWindow.CreateFederationCmd}" />
+                <MenuItem Header="_Open" Command="{x:Static local:XplorerMainWindow.OpenFederationCmd}" />
+                <MenuItem Header="_Edit" Command="{x:Static local:XplorerMainWindow.EditFederationCmd}" />
+                
+            </MenuItem>
+                
             <MenuItem Header="View">
                 <MenuItem Header="_Zoom Extents" Click="MenuItem_ZoomExtents"/>
                 <MenuItem Header="_Copy" Command="Copy"/>
-                <MenuItem IsCheckable="True" Header="Show code dialog" Name="mnShowCodeDialod" Click="mnShowCodeDialod_Click" IsChecked="{Binding IsEnabled, ElementName=DynamicProductSelection, Mode=TwoWay}" />
+              
                 <MenuItem IsCheckable="True" Header="Show Gridlines" IsChecked="{Binding ShowGridLines, ElementName=DrawingControl}"/>
                 <MenuItem IsCheckable="True" Header="Show Spaces" IsChecked="{Binding ShowSpaces, ElementName=DrawingControl}"/>
                 <MenuItem IsCheckable="True" Header="Show Walls" IsChecked="{Binding ShowWalls, ElementName=DrawingControl}"/>
@@ -86,7 +108,7 @@
                 <MenuItem IsCheckable="True" Header="ZoomAroundMouseDownPoint" IsChecked="{Binding Viewport.ZoomAroundMouseDownPoint, ElementName=DrawingControl}"/>
                 <MenuItem IsCheckable="True" Header="Orthographic" IsChecked="{Binding Viewport.Orthographic, ElementName=DrawingControl}"/>
                 <MenuItem IsCheckable="True" Header="InfiniteSpin" IsChecked="{Binding Viewport.InfiniteSpin, ElementName=DrawingControl}"/>
-                <MenuItem IsCheckable="True" Header="IsPanEnabled" IsChecked="{Binding Viewport.IsPanEnabled, ElementName=DrawingControl}"/>
+                <MenuItem IsCheckable="True" Header="IsPanEnabled" IsChecked="{Binding Viewport.IsPanEnabled, ElementName=DrawingControl}" Background="PaleGoldenrod"/>
                 <MenuItem IsCheckable="True" Header="IsRotationEnabled" IsChecked="{Binding Viewport.IsRotationEnabled, ElementName=DrawingControl}"/>
                 <MenuItem IsCheckable="True" Header="IsZoomEnabled" IsChecked="{Binding Viewport.IsZoomEnabled, ElementName=DrawingControl}"/>
                 <MenuItem IsCheckable="True" Header="IsChangeFovEnabled" IsChecked="{Binding Viewport.IsChangeFieldOfViewEnabled, ElementName=DrawingControl}"/>
@@ -108,9 +130,13 @@
                         <TextBlock Text="{Binding Viewport.CameraInertiaFactor, StringFormat='{}{0:0.000}', ElementName=DrawingControl}"/>
                     </StackPanel>
                 </MenuItem>
+                <pt:EnumMenuItem SelectedValue="{Binding Viewport.CameraRotationMode, ElementName=DrawingControl}" Header="CameraRotationMode"/>
+                <pt:EnumMenuItem SelectedValue="{Binding Viewport.CameraMode, ElementName=DrawingControl}" Header="CameraMode" />
             </MenuItem>
-            <pt:EnumMenuItem SelectedValue="{Binding Viewport.CameraRotationMode, ElementName=DrawingControl}" Header="CameraRotationMode"/>
-            <pt:EnumMenuItem SelectedValue="{Binding Viewport.CameraMode, ElementName=DrawingControl}" Header="CameraMode" />
+            <MenuItem Header="COBie">
+                <MenuItem Header="_Export" Command="{x:Static local:XplorerMainWindow.ExportCOBieCmd}" />
+            </MenuItem>
+
         </Menu>
        
         <Grid Grid.Row="1">
@@ -118,8 +144,6 @@
                 <ColumnDefinition Width=".3*"/>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition />
-                <ColumnDefinition Width="Auto" Name="RightSeparator"/>
-                <ColumnDefinition Width=".3*" Name="RightColumn"/>
             </Grid.ColumnDefinitions>
             <Grid>
                 <Grid.RowDefinitions>
@@ -127,16 +151,13 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height=".3*"/>
                 </Grid.RowDefinitions>
-                <xbim:XbimTreeview x:Name="SpatialControl"                             
-                               SelectedItem="{Binding Path=SelectedItem, ElementName=MainWindow, Mode=OneWay}" 
-                               SelectedValue="{Binding Path=SelectedItem, ElementName=MainWindow, Mode=OneWayToSource}"   
-                               Indentation="12"
-                               BorderThickness="1"
-                               Model="{Binding}"  
-                               SelectionMode="Single"
-                               MouseDoubleClick="SpatialControl_MouseDoubleClick"
-                               Grid.Row="0"
-                               />
+                <xbim:XbimTreeview x:Name="SpatialControl"   Grid.Row="0" 
+                            Indentation="10"
+                            BorderThickness="1"
+                            Model="{Binding}"  
+                            SelectedEntity="{Binding Path=SelectedItem, ElementName=MainWindow, Mode=TwoWay}"
+                            SelectionMode="Single"
+                            MouseDoubleClick="SpatialControl_MouseDoubleClick"  FontSize="10" />
                 <GridSplitter 
                     Grid.Row="1" 
                     HorizontalAlignment="Stretch"
@@ -145,7 +166,10 @@
                     ShowsPreview="True"
                     Height="5"
                     />
-                <xbim:IfcMetaDataControl x:Name="PropertiesControl" BorderThickness="1" Grid.Row="2" EntityLabel="{Binding Path=SelectedItem, ElementName=MainWindow}" >
+                <xbim:IfcMetaDataControl x:Name="PropertiesControl" BorderThickness="1" Grid.Row="2"  
+                                         SelectedEntity="{Binding Path=SelectedEntity, ElementName=SpatialControl}" 
+                                         Model="{Binding}"
+                                         >
                    
                 </xbim:IfcMetaDataControl>
             </Grid>
@@ -158,14 +182,14 @@
                 Width="5"
                 />
             <xbim:DrawingControl3D x:Name="DrawingControl" 
-                                   SelectedItem="{Binding Path=SelectedItem, ElementName=MainWindow, Mode=TwoWay}"    
+                                   SelectedEntity="{Binding Path=SelectedItem, ElementName=MainWindow, Mode=TwoWay}"    
                                    Model ="{Binding}" 
                                    Grid.Column="2" 
                                    Focusable="True" 
                                    Width="Auto" 
                                    Height="Auto" 
-                                   ProgressChanged="ProgressChanged" 
                                    MouseDoubleClick="SpatialControl_MouseDoubleClick"
+                                   ModelOpacity="0.75"
                                    >
                 <xbim:DrawingControl3D.Background>
                     <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
@@ -174,19 +198,6 @@
                     </LinearGradientBrush>
                 </xbim:DrawingControl3D.Background>
             </xbim:DrawingControl3D>
-            <StackPanel Name="stckBrowseButtons" Grid.Column="2" HorizontalAlignment="Right" Orientation="Horizontal" VerticalAlignment="Top" Visibility="{Binding ElementName=DrawingControl, Path=MultiselectionNotEmpty, Converter={StaticResource BooleanToVisibilityConverter}}" IsVisibleChanged="stckBrowseButtons_IsVisibleChanged">
-                <Button Content=" &lt;&lt; Previous " Height="30" Name="btnZoomToPrevious" Click="btnZoomToPrevious_Click"/>
-                <Button Content="     Next &gt;&gt; " Height="30" Name="btnZoomToNext" Click="btnZoomToNext_Click"/>
-            </StackPanel>
-            <GridSplitter 
-                Grid.Column="3" 
-                HorizontalAlignment="Center"
-                VerticalAlignment="Stretch"
-                Background="Gray" 
-                ShowsPreview="True"
-                Width="5"
-                />
-            <xbim:DynamicProductSelectionControl Model ="{Binding}" Name="DynamicProductSelection" Grid.Column="4" />
         </Grid>
         <StatusBar Grid.Row="2" Height="23"  Name="statusBar" VerticalAlignment="Top" >
             <StatusBarItem>
@@ -200,12 +211,17 @@
                 <Separator/>
             </StatusBarItem>
             <StatusBarItem>
+                <Slider x:Name="ModelOpacity"  Minimum="0.1" Maximum="1.0" Value="{Binding Path=ModelOpacity, ElementName=DrawingControl}" Width="100" LargeChange=".01"></Slider>
+            </StatusBarItem>
+            <StatusBarItem>
                 <Separator/>
             </StatusBarItem>
             <StatusBarItem HorizontalAlignment="Right" Name="StatusBar" Visibility="Hidden">
                 <Grid>
+                    
                     <ProgressBar  Name="ProgressBar"  Height="20" Maximum="100" Minimum="0" Width="150"  HorizontalAlignment="Center" VerticalAlignment="Center"></ProgressBar>
                     <TextBlock Name="StatusMsg" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White">Parsing</TextBlock>
+                    
                 </Grid>
             </StatusBarItem>
         </StatusBar>

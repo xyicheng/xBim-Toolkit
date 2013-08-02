@@ -14,7 +14,7 @@
 
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Windows.Markup;
+
 using System.Runtime.CompilerServices;
 
 #endregion
@@ -37,4 +37,3 @@ using System.Runtime.CompilerServices;
 
 [assembly: Guid("a797786b-8f96-460b-86db-1749350cc720")]
 
-[assembly: XmlnsDefinition("http://schemas.Xbim.com/Xbim", "Xbim.IO")]

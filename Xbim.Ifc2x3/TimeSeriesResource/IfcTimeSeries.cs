@@ -24,7 +24,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc2x3.TimeSeriesResource
 {
-    [IfcPersistedEntityAttribute, Serializable, IndexedClass]
+    [IfcPersistedEntityAttribute, IndexedClass]
     public abstract class IfcTimeSeries : IfcMetricValueSelect, INotifyPropertyChanged, ISupportChangeNotification,
                                           IPersistIfcEntity, IfcObjectReferenceSelect, INotifyPropertyChanging
     {

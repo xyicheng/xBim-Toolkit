@@ -30,7 +30,7 @@ namespace Xbim.Ifc2x3.StructuralAnalysisDomain
     ///   Both, the IfcElement and the IfcStructuralMember, may involve any number (zero, one, or many) associations between physical and analytical element. Multiple instances of IfcRelConnectsStructuralElement can therefore be used to reflect the many-to-many nature of the association between physical and analytical elements.
     ///   HISTORY  New entity in Release IFC2x Edition 3.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcRelConnectsStructuralElement : IfcRelConnects
     {
         #region Fields

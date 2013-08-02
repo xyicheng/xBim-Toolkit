@@ -26,7 +26,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc2x3.ActorResource
 {
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class OrganizationCollection : XbimList<IfcOrganization>
     {
         internal OrganizationCollection(IPersistIfcEntity owner)
@@ -55,7 +55,7 @@ namespace Xbim.Ifc2x3.ActorResource
     }
 
 
-    [IfcPersistedEntityAttribute, Serializable, IndexedClass]
+    [IfcPersistedEntityAttribute, IndexedClass]
     public class IfcOrganization : IfcActorSelect, IPersistIfcEntity, IFormattable, ISupportChangeNotification,
                                    INotifyPropertyChanged, IfcObjectReferenceSelect, INotifyPropertyChanging
     {
@@ -219,7 +219,11 @@ namespace Xbim.Ifc2x3.ActorResource
         }
 
         #endregion
+        public string RolesString
+        {
+            get { return Roles == null ? null : Roles.ToString("D; ", null); }
 
+        }
         #region Part 21 Step file Parse routines
 
         public virtual void IfcParse(int propIndex, IPropertyValue value)
@@ -366,9 +370,9 @@ namespace Xbim.Ifc2x3.ActorResource
 
         public void AddRole(IfcActorRole newRole)
         {
-            if (_roles == null)
+            if (Roles == null)
                 _roles = new ActorRoleCollection(this);
-            _roles.Add(newRole);
+            Roles.Add(newRole);
         }
 
         /////// <summary>
@@ -685,11 +689,11 @@ namespace Xbim.Ifc2x3.ActorResource
         internal bool IsEquivalent(IfcOrganization o)
         {
             if (o == null) return false;
-            return (o._addresses.IsEquivalent(_addresses)
-                    && o._description == _description
-                    && o._id == _id
-                    && o._name == _name
-                    && o._roles.IsEquivalent(_roles));
+            return (o.Addresses.IsEquivalent(Addresses)
+                    && o.Description == Description
+                    && o.Id == Id
+                    && o.Name ==Name
+                    && o.Roles.IsEquivalent(Roles));
         }
 
         #region INotifyPropertyChanged Members

@@ -36,21 +36,7 @@ namespace Xbim.Tests
         {
             //System.Diagnostics.Debug.WriteLine("Test Cleanup");
         }
-        [TestMethod]
-        public void GlobalCountTest()
-        {
-            XbimModel model = new XbimModel();
-            model.Open(SourceFile);
-           //get the cached count
-            long c = model.Instances.Count;
-            //read every record
-            foreach (var entity in model.Instances)
-            {
-                c--;
-            }
-            model.Close();
-            Assert.AreEqual(c , 0);
-        }
+       
 
         /// <summary>
         /// Test the count feature in combination with roll back transaction
@@ -143,21 +129,7 @@ namespace Xbim.Tests
             Assert.AreEqual(c1,c2);
         }
 
-        [TestMethod]
-        public void CheckModelDispose()
-        {
-            long c1;
-            using (XbimModel model1 = new XbimModel())
-            {
-                 model1.Open(SourceFile, XbimDBAccess.ReadWrite);
-                 c1 = model1.Instances.Count;
-            } //dispose should close the model, allowing us to open it for reading and writing
-            XbimModel model2 = new XbimModel();
-            model2.Open(SourceFile, XbimDBAccess.ReadWrite);
-            long c2 = model2.Instances.Count;
-            model2.Close();
-            Assert.AreEqual(c1, c2);
-        }
+       
 
         [TestMethod]
         public void CheckModelReadWrite()
@@ -167,18 +139,19 @@ namespace Xbim.Tests
                 Assert.IsTrue(model1.Open(SourceFile, XbimDBAccess.ReadWrite));
                 using (var txn1 = model1.BeginTransaction())
                 {
-                     model1.Instances.New<IfcWall>(); //DO SOMETHING
+                    model1.Instances.New<IfcWall>(); //DO SOMETHING
                 }
-               
-                using (XbimModel model2 = new XbimModel())
+            }
+
+            using (XbimModel model2 = new XbimModel())
+            {
+                Assert.IsTrue(model2.Open(SourceFile, XbimDBAccess.ReadWrite));
+                using (var txn2 = model2.BeginTransaction())
                 {
-                    Assert.IsTrue(model2.Open(SourceFile, XbimDBAccess.ReadWrite));
-                    using (var txn2 = model2.BeginTransaction())
-                    {
-                        model2.Instances.New<IfcWall>(); //DO SOMETHING
-                    }
+                    model2.Instances.New<IfcWall>(); //DO SOMETHING
                 }
-            } //dispose should close the models, allowing us to open it for reading and writing
+            }
+            //dispose should close the models, allowing us to open it for reading and writing
 
             try
             {
@@ -198,15 +171,13 @@ namespace Xbim.Tests
                     f.Close();
                     Assert.Fail(); //it should not be able to be opened
                 }
-                catch (System.IO.IOException) //this should fail
+                catch (System.IO.IOException) //we should get this exception
                 {
-
+                  
                 }
-                finally
-                {
-                    model.Close();
-                }
+               
             }
+            Assert.IsTrue(XbimModel.ModelOpenCount == 0);
         }
 
         [TestMethod]
@@ -242,7 +213,7 @@ namespace Xbim.Tests
                 using (XbimModel referencing = new XbimModel())
                 {
                     referencing.Open("ReferenceTestModel.xBIM");
-                    referencingCount = referencing.Instances.Count;
+                    referencingCount = referencing.InstancesLocal.Count;
                     foreach (var refModel in referencing.RefencedModels)
                     {
                         referencingCount += refModel.Model.Instances.Count;
@@ -320,33 +291,89 @@ namespace Xbim.Tests
             {
                 Assert.IsTrue(model1.Open(ModelA, XbimDBAccess.Read));
                 
-                foreach (var handle in model1.Instances)
+                foreach (var entity in model1.Instances)
                 {
                    
                     MemoryStream ms = new MemoryStream();
                     BinaryWriter bw = new BinaryWriter(ms);
-                    IPersistIfcEntity entity = model1.Instances[handle];
                     entity.WriteEntity(bw);
                     int uniqueHash = XbimGeometryData.GenerateGeometryHash(ms.GetBuffer());
-                    Debug.WriteLine(uniqueHash + ", #" + handle);
+                    Debug.WriteLine(uniqueHash + ", #" + entity);
                 }
                 Debug.WriteLine("End of Model A");
                 using (XbimModel model2 = new XbimModel())
                 {
                     Assert.IsTrue(model2.Open(ModelB, XbimDBAccess.Read));
-                   
-                    foreach (var handle in model2.Instances)
+
+                    foreach (var entity in model2.Instances)
                     {
                         MemoryStream ms = new MemoryStream();
                         BinaryWriter bw = new BinaryWriter(ms);
-                        IPersistIfcEntity entity = model2.Instances[handle];           
                         entity.WriteEntity(bw);
                         int uniqueHash = XbimGeometryData.GenerateGeometryHash(ms.GetBuffer());
-                        Debug.WriteLine(uniqueHash + ", #" + handle);
+                        Debug.WriteLine(uniqueHash + ", #" + entity.EntityLabel);
                     }
                 }
             }
 
+        }
+        /// <summary>
+        /// Opens a model twice in readonly mode
+        /// </summary>
+        [TestMethod]
+        public void OpenReadOnly()
+        {
+            Assert.IsTrue(XbimModel.ModelOpenCount == 0);
+            using (XbimModel m = new XbimModel())
+            {
+                m.Open(ModelA, XbimDBAccess.Read);
+                Assert.IsTrue(XbimModel.ModelOpenCount == 1);
+                using (XbimModel m2 = new XbimModel())
+                {
+                    m2.Open(ModelA, XbimDBAccess.Read);
+                    Assert.IsTrue(XbimModel.ModelOpenCount == 2);
+
+                }
+            }
+            Assert.IsTrue(XbimModel.ModelOpenCount == 0);
+        }
+
+        /// <summary>
+        /// Checks that the correct number of instances are stored in the database meta data
+        /// </summary>
+        [TestMethod]
+        public void GlobalCountTest()
+        {
+            XbimModel model = new XbimModel();
+            model.Open(ModelA);
+            //get the cached count
+            long c = model.Instances.Count;
+            //read every record
+            foreach (var entity in model.Instances)
+            {
+                c--;
+            }
+            model.Close();
+            Assert.AreEqual(c, 0);
+        }
+
+        /// <summary>
+        /// Checks whether the database is being disposed and closed correctly
+        /// </summary>
+        [TestMethod]
+        public void CheckModelDispose()
+        {
+            long c1;
+            using (XbimModel model1 = new XbimModel())
+            {
+                model1.Open(ModelA, XbimDBAccess.ReadWrite);
+                c1 = model1.Instances.Count;
+            } //dispose should close the model, allowing us to open it for reading and writing
+            XbimModel model2 = new XbimModel();
+            model2.Open(ModelA, XbimDBAccess.ReadWrite);
+            long c2 = model2.Instances.Count;
+            model2.Close();
+            Assert.AreEqual(c1, c2);
         }
 
         [TestMethod]
@@ -370,7 +397,7 @@ namespace Xbim.Tests
             } 
            
             Assert.IsTrue(File.Exists("Test.ifc"));
-            
+            Assert.IsTrue(XbimModel.ModelOpenCount == 0);
         }
     }
 }

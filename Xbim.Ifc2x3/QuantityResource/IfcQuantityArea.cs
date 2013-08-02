@@ -32,7 +32,7 @@ namespace Xbim.Ifc2x3.QuantityResource
     ///   WR21   :   If a unit is given, the unit type shall be area unit.  
     ///   WR22   :   A valid area quantity shall be greater than or equal to zero.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcQuantityArea : IfcPhysicalSimpleQuantity
     {
         #region Fields
@@ -74,9 +74,14 @@ namespace Xbim.Ifc2x3.QuantityResource
             string baseErr = base.WhereRule();
             if (Unit != null && Unit.UnitType != IfcUnitEnum.AREAUNIT)
                 baseErr += "WR21 QuantityArea : If a unit is given, the unit type shall be area unit.\n";
-            if (_areaValue < 0)
+            if (AreaValue < 0)
                 baseErr += "WR22 QuantityArea : A valid area quantity shall be greater than or equal to zero.\n";
             return baseErr;
+        }
+        
+        public override string ToString()
+        {
+            return AreaValue.ToPart21;
         }
     }
 }

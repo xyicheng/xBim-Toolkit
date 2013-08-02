@@ -30,7 +30,7 @@ namespace Xbim.Ifc2x3.Kernel
     ///   The inherited attribute RelatedObjects define the items to which the library association is applied. The attribute RelatingLibrary is the reference to a library reference, applied to the item(s).
     ///   HISTORY: New entity in IFC Release 2x.
     /// </remarks>
-    [IfcPersistedEntityAttribute, Serializable]
+    [IfcPersistedEntityAttribute]
     public class IfcRelAssociatesLibrary : IfcRelAssociates
     {
         #region Fields
