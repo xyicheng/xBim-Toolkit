@@ -793,9 +793,11 @@ namespace Xbim.Presentation
 
         private XbimScene<WpfMeshGeometry3D, WpfMaterial> BuildScene(XbimModel model)
         {
+            // spaces are not excluded from the model to make the ShowSpaces property meaningful
             XbimScene<WpfMeshGeometry3D, WpfMaterial> scene = new XbimScene<WpfMeshGeometry3D, WpfMaterial>(model);
             XbimGeometryHandleCollection handles = new XbimGeometryHandleCollection(model.GetGeometryHandles()
-                                                       .Exclude(IfcEntityNameEnum.IFCFEATUREELEMENT | IfcEntityNameEnum.IFCSPACE));
+                   .Exclude(IfcEntityNameEnum.IFCFEATUREELEMENT));
+                    // .Exclude(IfcEntityNameEnum.IFCFEATUREELEMENT | IfcEntityNameEnum.IFCSPACE));
             double total = handles.Count;
             double processed = 0;
 
@@ -960,6 +962,7 @@ namespace Xbim.Presentation
             if (SelectedEntity != null && Highlighted != null && Highlighted.Mesh != null)
             {
                 Rect3D r3d = Highlighted.Mesh.GetBounds();
+                // Debug.WriteLine("SelectedBBox: " + r3d.ToString());
                 ZoomTo(r3d);
             }
         }

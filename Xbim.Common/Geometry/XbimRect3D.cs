@@ -195,13 +195,15 @@ namespace Xbim.Common.Geometry
             float srXmin = (float)bw.ReadDouble(); //legacy when using windows rect3d and doubles
             float srYmin = (float)bw.ReadDouble();
             float srZmin = (float)bw.ReadDouble();
-            float srXmax = (float)bw.ReadDouble();
-            float srYmax = (float)bw.ReadDouble();
-            float srZmax = (float)bw.ReadDouble();
             rect.Location = new XbimPoint3D(srXmin, srYmin, srZmin);
-            rect.SizeX = srXmax - srXmin;
-            rect.SizeY = srYmax - srYmin;
-            rect.SizeZ = srZmax - srZmin;
+
+            float srXSz = (float)bw.ReadDouble(); // all ToArray functions store position and size (bugfix: it was previously reading data as max)
+            float srYSz = (float)bw.ReadDouble();
+            float srZSz = (float)bw.ReadDouble();
+            rect.SizeX = srXSz;
+            rect.SizeY = srYSz;
+            rect.SizeZ = srZSz;
+
             return rect;
         }
 
@@ -243,7 +245,14 @@ namespace Xbim.Common.Geometry
 
         public override string ToString()
         {
-            return string.Format(System.Globalization.CultureInfo.InvariantCulture, "{0} {1} {2} {3} {4} {5}", _x, _y, _z, _sizeX, _sizeY, _sizeZ);
+            return string.Format(System.Globalization.CultureInfo.InvariantCulture, "{0} {1} {2} {3} {4} {5}", 
+                _x.ToString("f99").TrimEnd(new char[] {'0', ','}),
+                _y.ToString("f99").TrimEnd(new char[] { '0', ',' }),
+                _z.ToString("f99").TrimEnd(new char[] { '0', ',' }),
+                _sizeX.ToString("f99").TrimEnd(new char[] { '0', ',' }),
+                _sizeY.ToString("f99").TrimEnd(new char[] { '0', ',' }),
+                _sizeZ.ToString("f99").TrimEnd(new char[] {'0', ','})
+                );
         }
 
         /// <summary>

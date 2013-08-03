@@ -170,6 +170,7 @@
     <Compile Include="FederatedModelDlg.xaml.cs">
       <DependentUpon>FederatedModelDlg.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Querying\GeomQuerying.cs" />
     <Compile Include="Querying\SquareBracketIndexer.cs" />
     <Compile Include="Querying\TextHighliter.cs" />
     <Compile Include="Querying\TreeQuery.cs" />

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -33,6 +34,18 @@ namespace XbimXplorer.Querying
         {
             InitializeComponent();
             DisplayHelp();
+#if DEBUG
+            // loads the last commands stored
+            var fname = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "xbimquerying.txt");
+            if (File.Exists(fname))
+            {
+                using (StreamReader reader = File.OpenText(fname))
+                {
+                    string read = reader.ReadToEnd();
+                    txtCommand.Text = read;
+                }
+            }
+#endif
         }
 
         private XbimModel Model
@@ -52,6 +65,17 @@ namespace XbimXplorer.Querying
                 (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
                 )
             {
+#if DEBUG
+                // stores the commands being launched
+                var fname = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "xbimquerying.txt");
+                using (StreamWriter writer = File.CreateText(fname))
+                {
+                    writer.Write(txtCommand.Text);
+                    writer.Flush();
+                    writer.Close();
+                }
+#endif
+
                 e.Handled = true;
                 if (bDoClear)
                     txtOut.Document = new FlowDocument();
@@ -212,6 +236,19 @@ namespace XbimXplorer.Querying
                             {
                                 ReportAdd(ReportType(item, BeVerbose));
                             }
+                        }
+                        continue;
+                    }
+                    m = Regex.Match(cmd, @"^(geometry|ge) (?<mode>(count|list|short) )*(?<entities>([\d,]+|[^ ]+))", RegexOptions.IgnoreCase);
+                    if (m.Success)
+                    {
+                        string start = m.Groups["entities"].Value;
+                        string mode = m.Groups["mode"].Value;
+                        IEnumerable<int> labels = tointarray(start, ',');
+                        foreach (var item in labels)
+                        {
+                            ReportAdd("Geometry for: " + item.ToString(), Brushes.Green);
+                            ReportAdd(GeomQuerying.GeomInfoBoundBox(Model, item));
                         }
                         continue;
                     }
@@ -485,11 +522,13 @@ namespace XbimXplorer.Querying
 
             t.AppendFormat("Commands:");
             t.AppendFormat("- select [count|list|short] [transverse] <startingElement> [Property [Property...]]");
-            t.Append("    <startingElement> is a either an entity label or an ifcTypeName", Brushes.Gray);
+            t.Append("    <startingElement>: <EntityLabel, <EntityLabel>> or <ifcTypeName>", Brushes.Gray);
             t.Append("    [Property] is a Property or Inverse name", Brushes.Gray);
             t.AppendFormat("- EntityLabel label [recursion]");
             t.Append("    [recursion] is an int representing the depth of children to report", Brushes.Gray);
-            t.AppendFormat("- IfcSchema [list] <TypeName> - (TypeName can contain wildcards)");
+            t.AppendFormat("- IfcSchema [list] <TypeName>");
+            t.Append("    <TypeName> can contain wildcards", Brushes.Gray);
+            t.AppendFormat("- geometry <EntityLabel,<EntityLabel>>");
             t.AppendFormat("- clip [off|<Elevation>|<px>, <py>, <pz>, <nx>, <ny>, <nz>|<Storey name>]");
             t.Append("    Clipping the 3D model is still and unstable feature. Use with caution.", Brushes.Gray);
             t.AppendFormat("- zoom <Region name>");
