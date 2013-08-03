@@ -56,7 +56,7 @@ namespace Xbim.IO
         public string Authorization;
         public string Documentation;
 
-        private IIfcFileHeader _fileHeader = new IfcFileHeader();
+        private IIfcFileHeader _fileHeader; // removed the initialiser because it's assigned from the model on write.
 
         #endregion
 

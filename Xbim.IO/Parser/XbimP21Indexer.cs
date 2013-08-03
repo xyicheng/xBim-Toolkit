@@ -68,7 +68,7 @@ namespace Xbim.IO.Parser
         private readonly Stack<Part21Entity> _processStack = new Stack<Part21Entity>();
         private PropertyValue _propertyValue;
         private int _listNestLevel = -1;
-        private readonly IfcFileHeader _header = new IfcFileHeader();
+        private readonly IfcFileHeader _header = new IfcFileHeader(IfcFileHeader.HeaderCreationMode.LeaveEmpty);
 
         public IfcFileHeader Header
         {

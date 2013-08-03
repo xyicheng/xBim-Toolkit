@@ -392,7 +392,7 @@ namespace Xbim.IO
                 XbimModel model = new XbimModel();
                 model.CreateDatabase(tmpFileName);  
                 model.Open(tmpFileName, XbimDBAccess.ReadWrite, true);
-                model.Header = new IfcFileHeader();
+                model.Header = new IfcFileHeader(IfcFileHeader.HeaderCreationMode.InitWithXbimDefaults);
                 return model;
             }
             catch (Exception e)

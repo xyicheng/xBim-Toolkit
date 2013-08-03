@@ -215,8 +215,8 @@ namespace Xbim.IO
 
         internal void Write(BinaryWriter binaryWriter)
         {
-            binaryWriter.Write(Name??"");
-            binaryWriter.Write(TimeStamp??"");
+            binaryWriter.Write(Name ?? "");
+            binaryWriter.Write(TimeStamp ?? "");
             binaryWriter.Write(AuthorName.Count);
             foreach (string item in AuthorName)
                 binaryWriter.Write(item);
@@ -443,20 +443,42 @@ namespace Xbim.IO
     }
 
     [Serializable]
-    public class IfcFileHeader:IIfcFileHeader
+    public class IfcFileHeader : IIfcFileHeader
     {
-        public IIfcFileDescription FileDescription = new FileDescription("2;1");
-        public IIfcFileName FileName = new FileName(DateTime.Now)
+        public enum HeaderCreationMode
         {
-            PreprocessorVersion =
-                string.Format("Xbim.Ifc File Processor version {0}",
-                              Assembly.GetExecutingAssembly().GetName().Version),
-            OriginatingSystem =
-                string.Format("Xbim version {0}",
-                              Assembly.GetExecutingAssembly().GetName().Version),
-        };
-        public IIfcFileSchema FileSchema = new FileSchema("IFC2X3");
+            LeaveEmpty,
+            InitWithXbimDefaults
+        }
 
+        public IfcFileHeader(HeaderCreationMode Mode)
+        {
+            // todo: bonghi: here need to create the header in different forms.
+            if (Mode == HeaderCreationMode.InitWithXbimDefaults)
+            {
+                FileDescription = new FileDescription("2;1");
+                FileName = new FileName(DateTime.Now)
+                    {
+                        PreprocessorVersion =
+                            string.Format("Xbim.Ifc File Processor version {0}",
+                                          Assembly.GetExecutingAssembly().GetName().Version),
+                        OriginatingSystem =
+                            string.Format("Xbim version {0}",
+                                          Assembly.GetExecutingAssembly().GetName().Version),
+                    };
+                FileSchema = new FileSchema("IFC2X3");
+            }
+            else
+            {
+                FileDescription = new FileDescription();
+                FileName = new FileName();
+                FileSchema = new FileSchema();
+            }
+        }
+
+        public IIfcFileDescription FileDescription;
+        public IIfcFileName FileName;
+        public IIfcFileSchema FileSchema;
 
         public void Write(BinaryWriter binaryWriter)
         {
@@ -482,7 +504,7 @@ namespace Xbim.IO
             {
                 FileDescription = value;
             }
-            
+
         }
 
         IIfcFileName IIfcFileHeader.FileName
@@ -495,7 +517,7 @@ namespace Xbim.IO
             {
                 FileName = value;
             }
-           
+
         }
 
         IIfcFileSchema IIfcFileHeader.FileSchema
@@ -508,7 +530,7 @@ namespace Xbim.IO
             {
                 FileSchema = value;
             }
-           
+
         }
     }
 }
