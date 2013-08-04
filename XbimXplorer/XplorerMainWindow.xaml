@@ -94,7 +94,16 @@
             <MenuItem Header="View">
                 <MenuItem Header="_Zoom Extents" Click="MenuItem_ZoomExtents"/>
                 <MenuItem Header="_Copy" Command="Copy"/>
-              
+                <!--
+                <MenuItem Header="_Layers" ItemsSource="{Binding LayerSet, ElementName=DrawingControl}">
+                    <MenuItem.ItemContainerStyle>
+                        <Style>
+                            <Setter Property="MenuItem.Header" Value="{Binding NameOnMenu}"/>
+                            <Setter Property="MenuItem.Command" Value="{Binding Open}"/>
+                        </Style>
+                    </MenuItem.ItemContainerStyle>
+                </MenuItem>
+                -->
                 <MenuItem IsCheckable="True" Header="Show Gridlines" IsChecked="{Binding ShowGridLines, ElementName=DrawingControl}"/>
                 <MenuItem IsCheckable="True" Header="Show Spaces" IsChecked="{Binding ShowSpaces, ElementName=DrawingControl}"/>
                 <MenuItem IsCheckable="True" Header="Show Walls" IsChecked="{Binding ShowWalls, ElementName=DrawingControl}"/>

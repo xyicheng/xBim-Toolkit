@@ -110,6 +110,7 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="DrawincControl3DLayers.cs" />
     <Compile Include="ViewModels\ClassificationViewModel.cs" />
     <Compile Include="ColourRgbExtensions.cs" />
     <Compile Include="XbimCuttingPlaneGroup.cs" />

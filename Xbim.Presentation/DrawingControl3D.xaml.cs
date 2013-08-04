@@ -141,7 +141,6 @@ namespace Xbim.Presentation
 
         private void Canvas_MouseDown(object sender, MouseButtonEventArgs e)
         {
-
             var pos = e.GetPosition(Canvas);
             var hit = FindHit(pos);
         
@@ -257,12 +256,9 @@ namespace Xbim.Presentation
             {
                 XbimModel model = e.NewValue as XbimModel;
                 d3d.LoadGeometry(model);
-                
+                d3d.SetValue(LayerSetProperty, d3d.LayerSetRefresh());
             }
-
         }
-
-
 
         public bool ForceRenderBothSides
         {
@@ -909,6 +905,27 @@ namespace Xbim.Presentation
                 foreach (var layer in scene.SubLayers) //go over top level layers only
                     if (toHide.Contains(layer.Name + ";"))
                         layer.HideAll();
+        }
+
+
+        // Using a DependencyProperty as the backing store for ShowWalls.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty LayerSetProperty =
+            DependencyProperty.Register("LayerSet", typeof(List<LayerViewModel>), typeof(DrawingControl3D));
+
+        public List<LayerViewModel> LayerSet
+        {
+            get { return (List<LayerViewModel>)GetValue(LayerSetProperty); }
+            // set { SetValue(ShowSpacesProperty, value); }
+        }
+
+        private List<LayerViewModel> LayerSetRefresh()
+        {
+            var ret = new List<LayerViewModel>();
+            ret.Add(new LayerViewModel("All", this));
+            foreach (var scene in scenes)
+                foreach (var layer in scene.SubLayers) //go over top level layers only
+                    ret.Add(new LayerViewModel(layer.Name, this));
+            return ret;
         }
 
         public void Hide(int hideProduct)

@@ -7,7 +7,7 @@ using System.Text;
 
 namespace Xbim.IO
 {
-    public class XbimSqliteDB
+    public class XbimSqliteDB : IDisposable
     {
         private string _dataBaseName;
 
@@ -58,6 +58,7 @@ namespace Xbim.IO
         /// <param name="sql"></param>
         public void ExecuteSQL(string sql)
         {
+            Flush();
             using (var mDBCon = this.GetConnection())
             {
                 SQLiteCommand cmd = new SQLiteCommand(mDBCon);
@@ -73,7 +74,7 @@ namespace Xbim.IO
             Closed
         }
 
-        public SQLiteConnection GetConnection(DbConnMode mode = DbConnMode.Open)
+        private SQLiteConnection GetConnection(DbConnMode mode = DbConnMode.Open)
         {
             SQLiteConnection mDBcon = new SQLiteConnection();
             mDBcon.ConnectionString = this.ConnectionString;
@@ -84,31 +85,32 @@ namespace Xbim.IO
 
         public void AddLayer(string layerName, int layerid, int parentLayerId, byte[] colour, byte[] vbo, byte[] bbArray)
         {
-            string str = "INSERT INTO Layers (SceneName, LayerName, LayerId, ParentLayerId, Meshes, XbimTexture, BoundingBox) " +
+            if (_transactedLayer == null)
+            {
+                Flush();
+                string str = "INSERT INTO Layers (SceneName, LayerName, LayerId, ParentLayerId, Meshes, XbimTexture, BoundingBox) " +
                          "VALUES (@SceneName, @LayerName, @LayerId, @ParentLayerId, @Meshes, @XbimTexture, @BoundingBox) ";
 
-            using (var mDBcon = this.GetConnection())
-            {
-                using (SQLiteTransaction SQLiteTrans = mDBcon.BeginTransaction())
-                {
-                    using (SQLiteCommand cmd = mDBcon.CreateCommand())
-                    {
-                        cmd.CommandText = str;
-                        cmd.Parameters.Add("@SceneName", DbType.String).Value = "MainScene";
-                        cmd.Parameters.Add("@LayerName", DbType.String).Value = layerName;
-                        cmd.Parameters.Add("@LayerId", DbType.Int32).Value = layerid;
-                        cmd.Parameters.Add("@ParentLayerId", DbType.Int32).Value = parentLayerId;
-                        cmd.Parameters.Add("@Meshes", DbType.Binary).Value = vbo;
-                        cmd.Parameters.Add("@XbimTexture", DbType.Binary).Value = colour;
-                        cmd.Parameters.Add("@BoundingBox", DbType.Binary).Value = bbArray;
-                        cmd.ExecuteNonQuery();
-                    }
-
-                    SQLiteTrans.Commit();
-                }
+                _transactedLayer = new transactedCommand(this, str);
+                _transactedLayer.Command.Parameters.Add("@SceneName", DbType.String).Value = "MainScene";
+                _transactedLayer.Command.Parameters.Add("@LayerName", DbType.String);
+                _transactedLayer.Command.Parameters.Add("@LayerId", DbType.Int32);
+                _transactedLayer.Command.Parameters.Add("@ParentLayerId", DbType.Int32);
+                _transactedLayer.Command.Parameters.Add("@Meshes", DbType.Binary);
+                _transactedLayer.Command.Parameters.Add("@XbimTexture", DbType.Binary);
+                _transactedLayer.Command.Parameters.Add("@BoundingBox", DbType.Binary);
             }
+
+            _transactedLayer.Command.Parameters["@LayerName"].Value = layerName;
+            _transactedLayer.Command.Parameters["@LayerId"].Value = layerid;
+            _transactedLayer.Command.Parameters["@ParentLayerId"].Value = parentLayerId;
+            _transactedLayer.Command.Parameters["@Meshes"].Value = vbo;
+            _transactedLayer.Command.Parameters["@XbimTexture"].Value = colour;
+            _transactedLayer.Command.Parameters["@BoundingBox"].Value = bbArray;
+            _transactedLayer.Command.ExecuteNonQuery();
         }
 
+        
         /// <summary>
         /// Adds a receord to the Meta table
         /// </summary>
@@ -118,29 +120,72 @@ namespace Xbim.IO
         /// <param name="Value">Any string persistence mechanism of choice (required).</param>
         public void AddMetaData(string Type, int EntityLabel, string Value, string Identifier = null)
         {
-            string str = "INSERT INTO Meta (" +
-                "'Meta_type', 'Meta_Value', 'Meta_key', 'Meta_intkey' " +
-                ") values (" +
-                "@Meta_type, @Meta_Value, @Meta_key, @Meta_intkey  " +
-                ")";
-
-            using (var mDBcon = this.GetConnection())
+            if (_transactedMetaString == null)
             {
-                using (SQLiteTransaction SQLiteTrans = mDBcon.BeginTransaction())
+                Flush();
+                string str = "INSERT INTO Meta (" +
+                    "'Meta_type', 'Meta_Value', 'Meta_key', 'Meta_intkey' " +
+                    ") values (" +
+                    "@Meta_type, @Meta_Value, @Meta_key, @Meta_intkey  " +
+                    ")";
+                _transactedMetaString = new transactedCommand(this, str);
+                _transactedMetaString.Command.Parameters.Add("@Meta_type", DbType.String);
+                _transactedMetaString.Command.Parameters.Add("@Meta_Value", DbType.String);
+                _transactedMetaString.Command.Parameters.Add("@Meta_key", DbType.String);
+                _transactedMetaString.Command.Parameters.Add("@Meta_intkey", DbType.Int32);
+            }
+
+            _transactedMetaString.Command.Parameters["@Meta_type"].Value = Type;
+            _transactedMetaString.Command.Parameters["@Meta_Value"].Value = Value;
+            if (Identifier == null)
+                _transactedMetaString.Command.Parameters["@Meta_key"].Value = DBNull.Value;
+            else
+                _transactedMetaString.Command.Parameters["@Meta_key"].Value = Identifier;
+            _transactedMetaString.Command.Parameters["@Meta_intkey"].Value = EntityLabel;
+            _transactedMetaString.Command.ExecuteNonQuery();
+        }
+
+        private transactedCommand _transactedMetaByteArray;
+        private transactedCommand _transactedMetaString;
+        private transactedCommand _transactedLayer;
+
+        private class transactedCommand : IDisposable
+        {
+            private SQLiteConnection _cn;
+            private SQLiteTransaction _trns;
+            internal SQLiteCommand Command;
+
+            public enum CmdMode
+            {
+                MetaBinary,
+                MetaString
+            }
+
+            public transactedCommand(XbimSqliteDB db, string sql)
+            {
+                _cn = db.GetConnection();
+                _trns = _cn.BeginTransaction();
+                Command = _cn.CreateCommand();
+                Command.CommandText = sql;
+            }
+
+            public void Dispose()
+            {
+                if (_trns != null)
                 {
-                    using (SQLiteCommand cmd = mDBcon.CreateCommand())
-                    {
-                        cmd.CommandText = str;
-                        cmd.Parameters.Add("@Meta_type", DbType.String).Value = Type;
-                        cmd.Parameters.Add("@Meta_Value", DbType.String).Value = Value;
-                        if (Identifier == null)
-                            cmd.Parameters.Add("@Meta_key", DbType.String).Value = DBNull.Value;
-                        else
-                            cmd.Parameters.Add("@Meta_key", DbType.String).Value = Identifier;
-                        cmd.Parameters.Add("@Meta_intkey", DbType.Int32).Value = EntityLabel;
-                        cmd.ExecuteNonQuery();
-                    }
-                    SQLiteTrans.Commit();
+                    _trns.Commit();
+                    _trns.Dispose();
+                    _trns = null;
+                }
+                if (Command != null)
+                {
+                    Command.Dispose();
+                    Command = null;
+                }
+                if (_cn != null)
+                {
+                    _cn.Dispose();
+                    _cn = null;
                 }
             }
         }
@@ -154,26 +199,71 @@ namespace Xbim.IO
         /// <param name="Value">Any string persistence mechanism of choice (required).</param>
         public void AddMetaData(string Type, int EntityLabel, byte[] Value, string Identifier = null)
         {
-            string str = "INSERT INTO Meta (" +
-                "'Meta_type', 'Meta_Value', 'Meta_key', 'Meta_intkey' " +
-                ") values (" +
-                "@Meta_type, @Meta_Value, @Meta_key, @Meta_intkey  " +
-                ")";
-
-            using (var mDBcon = this.GetConnection())
+            if (_transactedMetaByteArray == null)
             {
-                using (SQLiteTransaction SQLiteTrans = mDBcon.BeginTransaction())
+                Flush();
+                string str = "INSERT INTO Meta (" +
+                    "'Meta_type', 'Meta_Value', 'Meta_key', 'Meta_intkey' " +
+                    ") values (" +
+                    "@Meta_type, @Meta_Value, @Meta_key, @Meta_intkey  " +
+                    ")";
+                _transactedMetaByteArray = new transactedCommand(this, str);
+                _transactedMetaByteArray.Command.Parameters.Add("@Meta_type", DbType.String);
+                _transactedMetaByteArray.Command.Parameters.Add("@Meta_Value", DbType.Binary);
+                _transactedMetaByteArray.Command.Parameters.Add("@Meta_key", DbType.String);
+                _transactedMetaByteArray.Command.Parameters.Add("@Meta_intkey", DbType.Int32);
+            }
+
+            _transactedMetaByteArray.Command.Parameters["@Meta_type"].Value = Type;
+            _transactedMetaByteArray.Command.Parameters["@Meta_Value"].Value = Value;
+            if (Identifier == null)
+                _transactedMetaByteArray.Command.Parameters["@Meta_key"].Value = DBNull.Value;
+            else
+                _transactedMetaByteArray.Command.Parameters["@Meta_key"].Value = Identifier;
+            _transactedMetaByteArray.Command.Parameters["@Meta_intkey"].Value = EntityLabel;
+            _transactedMetaByteArray.Command.ExecuteNonQuery();
+        }
+
+        public void Dispose()
+        {
+            Flush();
+        }
+
+        public void Flush()
+        {
+            if (_transactedMetaByteArray != null)
+            {
+                _transactedMetaByteArray.Dispose();
+                _transactedMetaByteArray = null;
+            }
+            if (_transactedMetaString != null)
+            {
+                _transactedMetaString.Dispose();
+                _transactedMetaString = null;
+            }
+            if (_transactedLayer != null)
+            {
+                _transactedLayer.Dispose();
+                _transactedLayer = null;
+            }
+        }
+
+        public void AddScene(int p1, string p2, byte[] boundingBoxFull)
+        {
+            Flush();
+            string str =
+                        "INSERT INTO Scenes (SceneId, SceneName, BoundingBox) " +
+                        "VALUES (@SceneId, @SceneName, @BoundingBox) ";
+            using (SQLiteConnection connection = this.GetConnection())
+            {
+                using (SQLiteTransaction SQLiteTrans = connection.BeginTransaction())
                 {
-                    using (SQLiteCommand cmd = mDBcon.CreateCommand())
+                    using (SQLiteCommand cmd = connection.CreateCommand())
                     {
                         cmd.CommandText = str;
-                        cmd.Parameters.Add("@Meta_type", DbType.String).Value = Type;
-                        cmd.Parameters.Add("@Meta_Value", DbType.Binary).Value = Value;
-                        if (Identifier == null)
-                            cmd.Parameters.Add("@Meta_key", DbType.String).Value = DBNull.Value;
-                        else
-                            cmd.Parameters.Add("@Meta_key", DbType.String).Value = Identifier;
-                        cmd.Parameters.Add("@Meta_intkey", DbType.Int32).Value = EntityLabel;
+                        cmd.Parameters.Add("@SceneId", DbType.Int32).Value = 1;
+                        cmd.Parameters.Add("@SceneName", DbType.String).Value = "MainScene";
+                        cmd.Parameters.Add("@BoundingBox", DbType.Binary).Value = boundingBoxFull;
                         cmd.ExecuteNonQuery();
                     }
                     SQLiteTrans.Commit();

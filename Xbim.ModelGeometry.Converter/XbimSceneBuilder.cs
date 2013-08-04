@@ -58,10 +58,10 @@ namespace Xbim.ModelGeometry.Converter
         {
             if (File.Exists(sceneDbName)) 
                 File.Delete(sceneDbName);
-            XbimSqliteDB db = new XbimSqliteDB(sceneDbName);
+            
             
             //get a connection
-            using (SQLiteConnection connection = db.GetConnection())
+            using (var db = new XbimSqliteDB(sceneDbName))
             {
                 try
                 {
@@ -130,9 +130,11 @@ namespace Xbim.ModelGeometry.Converter
                                 composed.ToArray(false),
                                 "World"
                                 );
+                        db.Flush();
                     }
-                    
 
+                    if (Logger != null)
+                        Logger.DebugFormat("XbimScene: Exporting layers.\r\n", mScalingReference);
                     foreach (var layerContent in handles.FilterByBuildingElementTypes())
                     {
                         string elementTypeName = layerContent.Key;
@@ -162,22 +164,10 @@ namespace Xbim.ModelGeometry.Converter
 
                     // create scene row in Scenes tables
                     //
-                    string str = 
-                        "INSERT INTO Scenes (SceneId, SceneName, BoundingBox) " +
-                        "VALUES (@SceneId, @SceneName, @BoundingBox) ";
+                    if (Logger != null)
+                        Logger.DebugFormat("XbimScene: Exporting scene.\r\n", mScalingReference);
                     byte[] boundingBoxFull = modelBounds.ToFloatArray();
-                    using (SQLiteTransaction SQLiteTrans = connection.BeginTransaction())
-                    {
-                        using (SQLiteCommand cmd = connection.CreateCommand())
-                        {
-                            cmd.CommandText = str;
-                            cmd.Parameters.Add("@SceneId", DbType.Int32).Value = 1;
-                            cmd.Parameters.Add("@SceneName", DbType.String).Value = "MainScene";
-                            cmd.Parameters.Add("@BoundingBox", DbType.Binary).Value = boundingBoxFull;
-                            cmd.ExecuteNonQuery();
-                        }
-                        SQLiteTrans.Commit();
-                    }
+                    db.AddScene(1, "MainScene", boundingBoxFull);
 
                     //now add some meta data about spaces
                     if (
@@ -190,15 +180,17 @@ namespace Xbim.ModelGeometry.Converter
                     {
                         if (Logger != null)
                             Logger.DebugFormat("XbimScene: Exporting spaces.\r\n", mScalingReference);
+
+                        // string data loop
                         foreach (var space in model.Instances.OfType<IfcSpace>())
                         {
-                            int iEntLabel = Math.Abs( space.EntityLabel);
+                            int iEntLabel = Math.Abs(space.EntityLabel);
                             if ((Options & GenerateSceneOption.IncludeSpaces) == GenerateSceneOption.IncludeSpaces)
                             {
                                 db.AddMetaData(
-                                    space.GetType().Name, 
+                                    space.GetType().Name,
                                     iEntLabel,
-                                    space.Name ?? "Unnamed Space", 
+                                    space.Name ?? "Unnamed Space",
                                     iEntLabel.ToString()
                                     );
                             }
@@ -228,6 +220,12 @@ namespace Xbim.ModelGeometry.Converter
                                         iEntLabel.ToString());
                                 }
                             }
+                        }
+
+                        // binary data loop
+                        foreach (var space in model.Instances.OfType<IfcSpace>())
+                        {
+                            int iEntLabel = Math.Abs(space.EntityLabel);
                             if ((Options & GenerateSceneOption.IncludeSpacesBBox) == GenerateSceneOption.IncludeSpacesBBox)
                             {
                                 XbimGeometryData geomdata = model.GetGeometryData(iEntLabel, XbimGeometryType.BoundingBox).FirstOrDefault();
@@ -238,7 +236,7 @@ namespace Xbim.ModelGeometry.Converter
                                     db.AddMetaData(
                                             "SpaceBBox",
                                             iEntLabel,
-                                            // string.Format("Box:{1};", transformed.ToString()), // verbose, but only a few items are expected in the model
+                                        // string.Format("Box:{1};", transformed.ToString()), // verbose, but only a few items are expected in the model
                                             transformed.ToFloatArray(),
                                             iEntLabel.ToString()
                                             );
@@ -246,6 +244,7 @@ namespace Xbim.ModelGeometry.Converter
                                 // db.AddMetaData(space.GetType().Name, space.Name ?? "Undefined Space", space.EntityLabel.ToString());
                             }
                         }
+
                     }
 
                     
@@ -297,11 +296,10 @@ namespace Xbim.ModelGeometry.Converter
                 }
                 finally
                 {
-                    connection.Close();
-                    SQLiteConnection.ClearPool(connection);
+                    db.Flush();
                     GC.Collect();
                 }
-            }
+            } 
         }
 
         private int RecursivelyPersistLayer(XbimSqliteDB db, XbimMeshLayer<XbimMeshGeometry3D, XbimRenderMaterial> layer, int layerid, int parentLayerId)
