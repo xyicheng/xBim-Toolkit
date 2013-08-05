@@ -16,5 +16,13 @@ namespace Xbim.ModelGeometry.Scene
         {
             get { throw new NotImplementedException(); }
         }
+
+        public string Description
+        {
+            get
+            {
+                return "Not Implemented";
+            }
+        }
     }
 }

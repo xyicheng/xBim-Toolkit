@@ -73,7 +73,7 @@ namespace Xbim.Presentation
         }
 
         #region Fields
-        private List<XbimScene<WpfMeshGeometry3D, WpfMaterial>> scenes = new List<XbimScene<WpfMeshGeometry3D, WpfMaterial>>();
+        public List<XbimScene<WpfMeshGeometry3D, WpfMaterial>> scenes = new List<XbimScene<WpfMeshGeometry3D, WpfMaterial>>();
         private XbimColourMap federationColours;
 
         protected RayMeshGeometry3DHitTestResult _hitResult;

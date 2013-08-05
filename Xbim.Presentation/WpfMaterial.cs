@@ -14,6 +14,7 @@ namespace Xbim.Presentation
     public class WpfMaterial : IXbimRenderMaterial
     {
         Material Material;
+        string _Description;
         
         public static implicit operator Material(WpfMaterial wpfMaterial)
         {
@@ -22,11 +23,14 @@ namespace Xbim.Presentation
        
         public void CreateMaterial(XbimTexture texture)
         {
+            
             if (texture.ColourMap.Count > 1)
             {
                 Material = new MaterialGroup();
+                _Description = "Texture" ;
                 foreach (var colour in texture.ColourMap)
                 {
+                    _Description += " " + colour.ToString();
                     ((MaterialGroup)Material).Children.Add(CreateMaterial(colour));
                 }
             }
@@ -34,11 +38,13 @@ namespace Xbim.Presentation
             {
                 XbimColour colour = texture.ColourMap[0];
                 Material = CreateMaterial(colour);
+                _Description = "Texture " + colour.ToString();
             }
         }
 
         private Material CreateMaterial(XbimColour colour)
         {
+            _Description = "Colour " + colour.ToString();
             Color col = Color.FromScRgb(colour.Alpha, colour.Red, colour.Green, colour.Blue);
             Brush brush = new SolidColorBrush(col);
             if (colour.SpecularFactor > 0)
@@ -48,6 +54,14 @@ namespace Xbim.Presentation
             else
                 return new DiffuseMaterial(brush);
             
+        }
+
+        public string Description
+        {
+            get
+            {
+                return _Description;
+            }
         }
 
 

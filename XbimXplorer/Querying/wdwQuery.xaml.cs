@@ -249,6 +249,8 @@ namespace XbimXplorer.Querying
                         {
                             ReportAdd("Geometry for: " + item.ToString(), Brushes.Green);
                             ReportAdd(GeomQuerying.GeomInfoBoundBox(Model, item));
+                            ReportAdd(GeomQuerying.GeomLayers(Model, item, ParentWindow.DrawingControl.scenes));
+
                         }
                         continue;
                     }

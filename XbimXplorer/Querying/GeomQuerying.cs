@@ -18,9 +18,28 @@ namespace XbimXplorer.Querying
             
             XbimRect3D r3d = XbimRect3D.FromArray(geomdata.ShapeData);
             return string.Format("Bounding box (position, size): {0} \r\n", r3d.ToString());
-            // XbimRect3D transformed = r3d.Transform(composed);
-            
-            
+        }
+
+        internal static string GeomLayers(XbimModel Model, int item, List<Xbim.ModelGeometry.Scene.XbimScene<Xbim.Presentation.WpfMeshGeometry3D, Xbim.Presentation.WpfMaterial>> scenes)
+        {
+            StringBuilder sb = new StringBuilder();
+            // XbimMeshGeometry3D geometry = new XbimMeshGeometry3D();
+            // IModel m = entity.ModelOf;
+            foreach (var scene in scenes)
+            {
+                foreach (var layer in scene.SubLayers)
+                {
+                    // an entity model could be spread across many layers (e.g. in case of different materials)
+                    if (layer.Model == Model)
+                    {
+                        foreach (var mi in layer.GetMeshInfo(item))
+                        {
+                            sb.AppendLine(mi.ToString());
+                        }
+                    }
+                }    
+            }
+            return sb.ToString();            
         }
     }
 }

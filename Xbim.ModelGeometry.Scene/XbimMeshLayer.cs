@@ -277,6 +277,38 @@ namespace Xbim.ModelGeometry.Scene
             Hidden.MoveTo(Visible);
         }
 
+
+        public class MeshInfo
+        {
+            private XbimMeshFragment mf;
+            private XbimMeshLayer<TVISIBLE, TMATERIAL> xbimMeshLayer;
+            
+            public MeshInfo(XbimMeshFragment mf, XbimMeshLayer<TVISIBLE, TMATERIAL> xbimMeshLayer)
+            {
+                // TODO: Complete member initialization
+                this.mf = mf;
+                this.xbimMeshLayer = xbimMeshLayer;
+            }
+
+            public override string ToString()
+            {
+                return string.Format("Layer: {0} ({3}) fragment position: {1} lenght: {2}", xbimMeshLayer.name, mf.StartPosition, mf.PositionCount, xbimMeshLayer.Material.Description);
+            }
+        }
+
+        public IEnumerable<MeshInfo> GetMeshInfo(int entityLabel)
+        {
+            foreach (var mf in Visible.Meshes.Where(m => m.EntityLabel == entityLabel))
+                yield return new MeshInfo(mf, this);
+            foreach (var mf in Hidden.Meshes.Where(m => m.EntityLabel == entityLabel))
+                yield return new MeshInfo(mf, this);
+            foreach (var layer in SubLayers)
+                foreach (var item in layer.GetMeshInfo(entityLabel))
+                {
+                    yield return item;    
+                }
+        }
+
        /// <summary>
         ///  Returns a collection of fragments for this layer, does not traverse sub layers or hidden layers unless arguments are true
        /// </summary>
@@ -295,6 +327,17 @@ namespace Xbim.ModelGeometry.Scene
                 foreach (var layer in SubLayers)
                     foreach (var mf in layer.GetMeshFragments(entityLabel, includeHidden, includSublayers))
                         yield return mf;
+        }
+
+        
+
+        public bool HasEntity(int entityLabel, bool includeHidden = false, bool includSublayers = false)
+        {
+            foreach (var item in  this.GetMeshFragments(entityLabel, includeHidden, includSublayers))
+	        {
+                return true;
+	        }
+            return false;          
         }
 
         public IXbimMeshGeometry3D GetVisibleMeshGeometry3D(int entityLabel)
