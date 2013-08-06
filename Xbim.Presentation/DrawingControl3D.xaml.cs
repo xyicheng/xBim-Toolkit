@@ -44,6 +44,7 @@ using System.Collections.Specialized;
 using System.Threading.Tasks;
 using Xbim.Common.Geometry;
 using Xbim.Ifc2x3.ExternalReferenceResource;
+using System.Text;
 
 #endregion
 
@@ -63,8 +64,44 @@ namespace Xbim.Presentation
             Canvas.MouseDown += Canvas_MouseDown;
             this.Loaded += DrawingControl3D_Loaded;
             federationColours = new XbimColourMap(StandardColourMaps.Federation);
-          
-           
+            Viewport.CameraChanged += Viewport_CameraChanged;
+        }
+
+        void Viewport_CameraChanged(object sender, RoutedEventArgs e)
+        {
+            // Debug.WriteLine("Cam changed " + DateTime.Now);
+            
+            HelixViewport3D snd = sender as HelixViewport3D;
+            if (viewBounds.Length() > 0 && snd != null)
+            {
+                var middlePoint = viewBounds.Centroid();
+                double CentralDistance = Math.Sqrt(
+                    Math.Pow(snd.Camera.Position.X, 2) + Math.Pow(middlePoint.X, 2) +
+                    Math.Pow(snd.Camera.Position.Y, 2) + Math.Pow(middlePoint.Y, 2) +
+                    Math.Pow(snd.Camera.Position.Z, 2) + Math.Pow(middlePoint.Z, 2)
+                    );
+
+                double FarPlane = CentralDistance + viewBounds.Length();
+                double NearPlane = CentralDistance - viewBounds.Length();
+
+                // if (NearPlane <= FarPlane / 7000)
+                //     NearPlane = FarPlane/7000;
+                if (NearPlane < 0.125)
+                {
+                    NearPlane = 0.125;
+                }
+                if (Viewport.Camera.NearPlaneDistance != NearPlane)
+                {
+                    Viewport.Camera.NearPlaneDistance = NearPlane;
+                    Debug.WriteLine("Near: " + NearPlane);
+                }
+                if (Viewport.Camera.FarPlaneDistance != FarPlane)
+                {
+                    Viewport.Camera.FarPlaneDistance = FarPlane;
+                    Debug.WriteLine("Far: " + FarPlane);
+                }
+            }
+            
         }
 
         void DrawingControl3D_Loaded(object sender, RoutedEventArgs e)
@@ -587,8 +624,6 @@ namespace Xbim.Presentation
             Viewport.ResetCamera();
            // PropertiesBillBoard.IsRendering = false;
             Highlighted.Mesh = null;
-            
-
         }
 
 
@@ -675,13 +710,10 @@ namespace Xbim.Presentation
           
             // Assumes a NearPlaneDistance of 1/8 of meter.
             //all models are now in metres
-            Viewport.DefaultCamera.NearPlaneDistance = 0.125; 
-            Viewport.Camera.NearPlaneDistance = Viewport.DefaultCamera.NearPlaneDistance;
-            Viewport.DefaultCamera.FarPlaneDistance = viewBounds.Length() * 3;
-            Viewport.Camera.FarPlaneDistance = Viewport.DefaultCamera.FarPlaneDistance;
+            Viewport_CameraChanged(null, null);
 
             //get bounding box for the whole scene and adapt gridlines to the model units
-
+            //
             double widthModelUnits = viewBounds.SizeY;
             double lengthModelUnits = viewBounds.SizeX;
             long gridWidth = Convert.ToInt64(widthModelUnits /  10);
@@ -785,6 +817,15 @@ namespace Xbim.Presentation
 
             this.Dispatcher.BeginInvoke(new Action(() => { Hide<IfcSpace>(); }), System.Windows.Threading.DispatcherPriority.Background);
             return scene;
+        }
+
+        public void ReportData(StringBuilder sb, IModel model, int entityLabel)
+        {
+            foreach (var scene in scenes)
+            {
+                IXbimMeshGeometry3D mesh = scene.GetMeshGeometry3D(model.Instances[entityLabel]);
+                mesh.ReportGeometryTo(sb);
+            }
         }
 
         private XbimScene<WpfMeshGeometry3D, WpfMaterial> BuildScene(XbimModel model)
@@ -991,6 +1032,7 @@ namespace Xbim.Presentation
         /// <param name="DoubleRectSize">Effectively doubles the size of the bounding box so to fit more space around it.</param>
         private void ZoomTo(Rect3D r3d, bool DoubleRectSize = true)
         {
+            
             if (!r3d.IsEmpty)
             {
                 Rect3D bounds = new Rect3D(viewBounds.X, viewBounds.Y, viewBounds.Z, viewBounds.SizeX, viewBounds.SizeY, viewBounds.SizeZ);

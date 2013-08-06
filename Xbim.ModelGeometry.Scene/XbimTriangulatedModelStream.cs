@@ -2,7 +2,7 @@
 
 The stream has an unusual doble indirection to points and normals to be able to retain unique position idenity for those
 frameworks that do not consider or require normal specifications (therefore saving streaming size and reducing video 
-memory usage
+memory usage)
 
 Structure of stream for triangular meshes:
 CountUniquePositions		// int

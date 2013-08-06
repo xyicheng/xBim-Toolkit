@@ -229,6 +229,7 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <None Include="XbimXplorer_TemporaryKey.pfx" />
+    <Resource Include="xBimQueryLogo.png" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Xbim.COBie\Xbim.COBie.csproj">

@@ -15,6 +15,31 @@ namespace Xbim.Presentation
         public GeometryModel3D WpfMesh;
         XbimMeshFragmentCollection meshes = new XbimMeshFragmentCollection();
 
+        public void ReportGeometryTo(StringBuilder sb)
+        {
+            int i = 0;
+            var pEn = Positions.GetEnumerator();
+            var nEn = Normals.GetEnumerator();
+            while (pEn.MoveNext() && nEn.MoveNext())
+            {
+                var p = pEn.Current;
+                var n = nEn.Current;
+                sb.AppendFormat("{0} pos: {1} nrm:{2}\r\n", i++, p, n);
+            }
+
+            i = 0;
+            sb.AppendLine("Triangles:");
+            foreach (var item in TriangleIndices)
+            {
+                sb.AppendFormat("{0}, ", item);
+                i++;
+                if (i % 3 == 0)
+                {
+                    sb.AppendLine();
+                }
+            }
+        }
+
         public WpfMeshGeometry3D()
         {
 
@@ -172,18 +197,18 @@ namespace Xbim.Presentation
                 {
                     Point3D p = m.Positions[i];
                     Vector3D v = m.Normals[i];
-                    m3d.Positions.Add(new XbimPoint3D (p.X,p.Y,p.Z));
+                    m3d.Positions.Add(new XbimPoint3D(p.X, p.Y, p.Z));
                     m3d.Normals.Add(new XbimVector3D(v.X, v.Y, v.Z));
                 }
                 for (int i = frag.StartTriangleIndex; i <= frag.EndTriangleIndex; i++)
                 {
                     m3d.TriangleIndices.Add(m.TriangleIndices[i] - frag.StartPosition);
                 }
-                m3d.Meshes.Add(new XbimMeshFragment(0,0)
+                m3d.Meshes.Add(new XbimMeshFragment(0, 0)
                 {
-                    EndPosition=m3d.PositionCount-1, 
-                    StartTriangleIndex = frag.StartTriangleIndex-m3d.PositionCount-1,
-                    EndTriangleIndex = frag.EndTriangleIndex-m3d.PositionCount-1
+                    EndPosition = m3d.PositionCount - 1,
+                    StartTriangleIndex = frag.StartTriangleIndex - m3d.PositionCount - 1,
+                    EndTriangleIndex = frag.EndTriangleIndex - m3d.PositionCount - 1
                 });
             }
             return m3d;
@@ -194,7 +219,7 @@ namespace Xbim.Presentation
             bool first = true;
             XbimRect3D boundingBox = XbimRect3D.Empty;
             foreach (var pos in Positions)
-            {
+            {   
                 if (first)
                 {
                     boundingBox = new XbimRect3D(pos);

@@ -239,18 +239,27 @@ namespace XbimXplorer.Querying
                         }
                         continue;
                     }
-                    m = Regex.Match(cmd, @"^(geometry|ge) (?<mode>(count|list|short) )*(?<entities>([\d,]+|[^ ]+))", RegexOptions.IgnoreCase);
+                    m = Regex.Match(cmd, @"^(geometry|ge) (?<mode>(binary|viewer) )*(?<entities>([\d,]+|[^ ]+))", RegexOptions.IgnoreCase);
                     if (m.Success)
                     {
                         string start = m.Groups["entities"].Value;
-                        string mode = m.Groups["mode"].Value;
+                        string mode = m.Groups["mode"].Value; 
                         IEnumerable<int> labels = tointarray(start, ',');
                         foreach (var item in labels)
                         {
                             ReportAdd("Geometry for: " + item.ToString(), Brushes.Green);
                             ReportAdd(GeomQuerying.GeomInfoBoundBox(Model, item));
                             ReportAdd(GeomQuerying.GeomLayers(Model, item, ParentWindow.DrawingControl.scenes));
-
+                            if (mode == "binary ")
+                            {
+                                ReportAdd(GeomQuerying.GeomInfoMesh(Model, item));
+                            }
+                            if (mode == "viewer ")
+                            {
+                                ReportAdd(
+                                    GeomQuerying.Viewerdata(ParentWindow.DrawingControl, Model, item)
+                                    );
+                            }
                         }
                         continue;
                     }

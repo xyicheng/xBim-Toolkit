@@ -93,9 +93,6 @@ namespace Xbim.ModelGeometry.Scene
             return boundingBoxHidden; 
         }
 
-     
-
-
         /// <summary>
         /// The colour map for this scene
         /// </summary>
@@ -137,8 +134,6 @@ namespace Xbim.ModelGeometry.Scene
            
         }
 
-        
-
         /// <summary>
         /// Create a new layer that will display meshes in the specified colour
         /// If the mesh geometry item has a style specified in the IFC definition sub layers will be created for each style
@@ -148,10 +143,7 @@ namespace Xbim.ModelGeometry.Scene
         {
             model = m;
             Style = new XbimTexture().CreateTexture(colour);
-            
         }
-
-       
 
         public XbimMeshLayer(XbimModel m, XbimColour colour, XbimColourMap subCategoryColourMap)
             :this(m, colour)
@@ -242,8 +234,10 @@ namespace Xbim.ModelGeometry.Scene
             }
             else
             {
-                if(!Hidden.Add(geomData)) //just add it to the main layer, if the main layer is too big split it.
+                bool AddingSuccessfull = Hidden.Add(geomData); // this is where the geometry is added to the main layer.
+                if (!AddingSuccessfull) 
                 {
+                    //if the main layer is too big split it.
                     //try and find a sublayer that is a split of this, i.e. has the same texture
                     foreach (var sublayer in subLayerMap.Reverse())
                     {
