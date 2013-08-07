@@ -1276,7 +1276,6 @@ namespace Xbim.IO
         /// Returns an enumerable of the handles to only the entities in this model
         /// Note this do NOT include entities that are in any federated models
         /// </summary>
-        /// </summary>
         public IEnumerable<XbimInstanceHandle> InstanceHandles 
         {
             get

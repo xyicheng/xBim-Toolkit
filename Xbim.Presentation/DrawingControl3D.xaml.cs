@@ -79,8 +79,8 @@ namespace Xbim.Presentation
                     Math.Pow(snd.Camera.Position.Z, 2) + Math.Pow(middlePoint.Z, 2)
                     );
 
-                double FarPlane = CentralDistance + viewBounds.Length();
-                double NearPlane = CentralDistance - viewBounds.Length();
+                double FarPlane = CentralDistance + 1.5 * viewBounds.Length();
+                double NearPlane = CentralDistance - 1.5 * viewBounds.Length();
 
                 // if (NearPlane <= FarPlane / 7000)
                 //     NearPlane = FarPlane/7000;
@@ -645,6 +645,8 @@ namespace Xbim.Presentation
         /// <param name="EntityLabels">If null loads the whole model, otherwise only elements listed in the enumerable</param>
         public void LoadGeometry(XbimModel model, IEnumerable<int> EntityLabels = null)
         {
+            
+
             // AddLayerToDrawingControl is the function that actually populates the geometry in the viewer.
             // AddLayerToDrawingControl is triggered by BuildRefModelScene and BuildScene below here when layers get ready.
 
@@ -823,7 +825,7 @@ namespace Xbim.Presentation
             wcsTransform = XbimMatrix3D.CreateTranslation(_modelTranslation) * XbimMatrix3D.CreateScale((float)(1 / metre));
 
             Parallel.ForEach<KeyValuePair<string, XbimGeometryHandleCollection>>(handles.FilterByBuildingElementTypes(), layerContent =>
-            //  foreach (var layerContent in handles.FilterByBuildingElementTypes())
+            // foreach (var layerContent in handles.FilterByBuildingElementTypes())
             {
                 string elementTypeName = layerContent.Key;
                 XbimGeometryHandleCollection layerHandles = layerContent.Value;
@@ -853,9 +855,6 @@ namespace Xbim.Presentation
 
             return scene;
         }
-
-
-        
 
         /// <summary>
         /// function that actually populates the geometry from the layer into the viewer meshes.

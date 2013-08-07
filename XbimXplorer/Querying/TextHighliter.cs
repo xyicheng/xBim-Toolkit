@@ -36,10 +36,13 @@ namespace XbimXplorer.Querying
             Bits.Add(new ReportBit(text, color));
         }
 
+        public Brush DefaultBrush = null;
+
         internal void AppendFormat(string format, params object[] args)
         {
             Bits.Add(new ReportBit(
-                string.Format(null, format, args)
+                string.Format(null, format, args),
+                DefaultBrush
                 ));
         }
 

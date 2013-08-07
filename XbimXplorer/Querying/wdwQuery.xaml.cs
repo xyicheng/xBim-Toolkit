@@ -657,6 +657,7 @@ namespace XbimXplorer.Querying
 
                 sb.AppendFormat(indentationHeader + "Namespace: {0}", ot.Type.Namespace);
                 // sb.AppendFormat(indentationHeader + "Xbim Type Id: {0}", ot.TypeId);
+                sb.DefaultBrush = Brushes.DarkOrange;
                 List<string> supertypes = new List<string>();
                 var iterSuper = ot.IfcSuperType;
                 while (iterSuper != null)
@@ -676,11 +677,13 @@ namespace XbimXplorer.Querying
                 }
                 if (beVerbose)
                 {
+                    sb.DefaultBrush = Brushes.DarkOrange;
                     sb.AppendFormat(indentationHeader + "Interfaces: {0}", ot.Type.GetInterfaces().Count());
                     foreach (var item in ot.Type.GetInterfaces())
                     {
                         sb.AppendFormat(indentationHeader + "- {0}", item.Name);
                     }
+                    sb.DefaultBrush = null;
                     sb.AppendFormat(indentationHeader + "Properties: {0}", ot.IfcProperties.Count());
                     foreach (var item in ot.IfcProperties.Values)
                     {
@@ -706,6 +709,7 @@ namespace XbimXplorer.Querying
                         sb.AppendFormat(indentationHeader + "- {0}\t{1}{2}", item.PropertyInfo.Name, CleanPropertyName(item.PropertyInfo.PropertyType.FullName), sTopParent);
                     }
                 }
+                sb.DefaultBrush = null;
                 sb.AppendFormat("");
             }
             else
