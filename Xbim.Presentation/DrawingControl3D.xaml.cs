@@ -50,8 +50,6 @@ using System.Text;
 
 namespace Xbim.Presentation
 {
-
-
     /// <summary>
     ///   Interaction logic for DrawingControl3D.xaml
     /// </summary>
@@ -93,15 +91,14 @@ namespace Xbim.Presentation
                 if (Viewport.Camera.NearPlaneDistance != NearPlane)
                 {
                     Viewport.Camera.NearPlaneDistance = NearPlane;
-                    Debug.WriteLine("Near: " + NearPlane);
+                    // Debug.WriteLine("Near: " + NearPlane);
                 }
                 if (Viewport.Camera.FarPlaneDistance != FarPlane)
                 {
                     Viewport.Camera.FarPlaneDistance = FarPlane;
-                    Debug.WriteLine("Far: " + FarPlane);
+                    // Debug.WriteLine("Far: " + FarPlane);
                 }
             }
-            
         }
 
         void DrawingControl3D_Loaded(object sender, RoutedEventArgs e)
@@ -626,8 +623,6 @@ namespace Xbim.Presentation
             Highlighted.Mesh = null;
         }
 
-
-
         private XbimRect3D GetModelBounds(XbimModel model)
         {
             XbimRect3D box = new XbimRect3D();
@@ -644,8 +639,15 @@ namespace Xbim.Presentation
             return box;
         }
 
-        private void LoadGeometry(XbimModel model)
+        /// <summary>
+        /// Clears the current graphics and initiates the cascade of events that result in viewing the scene.
+        /// </summary>
+        /// <param name="EntityLabels">If null loads the whole model, otherwise only elements listed in the enumerable</param>
+        public void LoadGeometry(XbimModel model, IEnumerable<int> EntityLabels = null)
         {
+            // AddLayerToDrawingControl is the function that actually populates the geometry in the viewer.
+            // AddLayerToDrawingControl is triggered by BuildRefModelScene and BuildScene below here when layers get ready.
+
             //reset all the visuals
             ClearGraphics();
             _materials.Clear();
@@ -675,7 +677,7 @@ namespace Xbim.Presentation
             _modelTranslation = new XbimVector3D(-p.X,-p.Y,-p.Z);
             model.RefencedModels.CollectionChanged += RefencedModels_CollectionChanged;
             //build the geometric scene and render as we go
-            XbimScene<WpfMeshGeometry3D, WpfMaterial> scene = BuildScene(model);
+            XbimScene<WpfMeshGeometry3D, WpfMaterial> scene = BuildScene(model, EntityLabels);
             if(scene.Layers.Count() > 0)
                 scenes.Add(scene);
             foreach (var refModel in model.RefencedModels)
@@ -706,7 +708,6 @@ namespace Xbim.Presentation
         {
             if (!modelBounds.IsEmpty) //we have  geometry so create view box
                 viewBounds = modelBounds;
-
           
             // Assumes a NearPlaneDistance of 1/8 of meter.
             //all models are now in metres
@@ -735,35 +736,6 @@ namespace Xbim.Presentation
             ViewHome();   
         }
 
-        private void DrawLayer(XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial> layer)
-        {
-            
-            //move it to the visual element
-           // byte[] bytes = ((XbimMeshGeometry3D)layer.Hidden).ToByteArray();
-            layer.Show();
-            
-            GeometryModel3D m3d = (WpfMeshGeometry3D)layer.Visible;
-            m3d.SetValue(TagProperty, layer);
-            //sort out materials and bind
-            if (layer.Style.RenderBothFaces)
-                m3d.BackMaterial = m3d.Material = (WpfMaterial)layer.Material;
-            else if (layer.Style.SwitchFrontAndRearFaces)
-                m3d.BackMaterial = (WpfMaterial)layer.Material;
-            else
-                m3d.Material = (WpfMaterial)layer.Material;
-            if (ForceRenderBothSides) m3d.BackMaterial = m3d.Material;
-            _materials.Add(m3d.Material);
-           // SetOpacityPercent(m3d.Material, ModelOpacity);
-            ModelVisual3D mv = new ModelVisual3D();
-            mv.Content = m3d;
-            if (layer.Style.IsTransparent)
-                Transparents.Children.Add(mv);
-            else
-                Opaques.Children.Add(mv);
-            foreach (var subLayer in layer.SubLayers)
-                DrawLayer(subLayer);
-        }
-
         void RefencedModels_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             if (e.Action == NotifyCollectionChangedAction.Add && e.NewItems.Count > 0)
@@ -784,11 +756,21 @@ namespace Xbim.Presentation
                 RecalculateView(refModel.Model);
             }
         }
+
+        public void ReportData(StringBuilder sb, IModel model, int entityLabel)
+        {
+            foreach (var scene in scenes)
+            {
+                IXbimMeshGeometry3D mesh = scene.GetMeshGeometry3D(model.Instances[entityLabel]);
+                mesh.ReportGeometryTo(sb);
+            }
+        }
+
         private XbimScene<WpfMeshGeometry3D, WpfMaterial> BuildRefModelScene(XbimModel model, IfcDocumentInformation docInfo)
         {
             XbimScene<WpfMeshGeometry3D, WpfMaterial> scene = new XbimScene<WpfMeshGeometry3D, WpfMaterial>(model);
             XbimGeometryHandleCollection handles = new XbimGeometryHandleCollection(model.GetGeometryHandles()
-                                                       .Exclude(IfcEntityNameEnum.IFCFEATUREELEMENT|IfcEntityNameEnum.IFCSPACE));
+                                                       .Exclude(IfcEntityNameEnum.IFCFEATUREELEMENT)); // ifcSpaces added to the geometry
             double total = handles.Count;
             double processed = 0;
 
@@ -806,7 +788,7 @@ namespace Xbim.Presentation
                 int progress = Convert.ToInt32(100.0 * processed / total);
             }
 
-            this.Dispatcher.BeginInvoke(new Action(() => { DrawLayer(layer); }), System.Windows.Threading.DispatcherPriority.Background);
+            this.Dispatcher.BeginInvoke(new Action(() => { AddLayerToDrawingControl(layer); }), System.Windows.Threading.DispatcherPriority.Background);
             lock (scene)
             {
                 scene.Add(layer);
@@ -819,22 +801,18 @@ namespace Xbim.Presentation
             return scene;
         }
 
-        public void ReportData(StringBuilder sb, IModel model, int entityLabel)
-        {
-            foreach (var scene in scenes)
-            {
-                IXbimMeshGeometry3D mesh = scene.GetMeshGeometry3D(model.Instances[entityLabel]);
-                mesh.ReportGeometryTo(sb);
-            }
-        }
-
-        private XbimScene<WpfMeshGeometry3D, WpfMaterial> BuildScene(XbimModel model)
+        private XbimScene<WpfMeshGeometry3D, WpfMaterial> BuildScene(XbimModel model, IEnumerable<int> LoadLabels)
         {
             // spaces are not excluded from the model to make the ShowSpaces property meaningful
             XbimScene<WpfMeshGeometry3D, WpfMaterial> scene = new XbimScene<WpfMeshGeometry3D, WpfMaterial>(model);
-            XbimGeometryHandleCollection handles = new XbimGeometryHandleCollection(model.GetGeometryHandles()
-                   .Exclude(IfcEntityNameEnum.IFCFEATUREELEMENT));
+            XbimGeometryHandleCollection handles; 
+                    // = new XbimGeometryHandleCollection(model.GetGeometryHandles().Exclude(IfcEntityNameEnum.IFCFEATUREELEMENT));
                     // .Exclude(IfcEntityNameEnum.IFCFEATUREELEMENT | IfcEntityNameEnum.IFCSPACE));
+            if (LoadLabels == null)
+                handles = new XbimGeometryHandleCollection(model.GetGeometryHandles().Exclude(IfcEntityNameEnum.IFCFEATUREELEMENT));
+            else 
+                handles = new XbimGeometryHandleCollection(model.GetGeometryHandles().Where(t => LoadLabels.Contains(t.ProductLabel)));
+
             double total = handles.Count;
             double processed = 0;
 
@@ -861,7 +839,7 @@ namespace Xbim.Presentation
                     int progress = Convert.ToInt32(100.0 * processed / total);
                 }
 
-                this.Dispatcher.BeginInvoke(new Action(() => { DrawLayer(layer); }), System.Windows.Threading.DispatcherPriority.Background);
+                this.Dispatcher.BeginInvoke(new Action(() => { AddLayerToDrawingControl(layer); }), System.Windows.Threading.DispatcherPriority.Background);
                 lock (scene)
                 {
                     scene.Add(layer);
@@ -877,30 +855,37 @@ namespace Xbim.Presentation
         }
 
 
-        private void DrawScene(XbimScene<WpfMeshGeometry3D, WpfMaterial> scene)
-        {   
-            foreach (var layer in scene.Layers.Where(l => l.HasContent))
-            {
-                //move it to the visual element
-                layer.ShowAll();
-                GeometryModel3D m3d = (WpfMeshGeometry3D)layer.Visible;
-                m3d.SetValue(TagProperty, layer.Name);         
-                //sort out materials and bind
-                if (layer.Style.RenderBothFaces)
-                    m3d.BackMaterial = m3d.Material = (WpfMaterial)layer.Material;
-                else if (layer.Style.SwitchFrontAndRearFaces)
-                    m3d.BackMaterial = (WpfMaterial)layer.Material;
-                else
-                    m3d.Material = (WpfMaterial)layer.Material;
-                ModelVisual3D mv = new ModelVisual3D();
-                mv.Content = m3d;
-                if (layer.Style.IsTransparent)
-                    Transparents.Children.Add(mv);
-                else
-                    Opaques.Children.Add(mv);
-                //used to bind the opacity to the transparency factor
-                _materials.Add(m3d.Material);
-            }
+        
+
+        /// <summary>
+        /// function that actually populates the geometry from the layer into the viewer meshes.
+        /// </summary>
+        private void AddLayerToDrawingControl(XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial> layer) // Formerely called DrawLayer
+        {
+            //move it to the visual element
+            // byte[] bytes = ((XbimMeshGeometry3D)layer.Hidden).ToByteArray();
+            layer.Show();
+
+            GeometryModel3D m3d = (WpfMeshGeometry3D)layer.Visible;
+            m3d.SetValue(TagProperty, layer);
+            //sort out materials and bind
+            if (layer.Style.RenderBothFaces)
+                m3d.BackMaterial = m3d.Material = (WpfMaterial)layer.Material;
+            else if (layer.Style.SwitchFrontAndRearFaces)
+                m3d.BackMaterial = (WpfMaterial)layer.Material;
+            else
+                m3d.Material = (WpfMaterial)layer.Material;
+            if (ForceRenderBothSides) m3d.BackMaterial = m3d.Material;
+            _materials.Add(m3d.Material);
+            // SetOpacityPercent(m3d.Material, ModelOpacity);
+            ModelVisual3D mv = new ModelVisual3D();
+            mv.Content = m3d;
+            if (layer.Style.IsTransparent)
+                Transparents.Children.Add(mv);
+            else
+                Opaques.Children.Add(mv);
+            foreach (var subLayer in layer.SubLayers)
+                AddLayerToDrawingControl(subLayer);
         }
 
         /// <summary>

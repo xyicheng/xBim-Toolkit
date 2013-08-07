@@ -161,6 +161,8 @@ namespace XbimXplorer.Querying
                         continue;
                     }
 
+
+
                     m = Regex.Match(cmd, @"^(Header|he)$", RegexOptions.IgnoreCase);
                     if (m.Success)
                     {
@@ -239,7 +241,24 @@ namespace XbimXplorer.Querying
                         }
                         continue;
                     }
-                    m = Regex.Match(cmd, @"^(geometry|ge) (?<mode>(binary|viewer) )*(?<entities>([\d,]+|[^ ]+))", RegexOptions.IgnoreCase);
+
+                    m = Regex.Match(cmd, @"^(reload|re) *(?<entities>([\d,]+|[^ ]+))", RegexOptions.IgnoreCase);
+                    if (m.Success)
+                    {
+                        string start = m.Groups["entities"].Value;
+                        IEnumerable<int> labels = tointarray(start, ',');
+                        if (labels.Count() > 0)
+                        {
+                            ParentWindow.DrawingControl.LoadGeometry(Model, labels);
+                        }
+                        else
+                        {
+                            ParentWindow.DrawingControl.LoadGeometry(Model);
+                        }
+                        continue;
+                    }
+
+                    m = Regex.Match(cmd, @"^(GeometryInfo|gi) (?<mode>(binary|viewer) )*(?<entities>([\d,]+|[^ ]+))", RegexOptions.IgnoreCase);
                     if (m.Success)
                     {
                         string start = m.Groups["entities"].Value;
@@ -535,20 +554,33 @@ namespace XbimXplorer.Querying
             t.AppendFormat("- select [count|list|short] [transverse] <startingElement> [Property [Property...]]");
             t.Append("    <startingElement>: <EntityLabel, <EntityLabel>> or <ifcTypeName>", Brushes.Gray);
             t.Append("    [Property] is a Property or Inverse name", Brushes.Gray);
+
             t.AppendFormat("- EntityLabel label [recursion]");
             t.Append("    [recursion] is an int representing the depth of children to report", Brushes.Gray);
+            
             t.AppendFormat("- IfcSchema [list] <TypeName>");
             t.Append("    <TypeName> can contain wildcards", Brushes.Gray);
-            t.AppendFormat("- geometry <EntityLabel,<EntityLabel>>");
+            
+            t.AppendFormat("- GeometryInfo [binary|viewer] <EntityLabel,<EntityLabel>>");
+            t.Append("    Provide textual information on meshes.", Brushes.Gray);
+
+            t.AppendFormat("- Reload <EntityLabel,<EntityLabel>>");
+            t.Append("    <EntityLabel> filters the elements to load in the viewer.", Brushes.Gray);
+            
             t.AppendFormat("- clip [off|<Elevation>|<px>, <py>, <pz>, <nx>, <ny>, <nz>|<Storey name>]");
             t.Append("    Clipping the 3D model is still and unstable feature. Use with caution.", Brushes.Gray);
+            
             t.AppendFormat("- zoom <Region name>");
             t.Append("    'zoom ?' provides a list of valid region names", Brushes.Gray);
+            
             t.AppendFormat("- Visual [list|[on|off <name>]]");
-            t.Append("    'Visual list' provides a list of valid region names", Brushes.Gray);
+            t.Append("    'Visual list' provides a list of valid layer names", Brushes.Gray);
+            
             t.AppendFormat("- clear [on|off]");
+            
             t.AppendFormat("- SimplifyGUI");
             t.Append("    opens a GUI for simplifying IFC files (useful for debugging purposes).", Brushes.Gray);
+            
             t.AppendFormat("");
             t.Append("Commands are executed on <ctrl>+<Enter>.", Brushes.Blue);
             t.AppendFormat("double slash (//) are the comments token and the remainder of lines is ignored.");
