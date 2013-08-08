@@ -525,6 +525,57 @@ namespace Xbim.Presentation
             Highlighted.Mesh = null;
         }
 
+
+        public XbimPoint3D FindCentroid(XbimPoint3D[] p)
+        {
+            double x = 0;
+            double y = 0;
+            double z = 0;
+            int n = 0;
+            foreach (var item in p)
+	        {
+		         x += item.X;
+                 y += item.Y;
+                 z += item.Z;
+                 n++;
+	        }
+            if (n > 0)
+            {
+                x /= n;
+                y /= n;
+                z /= n;
+            }
+            return new XbimPoint3D(x, y, z);
+        }
+
+        private void CreateNormal(XbimPoint3D cnt, XbimVector3D xbimVector3D, MeshBuilder axesMeshBuilder)
+        {
+            List<Point3D> path = new List<Point3D>();
+            path.Add(
+                new Point3D(cnt.X, cnt.Y, cnt.Z)
+                );
+
+            double nrmRatio = .2;
+            path.Add(
+                new Point3D(
+                cnt.X + xbimVector3D.X * nrmRatio,
+                cnt.Y + xbimVector3D.Y * nrmRatio,
+                cnt.Z + xbimVector3D.Z * nrmRatio
+                ));
+
+            double LineThickness = 0.01;
+            axesMeshBuilder.AddTube(path, LineThickness, 9, false);
+            return;
+        }
+
+        public enum SelectionHighlightModes
+        {
+            WholeMesh,
+            Normals
+        }
+
+        public SelectionHighlightModes SelectionHighlightMode = SelectionHighlightModes.WholeMesh;
+
         /// <summary>
         /// Executed when a new entity is selected
         /// </summary>
@@ -532,8 +583,8 @@ namespace Xbim.Presentation
         private void Select(IPersistIfcEntity newVal)
         {
             // todo: bonghi: investigate why this does not cause flickering in uncut models.
-            if (cuttingGroup.IsEnabled)
-            {
+            //if (cuttingGroup.IsEnabled)
+            //{
                 XbimMeshGeometry3D m = new XbimMeshGeometry3D();
                 var geomDataSet = Model.GetGeometryData(newVal.EntityLabel, XbimGeometryType.TriangulatedMesh);
                 foreach (var geomData in geomDataSet)
@@ -541,29 +592,58 @@ namespace Xbim.Presentation
                     geomData.TransformBy(wcsTransform);
                     m.Add(geomData);    
                 }
-                List<Point3D> ps = new List<Point3D>(m.PositionCount);
-                foreach (var item in m.Positions)
+                if (SelectionHighlightMode == SelectionHighlightModes.WholeMesh)
                 {
-                    ps.Add(new Point3D(item.X, item.Y, item.Z));
-                }
-                // Highlighted is defined in the XAML of drawingcontrol3d
-                Highlighted.Mesh = new Mesh3D(ps, m.TriangleIndices);
-            }
-            else
-            {
-                foreach (var scene in scenes)
-                {
-                    IXbimMeshGeometry3D mesh = scene.GetMeshGeometry3D(newVal);
-                    WpfMeshGeometry3D wpfGeom = new WpfMeshGeometry3D(mesh);
-                    if (mesh.Meshes.Count() > 0)
+                    List<Point3D> ps = new List<Point3D>(m.PositionCount);
+                    foreach (var item in m.Positions)
                     {
-                        // Highlighted is defined in the XAML of drawingcontrol3d
-                        Highlighted.Mesh = new Mesh3D(wpfGeom.Mesh.Positions, wpfGeom.Mesh.TriangleIndices);
-                        return;
+                        ps.Add(new Point3D(item.X, item.Y, item.Z));
                     }
+                    // Highlighted is defined in the XAML of drawingcontrol3d
+                    Highlighted.Mesh = new Mesh3D(ps, m.TriangleIndices);
                 }
-            }
+                else
+                {
+                    // prepares the normals to faces (or points)
+                    var axesMeshBuilder = new MeshBuilder();
+                    for (int i = 0; i < m.TriangleIndices.Count; i += 3)
+                    {
+                        int p1 = m.TriangleIndices[i];
+                        int p2 = m.TriangleIndices[i + 1];
+                        int p3 = m.TriangleIndices[i + 2];
+
+                        if (m.Normals[p1] == m.Normals[p2] && m.Normals[p1] == m.Normals[p3]) // same normals
+                        {
+                            var cnt = FindCentroid(new XbimPoint3D[] { m.Positions[p1], m.Positions[p2], m.Positions[p3] });
+                            CreateNormal(cnt, m.Normals[p1], axesMeshBuilder);
+                        }
+                        else
+                        {
+                            CreateNormal(m.Positions[p1], m.Normals[p1], axesMeshBuilder);
+                            CreateNormal(m.Positions[p2], m.Normals[p2], axesMeshBuilder);
+                            CreateNormal(m.Positions[p3], m.Normals[p3], axesMeshBuilder);
+                        }
+                    }
+                    Highlighted.Content = new GeometryModel3D(axesMeshBuilder.ToMesh(), Materials.Yellow);
+                }
+            //}
+            //else
+            //{
+            //    foreach (var scene in scenes)
+            //    {
+            //        IXbimMeshGeometry3D mesh = scene.GetMeshGeometry3D(newVal);
+            //        WpfMeshGeometry3D wpfGeom = new WpfMeshGeometry3D(mesh);
+            //        if (mesh.Meshes.Count() > 0)
+            //        {
+            //            // Highlighted is defined in the XAML of drawingcontrol3d
+            //            Highlighted.Mesh = new Mesh3D(wpfGeom.Mesh.Positions, wpfGeom.Mesh.TriangleIndices);
+            //            return;
+            //        }
+            //    }
+            //}
         }
+
+        
 
         private RayMeshGeometry3DHitTestResult FindHit(Point position)
         {
