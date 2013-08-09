@@ -140,6 +140,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="ModelSeparation.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Querying\wdwQuery.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -169,6 +173,9 @@
     </Compile>
     <Compile Include="FederatedModelDlg.xaml.cs">
       <DependentUpon>FederatedModelDlg.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ModelSeparation.xaml.cs">
+      <DependentUpon>ModelSeparation.xaml</DependentUpon>
     </Compile>
     <Compile Include="Querying\SquareBracketIndexer.cs" />
     <Compile Include="Querying\TextHighliter.cs" />

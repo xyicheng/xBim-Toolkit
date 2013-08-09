@@ -114,6 +114,9 @@
       <DependentUpon>DynamicProductSelectionControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Multiselection.cs" />
+    <Compile Include="SynchronizedView.xaml.cs">
+      <DependentUpon>SynchronizedView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ViewModels\ClassificationViewModel.cs" />
     <Compile Include="ColourRgbExtensions.cs" />
     <Compile Include="ViewModels\GroupViewModel.cs" />
@@ -171,6 +174,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="SynchronizedView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>
