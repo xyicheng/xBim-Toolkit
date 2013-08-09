@@ -250,6 +250,9 @@ namespace Xbim.Presentation
                         break;
                     case XbimViewType.IfcEntityType:
                         break;
+                    case XbimViewType.Groups:
+                        tv.ViewGroups();
+                        break;
                     default:
                         break;
                 }
@@ -347,6 +350,33 @@ namespace Xbim.Presentation
             //else //Load any spatialstructure
             //{
             //}
+        }
+
+        private void ViewGroups()
+        {
+            if (Model != null)
+            {
+                this.ChildrenBinding = new Binding("Children");
+                List<GroupViewModel> modelList = new List<GroupViewModel>();
+                
+                var groups = Model.Instances.OfType<IfcGroup>();
+                var groupedObjects = new List<IfcRoot>();
+                foreach (var obj in Model.Instances.OfType<IfcRelAssignsToGroup>())
+                {
+                    groupedObjects.AddRange(obj.RelatedObjects.ToList());
+                }
+
+                foreach (var item in groups)
+                {
+                    if(!groupedObjects.Contains(item))
+                        modelList.Add(new GroupViewModel(item, null)); //add only root groups/systems
+                }
+                this.HierarchySource = modelList;
+                //foreach (var child in modelList)
+                //{
+                //    LazyLoadAll(child); //why to do this?
+                //}
+            }
         }
     }
 }

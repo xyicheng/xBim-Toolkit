@@ -90,9 +90,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VersionComparer", "VersionC
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.Analysis", "Xbim.Analysis\Xbim.Analysis.csproj", "{25056C5D-D281-436E-B281-95F339861C5D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.ModelEnhancement", "Xbim.ModelEnhancement\Xbim.ModelEnhancement.csproj", "{2DEFB7B4-B9C8-4001-8999-622DCD42732E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.ModelEnhancement.Example", "Xbim.ModelEnhancement.Example\Xbim.ModelEnhancement.Example.csproj", "{75B3FAF2-AEF9-4A90-8788-05DC07D39868}"
+EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 21
+		SccNumberOfProjects = 23
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://tfs.codeplex.com/tfs/tfs13
 		SccLocalPath0 = .
@@ -164,6 +168,12 @@ Global
 		SccProjectUniqueName20 = Xbim.Analysis\\Xbim.Analysis.csproj
 		SccProjectName20 = Xbim.Analysis
 		SccLocalPath20 = Xbim.Analysis
+		SccProjectUniqueName21 = Xbim.ModelEnhancement\\Xbim.ModelEnhancement.csproj
+		SccProjectName21 = Xbim.ModelEnhancement
+		SccLocalPath21 = Xbim.ModelEnhancement
+		SccProjectUniqueName22 = Xbim.ModelEnhancement.Example\\Xbim.ModelEnhancement.Example.csproj
+		SccProjectName22 = Xbim.ModelEnhancement.Example
+		SccLocalPath22 = Xbim.ModelEnhancement.Example
 	EndGlobalSection
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = XbimComplete.vsmdi
@@ -287,6 +297,16 @@ Global
 		{25056C5D-D281-436E-B281-95F339861C5D}.NugetDistribution|Any CPU.Build.0 = Release|Any CPU
 		{25056C5D-D281-436E-B281-95F339861C5D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{25056C5D-D281-436E-B281-95F339861C5D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2DEFB7B4-B9C8-4001-8999-622DCD42732E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2DEFB7B4-B9C8-4001-8999-622DCD42732E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2DEFB7B4-B9C8-4001-8999-622DCD42732E}.NugetDistribution|Any CPU.ActiveCfg = Release|Any CPU
+		{2DEFB7B4-B9C8-4001-8999-622DCD42732E}.NugetDistribution|Any CPU.Build.0 = Release|Any CPU
+		{2DEFB7B4-B9C8-4001-8999-622DCD42732E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2DEFB7B4-B9C8-4001-8999-622DCD42732E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{75B3FAF2-AEF9-4A90-8788-05DC07D39868}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{75B3FAF2-AEF9-4A90-8788-05DC07D39868}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{75B3FAF2-AEF9-4A90-8788-05DC07D39868}.NugetDistribution|Any CPU.ActiveCfg = Release|x86
+		{75B3FAF2-AEF9-4A90-8788-05DC07D39868}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

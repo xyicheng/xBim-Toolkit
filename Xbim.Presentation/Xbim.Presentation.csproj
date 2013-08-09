@@ -113,8 +113,10 @@
     <Compile Include="DynamicProductSelectionControl.xaml.cs">
       <DependentUpon>DynamicProductSelectionControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Multiselection.cs" />
     <Compile Include="ViewModels\ClassificationViewModel.cs" />
     <Compile Include="ColourRgbExtensions.cs" />
+    <Compile Include="ViewModels\GroupViewModel.cs" />
     <Compile Include="XbimCuttingPlaneGroup.cs" />
     <Compile Include="DrawingControl3D.xaml.cs" />
     <Compile Include="FederatedModelItem.cs" />
