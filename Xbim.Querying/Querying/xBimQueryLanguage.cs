@@ -31,7 +31,9 @@ namespace Xbim.Querying
             : base(caseSensitive: false)
         {
             _model = new XbimModel();
+#if debug
             _model.Open(@"F:\dev\Codeplex\xBIM\XbimFramework\Head\Xbim.Querying\Querying\Test\Duplex-Handover.xBIM");
+#endif
             InitGrammar();
         }
 
