@@ -1023,12 +1023,23 @@ namespace Xbim.IO
         /// <returns></returns>
         public IEnumerable<XbimGeometryData> GetGeometryData(int productLabel, XbimGeometryType geomType)
         {
+            
             IPersistIfc entity = cache.GetInstance(productLabel, false, true);
             if (entity != null)
             {
                 foreach (var item in cache.GetGeometry(IfcMetaData.IfcTypeId(entity), productLabel, geomType))
                 {
                     yield return item;
+                }
+            }
+            else // look in referenced models
+            {
+                foreach (XbimReferencedModel refModel in this.RefencedModels)
+                {
+                    foreach (var item in refModel.Model.GetGeometryData(productLabel, geomType))
+                    {
+                        yield return item;
+                    }
                 }
             }
         }

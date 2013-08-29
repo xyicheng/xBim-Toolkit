@@ -111,6 +111,7 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="DrawincControl3DLayers.cs" />
+    <Compile Include="Multiselection.cs" />
     <Compile Include="ViewModels\ClassificationViewModel.cs" />
     <Compile Include="ColourRgbExtensions.cs" />
     <Compile Include="XbimCuttingPlaneGroup.cs" />

@@ -27,7 +27,7 @@ namespace Xbim.ModelGeometry.Scene
         public Type EntityType;
         public int StartTriangleIndex;
         public int EndTriangleIndex;
-        
+
         public XbimMeshFragment(int pStart, int tStart)
         {
             StartPosition = EndPosition = pStart;
@@ -36,7 +36,7 @@ namespace Xbim.ModelGeometry.Scene
             EntityType = null;
         }
 
-        public bool IsEmpty 
+        public bool IsEmpty
         {
             get
             {
@@ -44,23 +44,18 @@ namespace Xbim.ModelGeometry.Scene
             }
         }
 
-
         public bool Contains(int vertexIndex)
         {
             return StartPosition <= vertexIndex && EndPosition >= vertexIndex;
         }
 
-        
-
-
-        public int PositionCount 
+        public int PositionCount
         {
             get
             {
-                return EndPosition - StartPosition +1 ;
+                return EndPosition - StartPosition + 1;
             }
         }
-
 
         /// <summary>
         /// Offsets the start of the fragment positions and triangle indices 
