@@ -188,25 +188,32 @@ namespace Xbim.Presentation
 
             if (SelectionBehaviour == SelectionBehaviours.MultipleSelection)
             {
-                MouseClickActions mc = MouseClickActions.Toggle;
-                if (ModifierKeyBehaviour.ContainsKey(Keyboard.Modifiers))
-                    mc = ModifierKeyBehaviour[Keyboard.Modifiers];
-
-                switch (mc)
+                if (thisSelectedEntity == null)
+                { // regardless of selection mode an empty selection clears the current selection
+                    Selection.Clear();
+                }
+                else
                 {
-                    case MouseClickActions.Add:
-                        Selection.Add(thisSelectedEntity);
-                        break;
-                    case MouseClickActions.Remove:
-                        Selection.Remove(thisSelectedEntity);
-                        break;
-                    case MouseClickActions.Toggle:
-                        Selection.Toggle(thisSelectedEntity);
-                        break;
-                    case MouseClickActions.Single:
-                        Selection.Clear();
-                        Selection.Add(thisSelectedEntity);
-                        break;
+                    MouseClickActions mc = MouseClickActions.Toggle;
+                    if (ModifierKeyBehaviour.ContainsKey(Keyboard.Modifiers))
+                        mc = ModifierKeyBehaviour[Keyboard.Modifiers];
+
+                    switch (mc)
+                    {
+                        case MouseClickActions.Add:
+                            Selection.Add(thisSelectedEntity);
+                            break;
+                        case MouseClickActions.Remove:
+                            Selection.Remove(thisSelectedEntity);
+                            break;
+                        case MouseClickActions.Toggle:
+                            Selection.Toggle(thisSelectedEntity);
+                            break;
+                        case MouseClickActions.Single:
+                            Selection.Clear();
+                            Selection.Add(thisSelectedEntity);
+                            break;
+                    }
                 }
                 Debug.WriteLine("Selectioncount: " + Selection.Count());
             }
@@ -722,7 +729,16 @@ namespace Xbim.Presentation
         private RayMeshGeometry3DHitTestResult FindHit(Point position)
         {
             RayMeshGeometry3DHitTestResult result = null;
-            HitTestResultCallback callback = hit =>
+            HitTestFilterCallback hitFilterCallback = oFilter =>
+            {
+                // Test for the object value you want to filter. 
+                if (oFilter.GetType() == typeof(MeshVisual3D))
+                    return HitTestFilterBehavior.ContinueSkipSelfAndChildren;
+                // Debug.WriteLine(oFilter.GetType());
+                return HitTestFilterBehavior.Continue;
+            };
+
+            HitTestResultCallback hitTestCallback = hit =>
             {
                 var rayHit = hit as RayMeshGeometry3DHitTestResult;
                 if (rayHit != null)
@@ -733,11 +749,11 @@ namespace Xbim.Presentation
                         return HitTestResultBehavior.Stop;
                     }
                 }
-
                 return HitTestResultBehavior.Continue;
             };
+
             var hitParams = new PointHitTestParameters(position);
-            VisualTreeHelper.HitTest(Viewport.Viewport, null, callback, hitParams);
+            VisualTreeHelper.HitTest(Viewport.Viewport, hitFilterCallback, hitTestCallback, hitParams);
             return result;
         }
         #endregion
