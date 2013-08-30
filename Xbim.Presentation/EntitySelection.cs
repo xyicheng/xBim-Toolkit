@@ -9,7 +9,7 @@ using System.Collections.Specialized;
 
 namespace Xbim.Presentation
 {
-    public class Multiselection : INotifyCollectionChanged, IEnumerable<IPersistIfcEntity>
+    public class EntitySelection : INotifyCollectionChanged, IEnumerable<IPersistIfcEntity>
     {
         private List<SelectionEvent> _selectionLog = new List<SelectionEvent>();
         private List<IPersistIfcEntity> _selection = new List<IPersistIfcEntity>();
@@ -100,6 +100,8 @@ namespace Xbim.Presentation
 
         public void Add(IPersistIfcEntity entity)
         {
+            if (entity == null)
+                return;
             Add(new IPersistIfcEntity[] { entity });
         }
 
@@ -118,6 +120,8 @@ namespace Xbim.Presentation
 
         public void Remove(IEnumerable<IPersistIfcEntity> entity)
         {
+            if (entity == null)
+                return;
             IEnumerable<IPersistIfcEntity> check = RemoveRange(entity);
             _selectionLog.Add(new SelectionEvent() { Action = Action.REMOVE, Entities = check });
             ResetLog();
@@ -169,6 +173,23 @@ namespace Xbim.Presentation
         IEnumerator IEnumerable.GetEnumerator()
         {
             return (IEnumerator)GetEnumerator();
+        }
+
+        internal void Toggle(IPersistIfcEntity item)
+        {
+            if (_selection.Contains(item))
+                this.Remove(item);
+            else
+                this.Add(item);
+        }
+
+        internal void Clear()
+        {
+            // to preserve undo capability
+            //
+            IPersistIfcEntity[] t = new IPersistIfcEntity[_selection.Count];
+            _selection.CopyTo(t);
+            this.RemoveRange(t);
         }
     }
 

@@ -65,6 +65,7 @@ namespace Xbim.Presentation
             this.Loaded += DrawingControl3D_Loaded;
             federationColours = new XbimColourMap(StandardColourMaps.Federation);
             Viewport.CameraChanged += Viewport_CameraChanged;
+            ClearGraphics();
         }
 
         void Viewport_CameraChanged(object sender, RoutedEventArgs e)
@@ -167,16 +168,49 @@ namespace Xbim.Presentation
             remove { RemoveHandler(LoadedEvent, value); }
         }
 
+        public enum MouseClickActions
+        {
+            Toggle,
+            Add,
+            Remove,
+            Single,
+            Ignore
+        }
+
+        public Dictionary<ModifierKeys, MouseClickActions> ModifierKeyBehaviour = new Dictionary<ModifierKeys, MouseClickActions>();
+
         private void Canvas_MouseDown(object sender, MouseButtonEventArgs e)
         {
-
             var pos = e.GetPosition(Canvas);
             var hit = FindHit(pos);
             // the highlighting of the selected component is triggered by the change of SelectedEntity (see OnSelectedEntityChanged)
-            SelectedEntity = GetClickedEntity(hit);
-            // todo: bonghi: check: ensure that deselection happens as SelectedEntity changes.
-            // todo: bonghi: check: Highlighted.Mesh = null;
-            // todo: bonghi: check: _currentProduct = null;            
+            var thisSelectedEntity = GetClickedEntity(hit);
+
+            if (SelectionBehaviour == SelectionBehaviours.MultipleSelection)
+            {
+                MouseClickActions mc = MouseClickActions.Toggle;
+                if (ModifierKeyBehaviour.ContainsKey(Keyboard.Modifiers))
+                    mc = ModifierKeyBehaviour[Keyboard.Modifiers];
+
+                switch (mc)
+                {
+                    case MouseClickActions.Add:
+                        Selection.Add(thisSelectedEntity);
+                        break;
+                    case MouseClickActions.Remove:
+                        Selection.Remove(thisSelectedEntity);
+                        break;
+                    case MouseClickActions.Toggle:
+                        Selection.Toggle(thisSelectedEntity);
+                        break;
+                    case MouseClickActions.Single:
+                        Selection.Clear();
+                        Selection.Add(thisSelectedEntity);
+                        break;
+                }
+                Debug.WriteLine("Selectioncount: " + Selection.Count());
+            }
+            SelectedEntity = thisSelectedEntity;
         }
 
         private static IPersistIfcEntity GetClickedEntity(RayMeshGeometry3DHitTestResult hit)
@@ -194,8 +228,6 @@ namespace Xbim.Presentation
                         frag = layer.Visible.Meshes.Find(hit.VertexIndex3);
                     if (!frag.IsEmpty)
                     {
-                        // todo: bonghi: check: _hitResult = hit;
-                        // todo: bonghi: check: _currentProduct = (int)id;
                         clicked = layer.Model.Instances[frag.EntityLabel];
                     }
                 }
@@ -320,39 +352,42 @@ namespace Xbim.Presentation
             SingleSelection,
             MultipleSelection
         }
+#if DEBUG
+        public SelectionBehaviours SelectionBehaviour = SelectionBehaviours.MultipleSelection;
+#else
         public SelectionBehaviours SelectionBehaviour = SelectionBehaviours.SingleSelection;
+#endif
 
-        public static readonly RoutedEvent SelectionChangedEvent =
-            EventManager.RegisterRoutedEvent("SelectionChangedEvent", RoutingStrategy.Bubble,
-                                             typeof(SelectionChangedEventHandler), typeof(DrawingControl3D));
-
-        public event SelectionChangedEventHandler SelectionChanged
+        public EntitySelection Selection
         {
-            add { AddHandler(SelectionChangedEvent, value); }
-            remove { RemoveHandler(SelectionChangedEvent, value); }
-        }
-
-        public Multiselection Selection
-        {
-            get { return (Multiselection)GetValue(SelectionProperty); }
+            get { return (EntitySelection)GetValue(SelectionProperty); }
             set { SetValue(SelectionProperty, value); }
         }
 
-        public static readonly DependencyProperty SelectionProperty = DependencyProperty.Register("Selection", typeof(Multiselection), typeof(DrawingControl3D), new PropertyMetadata(OnSelectedEntityChanged));
+        public static readonly DependencyProperty SelectionProperty = DependencyProperty.Register("Selection", typeof(EntitySelection), typeof(DrawingControl3D), new PropertyMetadata(OnSelectionChanged));
         private static void OnSelectionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (d is DrawingControl3D)
             {
                 DrawingControl3D d3d = d as DrawingControl3D;
-                Multiselection oldVal = e.OldValue as Multiselection;
-                Multiselection newVal = e.NewValue as Multiselection;
+                EntitySelection oldVal = e.OldValue as EntitySelection;
+                EntitySelection newVal = e.NewValue as EntitySelection;
                 d3d.ReplaceSelection(newVal, oldVal);
+                Debug.WriteLine("Selectioncount: " + newVal.Count());
             }
         }
 
-        private void ReplaceSelection(Multiselection newVal, Multiselection oldVal)
+        private void ReplaceSelection(EntitySelection newVal, EntitySelection oldVal)
         {
-            throw new NotImplementedException();
+            // throw new NotImplementedException();
+        }
+
+        public static readonly RoutedEvent SelectedEntityChangedEvent = EventManager.RegisterRoutedEvent("SelectedEntityChangedEvent", RoutingStrategy.Bubble, typeof(SelectionChangedEventHandler), typeof(DrawingControl3D));
+
+        public event SelectionChangedEventHandler SelectedEntityChanged
+        {
+            add { AddHandler(SelectedEntityChangedEvent, value); }
+            remove { RemoveHandler(SelectedEntityChangedEvent, value); }
         }
 
         public IPersistIfcEntity SelectedEntity
@@ -371,35 +406,48 @@ namespace Xbim.Presentation
             {
                 DrawingControl3D d3d = d as DrawingControl3D;
                 IPersistIfcEntity oldVal = e.OldValue as IPersistIfcEntity;
-                if (oldVal != null)
-                {
-                    d3d.Deselect(oldVal);
-                }
+                //if (oldVal != null)
+                //{
+                //    d3d.Deselect(oldVal);
+                //}
                 IPersistIfcEntity newVal = e.NewValue as IPersistIfcEntity;
-                if (newVal != null)
-                {
-                    d3d.Select(newVal);
-                }
+                d3d.HighlighSelected(newVal);
             }
         }
 
-        private void Deselect(IPersistIfcEntity oldVal)
-        {
-            Highlighted.Mesh = null;
-        }
+        //private void Deselect(IPersistIfcEntity oldVal)
+        //{
+        //    Highlighted.Mesh = null;
+        //}
 
         /// <summary>
         /// Executed when a new entity is selected
         /// </summary>
         /// <param name="newVal"></param>
-        private void Select(IPersistIfcEntity newVal)
+        private void HighlighSelected(IPersistIfcEntity newVal)
         {
             XbimMeshGeometry3D m = new XbimMeshGeometry3D();
-            var geomDataSet = Model.GetGeometryData(newVal.EntityLabel, XbimGeometryType.TriangulatedMesh);
-            foreach (var geomData in geomDataSet)
+
+            if (SelectionBehaviour == SelectionBehaviours.MultipleSelection)
             {
-                geomData.TransformBy(wcsTransform);
-                m.Add(geomData);
+                foreach (var item in Selection)
+                {
+                    var geomDataSet = Model.GetGeometryData(item.EntityLabel, XbimGeometryType.TriangulatedMesh);
+                    foreach (var geomData in geomDataSet)
+                    {
+                        geomData.TransformBy(wcsTransform);
+                        m.Add(geomData);
+                    }
+                }
+            }
+            else if (newVal != null)
+            {
+                var geomDataSet = Model.GetGeometryData(newVal.EntityLabel, XbimGeometryType.TriangulatedMesh);
+                foreach (var geomData in geomDataSet)
+                {
+                    geomData.TransformBy(wcsTransform);
+                    m.Add(geomData);
+                }
             }
             if (SelectionHighlightMode == SelectionHighlightModes.WholeMesh)
             {
@@ -710,9 +758,13 @@ namespace Xbim.Presentation
 
         private void ClearGraphics()
         {
+            _materials.Clear();
+            _opacities.Clear();
+            this.ClearCutPlane();
+
             PercentageLoaded = 0;
-            // _hitResult = null;
-            // _currentProduct = null;
+            Selection = new EntitySelection();
+
             Opaques.Children.Clear();
             Transparents.Children.Clear();
             modelBounds = XbimRect3D.Empty;
@@ -750,9 +802,7 @@ namespace Xbim.Presentation
 
             //reset all the visuals
             ClearGraphics();
-            _materials.Clear();
-            _opacities.Clear();
-            this.ClearCutPlane();
+            
             if (model == null) 
                 return; //nothing to show
 
