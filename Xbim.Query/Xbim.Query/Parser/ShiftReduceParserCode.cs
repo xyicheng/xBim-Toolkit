@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Diagnostics.CodeAnalysis;
 
-namespace QUT.Gppg
+namespace QUT.Xbim.Gppg
 {
     /// <summary>
     /// Abstract class for GPPG shift-reduce parsers.

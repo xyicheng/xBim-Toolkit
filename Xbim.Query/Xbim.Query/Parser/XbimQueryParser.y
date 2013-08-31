@@ -1,15 +1,20 @@
 ﻿%{
- 
+	
 %}
 %namespace Xbim.Query
 %partial   
 %parsertype XbimQueryParser
 %output=XbimQueryParser.cs
+%visibility internal
 
-%start expression
+%start expressions
 
 %union{
 		public string strVal;
+		public int intVal;
+		public float floatVal;
+		public bool boolVal;
+		public Type typeVal;
 	  }
 
 
@@ -44,35 +49,44 @@
 %token  REMOVE
 %token  FROM
 %token  NAME /*name*/
-%token  DESCRIPTION
 %token  PREDEFINED_TYPE
 %token  TYPE
 %token  MATERIAL
 
+
 %%
+expressions
+	: expressions expression
+	| expression
+	| error
+	;
+
 expression
-	: expression selection ';'
-	| expression creation ';'
-	| expression addition ';'
-	| /*EMPTY*/
+	: selection
+	| creation
+	| addition
 	;
 
 selection
-	: SELECT PRODUCT 
-	| SELECT PRODUCT WHERE conditions
-	| IDENTIFIER OP_EQ PRODUCT WHERE conditions
-	| IDENTIFIER OP_NEQ PRODUCT WHERE conditions
+	: SELECT PRODUCT ';'
+	| SELECT PRODUCT WHERE conditions ';'
+	| IDENTIFIER OP_EQ PRODUCT WHERE conditions ';'
+	| IDENTIFIER OP_NEQ PRODUCT WHERE conditions ';'
 	;
 	
 creation
-	: CREATE PRODUCT WITH_NAME STRING
-	| CREATE PRODUCT WITH_NAME STRING DESCRIPTION STRING
-	| IDENTIFIER NEW PRODUCT STRING
+	: CREATE PRODUCT WITH_NAME STRING ';'								{CreateObject($1.typeVal, $4.strVal);}
+	| CREATE NEW PRODUCT WITH_NAME STRING ';'							{CreateObject($3.typeVal, $5.strVal);}
+	| CREATE NEW PRODUCT STRING ';'										{CreateObject($3.typeVal, $4.strVal);}
+	| CREATE PRODUCT STRING ';'											{CreateObject($2.typeVal, $3.strVal);}
+	| CREATE PRODUCT WITH_NAME STRING DESCRIPTION STRING ';'			{CreateObject($2.typeVal, $4.strVal, $6.strVal);}
+	| CREATE NEW PRODUCT WITH_NAME STRING DESCRIPTION STRING ';'		{CreateObject($3.typeVal, $5.strVal, $7.strVal);}
+	| IDENTIFIER OP_EQ NEW PRODUCT STRING ';'							{Variables.Set($1.strVal, CreateObject($4.typeVal, $5.strVal));}
 	;
 	
 addition
-	: ADD IDENTIFIER TO IDENTIFIER
-	| REMOVE IDENTIFIER FROM IDENTIFIER
+	: ADD IDENTIFIER TO IDENTIFIER ';'
+	| REMOVE IDENTIFIER FROM IDENTIFIER ';'
 	;
 
 conditions
