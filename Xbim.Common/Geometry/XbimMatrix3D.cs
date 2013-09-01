@@ -552,6 +552,44 @@ namespace Xbim.Common.Geometry
                 );
         }
 
+        public static XbimMatrix3D CreateWorld(XbimVector3D position, XbimVector3D forward, XbimVector3D up)
+        {
+            // prepare vectors
+            forward.Normalize();
+            XbimVector3D vector = forward * -1;
+            XbimVector3D vector2 = XbimVector3D.CrossProduct(up, vector);
+            vector2.Normalize();
+            XbimVector3D vector3 = XbimVector3D.CrossProduct(vector, vector2);
+
+            // prepare matrix
+            XbimMatrix3D result = new XbimMatrix3D(
+                vector2.X, vector2.Y, vector2.Z, 0.0,
+                vector3.X, vector3.Y, vector3.Z, 0.0,
+                vector.X, vector.Y, vector.Z, 0.0,
+                position.X, position.Y, position.Z, 0.0);
+            return result;
+        }
+
+        // Microsoft.Xna.Framework.Matrix
+        public static XbimMatrix3D CreateLookAt(XbimVector3D cameraPosition, XbimVector3D cameraTarget, XbimVector3D cameraUpVector)
+        {
+            // prepare vectors
+            XbimVector3D vector = cameraPosition - cameraTarget;
+            vector.Normalize();
+            XbimVector3D vector2 = XbimVector3D.CrossProduct(cameraUpVector, vector);
+            vector2.Normalize();
+            XbimVector3D vector3 = XbimVector3D.CrossProduct(vector, vector2);
+
+            // prepare matrix
+            XbimMatrix3D result = new XbimMatrix3D(
+                vector2.X, vector3.X, vector.X, 0.0,
+                vector2.Y, vector3.Y, vector.Y, 0.0,
+                vector2.Z, vector3.Z, vector.Z, 0.0,
+                -XbimVector3D.DotProduct(vector2, cameraPosition), -XbimVector3D.DotProduct(vector3, cameraPosition), -XbimVector3D.DotProduct(vector, cameraPosition), 1.0);
+            return result;
+        }
+
+
         /// <summary>
         /// Creates a 3D translation matrix.
         /// </summary>

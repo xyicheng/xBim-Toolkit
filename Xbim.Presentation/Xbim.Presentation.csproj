@@ -112,6 +112,8 @@
     </Compile>
     <Compile Include="DrawincControl3DLayers.cs" />
     <Compile Include="EntitySelection.cs" />
+    <Compile Include="ModelGeomInfo\PolylineGeomInfo.cs" />
+    <Compile Include="ModelGeomInfo\PointGeomInfo.cs" />
     <Compile Include="ViewModels\ClassificationViewModel.cs" />
     <Compile Include="ColourRgbExtensions.cs" />
     <Compile Include="XbimCuttingPlaneGroup.cs" />

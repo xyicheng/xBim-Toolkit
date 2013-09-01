@@ -45,6 +45,7 @@ using System.Threading.Tasks;
 using Xbim.Common.Geometry;
 using Xbim.Ifc2x3.ExternalReferenceResource;
 using System.Text;
+using Xbim.Presentation.ModelGeomInfo;
 
 #endregion
 
@@ -66,11 +67,13 @@ namespace Xbim.Presentation
             federationColours = new XbimColourMap(StandardColourMaps.Federation);
             Viewport.CameraChanged += Viewport_CameraChanged;
             ClearGraphics();
+            MouseModifierKeyBehaviour.Add(ModifierKeys.Control, MouseClickActions.Measure);
         }
 
         void Viewport_CameraChanged(object sender, RoutedEventArgs e)
         {
             // Debug.WriteLine("Cam changed " + DateTime.Now);
+            
             
             HelixViewport3D snd = sender as HelixViewport3D;
             if (viewBounds.Length() > 0 && snd != null)
@@ -174,11 +177,14 @@ namespace Xbim.Presentation
             Add,
             Remove,
             Single,
-            Ignore
+            Ignore,
+            Measure
         }
 
-        public Dictionary<ModifierKeys, MouseClickActions> ModifierKeyBehaviour = new Dictionary<ModifierKeys, MouseClickActions>();
+        public Dictionary<ModifierKeys, MouseClickActions> MouseModifierKeyBehaviour = new Dictionary<ModifierKeys, MouseClickActions>();
 
+
+        private List<PointGeomInfo> PrevPoints = new List<PointGeomInfo>();
         private void Canvas_MouseDown(object sender, MouseButtonEventArgs e)
         {
             var pos = e.GetPosition(Canvas);
@@ -191,33 +197,104 @@ namespace Xbim.Presentation
                 if (thisSelectedEntity == null)
                 { // regardless of selection mode an empty selection clears the current selection
                     Selection.Clear();
+                    PrevPoints.Clear();
+                    HighlighSelected(null);
                 }
                 else
                 {
                     MouseClickActions mc = MouseClickActions.Toggle;
-                    if (ModifierKeyBehaviour.ContainsKey(Keyboard.Modifiers))
-                        mc = ModifierKeyBehaviour[Keyboard.Modifiers];
+                    if (MouseModifierKeyBehaviour.ContainsKey(Keyboard.Modifiers))
+                        mc = MouseModifierKeyBehaviour[Keyboard.Modifiers];
 
                     switch (mc)
                     {
                         case MouseClickActions.Add:
                             Selection.Add(thisSelectedEntity);
+                            HighlighSelected(null);
                             break;
                         case MouseClickActions.Remove:
                             Selection.Remove(thisSelectedEntity);
+                            HighlighSelected(null);
                             break;
                         case MouseClickActions.Toggle:
                             Selection.Toggle(thisSelectedEntity);
+                            HighlighSelected(null);
                             break;
                         case MouseClickActions.Single:
                             Selection.Clear();
                             Selection.Add(thisSelectedEntity);
+                            HighlighSelected(null);
+                            break;
+                        case MouseClickActions.Measure:
+                            var p = GetClosestPoint(hit);
+                            PrevPoints.AddRange(p);
+
+                            PolylineGeomInfo g = new PolylineGeomInfo(PrevPoints);
+                            Debug.WriteLine(string.Format(
+                                "Lenght: {0} (count: {1})", g.GetLenght(), g.Count()
+                                ));
+                            double d = g.GetArea();
+                            if (!double.IsNaN(d))
+                            {
+                                Debug.WriteLine(string.Format(
+                                    "Area: {0}", d
+                                    ));
+                            }
+
+                            g.SetToVisual(Highlighted);
                             break;
                     }
                 }
                 Debug.WriteLine("Selectioncount: " + Selection.Count());
             }
-            SelectedEntity = thisSelectedEntity;
+            else
+            {
+                SelectedEntity = thisSelectedEntity;
+            }
+        }
+        
+        private IEnumerable< PointGeomInfo> GetClosestPoint(RayMeshGeometry3DHitTestResult hit)
+        {
+            List<PointGeomInfo> gret = new List<PointGeomInfo>();
+
+            int[] pts = new int[] {
+                hit.VertexIndex1,
+                hit.VertexIndex2,
+                hit.VertexIndex3
+            };
+
+            PointGeomInfo pHit = new PointGeomInfo();
+            pHit.EntityLabel = GetClickedEntity(hit).EntityLabel;
+            pHit.Point = hit.PointHit;
+
+            double minDist = double.PositiveInfinity;
+            int iClosest = -1;
+            for (int i = 0; i < 3; i++)
+            {
+                
+                int iPtMesh = pts[i];
+
+                PointGeomInfo pRetI = new PointGeomInfo();
+                pRetI.EntityLabel = pHit.EntityLabel;
+                pRetI.Point = hit.MeshHit.Positions[iPtMesh];
+
+                // gret.Add(pRetI);
+
+                double dist = hit.PointHit.DistanceTo(hit.MeshHit.Positions[iPtMesh]);
+                if (dist < minDist)
+                {
+                    minDist = dist;
+                    iClosest = iPtMesh;
+                }
+            }
+
+            PointGeomInfo pRet = new PointGeomInfo();
+            pRet.EntityLabel = pHit.EntityLabel;
+            pRet.Point = hit.MeshHit.Positions[iClosest];
+
+            gret.Add(pRet);
+
+            return gret;
         }
 
         private static IPersistIfcEntity GetClickedEntity(RayMeshGeometry3DHitTestResult hit)

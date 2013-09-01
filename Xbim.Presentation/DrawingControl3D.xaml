@@ -35,6 +35,13 @@
                 </ModelVisual3D.Children>
             </ModelVisual3D>
         </local:XbimCuttingPlaneGroup>
+
+        <!-- 
+            <HelixToolkit:RotateManipulator Color="Green" Axis="0,1,0" Transform="{Binding Transform, ElementName=planeManipulator}" TargetTransform="{Binding Transform, ElementName=planeManipulator}" Diameter="1"/>
+            <HelixToolkit:RotateManipulator Color="Blue" Axis="0,0,1" Transform="{Binding Transform, ElementName=planeManipulator}" TargetTransform="{Binding Transform, ElementName=planeManipulator}" Diameter="1"/>
+            <HelixToolkit:TranslateManipulator x:Name="planeManipulator" Color="Red" Transform="{Binding Transform, ElementName=planeManipulator}" TargetTransform="{Binding Transform, ElementName=planeManipulator}" Direction="1,0,0"/>
+        -->
+        
         <HelixToolkit:DefaultLights ShowLights="False" />
         <!-- You can also add elements here in the xaml -->
         <HelixToolkit:GridLinesVisual3D x:Name="GridLines" Width="10000" Length="10000" MinorDistance="1000" MajorDistance="10000" Thickness="25"/>
