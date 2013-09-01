@@ -69,6 +69,10 @@ namespace Xbim.Querying.xBimQL.Test
             var cnt = model.Instances.OfType("IfcWall", false).Count();
             var chkCnt = model.Query("select @ifcWall.Count()");
             Assert.AreEqual(cnt.ToString(), chkCnt.ToString());
+
+            chkCnt = model.Query("select @12275.Representation.Representations");
+            Assert.AreEqual("1", chkCnt.ToString());
+
             model.Close();
         }
     }

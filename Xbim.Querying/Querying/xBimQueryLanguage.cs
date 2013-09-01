@@ -78,6 +78,7 @@ namespace Xbim.Querying
             var SelectExpression = new NonTerminal("SelectExpression", typeof(SelectExpressionNode));
             var SelectFunction = new NonTerminal("SelectFunction", typeof(SelectFunctionNode));
             var SelectMemberAccess = new NonTerminal("SelectMemberAccess", typeof(SelectMemberAccessNode));
+            var SelectProperty = new NonTerminal("SelectFunction", typeof(SelectPropertyNode));
             var SelectFunctionName = new NonTerminal("SelectFunctionName", typeof(EmptyStatementNode));
             var SelectTerm = new NonTerminal("SelectItem", typeof(EmptyStatementNode));
             var NumberOrEmpty = new NonTerminal("NumberOrEmpty", typeof(EmptyStatementNode));
@@ -138,7 +139,8 @@ namespace Xbim.Querying
 
             SelectExpression.Rule = Empty | SelectMemberAccess;
             SelectMemberAccess.Rule = dot + PreferShiftHere() + SelectTerm + SelectExpression;
-            SelectTerm.Rule = SelectFunction | identifier;
+            SelectTerm.Rule = SelectFunction | SelectProperty;
+            SelectProperty.Rule = identifier;
             SelectFunction.Rule = SelectFunctionName + PreferShiftHere() + ToTerm("(") + ArgList + ")";
             SelectFunctionName.Rule = ToTerm("Where") | "Range" | "Count";
 

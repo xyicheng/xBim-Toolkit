@@ -13,8 +13,10 @@ namespace Xbim.Querying.Nodes
     {
         public object Left;
         SelectFunctionNode _TheFunction = null;
-        SelectMemberAccessNode _queue = null;
+        SelectPropertyNode _PropNode = null;
 
+        SelectMemberAccessNode _queue = null;
+        
         protected override object DoEvaluate(Irony.Interpreter.ScriptThread thread)
         {
             object retval = null;
@@ -26,8 +28,16 @@ namespace Xbim.Querying.Nodes
                     _TheFunction.BaseObject = Left;
                     retval = _TheFunction.Evaluate(thread);
                 }
+                else if (_PropNode != null)
+                {
+                    _PropNode.BaseObject = Left;
+                    retval = _PropNode.Evaluate(thread);
+                }
             }
+            else if (_queue != null)
+            {
 
+            }
             thread.CurrentNode = Parent; //standard epilog
             return retval;
         }
@@ -42,8 +52,17 @@ namespace Xbim.Querying.Nodes
             {
                 _TheFunction = (SelectFunctionNode)functionOrId;
             }
+            else if (functionOrId is SelectPropertyNode)
+            {
+                _PropNode = (SelectPropertyNode)functionOrId;
+            }
+            else
+            {
+                throw new Exception("Unmanaged type in selectmemberaccessnode");
+            }
 
             var child = AddChild("Queue", nodes[1]);
+            string sval = nodes[1].FindTokenAndGetText();
             if (child is SelectMemberAccessNode)
             {
                 _queue = (SelectMemberAccessNode)child;

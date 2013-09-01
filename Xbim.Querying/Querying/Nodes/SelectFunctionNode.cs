@@ -28,6 +28,10 @@ namespace Xbim.Querying.Nodes
                     else
                         retval = -1;
                     break;
+                case "where":
+
+
+                    break;
                 default:
                     throw new Exception("Not implemented: " + functionName);
  
