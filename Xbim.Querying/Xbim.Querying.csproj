@@ -7,7 +7,7 @@
     <ProjectGuid>{DA65C44A-A1D7-4C15-8636-75B6B9344988}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Xbim.Querying</RootNamespace>
+    <RootNamespace>Xbim</RootNamespace>
     <AssemblyName>Xbim.Querying</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -64,8 +64,6 @@
     <Compile Include="Querying\Extensions\QLModelExtensions.cs" />
     <Compile Include="Querying\Nodes\SelectStatement.cs" />
     <Compile Include="Querying\xBimInterpretedLanguageGrammar.cs" />
-    <Compile Include="Querying\Test\GrammarSelectTests.cs" />
-    <Compile Include="Querying\Test\RuntimeTests.cs" />
     <Compile Include="Querying\xBimQueryLanguage.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -77,11 +75,6 @@
       <Project>{85856df2-c8ab-4120-8a8d-ae05d2696b51}</Project>
       <Name>Xbim.IO</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Querying\Test\Duplex-Handover.xbim">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Lib\Irony.dll">
