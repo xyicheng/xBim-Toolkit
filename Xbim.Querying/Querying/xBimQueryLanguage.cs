@@ -78,7 +78,7 @@ namespace Xbim.Querying
             var SelectExpression = new NonTerminal("SelectExpression", typeof(SelectExpressionNode));
             var SelectFunction = new NonTerminal("SelectFunction", typeof(SelectFunctionNode));
             var SelectMemberAccess = new NonTerminal("SelectMemberAccess", typeof(SelectMemberAccessNode));
-            var SelectProperty = new NonTerminal("SelectFunction", typeof(SelectPropertyNode));
+            var SelectProperty = new NonTerminal("SelectProperty", typeof(SelectPropertyNode));
             var SelectFunctionName = new NonTerminal("SelectFunctionName", typeof(EmptyStatementNode));
             var SelectTerm = new NonTerminal("SelectItem", typeof(EmptyStatementNode));
             var NumberOrEmpty = new NonTerminal("NumberOrEmpty", typeof(EmptyStatementNode));
@@ -167,7 +167,7 @@ namespace Xbim.Querying
             RegisterBracePair("(", ")");
             // RegisterBracePair("[", "]");
             MarkTransient(Term, Expr, Statement, BinOp, UnOp, IncDecOp, AssignmentOp, ParExpr); //, ObjectRef);
-            MarkTransient(NumberOrEmpty);
+            MarkTransient(NumberOrEmpty, SelectExpression);
             MarkTransient(SelectTerm);
 
             // 7. Syntax error reporting

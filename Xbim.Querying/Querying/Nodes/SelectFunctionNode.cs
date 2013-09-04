@@ -9,10 +9,10 @@ using Irony.Parsing;
 
 namespace Xbim.Querying.Nodes
 {
-    public class SelectFunctionNode : AstNode
+    public class SelectFunctionNode : LeftObjectNode
     {
         ParseTreeNode function = null;
-        public object BaseObject = null;
+        
         protected override object DoEvaluate(Irony.Interpreter.ScriptThread thread)
         {
             object retval = null;
@@ -22,19 +22,17 @@ namespace Xbim.Querying.Nodes
             switch (functionName.ToLowerInvariant())
             {
                 case "count":
-                    IEnumerable<object> o = BaseObject as IEnumerable<object>;
+                    IEnumerable<object> o = Left as IEnumerable<object>;
                     if (o != null)
                         retval = o.Count();
                     else
                         retval = -1;
                     break;
                 case "where":
-
-
+                    throw new Exception("Not implemented: Where");
                     break;
                 default:
                     throw new Exception("Not implemented: " + functionName);
- 
             }
 
             thread.CurrentNode = Parent; //standard epilog

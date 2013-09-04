@@ -54,6 +54,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Querying\Nodes\LeftObjectNode.cs" />
     <Compile Include="Querying\Nodes\SelectPropertyNode.cs" />
     <Compile Include="Querying\Nodes\SelectExpressionNode.cs" />
     <Compile Include="Querying\Nodes\SelectMemberAccessNode.cs" />

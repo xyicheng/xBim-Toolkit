@@ -69,10 +69,29 @@ namespace Xbim.Querying.xBimQL.Test
             var cnt = model.Instances.OfType("IfcWall", false).Count();
             var chkCnt = model.Query("select @ifcWall.Count()");
             Assert.AreEqual(cnt.ToString(), chkCnt.ToString());
+            model.Close();
+        }
 
-            chkCnt = model.Query("select @12275.Representation.Representations");
-            Assert.AreEqual("1", chkCnt.ToString());
+        [TestMethod]
+        public void QueryingPropFunction()
+        {
+            // DirectoryInfo d = new DirectoryInfo("."); // to find folder location
+            XbimModel model = new XbimModel();
+            model.Open(SourceModelFileName, XbimDBAccess.Read);
+            var chkCnt = model.Query("select @12275.Representation");
+            Assert.AreEqual(1, ((IEnumerable<object>)chkCnt).Count());
 
+            model.Close();
+        }
+
+        [TestMethod]
+        public void QueryingNestedPropFunction()
+        {
+            // DirectoryInfo d = new DirectoryInfo("."); // to find folder location
+            XbimModel model = new XbimModel();
+            model.Open(SourceModelFileName, XbimDBAccess.Read);
+            var chkCnt = model.Query("select @12275.Representation.Representations");
+            Assert.AreEqual(3, ((IEnumerable<object>)chkCnt).Count());
             model.Close();
         }
     }
