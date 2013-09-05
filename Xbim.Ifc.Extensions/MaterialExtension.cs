@@ -47,6 +47,11 @@ namespace Xbim.Ifc2x3.Extensions
                                                                     });
                 pSet.ExtendedProperties.Add_Reversible(singleValue);
             }
+            else
+            {
+                // CM 03/09/2013 - Added this as before hand if the property already existed nothing would be set
+                singleValue.NominalValue = value;
+            }
         }
 
         public static void SetExtendedSingleValue(this IfcMaterial material, string pSetName, string propertyName,
