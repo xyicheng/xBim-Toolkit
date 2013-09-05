@@ -105,6 +105,7 @@ namespace Xbim.Querying
             var parser = new Parser(language);
 
             MustRunOk(parser, "select @12275.Representation.Representations.Where(Identifier=='Body')");
+            MustRunOk(parser, "select @12275.Representation.Representations.Where(Identifier==\"Body\")");
         }
     }
 }

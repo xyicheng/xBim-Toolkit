@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Irony.Ast;
+using Irony.Interpreter;
 using Irony.Interpreter.Ast;
 using Irony.Parsing;
 
@@ -62,7 +63,10 @@ namespace Xbim.Querying.Nodes
                         List<object> tretvalWhere = new List<object>();
                         foreach (var item in o)
                         {
-                            // todo: bonghi: needs to set the context here.
+                            // todo: bonghi: needs to check the context is set here.
+                            var scpInfo = new ScopeInfo(this, false);
+                            object[] oIfc = new object[] { item };
+                            thread.PushScope(scpInfo, oIfc);
                             object oCondition = Arguments[0].Evaluate(thread);
                             try
                             {
@@ -76,7 +80,7 @@ namespace Xbim.Querying.Nodes
                                 
                                 throw;
                             }
-                            
+                            thread.PopScope();
                         }
                             
                         

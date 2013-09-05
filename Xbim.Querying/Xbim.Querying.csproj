@@ -54,6 +54,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Querying\Extensions\QLIPersistIfcEntityExtensions.cs" />
+    <Compile Include="Querying\Nodes\IfcClassPropertyNode.cs" />
     <Compile Include="Querying\Nodes\LeftObjectNode.cs" />
     <Compile Include="Querying\Nodes\SelectPropertyNode.cs" />
     <Compile Include="Querying\Nodes\SelectExpressionNode.cs" />
@@ -77,15 +79,11 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Lib\Irony.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Lib\Irony.Interpreter.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <ItemGroup>
-    <WCFMetadata Include="Service References\" />
+    <Content Include="Lib\Irony.dll" />
+    <Content Include="Lib\Irony.Interpreter.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

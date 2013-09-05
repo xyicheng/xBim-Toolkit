@@ -7,6 +7,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Irony.Parsing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.Ifc2x3.RepresentationResource;
 using Xbim.IO;
 using Xbim.IO.Querying;
 using Xbim.XbimExtensions;
@@ -85,7 +87,8 @@ namespace Xbim.Querying.xBimQL.Test
             {
                 model.Open(SourceModelFileName, XbimDBAccess.Read);
                 var chkCnt = model.Query("select @12275.Representation");
-                Assert.AreEqual(1, ((IEnumerable<object>)chkCnt).Count());
+                Assert.IsInstanceOfType(chkCnt, typeof(IfcProductDefinitionShape));
+                
                 model.Close();
             }
         }
@@ -151,12 +154,11 @@ namespace Xbim.Querying.xBimQL.Test
             using (XbimModel model = new XbimModel())
             {
                 model.Open(SourceModelFileName, XbimDBAccess.Read);
-                var cnt = model.Query("select @12275.Representation.Representations.Where(Identifier='Body')") as List<Object>;
+                var cnt = model.Query(@"select @12275.Representation.Representations.Where(@RepresentationIdentifier==""Body"")") as List<Object>;
                 Assert.IsNotNull(cnt);
                 Assert.AreEqual(1, cnt.Count());
                 model.Close();
             }
         }
-
     }
 }
