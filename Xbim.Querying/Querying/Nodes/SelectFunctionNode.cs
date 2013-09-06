@@ -67,9 +67,10 @@ namespace Xbim.Querying.Nodes
                             var scpInfo = new ScopeInfo(this, false);
                             object[] oIfc = new object[] { item };
                             thread.PushScope(scpInfo, oIfc);
-                            object oCondition = Arguments[0].Evaluate(thread);
+                            
                             try
                             {
+                                object oCondition = Arguments[0].Evaluate(thread);
                                 if ((bool)oCondition)
                                 {
                                     tretvalWhere.Add(item);
@@ -77,8 +78,7 @@ namespace Xbim.Querying.Nodes
                             }
                             catch (Exception)
                             {
-                                
-                                throw;
+                                // if problems just ignore so that statements that don't compute (say for missing properties) are still ok.
                             }
                             thread.PopScope();
                         }

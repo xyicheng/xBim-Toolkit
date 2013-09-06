@@ -160,5 +160,27 @@ namespace Xbim.Querying.xBimQL.Test
                 model.Close();
             }
         }
+
+        [TestMethod]
+        public void QueryingSelectAllModel()
+        {
+            // DirectoryInfo d = new DirectoryInfo("."); // to find folder location
+            using (XbimModel model = new XbimModel())
+            {
+                model.Open(SourceModelFileName, XbimDBAccess.Read);
+                var cnt = model.Query(@"select @*");
+                Assert.IsNotNull(cnt);
+
+                dynamic doors = model.Query(@"select @IfcDoor.Where(@OverallHeight==2090)");
+                Assert.IsNotNull(doors);
+                Assert.AreEqual(36, doors.Count);
+
+                doors = model.Query(@"select @IfcDoor.Where(@OverallHeight==2090 && @OverallWidth==790)");
+                Assert.IsNotNull(doors);
+                Assert.AreEqual(4, doors.Count);
+                
+                model.Close();
+            }
+        }
     }
 }
