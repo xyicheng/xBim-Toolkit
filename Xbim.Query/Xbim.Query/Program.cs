@@ -3,6 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Xbim.IO;
+using Xbim.XbimExtensions.Interfaces;
+using System.Linq.Expressions;
+using Xbim.Ifc2x3.SharedBldgElements;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.XbimExtensions.SelectTypes;
+using Xbim.Ifc2x3.Kernel;
 
 namespace Xbim.Query
 {
@@ -11,10 +17,8 @@ namespace Xbim.Query
         static void Main(string[] args)
         {
             string source = @"
-            select wall where name is 'my wall'; 
-            create new group 'My group number one';
-            $myGroup is new wall 'My wall no.1';
-            ";
+            select wall where name is 'New wall'; 
+            ";//where name is 'New wall'
             //test scanner
             Scanner scanner = new Scanner();
             scanner.SetSource(source, 0);
@@ -23,6 +27,8 @@ namespace Xbim.Query
             {
                 string name = val >= 60 ? Enum.GetName(typeof(Tokens), val) : ((char)val).ToString();
                 Console.Write(name + " ");
+                if (name == ";") Console.WriteLine();
+
                 val = scanner.yylex();
             }
 
@@ -32,10 +38,17 @@ namespace Xbim.Query
             scanner.SetSource(source, 0);
 
             XbimModel model = XbimModel.CreateTemporaryModel();
-            
+            IfcWall wall = null;
+
             using (XbimReadWriteTransaction txn = model.BeginTransaction("Model processing"))
             {
-                XbimQueryParser parser = new XbimQueryParser(scanner, model);
+                wall = model.Instances.New<IfcWall>(w => w.Name = "New wall");
+                model.Instances.New<IfcWall>(w => w.Name = "New wall");
+                model.Instances.New<IfcWall>(w => w.Name = "New wall");
+                model.Instances.New<IfcWall>(w => w.Name = "New wall");
+                model.Instances.New<IfcWall>(w => w.Name = "New wall");
+
+                Parser parser = new Parser(scanner, model);
                 var success = parser.Parse();
                 var groups = model.Instances.OfType<Xbim.Ifc2x3.Kernel.IfcGroup>();
                 txn.Commit();
@@ -47,15 +60,14 @@ namespace Xbim.Query
                 {
                     Console.WriteLine(item);
                 }
+
+                var ent = parser.Variables["$$"].Count();
             }
-            
-            
-            
-            
-            
 
             Console.ReadKey();
             
         }
+
+
     }
 }

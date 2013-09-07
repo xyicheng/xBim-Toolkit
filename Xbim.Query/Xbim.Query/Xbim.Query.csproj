@@ -83,14 +83,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Parser\ShiftReduceParserCode.cs" />
-    <Compile Include="Parser\XbimQueryParser.cs" />
-    <Compile Include="Parser\XbimQueryParserHelper.cs" />
-    <Compile Include="Parser\XbimQueryScannerHelper.cs" />
-    <Compile Include="Parser\XbimQueryScanner.cs" />
+    <Compile Include="Parser\Parser.cs" />
+    <Compile Include="Parser\ParserHelper.cs" />
+    <Compile Include="Parser\ScannerHelper.cs" />
+    <Compile Include="Parser\Scanner.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="XbimQueryBuilder.cs" />
     <Compile Include="XbimQueryFactory.cs" />
+    <Compile Include="XbimQueryParser.cs" />
     <Compile Include="XbimVariables.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -112,8 +113,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Parser\makeparser.bat" />
-    <None Include="Parser\XbimQueryParser.y" />
-    <None Include="Parser\XbimQueryScanner.lex" />
+    <None Include="Parser\Parser.y" />
+    <None Include="Parser\Scanner.lex" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Sample_files\" />

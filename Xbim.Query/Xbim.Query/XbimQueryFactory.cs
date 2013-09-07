@@ -14,7 +14,20 @@ namespace Xbim.Query
     {
         /// <summary>
         /// Creates constant expression with promoted value to the same type as the left type.
-        /// It is necessary for some of the operations that the types on both sides are same.
+        /// It is necessary for some of the operations that the types on both sides are the same.
+        /// If it is not possible to convert left argument null is returned in release compilation
+        /// or exception is thrown in debug mode.
+        /// </summary>
+        /// <param name="leftType">Target type of the parameter</param>
+        /// <returns>Expression how to handle input constant value to make it comparable with the type</returns>
+        public static Expression PromoteToConstant(Expression leftType, string rightValue)
+        {
+            return PromoteToConstant(leftType.Type, rightValue);
+        }
+
+        /// <summary>
+        /// Creates constant expression with promoted value to the same type as the left type.
+        /// It is necessary for some of the operations that the types on both sides are the same.
         /// If it is not possible to convert left argument null is returned in release compilation
         /// or exception is thrown in debug mode.
         /// </summary>
@@ -257,7 +270,7 @@ namespace Xbim.Query
         /// Nullable&lt;ExpressType&gt; generic function new Nullable instance is created and ExpressType core 
         /// value is used in this new object so that its behavior is the same as if just the 
         /// base types were used. If input is not ExpressType or Nullable&lt;ExpressType&gt;
-        /// nothing happens.<br>
+        /// nothing happens.<br />
         /// This overloaded method is helper for the case when both sides of binary operation
         /// are to be unwrapped at one step. Left and right types should be the same.
         /// </summary>

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Xbim.Ifc2x3.Kernel;
+using System.Globalization;
 
 namespace Xbim.Query
 {
@@ -12,8 +13,10 @@ namespace Xbim.Query
         /// String processing funtion used during the scanning.
         /// </summary>
         /// <returns>Token PRODUCT, PRODUCT_TYPE or STRING</returns>
-        public Tokens ProcessString()
+        private Tokens ProcessString()
         {
+            yylval.strVal = yytext;
+
             SetValue();
             Type t = GetProductType(yytext);
             if (t != null)
@@ -32,7 +35,12 @@ namespace Xbim.Query
             return Tokens.STRING;
         }
 
-        public Tokens SetValue(Tokens type = Tokens.STRING)
+        /// <summary>
+        /// function used by scanner to set values for value type tokens
+        /// </summary>
+        /// <param name="type">Value type. If no value type is specified 'STRING' is used by default</param>
+        /// <returns>Token set by the function</returns>
+        private Tokens SetValue(Tokens type = Tokens.STRING)
         {
             yylval.strVal = yytext;
 
@@ -43,10 +51,20 @@ namespace Xbim.Query
                         return type;
                     break;
                 case Tokens.FLOAT:
-                    if (float.TryParse(yytext, out yylval.floatVal))
+                    if (float.TryParse(yytext, NumberStyles.Float, CultureInfo.InvariantCulture, out yylval.floatVal))
                         return type;
                     break;
                 case Tokens.BOOLEAN:
+                    if (yytext.ToLower() == ".t.")
+                    {
+                        yylval.boolVal = true;
+                        return type;
+                    }
+                    if (yytext.ToLower() == ".f.")
+                    {
+                        yylval.boolVal = false;
+                        return type;
+                    }
                     if (bool.TryParse(yytext, out yylval.boolVal))
                         return type;
                     break;
@@ -65,6 +83,7 @@ namespace Xbim.Query
                 case Tokens.IDENTIFIER:
                     return type;
                 default:
+                    yylval.strVal = yytext.Trim('\'', '"');
                     return Tokens.STRING;
             }
             return Tokens.STRING;
@@ -86,7 +105,7 @@ namespace Xbim.Query
         /// </summary>
         /// <param name="productName">Name of the product</param>
         /// <returns>True it the string can be name of some product, false otherwise</returns>
-        public bool IsProduct(string productName)
+        private bool IsProduct(string productName)
         {
             return ProductDictionary.ContainsKey(productName.ToLower());
         }
@@ -96,7 +115,7 @@ namespace Xbim.Query
         /// </summary>
         /// <param name="productName">Name of the type product</param>
         /// <returns>True it the string can be name of some type product, false otherwise</returns>
-        public bool IsTypeProduct(string typeProductName)
+        private bool IsTypeProduct(string typeProductName)
         {
             return TypeProductDictionary.ContainsKey(typeProductName.ToLower());
         }
@@ -106,7 +125,7 @@ namespace Xbim.Query
         /// </summary>
         /// <param name="productName">Name of the product (IfcWall, wall, IfcStairFlight, stair flight, ...)</param>
         /// <returns>Type if found, null otherwise</returns>
-        public Type GetProductType(string productName)
+        private Type GetProductType(string productName)
         {
             Type result = null;
             ProductDictionary.TryGetValue(productName.ToLower(), out result);
@@ -118,7 +137,7 @@ namespace Xbim.Query
         /// </summary>
         /// <param name="typeProductName">Name of the type product (IfcWallType, wall_type, ...)</param>
         /// <returns>Type if found, null otherwise</returns>
-        public Type GetTypeProductType(string typeProductName)
+        private Type GetTypeProductType(string typeProductName)
         {
             Type result = null;
             TypeProductDictionary.TryGetValue(typeProductName.ToLower(), out result);
@@ -157,12 +176,14 @@ namespace Xbim.Query
         /// </summary>
         /// <param name="input">Input string</param>
         /// <returns>Splitted camel-case string</returns>
-        public static string SplitCamelCase(string input)
+        private static string SplitCamelCase(string input)
         {
             return System.Text.RegularExpressions.Regex.Replace(input, "([A-Z])", "_$1", System.Text.RegularExpressions.RegexOptions.Compiled).Trim('_');
         }
 
-
+        /// <summary>
+        /// List of errors
+        /// </summary>
         public List<string> Errors = new List<string>();
 
         /// <summary>

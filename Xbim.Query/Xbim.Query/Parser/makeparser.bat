@@ -1,2 +1,2 @@
-gppg /gplex /listing  /conflicts XbimQueryParser.y
-gplex  XbimQueryScanner.lex 
+gppg /gplex /listing  /conflicts Parser.y
+gplex  Scanner.lex 

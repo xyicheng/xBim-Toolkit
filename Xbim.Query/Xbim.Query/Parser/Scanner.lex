@@ -1,6 +1,6 @@
 ﻿%namespace Xbim.Query
 
-%option verbose, summary, caseinsensitive, noPersistBuffer, out:XbimQueryScanner.cs
+%option verbose, summary, caseinsensitive, noPersistBuffer, out:Scanner.cs
 %visibility internal
 
 %{
@@ -71,16 +71,16 @@
 "select"			{ return (int)Tokens.SELECT;}
 "where"			{ return (int)Tokens.WHERE;}
 "create"			{ return (int)Tokens.CREATE;}
-"with name"			{ return (int)Tokens.WITH_NAME; }/*with name, called*/				
-"called"			{ return (int)Tokens.WITH_NAME; }/*with name, called*/				
-"description"			{ return (int)Tokens.DESCRIPTION ;} /*and description, described as*/	
-"described as"			{ return (int)Tokens.DESCRIPTION ;} /*and description, described as*/	
+"with name" |
+"called"			{ return (int)Tokens.WITH_NAME; }
+"description" |
+"described as"			{ return (int)Tokens.DESCRIPTION ;} 
 "new"			{ return (int)Tokens.NEW;}  /*is new*/								
 "add"			{ return (int)Tokens.ADD;}
 "to"			{ return (int)Tokens.TO; }
 "remove"			{ return (int)Tokens.REMOVE; }
 "from"			{ return (int)Tokens.FROM; }
-"name"			{ return (int)Tokens.NAME; } /*name*/									
+"name"			{ return (int)Tokens.NAME; }									
 "predefined type"			{ return (int)Tokens.PREDEFINED_TYPE; }
 "type"			{ return (int)Tokens.TYPE; }
 "material"			{ return (int)Tokens.MATERIAL; }
@@ -91,13 +91,15 @@
 
 /* ********************     values        ****************** */
 [\-\+]?[0-9]+	    {  return (int)SetValue(Tokens.INTEGER); }
-[\-\+\.0-9][\.0-9]+	{ return (int)SetValue(Tokens.FLOAT);  }
+[\-\+]?[0-9]*[\.][0-9]*	|
 [\-\+\.0-9][\.0-9]+E[\-\+0-9][0-9]* { return (int)SetValue(Tokens.FLOAT); }
 [\"]([\n]|[\000\011-\046\050-\176\201-\237\240-\377]|[\047][\047])*[\"]	{ return (int)SetValue(); }
 [\']([\n]|[\000\011-\046\050-\176\201-\237\240-\377]|[\047][\047])*[\']	{ return (int)SetValue(); }
+".T." |
+".F." |
 true |
 false	    { return (int)SetValue(Tokens.BOOLEAN); }
-[a-z]+[a-z_]+[a-z]	{ return (int)ProcessString(); }
+[a-z]+[a-z_\-0-9]*	{ return (int)ProcessString(); }
 
 
 /* -----------------------  Epilog ------------------- */
