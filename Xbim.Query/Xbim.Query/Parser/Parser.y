@@ -62,13 +62,13 @@
 expressions
 	: expressions expression
 	| expression
+	| error
 	;
 
 expression
 	: selection
 	| creation
 	| addition
-	| error
 	;
 
 selection
@@ -116,7 +116,7 @@ condition
 
 attributeCondidion	
 	: attribute op_bool STRING				{$$.val = GenerateAttributeCondition($1.strVal, $3.strVal, ((Tokens)($2.val)));}
-	: attribute op_bool NONDEF				{$$.val = GenerateAttributeCondition($1.strVal, null, ((Tokens)($2.val)));}
+	| attribute op_bool NONDEF				{$$.val = GenerateAttributeCondition($1.strVal, null, ((Tokens)($2.val)));}
 	| attribute op_cont STRING				{$$.val = GenerateAttributeCondition($1.strVal, $3.strVal, ((Tokens)($2.val)));}
 	;
 

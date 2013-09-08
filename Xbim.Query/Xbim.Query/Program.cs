@@ -17,7 +17,7 @@ namespace Xbim.Query
         static void Main(string[] args)
         {
             string source = @"
-            select wall where name is 'New wall'; 
+            Select wall where 'integer value' is 291.25;
             ";//where name is 'New wall'
             //test scanner
             Scanner scanner = new Scanner();
@@ -42,7 +42,7 @@ namespace Xbim.Query
 
             using (XbimReadWriteTransaction txn = model.BeginTransaction("Model processing"))
             {
-                wall = model.Instances.New<IfcWall>(w => w.Name = "New wall");
+                wall = model.Instances.New<IfcWall>(w => w.Name = "Wall No. 1");
                 model.Instances.New<IfcWall>(w => w.Name = "New wall");
                 model.Instances.New<IfcWall>(w => w.Name = "New wall");
                 model.Instances.New<IfcWall>(w => w.Name = "New wall");

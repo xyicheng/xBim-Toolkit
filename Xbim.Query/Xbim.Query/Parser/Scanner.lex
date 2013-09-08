@@ -27,41 +27,41 @@
 "$"[a-z][a-z0-9_]*		            { return (int)SetValue(Tokens.IDENTIFIER); }
 
 /* ********************** Operators ************************** */
-"="		{  return ((int)Tokens.OP_EQ); }
-"equals"		{  return ((int)Tokens.OP_EQ); }
-"is"		{  return ((int)Tokens.OP_EQ); }
+"="	|
+"equals" |
+"is" |
 "is equal to"		{  return ((int)Tokens.OP_EQ); }
 
-"!="		{ return ((int)Tokens.OP_NEQ); }
-"is not equal to"		{ return ((int)Tokens.OP_NEQ); }
-"is not"		{ return ((int)Tokens.OP_NEQ); }
-"does not equal"		{ return ((int)Tokens.OP_NEQ); }
+"!=" |
+"is not equal to" |
+"is not" |
+"does not equal" |
 "doesn't equal"		{ return ((int)Tokens.OP_NEQ); }
 
-">"		{  return ((int)Tokens.OP_GT); }
+">" |
 "is greater than"		{  return ((int)Tokens.OP_GT); }
 
-"<"		{  return ((int)Tokens.OP_LT); }
-"is lower than"		{  return ((int)Tokens.OP_LT); }
+"<"	|
+"is less than"		{  return ((int)Tokens.OP_LT); }
 
-">="		{  return ((int)Tokens.OP_GTE); }
+">=" |
 "is greater than or equal to"		{  return ((int)Tokens.OP_GTE); }
 
-"<="		{  return ((int)Tokens.OP_LTQ); }
-"is lower than or equal to"		{  return ((int)Tokens.OP_LTQ); }
+"<=" |
+"is less than or equal to"		{  return ((int)Tokens.OP_LTQ); }
 
-"&&"		{  return ((int)Tokens.OP_AND); }
+"&&" |
 "and"		{  return ((int)Tokens.OP_AND); }
 
-"||"		{  return ((int)Tokens.OP_OR); }
+"||" |
 "or"		{  return ((int)Tokens.OP_OR); }
 
-"~"					{return ((int)Tokens.OP_CONTAINS);}
-"contains"			{return ((int)Tokens.OP_CONTAINS);}
+"~"	|
+"contains" |
 "is like"			{return ((int)Tokens.OP_CONTAINS);}
 
-"!~"			{return ((int)Tokens.OP_NOT_CONTAINS);}
-"does not contain"			{return ((int)Tokens.OP_NOT_CONTAINS);}
+"!~" |
+"does not contain" |
 "doesn't contain"			{return ((int)Tokens.OP_NOT_CONTAINS);}
 
 ";"		{  return (';'); }

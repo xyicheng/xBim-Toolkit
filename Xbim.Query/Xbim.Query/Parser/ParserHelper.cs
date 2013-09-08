@@ -37,20 +37,38 @@ namespace Xbim.Query
             if (_model == null) throw new ArgumentNullException("Model is NULL");
             if (name == null) throw new ArgumentNullException("Name must be defined");
 
-            var entity = _model.Instances.New(type);
-            var root = entity as IfcRoot;
-            if (root != null)
+            if (_model.IsTransacting)
             {
-                root.Name = name;
-                root.Description = description;
+                var entity = _model.Instances.New(type);
+                var root = entity as IfcRoot;
+                if (root != null)
+                {
+                    root.Name = name;
+                    root.Description = description;
+                }
+                return root;
             }
-            return root;
+            else
+            {
+                using (var txn = _model.BeginTransaction("Object ctreation"))
+                {
+                    var entity = _model.Instances.New(type);
+                    var root = entity as IfcRoot;
+                    if (root != null)
+                    {
+                        root.Name = name;
+                        root.Description = description;
+                    }
+                    return root;
+                    txn.Commit();
+                }   
+            }
         }
 
         private Expression GenerateAttributeCondition(string attribute, object value, Tokens condition)
         {
             var attrNameExpr = Expression.Constant(attribute);
-            var valExpr = Expression.Constant(value);
+            var valExpr = Expression.Constant(value, typeof(object));
             var condExpr = Expression.Constant(condition);
             var scannExpr = Expression.Constant(Scanner);
 
@@ -62,7 +80,7 @@ namespace Xbim.Query
         private Expression GeneratePropertyCondition(string property, object value, Tokens condition)
         {
             var propNameExpr = Expression.Constant(property);
-            var valExpr = Expression.Constant(value);
+            var valExpr = Expression.Constant(value, typeof(object));
             var condExpr = Expression.Constant(condition);
             var scannExpr = Expression.Constant(Scanner);
 
@@ -198,7 +216,7 @@ namespace Xbim.Query
                 {
                     foreach (var prop in pSet.Value)
                     {
-                        if (prop.Key.ToString() == name) return prop.Value;
+                        if (prop.Key.ToString().ToLower() == name.ToLower()) return prop.Value;
                     }
                 }
             return null;
@@ -262,7 +280,7 @@ namespace Xbim.Query
             string leftS = Convert.ToString(left);
             string rightS = Convert.ToString(right);
 
-            return leftS.Contains(rightS);
+            return leftS.ToLower().Contains(rightS.ToLower());
         }
         #endregion
 
@@ -276,7 +294,10 @@ namespace Xbim.Query
         {
             if (!typeof(IfcRoot).IsAssignableFrom(type)) return new IPersistIfcEntity[]{};
 
-            return _model.Instances.Where(i => type.IsAssignableFrom(i.GetType()) && i as IfcRoot != null && ((IfcRoot)i).Name == name);
+            Expression expression = GenerateAttributeCondition("Name", name, Tokens.OP_EQ);
+
+            return Select(type, expression);
+            //return _model.Instances.Where(i => type.IsAssignableFrom(i.GetType()) && i as IfcRoot != null && ((IfcRoot)i).Name == name);
         }
 
         private IEnumerable<IPersistIfcEntity> Select(Type type, Expression condition)
@@ -326,7 +347,7 @@ namespace Xbim.Query
             }
         }
 
-        private static bool EvaluateTypeObjectType(IPersistIfcEntity input, Type type, Tokens condition, AbstractScanner<ValueType, LexLocation> scanner)
+        private static bool EvaluateTypeObjectType(IPersistIfcEntity input, Type type, Tokens condition)
         {
             IfcObject obj = input as IfcObject;
             if (obj == null) return false;
