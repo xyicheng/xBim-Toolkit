@@ -7,6 +7,8 @@ using Xbim.Query;
 using Xbim.IO;
 using Xbim.Ifc2x3.SharedBldgElements;
 using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.Extensions;
+using Xbim.Ifc2x3.MeasureResource;
 
 namespace XbimQueryTest
 {
@@ -68,6 +70,19 @@ namespace XbimQueryTest
                 {"Select wall where type = IfcSlabType;",true},
                 {"Select wall where 'fire protection' is true;",true},
                 {"Select wall where 'fire protection' is .F.;",true},
+                {"Select wall where 'Heat Performance' is 12.25;",true},
+                {"Select wall where 'Heat Performance' is greater than 12.25;",true},
+                {"Select wall where 'Heat Performance' is greater than or equal to 12.25;",true},
+                {"Select wall where 'Heat Performance' equals 12.25;",true},
+                {"Select wall where 'Heat Performance' = 12.25;",true},
+                {"Select wall where 'Heat Performance' != 12.25;",true},
+                {"Select wall where 'Heat Performance' is less than 12.25;",true},
+                {"Select wall where 'Heat Performance' < 12.25;",true},
+                {"Select wall where 'Heat Performance' <= 12.25;",true},
+                {"Select wall where 'Heat Performance' ~ 12.25;",false},
+                {"Select wall where 'Heat Performance' contains 12.25;",false},
+                {"Select wall where 'Heat Performance' ~ 'substring';",true},
+                {"Select wall where 'Heat Performance' doesn't contain 'substring';",true},
                 {"Select xyz",false},
                 {"$MyWalls is wall 'My wall';",true},
                 {"$MyWalls is wall where 'External' = true;",true},
@@ -124,7 +139,7 @@ namespace XbimQueryTest
                 var wall2 = model.Instances.Where<IfcWall>(w => w.Name == "New wall assigned").FirstOrDefault();
                 Assert.IsNotNull(wallType, "There should be one wall now with the name 'New wall assigned'");
                 Assert.AreEqual(parser.Results.FirstOrDefault().Key, "$MyWall");
-                Assert.AreEqual(parser.Results.FirstOrDefault().Value, wall2);
+                Assert.AreEqual(parser.Results["$MyWall"].FirstOrDefault(), wall2);
 
                 txn.Commit();
             }
@@ -142,6 +157,18 @@ namespace XbimQueryTest
                     w.Description = "Some description of the wall No. 1";
                 });
 
+                model.Instances.New<IfcWall>(w =>
+                {
+                    w.Name = "Wall No. 2";
+                    w.Description = "Some description of the wall No. 2";
+                });
+
+                model.Instances.New<IfcWall>(w =>
+                {
+                    w.Name = "Wall No. 3";
+                    w.Description = "Some description of the wall No. 3";
+                });
+
                 model.Instances.New<IfcSlab>(s =>
                 {
                     s.Name = "Slab No. 1";
@@ -149,21 +176,106 @@ namespace XbimQueryTest
                     s.PredefinedType = IfcSlabTypeEnum.ROOF;
                 });
 
+                txn.Commit();
+
+                parser.Parse("Select wall;");
+                var count = parser.Results["$$"].Count();
+                Assert.AreEqual(count, 3, "There should be one wall now selected in '$$'");
+
                 parser.Parse("Select wall 'Wall No. 1';");
                 var wall = parser.Results["$$"].FirstOrDefault();
-                Assert.IsNotNull(wall, "There should be one wall now selected in '$$'");
+                Assert.IsNotNull(wall, "There should be one wall selected now in '$$'");
 
                 parser.Parse("Select wall where name is'Wall No. 1';");
                 wall = parser.Results["$$"].FirstOrDefault();
                 Assert.IsNotNull(wall, "There should be one wall now selected in '$$'");
 
+                parser.Parse("Select wall where name contains'wall';");
+                count = parser.Results["$$"].Count();
+                Assert.AreEqual(count, 3 , "There should be three wall now selected in '$$'");
+
+                parser.Parse("Select wall where name contains'WaLL';");
+                count = parser.Results["$$"].Count();
+                Assert.AreEqual(count, 3, "There should be three wall now selected in '$$'");
+
                 parser.Parse("$slabs is slab where predefined type is 'ROOF';");
                 var roof = parser.Results["$slabs"].FirstOrDefault();
-                Assert.IsNotNull(wall, "There should be one slab now selected in '$slab'");
+                Assert.IsNotNull(roof, "There should be one slab now selected in '$slab'");
+
+            }
+        }
+
+        [TestMethod]
+        public void PropertySelectionTest()
+        {
+            //create model and sample data
+            XbimModel model = XbimModel.CreateTemporaryModel();
+            using (var txn = model.BeginTransaction())
+            {
+                var w1 = model.Instances.New<IfcWall>(w => w.Name = "Wall No.1");
+                var w2 = model.Instances.New<IfcWall>(w => w.Name = "Wall No.2");
+                var w3 = model.Instances.New<IfcWall>(w => w.Name = "Wall No.3");
+
+                w1.SetPropertySingleValue("Test set 1", "String value", new IfcLabel("some string for wall 1"));
+                w1.SetPropertySingleValue("Test set 1", "Double value", new IfcLengthMeasure(156.32));
+                w1.SetPropertySingleValue("Test set 1", "Identifier value", new IfcIdentifier("identifier value 123sdfds8sfads58sdf"));
+                w1.SetPropertySingleValue("Test set 1", "Integer value", new IfcInteger(235));
+                w1.SetPropertySingleValue("Test set 1", "Bool value", new IfcBoolean(true));
+                //null property value
+                w1.SetPropertySingleValue("Test set 1", "Null value", typeof(IfcLabel));
+                var nulProp = w1.GetPropertySingleValue("Test set 1", "Null value");
+                nulProp.NominalValue = null;
+
+                w2.SetPropertySingleValue("Test set 1", "String value", new IfcLabel("some string for wall 2"));
+                w2.SetPropertySingleValue("Test set 1", "Double value", new IfcLengthMeasure(7856.32));
+                w2.SetPropertySingleValue("Test set 1", "Identifier value", new IfcIdentifier("identifier value 123sdfds8sfads58sdf"));
+                w2.SetPropertySingleValue("Test set 1", "Integer value", new IfcInteger(735));
+                w2.SetPropertySingleValue("Test set 1", "Bool value", new IfcBoolean(true));
+                //null property value
+                w2.SetPropertySingleValue("Test set 1", "Null value", typeof(IfcLabel));
+                var nulProp2 = w2.GetPropertySingleValue("Test set 1", "Null value");
+                nulProp2.NominalValue = null;
+
+                w3.SetPropertySingleValue("Test set 1", "String value", new IfcLabel("some string for wall 3"));
+                w3.SetPropertySingleValue("Test set 1", "Double value", new IfcLengthMeasure(6.32));
+                w3.SetPropertySingleValue("Test set 1", "Identifier value", new IfcIdentifier("identifier value 123sdfds8sfads58sdf"));
+                w3.SetPropertySingleValue("Test set 1", "Integer value", new IfcInteger(291));
+                w3.SetPropertySingleValue("Test set 1", "Bool value", new IfcBoolean(false));
+                //null property value
+                w3.SetPropertySingleValue("Test set 1", "Null value", typeof(IfcLabel));
+                var nulProp3 = w3.GetPropertySingleValue("Test set 1", "Null value");
+                nulProp3.NominalValue = null;
 
                 txn.Commit();
             }
+
+            //Queries and expected number of results
+            Dictionary<string, int> tests = new Dictionary<string, int>() { 
+            {"Select wall where 'string Value' contains 'some string';",3},
+            {"Select wall where 'string value' = 'some string for wall 3';",1},
+            {"Select wall where 'double value' < 5;",0},
+            {"Select wall where 'double value' > 5 and 'double value' < 200;",2},
+            {"Select wall where 'integer value' is 291;",1},
+            {"Select wall where 'integer value' is 330.25;",0},
+            {"Select wall where 'bool value' = true;",2},
+            {"Select wall where 'null value' is not defined;",3},
+            {"Select wall where 'null value' is undefined;",3},
+            {"Select wall where 'null value' = null;",3},
+            };
+
+            //create parser and perform the test
+            XbimQueryParser parser = new XbimQueryParser(model);
+            foreach (var test in tests)
+            {
+                parser.Parse(test.Key);
+                if (test.Key != "Select wall where 'integer value' is 330.25;")
+                {
+                    Assert.AreEqual(0, parser.Errors.Count(), "There shouldn't be any parser errors.");
+                    Assert.AreEqual(test.Value, parser.Results["$$"].Count());
+                }
+                else
+                    Assert.AreNotEqual(parser.Errors.Count(), 0, "There should be parser error.");
+            }
         }
-       
     }
 }
