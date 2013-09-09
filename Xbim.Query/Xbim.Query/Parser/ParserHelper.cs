@@ -19,7 +19,7 @@ namespace Xbim.Query
     internal partial class Parser
     {
         private XbimModel _model;
-        private XbimVariables _variables = new XbimVariables();
+        private XbimVariables _variables;
         private ParameterExpression _input = Expression.Parameter(typeof(IPersistIfcEntity), "Input");
 
         //public properties of the parser
@@ -28,6 +28,7 @@ namespace Xbim.Query
         internal Parser(Scanner lex, XbimModel model): base(lex)
         {
             _model = model;
+            _variables = new XbimVariables();
             if (_model == null) throw new ArgumentNullException("Model is NULL");
         }
 
@@ -37,10 +38,11 @@ namespace Xbim.Query
             if (_model == null) throw new ArgumentNullException("Model is NULL");
             if (name == null) throw new ArgumentNullException("Name must be defined");
 
+            IfcRoot root = null;
             if (_model.IsTransacting)
             {
                 var entity = _model.Instances.New(type);
-                var root = entity as IfcRoot;
+                root = entity as IfcRoot;
                 if (root != null)
                 {
                     root.Name = name;
@@ -53,15 +55,15 @@ namespace Xbim.Query
                 using (var txn = _model.BeginTransaction("Object ctreation"))
                 {
                     var entity = _model.Instances.New(type);
-                    var root = entity as IfcRoot;
+                    root = entity as IfcRoot;
                     if (root != null)
                     {
                         root.Name = name;
                         root.Description = description;
                     }
-                    return root;
                     txn.Commit();
-                }   
+                }
+                return root;
             }
         }
 
@@ -117,10 +119,25 @@ namespace Xbim.Query
         #region Property and attribute conditions helpers
         private static bool EvaluateValueCondition(object ifcVal, object val, Tokens condition, AbstractScanner<ValueType, LexLocation> scanner)
         {
-            if (ifcVal == null && val == null) return true;
-            if (ifcVal == null && val != null) return false;
+            //special handling for null value comparison
+            if (val == null)
+            {
+                if (condition == Tokens.OP_EQ && ifcVal == null)
+                    return true;
+                if (condition == Tokens.OP_EQ && ifcVal != null)
+                    return false;
+                if (condition == Tokens.OP_NEQ && ifcVal == null)
+                    return false;
+                if (condition == Tokens.OP_NEQ && ifcVal != null)
+                    return true;
+                scanner.yyerror("NULL value can be used only with operators IS and IS_NOT.");
+                return false;
+            }
+            //no comparison can be made
+            if (ifcVal == null)
+                return false;
 
-            //try to get values to the same level;
+            //try to get values to the same level; none of the values can be null for this operation
             object left = UnWrapType(ifcVal);
             object right = PromoteType(GetNonNullableType(left.GetType()), val);
 
@@ -155,7 +172,7 @@ namespace Xbim.Query
                 default:
                     throw new ArgumentOutOfRangeException("Unexpected token used as a condition");
             }
-            scanner.yyerror("Can't compare which one from " + left + " and " + right + " is bigger.");
+            scanner.yyerror("Can't compare " + left + " and " + right + ".");
             return false;
         }
 
@@ -473,5 +490,127 @@ namespace Xbim.Query
             }
         }
 
+        private void DumpIdentifier(string identifier)
+        {
+            IEnumerable<IPersistIfcEntity> entities = null;
+            if (Variables.TryGetValue(identifier, out entities))
+            {
+                Console.WriteLine();
+                foreach (var entity in entities)
+                {
+                    Console.WriteLine("#{0} ({1}): {2}", entity.EntityLabel, entity.GetType(), entity is IfcRoot ? ((IfcRoot)entity).Name.ToString() : "No name defined");
+                }
+            }
+            else
+                Console.WriteLine("Variable {0} is not defined.", identifier);
+        }
+
+        private void ClearIdentifier(string identifier)
+        {
+            if (Variables.ContainsKey(identifier))
+            {
+                Variables[identifier] = new IPersistIfcEntity[]{};
+            }
+        }
+
+        private void AddOrRemoveToGroupOrType(Tokens action, string productsIdentifier, string groupOrType)
+        { 
+        //conditions
+            if (!Variables.IsDefined(productsIdentifier))
+            {
+                Scanner.yyerror("Variable '" + productsIdentifier + "' is not defined and doesn't contain any products.");
+                return;
+            }
+            if (!Variables.IsDefined(groupOrType))
+            {
+                Scanner.yyerror("Variable '" + groupOrType + "' is not defined and doesn't contain any products.");
+                return;
+            }
+
+            Type targetType = Variables[groupOrType].FirstOrDefault().GetType();
+            var isGroup = typeof(IfcGroup).IsAssignableFrom(targetType);
+            var isTypeObject = typeof(IfcTypeObject).IsAssignableFrom(targetType);
+
+            if (!isGroup && !isTypeObject)
+            {
+                Scanner.yyerror("Only 'group', 'system' or 'type object' should be in '" + groupOrType + "'.");
+                return;
+            }
+            if (Variables[groupOrType].Count() != 1)
+            {
+                Scanner.yyerror("Only one group, system or type object should be in '" + groupOrType + "'.");
+                return;
+            }
+
+            if (isGroup)
+            {
+                if (Variables[productsIdentifier].OfType<IfcObjectDefinition>().Count() != Variables[productsIdentifier].Count())
+                {
+                    Scanner.yyerror("Only objects which are subtypes of 'IfcObjectDefinition' can be assigned to group '" + groupOrType + "'.");
+                    return;
+                }
+                
+                XbimReadWriteTransaction txn = null;
+                if (!_model.IsTransacting)
+                {
+                    txn = _model.BeginTransaction("Group manipulation");
+                }
+
+                IfcGroup gr = Variables[groupOrType].FirstOrDefault() as IfcGroup;
+                foreach (var prod in Variables[productsIdentifier])
+                {
+                   
+                    switch (action)
+                    {
+                        case Tokens.ADD:
+                            gr.AddObjectToGroup(prod as IfcObjectDefinition);
+                            break;
+                        case Tokens.REMOVE:
+                            gr.RemoveObjectFromGroup(prod as IfcObjectDefinition);
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException("Unexpected action. Only ADD or REMOVE can be used in this context.");
+                    }
+                }
+
+                if (txn != null) txn.Commit();
+                return;
+            }
+
+            if (isTypeObject)
+            {
+                if (Variables[productsIdentifier].OfType<IfcObject>().Count() != Variables[productsIdentifier].Count())
+                {
+                    Scanner.yyerror("Only objects which are subtypes of 'IfcObject' can be assigned to 'IfcTypeObject' '" + groupOrType + "'.");
+                    return;
+                }
+                
+                XbimReadWriteTransaction txn = null;
+                if (!_model.IsTransacting)
+                {
+                    txn = _model.BeginTransaction("TypeObject manipulation");
+                }
+
+                IfcTypeObject typeObject = Variables[groupOrType].FirstOrDefault() as IfcTypeObject;
+                foreach (var obj in Variables[productsIdentifier])
+                {
+                    switch (action)
+                    {
+                        case Tokens.ADD:
+                            (obj as IfcObject).SetDefiningType(typeObject, _model);
+                            break;
+                        case Tokens.REMOVE:
+                            IfcRelDefinesByType rel = _model.Instances.Where<IfcRelDefinesByType>(r => r.RelatingType == typeObject && r.RelatedObjects.Contains(obj as IfcObject)).FirstOrDefault();
+                            if (rel != null) rel.RelatedObjects.Remove_Reversible(obj as IfcObject);
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException("Unexpected action. Only ADD or REMOVE can be used in this context.");
+                    }
+                }
+
+                if (txn != null) txn.Commit();
+                return;
+            }
+        }
     }
 }

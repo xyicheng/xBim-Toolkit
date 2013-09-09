@@ -93,7 +93,7 @@ namespace Xbim.Query
         public bool Parse()
         {
             ResetSource();
-            _parser = new Parser(_scanner, _model);
+            //_parser = new Parser(_scanner, _model);
             return _parser.Parse();
         }
 
@@ -159,7 +159,7 @@ namespace Xbim.Query
             _strSource = null;
             _strListSource = null;
             _streamSource = null;
-            _scanner = new Scanner();
+            //_scanner = new Scanner();
         }
 
 

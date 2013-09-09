@@ -13,7 +13,7 @@ using Xbim.Ifc2x3.MeasureResource;
 namespace XbimQueryTest
 {
     [TestClass]
-    public class ScannerTest
+    public class ParserTests
     {
         [TestMethod]
         public void ValueTest()
@@ -36,8 +36,9 @@ namespace XbimQueryTest
             {"'Nějaký text s interpunkcí'", "STRING"},
             {"\"Nějaký text s interpunkcí\"", "STRING"},
             {"NuLL", "NONDEF"},
-            {"Not defined", "NONDEF"},
-            {"Unknown", "NONDEF"}
+            {"undefined", "NONDEF"},
+            {"Unknown", "NONDEF"},
+            {"defined", "DEFINED"}
             };
 
             XbimQueryParser parser = new XbimQueryParser(Xbim.IO.XbimModel.CreateTemporaryModel());
@@ -99,13 +100,21 @@ namespace XbimQueryTest
                 //Add or remove elements from the type
                 {"$wallType = new wall_type 'New wall type No.1';",true},
                 {"$wall is new wall 'New wall is here.';",true},
-                {"Add $wall to $wallType;",true}
+                {"Add $wall to $wallType;",true},
+
+                //variable manipulation
+                {"Dump $wallType;",true},
+                {"Clear $wallType;",true}
             };
 
             Xbim.IO.XbimModel model = Xbim.IO.XbimModel.CreateTemporaryModel();
             XbimQueryParser parser = new XbimQueryParser(model);
+            parser.Parse("$MyWalls is new wall 'wall';");
+            parser.Parse("$NewGroup is new group 'group';");
+
             using (var txn = model.BeginTransaction("Query test"))
             {
+                
                 foreach (var test in testCases)
                 {
                     var result = parser.Parse(test.Key);
@@ -138,7 +147,7 @@ namespace XbimQueryTest
                 parser.Parse("$MyWall is new IfcWall with name 'New wall assigned' and description 'Description of the wall assigned';");
                 var wall2 = model.Instances.Where<IfcWall>(w => w.Name == "New wall assigned").FirstOrDefault();
                 Assert.IsNotNull(wallType, "There should be one wall now with the name 'New wall assigned'");
-                Assert.AreEqual(parser.Results.FirstOrDefault().Key, "$MyWall");
+                Assert.IsTrue(parser.Results.ContainsKey("$MyWall"));
                 Assert.AreEqual(parser.Results["$MyWall"].FirstOrDefault(), wall2);
 
                 txn.Commit();
@@ -208,6 +217,7 @@ namespace XbimQueryTest
         [TestMethod]
         public void PropertySelectionTest()
         {
+            #region Model definition
             //create model and sample data
             XbimModel model = XbimModel.CreateTemporaryModel();
             using (var txn = model.BeginTransaction())
@@ -248,19 +258,23 @@ namespace XbimQueryTest
 
                 txn.Commit();
             }
+            #endregion
 
             //Queries and expected number of results
             Dictionary<string, int> tests = new Dictionary<string, int>() { 
             {"Select wall where 'string Value' contains 'some string';",3},
+            {"Select wall where 'string Value' contains '1';",1},
             {"Select wall where 'string value' = 'some string for wall 3';",1},
             {"Select wall where 'double value' < 5;",0},
             {"Select wall where 'double value' > 5 and 'double value' < 200;",2},
             {"Select wall where 'integer value' is 291;",1},
+            {"Select wall where 'integer value' is 291.25;",1},
             {"Select wall where 'integer value' is 330.25;",0},
             {"Select wall where 'bool value' = true;",2},
             {"Select wall where 'null value' is not defined;",3},
             {"Select wall where 'null value' is undefined;",3},
             {"Select wall where 'null value' = null;",3},
+            {"Select wall where 'null value' doesn't equal null;",0},
             };
 
             //create parser and perform the test
@@ -268,14 +282,57 @@ namespace XbimQueryTest
             foreach (var test in tests)
             {
                 parser.Parse(test.Key);
-                if (test.Key != "Select wall where 'integer value' is 330.25;")
-                {
-                    Assert.AreEqual(0, parser.Errors.Count(), "There shouldn't be any parser errors.");
-                    Assert.AreEqual(test.Value, parser.Results["$$"].Count());
-                }
-                else
-                    Assert.AreNotEqual(parser.Errors.Count(), 0, "There should be parser error.");
+                Assert.AreEqual(0, parser.Errors.Count(), "There shouldn't be any parser errors.");
+                Assert.AreEqual(test.Value, parser.Results["$$"].Count());
             }
+        }
+
+        [TestMethod]
+        public void VariablesOperationsTest()
+        {
+            XbimModel model = XbimModel.CreateTemporaryModel();
+            XbimQueryParser parser = new XbimQueryParser(model);
+
+            //create data using queries
+            parser.Parse("Create new wall with name 'My wall No. 1' and description 'First description contains dog.';");
+            parser.Parse("Create new wall with name 'My wall No. 2' and description 'First description contains cat.';");
+            parser.Parse("Create new wall with name 'My wall No. 3' and description 'First description contains dog and cat.';");
+            parser.Parse("Create new wall with name 'My wall No. 4' and description 'First description contains dog and cow.';");
+            parser.Parse("Create new wall_type with name 'Wall type No. 1';");
+            parser.Parse("Create new system with name 'System No. 1';");
+            parser.Parse("Create new system with name 'System No. 2';");
+            var res = model.Instances.OfType<IfcWall>().Count();
+
+            parser.Parse("Select wall;");
+            Assert.AreEqual(parser.Results["$$"].Count(), 4);
+            Assert.AreEqual(parser.Errors.Count(), 0);
+
+            parser.Parse("Select group;");
+            Assert.AreEqual(parser.Results["$$"].Count(), 2);
+            Assert.AreEqual(parser.Errors.Count(), 0);
+
+            parser.Parse("$a is wall where description contains 'cat';");
+            Assert.AreEqual(parser.Results["$a"].Count(), 2);
+            parser.Parse("$a is wall where description contains 'cow';");
+            Assert.AreEqual(parser.Results["$a"].Count(), 3);
+            Assert.AreEqual(parser.Errors.Count(), 0);
+
+            parser.Parse("$a is not wall where description contains 'dog';");
+            Assert.AreEqual(parser.Results["$a"].Count(), 1);
+            Assert.AreEqual(parser.Errors.Count(), 0);
+
+            parser.Parse("$g is group 'System No. 1';");
+            parser.Parse("$t is IfcWallType;");
+            parser.Parse("Add $a to $g;");
+            parser.Parse("Add $a to $t;");
+            Assert.AreEqual(parser.Errors.Count(), 0);
+
+            parser.Parse("Add $t to $a;");
+            Assert.AreNotEqual(parser.Errors.Count(), 0);
+
+            parser.Parse("Clear $a;");
+            Assert.AreEqual(parser.Results["$a"].Count(), 0);
+            Assert.AreEqual(parser.Errors.Count(), 0);
         }
     }
 }

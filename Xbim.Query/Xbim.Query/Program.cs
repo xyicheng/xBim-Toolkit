@@ -9,6 +9,7 @@ using Xbim.Ifc2x3.SharedBldgElements;
 using Xbim.Ifc2x3.MeasureResource;
 using Xbim.XbimExtensions.SelectTypes;
 using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.Extensions;
 
 namespace Xbim.Query
 {
@@ -17,7 +18,7 @@ namespace Xbim.Query
         static void Main(string[] args)
         {
             string source = @"
-            Select wall where 'integer value' is 291.25;
+            Select wall where 'Heat Performance' ~ 'substring';
             ";//where name is 'New wall'
             //test scanner
             Scanner scanner = new Scanner();
@@ -64,10 +65,60 @@ namespace Xbim.Query
                 var ent = parser.Variables["$$"].Count();
             }
 
+            //PropertySelectionTest();
+
             Console.ReadKey();
             
         }
 
+        public static void PropertySelectionTest()
+        {
+            //create model and sample data
+            XbimModel model = XbimModel.CreateTemporaryModel();
+            using (var txn = model.BeginTransaction())
+            {
+                var w1 = model.Instances.New<IfcWall>(w => w.Name = "Wall No.1");
+                var w2 = model.Instances.New<IfcWall>(w => w.Name = "Wall No.2");
+                var w3 = model.Instances.New<IfcWall>(w => w.Name = "Wall No.3");
+
+                w1.SetPropertySingleValue("Test set 1", "String value", new IfcLabel("some string for wall 1"));
+                w1.SetPropertySingleValue("Test set 1", "Double value", new IfcLengthMeasure(156.32));
+                w1.SetPropertySingleValue("Test set 1", "Identifier value", new IfcIdentifier("identifier value 123sdfds8sfads58sdf"));
+                w1.SetPropertySingleValue("Test set 1", "Integer value", new IfcInteger(235));
+                w1.SetPropertySingleValue("Test set 1", "Bool value", new IfcBoolean(true));
+                //null property value
+                w1.SetPropertySingleValue("Test set 1", "Null value", typeof(IfcLabel));
+                var nulProp = w1.GetPropertySingleValue("Test set 1", "Null value");
+                nulProp.NominalValue = null;
+
+                w2.SetPropertySingleValue("Test set 1", "String value", new IfcLabel("some string for wall 2"));
+                w2.SetPropertySingleValue("Test set 1", "Double value", new IfcLengthMeasure(7856.32));
+                w2.SetPropertySingleValue("Test set 1", "Identifier value", new IfcIdentifier("identifier value 123sdfds8sfads58sdf"));
+                w2.SetPropertySingleValue("Test set 1", "Integer value", new IfcInteger(735));
+                w2.SetPropertySingleValue("Test set 1", "Bool value", new IfcBoolean(true));
+                //null property value
+                w2.SetPropertySingleValue("Test set 1", "Null value", typeof(IfcLabel));
+                var nulProp2 = w2.GetPropertySingleValue("Test set 1", "Null value");
+                nulProp2.NominalValue = null;
+
+                w3.SetPropertySingleValue("Test set 1", "String value", new IfcLabel("some string for wall 3"));
+                w3.SetPropertySingleValue("Test set 1", "Double value", new IfcLengthMeasure(6.32));
+                w3.SetPropertySingleValue("Test set 1", "Identifier value", new IfcIdentifier("identifier value 123sdfds8sfads58sdf"));
+                w3.SetPropertySingleValue("Test set 1", "Integer value", new IfcInteger(291));
+                w3.SetPropertySingleValue("Test set 1", "Bool value", new IfcBoolean(false));
+                //null property value
+                w3.SetPropertySingleValue("Test set 1", "Null value", typeof(IfcLabel));
+                var nulProp3 = w3.GetPropertySingleValue("Test set 1", "Null value");
+                nulProp3.NominalValue = null;
+
+                txn.Commit();
+            }
+
+            //create parser and perform the test
+            XbimQueryParser parser = new XbimQueryParser(model);
+            parser.Parse("Select wall where 'integer value' is 330.25;");
+            var count = parser.Results["$$"].Count();
+        }
 
     }
 }

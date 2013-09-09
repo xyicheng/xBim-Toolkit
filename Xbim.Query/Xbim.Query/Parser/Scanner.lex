@@ -80,14 +80,19 @@
 "to"			{ return (int)Tokens.TO; }
 "remove"			{ return (int)Tokens.REMOVE; }
 "from"			{ return (int)Tokens.FROM; }
+"dump"			{ return (int)Tokens.DUMP; }
+"clear"			{ return (int)Tokens.CLEAR; }
+
 "name"			{ return (int)Tokens.NAME; }									
 "predefined type"			{ return (int)Tokens.PREDEFINED_TYPE; }
 "type"			{ return (int)Tokens.TYPE; }
 "material"			{ return (int)Tokens.MATERIAL; }
 
 "null" |
-"not defined" |
+"undefined" |
 "unknown"			{return (int)Tokens.NONDEF;}
+
+"defined"			{return (int)Tokens.DEFINED;}
 
 /* ********************     values        ****************** */
 [\-\+]?[0-9]+	    {  return (int)SetValue(Tokens.INTEGER); }

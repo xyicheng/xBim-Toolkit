@@ -27,6 +27,7 @@
 %token	STRING	
 %token	BOOLEAN		
 %token	NONDEF			/*not defined, null*/
+%token	DEFINED			/*not null*/
 %token	IDENTIFIER	
 %token  OP_EQ			/*is equal, equals, is, =*/
 %token  OP_NEQ			/*is not equal, is not, !=*/
@@ -42,9 +43,7 @@
 %token  PRODUCT_TYPE
 
 /*operations and keywords*/
-%token  SELECT
 %token  WHERE
-%token  CREATE
 %token  WITH_NAME /*with name, called*/
 %token  DESCRIPTION /*and description, described as*/
 %token  NEW /*is new*/
@@ -57,18 +56,30 @@
 %token  TYPE
 %token  MATERIAL
 
+/* commands */
+%token  SELECT
+%token  CREATE
+%token  DUMP
+%token  CLEAR
+
 
 %%
 expressions
 	: expressions expression
 	| expression
-	| error
 	;
 
 expression
 	: selection
 	| creation
 	| addition
+	| variables_actions
+	| error
+	;
+
+variables_actions
+	: DUMP IDENTIFIER ';'											{DumpIdentifier($2.strVal);}
+	| CLEAR IDENTIFIER ';'											{ClearIdentifier($2.strVal);}
 	;
 
 selection
@@ -93,11 +104,9 @@ creation_statement
 	| NEW object WITH_NAME STRING OP_AND DESCRIPTION STRING			{$$.val = CreateObject($2.typeVal, $4.strVal, $7.strVal);}			
 	;
 
-
-	
 addition
-	: ADD IDENTIFIER TO IDENTIFIER ';'
-	| REMOVE IDENTIFIER FROM IDENTIFIER ';'
+	: ADD IDENTIFIER TO IDENTIFIER ';'								{AddOrRemoveToGroupOrType(Tokens.ADD, $2.strVal, $4.strVal);}
+	| REMOVE IDENTIFIER FROM IDENTIFIER ';'							{AddOrRemoveToGroupOrType(Tokens.REMOVE, $2.strVal, $4.strVal);}
 	;
 
 conditions
@@ -148,6 +157,8 @@ propertyCondition
 	
 	| STRING op_bool BOOLEAN			{$$.val = GeneratePropertyCondition($1.strVal, $3.boolVal, ((Tokens)($2.val)));}
     | STRING op_bool NONDEF				{$$.val = GeneratePropertyCondition($1.strVal, null, ((Tokens)($2.val)));}
+    | STRING OP_NEQ DEFINED				{$$.val = GeneratePropertyCondition($1.strVal, null, Tokens.OP_EQ);}
+    | STRING OP_EQ DEFINED				{$$.val = GeneratePropertyCondition($1.strVal, null, Tokens.OP_NEQ);}
 	;
 
 op_bool

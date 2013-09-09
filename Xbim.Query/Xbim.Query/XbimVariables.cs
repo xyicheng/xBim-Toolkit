@@ -38,15 +38,7 @@ namespace Xbim.Query
         {
             if (IsDefined(variable))
             {
-                var actual = this[variable].ToList();
-
-                //merge lists
-                foreach (var entity in entities)
-                {
-                    if (!actual.Contains(entity)) actual.Add(entity);
-                }
-
-                this[variable] = actual;
+                this[variable] = this[variable].Union(entities);
             }
             else
                 Add(variable, entities);
@@ -57,15 +49,7 @@ namespace Xbim.Query
         {
             if (IsDefined(variable))
             {
-                var actual = this[variable].ToList();
-
-                //remove existing from lists
-                foreach (var entity in entities)
-                {
-                    if (!actual.Contains(entity)) actual.Remove(entity);
-                }
-
-                this[variable] = actual;
+                this[variable] = this[variable].Except(entities);
             }
             else
                 throw new ArgumentException("Can't remove entities from variable which is not defined.");
