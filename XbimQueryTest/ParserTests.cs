@@ -104,7 +104,15 @@ namespace XbimQueryTest
 
                 //variable manipulation
                 {"Dump $wallType;",true},
-                {"Clear $wallType;",true}
+                {"Export $wallType;",true},
+                {"Dump 'name', 'description', 'fire rating' from $wallType;",true},
+                {"Dump 'name', 'description', 'fire rating' from $wallType to file 'report.txt';",true},
+                {"Clear $wallType;",true},
+
+                //model manipulation syntax
+                {"Save model to file 'output.ifc';", true},
+                {"Close model;", true},
+                {"Open model from file 'output.ifc';", true},
             };
 
             Xbim.IO.XbimModel model = Xbim.IO.XbimModel.CreateTemporaryModel();
@@ -112,15 +120,12 @@ namespace XbimQueryTest
             parser.Parse("$MyWalls is new wall 'wall';");
             parser.Parse("$NewGroup is new group 'group';");
 
-            using (var txn = model.BeginTransaction("Query test"))
+            foreach (var test in testCases)
             {
-                
-                foreach (var test in testCases)
-                {
-                    var result = parser.Parse(test.Key);
-                    Assert.AreEqual(test.Value, parser.Errors.FirstOrDefault() == null);
-                }
-                txn.Commit();
+                var result = parser.Parse(test.Key);
+                var wasOK = 0 == parser.Errors.Count();
+
+                Assert.AreEqual(test.Value, wasOK);
             }
         }
 
@@ -322,6 +327,7 @@ namespace XbimQueryTest
             Assert.AreEqual(parser.Errors.Count(), 0);
 
             parser.Parse("$g is group 'System No. 1';");
+            Assert.AreEqual(parser.Errors.Count(), 0);
             parser.Parse("$t is IfcWallType;");
             parser.Parse("Add $a to $g;");
             parser.Parse("Add $a to $t;");

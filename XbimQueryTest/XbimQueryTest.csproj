@@ -77,7 +77,9 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
-    <None Include="TestModels\Standard Classroom.ifc" />
+    <None Include="TestModels\Standard Classroom.ifc">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

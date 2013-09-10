@@ -41,6 +41,8 @@
 %token  OP_OR
 %token  PRODUCT
 %token  PRODUCT_TYPE
+%token  FILE
+%token  MODEL
 
 /*operations and keywords*/
 %token  WHERE
@@ -61,6 +63,9 @@
 %token  CREATE
 %token  DUMP
 %token  CLEAR
+%token  OPEN
+%token  CLOSE
+%token  SAVE
 
 
 %%
@@ -74,12 +79,28 @@ expression
 	| creation
 	| addition
 	| variables_actions
+	| model_actions
 	| error
+	;
+
+model_actions
+	: OPEN MODEL FROM FILE STRING';'								{OpenModel($5.strVal);}
+	| CLOSE MODEL ';'												{CloseModel();}
+	| SAVE MODEL TO FILE STRING';'									{SaveModel($5.strVal);}
 	;
 
 variables_actions
 	: DUMP IDENTIFIER ';'											{DumpIdentifier($2.strVal);}
 	| CLEAR IDENTIFIER ';'											{ClearIdentifier($2.strVal);}
+	| DUMP string_list FROM IDENTIFIER ';'							{DumpAttributes($4.strVal, ((List<string>)($2.val)));}
+	| DUMP string_list FROM IDENTIFIER TO FILE STRING ';'			{DumpAttributes($4.strVal, ((List<string>)($2.val)), $7.strVal);}
+	;
+
+string_list
+	: string_list ',' STRING										{((List<string>)($1.val)).Add($3.strVal); $$.val = $1.val;}
+	| string_list ',' attribute										{((List<string>)($1.val)).Add($3.strVal); $$.val = $1.val;}
+	| STRING														{$$.val = new List<string>(){$1.strVal};}
+	| attribute														{$$.val = new List<string>(){$1.strVal};}
 	;
 
 selection
@@ -94,7 +115,7 @@ selection_statement
 	;
 	
 creation
-	: CREATE creation_statement ';'									{Variables.Set("$$", ((IPersistIfcEntity)($3.val)));}
+	: CREATE creation_statement ';'									{Variables.Set("$$", ((IPersistIfcEntity)($2.val)));}
 	| IDENTIFIER OP_EQ creation_statement ';'						{Variables.Set($1.strVal, ((IPersistIfcEntity)($3.val)));}
 	;
 
@@ -181,6 +202,7 @@ op_cont
 object
 	: PRODUCT				{$$.typeVal = $1.typeVal;}
 	| PRODUCT_TYPE			{$$.typeVal = $1.typeVal;}
+	| MATERIAL			{$$.typeVal = $1.typeVal;}
 	;
 	
 %%

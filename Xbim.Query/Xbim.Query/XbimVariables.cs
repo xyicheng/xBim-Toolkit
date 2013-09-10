@@ -23,6 +23,7 @@ namespace Xbim.Query
 
         public void Set(string variable, IPersistIfcEntity entity)
         {
+            if (entity == null) return;
             Set(variable, new IPersistIfcEntity[] { entity });
         }
 

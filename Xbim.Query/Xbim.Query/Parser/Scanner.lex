@@ -24,7 +24,7 @@
 
 
 /* ********************** Identifiers ************************** */
-"$"[a-z][a-z0-9_]*		            { return (int)SetValue(Tokens.IDENTIFIER); }
+"$"[a-z$][a-z0-9_]*		            { return (int)SetValue(Tokens.IDENTIFIER); }
 
 /* ********************** Operators ************************** */
 "="	|
@@ -65,6 +65,7 @@
 "doesn't contain"			{return ((int)Tokens.OP_NOT_CONTAINS);}
 
 ";"		{  return (';'); }
+","		{  return (','); }
 
 
 /* ********************** Keywords ************************** */
@@ -80,13 +81,19 @@
 "to"			{ return (int)Tokens.TO; }
 "remove"			{ return (int)Tokens.REMOVE; }
 "from"			{ return (int)Tokens.FROM; }
+"export" |
 "dump"			{ return (int)Tokens.DUMP; }
 "clear"			{ return (int)Tokens.CLEAR; }
+"open"			{ return (int)Tokens.OPEN; }
+"close"			{ return (int)Tokens.CLOSE; }
+"save"			{ return (int)Tokens.SAVE; }
 
 "name"			{ return (int)Tokens.NAME; }									
 "predefined type"			{ return (int)Tokens.PREDEFINED_TYPE; }
 "type"			{ return (int)Tokens.TYPE; }
 "material"			{ return (int)Tokens.MATERIAL; }
+"file"			{ return (int)Tokens.FILE; }
+"model"			{ return (int)Tokens.MODEL; }
 
 "null" |
 "undefined" |

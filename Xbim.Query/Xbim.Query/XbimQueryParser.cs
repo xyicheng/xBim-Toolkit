@@ -22,6 +22,11 @@ namespace Xbim.Query
         public IEnumerable<string> Errors { get { return _scanner.Errors; } }
 
         /// <summary>
+        /// Model on which the parser operates
+        /// </summary>
+        public XbimModel Model { get { return _model; } }
+
+        /// <summary>
         /// Variables which are result of the parsing process. 
         /// It can be either list of selected objects or new objects assigned to the variables.
         /// </summary>
@@ -30,6 +35,14 @@ namespace Xbim.Query
         public XbimQueryParser(XbimModel model)
         {
             _model = model;
+            _scanner = new Scanner();
+            _parser = new Parser(_scanner, _model);
+        }
+
+        public XbimQueryParser()
+        {
+            //create new empty model
+            _model = XbimModel.CreateTemporaryModel();
             _scanner = new Scanner();
             _parser = new Parser(_scanner, _model);
         }
@@ -149,6 +162,9 @@ namespace Xbim.Query
             if (_streamSource != null) _scanner.SetSource(_streamSource);
             if (_strListSource != null) _scanner.SetSource(_strListSource);
             if (_strSource != null) _scanner.SetSource(_strSource, 0);
+
+            //reset error log with new source
+            _scanner.Errors.Clear();
         }
 
         /// <summary>
