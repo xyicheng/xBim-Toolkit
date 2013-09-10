@@ -90,6 +90,7 @@ namespace XbimQueryTest
                 
                 //Creation of the new elements
                 {"Create new wall 'Totally new wall';",true},
+                {"Create new wall called 'Totally new wall number 2' and described as 'Other description';",true},
                 {"$NewGroup is new group with name 'New group No.1' and description 'This is brand new description of the group';",true},
                 
                 //Add or remove elements from the group
