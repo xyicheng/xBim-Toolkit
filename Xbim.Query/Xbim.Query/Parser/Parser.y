@@ -202,7 +202,7 @@ op_cont
 object
 	: PRODUCT				{$$.typeVal = $1.typeVal;}
 	| PRODUCT_TYPE			{$$.typeVal = $1.typeVal;}
-	| MATERIAL			{$$.typeVal = $1.typeVal;}
+	| MATERIAL				{$$.typeVal = $1.typeVal;}
 	;
 	
 %%

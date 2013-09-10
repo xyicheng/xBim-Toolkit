@@ -91,7 +91,7 @@
 "name"			{ return (int)Tokens.NAME; }									
 "predefined type"			{ return (int)Tokens.PREDEFINED_TYPE; }
 "type"			{ return (int)Tokens.TYPE; }
-"material"			{ return (int)Tokens.MATERIAL; }
+"material"			{ return (int)SetValue(Tokens.MATERIAL); }
 "file"			{ return (int)Tokens.FILE; }
 "model"			{ return (int)Tokens.MODEL; }
 

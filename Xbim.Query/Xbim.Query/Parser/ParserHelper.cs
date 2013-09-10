@@ -49,7 +49,7 @@ namespace Xbim.Query
             }
             else
             {
-                using (var txn = _model.BeginTransaction("Object ctreation"))
+                using (var txn = _model.BeginTransaction("Object creation"))
                 {
                     entity = Create(type, name, description);
                     txn.Commit();
@@ -520,7 +520,10 @@ namespace Xbim.Query
                 foreach (var entity in entities)
                 {
                     if (entity != null)
-                        str.AppendLine(String.Format("#{0} ({1}): {2}", entity.EntityLabel, entity.GetType(), entity is IfcRoot ? ((IfcRoot)entity).Name.ToString() : "No name defined"));
+                    {
+                        var name = GetAttribute("Name", entity);
+                        str.AppendLine(String.Format("{1} #{0}: {2}", entity.EntityLabel, entity.GetType().Name, name != null ? name.ToString() : "No name defined"));
+                    }
                     else
                         throw new Exception("Null entity in the dictionary");
                 }

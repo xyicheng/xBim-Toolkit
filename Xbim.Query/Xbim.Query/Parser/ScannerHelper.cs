@@ -80,6 +80,9 @@ namespace Xbim.Query
                     if (yylval.typeVal != null)
                         return type;
                     break;
+                case Tokens.MATERIAL:
+                    yylval.typeVal = typeof(Xbim.Ifc2x3.MaterialResource.IfcMaterial);
+                    return type;
                 case Tokens.IDENTIFIER:
                     return type;
                 default:
