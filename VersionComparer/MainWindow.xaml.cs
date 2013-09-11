@@ -40,8 +40,7 @@ namespace VersionComparer
             Revision.Open(RevisedTextBox.Text, Xbim.XbimExtensions.XbimDBAccess.Read);
 
             Messages.Items.Clear();
-
-            vc.StartComparison(Base, Revision);
+            vc.StartComparison(Base, Revision, Filter.Text);
         }
 
         private String BrowseFile()

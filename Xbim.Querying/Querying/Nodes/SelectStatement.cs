@@ -12,7 +12,7 @@ namespace Xbim.Querying.Nodes
     public class SelectStatement : AstNode
     {
         AstNode _root;
-        SelectMemberAccessNode _Queue;
+        LeftObjectNode _Queue;
         protected override object DoEvaluate(Irony.Interpreter.ScriptThread thread)
         {
             object retval = null;
@@ -45,10 +45,10 @@ namespace Xbim.Querying.Nodes
                     AddChild("Root", nodes[0]);
                 }
                 
-                if (nodes.Count > 1 && nodes[1].ChildNodes.Count > 0 )
+                if (nodes.Count > 1)
                 {
-                    _Queue = (SelectMemberAccessNode)nodes[1].ChildNodes[0].AstNode;
-                    AddChild("Queue", nodes[1].ChildNodes[0]);
+                    _Queue = (LeftObjectNode)nodes[1].AstNode;
+                    AddChild("Queue", nodes[1]);
                 }
             }
         }

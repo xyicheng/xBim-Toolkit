@@ -11,19 +11,19 @@ namespace Xbim.Analysis.Comparitors
         private Dictionary<Int32, Int32> map = new Dictionary<Int32, Int32>();
         public Dictionary<Int32, Int32> GetMap() { return map; }
 
-        public Dictionary<IfcProduct, ChangeType> Compare(IEnumerable<IfcProduct> baseline, IEnumerable<IfcProduct> delta)
+        public Dictionary<IfcRoot, ChangeType> Compare(IEnumerable<IfcRoot> baseline, IEnumerable<IfcRoot> delta)
         {
             //Create our dictionary for return
-            Dictionary<IfcProduct, ChangeType> changes = new Dictionary<IfcProduct, ChangeType>();
+            Dictionary<IfcRoot, ChangeType> changes = new Dictionary<IfcRoot, ChangeType>();
 
             //Work from copies so we can alter collections
-            List<IfcProduct> Baseline = new List<IfcProduct>(baseline);
-            List<IfcProduct> Delta = new List<IfcProduct>(delta);
+            List<IfcRoot> Baseline = new List<IfcRoot>(baseline);
+            List<IfcRoot> Delta = new List<IfcRoot>(delta);
 
             foreach (var i in baseline)
             {
                 //Try to get the item in baseline and revisions
-                IfcProduct r = null;
+                IfcRoot r = null;
                 try
                 {
                     var c = Delta.Where(x => x.GlobalId == i.GlobalId);

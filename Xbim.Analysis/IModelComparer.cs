@@ -8,7 +8,7 @@ namespace Xbim.Analysis
 {
     public interface IModelComparer
     {
-        Dictionary<IfcProduct, ChangeType> Compare(IEnumerable<IfcProduct> Baseline, IEnumerable<IfcProduct> Delta);
+        Dictionary<IfcRoot, ChangeType> Compare(IEnumerable<IfcRoot> Baseline, IEnumerable<IfcRoot> Delta);
         Dictionary<Int32, Int32> GetMap();
     }
     public enum ChangeType { 

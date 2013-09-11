@@ -57,7 +57,7 @@ namespace Xbim.Querying
             var TernaryIfExpr = new NonTerminal("TernaryIf", typeof(IfNode));
             var ArgList = new NonTerminal("ArgList", typeof(ExpressionListNode));
             var FunctionCall = new NonTerminal("FunctionCall", typeof(FunctionCallNode));
-            // var MemberAccess = new NonTerminal("MemberAccess", typeof(MemberAccessNode));
+            var MemberAccess = new NonTerminal("MemberAccess", typeof(MemberAccessNode));
             // var IndexedAccess = new NonTerminal("IndexedAccess", typeof(IndexedAccessNode));
             // var ObjectRef = new NonTerminal("ObjectRef"); // foo, foo.bar or f['bar']
             var UnOp = new NonTerminal("UnOp");
@@ -78,10 +78,12 @@ namespace Xbim.Querying
             var SelectExpression = new NonTerminal("SelectExpression", typeof(SelectExpressionNode));
             var SelectFunction = new NonTerminal("SelectFunction", typeof(SelectFunctionNode));
             var SelectMemberAccess = new NonTerminal("SelectMemberAccess", typeof(SelectMemberAccessNode));
-            var SelectProperty = new NonTerminal("SelectFunction", typeof(SelectPropertyNode));
+            var SelectProperty = new NonTerminal("SelectProperty", typeof(SelectPropertyNode));
             var SelectFunctionName = new NonTerminal("SelectFunctionName", typeof(EmptyStatementNode));
             var SelectTerm = new NonTerminal("SelectItem", typeof(EmptyStatementNode));
             var NumberOrEmpty = new NonTerminal("NumberOrEmpty", typeof(EmptyStatementNode));
+            var IfcClassProperty = new NonTerminal("IfcClassProperty", typeof(IfcClassPropertyNode));
+
 
             // core
             var Statement = new NonTerminal("Statement");
@@ -94,6 +96,7 @@ namespace Xbim.Querying
             var comma = ToTerm(",");
             var PositiveIntegerNumber = new NumberLiteral("IntegerNumber", NumberOptions.IntOnly);
             var stringLit = new StringLiteral("string", "\"", StringOptions.AllowsAllEscapes);
+            var ElementIdStart = ToTerm("@");
             stringLit.AddStartEnd("'", StringOptions.AllowsAllEscapes);
 
             /*
@@ -106,7 +109,7 @@ namespace Xbim.Querying
 
             // 3. BNF rules
             Expr.Rule = Term | UnExpr | BinExpr | PrefixIncDec | PostfixIncDec | TernaryIfExpr;
-            Term.Rule = number | ParExpr | stringLit | FunctionCall | identifier; // | IndexedAccess; // | MemberAccess;
+            Term.Rule = number | ParExpr | stringLit | FunctionCall | identifier | IfcClassProperty | MemberAccess; // | IndexedAccess; // | MemberAccess;
             ParExpr.Rule = "(" + Expr | SelectStatement + ")";
             UnExpr.Rule = UnOp + Term + ReduceHere();
             UnOp.Rule = ToTerm("+") | "-" | "!";
@@ -116,6 +119,8 @@ namespace Xbim.Querying
             PostfixIncDec.Rule = identifier + PreferShiftHere() + IncDecOp;
             IncDecOp.Rule = ToTerm("++") | "--";
             TernaryIfExpr.Rule = Expr + "?" + Expr + ":" + Expr;
+            MemberAccess.Rule = Expr + PreferShiftHere() + "." + identifier;
+            IfcClassProperty.Rule = ElementIdStart + identifier;
 
             AssignmentStmt.Rule = identifier + AssignmentOp + Expr;
             AssignmentOp.Rule = ToTerm("=") | "+=" | "-=" | "*=" | "/=";
@@ -167,7 +172,7 @@ namespace Xbim.Querying
             RegisterBracePair("(", ")");
             // RegisterBracePair("[", "]");
             MarkTransient(Term, Expr, Statement, BinOp, UnOp, IncDecOp, AssignmentOp, ParExpr); //, ObjectRef);
-            MarkTransient(NumberOrEmpty);
+            MarkTransient(NumberOrEmpty, SelectExpression);
             MarkTransient(SelectTerm);
 
             // 7. Syntax error reporting

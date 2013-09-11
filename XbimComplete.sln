@@ -92,9 +92,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.Analysis", "Xbim.Analy
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.Querying", "Xbim.Querying\Xbim.Querying.csproj", "{DA65C44A-A1D7-4C15-8636-75B6B9344988}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.Querying.Tests", "Xbim.Querying.Tests\Xbim.Querying.Tests.csproj", "{26E9D71E-C586-4130-B4DE-4B237A4F22FF}"
+EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 22
+		SccNumberOfProjects = 23
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://tfs.codeplex.com/tfs/tfs13
 		SccLocalPath0 = .
@@ -169,6 +171,10 @@ Global
 		SccProjectUniqueName21 = Xbim.Querying\\Xbim.Querying.csproj
 		SccProjectName21 = Xbim.Querying
 		SccLocalPath21 = Xbim.Querying
+		SccProjectUniqueName22 = Xbim.Querying.Tests\\Xbim.Querying.Tests.csproj
+		SccProjectTopLevelParentUniqueName22 = XbimComplete.sln
+		SccProjectName22 = Xbim.Querying.Tests
+		SccLocalPath22 = Xbim.Querying.Tests
 	EndGlobalSection
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = XbimComplete.vsmdi
@@ -423,6 +429,18 @@ Global
 		{DA65C44A-A1D7-4C15-8636-75B6B9344988}.Release|Any CPU.Build.0 = Release|Any CPU
 		{DA65C44A-A1D7-4C15-8636-75B6B9344988}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{DA65C44A-A1D7-4C15-8636-75B6B9344988}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{26E9D71E-C586-4130-B4DE-4B237A4F22FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{26E9D71E-C586-4130-B4DE-4B237A4F22FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{26E9D71E-C586-4130-B4DE-4B237A4F22FF}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{26E9D71E-C586-4130-B4DE-4B237A4F22FF}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{26E9D71E-C586-4130-B4DE-4B237A4F22FF}.NugetDistribution|Any CPU.ActiveCfg = Release|Any CPU
+		{26E9D71E-C586-4130-B4DE-4B237A4F22FF}.NugetDistribution|Any CPU.Build.0 = Release|Any CPU
+		{26E9D71E-C586-4130-B4DE-4B237A4F22FF}.NugetDistribution|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{26E9D71E-C586-4130-B4DE-4B237A4F22FF}.NugetDistribution|Mixed Platforms.Build.0 = Release|Any CPU
+		{26E9D71E-C586-4130-B4DE-4B237A4F22FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{26E9D71E-C586-4130-B4DE-4B237A4F22FF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{26E9D71E-C586-4130-B4DE-4B237A4F22FF}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{26E9D71E-C586-4130-B4DE-4B237A4F22FF}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -436,6 +454,7 @@ Global
 		{12738A47-548C-4E82-8E79-AEA36C24CA2D} = {0DA6263B-5A69-401E-99D0-391644EF4709}
 		{8729CDD1-B493-48EC-A867-61ABAF3E93D2} = {7ECDCF15-95BB-4D2B-8C0D-8615D6E3BAB1}
 		{6EF22FB8-7048-4E6A-9B2F-AC2570A998A9} = {7ECDCF15-95BB-4D2B-8C0D-8615D6E3BAB1}
+		{26E9D71E-C586-4130-B4DE-4B237A4F22FF} = {7ECDCF15-95BB-4D2B-8C0D-8615D6E3BAB1}
 		{10A2F674-DB37-41FF-AB71-9D54C8F0A5B6} = {E9E301F2-FE7D-4410-B88D-F83D684A8E62}
 	EndGlobalSection
 EndGlobal
