@@ -21,7 +21,6 @@ using Xbim.Ifc2x3.ProductExtension;
 using System.Threading.Tasks;
 using System.Threading;
 using Xbim.Common.Exceptions;
-using System.Windows.Media.Media3D;
 using Xbim.ModelGeometry.Converter;
 using Xbim.Common.Geometry;
 

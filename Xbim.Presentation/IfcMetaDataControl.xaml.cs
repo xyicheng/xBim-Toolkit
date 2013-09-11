@@ -59,7 +59,6 @@ namespace Xbim.Presentation
                 set { _propertySetName = value; }
             }
 
-
             public string Name
             {
                 get { return _name; }
@@ -151,42 +150,45 @@ namespace Xbim.Presentation
 
     
 
-        public int EntityLabel
+        public IPersistIfcEntity SelectedEntity
         {
-            get { return (int)GetValue(EntityLabelProperty); }
-            set { SetValue(EntityLabelProperty, value); }
+            get { return (IPersistIfcEntity)GetValue(SelectedEntityProperty); }
+            set { SetValue(SelectedEntityProperty, value); }
         }
 
         // Using a DependencyProperty as the backing store for IfcInstance.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty EntityLabelProperty =
-            DependencyProperty.Register("EntityLabel", typeof(int), typeof(IfcMetaDataControl),
-                                        new UIPropertyMetadata(-1, new PropertyChangedCallback(OnEntityLabelChanged)));
+        public static readonly DependencyProperty SelectedEntityProperty =
+            DependencyProperty.Register("SelectedEntity", typeof(IPersistIfcEntity), typeof(IfcMetaDataControl),
+                                        new UIPropertyMetadata(null, new PropertyChangedCallback(OnSelectedEntityChanged)));
 
 
-        private static void OnEntityLabelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static void OnSelectedEntityChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             IfcMetaDataControl ctrl = d as IfcMetaDataControl;
-            if (ctrl != null && e.NewValue != null && e.NewValue is int)
-                ctrl.DataRebind((int)e.NewValue);
+            if (ctrl != null && e.NewValue != null && e.NewValue is IPersistIfcEntity)
+            {
+                ctrl.DataRebind((IPersistIfcEntity)e.NewValue);
+            }
         }
 
-        private void DataRebind(int entityLabel)
+        private void DataRebind(IPersistIfcEntity entity)
         {
             Clear(); //remove any bindings
            // ScrollView.ScrollToHome();
             _entity = null;
             ObjectDataProvider dp = DataContext as ObjectDataProvider;
-            if (Model == null && dp != null && dp.ObjectInstance is XbimModel)
-                Model = dp.ObjectInstance as XbimModel;
-            if (Model != null && entityLabel > 0)
+
+            if (entity != null)
             {
-                _entity = Model.Instances[entityLabel] as IPersistIfcEntity;
+                _entity = entity;
                 if (TheTabs.SelectedItem == ObjectTab) FillObjectData();
                 else if (TheTabs.SelectedItem == TypeTab) FillTypeData();
                 else if (TheTabs.SelectedItem == MaterialTab) FillMaterialData();
                 else if (TheTabs.SelectedItem == PropertyTab) FillPropertyData();
                 else if (TheTabs.SelectedItem == QuantityTab) FillQuantityData();
             }
+            else
+                _entity = null;
         }
 
         private void FillTypeData()
@@ -268,10 +270,11 @@ namespace Xbim.Presentation
                     IfcPropertySet pSet = relDef.RelatingPropertyDefinition as IfcPropertySet;
                     if (pSet != null)
                     {
-                        foreach (var item in pSet.HasProperties.OfType<IfcPropertySingleValue>()) //on;y handle simple properties
+                        foreach (var item in pSet.HasProperties.OfType<IfcPropertySingleValue>()) //only handle simple properties
                         {
                             string val="";
-                            if(item.NominalValue!=null) val = ((ExpressType)(item.NominalValue)).ToPart21;
+                            if(item.NominalValue!=null) 
+                                val = ((ExpressType)(item.NominalValue)).Value.ToString(); // value (not ToPart21) for visualisation
                             _properties.Add(new PropertyItem()
                             {
                                 PropertySetName = pSet.Name,
@@ -292,25 +295,36 @@ namespace Xbim.Presentation
             {
                 IEnumerable<IfcRelAssociatesMaterial> matRels = ifcObj.HasAssociations.OfType<IfcRelAssociatesMaterial>();
                 foreach (IfcRelAssociatesMaterial matRel in matRels)
+                {
+                    // todo: bonghi: the following material items query is only temporary for debug purposes.
+                    // it shouldn't effect on Release because of lazy nature of yielded IEnumerables.
+                    //
+                    var v = Model.Instances.GetInstancesOfMaterial(matRel.RelatingMaterial, true);
+                    System.Diagnostics.Debug.WriteLine( 
+                        string.Format("Items: {0}",
+                            string.Join(";", v.Select(x => x.EntityLabel).ToArray())
+                        ));
+                    // end todo
                     AddMaterialData(matRel.RelatingMaterial, "");
+                }
             }
-
         }
 
         private void AddMaterialData(IfcMaterialSelect matSel, string setName)
         {
+
             if (matSel is IfcMaterial) //simplest just add it
                 _materials.Add(new PropertyItem()
                 {
-                    Name = ((IfcMaterial)matSel).Name,
-                    PropertySetName=setName,
-                    Value=""
+                    Name = string.Format("{0} [#{1}]", ((IfcMaterial)matSel).Name, Math.Abs(matSel.EntityLabel)),
+                    PropertySetName = setName,
+                    Value = ""
                 });
             else if (matSel is IfcMaterialLayer)
                 _materials.Add(new PropertyItem()
                 {
-                    Name = ((IfcMaterialLayer)matSel).Material.Name,
-                    Value = ((IfcMaterialLayer)matSel).LayerThickness.ToPart21,
+                    Name = string.Format("{0} [#{1}]", ((IfcMaterialLayer)matSel).Material.Name, Math.Abs(matSel.EntityLabel)),
+                    Value = ((IfcMaterialLayer)matSel).LayerThickness.Value.ToString(),
                     PropertySetName = setName
                 });
             else if (matSel is IfcMaterialList)
@@ -319,7 +333,7 @@ namespace Xbim.Presentation
                 {
                     _materials.Add(new PropertyItem()
                     {
-                        Name = mat.Name,
+                        Name = string.Format("{0} [#{1}]", mat.Name, Math.Abs(mat.EntityLabel)),
                         PropertySetName = setName,
                         Value = ""
                     });
@@ -383,7 +397,22 @@ namespace Xbim.Presentation
 
         // Using a DependencyProperty as the backing store for Model.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty ModelProperty =
-            DependencyProperty.Register("Model", typeof(XbimModel), typeof(IfcMetaDataControl), new PropertyMetadata(null));
+            DependencyProperty.Register("Model", typeof(XbimModel), typeof(IfcMetaDataControl), new PropertyMetadata(null, new PropertyChangedCallback(OnModelChanged)));
+
+
+        private static void OnModelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            IfcMetaDataControl ctrl = d as IfcMetaDataControl;
+            if (ctrl != null)
+            {
+                if (e.NewValue == null)
+                {
+                    ctrl.Clear();
+                }
+                ctrl.DataRebind(null);
+            }
+        }
+
 
         private void Clear()
         {

@@ -796,7 +796,7 @@ namespace Xbim.IO
 
             _entitiesParsed = 0;
             bool foundHeader = false;
-            IfcFileHeader header = new IfcFileHeader();
+            IfcFileHeader header = new IfcFileHeader(IfcFileHeader.HeaderCreationMode.LeaveEmpty);
             string headerId="";
             while (_currentNode == null && input.Read()) //read through to UOS
             {

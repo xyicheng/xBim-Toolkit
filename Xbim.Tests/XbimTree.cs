@@ -4,14 +4,13 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Xbim.IO;
-using Xbim.IO.Tree;
-using Xbim.IO.TreeView;
+using Xbim.IO.ViewModels;
 using System.IO;
-//using Xbim.Presentation;
+using Xbim.Presentation;
 using Xbim.XbimExtensions;
 using Xbim.Ifc2x3.Kernel;
 using Xbim.Ifc2x3.Extensions;
-using Xbim.Ifc2x3.ProductExtension;
+using Xbim.IO.Tree;
 
 
 namespace Xbim.Tests
@@ -25,8 +24,8 @@ namespace Xbim.Tests
     {
 
         private const string Root = "TestSourceFiles";
-        private const string SourceModelLeaf = "Duplex_A_Co-ord.xBIM"; //"Clinic-CutDown.xbim";
-        private const string SourceFile = "c:\\BimCache\\f5265304-0cc8-4541-8d6d-357569921794.xbim";//Root + @"\" + SourceModelLeaf;
+        private const string SourceModelLeaf = "Clinic-CutDown.xbim";
+        private const string SourceFile = Root + @"\" + SourceModelLeaf;
         
         private static XbimModel _model = null;
 
@@ -74,25 +73,53 @@ namespace Xbim.Tests
         #endregion
 
         [TestMethod]
-        public void TestMethod1()
+        public void TestTreeBuilding()
         {
-            //TreeContainmentStrategy contTreeQuery = new TreeContainmentStrategy(_model);
-            //TreeNodes containerTreeStructure = TreeBuilder.BuildTreeStructure(contTreeQuery);
-            
+            TreeContainmentStrategy contTreeQuery = new TreeContainmentStrategy(_model);
+            TreeNodes containerTreeStructure = TreeBuilder.BuildTreeStructure(contTreeQuery);
+            //CreateTreeStructure(Trees[0], containerTreeStructure);
+
             //TreeComponentStrategy compTreeQuery = new TreeComponentStrategy(_model);
             //TreeNodes componentTreeStructure = TreeBuilder.BuildTreeStructure(compTreeQuery);
-            
-            //New way Containment========================================================================
+            //CreateTreeStructure(Trees[1], componentTreeStructure);
 
-            List<IXbimViewModel> svList = TreeViewBuilder.ContainmentView(_model);
 
-            //New way Components/elements========================================================================
+            //New way========================================================================
+            List<SpatialViewModel> svList = new List<SpatialViewModel>();
 
-            List<IXbimViewModel> eleList = TreeViewBuilder.ComponentView(_model);
+            IfcProject project = _model.IfcProject as IfcProject;
+            if (project != null)
+            {
+                foreach (var item in project.GetSpatialStructuralElements())
+                {
+                    var sv = new SpatialViewModel(item, null);
+                    svList.Add(sv);
+                }
+
+                foreach (var child in svList)
+                {
+                    LazyLoadAll(child);
+                }
+
+            }
+            //============Try TreeBuilder=================
+            List<IXbimViewModel> cvList = new List<IXbimViewModel>();
+            cvList = TreeViewBuilder.ContainmentView(_model);
+
+            List<IXbimViewModel> compvList = new List<IXbimViewModel>();
+            compvList = TreeViewBuilder.ComponentView(_model);
         }
 
         
 
-        
+        private void LazyLoadAll(IXbimViewModel parent)
+        {
+
+            foreach (var child in parent.Children)
+            {
+                LazyLoadAll(child);
+            }
+
+        }
     }
 }

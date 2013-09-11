@@ -19,7 +19,8 @@
     <OldToolsVersion>3.5</OldToolsVersion>
     <UpgradeBackupLocation />
     <IsWebBootstrapper>true</IsWebBootstrapper>
-    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
     <SccProjectName>SAK</SccProjectName>
     <SccLocalPath>SAK</SccLocalPath>
     <SccProvider>SAK</SccProvider>
@@ -36,16 +37,18 @@
     <UpdatePeriodically>false</UpdatePeriodically>
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
-    <InstallUrl>https://xBIM.codeplex.com/releases/clickonce/</InstallUrl>
+    <InstallUrl>http://xBIM.codeplex.com/releases/clickonce/</InstallUrl>
     <SupportUrl>http://www.openBIM.org</SupportUrl>
     <ProductName>xBIM Xplorer</ProductName>
     <PublisherName>xBIM Team</PublisherName>
     <SuiteName>xBIM Toolkit</SuiteName>
     <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
     <WebPage>publish.htm</WebPage>
-    <ApplicationRevision>19</ApplicationRevision>
+    <OpenBrowserOnPublish>false</OpenBrowserOnPublish>
+    <ApplicationRevision>27</ApplicationRevision>
     <ApplicationVersion>2.4.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
+    <CreateDesktopShortcut>true</CreateDesktopShortcut>
     <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
@@ -54,7 +57,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>..\bin\Debug\</OutputPath>
+    <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -63,7 +66,7 @@
     <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
-    <OutputPath>..\bin\Release\</OutputPath>
+    <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>none</DebugType>
@@ -95,6 +98,7 @@
     </Reference>
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xaml" />
     <Reference Include="System.Xml.Linq">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -124,6 +128,26 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Page Include="Dialogs\AddFederatedModel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Dialogs\CreateFederationWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="FederatedModelDlg.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Querying\wdwQuery.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Simplify\IfcSimplify.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="XplorerMainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -136,6 +160,26 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Dialogs\AddFederatedModel.xaml.cs">
+      <DependentUpon>AddFederatedModel.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Dialogs\CreateFederationWindow.xaml.cs">
+      <DependentUpon>CreateFederationWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="FederatedModelDlg.xaml.cs">
+      <DependentUpon>FederatedModelDlg.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Querying\GeomQuerying.cs" />
+    <Compile Include="Querying\SquareBracketIndexer.cs" />
+    <Compile Include="Querying\TextHighliter.cs" />
+    <Compile Include="Querying\TreeQuery.cs" />
+    <Compile Include="Querying\wdwQuery.xaml.cs">
+      <DependentUpon>wdwQuery.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Simplify\FileTextParser.cs" />
+    <Compile Include="Simplify\IfcSimplify.xaml.cs">
+      <DependentUpon>IfcSimplify.xaml</DependentUpon>
     </Compile>
     <Compile Include="XplorerMainWindow.xaml.cs">
       <DependentUpon>XplorerMainWindow.xaml</DependentUpon>
@@ -165,27 +209,12 @@
     <Resource Include="..\Readme.txt">
       <Link>Readme.txt</Link>
     </Resource>
-    <Content Include="..\bin\Release\x64\Xbim.ModelGeometry.OCC.dll" Condition="'$(Configuration)'=='Release'">
-      <Link>x64\Xbim.ModelGeometry.OCC.dll</Link>
-      <IsAssembly>True</IsAssembly>
-    </Content>
-    <Content Include="..\bin\Debug\x64\Xbim.ModelGeometry.OCC.dll" Condition="'$(Configuration)'=='Debug'">
-      <Link>x64\Xbim.ModelGeometry.OCC.dll</Link>
-      <IsAssembly>True</IsAssembly>
-    </Content>
-    <Content Include="..\bin\Debug\x86\Xbim.ModelGeometry.OCC.dll" Condition="'$(Configuration)'=='Debug'">
-      <Link>x86\Xbim.ModelGeometry.OCC.dll</Link>
-      <IsAssembly>True</IsAssembly>
-    </Content>
-    <Content Include="..\bin\Release\x86\Xbim.ModelGeometry.OCC.dll" Condition="'$(Configuration)'=='Release'">
-      <Link>x86\Xbim.ModelGeometry.OCC.dll</Link>
-      <IsAssembly>True</IsAssembly>
-    </Content>
     <None Include="..\Local.testsettings">
       <Link>Local.testsettings</Link>
     </None>
-    <None Include="..\TraceAndTestImpact.testsettings">
-      <Link>TraceAndTestImpact.testsettings</Link>
+    <None Include="..\Test Models\Standard Classroom CIC 6-2.8.0.ifc">
+      <Link>Standard Classroom CIC 6-2.8.0.ifc</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="app.config" />
     <Content Include="COBie-UK-2012-template.xls">
@@ -200,6 +229,7 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <None Include="XbimXplorer_TemporaryKey.pfx" />
+    <Resource Include="xBimQueryLogo.png" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Xbim.COBie\Xbim.COBie.csproj">
@@ -226,30 +256,19 @@
       <Project>{97DFF14E-ADD7-4ED3-B8C3-0D3D3E6CDEE8}</Project>
       <Name>Xbim.ModelGeometry.Converter</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Xbim.ModelGeometry.OCC\Xbim.ModelGeometry.OCC32.vcxproj">
-      <Project>{A0544330-3B8B-45F6-BE6B-E9A5AD661384}</Project>
-      <Name>Xbim.ModelGeometry.OCC32</Name>
-      <Private>False</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\Xbim.ModelGeometry.OCC\Xbim.ModelGeometry.OCC64.vcxproj">
-      <Project>{BB0E1C7A-C255-41CB-814D-894193AB6424}</Project>
-      <Name>Xbim.ModelGeometry.OCC64</Name>
-      <Private>False</Private>
-      <EmbedInteropTypes>False</EmbedInteropTypes>
-    </ProjectReference>
     <ProjectReference Include="..\Xbim.ModelGeometry.Scene\Xbim.ModelGeometry.Scene.csproj">
       <Project>{3D9D37DE-A254-4433-B172-7590CBD84C69}</Project>
       <Name>Xbim.ModelGeometry.Scene</Name>
     </ProjectReference>
     <ProjectReference Include="..\Xbim.Presentation\Xbim.Presentation.csproj">
-      <Project>{89F98E53-DE4E-4427-8244-D5934AD08849}</Project>
+      <Project>{89f98e53-de4e-4427-8244-d5934ad08849}</Project>
       <Name>Xbim.Presentation</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <BootstrapperPackage Include=".NETFramework,Version=v4.0">
+    <BootstrapperPackage Include=".NETFramework,Version=v4.0,KB2468871">
       <Visible>False</Visible>
-      <ProductName>Microsoft .NET Framework 4 %28x86 and x64%29</ProductName>
+      <ProductName>Microsoft .NET Framework 4 %28x86 and x64%29 and Update for .NET Framework 4 %28KB2468871%29</ProductName>
       <Install>true</Install>
     </BootstrapperPackage>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
@@ -262,141 +281,11 @@
       <ProductName>.NET Framework 3.5 SP1</ProductName>
       <Install>false</Install>
     </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Visual.C++.10.0.x64">
+    <BootstrapperPackage Include="Microsoft.Windows.Installer.4.5">
       <Visible>False</Visible>
-      <ProductName>Visual C++ 2010 Runtime Libraries %28x64%29</ProductName>
+      <ProductName>Windows Installer 4.5</ProductName>
       <Install>true</Install>
     </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Visual.C++.10.0.x86">
-      <Visible>False</Visible>
-      <ProductName>Visual C++ 2010 Runtime Libraries %28x86%29</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
-      <Visible>False</Visible>
-      <ProductName>Windows Installer 3.1</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="..\packages\System.Data.SQLite.1.0.84.0\content\net40\x64\SQLite.Interop.dll">
-      <Link>x64\SQLite.Interop.dll</Link>
-    </Content>
-    <Content Include="..\packages\System.Data.SQLite.1.0.84.0\content\net40\x86\SQLite.Interop.dll">
-      <Link>x86\SQLite.Interop.dll</Link>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\OpenCascade\Win32\bin\TKBO.dll">
-      <Link>x86\TKBO.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\OpenCascade\Win32\bin\TKBool.dll">
-      <Link>x86\TKBool.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\OpenCascade\Win32\bin\TKBRep.dll">
-      <Link>x86\TKBRep.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\OpenCascade\Win32\bin\TKernel.dll">
-      <Link>x86\TKernel.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\OpenCascade\Win32\bin\TKG2d.dll">
-      <Link>x86\TKG2d.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\OpenCascade\Win32\bin\TKG3d.dll">
-      <Link>x86\TKG3d.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\OpenCascade\Win32\bin\TKGeomAlgo.dll">
-      <Link>x86\TKGeomAlgo.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\OpenCascade\Win32\bin\TKGeomBase.dll">
-      <Link>x86\TKGeomBase.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\OpenCascade\Win32\bin\TKMath.dll">
-      <Link>x86\TKMath.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\OpenCascade\Win32\bin\TKMesh.dll">
-      <Link>x86\TKMesh.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\OpenCascade\Win32\bin\TKOffset.dll">
-      <Link>x86\TKOffset.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\OpenCascade\Win32\bin\TKPrim.dll">
-      <Link>x86\TKPrim.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\OpenCascade\Win32\bin\TKShHealing.dll">
-      <Link>x86\TKShHealing.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\OpenCascade\Win32\bin\TKTopAlgo.dll">
-      <Link>x86\TKTopAlgo.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\OpenCascade\Win64\bin\TKBO.dll">
-      <Link>x64\TKBO.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\OpenCascade\Win64\bin\TKBool.dll">
-      <Link>x64\TKBool.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\OpenCascade\Win64\bin\TKBRep.dll">
-      <Link>x64\TKBRep.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\OpenCascade\Win64\bin\TKernel.dll">
-      <Link>x64\TKernel.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\OpenCascade\Win64\bin\TKG2d.dll">
-      <Link>x64\TKG2d.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\OpenCascade\Win64\bin\TKG3d.dll">
-      <Link>x64\TKG3d.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\OpenCascade\Win64\bin\TKGeomAlgo.dll">
-      <Link>x64\TKGeomAlgo.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\OpenCascade\Win64\bin\TKGeomBase.dll">
-      <Link>x64\TKGeomBase.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\OpenCascade\Win64\bin\TKMath.dll">
-      <Link>x64\TKMath.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\OpenCascade\Win64\bin\TKMesh.dll">
-      <Link>x64\TKMesh.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\OpenCascade\Win64\bin\TKOffset.dll">
-      <Link>x64\TKOffset.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\OpenCascade\Win64\bin\TKPrim.dll">
-      <Link>x64\TKPrim.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\OpenCascade\Win64\bin\TKShHealing.dll">
-      <Link>x64\TKShHealing.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\OpenCascade\Win64\bin\TKTopAlgo.dll">
-      <Link>x64\TKTopAlgo.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
   <ItemGroup>
     <PublishFile Include="Esent.Interop">
@@ -439,20 +328,8 @@
       <IncludeHash>True</IncludeHash>
       <FileType>Assembly</FileType>
     </PublishFile>
-    <PublishFile Include="Xbim.ModelGeometry.OCC">
-      <Visible>False</Visible>
-      <Group>
-      </Group>
-      <TargetPath>
-      </TargetPath>
-      <PublishState>Exclude</PublishState>
-      <IncludeHash>True</IncludeHash>
-      <FileType>Assembly</FileType>
-    </PublishFile>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Templates\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <FileAssociation Include=".xBIM">
       <Visible>False</Visible>
@@ -469,4 +346,42 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <ItemGroup Condition=" '$(Configuration)' == 'Release' ">
+    <x86PublishFile Include="bin\Release\x86\*.dll">
+      <Visible>False</Visible>
+    </x86PublishFile>
+    <x64PublishFile Include="bin\Release\x64\*.dll">
+      <Visible>False</Visible>
+    </x64PublishFile>
+  </ItemGroup>
+  <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <x86PublishFile Include="bin\Debug\x86\*.dll">
+      <Visible>False</Visible>
+    </x86PublishFile>
+    <x64PublishFile Include="bin\Debug\x64\*.dll">
+      <Visible>False</Visible>
+    </x64PublishFile>
+    <x86DebugPublishFile Include="bin\Debug\x86\Debug\*.dll">
+      <Visible>False</Visible>
+    </x86DebugPublishFile>
+    <x64DebugPublishFile Include="bin\Debug\x64\Debug\*.dll">
+      <Visible>False</Visible>
+    </x64DebugPublishFile>
+  </ItemGroup>
+  <Target Name="BeforePublish">
+    <Touch Files="@(IntermediateAssembly)" />
+    <CreateItem Include="@(x86PublishFile)" AdditionalMetadata="TargetPath=x86\%(FileName)%(Extension);IsDataFile=false;">
+      <Output TaskParameter="Include" ItemName="_DeploymentManifestFiles" />
+    </CreateItem>
+    <CreateItem Include="@(x64PublishFile)" AdditionalMetadata="TargetPath=x64\%(FileName)%(Extension);IsDataFile=false;">
+      <Output TaskParameter="Include" ItemName="_DeploymentManifestFiles" />
+    </CreateItem>
+    <CreateItem Include="@(x86DebugPublishFile)" AdditionalMetadata="TargetPath=x86\Debug\%(FileName)%(Extension);IsDataFile=false">
+      <Output TaskParameter="Include" ItemName="_DeploymentManifestFiles" />
+    </CreateItem>
+    <CreateItem Include="@(x64DebugPublishFile)" AdditionalMetadata="TargetPath=x64\Debug\%(FileName)%(Extension);IsDataFile=false">
+      <Output TaskParameter="Include" ItemName="_DeploymentManifestFiles" />
+    </CreateItem>
+  </Target>
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
 </Project>

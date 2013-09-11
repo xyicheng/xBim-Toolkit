@@ -10,9 +10,10 @@
 
 #endregion
 
+using Xbim.XbimExtensions.Interfaces;
 namespace Xbim.XbimExtensions.SelectTypes
 {
-    public interface IfcObjectReferenceSelect : ExpressSelectType
+    public interface IfcObjectReferenceSelect : ExpressSelectType, IPersistIfcEntity, ISupportChangeNotification
     {
     }
 }

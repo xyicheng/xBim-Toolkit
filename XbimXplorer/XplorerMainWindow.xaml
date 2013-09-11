@@ -3,7 +3,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:ifc="http://schemas.Xbim.com/ifc"
     xmlns:xbim="http://schemas.Xbim.com/Presentation"
-    xmlns:xbimView ="clr-namespace:Xbim.IO.TreeView;assembly=Xbim.IO"
+    xmlns:xbimView="clr-namespace:Xbim.IO.ViewModels;assembly=Xbim.IO"
     xmlns:xbimIO="clr-namespace:Xbim.IO;assembly=Xbim.IO"
     xmlns:local="clr-namespace:XbimXplorer"
     xmlns:pt="clr-namespace:PropertyTools.Wpf;assembly=PropertyTools.Wpf" 
@@ -22,7 +22,8 @@
                 <!--<Image Grid.Column="0" Source="/folder.png" Margin="0 0 4 0"/>-->
                 <TextBlock Grid.Column="1" Text="{Binding Name}" FontWeight="Bold"/>
             </Grid>
-        </DataTemplate> <DataTemplate DataType="{x:Type xbimView:SpatialViewModel}">
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type xbimView:SpatialViewModel}">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -61,8 +62,12 @@
         <CommandBinding Command="Close"  Executed="CommandBinding_Close" CanExecute="CommandBinding_CanExecute"/>
         <CommandBinding Command="SaveAs" Executed="CommandBinding_SaveAs"  CanExecute="CommandBinding_CanExecute"/>
         <CommandBinding Command="Open"   Executed="CommandBinding_Open" CanExecute="CommandBinding_CanExecute"/>
+        
         <CommandBinding Command="{x:Static local:XplorerMainWindow.InsertCmd}" Executed="InsertCmdExecuted" CanExecute="InsertCmdCanExecute"/>
         <CommandBinding Command="{x:Static local:XplorerMainWindow.ExportCOBieCmd}"   Executed="ExportCOBieCmdExecuted" CanExecute="ExportCOBieCmdCanExecute"/>
+        <CommandBinding Command="{x:Static local:XplorerMainWindow.EditFederationCmd}" Executed="EditFederationCmdExecuted" CanExecute="EditFederationCmdCanExecute"/>
+        <CommandBinding Command="{x:Static local:XplorerMainWindow.OpenFederationCmd}" Executed="OpenFederationCmdExecuted" CanExecute="OpenFederationCmdCanExecute"/>
+        <CommandBinding Command="{x:Static local:XplorerMainWindow.CreateFederationCmd}" Executed="CreateFederationCmdExecuted" CanExecute="CreateFederationCmdCanExecute"/>
 
     </Window.CommandBindings>
     <Grid Name="MainFrame" DataContext="{StaticResource ModelProvider}">
@@ -74,17 +79,33 @@
        
         <Menu Grid.Row="0" >
             <MenuItem Header="_Model">
-                <!--<MenuItem Header="_New Xbim File" Click="FileNew_Click"/>-->
+                
                 <MenuItem Header="_Open" Command="Open"/>
-                <MenuItem Header="_New" Command="New" />
                 <!--<MenuItem Header="_Insert" Command="{x:Static local:XplorerMainWindow.InsertCmd}" />-->
                 <MenuItem Header="_SaveAs" Command="SaveAs"/>
+                <MenuItem Header="_Query" Click="OpenQuery" />
                 <MenuItem Header="_Close" Command="Close" />
             </MenuItem>
+            <MenuItem Header="Federate">
+                <MenuItem Header="_Create" Command="{x:Static local:XplorerMainWindow.CreateFederationCmd}" />
+                <MenuItem Header="_Open" Command="{x:Static local:XplorerMainWindow.OpenFederationCmd}" />
+                <MenuItem Header="_Edit" Command="{x:Static local:XplorerMainWindow.EditFederationCmd}" />
+                
+            </MenuItem>
+                
             <MenuItem Header="View">
                 <MenuItem Header="_Zoom Extents" Click="MenuItem_ZoomExtents"/>
                 <MenuItem Header="_Copy" Command="Copy"/>
-              
+                <!--
+                <MenuItem Header="_Layers" ItemsSource="{Binding LayerSet, ElementName=DrawingControl}">
+                    <MenuItem.ItemContainerStyle>
+                        <Style>
+                            <Setter Property="MenuItem.Header" Value="{Binding NameOnMenu}"/>
+                            <Setter Property="MenuItem.Command" Value="{Binding Open}"/>
+                        </Style>
+                    </MenuItem.ItemContainerStyle>
+                </MenuItem>
+                -->
                 <MenuItem IsCheckable="True" Header="Show Gridlines" IsChecked="{Binding ShowGridLines, ElementName=DrawingControl}"/>
                 <MenuItem IsCheckable="True" Header="Show Spaces" IsChecked="{Binding ShowSpaces, ElementName=DrawingControl}"/>
                 <MenuItem IsCheckable="True" Header="Show Walls" IsChecked="{Binding ShowWalls, ElementName=DrawingControl}"/>
@@ -145,7 +166,7 @@
                             Indentation="10"
                             BorderThickness="1"
                             Model="{Binding}"  
-                            EntityLabel="{Binding Path=SelectedItem, ElementName=MainWindow, Mode=TwoWay}"
+                            SelectedEntity="{Binding Path=SelectedItem, ElementName=MainWindow, Mode=TwoWay}"
                             SelectionMode="Single"
                             MouseDoubleClick="SpatialControl_MouseDoubleClick"  FontSize="10" />
                 <GridSplitter 
@@ -156,7 +177,10 @@
                     ShowsPreview="True"
                     Height="5"
                     />
-                <xbim:IfcMetaDataControl x:Name="PropertiesControl" BorderThickness="1" Grid.Row="2" EntityLabel="{Binding Path=SelectedItem, ElementName=MainWindow}" >
+                <xbim:IfcMetaDataControl x:Name="PropertiesControl" BorderThickness="1" Grid.Row="2"  
+                                         SelectedEntity="{Binding Path=SelectedEntity, ElementName=SpatialControl}" 
+                                         Model="{Binding}"
+                                         >
                    
                 </xbim:IfcMetaDataControl>
             </Grid>
@@ -169,7 +193,7 @@
                 Width="5"
                 />
             <xbim:DrawingControl3D x:Name="DrawingControl" 
-                                   SelectedItem="{Binding Path=SelectedItem, ElementName=MainWindow, Mode=TwoWay}"    
+                                   SelectedEntity="{Binding Path=SelectedItem, ElementName=MainWindow, Mode=TwoWay}"    
                                    Model ="{Binding}" 
                                    Grid.Column="2" 
                                    Focusable="True" 

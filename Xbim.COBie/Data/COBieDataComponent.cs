@@ -15,6 +15,7 @@ using Xbim.Ifc2x3.SharedComponentElements;
 using Xbim.IO;
 using Xbim.ModelGeometry.Scene;
 using Xbim.Common.Geometry;
+//using System.Diagnostics;
 
 namespace Xbim.COBie.Data
 {
@@ -53,6 +54,10 @@ namespace Xbim.COBie.Data
         /// <returns>COBieSheet<COBieComponentRow></returns>
         public override COBieSheet<COBieComponentRow> Fill()
         {
+//#if DEBUG 
+//            Stopwatch timer = new Stopwatch();
+//            timer.Start();
+//#endif
             ProgressIndicator.ReportMessage("Starting Components...");
             //Create new sheet
             COBieSheet<COBieComponentRow> components = new COBieSheet<COBieComponentRow>(Constants.WORKSHEET_COMPONENT);
@@ -134,6 +139,12 @@ namespace Xbim.COBie.Data
             }
 
             ProgressIndicator.Finalise();
+//#if DEBUG 
+//            timer.Stop();
+//            Console.WriteLine(String.Format("Time to generate Component data = {0} seconds", timer.Elapsed.TotalSeconds.ToString("F3")));
+//#endif
+           
+            
             return components;
         }
 
@@ -170,7 +181,7 @@ namespace Xbim.COBie.Data
             string value = "";
             List<string> names = new List<string>();
                     
-            if (el != null && el.ContainedInStructure.Count() > 0)
+            if (el != null )//&& el.ContainedInStructure.Count() > 0
             {
                 IEnumerable<IfcRoot> owningObjects = el.ContainedInStructure.Select(cis => cis.RelatingStructure).OfType<IfcSpace>(); //only one or zero held in ContainedInStructure
                 if (owningObjects.Any())
@@ -185,7 +196,7 @@ namespace Xbim.COBie.Data
 
             //check for the element as a containing item of a space
             IEnumerable<IfcSpace> ifcSpaces = Model.Instances.Where<IfcRelSpaceBoundary>(rsb => ((rsb.RelatedBuildingElement != null) && (rsb.RelatedBuildingElement == el))).Select(rsb => rsb.RelatingSpace);
-
+            
             if (ifcSpaces.Any()) 
             {
                 foreach (IfcSpace item in ifcSpaces)
@@ -194,6 +205,7 @@ namespace Xbim.COBie.Data
                         names.Add(item.Name);
                 }
             }
+
             if (names.Count > 0) //check we have some values
             {
                 value = string.Join(", ", names);
@@ -225,7 +237,7 @@ namespace Xbim.COBie.Data
                 .Select(bb => new SpaceInfo
                 {
                     Rectangle = XbimRect3D.FromArray(bb.ShapeData),
-                    Matrix = XbimMatrix3D.FromArray(bb.TransformData),
+                    Matrix = bb.Transform,
                     Name = Model.Instances.OfType<IfcSpace>().Where(sp => (Math.Abs(sp.EntityLabel) == Math.Abs(bb.IfcProductLabel))).Select(sp => sp.Name.ToString()).FirstOrDefault()
                 }).ToList();
             }
@@ -242,7 +254,7 @@ namespace Xbim.COBie.Data
                     return string.Empty; //No geometry
 
                 XbimRect3D elBoundBox = XbimRect3D.FromArray(elGeoData.ShapeData);
-                XbimMatrix3D elWorldMatrix = XbimMatrix3D.FromArray(elGeoData.TransformData);
+                XbimMatrix3D elWorldMatrix = elGeoData.Transform;
                 //Get object space top and bottom points of the bounding box
                 List<XbimPoint3D> elBoxPts = new List<XbimPoint3D>();
                 elBoxPts.Add(new XbimPoint3D(elBoundBox.X, elBoundBox.Y, elBoundBox.Z));

@@ -1,6 +1,6 @@
 #pragma once
 #include "XbimFaceEnumerator.h"
-#include "IXbimGeometryModel.h"
+#include "XbimGeometryModel.h"
 #include "XbimGeometryModel.h"
 #include "XbimFace.h"
 #include <TopoDS_Shell.hxx>
@@ -21,14 +21,13 @@ namespace Xbim
 	{
 		namespace OCC
 		{
-		public ref class XbimShell : IXbimGeometryModel,  IEnumerable<XbimFace^>
+		public ref class XbimShell : XbimGeometryModel,  IEnumerable<XbimFace^>
 		{
 		private:
 			TopoDS_Shape * pShell;
 			bool _hasCurvedEdges;
 			static ILogger^ Logger = LoggerFactory::GetLogger();
-			Int32 _representationLabel;
-			Int32 _surfaceStyleLabel;
+			
 		public:
 			XbimShell(IfcConnectedFaceSet^ faceSet);
 			XbimShell(IfcClosedShell^ shell);
@@ -63,11 +62,11 @@ namespace Xbim
 
 			virtual property XbimLocation ^ Location 
 			{
-				XbimLocation ^ get()
+				XbimLocation ^ get() override 
 				{
 					return gcnew XbimLocation(pShell->Location());
 				}
-				void set(XbimLocation ^ location)
+				void set(XbimLocation ^ location) override 
 				{
 					pShell->Location(*(location->Handle));;
 				}
@@ -75,48 +74,47 @@ namespace Xbim
 			
 			virtual property double Volume
 			{
-				double get()
+				double get() override 
 				{
-					GProp_GProps System;
-					BRepGProp::VolumeProperties(*pShell, System, Standard_True);
-					return System.Mass();
+					if(pShell!=nullptr)
+					{
+						GProp_GProps System;
+						BRepGProp::VolumeProperties(*pShell, System, Standard_True);
+						return System.Mass();
+					}
+					else
+						return 0;
 				}
 			}
 			virtual property bool HasCurvedEdges
 			{
-				virtual bool get()
+				virtual bool get() override 
 				{
 					return _hasCurvedEdges;
 				}
 			}
-			virtual XbimBoundingBox^ GetBoundingBox(bool precise)
+			virtual property XbimMatrix3D Transform
 			{
-				return XbimGeometryModel::GetBoundingBox(this, precise);
-			};
+				XbimMatrix3D get() override
+				{
+					return XbimMatrix3D::Identity;
+				}
+			}
 			
-			virtual property Int32 RepresentationLabel
-			{
-				Int32 get(){return _representationLabel; }
-				void set(Int32 value){ _representationLabel=value; }
-			}
-
-			virtual property Int32 SurfaceStyleLabel
-			{
-				Int32 get(){return _surfaceStyleLabel; }
-				void set(Int32 value){ _surfaceStyleLabel=value; }
-			}
+			
 
 			virtual property TopoDS_Shape* Handle
 			{
-				TopoDS_Shape* get(){return pShell;};			
+				TopoDS_Shape* get() override
+				{return pShell;};			
 			}
 			/*Interfaces*/
 
-			virtual IXbimGeometryModel^ Cut(IXbimGeometryModel^ shape);
-			virtual IXbimGeometryModel^ Union(IXbimGeometryModel^ shape);
-			virtual IXbimGeometryModel^ Intersection(IXbimGeometryModel^ shape);
-			virtual IXbimGeometryModel^ CopyTo(IfcObjectPlacement^ placement);
-			virtual void Move(TopLoc_Location location);
+			virtual XbimGeometryModel^ Cut(XbimGeometryModel^ shape) override;
+			virtual XbimGeometryModel^ Union(XbimGeometryModel^ shape) override;
+			virtual XbimGeometryModel^ Intersection(XbimGeometryModel^ shape) override;
+			virtual XbimGeometryModel^ CopyTo(IfcObjectPlacement^ placement) override;
+			virtual void Move(TopLoc_Location location) override;
 			// IEnumerable<IIfcFace^> Members
 			virtual property IEnumerable<XbimFace^>^ CfsFaces
 			{
@@ -133,12 +131,6 @@ namespace Xbim
 				return gcnew XbimFaceEnumerator(*(pShell));
 			}
 
-			virtual List<XbimTriangulatedModel^>^Mesh(bool withNormals, double deflection, XbimMatrix3D transform);
-			virtual List<XbimTriangulatedModel^>^Mesh(bool withNormals, double deflection);
-			virtual List<XbimTriangulatedModel^>^Mesh(bool withNormals);
-			virtual List<XbimTriangulatedModel^>^Mesh();
-
-		
 			//Builds a TopoDS_Shell from an ClosedShell
 			static TopoDS_Shape Build(IfcClosedShell^ shell, bool% hasCurves);
 			

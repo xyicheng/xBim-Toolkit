@@ -18,7 +18,7 @@ using System.Collections.Generic;
 
 namespace Xbim.XbimExtensions.SelectTypes
 {
-    public interface ExpressComplexType
+    public interface ExpressComplexType : Xbim.XbimExtensions.Interfaces.IPersistIfc, IfcValue
     {
         IEnumerable<object> Properties { get; }
         void Add(object o);

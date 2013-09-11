@@ -18,7 +18,7 @@ using System;
 
 namespace Xbim.XbimExtensions.SelectTypes
 {
-    public interface ExpressType
+    public interface ExpressType : Xbim.XbimExtensions.Interfaces.IPersistIfc
     {
         string ToPart21 { get; }
         Type UnderlyingSystemType { get; }

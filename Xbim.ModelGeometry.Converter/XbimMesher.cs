@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Xbim.Common.Geometry;
@@ -10,18 +9,24 @@ using Xbim.Common.Logging;
 using Xbim.Ifc2x3.Kernel;
 using Xbim.Ifc2x3.ProductExtension;
 using Xbim.IO;
-using Xbim.ModelGeometry.OCC;
 using Xbim.ModelGeometry.Scene;
+using Xbim.ModelGeometry.Scene.Clustering;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
+using System.Reflection;
 
 namespace Xbim.ModelGeometry.Converter
 {
     public class XbimMesher
     {
+        /// <summary>
+        /// Maximum size of a geoemtric region in metres
+        /// </summary>
+        private const float MaxWorldSize = 200;
+
         static XbimMesher()
         {
-            AssemblyResolver.HandleUnresovledAssemblies();
+            AssemblyResolver.HandleUnresolvedAssemblies();
         }
 
         private class MapData
@@ -58,10 +63,8 @@ namespace Xbim.ModelGeometry.Converter
                 EntityLabel = toAdd.Product.EntityLabel;
                 EntityTypeId = IfcMetaData.IfcTypeId(toAdd.Product);
                 SurfaceStyleLabel = toAdd.Geometry.SurfaceStyleLabel;
-                Matrix = XbimMatrix3D.Multiply(((XbimMap)toAdd.Geometry).Transform, toAdd.Matrix);
+                Matrix = XbimMatrix3D.Multiply(toAdd.Geometry.Transform, toAdd.Matrix);
             }
-
-
         }
 
         /// <summary>
@@ -69,12 +72,31 @@ namespace Xbim.ModelGeometry.Converter
         /// This will create the default 3D mesh geometry for all IfcProducts and add it to the model
         /// </summary>
         /// <param name="model"></param>
-        public static void GenerateGeometry(XbimModel model, ILogger Logger = null, ReportProgressDelegate progDelegate = null )
+        public static void GenerateGeometry(XbimModel model, ILogger Logger = null, ReportProgressDelegate progDelegate = null)
         {
-
+            //Create the geometry engine by reflection to allow dynamic loading of different binary platforms (32, 64 etc)
+            Assembly assembly = AssemblyResolver.GetModelGeometryAssembly();
+            if (assembly == null)
+            {
+                if (Logger != null)
+                {
+                    Logger.Error("Failed to load Xbim.ModelGeometry.OCC.dll Please ensure it is installed correctly");
+                }
+                return;
+            }
+            IXbimGeometryEngine engine = (IXbimGeometryEngine)assembly.CreateInstance("Xbim.ModelGeometry.XbimGeometryEngine");
+            engine.Init(model);
+            if (engine == null)
+            {
+                if (Logger != null)
+                {
+                    Logger.Error("Failed to create Xbim Geometry engine. Please ensure Xbim.ModelGeometry.OCC.dll is installed correctly");
+                }
+                return;
+            }
+           
             //now convert the geometry
-
-            IEnumerable<IfcProduct> toDraw = model.Instances.OfType<IfcProduct>().Where(t => !(t is IfcFeatureElement));
+            IEnumerable<IfcProduct> toDraw = model.InstancesLocal.OfType<IfcProduct>().Where(t => !(t is IfcFeatureElement));
             if (!toDraw.Any()) return; //nothing to do
             TransformGraph graph = new TransformGraph(model);
             //create a new dictionary to hold maps
@@ -90,29 +112,35 @@ namespace Xbim.ModelGeometry.Converter
             int percentageParsed = 0;
             int total = graph.ProductNodes.Values.Count;
 
-      
             try
             {
-                XbimLOD lod = XbimLOD.LOD_Unspecified;
+                //Dictionary<int, IXbimGeometryModel> solids = new Dictionary<int, IXbimGeometryModel>();
+                //foreach (var item in model.Instances.OfType<IfcSolidModel>())
+                //{
+                //    IXbimGeometryModel geomModel = engine.GetGeometry3D(item, maps);
+                //    solids.Add(item.EntityLabel, geomModel);
+                //}
+
                 //use parallel as this improves the OCC geometry generation greatly
                 ParallelOptions opts = new ParallelOptions();
                 opts.MaxDegreeOfParallelism = 16;
-
+                XbimRect3D bounds = XbimRect3D.Empty;
                 double deflection = 4;// model.GetModelFactors.DeflectionTolerance;
+#if DOPARALLEL
                 Parallel.ForEach<TransformNode>(graph.ProductNodes.Values, opts, node => //go over every node that represents a product
-                //   foreach (var node in graph.ProductNodes.Values)
+#else
+                foreach (var node in graph.ProductNodes.Values)
+#endif
                 {
                     IfcProduct product = node.Product(model);
                     try
                     {
-
-                        IXbimGeometryModel geomModel = XbimGeometryModel.CreateFrom(product, maps, false, lod, false);
+                        IXbimGeometryModel geomModel = engine.GetGeometry3D(product, maps);
                         if (geomModel != null)  //it has geometry
                         {
                             XbimMatrix3D m3d = node.WorldMatrix();
-                            if (geomModel is XbimMap) //do not process maps now
+                            if (geomModel.IsMap) //do not process maps now
                             {
-
                                 MapData toAdd = new MapData(geomModel, m3d, product);
                                 if (!mappedModels.TryAdd(geomModel.RepresentationLabel, toAdd)) //get unique rep
                                     mapRefs.Enqueue(new MapRefData(toAdd)); //add ref
@@ -134,15 +162,19 @@ namespace Xbim.ModelGeometry.Converter
                                 }
                                 else
                                 {
-                                    List<XbimTriangulatedModel> tm = geomModel.Mesh(true, deflection);
-                                    XbimBoundingBox bb = geomModel.GetBoundingBox(true);
+                                    List<XbimTriangulatedModel> tm = geomModel.Mesh();
+                                    XbimRect3D bb = geomModel.GetBoundingBox();
 
                                     byte[] matrix = m3d.ToArray(true);
                                     short? typeId = IfcMetaData.IfcTypeId(product);
 
                                     geomIds = new int[tm.Count + 1];
-                                    geomIds[0] = geomTable.AddGeometry(product.EntityLabel, XbimGeometryType.BoundingBox, typeId.Value, matrix, bb.ToArray(), 0, geomModel.SurfaceStyleLabel);
-
+                                    geomIds[0] = geomTable.AddGeometry(product.EntityLabel, XbimGeometryType.BoundingBox, typeId.Value, matrix, bb.ToDoublesArray(), 0, geomModel.SurfaceStyleLabel);
+                                    bb = XbimRect3D.TransformBy(bb, m3d);
+                                    if (bounds.IsEmpty)
+                                        bounds = bb;
+                                    else
+                                        bounds.Union(bb);
                                     short subPart = 0;
                                     foreach (XbimTriangulatedModel b in tm)
                                     {
@@ -158,7 +190,7 @@ namespace Xbim.ModelGeometry.Converter
                                         if (newPercentage > percentageParsed)
                                         {
                                             percentageParsed = newPercentage;
-                                            progDelegate(percentageParsed, "Converted");
+                                            progDelegate(percentageParsed, "Meshing");
                                         }
                                     }
                                 }
@@ -169,7 +201,26 @@ namespace Xbim.ModelGeometry.Converter
                         }
                         else
                         {
+                            // store a transform only if no geomtery is available
+                            XbimGeometryCursor geomTable = model.GetGeometryTable();
+                            XbimLazyDBTransaction transaction = geomTable.BeginLazyTransaction();
+                            XbimMatrix3D m3dtemp = node.WorldMatrix();
+                            byte[] matrix = m3dtemp.ToArray(true);
+                            short? typeId = IfcMetaData.IfcTypeId(product);
+                            geomTable.AddGeometry(product.EntityLabel, XbimGeometryType.TransformOnly, typeId.Value, matrix, new byte[] {});
+                            transaction.Commit();
+                            model.FreeTable(geomTable);
+
                             Interlocked.Increment(ref tally);
+                            if (progDelegate != null)
+                            {
+                                int newPercentage = Convert.ToInt32((double)tally / total * 100.0);
+                                if (newPercentage > percentageParsed)
+                                {
+                                    percentageParsed = newPercentage;
+                                    progDelegate(percentageParsed, "Meshing");
+                                }
+                            }
                         }
                     }
                     catch (Exception e1)
@@ -177,33 +228,37 @@ namespace Xbim.ModelGeometry.Converter
                         String message = String.Format("Error Triangulating product geometry of entity {0} - {1}",
                             product.EntityLabel,
                             product.ToString());
-                        if(Logger!=null) Logger.Warn(message, e1);
+                        if (Logger != null) Logger.Warn(message, e1);
                     }
                 }
-
-               );
+#if DOPARALLEL
+                );
+#endif
                 graph = null;
 
                 // Debug.WriteLine(tally);
+#if DOPARALLEL
                 //now sort out maps again in parallel
                 Parallel.ForEach<KeyValuePair<int, MapData>>(mappedModels, opts, map =>
-                // foreach (var map in mappedModels)
+#else
+                foreach (var map in mappedModels)
+#endif
                 {
                     IXbimGeometryModel geomModel = map.Value.Geometry;
                     XbimMatrix3D m3d = map.Value.Matrix;
                     IfcProduct product = map.Value.Product;
 
                     //have we already written it?
-                    int[] writtenGeomids;
-                    if (written.TryGetValue(geomModel.RepresentationLabel, out writtenGeomids))
+                    int[] writtenGeomids = new int[0];
+                    if (!written.TryAdd(geomModel.RepresentationLabel, writtenGeomids))
                     {
                         //make maps    
                         mapRefs.Enqueue(new MapRefData(map.Value)); //add ref
                     }
                     else
                     {
-                        m3d = XbimMatrix3D.Multiply(((XbimMap)geomModel).Transform, m3d);
-                        WriteGeometry(model, written, geomModel, m3d, product, deflection);
+                        m3d = XbimMatrix3D.Multiply(geomModel.Transform, m3d);
+                        WriteGeometry(model, written, geomModel, ref bounds, m3d, product, deflection);
 
                     }
 
@@ -214,13 +269,14 @@ namespace Xbim.ModelGeometry.Converter
                         if (newPercentage > percentageParsed)
                         {
                             percentageParsed = newPercentage;
-                            progDelegate(percentageParsed, "Converted");
+                            progDelegate(percentageParsed, "Meshing");
                         }
                     }
                     map.Value.Clear(); //release any native memory we are finished with this
                 }
+#if DOPARALLEL
                 );
-
+#endif
                 //clear up maps
                 mappedModels.Clear();
                 XbimGeometryCursor geomMapTable = model.GetGeometryTable();
@@ -231,7 +287,7 @@ namespace Xbim.ModelGeometry.Converter
                     int[] geomIds;
                     if (!written.TryGetValue(map.RepresentationLabel, out geomIds))
                     {
-                        if(Logger!=null) Logger.WarnFormat("A geometry mapped reference (#{0}) has been found that has no base geometry", map.RepresentationLabel);
+                        if (Logger != null) Logger.WarnFormat("A geometry mapped reference (#{0}) has been found that has no base geometry", map.RepresentationLabel);
                     }
                     else
                     {
@@ -252,7 +308,7 @@ namespace Xbim.ModelGeometry.Converter
                         if (newPercentage > percentageParsed)
                         {
                             percentageParsed = newPercentage;
-                            progDelegate(percentageParsed, "Converted");
+                            progDelegate(percentageParsed, "Meshing");
                         }
                     }
                     if (tally % 100 == 100)
@@ -263,11 +319,31 @@ namespace Xbim.ModelGeometry.Converter
 
                 }
                 mapTrans.Commit();
+
+                // Store model regions in the database.
+                // all regions are stored for the project in one row and need to be desirialised to XbimRegionCollection before being enumerated on read.
+                //
+                // todo: bonghi: currently geometry labels of partitioned models are not stored, only their bounding box and count are.
+                //
+                mapTrans.Begin();
+                XbimRegionCollection regions = PartitionWorld(model, bounds);
+                IfcProject project = model.IfcProject;
+                int projectId = 0;
+                if (project != null)
+                    projectId = Math.Abs(project.EntityLabel);
+                geomMapTable.AddGeometry(projectId, XbimGeometryType.Region, IfcMetaData.IfcTypeId(typeof(IfcProject)), XbimMatrix3D.Identity.ToArray(), regions.ToArray());
+                mapTrans.Commit();
+
+
                 model.FreeTable(geomMapTable);
+                if (progDelegate != null)
+                {
+                    progDelegate(0, "Ready");
+                }
             }
             catch (Exception e2)
             {
-                if(Logger!=null) Logger.Warn("General Error Triangulating geometry", e2);
+                if (Logger != null) Logger.Warn("General Error Triangulating geometry", e2);
             }
             finally
             {
@@ -275,17 +351,55 @@ namespace Xbim.ModelGeometry.Converter
             }
         }
 
-        private static void WriteGeometry(XbimModel model, ConcurrentDictionary<int, int[]> written, IXbimGeometryModel geomModel, XbimMatrix3D m3d, IfcProduct product, double deflection)
+        private static XbimRegionCollection PartitionWorld(XbimModel model, XbimRect3D bounds)
+        {
+            float metre = (float)model.GetModelFactors.OneMetre;
+            XbimRegionCollection regions = new XbimRegionCollection();
+            if (bounds.Length() / metre <= MaxWorldSize)
+            {
+                regions.Add(new XbimRegion("All", bounds, -1));
+            }
+            else //need to partition the model
+            {
+                List<XbimBBoxClusterElement> ElementsToCluster = new List<XbimBBoxClusterElement>();
+                foreach (var geomData in model.GetGeometryData(XbimGeometryType.BoundingBox))
+                {
+                    XbimRect3D bound = XbimRect3D.FromArray(geomData.ShapeData);
+                    XbimMatrix3D m3D = geomData.Transform;
+                    bound = XbimRect3D.TransformBy(bound, m3D);
+                    ElementsToCluster.Add(new XbimBBoxClusterElement(geomData.GeometryLabel, bound));
+                }
+                // the XbimDBSCAN method adopted for clustering produces clusters of contiguous elements.
+                // if the maximum size is a problem they could then be split using other algorithms that divide spaces equally
+                //
+                var v = XbimDBSCAN.GetClusters(ElementsToCluster, 5 * metre); // .OrderByDescending(x => x.GeometryIds.Count);
+                int i = 1;
+                foreach (var item in v)
+                {
+                    regions.Add(new XbimRegion("Region " + i++, item.Bound, item.GeometryIds.Count));
+                }
+            }
+            return regions;
+        }
+
+        private static void WriteGeometry(XbimModel model, ConcurrentDictionary<int, int[]> written, IXbimGeometryModel geomModel, ref XbimRect3D bounds, XbimMatrix3D m3d, IfcProduct product, double deflection)
         {
             List<XbimTriangulatedModel> tm = geomModel.Mesh(true, deflection);
-            XbimBoundingBox bb = geomModel.GetBoundingBox(true);
+            XbimRect3D bb = geomModel.GetBoundingBox();
             byte[] matrix = m3d.ToArray(true);
             short? typeId = IfcMetaData.IfcTypeId(product);
             XbimGeometryCursor geomTable = model.GetGeometryTable();
 
             XbimLazyDBTransaction transaction = geomTable.BeginLazyTransaction();
             int[] geomIds = new int[tm.Count + 1];
-            geomIds[0] = geomTable.AddGeometry(product.EntityLabel, XbimGeometryType.BoundingBox, typeId.Value, matrix, bb.ToArray(), 0, geomModel.SurfaceStyleLabel);
+            geomIds[0] = geomTable.AddGeometry(product.EntityLabel, XbimGeometryType.BoundingBox, typeId.Value, matrix, bb.ToDoublesArray(), 0, geomModel.SurfaceStyleLabel);
+
+            bb = XbimRect3D.TransformBy(bb, m3d);
+
+            if (bounds.IsEmpty)
+                bounds = bb;
+            else
+                bounds.Union(bb);
             short subPart = 0;
             foreach (XbimTriangulatedModel b in tm)
             {
@@ -293,9 +407,13 @@ namespace Xbim.ModelGeometry.Converter
                 subPart++;
             }
             transaction.Commit();
-            written.TryAdd(geomModel.RepresentationLabel, geomIds);
+            written.AddOrUpdate(geomModel.RepresentationLabel, geomIds, (k, v) => v = geomIds);
             model.FreeTable(geomTable);
+        }
 
+        public static void InitGeometryEngine(string basePath)
+        {
+            Assembly assembly = AssemblyResolver.GetModelGeometryAssembly(basePath);
         }
     }
 }

@@ -10,6 +10,8 @@ using Xbim.Ifc2x3.PropertyResource;
 using Xbim.Ifc2x3.SharedFacilitiesElements;
 using Xbim.Ifc2x3.UtilityResource;
 using Xbim.Ifc2x3.MaterialResource;
+//using System.Diagnostics;
+//using System;
 
 namespace Xbim.COBie.Data
 {
@@ -36,6 +38,10 @@ namespace Xbim.COBie.Data
         /// <returns>COBieSheet<COBieTypeRow></returns>
         public override COBieSheet<COBieTypeRow> Fill()
         {
+//#if DEBUG 
+//            Stopwatch timer = new Stopwatch();
+//            timer.Start();
+//#endif            
             ProgressIndicator.ReportMessage("Starting Types...");
 
             // Create new Sheet
@@ -110,16 +116,19 @@ namespace Xbim.COBie.Data
                 attributeBuilder.PopulateAttributesRows(type); //fill attribute sheet rows
                 
             }
+            ProgressIndicator.Finalise();
             //--------------Loop all IfcMaterialLayerSet-----------------------------
+            ProgressIndicator.ReportMessage("Starting MaterialLayerSets...");
             IEnumerable<IfcMaterialLayerSet> ifcMaterialLayerSets = Model.Instances.OfType<IfcMaterialLayerSet>();
             ChildNamesList rowHolderChildNames = new ChildNamesList();
             ChildNamesList rowHolderLayerChildNames = new ChildNamesList();
             
             string createdBy = DEFAULT_STRING, createdOn = DEFAULT_STRING, extSystem = DEFAULT_STRING;
+            ProgressIndicator.Initialise("Creating MaterialLayerSets", ifcMaterialLayerSets.Count());
 
             foreach (IfcMaterialLayerSet ifcMaterialLayerSet in ifcMaterialLayerSets)
             {
-                
+                ProgressIndicator.IncrementAndUpdate();
                 //Material layer has no owner history, so lets take the owner history from IfcRelAssociatesMaterial.RelatingMaterial -> (IfcMaterialLayerSetUsage.ForLayerSet -> IfcMaterialLayerSet) || IfcMaterialLayerSet || IfcMaterialLayer as it is a IfcMaterialSelect
                 IfcOwnerHistory ifcOwnerHistory = GetMaterialOwnerHistory(ifcMaterialLayerSet);
                 if (ifcOwnerHistory != null)
@@ -179,12 +188,15 @@ namespace Xbim.COBie.Data
                     }
                 }
             }
+            ProgressIndicator.Finalise();
             //--------Loop Materials in case they are not in a layer Set-----
+            ProgressIndicator.ReportMessage("Starting Materials...");
+            
             IEnumerable<IfcMaterial> ifcMaterials = Model.Instances.OfType<IfcMaterial>();
-
+            ProgressIndicator.Initialise("Creating Materials", ifcMaterials.Count());
             foreach (IfcMaterial ifcMaterial in ifcMaterials)
             {
-
+                ProgressIndicator.IncrementAndUpdate();
                 string name = ifcMaterial.Name.ToString().Trim();
                 if (!string.IsNullOrEmpty(ifcMaterial.Name))
                 {
@@ -205,8 +217,12 @@ namespace Xbim.COBie.Data
                     rowHolderChildNames.Add(name.ToLower());
                 }
             }
-
             ProgressIndicator.Finalise();
+            
+//#if DEBUG
+//            timer.Stop();
+//            Console.WriteLine(String.Format("Time to generate Type data = {0} seconds", timer.Elapsed.TotalSeconds.ToString("F3")));
+//#endif
             return types;
         }
 

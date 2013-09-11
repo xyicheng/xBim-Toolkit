@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
+using Xbim.Ifc2x3.ActorResource;
 using Xbim.Ifc2x3.Kernel;
 using Xbim.Ifc2x3.PresentationAppearanceResource;
 using Xbim.Ifc2x3.ProductExtension;
@@ -18,10 +19,12 @@ namespace Xbim.ModelGeometry.Scene
         /// Creates a colour map based on the IFC product types
         /// </summary>
         IfcProductTypeMap,
+        Federation,
         /// <summary>
         /// Creates an empty colour map
         /// </summary>
         Empty
+        
     }
     /// <summary>
     /// Provides a map for obtaining a colour for a keyed type, the colour is an ARGB value
@@ -51,11 +54,43 @@ namespace Xbim.ModelGeometry.Scene
                 case StandardColourMaps.IfcProductTypeMap:
                     BuildIfcProductTypeMap();
                     break;
+                case StandardColourMaps.Federation:
+                    BuildFederationMap();
+                    break;
                 default:
                     break;
             }
         }
 
+        private void BuildFederationMap()
+        {
+            Clear();
+            Add(new XbimColour("Default", 0.98, 0.92, 0.74, 1)); //grey
+            Add(new XbimColour(IfcRole.Architect.ToString(), 1.0 , 1.0 , 1.0 , .5)); //white
+            Add(new XbimColour(IfcRole.BuildingOperator.ToString(), 1.0, 0, 0, 1)); //red
+            Add(new XbimColour(IfcRole.BuildingOwner.ToString(), 1.0, 0, 0, 1));
+            Add(new XbimColour(IfcRole.CivilEngineer.ToString(), 1.0, 0, 0, 1));
+            Add(new XbimColour(IfcRole.Client.ToString(), 1.0, 0, 0, 1));
+            Add(new XbimColour(IfcRole.ComissioningEngineer.ToString(), 1.0, 0, 0, 1));
+            Add(new XbimColour(IfcRole.ConstructionManager.ToString(), 1.0, 0, 0, 1)); //red
+            Add(new XbimColour(IfcRole.Consultant.ToString(), 1.0, 0, 0, 1));
+            Add(new XbimColour(IfcRole.Contractor.ToString(), 1.0, 0, 0, 1));
+            Add(new XbimColour(IfcRole.CostEngineer.ToString(), 1.0, 0, 0, 1));
+            Add(new XbimColour(IfcRole.ElectricalEngineer.ToString(), 0.0, 0, 1.0, 1)); //blue
+            Add(new XbimColour(IfcRole.Engineer.ToString(), 1.0, 0, 0, 1)); //red
+            Add(new XbimColour(IfcRole.FacilitiesManager.ToString(), 1.0, 0, 0, 1));
+            Add(new XbimColour(IfcRole.FieldConstructionManager.ToString(), 1.0, 0, 0, 1));
+            Add(new XbimColour(IfcRole.Manufacturer.ToString(), 1.0, 0, 0, 1));
+            Add(new XbimColour(IfcRole.MechanicalEngineer.ToString(), 1.0, 0.5, 0.25, 1));
+            Add(new XbimColour(IfcRole.Owner.ToString(), 1.0, 0, 0, 1)); //red
+            Add(new XbimColour(IfcRole.ProjectManager.ToString(), 1.0, 0, 0, 1));
+            Add(new XbimColour(IfcRole.Reseller.ToString(), 1.0, 0, 0, 1));
+            Add(new XbimColour(IfcRole.StructuralEngineer.ToString(), 0.2, 0.2, 0.2, 1.0)); //dark
+            Add(new XbimColour(IfcRole.Subcontractor.ToString(), 1.0, 0, 0, 1));
+            Add(new XbimColour(IfcRole.Supplier.ToString(), 1.0, 0, 0, 1));
+            Add(new XbimColour(IfcRole.UserDefined.ToString(), 1.0, 0, 0, 1));
+            
+        }
 
        
         new public XbimColour this[string key]
@@ -76,6 +111,7 @@ namespace Xbim.ModelGeometry.Scene
        
         private void BuildIfcProductTypeMap()
         {
+            Clear();
             Add(new XbimColour("Default", 0.98, 0.92, 0.74, 1));
             Add(new XbimColour(typeof(IfcWall).Name, 0.98, 0.92, 0.74, 1));
             Add(new XbimColour(typeof(IfcWallStandardCase).Name, 0.98, 0.92, 0.74, 1));

@@ -159,17 +159,19 @@ namespace Xbim.Ifc2x3.Extensions
         /// </summary>
         public static IEnumerable<IfcBuilding> GetBuildings(this IfcProject project)
         {
-
-            IEnumerable<IfcRelAggregates> aggregate = project.IsDecomposedBy.OfType<IfcRelAggregates>();
-            foreach (IfcRelAggregates rel in aggregate)
+            if (project != null)
             {
-                foreach (IfcObjectDefinition definition in rel.RelatedObjects)
+                IEnumerable<IfcRelAggregates> aggregate = project.IsDecomposedBy.OfType<IfcRelAggregates>();
+                foreach (IfcRelAggregates rel in aggregate)
                 {
-                    if (definition is IfcSite)
-                        foreach (IfcBuilding building in ((IfcSite)definition).GetBuildings())
-                            yield return building;
-                    if (definition is IfcBuilding)
-                        yield return (definition as IfcBuilding);
+                    foreach (IfcObjectDefinition definition in rel.RelatedObjects)
+                    {
+                        if (definition is IfcSite)
+                            foreach (IfcBuilding building in ((IfcSite)definition).GetBuildings())
+                                yield return building;
+                        if (definition is IfcBuilding)
+                            yield return (definition as IfcBuilding);
+                    }
                 }
             }
         }

@@ -10,6 +10,7 @@
 #include <BRepPrimAPI_MakeHalfSpace.hxx>
 #include <BRepBuilderAPI_MakeFace.hxx>
 #include <BRepPrimAPI_MakePrism.hxx>
+#include <BRepBuilderAPI.hxx>
 #include <BRepBuilderAPI_MakeWire.hxx>
 #include <BRepPrimAPI_MakeRevol.hxx>
 #include <BRepOffsetAPI_MakePipeShell.hxx>
@@ -37,6 +38,16 @@
 #include <BOPTools_DSFiller.hxx>
 #include <Geom_Curve.hxx>
 #include <ShapeAnalysis_Shell.hxx>
+
+#include <gp_Circ.hxx>
+#include <gp_Elips.hxx>
+#include <GC_MakeCircle.hxx>
+#include <GC_MakeEllipse.hxx>
+#include <GC_MakeLine.hxx>
+#include <BRepBuilderAPI_MakeFace.hxx>
+#include <BRepBuilderAPI_MakeEdge.hxx>
+
+#include <TColgp_Array1OfPnt.hxx>
 //#include <BRepPrimAPI_MakeSphere.hxx>
 //#include <BRepPrimAPI_MakeCylinder.hxx>
 using namespace Xbim::XbimExtensions;
@@ -133,7 +144,7 @@ namespace Xbim
 				*nativeHandle = temp;
 		};
 
-		XbimSolid::XbimSolid(IXbimGeometryModel^ solid, XbimMatrix3D transform)
+		XbimSolid::XbimSolid(XbimGeometryModel^ solid, XbimMatrix3D transform)
 		{
 			_representationLabel = solid->RepresentationLabel;
 			_surfaceStyleLabel = solid->SurfaceStyleLabel;
@@ -148,7 +159,7 @@ namespace Xbim
 			}
 		};
 
-		XbimSolid::XbimSolid(IXbimGeometryModel^ solid, bool hasCurves)
+		XbimSolid::XbimSolid(XbimGeometryModel^ solid, bool hasCurves)
 		{
 			_representationLabel = solid->RepresentationLabel;
 			_surfaceStyleLabel = solid->SurfaceStyleLabel;	
@@ -254,30 +265,9 @@ namespace Xbim
 		}
 
 
-		List<XbimTriangulatedModel^>^XbimSolid::Mesh()
-		{
-			return Mesh(true, XbimGeometryModel::DefaultDeflection, XbimMatrix3D::Identity);
-		}
-
-		List<XbimTriangulatedModel^>^XbimSolid::Mesh(bool withNormals )
-		{
-			return Mesh(withNormals, XbimGeometryModel::DefaultDeflection, XbimMatrix3D::Identity);
-		}
-
-		List<XbimTriangulatedModel^>^XbimSolid::Mesh( bool withNormals, double deflection )
-		{
-			return XbimGeometryModel::Mesh(this,withNormals,deflection, XbimMatrix3D::Identity);
-			
-		}
-
-		List<XbimTriangulatedModel^>^XbimSolid::Mesh(bool withNormals, double deflection, XbimMatrix3D transform )
-		{
-			return XbimGeometryModel::Mesh(this,withNormals,deflection, transform);
-			
-		}
 
 		//Solid operations
-		IXbimGeometryModel^ XbimSolid::Cut(IXbimGeometryModel^ shape)
+		XbimGeometryModel^ XbimSolid::Cut(XbimGeometryModel^ shape)
 		{
 			bool hasCurves =  _hasCurvedEdges || shape->HasCurvedEdges; //one has a curve the result will have one
 			try
@@ -349,7 +339,7 @@ namespace Xbim
 			throw gcnew XbimGeometryException("Failed to form difference between two shapes");
 		}
 
-		IXbimGeometryModel^ XbimSolid::Union(IXbimGeometryModel^ shape)
+		XbimGeometryModel^ XbimSolid::Union(XbimGeometryModel^ shape)
 		{
 			bool hasCurves =  _hasCurvedEdges || shape->HasCurvedEdges; //one has a curve the result will have one
 			BRepAlgoAPI_Fuse boolOp(*nativeHandle,*(shape->Handle));
@@ -368,7 +358,7 @@ namespace Xbim
 			Logger->Warn("Failed to form Union between two shapes");
 			return nullptr;
 		}
-		IXbimGeometryModel^ XbimSolid::Intersection(IXbimGeometryModel^ shape)
+		XbimGeometryModel^ XbimSolid::Intersection(XbimGeometryModel^ shape)
 		{
 			bool hasCurves =  _hasCurvedEdges || shape->HasCurvedEdges; //one has a curve the result will have one
 			BRepAlgoAPI_Common boolOp(*nativeHandle,*(shape->Handle));
@@ -387,7 +377,7 @@ namespace Xbim
 			Logger->Warn("Failed to form intersection between two shapes");
 			return nullptr;
 		}
-		IXbimGeometryModel^ XbimSolid::CopyTo(IfcObjectPlacement^ placement)
+		XbimGeometryModel^ XbimSolid::CopyTo(IfcObjectPlacement^ placement)
 		{
 			if(dynamic_cast<IfcLocalPlacement^>(placement))
 			{
@@ -506,8 +496,8 @@ namespace Xbim
 		{
 			IfcBooleanOperand^ fOp= repItem->FirstOperand;
 			IfcBooleanOperand^ sOp= repItem->SecondOperand;
-			IXbimGeometryModel^ shape1;
-			IXbimGeometryModel^ shape2;
+			XbimGeometryModel^ shape1;
+			XbimGeometryModel^ shape2;
 			System::Nullable<bool> _shape1IsSolid;
 			if(dynamic_cast<IfcBooleanResult^>(fOp))
 				shape1 = gcnew XbimSolid((IfcBooleanResult^)fOp);
@@ -547,7 +537,7 @@ namespace Xbim
 				if(_shape1IsSolid.HasValue)
 				{
 
-					if(!shape1->GetBoundingBox(false)->Intersects(shape2->GetBoundingBox(false)))
+					if(!shape1->Intersects(shape2))
 					{
 						if(_shape1IsSolid.Value == true)
 						{
@@ -572,19 +562,19 @@ namespace Xbim
 				{
 				case IfcBooleanOperator::Union:
 					{	
-						IXbimGeometryModel^ m = shape1->Union(shape2);
+						XbimGeometryModel^ m = shape1->Union(shape2);
 						hasCurves = m->HasCurvedEdges;
 						return TopoDS_Shape(*m->Handle);  
 					}
 				case IfcBooleanOperator::Intersection:
 					{	
-						IXbimGeometryModel^ m = shape1->Intersection(shape2);
+						XbimGeometryModel^ m = shape1->Intersection(shape2);
 						hasCurves = m->HasCurvedEdges;
 						return TopoDS_Shape(*m->Handle);  
 					}
 				case IfcBooleanOperator::Difference:
 					{	
-						IXbimGeometryModel^ m = shape1->Cut(shape2);
+						XbimGeometryModel^ m = shape1->Cut(shape2);
 						hasCurves = m->HasCurvedEdges;
 						return TopoDS_Shape(*m->Handle);  
 					}
@@ -602,7 +592,149 @@ namespace Xbim
 
 		TopoDS_Solid XbimSolid::Build(IfcSweptDiskSolid^ swdSolid, bool% hasCurves)
 		{
-			throw gcnew NotImplementedException("Build::IfcSweptDiskSolid is not implemented");
+			
+			//Build the directrix
+			TopoDS_Wire sweep;
+			bool isConic = (dynamic_cast<IfcConic^>(swdSolid->Directrix)!=nullptr);
+			gp_Ax2 ax2(gp_Pnt(0.,0.,0.),gp_Dir(0.,0.,1.));
+			XbimModelFactors^ mf = ((IPersistIfcEntity^)swdSolid)->ModelOf->GetModelFactors;
+
+			double parameterFactor =  mf->LengthToMetresConversionFactor;
+			Handle(Geom_Curve) curve;
+			if(isConic)
+			{
+				//it could be based on a circle, ellipse or line
+				if(dynamic_cast<IfcCircle^>(swdSolid->Directrix))
+				{
+					hasCurves=true;
+					IfcCircle^ c = (IfcCircle^) swdSolid->Directrix;
+					if(dynamic_cast<IfcAxis2Placement2D^>(c->Position))
+					{
+						IfcAxis2Placement2D^ ax2 = (IfcAxis2Placement2D^)c->Position;
+						gp_Ax2 gpax2(gp_Pnt(ax2->Location->X, ax2->Location->Y,0), gp_Dir(0,0,1),gp_Dir(ax2->P[0]->X, ax2->P[0]->Y,0.));			
+						gp_Circ gc(gpax2,c->Radius);
+						curve = GC_MakeCircle(gc);
+					}
+					else if(dynamic_cast<IfcAxis2Placement3D^>(c->Position))
+					{
+						IfcAxis2Placement3D^ ax2 = (IfcAxis2Placement3D^)c->Position;
+						gp_Ax3 	gpax3 = XbimGeomPrim::ToAx3(ax2);		
+						gp_Circ gc(gpax3.Ax2(),c->Radius);	
+						curve = GC_MakeCircle(gc);
+					}	
+					else
+					{
+						Type ^ type = c->Position->GetType();
+						throw(gcnew NotImplementedException(String::Format("XbimFaceBound. Circle with Placement of type {0} is not implemented",type->Name)));	
+					}
+				}
+				else if (dynamic_cast<IfcEllipse^>(swdSolid->Directrix))
+				{
+					hasCurves=true;
+					IfcEllipse^ c = (IfcEllipse^) swdSolid->Directrix;
+
+					if(dynamic_cast<IfcAxis2Placement2D^>(c->Position))
+					{
+						IfcAxis2Placement2D^ ax2 = (IfcAxis2Placement2D^)c->Position;
+						double s1;
+						double s2;
+						if( c->SemiAxis1 > c->SemiAxis2)
+						{
+							s1=c->SemiAxis1;
+							s2=c->SemiAxis2;
+						}
+						else //either same or two is larger than 1
+						{
+							s1=c->SemiAxis2;
+							s2=c->SemiAxis1;
+						}
+
+						gp_Ax2 gpax2(gp_Pnt(ax2->Location->X, ax2->Location->Y,0), gp_Dir(0,0,1),gp_Dir(ax2->P[0]->X, ax2->P[0]->Y,0.));	
+
+						gp_Elips gc(gpax2,s1, s2);
+						curve = GC_MakeEllipse(gc);
+					}
+					else if(dynamic_cast<IfcAxis2Placement3D^>(c->Position))
+					{
+						Type ^ type = c->Position->GetType();
+						throw(gcnew NotImplementedException(String::Format("XbimSolid. Ellipse with Placement of type {0} is not implemented",type->Name)));	
+					}
+					else
+					{
+						Type ^ type = c->Position->GetType();
+						throw(gcnew NotImplementedException(String::Format("XbimSolid. Ellipse with Placement of type {0} is not implemented",type->Name)));	
+					}
+				}
+				BRepBuilderAPI_MakeWire w;
+				double flt1 = (double)(swdSolid->StartParam.Value) * parameterFactor;
+				double flt2 = (double)(swdSolid->EndParam.Value) * parameterFactor;
+				if ( isConic && Math::Abs(Math::IEEERemainder(flt2-flt1,(double)(Math::PI*2.0))-0.0f) < BRepBuilderAPI::Precision()) 
+				{
+					w.Add(BRepBuilderAPI_MakeEdge(curve));
+				} 
+				else 
+				{
+					BRepBuilderAPI_MakeEdge e (curve, flt1, flt2);
+					w.Add(e.Edge());
+				}
+				sweep = w.Wire();
+			}
+			else if (dynamic_cast<IfcLine^>(swdSolid->Directrix))
+			{
+				IfcLine^ line = (IfcLine^)(swdSolid->Directrix);
+				IfcCartesianPoint^ cp = line->Pnt;
+
+				IfcVector^ dir = line->Dir;
+				gp_Pnt pnt(cp->X,cp->Y,cp->Z);
+				XbimVector3D v3d = dir->XbimVector3D();
+				gp_Vec vec(v3d.X,v3d.Y,v3d.Z);
+				curve = GC_MakeLine(pnt,vec);
+				sweep = BRepBuilderAPI_MakeWire(BRepBuilderAPI_MakeEdge(GC_MakeLine(pnt,vec),0,dir->Magnitude));
+			}
+			else if(dynamic_cast<IfcCompositeCurve^>(swdSolid->Directrix))
+			{
+				sweep = XbimFaceBound::Build((IfcCompositeCurve^)(swdSolid->Directrix),hasCurves);
+			}
+			else
+			{
+				Type ^ type = swdSolid->Directrix->GetType();
+				throw(gcnew NotImplementedException(String::Format("XbimSolid. CompositeCurveSegments with BasisCurve of type {0} is not implemented",type->Name)));	
+			}
+
+			//build the surface to sweep
+			//make the outer wire
+			gp_Circ outer(ax2,swdSolid->Radius);
+			Handle(Geom_Circle) hOuter = GC_MakeCircle(outer);
+			TopoDS_Edge outerEdge = BRepBuilderAPI_MakeEdge(hOuter);
+			BRepBuilderAPI_MakeWire outerWire;
+			outerWire.Add(outerEdge);
+					
+			//BRepTools::Write(faceBlder.Face(),"f");
+			
+			BRepOffsetAPI_MakePipeShell pipeMaker(sweep);
+			pipeMaker.Add(outerWire.Wire(),Standard_True, Standard_True);
+			pipeMaker.Build();
+			if(pipeMaker.IsDone() && pipeMaker.MakeSolid())
+			{ 
+				TopoDS_Shape result = pipeMaker.Shape();
+				
+				//now add inner wire if it is defined
+				/*if(swdSolid->InnerRadius.HasValue)
+				{
+				gp_Circ inner(ax2,swdSolid->InnerRadius.Value);
+				Handle(Geom_Circle) hInner = GC_MakeCircle(inner);
+				TopoDS_Edge innerEdge = BRepBuilderAPI_MakeEdge(hInner);
+				BRepBuilderAPI_MakeWire innerWire;
+				innerWire.Add(innerEdge);
+				faceBlder.Add(innerWire);
+				}*/
+				return TopoDS::Solid(result);
+			}
+			else
+			{
+				Logger->WarnFormat( "Entity #" + swdSolid->EntityLabel.ToString() + ", IfcSweptDiskSolid could not be constructed ");
+				return TopoDS_Solid();
+			}
 		}
 		
 		TopoDS_Solid XbimSolid::Build(IfcSweptAreaSolid^ sweptAreaSolid, bool% hasCurves)
@@ -769,51 +901,59 @@ namespace Xbim
 
 		TopoDS_Solid XbimSolid::Build(IfcPolygonalBoundedHalfSpace^ pbhs, bool% hasCurves)
 		{
-			//creates polygon and its plane normal direction
-			gp_Ax3 ax3Polygon = XbimGeomPrim::ToAx3(pbhs->Position);
-			gp_Dir normPolygon = ax3Polygon.Direction();	
-			TopoDS_Wire wire =  XbimFaceBound::Build(pbhs->PolygonalBoundary, hasCurves); //get the polygon
-			BRepBuilderAPI_MakeFace makeFace(wire);
 			
-			TopoDS_Face face = makeFace.Face();
-			
-			gp_Trsf toPos = XbimGeomPrim::ToTransform(pbhs->Position);
-			face.Move(toPos);			
-			TopoDS_Shape pris = BRepPrimAPI_MakePrism(face, gp_Vec(normPolygon)*2e6); //create infinite extrusion,  this is a work around as infinite half space don't work properly in open cascade
-			//Move the prism so that it approximates to infinit in both directions
-			gp_Trsf away; 
-			away.SetTranslation(gp_Vec(normPolygon)*-1e6);
-			pris.Move(away);
-			
-			TopoDS_Solid hs = MakeHalfSpace((IfcHalfSpaceSolid^)pbhs,hasCurves,false );//cast to build the half space
-
-			BRepAlgoAPI_Common joiner(pris, hs);
-			
-			if(joiner.ErrorStatus() == 0) //find the solid and return it, else throw an exception
-			{
-				TopoDS_Shape result = joiner.Shape();
-				if( BRepCheck_Analyzer(result).IsValid() == 0) //try and move half space in case it is co-planar with a face. This cause OpenCascade to delete the face and make an illegal solid
+				//creates polygon and its plane normal direction
+				gp_Ax3 ax3Polygon = XbimGeomPrim::ToAx3(pbhs->Position);
+				gp_Dir normPolygon = ax3Polygon.Direction();	
+				TopoDS_Wire wire =  XbimFaceBound::Build(pbhs->PolygonalBoundary, hasCurves); //get the polygon
+				BRepBuilderAPI_MakeFace makeFace(wire);
+				TopoDS_Face face = makeFace.Face();
+				if(face.IsNull()) 
 				{
-					TopoDS_Solid hsMoved = MakeHalfSpace((IfcHalfSpaceSolid^)pbhs,hasCurves, true );//cast to build the half space
-			
-					BRepAlgoAPI_Common joiner2(pris, hsMoved);
-					if(BRepCheck_Analyzer(joiner2.Shape()).IsValid() != 0)
-						result = joiner2.Shape();
-					else //these shapes have nothing in common, so just return an empty solid
-						return TopoDS_Solid();
+					Logger->WarnFormat("The IfcPolygonalBoundedHalfSpace #{0} has an icorrectly defined PolygonalBoundary #{1}, it has been ignored",pbhs->EntityLabel,pbhs->PolygonalBoundary->EntityLabel);
+					return TopoDS_Solid(); //the face is illegal
 				}
 
-				if(result.ShapeType() == TopAbs_SOLID) //if we have a solid just send it
-				{
-					return TopoDS::Solid(result);
-				}
+				gp_Trsf toPos = XbimGeomPrim::ToTransform(pbhs->Position);
+				face.Move(toPos);	
+	
+				TopoDS_Shape pris = BRepPrimAPI_MakePrism(face, gp_Vec(normPolygon)*2e6); //create infinite extrusion,  this is a work around as infinite half space don't work properly in open cascade
+				//Move the prism so that it approximates to infinit in both directions
+				gp_Trsf away; 
+				away.SetTranslation(gp_Vec(normPolygon)*-1e6);
+				pris.Move(away);
 
-				for (TopExp_Explorer solidEx(result,TopAbs_SOLID) ; solidEx.More(); solidEx.Next())  
+				TopoDS_Solid hs = MakeHalfSpace((IfcHalfSpaceSolid^)pbhs,hasCurves,false );//cast to build the half space
+
+				BRepAlgoAPI_Common joiner(pris, hs);
+
+				if(joiner.ErrorStatus() == 0) //find the solid and return it, else throw an exception
 				{
-					return TopoDS::Solid(solidEx.Current());
+					TopoDS_Shape result = joiner.Shape();
+					if( BRepCheck_Analyzer(result).IsValid() == 0) //try and move half space in case it is co-planar with a face. This cause OpenCascade to delete the face and make an illegal solid
+					{
+						TopoDS_Solid hsMoved = MakeHalfSpace((IfcHalfSpaceSolid^)pbhs,hasCurves, true );//cast to build the half space
+
+						BRepAlgoAPI_Common joiner2(pris, hsMoved);
+						if(BRepCheck_Analyzer(joiner2.Shape()).IsValid() != 0)
+							result = joiner2.Shape();
+						else //these shapes have nothing in common, so just return an empty solid
+							return TopoDS_Solid();
+					}
+
+					if(result.ShapeType() == TopAbs_SOLID) //if we have a solid just send it
+					{
+						return TopoDS::Solid(result);
+					}
+
+					for (TopExp_Explorer solidEx(result,TopAbs_SOLID) ; solidEx.More(); solidEx.Next())  
+					{
+						return TopoDS::Solid(solidEx.Current());
+					}
 				}
-			}
-			throw gcnew XbimGeometryException("Failed create polygonally bounded half space");
+		
+				throw gcnew XbimGeometryException("Failed to create polygonally bounded half space");
+		
 		}
 
 

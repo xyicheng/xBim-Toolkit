@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using PropertyTools.Wpf;
 using Xbim.IO;
-using Xbim.IO.TreeView;
 using System.Windows;
 using Xbim.Ifc2x3.Kernel;
 using System.Windows.Data;
@@ -14,6 +13,9 @@ using System.Windows.Controls.Primitives;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Collections.Specialized;
+using Xbim.XbimExtensions.Interfaces;
+using System.Collections.ObjectModel;
+using Xbim.IO.ViewModels;
 
 namespace Xbim.Presentation
 {
@@ -23,78 +25,184 @@ namespace Xbim.Presentation
         public XbimTreeview()
         {
             SelectionMode = System.Windows.Controls.SelectionMode.Single; //always use single selection mode
-           
         }
 
         protected override void OnSelectionChanged(System.Windows.Controls.SelectionChangedEventArgs e)
         {
             base.OnSelectionChanged(e);
             if (e.AddedItems.Count > 0)
-                EntityLabel = ((IXbimViewModel)(e.AddedItems[0])).EntityLabel;
+            {
+                IPersistIfcEntity p = ((IXbimViewModel)(e.AddedItems[0])).Entity;
+                IPersistIfcEntity p2 = SelectedEntity;
+                if (p2 == null)
+                    SelectedEntity = p;
+                else if (!(p.ModelOf == p2.ModelOf && Math.Abs(p.EntityLabel)==Math.Abs(p2.EntityLabel))) 
+                    SelectedEntity = p;
+            }
         }
 
 
 
-        public int EntityLabel
+        public IPersistIfcEntity SelectedEntity
         {
-            get { return (int)GetValue(EntityLabelProperty); }
-            set { SetValue(EntityLabelProperty, value); }
+            get { return (IPersistIfcEntity)GetValue(SelectedEntityProperty); }
+            set { SetValue(SelectedEntityProperty, value); }
         }
 
-        // Using a DependencyProperty as the backing store for EntityLabel.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty EntityLabelProperty =
-            DependencyProperty.Register("EntityLabel", typeof(int), typeof(XbimTreeview), new FrameworkPropertyMetadata(-1, FrameworkPropertyMetadataOptions.Inherits,
-                                                                      new PropertyChangedCallback(OnEntityLabelChanged)));
+        // Using a DependencyProperty as the backing store for SelectedEntity.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty SelectedEntityProperty =
+            DependencyProperty.Register("SelectedEntity", typeof(IPersistIfcEntity), typeof(XbimTreeview), new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.Inherits,
+                                                                      new PropertyChangedCallback(OnSelectedEntityChanged)));
 
-        
-
-
-        private static void OnEntityLabelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static void OnSelectedEntityChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             XbimTreeview view = d as XbimTreeview;
-            if (view != null && e.NewValue is int)
+            if (view != null && e.NewValue is IPersistIfcEntity)
             {
                 view.UnselectAll();
-                int newVal = (int)(e.NewValue);
-                if (newVal > 0) view.Select(newVal);
+                IPersistIfcEntity newVal = (IPersistIfcEntity)(e.NewValue);
+                if (newVal != null) view.Select(newVal);
                 return;
             }
         }
 
-        private void Select(int newVal)
+        // todo: bonghi: this one is too slow on Architettonico_def.xBIM, so I'm patching it for a specific hierarchy, but it needs serious redesign for efficiency
+        private void Select(IPersistIfcEntity newVal, bool tryOptimise = true)
         {
-            foreach (var item in HierarchySource.OfType<IXbimViewModel>())
+            if (this.ViewDefinition == XbimViewType.SpatialStructure && tryOptimise)
             {
-                IXbimViewModel toSelect = FindItem(item, newVal);
-                if (toSelect != null)
+                /*
+                We know that the structure in this case looks like:
+                 
+                XbimModelViewModel
+                    model.project.GetSpatialStructuralElements (into SpatialViewModel)
+                    model.RefencedModels (into XbimRefModelViewModel)
+                        model.project.GetSpatialStructuralElements (into SpatialViewModel)
+
+                SpatialViewModel
+                    SpatialViewModel 
+                    ContainedElementsViewModel
+                        IfcProductModelView
+                            IfcProductModelView
+                 
+                If a model is a product then find its space with breadth first then expand to it with depth first.
+                todo: bonghi: this is still not optimal, because it can only point to simple IPersistIfcEntity and not intermediate IXbimViewModels.
+ 
+                */
+                IfcProduct p = newVal as IfcProduct;
+                if (p != null)
                 {
-                    item.IsExpanded = true;
-                    UpdateLayout();
-                    ScrollIntoView(toSelect);
-                    toSelect.IsSelected = true; ;
-                    return;
+                    var found = FindUnderContainingSpace(newVal, p);  // direct search 
+                    if (found == null)
+                    { 
+                        // search for composed object
+                        var ParentObject = p.Decomposes.FirstOrDefault().RelatingObject;
+                        found = FindUnderContainingSpace(newVal, (IfcProduct)ParentObject);  // direct search of parent through containing space
+                        if (found != null)
+                            found = FindItemDepthFirst(found, newVal); // then search for the child
+                        
+                    }
+                    if (found != null)
+                    {
+                        Highlight(found);
+                        return;
+                    }
+                }
+                // if optimised search fails revert to brute force expansion
+                this.Select(newVal, false);
+            }
+            else
+            {
+                foreach (var item in HierarchySource.OfType<IXbimViewModel>())
+                {
+                    IXbimViewModel toSelect = FindItemDepthFirst(item, newVal);
+                    if (toSelect != null)
+                    {
+                        Highlight(toSelect); 
+                        return;
+                    }
                 }
             }
         }
 
-        public IXbimViewModel FindItem(IXbimViewModel node, int entitylabel)
+        private IXbimViewModel FindUnderContainingSpace(IPersistIfcEntity newVal, IfcProduct p)
         {
-            if (node.EntityLabel == entitylabel)
+            var ContainingSpace = p.IsContainedIn().FirstOrDefault();
+            if (ContainingSpace != null)
             {
-                node.IsExpanded = true;
+                var ContainingSpaceView = FindItemBreadthFirst(ContainingSpace);
+                if (ContainingSpaceView != null)
+                {
+                    var found = FindItemDepthFirst(ContainingSpaceView, newVal);
+                    if (found != null)
+                    {
+                        return found;
+                    }
+                }
+            }
+            return null;
+        }
+
+        private void Highlight(IXbimViewModel toSelect)
+        {
+            UpdateLayout();
+            ScrollIntoView(toSelect);
+            toSelect.IsSelected = true;
+            while (toSelect != null)
+            {
+                toSelect.IsExpanded = true;
+                toSelect = toSelect.CreatingParent;
+            }
+        }
+
+        public IXbimViewModel FindItemBreadthFirst(IPersistIfcEntity entity)
+        {
+            Queue<IXbimViewModel> queue = new Queue<IXbimViewModel>();
+            foreach (var item in HierarchySource.OfType<IXbimViewModel>())
+            {
+                queue.Enqueue(item);
+            }
+            IXbimViewModel current = queue.Dequeue();
+            while (current != null)
+            {
+                if (IsMatch(current, entity))
+                {
+                    return current;
+                }
+                foreach (var item in current.Children)
+                {
+                    queue.Enqueue(item);
+                }
+                current = queue.Dequeue();
+            }
+            return null;
+        }
+
+        public IXbimViewModel FindItemDepthFirst(IXbimViewModel node, IPersistIfcEntity entity)
+        {
+            if (IsMatch(node, entity))
+            {
+                // node.IsExpanded = true; // commented because of new Highlighting mechanisms
                 return node;
             }
 
             foreach (var child in node.Children)
             {
-                IXbimViewModel res = FindItem(child, entitylabel);
+                IXbimViewModel res = FindItemDepthFirst(child, entity);
                 if (res != null)
                 {
-                    node.IsExpanded = true; //it is here so expand parent
+                    // node.IsExpanded = true; //commented because of new Highlighting mechanisms
                     return res;
                 }
             }
             return null;
+        }
+
+        // todo: bonghi: this function should be changed to match IXbimViewModel directly.
+        // it should be possible in the redesign to build an IXbimViewModel from an IPersistIfcEntity.
+        private static bool IsMatch(IXbimViewModel node, IPersistIfcEntity entity)
+        {
+            return node.Model == entity.ModelOf && node.EntityLabel == Math.Abs(entity.EntityLabel);
         }
 
         public XbimViewType ViewDefinition
@@ -136,7 +244,6 @@ namespace Xbim.Presentation
                 {
                     case XbimViewType.SpatialStructure:
                         tv.ViewModel();
-                        
                         break;
                     case XbimViewType.Classification:
                         break;
@@ -147,14 +254,12 @@ namespace Xbim.Presentation
                     default:
                         break;
                 }
-
-                
             }
             else
             {
                 if (tv != null) //unbind
                 {
-                    tv.HierarchySource = null;
+                    tv.HierarchySource = Enumerable.Empty<XbimModelViewModel>();
                 }
             }
         }
@@ -167,7 +272,7 @@ namespace Xbim.Presentation
                 XbimModelViewModel vm = HierarchySource.Cast<XbimModelViewModel>().FirstOrDefault();
                 if(vm!=null)
                 {
-                    vm.AddRefModel(new XbimModelViewModel(refModel.Model.IfcProject));
+                    vm.AddRefModel(new XbimRefModelViewModel(refModel, null));
                 }
             }
         }
@@ -181,7 +286,7 @@ namespace Xbim.Presentation
                 List<SpatialViewModel> svList = new List<SpatialViewModel>();
                 foreach (var item in project.GetSpatialStructuralElements())
                 {
-                    var sv = new SpatialViewModel(item);
+                    var sv = new SpatialViewModel(item, null);
                     svList.Add(sv); 
                 }
                 
@@ -200,9 +305,10 @@ namespace Xbim.Presentation
             IfcProject project = Model.IfcProject as IfcProject;
             if (project != null)
             {
+              
                 this.ChildrenBinding = new Binding("Children");
-                List<XbimModelViewModel> svList = new List<XbimModelViewModel>();  
-                svList.Add(new XbimModelViewModel(project));
+                ObservableCollection<XbimModelViewModel> svList = new ObservableCollection<XbimModelViewModel>();  
+                svList.Add(new XbimModelViewModel(project, null));
                 this.HierarchySource = svList;
             }
         }

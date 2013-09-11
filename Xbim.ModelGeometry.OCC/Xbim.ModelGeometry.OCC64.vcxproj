@@ -67,13 +67,13 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)bin\$(Configuration)\$(PlatformName)\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)$(PlatformShortName)\$(Configuration)\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)$(Configuration)\x64\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)obj\$(PlatformShortName)\$(Configuration)\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</LinkIncremental>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)bin\$(Configuration)\$(PlatformName)\</OutDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='NugetDistribution|x64'">$(SolutionDir)bin\$(Configuration)\$(PlatformName)\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)$(PlatformShortName)\$(Configuration)\</IntDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='NugetDistribution|x64'">$(ProjectDir)$(PlatformShortName)\$(Configuration)\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)$(Configuration)\x64\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='NugetDistribution|x64'">$(ProjectDir)$(Configuration)\x64\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)obj\$(PlatformShortName)\$(Configuration)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='NugetDistribution|x64'">$(ProjectDir)obj\$(PlatformShortName)\$(Configuration)\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkIncremental>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='NugetDistribution|x64'">false</LinkIncremental>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Template|x64'">$(SolutionDir)bin\$(PlatformShortName)\$(Configuration)\</OutDir>
@@ -109,7 +109,7 @@
       <AdditionalDependencies>TKBool.lib;TKernel.lib;TKMath.lib;TKTopAlgo.lib;TKBRep.lib;TKMesh.lib;TKPrim.lib;TKBO.lib;TKG3D.lib;TKG2D.lib;TKGeomBase.lib;TKGeomAlgo.lib;TKShHealing.lib;TKOffset.lib;OpenGL32.Lib;Glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <AdditionalLibraryDirectories>.\OpenCascade\win64\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
       <AssemblyDebug>true</AssemblyDebug>
       <TargetMachine>MachineX64</TargetMachine>
       <KeyFile>
@@ -259,6 +259,7 @@
     <ClCompile Include="XbimFaceBound.cpp" />
     <ClCompile Include="XbimFacetedShell.cpp" />
     <ClCompile Include="XbimFeaturedShape.cpp" />
+    <ClCompile Include="XbimGeometryEngine.cpp" />
     <ClCompile Include="XbimMap.cpp" />
     <ClCompile Include="XbimGeometryModel.cpp" />
     <ClCompile Include="XbimGeometryModelCollection.cpp" />
@@ -273,7 +274,6 @@
   <ItemGroup>
     <ClInclude Include="CartesianTransform.h" />
     <ClInclude Include="ITessellatorReceiver.h" />
-    <ClInclude Include="IXbimGeometryModel.h" />
     <ClInclude Include="IXbimMeshGeometry.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="resource1.h" />
@@ -291,6 +291,7 @@
     <ClInclude Include="XbimFaceOuterBound.h" />
     <ClInclude Include="XbimFacetedShell.h" />
     <ClInclude Include="XbimFeaturedShape.h" />
+    <ClInclude Include="XbimGeometryEngine.h" />
     <ClInclude Include="XbimMap.h" />
     <ClInclude Include="XbimGeometryModel.h" />
     <ClInclude Include="XbimGeometryModelCollection.h" />

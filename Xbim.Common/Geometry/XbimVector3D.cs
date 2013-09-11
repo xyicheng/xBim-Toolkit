@@ -7,16 +7,22 @@ namespace Xbim.Common.Geometry
 {
     public struct XbimVector3D
     {
+        public readonly static XbimVector3D Zero;
+
+        static XbimVector3D()
+        {
+            Zero = new XbimVector3D(0, 0, 0);
+        }
         public float X;
         public float Y;
         public float Z;
+        
         public float Length 
         {
             get
             {
              return length();
             }
-           
         }
 
         private float length()
@@ -36,6 +42,28 @@ namespace Xbim.Common.Geometry
             X = (float)vx;
             Y = (float)vy;
             Z = (float)vz;
+        }
+
+        public XbimVector3D(float v)
+        {
+            X = v;
+            Y = v;
+            Z = v;
+        }
+
+        static public XbimVector3D Min(XbimVector3D a, XbimVector3D b)
+        {
+            return new XbimVector3D(
+                (a.X < b.X) ? a.X : b.X,
+                (a.Y < b.Y) ? a.Y : b.Y,
+                (a.Z < b.Z) ? a.Z : b.Z);
+        }
+        static public XbimVector3D Max(XbimVector3D a, XbimVector3D b)
+        {
+            return new XbimVector3D(
+                (a.X > b.X) ? a.X : b.X,
+                (a.Y > b.Y) ? a.Y : b.Y,
+                (a.Z > b.Z) ? a.Z : b.Z);
         }
 
         #region Operators
@@ -71,6 +99,26 @@ namespace Xbim.Common.Geometry
             return v1.Equals(v2);
         }
 
+        public static XbimVector3D operator +(XbimVector3D vector1, XbimVector3D vector2)
+        {
+            return new XbimVector3D(vector1.X + vector2.X, vector1.Y + vector2.Y, vector1.Z + vector2.Z);
+        }
+
+        public static XbimVector3D Add(XbimVector3D vector1, XbimVector3D vector2)
+        {
+            return new XbimVector3D(vector1.X + vector2.X, vector1.Y + vector2.Y, vector1.Z + vector2.Z);
+        }
+
+        public static XbimVector3D operator -(XbimVector3D vector1, XbimVector3D vector2)
+        {
+            return new XbimVector3D(vector1.X - vector2.X, vector1.Y - vector2.Y, vector1.Z - vector2.Z);
+        }
+
+        public static XbimVector3D Subtract(XbimVector3D vector1, XbimVector3D vector2)
+        {
+            return new XbimVector3D(vector1.X - vector2.X, vector1.Y - vector2.Y, vector1.Z - vector2.Z);
+        }
+
         public static XbimVector3D operator *(float l, XbimVector3D v1)
         {
             return XbimVector3D.Multiply(l, v1);
@@ -80,12 +128,12 @@ namespace Xbim.Common.Geometry
         {
             return XbimVector3D.Multiply((float)l, v1);
         }
-        
 
         public static XbimVector3D operator *(XbimVector3D v1, float l)
         {
             return XbimVector3D.Multiply(l, v1);
         }
+
         public static XbimVector3D operator *(XbimVector3D v1, XbimMatrix3D m)
         {
             return XbimVector3D.Multiply(v1, m);
@@ -98,7 +146,6 @@ namespace Xbim.Common.Geometry
         
         public static XbimVector3D Multiply(XbimVector3D vec, XbimMatrix3D m)
         {
-            
             var x = vec.X;
             var y = vec.Y;
             var z = vec.Z;
@@ -107,19 +154,6 @@ namespace Xbim.Common.Geometry
                                      m.M13 * x + m.M23 * y + m.M33 * z 
                                     );
         }
-
-        public static XbimVector3D operator -(XbimVector3D a, XbimVector3D b)
-        {
-            return XbimVector3D.Subtract(a, b);
-        }
-
-        public static XbimVector3D Subtract(XbimVector3D a, XbimVector3D b)
-        {
-            return new XbimVector3D(a.X - b.X,
-                                    a.Y - b.Y,
-                                    a.Z - b.Z);
-        }
-
 
         public void Normalize()
         {
@@ -131,19 +165,27 @@ namespace Xbim.Common.Geometry
             if (len == 0)
             {
                 X = 0; Y = 0; Z = 0;
+                return;
             }
-            else if (len == 1)
-                return; //do nothing
-
+            
             len = 1 / len;
             X = x * len;
             Y = y * len;
             Z = z * len;
+
+            if (Math.Abs(X) == 1)
+                { Y = 0; Z = 0; }
+            else if (Math.Abs(Y) == 1)
+                { X = 0; Z = 0; }
+            else if (Math.Abs(Z) == 1)
+                { X = 0; Y = 0; }
         }
+
         public XbimVector3D CrossProduct(XbimVector3D v2)
         {
             return XbimVector3D.CrossProduct(this, v2);
         }
+
         public static XbimVector3D CrossProduct(XbimVector3D v1, XbimVector3D v2)
         {
             var x = v1.X;
@@ -170,11 +212,5 @@ namespace Xbim.Common.Geometry
         }
 
         #endregion
-
-
-
-       
-        
-       
     }
 }

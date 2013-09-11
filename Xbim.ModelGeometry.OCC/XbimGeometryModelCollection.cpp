@@ -23,7 +23,7 @@ namespace Xbim
 		{
 		/*Interfaces*/
 
-		IXbimGeometryModel^ XbimGeometryModelCollection::Cut(IXbimGeometryModel^ shape)
+		XbimGeometryModel^ XbimGeometryModelCollection::Cut(XbimGeometryModel^ shape)
 		{
 			throw gcnew XbimGeometryException("A cut operation has been applied to a collection of model object this is illegal according to schema");
 			/*try
@@ -69,7 +69,7 @@ namespace Xbim
 
 			//}
 		}
-		IXbimGeometryModel^ XbimGeometryModelCollection::Union(IXbimGeometryModel^ shape)
+		XbimGeometryModel^ XbimGeometryModelCollection::Union(XbimGeometryModel^ shape)
 		{
 			throw gcnew XbimGeometryException("A cut operation has been applied to a collection of model object this is illegal according to schema");
 			//BRepAlgoAPI_Fuse boolOp(*pCompound,*(shape->Handle));
@@ -103,7 +103,7 @@ namespace Xbim
 			//	return nullptr;
 			//}
 		}
-		IXbimGeometryModel^ XbimGeometryModelCollection::Intersection(IXbimGeometryModel^ shape)
+		XbimGeometryModel^ XbimGeometryModelCollection::Intersection(XbimGeometryModel^ shape)
 		{
 			throw gcnew XbimGeometryException("A cut operation has been applied to a collection of model object this is illegal according to schema");
 			//BRepAlgoAPI_Common boolOp(*pCompound,*(shape->Handle));
@@ -138,31 +138,22 @@ namespace Xbim
 			//	return nullptr;
 			//}
 		}
-		List<XbimTriangulatedModel^>^XbimGeometryModelCollection::Mesh( )
-		{
-			return Mesh(true, XbimGeometryModel::DefaultDeflection, XbimMatrix3D::Identity);
-		}
+		
 
-		List<XbimTriangulatedModel^>^XbimGeometryModelCollection::Mesh(bool withNormals )
-		{
-			return Mesh(withNormals, XbimGeometryModel::DefaultDeflection, XbimMatrix3D::Identity);
-		}
-		List<XbimTriangulatedModel^>^XbimGeometryModelCollection::Mesh(bool withNormals, double deflection )
-		{ 
-			return Mesh(withNormals, deflection, XbimMatrix3D::Identity);
-		}
-
-		List<XbimTriangulatedModel^>^ XbimGeometryModelCollection::Mesh(bool withNormals, double deflection, XbimMatrix3D transform )
+		List<XbimTriangulatedModel^>^ XbimGeometryModelCollection::Mesh(bool withNormals, double deflection )
 		{ 
 			
 			if(shapes->Count > 0) //we have children that need special materials etc
 			{
 				List<XbimTriangulatedModel^>^tm = gcnew List<XbimTriangulatedModel^>();
-				for each(IXbimGeometryModel^ gm in shapes)
+				for each(XbimGeometryModel^ gm in shapes)
 				{
-					List<XbimTriangulatedModel^>^ mm = gm->Mesh(withNormals, deflection, transform);
+					
+					List<XbimTriangulatedModel^>^ mm = gm->Mesh(withNormals, deflection);
 					if(mm!=nullptr)
 						tm->AddRange(mm);
+					
+					
 				}
 				return tm;
 			}
@@ -174,7 +165,7 @@ namespace Xbim
 		void XbimGeometryModelCollection::Move(TopLoc_Location location)
 		{	
 			
-			for each(IXbimGeometryModel^ shape in shapes)
+			for each(XbimGeometryModel^ shape in shapes)
 				shape->Move(location);
 			if (pCompound) //remove anyy cached compund data
 			{
@@ -183,22 +174,22 @@ namespace Xbim
 			}
 		}
 
-		IXbimGeometryModel^ XbimGeometryModelCollection::CopyTo(IfcObjectPlacement^ placement)
+		XbimGeometryModel^ XbimGeometryModelCollection::CopyTo(IfcObjectPlacement^ placement)
 		{
-			XbimGeometryModelCollection^ newColl = gcnew XbimGeometryModelCollection(_isMap, HasCurvedEdges);
+			XbimGeometryModelCollection^ newColl = gcnew XbimGeometryModelCollection(HasCurvedEdges);
 			newColl->RepresentationLabel=RepresentationLabel;
 			newColl->SurfaceStyleLabel=SurfaceStyleLabel;
-			for each(IXbimGeometryModel^ shape in shapes)
+			for each(XbimGeometryModel^ shape in shapes)
 			{
 				newColl->Add(shape->CopyTo(placement));
 			}
 			return newColl;
 		}
 		///Every element should be a solid bedore this is called. returns a compound solid
-		IXbimGeometryModel^ XbimGeometryModelCollection::Solidify()
+		XbimGeometryModel^ XbimGeometryModelCollection::Solidify()
 		{
-			IXbimGeometryModel^ a;
-			for each(IXbimGeometryModel^ b in shapes)
+			XbimGeometryModel^ a;
+			for each(XbimGeometryModel^ b in shapes)
 			{
 				if(a==nullptr) a=b;
 				else

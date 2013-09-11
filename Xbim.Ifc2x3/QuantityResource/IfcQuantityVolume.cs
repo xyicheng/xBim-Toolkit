@@ -66,7 +66,7 @@ namespace Xbim.Ifc2x3.QuantityResource
                     base.IfcParse(propIndex, value);
                     break;
                 case 3:
-                    VolumeValue = value.RealVal;
+                    _volumeValue = value.RealVal;
                     break;
                 default:
                     this.HandleUnexpectedAttribute(propIndex, value); break;

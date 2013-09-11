@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Xbim.Common.Geometry;
 
 namespace Xbim.XbimExtensions
 {
@@ -27,11 +28,11 @@ namespace Xbim.XbimExtensions
         readonly public int IfcProductLabel;
         readonly public XbimGeometryType GeometryType;
         readonly public byte[] ShapeData;
-        readonly public byte[] TransformData;
+        
         readonly public int GeometryHash;
         readonly public short IfcTypeId;
         readonly public int StyleLabel;
-
+        private XbimMatrix3D transform;
 
         public XbimGeometryData(int geometrylabel, int productLabel, XbimGeometryType geomType, short ifcTypeId, byte[] shape, byte[] transform, int geometryHash, int styleLabel)
         {
@@ -39,13 +40,34 @@ namespace Xbim.XbimExtensions
             GeometryType = geomType;
             IfcTypeId = ifcTypeId;
             ShapeData = shape;
-            TransformData = transform;
+           // TransformData = transform;
             IfcProductLabel = productLabel;
             GeometryHash = geometryHash;
             StyleLabel = styleLabel;
+            this.transform = XbimMatrix3D.FromArray(transform);
         }
 
+        public XbimMatrix3D Transform
+        {
+            get
+            {
+                return transform;
+            }
+        }
 
+        /// <summary>
+        /// Transforms the shape data of the geometry by the matrix
+        /// </summary>
+        /// <param name="matrix"></param>
+        public void TransformBy(XbimMatrix3D matrix)
+        {
+            transform = XbimMatrix3D.Multiply(transform, matrix);
+        }
+
+        public byte[] TransformData()
+        {
+            return transform.ToArray();
+        }
         /// <summary>
         /// The constructs an XbimGeoemtryData object, the geometry hash is calculated from the array of shape data
         /// </summary>
@@ -62,7 +84,7 @@ namespace Xbim.XbimExtensions
             GeometryType = geomType;
             IfcTypeId = ifcTypeId;
             ShapeData = shape;
-            TransformData = transform;
+            this.transform = XbimMatrix3D.FromArray(transform);
             IfcProductLabel = productLabel;
             GeometryHash = GenerateGeometryHash(ShapeData);
             StyleLabel = styleLabel;

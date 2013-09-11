@@ -2,6 +2,7 @@
 using System.Linq;
 using Xbim.Ifc2x3.Kernel;
 using Xbim.Ifc2x3.PropertyResource;
+//using System;
 
 
 
@@ -54,7 +55,7 @@ namespace Xbim.COBie.Data
         {
             get { return _ifcPropertySingleValues; }
         }
-        
+
         #endregion
 
 
@@ -67,6 +68,7 @@ namespace Xbim.COBie.Data
         /// <param name="sourceRows"></param>
         public COBieDataPropertySetValues(IEnumerable<IfcObject> sourceRows)
         {
+            //_propSetsValuesObjects = new Dictionary<IfcObject, Dictionary<IfcPropertySet, List<IfcSimpleProperty>>>();
             _propSetsValuesObjects = sourceRows.Where(el => (el != null)).ToDictionary(el => el, el => el.PropertySets
                 .ToDictionary(ps => ps, ps => ps.HasProperties.OfType<IfcSimpleProperty>().ToList()));
             
@@ -146,9 +148,25 @@ namespace Xbim.COBie.Data
         /// <param name="ifcObject">IfcObject holding the single property values</param>
         public void SetAllPropertySingleValues (IfcObject ifcObject)
         {
+            //_ifcPropertySingleValues = ifcObject.IsDefinedByProperties.Select(def => def.RelatingPropertyDefinition).OfType<IfcPropertySet>()
+            //    .SelectMany(ps => ps.HasProperties.OfType<IfcSimpleProperty>()).ToList();
+
+            //_ifcPropertySingleValues = ifcObject.PropertySets.SelectMany(ps => ps.HasProperties.OfType<IfcSimpleProperty>()).ToList();
+
             _ifcPropertySingleValues = (from dic in _propSetsValuesObjects[ifcObject]
-                        from psetval in dic.Value //list of IfcPropertySingleValue
-                        select psetval).ToList();
+                                        from psetval in dic.Value //list of IfcPropertySingleValue
+                                        select psetval).ToList();
+//#if DEBUG
+//            var xxx = (from dic in _propSetsValuesObjects[ifcObject]
+//                       from psetval in dic.Value //list of IfcPropertySingleValue
+//                       select psetval).ToList();
+
+//            if (_ifcPropertySingleValues.Count != xxx.Count)
+//            {
+//                Console.WriteLine(String.Format("Mismatch on property count {0} != {1}", _ifcPropertySingleValues.Count, xxx.Count));
+//            }
+            
+//#endif
         }
 
         /// <summary>
@@ -157,7 +175,7 @@ namespace Xbim.COBie.Data
         /// <param name="ifcObject">IfcObject holding the single property values</param>
         public void SetAllPropertySingleValues(IfcTypeObject ifcObject)
         {
-            _ifcPropertySingleValues.Clear(); //reset
+            //_ifcPropertySingleValues.Clear(); //reset
 
             if (_propSetsValuesTypeObjects.ContainsKey(ifcObject))
             {

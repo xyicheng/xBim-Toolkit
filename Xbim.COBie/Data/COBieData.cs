@@ -158,7 +158,7 @@ namespace Xbim.COBie.Data
             IfcRelAssociatesMaterial ifcRelAssociatesMaterial = null;
             if (ifcMaterialLayerSetUsage != null)
                 ifcRelAssociatesMaterial = ifcRelAssociatesMaterials.Where(ram => (ram.RelatingMaterial is IfcMaterialLayerSetUsage) && ((ram.RelatingMaterial as IfcMaterialLayerSetUsage) == ifcMaterialLayerSetUsage)).FirstOrDefault();
-
+                
             if (ifcRelAssociatesMaterial == null)
                 ifcRelAssociatesMaterial = ifcRelAssociatesMaterials.Where(ram => (ram.RelatingMaterial is IfcMaterialLayerSet) && ((ram.RelatingMaterial as IfcMaterialLayerSet) == ifcMaterialLayerSet)).FirstOrDefault();
 

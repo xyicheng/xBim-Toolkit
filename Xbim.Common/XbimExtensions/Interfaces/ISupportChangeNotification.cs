@@ -10,9 +10,10 @@
 
 #endregion
 
+using System.ComponentModel;
 namespace Xbim.XbimExtensions.Interfaces
 {
-    public interface ISupportChangeNotification
+    public interface ISupportChangeNotification : INotifyPropertyChanged, INotifyPropertyChanging
     {
         /// <summary>
         ///   Raises the NotifyPropertyChanged event on this object
