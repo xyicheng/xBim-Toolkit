@@ -114,6 +114,11 @@ namespace XbimQueryTest
                 {"Save model to file 'output.ifc';", true},
                 {"Close model;", true},
                 {"Open model from file 'output.ifc';", true},
+
+                //setting of attributes and properties
+                {"$wall is new wall with name 'New wall is here' and description 'New description for the wall';",true},
+                {"Set name to 'New name', description to 'New description', 'fire protection' to 12.3 for $wall;", true},
+                {"Set name to 123, description to 'New description', 'fire protection' to 12.3 for $wall;", false},
             };
 
             Xbim.IO.XbimModel model = Xbim.IO.XbimModel.CreateTemporaryModel();

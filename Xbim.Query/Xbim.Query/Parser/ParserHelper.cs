@@ -14,6 +14,8 @@ using Xbim.Ifc2x3.Extensions;
 using Xbim.Ifc2x3.MeasureResource;
 using Xbim.Ifc2x3.ProductExtension;
 using System.IO;
+using Xbim.Ifc2x3.PropertyResource;
+using Xbim.Ifc2x3.MaterialPropertyResource;
 
 namespace Xbim.Query
 {
@@ -33,7 +35,7 @@ namespace Xbim.Query
             if (_model == null) throw new ArgumentNullException("Model is NULL");
         }
 
-        #region Attribute and property conditions
+        #region Objects creation
         private IPersistIfcEntity CreateObject(Type type, string name, string description = null)
         {
             if (_model == null) throw new ArgumentNullException("Model is NULL");
@@ -78,7 +80,9 @@ namespace Xbim.Query
 
             return entity;
         }
+        #endregion
 
+        #region Attribute and property conditions
         private Expression GenerateAttributeCondition(string attribute, object value, Tokens condition)
         {
             var attrNameExpr = Expression.Constant(attribute);
@@ -150,8 +154,20 @@ namespace Xbim.Query
                 return false;
 
             //try to get values to the same level; none of the values can be null for this operation
-            object left = UnWrapType(ifcVal);
-            object right = PromoteType(GetNonNullableType(left.GetType()), val);
+            object left = null;
+            object right = null;
+            try
+            {
+                left = UnWrapType(ifcVal);
+                right = PromoteType(GetNonNullableType(left.GetType()), val);
+            }
+            catch (Exception)
+            {
+
+                scanner.yyerror(val.ToString() + " is not compatible type with type of " + ifcVal.GetType());
+                return false;
+            }
+            
 
             //create expression
             bool? result = null;
@@ -751,5 +767,155 @@ namespace Xbim.Query
             }
         }
         #endregion
+
+        #region Objects manipulation
+        private void EvaluateSetExpression(string identifier, Expression expression)
+        {
+            if (identifier == null || expression == null) return;
+            try
+            {
+                var action = Expression.Lambda<Action<IPersistIfcEntity>>(expression, _input).Compile();
+                var entities = _variables.GetEntities(identifier);
+                if (entities != null)
+                    entities.ToList().ForEach(action);
+            }
+            catch (Exception e)
+            {
+                Scanner.yyerror(e.Message);   
+            }
+        }
+
+        private Expression GenerateSetExpression(string attrName, object newVal)
+        {
+            var nameExpr = Expression.Constant(attrName);
+            var valExpr = Expression.Constant(newVal);
+
+            var evaluateMethod = GetType().GetMethod("SetAttribute", BindingFlags.Static | BindingFlags.NonPublic);
+            return Expression.Call(null, evaluateMethod, _input, nameExpr, valExpr);
+        }
+
+        private static void SetAttribute(IPersistIfcEntity input, string attrName, object newVal)
+        {
+            if (input == null) return;
+
+            var attr = input.GetType().GetProperty(attrName, BindingFlags.IgnoreCase);
+            if (attr == null)
+            {
+                SetProperty(input, attrName, newVal);
+                return;
+            }
+            SetValue(attr, input, newVal);
+        }
+
+        private static void SetProperty(IPersistIfcEntity entity, string name, object newVal)
+        {
+            List<IfcPropertySet> pSets = null;
+            List<IfcExtendedMaterialProperties> pSetsMaterial = null;
+            IfcPropertySingleValue property = null;
+            PropertyInfo info = null;
+
+            IfcObject obj = entity as IfcObject;
+            if (obj != null)
+            {
+                pSets = obj.GetAllPropertySets();
+            }
+            IfcTypeObject typeObj = entity as IfcTypeObject;
+            if (typeObj != null)
+            {
+                pSets = typeObj.GetAllPropertySets();
+            }
+            IfcMaterial material = entity as IfcMaterial;
+            if (material != null)
+            {
+                pSetsMaterial = material.GetAllPropertySets();
+            }
+
+            if (pSets != null)
+                foreach (var pSet in pSets)
+                {
+                    foreach (var prop in pSet.HasProperties)
+                    {
+                        if (prop.Name.ToString().ToLower() == name.ToLower()) property = prop as IfcPropertySingleValue;
+                    }
+                }
+            if (pSets != null)
+                foreach (var pSet in pSetsMaterial)
+                {
+                    foreach (var prop in pSet.ExtendedProperties)
+                    {
+                        if (prop.Name.ToString().ToLower() == name.ToLower()) property = prop as IfcPropertySingleValue;
+                    }
+                }
+
+            //set property
+            if (property != null)
+            {
+                info = property.GetType().GetProperty(name);
+                SetValue(info, entity, newVal);
+            }
+
+            //create new property if no such a property exists
+            else
+            {
+                string pSetName = "xbim_extended_properties";
+                IfcValue val = null;
+                Type type = newVal.GetType();
+                if (type == typeof(int))
+                    val = new IfcInteger((int)newVal);
+                if (type == typeof(string))
+                    val = new IfcLabel((string)newVal);
+                if (type == typeof(double))
+                    val = new IfcNumericMeasure((double)newVal);
+                if (type == typeof(bool))
+                    val = new IfcBoolean((bool)newVal);
+                
+                if (val == null)
+                    return;
+
+                if (obj != null)
+                {
+                    obj.SetPropertySingleValue(pSetName, name, val);
+                }
+                if (typeObj != null)
+                {
+                    typeObj.SetPropertySingleValue(pSetName, name, val);
+                }
+                if (material != null)
+                {
+                    material.SetExtendedSingleValue(pSetName, name, val);
+                }
+            }
+        }
+
+        private static void SetValue(PropertyInfo info, object instance, object value)
+        {
+            try
+            {
+                var targetType = info.PropertyType.IsNullableType()
+                 ? Nullable.GetUnderlyingType(info.PropertyType)
+                 : info.PropertyType;
+
+                var newValue = Activator.CreateInstance(targetType, value);
+                var convertedValue = Convert.ChangeType(newValue, info.PropertyType);
+
+                info.SetValue(instance, convertedValue, null);
+            }
+            catch (Exception)
+            {
+                throw new Exception("Value "+value.ToString()+" could not be set to "+ info.Name+" of type"+ instance.GetType().Name + ". Type should be compatible with " + info.MemberType);
+            }
+            
+        }
+
+        #endregion
+    }
+
+    public static class TypeExtensions
+    {
+        public static bool IsNullableType(this Type type)
+        {
+            return type.IsGenericType
+            && type.GetGenericTypeDefinition().Equals(typeof(Nullable<>));
+        }
     }
 }

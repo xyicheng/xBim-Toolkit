@@ -70,6 +70,8 @@
 
 /* ********************** Keywords ************************** */
 "select"			{ return (int)Tokens.SELECT;}
+"set"			{ return (int)Tokens.SET;}
+"for"			{ return (int)Tokens.FOR;}
 "where"			{ return (int)Tokens.WHERE;}
 "create"			{ return (int)Tokens.CREATE;}
 "with name" |

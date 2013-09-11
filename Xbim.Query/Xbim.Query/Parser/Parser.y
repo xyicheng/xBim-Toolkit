@@ -53,6 +53,7 @@
 %token  TO
 %token  REMOVE
 %token  FROM
+%token  FOR
 %token  NAME /*name*/
 %token  PREDEFINED_TYPE
 %token  TYPE
@@ -60,6 +61,7 @@
 
 /* commands */
 %token  SELECT
+%token  SET
 %token  CREATE
 %token  DUMP
 %token  CLEAR
@@ -75,25 +77,48 @@ expressions
 	;
 
 expression
-	: selection
-	| creation
-	| addition
-	| variables_actions
-	| model_actions
+	: selection ';'
+	| creation ';'
+	| addition ';'
+	| attr_setting ';'
+	| variables_actions ';'
+	| model_actions ';'
 	| error
 	;
 
+attr_setting
+	: SET value_setting_list FOR IDENTIFIER				{EvaluateSetExpression($4.strVal, ((Expression)($2.val)));}
+	;
+
+value_setting_list
+	: value_setting_list ',' value_setting				{((List<Expression>)($1.val)).Add((Expression)($2.val)); $$.val = $1.val;}
+	| value_setting										{$$.val = new List<Expression>(){((Expression)($1.val))};}
+	;
+
+value_setting
+	: attribute TO value		{$$.val = GenerateSetExpression($1.strVal, $3.val);}
+	| STRING TO value			{$$.val = GenerateSetExpression($1.strVal, $3.val);}
+	;	
+
+value
+	: STRING							{$$.val = $1.strVal;}
+	| BOOLEAN							{$$.val = $1.boolVal;}
+	| INTEGER							{$$.val = $1.intVal;}
+	| FLOAT								{$$.val = $1.floatVal;}
+	| NONDEF							{$$.val = null;}
+	;
+
 model_actions
-	: OPEN MODEL FROM FILE STRING';'								{OpenModel($5.strVal);}
-	| CLOSE MODEL ';'												{CloseModel();}
-	| SAVE MODEL TO FILE STRING';'									{SaveModel($5.strVal);}
+	: OPEN MODEL FROM FILE STRING									{OpenModel($5.strVal);}
+	| CLOSE MODEL													{CloseModel();}
+	| SAVE MODEL TO FILE STRING										{SaveModel($5.strVal);}
 	;
 
 variables_actions
-	: DUMP IDENTIFIER ';'											{DumpIdentifier($2.strVal);}
-	| CLEAR IDENTIFIER ';'											{ClearIdentifier($2.strVal);}
-	| DUMP string_list FROM IDENTIFIER ';'							{DumpAttributes($4.strVal, ((List<string>)($2.val)));}
-	| DUMP string_list FROM IDENTIFIER TO FILE STRING ';'			{DumpAttributes($4.strVal, ((List<string>)($2.val)), $7.strVal);}
+	: DUMP IDENTIFIER												{DumpIdentifier($2.strVal);}
+	| CLEAR IDENTIFIER												{ClearIdentifier($2.strVal);}
+	| DUMP string_list FROM IDENTIFIER								{DumpAttributes($4.strVal, ((List<string>)($2.val)));}
+	| DUMP string_list FROM IDENTIFIER TO FILE STRING				{DumpAttributes($4.strVal, ((List<string>)($2.val)), $7.strVal);}
 	;
 
 string_list
@@ -104,8 +129,8 @@ string_list
 	;
 
 selection
-	: SELECT selection_statement ';'								{Variables.Set("$$", ((IEnumerable<IPersistIfcEntity>)($2.val)));}
-	| IDENTIFIER op_bool selection_statement ';'					{AddOrRemoveFromSelection($1.strVal, ((Tokens)($2.val)), $3.val);}
+	: SELECT selection_statement									{Variables.Set("$$", ((IEnumerable<IPersistIfcEntity>)($2.val)));}
+	| IDENTIFIER op_bool selection_statement						{AddOrRemoveFromSelection($1.strVal, ((Tokens)($2.val)), $3.val);}
 	;
 
 selection_statement
@@ -115,8 +140,8 @@ selection_statement
 	;
 	
 creation
-	: CREATE creation_statement ';'									{Variables.Set("$$", ((IPersistIfcEntity)($2.val)));}
-	| IDENTIFIER OP_EQ creation_statement ';'						{Variables.Set($1.strVal, ((IPersistIfcEntity)($3.val)));}
+	: CREATE creation_statement										{Variables.Set("$$", ((IPersistIfcEntity)($2.val)));}
+	| IDENTIFIER OP_EQ creation_statement							{Variables.Set($1.strVal, ((IPersistIfcEntity)($3.val)));}
 	;
 
 creation_statement
@@ -126,8 +151,8 @@ creation_statement
 	;
 
 addition
-	: ADD IDENTIFIER TO IDENTIFIER ';'								{AddOrRemoveToGroupOrType(Tokens.ADD, $2.strVal, $4.strVal);}
-	| REMOVE IDENTIFIER FROM IDENTIFIER ';'							{AddOrRemoveToGroupOrType(Tokens.REMOVE, $2.strVal, $4.strVal);}
+	: ADD IDENTIFIER TO IDENTIFIER									{AddOrRemoveToGroupOrType(Tokens.ADD, $2.strVal, $4.strVal);}
+	| REMOVE IDENTIFIER FROM IDENTIFIER								{AddOrRemoveToGroupOrType(Tokens.REMOVE, $2.strVal, $4.strVal);}
 	;
 
 conditions

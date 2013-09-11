@@ -6,6 +6,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Xbim.IO;
 using Xbim.Query;
 using System.IO;
+using Xbim.Ifc2x3.MeasureResource;
+using System.Reflection;
 
 namespace XbimQueryTest
 {
@@ -37,5 +39,8 @@ namespace XbimQueryTest
             Assert.AreEqual(0, parser.Errors.Count());
             Assert.AreEqual(3, parser.Results["$$"].Count());
         }
+
     }
+
+    
 }
