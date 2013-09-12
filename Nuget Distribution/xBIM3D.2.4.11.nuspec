@@ -1,0 +1,72 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+    <metadata>
+        <id>xBIM3D</id>
+        <version>2.4.11</version>
+        <title>xBIM 3D</title>
+        <authors>xBIM Team</authors>
+        <owners>Steve Lockley</owners>
+        <licenseUrl>http://xbim.codeplex.com/license</licenseUrl>
+        <projectUrl>http://xbim.codeplex.com/</projectUrl>
+        <iconUrl>http://download-codeplex.sec.s-msft.com/Download?ProjectName=xbim&amp;DownloadId=373774&amp;Build=20335</iconUrl>
+        <requireLicenseAcceptance>true</requireLicenseAcceptance>
+        <description>xBIM 3D is the full version of the xBIM toolkit. It supports  geometric operations and 3D visualisation as well as reading and writing IFC data files.. Use xBIM 3D if you are building BIM applications that need a 3D graphical user interface.
+xBIM is an Open Source Toolkit for developing IFC based applications (BuildingSmart Data model). 
+It provides full support for reading and writing geometry, topology and data in accordance with the Ifc2x3 schema.
+xBIM reads and writes Ifc, IfcXMl and IfcZip formats and will convert models to COBie spreadsheets in both UK and US cultures.
+A range of 3D viewing controls are provided for use with Windows forms, WPF, WEBGL and OpenGL platforms.
+IOS and Android versions are under development.</description>
+        <summary>The .Net toolkit for developing 3D BIM applications based on the IFC standard.</summary>
+        <releaseNotes>This version builds for Any CPU.</releaseNotes>
+        <language>en-GB</language>
+        <tags>BIM, IFC, IfcXml, IfcZip, COBie, .Net, C#, BuildingSmart, 3D</tags>
+        <dependencies>
+            <dependency id="HelixToolkit" version="2013.1.10.1" />
+            <dependency id="NPOI" version="1.2.5" />
+            <dependency id="PropertyTools.Wpf" version="2013.1.12.1" />
+            <dependency id="Newtonsoft.Json" version="4.5.11" />
+            <dependency id="Xbim" version="2.4.11" />
+        </dependencies>
+    </metadata>
+    <files>
+        <file src="..\Xbim.ModelGeometry.OCC\NugetDistribution\x64\TKBO.dll" target="content\net40\x64\TKBO.dll" />
+        <file src="..\Xbim.ModelGeometry.OCC\NugetDistribution\x64\TKBool.dll" target="content\net40\x64\TKBool.dll" />
+        <file src="..\Xbim.ModelGeometry.OCC\NugetDistribution\x64\TKBRep.dll" target="content\net40\x64\TKBRep.dll" />
+        <file src="..\Xbim.ModelGeometry.OCC\NugetDistribution\x64\TKernel.dll" target="content\net40\x64\TKernel.dll" />
+        <file src="..\Xbim.ModelGeometry.OCC\NugetDistribution\x64\TKG2d.dll" target="content\net40\x64\TKG2d.dll" />
+        <file src="..\Xbim.ModelGeometry.OCC\NugetDistribution\x64\TKG3d.dll" target="content\net40\x64\TKG3d.dll" />
+        <file src="..\Xbim.ModelGeometry.OCC\NugetDistribution\x64\TKGeomAlgo.dll" target="content\net40\x64\TKGeomAlgo.dll" />
+        <file src="..\Xbim.ModelGeometry.OCC\NugetDistribution\x64\TKGeomBase.dll" target="content\net40\x64\TKGeomBase.dll" />
+        <file src="..\Xbim.ModelGeometry.OCC\NugetDistribution\x64\TKMath.dll" target="content\net40\x64\TKMath.dll" />
+        <file src="..\Xbim.ModelGeometry.OCC\NugetDistribution\x64\TKMesh.dll" target="content\net40\x64\TKMesh.dll" />
+        <file src="..\Xbim.ModelGeometry.OCC\NugetDistribution\x64\TKOffset.dll" target="content\net40\x64\TKOffset.dll" />
+        <file src="..\Xbim.ModelGeometry.OCC\NugetDistribution\x64\TKPrim.dll" target="content\net40\x64\TKPrim.dll" />
+        <file src="..\Xbim.ModelGeometry.OCC\NugetDistribution\x64\TKShHealing.dll" target="content\net40\x64\TKShHealing.dll" />
+        <file src="..\Xbim.ModelGeometry.OCC\NugetDistribution\x64\TKTopAlgo.dll" target="content\net40\x64\TKTopAlgo.dll" />
+        <file src="..\Xbim.ModelGeometry.OCC\NugetDistribution\x64\Xbim.ModelGeometry.OCC.dll" target="content\net40\x64\Xbim.ModelGeometry.OCC.dll" />
+        <file src="..\Xbim.ModelGeometry.OCC\NugetDistribution\x86\TKBO.dll" target="content\net40\x86\TKBO.dll" />
+        <file src="..\Xbim.ModelGeometry.OCC\NugetDistribution\x86\TKBool.dll" target="content\net40\x86\TKBool.dll" />
+        <file src="..\Xbim.ModelGeometry.OCC\NugetDistribution\x86\TKBRep.dll" target="content\net40\x86\TKBRep.dll" />
+        <file src="..\Xbim.ModelGeometry.OCC\NugetDistribution\x86\TKernel.dll" target="content\net40\x86\TKernel.dll" />
+        <file src="..\Xbim.ModelGeometry.OCC\NugetDistribution\x86\TKG2d.dll" target="content\net40\x86\TKG2d.dll" />
+        <file src="..\Xbim.ModelGeometry.OCC\NugetDistribution\x86\TKG3d.dll" target="content\net40\x86\TKG3d.dll" />
+        <file src="..\Xbim.ModelGeometry.OCC\NugetDistribution\x86\TKGeomAlgo.dll" target="content\net40\x86\TKGeomAlgo.dll" />
+        <file src="..\Xbim.ModelGeometry.OCC\NugetDistribution\x86\TKGeomBase.dll" target="content\net40\x86\TKGeomBase.dll" />
+        <file src="..\Xbim.ModelGeometry.OCC\NugetDistribution\x86\TKMath.dll" target="content\net40\x86\TKMath.dll" />
+        <file src="..\Xbim.ModelGeometry.OCC\NugetDistribution\x86\TKMesh.dll" target="content\net40\x86\TKMesh.dll" />
+        <file src="..\Xbim.ModelGeometry.OCC\NugetDistribution\x86\TKOffset.dll" target="content\net40\x86\TKOffset.dll" />
+        <file src="..\Xbim.ModelGeometry.OCC\NugetDistribution\x86\TKPrim.dll" target="content\net40\x86\TKPrim.dll" />
+        <file src="..\Xbim.ModelGeometry.OCC\NugetDistribution\x86\TKShHealing.dll" target="content\net40\x86\TKShHealing.dll" />
+        <file src="..\Xbim.ModelGeometry.OCC\NugetDistribution\x86\TKTopAlgo.dll" target="content\net40\x86\TKTopAlgo.dll" />
+        <file src="..\Xbim.ModelGeometry.OCC\NugetDistribution\x86\Xbim.ModelGeometry.OCC.dll" target="content\net40\x86\Xbim.ModelGeometry.OCC.dll" />
+        <file src="..\bin\NugetDistribution\Xbim.COBie.dll" target="lib\net40\Xbim.COBie.dll" />
+        <file src="..\bin\NugetDistribution\Xbim.COBie.pdb" target="lib\net40\Xbim.COBie.pdb" />
+        <file src="..\bin\NugetDistribution\Xbim.ModelGeometry.Converter.dll" target="lib\net40\Xbim.ModelGeometry.Converter.dll" />
+        <file src="..\bin\NugetDistribution\Xbim.ModelGeometry.Converter.pdb" target="lib\net40\Xbim.ModelGeometry.Converter.pdb" />
+        <file src="..\bin\NugetDistribution\Xbim.ModelGeometry.Scene.dll" target="lib\net40\Xbim.ModelGeometry.Scene.dll" />
+        <file src="..\bin\NugetDistribution\Xbim.ModelGeometry.Scene.pdb" target="lib\net40\Xbim.ModelGeometry.Scene.pdb" />
+        <file src="..\bin\NugetDistribution\Xbim.Presentation.dll" target="lib\net40\Xbim.Presentation.dll" />
+        <file src="..\bin\NugetDistribution\Xbim.Presentation.pdb" target="lib\net40\Xbim.Presentation.pdb" />
+        <file src="install.ps1" target="tools\install.ps1" />
+    </files>
+</package>
