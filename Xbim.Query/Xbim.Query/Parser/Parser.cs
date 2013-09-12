@@ -4,9 +4,9 @@
 
 // GPPG version 1.5.0
 // Machine:  CENTAURUS
-// DateTime: 11.9.2013 22:32:19
+// DateTime: 12.9.2013 9:27:23
 // UserName: Martin
-// Input file <Parser.y - 11.9.2013 22:32:13>
+// Input file <Parser.y - 12.9.2013 9:25:34>
 
 // options: conflicts lines gplex conflicts listing
 
@@ -21,7 +21,7 @@ using System.Linq.Expressions;
 namespace Xbim.Query
 {
 internal enum Tokens {error=60,
-    EOF=61,INTEGER=62,FLOAT=63,STRING=64,BOOLEAN=65,NONDEF=66,
+    EOF=61,INTEGER=62,DOUBLE=63,STRING=64,BOOLEAN=65,NONDEF=66,
     DEFINED=67,IDENTIFIER=68,OP_EQ=69,OP_NEQ=70,OP_GT=71,OP_LT=72,
     OP_GTE=73,OP_LTQ=74,OP_CONTAINS=75,OP_NOT_CONTAINS=76,OP_AND=77,OP_OR=78,
     PRODUCT=79,PRODUCT_TYPE=80,FILE=81,MODEL=82,WHERE=83,WITH_NAME=84,
@@ -38,7 +38,7 @@ internal partial struct ValueType
 #line 17 "Parser.y"
 		public int intVal;
 #line 18 "Parser.y"
-		public float floatVal;
+		public double doubleVal;
 #line 19 "Parser.y"
 		public bool boolVal;
 #line 20 "Parser.y"
@@ -66,10 +66,10 @@ internal class ScanObj {
 
 internal partial class Parser: ShiftReduceParser<ValueType, LexLocation>
 {
-  // Verbatim content from Parser.y - 11.9.2013 22:32:13
+  // Verbatim content from Parser.y - 12.9.2013 9:25:34
 #line 2 "Parser.y"
 	
-  // End verbatim content from Parser.y - 11.9.2013 22:32:13
+  // End verbatim content from Parser.y - 12.9.2013 9:25:34
 
 #pragma warning disable 649
   private static Dictionary<int, string> aliasses;
@@ -332,11 +332,11 @@ internal partial class Parser: ShiftReduceParser<ValueType, LexLocation>
     {
       case 11: // attr_setting -> SET, value_setting_list, FOR, IDENTIFIER
 #line 90 "Parser.y"
-{EvaluateSetExpression(ValueStack[ValueStack.Depth-1].strVal, ((Expression)(ValueStack[ValueStack.Depth-3].val)));}
+{EvaluateSetExpression(ValueStack[ValueStack.Depth-1].strVal, ((List<Expression>)(ValueStack[ValueStack.Depth-3].val)));}
         break;
       case 12: // value_setting_list -> value_setting_list, ',', value_setting
 #line 94 "Parser.y"
-{((List<Expression>)(ValueStack[ValueStack.Depth-3].val)).Add((Expression)(ValueStack[ValueStack.Depth-2].val)); CurrentSemanticValue.val = ValueStack[ValueStack.Depth-3].val;}
+{((List<Expression>)(ValueStack[ValueStack.Depth-3].val)).Add((Expression)(ValueStack[ValueStack.Depth-1].val)); CurrentSemanticValue.val = ValueStack[ValueStack.Depth-3].val;}
         break;
       case 13: // value_setting_list -> value_setting
 #line 95 "Parser.y"
@@ -362,9 +362,9 @@ internal partial class Parser: ShiftReduceParser<ValueType, LexLocation>
 #line 106 "Parser.y"
 {CurrentSemanticValue.val = ValueStack[ValueStack.Depth-1].intVal;}
         break;
-      case 19: // value -> FLOAT
+      case 19: // value -> DOUBLE
 #line 107 "Parser.y"
-{CurrentSemanticValue.val = ValueStack[ValueStack.Depth-1].floatVal;}
+{CurrentSemanticValue.val = ValueStack[ValueStack.Depth-1].doubleVal;}
         break;
       case 20: // value -> NONDEF
 #line 108 "Parser.y"
@@ -539,13 +539,13 @@ internal partial class Parser: ShiftReduceParser<ValueType, LexLocation>
 #line 196 "Parser.y"
 {CurrentSemanticValue.val = GeneratePropertyCondition(ValueStack[ValueStack.Depth-3].strVal, ValueStack[ValueStack.Depth-1].intVal, ((Tokens)(ValueStack[ValueStack.Depth-2].val)));}
         break;
-      case 64: // propertyCondition -> STRING, op_bool, FLOAT
+      case 64: // propertyCondition -> STRING, op_bool, DOUBLE
 #line 198 "Parser.y"
-{CurrentSemanticValue.val = GeneratePropertyCondition(ValueStack[ValueStack.Depth-3].strVal, ValueStack[ValueStack.Depth-1].floatVal, ((Tokens)(ValueStack[ValueStack.Depth-2].val)));}
+{CurrentSemanticValue.val = GeneratePropertyCondition(ValueStack[ValueStack.Depth-3].strVal, ValueStack[ValueStack.Depth-1].doubleVal, ((Tokens)(ValueStack[ValueStack.Depth-2].val)));}
         break;
-      case 65: // propertyCondition -> STRING, op_num_rel, FLOAT
+      case 65: // propertyCondition -> STRING, op_num_rel, DOUBLE
 #line 199 "Parser.y"
-{CurrentSemanticValue.val = GeneratePropertyCondition(ValueStack[ValueStack.Depth-3].strVal, ValueStack[ValueStack.Depth-1].floatVal, ((Tokens)(ValueStack[ValueStack.Depth-2].val)));}
+{CurrentSemanticValue.val = GeneratePropertyCondition(ValueStack[ValueStack.Depth-3].strVal, ValueStack[ValueStack.Depth-1].doubleVal, ((Tokens)(ValueStack[ValueStack.Depth-2].val)));}
         break;
       case 66: // propertyCondition -> STRING, op_bool, STRING
 #line 201 "Parser.y"

@@ -15,7 +15,7 @@
 %union{
 		public string strVal;
 		public int intVal;
-		public float floatVal;
+		public double doubleVal;
 		public bool boolVal;
 		public Type typeVal;
 		public object val;
@@ -23,7 +23,7 @@
 
 
 %token	INTEGER	
-%token	FLOAT	
+%token	DOUBLE	
 %token	STRING	
 %token	BOOLEAN		
 %token	NONDEF			/*not defined, null*/
@@ -87,11 +87,11 @@ expression
 	;
 
 attr_setting
-	: SET value_setting_list FOR IDENTIFIER				{EvaluateSetExpression($4.strVal, ((Expression)($2.val)));}
+	: SET value_setting_list FOR IDENTIFIER				{EvaluateSetExpression($4.strVal, ((List<Expression>)($2.val)));}
 	;
 
 value_setting_list
-	: value_setting_list ',' value_setting				{((List<Expression>)($1.val)).Add((Expression)($2.val)); $$.val = $1.val;}
+	: value_setting_list ',' value_setting				{((List<Expression>)($1.val)).Add((Expression)($3.val)); $$.val = $1.val;}
 	| value_setting										{$$.val = new List<Expression>(){((Expression)($1.val))};}
 	;
 
@@ -104,7 +104,7 @@ value
 	: STRING							{$$.val = $1.strVal;}
 	| BOOLEAN							{$$.val = $1.boolVal;}
 	| INTEGER							{$$.val = $1.intVal;}
-	| FLOAT								{$$.val = $1.floatVal;}
+	| DOUBLE								{$$.val = $1.doubleVal;}
 	| NONDEF							{$$.val = null;}
 	;
 
@@ -195,8 +195,8 @@ propertyCondition
 	: STRING op_bool    INTEGER			{$$.val = GeneratePropertyCondition($1.strVal, $3.intVal, ((Tokens)($2.val)));}
 	| STRING op_num_rel INTEGER			{$$.val = GeneratePropertyCondition($1.strVal, $3.intVal, ((Tokens)($2.val)));}
 	
-	| STRING  op_bool    FLOAT			{$$.val = GeneratePropertyCondition($1.strVal, $3.floatVal, ((Tokens)($2.val)));}
-	| STRING op_num_rel FLOAT			{$$.val = GeneratePropertyCondition($1.strVal, $3.floatVal, ((Tokens)($2.val)));}
+	| STRING  op_bool    DOUBLE			{$$.val = GeneratePropertyCondition($1.strVal, $3.doubleVal, ((Tokens)($2.val)));}
+	| STRING op_num_rel DOUBLE			{$$.val = GeneratePropertyCondition($1.strVal, $3.doubleVal, ((Tokens)($2.val)));}
 	
 	| STRING op_bool STRING				{$$.val = GeneratePropertyCondition($1.strVal, $3.strVal, ((Tokens)($2.val)));}
 	| STRING op_cont STRING				{$$.val = GeneratePropertyCondition($1.strVal, $3.strVal, ((Tokens)($2.val)));}

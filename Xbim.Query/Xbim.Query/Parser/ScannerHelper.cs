@@ -50,9 +50,16 @@ namespace Xbim.Query
                     if (int.TryParse(yytext, out yylval.intVal))
                         return type;
                     break;
-                case Tokens.FLOAT:
-                    if (float.TryParse(yytext, NumberStyles.Float, CultureInfo.InvariantCulture, out yylval.floatVal))
+                case Tokens.DOUBLE:
+                    try
+                    {
+                        yylval.doubleVal = double.Parse(yytext, CultureInfo.InvariantCulture);
                         return type;
+                    }
+                    catch (Exception)
+                    {
+                        
+                    }
                     break;
                 case Tokens.BOOLEAN:
                     if (yytext.ToLower() == ".t.")

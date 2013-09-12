@@ -21,11 +21,11 @@ namespace XbimQueryTest
             Dictionary<string, string> testCases = new Dictionary<string, string>() { 
             {"12", "INTEGER"},
             {"E12", "STRING"},
-            {"12.2", "FLOAT"},
-            {"2.", "FLOAT"},
-            {".5", "FLOAT"},
-            {".3e-5", "FLOAT"},
-            {"5.E8", "FLOAT"},
+            {"12.2", "DOUBLE"},
+            {"2.", "DOUBLE"},
+            {".5", "DOUBLE"},
+            {".3e-5", "DOUBLE"},
+            {"5.E8", "DOUBLE"},
             {"'5E8'", "STRING"},
             {"E5-P", "STRING"},
             {"E-8", "STRING"},
@@ -117,6 +117,8 @@ namespace XbimQueryTest
 
                 //setting of attributes and properties
                 {"$wall is new wall with name 'New wall is here' and description 'New description for the wall';",true},
+                {"Set name to 'New name' for $wall;", true},
+                {"Set name to 'New name', description to 'New description' for $wall;", true},
                 {"Set name to 'New name', description to 'New description', 'fire protection' to 12.3 for $wall;", true},
                 {"Set name to 123, description to 'New description', 'fire protection' to 12.3 for $wall;", false},
             };

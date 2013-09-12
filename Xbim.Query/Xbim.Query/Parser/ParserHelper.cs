@@ -769,26 +769,42 @@ namespace Xbim.Query
         #endregion
 
         #region Objects manipulation
-        private void EvaluateSetExpression(string identifier, Expression expression)
+        private void EvaluateSetExpression(string identifier, IEnumerable<Expression> expressions)
         {
-            if (identifier == null || expression == null) return;
-            try
+            if (identifier == null || expressions == null) return;
+
+            if (_model.IsTransacting)
+                PerformEvaluateSetExpression(identifier, expressions);
+            else
+                using (var txn = _model.BeginTransaction("Setting properties and attribues"))
+                {
+                    PerformEvaluateSetExpression(identifier, expressions);
+                    txn.Commit();
+                }
+        }
+
+        private void PerformEvaluateSetExpression(string identifier, IEnumerable<Expression> expressions)
+        {
+            var entities = _variables.GetEntities(identifier);
+            if (entities == null) return;
+            foreach (var expression in expressions)
             {
-                var action = Expression.Lambda<Action<IPersistIfcEntity>>(expression, _input).Compile();
-                var entities = _variables.GetEntities(identifier);
-                if (entities != null)
+                try
+                {
+                    var action = Expression.Lambda<Action<IPersistIfcEntity>>(expression, _input).Compile();
                     entities.ToList().ForEach(action);
-            }
-            catch (Exception e)
-            {
-                Scanner.yyerror(e.Message);   
+                }
+                catch (Exception e)
+                {
+                    Scanner.yyerror(e.Message);
+                }
             }
         }
 
         private Expression GenerateSetExpression(string attrName, object newVal)
         {
             var nameExpr = Expression.Constant(attrName);
-            var valExpr = Expression.Constant(newVal);
+            var valExpr = Expression.Convert(Expression.Constant(newVal), typeof(object));
 
             var evaluateMethod = GetType().GetMethod("SetAttribute", BindingFlags.Static | BindingFlags.NonPublic);
             return Expression.Call(null, evaluateMethod, _input, nameExpr, valExpr);
@@ -798,7 +814,7 @@ namespace Xbim.Query
         {
             if (input == null) return;
 
-            var attr = input.GetType().GetProperty(attrName, BindingFlags.IgnoreCase);
+            var attr = input.GetType().GetProperty(attrName, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
             if (attr == null)
             {
                 SetProperty(input, attrName, newVal);
@@ -838,7 +854,7 @@ namespace Xbim.Query
                         if (prop.Name.ToString().ToLower() == name.ToLower()) property = prop as IfcPropertySingleValue;
                     }
                 }
-            if (pSets != null)
+            if (pSetsMaterial != null)
                 foreach (var pSet in pSetsMaterial)
                 {
                     foreach (var prop in pSet.ExtendedProperties)
@@ -896,11 +912,11 @@ namespace Xbim.Query
                  : info.PropertyType;
 
                 var newValue = Activator.CreateInstance(targetType, value);
-                var convertedValue = Convert.ChangeType(newValue, info.PropertyType);
+                //var convertedValue = Convert.ChangeType(newValue, info.PropertyType);
 
-                info.SetValue(instance, convertedValue, null);
+                info.SetValue(instance, newValue, null);
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 throw new Exception("Value "+value.ToString()+" could not be set to "+ info.Name+" of type"+ instance.GetType().Name + ". Type should be compatible with " + info.MemberType);
             }
