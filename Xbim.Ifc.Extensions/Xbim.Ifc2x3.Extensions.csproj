@@ -641,6 +641,7 @@
     <Compile Include="ClassificationExtensions.cs" />
     <Compile Include="ObjectReferenceSelectExtensions.cs" />
     <Compile Include="PersonExtensions.cs" />
+    <Compile Include="PhysicalSimpleQuantityExtensions.cs" />
     <Compile Include="TimeSeriesExtensions.cs" />
     <Compile Include="UnitExtensions.cs" />
     <Compile Include="LocalTimeExtensions.cs" />
