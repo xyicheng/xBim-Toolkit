@@ -9,6 +9,8 @@ using Xbim.Ifc2x3.SharedBldgElements;
 using Xbim.Ifc2x3.Kernel;
 using Xbim.Ifc2x3.Extensions;
 using Xbim.Ifc2x3.MeasureResource;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.Ifc2x3.MaterialResource;
 
 namespace XbimQueryTest
 {
@@ -65,10 +67,12 @@ namespace XbimQueryTest
                 {"Select wall where name is 'Some name' and description contains 'My description';",true},
                 {"Select wall where description doesn't contain 'bad description';",true},
                 {"Select wall where type is not slab_type;",true},
+                {"Select wall where thickness is less than 25.32;",true},
                 {"Select wall where type != slab_type;",true},
                 {"Select wall where type is IfcSlabType;",true},
                 {"Select wall where type is 'wall type No.1';",true},
                 {"Select wall where type = IfcSlabType;",true},
+                {"Select wall where type contains 'part name';",true},
                 {"Select wall where 'fire protection' is true;",true},
                 {"Select wall where 'fire protection' is .F.;",true},
                 {"Select wall where 'Heat Performance' is 12.25;",true},
@@ -118,6 +122,7 @@ namespace XbimQueryTest
                 //setting of attributes and properties
                 {"$wall is new wall with name 'New wall is here' and description 'New description for the wall';",true},
                 {"Set name to 'New name' for $wall;", true},
+                {"Set name to NULL for $wall;", true},
                 {"Set name to 'New name', description to 'New description' for $wall;", true},
                 {"Set name to 'New name', description to 'New description', 'fire protection' to 12.3 for $wall;", true},
                 {"Set name to 123, description to 'New description', 'fire protection' to 12.3 for $wall;", false},
@@ -160,8 +165,14 @@ namespace XbimQueryTest
                 parser.Parse("$MyWall is new IfcWall with name 'New wall assigned' and description 'Description of the wall assigned';");
                 var wall2 = model.Instances.Where<IfcWall>(w => w.Name == "New wall assigned").FirstOrDefault();
                 Assert.IsNotNull(wallType, "There should be one wall now with the name 'New wall assigned'");
-                Assert.IsTrue(parser.Results.ContainsKey("$MyWall"));
+                Assert.IsTrue(parser.Results.IsDefined("$MyWall"));
                 Assert.AreEqual(parser.Results["$MyWall"].FirstOrDefault(), wall2);
+
+                parser.Parse("$Space is new space with name 'New space' and description 'Description of the space';");
+                var space = model.Instances.Where<Xbim.Ifc2x3.ProductExtension.IfcSpace>(w => w.Name == "New space").FirstOrDefault();
+                Assert.IsNotNull(wallType, "There should be one space now with the name 'New space'");
+                Assert.IsTrue(parser.Results.IsDefined("$Space"));
+                Assert.AreEqual(parser.Results["$Space"].FirstOrDefault(), space);
 
                 txn.Commit();
             }
@@ -307,15 +318,16 @@ namespace XbimQueryTest
             XbimQueryParser parser = new XbimQueryParser(model);
 
             //create data using queries
-            parser.Parse("Create new wall with name 'My wall No. 1' and description 'First description contains dog.';");
-            parser.Parse("Create new wall with name 'My wall No. 2' and description 'First description contains cat.';");
-            parser.Parse("Create new wall with name 'My wall No. 3' and description 'First description contains dog and cat.';");
-            parser.Parse("Create new wall with name 'My wall No. 4' and description 'First description contains dog and cow.';");
-            parser.Parse("Create new wall_type with name 'Wall type No. 1';");
-            parser.Parse("Create new system with name 'System No. 1';");
-            parser.Parse("Create new system with name 'System No. 2';");
-            var res = model.Instances.OfType<IfcWall>().Count();
+            parser.Parse(@"
+            Create new wall with name 'My wall No. 1' and description 'First description contains dog.';
+            Create new wall with name 'My wall No. 2' and description 'First description contains cat.';
+            Create new wall with name 'My wall No. 3' and description 'First description contains dog and cat.';
+            Create new wall with name 'My wall No. 4' and description 'First description contains dog and cow.';
+            Create new wall_type with name 'Wall type No. 1';
+            Create new system with name 'System No. 1';
+            Create new system with name 'System No. 2';");
 
+            //check data are created
             parser.Parse("Select wall;");
             Assert.AreEqual(parser.Results["$$"].Count(), 4);
             Assert.AreEqual(parser.Errors.Count(), 0);
@@ -324,6 +336,7 @@ namespace XbimQueryTest
             Assert.AreEqual(parser.Results["$$"].Count(), 2);
             Assert.AreEqual(parser.Errors.Count(), 0);
 
+            //variable tests
             parser.Parse("$a is wall where description contains 'cat';");
             Assert.AreEqual(parser.Results["$a"].Count(), 2);
             parser.Parse("$a is wall where description contains 'cow';");
@@ -347,6 +360,163 @@ namespace XbimQueryTest
             parser.Parse("Clear $a;");
             Assert.AreEqual(parser.Results["$a"].Count(), 0);
             Assert.AreEqual(parser.Errors.Count(), 0);
+
+            parser.Parse(@"
+            $space is new space 'Original space';
+            $walls is wall;
+            Add $walls to $space;
+            ");
+            IfcSpace space = parser.Results["$space"].FirstOrDefault() as IfcSpace;
+            Assert.AreEqual(parser.Errors.Count(), 0);
+            Assert.IsNotNull(space);
+            Assert.AreEqual(4, space.GetContainedElements().Count());
         }
+
+        [TestMethod]
+        public void AttributeAndPropertySettingTest()
+        { 
+            //create test model
+            XbimModel model = XbimModel.CreateTemporaryModel();
+            using (var txn = model.BeginTransaction())
+            {
+                var w1 = model.Instances.New<IfcWall>(w => { w.Name = "Wall No.1"; w.Description = "Some doscription No.1"; });
+                w1.SetPropertySingleValue("Testing property set", "Testing label", new IfcLabel("Testing value"));
+                w1.SetPropertySingleValue("Testing property set", "Testing length", new IfcLengthMeasure(12.5));
+                w1.SetPropertySingleValue("Testing property set", "Testing integer", new IfcInteger(56));
+                w1.SetPropertySingleValue("Testing property set", "Testing bool", new IfcBoolean(true));
+                w1.SetPropertySingleValue("Testing property set", "Testing logical", new IfcLogical(null));
+                Xbim.XbimExtensions.SelectTypes.IfcValue nullVal = null;
+                w1.SetPropertySingleValue("Testing property set", "Testing not defined", nullVal);
+
+                txn.Commit();
+            }
+
+            //test cases
+            XbimQueryParser parser = new XbimQueryParser(model);
+            parser.Parse(@"
+            $wall = wall 'Wall No.1';
+            Set name to 'Changed name' for $wall;
+            Set description to null for $wall;
+            Set 'Testing label' to 'New label' for $wall;
+            Set 'Testing length' to 123.5 for $wall;
+            Set 'Testing integer' to 78 for $wall;
+            Set 'Testing bool' to false for $wall;
+            Set 'Testing logical' to true for $wall;
+            Set 'Testing not defined' to 'New label value' for $wall;
+            $slab is new slab 'Roof slab';
+            Set predefined type to 'roof' for $slab;
+            ");
+
+            //testing object
+            var wall = model.Instances.OfType<IfcWall>().FirstOrDefault();
+
+            Assert.AreEqual(0, parser.Errors.Count());
+            Assert.AreEqual("Changed name", wall.Name.ToString());
+            Assert.IsNull(wall.Description);
+            Assert.AreEqual("New label", wall.GetPropertySingleNominalValue("Testing property set", "Testing label").ToString());
+            Assert.AreEqual(123.5, wall.GetPropertySingleNominalValue("Testing property set", "Testing length").Value);
+            Assert.AreEqual((Int64)78, wall.GetPropertySingleNominalValue("Testing property set", "Testing integer").Value);
+            Assert.AreEqual(false, wall.GetPropertySingleNominalValue("Testing property set", "Testing bool").Value);
+            Assert.AreEqual(true, wall.GetPropertySingleNominalValue("Testing property set", "Testing logical").Value);
+            Assert.AreEqual("New label value", wall.GetPropertySingleNominalValue("Testing property set", "Testing not defined").Value);
+            Assert.AreEqual(IfcSlabTypeEnum.ROOF, parser.Results["$slab"].Cast<IfcSlab>().FirstOrDefault().PredefinedType);
+
+        }
+
+        [TestMethod]
+        public void TypeConditionTest()
+        {
+            XbimModel model = XbimModel.CreateTemporaryModel();
+            XbimQueryParser parser = new XbimQueryParser(model);
+            parser.Parse(@"
+            Create new wall 'First wall';
+            Create new wall 'Second wall';
+            Create new wall 'Third wall';
+            Create new wall_type 'My wall type';
+            $wall = wall;
+            $wallType = wall_type;
+            Add $wall to $wallType;
+            $test1 is wall where type is 'My wall type';
+            $test2 is wall where type is IfcWallType;
+            Create new slab 'New slab';
+            $test3 is slab where type is not defined;
+            $test4 is wall where type is defined;
+            $test5 is wall where type contains 'my wall';
+            ");
+
+            Assert.AreEqual(0, parser.Errors.Count());
+            Assert.AreEqual(3, parser.Results["$test1"].Count());
+            Assert.AreEqual(3, parser.Results["$test2"].Count());
+            Assert.AreEqual(1, parser.Results["$test3"].Count());
+            Assert.AreEqual(3, parser.Results["$test4"].Count());
+            Assert.AreEqual(3, parser.Results["$test5"].Count());
+        }
+
+        [TestMethod]
+        public void MaterialSelectionTest()
+        {
+            XbimModel model = XbimModel.CreateTemporaryModel();
+            using (var txn = model.BeginTransaction())
+            {
+                var wall = model.Instances.New<IfcWall>(w => w.Name = "New wall");
+                var material = model.Instances.New<IfcMaterial>(m => m.Name = "Plain material");
+                wall.SetMaterial(material);
+
+                var wall2 = model.Instances.New<IfcWall>(w => w.Name = "Second new wall");
+                var materialUsage = model.Instances.New<IfcMaterialLayerSetUsage>(mlsu =>
+                {
+                    mlsu.DirectionSense = IfcDirectionSenseEnum.POSITIVE;
+                    mlsu.LayerSetDirection = IfcLayerSetDirectionEnum.AXIS1;
+                    mlsu.OffsetFromReferenceLine = 0;
+                    mlsu.ForLayerSet = model.Instances.New<IfcMaterialLayerSet>(mls => {
+                        mls.MaterialLayers.Add_Reversible(model.Instances.New<IfcMaterialLayer>(ml => {
+                            ml.IsVentilated = false;
+                            ml.LayerThickness = 10.0;
+                            ml.Material = model.Instances.New<IfcMaterial>(m => m.Name = "Plaster");
+                        }));
+                        mls.MaterialLayers.Add_Reversible(model.Instances.New<IfcMaterialLayer>(ml =>
+                        {
+                            ml.IsVentilated = false;
+                            ml.LayerThickness = 120.5;
+                            ml.Material = model.Instances.New<IfcMaterial>(m => m.Name = "Bricks");
+                        }));
+                        mls.MaterialLayers.Add_Reversible(model.Instances.New<IfcMaterialLayer>(ml =>
+                        {
+                            ml.IsVentilated = false;
+                            ml.LayerThickness = 120.5;
+                            ml.Material = model.Instances.New<IfcMaterial>(m => m.Name = "Concreate");
+                        }));
+                        mls.MaterialLayers.Add_Reversible(model.Instances.New<IfcMaterialLayer>(ml =>
+                        {
+                            ml.IsVentilated = false;
+                            ml.LayerThickness = 5.0;
+                            ml.Material = model.Instances.New<IfcMaterial>(m => m.Name = "Outer finish");
+                        }));
+                    });
+                });
+                wall2.SetMaterial(materialUsage);
+
+
+                txn.Commit();
+            }
+ 
+            //tests
+            XbimQueryParser parser = new XbimQueryParser(model);
+            parser.Parse(@"
+            $test1 = wall where material contains plaster;
+            $test2 = wall where material is plaster;
+            $test3 = wall where material contains pl;
+            $test4 = wall where thickness > 300;
+            $test5 = wall where thickness = 256;
+            ");
+
+            Assert.AreEqual(0, parser.Errors.Count());
+            Assert.AreEqual(1, parser.Results["$test1"].Count());
+            Assert.AreEqual(1, parser.Results["$test2"].Count());
+            Assert.AreEqual(2, parser.Results["$test3"].Count());
+            Assert.AreEqual(0, parser.Results["$test4"].Count());
+            Assert.AreEqual(1, parser.Results["$test5"].Count());
+        }
+
     }
 }

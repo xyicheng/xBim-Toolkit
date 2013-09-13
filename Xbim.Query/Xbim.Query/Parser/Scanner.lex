@@ -91,11 +91,15 @@
 "save"			{ return (int)Tokens.SAVE; }
 
 "name"			{ return (int)Tokens.NAME; }									
+"predefinedtype" |
+"predefined_type" |
 "predefined type"			{ return (int)Tokens.PREDEFINED_TYPE; }
 "type"			{ return (int)Tokens.TYPE; }
-"material"			{ return (int)SetValue(Tokens.MATERIAL); }
+"material"		{ return (int)SetValue(Tokens.MATERIAL); }
+"thickness"		{ return (int)Tokens.THICKNESS; }  
 "file"			{ return (int)Tokens.FILE; }
 "model"			{ return (int)Tokens.MODEL; }
+"classification"	{ return (int)Tokens.CLASSIFICATION; }
 
 "null" |
 "undefined" |

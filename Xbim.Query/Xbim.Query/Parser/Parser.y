@@ -43,6 +43,7 @@
 %token  PRODUCT_TYPE
 %token  FILE
 %token  MODEL
+%token  CLASSIFICATION
 
 /*operations and keywords*/
 %token  WHERE
@@ -58,6 +59,7 @@
 %token  PREDEFINED_TYPE
 %token  TYPE
 %token  MATERIAL
+%token  THICKNESS
 
 /* commands */
 %token  SELECT
@@ -104,8 +106,13 @@ value
 	: STRING							{$$.val = $1.strVal;}
 	| BOOLEAN							{$$.val = $1.boolVal;}
 	| INTEGER							{$$.val = $1.intVal;}
-	| DOUBLE								{$$.val = $1.doubleVal;}
+	| DOUBLE							{$$.val = $1.doubleVal;}
 	| NONDEF							{$$.val = null;}
+	;
+
+num_value
+	: DOUBLE							{$$.val = $1.doubleVal;}
+	| INTEGER							{$$.val = $1.intVal;}
 	;
 
 model_actions
@@ -141,6 +148,7 @@ selection_statement
 	
 creation
 	: CREATE creation_statement										{Variables.Set("$$", ((IPersistIfcEntity)($2.val)));}
+	| CREATE CLASSIFICATION STRING									{CreateClassification($3.strVal);}
 	| IDENTIFIER OP_EQ creation_statement							{Variables.Set($1.strVal, ((IPersistIfcEntity)($3.val)));}
 	;
 
@@ -151,8 +159,8 @@ creation_statement
 	;
 
 addition
-	: ADD IDENTIFIER TO IDENTIFIER									{AddOrRemoveToGroupOrType(Tokens.ADD, $2.strVal, $4.strVal);}
-	| REMOVE IDENTIFIER FROM IDENTIFIER								{AddOrRemoveToGroupOrType(Tokens.REMOVE, $2.strVal, $4.strVal);}
+	: ADD IDENTIFIER TO IDENTIFIER									{AddOrRemove(Tokens.ADD, $2.strVal, $4.strVal);}
+	| REMOVE IDENTIFIER FROM IDENTIFIER								{AddOrRemove(Tokens.REMOVE, $2.strVal, $4.strVal);}
 	;
 
 conditions
@@ -184,11 +192,18 @@ attribute
 materialCondition	
 	: MATERIAL op_bool STRING			{$$.val = GenerateMaterialCondition($3.strVal, ((Tokens)($2.val)));}
 	| MATERIAL op_cont STRING			{$$.val = GenerateMaterialCondition($3.strVal, ((Tokens)($2.val)));}
+	
+	| THICKNESS op_bool num_value		{$$.val = GenerateThicknessCondition(Convert.ToDouble($3.val), ((Tokens)($2.val)));}
+	| THICKNESS op_num_rel num_value	{$$.val = GenerateThicknessCondition(Convert.ToDouble($3.val), ((Tokens)($2.val)));}
 	;
 	
 typeCondition	
 	: TYPE op_bool PRODUCT_TYPE			{$$.val = GenerateTypeObjectTypeCondition($3.typeVal, ((Tokens)($2.val)));}
 	| TYPE op_bool STRING				{$$.val = GenerateTypeObjectNameCondition($3.strVal, ((Tokens)($2.val)));}
+	| TYPE op_cont STRING				{$$.val = GenerateTypeObjectNameCondition($3.strVal, ((Tokens)($2.val)));}
+	| TYPE op_bool NONDEF				{$$.val = GenerateTypeObjectTypeCondition(null, ((Tokens)($2.val)));}
+	| TYPE OP_NEQ DEFINED				{$$.val = GenerateTypeObjectTypeCondition(null, Tokens.OP_EQ);}
+	| TYPE OP_EQ DEFINED				{$$.val = GenerateTypeObjectTypeCondition(null, Tokens.OP_NEQ);}
 	;
 
 propertyCondition	

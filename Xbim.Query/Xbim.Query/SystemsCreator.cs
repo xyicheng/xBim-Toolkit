@@ -2,38 +2,62 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Xbim.XbimExtensions.Interfaces;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.Ifc2x3.Extensions;
 using System.IO;
 using Xbim.IO;
-using Xbim.Ifc2x3.ProductExtension;
-using Xbim.XbimExtensions.Interfaces;
-using Xbim.Ifc2x3.Extensions;
 
-namespace Xbim.ModelEnhancement
+namespace Xbim.Query
 {
-    /// <summary>
-    /// This class will parse CSV file containing definition of the classification
-    /// and will create hierarchy of IfcSystem in the model.
-    /// </summary>
-    public class SystemsFromCSV
+    internal class SystemsCreator
     {
         private XbimModel _model;
 
-        public SystemsFromCSV(XbimModel model)
+        public void CreateSystem(XbimModel model, SYSTEM system)
         {
+            //set model in which the systems are to be created
             _model = model;
+            
+            //get data
+            string data = null;
+            CsvLineParser parser = null;
+            switch (system)
+            {
+                case SYSTEM.NRM:
+                    if (model.Instances.Where<IfcSystem>(s => s.Name == "NRM").FirstOrDefault() != null) return;
+                    data = Properties.Resources.NRM;
+                    parser = new CsvLineParser(';');
+                    break;
+                case SYSTEM.UNICLASS:
+                    if (model.Instances.Where<IfcSystem>(s => s.Name == "uniclass").FirstOrDefault() != null) return;
+                    data = Properties.Resources.Uniclass;
+                    parser = new CsvLineParser();
+                    break;
+                default:
+                    break;
+            }
+
+            //process file
+            if (_model.IsTransacting)
+                ParseCSV(data, parser);
+            else
+                using (var txn = model.BeginTransaction("Systems creation"))
+                {
+                    ParseCSV(data, parser);
+                    txn.Commit();
+                }
         }
 
-        public void ParseCSVFile(string fileName)
+        private void ParseCSV(string data, CsvLineParser parser)
         {
-            if (!File.Exists(fileName))
-                throw new ArgumentException("File " + fileName + "doesn't exist");
-
-            var csv = File.OpenRead(fileName);
-            TextReader csvReader = new StreamReader(csv);
+            TextReader csvReader = new StringReader(data);
 
             //header line
             string line = csvReader.ReadLine();
-            CsvLineParser lineParser = new CsvLineParser(line);
+            CsvLineParser lineParser = parser;
+            lineParser.ParseHeader(line);
+
             //get first line of data
             line = csvReader.ReadLine();
 
@@ -62,21 +86,22 @@ namespace Xbim.ModelEnhancement
 
             IfcSystem system = _model.Instances.Where<IfcSystem>(s => s.Name == name).FirstOrDefault();
             if (system == null)
-                system = _model.Instances.New<IfcSystem>(s => {
+                system = _model.Instances.New<IfcSystem>(s =>
+                {
                     s.Name = name;
                 });
             if (description != null) system.Description = description;
             return system;
         }
-        
+
 
         private class CsvLineParser
         {
             //settings
-            public char separator = ',';
-            public string CodeFieldName = "Code";
-            public string DescriptionFieldName = "Description";
-            public string ParentCodeFieldName = "Parent";
+            private char   _separator = ',';
+            private string _CodeFieldName = "Code";
+            private string _DescriptionFieldName = "Description";
+            private string _ParentCodeFieldName = "Parent";
 
             //header used to parse the file
             private string[] header;
@@ -85,17 +110,25 @@ namespace Xbim.ModelEnhancement
             private int descriptionIndex;
             private int parentCodeIndex;
 
-            public CsvLineParser(string headerLine)
+            public CsvLineParser(char separator = ',', string codeField = "Code", string descriptionField = "Description", string parentField = "Parent")
+            {
+                _separator = separator;
+                _CodeFieldName = codeField;
+                _DescriptionFieldName = descriptionField;
+                _ParentCodeFieldName = parentField;
+            }
+
+            public void ParseHeader(string headerLine)
             {
                 //create header of the file
                 string line = headerLine.ToLower();
                 line = line.Replace("\"", "");
-                header = headerLine.Split(separator);
+                header = headerLine.Split(_separator);
 
                 //get indexes of the fields
-                codeIndex = header.ToList().IndexOf(CodeFieldName);
-                descriptionIndex = header.ToList().IndexOf(DescriptionFieldName);
-                parentCodeIndex = header.ToList().IndexOf(ParentCodeFieldName);
+                codeIndex = header.ToList().IndexOf(_CodeFieldName);
+                descriptionIndex = header.ToList().IndexOf(_DescriptionFieldName);
+                parentCodeIndex = header.ToList().IndexOf(_ParentCodeFieldName);
 
                 if (codeIndex < 0) throw new Exception("File is either not CSV file or it doesn't comply to the predefined structure.");
             }
@@ -104,7 +137,7 @@ namespace Xbim.ModelEnhancement
             {
                 Line result = new Line();
                 line = line.Replace("\"", "");
-                string[] fields = line.Split(separator);
+                string[] fields = line.Split(_separator);
 
                 //get data
                 if (codeIndex >= 0) result.Code = fields[codeIndex];
@@ -115,10 +148,17 @@ namespace Xbim.ModelEnhancement
             }
         }
 
-        private struct Line {
+        private struct Line
+        {
             public string Code;
             public string Description;
             public string ParentCode;
         }
+    }
+
+    internal enum SYSTEM
+    {
+        NRM,
+        UNICLASS
     }
 }
