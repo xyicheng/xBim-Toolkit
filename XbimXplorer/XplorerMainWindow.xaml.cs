@@ -169,9 +169,7 @@ namespace XbimXplorer
             get
             {
                 return MainFrame.DataContext as ObjectDataProvider;
-               
             }
-            
         }
 
         public XbimModel Model
@@ -297,6 +295,13 @@ namespace XbimXplorer
             {
                 _currentModelFileName = fileName.ToLower();
                 model.Open(fileName, XbimDBAccess.Read, worker.ReportProgress); //load entities into the model
+                // sets a convenient integer to all children for model identification
+                // this is used by the federated model selection mechanisms.
+                int i = 0;
+                foreach (var item in model.AllModels)
+                {
+                    item.Tag = i++;
+                }
                 args.Result = model;
             }
             catch (Exception ex)

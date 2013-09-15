@@ -48,11 +48,16 @@ namespace XbimXplorer.Querying
 #endif
         }
 
+        private XbimModel _Model = null;
         private XbimModel Model
         {
             get
             {
-                return ParentWindow.Model;
+                if (ParentWindow != null)
+                    return ParentWindow.Model;
+                if (_Model == null)
+                    _Model = new XbimModel();
+                return _Model;
             }
         }
         public XplorerMainWindow ParentWindow;
@@ -101,6 +106,21 @@ namespace XbimXplorer.Querying
                     if (mdbclosed.Success)
                     {
                         DisplayHelp();
+                        continue;
+                    }
+
+                    mdbclosed = Regex.Match(cmd, @"xplorer", RegexOptions.IgnoreCase);
+                    if (mdbclosed.Success)
+                    {
+                        if (ParentWindow != null)
+                            ParentWindow.Focus();
+                        else
+                        {
+                            // todo: bonghi: open the model in xplorer if needed.
+                            XplorerMainWindow xp = new XplorerMainWindow();
+                            ParentWindow = xp;
+                            xp.Show();
+                        }
                         continue;
                     }
 
@@ -166,6 +186,11 @@ namespace XbimXplorer.Querying
                     m = Regex.Match(cmd, @"^(Header|he)$", RegexOptions.IgnoreCase);
                     if (m.Success)
                     {
+                        if (Model.Header == null)
+                        {
+                            ReportAdd("Model header is not defined.", Brushes.Red);
+                            continue;
+                        }
                         ReportAdd("FileDescription:");
                         foreach (var item in Model.Header.FileDescription.Description)
                         {

@@ -13,6 +13,7 @@
 #region Directives
 
 using System.Windows;
+using System.Windows.Input;
 
 #endregion
 
@@ -23,5 +24,18 @@ namespace XbimXplorer
     /// </summary>
     public partial class App : Application
     {
+        protected override void OnStartup(StartupEventArgs e)
+        {
+            if (Keyboard.IsKeyDown(Key.LeftCtrl))
+            {
+                var q = new Querying.wdwQuery();
+                q.Show();
+            }
+            else
+            {
+                var mainView = new XplorerMainWindow();
+                mainView.Show();
+            }
+        }
     }
 }

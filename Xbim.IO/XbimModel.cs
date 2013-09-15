@@ -32,8 +32,6 @@ namespace Xbim.IO
     {
         #region Fields
 
-       
-
         #region Logging Fields
 
         internal readonly static ILogger Logger = LoggerFactory.GetLogger();
@@ -46,7 +44,6 @@ namespace Xbim.IO
         internal IfcPersistedInstanceCache Cache
         {
             get { return cache; }
-
         }
         
         protected IIfcFileHeader header;
@@ -420,8 +417,10 @@ namespace Xbim.IO
                 if (string.IsNullOrWhiteSpace(Path.GetExtension(dbFileName)))
                     dbFileName += ".xBIM";
                 XbimModel model = new XbimModel();
-                model.CreateDatabase(dbFileName); 
+                model.CreateDatabase(dbFileName);
                 model.Open(dbFileName, access,null);
+                model.header = new IfcFileHeader(IfcFileHeader.HeaderCreationMode.InitWithXbimDefaults);
+                model.header.FileName.Name = dbFileName;
                 return model;
             }
             catch (Exception e)
@@ -434,7 +433,6 @@ namespace Xbim.IO
 
         public byte[] GetEntityBinaryData(IPersistIfcEntity entity)
         {
-
             if (entity.Activated) //we have it in memory but not written to store yet
             {
                 MemoryStream entityStream = new MemoryStream(4096);
@@ -675,9 +673,6 @@ namespace Xbim.IO
             }
             _deleteOnClose = false;
         }
-
-
-
         #endregion
 
         private bool Open(string fileName, XbimDBAccess accessMode, bool deleteOnClose)
@@ -1023,7 +1018,6 @@ namespace Xbim.IO
         /// <returns></returns>
         public IEnumerable<XbimGeometryData> GetGeometryData(int productLabel, XbimGeometryType geomType)
         {
-            
             IPersistIfc entity = cache.GetInstance(productLabel, false, true);
             if (entity != null)
             {
@@ -1032,16 +1026,20 @@ namespace Xbim.IO
                     yield return item;
                 }
             }
-            else // look in referenced models
-            {
-                foreach (XbimReferencedModel refModel in this.RefencedModels)
-                {
-                    foreach (var item in refModel.Model.GetGeometryData(productLabel, geomType))
-                    {
-                        yield return item;
-                    }
-                }
-            }
+
+            // RefencedModels must NOT be iterated because of potential entityLabel clashes.
+            // identity needs instead to be tested at the model level of children first, then call this function on the matching child.
+
+            //else // look in referenced models
+            //{
+            //    foreach (XbimReferencedModel refModel in this.RefencedModels)
+            //    {
+            //        foreach (var item in refModel.Model.GetGeometryData(productLabel, geomType))
+            //        {
+            //            yield return item;
+            //        }
+            //    }
+            //}
         }
 
         public IEnumerable<XbimGeometryData> GetGeometryData(IfcProduct product, XbimGeometryType geomType)
@@ -1189,18 +1187,31 @@ namespace Xbim.IO
                 _referencedModels.Add(new XbimReferencedModel(docInfo, refModel));
                 return docInfo.DocumentId;
             }
-                
-                
         }
 
-        private void LoadReferenceModels()
+        /// <summary>
+        /// All reference models are opened in a readonly mode.
+        /// Their children reference models is invoked iteratively.
+        /// 
+        /// Loading referenced models defaults to avoiding Exception on file not found; in this way the federated model can still be opened and the error rectified.
+        /// </summary>
+        /// <param name="ThrowExceptionOnNotFound"></param>
+        private void LoadReferenceModels(bool ThrowExceptionOnNotFound = false)
         {
             var docInfos = this.Instances.OfType<IfcDocumentInformation>().Where(d => d.IntendedUse == refDocument);
             foreach (var docInfo in docInfos)
             {
+                if (!File.Exists(docInfo.Name))
+                {
+                    if (ThrowExceptionOnNotFound)
+                        throw new XbimException("Reference model not found:" + docInfo.Name);
+                    continue;
+                }
                 XbimModel model = new XbimModel();
                 if (!model.Open(docInfo.Name, XbimDBAccess.Read))
-                    throw new XbimException("Unable to open reference model " + docInfo.Name);
+                {
+                    throw new XbimException("Unable to open reference model: " + docInfo.Name);
+                }
                 else
                     _referencedModels.Add(new XbimReferencedModel(docInfo, model));
             }
@@ -1301,6 +1312,11 @@ namespace Xbim.IO
           return item.Model.GetInstanceVolatile(item.EntityLabel);
         }
 
+        /// <summary>
+        /// Federated models can be nested.
+        /// Since children models do not have a method for pointing to the parent management of their 
+        /// uniqueness must be achieved top down by the topmost one. After all child models are loaded.
+        /// </summary>
         public IEnumerable<XbimModel> AllModels
         {
             get
@@ -1311,5 +1327,7 @@ namespace Xbim.IO
                         yield return m;
             }
         }
+
+        public object Tag { get; set; }
     }
 }
