@@ -14,7 +14,7 @@
 #include <gp_Ax2d.hxx>
 #include <gp_Ax3.hxx>
 #include <gp_Mat2d.hxx>
-
+#include "CartesianTransform.h"
 using namespace System;
 using namespace Xbim::Common::Geometry;
 namespace Xbim
@@ -26,6 +26,15 @@ namespace Xbim
 		XbimGeomPrim::XbimGeomPrim(void)
 		{
 		}
+
+		// Converts an ObjectPlacement into a TopLoc_Location
+		TopLoc_Location XbimGeomPrim::ToLocation(IfcObjectPlacement^ placement)
+		{
+			XbimMatrix3D m3D = CartesianTransform::ConvertMatrix3D(placement);
+			gp_Trsf trsf = XbimGeomPrim::ToTransform(m3D);
+			return TopLoc_Location(trsf);
+		}
+
 
 		// Converts an Axis2Placement3D into a TopLoc_Location
 		TopLoc_Location XbimGeomPrim::ToLocation(IfcPlacement^ placement)
@@ -159,16 +168,16 @@ namespace Xbim
 			XbimVector3D U1; //Y axis direction
 			if(ct3D->Axis3!=nullptr)
 			{
-				IfcDirection% dir = (IfcDirection%)ct3D->Axis3;
-				U3 = XbimVector3D(dir.DirectionRatios[0],dir.DirectionRatios[1],dir.DirectionRatios[2]); 
+				IfcDirection^ dir = ct3D->Axis3;
+				U3 = XbimVector3D(dir->DirectionRatios[0],dir->DirectionRatios[1],dir->DirectionRatios[2]); 
 				U3.Normalize();
 			}
 			else
 				U3 = XbimVector3D(0.,0.,1.); 
 			if(ct3D->Axis1!=nullptr)
 			{
-				IfcDirection% dir = (IfcDirection%)ct3D->Axis1;
-				U1 = XbimVector3D(dir.DirectionRatios[0],dir.DirectionRatios[1],dir.DirectionRatios[2]); 
+				IfcDirection^ dir = ct3D->Axis1;
+				U1 = XbimVector3D(dir->DirectionRatios[0],dir->DirectionRatios[1],dir->DirectionRatios[2]); 
 				U1.Normalize();
 			}
 			else
@@ -185,8 +194,8 @@ namespace Xbim
 
 			if(ct3D->Axis2!=nullptr)
 			{
-				IfcDirection% dir = (IfcDirection%)ct3D->Axis2;
-				U2 = XbimVector3D(dir.DirectionRatios[0],dir.DirectionRatios[1],dir.DirectionRatios[2]); 
+				IfcDirection^ dir = ct3D->Axis2;
+				U2 = XbimVector3D(dir->DirectionRatios[0],dir->DirectionRatios[1],dir->DirectionRatios[2]); 
 				U2.Normalize();
 			}
 			else
@@ -220,16 +229,16 @@ namespace Xbim
 			XbimVector3D U1; //Y axis direction
 			if(ct3D->Axis3!=nullptr)
 			{
-				IfcDirection% dir = (IfcDirection%)ct3D->Axis3;
-				U3 = XbimVector3D(dir.DirectionRatios[0],dir.DirectionRatios[1],dir.DirectionRatios[2]); 
+				IfcDirection^ dir = ct3D->Axis3;
+				U3 = XbimVector3D(dir->DirectionRatios[0],dir->DirectionRatios[1],dir->DirectionRatios[2]); 
 				U3.Normalize();
 			}
 			else
 				U3 = XbimVector3D(0.,0.,1.); 
 			if(ct3D->Axis1!=nullptr)
 			{
-				IfcDirection% dir = (IfcDirection%)ct3D->Axis1;
-				U1 = XbimVector3D(dir.DirectionRatios[0],dir.DirectionRatios[1],dir.DirectionRatios[2]); 
+				IfcDirection^ dir = ct3D->Axis1;
+				U1 = XbimVector3D(dir->DirectionRatios[0],dir->DirectionRatios[1],dir->DirectionRatios[2]); 
 				U1.Normalize();
 			}
 			else
@@ -246,8 +255,8 @@ namespace Xbim
 
 			if(ct3D->Axis2!=nullptr)
 			{
-				IfcDirection% dir = (IfcDirection%)ct3D->Axis2;
-				U2 = XbimVector3D(dir.DirectionRatios[0],dir.DirectionRatios[1],dir.DirectionRatios[2]); 
+				IfcDirection^ dir = ct3D->Axis2;
+				U2 = XbimVector3D(dir->DirectionRatios[0],dir->DirectionRatios[1],dir->DirectionRatios[2]); 
 				U2.Normalize();
 			}
 			else
@@ -287,9 +296,19 @@ namespace Xbim
 			return trsf;
 		}
 
+		XbimMatrix3D XbimGeomPrim::ToMatrix3D(const TopLoc_Location& location)
+		{
+			const gp_Trsf& trsf = location.Transformation();
+			gp_Mat m = trsf.VectorialPart();
+			gp_XYZ t = trsf.TranslationPart();
+			return XbimMatrix3D((double)m.Row(1).X(),(double)m.Row(1).Y(),(double)m.Row(1).Z(), 0.0,
+								(double)m.Row(2).X(),(double)m.Row(2).Y(),(double)m.Row(2).Z(), 0.0,
+								(double)m.Row(3).X(),(double)m.Row(3).Y(),(double)m.Row(3).Z(), 0.0,
+								(double)t.X(), (double)t.Y(), (double)t.Z(),1.0);
+		}
+
 		gp_Trsf XbimGeomPrim::ToTransform(IfcCartesianTransformationOperator2D^ ct)
 		{
-			throw gcnew NotImplementedException("2D transformation not implemented");
 			gp_Trsf2d m;
 			IfcDirection^ axis1 = ct->Axis1;
 			IfcDirection^ axis2 = ct->Axis2;
@@ -298,11 +317,8 @@ namespace Xbim
 			gp_Mat2d mat = m.HVectorialPart();
 			if (axis1 != nullptr)
 			{
-				
-				/*System::Windows::Vector d1 = axis1->XbimPoint3D();
+				XbimVector3D d1 = axis1->XbimVector3D();
 				d1.Normalize();
-
-
 				mat.SetValue(1,1,d1.X);
 				mat.SetValue(1,2,d1.Y);
 				mat.SetValue(2,1,-d1.Y);
@@ -310,26 +326,26 @@ namespace Xbim
 
 				if (axis2 != nullptr)
 				{
-					System::Windows::Vector v(-d1.Y, d1.X);
-					double factor = System::Windows::Vector::Multiply(axis2->WVector(),v );
+					XbimVector3D v(-d1.Y, d1.X, 0);
+					double factor = XbimVector3D::DotProduct(axis2->XbimVector3D(),v );
 					if (factor < 0)
 					{
 						mat.SetValue(2,1,d1.Y);
 						mat.SetValue(2,2,-d1.X);
 					}
-				}*/
+				}
 			}
 			else
-			{/*
+			{
 				if (axis2 != nullptr)
 				{
-					System::Windows::Vector d1 = axis2->WVector();
+					XbimVector3D d1 = axis2->XbimVector3D();
 					d1.Normalize();
 					mat.SetValue(1,1,d1.Y);
 					mat.SetValue(1,2,-d1.X);
 					mat.SetValue(2,1,d1.X);
 					mat.SetValue(2,2,d1.X);
-				}*/
+				}
 			}
 
 			m.SetScaleFactor(scale);

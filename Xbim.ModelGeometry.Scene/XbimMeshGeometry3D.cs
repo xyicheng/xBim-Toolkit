@@ -407,7 +407,7 @@ namespace Xbim.ModelGeometry.Scene
         /// <param name="geometryMeshData"></param>
         public bool Add(XbimGeometryData geometryMeshData)
         {
-            XbimMatrix3D transform = XbimMatrix3D.FromArray(geometryMeshData.TransformData);
+            XbimMatrix3D transform = geometryMeshData.Transform;
             if (geometryMeshData.GeometryType == XbimGeometryType.TriangulatedMesh)
             {
                 XbimTriangulatedModelStream strm = new XbimTriangulatedModelStream(geometryMeshData.ShapeData);
@@ -523,6 +523,25 @@ namespace Xbim.ModelGeometry.Scene
                 }
             }
             return bytes;
+        }
+
+
+        public XbimRect3D GetBounds()
+        {
+            bool first = true;
+            XbimRect3D boundingBox = XbimRect3D.Empty;
+            foreach (var pos in Positions)
+            {
+                if (first)
+                {
+                    boundingBox = new XbimRect3D(pos);
+                    first = false;
+                }
+                else
+                    boundingBox.Union(pos);
+
+            }
+            return boundingBox;
         }
     }
 }

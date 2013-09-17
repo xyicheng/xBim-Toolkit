@@ -1,11 +1,14 @@
 #include "StdAfx.h"
 #include "XbimMap.h"
-#include "XbimGeomPrim.h"
+
+#include "XbimPolyhedron.h"
+
 using namespace System::Collections::Generic;
 using namespace Xbim::XbimExtensions;
 using namespace Xbim::Ifc2x3::Extensions;
 using namespace System::Linq;
 using namespace Xbim::Common::Exceptions;
+using namespace  System::Threading;
 
 namespace Xbim
 {
@@ -13,72 +16,78 @@ namespace Xbim
 	{
 		namespace OCC
 		{
-		XbimMap::XbimMap(IXbimGeometryModel^ item, IfcAxis2Placement^ origin, IfcCartesianTransformationOperator^ transform, ConcurrentDictionary<int,Object^>^ maps)
-		{
-			_mappedItem = item;
-			 _representationLabel = item->RepresentationLabel;
-			_surfaceStyleLabel = item->SurfaceStyleLabel;
 
-
-			if(origin !=nullptr)
+			XbimPolyhedron^ XbimMap::ToPolyHedron(double deflection, double precision, double precisionMax)
 			{
-				if(dynamic_cast<IfcAxis2Placement3D^>(origin))
-					_transform = Axis2Placement3DExtensions::ToMatrix3D((IfcAxis2Placement3D^)origin,maps);
-				else if(dynamic_cast<IfcAxis2Placement2D^>(origin))
-					_transform = Axis2Placement2DExtensions::ToMatrix3D((IfcAxis2Placement2D^)origin,maps);
-				else
-					throw gcnew XbimGeometryException("Invalid IfcAxis2Placement argument");
-					
+				XbimPolyhedron^ poly = _mappedItem->ToPolyHedron(deflection, precision,precisionMax);
+				poly->Transform(_transform);
+				return poly;
 			}
-	
-			if(transform!=nullptr)
-				_transform= XbimMatrix3D::Multiply( CartesianTransformationOperatorExtensions::ToMatrix3D(transform, maps),_transform);
-
-		}
+			XbimMap::XbimMap(const TopoDS_Shape& shape,XbimMap^ copy)
+			{
+				_mappedItem = copy->MappedItem;
+				_hasCurvedEdges=copy->HasCurvedEdges;
+				_representationLabel = copy->RepresentationLabel;
+				_surfaceStyleLabel = copy->SurfaceStyleLabel;
+			}
+			XbimMap::XbimMap(XbimGeometryModel^ item, IfcAxis2Placement^ origin, IfcCartesianTransformationOperator^ transform, ConcurrentDictionary<int,Object^>^ maps)
+			{
+				_mappedItem = item;
+				_hasCurvedEdges=item->HasCurvedEdges;
+				_representationLabel = item->RepresentationLabel;
+				_surfaceStyleLabel = item->SurfaceStyleLabel;
+				_origin = origin;
+				_cartTransform = transform;
 		
-		IXbimGeometryModel^ XbimMap::Cut(IXbimGeometryModel^ shape)
-		{
-			throw gcnew NotImplementedException("Cut needs to be implemented");
-		}
+				
+				_transform=XbimMatrix3D::Identity;
+				if(origin !=nullptr)
+				{
+					if(dynamic_cast<IfcAxis2Placement3D^>(origin))
+						_transform = Axis2Placement3DExtensions::ToMatrix3D((IfcAxis2Placement3D^)origin,maps);
+					else if(dynamic_cast<IfcAxis2Placement2D^>(origin))
+						_transform = Axis2Placement2DExtensions::ToMatrix3D((IfcAxis2Placement2D^)origin,maps);
+					else
+						throw gcnew XbimGeometryException("Invalid IfcAxis2Placement argument");
 
-		IXbimGeometryModel^ XbimMap::Union(IXbimGeometryModel^ shape)
-		{
-			throw gcnew NotImplementedException("Union needs to be implemented");
-		}
+				}
 
-		IXbimGeometryModel^ XbimMap::Intersection(IXbimGeometryModel^ shape)
-		{
-			throw gcnew NotImplementedException("Intersection needs to be implemented");
-		}
+				if(transform!=nullptr)
+					_transform= XbimMatrix3D::Multiply( CartesianTransformationOperatorExtensions::ToMatrix3D(transform, maps),_transform);
+				
+			}
 
-		IXbimGeometryModel^ XbimMap::CopyTo(IfcObjectPlacement^ placement)
-		{
-			throw gcnew NotImplementedException("CopyTo needs to be implemented");
-		}
+			XbimGeometryModel^ XbimMap::CopyTo(IfcAxis2Placement^ placement)
+			{
 
-		void XbimMap::Move(TopLoc_Location location)
-		{
-			_mappedItem->Move(location);
-		}
+				TopoDS_Shape movedShape = *nativeHandle;
+				movedShape.Move(XbimGeomPrim::ToLocation(placement));
+				XbimMap^ map = gcnew XbimMap(movedShape,this);
+				return map;
 
-		List<XbimTriangulatedModel^>^XbimMap::Mesh()
-		{
-			return Mesh(true, XbimGeometryModel::DefaultDeflection,XbimMatrix3D::Identity);
-		}
+			}
 
-		List<XbimTriangulatedModel^>^XbimMap::Mesh( bool withNormals )
-		{
-			return Mesh(withNormals, XbimGeometryModel::DefaultDeflection, XbimMatrix3D::Identity);
-		}
-		List<XbimTriangulatedModel^>^XbimMap::Mesh(bool withNormals, double deflection )
-		{
-			return _mappedItem->Mesh(withNormals, deflection, XbimMatrix3D::Identity);
-		}
+			XbimTriangulatedModelCollection^ XbimMap::Mesh(double deflection)
+			{
+				if(theMesh==nullptr)
+				{
+					Monitor::Enter(_mappedItem);
+					try
+					{
+						theMesh = _mappedItem->Mesh(deflection);	
+					}
+					finally
+					{
+						Monitor::Exit(_mappedItem);
+					}
+				}
+				return theMesh;
+			}
 
-		List<XbimTriangulatedModel^>^XbimMap::Mesh(bool withNormals, double deflection, XbimMatrix3D transform )
-		{
-			return _mappedItem->Mesh(withNormals, deflection, XbimMatrix3D::Identity);
+			void XbimMap::ToSolid(double precision, double maxPrecision) 
+			{
+				_mappedItem->ToSolid(precision, maxPrecision);
+			}
 		}
 	}
-}
 }

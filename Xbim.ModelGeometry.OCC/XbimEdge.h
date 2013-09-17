@@ -1,7 +1,7 @@
 #pragma once
 #include <TopoDS_Edge.hxx>
 #include <TopoDS_Vertex.hxx>
-
+#include <BRepBuilderAPI_MakeEdge.hxx>
 #include "XbimVertexPoint.h"
 
 using namespace Xbim::XbimExtensions::Interfaces;
@@ -33,8 +33,8 @@ namespace Xbim
 				}
 				void InstanceCleanup()
 				{   
-					int temp = System::Threading::Interlocked::Exchange((int)(void*)nativeHandleEdge, 0);
-					if(temp!=0)
+					IntPtr temp = System::Threading::Interlocked::Exchange(IntPtr(nativeHandleEdge), IntPtr(0));
+					if(temp!=IntPtr(0))
 					{
 						if (nativeHandleEdge)
 						{
@@ -49,7 +49,7 @@ namespace Xbim
 					}
 
 				}
-
+				static String^ GetBuildEdgeErrorMessage(BRepBuilderAPI_EdgeError edgeErr);
 				virtual property XbimVertexPoint^ EdgeStart
 				{
 					XbimVertexPoint^ get();

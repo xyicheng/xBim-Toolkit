@@ -44,31 +44,33 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\bin\Debug\</OutputPath>
+    <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>TRACE;DEBUG;SupportActivation</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>none</DebugType>
+    <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>..\bin\Release\</OutputPath>
+    <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE;SupportActivation</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>
     </DocumentationFile>
+    <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'NugetDistribution|AnyCPU' ">
     <OutputPath>..\bin\NugetDistribution\</OutputPath>
     <DefineConstants>TRACE;SupportActivation</DefineConstants>
     <Optimize>true</Optimize>
-    <DebugType>none</DebugType>
+    <DebugType>pdbonly</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
     <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
     <CodeAnalysisFailOnMissingRules>true</CodeAnalysisFailOnMissingRules>
+    <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -80,6 +82,9 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="ActorSelectExtensions.cs" />
+    <Compile Include="AddressExtensions.cs" />
+    <Compile Include="AppliedValueExtensions.cs" />
     <Compile Include="Axis2Placement2DExtensions.cs" />
     <Compile Include="Axis2Placement3DExtensions.cs" />
     <Compile Include="BuildingElementExtension.cs" />
@@ -621,6 +626,7 @@
     <Compile Include="DataProviders\IfcWindowStyles.cs" />
     <Compile Include="DataProviders\IfcZones.cs" />
     <Compile Include="DataProviders\IfcZShapeProfileDefs.cs" />
+    <Compile Include="DateTimeSelectExtensions.cs" />
     <Compile Include="DirectionExtensions.cs" />
     <Compile Include="DistributionControlElementExtensions.cs" />
     <Compile Include="DoorExtensions.cs" />
@@ -634,8 +640,13 @@
     <Compile Include="GeometryResourceExtensions.cs" />
     <Compile Include="GroupExtension.cs" />
     <Compile Include="ClassificationExtensions.cs" />
+    <Compile Include="ObjectReferenceSelectExtensions.cs" />
+    <Compile Include="PersonExtensions.cs" />
+    <Compile Include="TimeSeriesExtensions.cs" />
+    <Compile Include="UnitExtensions.cs" />
     <Compile Include="LocalTimeExtensions.cs" />
     <Compile Include="MaterialExtension.cs" />
+    <Compile Include="MonetaryUnitExtensions.cs" />
     <Compile Include="NamedUnitExtensions.cs" />
     <Compile Include="ObjectDefinitionExtensions.cs" />
     <Compile Include="ObjectExtensions.cs" />

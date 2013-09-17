@@ -13,16 +13,19 @@
 #region Directives
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
-using Xbim.Ifc.GeometricConstraintResource;
-using Xbim.Ifc.GeometryResource;
-using Xbim.Ifc.Kernel;
-using Xbim.Ifc.RepresentationResource;
+using Xbim.Ifc2x3.GeometricConstraintResource;
+using Xbim.Ifc2x3.GeometryResource;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.Ifc2x3.RepresentationResource;
 using Xbim.XbimExtensions;
+using Xbim.XbimExtensions.Interfaces;
 
 #endregion
 
-namespace Xbim.Ifc.Extensions
+namespace Xbim.Ifc2x3.Extensions
 {
     public static class ProductExtensions
     {
@@ -34,7 +37,15 @@ namespace Xbim.Ifc.Extensions
                         r => string.Compare(r.RepresentationIdentifier.GetValueOrDefault(), "Axis", true) == 0);
             return null;
         }
-
+        /// <summary>
+        /// Returns the spatial structural elements that this product is in
+        /// </summary>
+        /// <param name="prod"></param>
+        /// <returns></returns>
+        public static IEnumerable<IfcSpatialStructureElement> IsContainedIn(this IfcProduct prod)
+        {
+            return prod.ModelOf.Instances.Where<IfcRelContainedInSpatialStructure>(r => r.RelatedElements.Contains(prod)).Select(s=>s.RelatingStructure);
+        }
         /// <summary>
         ///   Returns the first Body(Solid) Representation, null if none exists
         /// </summary>
@@ -57,13 +68,13 @@ namespace Xbim.Ifc.Extensions
         public static void SetNewObjectLocalPlacement(this IfcProduct prod, double placementX, double placementY,
                                                       double placementZ)
         {
-            IModel model = ModelManager.ModelOf(prod);
+            IModel model = prod.ModelOf;
 
-            prod.ObjectPlacement = model.New<IfcLocalPlacement>();
+            prod.ObjectPlacement = model.Instances.New<IfcLocalPlacement>();
             IfcLocalPlacement localPlacement = prod.ObjectPlacement as IfcLocalPlacement;
 
             if (localPlacement.RelativePlacement == null)
-                localPlacement.RelativePlacement = model.New<IfcAxis2Placement3D>();
+                localPlacement.RelativePlacement = model.Instances.New<IfcAxis2Placement3D>();
             IfcAxis2Placement3D placement = localPlacement.RelativePlacement as IfcAxis2Placement3D;
             placement.SetNewLocation(placementX, placementY, placementZ);
         }
@@ -135,15 +146,15 @@ namespace Xbim.Ifc.Extensions
                                                                                         IfcRepresentationContext context)
         {
             IModel model = (prod as IPersistIfcEntity).ModelOf;
-            if (model == null) model = ModelManager.ModelOf(prod);
+            if (model == null) model = prod.ModelOf;
             IfcProductDefinitionShape definitionShape = prod.Representation as IfcProductDefinitionShape;
             if (definitionShape == null)
             {
-                definitionShape = model.New<IfcProductDefinitionShape>();
+                definitionShape = model.Instances.New<IfcProductDefinitionShape>();
                 prod.Representation = definitionShape;
             }
 
-            IfcShapeRepresentation shapeRepresentation = model.New<IfcShapeRepresentation>();
+            IfcShapeRepresentation shapeRepresentation = model.Instances.New<IfcShapeRepresentation>();
             shapeRepresentation.ContextOfItems = context; // model.IfcProject.ModelContext();
             shapeRepresentation.RepresentationIdentifier = "Body";
             shapeRepresentation.RepresentationType = "Brep";
@@ -161,15 +172,15 @@ namespace Xbim.Ifc.Extensions
                                                                                                   context)
         {
             IModel model = (prod as IPersistIfcEntity).ModelOf;
-            if (model == null) model = ModelManager.ModelOf(prod);
+            if (model == null) model = prod.ModelOf;
             IfcProductDefinitionShape definitionShape = prod.Representation as IfcProductDefinitionShape;
             if (definitionShape == null)
             {
-                definitionShape = model.New<IfcProductDefinitionShape>();
+                definitionShape = model.Instances.New<IfcProductDefinitionShape>();
                 prod.Representation = definitionShape;
             }
 
-            IfcShapeRepresentation shapeRepresentation = model.New<IfcShapeRepresentation>();
+            IfcShapeRepresentation shapeRepresentation = model.Instances.New<IfcShapeRepresentation>();
             shapeRepresentation.ContextOfItems = context; // model.IfcProject.ModelContext();
             shapeRepresentation.RepresentationIdentifier = "Body";
             shapeRepresentation.RepresentationType = "SweptSolid";

@@ -7,6 +7,7 @@ using System.Collections;
 using Xbim.Ifc2x3.Kernel;
 using System.ComponentModel;
 using System.Collections.ObjectModel;
+using Xbim.IO;
 
 namespace Xbim.Presentation
 {
@@ -111,5 +112,11 @@ namespace Xbim.Presentation
             }
         }
         #endregion
+
+
+        public IO.XbimModel Model
+        {
+            get { return (XbimModel)product.ModelOf; }
+        }
     }
 }

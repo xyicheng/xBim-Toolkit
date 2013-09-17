@@ -125,11 +125,11 @@ namespace Xbim.COBie
                                         typeof(IfcSite),
                                         typeof(IfcSpace),
                                         typeof(IfcProject),
-                                        typeof(IfcTendon),
-                                        typeof(IfcTendonAnchor),
-                                        typeof(IfcFooting),
-                                        typeof(IfcCovering)
-                                        //typeof(IfcColumnStandardCase), //IFC2x Edition 4.
+                                        //typeof(IfcTendon),
+                                        //typeof(IfcTendonAnchor),
+                                        //typeof(IfcFooting),
+                                        //typeof(ifcCovering),
+                                        ///typeof(IfcColumnStandardCase), //IFC2x Edition 4.
                                         //typeof(IfcMemberStandardCase), //IFC2x Edition 4.
                                         //typeof(IfcPlateStandardCase), //IFC2x Edition 4.
                                         //typeof(IfcSlabElementedCase), //IFC2x Edition 4.
@@ -177,18 +177,7 @@ namespace Xbim.COBie
                                                 typeof(IfcBuilding),
                                                 typeof(IfcBuildingStorey)
                                                 };
-            //Assemblies should only be shown from the components and type sheets so add there exclusions 
-            Assembly.AddRange(Types);
-            Assembly.AddRange(Component);
-            
-
         }
-
-      
-               
-        
-
-        
     }
 
     /// <summary>
@@ -233,8 +222,8 @@ namespace Xbim.COBie
                                     "Finish",   "Color",    "Size",     "Shape",    "ModelReference",   "NominalHeight",    "NominalWidth", "NominalLength",    "WarrantyName",
                                     "WarrantyDescription",  "DurationUnit",         "ServiceLifeType",  "ServiceLifeDuration",  "ExpectedLife",     "LifeCyclePhase",   "Cost",
                                     "ReplacementCost",  "WarrantyDurationUnit", "WarrantyDurationLabor",    "WarrantyGuarantorLabor",   "WarrantyDurationParts",    
-                                    "WarrantyGuarantorParts",   "ModelLabel",   "ModelNumber",  "Manufacturer", "IsFixed",  "AssetType", "CodePerformance", "SustainabilityPerformance"
-        
+                                    "WarrantyGuarantorParts",   "ModelLabel",   "ModelNumber",  "Manufacturer", "IsFixed",  "AssetType", "CodePerformance", "SustainabilityPerformance",
+                                    "PointOfContact", "Colour", "Regulation", "Environmental"
                                 };
 
             AttributesContain = new List<string>() { "Roomtag", "RoomTag", "GSA BIM Area" }; //"Tag",
@@ -264,9 +253,9 @@ namespace Xbim.COBie
         
         public SpaceValues()
         {
-            AttributesEqualTo = new List<string> { "Area", "Number", "UsableHeight", "RoomTag", "Room Tag" }; 
+            AttributesEqualTo = new List<string> { "Area", "Number", "UsableHeight", "RoomTag", "Room Tag", "Tag", "Room_Tag", "FinishCeilingHeight" }; 
 
-            AttributesContain = new List<string> { "ZoneName", "Category", "Length", "Width" };
+            AttributesContain = new List<string> { "ZoneName", "Category", "Length", "Width", "GrossFloorArea", "GSA", "NetFloorArea" };
 
             PropertySetsEqualTo = new List<string>() { "BaseQuantities" }; 
         }

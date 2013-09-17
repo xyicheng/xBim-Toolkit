@@ -74,9 +74,14 @@ namespace Xbim.Ifc2x3.QuantityResource
             string baseErr = base.WhereRule();
             if (Unit != null && Unit.UnitType != IfcUnitEnum.LENGTHUNIT)
                 baseErr += "WR21 QuantityLength : If a unit is given, the unit type shall be length unit.\n";
-            if (_lengthValue < 0)
+            if (LengthValue < 0)
                 baseErr += "WR22 QuantityLength : A valid length quantity shall be greater than or equal to zero.\n";
             return baseErr;
+        }
+
+        public override string ToString()
+        {
+            return LengthValue.ToPart21;
         }
     }
 }

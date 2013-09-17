@@ -1,7 +1,10 @@
 #pragma once
-#include "IXbimGeometryModel.h"
+#include "XbimGeometryModel.h"
 #include "XbimGeometryModel.h"
 #include "XbimSolid.h"
+#include "BRepBuilderAPI_Transform.hxx"
+#include "BRepBuilderAPI_GTransform.hxx"
+#include "XbimGeomPrim.h"
 using namespace Xbim::Ifc2x3::GeometryResource;
 using namespace Xbim::Ifc2x3::TopologyResource;
 namespace Xbim
@@ -10,112 +13,100 @@ namespace Xbim
 	{
 		namespace OCC
 		{
-		public ref class XbimMap : IXbimGeometryModel
+		public ref class XbimMap : XbimGeometryModel
 		{
 		private:
-			IXbimGeometryModel^ _mappedItem;
+			XbimGeometryModel^ _mappedItem;
 			XbimMatrix3D _transform;
-			Int32 _representationLabel;
-			Int32 _surfaceStyleLabel;
+			XbimTriangulatedModelCollection^ theMesh;
+			IfcAxis2Placement^ _origin; 
+			IfcCartesianTransformationOperator^ _cartTransform;
 		public:
-				~XbimMap()
-				{
-					InstanceCleanup();
-				}
-
-				!XbimMap()
-				{
-					InstanceCleanup();
-				}
-				void InstanceCleanup()
-				{   
-					_mappedItem=nullptr;
-				}
-			XbimMap(IXbimGeometryModel^ item, IfcAxis2Placement^ origin, IfcCartesianTransformationOperator^ transform, ConcurrentDictionary<int,Object^>^ maps);
-			virtual IXbimGeometryModel^ Cut(IXbimGeometryModel^ shape);
-			virtual IXbimGeometryModel^ Union(IXbimGeometryModel^ shape);
-			virtual IXbimGeometryModel^ Intersection(IXbimGeometryModel^ shape);
-			virtual IXbimGeometryModel^ CopyTo(IfcObjectPlacement^ placement);
-			virtual void Move(TopLoc_Location location);
-			virtual property bool HasCurvedEdges
+			XbimMap(XbimGeometryModel^ item, IfcAxis2Placement^ origin, IfcCartesianTransformationOperator^ transform, ConcurrentDictionary<int,Object^>^ maps);
+			XbimMap(const TopoDS_Shape & shape,XbimMap^ copy);
+#if USE_CARVE
+			virtual XbimPolyhedron^ ToPolyHedron(double deflection, double precision, double precisionMax) override;
+#endif
+			~XbimMap()
 			{
-				virtual bool get() //this geometry has the same curved edges as the object it maps
-				{
-					return _mappedItem->HasCurvedEdges;
-				}
-			}
-			virtual XbimBoundingBox^ GetBoundingBox(bool precise)
-			{
-				return _mappedItem->GetBoundingBox(precise);
-			};
-						
-			virtual property Int32 RepresentationLabel
-			{
-				Int32 get(){return _representationLabel; }
-				void set(Int32 value){ _representationLabel=value; }
+				InstanceCleanup();
 			}
 
-			virtual property Int32 SurfaceStyleLabel
+			!XbimMap()
 			{
-				Int32 get(){return _surfaceStyleLabel; }
-				void set(Int32 value){ _surfaceStyleLabel=value; }
+				InstanceCleanup();
+			}
+			virtual void InstanceCleanup() override
+			{   
+				_mappedItem=nullptr;
+				XbimGeometryModel::InstanceCleanup();
+			}
+			virtual XbimGeometryModel^ CopyTo(IfcAxis2Placement^ placement) override;
+			//virtual void Move(TopLoc_Location location) override;
+			virtual property bool IsValid
+			{
+				bool get() override
+				{
+					return _mappedItem !=nullptr && _mappedItem->IsValid;
+				}
 			}
 
-			property XbimMatrix3D Transform
+			virtual property XbimMatrix3D Transform
 			{
-				XbimMatrix3D get()
+				XbimMatrix3D get() override
 				{
 					return _transform;
-				}
-			}
-			
-			property IXbimGeometryModel^ MappedItem
-			{
-				IXbimGeometryModel^ get()
-				{
-					return _mappedItem;
-				}
-			}
-			virtual List<XbimTriangulatedModel^>^Mesh(bool withNormals, double deflection, XbimMatrix3D transform);
-			virtual List<XbimTriangulatedModel^>^Mesh(bool withNormals, double deflection);
-			virtual List<XbimTriangulatedModel^>^Mesh(bool withNormals);
-			virtual List<XbimTriangulatedModel^>^Mesh();
-			virtual property double Volume
-			{
-				double get()
-				{
-					return _mappedItem->Volume;
-				}
-			}
-
-			virtual property XbimLocation ^ Location 
-			{
-				XbimLocation ^ get()
-				{
-					throw gcnew NotImplementedException("Location needs to be implemented");
-				}
-				void set(XbimLocation ^ location)
-				{
-					throw gcnew NotImplementedException("Location needs to be implemented");
 				}
 			}
 
 			virtual property TopoDS_Shape* Handle
 			{
-				TopoDS_Shape* get()
+				TopoDS_Shape* get() override
 				{
-					
-					if(!_transform.IsIdentity) //see if we need to map
+					if(nativeHandle==nullptr)
 					{
-						XbimSolid^ solid = gcnew XbimSolid(_mappedItem,_transform);
-						_transform = XbimMatrix3D::Identity; //Matrix no longer should be applied it has been applied to the mapped geometry
-						_mappedItem=solid;
+						TopoDS_Shape temp = *(_mappedItem->Handle);
+						nativeHandle = new TopoDS_Shape();
+						if(_origin!=nullptr)
+							temp.Move(XbimGeomPrim::ToLocation(_origin));
+						if(_cartTransform!=nullptr)
+						{	
+							if(dynamic_cast<IfcCartesianTransformationOperator3DnonUniform^>( _cartTransform))
+							{
+								BRepBuilderAPI_GTransform gTran(temp,XbimGeomPrim::ToTransform((IfcCartesianTransformationOperator3DnonUniform^)_cartTransform));
+								*nativeHandle = gTran.Shape();
+							}
+							else
+							{
+								BRepBuilderAPI_Transform gTran(temp,XbimGeomPrim::ToTransform(_cartTransform));
+								*nativeHandle =gTran.Shape();
+							}
+						}
+						else
+							*nativeHandle = temp;
 					}
-					return _mappedItem->Handle;
+					return nativeHandle;
 				}
 			}
 
-			
+			property XbimGeometryModel^ MappedItem
+			{
+				XbimGeometryModel^ get()
+				{
+					return _mappedItem;
+				}
+			}
+
+			virtual property double Volume
+			{
+				double get() override
+				{
+					return _mappedItem->Volume;
+				}
+			}
+
+			virtual XbimTriangulatedModelCollection^ Mesh(double deflection) override;
+			virtual void ToSolid(double precision, double maxPrecision) override; 
 		};
 	}
 	}

@@ -22,7 +22,7 @@ namespace Xbim.Common.Geometry
         private float _sizeX;
         private float _sizeY;
         private float _sizeZ;
-
+       
 
         public float SizeX
         {
@@ -135,6 +135,37 @@ namespace Xbim.Common.Geometry
             _sizeY = (float)0.0;
             _sizeZ = (float)0.0;
         }
+
+        public XbimRect3D(XbimVector3D vMin, XbimVector3D vMax)
+        {
+            this._x = Math.Min(vMin.X, vMax.X);
+            this._y = Math.Min(vMin.Y, vMax.Y);
+            this._z = Math.Min(vMin.Z, vMax.Z);
+            this._sizeX = Math.Max(vMin.X, vMax.X) - this._x;
+            this._sizeY = Math.Max(vMin.Y, vMax.Y) - this._y;
+            this._sizeZ = Math.Max(vMin.Z, vMax.Z) - this._z;
+        }
+        
+        /// <summary>
+        /// Minimum vertex
+        /// </summary>
+        public XbimPoint3D Min
+        {
+            get
+            {
+                return new XbimPoint3D(_x+_sizeX,_y+_sizeY,_z+_sizeZ);
+            }
+        }
+        /// <summary>
+        /// Maximum vertex
+        /// </summary>
+        public XbimPoint3D Max
+        {
+            get
+            {
+                return this.Location;
+            }
+        }
         /// <summary>
         /// Reinitialises the rectangle 3d from the byte array
         /// </summary>
@@ -157,6 +188,24 @@ namespace Xbim.Common.Geometry
             rect.SizeZ = srZmax - srZmin;
             return rect;
         }
+        /// <summary>
+        /// Writes the Bounding Box as 6 doubles
+        /// </summary>
+        /// <returns></returns>
+        public byte[] ToArray()
+        {
+            MemoryStream ms = new MemoryStream();
+            BinaryWriter bw = new BinaryWriter(ms);
+            bw.Write((double)_x);
+            bw.Write((double)_y);
+            bw.Write((double)_z);
+            bw.Write((double)_sizeX);
+            bw.Write((double)_sizeY);
+            bw.Write((double)_sizeZ);
+            bw.Close();
+            return ms.ToArray();
+        }
+
 
         static public XbimRect3D Inflate( double x, double y, double z)
         {
@@ -198,13 +247,34 @@ namespace Xbim.Common.Geometry
         /// <returns></returns>
         public XbimPoint3D Centroid()
         {
-            return new XbimPoint3D((X + SizeX / 2), (Y + SizeY / 2), (Z + SizeZ / 2));
+            if (IsEmpty) 
+                return new XbimPoint3D(0, 0, 0);
+            else
+                return new XbimPoint3D((X + SizeX / 2), (Y + SizeY / 2), (Z + SizeZ / 2));
         }
 
 
-        public void TransformBy(XbimMatrix3D matrix3d)
+        static public XbimRect3D TransformBy(XbimRect3D rect3d, XbimMatrix3D m)
         {
-            Location = XbimPoint3D.Multiply(Location, matrix3d);
+            XbimPoint3D min = rect3d.Min;
+            XbimPoint3D max = rect3d.Max;
+            XbimVector3D up = m.Up;
+            XbimVector3D right = m.Right;
+            XbimVector3D backward = m.Backward;
+            var xa = right * min.X;
+            var xb = right * max.X;
+
+            var ya = up * min.Y;
+            var yb = up * max.Y;
+
+            var za = backward * min.Z;
+            var zb = backward * max.Z;
+
+            return new XbimRect3D(
+                XbimVector3D.Min(xa, xb) + XbimVector3D.Min(ya, yb) + XbimVector3D.Min(za, zb) + m.Translation,
+                XbimVector3D.Max(xa, xb) + XbimVector3D.Max(ya, yb) + XbimVector3D.Max(za, zb) + m.Translation
+            );
+            
         }
 
         public void Union(XbimRect3D bb)
@@ -254,6 +324,50 @@ namespace Xbim.Common.Geometry
         {
             return (((((x >= this._x) && (x <= (this._x + this._sizeX))) && ((y >= this._y) && (y <= (this._y + this._sizeY)))) && (z >= this._z)) && (z <= (this._z + this._sizeZ)));
   
+        }
+
+        public bool Intersects(XbimRect3D rect)
+        {
+            if (this.IsEmpty || rect.IsEmpty)
+            {
+                return false;
+            }
+            return (((((rect._x <= (this._x + this._sizeX)) && ((rect._x + rect._sizeX) >= this._x)) && ((rect._y <= (this._y + this._sizeY)) && ((rect._y + rect._sizeY) >= this._y))) && (rect._z <= (this._z + this._sizeZ))) && ((rect._z + rect._sizeZ) >= this._z));
+        }
+       
+
+        public bool Contains(XbimRect3D rect)
+        {
+            if (this.IsEmpty)
+            {
+                return false;
+            }
+
+            return this.ContainsCoords(rect.X, rect.Y, rect.Z) && this.ContainsCoords(rect.X + rect.SizeX, rect.Y + rect.SizeY, rect.Z+rect.SizeZ);
+        }
+
+       /// <summary>
+       /// Returns the radius of the sphere that contains this bounding box rectangle 3D
+       /// </summary>
+       /// <returns></returns>
+        public float Radius()
+        {
+            XbimVector3D max = new XbimVector3D(SizeX, SizeY, SizeZ);
+            float len = max.Length;
+            if (len != 0)
+                return  len / 2;
+            else
+                return 0;
+        }
+
+        /// <summary>
+        /// Returns the length of the largest diagonal
+        /// </summary>
+        /// <returns></returns>
+        public float Length()
+        {
+            XbimVector3D max = new XbimVector3D(SizeX, SizeY, SizeZ);
+            return max.Length;
         }
     }
 }

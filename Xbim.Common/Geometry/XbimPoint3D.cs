@@ -12,6 +12,12 @@ namespace Xbim.Common.Geometry
         public float Z;
 
        
+        public readonly static XbimPoint3D Zero;
+        
+        static XbimPoint3D()
+        {
+            Zero = new XbimPoint3D(0, 0, 0);
+        }
         public XbimPoint3D(float x, float y, float z)
         {
             X = x; Y = y; Z = z;
@@ -90,7 +96,12 @@ namespace Xbim.Common.Geometry
         {
             return XbimPoint3D.Subtract(a, b);
         }
-
+        public static XbimPoint3D operator -(XbimPoint3D a, XbimVector3D b)
+        {
+            return new XbimPoint3D(a.X - b.X,
+                                    a.Y - b.Y,
+                                    a.Z - b.Z);
+        }
         public static XbimVector3D Subtract(XbimPoint3D a, XbimPoint3D b)
         {
             return new XbimVector3D(a.X - b.X,
@@ -100,5 +111,7 @@ namespace Xbim.Common.Geometry
 
 
 
+
+        
     }
 }

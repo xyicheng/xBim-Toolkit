@@ -74,9 +74,14 @@ namespace Xbim.Ifc2x3.QuantityResource
             string baseErr = base.WhereRule();
             if (Unit != null && Unit.UnitType != IfcUnitEnum.TIMEUNIT)
                 baseErr += "WR21 QuantityTime : If a unit is given, the unit type shall be time unit.\n";
-            if (_timeValue < 0)
+            if (TimeValue < 0)
                 baseErr += "WR22 QuantityTime : A valid time quantity shall be greater than or equal to zero.\n";
             return baseErr;
+        }
+
+        public override string ToString()
+        {
+            return TimeValue.ToPart21;
         }
     }
 }

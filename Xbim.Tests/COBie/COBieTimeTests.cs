@@ -278,7 +278,7 @@ namespace Xbim.Tests.COBie
         {
             Stopwatch timer = new Stopwatch();
             timer.Start();
-            _cobieEngine.GetCOBieSystemSheet();
+            _cobieEngine.GetCOBieSystemSheet(new Dictionary<string, HashSet<string>>());
             timer.Stop();
             Console.WriteLine(string.Format("System Sheet Time = {0}", timer.Elapsed.TotalSeconds.ToString()));
             return timer.Elapsed;

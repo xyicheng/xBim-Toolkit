@@ -81,7 +81,10 @@ namespace Xbim.COBie.Data
                 {
                     count++;
                     ProgressIndicator.IncrementAndUpdate();
-                    
+                    //if no name to link the row name too skip it, as no way to link back to the parent object
+                    //if (string.IsNullOrEmpty(ifcProduct.Name))
+                    //    continue;
+
                     COBieCoordinateRow coordinate = new COBieCoordinateRow(coordinates);
                     
                     coordinate.Name = (string.IsNullOrEmpty(ifcProduct.Name.ToString())) ? DEFAULT_STRING : ifcProduct.Name.ToString();// (ifcBuildingStorey == null || ifcBuildingStorey.Name.ToString() == "") ? "CoordinateName" : ifcBuildingStorey.Name.ToString();
@@ -103,7 +106,7 @@ namespace Xbim.COBie.Data
                         
                         if (geoData != null)
                         {
-                            XbimMatrix3D worldMatrix = XbimMatrix3D.FromArray(geoData.TransformData);
+                            XbimMatrix3D worldMatrix = geoData.Transform;
                             ifcCartesianPointLower = new IfcCartesianPoint(worldMatrix.OffsetX, worldMatrix.OffsetY, worldMatrix.OffsetZ); //get the offset from the world coordinates system 0,0,0 point, i.e. origin point of this object in world space
                         }
                         coordinate.SheetName = "Floor";
@@ -115,7 +118,7 @@ namespace Xbim.COBie.Data
                         if (geoData != null)
                         {
                             XbimRect3D boundBox = XbimRect3D.FromArray(geoData.ShapeData);
-                            XbimMatrix3D worldMatrix = XbimMatrix3D.FromArray(geoData.TransformData);
+                            XbimMatrix3D worldMatrix = geoData.Transform;
                             //do the transform in the next call to the structure TransformedBoundingBox constructor
                             TransformedBoundingBox tranBox = new TransformedBoundingBox(boundBox, worldMatrix);
                             ClockwiseRotation = tranBox.ClockwiseRotation;

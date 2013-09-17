@@ -46,37 +46,40 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\bin\Debug\</OutputPath>
+    <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>TRACE;DEBUG;SupportActivation</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>none</DebugType>
+    <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>..\bin\Release\</OutputPath>
+    <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE;SupportActivation</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>
     </DocumentationFile>
+    <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'NugetDistribution|AnyCPU' ">
     <OutputPath>..\bin\NugetDistribution\</OutputPath>
     <DefineConstants>TRACE;SupportActivation</DefineConstants>
     <Optimize>true</Optimize>
-    <DebugType>none</DebugType>
+    <DebugType>pdbonly</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
     <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
+    <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Esent.Collections">
-      <HintPath>..\packages\ManagedEsent.1.8.2\lib\net40\Esent.Collections.dll</HintPath>
+      <HintPath>..\packages\ManagedEsent.1.6\lib\net20\Esent.Collections.dll</HintPath>
     </Reference>
-    <Reference Include="Esent.Interop">
-      <HintPath>..\packages\ManagedEsent.1.8.2\lib\net40\Esent.Interop.dll</HintPath>
+    <Reference Include="Esent.Interop, Version=1.6.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\ManagedEsent.1.6\lib\net20\Esent.Interop.dll</HintPath>
     </Reference>
     <Reference Include="ICSharpCode.SharpZipLib">
       <HintPath>..\packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
@@ -99,8 +102,20 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="DynamicGrouping\GroupingByXml.cs" />
+    <Compile Include="DynamicGrouping\GroupsFromXml.cs" />
+    <Compile Include="DynamicGrouping\XbimQueryBuilder.cs" />
+    <Compile Include="DynamicGrouping\XbimQueryFactory.cs" />
     <Compile Include="IfcFileHeader.cs" />
     <Compile Include="IfcRepresentationItemExtensions.cs" />
+    <Compile Include="Parser\XbimP21Decoder.cs" />
+    <Compile Include="Tree\TreeBuilder.cs" />
+    <Compile Include="Tree\TreeComponentStrategy.cs" />
+    <Compile Include="Tree\TreeContainmentStrategy.cs" />
+    <Compile Include="Tree\TreeNode.cs" />
+    <Compile Include="Tree\TreeNodes.cs" />
+    <Compile Include="Tree\TreeQueryStrategy.cs" />
+    <Compile Include="XbimFederatedModelInstances.cs" />
     <Compile Include="XbimGeometryHandle.cs" />
     <Compile Include="XbimGeometryHandleCollection.cs" />
     <Compile Include="XbimGeometrySort.cs" />
@@ -138,7 +153,6 @@
     <Compile Include="XbimOutputStream.cs" />
     <Compile Include="XbimPackage.cs" />
     <Compile Include="XbimParserState.cs" />
-    <Compile Include="XbimProductGeometry.cs" />
     <Compile Include="XbimReadOnlyDBTransaction.cs" />
     <Compile Include="XbimReadTransaction.cs" />
     <Compile Include="XbimReadWriteTransaction.cs" />
@@ -188,6 +202,7 @@
     <None Include="Parser\StepP21Lex.lex" />
     <None Include="Parser\StepP21Parser.y" />
     <None Include="Parser\XbimViewerKey.pfx" />
+    <None Include="README.rtf" />
     <None Include="XbimIfcKey.pfx" />
   </ItemGroup>
   <ItemGroup>
@@ -203,11 +218,17 @@
     <Folder Include="Query\" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="DynamicGrouping\NRM clssification.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="DynamicGrouping\NRM2IFC.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="x64\SQLite.Interop.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="x86\SQLite.Interop.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

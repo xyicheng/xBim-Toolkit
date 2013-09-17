@@ -1,9 +1,10 @@
 #pragma once
 #include <TopoDS_Vertex.hxx>
+
 using namespace Xbim::XbimExtensions::Interfaces;
 using namespace Xbim::Ifc2x3::GeometryResource;
 using namespace Xbim::Common::Geometry;
-
+using namespace System;
 namespace Xbim
 {
 	namespace ModelGeometry
@@ -36,8 +37,8 @@ namespace Xbim
 			}
 			void InstanceCleanup()
 			{   
-				int temp = System::Threading::Interlocked::Exchange((int)(void*)pVertex, 0);
-				if(temp!=0)
+				IntPtr temp = System::Threading::Interlocked::Exchange(IntPtr(pVertex), IntPtr(0));
+					if(temp!=IntPtr(0))
 				{
 					if (pVertex)
 					{

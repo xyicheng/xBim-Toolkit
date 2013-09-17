@@ -18,55 +18,79 @@
     </FileUpgradeFlags>
     <OldToolsVersion>3.5</OldToolsVersion>
     <UpgradeBackupLocation />
-    <PublishUrl>publish\</PublishUrl>
-    <Install>true</Install>
-    <InstallFrom>Disk</InstallFrom>
-    <UpdateEnabled>false</UpdateEnabled>
-    <UpdateMode>Foreground</UpdateMode>
-    <UpdateInterval>7</UpdateInterval>
-    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
-    <UpdatePeriodically>false</UpdatePeriodically>
-    <UpdateRequired>false</UpdateRequired>
-    <MapFileExtensions>true</MapFileExtensions>
-    <ApplicationRevision>0</ApplicationRevision>
-    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
-    <UseApplicationTrust>false</UseApplicationTrust>
-    <BootstrapperEnabled>true</BootstrapperEnabled>
-    <TargetFrameworkProfile />
+    <IsWebBootstrapper>true</IsWebBootstrapper>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
     <SccProjectName>SAK</SccProjectName>
     <SccLocalPath>SAK</SccLocalPath>
     <SccProvider>SAK</SccProvider>
     <SccAuxPath>SAK</SccAuxPath>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Web</InstallFrom>
+    <UpdateEnabled>true</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <InstallUrl>http://xBIM.codeplex.com/releases/clickonce/</InstallUrl>
+    <SupportUrl>http://www.openBIM.org</SupportUrl>
+    <ProductName>xBIM Xplorer</ProductName>
+    <PublisherName>xBIM Team</PublisherName>
+    <SuiteName>xBIM Toolkit</SuiteName>
+    <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
+    <WebPage>publish.htm</WebPage>
+    <OpenBrowserOnPublish>false</OpenBrowserOnPublish>
+    <ApplicationRevision>27</ApplicationRevision>
+    <ApplicationVersion>2.4.0.%2a</ApplicationVersion>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <CreateDesktopShortcut>true</CreateDesktopShortcut>
+    <PublishWizardCompleted>true</PublishWizardCompleted>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>icon.ico</ApplicationIcon>
+    <ApplicationIcon>xBIM.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>..\bin\Debug\</OutputPath>
+    <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DebugType>full</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PlatformTarget>x86</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
     <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
-    <OutputPath>..\bin\Release\</OutputPath>
+    <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <Optimize>true</Optimize>
-    <DebugType>none</DebugType>
+    <DebugType>pdbonly</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ManifestCertificateThumbprint>CAFDCB09EC9A33A0B250FF4513695317790A827C</ManifestCertificateThumbprint>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ManifestKeyFile>XbimXplorer_TemporaryKey.pfx</ManifestKeyFile>
+  </PropertyGroup>
+  <PropertyGroup>
+    <GenerateManifests>true</GenerateManifests>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignManifests>true</SignManifests>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="PropertyTools">
+    <Reference Include="PropertyTools, Version=0.0.0.0, Culture=neutral, PublicKeyToken=ea0c9f2b460934d0, processorArchitecture=MSIL">
       <HintPath>..\packages\PropertyTools.Wpf.2013.1.12.1\lib\NET40\PropertyTools.dll</HintPath>
     </Reference>
-    <Reference Include="PropertyTools.Wpf">
+    <Reference Include="PropertyTools.Wpf, Version=2013.1.1.1, Culture=neutral, PublicKeyToken=ea0c9f2b460934d0, processorArchitecture=MSIL">
       <HintPath>..\packages\PropertyTools.Wpf.2013.1.12.1\lib\NET40\PropertyTools.Wpf.dll</HintPath>
     </Reference>
     <Reference Include="System" />
@@ -75,6 +99,7 @@
     </Reference>
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xaml" />
     <Reference Include="System.Xml.Linq">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -104,6 +129,22 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Page Include="Dialogs\AddFederatedModel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Dialogs\CreateFederationWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="FederatedModelDlg.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Querying\wdwQuery.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="XplorerMainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -116,6 +157,19 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Dialogs\AddFederatedModel.xaml.cs">
+      <DependentUpon>AddFederatedModel.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Dialogs\CreateFederationWindow.xaml.cs">
+      <DependentUpon>CreateFederationWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="FederatedModelDlg.xaml.cs">
+      <DependentUpon>FederatedModelDlg.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Querying\TreeQuery.cs" />
+    <Compile Include="Querying\wdwQuery.xaml.cs">
+      <DependentUpon>wdwQuery.xaml</DependentUpon>
     </Compile>
     <Compile Include="XplorerMainWindow.xaml.cs">
       <DependentUpon>XplorerMainWindow.xaml</DependentUpon>
@@ -136,20 +190,35 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <Resource Include="xBIM.ico" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <None Include="app.config" />
-    <None Include="COBie-UK-2012-template.xls">
+    <Resource Include="..\Readme.txt">
+      <Link>Readme.txt</Link>
+    </Resource>
+    <None Include="..\Local.testsettings">
+      <Link>Local.testsettings</Link>
+    </None>
+    <None Include="..\Test Models\Standard Classroom CIC 6-2.8.0.ifc">
+      <Link>Standard Classroom CIC 6-2.8.0.ifc</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="app.config" />
+    <Content Include="COBie-UK-2012-template.xls">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="COBie-US-2_4-template.xls">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
+    <None Include="XbimXplorer_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Xbim.COBie\Xbim.COBie.csproj">
@@ -181,12 +250,82 @@
       <Name>Xbim.ModelGeometry.Scene</Name>
     </ProjectReference>
     <ProjectReference Include="..\Xbim.Presentation\Xbim.Presentation.csproj">
-      <Project>{89F98E53-DE4E-4427-8244-D5934AD08849}</Project>
+      <Project>{89f98e53-de4e-4427-8244-d5934ad08849}</Project>
       <Name>Xbim.Presentation</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="icon.ico" />
+    <BootstrapperPackage Include=".NETFramework,Version=v4.0,KB2468871">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4 %28x86 and x64%29 and Update for .NET Framework 4 %28KB2468871%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Windows.Installer.4.5">
+      <Visible>False</Visible>
+      <ProductName>Windows Installer 4.5</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <PublishFile Include="Esent.Interop">
+      <Visible>False</Visible>
+      <Group>
+      </Group>
+      <TargetPath>
+      </TargetPath>
+      <PublishState>Include</PublishState>
+      <IncludeHash>True</IncludeHash>
+      <FileType>Assembly</FileType>
+    </PublishFile>
+    <PublishFile Include="ICSharpCode.SharpZipLib">
+      <Visible>False</Visible>
+      <Group>
+      </Group>
+      <TargetPath>
+      </TargetPath>
+      <PublishState>Include</PublishState>
+      <IncludeHash>True</IncludeHash>
+      <FileType>Assembly</FileType>
+    </PublishFile>
+    <PublishFile Include="log4net">
+      <Visible>False</Visible>
+      <Group>
+      </Group>
+      <TargetPath>
+      </TargetPath>
+      <PublishState>Include</PublishState>
+      <IncludeHash>True</IncludeHash>
+      <FileType>Assembly</FileType>
+    </PublishFile>
+    <PublishFile Include="System.Data.SQLite">
+      <Visible>False</Visible>
+      <Group>
+      </Group>
+      <TargetPath>
+      </TargetPath>
+      <PublishState>Include</PublishState>
+      <IncludeHash>True</IncludeHash>
+      <FileType>Assembly</FileType>
+    </PublishFile>
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <FileAssociation Include=".xBIM">
+      <Visible>False</Visible>
+      <Description>xBIM files</Description>
+      <Progid>xBIM.Xplorer</Progid>
+      <DefaultIcon>xBIM.ico</DefaultIcon>
+    </FileAssociation>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -196,4 +335,41 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <ItemGroup Condition=" '$(Configuration)' == 'Release' ">
+    <x86PublishFile Include="bin\Release\x86\*.dll">
+      <Visible>False</Visible>
+    </x86PublishFile>
+    <x64PublishFile Include="bin\Release\x64\*.dll">
+      <Visible>False</Visible>
+    </x64PublishFile>
+  </ItemGroup>
+  <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <x86PublishFile Include="bin\Debug\x86\*.dll">
+      <Visible>False</Visible>
+    </x86PublishFile>
+    <x64PublishFile Include="bin\Debug\x64\*.dll">
+      <Visible>False</Visible>
+    </x64PublishFile>
+    <x86DebugPublishFile Include="bin\Debug\x86\Debug\*.dll">
+      <Visible>False</Visible>
+    </x86DebugPublishFile>
+    <x64DebugPublishFile Include="bin\Debug\x64\Debug\*.dll">
+      <Visible>False</Visible>
+    </x64DebugPublishFile>
+  </ItemGroup>
+  <Target Name="BeforePublish">
+    <Touch Files="@(IntermediateAssembly)" />
+    <CreateItem Include="@(x86PublishFile)" AdditionalMetadata="TargetPath=x86\%(FileName)%(Extension);IsDataFile=false;">
+      <Output TaskParameter="Include" ItemName="_DeploymentManifestFiles" />
+    </CreateItem>
+    <CreateItem Include="@(x64PublishFile)" AdditionalMetadata="TargetPath=x64\%(FileName)%(Extension);IsDataFile=false;">
+      <Output TaskParameter="Include" ItemName="_DeploymentManifestFiles" />
+    </CreateItem>
+    <CreateItem Include="@(x86DebugPublishFile)" AdditionalMetadata="TargetPath=x86\Debug\%(FileName)%(Extension);IsDataFile=false">
+      <Output TaskParameter="Include" ItemName="_DeploymentManifestFiles" />
+    </CreateItem>
+    <CreateItem Include="@(x64DebugPublishFile)" AdditionalMetadata="TargetPath=x64\Debug\%(FileName)%(Extension);IsDataFile=false">
+      <Output TaskParameter="Include" ItemName="_DeploymentManifestFiles" />
+    </CreateItem>
+  </Target>
 </Project>

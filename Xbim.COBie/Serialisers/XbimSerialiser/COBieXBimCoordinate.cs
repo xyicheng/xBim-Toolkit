@@ -75,7 +75,9 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                                 (ValidateString(rowNext.Category)) && 
                                 (rowNext.Category.Contains("box-")) &&
                                 (ValidateString(row.SheetName)) && 
+                                //(ValidateString(row.RowName)) &&
                                 (ValidateString(rowNext.SheetName)) &&
+                                //(ValidateString(rowNext.RowName)) &&
                                 (row.SheetName == rowNext.SheetName) &&
                                 (row.RowName == rowNext.RowName)
                                 )

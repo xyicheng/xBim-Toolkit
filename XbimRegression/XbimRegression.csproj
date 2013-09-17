@@ -21,7 +21,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>..\bin\Debug\</OutputPath>
+    <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -36,7 +36,7 @@
     <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
-    <OutputPath>..\bin\Release\</OutputPath>
+    <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>none</DebugType>
@@ -70,9 +70,17 @@
       <Project>{6745F5AC-AF3C-4372-81AA-A75E7B1FA03B}</Project>
       <Name>Xbim.Common</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Xbim.Ifc2x3\Xbim.Ifc2x3.csproj">
+      <Project>{5d4c907d-1293-4e5f-9642-d0862ae4741c}</Project>
+      <Name>Xbim.Ifc2x3</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Xbim.IO\Xbim.IO.csproj">
       <Project>{85856DF2-C8AB-4120-8A8D-AE05D2696B51}</Project>
       <Name>Xbim.IO</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Xbim.ModelGeometry.Converter\Xbim.ModelGeometry.Converter.csproj">
+      <Project>{97dff14e-add7-4ed3-b8c3-0d3d3e6cdee8}</Project>
+      <Name>Xbim.ModelGeometry.Converter</Name>
     </ProjectReference>
     <ProjectReference Include="..\Xbim.ModelGeometry.Scene\Xbim.ModelGeometry.Scene.csproj">
       <Project>{3D9D37DE-A254-4433-B172-7590CBD84C69}</Project>
@@ -80,7 +88,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
+    <None Include="app.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

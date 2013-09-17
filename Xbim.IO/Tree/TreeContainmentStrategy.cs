@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Xbim.XbimExtensions;
+using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.IO.Tree
 {

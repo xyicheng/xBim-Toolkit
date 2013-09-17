@@ -25,7 +25,7 @@ namespace Xbim.Presentation
         public ClassificationViewModel(IfcClassificationItem classification)
         {
             xbimModel = classification.ModelOf as XbimModel;
-            this.classificationHandle = new XbimInstanceHandle(classification.EntityLabel, classification.GetType());
+            this.classificationHandle = new XbimInstanceHandle(this.xbimModel, classification.EntityLabel, classification.GetType());
             IEnumerable<ClassificationViewModel> subs = this.SubClassifications; //call this once to preload first level of hierarchy   
         }
 

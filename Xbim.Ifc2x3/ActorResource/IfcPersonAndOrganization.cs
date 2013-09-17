@@ -73,6 +73,19 @@ namespace Xbim.Ifc2x3.ActorResource
         {
             return !(left == right);
         }
+
+        public override string ToString()
+        {
+            string person = ThePerson.ToString();
+            string org = TheOrganization.ToString();
+            if (!string.IsNullOrWhiteSpace(person) && !string.IsNullOrWhiteSpace(org))
+                return "'" + person + "' at '" + org + "'";
+            else if (!string.IsNullOrWhiteSpace(person))
+                return person;
+            else if (!string.IsNullOrWhiteSpace(org))
+                return org;
+            else return "Unknown";
+        }
         #region IPersistIfcEntity Members
 
         private int _entityLabel;
@@ -178,47 +191,8 @@ namespace Xbim.Ifc2x3.ActorResource
         [Browsable(true)]
         public string RolesString
         {
-            get { return _roles == null ? null : _roles.ToString("D; ", null); }
-            set
-            {
-                throw new NotImplementedException();
-                //using (Transaction txn = BeginTransaction(string.Format("Roles = {0}", value), true))
-                //{
-                //    if (string.IsNullOrEmpty(value))
-                //    {
-                //        Transaction.AddPropertyChange(v => _roles = v, _roles, null);
-                //        _roles = null;
-                //    }
-                //    else
-                //    {
-                //        string[] roles = value.Split(new string[] { "; ", ";" }, StringSplitOptions.RemoveEmptyEntries);
-                //        if (string.Join("; ", roles) == RolesString) //no real change so exit transaction
-                //            return;
-                //        if (_roles == null)
-                //        {
-                //            ActorRoleCollection c = new ActorRoleCollection();
-                //            Transaction.AddPropertyChange(v => _roles = v, null, c);
-                //            _roles = c;
-                //        }
-                //        else
-                //            _roles.Clear_Reversible();
-
-                //        if (roles != null)
-                //        {
-                //            foreach (string item in roles)
-                //            {
-                //                ActorRole aRole = new ActorRole(item);
-                //                aRole.OnModelAdd(Model);
-                //                _roles.Add_Reversible(aRole);
-                //            }
-                //        }
-                //    }
-                //    Transaction.AddTransactionReversedHandler(() => { NotifyPropertyChanged("Roles"); NotifyPropertyChanged("RolesString"); });
-                //    if (txn != null) txn.Commit();
-                //    NotifyPropertyChanged("Roles");
-                //    NotifyPropertyChanged("RolesString");
-                //}
-            }
+            get { return Roles == null ? null : Roles.ToString("D; ", null); }
+           
         }
 
         #endregion

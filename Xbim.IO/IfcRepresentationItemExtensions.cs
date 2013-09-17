@@ -21,8 +21,12 @@ namespace Xbim.IO
             {
                 foreach (var presStyle in styledItem.Styles)
                 {
-                    IfcSurfaceStyle aSurfaceStyle = presStyle.Styles.OfType<IfcSurfaceStyle>().FirstOrDefault();
-                    if (aSurfaceStyle != null) return aSurfaceStyle;
+                    if (presStyle != null)
+                    {
+                        IfcSurfaceStyle aSurfaceStyle = presStyle.Styles.OfType<IfcSurfaceStyle>().FirstOrDefault();
+                        if (aSurfaceStyle != null) return aSurfaceStyle;
+                    }
+                    
                 }
 
             }

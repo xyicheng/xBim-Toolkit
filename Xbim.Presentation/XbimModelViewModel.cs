@@ -8,6 +8,7 @@ using Xbim.IO;
 using Xbim.Ifc2x3.Extensions;
 using Xbim.XbimExtensions.Interfaces;
 using System.ComponentModel;
+using System.Collections.ObjectModel;
 
 namespace Xbim.Presentation
 {
@@ -20,15 +21,20 @@ namespace Xbim.Presentation
         IfcProject _project;
         private bool _isSelected;
         private bool _isExpanded;
-        private List<IXbimViewModel> children;
+        private ObservableCollection<IXbimViewModel> children;
 
         public string Name
         {
             get
-            {                
-                return _project.Name;
+            {
+                // to improve on the user interface experience the classification viewer makes up a name in case the name is empty
+                if (_project.Name != string.Empty)
+                    return _project.Name;
+                else
+                    return "Unnamed project";
             }
         }
+
         
         public XbimModelViewModel(IfcProject project)
         {
@@ -45,14 +51,14 @@ namespace Xbim.Presentation
             {
                 if (children == null)
                 {
-                    children = new List<IXbimViewModel>();
+                    children = new ObservableCollection<IXbimViewModel>();
                     foreach (var item in _project.GetSpatialStructuralElements())
                     {
                         children.Add(new SpatialViewModel(item));
                     }
                     foreach (var refModel in xbimModel.RefencedModels)
                     {
-                        children.Add(new XbimModelViewModel(refModel.Model.IfcProject));
+                        children.Add(new XbimRefModelViewModel(refModel));
                     }
                 }
                 return children;
@@ -128,10 +134,16 @@ namespace Xbim.Presentation
         #endregion
 
 
-        internal void AddRefModel(XbimModelViewModel xbimModelViewModel)
+        internal void AddRefModel(XbimRefModelViewModel xbimModelViewModel)
         {
-            //children.Add(xbimModelViewModel);
-            //NotifyPropertyChanged("Children");
+            children.Add(xbimModelViewModel);
+            NotifyPropertyChanged("Children");
+        }
+
+
+        public XbimModel Model
+        {
+            get { return xbimModel; }
         }
      }
 }

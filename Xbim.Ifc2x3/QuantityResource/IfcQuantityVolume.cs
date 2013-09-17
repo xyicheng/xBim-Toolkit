@@ -82,5 +82,10 @@ namespace Xbim.Ifc2x3.QuantityResource
                 baseErr += "WR22 QuantityVolume : A valid volume quantity shall be greater than or equal to zero.\n";
             return baseErr;
         }
+
+        public override string ToString()
+        {
+            return VolumeValue.ToPart21;
+        }
     }
 }

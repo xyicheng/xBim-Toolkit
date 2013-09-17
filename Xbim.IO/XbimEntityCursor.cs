@@ -184,8 +184,8 @@ namespace Xbim.IO
 
         }
 
-        public XbimEntityCursor(Instance instance, string database)
-            : this(instance, database, OpenDatabaseGrbit.None)
+        public XbimEntityCursor(XbimModel model, string database)
+            : this(model, database, OpenDatabaseGrbit.None)
         {
         }
         /// <summary>
@@ -193,8 +193,8 @@ namespace Xbim.IO
         /// </summary>
         /// <param name="instance"></param>
         /// <param name="database"></param>
-        public XbimEntityCursor(JET_INSTANCE instance, string database, OpenDatabaseGrbit mode)
-            : base(instance, database, mode)
+        public XbimEntityCursor(XbimModel model, string database, OpenDatabaseGrbit mode)
+            : base(model, database, mode)
         {
             Api.JetOpenTable(this.sesid, this.dbId, ifcEntityTableName, null, 0, 
                 mode == OpenDatabaseGrbit.ReadOnly ? OpenTableGrbit.ReadOnly :
@@ -369,7 +369,7 @@ namespace Xbim.IO
         /// <param name="typeId">Type identifer</param>
         /// <param name="indexKeys">Search keys to use specifiy null if no indices</param>
         /// <param name="data">property data</param>
-        internal void AddEntity(int currentLabel, short typeId, IEnumerable<int> indexKeys, byte[] data, bool? indexed)
+        internal void AddEntity(int currentLabel, short typeId, IEnumerable<int> indexKeys, byte[] data, bool? indexed, XbimLazyDBTransaction? trans = null)
         {
             try
             {
@@ -397,6 +397,7 @@ namespace Xbim.IO
                 //now add in any extra index keys
                 if (indexKeys != null && indexKeys.Any())
                 {
+                    int transactionCounter = 0;
                     foreach (var key in indexKeys.Distinct())
                     {
                         using (var update = new Update(sesid, _indexTable, JET_prep.Insert))
@@ -404,6 +405,12 @@ namespace Xbim.IO
                             _colValIdxKey.Value = key;
                             Api.SetColumns(sesid, _indexTable, _colIdxValues);
                             update.Save();
+                            transactionCounter++;
+                            if (trans.HasValue && transactionCounter % 100 == 0)
+                            {
+                                trans.Value.Commit();
+                                trans.Value.Begin();
+                            }
                         }
                     }
                 }
@@ -426,7 +433,7 @@ namespace Xbim.IO
             System.Diagnostics.Debug.Assert(typeof(IPersistIfcEntity).IsAssignableFrom(type));
             int highest = RetrieveHighestLabel();
             IfcType ifcType = IfcMetaData.IfcType(type);
-            XbimInstanceHandle h = new XbimInstanceHandle(highest + 1, ifcType.TypeId);
+            XbimInstanceHandle h = new XbimInstanceHandle(this.model, highest + 1, ifcType.TypeId);
             AddEntity(h.EntityLabel, h.EntityTypeId, null, null, ifcType.IndexedClass);
             return h;
         }
@@ -485,7 +492,7 @@ namespace Xbim.IO
                 Api.MakeKey(sesid, _indexTable, lookupKey, MakeKeyGrbit.FullColumnEndLimit);
                 if (Api.TrySetIndexRange(sesid, _indexTable, SetIndexRangeGrbit.RangeUpperLimit | SetIndexRangeGrbit.RangeInclusive))
                 {
-                    ih = new XbimInstanceHandle(Api.RetrieveColumnAsInt32(sesid, _indexTable, _colIdIdxEntityLabel, RetrieveColumnGrbit.RetrieveFromIndex), Api.RetrieveColumnAsInt16(sesid, _indexTable, _colIdIdxIfcType, RetrieveColumnGrbit.RetrieveFromIndex));
+                    ih = new XbimInstanceHandle(this.model, Api.RetrieveColumnAsInt32(sesid, _indexTable, _colIdIdxEntityLabel, RetrieveColumnGrbit.RetrieveFromIndex), Api.RetrieveColumnAsInt16(sesid, _indexTable, _colIdIdxIfcType, RetrieveColumnGrbit.RetrieveFromIndex));
                     
                     return true;
                 }
@@ -515,7 +522,7 @@ namespace Xbim.IO
         {
             int? label = Api.RetrieveColumnAsInt32(sesid, table, _colIdEntityLabel);
             short? typeId = Api.RetrieveColumnAsInt16(sesid, table, _colIdIfcType);
-            return new XbimInstanceHandle(label.Value, typeId.Value);
+            return new XbimInstanceHandle(this.model, label.Value, typeId.Value);
             
         }
         /// <summary>
@@ -595,7 +602,7 @@ namespace Xbim.IO
         {
             if (Api.TryMoveNext(this.sesid, this._indexTable))
             {
-                ih = new XbimInstanceHandle(Api.RetrieveColumnAsInt32(sesid, _indexTable, _colIdIdxEntityLabel, RetrieveColumnGrbit.RetrieveFromIndex), Api.RetrieveColumnAsInt16(sesid, _indexTable, _colIdIdxIfcType, RetrieveColumnGrbit.RetrieveFromIndex));
+                ih = new XbimInstanceHandle(this.model,Api.RetrieveColumnAsInt32(sesid, _indexTable, _colIdIdxEntityLabel, RetrieveColumnGrbit.RetrieveFromIndex), Api.RetrieveColumnAsInt16(sesid, _indexTable, _colIdIdxIfcType, RetrieveColumnGrbit.RetrieveFromIndex));
                 return true;
             }
             else
@@ -645,13 +652,13 @@ namespace Xbim.IO
 
     }
 
-    internal class XbimInstancesEnumerator : IEnumerator<int>, IEnumerator
+    internal class XbimInstancesLabelEnumerator : IEnumerator<int>, IEnumerator
     {
         private IfcPersistedInstanceCache cache;
         private XbimEntityCursor cursor;
         private int current;
 
-        public XbimInstancesEnumerator(IfcPersistedInstanceCache cache)
+        public XbimInstancesLabelEnumerator(IfcPersistedInstanceCache cache)
         {
             this.cache = cache;
             this.cursor = cache.GetEntityTable();
@@ -674,6 +681,55 @@ namespace Xbim.IO
         object IEnumerator.Current
         {
            get { return current; }
+        }
+
+        bool IEnumerator.MoveNext()
+        {
+            int label;
+            if (cursor.TryMoveNextLabel(out label))
+            {
+                current = label;
+                return true;
+            }
+            else
+                return false;
+        }
+
+
+        public void Dispose()
+        {
+            cache.FreeTable(cursor);
+        }
+    }
+
+    internal class XbimInstancesEntityEnumerator : IEnumerator<IPersistIfcEntity>, IEnumerator
+    {
+        private IfcPersistedInstanceCache cache;
+        private XbimEntityCursor cursor;
+        private int current;
+
+        public XbimInstancesEntityEnumerator(IfcPersistedInstanceCache cache)
+        {
+            this.cache = cache;
+            this.cursor = cache.GetEntityTable();
+            Reset();
+        }
+        public IPersistIfcEntity Current
+        {
+            get { return cache.GetInstance(current); }
+        }
+
+
+        public void Reset()
+        {
+            cursor.MoveBeforeFirst();
+            current = 0;
+        }
+
+
+        object IEnumerator.Current
+        {
+            get { return cache.GetInstance(current); }
         }
 
         bool IEnumerator.MoveNext()

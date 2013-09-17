@@ -325,6 +325,50 @@ namespace Xbim.Common.Geometry
             _m44 = (float)m33;
             _isNotDefaultInitialised = true;
         }
+        /// <summary>
+        /// Creates a matrix for scaling equally in all 3 axis
+        /// </summary>
+        /// <param name="scale"></param>
+        public XbimMatrix3D(double scale)       
+        {         
+            _m11 = 1f;
+            _m12 = 0;
+            _m13 = 0;
+            _m14 = (float)scale;
+            _m21 = 0;
+            _m22 = 1f;
+            _m23 = 0;
+            _m24 = (float)scale;
+            _m31 = 0;
+            _m32 = 0;
+            _m33 = 1f;
+            _m34 = (float)scale;
+            _offsetX = 0;
+            _offsetY = 0;
+            _offsetZ = 0;
+            _m44 = 1f;
+            _isNotDefaultInitialised = true;
+        }
+        public XbimMatrix3D(XbimVector3D translation, double scale = 1)
+        {
+            _m11 = 1f;
+            _m12 = 0;
+            _m13 = 0;
+            _m14 = (float)scale;
+            _m21 = 0;
+            _m22 = 1f;
+            _m23 = 0;
+            _m24 = (float)scale;
+            _m31 = 0;
+            _m32 = 0;
+            _m33 = 1f;
+            _m34 = (float)scale;
+            _offsetX = translation.X;
+            _offsetY = translation.Y;
+            _offsetZ = translation.Z;
+            _m44 = 1f;
+            _isNotDefaultInitialised = true;
+        }
 
         public static XbimMatrix3D FromArray(byte[] array, bool useDouble = true)
         {
@@ -403,7 +447,59 @@ namespace Xbim.Common.Geometry
         }
         #endregion
 
+        #region Accessors
+        public XbimVector3D Up
+        {
+            get
+            {
+                return new XbimVector3D(_m21, _m22, _m23);
+            }
+        }
+        public XbimVector3D Down
+        {
+            get
+            {
+                return new XbimVector3D(-_m21, -_m22,-_m23);
+            }
+        }
+        public XbimVector3D Right
+        {
+            get
+            {
+                return new XbimVector3D(_m11, _m12, _m13);
+            }
+        }
+        public XbimVector3D Left
+        {
+            get
+            {
+                return new XbimVector3D(-_m11, -_m12, -_m13);
+            }
+        }
+        public XbimVector3D Forward
+        {
+            get
+            {
+                return new XbimVector3D(-_m31, -_m32, -_m33);
+            }
+        }
+        public XbimVector3D Backward
+        {
+            get
+            {
+                return new XbimVector3D(_m31, _m32, _m33);
+            }
+        }
 
+        public XbimVector3D Translation
+        {
+            get
+            {
+                return new XbimVector3D(_offsetX, _offsetY, _offsetZ);
+            }
+        }
+
+        #endregion
         #region Functions
 
         /// <summary>

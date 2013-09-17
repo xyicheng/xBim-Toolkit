@@ -23,14 +23,14 @@ namespace XbimConvert
             if (args.Length < 1)
             {
                 Console.WriteLine("Invalid number of Parameters, filename required");
-                Console.WriteLine("Syntax: XbimConvert source [-quiet|-q] [-keepextension|-ke] [-filter|-f <elementid|elementtype>] [-sanitiselog] [-occ]");
+                Console.WriteLine("Syntax: XbimConvert source [-quiet|-q] [-generatescene|-gs] [-nogeometry|-ng] [-keepextension|-ke] [-filter|-f <elementid|elementtype>] [-sanitiselog] [-occ]");
                 return;
             }
 
             IfcFileName = args[0];
             if (!File.Exists(IfcFileName))
             {
-                Console.WriteLine("Invalid ifc filename {0}", IfcFileName);
+                Console.WriteLine("Invalid ifc filename {0}, current directory is: {1}", IfcFileName, Directory.GetCurrentDirectory());
                 return;
             }
 
@@ -54,6 +54,15 @@ namespace XbimConvert
                                 KeepFileExtension = true;
                                 break;
 
+
+                            case "-generatescene":
+                            case "-gs":
+                                GenerateScene = true;
+                                break;
+                            case "-nogeometry":
+                            case "-ng":
+                                NoGeometry = true;
+                                break;
                             case "-filter":
                             case "-f":
                                 paramType = CompoundParameter.Filter;
@@ -110,6 +119,8 @@ namespace XbimConvert
         public String IfcFileName { get; set; }
         public bool IsQuiet { get; set; }
         public bool KeepFileExtension { get; set; }
+        public bool GenerateScene { get; set; }
+        public bool NoGeometry { get; set; }
         public bool IsValid { get; set; }
         public FilterType FilterType { get; set; }
         public int ElementIdFilter {get;set;}

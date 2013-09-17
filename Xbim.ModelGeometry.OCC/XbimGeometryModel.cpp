@@ -1,5 +1,6 @@
 #include "StdAfx.h"
 #include "XbimGeometryModel.h"
+#include "XbimPolyhedron.h"
 #include "XbimTriangularMeshStreamer.h"
 #include "XbimLocation.h"
 #include "XbimSolid.h"
@@ -32,13 +33,17 @@
 #include <GeomLProp_SLProps.hxx>
 #include <BRepLib.hxx>
 #include <Poly.hxx>
-
+#include <BRepBuilderAPI.hxx>
+#include <ShapeFix_ShapeTolerance.hxx>
+#include <BRepCheck_Analyzer.hxx>
+#include <carve/triangulator.hpp>
 using namespace Xbim::IO;
 using namespace Xbim::Ifc2x3::ProductExtension;
 using namespace Xbim::Ifc2x3::SharedComponentElements;
 using namespace System::Linq;
 using namespace Xbim::Ifc2x3::PresentationAppearanceResource;
 using namespace Xbim::Common::Exceptions;
+using namespace  System::Threading;
 class Message_ProgressIndicator {};
 
 namespace Xbim
@@ -47,799 +52,726 @@ namespace Xbim
 	{
 		namespace OCC
 		{
-void CALLBACK XMS_BeginTessellate(GLenum type, void *pPolygonData)
-{
-	((XbimTriangularMeshStreamer*)pPolygonData)->BeginPolygon(type);
-};
-void CALLBACK XMS_EndTessellate(void *pVertexData)
-{
-	((XbimTriangularMeshStreamer*)pVertexData)->EndPolygon();
-};
-void CALLBACK XMS_TessellateError(GLenum err)
-{
-	// swallow the error.
-};
-void CALLBACK XMS_AddVertexIndex(void *pVertexData, void *pPolygonData)
-{
+			void CALLBACK XMS_BeginTessellate(GLenum type, void *pPolygonData)
+			{
+				((XbimTriangularMeshStreamer*)pPolygonData)->BeginPolygon(type);
+			};
+			void CALLBACK XMS_EndTessellate(void *pVertexData)
+			{
+				((XbimTriangularMeshStreamer*)pVertexData)->EndPolygon();
+			};
+			void CALLBACK XMS_TessellateError(GLenum err)
+			{
+				// swallow the error.
+			};
+			void CALLBACK XMS_AddVertexIndex(void *pVertexData, void *pPolygonData)
+			{
 				((XbimTriangularMeshStreamer*)pPolygonData)->WriteTriangleIndex((size_t)pVertexData);
-};
-gp_Dir GetNormal(const TopoDS_Face& face)
-{
-	// get bounds of face
-	Standard_Real umin, umax, vmin, vmax;
+			};
 
-	BRepTools::UVBounds(face, umin, umax, vmin, vmax);          // create surface
-	Handle(Geom_Surface) surf=BRep_Tool::Surface(face);          // get surface properties
-	GeomLProp_SLProps props(surf, umin, vmin, 1, 0.01);          // get surface normal
-	gp_Dir norm = props.Normal();                         // check orientation
-	if(face.Orientation()==TopAbs_REVERSED) 
-		norm.Reverse();
-	return norm;
-}
-
-
-
-		bool XbimGeometryModel::CutOpenings(IfcProduct^ product, XbimLOD lod)
-		{
-			if(dynamic_cast<IfcElement^>(product))
+			gp_Dir GetNormal(const TopoDS_Face& face)
 			{
-				//add in additional types here that you don't want to cut
-				if(dynamic_cast<IfcBeam^>(product) ||
-					dynamic_cast<IfcColumn^>(product) ||
-					dynamic_cast<IfcMember^>(product)||
-					dynamic_cast<IfcElementAssembly^>(product)||
-					dynamic_cast<IfcPlate^>(product))
-				{
-					return lod==XbimLOD::LOD400;
-				}
-				else
-					return true;
+				// get bounds of face
+				Standard_Real umin, umax, vmin, vmax;
+
+				BRepTools::UVBounds(face, umin, umax, vmin, vmax);          // create surface
+				Handle(Geom_Surface) surf=BRep_Tool::Surface(face);          // get surface properties
+				GeomLProp_SLProps props(surf, umin, vmin, 1, 0.01);          // get surface normal
+				gp_Dir norm = props.Normal();                         // check orientation
+				if(face.Orientation()==TopAbs_REVERSED) 
+					norm.Reverse();
+				return norm;
 			}
-			else
-				return false;
-		}
-		/* Creates a 3D Model geometry for the product based upon the first "Body" ShapeRepresentation that can be found in  
-		Products.ProductRepresentation that is within the specified GeometricRepresentationContext, if the Representation 
-		context is null the first "Body" ShapeRepresentation is used. Returns null if their is no valid geometric definition
-		*/
-		IXbimGeometryModel^ XbimGeometryModel::CreateFrom(IfcProduct^ product, IfcGeometricRepresentationContext^ repContext, ConcurrentDictionary<int, Object^>^ maps, bool forceSolid, XbimLOD lod, bool occOut)
-		{
-			try
-			{
-				if(product->Representation == nullptr ||  product->Representation->Representations == nullptr 
-					|| dynamic_cast<IfcTopologyRepresentation^>(product->Representation)) 
-					return nullptr; //if it doesn't have one do nothing
-				//we should cast the shape below to a ShapeRepresentation but using IfcRepresentation means this works for older IFC2x formats  and there is no data loss
-
-				for each(IfcRepresentation^ shape in product->Representation->Representations)
-				{
-
-					if(repContext == nullptr || shape->ContextOfItems ==  repContext) 
-					{
-						if( !shape->RepresentationIdentifier.HasValue ||
-							(String::Compare(shape->RepresentationIdentifier.Value, "body" , true)==0)||
-							String::Compare(shape->RepresentationIdentifier.Value, "facetation" , true)==0)
-							//we have a 3D geometry
-						{
-							if(dynamic_cast<IfcGeometricRepresentationContext^>(shape->ContextOfItems))
-								BRepBuilderAPI::Precision((const Standard_Real)((IfcGeometricRepresentationContext^)(shape->ContextOfItems))->DefaultPrecision);
-
-							//srl optimisation openings and projectionss cannot have openings or projection so don't check for them
-							if(CutOpenings(product, lod) && !dynamic_cast<IfcFeatureElement^>(product ))
-							{
-								IfcElement^ element = (IfcElement^) product;
-								List<IXbimGeometryModel^>^ projectionSolids = gcnew List<IXbimGeometryModel^>();
-								List<IXbimGeometryModel^>^ openingSolids = gcnew List<IXbimGeometryModel^>();
-								for each(IfcRelProjectsElement^ rel in element->HasProjections)
-								{
-									IfcFeatureElementAddition^ fe = rel->RelatedFeatureElement;
-									if(fe->Representation!=nullptr)
-									{
-										IfcFeatureElementAddition^ fe = rel->RelatedFeatureElement;
-										if(fe->Representation!=nullptr)
-										{
-											IXbimGeometryModel^ im = CreateFrom(fe,repContext, maps, true, lod, occOut);
-											if(dynamic_cast<XbimGeometryModelCollection^>(im))
-												im = ((XbimGeometryModelCollection^)im)->Solidify();
-											if(!dynamic_cast<XbimSolid^>(im))
-												throw gcnew XbimGeometryException("FeatureElementAdditions must be of type solid");
-
-											im = im->CopyTo(fe->ObjectPlacement);
-											projectionSolids->Add(im);
-										}
-									}
-								}
-								for each(IfcRelVoidsElement^ rel in element->HasOpenings)
-								{
-									IfcFeatureElementSubtraction^ fe = rel->RelatedOpeningElement;
-									if(fe->Representation!=nullptr)
-									{
-										IXbimGeometryModel^ im = CreateFrom(fe, repContext, maps, true,lod, occOut);
-										//BRepTools::Write(*(im->Handle),"f1" );
-										if(im!=nullptr && !im->Handle->IsNull())
-										{	
-											im = im->CopyTo(fe->ObjectPlacement);
-											//BRepTools::Write(*(im->Handle),"f2" );
-											//the rules say that 
-											//The PlacementRelTo relationship of IfcLocalPlacement shall point (if given) 
-											//to the local placement of the master IfcElement (its relevant subtypes), 
-											//which is associated to the IfcFeatureElement by the appropriate relationship object
-											if(product->ObjectPlacement != ((IfcLocalPlacement^)(fe->ObjectPlacement))->PlacementRelTo)
-											{
-												if(dynamic_cast<IfcLocalPlacement^>(product->ObjectPlacement))
-												{	
-													//we need to move the opening into the coordinate space of the product
-													IfcLocalPlacement^ lp = (IfcLocalPlacement^)product->ObjectPlacement;							
-													TopLoc_Location prodLoc = XbimGeomPrim::ToLocation(lp->RelativePlacement);
-													prodLoc= prodLoc.Inverted();
-													im->Move(prodLoc);
-												}
-											}
-											//BRepTools::Write(*(im->Handle),"f3" );
-											openingSolids->Add(im);
-										}
-									}
-									
-								}
-								if(Enumerable::Any(openingSolids) || Enumerable::Any(projectionSolids))
-								{
-
-									IXbimGeometryModel^ baseShape = CreateFrom(shape, maps, true,lod, occOut);	
-									//BRepTools::Write(*(baseShape->Handle),"f4" );
-									
-									IXbimGeometryModel^ fshape = gcnew XbimFeaturedShape(product, baseShape, openingSolids, projectionSolids);
-#ifdef _DEBUG
-									
-									if(occOut)
-									{
-										char fname[512];
-										sprintf(fname, "#%d",shape->EntityLabel);
-										BRepTools::Write(*(fshape->Handle),fname );
-									}
-#endif
-
-									return fshape;
-								}
-								else //we have no openings or projections
-								{
-
-									IXbimGeometryModel^ fshape = CreateFrom(shape, maps, forceSolid,lod, occOut);
-#ifdef _DEBUG
-									if(occOut)
-									{
-
-										char fname[512];
-										sprintf(fname, "#%d",shape->EntityLabel);
-										BRepTools::Write(*(fshape->Handle),fname );
-
-									}
-#endif
-									return fshape;
-								}
-							}
-							else
-							{
-
-								IXbimGeometryModel^ fshape = CreateFrom(shape, maps, forceSolid,lod, occOut);
-#ifdef _DEBUG
-								if(occOut)
-								{
-									char fname[512];
-									sprintf(fname, "#%d",shape->EntityLabel);
-									BRepTools::Write(*(fshape->Handle),fname );
-								}
-#endif
-								return fshape;
-							}
-						}
-					}
-				}
-			}
-			catch(XbimGeometryException^ xbimE)
-			{
-				Logger->ErrorFormat("Error creating geometry for entity #{0}={1}\n{2}\nThe geometry has been omitted",product->EntityLabel,product->GetType()->Name,xbimE->Message);
-			}
-			return nullptr;
-		}
-
-		IXbimGeometryModel^ XbimGeometryModel::CreateFrom(IfcProduct^ product, ConcurrentDictionary<int, Object^>^ maps, bool forceSolid, XbimLOD lod, bool occOut)
-		{
-			return CreateFrom(product, nullptr, maps, forceSolid, lod, occOut);
-		}
-
-		IXbimGeometryModel^ XbimGeometryModel::CreateFrom(IfcProduct^ product, bool forceSolid, XbimLOD lod, bool occOut)
-		{
-			// HACK: Ideally we shouldn't need this try-catch handler. This just allows us to log the fault, and raise a managed exception, before the application terminates.
-			// Upstream callers should ideally terminate the application ASAP.
-			__try
-			{
-				return CreateFrom(product, nullptr, gcnew ConcurrentDictionary<int, Object^>(), forceSolid,lod,occOut);
-			}
-			__except(GetExceptionCode() == EXCEPTION_ACCESS_VIOLATION)
-			{
-				Logger->Fatal("Access Violation in geometry engine. Thireturns may leave the application in an inconsistent state!");
-				throw gcnew AccessViolationException(
-					"A memory access violation occurred in the geometry engine. The application and geometry may be in an inconsistent state and the process should be terminated.");
-			}
-		}
-
-		/*
-		Create a model geometry for a given shape
-		*/
-		IXbimGeometryModel^ XbimGeometryModel::CreateFrom(IfcRepresentation^ rep, ConcurrentDictionary<int, Object^>^ maps, bool forceSolid, XbimLOD lod, bool occOut)
-		{
-
-			if(rep->Items->Count == 0) //we have nothing to do
-				return nullptr;
-			else if (rep->Items->Count == 1) //we have a single shape geometry
-			{
-				IfcRepresentationItem^ repItem = rep->Items->First;
-				IXbimGeometryModel^ geom = CreateFrom(repItem,maps, forceSolid,lod,occOut);
-				if(geom!=nullptr)
-				{
-					if(geom->RepresentationLabel==0) geom->RepresentationLabel = repItem->EntityLabel; //only set if we haven't further down
-					IfcSurfaceStyle^ surfaceStyle = IfcRepresentationItemExtensions::SurfaceStyle(repItem);
-					if(surfaceStyle!=nullptr) geom->SurfaceStyleLabel=Math::Abs(surfaceStyle->EntityLabel);
-				}
-				return geom;
-			}
-			else // we have a compound shape
-			{
-				XbimGeometryModelCollection^ gms = gcnew XbimGeometryModelCollection(false,false);
-				gms->RepresentationLabel = rep->EntityLabel;
-				bool first = true;
-				for each (IfcRepresentationItem^ repItem in rep->Items)
-				{
-
-					IXbimGeometryModel^ geom = CreateFrom(repItem,maps,false,lod,occOut); // we will make a solid when we have all the bits if necessary
-					if(geom!=nullptr)
-					{
-						geom->RepresentationLabel = repItem->EntityLabel;
-						IfcSurfaceStyle^ surfaceStyle = IfcRepresentationItemExtensions::SurfaceStyle(repItem);
-						if(surfaceStyle!=nullptr) geom->SurfaceStyleLabel=Math::Abs(surfaceStyle->EntityLabel);else  geom->SurfaceStyleLabel = 0;
-						if(first)
-						{
-							first = false;
-							gms->SurfaceStyleLabel=geom->SurfaceStyleLabel; //set collection same as first one for bounding boxes
-						}
-						if(!(dynamic_cast<XbimSolid^>(geom) && (*(geom->Handle)).IsNull())) 
-						{
-							gms->Add(geom); //don't add solids that are empty
-#ifdef _DEBUG
-							if(occOut)
-							{
-								char fname[512];
-								sprintf(fname, "#%d",repItem->EntityLabel);
-								BRepTools::Write(*(geom->Handle),fname );
-							}
-#endif
-						}
-					}
-
-				}
-				return gms;
-			}
-		}
-
-		IXbimGeometryModel^ XbimGeometryModel::CreateFrom(IfcRepresentation^ rep, bool forceSolid, XbimLOD lod, bool occOut)
-		{
-			return CreateFrom(rep, gcnew ConcurrentDictionary<int, Object^>(), forceSolid,lod, occOut);
-		}
-
-		IXbimGeometryModel^ XbimGeometryModel::CreateFrom(IfcRepresentationItem^ repItem, bool forceSolid, XbimLOD lod, bool occOut)
-		{
-			return CreateFrom(repItem, gcnew ConcurrentDictionary<int, Object^>(), forceSolid,lod, occOut);
-		}
-
-		IXbimGeometryModel^ XbimGeometryModel::CreateFrom(IfcRepresentationItem^ repItem, ConcurrentDictionary<int, Object^>^ maps, bool forceSolid,XbimLOD lod, bool occOut)
-		{
-			if(!forceSolid && dynamic_cast<IfcFacetedBrep^>(repItem))
-			{
-				IXbimGeometryModel^ geom = gcnew XbimFacetedShell(((IfcFacetedBrep^)repItem)->Outer);
-				geom->RepresentationLabel = repItem->EntityLabel;
-				IfcSurfaceStyle^ surfaceStyle = IfcRepresentationItemExtensions::SurfaceStyle(repItem);
-				if(surfaceStyle!=nullptr) geom->SurfaceStyleLabel=Math::Abs(surfaceStyle->EntityLabel);
-				return geom;
-			}
-			else if(dynamic_cast<IfcSolidModel^>(repItem))
-				return gcnew XbimSolid((IfcSolidModel^)repItem);
-			else if(dynamic_cast<IfcHalfSpaceSolid^>(repItem))
-				return gcnew XbimSolid((IfcHalfSpaceSolid^)repItem);
-			else if(dynamic_cast<IfcCsgPrimitive3D^>(repItem))
-				return gcnew XbimSolid((IfcCsgPrimitive3D^)repItem);
-			else if(dynamic_cast<IfcFacetedBrep^>(repItem)) 
-				return gcnew XbimSolid((IfcFacetedBrep^)repItem);
-			else if(dynamic_cast<IfcShellBasedSurfaceModel^>(repItem)) 
-				return Build((IfcShellBasedSurfaceModel^)repItem, forceSolid);
-			else if(dynamic_cast<IfcFaceBasedSurfaceModel^>(repItem)) 
-				return Build((IfcFaceBasedSurfaceModel^)repItem, forceSolid);
-			else if(dynamic_cast<IfcBooleanResult^>(repItem)) 
-				return gcnew XbimSolid((IfcBooleanResult^)repItem);
-			else if(dynamic_cast<IfcMappedItem^>(repItem))
-			{
-				IfcMappedItem^ map = (IfcMappedItem^) repItem;
-				IfcRepresentationMap^ repMap = map->MappingSource;
-				IXbimGeometryModel^ mg;
-				Object ^ lookup;
-				if(!maps->TryGetValue(Math::Abs(repMap->MappedRepresentation->EntityLabel), lookup)) //look it up
-				{
-					mg =  CreateFrom(repMap->MappedRepresentation,maps, forceSolid,lod, occOut); //make the first one
-					if(mg!=nullptr)
-					{
-						mg->RepresentationLabel=repMap->MappedRepresentation->EntityLabel;
-						IfcSurfaceStyle^ surfaceStyle = IfcRepresentationItemExtensions::SurfaceStyle(repItem);
-						if(surfaceStyle!=nullptr) mg->SurfaceStyleLabel=Math::Abs(surfaceStyle->EntityLabel);
-						maps->TryAdd(Math::Abs(repMap->MappedRepresentation->EntityLabel), mg);
-					}
-				}
-				else
-					mg= (IXbimGeometryModel^)lookup;
-
-				//need to transform all the geometries as below
-				if(mg!=nullptr)
-					return gcnew XbimMap(mg,repMap->MappingOrigin,map->MappingTarget, maps); 
-				else
-					return nullptr;
-
-			} //the below items should build surfaces or topologies and need to be implemented
-			else if(dynamic_cast<IfcCurveBoundedPlane^>(repItem))
-			{
-				return nullptr; //surface is not implmented yet
-				//return gcnew XbimSolid((IfcVertexPoint^)repItem);
-			}
-			else if(dynamic_cast<IfcVertexPoint^>(repItem))
-			{
-				return nullptr; //topology is not implmented yet
-				//return gcnew XbimSolid((IfcVertexPoint^)repItem);
-			}
-			else if(dynamic_cast<IfcEdge^>(repItem))
-			{
-				return nullptr; //topology is not implmented yet
-				//return gcnew XbimSolid((IfcEdge^)repItem);
-			}
-			else if(dynamic_cast<IfcGeometricSet^>(repItem))
-			{
-				return nullptr; //this s not a solid object
-				//IfcGeometricSet^ gset = (IfcGeometricSet^) repItem;
-				//Logger->Warn(String::Format("Support for IfcGeometricSet #{0} has not been implemented", Math::Abs(gset->EntityLabel)));
-			}
-			else
-			{
-				Type ^ type = repItem->GetType();
-				Logger->Warn(String::Format("XbimGeometryModel. Could not Build Geometry #{0}, type {1} is not implemented",Math::Abs(repItem->EntityLabel), type->Name));
-			}
-			return nullptr;
-		}
-
-		
-
-		IXbimGeometryModel^ XbimGeometryModel::Build(IfcFaceBasedSurfaceModel^ repItem, bool forceSolid)
-		{
-
-			if(repItem->FbsmFaces->Count == 0) return nullptr;
-			else if(repItem->FbsmFaces->Count == 1 && dynamic_cast<IfcClosedShell^>(repItem->FbsmFaces->First))
-			{
-				//A Closed shell must be defined by IfcPolyLoop, therefore we can assume it comples as XbimFacetedShell
-				if(forceSolid)
-					return gcnew XbimSolid((IfcClosedShell^)(repItem->FbsmFaces->First));
-				else
-				{
-					IXbimGeometryModel^ geom = gcnew XbimFacetedShell((IfcClosedShell^)(repItem->FbsmFaces->First));
-					geom->RepresentationLabel = repItem->EntityLabel;
-					IfcSurfaceStyle^ surfaceStyle = IfcRepresentationItemExtensions::SurfaceStyle(repItem);
-					if(surfaceStyle!=nullptr) geom->SurfaceStyleLabel=Math::Abs(surfaceStyle->EntityLabel);
-					return geom;
-				}
-
-			}
-
-			else if(repItem->FbsmFaces->Count == 1) //its an open shell
-			{
-				if(forceSolid)
-				{
-					XbimSolid^ solid = gcnew XbimSolid(repItem->FbsmFaces->First);
-					return solid;
-				}
-				else
-				{
-					IXbimGeometryModel^ geom = gcnew XbimFacetedShell(repItem->FbsmFaces->First);
-					geom->RepresentationLabel = repItem->EntityLabel;
-					IfcSurfaceStyle^ surfaceStyle = IfcRepresentationItemExtensions::SurfaceStyle(repItem);
-					if(surfaceStyle!=nullptr) geom->SurfaceStyleLabel=Math::Abs(surfaceStyle->EntityLabel);
-					return geom;
-				}
-					
-			}
-
-			else
-			{
-				XbimGeometryModelCollection^ gms = gcnew XbimGeometryModelCollection(false,false);	
-				if(forceSolid)
-				{
-					for each(IfcConnectedFaceSet^ fbmsFaces in repItem->FbsmFaces)
-					{
-						if(dynamic_cast<IfcClosedShell^>(fbmsFaces)) 
-							gms->Add(gcnew XbimSolid((IfcClosedShell^)fbmsFaces));
-						else 
-						{
-							XbimShell^ shell = gcnew XbimShell(repItem->FbsmFaces->First);
-							return  shell;
-						}
-
-					}
-				}
-				else
-				{
-					for each(IfcConnectedFaceSet^ fbmsFaces in repItem->FbsmFaces)
-					{
-
-						if(dynamic_cast<IfcClosedShell^>(fbmsFaces)) 
-							gms->Add(gcnew XbimFacetedShell((IfcClosedShell^)fbmsFaces));
-						else 
-							gms->Add(gcnew XbimFacetedShell(fbmsFaces)); //just add the face set
-					}
-				}
-				if( Enumerable::FirstOrDefault(gms) == nullptr)
-					return nullptr;
-				else
-				{
-					return gms;
-				}
-			}
-		}
-
-		IXbimGeometryModel^ XbimGeometryModel::Build(IfcShellBasedSurfaceModel^ repItem, bool forceSolid)
-		{
-			if(repItem->SbsmBoundary->Count == 0) return nullptr;
-			else if(repItem->SbsmBoundary->Count == 1 && dynamic_cast<IfcClosedShell^>(repItem->SbsmBoundary->First) ) 
-			{
-				//A Closed shell must be defined by IfcPolyLoop, therefore we can assume it comples as XbimFacetedShell
-
-				XbimFacetedShell^ solid =  gcnew XbimFacetedShell((IfcClosedShell^)(repItem->SbsmBoundary->First));
-				return solid;
-			}
-			else if(repItem->SbsmBoundary->Count == 1 )
-			{
-				XbimFacetedShell^ shell =  gcnew XbimFacetedShell(repItem->SbsmBoundary->First);
-				return shell;
-			}
-			else
-			{
-				XbimGeometryModelCollection^ gms = gcnew XbimGeometryModelCollection(false,false);		
-				for each(IfcShell^ sbms in repItem->SbsmBoundary)
-				{
-					if(dynamic_cast<IfcClosedShell^>(sbms)) 
-						gms->Add(gcnew XbimFacetedShell((IfcClosedShell^)sbms));
-					else if(dynamic_cast<IfcOpenShell^>(sbms))
-						gms->Add(gcnew XbimFacetedShell((IfcOpenShell^)sbms));
-					else
-					{
-						Type ^ type = sbms->GetType();
-						throw(gcnew NotImplementedException(String::Format("XbimGeometryModel:Build(IfcShellBasedSurfaceModel). Could not BuildShape of type {0}. It is not implemented",type->Name)));
-					}
-				}
-				if( Enumerable::FirstOrDefault(gms) == nullptr)
-					return nullptr;
-				else
-				{
-					return gms;
-				}
-			}
-
-		}
-
-		IXbimGeometryModel^ XbimGeometryModel::Fix(IXbimGeometryModel^ shape)
-		{
-
-
-			ShapeUpgrade_ShellSewing ss;
-			TopoDS_Shape res = ss.ApplySewing(*(shape->Handle), BRepBuilderAPI::Precision()*10);
-			if(res.IsNull())
-			{
-				Logger->Warn("Failed to fix shape, an empty solid has been found");
-				return nullptr;
-			}
-			if(res.ShapeType() == TopAbs_COMPOUND)
-			{
-				BRep_Builder b;
-				TopoDS_Shell shell;
-				b.MakeShell(shell);
-				for(TopExp_Explorer fExp(res, TopAbs_FACE); fExp.More(); fExp.Next())
-				{
-					b.Add(shell, TopoDS::Face(fExp.Current()));
-				}
-
-				ShapeFix_Shell shellFix(shell);
-				shellFix.Perform();
-				ShapeFix_Solid sfs;
-				return  gcnew XbimSolid(sfs.SolidFromShell(shellFix.Shell()));				
-			}
-			else if(res.ShapeType() == TopAbs_SHELL) //make shells into solids
-			{
-				ShapeFix_Shell shellFix(TopoDS::Shell(res));
-				shellFix.Perform();
-				ShapeFix_Solid sfs;
-				return gcnew XbimSolid(sfs.SolidFromShell(shellFix.Shell()));				
-			}
-			else if(res.ShapeType() == TopAbs_SOLID)
-				return gcnew XbimSolid(TopoDS::Solid(res));
-			else if(res.ShapeType() == TopAbs_COMPSOLID)
-				Logger->Warn("Failed to fix shape, Compound Solids not supported");
-			return nullptr;
-		}
 
 #pragma unmanaged
 
-		
-#pragma unmanaged
-
-		long OpenCascadeShapeStreamerFeed(const TopoDS_Shape & shape, XbimTriangularMeshStreamer* tms)
-		{
-			// vertexData receives the calls from the following code that put the information in the binary stream.
-			//
-			// XbimTriangularMeshStreamer tms;
-
-			// triangle indices are 1 based; this converts them to 0 based them and deals with multiple triangles to be added for multiple calls to faces.
-			//
-			int tally = -1;	
-
-			for (TopExp_Explorer faceEx(shape,TopAbs_FACE) ; faceEx.More(); faceEx.Next()) 
+			long OpenCascadeShapeStreamerFeed(const TopoDS_Shape & shape, XbimTriangularMeshStreamer* tms)
 			{
-				const TopoDS_Face& face = TopoDS::Face(faceEx.Current());
-				TopAbs_Orientation orient = face.Orientation();
-				TopLoc_Location loc;
-				Handle (Poly_Triangulation) facing = BRep_Tool::Triangulation(face,loc);
-				if(facing.IsNull())
-				{
-					continue;
-				}	
-
-				// computation of normals
-				// the returing array is 3 times longer than point array and it's to be read in groups of 3.
+				// vertexData receives the calls from the following code that put the information in the binary stream.
 				//
-				Poly::ComputeNormals(facing);
-				
-				const TShort_Array1OfShortReal& normals =  facing->Normals();
-				
-				Standard_Integer nbNodes = facing->NbNodes();
-				// tms.info('p', (int)nbNodes);
-				Standard_Integer nbTriangles = facing->NbTriangles();
-				Standard_Integer nbNormals = normals.Length();
-				if(nbNormals != nbNodes * 3) //there is a geometry error in OCC
-					continue;
-				const TColgp_Array1OfPnt& points = facing->Nodes();
-				int nTally = 0;
+				// XbimTriangularMeshStreamer tms;
 
-				tms->BeginFace(nbNodes);
+				// triangle indices are 1 based; this converts them to 0 based them and deals with multiple triangles to be added for multiple calls to faces.
+				//
+				int tally = -1;	
 
-				for(Standard_Integer nd = 1 ; nd <= nbNodes ; nd++)
+				for (TopExp_Explorer faceEx(shape,TopAbs_FACE) ; faceEx.More(); faceEx.Next()) 
 				{
-					gp_XYZ p = points(nd).Coord();
-					loc.Transformation().Transforms(p); // bonghi: question: to fix how mapped representation works, will we still have to apply the transform? 
-					
-					tms->WritePoint((float)p.X(), (float)p.Y(), (float)p.Z());
-					nTally+=3;
-				}
 
-				const Poly_Array1OfTriangle& triangles = facing->Triangles();
-
-				Standard_Integer n1, n2, n3;
-				float nrmx, nrmy, nrmz;
-
-				tms->BeginPolygon(GL_TRIANGLES);
-				for(Standard_Integer tr = 1 ; tr <= nbTriangles ; tr++)
-				{
-					triangles(tr).Get(n1, n2, n3); // triangle indices are 1 based
-					int iPointIndex;
-					if(orient == TopAbs_REVERSED) //srl code below fixed to get normals in the correct order of triangulation
+					const TopoDS_Face& face = TopoDS::Face(faceEx.Current());
+					TopAbs_Orientation orient = face.Orientation();
+					TopLoc_Location loc;
+					Handle (Poly_Triangulation) facing = BRep_Tool::Triangulation(face,loc);
+					if(facing.IsNull())
 					{
-						// note the negative values of the normals for reversed faces.
-						// tms->info('R');
+						continue;
+					}	
 
-						// setnormal and point
-						iPointIndex = 3 * n3 - 2; // n3 srl fix
-						nrmx = -(float)normals(iPointIndex++);
-						nrmy = -(float)normals(iPointIndex++);
-						nrmz = -(float)normals(iPointIndex++);
-						tms->SetNormal(nrmx, nrmy, nrmz);
-						tms->WriteTriangleIndex(n3);
-						
+					// computation of normals
+					// the returing array is 3 times longer than point array and it's to be read in groups of 3.
+					//
+					Poly::ComputeNormals(facing);
 
-						// setnormal and point
-						iPointIndex = 3 * n2 - 2;
-						nrmx = -(float)normals(iPointIndex++);
-						nrmy = -(float)normals(iPointIndex++);
-						nrmz = -(float)normals(iPointIndex++);
-						tms->SetNormal(nrmx, nrmy, nrmz);
-						tms->WriteTriangleIndex(n2);
-						
+					const TShort_Array1OfShortReal& normals =  facing->Normals();
 
-						// setnormal and point
-						iPointIndex = 3 * n1 - 2; // n1 srl fix
-						nrmx = -(float)normals(iPointIndex++);
-						nrmy = -(float)normals(iPointIndex++);
-						nrmz = -(float)normals(iPointIndex++);
-						tms->SetNormal(nrmx, nrmy, nrmz);
-						tms->WriteTriangleIndex(n1);
-						
-					}
-					else
+					Standard_Integer nbNodes = facing->NbNodes();
+					// tms.info('p', (int)nbNodes);
+					Standard_Integer nbTriangles = facing->NbTriangles();
+					Standard_Integer nbNormals = normals.Length();
+					if(nbNormals != nbNodes * 3) //there is a geometry error in OCC
+						continue;
+					const TColgp_Array1OfPnt& points = facing->Nodes();
+					int nTally = 0;
+
+					tms->BeginFace(nbNodes);
+
+					for(Standard_Integer nd = 1 ; nd <= nbNodes ; nd++)
 					{
-						// tms->info('N');
-						// setnormal and point
-						iPointIndex = 3 * n1 - 2;
-						nrmx = (float)normals(iPointIndex++);
-						nrmy = (float)normals(iPointIndex++);
-						nrmz = (float)normals(iPointIndex++);
-						tms->SetNormal(nrmx, nrmy, nrmz);
-						tms->WriteTriangleIndex(n1);
-						
+						gp_XYZ p = points(nd).Coord();
+						loc.Transformation().Transforms(p); 
 
-						// setnormal and point
-						iPointIndex = 3 * n2 - 2;
-						nrmx = (float)normals(iPointIndex++);
-						nrmy = (float)normals(iPointIndex++);
-						nrmz = (float)normals(iPointIndex++);
-						tms->SetNormal(nrmx, nrmy, nrmz);
-						tms->WriteTriangleIndex(n2);
-						
-
-						// setnormal and point
-						iPointIndex = 3 * n3 - 2;
-						nrmx = (float)normals(iPointIndex++);
-						nrmy = (float)normals(iPointIndex++);
-						nrmz = (float)normals(iPointIndex++);
-						tms->SetNormal(nrmx, nrmy, nrmz);
-						tms->WriteTriangleIndex(n3);
+						tms->WritePoint((float)p.X(), (float)p.Y(), (float)p.Z());
+						nTally+=3;
 					}
-				}
-				tally+=nbNodes; // bonghi: question: point coordinates might be duplicated with this method for different faces. Size optimisation could be possible at the cost of performance speed.
 
-				tms->EndPolygon();
-				tms->EndFace();
+					const Poly_Array1OfTriangle& triangles = facing->Triangles();
+
+					Standard_Integer n1, n2, n3;
+					float nrmx, nrmy, nrmz;
+
+					tms->BeginPolygon(GL_TRIANGLES);
+					for(Standard_Integer tr = 1 ; tr <= nbTriangles ; tr++)
+					{
+						triangles(tr).Get(n1, n2, n3); // triangle indices are 1 based
+						int iPointIndex;
+						if(orient == TopAbs_REVERSED) //srl code below fixed to get normals in the correct order of triangulation
+						{
+							// note the negative values of the normals for reversed faces.
+							// tms->info('R');
+
+							// setnormal and point
+							iPointIndex = 3 * n3 - 2; // n3 srl fix
+							nrmx = -(float)normals(iPointIndex++);
+							nrmy = -(float)normals(iPointIndex++);
+							nrmz = -(float)normals(iPointIndex++);
+							tms->SetNormal(nrmx, nrmy, nrmz);
+							tms->WriteTriangleIndex(n3);
+
+
+							// setnormal and point
+							iPointIndex = 3 * n2 - 2;
+							nrmx = -(float)normals(iPointIndex++);
+							nrmy = -(float)normals(iPointIndex++);
+							nrmz = -(float)normals(iPointIndex++);
+							tms->SetNormal(nrmx, nrmy, nrmz);
+							tms->WriteTriangleIndex(n2);
+
+
+							// setnormal and point
+							iPointIndex = 3 * n1 - 2; // n1 srl fix
+							nrmx = -(float)normals(iPointIndex++);
+							nrmy = -(float)normals(iPointIndex++);
+							nrmz = -(float)normals(iPointIndex++);
+							tms->SetNormal(nrmx, nrmy, nrmz);
+							tms->WriteTriangleIndex(n1);
+
+						}
+						else
+						{
+							// tms->info('N');
+							// setnormal and point
+							iPointIndex = 3 * n1 - 2;
+							nrmx = (float)normals(iPointIndex++);
+							nrmy = (float)normals(iPointIndex++);
+							nrmz = (float)normals(iPointIndex++);
+							tms->SetNormal(nrmx, nrmy, nrmz);
+							tms->WriteTriangleIndex(n1);
+
+
+							// setnormal and point
+							iPointIndex = 3 * n2 - 2;
+							nrmx = (float)normals(iPointIndex++);
+							nrmy = (float)normals(iPointIndex++);
+							nrmz = (float)normals(iPointIndex++);
+							tms->SetNormal(nrmx, nrmy, nrmz);
+							tms->WriteTriangleIndex(n2);
+
+
+							// setnormal and point
+							iPointIndex = 3 * n3 - 2;
+							nrmx = (float)normals(iPointIndex++);
+							nrmy = (float)normals(iPointIndex++);
+							nrmz = (float)normals(iPointIndex++);
+							tms->SetNormal(nrmx, nrmy, nrmz);
+							tms->WriteTriangleIndex(n3);
+						}
+					}
+					tally+=nbNodes; // bonghi: question: point coordinates might be duplicated with this method for different faces. Size optimisation could be possible at the cost of performance speed.
+
+					tms->EndPolygon();
+					tms->EndFace();
+				}
+				size_t iSize = tms->StreamSize();
+				return 0;
 			}
-			size_t iSize = tms->StreamSize();
-			return 0;
-		}
 
-		void OpenGLShapeStreamerFeed(const TopoDS_Shape & shape, XbimTriangularMeshStreamer* tms)
-		{
-			GLUtesselator *ActiveTss = gluNewTess();
-
-			gluTessCallback(ActiveTss, GLU_TESS_BEGIN_DATA,  (void (CALLBACK *)()) XMS_BeginTessellate);
-			gluTessCallback(ActiveTss, GLU_TESS_END_DATA,  (void (CALLBACK *)()) XMS_EndTessellate);
-			gluTessCallback(ActiveTss, GLU_TESS_ERROR,    (void (CALLBACK *)()) XMS_TessellateError);
-			gluTessCallback(ActiveTss, GLU_TESS_VERTEX_DATA,  (void (CALLBACK *)()) XMS_AddVertexIndex);
-
-			GLdouble glPt3D[3];
-			// TesselateStream vertexData(pStream, points, faceCount, streamSize);
-			for (TopExp_Explorer faceEx(shape,TopAbs_FACE) ; faceEx.More(); faceEx.Next()) 
+			void OpenGLShapeStreamerFeed(const TopoDS_Shape & shape, XbimTriangularMeshStreamer* tms)
 			{
-				tms->BeginFace(-1);
-				const TopoDS_Face& face = TopoDS::Face(faceEx.Current());
-				gp_Dir normal = GetNormal(face);
-				tms->SetNormal(
-					(float)normal.X(), 
-					(float)normal.Y(), 
-					(float)normal.Z()
-					);
-				// vertexData.BeginFace(normal);
-				// gluTessBeginPolygon(tess, &vertexData);
-				gluTessBeginPolygon(ActiveTss, tms);
+				GLUtesselator *ActiveTss = gluNewTess();
 
-				// go over each wire
-				for (TopExp_Explorer wireEx(face,TopAbs_WIRE) ; wireEx.More(); wireEx.Next()) 
+				gluTessCallback(ActiveTss, GLU_TESS_BEGIN_DATA,  (void (CALLBACK *)()) XMS_BeginTessellate);
+				gluTessCallback(ActiveTss, GLU_TESS_END_DATA,  (void (CALLBACK *)()) XMS_EndTessellate);
+				gluTessCallback(ActiveTss, GLU_TESS_ERROR,    (void (CALLBACK *)()) XMS_TessellateError);
+				gluTessCallback(ActiveTss, GLU_TESS_VERTEX_DATA,  (void (CALLBACK *)()) XMS_AddVertexIndex);
+
+				GLdouble glPt3D[3];
+				// TesselateStream vertexData(pStream, points, faceCount, streamSize);
+				for (TopExp_Explorer faceEx(shape,TopAbs_FACE) ; faceEx.More(); faceEx.Next()) 
 				{
-					gluTessBeginContour(ActiveTss);
-					const TopoDS_Wire& wire = TopoDS::Wire(wireEx.Current());
+					tms->BeginFace(-1);
+					const TopoDS_Face& face = TopoDS::Face(faceEx.Current());
+					gp_Dir normal = GetNormal(face);
+					tms->SetNormal(
+						(float)normal.X(), 
+						(float)normal.Y(), 
+						(float)normal.Z()
+						);
+					// vertexData.BeginFace(normal);
+					// gluTessBeginPolygon(tess, &vertexData);
+					gluTessBeginPolygon(ActiveTss, tms);
 
-					BRepTools_WireExplorer wEx(wire);
-
-					for(;wEx.More();wEx.Next())
+					// go over each wire
+					for (TopExp_Explorer wireEx(face,TopAbs_WIRE) ; wireEx.More(); wireEx.Next()) 
 					{
-						const TopoDS_Edge& edge = wEx.Current();
-						const TopoDS_Vertex& vertex=  wEx.CurrentVertex();
-						gp_Pnt p = BRep_Tool::Pnt(vertex);
-						glPt3D[0] = p.X();
-						glPt3D[1] = p.Y();
-						glPt3D[2] = p.Z();
+						gluTessBeginContour(ActiveTss);
+						const TopoDS_Wire& wire = TopoDS::Wire(wireEx.Current());
+
+						BRepTools_WireExplorer wEx(wire);
+
+						for(;wEx.More();wEx.Next())
+						{
+							const TopoDS_Edge& edge = wEx.Current();
+							const TopoDS_Vertex& vertex=  wEx.CurrentVertex();
+							gp_Pnt p = BRep_Tool::Pnt(vertex);
+							glPt3D[0] = p.X();
+							glPt3D[1] = p.Y();
+							glPt3D[2] = p.Z();
 							size_t pIndex = tms->WritePoint((float)p.X(), (float)p.Y(), (float)p.Z());
 							gluTessVertex(ActiveTss, glPt3D, (void*)pIndex); 
+						}
+						gluTessEndContour(ActiveTss);
 					}
-					gluTessEndContour(ActiveTss);
+					gluTessEndPolygon(ActiveTss);
+					tms->EndFace();
 				}
-				gluTessEndPolygon(ActiveTss);
-				tms->EndFace();
+				gluDeleteTess(ActiveTss);
 			}
-			gluDeleteTess(ActiveTss);
-		}
 
 #pragma managed
-
-
-		List<XbimTriangulatedModel^>^XbimGeometryModel::Mesh(IXbimGeometryModel^ shape, bool withNormals, double deflection, XbimMatrix3D transform )
-		{
 			
-//Build the Mesh
-			try
+			void XbimGeometryModel::Init(const TopoDS_Shape&  shape , bool hasCurves,int representationLabel, int surfaceStyleLabel)
 			{
-				
-				bool hasCurvedEdges = shape->HasCurvedEdges;
-				
-				// transformed shape is the shape placed according to the transform matrix
-				TopoDS_Shape transformedShape;
-				if(!transform.IsIdentity)
-				{
-					BRepBuilderAPI_Transform gTran(transformedShape,XbimGeomPrim::ToTransform(transform));
-					transformedShape = gTran.Shape();
-				}
+				if(shape.ShapeType() == TopAbs_SHELL)
+					nativeHandle = new TopoDS_Shell();
+				else if(shape.ShapeType() == TopAbs_SOLID)
+					nativeHandle = new TopoDS_Solid();
+				else if(shape.ShapeType() == TopAbs_COMPOUND)
+					nativeHandle = new TopoDS_Compound();
 				else
-					transformedShape = *(shape->Handle);
+					throw gcnew XbimGeometryException("Attempt to build a solid from an unexpected shape type");
+				*nativeHandle=shape;
+				_hasCurvedEdges = hasCurves;
+				_representationLabel=representationLabel;
+				_surfaceStyleLabel=surfaceStyleLabel;
+			};
+			void XbimGeometryModel::Init(IfcRepresentationItem^ entity)
+			{
+				_bounds=XbimRect3D::Empty;
+				RepresentationLabel = Math::Abs(entity->EntityLabel);
+				IfcSurfaceStyle^ surfaceStyle = IfcRepresentationItemExtensions::SurfaceStyle(entity);
+				if(surfaceStyle!=nullptr) SurfaceStyleLabel=Math::Abs(surfaceStyle->EntityLabel);
+			}
+
+			//boolean operations
+			
+
+
+			XbimGeometryModel^ XbimGeometryModel::Cut(XbimGeometryModel^ shape, double precision, double maxPrecision)
+			{
+				bool hasCurves =  _hasCurvedEdges || shape->HasCurvedEdges; //one has a curve the result will have one
+				
+				ShapeFix_ShapeTolerance fTol;
+				double currentTolerance = precision;
+				fTol.SetTolerance(*Handle, currentTolerance);
+				fTol.SetTolerance(*(shape->Handle),currentTolerance);
+				
+TryCutSolid:		
 				try
 				{
-					XbimTriangularMeshStreamer value(shape->RepresentationLabel, shape->SurfaceStyleLabel);
-					XbimTriangularMeshStreamer* m = &value;
-					//decide which meshing algorithm to use, Opencascade is slow but necessary to resolve curved edges
-					if (hasCurvedEdges) 
+					BRepAlgoAPI_Cut boolOp(*Handle,*(shape->Handle));
+					if(boolOp.ErrorStatus() == 0)
 					{
-						// BRepMesh_IncrementalMesh calls BRepMesh_FastDiscret to create the mesh geometry.
-						// todo: Bonghi: Question: is this ok to use the shape instead of transformedShape? I assume the transformed shape points to the shape.
-						BRepMesh_IncrementalMesh incrementalMesh(*(shape->Handle), deflection); 
-						OpenCascadeShapeStreamerFeed(transformedShape, m);
+						//make sure it is a valid geometry
+						if( BRepCheck_Analyzer(boolOp.Shape(), Standard_True).IsValid() == Standard_True) 
+							return gcnew XbimSolid(boolOp.Shape(), hasCurves,_representationLabel,_surfaceStyleLabel);
+						else //if not try and fix it
+						{
+
+							currentTolerance*=10; //try courser;
+							if(currentTolerance<=maxPrecision)
+							{
+								fTol.SetTolerance(*Handle, currentTolerance);
+								fTol.SetTolerance(*(shape->Handle),currentTolerance);
+								goto TryCutSolid;
+							}
+							ShapeFix_Shape sfs(boolOp.Shape());
+							sfs.SetPrecision(precision);
+							sfs.SetMinTolerance(precision);
+							sfs.SetMaxTolerance(maxPrecision);
+							sfs.Perform();
+#ifdef _DEBUG
+							if( BRepCheck_Analyzer(sfs.Shape(), Standard_True).IsValid() == Standard_True) //in release builds except the geometry is not compliant
+								Logger->ErrorFormat("Unable to create valid shape when performing boolean cut operation on shape #{0} with shape #{1}.", RepresentationLabel,shape->RepresentationLabel );
+						
+#endif // _DEBUG
+
+							return gcnew XbimSolid(sfs.Shape(), hasCurves,_representationLabel,_surfaceStyleLabel);
+						}
 					}
 					else
-						OpenGLShapeStreamerFeed(transformedShape, m);
-					size_t uiCalcSize = m->StreamSize();
-
-					IntPtr BonghiUnManMem = Marshal::AllocHGlobal((int)uiCalcSize);
-					unsigned char* BonghiUnManMemBuf = (unsigned char*)BonghiUnManMem.ToPointer();
-					size_t controlSize = m->StreamTo(BonghiUnManMemBuf);
-
-					if (uiCalcSize != controlSize)
 					{
-						int iError = 0;
-						iError++;
+						currentTolerance*=10; //try courser;
+						if(currentTolerance<=maxPrecision)
+						{
+							fTol.SetTolerance(*Handle, currentTolerance);
+							fTol.SetTolerance(*(shape->Handle),currentTolerance);
+							goto TryCutSolid;
+						}
+						//it isn't working
+						
+						Logger->ErrorFormat("Unable to perform boolean cut operation on shape #{0} with shape #{1}. Discarded", RepresentationLabel,shape->RepresentationLabel );
+						return this;
+					}
+				}
+				catch(Standard_Failure e)
+				{
+					String^ err = gcnew String(e.GetMessageString());
+					Logger->ErrorFormat("Boolean error {0} on shape #{1} with shape #{2}. Discarded", err, RepresentationLabel,shape->RepresentationLabel );
+					
+				}		
+				return this;//stick with what we started with
+			}
+
+			XbimGeometryModel^ XbimGeometryModel::Union(XbimGeometryModel^ shape, double precision, double maxPrecision)
+			{
+				bool hasCurves =  _hasCurvedEdges || shape->HasCurvedEdges; //one has a curve the result will have one
+				
+				ShapeFix_ShapeTolerance fTol;
+				double currentTolerance = precision;
+				fTol.SetTolerance(*Handle, currentTolerance);
+				fTol.SetTolerance(*(shape->Handle),currentTolerance);
+TryUnionSolid:		
+				try
+				{
+					
+					BRepAlgoAPI_Fuse boolOp(*Handle,*(shape->Handle));
+					if(boolOp.ErrorStatus() == 0)
+					{
+						//make sure it is a valid geometry
+						if( BRepCheck_Analyzer(boolOp.Shape(), Standard_True).IsValid() == Standard_True) 
+							return gcnew XbimSolid(boolOp.Shape(), hasCurves,_representationLabel,_surfaceStyleLabel);
+						else //if not try and fix it
+						{
+
+							currentTolerance*=10; //try courser;
+							if(currentTolerance<=maxPrecision)
+							{
+								fTol.SetTolerance(*Handle, currentTolerance);
+								fTol.SetTolerance(*(shape->Handle),currentTolerance);
+								goto TryUnionSolid;
+							}
+							ShapeFix_Shape sfs(boolOp.Shape());
+							sfs.SetPrecision(precision);
+							sfs.SetMinTolerance(precision);
+							sfs.SetMaxTolerance(maxPrecision);
+							sfs.Perform();
+#ifdef _DEBUG
+							if( BRepCheck_Analyzer(sfs.Shape(), Standard_True).IsValid() == Standard_False) //in release builds except the geometry is not compliant
+								Logger->ErrorFormat("Unable to create valid shape when performing boolean union operation on shape #{0} with shape #{1}. Discarded", RepresentationLabel,shape->RepresentationLabel );
+					
+#endif // _DEBUG
+								return gcnew XbimSolid(sfs.Shape(), hasCurves,_representationLabel,_surfaceStyleLabel);
+						}
+					}
+					else
+					{
+						currentTolerance*=10; //try courser;
+						if(currentTolerance<=maxPrecision)
+						{
+							fTol.SetTolerance(*Handle, currentTolerance);
+							fTol.SetTolerance(*(shape->Handle),currentTolerance);
+							goto TryUnionSolid;
+						}
+						//it isn't working
+						Logger->ErrorFormat("Unable to perform boolean union operation on shape #{0} with shape #{1}. Discarded", RepresentationLabel,shape->RepresentationLabel );
+						return this;
+					}
+				}
+				catch(Standard_Failure e)
+				{
+					String^ err = gcnew String(e.GetMessageString());
+					Logger->ErrorFormat("Boolean  error {0} on shape #{1} with shape #{2}. Discarded", err, RepresentationLabel,shape->RepresentationLabel );
+					
+				}	
+				return this;//stick with what we started with
+			}
+			XbimGeometryModel^ XbimGeometryModel::Intersection(XbimGeometryModel^ shape, double precision, double maxPrecision)
+			{
+				bool hasCurves =  _hasCurvedEdges || shape->HasCurvedEdges; //one has a curve the result will have one
+
+				ShapeFix_ShapeTolerance fTol;
+				double currentTolerance = precision;
+				fTol.SetTolerance(*Handle, currentTolerance);
+				fTol.SetTolerance(*(shape->Handle),currentTolerance);
+TryIntersectSolid:		
+
+				try
+				{
+					BRepAlgoAPI_Common boolOp(*Handle,*(shape->Handle));	
+					if(boolOp.ErrorStatus() == 0)
+					{
+						//make sure it is a valid geometry
+						if( BRepCheck_Analyzer(boolOp.Shape(), Standard_True).IsValid() == Standard_True) 
+							return gcnew XbimSolid(boolOp.Shape(), hasCurves,_representationLabel,_surfaceStyleLabel);
+						else //if not try and fix it
+						{
+							currentTolerance*=10; //try courser;
+							if(currentTolerance<=maxPrecision)
+							{
+								fTol.SetTolerance(*Handle, currentTolerance);
+								fTol.SetTolerance(*(shape->Handle),currentTolerance);
+								goto TryIntersectSolid;
+							}
+							ShapeFix_Shape sfs(boolOp.Shape());
+							sfs.SetPrecision(precision);
+							sfs.SetMinTolerance(precision);
+							sfs.SetMaxTolerance(maxPrecision);
+							sfs.Perform();
+#ifdef _DEBUG
+							if( BRepCheck_Analyzer(sfs.Shape(), Standard_True).IsValid() == Standard_True) //in release builds except the geometry is not compliant
+								Logger->ErrorFormat("Unable to create valid shape when performing boolean union operation on shape #{0} with shape #{1}. Discarded", RepresentationLabel,shape->RepresentationLabel );
+#endif // _DEBUG
+								return gcnew XbimSolid(sfs.Shape(), hasCurves,_representationLabel,_surfaceStyleLabel);
+						}
+					}
+					else
+					{
+						currentTolerance*=10; //try courser;
+						if(currentTolerance<=maxPrecision)
+						{
+							fTol.SetTolerance(*Handle, currentTolerance);
+							fTol.SetTolerance(*(shape->Handle),currentTolerance);
+							goto TryIntersectSolid;
+						}
+						
+						//it isn't working
+						Logger->ErrorFormat("Unable to perform intersect operation on shape #{0} with shape #{1}. Discarded", RepresentationLabel,shape->RepresentationLabel );
+						return this;
+					}
+				}
+				catch(Standard_Failure e)
+				{
+					String^ err = gcnew String(e.GetMessageString());
+					Logger->ErrorFormat("Boolean error {0} on shape #{1} with shape #{2}. Discarded", err, RepresentationLabel,shape->RepresentationLabel );
+					
+				}
+				return this;//stick with what we started with
+			}
+
+			XbimTriangulatedModelCollection^ XbimGeometryModel::Mesh(double deflection )
+			{	
+				//Build the Mesh
+				XbimTriangularMeshStreamer value(RepresentationLabel, SurfaceStyleLabel);
+				XbimTriangularMeshStreamer* m = &value;
+				//decide which meshing algorithm to use, Opencascade is slow but necessary to resolve curved edges
+				TopoDS_Shape shape = *(Handle);
+				if (HasCurvedEdges) 
+				{
+					Monitor::Enter(this);
+					try
+					{
+						try
+						{				
+							BRepMesh_IncrementalMesh incrementalMesh(shape, deflection);
+							OpenCascadeShapeStreamerFeed(shape, m);								
+						}
+						catch(Standard_Failure e)
+						{
+							String^ err = gcnew String(e.GetMessageString());
+							Logger->ErrorFormat("Mesh triangulation error, {0}. Geometry {1} has been discarded", err,RepresentationLabel);
+							return gcnew XbimTriangulatedModelCollection();
+						}
+					}
+					finally
+					{
+						Monitor::Exit(this);
+					}
+					
+					GC::KeepAlive(this); //stop the native object being deleted by the garbage collector
+				}
+				else
+					OpenGLShapeStreamerFeed(shape, m);
+				size_t uiCalcSize = m->StreamSize();
+				IntPtr BonghiUnManMem = Marshal::AllocHGlobal((int)uiCalcSize);
+				unsigned char* BonghiUnManMemBuf = (unsigned char*)BonghiUnManMem.ToPointer();
+				size_t controlSize = m->StreamTo(BonghiUnManMemBuf);
+				array<unsigned char>^ BmanagedArray = gcnew array<unsigned char>((int)uiCalcSize);
+				Marshal::Copy(BonghiUnManMem, BmanagedArray, 0, (int)uiCalcSize);
+				Marshal::FreeHGlobal(BonghiUnManMem);
+				XbimTriangulatedModelCollection^ list = gcnew XbimTriangulatedModelCollection();
+				list->Add(gcnew XbimTriangulatedModel(BmanagedArray, GetBoundingBox() ,RepresentationLabel, SurfaceStyleLabel) );
+				
+				return list;
+			};
+
+			XbimRect3D XbimGeometryModel::GetBoundingBox()
+			{
+				if(_bounds.IsEmpty)
+				{
+					Bnd_Box pBox;
+					BRepBndLib::Add(*(this->Handle), pBox);
+					Standard_Real srXmin, srYmin, srZmin, srXmax, srYmax, srZmax;
+					if(pBox.IsVoid()) return XbimRect3D::Empty;
+					pBox.Get(srXmin, srYmin, srZmin, srXmax, srYmax, srZmax);
+					_bounds = XbimRect3D((float)srXmin, (float)srYmin, (float)srZmin, (float)(srXmax-srXmin),  (float)(srYmax-srYmin), (float)(srZmax-srZmin));
+				}
+				return _bounds;
+			};
+
+			XbimPolyhedron^ XbimGeometryModel::ToPolyHedron(double deflection, double precision,double precisionMax)
+			{	
+				TopoDS_Shape shape = *(this->Handle);
+				std::vector<vertex_t> vertexStore; //vertices in the polyhedron
+				std::vector<std::vector<carve::mesh::MeshSet<3>::vertex_t *>> faces; //faces on the polyhedron
+				vertexStore.reserve(2048);
+				faces.reserve(1024);
+				TopTools_DataMapOfShapeInteger vertexMap;
+
+				std::vector<mesh_t*> meshes;
+
+				if(!HasCurvedEdges)
+				{
+					
+					for (TopExp_Explorer vEx(shape,TopAbs_VERTEX) ; vEx.More(); vEx.Next()) //gather all the points
+					{
+						const TopoDS_Vertex& curVert=TopoDS::Vertex(vEx.Current());
+						if(!vertexMap.IsBound(curVert))
+						{
+							vertexMap.Bind(curVert,(Standard_Integer)vertexStore.size());
+							gp_Pnt p = BRep_Tool::Pnt(curVert);
+							vertexStore.push_back(carve::geom::VECTOR(p.X(), p.Y(), p.Z()));
+						}
+					}
+					for (TopExp_Explorer shellEx(shape,TopAbs_SHELL) ; shellEx.More(); shellEx.Next()) 
+					{
+						faces.clear();
+						//go over each face and gets its loop
+						for (TopExp_Explorer faceEx(shellEx.Current(),TopAbs_FACE) ; faceEx.More(); faceEx.Next()) 
+						{
+							const TopoDS_Face& face = TopoDS::Face(faceEx.Current());
+							if(face.IsNull()) continue; //nothing here				
+							TopoDS_Wire outerWire = BRepTools::OuterWire(face);//get the outer loop
+							if(outerWire.IsNull()) continue; //nothing here
+							std::vector<vertex_t *> initialFaceLoop;//first get the outer loop
+							for(BRepTools_WireExplorer outerWireEx(outerWire);outerWireEx.More();outerWireEx.Next())
+							{
+								const TopoDS_Vertex& vertex=  outerWireEx.CurrentVertex();
+								initialFaceLoop.push_back(&vertexStore[vertexMap.Find(vertex)]);
+							}
+							if(initialFaceLoop.size() < 3) //we do not have a valid face
+							{
+								Logger->InfoFormat("A face with {0} edges found in IfcRepresentationItem #{1}, 3 is minimum. Ignored",initialFaceLoop.size(), RepresentationLabel );
+								continue;
+							}
+							TopExp_Explorer wireEx(face,TopAbs_WIRE);
+							wireEx.Next();
+							if(wireEx.More()) //we have more than one wire
+							{
+								wireEx.ReInit();
+								std::vector<std::vector<vertex_t *>> holes;
+								for(;wireEx.More();wireEx.Next()) //go   over holes
+								{
+									TopoDS_Wire holeWire = TopoDS::Wire(wireEx.Current());
+									if(holeWire.IsEqual(outerWire)) 
+										continue; //skip the outer wire
+
+									BRepTools_WireExplorer wEx(holeWire, face);
+									if(wEx.More())
+									{
+										holes.push_back(std::vector<vertex_t *>());
+										std::vector<vertex_t *> & holeLoop = holes.back();				
+										for(;wEx.More();wEx.Next())
+										{
+											const TopoDS_Vertex& vertex=  wEx.CurrentVertex();
+											holeLoop.push_back(&vertexStore[vertexMap.Find(vertex)]);
+										}
+										if(holeLoop.size() < 3) //we do not have a valid hole
+										{
+											Logger->WarnFormat("An opening with {0} edges found in IfcRepresentation #{1}, 3 is minimum. Ignored",initialFaceLoop.size(), RepresentationLabel );
+											holes.pop_back();
+										}
+									}
+
+								}
+								face_t face(initialFaceLoop.begin(), initialFaceLoop.end());
+								std::vector<std::vector<carve::geom2d::P2> > projected_poly;
+								projected_poly.resize(holes.size() + 1);
+								projected_poly[0].reserve(initialFaceLoop.size());
+								for (size_t j = 0; j < initialFaceLoop.size(); ++j) {
+									projected_poly[0].push_back(face.project(initialFaceLoop[j]->v));
+								}
+								for (size_t j = 0; j < holes.size(); ++j) {
+									projected_poly[j+1].reserve(holes[j].size());
+									for (size_t k = 0; k < holes[j].size(); ++k) {
+										projected_poly[j+1].push_back(face.project(holes[j][k]->v));
+									}
+								}
+								std::vector<std::pair<size_t, size_t> > result = carve::triangulate::incorporateHolesIntoPolygon(projected_poly);
+								faces.push_back(std::vector<carve::mesh::MeshSet<3>::vertex_t *>());
+								std::vector<carve::mesh::MeshSet<3>::vertex_t *> &out = faces.back();
+								out.reserve(result.size());
+								for (size_t j = 0; j < result.size(); ++j) 
+								{
+									if (result[j].first == 0) 
+										out.push_back(initialFaceLoop[result[j].second]);
+									else 
+										out.push_back(holes[result[j].first-1][result[j].second]);
+								}			
+							}
+							else //solid face, no holes
+							{
+								faces.push_back(std::vector<carve::mesh::MeshSet<3>::vertex_t *>());
+								std::vector<carve::mesh::MeshSet<3>::vertex_t *> &out = faces.back();
+								out.reserve(initialFaceLoop.size());
+								for (size_t i = 0; i < initialFaceLoop.size(); i++)
+								{
+									out.push_back(initialFaceLoop[i]);
+								}	
+							}
+						}
+						std::vector<face_t *> faceList;
+						faceList.reserve(faces.size());
+						for (size_t i = 0; i < faces.size(); ++i) 
+							faceList.push_back(new face_t(faces[i].begin(), faces[i].end()));
+						std::vector<mesh_t*> theseMeshes;
+						mesh_t::create(faceList.begin(), faceList.end(), theseMeshes, carve::mesh::MeshOptions());
+						for (size_t i = 0; i < theseMeshes.size(); i++)
+						{
+							meshes.push_back(theseMeshes[i]);
+						}
+						
+					}
+				}
+				else //triangulate the faces
+				{
+
+					Monitor::Enter(this);
+					try
+					{
+						BRepMesh_IncrementalMesh incrementalMesh(shape, deflection); //triangulate the first time
+					}
+					finally
+					{
+						Monitor::Exit(this);
+					}
+					std::unordered_map<Float3D, size_t> vertexMap;
+					for (TopExp_Explorer shellEx(shape,TopAbs_SHELL) ; shellEx.More(); shellEx.Next()) 	
+					{
+						faces.clear();
+						for (TopExp_Explorer faceEx(shellEx.Current(),TopAbs_FACE) ; faceEx.More(); faceEx.Next()) 	
+						{
+							const TopoDS_Face & face = TopoDS::Face(faceEx.Current());
+							TopAbs_Orientation orient = face.Orientation();
+							TopLoc_Location loc;
+							Handle (Poly_Triangulation) facing = BRep_Tool::Triangulation(face,loc);
+							if(facing.IsNull()) continue;
+
+							Standard_Integer nbNodes = facing->NbNodes();
+							Standard_Integer nbTriangles = facing->NbTriangles();
+
+							const TColgp_Array1OfPnt& points = facing->Nodes();
+							std::unordered_map<Standard_Integer,size_t> posMap;
+							for(Standard_Integer nd = 1 ; nd <= nbNodes ; nd++)
+							{
+								gp_XYZ p = points(nd).XYZ();
+								loc.Transformation().Transforms(p);			 
+								Float3D p3D((float)p.X(),(float)p.Y(),(float)p.Z());
+								std::unordered_map<Float3D, size_t>::const_iterator hit = vertexMap.find(p3D);
+								if(hit==vertexMap.end()) //not found add it in
+								{	
+									posMap.insert(std::make_pair(nd,vertexStore.size()));
+									vertexMap.insert(std::make_pair(p3D,vertexStore.size()));
+									vertexStore.push_back(carve::geom::VECTOR(p.X(),p.Y(),p.Z()));
+								}
+								else
+									posMap.insert(std::make_pair(nd,hit->second));
+							}
+							const Poly_Array1OfTriangle& triangles = facing->Triangles();
+							Standard_Integer n1, n2, n3;			
+							for(Standard_Integer tr = 1 ; tr <= nbTriangles ; tr++)
+							{
+								triangles(tr).Get(n1, n2, n3); // triangle indices are 1 based
+								faces.push_back(std::vector<carve::mesh::MeshSet<3>::vertex_t *>());
+								std::vector<carve::mesh::MeshSet<3>::vertex_t *> &m = faces.back();
+								m.reserve(3);
+								if(orient == TopAbs_REVERSED) //srl code below fixed to get normals in the correct order of triangulation
+								{
+									m.push_back(&vertexStore[posMap[n3]]);
+									m.push_back(&vertexStore[posMap[n2]]);
+									m.push_back(&vertexStore[posMap[n1]]);
+								}
+								else
+								{
+									m.push_back(&vertexStore[posMap[n1]]);
+									m.push_back(&vertexStore[posMap[n2]]);
+									m.push_back(&vertexStore[posMap[n3]]);
+								}
+							}
+						}
+						std::vector<face_t *> faceList;
+						faceList.reserve(faces.size());
+						for (size_t i = 0; i < faces.size(); ++i) 
+							faceList.push_back(new face_t(faces[i].begin(), faces[i].end()));
+						std::vector<mesh_t*> theseMeshes;
+						mesh_t::create(faceList.begin(), faceList.end(), theseMeshes, carve::mesh::MeshOptions());
+						for (size_t i = 0; i < theseMeshes.size(); i++)
+						{
+							meshes.push_back(theseMeshes[i]);
+						}
 					}
 
-					array<unsigned char>^ BmanagedArray = gcnew array<unsigned char>((int)uiCalcSize);
-					Marshal::Copy(BonghiUnManMem, BmanagedArray, 0, (int)uiCalcSize);
-					Marshal::FreeHGlobal(BonghiUnManMem);
-					List<XbimTriangulatedModel^>^list = gcnew List<XbimTriangulatedModel^>();
-					list->Add(gcnew XbimTriangulatedModel(BmanagedArray, shape->RepresentationLabel, shape->SurfaceStyleLabel) );
-					return list;
 				}
-				catch(...)
-				{
-					System::Diagnostics::Debug::WriteLine("Error processing geometry in XbimGeometryModel::Mesh");
-				}
-				finally
-				{
-					// Marshal::FreeHGlobal(vertexPtr);
+				//Make the Polyhedron 
 
-				}
-				
+				meshset_t *mesh = new meshset_t(vertexStore, meshes);
+				return  gcnew XbimPolyhedron(mesh, RepresentationLabel, SurfaceStyleLabel);
 			}
-			catch(...)
-			{
-				System::Diagnostics::Debug::WriteLine("Failed to Triangulate shape");
-				return gcnew List<XbimTriangulatedModel^>();
-			}
-		}	
 
-		XbimBoundingBox^ XbimGeometryModel::GetBoundingBox(IXbimGeometryModel^ shape, bool precise)
-		{
-			Bnd_Box * pBox = new Bnd_Box();
-			if(precise)
+			bool XbimGeometryModel::Intersects(XbimGeometryModel^ other)
 			{
-				BRepBndLib::Add(*(shape->Handle), *pBox);
+				Bnd_Box aBox;
+				BRepBndLib::Add(*(this->Handle), aBox);
+				Bnd_Box bBox;
+				BRepBndLib::Add(*(other->Handle), bBox);
+				return aBox.IsOut(bBox)==Standard_False;
 			}
-			else
+
+			bool XbimGeometryModel::IsMap::get() 
 			{
-			
-				BRepBndLib::AddClose(*(shape->Handle), *pBox);
-			}
-			return gcnew XbimBoundingBox(pBox);
-		};
+				return dynamic_cast<XbimMap^>(this)!=nullptr;
+			};
+
+
+		}
 	}
-}
 }

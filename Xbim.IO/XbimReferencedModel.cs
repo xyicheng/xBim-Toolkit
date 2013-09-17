@@ -29,5 +29,24 @@ namespace Xbim.IO
                 return DocumentInformation.DocumentId;
             }            
         }
+        public string Owner
+        {
+            get
+            {
+                return DocumentInformation.DocumentOwner.ToString();
+            }
+        }
+        public string Name
+        {
+            get
+            {
+                return DocumentInformation.Name;
+            }
+        }
+
+        internal void Dispose()
+        {
+            Model.Dispose();
+        }
     }
 }

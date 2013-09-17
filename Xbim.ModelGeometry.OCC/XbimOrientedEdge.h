@@ -37,8 +37,8 @@ namespace Xbim
 				}
 				void InstanceCleanup()
 				{   
-					int temp = System::Threading::Interlocked::Exchange((int)(void*)nativeHandleEdge, 0);
-					if(temp!=0)
+					IntPtr temp = System::Threading::Interlocked::Exchange(IntPtr(nativeHandleEdge), IntPtr(0));
+					if(temp!=IntPtr(0))
 					{
 						if (nativeHandleEdge)
 						{

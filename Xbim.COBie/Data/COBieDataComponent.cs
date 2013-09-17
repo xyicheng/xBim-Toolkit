@@ -86,7 +86,7 @@ namespace Xbim.COBie.Data
                 ProgressIndicator.IncrementAndUpdate();
                 
                 COBieComponentRow component = new COBieComponentRow(components);
-
+                
                 IfcElement el = obj as IfcElement;
                 if (el == null)
                     continue;
@@ -96,19 +96,26 @@ namespace Xbim.COBie.Data
                     name = "Name Unknown " + UnknownCount.ToString();
                     UnknownCount++;
                 }
+                //set allPropertyValues to this element
+                allPropertyValues.SetAllPropertySingleValues(el); //set the internal filtered IfcPropertySingleValues List in allPropertyValues
+                
                 component.Name = name;
-                component.CreatedBy = GetTelecomEmailAddress(el.OwnerHistory);
-                component.CreatedOn = GetCreatedOnDateAsFmtString(el.OwnerHistory);
+                string createBy = allPropertyValues.GetPropertySingleValueValue("COBieCreatedBy", false); //support for COBie Toolkit for Autodesk Revit
+                component.CreatedBy = ValidateString(createBy) ? createBy : GetTelecomEmailAddress(el.OwnerHistory);
+                string createdOn = allPropertyValues.GetPropertySingleValueValue("COBieCreatedOn", false);//support for COBie Toolkit for Autodesk Revit
+                component.CreatedOn = ValidateString(createdOn) ?  createdOn : GetCreatedOnDateAsFmtString(el.OwnerHistory);
                 
                 component.TypeName = GetTypeName(el);
                 component.Space = GetComponentRelatedSpace(el);
-                component.Description = GetComponentDescription(el);
-                component.ExtSystem = GetExternalSystem(el);
+                string description = allPropertyValues.GetPropertySingleValueValue("COBieDescription", false);//support for COBie Toolkit for Autodesk Revit
+                component.Description = ValidateString(description) ? description : GetComponentDescription(el);
+                string extSystem = allPropertyValues.GetPropertySingleValueValue("COBieExtSystem", false);//support for COBie Toolkit for Autodesk Revit
+                component.ExtSystem = ValidateString(extSystem) ? extSystem : GetExternalSystem(el);
                 component.ExtObject = el.GetType().Name;
                 component.ExtIdentifier = el.GlobalId;
 
                 //set from PropertySingleValues filtered via candidateProperties
-                allPropertyValues.SetAllPropertySingleValues(el); //set the internal filtered IfcPropertySingleValues List in allPropertyValues
+                //set the internal filtered IfcPropertySingleValues List in allPropertyValues to this element set above
                 component.SerialNumber = allPropertyValues.GetPropertySingleValueValue("SerialNumber", false);
                 component.InstallationDate = GetDateFromProperty(allPropertyValues, "InstallationDate");
                 component.WarrantyStartDate = GetDateFromProperty(allPropertyValues, "WarrantyStartDate");
@@ -202,7 +209,7 @@ namespace Xbim.COBie.Data
                 .Select(bb => new SpaceInfo
                 {
                     Rectangle = XbimRect3D.FromArray(bb.ShapeData),
-                    Matrix = XbimMatrix3D.FromArray(bb.TransformData),
+                    Matrix = bb.Transform,
                     Name = Model.Instances.OfType<IfcSpace>().Where(sp => (Math.Abs(sp.EntityLabel) == Math.Abs(bb.IfcProductLabel))).Select(sp => sp.Name.ToString()).FirstOrDefault()
                 }).ToList();
             }
@@ -218,7 +225,7 @@ namespace Xbim.COBie.Data
                     return string.Empty; //No geometry
 
                 XbimRect3D elBoundBox = XbimRect3D.FromArray(elGeoData.ShapeData);
-                XbimMatrix3D elWorldMatrix = XbimMatrix3D.FromArray(elGeoData.TransformData);
+                XbimMatrix3D elWorldMatrix = elGeoData.Transform;
                 //Get object space top and bottom points of the bounding box
                 List<XbimPoint3D> elBoxPts = new List<XbimPoint3D>();
                 elBoxPts.Add(new XbimPoint3D(elBoundBox.X, elBoundBox.Y, elBoundBox.Z));

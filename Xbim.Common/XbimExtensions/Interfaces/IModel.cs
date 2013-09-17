@@ -65,7 +65,7 @@ namespace Xbim.XbimExtensions.Interfaces
     {
 
 
-        XbimModelFactors GetModelFactors { get; }
+        XbimModelFactors ModelFactors { get; }
 
         IXbimInstanceCollection Instances { get; }
         int Activate(IPersistIfcEntity owningEntity, bool write);

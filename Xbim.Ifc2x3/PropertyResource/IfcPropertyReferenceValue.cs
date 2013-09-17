@@ -52,6 +52,7 @@ namespace Xbim.Ifc2x3.PropertyResource
         /// <summary>
         ///   Optional. Description of the use of the referenced value within the property.
         /// </summary>
+        [IfcAttribute(3, IfcAttributeState.Optional)]
         public IfcLabel? UsageName
         {
             get { return _usageName; }
@@ -61,6 +62,7 @@ namespace Xbim.Ifc2x3.PropertyResource
         /// <summary>
         ///   Reference to another entity througH one of the select types in IfcObjectReferenceSelect.
         /// </summary>
+        [IfcAttribute(4, IfcAttributeState.Mandatory, IfcAttributeType.Class, 1)]
         public IfcObjectReferenceSelect PropertyReference
         {
             get { return _propertyReference; }

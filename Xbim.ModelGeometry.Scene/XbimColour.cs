@@ -134,7 +134,7 @@ namespace Xbim.ModelGeometry.Scene
             this.Green = (float)(double)rgbColour.Green;
             this.Blue = (float)(double)rgbColour.Blue;
             this.Alpha = 1;
-            this.Name=rgbColour.Name;
+           // this.Name = string.Format("{0},A={1},D={2},S={3},T={4},R={5},RGB={6}", rgbColour.Name, Alpha, DiffuseFactor, SpecularFactor, TransmissionFactor, ReflectionFactor, rgbColour.EntityLabel);
             
         }
 

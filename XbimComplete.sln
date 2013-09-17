@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2010
+# Visual Studio 2012
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{B5EDEE8A-69B9-47E5-8455-E1A9A7ED8969}"
 	ProjectSection(SolutionItems) = preProject
 		Xbim.ModelGeometry.OCC\Version.rc = Xbim.ModelGeometry.OCC\Version.rc
@@ -11,24 +11,33 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{7ECDCF15-95BB-4D2B-8C0D-8615D6E3BAB1}"
 	ProjectSection(SolutionItems) = preProject
 		Local.testsettings = Local.testsettings
+		XbimRegression\Params.cs = XbimRegression\Params.cs
+		Readme.txt = Readme.txt
 		TraceAndTestImpact.testsettings = TraceAndTestImpact.testsettings
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{25F1A002-D766-40FD-910C-D3E9DCC6FCBF}"
 	ProjectSection(SolutionItems) = preProject
 		JSLintOptions.xml = JSLintOptions.xml
+		Local.testsettings = Local.testsettings
 		Readme.txt = Readme.txt
+		TraceAndTestImpact.testsettings = TraceAndTestImpact.testsettings
 		XbimComplete.vsmdi = XbimComplete.vsmdi
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Licences", "Licences", "{E9E301F2-FE7D-4410-B88D-F83D684A8E62}"
 	ProjectSection(SolutionItems) = preProject
 		Licences\CDDL Licence.txt = Licences\CDDL Licence.txt
+		Licences\MIT Licence.txt = Licences\MIT Licence.txt
+		Licences\MS Permissive Licence.txt = Licences\MS Permissive Licence.txt
+		Licences\NewBSD Licence.txt = Licences\NewBSD Licence.txt
+		Licences\OPEN CASCADE Public Licence.txt = Licences\OPEN CASCADE Public Licence.txt
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3rd Party", "3rd Party", "{10A2F674-DB37-41FF-AB71-9D54C8F0A5B6}"
 	ProjectSection(SolutionItems) = preProject
 		Licences\Apache2_0.txt = Licences\Apache2_0.txt
+		Licences\CDDL Licence.txt = Licences\CDDL Licence.txt
 		Licences\MIT Licence.txt = Licences\MIT Licence.txt
 		Licences\MS Permissive Licence.txt = Licences\MS Permissive Licence.txt
 		Licences\NewBSD Licence.txt = Licences\NewBSD Licence.txt
@@ -67,6 +76,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.Ifc2x3.Extensions", "Xbim.Ifc.Extensions\Xbim.Ifc2x3.Extensions.csproj", "{09870F18-1796-4A3E-A66D-68DB3DA60B24}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.ModelGeometry.Converter", "Xbim.ModelGeometry.Converter\Xbim.ModelGeometry.Converter.csproj", "{97DFF14E-ADD7-4ED3-B8C3-0D3D3E6CDEE8}"
+	ProjectSection(ProjectDependencies) = postProject
+		{A0544330-3B8B-45F6-BE6B-E9A5AD661384} = {A0544330-3B8B-45F6-BE6B-E9A5AD661384}
+		{BB0E1C7A-C255-41CB-814D-894193AB6424} = {BB0E1C7A-C255-41CB-814D-894193AB6424}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.Presentation", "Xbim.Presentation\Xbim.Presentation.csproj", "{89F98E53-DE4E-4427-8244-D5934AD08849}"
 EndProject
@@ -135,10 +148,10 @@ Global
 		SccProjectTopLevelParentUniqueName16 = XbimComplete.sln
 		SccProjectName16 = XbimXplorer
 		SccLocalPath16 = XbimXplorer
-		SccProjectUniqueName17 = Xbim.ModelGeometry.OCC\\Xbim.ModelGeometry.OCC64.vcxproj
+		SccProjectUniqueName17 = Xbim.ModelGeometry.OCC\\Xbim.ModelGeometry.OCC32.vcxproj
 		SccProjectName17 = Xbim.ModelGeometry.OCC
 		SccLocalPath17 = Xbim.ModelGeometry.OCC
-		SccProjectUniqueName18 = Xbim.ModelGeometry.OCC\\Xbim.ModelGeometry.OCC32.vcxproj
+		SccProjectUniqueName18 = Xbim.ModelGeometry.OCC\\Xbim.ModelGeometry.OCC64.vcxproj
 		SccProjectName18 = Xbim.ModelGeometry.OCC
 		SccLocalPath18 = Xbim.ModelGeometry.OCC
 	EndGlobalSection
@@ -247,11 +260,9 @@ Global
 		{BB0E1C7A-C255-41CB-814D-894193AB6424}.Release|Any CPU.ActiveCfg = Release|x64
 		{BB0E1C7A-C255-41CB-814D-894193AB6424}.Release|Any CPU.Build.0 = Release|x64
 		{A0544330-3B8B-45F6-BE6B-E9A5AD661384}.Debug|Any CPU.ActiveCfg = Debug|Win32
-		{A0544330-3B8B-45F6-BE6B-E9A5AD661384}.Debug|Any CPU.Build.0 = Debug|Win32
 		{A0544330-3B8B-45F6-BE6B-E9A5AD661384}.NugetDistribution|Any CPU.ActiveCfg = NugetDistribution|Win32
 		{A0544330-3B8B-45F6-BE6B-E9A5AD661384}.NugetDistribution|Any CPU.Build.0 = NugetDistribution|Win32
 		{A0544330-3B8B-45F6-BE6B-E9A5AD661384}.Release|Any CPU.ActiveCfg = Release|Win32
-		{A0544330-3B8B-45F6-BE6B-E9A5AD661384}.Release|Any CPU.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -265,6 +276,9 @@ Global
 		{8729CDD1-B493-48EC-A867-61ABAF3E93D2} = {7ECDCF15-95BB-4D2B-8C0D-8615D6E3BAB1}
 		{6EF22FB8-7048-4E6A-9B2F-AC2570A998A9} = {7ECDCF15-95BB-4D2B-8C0D-8615D6E3BAB1}
 		{10A2F674-DB37-41FF-AB71-9D54C8F0A5B6} = {E9E301F2-FE7D-4410-B88D-F83D684A8E62}
+	EndGlobalSection
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
 	EndGlobalSection
 	GlobalSection(JSLint) = preSolution
 		SolutionConfigurationLocation = JSLintOptions.xml
