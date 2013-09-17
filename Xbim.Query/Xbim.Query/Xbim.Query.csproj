@@ -128,7 +128,9 @@
     <None Include="Parser\gplex.exe" />
     <None Include="Parser\gppg.exe" />
     <Content Include="Parser\Queries.txt" />
-    <None Include="PredefinedRules\ClassifyModelToNRM" />
+    <None Include="PredefinedRules\ClassifyModelToNRM">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="README.rtf" />
   </ItemGroup>
   <ItemGroup>

@@ -60,13 +60,6 @@ namespace Xbim.Query.Properties {
             }
         }
         
-        internal static byte[] ClassifyModelToNRM {
-            get {
-                object obj = ResourceManager.GetObject("ClassifyModelToNRM", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
-        
         /// <summary>
         ///   Looks up a localized string similar to Code; Description; Parent
         ///NRM; New Rules of Measurement

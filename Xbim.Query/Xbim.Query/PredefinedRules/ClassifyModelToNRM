@@ -1,4 +1,5 @@
-﻿Create classification NRM;
+﻿Open model from file 'd:\CODE\Sample_IFC\Simple_house.ifc';
+Create classification NRM;
 
 //**********************************  External Walls  ***************************************
 $extWallsGroup = system where description = 'External Walls';
@@ -29,7 +30,7 @@ $extWalls is plate where
 	type predefined type is 'CURTAIN_PANEL'
 	;
 
-Add $extWallss to $extWallsGroup;
+Add $extWalls to $extWallsGroup;
 
 
 //*********************************  Basement Retaining Walls  ************************************
@@ -69,7 +70,7 @@ $ground is slab where
 	name contains 'GS' or
 	name contains 'GND' or
 	function is 1 or
-	IsExternal is true
+	IsExternal is true or
 	type predefined type is 'SLAB' or
 	type name contains 'GS' or
 	type name contains 'GND'
@@ -89,15 +90,15 @@ $upperFloor is slab where
 	type name contains 'Susp'
 	;
 
-Add $upperFloorGroup to upperFloor;
+Add $upperFloor to $upperFloorGroup;
 
 //*********************************  Roof  *******************************************
-$roofGroup is group where description is 'upperFloorGroup';
+$roofGroup is group where description is 'Roof';
 
 $roof is slab where
 	predefined type is 'ROOF' or
 	name contains 'Roof' or
-	'Name' is 'Roof'
+	'Name' is 'Roof' or
 	type predefined type is 'ROOF'
 	;
 
@@ -118,11 +119,11 @@ $doors is door where
 	description contains 'Ext' or
 	IsExternal is true or
 	Function = 1 or
-	Reference contains 'Ext'
-	type name contains 'Ext'
-	type description contains 'Ext'
+	Reference contains 'Ext' or
+	type name contains 'Ext' or
+	type description contains 'Ext' or
 	type IsExternal is true or
-	type Function = 1 or
+	type Function = 1
 	;
 
 Add $windows to $winDoorGroup;
@@ -146,7 +147,7 @@ $stair is railing where
 	predefined type is 'HANDRAIL' or
 	predefined type is 'GUARDRAIL' or
 	predefined type is 'NOTDEFINED' or
-	name contains 'Handrail'
+	name contains 'Handrail' or
 	type predefined type is 'HANDRAIL' or
 	type predefined type is 'GUARDRAIL' or
 	type predefined type is 'NOTDEFINED' or
@@ -189,8 +190,8 @@ $ceilingFinish is covering where
 
 Add $ceilingFinish to $ceilingFinishGroup;
 
-//****************************  Roads, paths and pavings  ***************************
-$roadsGroup is group where description is 'Roads, paths and pavings';
+//****************************  Roads, Paths, Pavings and Surfacings  ***************************
+$roadsGroup is group where description is 'Roads, Paths, Pavings and Surfacings';
 
 $roads is ramp_flight where function is not 0;
 
@@ -202,3 +203,5 @@ $furnishingGroup is group where description is 'General fittings, furnishings an
 $furniture is IfcFurnishingElement;
 
 Add $furniture to $furnishingGroup;
+
+Save model to file 'Result.ifc';

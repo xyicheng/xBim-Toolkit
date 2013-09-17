@@ -678,8 +678,8 @@ namespace Xbim.Query
         }
         #endregion
 
-        #region Add or remove elements to and from group or type
-        private void AddOrRemove(Tokens action, string productsIdentifier, string groupOrType)
+        #region Add or remove elements to and from group or type or spatial element
+        private void AddOrRemove(Tokens action, string productsIdentifier, string aggregation)
         { 
         //conditions
             if (!Variables.IsDefined(productsIdentifier))
@@ -687,26 +687,26 @@ namespace Xbim.Query
                 Scanner.yyerror("Variable '" + productsIdentifier + "' is not defined and doesn't contain any products.");
                 return;
             }
-            if (!Variables.IsDefined(groupOrType))
+            if (!Variables.IsDefined(aggregation))
             {
-                Scanner.yyerror("Variable '" + groupOrType + "' is not defined and doesn't contain any products.");
+                Scanner.yyerror("Variable '" + aggregation + "' is not defined and doesn't contain any products.");
                 return;
             }
-            if (Variables[groupOrType].Count() != 1)
+            if (Variables[aggregation].Count() != 1)
             {
-                Scanner.yyerror("Exactly one group, system or type object should be in '" + groupOrType + "'.");
+                Scanner.yyerror("Exactly one group, system, type or spatial element should be in '" + aggregation + "'.");
                 return;
             }
 
 
-            IfcGroup group = Variables[groupOrType].FirstOrDefault() as IfcGroup;
-            IfcTypeObject typeObject = Variables[groupOrType].FirstOrDefault() as IfcTypeObject;
-            IfcSpatialStructureElement spatialStructure = Variables[groupOrType].FirstOrDefault() as IfcSpatialStructureElement;
+            IfcGroup group = Variables[aggregation].FirstOrDefault() as IfcGroup;
+            IfcTypeObject typeObject = Variables[aggregation].FirstOrDefault() as IfcTypeObject;
+            IfcSpatialStructureElement spatialStructure = Variables[aggregation].FirstOrDefault() as IfcSpatialStructureElement;
 
 
             if (group == null && typeObject == null && spatialStructure == null)
             {
-                Scanner.yyerror("Only 'group', 'system', 'spatial element' or 'type object' should be in '" + groupOrType + "'.");
+                Scanner.yyerror("Only 'group', 'system', 'spatial element' or 'type object' should be in '" + aggregation + "'.");
                 return;
             }
             
@@ -717,7 +717,7 @@ namespace Xbim.Query
             {
                 var objects = Variables[productsIdentifier].OfType<IfcObjectDefinition>().Cast<IfcObjectDefinition>();
                 if (objects.Count() != Variables[productsIdentifier].Count())
-                    Scanner.yyerror("Only objects which are subtypes of 'IfcObjectDefinition' can be assigned to group '" + groupOrType + "'.");
+                    Scanner.yyerror("Only objects which are subtypes of 'IfcObjectDefinition' can be assigned to group '" + aggregation + "'.");
 
                 perform = () =>
                 {
@@ -743,7 +743,7 @@ namespace Xbim.Query
             {
                 var objects = Variables[productsIdentifier].OfType<IfcObject>().Cast<IfcObject>();
                 if (objects.Count() != Variables[productsIdentifier].Count())
-                    Scanner.yyerror("Only objects which are subtypes of 'IfcObject' can be assigned to 'IfcTypeObject' '" + groupOrType + "'.");
+                    Scanner.yyerror("Only objects which are subtypes of 'IfcObject' can be assigned to 'IfcTypeObject' '" + aggregation + "'.");
 
                 perform = () => {
                     foreach (var obj in objects)
@@ -768,7 +768,7 @@ namespace Xbim.Query
             {
                 var objects = Variables[productsIdentifier].OfType<IfcProduct>().Cast<IfcProduct>();
                 if (objects.Count() != Variables[productsIdentifier].Count())
-                    Scanner.yyerror("Only objects which are subtypes of 'IfcProduct' can be assigned to 'IfcSpatialStructureElement' '" + groupOrType + "'.");
+                    Scanner.yyerror("Only objects which are subtypes of 'IfcProduct' can be assigned to 'IfcSpatialStructureElement' '" + aggregation + "'.");
 
                 perform = () =>
                 {

@@ -34,10 +34,14 @@ namespace Xbim.Query
                 else
                 {
                     Console.WriteLine("Input file processed with errors");
+                    FileStream errFile = File.Open("Errors.txt", FileMode.OpenOrCreate, FileAccess.Write);
+                    var errLog = new StreamWriter(errFile);
                     foreach (var err in parser.Errors)
                     {
                         Console.WriteLine(err);
+                        errLog.WriteLine(err);
                     }
+                    errLog.Close();
                 }
 
             }
