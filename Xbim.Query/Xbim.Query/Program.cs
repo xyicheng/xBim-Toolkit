@@ -20,24 +20,32 @@ namespace Xbim.Query
         {
             var testModelPath = @"D:\CODE\xBIM\XbimFramework\Dev\Martin\XbimQueryTest\TestModels\Standard Classroom.ifc";
             var isTestModel = File.Exists(testModelPath);
-            if (args.Length == 0 && !isTestModel)
-            {
-                Console.WriteLine("Specify model as an input.");
-                Console.WriteLine("Press any key...");
-                Console.ReadKey();
-                return;
-            }
 
             XbimModel model = XbimModel.CreateTemporaryModel();
-            Console.WriteLine("Opening model...");
+            XbimQueryParser parser = new XbimQueryParser(model);
 
-            if (args.Length != 0)
-                model.CreateFrom(args[0], null, null, true);
+            if (args.Count() > 0)
+            {
+                Stream reader = File.Open(args[0], FileMode.Open, FileAccess.Read);
+                parser.Parse(reader);
+
+                if (parser.Errors.Count() == 0)
+                    Console.WriteLine("Input file processed");
+                else
+                {
+                    Console.WriteLine("Input file processed with errors");
+                    foreach (var err in parser.Errors)
+                    {
+                        Console.WriteLine(err);
+                    }
+                }
+
+            }
+            
 
             Console.WriteLine("Enter your commands sir (use 'exit' command to quit):");
             Console.WriteLine();
 
-            XbimQueryParser parser = new XbimQueryParser(model);
             string command = Console.ReadLine();
             while (command.ToLower() != "exit")
             {

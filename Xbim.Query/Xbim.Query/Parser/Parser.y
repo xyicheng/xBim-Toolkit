@@ -99,21 +99,21 @@ value_setting_list
 	;
 
 value_setting
-	: attribute TO value		{$$.val = GenerateSetExpression($1.strVal, $3.val);}
-	| STRING TO value			{$$.val = GenerateSetExpression($1.strVal, $3.val);}
+	: attribute TO value					{$$.val = GenerateSetExpression($1.strVal, $3.val);}
+	| STRING TO value						{$$.val = GenerateSetExpression($1.strVal, $3.val);}
 	;	
 
 value
-	: STRING							{$$.val = $1.strVal;}
-	| BOOLEAN							{$$.val = $1.boolVal;}
-	| INTEGER							{$$.val = $1.intVal;}
-	| DOUBLE							{$$.val = $1.doubleVal;}
-	| NONDEF							{$$.val = null;}
+	: STRING								{$$.val = $1.strVal;}
+	| BOOLEAN								{$$.val = $1.boolVal;}
+	| INTEGER								{$$.val = $1.intVal;}
+	| DOUBLE								{$$.val = $1.doubleVal;}
+	| NONDEF								{$$.val = null;}
 	;
 
 num_value
-	: DOUBLE							{$$.val = $1.doubleVal;}
-	| INTEGER							{$$.val = $1.intVal;}
+	: DOUBLE								{$$.val = $1.doubleVal;}
+	| INTEGER								{$$.val = $1.intVal;}
 	;
 
 model_actions
@@ -211,8 +211,8 @@ typeCondition
 	;
 
 groupCondition
-	: GROUP propertyCondition			{$$.val = GenerateGroupCondition((Expression)($1.val));}
-	| GROUP attributeCondition			{$$.val = GenerateGroupCondition((Expression)($1.val));}
+	: GROUP propertyCondition			{$$.val = GenerateGroupCondition((Expression)($2.val));}
+	| GROUP attributeCondition			{$$.val = GenerateGroupCondition((Expression)($2.val));}
 	;
 
 propertyCondition	
@@ -252,6 +252,7 @@ object
 	: PRODUCT				{$$.typeVal = $1.typeVal;}
 	| PRODUCT_TYPE			{$$.typeVal = $1.typeVal;}
 	| MATERIAL				{$$.typeVal = $1.typeVal;}
+	| GROUP					{$$.typeVal = $1.typeVal;}
 	;
 	
 %%

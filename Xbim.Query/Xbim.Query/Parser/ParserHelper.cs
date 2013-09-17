@@ -678,7 +678,7 @@ namespace Xbim.Query
         }
         #endregion
 
-        #region Add or remove elements to and from gtoup or type
+        #region Add or remove elements to and from group or type
         private void AddOrRemove(Tokens action, string productsIdentifier, string groupOrType)
         { 
         //conditions
@@ -831,7 +831,7 @@ namespace Xbim.Query
         {
             try
             {
-                if (Path.GetExtension(path).ToLower() == ".ifc")
+                if (Path.GetExtension(path).ToLower() != ".xbim")
                     _model.CreateFrom(path, null, null, true);
                 else
                     _model.Open(path, XbimExtensions.XbimDBAccess.ReadWrite);
@@ -862,7 +862,7 @@ namespace Xbim.Query
         {
             try
             {
-                _model.SaveAs(path, XbimStorageType.IFC);
+                _model.SaveAs(path);
             }
             catch (Exception e)
             {

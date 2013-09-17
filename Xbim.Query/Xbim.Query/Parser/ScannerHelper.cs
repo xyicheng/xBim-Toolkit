@@ -90,6 +90,9 @@ namespace Xbim.Query
                 case Tokens.MATERIAL:
                     yylval.typeVal = typeof(Xbim.Ifc2x3.MaterialResource.IfcMaterial);
                     return type;
+                case Tokens.GROUP:
+                    yylval.typeVal = typeof(IfcGroup);
+                    return type;
                 case Tokens.IDENTIFIER:
                     return type;
                 default:

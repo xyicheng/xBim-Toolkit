@@ -107,6 +107,11 @@ namespace XbimQueryTest
                 {"$wall is new wall 'New wall is here.';",true},
                 {"Add $wall to $wallType;",true},
 
+                 //Add or remove elements from spatial element (site, building, storey, space)
+                {"$allWalls = wall;",true},
+                {"$building is new building 'Default building';",true},
+                {"Add $allWalls to $building;",true},
+
                 //variable manipulation
                 {"Dump $wallType;",true},
                 {"Export $wallType;",true},
@@ -126,6 +131,18 @@ namespace XbimQueryTest
                 {"Set name to 'New name', description to 'New description' for $wall;", true},
                 {"Set name to 'New name', description to 'New description', 'fire protection' to 12.3 for $wall;", true},
                 {"Set name to 123, description to 'New description', 'fire protection' to 12.3 for $wall;", false},
+
+                //element type attributes and properties
+                {"Select wall where type name is 'Some name';",true},
+                {"Select wall where type description is 'Some description';",true},
+                {"Select slab where type predefined type is 'ROOF';",true},
+                {"Select slab where type 'Fire rating' is 'Great';",true},
+
+                //contained in group attributes and properties
+                {"Select wall where group name is 'Some name';",true},
+                {"Select wall where group description is 'Some description';",true},
+                {"Select slab where group predefined type is 'ROOF';",true},
+                {"Select slab where group 'Fire rating' is 'Great';",true},
             };
 
             Xbim.IO.XbimModel model = Xbim.IO.XbimModel.CreateTemporaryModel();
@@ -518,5 +535,78 @@ namespace XbimQueryTest
             Assert.AreEqual(1, parser.Results["$test5"].Count());
         }
 
+        [TestMethod]
+        public void ElementTypeAttributes()
+        {
+            XbimModel model = XbimModel.CreateTemporaryModel();
+            XbimQueryParser parser = new XbimQueryParser(model);
+
+            parser.Parse(@"
+                Create new wall 'Wall No.1';
+                Create new wall 'Wall No.1';
+                Create new wall 'Wall No.1';
+                Create new wall 'Wall No.1';
+                Create new wall 'Wall No.1';
+                Create new wall 'Wall No.2';
+                Create new wall 'Wall No.2';
+                Create new wall 'Wall No.2';
+
+                $walls1 is wall 'Wall No.1';
+                $walls2 is wall 'Wall No.2';
+                
+                $type1 is new IfcWallType 'Wall type 1';
+                $type2 is new IfcWallType 'Wall type 2';
+                Set description to 'Description of type 1', 'Fire rating' to 'Great', IsExternal to true for $type1;
+                Set description to 'Description of type 2', 'Fire rating' to 'Poor', IsExternal to false for $type2;
+                
+                Add $walls1 to $type1;
+                Add $walls2 to $type2;
+                
+                $test1 is wall where type name is 'Wall type 1';
+                $test2 is wall where type IsExternal is false;
+
+                $slab is new slab 'My slab slab';
+                $slabType is new slab_type 'My slab type';
+                Set predefined type to 'BASESLAB' for $slabType;
+                Add $slab to $slabType;
+
+                $test3 is slab where type predefined type is 'BASESLAB';
+            ");
+
+            Assert.AreEqual(0, parser.Errors.Count());
+            Assert.AreEqual(5, parser.Results["$test1"].Count());
+            Assert.AreEqual(3, parser.Results["$test2"].Count());
+            Assert.AreEqual(1, parser.Results["$test3"].Count());
+        }
+
+        [TestMethod]
+        public void ElementGroupsAttributes()
+        {
+            XbimModel model = XbimModel.CreateTemporaryModel();
+            XbimQueryParser parser = new XbimQueryParser(model);
+
+            parser.Parse(@"
+                Create classification NRM;
+
+                Create new wall 'Wall No.X';
+                Create new wall 'Wall No.X';
+                Create new wall 'Wall No.X';
+                Create new wall 'Wall No.X';
+                Create new wall 'Wall No.X';
+                Create new wall 'Wall No.X';
+                Create new wall 'Wall No.X';
+                Create new wall 'Wall No.X';
+
+                $walls is wall;
+                $group = group where name is '02.05.01';
+                Add $walls to $group;
+                
+                $test1 is wall where group description is 'External Walls'; //this is a group in ancestor hierarchy
+                $test2 is wall where group description contains 'external'; 
+            ");
+
+            Assert.AreEqual(0, parser.Errors.Count());
+            Assert.AreEqual(8, parser.Results["$test1"].Count());
+        }
     }
 }

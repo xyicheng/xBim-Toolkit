@@ -1,4 +1,6 @@
-﻿%namespace Xbim.Query
+﻿%using QUT.Xbim.Gppg;
+
+%namespace Xbim.Query
 
 %option verbose, summary, caseinsensitive, noPersistBuffer, out:Scanner.cs
 %visibility internal
@@ -100,7 +102,7 @@
 "file"			{ return (int)Tokens.FILE; }
 "model"			{ return (int)Tokens.MODEL; }
 "classification"	{ return (int)Tokens.CLASSIFICATION; }
-"group"			{ return (int)Tokens.GROUP; }
+"group"			{ return (int)SetValue(Tokens.GROUP); }
 
 "null" |
 "undefined" |
@@ -123,7 +125,7 @@ false	    { return (int)SetValue(Tokens.BOOLEAN); }
 
 /* -----------------------  Epilog ------------------- */
 %{
-	//yylloc = new LexLocation(tokLin,tokCol,tokELin,tokECol);
+	yylloc = new LexLocation(tokLin,tokCol,tokELin,tokECol);
 %}
 /* --------------------------------------------------- */
 %%
