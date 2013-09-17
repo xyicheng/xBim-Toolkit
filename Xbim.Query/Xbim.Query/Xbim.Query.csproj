@@ -95,8 +95,6 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="SystemsCreator.cs" />
-    <Compile Include="XbimQueryBuilder.cs" />
-    <Compile Include="XbimQueryFactory.cs" />
     <Compile Include="XbimQueryParser.cs" />
     <Compile Include="XbimVariables.cs" />
   </ItemGroup>
