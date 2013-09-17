@@ -119,6 +119,7 @@
     <Content Include="Parser\Queries.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <None Include="PredefinedRules\ClassifyModelToNRM" />
     <None Include="README.rtf" />
   </ItemGroup>
   <ItemGroup>

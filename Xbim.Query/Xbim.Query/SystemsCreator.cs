@@ -122,13 +122,14 @@ namespace Xbim.Query
             {
                 //create header of the file
                 string line = headerLine.ToLower();
-                line = line.Replace("\"", "");
-                header = headerLine.Split(_separator);
+                header = line.Split(_separator);
+                for (int i = 0; i < header.Count(); i++)
+                    header[i] = header[i].Trim(' ', '"');
 
                 //get indexes of the fields
-                codeIndex = header.ToList().IndexOf(_CodeFieldName);
-                descriptionIndex = header.ToList().IndexOf(_DescriptionFieldName);
-                parentCodeIndex = header.ToList().IndexOf(_ParentCodeFieldName);
+                codeIndex = header.ToList().IndexOf(_CodeFieldName.ToLower());
+                descriptionIndex = header.ToList().IndexOf(_DescriptionFieldName.ToLower());
+                parentCodeIndex = header.ToList().IndexOf(_ParentCodeFieldName.ToLower());
 
                 if (codeIndex < 0) throw new Exception("File is either not CSV file or it doesn't comply to the predefined structure.");
             }
@@ -136,13 +137,16 @@ namespace Xbim.Query
             public Line ParseLine(string line)
             {
                 Line result = new Line();
-                line = line.Replace("\"", "");
                 string[] fields = line.Split(_separator);
+                //trim all fields
+                for (int i = 0; i < fields.Count(); i++)
+                    fields[i] = fields[i].Trim(' ', '"');
 
                 //get data
-                if (codeIndex >= 0) result.Code = fields[codeIndex];
-                if (descriptionIndex >= 0) result.Description = fields[descriptionIndex];
-                if (parentCodeIndex >= 0) result.ParentCode = fields[parentCodeIndex];
+                int colNum = fields.Count();
+                if (codeIndex >= 0 && colNum >= codeIndex+1) result.Code = fields[codeIndex];
+                if (descriptionIndex >= 0 && colNum >= descriptionIndex+1) result.Description = fields[descriptionIndex];
+                if (parentCodeIndex >= 0 && colNum >= parentCodeIndex + 1) result.ParentCode = fields[parentCodeIndex];
 
                 return result;
             }

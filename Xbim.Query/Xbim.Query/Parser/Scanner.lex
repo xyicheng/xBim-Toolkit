@@ -100,6 +100,7 @@
 "file"			{ return (int)Tokens.FILE; }
 "model"			{ return (int)Tokens.MODEL; }
 "classification"	{ return (int)Tokens.CLASSIFICATION; }
+"group"			{ return (int)Tokens.GROUP; }
 
 "null" |
 "undefined" |

@@ -451,6 +451,28 @@ namespace Xbim.Query
                     return false;
             }
         }
+
+        private Expression GenerateTypeCondition(Expression expression) 
+        {
+            var function = Expression.Lambda<Func<IPersistIfcEntity, bool>>(expression, _input).Compile();
+            var fceExpr = Expression.Constant(function);
+
+            var evaluateMethod = GetType().GetMethod("EvaluateTypeCondition", BindingFlags.Static | BindingFlags.NonPublic);
+
+            return Expression.Call(null, evaluateMethod, _input, fceExpr);
+        }
+
+        private static bool EvaluateTypeCondition(IPersistIfcEntity input, Func<IPersistIfcEntity, bool> function)
+        {
+            var obj = input as IfcObject;
+            if (obj == null) return false;
+
+            var defObj = obj.GetDefiningType();
+            if (defObj == null) return false;
+
+            return function(defObj);
+        }
+
         #endregion
 
         #region Material conditions
@@ -1025,6 +1047,7 @@ namespace Xbim.Query
 
         #endregion
 
+        #region Thickness conditions
         private Expression GenerateThicknessCondition(double thickness, Tokens condition)
         {
             var thickExpr = Expression.Constant(thickness);
@@ -1068,7 +1091,9 @@ namespace Xbim.Query
                     throw new ArgumentException("Unexpected value of the condition");
             }
         }
+        #endregion
 
+        #region Creation of classification systems
         private void CreateClassification(string name)
         {
             SystemsCreator creator = new SystemsCreator();
@@ -1082,6 +1107,48 @@ namespace Xbim.Query
                 creator.CreateSystem(_model, SYSTEM.NRM);
             }
         }
+        #endregion
+
+        #region Group conditions
+        private Expression GenerateGroupCondition(Expression expression) 
+        {
+            var function = Expression.Lambda<Func<IPersistIfcEntity, bool>>(expression, _input).Compile();
+            var fceExpr = Expression.Constant(function);
+
+            var evaluateMethod = GetType().GetMethod("EvaluateGroupCondition", BindingFlags.Static | BindingFlags.NonPublic);
+
+            return Expression.Call(null, evaluateMethod, _input, fceExpr);
+        }
+
+        private static bool EvaluateGroupCondition(IPersistIfcEntity input, Func<IPersistIfcEntity, bool> function)
+        {
+            foreach (var item in GetGroups(input))
+            {
+                if (function(item)) return true;
+            }
+            return false;
+        }
+
+        private static IEnumerable<IfcGroup> GetGroups(IPersistIfcEntity input)
+        {
+            IModel model = input.ModelOf;
+            var obj = input as IfcObjectDefinition;
+            if (obj != null)
+            {
+                var rels = model.Instances.Where<IfcRelAssignsToGroup>(r => r.RelatedObjects.Contains(input));
+                foreach (var rel in rels)
+                {
+                    yield return rel.RelatingGroup;
+
+                    //recursive search for upper groups in the hierarchy
+                    foreach (var gr in GetGroups(rel.RelatingGroup))
+                    {
+                        yield return gr;
+                    }
+                }
+            }
+        }
+        #endregion
     }
 
     public static class TypeExtensions

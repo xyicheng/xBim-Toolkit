@@ -1,0 +1,204 @@
+﻿Create classification NRM;
+
+//**********************************  External Walls  ***************************************
+$extWallsGroup = system where description = 'External Walls';
+
+//select elements
+$extWalls is IfcCurtainWall;
+
+$extWalls is wall where 
+	name contains 'Ext' or 
+	Function is 1 or 
+	IsExternal is true or 
+	type name contains 'Ext' or 
+	type function is 1 or 
+	type 'IsExternal' is true
+	;
+
+$extWalls is covering where
+	predefined type is cladding or
+	predefined type is insulation or
+	type predefined type is cladding
+	;
+
+$extWalls is member where 
+	type predefined type is STUD
+	;
+
+$extWalls is plate where 
+	type predefined type is CURTAIN_PANEL
+	;
+
+Add $extWallss to $extWallsGroup;
+
+
+//*********************************  Basement Retaining Walls  ************************************
+$basementWallsGroup is system where description is 'Basement Retaining Walls';
+
+$basementWalls is wall where 
+	name contains 'Retaining' or
+	type name contains 'Retaining'
+	;
+
+Add $basementWalls to $basementWallsGroup;
+
+//*************************************  Foundations  *****************************************
+$foundationsGroup = system where description is 'Foundations';
+
+$foundations is IfcWall where 
+	name contains 'Footing' or
+	name contains 'Foundation' or
+	type name contains 'Footing' or
+	type name contains 'Foundation'
+	;
+
+Add $foundations to $foundationsGroup;
+
+//****************************  Internal Walls and Partitions  ***********************************
+$intWallsGroup is system where description contains 'Internal Walls and Partitions';
+
+$intWalls is wall where group description is not 'External Walls';
+
+Add $intWalls to $intWallsGroup;
+
+//**********************************  Ground Floor Construction  *********************************
+$groundGroup = group where description is 'Ground Floor Construction';
+
+$ground is slab where
+	predefined type is SLAB or
+	name contains 'GS' or
+	name contains 'GND' or
+	function is 1 or
+	IsExternal is true
+	type predefined type is SLAB or
+	type name contains 'GS' or
+	type name contains 'GND'
+	;
+
+Add $ground to $groundGroup;
+
+//**************************************  Upper Floors  *******************************************
+$upperFloorGroup is system where description is 'Upper Floors';
+
+$upperFloor is slab where
+	predefined type is FLOOR or
+	name contains 'Susp' or
+	function is 0 or
+	IsExternal is false or
+	type predefined type is FLOOR or
+	type name contains 'Susp'
+	;
+
+Add $upperFloorGroup to upperFloor;
+
+//*********************************  Roof  *******************************************
+$roofGroup is group where description is 'upperFloorGroup';
+
+$roof is slab where
+	predefined type is ROOF or
+	name contains 'Roof' or
+	'Name' is 'Roof'
+	type predefined type is ROOF
+	;
+
+$roof is FlowSegment where
+	type predefined type is GUTTER or
+	name contains 'gutter'
+	;
+
+Add $roof to $roofGroup;
+
+//*********************************  Windows and External Doors  *********************************
+$winDoorGroup is group where description is 'Windows and External Doors';
+
+$windows is window;
+
+$doors is door where
+	name contains 'Ext' or
+	description contains 'Ext' or
+	IsExternal is true or
+	Function = 1 or
+	Reference contains 'Ext'
+	type name contains 'Ext'
+	type description contains 'Ext'
+	type IsExternal is true or
+	type Function = 1 or
+	;
+
+Add $windows to $winDoorGroup;
+Add $doors to $winDoorGroup;
+
+//*********************************  Internal Doors  *********************************
+$intDoorGroup is group where description is 'Internal Doors';
+
+$intDoors is door where
+	group description is not 'Internal Walls and Partitions'
+	;
+
+Add $intDoors to $intDoorGroup;
+
+//*********************************  Stairs and Ramps  *********************************
+$stairsGroup is group where description is 'Stairs and Ramps';
+
+$stair is stair;
+$stair is stair_flight;
+$stair is railing where
+	predefined type is HANDRAIL or
+	predefined type is GUARDRAIL or
+	predefined type is NOTDEFINED or
+	name contains 'Handrail'
+	type predefined type is HANDRAIL or
+	type predefined type is GUARDRAIL or
+	type predefined type is NOTDEFINED or
+	type name contains 'Handrail'
+	;
+
+$stair is member where
+	name contains 'stringer' or
+	description contains 'stringer' or
+	type name contains 'stringer' or
+	type description contains 'stringer' or
+	type predefined_type is STRINGER
+	;
+
+$stair is building_element_proxy where
+	name contains 'riser' or
+	name contains 'tread' or
+	type name contains 'riser' or
+	type name contains 'tread'
+	;
+
+$stair is ramp_flight where function is 0;
+
+Add $stair to $stairsGroup;
+
+//*******************************  Frame  **********************************
+$framingGroup is group where description is 'Frame';
+
+$framing is column;
+
+Add $framing to $framingGroup;
+
+//****************************  Ceiling finishes  ***************************
+$ceilingFinishGroup is group where description is 'Ceiling finishes';
+
+$ceilingFinish is covering where 
+	predefined type is CEILING or
+	type predefined type is CEILING
+	;
+
+Add $ceilingFinish to $ceilingFinishGroup;
+
+//****************************  Roads, paths and pavings  ***************************
+$roadsGroup is group where description is 'Roads, paths and pavings';
+
+$roads is ramp_flight where function is not 0;
+
+Add $roads to $roadsGroup;
+
+//****************************  General fittings, furnishings and equipment  ***************************
+$furnishingGroup is group where description is 'General fittings, furnishings and equipment';
+
+$furniture is IfcFurnishingElement;
+
+Add $furniture to $furnishingGroup;

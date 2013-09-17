@@ -60,6 +60,7 @@
 %token  TYPE
 %token  MATERIAL
 %token  THICKNESS
+%token  GROUP
 
 /* commands */
 %token  SELECT
@@ -171,13 +172,14 @@ conditions
 	
 condition
 	: 
-	| attributeCondidion					{$$.val = $1.val;}
+	| attributeCondition					{$$.val = $1.val;}
 	| materialCondition						{$$.val = $1.val;}
 	| typeCondition							{$$.val = $1.val;}
 	| propertyCondition						{$$.val = $1.val;}
+	| groupCondition						{$$.val = $1.val;}
 	;
 
-attributeCondidion	
+attributeCondition	
 	: attribute op_bool STRING				{$$.val = GenerateAttributeCondition($1.strVal, $3.strVal, ((Tokens)($2.val)));}
 	| attribute op_bool NONDEF				{$$.val = GenerateAttributeCondition($1.strVal, null, ((Tokens)($2.val)));}
 	| attribute op_cont STRING				{$$.val = GenerateAttributeCondition($1.strVal, $3.strVal, ((Tokens)($2.val)));}
@@ -204,6 +206,13 @@ typeCondition
 	| TYPE op_bool NONDEF				{$$.val = GenerateTypeObjectTypeCondition(null, ((Tokens)($2.val)));}
 	| TYPE OP_NEQ DEFINED				{$$.val = GenerateTypeObjectTypeCondition(null, Tokens.OP_EQ);}
 	| TYPE OP_EQ DEFINED				{$$.val = GenerateTypeObjectTypeCondition(null, Tokens.OP_NEQ);}
+	| TYPE propertyCondition			{$$.val = GenerateTypeCondition((Expression)($2.val));}
+	| TYPE attributeCondition			{$$.val = GenerateTypeCondition((Expression)($2.val));}
+	;
+
+groupCondition
+	: GROUP propertyCondition			{$$.val = GenerateGroupCondition((Expression)($1.val));}
+	| GROUP attributeCondition			{$$.val = GenerateGroupCondition((Expression)($1.val));}
 	;
 
 propertyCondition	
