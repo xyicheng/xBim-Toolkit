@@ -12,7 +12,7 @@
 
 namespace Xbim.XbimExtensions.SelectTypes
 {
-    public interface IfcDateTimeSelect : IfcMetricValueSelect
+    public interface IfcDateTimeSelect : IfcMetricValueSelect, IfcObjectReferenceSelect
     {
     }
 }

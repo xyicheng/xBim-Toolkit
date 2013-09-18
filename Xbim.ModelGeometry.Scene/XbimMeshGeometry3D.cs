@@ -15,7 +15,6 @@ namespace Xbim.ModelGeometry.Scene
     /// </summary>
     public class XbimMeshGeometry3D : IXbimMeshGeometry3D, IXbimTriangulatesToPositionsIndices, IXbimTriangulatesToPositionsNormalsIndices
     {
-
         const int defaultSize = 0x4000;
         public List<XbimPoint3D> Positions;
         public List<XbimVector3D> Normals;
@@ -29,7 +28,31 @@ namespace Xbim.ModelGeometry.Scene
         uint _pointTally;
         uint _fanStartIndex;
         uint indexOffset;
-       
+
+        public void ReportGeometryTo(StringBuilder sb)
+        {
+            int i = 0;
+            var pEn = Positions.GetEnumerator();
+            var nEn = Normals.GetEnumerator();
+            while (pEn.MoveNext() && nEn.MoveNext())
+            {
+                var p = pEn.Current;
+                var n = nEn.Current;
+                sb.AppendFormat("{0} pos: {1} nrm:{2}\r\n", i++, p, n);
+            }
+
+            i = 0;
+            sb.AppendLine("Triangles:");
+            foreach (var item in TriangleIndices)
+            {
+                sb.AppendFormat("{0}, ", item);
+                i++;
+                if (i % 3 == 0)
+                {
+                    sb.AppendLine();
+                }
+            }
+        }
 
         public XbimMeshGeometry3D(int size)
         {

@@ -268,7 +268,7 @@ namespace Xbim.IO
                 byte[] hd = Api.RetrieveColumn(sesid, globalsTable, ifcHeaderColumn);
                 if (hd == null) return null;//there is nothing in at the moment
                 BinaryReader br = new BinaryReader(new MemoryStream(hd));
-                IfcFileHeader hdr = new IfcFileHeader();
+                IfcFileHeader hdr = new IfcFileHeader(IfcFileHeader.HeaderCreationMode.LeaveEmpty);
                 hdr.Read(br);
                 return hdr;
             }

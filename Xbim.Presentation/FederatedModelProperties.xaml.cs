@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -27,6 +28,14 @@ namespace Xbim.Presentation
             this.DataContextChanged += FederatedModelProperties_DataContextChanged;
         }
 
+        public IEnumerable SelectedItems
+        {
+            get
+            {
+                return propertyGrid.SelectedItems;
+            }
+        }
+
         void FederatedModelProperties_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
             XbimModel model = DataContext as XbimModel;
@@ -34,7 +43,6 @@ namespace Xbim.Presentation
             {
                 propertyGrid.ItemsSource = model.RefencedModels;
             }
-
         }
     }
 }

@@ -1,0 +1,22 @@
+﻿<Window x:Class="VersionComparer.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="MainWindow" Height="354" Width="497.8">
+    <Grid>
+
+        <Label Content="Baseline File:" HorizontalAlignment="Left" Margin="6,7,0,0" VerticalAlignment="Top"/>
+        <Button Content="Browse..." HorizontalAlignment="Right" Margin="0,11,10,0" VerticalAlignment="Top" Width="75" Click="BrowseBaseline_Click"/>
+        <TextBox x:Name="BaselineTextBox" Height="23" Margin="88,10,90,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top"/>
+
+        <Label Content="Revised File:" HorizontalAlignment="Left" Margin="6,35,0,0" VerticalAlignment="Top"/>
+        <Button Content="Browse..." HorizontalAlignment="Right" Margin="0,39,10,0" VerticalAlignment="Top" Width="75" Click="BrowseRevision_Click"/>
+        <TextBox x:Name="RevisedTextBox" Height="23" Margin="88,38,90,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top"/>
+
+        <Label Content="Filter:" HorizontalAlignment="Left" Margin="6,63,0,0" VerticalAlignment="Top"/>
+        <TextBox x:Name="Filter" Height="23" Margin="88,66,9.8,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top"/>
+
+        <Button Content="Compare" Margin="10,95,9.8,0" VerticalAlignment="Top" Height="41" Click="StartComparison_Click"/>
+        <ListBox x:Name="Messages" Margin="10,141,9.8,10"/>
+
+    </Grid>
+</Window>

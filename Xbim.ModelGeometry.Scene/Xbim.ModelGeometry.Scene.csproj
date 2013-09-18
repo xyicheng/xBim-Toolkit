@@ -27,6 +27,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -57,6 +58,7 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Clustering\XbimBBoxClusterElement.cs" />
     <Compile Include="IXbimGeometryEngine.cs" />
     <Compile Include="IXbimGeometryModel.cs" />
     <Compile Include="IXbimMeshGeometry3D.cs" />
@@ -73,6 +75,7 @@
     <Compile Include="TransformNode.cs" />
     <Compile Include="XbimColour.cs" />
     <Compile Include="XbimColourMap.cs" />
+    <Compile Include="Clustering\XbimDBSCAN.cs" />
     <Compile Include="XbimRegion.cs" />
     <Compile Include="XbimLOD.cs" />
     <Compile Include="XbimMeshFragment.cs" />

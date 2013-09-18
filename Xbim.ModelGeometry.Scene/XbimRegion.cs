@@ -6,6 +6,9 @@ using Xbim.Common.Geometry;
 
 namespace Xbim.ModelGeometry.Scene
 {
+    /// <summary>
+    /// Used in the clustering analysis of elements the model.
+    /// </summary>
     public class XbimRegion
     {
         public string Name;
@@ -15,7 +18,6 @@ namespace Xbim.ModelGeometry.Scene
 
         public XbimRegion(string name, XbimRect3D bounds, int population)
         {
-            // TODO: Complete member initialization
             this.Name = name;
             this.Size = new XbimVector3D(bounds.SizeX,bounds.SizeY,bounds.SizeZ);
             this.Centre = bounds.Centroid();
@@ -24,8 +26,18 @@ namespace Xbim.ModelGeometry.Scene
 
         public XbimRegion()
         {
-           
         }
 
+        public XbimRect3D ToXbimRect3D()
+        {
+            return new XbimRect3D(
+                this.Centre - this.Size * 0.5,
+                this.Size);
+        }
+
+        internal float Diagonal()
+        {
+            return Size.Length;
+        }
     }
 }

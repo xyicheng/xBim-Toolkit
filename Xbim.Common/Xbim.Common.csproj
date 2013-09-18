@@ -66,6 +66,7 @@
     <Compile Include="Exceptions\XbimParserException.cs" />
     <Compile Include="Geometry\XbimMatrix3D.cs" />
     <Compile Include="Geometry\XbimPoint3D.cs" />
+    <Compile Include="Geometry\XbimQuaternion.cs" />
     <Compile Include="Geometry\XbimRect3D.cs" />
     <Compile Include="Geometry\XbimVector3D.cs" />
     <Compile Include="Helpers\AttributeHelper.cs" />

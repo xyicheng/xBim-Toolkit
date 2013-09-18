@@ -240,6 +240,14 @@ namespace Xbim.Common.Geometry
             _identity._isNotDefaultInitialised = true;
         }
 
+        public bool IsAffine
+        {
+            get
+            {
+                return (this._m14 == 0.0 && this._m24 == 0.0 && this._m34 == 0.0 && this._m44 == 1.0);
+            }
+        }
+
         public static XbimMatrix3D Identity
         {
             get
@@ -264,112 +272,50 @@ namespace Xbim.Common.Geometry
         /// <summary>
         /// Creates a new instance of a XbimMatrix3D, initializing it with the given arguments
         /// </summary>
-        public XbimMatrix3D(Single m00, Single m01, Single m02, Single m03, Single m10, Single m11, Single m12, Single m13, Single m20, Single m21, Single m22, Single m23, Single m30, Single m31, Single m32, Single m33)
+        public XbimMatrix3D(Single m11, Single m12, Single m13, Single m14, Single m21, Single m22, Single m23, Single m24, Single m31, Single m32, Single m33, Single m34, Single OffsetX, Single OffsetY, Single OffsetZ, Single m44)
         {    
-              
-            _m11 = m00;
-            _m12 = m01;
-            _m13 = m02;
-            _m14 = m03;
-            _m21 = m10;
-            _m22 = m11;
-            _m23 = m12;
-            _m24 = m13;
-            _m31 = m20;
-            _m32 = m21;
-            _m33 = m22;
-            _m34 = m23;
-            _offsetX = m30;
-            _offsetY = m31;
-            _offsetZ = m32;
-            _m44 = m33;
+            _m11 = m11;
+            _m12 = m12;
+            _m13 = m13;
+            _m14 = m14;
+            _m21 = m21;
+            _m22 = m22;
+            _m23 = m23;
+            _m24 = m24;
+            _m31 = m31;
+            _m32 = m32;
+            _m33 = m33;
+            _m34 = m34;
+            _offsetX = OffsetX;
+            _offsetY = OffsetY;
+            _offsetZ = OffsetZ;
+            _m44 = m44;
              _isNotDefaultInitialised=true;
         }
         /// <summary>
         /// Initialises with doubles, there is a possible loss of data as this matrix uses floats internally
         /// </summary>
-        /// <param name="m00"></param>
-        /// <param name="m01"></param>
-        /// <param name="m02"></param>
-        /// <param name="m03"></param>
-        /// <param name="m10"></param>
-        /// <param name="m11"></param>
-        /// <param name="m12"></param>
-        /// <param name="m13"></param>
-        /// <param name="m20"></param>
-        /// <param name="m21"></param>
-        /// <param name="m22"></param>
-        /// <param name="m23"></param>
-        /// <param name="m30"></param>
-        /// <param name="m31"></param>
-        /// <param name="m32"></param>
-        /// <param name="m33"></param>
-        public XbimMatrix3D(double m00, double m01, double m02, double m03, double m10, double m11, double m12, double m13, double m20, double m21, double m22, double m23, double m30, double m31, double m32, double m33)
+        public XbimMatrix3D(double m11, double m12, double m13, double m14, double m21, double m22, double m23, double m24, double m31, double m32, double m33, double m34, double OffsetX, double OffsetY, double OffsetZ, double m44)
         {
-
-            _m11 = (float)m00;
-            _m12 = (float)m01;
-            _m13 = (float)m02;
-            _m14 = (float)m03;
-            _m21 = (float)m10;
-            _m22 = (float)m11;
-            _m23 = (float)m12;
-            _m24 = (float)m13;
-            _m31 = (float)m20;
-            _m32 = (float)m21;
-            _m33 = (float)m22;
-            _m34 = (float)m23;
-            _offsetX = (float)m30;
-            _offsetY = (float)m31;
-            _offsetZ = (float)m32;
-            _m44 = (float)m33;
+            _m11 = (float)m11;
+            _m12 = (float)m12;
+            _m13 = (float)m13;
+            _m14 = (float)m14;
+            _m21 = (float)m21;
+            _m22 = (float)m22;
+            _m23 = (float)m23;
+            _m24 = (float)m24;
+            _m31 = (float)m31;
+            _m32 = (float)m32;
+            _m33 = (float)m33;
+            _m34 = (float)m34;
+            _offsetX = (float)OffsetX;
+            _offsetY = (float)OffsetY;
+            _offsetZ = (float)OffsetZ;
+            _m44 = (float)m44;
             _isNotDefaultInitialised = true;
         }
-        /// <summary>
-        /// Creates a matrix for scaling equally in all 3 axis
-        /// </summary>
-        /// <param name="scale"></param>
-        public XbimMatrix3D(double scale)       
-        {         
-            _m11 = 1f;
-            _m12 = 0;
-            _m13 = 0;
-            _m14 = (float)scale;
-            _m21 = 0;
-            _m22 = 1f;
-            _m23 = 0;
-            _m24 = (float)scale;
-            _m31 = 0;
-            _m32 = 0;
-            _m33 = 1f;
-            _m34 = (float)scale;
-            _offsetX = 0;
-            _offsetY = 0;
-            _offsetZ = 0;
-            _m44 = 1f;
-            _isNotDefaultInitialised = true;
-        }
-        public XbimMatrix3D(XbimVector3D translation, double scale = 1)
-        {
-            _m11 = 1f;
-            _m12 = 0;
-            _m13 = 0;
-            _m14 = (float)scale;
-            _m21 = 0;
-            _m22 = 1f;
-            _m23 = 0;
-            _m24 = (float)scale;
-            _m31 = 0;
-            _m32 = 0;
-            _m33 = 1f;
-            _m34 = (float)scale;
-            _offsetX = translation.X;
-            _offsetY = translation.Y;
-            _offsetZ = translation.Z;
-            _m44 = 1f;
-            _isNotDefaultInitialised = true;
-        }
-
+        
         public static XbimMatrix3D FromArray(byte[] array, bool useDouble = true)
         {
             MemoryStream ms = new MemoryStream(array);
@@ -576,8 +522,93 @@ namespace Xbim.Common.Geometry
                   m.M21 , m.M22 , m.M23, m.M24 ,
                   m.M31 , m.M32 , m.M33, m.M34 ,
                   m.OffsetX , m.OffsetY , m.OffsetZ , m.M44);
-            
-            
+        }
+
+
+        /// <summary>
+        /// Creates a 3D scaling matrix.
+        /// </summary>
+        /// <param name="UniformScale">>The scaling factor along all axis.</param>
+        /// <returns>The new scaling matrix</returns>
+        public static XbimMatrix3D CreateScale(float UniformScale)
+        {
+            return CreateScale(UniformScale, UniformScale, UniformScale);
+        }
+
+        /// <summary>
+        /// Creates a 3D scaling matrix.
+        /// </summary>
+        /// <param name="ScaleX">>The scaling factor along the x-axis.</param>
+        /// <param name="ScaleY">>The scaling factor along the y-axis.</param>
+        /// <param name="ScaleZ">>The scaling factor along the z-axis.</param>
+        /// <returns>The new scaling matrix</returns>
+        public static XbimMatrix3D CreateScale(float ScaleX, float ScaleY, float ScaleZ)
+        {
+            return new XbimMatrix3D(
+                ScaleX, 0.0, 0.0, 0.0,
+                0.0, ScaleY, 0.0, 0.0,
+                0.0, 0.0, ScaleZ, 0.0,
+                0.0, 0.0, 0.0, 1.0
+                );
+        }
+
+        public static XbimMatrix3D CreateWorld(XbimVector3D position, XbimVector3D forward, XbimVector3D up)
+        {
+            // prepare vectors
+            forward.Normalize();
+            XbimVector3D vector = forward * -1;
+            XbimVector3D vector2 = XbimVector3D.CrossProduct(up, vector);
+            vector2.Normalize();
+            XbimVector3D vector3 = XbimVector3D.CrossProduct(vector, vector2);
+
+            // prepare matrix
+            XbimMatrix3D result = new XbimMatrix3D(
+                vector2.X, vector2.Y, vector2.Z, 0.0,
+                vector3.X, vector3.Y, vector3.Z, 0.0,
+                vector.X, vector.Y, vector.Z, 0.0,
+                position.X, position.Y, position.Z, 0.0);
+            return result;
+        }
+
+        // Microsoft.Xna.Framework.Matrix
+        public static XbimMatrix3D CreateLookAt(XbimVector3D cameraPosition, XbimVector3D cameraTarget, XbimVector3D cameraUpVector)
+        {
+            // prepare vectors
+            XbimVector3D vector = cameraPosition - cameraTarget;
+            vector.Normalize();
+            XbimVector3D vector2 = XbimVector3D.CrossProduct(cameraUpVector, vector);
+            vector2.Normalize();
+            XbimVector3D vector3 = XbimVector3D.CrossProduct(vector, vector2);
+
+            // prepare matrix
+            XbimMatrix3D result = new XbimMatrix3D(
+                vector2.X, vector3.X, vector.X, 0.0,
+                vector2.Y, vector3.Y, vector.Y, 0.0,
+                vector2.Z, vector3.Z, vector.Z, 0.0,
+                -XbimVector3D.DotProduct(vector2, cameraPosition), -XbimVector3D.DotProduct(vector3, cameraPosition), -XbimVector3D.DotProduct(vector, cameraPosition), 1.0);
+            return result;
+        }
+
+
+        /// <summary>
+        /// Creates a 3D translation matrix.
+        /// </summary>
+        public static XbimMatrix3D CreateTranslation(float X, float Y, float Z)
+        {
+            return new XbimMatrix3D(
+                1.0, 0.0, 0.0, 0.0,
+                0.0, 1.0, 0.0, 0.0,
+                0.0, 0.0, 1.0, 0.0,
+                X, Y, Z, 1.0
+                );
+        }
+
+        /// <summary>
+        /// Creates a 3D translation matrix.
+        /// </summary>
+        public static XbimMatrix3D CreateTranslation(XbimVector3D TranslationVector)
+        {
+            return CreateTranslation(TranslationVector.X, TranslationVector.Y, TranslationVector.Z);
         }
 
         /// <summary>
@@ -646,12 +677,7 @@ namespace Xbim.Common.Geometry
             OffsetY = (a00 * b09 - a01 * b07 + a02 * b06) * invDet;
             OffsetZ = (-a30 * b03 + a31 * b01 - a32 * b00) * invDet;
             M44 = (a20 * b03 - a21 * b01 + a22 * b00) * invDet;
-
         }
-
-
-
-
 
         public byte[] ToArray(bool useDouble = true)
         {
@@ -960,6 +986,8 @@ namespace Xbim.Common.Geometry
             //    _m24 = (float)((m14 * sinValue) + (m24 * cosValue));
             //}
         }
-       
+
+
+        
     }
 }

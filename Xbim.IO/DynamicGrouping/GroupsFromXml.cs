@@ -13,6 +13,9 @@ using Xbim.IO;
 
 namespace Xbim.IO.DynamicGrouping
 {
+    /// <summary>
+    /// Loads an IfcGroup hierarcy from an XML
+    /// </summary>
     public class GroupsFromXml
     {
         private XmlDocument _xmlDoc;
@@ -148,7 +151,8 @@ namespace Xbim.IO.DynamicGrouping
 
                 //recursive call for the child nodes
                 XmlNodeList children = groupNode.ChildNodes;
-                if (children.Count != 0) ProcessGroups(children, group);
+                if (children.Count != 0) 
+                    ProcessGroups(children, group);
             }
         }
 

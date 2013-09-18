@@ -11,7 +11,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{7ECDCF15-95BB-4D2B-8C0D-8615D6E3BAB1}"
 	ProjectSection(SolutionItems) = preProject
 		Local.testsettings = Local.testsettings
-		XbimRegression\Params.cs = XbimRegression\Params.cs
 		Readme.txt = Readme.txt
 		TraceAndTestImpact.testsettings = TraceAndTestImpact.testsettings
 	EndProjectSection
@@ -87,9 +86,17 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Xbim.ModelGeometry.OCC64", 
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Xbim.ModelGeometry.OCC32", "Xbim.ModelGeometry.OCC\Xbim.ModelGeometry.OCC32.vcxproj", "{A0544330-3B8B-45F6-BE6B-E9A5AD661384}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VersionComparer", "VersionComparer\VersionComparer.csproj", "{12738A47-548C-4E82-8E79-AEA36C24CA2D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.Analysis", "Xbim.Analysis\Xbim.Analysis.csproj", "{25056C5D-D281-436E-B281-95F339861C5D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.Querying", "Xbim.Querying\Xbim.Querying.csproj", "{DA65C44A-A1D7-4C15-8636-75B6B9344988}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.Querying.Tests", "Xbim.Querying.Tests\Xbim.Querying.Tests.csproj", "{26E9D71E-C586-4130-B4DE-4B237A4F22FF}"
+EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 19
+		SccNumberOfProjects = 23
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://tfs.codeplex.com/tfs/tfs13
 		SccLocalPath0 = .
@@ -154,6 +161,20 @@ Global
 		SccProjectUniqueName18 = Xbim.ModelGeometry.OCC\\Xbim.ModelGeometry.OCC64.vcxproj
 		SccProjectName18 = Xbim.ModelGeometry.OCC
 		SccLocalPath18 = Xbim.ModelGeometry.OCC
+		SccProjectUniqueName19 = VersionComparer\\VersionComparer.csproj
+		SccProjectTopLevelParentUniqueName19 = XbimComplete.sln
+		SccProjectName19 = VersionComparer
+		SccLocalPath19 = VersionComparer
+		SccProjectUniqueName20 = Xbim.Analysis\\Xbim.Analysis.csproj
+		SccProjectName20 = Xbim.Analysis
+		SccLocalPath20 = Xbim.Analysis
+		SccProjectUniqueName21 = Xbim.Querying\\Xbim.Querying.csproj
+		SccProjectName21 = Xbim.Querying
+		SccLocalPath21 = Xbim.Querying
+		SccProjectUniqueName22 = Xbim.Querying.Tests\\Xbim.Querying.Tests.csproj
+		SccProjectTopLevelParentUniqueName22 = XbimComplete.sln
+		SccProjectName22 = Xbim.Querying.Tests
+		SccLocalPath22 = Xbim.Querying.Tests
 	EndGlobalSection
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = XbimComplete.vsmdi
@@ -194,7 +215,6 @@ Global
 		{6745F5AC-AF3C-4372-81AA-A75E7B1FA03B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6745F5AC-AF3C-4372-81AA-A75E7B1FA03B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{219A127E-82B8-43A1-8959-7102E4724F8F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{219A127E-82B8-43A1-8959-7102E4724F8F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{219A127E-82B8-43A1-8959-7102E4724F8F}.NugetDistribution|Any CPU.ActiveCfg = Release|Any CPU
 		{219A127E-82B8-43A1-8959-7102E4724F8F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{219A127E-82B8-43A1-8959-7102E4724F8F}.Release|Any CPU.Build.0 = Release|Any CPU
@@ -260,9 +280,35 @@ Global
 		{BB0E1C7A-C255-41CB-814D-894193AB6424}.Release|Any CPU.ActiveCfg = Release|x64
 		{BB0E1C7A-C255-41CB-814D-894193AB6424}.Release|Any CPU.Build.0 = Release|x64
 		{A0544330-3B8B-45F6-BE6B-E9A5AD661384}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{A0544330-3B8B-45F6-BE6B-E9A5AD661384}.Debug|Any CPU.Build.0 = Debug|Win32
 		{A0544330-3B8B-45F6-BE6B-E9A5AD661384}.NugetDistribution|Any CPU.ActiveCfg = NugetDistribution|Win32
 		{A0544330-3B8B-45F6-BE6B-E9A5AD661384}.NugetDistribution|Any CPU.Build.0 = NugetDistribution|Win32
 		{A0544330-3B8B-45F6-BE6B-E9A5AD661384}.Release|Any CPU.ActiveCfg = Release|Win32
+		{A0544330-3B8B-45F6-BE6B-E9A5AD661384}.Release|Any CPU.Build.0 = Release|Win32
+		{12738A47-548C-4E82-8E79-AEA36C24CA2D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{12738A47-548C-4E82-8E79-AEA36C24CA2D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{12738A47-548C-4E82-8E79-AEA36C24CA2D}.NugetDistribution|Any CPU.ActiveCfg = Release|Any CPU
+		{12738A47-548C-4E82-8E79-AEA36C24CA2D}.NugetDistribution|Any CPU.Build.0 = Release|Any CPU
+		{12738A47-548C-4E82-8E79-AEA36C24CA2D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{12738A47-548C-4E82-8E79-AEA36C24CA2D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{25056C5D-D281-436E-B281-95F339861C5D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{25056C5D-D281-436E-B281-95F339861C5D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{25056C5D-D281-436E-B281-95F339861C5D}.NugetDistribution|Any CPU.ActiveCfg = Release|Any CPU
+		{25056C5D-D281-436E-B281-95F339861C5D}.NugetDistribution|Any CPU.Build.0 = Release|Any CPU
+		{25056C5D-D281-436E-B281-95F339861C5D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{25056C5D-D281-436E-B281-95F339861C5D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DA65C44A-A1D7-4C15-8636-75B6B9344988}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DA65C44A-A1D7-4C15-8636-75B6B9344988}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DA65C44A-A1D7-4C15-8636-75B6B9344988}.NugetDistribution|Any CPU.ActiveCfg = Release|Any CPU
+		{DA65C44A-A1D7-4C15-8636-75B6B9344988}.NugetDistribution|Any CPU.Build.0 = Release|Any CPU
+		{DA65C44A-A1D7-4C15-8636-75B6B9344988}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DA65C44A-A1D7-4C15-8636-75B6B9344988}.Release|Any CPU.Build.0 = Release|Any CPU
+		{26E9D71E-C586-4130-B4DE-4B237A4F22FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{26E9D71E-C586-4130-B4DE-4B237A4F22FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{26E9D71E-C586-4130-B4DE-4B237A4F22FF}.NugetDistribution|Any CPU.ActiveCfg = Release|Any CPU
+		{26E9D71E-C586-4130-B4DE-4B237A4F22FF}.NugetDistribution|Any CPU.Build.0 = Release|Any CPU
+		{26E9D71E-C586-4130-B4DE-4B237A4F22FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{26E9D71E-C586-4130-B4DE-4B237A4F22FF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -273,14 +319,13 @@ Global
 		{5B6AC153-AC56-4B01-8734-88EAB805A6DB} = {0DA6263B-5A69-401E-99D0-391644EF4709}
 		{FB5A1829-7B34-4DE9-94A9-AF3AD36320BB} = {0DA6263B-5A69-401E-99D0-391644EF4709}
 		{9FD894A7-6637-4BF0-A0EA-D654CEB0E234} = {0DA6263B-5A69-401E-99D0-391644EF4709}
+		{12738A47-548C-4E82-8E79-AEA36C24CA2D} = {0DA6263B-5A69-401E-99D0-391644EF4709}
 		{8729CDD1-B493-48EC-A867-61ABAF3E93D2} = {7ECDCF15-95BB-4D2B-8C0D-8615D6E3BAB1}
 		{6EF22FB8-7048-4E6A-9B2F-AC2570A998A9} = {7ECDCF15-95BB-4D2B-8C0D-8615D6E3BAB1}
+		{26E9D71E-C586-4130-B4DE-4B237A4F22FF} = {7ECDCF15-95BB-4D2B-8C0D-8615D6E3BAB1}
 		{10A2F674-DB37-41FF-AB71-9D54C8F0A5B6} = {E9E301F2-FE7D-4410-B88D-F83D684A8E62}
 	EndGlobalSection
 	GlobalSection(Performance) = preSolution
 		HasPerformanceSessions = true
-	EndGlobalSection
-	GlobalSection(JSLint) = preSolution
-		SolutionConfigurationLocation = JSLintOptions.xml
 	EndGlobalSection
 EndGlobal

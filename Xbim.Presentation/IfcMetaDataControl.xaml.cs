@@ -30,6 +30,7 @@ using System.Windows.Data;
 using Xbim.Ifc2x3.PropertyResource;
 using Xbim.Ifc2x3.QuantityResource;
 using Xbim.Ifc2x3.MaterialResource;
+using Xbim.Ifc2x3.MeasureResource;
 
 #endregion
 
@@ -58,7 +59,6 @@ namespace Xbim.Presentation
                 get { return _propertySetName; }
                 set { _propertySetName = value; }
             }
-
 
             public string Name
             {
@@ -235,6 +235,8 @@ namespace Xbim.Presentation
             if (_quantities.Count > 0) return; //don't fill unless empty
             //now the property sets for any 
             IfcObject ifcObj = _entity as IfcObject;
+            // local cache for efficiency
+            IfcUnitAssignment modelUnits = null;
             if (ifcObj != null)
             {
                 foreach (IfcRelDefinesByProperties relDef in ifcObj.IsDefinedByProperties.Where(r => r.RelatingPropertyDefinition is IfcElementQuantity))
@@ -244,20 +246,20 @@ namespace Xbim.Presentation
                     {
                         foreach (var item in pSet.Quantities.OfType<IfcPhysicalSimpleQuantity>()) //only handle simple quantities properties
                         {
-
+                            if (modelUnits == null)
+                                modelUnits = item.ModelOf.Instances.OfType<IfcUnitAssignment>().FirstOrDefault(); // not optional, should never return void in valid model
+                            var v = modelUnits.GetUnitFor(item);
                             _quantities.Add(new PropertyItem()
                             {
                                 PropertySetName = pSet.Name,
                                 Name = item.Name,
-                                Value = item.ToString()
+                                Value = item.ToString() + " " + v.GetName()
                             });
                         }
                     }
                 }
             }
         }
-
-       
 
         private void FillPropertyData()
         {
@@ -271,10 +273,11 @@ namespace Xbim.Presentation
                     IfcPropertySet pSet = relDef.RelatingPropertyDefinition as IfcPropertySet;
                     if (pSet != null)
                     {
-                        foreach (var item in pSet.HasProperties.OfType<IfcPropertySingleValue>()) //on;y handle simple properties
+                        foreach (var item in pSet.HasProperties.OfType<IfcPropertySingleValue>()) //only handle simple properties
                         {
                             string val="";
-                            if(item.NominalValue!=null) val = ((ExpressType)(item.NominalValue)).ToPart21;
+                            if(item.NominalValue!=null) 
+                                val = ((ExpressType)(item.NominalValue)).Value.ToString(); // value (not ToPart21) for visualisation
                             _properties.Add(new PropertyItem()
                             {
                                 PropertySetName = pSet.Name,
@@ -295,25 +298,36 @@ namespace Xbim.Presentation
             {
                 IEnumerable<IfcRelAssociatesMaterial> matRels = ifcObj.HasAssociations.OfType<IfcRelAssociatesMaterial>();
                 foreach (IfcRelAssociatesMaterial matRel in matRels)
+                {
+                    // todo: bonghi: the following material items query is only temporary for debug purposes.
+                    // it shouldn't effect on Release because of lazy nature of yielded IEnumerables.
+                    //
+                    var v = Model.Instances.GetInstancesOfMaterial(matRel.RelatingMaterial, true);
+                    System.Diagnostics.Debug.WriteLine( 
+                        string.Format("Items: {0}",
+                            string.Join(";", v.Select(x => x.EntityLabel).ToArray())
+                        ));
+                    // end todo
                     AddMaterialData(matRel.RelatingMaterial, "");
+                }
             }
-
         }
 
         private void AddMaterialData(IfcMaterialSelect matSel, string setName)
         {
+
             if (matSel is IfcMaterial) //simplest just add it
                 _materials.Add(new PropertyItem()
                 {
-                    Name = ((IfcMaterial)matSel).Name,
-                    PropertySetName=setName,
-                    Value=""
+                    Name = string.Format("{0} [#{1}]", ((IfcMaterial)matSel).Name, Math.Abs(matSel.EntityLabel)),
+                    PropertySetName = setName,
+                    Value = ""
                 });
             else if (matSel is IfcMaterialLayer)
                 _materials.Add(new PropertyItem()
                 {
-                    Name = ((IfcMaterialLayer)matSel).Material.Name,
-                    Value = ((IfcMaterialLayer)matSel).LayerThickness.ToPart21,
+                    Name = string.Format("{0} [#{1}]", ((IfcMaterialLayer)matSel).Material.Name, Math.Abs(matSel.EntityLabel)),
+                    Value = ((IfcMaterialLayer)matSel).LayerThickness.Value.ToString(),
                     PropertySetName = setName
                 });
             else if (matSel is IfcMaterialList)
@@ -322,7 +336,7 @@ namespace Xbim.Presentation
                 {
                     _materials.Add(new PropertyItem()
                     {
-                        Name = mat.Name,
+                        Name = string.Format("{0} [#{1}]", mat.Name, Math.Abs(mat.EntityLabel)),
                         PropertySetName = setName,
                         Value = ""
                     });
@@ -394,6 +408,10 @@ namespace Xbim.Presentation
             IfcMetaDataControl ctrl = d as IfcMetaDataControl;
             if (ctrl != null)
             {
+                if (e.NewValue == null)
+                {
+                    ctrl.Clear();
+                }
                 ctrl.DataRebind(null);
             }
         }

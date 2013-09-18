@@ -68,7 +68,7 @@ namespace Xbim.IO.Parser
         private readonly Stack<Part21Entity> _processStack = new Stack<Part21Entity>();
         private PropertyValue _propertyValue;
         private int _listNestLevel = -1;
-        private readonly IfcFileHeader _header = new IfcFileHeader();
+        private readonly IfcFileHeader _header = new IfcFileHeader(IfcFileHeader.HeaderCreationMode.LeaveEmpty);
 
         public IfcFileHeader Header
         {
@@ -325,11 +325,13 @@ namespace Xbim.IO.Parser
             else
             {
                 _binaryWriter.Write((byte)P21ParseAction.SetStringValue);
-                string res = value.Trim('\'');
-                res = PropertyValue.SpecialCharRegEx.Replace(res, PropertyValue.SpecialCharEvaluator);
-                res = res.Replace("\'\'", "\'");
-                _binaryWriter.Write(res);
-                
+                string ret = value.Substring(1, value.Length - 2); //remove the quotes
+                if (ret.Contains("\\"))
+                {
+                    XbimP21StringDecoder d = new XbimP21StringDecoder();
+                    ret = d.Unescape(ret);
+                }
+                _binaryWriter.Write(ret);
             }
             if (_listNestLevel == 0)
                 _currentInstance.CurrentParamIndex++;

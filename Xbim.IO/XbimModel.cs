@@ -5,31 +5,21 @@ using System.Text;
 using Xbim.XbimExtensions.Interfaces;
 using Xbim.Ifc2x3.ActorResource;
 using Xbim.Ifc2x3.UtilityResource;
-using Xbim.XbimExtensions.Transactions;
 using Xbim.Ifc2x3.Kernel;
-using Xbim.XbimExtensions.DataProviders;
 using System.IO;
 using Xbim.XbimExtensions;
 using Xbim.Ifc2x3.Extensions;
 using System.CodeDom.Compiler;
 using Xbim.XbimExtensions.SelectTypes;
 using System.Collections;
-using System.Xml;
 using ICSharpCode.SharpZipLib.Zip;
-using System.IO.Compression;
 using Xbim.Ifc2x3.MeasureResource;
-using Xbim.Ifc2x3.GeometryResource;
-using System.Linq.Expressions;
 using System.Diagnostics;
-using Xbim.XbimExtensions.Transactions.Extensions;
 using Xbim.Common.Logging;
-using Xbim.IO.Parser;
 using Xbim.Common;
 using Xbim.Common.Exceptions;
 using System.Globalization;
 using Xbim.Ifc2x3.ExternalReferenceResource;
-using Xbim.Ifc.SelectTypes;
-using Xbim.Ifc2x3.PresentationAppearanceResource;
 using Xbim.IO.DynamicGrouping;
 using Xbim.Ifc2x3.RepresentationResource;
 
@@ -41,10 +31,7 @@ namespace Xbim.IO
     /// </summary>
     public class XbimModel : IModel, IDisposable
     {
-
         #region Fields
-
-       
 
         #region Logging Fields
 
@@ -58,7 +45,6 @@ namespace Xbim.IO
         internal IfcPersistedInstanceCache Cache
         {
             get { return cache; }
-
         }
         
         protected IIfcFileHeader header;
@@ -69,7 +55,7 @@ namespace Xbim.IO
         private XbimInstanceCollection instances;
         private XbimEntityCursor editTransactionEntityCursor;
         private bool _deleteOnClose;
-
+        
         const string refDocument = "XbimReferencedModel";
         private XbimReferencedModelCollection _referencedModels = new XbimReferencedModelCollection();
        
@@ -110,7 +96,6 @@ namespace Xbim.IO
             {
                 return instances;
             }
-
         }
         /// <summary>
         /// Returns a collection of all instances in the model and all federated instances 
@@ -121,7 +106,6 @@ namespace Xbim.IO
             {
                 return new XbimFederatedModelInstances(this);
             }
-
         }
         /// <summary>
         /// based on the XML rule definition, this creates group objects to group instances together
@@ -138,45 +122,45 @@ namespace Xbim.IO
         private void GetModelFactors()
         {
             double angleToRadiansConversionFactor = Math.PI / 180; //assume degrees
-            double lengthToMetresConversionFactor = 1; //assume metres
-            IfcUnitAssignment ua = Instances.OfType<IfcUnitAssignment>().FirstOrDefault();
-            if (ua != null)
-            {
-                foreach (var unit in ua.Units)
-                {
-                    double value = 1.0;
-                    IfcConversionBasedUnit cbUnit = unit as IfcConversionBasedUnit;
-                    IfcSIUnit siUnit = unit as IfcSIUnit;
-                    if (cbUnit != null)
+                    double lengthToMetresConversionFactor = 1; //assume metres
+                    IfcUnitAssignment ua = Instances.OfType<IfcUnitAssignment>().FirstOrDefault();
+                    if (ua != null)
                     {
-                        IfcMeasureWithUnit mu = cbUnit.ConversionFactor;
-                        if (mu.UnitComponent is IfcSIUnit)
-                            siUnit = (IfcSIUnit)mu.UnitComponent;
-                        ExpressType et = ((ExpressType)mu.ValueComponent);
-
-                        if (et.UnderlyingSystemType == typeof(double))
-                            value *= (double)et.Value;
-                        else if (et.UnderlyingSystemType == typeof(int))
-                            value *= (double)((int)et.Value);
-                        else if (et.UnderlyingSystemType == typeof(long))
-                            value *= (double)((long)et.Value);
-                    }
-                    if (siUnit != null)
-                    {
-                        value *= siUnit.Power();
-                        switch (siUnit.UnitType)
+                        foreach (var unit in ua.Units)
                         {
-                            case IfcUnitEnum.LENGTHUNIT:
-                                lengthToMetresConversionFactor = value;
-                                break;
-                            case IfcUnitEnum.PLANEANGLEUNIT:
-                                angleToRadiansConversionFactor = value;
-                                break;
-                            default:
-                                break;
+                            double value = 1.0;
+                            IfcConversionBasedUnit cbUnit = unit as IfcConversionBasedUnit;
+                            IfcSIUnit siUnit = unit as IfcSIUnit;
+                            if (cbUnit != null)
+                            {
+                                IfcMeasureWithUnit mu = cbUnit.ConversionFactor;
+                                if (mu.UnitComponent is IfcSIUnit)
+                                    siUnit = (IfcSIUnit)mu.UnitComponent;
+                                ExpressType et = ((ExpressType)mu.ValueComponent);
+
+                                if (et.UnderlyingSystemType == typeof(double))
+                                    value *= (double)et.Value;
+                                else if (et.UnderlyingSystemType == typeof(int))
+                                    value *= (double)((int)et.Value);
+                                else if (et.UnderlyingSystemType == typeof(long))
+                                    value *= (double)((long)et.Value);
+                            }
+                            if (siUnit != null)
+                            {
+                                value *= siUnit.Power();
+                                switch (siUnit.UnitType)
+                                {
+                                    case IfcUnitEnum.LENGTHUNIT:
+                                        lengthToMetresConversionFactor = value;
+                                        break;
+                                    case IfcUnitEnum.PLANEANGLEUNIT:
+                                        angleToRadiansConversionFactor = value;
+                                        break;
+                                    default:
+                                        break;
+                                }
+                            }
                         }
-                    }
-                }
             }
             IEnumerable<IfcGeometricRepresentationContext> gcs = this.Instances.OfType<IfcGeometricRepresentationContext>();
             double? defaultPrecision = null;
@@ -224,7 +208,6 @@ namespace Xbim.IO
         //Loads the property data of an entity, if it is not already loaded
         int IModel.Activate(IPersistIfcEntity entity, bool write)
         {
-
             if (write) //we want to activate for reading
             {
                 //if (!Transaction.IsRollingBack)
@@ -332,8 +315,6 @@ namespace Xbim.IO
 
         #region IModel interface implementation
 
-
-
         /// <summary>
         /// Registers an entity for deletion
         /// </summary>
@@ -343,10 +324,6 @@ namespace Xbim.IO
         {
             cache.Delete_Reversable(instance);
         }
-
-
-
-
 
         /// <summary>
         /// Returns an instance from the Model with the corresponding label but does not keep a cache of it
@@ -362,8 +339,6 @@ namespace Xbim.IO
             return cache.GetInstance(label, true, true);
         }
 
-
-
         /// <summary>
         /// Returns the total number of Geometry objects in the model
         /// </summary>
@@ -374,8 +349,6 @@ namespace Xbim.IO
                 return cache.GeometriesCount();
             }
         }
-
-
 
         /// <summary>
         /// Creates a new Model and populates with instances from the specified file, Ifc, IfcXML, IfcZip and Xbim are all supported.
@@ -419,8 +392,6 @@ namespace Xbim.IO
             return true;
         }
 
-
-
         /// <summary>
         /// Creates an empty model using a temporary filename, the model will be deleted on close, unless SaveAs is called
         /// It will be returned open for read write operations
@@ -435,7 +406,7 @@ namespace Xbim.IO
                 XbimModel model = new XbimModel();
                 model.CreateDatabase(tmpFileName);  
                 model.Open(tmpFileName, XbimDBAccess.ReadWrite, true);
-                model.Header = new IfcFileHeader();
+                model.Header = new IfcFileHeader(IfcFileHeader.HeaderCreationMode.InitWithXbimDefaults);
                 return model;
             }
             catch (Exception e)
@@ -465,23 +436,20 @@ namespace Xbim.IO
                 XbimModel model = new XbimModel();
                 model.CreateDatabase(dbFileName); 
                 model.Open(dbFileName, access,null);
+                model.header = new IfcFileHeader(IfcFileHeader.HeaderCreationMode.InitWithXbimDefaults);
+                model.header.FileName.Name = dbFileName;
                 return model;
             }
             catch (Exception e)
             {
                 throw new XbimException("Failed to create and open xBIM file \'" + dbFileName + "\'\n" + e.Message, e);
             }
-                
         }
-
-       
 
         #endregion
 
-
         public byte[] GetEntityBinaryData(IPersistIfcEntity entity)
         {
-
             if (entity.Activated) //we have it in memory but not written to store yet
             {
                 MemoryStream entityStream = new MemoryStream(4096);
@@ -495,20 +463,12 @@ namespace Xbim.IO
             }
         }
 
-
-
-
-
-
-
-
         public IIfcFileHeader Header
         {
 
             get { return header; }
             set { header = value; }
         }
-
 
         #region Validation
 
@@ -661,7 +621,6 @@ namespace Xbim.IO
 
         #endregion
 
-
         #region Part 21 parse functions
 
 
@@ -731,9 +690,6 @@ namespace Xbim.IO
             }
             _deleteOnClose = false;
         }
-
-
-
         #endregion
 
         private bool Open(string fileName, XbimDBAccess accessMode, bool deleteOnClose)
@@ -742,7 +698,6 @@ namespace Xbim.IO
             _deleteOnClose = deleteOnClose;
             return ok;
         }
-
 
         /// <summary>
         /// Opens an Xbim model only, to open Ifc, IfcZip and IfcXML files use the CreatFrom method
@@ -815,7 +770,6 @@ namespace Xbim.IO
                     }
                     finally
                     {
-
                         Open(srcFile, accessMode, null);
                     }
                 }
@@ -830,10 +784,6 @@ namespace Xbim.IO
                 throw new XbimException(string.Format("Failed to Save file as {0}\n{1}", outputFileName, e.Message));
             }
         }
-
-
-      
-
 
         // Extract first ifc file from zipped file and save in the same directory
         internal string ExportZippedIfc(string inputIfcFile)
@@ -875,12 +825,7 @@ namespace Xbim.IO
             return "";
         }
 
-
-
-
-
         #region Part21 File Writer support
-
 
         /// <summary>
         /// Writes a Part 21 Header
@@ -945,7 +890,6 @@ namespace Xbim.IO
             tw.WriteLine("END-ISO-10303-21;");
         }
 
-
         #endregion
 
         #region Helpers
@@ -964,10 +908,6 @@ namespace Xbim.IO
 
         #endregion
 
-
-
-
-
         /// <summary>
         ///   Creates an Ifc Persistent Instance from an entity name string and label, this is NOT an undoable operation
         /// </summary>
@@ -984,7 +924,6 @@ namespace Xbim.IO
             {
                 throw new ArgumentException(string.Format("Error creating entity {0}, it is not a supported Xbim type, {1}", ifcEntityName, e.Message));
             }
-
         }
         /// <summary>
         /// Creates an Ifc Persistent Instance from an entity type and label, this is NOT an undoable operation
@@ -994,23 +933,14 @@ namespace Xbim.IO
         /// <returns></returns>
         internal IPersistIfc CreateInstance(Type ifcType, long? label)
         {
-
             throw new NotImplementedException("To do");
             //return instances.AddNew(this,ifcType,label.Value);
-
         }
-
-
 
         public void Print()
         {
             cache.Print();
         }
-
-
-
-
-
 
         public IfcProject IfcProject
         {
@@ -1020,7 +950,7 @@ namespace Xbim.IO
             }
         }
         /// <summary>
-        /// Returns all products in the model, including dederated products
+        /// Returns all products in the model, including federated products
         /// </summary>
         public IEnumerable<IPersistIfcEntity> IfcProducts
         {
@@ -1046,8 +976,6 @@ namespace Xbim.IO
         {
             get { return instances.DefaultOwningUser; }
         }
-
-
 
         ~XbimModel()
         {
@@ -1091,13 +1019,11 @@ namespace Xbim.IO
         public XbimGeometryHandleCollection GetGeometryHandles(XbimGeometryType geomType=XbimGeometryType.TriangulatedMesh, XbimGeometrySort sortOrder=XbimGeometrySort.OrderByIfcSurfaceStyleThenIfcType)
         {
             return cache.GetGeometryHandles(geomType,sortOrder);
-          
         }
 
         public XbimGeometryHandle GetGeometryHandle(int geometryLabel)
         {
             return cache.GetGeometryHandle(geometryLabel);
-
         }
 
         /// <summary>
@@ -1118,6 +1044,20 @@ namespace Xbim.IO
                     yield return item;
                 }
             }
+
+            // RefencedModels must NOT be iterated because of potential entityLabel clashes.
+            // identity needs instead to be tested at the model level of children first, then call this function on the matching child.
+
+            //else // look in referenced models
+            //{
+            //    foreach (XbimReferencedModel refModel in this.RefencedModels)
+            //    {
+            //        foreach (var item in refModel.Model.GetGeometryData(productLabel, geomType))
+            //        {
+            //            yield return item;
+            //        }
+            //    }
+            //}
         }
 
         public IEnumerable<XbimGeometryData> GetGeometryData(IfcProduct product, XbimGeometryType geomType)
@@ -1145,10 +1085,7 @@ namespace Xbim.IO
             {
                 yield return shape;
             }
-
         }
-
-
 
         internal XbimEntityCursor GetEntityTable()
         {
@@ -1193,8 +1130,6 @@ namespace Xbim.IO
             editTransactionEntityCursor = null;
         }
        
-
-
         internal void Flush()
         {
             cache.Write(editTransactionEntityCursor);
@@ -1205,8 +1140,6 @@ namespace Xbim.IO
             Debug.Assert(editTransactionEntityCursor != null);
             return editTransactionEntityCursor;
         }
-
-
 
         #region Model Group functions
         /// <summary>
@@ -1272,18 +1205,31 @@ namespace Xbim.IO
                 _referencedModels.Add(new XbimReferencedModel(docInfo, refModel));
                 return docInfo.DocumentId;
             }
-                
-                
         }
 
-        private void LoadReferenceModels()
+        /// <summary>
+        /// All reference models are opened in a readonly mode.
+        /// Their children reference models is invoked iteratively.
+        /// 
+        /// Loading referenced models defaults to avoiding Exception on file not found; in this way the federated model can still be opened and the error rectified.
+        /// </summary>
+        /// <param name="ThrowExceptionOnNotFound"></param>
+        private void LoadReferenceModels(bool ThrowExceptionOnNotFound = false)
         {
             var docInfos = this.Instances.OfType<IfcDocumentInformation>().Where(d => d.IntendedUse == refDocument);
             foreach (var docInfo in docInfos)
             {
+                if (!File.Exists(docInfo.Name))
+                {
+                    if (ThrowExceptionOnNotFound)
+                        throw new XbimException("Reference model not found:" + docInfo.Name);
+                    continue;
+                }
                 XbimModel model = new XbimModel();
                 if (!model.Open(docInfo.Name, XbimDBAccess.Read))
-                    throw new XbimException("Unable to open reference model " + docInfo.Name);
+                {
+                    throw new XbimException("Unable to open reference model: " + docInfo.Name);
+                }
                 else
                     _referencedModels.Add(new XbimReferencedModel(docInfo, model));
             }
@@ -1298,7 +1244,6 @@ namespace Xbim.IO
             {
                 return _referencedModels;
             }
-            
         }
 
         public XbimGeometryData GetGeometryData(XbimGeometryHandle handle)
@@ -1334,7 +1279,6 @@ namespace Xbim.IO
                 project.OwnerHistory.OwningApplication = DefaultOwningApplication;
                 txn.Commit();
             }
-            
         }
 
         /// <summary>
@@ -1352,7 +1296,6 @@ namespace Xbim.IO
         {
             AddModelReference(fileName, organisationName,IfcRole.UserDefined, ownerName);
         }
-
 
         /// <summary>
         /// Returns an enumerable of the handles to all entities in the model
@@ -1373,7 +1316,6 @@ namespace Xbim.IO
         /// Returns an enumerable of the handles to only the entities in this model
         /// Note this do NOT include entities that are in any federated models
         /// </summary>
-        /// </summary>
         public IEnumerable<XbimInstanceHandle> InstanceHandles 
         {
             get
@@ -1386,9 +1328,13 @@ namespace Xbim.IO
         internal IPersistIfcEntity GetInstanceVolatile(XbimInstanceHandle item)
         {
           return item.Model.GetInstanceVolatile(item.EntityLabel);
-          
         }
 
+        /// <summary>
+        /// Federated models can be nested.
+        /// Since children models do not have a method for pointing to the parent management of their 
+        /// uniqueness must be achieved top down by the topmost one. After all child models are loaded.
+        /// </summary>
         public IEnumerable<XbimModel> AllModels
         {
             get
@@ -1399,5 +1345,7 @@ namespace Xbim.IO
                         yield return m;
             }
         }
+
+        public object Tag { get; set; }
     }
 }

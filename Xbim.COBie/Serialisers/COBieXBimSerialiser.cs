@@ -260,7 +260,7 @@ namespace Xbim.COBie.Serialisers
                 Model.DefaultOwningUser.TheOrganization.Name = "Unknown";
                 if (Model.Header == null)
                 {
-                    Model.Header = new IfcFileHeader();
+                    Model.Header = new IfcFileHeader(IfcFileHeader.HeaderCreationMode.InitWithXbimDefaults);
                 }
                 Model.Header.FileDescription.Description.Clear();
                 Model.Header.FileDescription.Description.Add("ViewDefinition[CoordinationView]");

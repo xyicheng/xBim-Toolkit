@@ -91,7 +91,7 @@ namespace Xbim.Tests
             {
                 foreach (var item in project.GetSpatialStructuralElements())
                 {
-                    var sv = new SpatialViewModel(item);
+                    var sv = new SpatialViewModel(item, null);
                     svList.Add(sv);
                 }
 

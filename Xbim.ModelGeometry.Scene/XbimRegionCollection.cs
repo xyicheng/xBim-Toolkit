@@ -8,6 +8,7 @@ namespace Xbim.ModelGeometry.Scene
 {
     public class XbimRegionCollection : List<XbimRegion>
     {
+        #region Serialisation
         new public byte[] ToArray()
         {
             MemoryStream ms = new MemoryStream();
@@ -50,6 +51,7 @@ namespace Xbim.ModelGeometry.Scene
             }
             return coll;
         }
+        #endregion
 
         public XbimRegion MostPopulated()
         {
@@ -66,6 +68,21 @@ namespace Xbim.ModelGeometry.Scene
                 }
             }
             return mostPopulated;
+        }
+
+        public XbimRegion Largest()
+        {
+            float max = 0;
+            XbimRegion Largest = null;
+            foreach (var region in this)
+            {
+                if (region.Diagonal() > max)
+                {
+                    Largest = region;
+                    max = region.Diagonal();
+                }
+            }
+            return Largest;
         }
     }
 }

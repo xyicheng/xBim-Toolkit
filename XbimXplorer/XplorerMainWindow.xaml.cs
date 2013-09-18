@@ -78,7 +78,7 @@ namespace XbimXplorer
         void OpenQuery(object sender, RoutedEventArgs e)
         {
             XbimXplorer.Querying.wdwQuery qw = new Querying.wdwQuery();
-            qw.Model = this.Model;
+            qw.ParentWindow = this;
             qw.Show();
         }
 
@@ -104,8 +104,8 @@ namespace XbimXplorer
                 {
                     case ".ifc": //it is an Ifc File
                     case ".ifcxml": //it is an IfcXml File
-                    case ".ifczip": //it is a xip file containing xbim or ifc File
-                    case ".zip": //it is a xip file containing xbim or ifc File
+                    case ".ifczip": //it is a zip file containing xbim or ifc File
+                    case ".zip": //it is a zip file containing xbim or ifc File
                         CloseAndDeleteTemporaryFiles();
                         _worker.DoWork += OpenIfcFile;
                         _worker.RunWorkerAsync(toOpen);
@@ -169,9 +169,7 @@ namespace XbimXplorer
             get
             {
                 return MainFrame.DataContext as ObjectDataProvider;
-               
             }
-            
         }
 
         public XbimModel Model
@@ -248,7 +246,7 @@ namespace XbimXplorer
                 model.Open(_temporaryXbimFileName, XbimDBAccess.ReadWrite);
                 XbimMesher.GenerateGeometry(model, null, worker.ReportProgress);
                 model.Close();
-                if (worker.CancellationPending == true) //if a cancellation has been requested then don't open the resukting file
+                if (worker.CancellationPending == true) //if a cancellation has been requested then don't open the resulting file
                 {
                     try
                     {
@@ -280,10 +278,8 @@ namespace XbimXplorer
                 }
 
                 args.Result = new Exception(sb.ToString());
-
             }
         }
-
 
         /// <summary>
         ///   This is called when we explcitly want to open an xBIM file
@@ -299,6 +295,13 @@ namespace XbimXplorer
             {
                 _currentModelFileName = fileName.ToLower();
                 model.Open(fileName, XbimDBAccess.Read, worker.ReportProgress); //load entities into the model
+                // sets a convenient integer to all children for model identification
+                // this is used by the federated model selection mechanisms.
+                int i = 0;
+                foreach (var item in model.AllModels)
+                {
+                    item.Tag = i++;
+                }
                 args.Result = model;
             }
             catch (Exception ex)
@@ -397,13 +400,17 @@ namespace XbimXplorer
                                                   if (args.Result is XbimModel) //all ok
                                                   {
                                                       ModelProvider.ObjectInstance = (XbimModel)args.Result; //this Triggers the event to load the model into the views 
+                                                      // PropertiesControl.Model = (XbimModel)args.Result; // // done thtough binding in xaml
                                                       ModelProvider.Refresh();
+
+                                                      ProgressBar.Value = 0;
+                                                      StatusMsg.Text = "Ready";
                                                   }
                                                   else //we have a problem
                                                   {
                                                       string errMsg = args.Result as String;
                                                       if (!string.IsNullOrEmpty(errMsg))
-                                                          MessageBox.Show(this, errMsg, "Error Opening Ifc File",
+                                                          MessageBox.Show(this, errMsg, "Error Opening File",
                                                                           MessageBoxButton.OK, MessageBoxImage.Error,
                                                                           MessageBoxResult.None, MessageBoxOptions.None);
                                                       if (args.Result is Exception)
@@ -421,6 +428,8 @@ namespace XbimXplorer
                                                                           MessageBoxButton.OK, MessageBoxImage.Error,
                                                                           MessageBoxResult.None, MessageBoxOptions.None);
                                                       }
+                                                      ProgressBar.Value = 0;
+                                                      StatusMsg.Text = "Error/Ready";
                                                   }
                                                   // StatusBar.Visibility = Visibility.Hidden;
                                               };
@@ -531,6 +540,7 @@ namespace XbimXplorer
                 {
                     model.Dispose();
                     ModelProvider.ObjectInstance = null;
+                    // PropertiesControl.Model = null; // done thtough binding in xaml
                     ModelProvider.Refresh();
                 }
             }

@@ -49,6 +49,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -110,8 +111,13 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="ClassificationViewModel.cs" />
+    <Compile Include="DrawincControl3DLayers.cs" />
+    <Compile Include="EntitySelection.cs" />
+    <Compile Include="ModelGeomInfo\PolylineGeomInfo.cs" />
+    <Compile Include="ModelGeomInfo\PointGeomInfo.cs" />
+    <Compile Include="ViewModels\ClassificationViewModel.cs" />
     <Compile Include="ColourRgbExtensions.cs" />
+    <Compile Include="XbimCuttingPlaneGroup.cs" />
     <Compile Include="DrawingControl3D.xaml.cs" />
     <Compile Include="FederatedModelItem.cs" />
     <Compile Include="FederatedModelProperties.xaml.cs">
@@ -120,14 +126,14 @@
     <Compile Include="IfcMetaDataControl.xaml.cs">
       <DependentUpon>IfcMetaDataControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="IfcProductModelView.cs" />
-    <Compile Include="IXbimViewModel.cs" />
+    <Compile Include="ViewModels\IfcProductModelView.cs" />
+    <Compile Include="ViewModels\IXbimViewModel.cs" />
     <Compile Include="ModelDataProvider.cs" />
     <Compile Include="ModelVisual3DExtensions.cs" />
-    <Compile Include="ContainedElementsViewModel.cs" />
+    <Compile Include="ViewModels\ContainedElementsViewModel.cs" />
     <Compile Include="Observable.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SpatialViewModel.cs" />
+    <Compile Include="ViewModels\SpatialViewModel.cs" />
     <Compile Include="SurfaceStyleExtensions.cs" />
     <Compile Include="SurfaceStyleRenderingExtensions.cs" />
     <Compile Include="SurfaceStyleShadingExtensions.cs" />
@@ -138,9 +144,10 @@
     <Compile Include="WpfVector3DCollection.cs" />
     <Compile Include="XbimMaterialModelVisual.cs" />
     <Compile Include="XbimMaterialProvider.cs" />
+    <Compile Include="XbimMeshHelper.cs" />
     <Compile Include="XbimModelPresentationExtensions.cs" />
-    <Compile Include="XbimModelViewModel.cs" />
-    <Compile Include="XbimRefModelViewModel.cs" />
+    <Compile Include="ViewModels\XbimModelViewModel.cs" />
+    <Compile Include="ViewModels\XbimRefModelViewModel.cs" />
     <Compile Include="XbimTreeview.cs" />
     <Compile Include="XbimViewType.cs" />
   </ItemGroup>

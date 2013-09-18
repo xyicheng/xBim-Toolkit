@@ -39,9 +39,7 @@ namespace Xbim.IO
     {
         public PropertyInfo PropertyInfo;
         public IfcAttribute IfcAttribute;
-        
     }
-
 
     /// <summary>
     ///   A collection of IPersistIfcEntity instances, optimised for IFC models
@@ -53,9 +51,9 @@ namespace Xbim.IO
         /// Look up the numeric id of an Ifc Entity and return the string name in upper case
         /// </summary>
         private static Dictionary<short, string> TypeIdToTypeNameLookup = new Dictionary<short, string>();
-       /// <summary>
-       /// Look up for the if of an Ifc entity that returns the IfcType
-       /// </summary>
+        /// <summary>
+        /// Look up for the if of an Ifc entity that returns the IfcType
+        /// </summary>
         private static Dictionary<short, IfcType> TypeIdToIfcTypeLookup = new Dictionary<short, IfcType>();
         /// <summary>
         /// Look up the entity Type and return the IfcType
@@ -65,50 +63,72 @@ namespace Xbim.IO
         /// Look up the name of an ifc entity and return the IfcType
         /// </summary>
         private static Dictionary<string, IfcType> TypeNameToIfcTypeLookup;
+        /// <summary>
+        /// Look up IfcTypes implementing an interface
+        /// </summary>
+        private static Dictionary<Type, List<IfcType>> InterfaceToIfcTypesLookup;
 
         static IfcMetaData()
         {
-            Module ifcModule = typeof (IfcActor).Module;
-            IEnumerable<Type> types =
+            Module ifcModule = typeof(IfcActor).Module;
+            IEnumerable<Type> typesToProcess =
                 ifcModule.GetTypes().Where(
                     t =>
-                    typeof (IPersistIfc).IsAssignableFrom(t) && t != typeof (IPersistIfc) && !t.IsEnum && !t.IsAbstract &&
-                    t.IsPublic && !typeof (ExpressHeaderType).IsAssignableFrom(t));
+                    typeof(IPersistIfc).IsAssignableFrom(t) && t != typeof(IPersistIfc) && !t.IsEnum && !t.IsAbstract &&
+                    t.IsPublic && !typeof(ExpressHeaderType).IsAssignableFrom(t));
 
-            TypeNameToIfcTypeLookup = new Dictionary<string, IfcType>(types.Count());
+            TypeNameToIfcTypeLookup = new Dictionary<string, IfcType>(typesToProcess.Count());
             TypeToIfcTypeLookup = new IfcTypeDictionary();
+            InterfaceToIfcTypesLookup = new Dictionary<Type, List<IfcType>>();
             try
             {
-                
-                foreach (Type type in types)
+                foreach (Type typeToProcess in typesToProcess)
                 {
-                    IfcType ifcType;
-                    if (TypeToIfcTypeLookup.Contains(type))
-                        ifcType = TypeToIfcTypeLookup[type];
+                    // Debug.WriteLine(type.ToString());
+                    IfcType ifcTypeToProcess;
+                    if (TypeToIfcTypeLookup.Contains(typeToProcess))
+                        ifcTypeToProcess = TypeToIfcTypeLookup[typeToProcess];
                     else
                     {
-                        IndexedClass[] ifcTypeIndex = (IndexedClass[])type.GetCustomAttributes(typeof(IndexedClass), true);
-                        ifcType = new IfcType { Type = type, IndexedClass = (ifcTypeIndex.GetLength(0) > 0) };
+                        IndexedClass[] ifcTypeIndex = (IndexedClass[])typeToProcess.GetCustomAttributes(typeof(IndexedClass), true);
+                        ifcTypeToProcess = new IfcType { Type = typeToProcess, IndexedClass = (ifcTypeIndex.GetLength(0) > 0) };
                     }
 
-                    string typeLookup = type.Name.ToUpperInvariant();
+                    string typeLookup = typeToProcess.Name.ToUpperInvariant();
                     if (!TypeNameToIfcTypeLookup.ContainsKey(typeLookup))
-                        TypeNameToIfcTypeLookup.Add(typeLookup, ifcType);
-                    
-                    if (!TypeToIfcTypeLookup.Contains(ifcType))
+                        TypeNameToIfcTypeLookup.Add(typeLookup, ifcTypeToProcess);
+
+                    if (!TypeToIfcTypeLookup.Contains(ifcTypeToProcess))
                     {
-                        TypeToIfcTypeLookup.Add(ifcType);
-                        AddParent(ifcType);
-                        AddProperties(ifcType);
+                        TypeToIfcTypeLookup.Add(ifcTypeToProcess);
+                        AddParent(ifcTypeToProcess);
+                        AddProperties(ifcTypeToProcess);
+                    }
+
+                    // populate the dictionary lookup by interface
+                    //
+                    foreach (Type interfaceFound in typeToProcess.GetInterfaces())
+                    {
+                        if (!interfaceFound.Namespace.StartsWith("Xbim"))
+                            continue;
+                        if (interfaceFound.Name == "IfcMaterialSelect")
+                        {
+                        }
+                        if (!InterfaceToIfcTypesLookup.ContainsKey(interfaceFound))
+                        {
+                            // add to dictionary
+                            InterfaceToIfcTypesLookup.Add(interfaceFound, new List<IfcType>());
+                        }
+                        InterfaceToIfcTypesLookup[interfaceFound].Add(ifcTypeToProcess);
                     }
                 }
 
-                //add the index property to abstract types
-               
-                foreach (IfcType ifcType in TypeToIfcTypeLookup.Where(t=>t.Type.IsAbstract))
+                // add the index property to abstract types
+                //
+                foreach (IfcType ifcType in TypeToIfcTypeLookup.Where(t => t.Type.IsAbstract))
                 {
                     IndexedClass[] ifcTypeIndex = (IndexedClass[])ifcType.Type.GetCustomAttributes(typeof(IndexedClass), true);
-                    ifcType.IndexedClass = (ifcTypeIndex.GetLength(0) > 0) ;
+                    ifcType.IndexedClass = (ifcTypeIndex.GetLength(0) > 0);
                 }
 
                 foreach (var entityValue in Enum.GetValues(typeof(IfcEntityNameEnum)))
@@ -116,7 +136,7 @@ namespace Xbim.IO
 
                 //add the Type Ids to each of the IfcTypes
                 foreach (var item in TypeIdToTypeNameLookup)
-                {     
+                {
                     IfcType ifcType = TypeNameToIfcTypeLookup[item.Value];
                     TypeIdToIfcTypeLookup.Add(item.Key, ifcType);
                     ifcType.TypeId = item.Key;
@@ -134,7 +154,7 @@ namespace Xbim.IO
             //    }
             //}
         }
-       
+
         internal static void AddProperties(IfcType ifcType)
         {
             PropertyInfo[] properties =
@@ -143,7 +163,7 @@ namespace Xbim.IO
             {
                 int attributeIdx = -1;
                 IfcAttribute[] ifcAttributes =
-                    (IfcAttribute[]) propInfo.GetCustomAttributes(typeof (IfcAttribute), false);
+                    (IfcAttribute[])propInfo.GetCustomAttributes(typeof(IfcAttribute), false);
                 if (ifcAttributes.GetLength(0) > 0) //we have an ifc property
                 {
                     if (ifcAttributes[0].Order > 0)
@@ -157,7 +177,7 @@ namespace Xbim.IO
                         ifcType.IfcInverses.Add(new IfcMetaProperty { PropertyInfo = propInfo, IfcAttribute = ifcAttributes[0] });
                 }
                 IndexedProperty[] ifcIndexes =
-                    (IndexedProperty[]) propInfo.GetCustomAttributes(typeof (IndexedProperty), false);
+                    (IndexedProperty[])propInfo.GetCustomAttributes(typeof(IndexedProperty), false);
                 if (ifcIndexes.GetLength(0) > 0) //we have an index
                 {
                     Debug.Assert(typeof(IPersistIfcEntity).IsAssignableFrom(propInfo.PropertyType)
@@ -167,16 +187,16 @@ namespace Xbim.IO
             }
         }
 
-       
+
         internal static void AddParent(IfcType child)
         {
             Type baseParent = child.Type.BaseType;
-            if (typeof (object) == baseParent || typeof (ValueType) == baseParent)
+            if (typeof(object) == baseParent || typeof(ValueType) == baseParent)
                 return;
             IfcType ifcParent;
             if (!TypeToIfcTypeLookup.Contains(baseParent))
             {
-                TypeToIfcTypeLookup.Add(ifcParent = new IfcType {Type = baseParent});
+                TypeToIfcTypeLookup.Add(ifcParent = new IfcType { Type = baseParent });
                 string typeLookup = baseParent.Name.ToUpper();
                 if (!TypeNameToIfcTypeLookup.ContainsKey(typeLookup))
                     TypeNameToIfcTypeLookup.Add(typeLookup, ifcParent);
@@ -195,23 +215,58 @@ namespace Xbim.IO
         }
 
         /// <summary>
-        /// Returns the IfcType witht he specified name
+        /// Returns the IfcType with the specified name
         /// </summary>
         /// <param name="typeName">The name of the type in uppercase</param>
-        /// <returns></returns>
+        /// <returns>The foud type (or Null if not found)</returns>
         public static IfcType IfcType(string typeName)
         {
-            return TypeNameToIfcTypeLookup[typeName];
+            if (TypeNameToIfcTypeLookup.ContainsKey(typeName))
+                return TypeNameToIfcTypeLookup[typeName];
+            return null;
+        }
+
+        public static IEnumerable<IfcType> IfcTypesImplementing(Type type)
+        {
+            if (InterfaceToIfcTypesLookup.ContainsKey(type))
+            {
+                foreach (var item in InterfaceToIfcTypesLookup[type])
+                    yield return item;
+            }
+        }
+
+        public static IEnumerable<Type> TypesImplementing(Type type)
+        {
+            if (InterfaceToIfcTypesLookup.ContainsKey(type))
+            {
+                foreach (var item in InterfaceToIfcTypesLookup[type])
+                    yield return item.Type;
+            }
+        }
+
+        public static IEnumerable<IfcType> TypesImplementing(string StringType)
+        {
+            var dictitem = InterfaceToIfcTypesLookup.Keys.Where(intf => intf.Name.ToUpperInvariant() == StringType.ToUpperInvariant()).FirstOrDefault();
+            if (dictitem != null)
+            {
+                foreach (var item in InterfaceToIfcTypesLookup[dictitem])
+	            {
+                    yield return item;
+	            }
+            }            
         }
 
         /// <summary>
         /// Returns the IfcType with the specified type
         /// </summary>
         /// <param name="type">The type</param>
-        /// <returns></returns>
+        /// <returns>The foud type (or Null if not found)</returns>
         public static IfcType IfcType(Type type)
         {
-            return TypeToIfcTypeLookup[type];
+            if (TypeToIfcTypeLookup.Contains(type))
+                return TypeToIfcTypeLookup[type];
+            return
+                null;
         }
 
         /// <summary>
@@ -221,7 +276,7 @@ namespace Xbim.IO
         /// <returns></returns>
         public static IfcType IfcType(short typeId)
         {
-           return TypeIdToIfcTypeLookup[typeId];
+            return TypeIdToIfcTypeLookup[typeId];
         }
 
         /// <summary>
@@ -267,7 +322,7 @@ namespace Xbim.IO
             return TypeToIfcTypeLookup[entity.GetType()];
         }
 
-    
+
         /// <summary>
         /// Trys to get the specified Ifc Type with the typeName, if the ifcType does not exist false is returned
         /// </summary>
@@ -276,7 +331,7 @@ namespace Xbim.IO
         /// <returns></returns>
         public static bool TryGetIfcType(string typeName, out IfcType ifcType)
         {
-            return TypeNameToIfcTypeLookup.TryGetValue(typeName,out ifcType);
+            return TypeNameToIfcTypeLookup.TryGetValue(typeName, out ifcType);
         }
 
         /// <summary>
@@ -295,8 +350,10 @@ namespace Xbim.IO
         {
             foreach (var item in TypeNameToIfcTypeLookup.Values)
             {
-                IList<Type> l =  item.NonAbstractSubTypes;
+                IList<Type> l = item.NonAbstractSubTypes;
             }
         }
+
+        
     }
 }

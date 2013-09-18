@@ -12,7 +12,7 @@
 
 namespace Xbim.XbimExtensions.SelectTypes
 {
-    public interface IfcSizeSelect : ExpressSelectType, ExpressType
+    public interface IfcSizeSelect : ExpressSelectType, IfcMeasureValue
     {
     }
 }

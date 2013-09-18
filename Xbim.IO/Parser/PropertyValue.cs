@@ -17,13 +17,9 @@ namespace Xbim.IO.Parser
 
         private object _entityVal;
 
-        public static readonly Regex SpecialCharRegEx;
-        public static readonly MatchEvaluator SpecialCharEvaluator;
-
+        // Regex SpecialCharRegEx has been replaced with XbimP21StringDecoder
         static PropertyValue()
         {
-            SpecialCharEvaluator = ConvertFromHex;
-            SpecialCharRegEx = new Regex(@"\\X\\([0-9A-F][0-9A-F])");
         }
 
         private static string ConvertFromHex(Match m)
@@ -146,12 +142,15 @@ namespace Xbim.IO.Parser
         {
             get
             {
-                string trimmed = _strVal.Substring(1, _strVal.Length - 2); //remove the quotes
+                string ret = _strVal.Substring(1, _strVal.Length - 2); //remove the quotes
+                if (ret.Contains('\\'))
+                {
+                    XbimP21StringDecoder d = new XbimP21StringDecoder();
+                    ret = d.Unescape(ret);
+                }
 
-                string res = SpecialCharRegEx.Replace(trimmed, SpecialCharEvaluator);
-                res = res.Replace("\'\'", "\'");
                 if (_ifcParserType == IfcParserType.String)
-                    return res;
+                    return ret;
                 else
                     throw new Exception(string.Format("Wrong parameter type, found {0}, expected {1}",
                                                       _ifcParserType.ToString(), "String"));
