@@ -25,5 +25,29 @@ namespace Xbim.Ifc2x3.Extensions
             IfcUnitAssignment modelUnits = ifcPhysicalSimpleQuantity.ModelOf.Instances.OfType<IfcUnitAssignment>().FirstOrDefault(); // not optional, should never return void in valid model
             return modelUnits.GetUnitFor(ifcPhysicalSimpleQuantity);
         }
+
+        public static object GetSpecificValue(this IfcPhysicalSimpleQuantity Quantity)
+        {
+            if (Quantity is IfcQuantityLength)
+                return ((IfcQuantityLength)Quantity).LengthValue.Value;
+
+            else if (Quantity is IfcQuantityArea)
+                return ((IfcQuantityArea)Quantity).AreaValue.Value;
+
+            else if (Quantity is IfcQuantityVolume)
+                return ((IfcQuantityVolume)Quantity).VolumeValue.Value;
+
+            else if (Quantity is IfcQuantityCount) // really not sure what to do here.
+                return ((IfcQuantityCount)Quantity).CountValue.Value;
+
+            else if (Quantity is IfcQuantityWeight)
+                return ((IfcQuantityWeight)Quantity).WeightValue.Value;
+
+            else if (Quantity is IfcQuantityTime)
+                return ((IfcQuantityTime)Quantity).TimeValue.Value;
+
+            return null;
+        }
+
     }
 }
