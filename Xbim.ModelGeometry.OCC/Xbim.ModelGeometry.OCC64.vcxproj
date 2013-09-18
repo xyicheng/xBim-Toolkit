@@ -97,7 +97,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>.\OpenCascade\inc;.\CarveCsg\include;.\CarveCsg\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\OpenCascade\inc;.\CarveCsg\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_LIB;NOMINMAX;USE_CARVE;_ITERATOR_DEBUG_LEVEL=0;_HAS_CPP0X=0;HAVE_STDINT_H;DOPARALLEL;DEB;_DEBUG;WIN64;_WINDOWS;WNT;_OCC64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
