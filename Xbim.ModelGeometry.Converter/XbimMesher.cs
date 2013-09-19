@@ -85,7 +85,11 @@ namespace Xbim.ModelGeometry.Converter
             {
                 if (Logger != null)
                 {
+#if DEBUG
+                    Logger.Error("Failed to load Xbim.ModelGeometry.OCCd.dll Please ensure it is installed correctly");
+#else
                     Logger.Error("Failed to load Xbim.ModelGeometry.OCC.dll Please ensure it is installed correctly");
+#endif
                 }
                 return;
             }
@@ -94,8 +98,12 @@ namespace Xbim.ModelGeometry.Converter
             if (engine == null)
             {
                 if (Logger != null)
-                {
+                {                   
+#if DEBUG
+                    Logger.Error("Failed to create Xbim Geometry engine. Please ensure Xbim.ModelGeometry.OCCd.dll is installed correctly");
+#else
                     Logger.Error("Failed to create Xbim Geometry engine. Please ensure Xbim.ModelGeometry.OCC.dll is installed correctly");
+#endif
                 }
                 return;
             }

@@ -177,6 +177,7 @@
     <None Include="ModelGeoemetryClassDiagram.cd" />
     <None Include="ReadMe.txt" />
     <None Include="XbimGeomKey.snk" />
+    <None Include="..\xbim.modelgeometry.converter\packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="CarveCSG">
