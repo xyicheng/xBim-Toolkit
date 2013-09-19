@@ -110,11 +110,15 @@ namespace Xbim.COBie.Data
         /// <param name="_attributes">The attribute Sheet to add the properties to its rows</param>
         public void PopulateAttributesRows(IfcObject ifcObject)
         {
+            if (PropertSetValues.PSetFilterOn) //we have a property set filter set in the PropertSetValues class, so reset to retrieve all property sets for this object
+            {
+                PropertSetValues.SetAllPropertyValues(ifcObject);
+            }
 
-            foreach (KeyValuePair<IfcPropertySet, List<IfcSimpleProperty>> pairValues in PropertSetValues[ifcObject])
+            foreach (KeyValuePair<IfcPropertySet, IEnumerable<IfcSimpleProperty>> pairValues in PropertSetValues.MapPsetToProps)
             {
                 IfcPropertySet ps = pairValues.Key; //get Property Set
-                //get all property attached to the property set
+
                 //check property set exclude list
                 if (!string.IsNullOrEmpty(ps.Name))
                 {
@@ -129,8 +133,10 @@ namespace Xbim.COBie.Data
 
                 //Get Property SetAttribSheet Property Single Values
                 IEnumerable<IfcSimpleProperty> pSVs = pairValues.Value;
+
                 //filter on ExcludePropertyValueNames and ExcludePropertyValueNamesWildcard
                 pSVs = FilterRows(pSVs);
+
                 //fill in the data to the attribute rows
                 ProcessAttributeRow( ps, pSVs);
             }
@@ -144,32 +150,33 @@ namespace Xbim.COBie.Data
         /// <param name="_attributes">The attribute Sheet to add the properties to its rows</param>
         public void PopulateAttributesRows(IfcTypeObject ifcTypeObject)
         {
-            if (PropertSetValues.PropSetsValuesTypeObjects.ContainsKey(ifcTypeObject))
+            if (PropertSetValues.PSetFilterOn) //we have a property set filter set in the PropertSetValues class, so reset to retrieve all property sets for this object
             {
-                foreach (KeyValuePair<IfcPropertySet, List<IfcSimpleProperty>> pairValues in PropertSetValues[ifcTypeObject])
-                {
-                    IfcPropertySet ps = pairValues.Key; //get Property Set
-                    //get all property attached to the property set
-                    //check property set exclude list
-                    if (!string.IsNullOrEmpty(ps.Name))
-                    {
-                        if (ExcludeAttributePropertySetNames.Count() > 0)
-                        {
-                            if (ExcludeAttributePropertySetNames.Contains(ps.Name))
-                            {
-                                continue; //skip this loop iteration if property set name matches exclude list item
-                            }
-                        }
-                    }
-                    
-                    IEnumerable<IfcSimpleProperty> pSVs = pairValues.Value; //Get Property SetAttribSheet Property Single Values
-                    //filter on ExcludePropertyValueNames and ExcludePropertyValueNamesWildcard
-                    pSVs = FilterRows(pSVs);
-                    //fill in the data to the attribute rows
-                    ProcessAttributeRow( ps, pSVs);
-                }
+                PropertSetValues.SetAllPropertyValues(ifcTypeObject);
             }
 
+            foreach (KeyValuePair<IfcPropertySet, IEnumerable<IfcSimpleProperty>> pairValues in PropertSetValues.MapPsetToProps)
+            {
+                IfcPropertySet ps = pairValues.Key; //get Property Set
+                //get all property attached to the property set
+                //check property set exclude list
+                if (!string.IsNullOrEmpty(ps.Name))
+                {
+                    if (ExcludeAttributePropertySetNames.Count() > 0)
+                    {
+                        if (ExcludeAttributePropertySetNames.Contains(ps.Name))
+                        {
+                            continue; //skip this loop iteration if property set name matches exclude list item
+                        }
+                    }
+                }
+                    
+                IEnumerable<IfcSimpleProperty> pSVs = pairValues.Value; //Get Property SetAttribSheet Property Single Values
+                //filter on ExcludePropertyValueNames and ExcludePropertyValueNamesWildcard
+                pSVs = FilterRows(pSVs);
+                //fill in the data to the attribute rows
+                ProcessAttributeRow( ps, pSVs);
+            }
         }
         /// <summary>
         /// Apply filter lists to propertySingleValue selection
@@ -443,65 +450,6 @@ namespace Xbim.COBie.Data
             }
         }
 
-        
-
-        //private string NumberValueCheck(string value, COBieAttributeRow attribute)
-        //{
-        //    double test;
-        //    if (double.TryParse(value, out test))
-        //    {
-        //        //if we have a large number and the units is millimetres then lets change to metres
-        //        //SquareMillemetres
-        //        bool uSSqmeters = attribute.Unit.ToLower().Contains("squaremillimeters");
-        //        bool uKSqMetres = (attribute.Unit.ToLower().Contains("squaremillimetres"));
-        //        if ((uSSqmeters || uKSqMetres) &&
-        //            (test > 1000000) //if size is large
-        //            )
-        //        {
-        //            test = test / 1000000.0;
-        //            if (uKSqMetres)
-        //                attribute.Unit = "squaremetres";
-        //            else
-        //                attribute.Unit = "squaremeters";
-
-        //        }
-
-        //        //Millimetres
-        //        bool uSmeters = attribute.Unit.ToLower().Contains("millimeters");
-        //        bool uKMetres = (attribute.Unit.ToLower().Contains("millimetres"));
-        //        if ((uSmeters || uKMetres) &&
-        //            (test > 100000) //if size is large
-        //            )
-        //        {
-        //            test = test / 1000.0;
-        //            if (uKMetres)
-        //                attribute.Unit = "metres";
-        //            else
-        //                attribute.Unit = "meters";
-
-        //        }
-
-        //        value = string.Format("{0:F4}", test); //format the number
-        //    }
-        //    return value;
-        //}
-
-        
-
-        /// <summary>
-        /// Get the first related object properties, fall back to where the IfcTypeObject has no properties
-        /// </summary>
-        /// <param name="ifcTypeObject">Object to get related object from</param>
-        private void GetRelatedObjectProperties(IfcTypeObject ifcTypeObject)
-        {
-            List<IfcSimpleProperty> RelObjValues = new List<IfcSimpleProperty>();
-
-            RelObjValues = (from dic in PropertSetValues.PropSetsValuesTypeObjectsFirstRelatedObject[ifcTypeObject]
-                            from psetval in dic.Value //list of IfcPropertySingleValue
-                            select psetval).ToList();
-
-            PropertSetValues.AllPropertySingleValues.AddRange(RelObjValues);
-        }
 
         /// <summary>
         /// Get Category method for property sets

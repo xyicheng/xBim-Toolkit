@@ -2,6 +2,7 @@
 using System.Linq;
 using Xbim.Ifc2x3.Kernel;
 using Xbim.Ifc2x3.PropertyResource;
+using System;
 //using System;
 
 
@@ -14,115 +15,56 @@ namespace Xbim.COBie.Data
     public class COBieDataPropertySetValues 
     {
         #region Fields
-        
-        private Dictionary<IfcObject, Dictionary<IfcPropertySet, List<IfcSimpleProperty>>> _propSetsValuesObjects = null;
-        private Dictionary<IfcTypeObject, Dictionary<IfcPropertySet, List<IfcSimpleProperty>>> _propSetsValuesTypeObjects = null;
-        private Dictionary<IfcTypeObject, Dictionary<IfcPropertySet, List<IfcSimpleProperty>>> _propSetsValuesTypeObjectsFirstRelatedObject = null;
-        
-        private List<IfcSimpleProperty> _ifcPropertySingleValues = null; //result set store
- 
+        private IfcObjectDefinition _currentObject;
+        private Dictionary<IfcPropertySet, IEnumerable<IfcSimpleProperty>> _mapPsetToProps;
         #endregion
 
         #region Properties
         /// <summary>
-        /// Dictionary keyed on the Object IfcObject, holding a Dictionary keyed on property set holding the SinglePropertyValues held by that set related to the object
+        /// True if a Property Set name filter is set
         /// </summary>
-        public Dictionary<IfcObject, Dictionary<IfcPropertySet, List<IfcSimpleProperty>>> PropSetsValuesObjects
+        public bool PSetFilterOn { get; set; }
+        
+        /// <summary>
+        /// IfcSimpleProperty value list of all properties associated to a IfcObject or IfcTypeObject currently set
+        /// </summary>
+        public IEnumerable<IfcSimpleProperty> ObjProperties
         {
-            get { return _propSetsValuesObjects; }
+            get
+            {
+                    return from dic in _mapPsetToProps
+                       from psetval in dic.Value //list of IfcSimpleProperty
+                       select psetval;
+            }
         }
 
         /// <summary>
-        /// Dictionary keyed on the Object IfcTypeObject, holding a Dictionary keyed on property set holding the SinglePropertyValues held by that set related to the object
+        /// Current object which set the properties
         /// </summary>
-        public Dictionary<IfcTypeObject, Dictionary<IfcPropertySet, List<IfcSimpleProperty>>> PropSetsValuesTypeObjects
+        public IfcObjectDefinition CurrentObject
         {
-            get { return _propSetsValuesTypeObjects; }
+            get { return _currentObject; }
+           
         }
 
         /// <summary>
-        /// Dictionary keyed on the Object IfcTypeObject, holding a Dictionary keyed on property set holding the SinglePropertyValues held by that set related to the object property  RelatedObjects.First()
+        /// Property sets mapped to a list of properties for the current set object
         /// </summary>
-        public Dictionary<IfcTypeObject, Dictionary<IfcPropertySet, List<IfcSimpleProperty>>> PropSetsValuesTypeObjectsFirstRelatedObject
+        public Dictionary<IfcPropertySet, IEnumerable<IfcSimpleProperty>> MapPsetToProps
         {
-            get { return _propSetsValuesTypeObjectsFirstRelatedObject; }
+            get { return _mapPsetToProps; }
         }
-       
-        /// <summary>
-        /// Property single value list of all properties associated to a IfcObject or IfcTypeObject
-        /// </summary>
-        public List<IfcSimpleProperty> AllPropertySingleValues
-        {
-            get { return _ifcPropertySingleValues; }
-        }
-
         #endregion
 
 
         #region Methods
 
-                
         /// <summary>
-        /// constructor for IfcObject types
+        /// Default Constructor
         /// </summary>
-        /// <param name="sourceRows"></param>
-        public COBieDataPropertySetValues(IEnumerable<IfcObject> sourceRows)
+        public COBieDataPropertySetValues()
         {
-            //_propSetsValuesObjects = new Dictionary<IfcObject, Dictionary<IfcPropertySet, List<IfcSimpleProperty>>>();
-            _propSetsValuesObjects = sourceRows.Where(el => (el != null)).ToDictionary(el => el, el => el.PropertySets
-                .ToDictionary(ps => ps, ps => ps.HasProperties.OfType<IfcSimpleProperty>().ToList()));
-            
-        }
-
-        /// <summary>
-        /// constructor for IfcObject types
-        /// </summary>
-        /// <param name="sourceRows"></param>
-        public COBieDataPropertySetValues(IEnumerable<IfcTypeObject> sourceRows)
-        {
-            _propSetsValuesTypeObjects = sourceRows.Where(tObj => (tObj.HasPropertySets != null)).ToDictionary(tObj => tObj, tObj => tObj.HasPropertySets.OfType<IfcPropertySet>()
-                .ToDictionary(ps => ps, ps => ps.HasProperties.OfType<IfcSimpleProperty>().ToList()));
-            //===========get related properties==================
-
-            //Get the first related object and property sets and property single values for the IfcTypeObject
-            _propSetsValuesTypeObjectsFirstRelatedObject = sourceRows.Where(tObjT => (tObjT.ObjectTypeOf.Count() > 0) && (tObjT.ObjectTypeOf.First().RelatedObjects.Count() > 0)).ToDictionary(tObj => tObj, tObj => tObj.ObjectTypeOf.First().RelatedObjects.First().IsDefinedByProperties.Select(ps => ps.RelatingPropertyDefinition).OfType<IfcPropertySet>()
-                                                                                                                       .ToDictionary(ps => ps, ps => ps.HasProperties.OfType<IfcSimpleProperty>().ToList()));
-            //set up property value list
-            _ifcPropertySingleValues = new List<IfcSimpleProperty>();
-            
-                  
-        }
-
-        /// <summary>
-        /// Indexer for COBieDataPropertySetValues class
-        /// </summary>
-        /// <param name="ifcObject"> IfcObject key for indexer</param>
-        /// <returns></returns>
-        public Dictionary<IfcPropertySet, List<IfcSimpleProperty>> this[IfcObject ifcObject]
-        {
-            get
-            {
-                if (_propSetsValuesObjects.ContainsKey(ifcObject))
-                    return _propSetsValuesObjects[ifcObject];
-                else
-                    return null;
-            }
-        }
-
-        /// <summary>
-        /// Indexer for COBieDataPropertySetValues class
-        /// </summary>
-        /// <param name="ifcTypeObject"> IfcTypeObject key for indexer</param>
-        /// <returns></returns>
-        public Dictionary<IfcPropertySet, List<IfcSimpleProperty>> this[IfcTypeObject ifcTypeObject]
-        {
-            get
-            {
-                if (_propSetsValuesTypeObjects.ContainsKey(ifcTypeObject))
-                    return _propSetsValuesTypeObjects[ifcTypeObject];
-                else
-                    return null;
-            }
+            _mapPsetToProps = new Dictionary<IfcPropertySet, IEnumerable<IfcSimpleProperty>>();
         }
 
          /// <summary>
@@ -130,90 +72,90 @@ namespace Xbim.COBie.Data
         /// </summary>
         /// <param name="ifcTypeObject"> IfcTypeObject </param>
         /// <returns>Dictionary of IfcPropertySet keyed to List of IfcPropertySingleValue</returns>
-        public Dictionary<IfcPropertySet, List<IfcSimpleProperty>> GetRelatedProperties(IfcTypeObject ifcTypeObject)
+        public Dictionary<IfcPropertySet, IEnumerable<IfcSimpleProperty>> GetRelatedProperties(IfcTypeObject ifcTypeObject)
         {
-
-            if ( (_propSetsValuesTypeObjectsFirstRelatedObject.Any()) && 
-                (_propSetsValuesTypeObjectsFirstRelatedObject.ContainsKey(ifcTypeObject))
-                )
-             return _propSetsValuesTypeObjectsFirstRelatedObject[ifcTypeObject];
-            else
-             return null;
+            if (ifcTypeObject != null)
+            {
+                IfcObject IfcObj = ifcTypeObject.ObjectTypeOf.First().RelatedObjects.First();
+                return IfcObj.IsDefinedByProperties
+                                .Select(def => def.RelatingPropertyDefinition).OfType<IfcPropertySet>()
+                                .ToDictionary(ps => ps, ps => ps.HasProperties.OfType<IfcSimpleProperty>());
+            }
+            return new Dictionary<IfcPropertySet, IEnumerable<IfcSimpleProperty>>();
+            
+            
         }
        
          
         /// <summary>
-        /// Set the single property values held for the IfcObject into _ifcPropertySingleValues field
+        /// Set the property sets mapped to list of simple property values held for the IfcObject
         /// </summary>
-        /// <param name="ifcObject">IfcObject holding the single property values</param>
-        public void SetAllPropertySingleValues (IfcObject ifcObject)
+        /// <param name="ifcObject">IfcObject holding the property values</param>
+        public void SetAllPropertyValues (IfcObject ifcObject)
         {
-            //_ifcPropertySingleValues = ifcObject.IsDefinedByProperties.Select(def => def.RelatingPropertyDefinition).OfType<IfcPropertySet>()
-            //    .SelectMany(ps => ps.HasProperties.OfType<IfcSimpleProperty>()).ToList();
+            _currentObject = ifcObject;
+            PSetFilterOn = false;
 
-            //_ifcPropertySingleValues = ifcObject.PropertySets.SelectMany(ps => ps.HasProperties.OfType<IfcSimpleProperty>()).ToList();
-
-            _ifcPropertySingleValues = (from dic in _propSetsValuesObjects[ifcObject]
-                                        from psetval in dic.Value //list of IfcPropertySingleValue
-                                        select psetval).ToList();
-//#if DEBUG
-//            var xxx = (from dic in _propSetsValuesObjects[ifcObject]
-//                       from psetval in dic.Value //list of IfcPropertySingleValue
-//                       select psetval).ToList();
-
-//            if (_ifcPropertySingleValues.Count != xxx.Count)
-//            {
-//                Console.WriteLine(String.Format("Mismatch on property count {0} != {1}", _ifcPropertySingleValues.Count, xxx.Count));
-//            }
-            
-//#endif
+            _mapPsetToProps = ifcObject.IsDefinedByProperties
+                            .Select(def => def.RelatingPropertyDefinition).OfType<IfcPropertySet>()
+                            .ToDictionary(ps => ps, ps => ps.HasProperties.OfType<IfcSimpleProperty>());
         }
 
         /// <summary>
-        /// Set the single property values held for the IfcObject into _ifcPropertySingleValues field
+        /// Set the property sets mapped to list of simple property values held for the IfcTypeObject
         /// </summary>
-        /// <param name="ifcObject">IfcObject holding the single property values</param>
-        public void SetAllPropertySingleValues(IfcTypeObject ifcObject)
+        /// <param name="ifcTypeObject">ifcTypeObject holding the property values</param>
+        public void SetAllPropertyValues(IfcTypeObject ifcTypeObject)
         {
-            //_ifcPropertySingleValues.Clear(); //reset
+            _currentObject = ifcTypeObject;
+            PSetFilterOn = false;
 
-            if (_propSetsValuesTypeObjects.ContainsKey(ifcObject))
+
+            if (ifcTypeObject.HasPropertySets != null) //we have properties to get
             {
-                _ifcPropertySingleValues = (from dic in _propSetsValuesTypeObjects[ifcObject]
-                                                from psetval in dic.Value //list of IfcPropertySingleValue
-                                                select psetval).ToList();
+                _mapPsetToProps = ifcTypeObject.HasPropertySets.OfType<IfcPropertySet>()
+                                        .ToDictionary(ps => ps, ps => ps.HasProperties.OfType<IfcSimpleProperty>());
             }
-            //fall back to related items to get the information from
-            if (_ifcPropertySingleValues.Count() == 0)
+            else
             {
-                //get first related object properties of the passed in object
-                GetRelatedObjectProperties(ifcObject); 
+                _mapPsetToProps.Clear(); //clear as we have no properties for this object
+            }
+
+            if (_mapPsetToProps.Count() == 0) //not sure we should do this, but we get values to fill from an object that is using the type object
+            {
+                IfcObject IfcObj = ifcTypeObject.ObjectTypeOf.First().RelatedObjects.First();
+                SetAllPropertyValues(IfcObj);//we do not filter on property set name here, just go for all of them
             }
         }
 
         
         /// <summary>
-        /// Set the single property values held for the IfcObject into _ifcPropertySingleValues field 
+        /// Set the property sets mapped to list of simple property values held for the IfcTypeObject
         /// filtered by a IfcPropertySet name
         /// </summary>
-        /// <param name="ifcTypeObject">IfcObject holding the single property values</param>
+        /// <param name="ifcTypeObject">IfcTypeObject holding the property values</param>
         /// <param name="propertySetName">IfcPropertySetName</param>
-        public void SetAllPropertySingleValues(IfcTypeObject ifcTypeObject, string propertySetName)
+        public void SetAllPropertyValues(IfcTypeObject ifcTypeObject, string propertySetName)
         {
-            _ifcPropertySingleValues.Clear(); //reset
+            _currentObject = ifcTypeObject;
+            PSetFilterOn = true;
 
-            if (_propSetsValuesTypeObjects.ContainsKey(ifcTypeObject))
+            if (ifcTypeObject.HasPropertySets != null) //we have properties to get
             {
-                _ifcPropertySingleValues = (from dic in _propSetsValuesTypeObjects[ifcTypeObject]
-                                                where (dic.Key.Name == propertySetName)
-                                                from psetval in dic.Value //list of IfcPropertySingleValue
-                                                select psetval).ToList();
+                _mapPsetToProps = ifcTypeObject.HasPropertySets.OfType<IfcPropertySet>()
+                                .Where(ps => (ps.Name == propertySetName))
+                                .ToDictionary(ps => ps, ps => ps.HasProperties.OfType<IfcSimpleProperty>());
             }
-            //fall back to related items to get the information from
-            if (_ifcPropertySingleValues.Count() == 0)
+            else
             {
-                //get first related object properties of the passed in object
-                GetRelatedObjectProperties(ifcTypeObject); //we do not filter on property set name here, just go for all of them
+                _mapPsetToProps.Clear(); //clear as we have no properties for this object
+            }
+
+            //fall back to related items to get the information from
+            if (_mapPsetToProps.Count() == 0)//not sure we should do this, but we get values to fill from an object that is using the type object
+            {
+                IfcObject IfcObj = ifcTypeObject.ObjectTypeOf.First().RelatedObjects.First();
+                SetAllPropertyValues(IfcObj); //we do not filter on property set name here, just go for all of them
             }
         }
 
@@ -227,23 +169,22 @@ namespace Xbim.COBie.Data
         /// <returns></returns>
         public string GetPropertySingleValueValue(string PropertyValueName, bool containsString)
         {
+            
             IfcPropertySingleValue ifcPropertySingleValue = null;
             if (containsString)
-                ifcPropertySingleValue = _ifcPropertySingleValues.Where(p => p.Name.ToString().Contains(PropertyValueName)).OfType<IfcPropertySingleValue>().FirstOrDefault();
+                ifcPropertySingleValue = ObjProperties.OfType<IfcPropertySingleValue>().Where(p => p.Name.ToString().Contains(PropertyValueName)).FirstOrDefault();
             else
-                ifcPropertySingleValue = _ifcPropertySingleValues.Where(p => p.Name == PropertyValueName).OfType<IfcPropertySingleValue>().FirstOrDefault();
+                ifcPropertySingleValue = ObjProperties.OfType<IfcPropertySingleValue>().Where(p => p.Name == PropertyValueName).FirstOrDefault();
 
             //return a string value
             if ((ifcPropertySingleValue != null) && 
                 (ifcPropertySingleValue.NominalValue != null) && 
                 (!string.IsNullOrEmpty(ifcPropertySingleValue.NominalValue.Value.ToString())) && 
-                (ifcPropertySingleValue.Name.ToString() != ifcPropertySingleValue.NominalValue.Value.ToString()) //name and vale are not the same
+                (ifcPropertySingleValue.Name.ToString() != ifcPropertySingleValue.NominalValue.Value.ToString()) //name and value are not the same
                 ) 
             return ifcPropertySingleValue.NominalValue.Value.ToString();
             else
                 return Constants.DEFAULT_STRING;
-        
-
         }
 
         /// <summary>
@@ -254,28 +195,7 @@ namespace Xbim.COBie.Data
         /// <returns></returns>
         public IfcPropertySingleValue GetPropertySingleValue(string PropertyValueName)
         {
-            return _ifcPropertySingleValues.Where(p => p.Name == PropertyValueName).OfType<IfcPropertySingleValue>().FirstOrDefault();
-        }
-
-        /// <summary>
-        /// Get the first related object properties, fall back to where the IfcTypeObject has no properties
-        /// </summary>
-        /// <param name="ifcTypeObject">Object to get related object from</param>
-        private void GetRelatedObjectProperties(IfcTypeObject ifcTypeObject)
-        {
-            if (_propSetsValuesTypeObjectsFirstRelatedObject.Any())
-            {
-                List<IfcSimpleProperty> RelObjValues = new List<IfcSimpleProperty>();
-                if (_propSetsValuesTypeObjectsFirstRelatedObject.ContainsKey(ifcTypeObject))
-                {
-                    RelObjValues = (from dic in _propSetsValuesTypeObjectsFirstRelatedObject[ifcTypeObject]
-                                from psetval in dic.Value //list of IfcPropertySingleValue
-                                select psetval).ToList();
-
-                    _ifcPropertySingleValues.AddRange(RelObjValues);
-                }
-                
-            }
+            return ObjProperties.OfType<IfcPropertySingleValue>().Where(p => p.Name == PropertyValueName).FirstOrDefault();
         }
         
         #endregion
