@@ -22,11 +22,10 @@ namespace Xbim
 		{
 			static int CompareBoundinBoxSize(XbimGeometryModel^ a, XbimGeometryModel^ b)
 			{
-			      /*float aLen = a->GetBoundingBox().Length();
-				  float bLen = b->GetBoundingBox().Length();*/
+			    XbimRect3D aBox = a->GetBoundingBox();
+				XbimRect3D bBox = b->GetBoundingBox();
 				double aVol = a->Volume;
 				double bVol = b->Volume;
-				//  return aLen.CompareTo(bLen);
 				return bVol.CompareTo(aVol);
 			}
 

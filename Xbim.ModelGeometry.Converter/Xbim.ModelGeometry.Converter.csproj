@@ -178,6 +178,14 @@
       <Link>x86\Xbim.ModelGeometry.OCCd.pdb</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x86\Xbim.ModelGeometry.OCCd.xml">
+      <Link>x86\Xbim.ModelGeometry.OCCd.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x64\Xbim.ModelGeometry.OCCd.xml">
+      <Link>x86\Xbim.ModelGeometry.OCCd.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>

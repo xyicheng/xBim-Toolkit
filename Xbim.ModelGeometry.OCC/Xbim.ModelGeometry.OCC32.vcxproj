@@ -191,6 +191,7 @@
     </PostBuildEvent>
     <ClCompile>
       <AdditionalUsingDirectories>$(OutDir)\</AdditionalUsingDirectories>
+      <GenerateXMLDocumentationFiles>true</GenerateXMLDocumentationFiles>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>

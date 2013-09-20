@@ -180,6 +180,14 @@ namespace Xbim.Common.Geometry
             }
         }
 
+        public double Volume
+        {
+            get
+            {
+                return _sizeX * _sizeY * _sizeZ;
+            }
+        }
+
         #region Serialisation
 
         /// <summary>
