@@ -73,9 +73,9 @@ namespace Xbim.IO
        
         #endregion
         #region Cached data
-        protected Dictionary<int, IPersistIfcEntity> read = new Dictionary<int, IPersistIfcEntity>();
-        protected Dictionary<int, IPersistIfcEntity> modified = new Dictionary<int, IPersistIfcEntity>();
-        protected Dictionary<int, IPersistIfcEntity> createdNew = new Dictionary<int, IPersistIfcEntity>();
+        protected ConcurrentDictionary<int, IPersistIfcEntity> read = new ConcurrentDictionary<int, IPersistIfcEntity>();
+        protected ConcurrentDictionary<int, IPersistIfcEntity> modified = new ConcurrentDictionary<int, IPersistIfcEntity>();
+        protected ConcurrentDictionary<int, IPersistIfcEntity> createdNew = new ConcurrentDictionary<int, IPersistIfcEntity>();
         #endregion
 
         private string _databaseName;
@@ -304,7 +304,8 @@ namespace Xbim.IO
         }
         #endregion
 
-
+       
+       
         /// <summary>
         ///  Opens an xbim model server file, exception is thrown if errors are encountered
         /// </summary>
@@ -834,9 +835,10 @@ namespace Xbim.IO
             XbimInstanceHandle h = cursor.AddEntity(t);
             IPersistIfcEntity entity = (IPersistIfcEntity)Activator.CreateInstance(t);
             entity.Bind(_model, h.EntityLabel); //bind it, the object is new and empty so the label is positive
-            this.read.Add(h.EntityLabel, entity);
-            modified.Add(h.EntityLabel, entity);
-            createdNew.Add(h.EntityLabel, entity);
+            entity= this.read.GetOrAdd(h.EntityLabel, entity);
+            modified.TryAdd(h.EntityLabel, entity);
+            createdNew.TryAdd(h.EntityLabel, entity);
+           
             return entity;
         }
 
@@ -969,7 +971,7 @@ namespace Xbim.IO
                         else
                             entity.Bind(_model, -posLabel); //a negative handle determines that the attributes of this entity have not been loaded yet
                         if (caching && !unCached)
-                            this.read.Add(posLabel, entity);
+                            entity = this.read.GetOrAdd(posLabel, entity);
                         return entity;
                     }
                 }
@@ -1046,7 +1048,7 @@ namespace Xbim.IO
                                 else
                                     entity.Bind(_model, -ih.EntityLabel); //a negative handle determines that the attributes of this entity have not been loaded yet
 
-                                if (caching) this.read.Add(ih.EntityLabel, entity);
+                                if (caching) entity = this.read.GetOrAdd(ih.EntityLabel, entity);
                                 entityLabels.Add(entity.EntityLabel);
                                 yield return (TIfcType)entity;
                             }
@@ -1143,7 +1145,7 @@ namespace Xbim.IO
                                         else
                                             entity.Bind(_model, -ih.EntityLabel); //a negative handle determines that the attributes of this entity have not been loaded yet
 
-                                        if (caching) this.read.Add(ih.EntityLabel, entity);
+                                        if (caching) entity = this.read.GetOrAdd(ih.EntityLabel, entity);
                                         entityLabels.Add(entity.EntityLabel);
                                         yield return (TIfcType)entity;
                                     }
@@ -1715,14 +1717,14 @@ namespace Xbim.IO
         /// <param name="entity"></param>
         internal void AddModified(IPersistIfcEntity entity)
         {
-            IPersistIfcEntity editing;
-            if (modified.TryGetValue(entity.EntityLabel, out editing)) //it  already exists as edited
-            {
-                if (!System.Object.ReferenceEquals(editing, entity)) //it is not the same object reference
-                    throw new XbimException("An attempt to edit a duplicate reference for #" + entity.EntityLabel + " error has occurred");
-            }
-            else
-                modified.Add(entity.EntityLabel, entity);
+            //IPersistIfcEntity editing;
+            //if (modified.TryGetValue(entity.EntityLabel, out editing)) //it  already exists as edited
+            //{
+            //    if (!System.Object.ReferenceEquals(editing, entity)) //it is not the same object reference
+            //        throw new XbimException("An attempt to edit a duplicate reference for #" + entity.EntityLabel + " error has occurred");
+            //}
+            //else
+            modified.TryAdd(entity.EntityLabel, entity);
         }
 
         public string DatabaseName 
@@ -1888,6 +1890,30 @@ namespace Xbim.IO
                     yield return item;
 
             }
+        }
+        /// <summary>
+        /// Starts a read cache
+        /// </summary>
+        internal void CacheStart()
+        {
+            caching = true;
+        }
+        /// <summary>
+        /// Clears a read cache, do not call when a transaction is active
+        /// </summary>
+        internal void CacheClear()
+        {
+            Debug.Assert(modified.Count == 0 && createdNew.Count==0);
+            read.Clear();
+        }
+        /// <summary>
+        /// Clears a read cache, and ends further caching, do not call when a transaction is active
+        /// </summary>
+        internal void CacheStop()
+        {
+            Debug.Assert(modified.Count == 0 && createdNew.Count == 0);
+            read.Clear();
+            caching = false;
         }
     }
 }

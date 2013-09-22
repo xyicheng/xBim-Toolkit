@@ -75,6 +75,7 @@ namespace XbimConvert
                         //model.Open(xbimFileName, XbimDBAccess.ReadWrite);
                         if (!arguments.NoGeometry)
                         {
+                           
                             XbimMesher.GenerateGeometry(model, Logger, progDelegate);
                             if (arguments.GenerateScene)
                             {

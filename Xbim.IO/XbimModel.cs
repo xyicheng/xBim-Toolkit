@@ -633,7 +633,7 @@ namespace Xbim.IO
                 switch (className)
                 {
                     case "FILE_DESCRIPTION":
-                        return new FileDescription();
+                        return new FileDescription("");
                     case "FILE_NAME":
                         return new FileName();
                     case "FILE_SCHEMA":
@@ -697,6 +697,32 @@ namespace Xbim.IO
             bool ok =  Open(fileName, accessMode);
             _deleteOnClose = deleteOnClose;
             return ok;
+        }
+
+        /// <summary>
+        /// Begins a cache of all data read from the model, improves performance where data is read many times
+        /// </summary>
+        public void CacheStart()
+        {
+            if (editTransactionEntityCursor == null) //if we are in a transaction caching is on anyway
+                 cache.CacheStart();
+        }
+        /// <summary>
+        /// Clears all read data in the cache
+        /// </summary>
+        public void CacheClear()
+        {
+            if (editTransactionEntityCursor == null) //if we are in a transaction do not clear
+                cache.CacheClear();
+        }
+
+        /// <summary>
+        /// Stops further caching of data and clears the current cache
+        /// </summary>
+        public void CacheStop()
+        {
+            if (editTransactionEntityCursor == null)  //if we are in a transaction do not stop
+                cache.CacheStop();
         }
 
         /// <summary>

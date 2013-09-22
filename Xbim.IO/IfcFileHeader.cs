@@ -27,9 +27,7 @@ namespace Xbim.IO
     [Serializable]
     public class FileDescription : IIfcFileDescription
     {
-        public FileDescription()
-        {
-        }
+        
 
         public FileDescription(string implementationLevel)
         {
@@ -38,7 +36,7 @@ namespace Xbim.IO
         }
 
         public List<string> Description = new List<string>(2);
-        public string ImplementationLevel;
+        private string ImplementationLevel;
         public int EntityCount;
 
         #region ISupportIfcParser Members
@@ -470,7 +468,7 @@ namespace Xbim.IO
             }
             else
             {
-                FileDescription = new FileDescription();
+                FileDescription = new FileDescription("");
                 FileName = new FileName();
                 FileSchema = new FileSchema();
             }
