@@ -22,7 +22,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Ifc2x3.PresentationAppearanceResource
 {
-    [IfcPersistedEntityAttribute]
+    [IfcPersistedEntityAttribute,IndexedClass]
     public abstract class IfcPresentationStyle : ISupportChangeNotification, INotifyPropertyChanged, IPersistIfcEntity,
                                                  INotifyPropertyChanging
     {
