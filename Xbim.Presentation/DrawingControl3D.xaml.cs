@@ -56,8 +56,6 @@ namespace Xbim.Presentation
     /// </summary>
     public partial class DrawingControl3D : UserControl
     {
-        // todo: bonghi: why are federated models transparent?
-        // 
         public DrawingControl3D()
         {
             InitializeComponent();
@@ -67,14 +65,12 @@ namespace Xbim.Presentation
             federationColours = new XbimColourMap(StandardColourMaps.Federation);
             Viewport.CameraChanged += Viewport_CameraChanged;
             ClearGraphics();
-            MouseModifierKeyBehaviour.Add(ModifierKeys.Control, MouseClickActions.Measure);
+            MouseModifierKeyBehaviour.Add(ModifierKeys.Control, MouseClickActions.Toggle);
+            MouseModifierKeyBehaviour.Add(ModifierKeys.Alt, MouseClickActions.Measure);
         }
 
         void Viewport_CameraChanged(object sender, RoutedEventArgs e)
         {
-            // Debug.WriteLine("Cam changed " + DateTime.Now);
-            
-            
             HelixViewport3D snd = sender as HelixViewport3D;
             if (viewBounds.Length() > 0 && snd != null)
             {
@@ -88,8 +84,6 @@ namespace Xbim.Presentation
                 double FarPlane = CentralDistance + 1.5 * viewBounds.Length();
                 double NearPlane = CentralDistance - 1.5 * viewBounds.Length();
 
-                // if (NearPlane <= FarPlane / 7000)
-                //     NearPlane = FarPlane/7000;
                 const double nearLimit = 0.125;
                 if (NearPlane < nearLimit)
                 {
@@ -97,13 +91,11 @@ namespace Xbim.Presentation
                 }
                 if (Viewport.Camera.NearPlaneDistance != NearPlane)
                 {
-                    Viewport.Camera.NearPlaneDistance = NearPlane;
-                    // Debug.WriteLine("Near: " + NearPlane);
+                    Viewport.Camera.NearPlaneDistance = NearPlane;  // Debug.WriteLine("Near: " + NearPlane);
                 }
                 if (Viewport.Camera.FarPlaneDistance != FarPlane)
                 {
-                    Viewport.Camera.FarPlaneDistance = FarPlane;
-                    // Debug.WriteLine("Far: " + FarPlane);
+                    Viewport.Camera.FarPlaneDistance = FarPlane;    // Debug.WriteLine("Far: " + FarPlane);
                 }
             }
         }
@@ -184,6 +176,13 @@ namespace Xbim.Presentation
 
         public Dictionary<ModifierKeys, MouseClickActions> MouseModifierKeyBehaviour = new Dictionary<ModifierKeys, MouseClickActions>();
 
+        private void SelectionDrivenSelectedEntityChange(IPersistIfcEntity entity)
+        {
+            _SelectedEntityChangeTriggedBySelectionChange = true;
+            this.SelectedEntity = entity;
+            _SelectedEntityChangeTriggedBySelectionChange = false;
+        }
+
 
         private List<PointGeomInfo> PrevPoints = new List<PointGeomInfo>();
         private void Canvas_MouseDown(object sender, MouseButtonEventArgs e)
@@ -195,41 +194,49 @@ namespace Xbim.Presentation
 
             if (SelectionBehaviour == SelectionBehaviours.MultipleSelection)
             {
+                // default behaviour is single selection
+                MouseClickActions mc = MouseClickActions.Single;
+                if (MouseModifierKeyBehaviour.ContainsKey(Keyboard.Modifiers))
+                    mc = MouseModifierKeyBehaviour[Keyboard.Modifiers];
+                if (mc != MouseClickActions.Measure)
+                {
+                    // drop the geometry for the measure visualization
+                    FurtherGeometries.Content = null;
+                    PrevPoints.Clear();
+                }
+
                 if (thisSelectedEntity == null)
                 { // regardless of selection mode an empty selection clears the current selection
                     Selection.Clear();
-                    PrevPoints.Clear();
                     HighlighSelected(null);
                 }
                 else
                 {
-                    MouseClickActions mc = MouseClickActions.Toggle;
-                    if (MouseModifierKeyBehaviour.ContainsKey(Keyboard.Modifiers))
-                        mc = MouseModifierKeyBehaviour[Keyboard.Modifiers];
-
                     switch (mc)
                     {
                         case MouseClickActions.Add:
                             Selection.Add(thisSelectedEntity);
-                            HighlighSelected(null);
-                            break;
+                            SelectionDrivenSelectedEntityChange(thisSelectedEntity);
+                            break; 
                         case MouseClickActions.Remove:
                             Selection.Remove(thisSelectedEntity);
-                            HighlighSelected(null);
+                            SelectionDrivenSelectedEntityChange(null);
                             break;
                         case MouseClickActions.Toggle:
-                            Selection.Toggle(thisSelectedEntity);
-                            HighlighSelected(null);
+                            bool bAdded = Selection.Toggle(thisSelectedEntity);
+                            if (bAdded)
+                                SelectionDrivenSelectedEntityChange(thisSelectedEntity);
+                            else
+                                SelectionDrivenSelectedEntityChange(null);
                             break;
                         case MouseClickActions.Single:
                             Selection.Clear();
                             Selection.Add(thisSelectedEntity);
-                            HighlighSelected(null);
+                            SelectionDrivenSelectedEntityChange(thisSelectedEntity);
                             break;
                         case MouseClickActions.Measure:
                             var p = GetClosestPoint(hit);
                             PrevPoints.AddRange(p);
-
                             PolylineGeomInfo g = new PolylineGeomInfo(PrevPoints);
                             Debug.WriteLine(string.Format(
                                 "Lenght: {0} (count: {1})", g.GetLenght(), g.Count()
@@ -241,12 +248,11 @@ namespace Xbim.Presentation
                                     "Area: {0}", d
                                     ));
                             }
-
-                            g.SetToVisual(Highlighted);
+                            // this hides the current selection; it might not be the best choice.
+                            g.SetToVisual(FurtherGeometries); 
                             break;
                     }
                 }
-                Debug.WriteLine("Selectioncount: " + Selection.Count());
             }
             else
             {
@@ -438,7 +444,7 @@ namespace Xbim.Presentation
             MultipleSelection
         }
 #if DEBUG
-        public SelectionBehaviours SelectionBehaviour = SelectionBehaviours.SingleSelection;
+        public SelectionBehaviours SelectionBehaviour = SelectionBehaviours.MultipleSelection;
 #else
         public SelectionBehaviours SelectionBehaviour = SelectionBehaviours.SingleSelection;
 #endif
@@ -458,13 +464,16 @@ namespace Xbim.Presentation
                 EntitySelection oldVal = e.OldValue as EntitySelection;
                 EntitySelection newVal = e.NewValue as EntitySelection;
                 d3d.ReplaceSelection(newVal, oldVal);
-                Debug.WriteLine("Selectioncount: " + newVal.Count());
             }
         }
 
         private void ReplaceSelection(EntitySelection newVal, EntitySelection oldVal)
         {
-            // throw new NotImplementedException();
+            if (newVal.Count() < 2)
+            {
+                SelectionDrivenSelectedEntityChange(newVal.FirstOrDefault());
+            }
+            this.HighlighSelected(null);
         }
 
         public static readonly RoutedEvent SelectedEntityChangedEvent = EventManager.RegisterRoutedEvent("SelectedEntityChangedEvent", RoutingStrategy.Bubble, typeof(SelectionChangedEventHandler), typeof(DrawingControl3D));
@@ -475,6 +484,7 @@ namespace Xbim.Presentation
             remove { RemoveHandler(SelectedEntityChangedEvent, value); }
         }
 
+        // this events are is not involved when SelectedEntityProperty is changed.
         public IPersistIfcEntity SelectedEntity
         {
             get { return (IPersistIfcEntity)GetValue(SelectedEntityProperty); }
@@ -485,25 +495,31 @@ namespace Xbim.Presentation
         public static readonly DependencyProperty SelectedEntityProperty =
             DependencyProperty.Register("SelectedEntity", typeof(IPersistIfcEntity), typeof(DrawingControl3D), new PropertyMetadata(OnSelectedEntityChanged));
 
+        /// <summary>
+        /// _SelectedEntityChangeTriggedBySelectionChange is introduced a temporary fix to allow the multiple selection mode to continue working and propagating the SelectedEntityChanged event.
+        /// When selectedEntity is changed externally (value is false) then the Selection property is also impacted.
+        /// </summary>
+        private bool _SelectedEntityChangeTriggedBySelectionChange = false;
         private static void OnSelectedEntityChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (d is DrawingControl3D)
             {
                 DrawingControl3D d3d = d as DrawingControl3D;
-                IPersistIfcEntity oldVal = e.OldValue as IPersistIfcEntity;
-                //if (oldVal != null)
-                //{
+                // IPersistIfcEntity oldVal = e.OldValue as IPersistIfcEntity;
+                // if (oldVal != null)
+                // {
                 //    d3d.Deselect(oldVal);
-                //}
+                // }
                 IPersistIfcEntity newVal = e.NewValue as IPersistIfcEntity;
+                if (!d3d._SelectedEntityChangeTriggedBySelectionChange)
+                {
+                    d3d.Selection.Clear();
+                    if (newVal != null)
+                        d3d.Selection.Add(newVal);
+                }
                 d3d.HighlighSelected(newVal);
             }
         }
-
-        //private void Deselect(IPersistIfcEntity oldVal)
-        //{
-        //    Highlighted.Mesh = null;
-        //}
 
         /// <summary>
         /// Executed when a new entity is selected
