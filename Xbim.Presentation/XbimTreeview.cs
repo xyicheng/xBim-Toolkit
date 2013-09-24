@@ -97,9 +97,17 @@ namespace Xbim.Presentation
                     { 
                         // search for composed object
                         var ParentObject = p.Decomposes.FirstOrDefault().RelatingObject;
-                        found = FindUnderContainingSpace(newVal, (IfcProduct)ParentObject);  // direct search of parent through containing space
-                        if (found != null)
-                            found = FindItemDepthFirst(found, newVal); // then search for the child
+                        if (ParentObject is IfcProduct) // 
+                        {
+                            found = FindUnderContainingSpace(newVal, (IfcProduct)ParentObject);  // direct search of parent through containing space
+                            if (found != null)
+                                found = FindItemDepthFirst(found, newVal); // then search for the child
+                        }
+                        else
+                        {
+                            // do basic search
+                            this.Select(newVal, false);
+                        }
                         
                     }
                     if (found != null)

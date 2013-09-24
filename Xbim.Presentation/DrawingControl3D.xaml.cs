@@ -90,9 +90,10 @@ namespace Xbim.Presentation
 
                 // if (NearPlane <= FarPlane / 7000)
                 //     NearPlane = FarPlane/7000;
-                if (NearPlane < 0.125)
+                const double nearLimit = 0.125;
+                if (NearPlane < nearLimit)
                 {
-                    NearPlane = 0.125;
+                    NearPlane = nearLimit;
                 }
                 if (Viewport.Camera.NearPlaneDistance != NearPlane)
                 {
@@ -437,7 +438,7 @@ namespace Xbim.Presentation
             MultipleSelection
         }
 #if DEBUG
-        public SelectionBehaviours SelectionBehaviour = SelectionBehaviours.MultipleSelection;
+        public SelectionBehaviours SelectionBehaviour = SelectionBehaviours.SingleSelection;
 #else
         public SelectionBehaviours SelectionBehaviour = SelectionBehaviours.SingleSelection;
 #endif
