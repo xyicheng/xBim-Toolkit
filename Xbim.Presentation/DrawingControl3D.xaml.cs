@@ -512,11 +512,29 @@ namespace Xbim.Presentation
         {
             XbimMeshGeometry3D m = new XbimMeshGeometry3D();
 
+            // 1. get the geometry first
             if (SelectionBehaviour == SelectionBehaviours.MultipleSelection)
             {
                 foreach (var item in Selection)
                 {
-                    var geomDataSet = Model.GetGeometryData(item.EntityLabel, XbimGeometryType.TriangulatedMesh);
+                    var fromModel = item.ModelOf as XbimModel;
+                    if (fromModel != null)
+                    {
+                        var geomDataSet = fromModel.GetGeometryData(item.EntityLabel, XbimGeometryType.TriangulatedMesh);
+                        foreach (var geomData in geomDataSet)
+                        {
+                            geomData.TransformBy(wcsTransform);
+                            m.Add(geomData);
+                        }
+                    }
+                }
+            }
+            else if (newVal != null)
+            {
+                var fromModel = newVal.ModelOf as XbimModel;
+                if (fromModel != null)
+                {
+                    var geomDataSet = fromModel.GetGeometryData(newVal.EntityLabel, XbimGeometryType.TriangulatedMesh);
                     foreach (var geomData in geomDataSet)
                     {
                         geomData.TransformBy(wcsTransform);
@@ -524,15 +542,9 @@ namespace Xbim.Presentation
                     }
                 }
             }
-            else if (newVal != null)
-            {
-                var geomDataSet = Model.GetGeometryData(newVal.EntityLabel, XbimGeometryType.TriangulatedMesh);
-                foreach (var geomData in geomDataSet)
-                {
-                    geomData.TransformBy(wcsTransform);
-                    m.Add(geomData);
-                }
-            }
+
+            // 2. then determine how to highlight it
+            //
             if (SelectionHighlightMode == SelectionHighlightModes.WholeMesh)
             {
                 List<Point3D> ps = new List<Point3D>(m.PositionCount);

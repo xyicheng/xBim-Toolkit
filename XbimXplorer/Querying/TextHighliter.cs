@@ -9,7 +9,34 @@ namespace XbimXplorer.Querying
 {
     internal class TextHighliter
     {
-        internal class ReportBit
+        internal abstract class ReportComponent
+        {
+            internal abstract Block ToBlock();
+        }
+
+        internal class MultiPartBit : ReportComponent
+        {
+            Block b = null;
+            public MultiPartBit(string[] strings, Brush[] brushes)
+            {
+                int iC = Math.Min(strings.Length, brushes.Length);
+                Span s = new Span();
+                for (int i = 0; i < iC; i++)
+                {
+                    Span s2 = new Span(new Run(strings[i]));
+                    s2.Foreground = brushes[i];
+                    s.Inlines.Add(s2);
+                }
+                b = new Paragraph(s);
+                
+            }
+            internal override Block ToBlock()
+            {
+                return b;
+            }
+        }
+
+        internal class ReportBit : ReportComponent
         {
             string TextContent;
             Brush textBrush;
@@ -20,7 +47,7 @@ namespace XbimXplorer.Querying
                 textBrush = brsh;
             }
 
-            internal Block ToBlock()
+            internal override Block ToBlock()
             {
                 Paragraph p = new Paragraph(new Run(TextContent));
                 if (textBrush != null)
@@ -29,7 +56,7 @@ namespace XbimXplorer.Querying
             }
         }
 
-        List<ReportBit> Bits = new List<ReportBit>();
+        List<ReportComponent> Bits = new List<ReportComponent>();
 
         internal void Append(string text, Brush color)
         {
@@ -53,12 +80,11 @@ namespace XbimXplorer.Querying
 
         internal void Clear()
         {
-            Bits = new List<ReportBit>();
+            Bits = new List<ReportComponent>();
         }
 
         internal void DropInto(System.Windows.Documents.FlowDocument flowDocument)
         {
-            
             flowDocument.Blocks.AddRange(this.ToBlocks());
         }
 
@@ -68,6 +94,13 @@ namespace XbimXplorer.Querying
             {
                 yield return item.ToBlock();
             }
+        }
+
+        internal void AppendSpans(string[] strings, Brush[] brushes)
+        {
+            MultiPartBit b = new MultiPartBit(strings, brushes);
+            Bits.Add(b);
+            
         }
     }
 }

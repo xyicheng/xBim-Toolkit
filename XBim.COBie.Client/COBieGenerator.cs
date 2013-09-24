@@ -260,11 +260,12 @@ namespace Xbim.COBie.Client
                 
             // Validate the workbook
             progress.ReportMessage("Starting Validation...");
-            Workbook.Validate((lastProcessedSheetIndex) =>
+
+            Workbook.Validate(ErrorRowIndexBase.Two, (lastProcessedSheetIndex) =>
             {
                 // When each sheet has been processed, increment the progress bar
                 progress.IncrementAndUpdate();
-            });
+            } );
             progress.ReportMessage("Finished Validation");
             progress.Finalise();
                 

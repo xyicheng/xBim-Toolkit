@@ -30,6 +30,7 @@ using System.Windows.Data;
 using Xbim.Ifc2x3.PropertyResource;
 using Xbim.Ifc2x3.QuantityResource;
 using Xbim.Ifc2x3.MaterialResource;
+using Xbim.Ifc2x3.MeasureResource;
 
 #endregion
 
@@ -234,6 +235,8 @@ namespace Xbim.Presentation
             if (_quantities.Count > 0) return; //don't fill unless empty
             //now the property sets for any 
             IfcObject ifcObj = _entity as IfcObject;
+            // local cache for efficiency
+            IfcUnitAssignment modelUnits = null;
             if (ifcObj != null)
             {
                 foreach (IfcRelDefinesByProperties relDef in ifcObj.IsDefinedByProperties.Where(r => r.RelatingPropertyDefinition is IfcElementQuantity))
@@ -243,20 +246,20 @@ namespace Xbim.Presentation
                     {
                         foreach (var item in pSet.Quantities.OfType<IfcPhysicalSimpleQuantity>()) //only handle simple quantities properties
                         {
-
+                            if (modelUnits == null)
+                                modelUnits = item.ModelOf.Instances.OfType<IfcUnitAssignment>().FirstOrDefault(); // not optional, should never return void in valid model
+                            var v = modelUnits.GetUnitFor(item);
                             _quantities.Add(new PropertyItem()
                             {
                                 PropertySetName = pSet.Name,
                                 Name = item.Name,
-                                Value = item.ToString()
+                                Value = item.ToString() + " " + v.GetName()
                             });
                         }
                     }
                 }
             }
         }
-
-       
 
         private void FillPropertyData()
         {

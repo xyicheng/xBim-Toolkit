@@ -53,7 +53,7 @@ namespace Xbim.IO
         }
 
         /// <summary>
-        /// Creates a table based on the SQL statement
+        /// runs the SQL statement no return value.
         /// </summary>
         /// <param name="sql"></param>
         public void ExecuteSQL(string sql)

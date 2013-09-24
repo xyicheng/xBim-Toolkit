@@ -48,11 +48,16 @@ namespace XbimXplorer.Querying
 #endif
         }
 
+        private XbimModel _Model = null;
         private XbimModel Model
         {
             get
             {
-                return ParentWindow.Model;
+                if (ParentWindow != null)
+                    return ParentWindow.Model;
+                if (_Model == null)
+                    _Model = new XbimModel();
+                return _Model;
             }
         }
         public XplorerMainWindow ParentWindow;
@@ -101,6 +106,21 @@ namespace XbimXplorer.Querying
                     if (mdbclosed.Success)
                     {
                         DisplayHelp();
+                        continue;
+                    }
+
+                    mdbclosed = Regex.Match(cmd, @"xplorer", RegexOptions.IgnoreCase);
+                    if (mdbclosed.Success)
+                    {
+                        if (ParentWindow != null)
+                            ParentWindow.Focus();
+                        else
+                        {
+                            // todo: bonghi: open the model in xplorer if needed.
+                            XplorerMainWindow xp = new XplorerMainWindow();
+                            ParentWindow = xp;
+                            xp.Show();
+                        }
                         continue;
                     }
 
@@ -166,6 +186,11 @@ namespace XbimXplorer.Querying
                     m = Regex.Match(cmd, @"^(Header|he)$", RegexOptions.IgnoreCase);
                     if (m.Success)
                     {
+                        if (Model.Header == null)
+                        {
+                            ReportAdd("Model header is not defined.", Brushes.Red);
+                            continue;
+                        }
                         ReportAdd("FileDescription:");
                         foreach (var item in Model.Header.FileDescription.Description)
                         {
@@ -202,14 +227,16 @@ namespace XbimXplorer.Querying
                         continue;
                     } 
 
-                    m = Regex.Match(cmd, @"^(IfcSchema|is) (?<mode>(list|count|short) )*(?<type>.+)", RegexOptions.IgnoreCase);
+                    m = Regex.Match(cmd, @"^(IfcSchema|is) (?<mode>(list|count|short|full) )*(?<type>.+)", RegexOptions.IgnoreCase);
                     if (m.Success)
                     {
                         string type = m.Groups["type"].Value;
                         string mode = m.Groups["mode"].Value;
 
-                        
-                        if (type == PrepareRegex(type)) // there's not a regex expression, we will prepare one assuming the search for a bare name.
+                        if (type == "/")
+                        {
+                        }
+                        else if (type == PrepareRegex(type)) // there's not a regex expression, we will prepare one assuming the search for a bare name.
                         {
                             type = @".*\." + type + "$"; // any character repeated then a dot then the name and the end of line
                         }
@@ -231,9 +258,11 @@ namespace XbimXplorer.Querying
                         else
                         {
                             // report
-                            bool BeVerbose = true;
+                            int  BeVerbose = 1;
                             if (mode.ToLower() == "short ")
-                                BeVerbose = false;
+                                BeVerbose = 0;
+                            if (mode.ToLower() == "full ")
+                                BeVerbose = 2;
                             foreach (var item in TypeList)
                             {
                                 ReportAdd(ReportType(item, BeVerbose));
@@ -283,7 +312,7 @@ namespace XbimXplorer.Querying
                         continue;
                     }
 
-                    m = Regex.Match(cmd, @"^(select|se) (?<mode>(count|list|short) )*(?<tt>(transverse|tt) )*(?<start>([\d,]+|[^ ]+)) *(?<props>.*)", RegexOptions.IgnoreCase);
+                    m = Regex.Match(cmd, @"^(select|se) (?<mode>(count|list|short) )*(?<tt>(transverse|tt) )*(?<start>([\d,-]+|[^ ]+)) *(?<props>.*)", RegexOptions.IgnoreCase);
                     if (m.Success)
                     {
                         string start = m.Groups["start"].Value;
@@ -517,10 +546,34 @@ namespace XbimXplorer.Querying
             List<int> ia = new List<int>();
             for (int i = 0; i < sa.Length; ++i)
             {
-                int j;
-                if (int.TryParse(sa[i], out j))
+                if (sa[i].Contains('-'))
                 {
-                    ia.Add(j);
+                    var v = sa[i].Split('-');
+                    if (v.Length == 2)
+                    {
+                        int iS, iT;
+                        if (
+                            int.TryParse(v[0], out iS) && 
+                            int.TryParse(v[1], out iT) 
+                            )
+                        {
+                            if (iT >= iS)
+                            {
+                                for (int iC = iS; iC <= iT; iC++)
+                                {
+                                    ia.Add(iC);
+                                }
+                            }
+                        }
+                    }
+                }
+                else 
+                {
+                    int j;
+                    if (int.TryParse(sa[i], out j))
+                    {
+                        ia.Add(j);
+                    }
                 }
             }
             return ia.ToArray();
@@ -557,9 +610,10 @@ namespace XbimXplorer.Querying
 
             t.AppendFormat("- EntityLabel label [recursion]");
             t.Append("    [recursion] is an int representing the depth of children to report", Brushes.Gray);
-            
-            t.AppendFormat("- IfcSchema [list] <TypeName>");
+
+            t.AppendFormat("- IfcSchema [list|count|short|full] <TypeName>");
             t.Append("    <TypeName> can contain wildcards", Brushes.Gray);
+            t.Append("    use / in <TypeName> to select all root types", Brushes.Gray);
             
             t.AppendFormat("- GeometryInfo [binary|viewer] <EntityLabel,<EntityLabel>>");
             t.Append("    Provide textual information on meshes.", Brushes.Gray);
@@ -625,8 +679,16 @@ namespace XbimXplorer.Querying
                         ))
                     )
                 {
-                    if (re.IsMatch(type.FullName))
-                        yield return type.FullName;
+                    if (RegExString == "/")
+                    {
+                        if (type.BaseType == typeof(object))
+                            yield return type.FullName;
+                    }
+                    else
+                    {
+                        if (re.IsMatch(type.FullName))
+                            yield return type.FullName;
+                    }
                 }
             }
         }
@@ -639,7 +701,7 @@ namespace XbimXplorer.Querying
             return rex;
         }
 
-        private TextHighliter ReportType(string type, bool beVerbose, string indentationHeader = "")
+        private TextHighliter ReportType(string type, int beVerbose, string indentationHeader = "")
         {
             var tarr = type.Split(new string[] { "." }, StringSplitOptions.RemoveEmptyEntries);
             type = tarr[tarr.Length - 1];
@@ -666,27 +728,61 @@ namespace XbimXplorer.Querying
                     iterSuper = iterSuper.IfcSuperType;
                 }
                 if (ot.IfcSuperType != null)
-                    sb.AppendFormat(indentationHeader + "Subtype of: {0}", string.Join(" => ", supertypes.ToArray()));
+                    sb.AppendFormat(indentationHeader + "Parents hierarchy: {0}", string.Join(" => ", supertypes.ToArray()));
                 if (ot.IfcSubTypes.Count > 0)
                 {
-                    sb.AppendFormat(indentationHeader + "Subtypes: {0}", ot.IfcSubTypes.Count);
-                    foreach (var item in ot.IfcSubTypes)
+                    if (beVerbose > 1)
                     {
-                        sb.AppendFormat(indentationHeader + "- {0}", item);
+                        sb.DefaultBrush = null;
+                        sb.AppendFormat(indentationHeader + "Subtypes tree:");
+                        sb.DefaultBrush = Brushes.DarkOrange;
+                        ChildTree(ot, sb, indentationHeader, 0);
+                    }
+                    else
+                    {
+                        sb.DefaultBrush = null;
+                        sb.AppendFormat(indentationHeader + "Subtypes: {0}", ot.IfcSubTypes.Count);
+                        sb.DefaultBrush = Brushes.DarkOrange;
+                        foreach (var item in ot.IfcSubTypes)
+                        {
+                            sb.AppendFormat(indentationHeader + "- {0}", item);
+                        }
                     }
                 }
-                if (beVerbose)
+                if (beVerbose > 0)
                 {
-                    sb.DefaultBrush = Brushes.DarkOrange;
+                    if (beVerbose > 1)
+                    {
+                        var allSub = ot.NonAbstractSubTypes;
+                        sb.DefaultBrush = null;
+                        sb.AppendFormat(indentationHeader + "All non abstract subtypes: {0}", allSub.Count());
+                        sb.DefaultBrush = Brushes.DarkOrange;
+                        foreach (var item in allSub)
+                        {
+                            sb.AppendFormat(indentationHeader + "- {0}", item.Name);
+                        }
+                    }
+                    sb.DefaultBrush = null;
                     sb.AppendFormat(indentationHeader + "Interfaces: {0}", ot.Type.GetInterfaces().Count());
+                    sb.DefaultBrush = Brushes.DarkOrange;
                     foreach (var item in ot.Type.GetInterfaces())
                     {
                         sb.AppendFormat(indentationHeader + "- {0}", item.Name);
                     }
+                    
                     sb.DefaultBrush = null;
+                    // sb.DefaultBrush = Brushes.DimGray;
                     sb.AppendFormat(indentationHeader + "Properties: {0}", ot.IfcProperties.Count());
+                    sb.DefaultBrush = null;
+                    Brush[] brushArray = new Brush[]
+                        {
+                            Brushes.DimGray,
+                            Brushes.DarkGray,
+                            Brushes.DimGray
+                        };
                     foreach (var item in ot.IfcProperties.Values)
                     {
+
                         var topParent = ot.IfcSuperType;
                         string sTopParent = "";
                         while (topParent != null && topParent.IfcProperties.Where(x => x.Value.PropertyInfo.Name == item.PropertyInfo.Name).Count() > 0)
@@ -694,7 +790,15 @@ namespace XbimXplorer.Querying
                             sTopParent = " \tfrom: " + topParent.ToString();
                             topParent = topParent.IfcSuperType;
                         }
-                        sb.AppendFormat(indentationHeader + "- {0}\t{1}{2}", item.PropertyInfo.Name, CleanPropertyName(item.PropertyInfo.PropertyType.FullName), sTopParent);
+                        sb.AppendSpans(
+                            new string[] {
+                                indentationHeader + "- " + item.PropertyInfo.Name + "\t\t",
+                                CleanPropertyName(item.PropertyInfo.PropertyType.FullName),
+                                sTopParent },
+                            brushArray);
+
+
+                        // sb.AppendFormat(\t{1}{2}", , , );
                     }
                     sb.AppendFormat(indentationHeader + "Inverses: {0}", ot.IfcInverses.Count());
                     foreach (var item in ot.IfcInverses)
@@ -706,7 +810,13 @@ namespace XbimXplorer.Querying
                             sTopParent = " \tfrom: " + topParent.ToString();
                             topParent = topParent.IfcSuperType;
                         }
-                        sb.AppendFormat(indentationHeader + "- {0}\t{1}{2}", item.PropertyInfo.Name, CleanPropertyName(item.PropertyInfo.PropertyType.FullName), sTopParent);
+                        //sb.AppendFormat(indentationHeader + "- {0}\t{1}{2}", item.PropertyInfo.Name, CleanPropertyName(item.PropertyInfo.PropertyType.FullName), sTopParent);
+                        sb.AppendSpans(
+                            new string[] {
+                                indentationHeader + "- " + item.PropertyInfo.Name + "\t\t",
+                                CleanPropertyName(item.PropertyInfo.PropertyType.FullName),
+                                sTopParent },
+                            brushArray);
                     }
                 }
                 sb.DefaultBrush = null;
@@ -770,7 +880,7 @@ namespace XbimXplorer.Querying
                         if (item != null)
                             sb.AppendFormat(indentationHeader + "Missing Common Interface: {0}", item.Name);
                     }
-                    if (beVerbose)
+                    if (beVerbose == 1)
                     {
                         foreach (var item in SelectSubTypes)
                         {
@@ -782,6 +892,18 @@ namespace XbimXplorer.Querying
             }
 
             return sb;
+        }
+
+        private void ChildTree(IfcType ot, TextHighliter sb, string indentationHeader, int Indent)
+        {
+            string sSpace = new string(' ', Indent * 2);
+            // sSpace = sSpace.Replace(new string[] { " " }, "  ");
+            foreach (var item in ot.IfcSubTypes)
+            {
+                string isAbstract = item.Type.IsAbstract ? " (abstract)" : "";
+                sb.AppendFormat(indentationHeader + sSpace + "- {0} {1}", item, isAbstract);
+                ChildTree(item, sb, indentationHeader, Indent + 1);    
+            }
         }
 
         private TextHighliter ReportEntity(int EntityLabel, int RecursiveDepth = 0, int IndentationLevel = 0, bool Verbose = false)

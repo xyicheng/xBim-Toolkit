@@ -278,7 +278,7 @@ namespace Xbim.COBie.Serialisers
                 if(sheet.SheetName != Constants.WORKSHEET_PICKLISTS)
                 {
                     // Ensure the validation is up to date
-                     sheet.Validate(workbook);
+                     sheet.Validate(workbook, ErrorRowIndexBase.Two);
                 }
 
                 WriteErrors(errorsSheet, sheet.Errors);  

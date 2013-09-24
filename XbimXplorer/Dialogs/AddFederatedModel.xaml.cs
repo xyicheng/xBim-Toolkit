@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using Xbim.Ifc2x3.ActorResource;
+using System.Diagnostics;
 
 namespace XbimXplorer.Dialogs
 {
@@ -23,7 +24,26 @@ namespace XbimXplorer.Dialogs
         public AddFederatedModel()
         {
             InitializeComponent();
+        }
 
+        public AddFederatedModel(Xbim.IO.XbimReferencedModel rItem) : this()
+        {
+            FileSelector.FilePath = rItem.DocumentInformation.Name;
+
+            
+            if (rItem.DocumentInformation.DocumentOwner is IfcOrganization)
+            {
+                var own = rItem.DocumentInformation.DocumentOwner as IfcOrganization;
+                RoleSelector.Text = own.RolesString;
+                OrganisationTextBox.Text = own.Name;
+            }
+            
+           
+            
+            RoleSelector.IsReadOnly = true;
+            RoleSelector.IsEnabled = false;
+
+            OrganisationTextBox.IsReadOnly = true;
         }
 
         public string FileName
@@ -44,7 +64,6 @@ namespace XbimXplorer.Dialogs
                 }
                 catch (Exception)
                 {
-
                     return IfcRole.UserDefined;
                 } 
             }
@@ -77,7 +96,6 @@ namespace XbimXplorer.Dialogs
             {
                 DialogResult = true;
                 this.Close();
-
             }
         }
     }

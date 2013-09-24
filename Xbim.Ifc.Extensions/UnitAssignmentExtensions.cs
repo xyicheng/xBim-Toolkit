@@ -17,6 +17,7 @@ using Xbim.Ifc2x3.MeasureResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.SelectTypes;
 using Xbim.XbimExtensions.Interfaces;
+using Xbim.Ifc2x3.QuantityResource;
 
 #endregion
 
@@ -95,7 +96,7 @@ namespace Xbim.Ifc2x3.Extensions
         }
 
         /// <summary>
-        ///   Sets the Length Unit to be SIUnit and SIPrefix, returns false if the units are not SI
+        /// Sets the Length Unit to be SIUnit and SIPrefix, returns false if the units are not SI
         /// </summary>
         /// <param name = "ua"></param>
         /// <param name = "siUnitName"></param>
@@ -135,6 +136,38 @@ namespace Xbim.Ifc2x3.Extensions
             }
         }
 
+        public static IfcNamedUnit GetUnitFor(this IfcUnitAssignment ua, IfcPhysicalSimpleQuantity Quantity)
+        {
+            if (Quantity.Unit != null)
+                return Quantity.Unit;
+
+            IfcUnitEnum? requiredUnit = null; 
+
+            // list of possible types taken from:
+            // http://www.buildingsmart-tech.org/ifc/IFC2x3/TC1/html/ifcquantityresource/lexical/ifcphysicalsimplequantity.htm
+            //
+            if (Quantity is IfcQuantityLength)
+                requiredUnit = IfcUnitEnum.LENGTHUNIT;
+            if (Quantity is IfcQuantityArea)
+                requiredUnit = IfcUnitEnum.AREAUNIT;
+            if (Quantity is IfcQuantityVolume)
+                requiredUnit = IfcUnitEnum.VOLUMEUNIT;
+            if (Quantity is IfcQuantityCount) // really not sure what to do here.
+                return null; 
+            if (Quantity is IfcQuantityWeight)
+                requiredUnit = IfcUnitEnum.MASSUNIT;
+            if (Quantity is IfcQuantityTime)
+                requiredUnit = IfcUnitEnum.TIMEUNIT;
+
+            if (requiredUnit == null)
+                return null;
+
+            IfcNamedUnit nu = ua.Units.OfType<IfcSIUnit>().FirstOrDefault(u => u.UnitType == (IfcUnitEnum)requiredUnit);
+            if (nu == null)
+                nu = ua.Units.OfType<IfcConversionBasedUnit>().FirstOrDefault(u => u.UnitType == (IfcUnitEnum)requiredUnit);
+            return nu;
+        }
+
         public static IfcNamedUnit GetAreaUnit(this IfcUnitAssignment ua)
         {
             IfcNamedUnit nu = ua.Units.OfType<IfcSIUnit>().FirstOrDefault(u => u.UnitType == IfcUnitEnum.AREAUNIT);
@@ -142,7 +175,6 @@ namespace Xbim.Ifc2x3.Extensions
                 nu = ua.Units.OfType<IfcConversionBasedUnit>().FirstOrDefault(u => u.UnitType == IfcUnitEnum.AREAUNIT);
             return nu;
         }
-
         public static IfcNamedUnit GetLengthUnit(this IfcUnitAssignment ua)
         {
             IfcNamedUnit nu = ua.Units.OfType<IfcSIUnit>().FirstOrDefault(u => u.UnitType == IfcUnitEnum.LENGTHUNIT);
@@ -157,7 +189,6 @@ namespace Xbim.Ifc2x3.Extensions
                 nu = ua.Units.OfType<IfcConversionBasedUnit>().FirstOrDefault(u => u.UnitType == IfcUnitEnum.VOLUMEUNIT);
             return nu;
         }
-
         public static string GetLengthUnitName(this IfcUnitAssignment ua)
         {
             IfcSIUnit si = ua.Units.OfType<IfcSIUnit>().FirstOrDefault(u => u.UnitType == IfcUnitEnum.LENGTHUNIT);
@@ -189,9 +220,7 @@ namespace Xbim.Ifc2x3.Extensions
             }
             return "";
         }
-
-        public static void SetOrChangeConversionUnit(this IfcUnitAssignment ua, IfcUnitEnum unitType,
-                                                     ConversionBasedUnit unit)
+        public static void SetOrChangeConversionUnit(this IfcUnitAssignment ua, IfcUnitEnum unitType, ConversionBasedUnit unit)
         {
             IModel model = ua.ModelOf;
             IfcSIUnit si = ua.Units.OfType<IfcSIUnit>().FirstOrDefault(u => u.UnitType == unitType);
@@ -202,9 +231,7 @@ namespace Xbim.Ifc2x3.Extensions
             }
             ua.Units.Add_Reversible(GetNewConversionUnit(model, unitType, unit));
         }
-
-        private static IfcConversionBasedUnit GetNewConversionUnit(IModel model, IfcUnitEnum unitType,
-                                                                   ConversionBasedUnit unitEnum)
+        private static IfcConversionBasedUnit GetNewConversionUnit(IModel model, IfcUnitEnum unitType, ConversionBasedUnit unitEnum)
         {
             IfcConversionBasedUnit unit = model.Instances.New<IfcConversionBasedUnit>();
             unit.UnitType = unitType;
@@ -271,7 +298,6 @@ namespace Xbim.Ifc2x3.Extensions
 
             return unit;
         }
-
         private static void SetConversionUnitsParameters(IModel model, IfcConversionBasedUnit unit, IfcLabel name,
                                                          IfcRatioMeasure ratio, IfcUnitEnum unitType, IfcSIUnitName siUnitName,
                                                          IfcSIPrefix? siUnitPrefix, IfcDimensionalExponents dimensions)
@@ -287,7 +313,6 @@ namespace Xbim.Ifc2x3.Extensions
                                                                            });
             unit.Dimensions = dimensions;
         }
-
         private static IfcDimensionalExponents GetLengthDimension(IModel model)
         {
             IfcDimensionalExponents dimension = model.Instances.New<IfcDimensionalExponents>();
@@ -301,7 +326,6 @@ namespace Xbim.Ifc2x3.Extensions
 
             return dimension;
         }
-
         private static IfcDimensionalExponents GetVolumeDimension(IModel model)
         {
             IfcDimensionalExponents dimension = model.Instances.New<IfcDimensionalExponents>();
@@ -315,8 +339,6 @@ namespace Xbim.Ifc2x3.Extensions
 
             return dimension;
         }
-
-      
         private static IfcDimensionalExponents GetAreaDimension(IModel model)
         {
             IfcDimensionalExponents dimension = model.Instances.New<IfcDimensionalExponents>();
@@ -330,7 +352,6 @@ namespace Xbim.Ifc2x3.Extensions
 
             return dimension;
         }
-
         private static IfcDimensionalExponents GetMassDimension(IModel model)
         {
             IfcDimensionalExponents dimension = model.Instances.New<IfcDimensionalExponents>();

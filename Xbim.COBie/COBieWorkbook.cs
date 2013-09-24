@@ -37,14 +37,14 @@ namespace Xbim.COBie
         /// Runs validation rules on each sheet and updates the Errors collection
         /// on each sheet.
         /// </summary>
-        public void Validate(Action<int> progressCallback = null)
+        public void Validate( ErrorRowIndexBase errorRowIdx, Action<int> progressCallback = null) //default for excel row index's on error rows
         {
             // Enumerates the sheets and validates each
             foreach (var sheet in this)
             {
                 if (sheet.SheetName != Constants.WORKSHEET_PICKLISTS) //skip validation on picklist
                 {
-                    sheet.Validate(this);
+                    sheet.Validate(this, errorRowIdx);
                 }
 
                 // Progress bar support

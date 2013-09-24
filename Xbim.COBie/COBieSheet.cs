@@ -17,6 +17,7 @@ namespace Xbim.COBie
 		private Dictionary<int, COBieColumn> _columns;
         private COBieErrorCollection _errors = new COBieErrorCollection();
         private Dictionary<string, HashSet<string>> _indices;
+        private ErrorRowIndexBase _errorRowIdx; //report error row based with row stating at one(excel), or two (data table)
 	    #endregion
 
 
@@ -170,8 +171,9 @@ namespace Xbim.COBie
         /// Validate the sheet
         /// </summary>
         /// <param name="workbook"></param>
-        public void Validate(COBieWorkbook workbook)
+        public void Validate(COBieWorkbook workbook, ErrorRowIndexBase errorRowIdx)
         {
+            _errorRowIdx = errorRowIdx; //set the index for error reporting on rows
             _errors.Clear();
 
             ValidatePrimaryKeysUnique();
@@ -349,12 +351,20 @@ namespace Xbim.COBie
             }
             string keyCols = string.Join(",", keyColList);
 
+            //set the index for the reported error row numbers
+            int errorRowInc = 2; //default for rows starting at row two - ErrorRowIndexBase.Two
+            if (_errorRowIdx == ErrorRowIndexBase.One) //if error row starting sow set the the row numbered one
+            {
+                errorRowInc = 1; 
+            }
+
             foreach (var dupe in dupes)
             {
                 List<string> indexList = new List<string>();
+                
                 foreach (var row in dupe.rows)
                 {
-                    indexList.Add((row.index + 2).ToString());
+                    indexList.Add((row.index + errorRowInc).ToString());
                 }
                 string rowIndexList = string.Join(",", indexList);
                 foreach (var row in dupe.rows)

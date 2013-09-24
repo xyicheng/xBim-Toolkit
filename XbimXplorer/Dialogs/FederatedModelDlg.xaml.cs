@@ -28,6 +28,8 @@ namespace XbimXplorer
             InitializeComponent();
         }
 
+        
+
         private void Add_Click(object sender, RoutedEventArgs e)
         {
             XbimModel model = DataContext as XbimModel;
@@ -53,6 +55,40 @@ namespace XbimXplorer
                         model.AddModelReference(fileName, fdlg.OrganisationName, fdlg.RoleName);
                     else
                         model.AddModelReference(fileName, fdlg.OrganisationName, role);
+                }
+            }
+        }
+
+        private void Modify_Click(object sender, RoutedEventArgs e)
+        {
+            XbimModel model = DataContext as XbimModel;
+            foreach (var item in FederatedList.SelectedItems)
+            {
+                if (item is XbimReferencedModel)
+                {
+                    var rItem = item as XbimReferencedModel;
+                    AddFederatedModel fdlg = new AddFederatedModel(rItem);
+                    
+                    bool? done = fdlg.ShowDialog();
+                    if (done.HasValue && done.Value == true)
+                    {
+                        string fileName = fdlg.FileName;
+                        string ext = System.IO.Path.GetExtension(fileName);
+                        using (XbimModel refM = new XbimModel())
+                        {
+                            if (string.Compare(ext, ".xbim", true) != 0)
+                            {
+                                refM.CreateFrom(fileName, null, null, true);
+                                XbimMesher.GenerateGeometry(refM);
+                                fileName = System.IO.Path.ChangeExtension(fileName, "xbim");
+                            }
+                        }
+                        using (var txn = model.BeginTransaction())
+                        {
+                            rItem.DocumentInformation.Name = fileName;
+                            txn.Commit();
+                        }
+                    }
                 }
             }
         }

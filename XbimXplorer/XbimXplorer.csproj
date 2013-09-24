@@ -136,7 +136,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="FederatedModelDlg.xaml">
+    <Page Include="Dialogs\FederatedModelDlg.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -167,7 +167,7 @@
     <Compile Include="Dialogs\CreateFederationWindow.xaml.cs">
       <DependentUpon>CreateFederationWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="FederatedModelDlg.xaml.cs">
+    <Compile Include="Dialogs\FederatedModelDlg.xaml.cs">
       <DependentUpon>FederatedModelDlg.xaml</DependentUpon>
     </Compile>
     <Compile Include="Querying\GeomQuerying.cs" />

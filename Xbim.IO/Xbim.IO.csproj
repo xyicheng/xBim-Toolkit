@@ -107,6 +107,7 @@
     <Compile Include="DynamicGrouping\GroupsFromXml.cs" />
     <Compile Include="DynamicGrouping\XbimQueryBuilder.cs" />
     <Compile Include="DynamicGrouping\XbimQueryFactory.cs" />
+    <Compile Include="FileReferenceResolver.cs" />
     <Compile Include="IfcFileHeader.cs" />
     <Compile Include="IfcRepresentationItemExtensions.cs" />
     <Compile Include="Parser\XbimP21StringDecoder.cs" />
