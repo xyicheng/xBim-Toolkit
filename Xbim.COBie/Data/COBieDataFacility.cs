@@ -56,7 +56,7 @@ namespace Xbim.COBie.Data
             IEnumerable<IfcObject> ifcObjects = ifcObjectList.AsEnumerable();
             if (ifcObjects.Any())
             {
-                COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(ifcObjects); //properties helper class
+                COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(); //properties helper class
                 COBieDataAttributeBuilder attributeBuilder = new COBieDataAttributeBuilder(Context, allPropertyValues);
                 attributeBuilder.InitialiseAttributes(ref _attributes);
 

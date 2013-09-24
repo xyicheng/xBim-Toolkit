@@ -12,6 +12,7 @@ using System.Collections;
 using Xbim.Ifc2x3.PropertyResource;
 using Xbim.Ifc2x3.Kernel;
 using Xbim.Ifc2x3.ExternalReferenceResource;
+using System.Diagnostics;
 
 namespace Xbim.COBie.Data
 {
@@ -35,6 +36,10 @@ namespace Xbim.COBie.Data
         /// <returns>COBieSheet<COBieSpaceRow></returns>
         public override COBieSheet<COBieSpaceRow> Fill()
         {
+#if DEBUG
+            Stopwatch timer = new Stopwatch();
+            timer.Start();
+#endif
             ProgressIndicator.ReportMessage("Starting Spaces...");
 
             //create new sheet 
@@ -43,7 +48,7 @@ namespace Xbim.COBie.Data
             // get all IfcBuildingStory objects from IFC file
             List<IfcSpace> ifcSpaces = Model.Instances.OfType<IfcSpace>().OrderBy(ifcSpace => ifcSpace.Name, new CompareIfcLabel()).ToList();
             
-            COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(ifcSpaces); //properties helper class
+            COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(); //properties helper class
             COBieDataAttributeBuilder attributeBuilder = new COBieDataAttributeBuilder(Context, allPropertyValues);
             attributeBuilder.InitialiseAttributes(ref _attributes);
 
@@ -64,7 +69,7 @@ namespace Xbim.COBie.Data
 
                 COBieSpaceRow space = new COBieSpaceRow(spaces);
                 //set allPropertyValues to this element
-                allPropertyValues.SetAllPropertySingleValues(ifcSpace); //set the internal filtered IfcPropertySingleValues List in allPropertyValues
+                allPropertyValues.SetAllPropertyValues(ifcSpace); //set the internal filtered IfcPropertySingleValues List in allPropertyValues
                 
                 space.Name = ifcSpace.Name;
 
@@ -103,6 +108,10 @@ namespace Xbim.COBie.Data
             }
             
             ProgressIndicator.Finalise();
+#if DEBUG
+            timer.Stop();
+            Console.WriteLine(String.Format("Time to generate Spaces data = {0} seconds", timer.Elapsed.TotalSeconds.ToString("F3")));
+#endif
             return spaces;
         }
 
@@ -126,8 +135,8 @@ namespace Xbim.COBie.Data
                 areavalue = ((double)netAreaValue);
                 if (areavalue > 0.0)
                 {
-                    if ((!string.IsNullOrEmpty(areaUnit)) && (areaUnit.ToLower().Contains("milli")) && (areavalue > 250000.0)) //we are using millimetres, and areavalue is lightly to be in mmsq if over 250000(0.5msq)
-                        areavalue = areavalue / 1000000.0;
+                    //if ((!string.IsNullOrEmpty(areaUnit)) && (areaUnit.ToLower().Contains("milli")) && (areavalue > 250000.0)) //we are using millimetres, and areavalue is lightly to be in mmsq if over 250000(0.5msq)
+                    //    areavalue = areavalue / 1000000.0;
 
                     return areavalue.ToString("F4");
                 }
@@ -135,7 +144,11 @@ namespace Xbim.COBie.Data
 
             //Fall back to properties
             //get the property single values for this ifcSpace
-            allPropertyValues.SetAllPropertySingleValues(ifcSpace);
+            if (allPropertyValues.CurrentObject != ifcSpace)
+            {
+                allPropertyValues.SetAllPropertyValues(ifcSpace);
+            }
+            
 
             //try and find it in the attached properties of the ifcSpace
             string value = allPropertyValues.GetPropertySingleValueValue("NetFloorArea", true);
@@ -148,8 +161,8 @@ namespace Xbim.COBie.Data
             {
                 if (double.TryParse(value, out areavalue))
                 {
-                    if ((!string.IsNullOrEmpty(areaUnit)) && (areaUnit.ToLower().Contains("milli")) && (areavalue > 250000.0))//we are using millimetres, and areavalue is lightly to be in mmsq if over 250000(0.5msq)
-                        areavalue = areavalue / 1000000.0;
+                    //if ((!string.IsNullOrEmpty(areaUnit)) && (areaUnit.ToLower().Contains("milli")) && (areavalue > 250000.0))//we are using millimetres, and areavalue is lightly to be in mmsq if over 250000(0.5msq)
+                    //    areavalue = areavalue / 1000000.0;
                     return areavalue.ToString("F4");
                 }
                 return value;
@@ -182,15 +195,18 @@ namespace Xbim.COBie.Data
             }
             if (areavalue > 0.0)
 	        {
-                if ((!string.IsNullOrEmpty(areaUnit)) && (areaUnit.ToLower().Contains("milli")) && (areavalue > 250000.0)) //we are using millimetres, and areavalue is lightly to be in mmsq if over 250000(0.5msq)
-                    areavalue = areavalue / 1000000.0;
+                //if ((!string.IsNullOrEmpty(areaUnit)) && (areaUnit.ToLower().Contains("milli")) && (areavalue > 250000.0)) //we are using millimetres, and areavalue is lightly to be in mmsq if over 250000(0.5msq)
+                //    areavalue = areavalue / 1000000.0;
                 
 		         return areavalue.ToString("F4");
 	        }
             
             //Fall back to properties
             //get the property single values for this ifcSpace
-            allPropertyValues.SetAllPropertySingleValues(ifcSpace);
+            if (allPropertyValues.CurrentObject != ifcSpace)
+            {
+                allPropertyValues.SetAllPropertyValues(ifcSpace);
+            }
 
             //try and find it in the attached properties of the ifcSpace
             string value = allPropertyValues.GetPropertySingleValueValue("GrossFloorArea", true);
@@ -203,8 +219,8 @@ namespace Xbim.COBie.Data
             {
                 if (double.TryParse(value, out areavalue))
                 {
-                    if ((!string.IsNullOrEmpty(areaUnit)) && (areaUnit.ToLower().Contains("milli")) && (areavalue > 250000.0))//we are using millimetres, and areavalue is lightly to be in mmsq if over 250000(0.5msq)
-                        areavalue = areavalue / 1000000.0;
+                    //if ((!string.IsNullOrEmpty(areaUnit)) && (areaUnit.ToLower().Contains("milli")) && (areavalue > 250000.0))//we are using millimetres, and areavalue is lightly to be in mmsq if over 250000(0.5msq)
+                    //    areavalue = areavalue / 1000000.0;
                     return areavalue.ToString("F4");
                 }
                 return value; 
@@ -226,7 +242,10 @@ namespace Xbim.COBie.Data
             
             //Fall back to properties
             //get the property single values for this ifcSpace
-            allPropertyValues.SetAllPropertySingleValues(ifcSpace);
+            if (allPropertyValues.CurrentObject != ifcSpace)
+            {
+                allPropertyValues.SetAllPropertyValues(ifcSpace);
+            }
 
             //try and find it in the attached properties of the ifcSpace
             string value = allPropertyValues.GetPropertySingleValueValue("UsableHeight", true);
@@ -267,10 +286,13 @@ namespace Xbim.COBie.Data
         /// <returns>property value as string or default value</returns>
         private string GetRoomTag(IfcSpace ifcSpace, COBieDataPropertySetValues allPropertyValues)
         {
-            if (!string.IsNullOrEmpty(ifcSpace.Name)) return ifcSpace.Name;
+            //if (!string.IsNullOrEmpty(ifcSpace.Name)) return ifcSpace.Name;
 
             string value = ""; // GetSpaceDescription(ifcSpace);
-            allPropertyValues.SetAllPropertySingleValues(ifcSpace);
+            if (allPropertyValues.CurrentObject != ifcSpace)
+            {
+                allPropertyValues.SetAllPropertyValues(ifcSpace);
+            }
             //try and find it in the attached properties of the ifcSpace
             value = allPropertyValues.GetPropertySingleValueValue("RoomTag", true);
             if (value == DEFAULT_STRING)

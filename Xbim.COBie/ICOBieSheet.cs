@@ -18,9 +18,9 @@ namespace Xbim.COBie
         IEnumerable<COBieColumn> ForeignKeyColumns { get; }
         Dictionary<string, HashSet<string>> Indices { get; }
         COBieErrorCollection Errors { get; }
-        
 
-        void Validate(COBieWorkbook workbook);
+
+        void Validate(COBieWorkbook workbook, ErrorRowIndexBase errorRowIdx);
         void BuildIndices();
         void SetRowsHashCode();
         T AddNewRow();

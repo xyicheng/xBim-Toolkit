@@ -4,12 +4,13 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Xbim.IO;
-using Xbim.IO.Tree;
+using Xbim.IO.ViewModels;
 using System.IO;
 using Xbim.Presentation;
 using Xbim.XbimExtensions;
 using Xbim.Ifc2x3.Kernel;
 using Xbim.Ifc2x3.Extensions;
+using Xbim.IO.Tree;
 
 
 namespace Xbim.Tests
@@ -101,6 +102,12 @@ namespace Xbim.Tests
                 }
 
             }
+            //============Try TreeBuilder=================
+            List<IXbimViewModel> cvList = new List<IXbimViewModel>();
+            cvList = TreeViewBuilder.ContainmentView(_model);
+
+            List<IXbimViewModel> compvList = new List<IXbimViewModel>();
+            compvList = TreeViewBuilder.ComponentView(_model);
         }
 
         

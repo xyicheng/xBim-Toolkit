@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using System.Collections.Specialized;
 using Xbim.XbimExtensions.Interfaces;
 using System.Collections.ObjectModel;
+using Xbim.IO.ViewModels;
 
 namespace Xbim.Presentation
 {
