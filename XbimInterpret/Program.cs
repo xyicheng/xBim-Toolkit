@@ -37,8 +37,9 @@ namespace XbimInterpret
                         errLog.WriteLine(err);
                     }
                     errLog.Close();
+                    Console.ReadKey();
                 }
-
+                return;
             }
 
 

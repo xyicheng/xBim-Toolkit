@@ -837,6 +837,11 @@ namespace Xbim.Script
         #region Model manipulation
         public void OpenModel(string path)
         {
+            if (!File.Exists(path))
+            {
+                Scanner.yyerror("File doesn't exist: " + path);
+                return;
+            }
             try
             {
                 if (Path.GetExtension(path).ToLower() != ".xbim")
