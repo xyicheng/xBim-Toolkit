@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Xbim.IO;
 
-namespace Xbim.Query
+namespace Xbim.Script
 {
     public class XbimQueryParser
     {

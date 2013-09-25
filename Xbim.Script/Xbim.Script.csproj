@@ -8,8 +8,8 @@
     <ProjectGuid>{BAE9A827-0620-4F68-A384-336A491EDD91}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Xbim.Query</RootNamespace>
-    <AssemblyName>Xbim.Query</AssemblyName>
+    <RootNamespace>Xbim.Script</RootNamespace>
+    <AssemblyName>Xbim.Script</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
@@ -71,45 +71,13 @@
     <SignManifests>true</SignManifests>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Esent.Collections, Version=1.6.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\ManagedEsent.1.6\lib\net20\Esent.Collections.dll</HintPath>
-    </Reference>
-    <Reference Include="Esent.Interop, Version=1.6.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\ManagedEsent.1.6\lib\net20\Esent.Interop.dll</HintPath>
-    </Reference>
-    <Reference Include="ICSharpCode.SharpZipLib, Version=0.86.0.518, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
-    </Reference>
-    <Reference Include="log4net, Version=1.2.11.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\log4net.2.0.0\lib\net40-client\log4net.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Data.SQLite, Version=1.0.88.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\System.Data.SQLite.1.0.88.0\lib\net40\System.Data.SQLite.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Data.SQLite.Linq, Version=1.0.88.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\System.Data.SQLite.1.0.88.0\lib\net40\System.Data.SQLite.Linq.dll</HintPath>
-    </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="Xbim.Common, Version=2.4.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\xBIM.2.4.11\lib\net40\Xbim.Common.dll</HintPath>
-    </Reference>
-    <Reference Include="Xbim.Ifc.Extensions, Version=2.4.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\xBIM.2.4.11\lib\net40\Xbim.Ifc.Extensions.dll</HintPath>
-    </Reference>
-    <Reference Include="Xbim.Ifc2x3, Version=2.4.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\xBIM.2.4.11\lib\net40\Xbim.Ifc2x3.dll</HintPath>
-    </Reference>
-    <Reference Include="Xbim.IO, Version=2.4.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\xBIM.2.4.11\lib\net40\Xbim.IO.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Parser\ShiftReduceParserCode.cs" />
@@ -148,7 +116,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="README.rtf" />
-    <None Include="Xbim.Query_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Parser\makeparser.bat" />
@@ -194,6 +161,24 @@
       <Progid>xBIM Query</Progid>
       <DefaultIcon>icon.ico</DefaultIcon>
     </FileAssociation>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Xbim.Common\Xbim.Common.csproj">
+      <Project>{6745F5AC-AF3C-4372-81AA-A75E7B1FA03B}</Project>
+      <Name>Xbim.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Xbim.Ifc.Extensions\Xbim.Ifc2x3.Extensions.csproj">
+      <Project>{6DF47D23-8F4D-4069-A44B-BBDACD3F9AEA}</Project>
+      <Name>Xbim.Ifc2x3.Extensions</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Xbim.Ifc2x3\Xbim.Ifc2x3.csproj">
+      <Project>{5D4C907D-1293-4E5F-9642-D0862AE4741C}</Project>
+      <Name>Xbim.Ifc2x3</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Xbim.IO\Xbim.IO.csproj">
+      <Project>{85856DF2-C8AB-4120-8A8D-AE05D2696B51}</Project>
+      <Name>Xbim.IO</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

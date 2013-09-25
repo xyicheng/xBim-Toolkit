@@ -71,6 +71,10 @@
       <Project>{85856DF2-C8AB-4120-8A8D-AE05D2696B51}</Project>
       <Name>Xbim.IO</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Xbim.Script\Xbim.Script.csproj">
+      <Project>{BAE9A827-0620-4F68-A384-336A491EDD91}</Project>
+      <Name>Xbim.Script</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>

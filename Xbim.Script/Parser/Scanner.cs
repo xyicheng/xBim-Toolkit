@@ -29,7 +29,7 @@ using System.Diagnostics.CodeAnalysis;
 
 using QUT.Xbim.Gppg;
 
-namespace Xbim.Query
+namespace Xbim.Script
 {   
     /// <summary>
     /// Summary Canonical example of GPLEX automaton

@@ -12,7 +12,7 @@ using Xbim.Ifc2x3.Kernel;
 using Xbim.Ifc2x3.Extensions;
 using System.IO;
 
-namespace Xbim.Query
+namespace Xbim.Script
 {
     class Program
     {

@@ -8,7 +8,7 @@ using Xbim.Ifc2x3.Extensions;
 using System.IO;
 using Xbim.IO;
 
-namespace Xbim.Query
+namespace Xbim.Script
 {
     internal class SystemsCreator
     {

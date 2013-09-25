@@ -5,7 +5,7 @@ using System.Text;
 using Xbim.XbimExtensions.Interfaces;
 using System.Text.RegularExpressions;
 
-namespace Xbim.Query
+namespace Xbim.Script
 {
     public class XbimVariables
     {

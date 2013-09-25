@@ -5,7 +5,7 @@ using System.Text;
 using Xbim.Ifc2x3.Kernel;
 using System.Globalization;
 
-namespace Xbim.Query
+namespace Xbim.Script
 {
     internal sealed partial class Scanner
     {

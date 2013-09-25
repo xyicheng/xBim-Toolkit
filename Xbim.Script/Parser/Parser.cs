@@ -18,7 +18,7 @@ using QUT.Xbim.Gppg;
 using Xbim.XbimExtensions.Interfaces;
 using System.Linq.Expressions;
 
-namespace Xbim.Query
+namespace Xbim.Script
 {
 internal enum Tokens {error=60,
     EOF=61,INTEGER=62,DOUBLE=63,STRING=64,BOOLEAN=65,NONDEF=66,

@@ -17,7 +17,7 @@ using System.IO;
 using Xbim.Ifc2x3.PropertyResource;
 using Xbim.Ifc2x3.MaterialPropertyResource;
 
-namespace Xbim.Query
+namespace Xbim.Script
 {
     internal partial class Parser
     {
