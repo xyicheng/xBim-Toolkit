@@ -196,12 +196,23 @@ namespace Xbim.Presentation
             return (IEnumerator)GetEnumerator();
         }
 
-        internal void Toggle(IPersistIfcEntity item)
+        /// <summary>
+        /// Toggles the selection state of an IPersistIfcEntity
+        /// </summary>
+        /// <param name="item">the IPersistIfcEntity to add or remove from the selection</param>
+        /// <returns>true if added; false if removed</returns>
+        internal bool Toggle(IPersistIfcEntity item)
         {
             if (_selection.Contains(item))
+            {
                 this.Remove(item);
+                return false;
+            }
             else
+            {
                 this.Add(item);
+                return true;
+            }
         }
 
         internal void Clear()
