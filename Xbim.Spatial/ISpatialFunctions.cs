@@ -6,7 +6,7 @@ using Xbim.Ifc2x3.Kernel;
 
 namespace Xbim.Spatial
 {
-    public interface ISpatialFunctionsAnalyser
+    public interface ISpatialFunctions
     {
         double? Distance(IfcProduct first, IfcProduct second);
         IfcProduct Buffer(IfcProduct product);

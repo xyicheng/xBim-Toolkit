@@ -6,7 +6,7 @@ using Xbim.Ifc2x3.Kernel;
 
 namespace Xbim.Spatial
 {
-    public interface ISpatialDirectionsAnalyser
+    public interface ISpatialDirections
     {
         bool? NorthOf(IfcProduct first, IfcProduct second);
         bool? SouthOf(IfcProduct first, IfcProduct second);

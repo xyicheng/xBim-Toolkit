@@ -16,7 +16,7 @@ namespace Xbim.Spatial
     /// This applies even for the object with no geometry.
     /// If the relation can't be established null is returned as the result is unknown but not necessarilly negative.
     /// </summary>
-    public class SemanticAnalyser: ISpatialRelationsAnalyser
+    public class SemanticAnalyser: ISpatialRelations
     {
         IModel _model;
 

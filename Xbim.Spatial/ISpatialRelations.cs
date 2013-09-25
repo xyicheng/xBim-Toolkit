@@ -6,7 +6,7 @@ using Xbim.Ifc2x3.Kernel;
 
 namespace Xbim.Spatial
 {
-    public interface ISpatialRelationsAnalyser
+    public interface ISpatialRelations
     {
         bool? Equals(IfcProduct first, IfcProduct second);
         bool? Disjoint(IfcProduct first, IfcProduct second);

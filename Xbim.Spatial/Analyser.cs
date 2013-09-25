@@ -10,7 +10,7 @@ using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.Spatial
 {
-    public class Analyser: ISpatialFunctionsAnalyser, ISpatialRelationsAnalyser, ISpatialDirectionsAnalyser
+    public class Analyser: ISpatialFunctions, ISpatialRelations, ISpatialDirections
     {
         private GeometricAnalyser _geometryAnalyser;
         private SemanticAnalyser _semanticAnalyser;

@@ -6,7 +6,7 @@ using Xbim.Ifc2x3.Kernel;
 
 namespace Xbim.Spatial
 {
-    public class GeometricAnalyser: ISpatialRelationsAnalyser, ISpatialFunctionsAnalyser, ISpatialDirectionsAnalyser
+    public class GeometricAnalyser: ISpatialRelations, ISpatialFunctions, ISpatialDirections
     {
         public bool? Equals(Xbim.Ifc2x3.Kernel.IfcProduct first, Xbim.Ifc2x3.Kernel.IfcProduct second)
         {

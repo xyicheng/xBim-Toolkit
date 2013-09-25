@@ -72,6 +72,23 @@
 %token  CLOSE
 %token  SAVE
 
+/* spatial keywords */
+%token  NORTH_OF
+%token  SOUTH_OF
+%token  WEST_OF
+%token  EAST_OF
+%token  ABOVE
+%token  BELOW
+
+%token  SPATIALY_EQUALS
+%token  DISJOINT
+%token  INTERSECTS
+%token  TOUCHES
+%token  CROSSES
+%token  WITHIN
+%token  SPATIALY_CONTAINS
+%token  OVERLAPS
+%token  RELATE
 
 %%
 expressions
