@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Xbim.IO;
-using Xbim.Query;
+using Xbim.Script;
 using System.IO;
 using Xbim.Ifc2x3.MeasureResource;
 using System.Reflection;
