@@ -74,7 +74,7 @@ namespace Xbim.COBie
             ExcludeFromPickList = false;
 
             //set the row index to report error rows on
-            ErrorRowStartIndex = ErrorRowIndexBase.Two; //default for excel sheet
+            ErrorRowStartIndex = ErrorRowIndexBase.RowTwo; //default for excel sheet
             
         }
 
@@ -144,8 +144,8 @@ namespace Xbim.COBie
     /// </summary>
     public enum ErrorRowIndexBase
     {
-        One,
-        Two
+        RowOne,
+        RowTwo
     }
 
     /// <summary>

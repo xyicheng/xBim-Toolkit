@@ -353,7 +353,7 @@ namespace Xbim.COBie
 
             //set the index for the reported error row numbers
             int errorRowInc = 2; //default for rows starting at row two - ErrorRowIndexBase.Two
-            if (_errorRowIdx == ErrorRowIndexBase.One) //if error row starting sow set the the row numbered one
+            if (_errorRowIdx == ErrorRowIndexBase.RowOne) //if error row starting sow set the the row numbered one
             {
                 errorRowInc = 1; 
             }
