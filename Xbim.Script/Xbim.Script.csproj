@@ -108,7 +108,6 @@
     <None Include="app.config" />
     <None Include="Classifications\NRM.csv" />
     <None Include="Classifications\Uniclass 1.4.csv" />
-    <None Include="packages.config" />
     <None Include="Parser\gplex.exe" />
     <None Include="Parser\gppg.exe" />
     <Content Include="Parser\Queries.txt" />
