@@ -98,12 +98,16 @@
       <Project>{85856df2-c8ab-4120-8a8d-ae05d2696b51}</Project>
       <Name>Xbim.IO</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Xbim.ModelGeometry.OCC\Xbim.ModelGeometry.OCC64.vcxproj">
+      <Project>{bb0e1c7a-c255-41cb-814d-894193ab6424}</Project>
+      <Name>Xbim.ModelGeometry.OCC64 %28Visual Studio 2010%29</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Xbim.ModelGeometry.Scene\Xbim.ModelGeometry.Scene.csproj">
       <Project>{3d9d37de-a254-4433-b172-7590cbd84c69}</Project>
       <Name>Xbim.ModelGeometry.Scene</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup  Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
+  <ItemGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
     <None Include="..\Xbim.ModelGeometry.OCC\bin\x64\Xbim.ModelGeometry.OCC.exp">
       <Link>x64\Xbim.ModelGeometry.OCC.exp</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -141,7 +145,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="..\Xbim.ModelGeometry.OCC\bin\x64\Xbim.ModelGeometry.OCC.xml">
-      <Link>x86\Xbim.ModelGeometry.OCC.xml</Link>
+      <Link>x64\Xbim.ModelGeometry.OCC.xml</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
@@ -183,15 +187,13 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="..\Xbim.ModelGeometry.OCC\bin\x64\Xbim.ModelGeometry.OCCd.xml">
-      <Link>x86\Xbim.ModelGeometry.OCCd.xml</Link>
+      <Link>x64\Xbim.ModelGeometry.OCCd.xml</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-
   <ItemGroup>
     <Content Include="..\Xbim.ModelGeometry.OCC\bin\x64\TKBO.dll">
       <Link>x64\TKBO.dll</Link>

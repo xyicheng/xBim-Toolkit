@@ -15,6 +15,7 @@ namespace XbimRegression
         private static readonly ILogger Logger = LoggerFactory.GetLogger();
 
         private const int DefaultTimeout = 1000 * 60 * 20; // 20 mins
+        public bool Caching;
 
         public static Params ParseParams(string[] args)
         {
@@ -54,7 +55,9 @@ namespace XbimRegression
                             case "/timeout":
                                 paramType = CompoundParameter.Timeout;
                                 break;
-
+                            case "/caching":
+                                Caching = true;
+                                break;
                             default:
                                 Console.WriteLine("Skipping un-expected argument '{0}'", arg);
                                 break;
@@ -69,6 +72,7 @@ namespace XbimRegression
                         }
                         paramType = CompoundParameter.None;
                         break;
+                  
                 }
                 
             }
@@ -101,7 +105,8 @@ namespace XbimRegression
         private enum CompoundParameter
         {
             None,
-            Timeout
+            Timeout,
+            CachingOn
         };
     }
 

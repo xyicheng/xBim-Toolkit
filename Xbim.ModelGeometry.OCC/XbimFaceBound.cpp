@@ -582,8 +582,8 @@ namespace Xbim
 				if(!wireSeg.IsNull())
 				{
 					if(!seg->SameSense) wireSeg.Reverse();
-					FTol.SetTolerance(wireSeg, mf->Precision, TopAbs_WIRE);					
-					wire.Add(wireSeg);
+					FTol.SetTolerance(wireSeg, mf->Precision, TopAbs_WIRE);		
+					wire.Add(wireSeg);				
 					if(!wire.IsDone() ) 
 					{				
 						FTol.SetTolerance(wireSeg, mf->OneMilliMetre, TopAbs_WIRE);	//go for courser tolerance
@@ -598,6 +598,7 @@ namespace Xbim
 								wire.Add(wireSeg);
 								if(!wire.IsDone())
 								{
+									
 									Logger->ErrorFormat("IfcCompositeCurveSegment {0} could not be added to IfcCompositeCurve #{1}. Ignored",seg->EntityLabel,cCurve->EntityLabel);
 								}
 								else
@@ -611,7 +612,26 @@ namespace Xbim
 			}
 
 			if ( wire.IsDone()) 
-				return wire.Wire();
+			{
+				TopoDS_Wire w = wire.Wire();
+				if( BRepCheck_Analyzer(w, Standard_True).IsValid() == Standard_True) 
+					return w;
+				else
+				{
+					double toleranceMax = cCurve->ModelOf->ModelFactors->PrecisionMax;
+					ShapeFix_Shape sfs(w);
+					sfs.SetMinTolerance(mf->Precision);
+					sfs.SetMaxTolerance(mf->OneMilliMetre*50);
+					sfs.Perform();
+					if( BRepCheck_Analyzer(sfs.Shape(), Standard_True).IsValid() == Standard_True && sfs.Shape().ShapeType()==TopAbs_WIRE) //in release builds except the geometry is not compliant
+						return TopoDS::Wire(sfs.Shape());
+					else
+					{
+						Logger->WarnFormat("Invalid IfcCompositeCurveSegment #{0} found. Discarded",cCurve->EntityLabel);
+						return TopoDS_Wire();
+					}
+				}
+			}
 			else
 			{
 				BRepBuilderAPI_WireError err = wire.Error();
@@ -951,9 +971,10 @@ namespace Xbim
 			XbimModelFactors^ mf = ((IPersistIfcEntity^)tCurve)->ModelOf->ModelFactors;
 			double tolerance = mf->Precision;
 			double toleranceMax = mf->PrecisionMax;
-			double parameterFactor =  isConic ? mf->AngleToRadiansConversionFactor : mf->LengthToMetresConversionFactor;
+			double parameterFactor =  isConic ? mf->AngleToRadiansConversionFactor : 1;
 			Handle(Geom_Curve) curve;
-
+			bool rotateElipse;
+			IfcAxis2Placement2D^ ax2;
 			//it could be based on a circle, ellipse or line
 			if(dynamic_cast<IfcCircle^>(tCurve->BasisCurve))
 			{
@@ -986,24 +1007,29 @@ namespace Xbim
 
 				if(dynamic_cast<IfcAxis2Placement2D^>(c->Position))
 				{
-					IfcAxis2Placement2D^ ax2 = (IfcAxis2Placement2D^)c->Position;
+					ax2 = (IfcAxis2Placement2D^)c->Position;
 					double s1;
 					double s2;
+					
 					if( c->SemiAxis1 > c->SemiAxis2)
 					{
 						s1=c->SemiAxis1;
 						s2=c->SemiAxis2;
+						rotateElipse=false;
 					}
 					else //either same or two is larger than 1
 					{
 						s1=c->SemiAxis2;
 						s2=c->SemiAxis1;
+						rotateElipse=true;
 					}
 
-					gp_Ax2 gpax2(gp_Pnt(ax2->Location->X, ax2->Location->Y,0), gp_Dir(0,0,1),gp_Dir(ax2->P[0]->X, ax2->P[0]->Y,0.));	
+					gp_Ax2 gpax2(gp_Pnt(ax2->Location->X, ax2->Location->Y,0), gp_Dir(0,0,1),gp_Dir(ax2->P[rotateElipse?1:0]->X, ax2->P[rotateElipse?1:0]->Y,0.));	
 					
 					gp_Elips gc(gpax2,s1, s2);
 					curve = GC_MakeEllipse(gc);
+				
+
 				}
 				else if(dynamic_cast<IfcAxis2Placement3D^>(c->Position))
 				{
@@ -1022,9 +1048,10 @@ namespace Xbim
 				IfcCartesianPoint^ cp = line->Pnt;
 				
 				IfcVector^ dir = line->Dir;
-				gp_Pnt pnt(cp->X,cp->Y,cp->Z);
+				gp_Pnt pnt(cp->X,cp->Y,cp->Dim==3?cp->Z:0);
 				
-				gp_Vec vec(dir->Orientation->X,dir->Orientation->Y,dir->Orientation->Z);
+				gp_Vec vec(dir->Orientation->X,dir->Orientation->Y,dir->Dim==3?dir->Orientation->Z:0);
+				parameterFactor=dir->Magnitude;
 				vec*=dir->Magnitude;
 				curve = GC_MakeLine(pnt,vec);
 			}
@@ -1075,7 +1102,13 @@ namespace Xbim
 					gp_Pnt pnt2(x,y,z);
 					if(!pnt1.IsEqual(pnt2, tolerance))
 					{
-						
+
+						if(rotateElipse) //if we have had to roate the elipse, then rotate the trims
+						{
+							gp_Ax1 centre(gp_Pnt(ax2->Location->X, ax2->Location->Y, 0),gp_Dir(0,0,1));
+							pnt1.Rotate(centre,90.0);
+							pnt2.Rotate(centre,90.0);
+						}
 						TopoDS_Vertex v1,v2;
 						double currentTolerance = tolerance;
 						b.MakeVertex(v1,pnt1,currentTolerance);
@@ -1086,24 +1119,25 @@ namespace Xbim
 						}
 						else //we need to trim
 						{
+							
 TryMakeEdge:
-						BRepBuilderAPI_MakeEdge e (curve,sense_agreement ? v1 : v2,sense_agreement ? v2 : v1);
-						BRepBuilderAPI_EdgeError err = e.Error();
-						if ( err!=BRepBuilderAPI_EdgeDone) 
-						{
-							currentTolerance*=10;
-							if(currentTolerance<=toleranceMax) 
+							BRepBuilderAPI_MakeEdge e (curve,sense_agreement ? v1 : v2,sense_agreement ? v2 : v1);
+							BRepBuilderAPI_EdgeError err = e.Error();
+							if ( err!=BRepBuilderAPI_EdgeDone) 
 							{
-								FTol.SetTolerance(v1,currentTolerance);
-								FTol.SetTolerance(v2,currentTolerance);
-								goto TryMakeEdge;
+								currentTolerance*=10;
+								if(currentTolerance<=toleranceMax) 
+								{
+									FTol.SetTolerance(v1,currentTolerance);
+									FTol.SetTolerance(v2,currentTolerance);
+									goto TryMakeEdge;
+								}
+								String^ errMsg = XbimEdge::GetBuildEdgeErrorMessage(err);
+								Logger->WarnFormat("Construction of Trimmed Curve #{0}, failed, {1}. A line segment has been used",tCurve->EntityLabel, errMsg);
+								b.Add(w,BRepBuilderAPI_MakeEdge(sense_agreement ? v1 : v2,sense_agreement ? v2 : v1));
 							}
-							String^ errMsg = XbimEdge::GetBuildEdgeErrorMessage(err);
-							Logger->WarnFormat("Construction of Trimmed Curve #{0}, failed, {1}. A line segment has been used",tCurve->EntityLabel, errMsg);
-							b.Add(w,BRepBuilderAPI_MakeEdge(sense_agreement ? v1 : v2,sense_agreement ? v2 : v1));
-						}
-						else 
-							b.Add(w, e.Edge());
+							else 
+								b.Add(w, e.Edge());
 						}
 						trimmed2 = true;
 					}
@@ -1113,13 +1147,19 @@ TryMakeEdge:
 				{
 					IfcParameterValue^ pv = (IfcParameterValue^)trim; 
 					const double value = (double)(pv->Value);
-					double flt2 = value * parameterFactor;
+					double flt2 = (value * parameterFactor);
 					if ( isConic && Math::Abs(Math::IEEERemainder(flt2-flt1,(double)(Math::PI*2.0))-0.0f) <= BRepBuilderAPI::Precision()) 
 					{
+						
 						b.Add(w,BRepBuilderAPI_MakeEdge(curve));
 					} 
 					else 
 					{
+						if(rotateElipse) //if we have had to roate the elipse, then rotate the trims
+						{
+							flt1+=(90*parameterFactor);
+							flt2+=(90*parameterFactor);
+						}
 						BRepBuilderAPI_MakeEdge e (curve,sense_agreement ? flt1 : flt2,sense_agreement ? flt2 : flt1);
 						b.Add(w,e.Edge());
 					}

@@ -110,6 +110,7 @@
     <Compile Include="FileReferenceResolver.cs" />
     <Compile Include="IfcFileHeader.cs" />
     <Compile Include="IfcRepresentationItemExtensions.cs" />
+    <Compile Include="Parser\IfcForwardReference.cs" />
     <Compile Include="Parser\XbimP21StringDecoder.cs" />
     <Compile Include="Tree\TreeBuilder.cs" />
     <Compile Include="Tree\TreeComponentStrategy.cs" />

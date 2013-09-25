@@ -81,7 +81,7 @@ namespace Xbim.XbimExtensions.Interfaces
 
         IIfcFileHeader Header { get;}  
 
-        bool CreateFrom(string importFrom, string xbimDbName = null, ReportProgressDelegate progDelegate = null, bool keepOpen = false);
+        bool CreateFrom(string importFrom, string xbimDbName = null, ReportProgressDelegate progDelegate = null, bool keepOpen = false, bool cacheEntites = false);
 
         bool SaveAs(string saveFileName, XbimStorageType? storageType = null, ReportProgressDelegate progDelegate = null);
 

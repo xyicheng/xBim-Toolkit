@@ -239,8 +239,8 @@ namespace Xbim
 				double tolerance = profile->ModelOf->ModelFactors->Precision;
 				double toleranceMax = profile->ModelOf->ModelFactors->PrecisionMax;
 				ShapeFix_ShapeTolerance FTol;
-				TopoDS_Wire wire = XbimFaceBound::Build(profile->OuterCurve, hasCurves);
 				TopoDS_Face face;
+				TopoDS_Wire wire = XbimFaceBound::Build(profile->OuterCurve, hasCurves);
 				double currentFaceTolerance = tolerance;
 TryBuildFace:
 				BRepBuilderAPI_MakeFace faceMaker(wire, false);

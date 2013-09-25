@@ -221,9 +221,9 @@ namespace Xbim.IO
             binaryWriter.Write(Organization.Count);
             foreach (string item in Organization)
                 binaryWriter.Write(item);
-            binaryWriter.Write(PreprocessorVersion);
-            binaryWriter.Write(OriginatingSystem);
-            binaryWriter.Write(AuthorizationName);
+            binaryWriter.Write(PreprocessorVersion ?? "");
+            binaryWriter.Write(OriginatingSystem ?? "");
+            binaryWriter.Write(AuthorizationName ?? "");
             binaryWriter.Write(AuthorizationMailingAddress.Count);
             foreach (string item in AuthorizationMailingAddress)
                 binaryWriter.Write(item);

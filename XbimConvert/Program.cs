@@ -51,6 +51,9 @@ namespace XbimConvert
                 Console.WriteLine("Invalid IFC filename or filter: {0}, current directory is: {1}", args[0], Directory.GetCurrentDirectory());
                 return -1;
             }
+
+            long parseTime = 0;
+            long geomTime = 0;
             foreach (var origFileName in files)
             {
                 using (EventTrace eventTrace = LoggerFactory.CreateEventTrace())
@@ -70,13 +73,15 @@ namespace XbimConvert
                         }
                     };
                     watch.Start();
-                        using (XbimModel model = ParseModelFile(origFileName, xbimFileName))
+                    using (XbimModel model = ParseModelFile(origFileName, xbimFileName, arguments.Caching))
                     {
                         //model.Open(xbimFileName, XbimDBAccess.ReadWrite);
+                        parseTime = watch.ElapsedMilliseconds;
                         if (!arguments.NoGeometry)
                         {
                            
                             XbimMesher.GenerateGeometry(model, Logger, progDelegate);
+                            geomTime = watch.ElapsedMilliseconds - parseTime;
                             if (arguments.GenerateScene)
                             {
                                 Stopwatch sceneTimer = new Stopwatch();
@@ -102,7 +107,7 @@ namespace XbimConvert
                    // XbimModel.Terminate();
                     GC.Collect();
                     ResetCursor(Console.CursorTop + 1);
-                    Console.WriteLine("Success. Processed in " + watch.ElapsedMilliseconds + " ms");
+                    Console.WriteLine("Success. Parsed in  " + parseTime + " ms, geometry meshed in " + geomTime + " ms, total time " + (parseTime+geomTime) + " ms.");
                 }
                 catch (Exception e)
                 {
@@ -174,9 +179,10 @@ namespace XbimConvert
             return result;
         }
 
-        private static XbimModel ParseModelFile(string inFileName, string xbimFileName)
+        private static XbimModel ParseModelFile(string inFileName, string xbimFileName, bool caching)
         {
             XbimModel model = new XbimModel();
+           
             //create a callback for progress
             switch (Path.GetExtension(inFileName).ToLowerInvariant())
             {
@@ -193,7 +199,7 @@ namespace XbimConvert
                                 Console.Write(string.Format("{0:D2}% Parsed", percentProgress));
                                 ResetCursor(Console.CursorTop);
                             }
-                        },true
+                        },true, caching
                         );
                     break;
                 case ".xbim":

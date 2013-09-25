@@ -358,7 +358,7 @@ namespace Xbim.IO
         /// If null the contents are loaded into memory and are not persistent
         /// </param>
         /// <returns></returns>
-        public bool CreateFrom(string importFrom, string xbimDbName = null, ReportProgressDelegate progDelegate = null, bool keepOpen = false)
+        public bool CreateFrom(string importFrom, string xbimDbName = null, ReportProgressDelegate progDelegate = null, bool keepOpen = false, bool cacheEntities = false)
         {
             Close();
             string fullPath = Path.GetFullPath(importFrom);
@@ -368,18 +368,18 @@ namespace Xbim.IO
                 throw new FileNotFoundException(fullPath + " file was not found");
             if (string.IsNullOrWhiteSpace(xbimDbName))
                 xbimDbName = Path.ChangeExtension(importFrom, "xBIM");
-
+            
             XbimStorageType toImportStorageType = StorageType(importFrom);
             switch (toImportStorageType)
             {
                 case XbimStorageType.IFCXML:
-                    cache.ImportIfcXml(xbimDbName, importFrom, progDelegate, keepOpen);
+                    cache.ImportIfcXml(xbimDbName, importFrom, progDelegate, keepOpen, cacheEntities);
                     break;
                 case XbimStorageType.IFC:
-                    cache.ImportIfc(xbimDbName, importFrom, progDelegate, keepOpen);
+                    cache.ImportIfc(xbimDbName, importFrom, progDelegate, keepOpen, cacheEntities);
                     break;
                 case XbimStorageType.IFCZIP:
-                    cache.ImportIfcZip(xbimDbName, importFrom, progDelegate, keepOpen);
+                    cache.ImportIfcZip(xbimDbName, importFrom, progDelegate, keepOpen, cacheEntities);
                     break;
                 case XbimStorageType.XBIM:
                     cache.ImportXbim(importFrom, progDelegate);

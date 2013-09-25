@@ -308,6 +308,7 @@ namespace Xbim
 TryCutSolid:		
 				try
 				{
+					
 					BRepAlgoAPI_Cut boolOp(*Handle,*(shape->Handle));
 					if(boolOp.ErrorStatus() == 0)
 					{
@@ -324,31 +325,60 @@ TryCutSolid:
 								fTol.SetTolerance(*(shape->Handle),currentTolerance);
 								goto TryCutSolid;
 							}
-							ShapeFix_Shape sfs(boolOp.Shape());
-							sfs.SetPrecision(precision);
-							sfs.SetMinTolerance(precision);
-							sfs.SetMaxTolerance(maxPrecision);
-							sfs.Perform();
+							
 #ifdef _DEBUG
 							if( BRepCheck_Analyzer(sfs.Shape(), Standard_True).IsValid() == Standard_True) //in release builds except the geometry is not compliant
 								Logger->ErrorFormat("Unable to create valid shape when performing boolean cut operation on shape #{0} with shape #{1}.", RepresentationLabel,shape->RepresentationLabel );
 						
 #endif // _DEBUG
-
-							return gcnew XbimSolid(sfs.Shape(), hasCurves,_representationLabel,_surfaceStyleLabel);
+							BRep_Builder builder;
+							TopoDS_Compound solids;
+							builder.MakeCompound(solids);
+							
+							ShapeFix_Solid solidFixer;
+							solidFixer.SetMinTolerance(precision);
+							solidFixer.SetMaxTolerance(maxPrecision);
+							solidFixer.SetPrecision(precision);
+							solidFixer.CreateOpenSolidMode()= Standard_True;
+							for (TopExp_Explorer shellEx(boolOp.Shape(),TopAbs_SHELL);shellEx.More();shellEx.Next()) //get each shell and solidify if possible
+							{
+								TopoDS_Solid solid = solidFixer.SolidFromShell(TopoDS::Shell(shellEx.Current()));
+								if( BRepCheck_Analyzer(solid, Standard_True).IsValid() == Standard_False) 
+								{
+									ShapeFix_Shape sfs(solid);
+									sfs.SetPrecision(precision);
+									sfs.SetMinTolerance(precision);
+									sfs.SetMaxTolerance(maxPrecision);
+									sfs.Perform();
+									if(sfs.Shape().ShapeType()==TopAbs_SHELL)
+										solid = solidFixer.SolidFromShell(TopoDS::Shell(sfs.Shape()));
+									else if(sfs.Shape().ShapeType()==TopAbs_SOLID)
+										solid = TopoDS::Solid(sfs.Shape()); 
+									else //anything else is useless, ignore
+										solid.Nullify(); 
+								}
+								if(!solid.IsNull()) builder.Add(solids,TopoDS::Solid(solid));
+							}
+							
+							return gcnew XbimSolid(solids, hasCurves,_representationLabel,_surfaceStyleLabel);
 						}
 					}
 					else
 					{
-						currentTolerance*=10; //try courser;
-						if(currentTolerance<=maxPrecision)
+						/*BRepTools::Write(*Handle,"b");
+						BRepTools::Write(*(shape->Handle),"h");*/
+						if(boolOp.ErrorStatus()>8) //errors below this are just errors in the input model, precision will not help
 						{
-							fTol.SetTolerance(*Handle, currentTolerance);
-							fTol.SetTolerance(*(shape->Handle),currentTolerance);
-							goto TryCutSolid;
+							currentTolerance*=10; //try courser;
+							if(currentTolerance<=maxPrecision)
+							{
+								fTol.SetTolerance(*Handle, currentTolerance);
+								fTol.SetTolerance(*(shape->Handle),currentTolerance);
+								goto TryCutSolid;
+							}
 						}
 						//it isn't working
-						
+
 						Logger->ErrorFormat("Unable to perform boolean cut operation on shape #{0} with shape #{1}. Discarded", RepresentationLabel,shape->RepresentationLabel );
 						return this;
 					}

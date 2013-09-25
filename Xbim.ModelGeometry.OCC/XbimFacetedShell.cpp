@@ -89,6 +89,7 @@ namespace Xbim
 			{
 				System::Diagnostics::Debug::Assert(nativeHandle==nullptr);
 				TopoDS_Shape shape = XbimShell::Build((IfcConnectedFaceSet^)cShell, _hasCurvedEdges); //get a sewn shell
+				
 				double precision = cShell->ModelOf->ModelFactors->Precision;
 				double maxPrecision = cShell->ModelOf->ModelFactors->PrecisionMax;
 				
@@ -139,7 +140,8 @@ namespace Xbim
 					*nativeHandle = sfs.Shape();
 				}
 				else */
-					*nativeHandle=solids;
+				*nativeHandle=solids;
+				
 				isSolid=true;
 			}
 
@@ -382,6 +384,7 @@ namespace Xbim
 					for (TopExp_Explorer shellEx(sfs.SewedShape(),TopAbs_SHELL);shellEx.More();shellEx.Next()) //get each shell and make it a solid
 					{
 						TopoDS_Solid solid = solidFixer.SolidFromShell(TopoDS::Shell(shellEx.Current()));
+						
 						if(!solid.IsNull())
 						{
 							GProp_GProps System;

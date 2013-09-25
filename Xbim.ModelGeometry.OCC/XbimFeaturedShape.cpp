@@ -204,25 +204,26 @@ namespace Xbim
 				{
 					
 					XbimGeometryModelCollection^ preparedOpenings = PrepareFeatures(openings, precision,precisionMax);
-					
+					base->ToSolid(precision,precisionMax);
 #if defined USE_CARVE
-					//if(preparedOpenings->Count<1) //should be quite efficient
-					//{
+					if(preparedOpenings->Count<1) //should be quite efficient
+					{
 
-					//	XbimGeometryModel^ result = base;
-					//	for each (XbimGeometryModel^ var in preparedOpenings)
-					//	{
-					//		result = result->Cut(var,precision, precisionMax);
-					//	}
-					//	return result;
-					//}
-					//else //use carve for speed
+						XbimGeometryModel^ result = base;
+						for each (XbimGeometryModel^ var in preparedOpenings)
+						{
+							result = result->Cut(var,precision, precisionMax);
+						}
+						return result;
+					}
+					else //use carve for speed
 					{
 
 						XbimPolyhedron^ polyBase = base->ToPolyHedron(deflection,precision ,precisionMax);
 						XbimPolyhedron^ polyResult = polyBase;
 						double currentPolyhedronPrecision = precision;
 						XbimCsg^ csg = gcnew XbimCsg(currentPolyhedronPrecision);
+						bool warned = false;
 						for each (XbimGeometryModel^ nonClashing in preparedOpenings) //do the least number first for performance
 						{
 							XbimPolyhedron^ polyOpenings = nonClashing->ToPolyHedron(deflection, precision,precisionMax);
@@ -241,7 +242,9 @@ TryCutPolyhedron:
 									csg = gcnew XbimCsg(currentPolyhedronPrecision);
 									goto TryCutPolyhedron;
 								}
-								Logger->ErrorFormat("Failed to cut openings, exception: {0}.\n Body is #{1}.\nCut ignored. This should not happen.", ex->Message, base->RepresentationLabel);
+								//return base->Cut(preparedOpenings,precision, precisionMax); //have one last go with open cascade
+								if(!warned) Logger->ErrorFormat("Failed to cut opening, exception: {0}.\n Body is #{1}.\nCut ignored. This should not happen.", ex->Message, base->RepresentationLabel);
+								warned=true;
 							}
 						}
 						GC::KeepAlive(csg);

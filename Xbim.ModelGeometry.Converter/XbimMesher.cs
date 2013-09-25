@@ -110,8 +110,8 @@ namespace Xbim.ModelGeometry.Converter
            
             //now convert the geometry
             IEnumerable<IfcProduct> toDraw = model.InstancesLocal.OfType<IfcProduct>().Where(t => !(t is IfcFeatureElement));
-          //  List<IfcProduct> toDraw = new List<IfcProduct>();
-          //  toDraw.Add(model.Instances[6872] as IfcProduct);
+            //List<IfcProduct> toDraw = new List<IfcProduct>();
+            //  toDraw.Add(model.Instances[513489] as IfcProduct);
             if (!toDraw.Any()) return; //othing to do
             TransformGraph graph = new TransformGraph(model);
             //create a new dictionary to hold maps

@@ -190,8 +190,8 @@ namespace XbimXplorer
             {
                 _temporaryXbimFileName = Path.GetTempFileName();
                 _defaultFileName = Path.GetFileNameWithoutExtension(ifcFilename);
-                model.CreateFrom(ifcFilename, _temporaryXbimFileName, worker.ReportProgress);
-                model.Open(_temporaryXbimFileName, XbimDBAccess.ReadWrite);
+                model.CreateFrom(ifcFilename, _temporaryXbimFileName, worker.ReportProgress,true,true);
+              //  model.Open(_temporaryXbimFileName, XbimDBAccess.ReadWrite);
                 XbimMesher.GenerateGeometry(model, null, worker.ReportProgress);
                // model.Close();
                 if (worker.CancellationPending == true) //if a cancellation has been requested then don't open the resulting file

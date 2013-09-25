@@ -637,7 +637,6 @@ namespace Xbim
 				gp_Vec vec(dir->X,dir->Y,dir->Z );
 				vec*= depth;
 				BRepPrimAPI_MakePrism prism(face , vec);
-
 				return TopoDS::Solid(prism.Shape());
 			}
 

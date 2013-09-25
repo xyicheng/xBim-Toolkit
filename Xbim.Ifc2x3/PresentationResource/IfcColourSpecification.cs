@@ -98,7 +98,7 @@ namespace Xbim.Ifc2x3.PresentationResource
 
         #region Fields
 
-        private IfcLabel? _name;
+        protected IfcLabel? _name;
 
         #endregion
 
