@@ -1,7 +1,7 @@
 ﻿%{
 	
 %}
-%namespace Xbim.Query
+%namespace Xbim.Script
 %partial   
 %parsertype Parser
 %output=Parser.cs

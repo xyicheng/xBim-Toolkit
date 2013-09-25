@@ -1,6 +1,6 @@
 ﻿%using QUT.Xbim.Gppg;
 
-%namespace Xbim.Query
+%namespace Xbim.Script
 
 %option verbose, summary, caseinsensitive, noPersistBuffer, out:Scanner.cs
 %visibility internal
