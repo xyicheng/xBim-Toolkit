@@ -131,22 +131,16 @@ namespace Xbim.Spatial
 
             //check the case of spatial strucure element (specific relations)
             IfcSpatialStructureElement spatStruct = first as IfcSpatialStructureElement;
+            IEnumerable<IfcProduct> prods = null;
             if (spatStruct != null)
             {
-                IEnumerable<IfcProduct> prods = GetProductsInSpatStruct(spatStruct);
+                prods = GetProductsInSpatStruct(spatStruct);
                 foreach (var prod in prods)
-                {
                     if (Contains(prod, second) ?? false) return true;
-                }
             }
-            //no else statement as it would cut off possible results
-            {
-                IEnumerable<IfcProduct> prods = GetProductsInProduct(first);
-                foreach (var prod in prods)
-                {
-                    if (Contains(prod, second) ?? false) return true;
-                }
-            }
+            prods = GetProductsInProduct(first);
+            foreach (var prod in prods)
+                if (Contains(prod, second) ?? false) return true;
 
             //if we don't know
             return null;
