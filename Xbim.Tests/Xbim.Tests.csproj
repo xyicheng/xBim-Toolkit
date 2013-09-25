@@ -69,6 +69,7 @@
     <Compile Include="P21Tests.cs" />
     <Compile Include="XbimModelDatabaseTests.cs" />
     <Compile Include="XbimModelTest.cs" />
+    <Compile Include="XbimScriptTests.cs" />
     <Compile Include="XbimTree.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -179,6 +180,10 @@
     <ProjectReference Include="..\Xbim.Presentation\Xbim.Presentation.csproj">
       <Project>{89f98e53-de4e-4427-8244-d5934ad08849}</Project>
       <Name>Xbim.Presentation</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Xbim.Script\Xbim.Script.csproj">
+      <Project>{BAE9A827-0620-4F68-A384-336A491EDD91}</Project>
+      <Name>Xbim.Script</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

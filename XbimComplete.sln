@@ -90,15 +90,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VersionComparer", "VersionC
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.Analysis", "Xbim.Analysis\Xbim.Analysis.csproj", "{25056C5D-D281-436E-B281-95F339861C5D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XbimQueryTest", "XbimQueryTest\XbimQueryTest.csproj", "{93A0C714-8ED4-46DB-8A77-C5B2A5575B03}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.Script", "Xbim.Script\Xbim.Script.csproj", "{BAE9A827-0620-4F68-A384-336A491EDD91}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XbimInterpret", "XbimInterpret\XbimInterpret.csproj", "{97255EE6-4C71-43FC-8EB8-69604C675C0F}"
 EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 24
+		SccNumberOfProjects = 23
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://tfs.codeplex.com/tfs/tfs13
 		SccLocalPath0 = .
@@ -170,17 +168,13 @@ Global
 		SccProjectUniqueName20 = Xbim.Analysis\\Xbim.Analysis.csproj
 		SccProjectName20 = Xbim.Analysis
 		SccLocalPath20 = Xbim.Analysis
-		SccProjectUniqueName21 = XbimQueryTest\\XbimQueryTest.csproj
-		SccProjectTopLevelParentUniqueName21 = XbimComplete.sln
-		SccProjectName21 = XbimQueryTest
-		SccLocalPath21 = XbimQueryTest
-		SccProjectUniqueName22 = Xbim.Script\\Xbim.Script.csproj
-		SccProjectName22 = Xbim.Script
-		SccLocalPath22 = Xbim.Script
-		SccProjectUniqueName23 = XbimInterpret\\XbimInterpret.csproj
-		SccProjectTopLevelParentUniqueName23 = XbimComplete.sln
-		SccProjectName23 = XbimInterpret
-		SccLocalPath23 = XbimInterpret
+		SccProjectUniqueName21 = Xbim.Script\\Xbim.Script.csproj
+		SccProjectName21 = Xbim.Script
+		SccLocalPath21 = Xbim.Script
+		SccProjectUniqueName22 = XbimInterpret\\XbimInterpret.csproj
+		SccProjectTopLevelParentUniqueName22 = XbimComplete.sln
+		SccProjectName22 = XbimInterpret
+		SccLocalPath22 = XbimInterpret
 	EndGlobalSection
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = XbimComplete.vsmdi
@@ -304,12 +298,6 @@ Global
 		{25056C5D-D281-436E-B281-95F339861C5D}.NugetDistribution|Any CPU.Build.0 = Release|Any CPU
 		{25056C5D-D281-436E-B281-95F339861C5D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{25056C5D-D281-436E-B281-95F339861C5D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{93A0C714-8ED4-46DB-8A77-C5B2A5575B03}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{93A0C714-8ED4-46DB-8A77-C5B2A5575B03}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{93A0C714-8ED4-46DB-8A77-C5B2A5575B03}.NugetDistribution|Any CPU.ActiveCfg = Release|Any CPU
-		{93A0C714-8ED4-46DB-8A77-C5B2A5575B03}.NugetDistribution|Any CPU.Build.0 = Release|Any CPU
-		{93A0C714-8ED4-46DB-8A77-C5B2A5575B03}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{93A0C714-8ED4-46DB-8A77-C5B2A5575B03}.Release|Any CPU.Build.0 = Release|Any CPU
 		{BAE9A827-0620-4F68-A384-336A491EDD91}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{BAE9A827-0620-4F68-A384-336A491EDD91}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BAE9A827-0620-4F68-A384-336A491EDD91}.NugetDistribution|Any CPU.ActiveCfg = Release|Any CPU
@@ -335,7 +323,6 @@ Global
 		{97255EE6-4C71-43FC-8EB8-69604C675C0F} = {0DA6263B-5A69-401E-99D0-391644EF4709}
 		{8729CDD1-B493-48EC-A867-61ABAF3E93D2} = {7ECDCF15-95BB-4D2B-8C0D-8615D6E3BAB1}
 		{6EF22FB8-7048-4E6A-9B2F-AC2570A998A9} = {7ECDCF15-95BB-4D2B-8C0D-8615D6E3BAB1}
-		{93A0C714-8ED4-46DB-8A77-C5B2A5575B03} = {7ECDCF15-95BB-4D2B-8C0D-8615D6E3BAB1}
 		{10A2F674-DB37-41FF-AB71-9D54C8F0A5B6} = {E9E301F2-FE7D-4410-B88D-F83D684A8E62}
 	EndGlobalSection
 EndGlobal

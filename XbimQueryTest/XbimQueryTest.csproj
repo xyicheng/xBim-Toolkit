@@ -52,7 +52,7 @@
     <Compile Include="ClassificationTest.cs" />
     <Compile Include="ModelTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ParserTests.cs" />
+    <Compile Include="XbimScriptTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Xbim.Common\Xbim.Common.csproj">
