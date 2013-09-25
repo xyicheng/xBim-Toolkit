@@ -27,6 +27,7 @@ namespace Xbim.Script
 
         //public properties of the parser
         public XbimVariables Variables { get { return _variables; } }
+        public XbimModel Model { get { return _model; } }
 
         internal Parser(Scanner lex, XbimModel model): base(lex)
         {
@@ -631,6 +632,13 @@ namespace Xbim.Script
                 StringBuilder str = new StringBuilder();
                 if (Variables.IsDefined(identifier))
                 {
+                    var header = "";
+                    foreach (var name in attrNames)
+                    {
+                        header += name + "; ";
+                    }
+                    str.AppendLine(header);
+
                     foreach (var entity in Variables[identifier])
                     {
                         var line = "";

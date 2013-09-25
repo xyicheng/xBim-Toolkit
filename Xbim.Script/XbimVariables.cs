@@ -11,13 +11,24 @@ namespace Xbim.Script
     {
 
         private Dictionary<string, IEnumerable<IPersistIfcEntity>> _data = new Dictionary<string, IEnumerable<IPersistIfcEntity>>();
-
+        private string _lastVariable = null;
+        public string LastVariable { get { return _lastVariable; } }
+        public IEnumerable<IPersistIfcEntity> LastEntities
+        {
+            get 
+            {
+                if (_lastVariable == null || !IsDefined(_lastVariable)) return new IPersistIfcEntity[] { };
+                return this[_lastVariable];
+            }
+        }
+        
         public IEnumerable<IPersistIfcEntity> GetEntities(string variable)
         {
             IEnumerable<IPersistIfcEntity> result = new IPersistIfcEntity[]{};
             _data.TryGetValue(variable, out result);
             return result;
         }
+
 
         public bool IsDefined(string variable)
         {
@@ -26,8 +37,10 @@ namespace Xbim.Script
 
         public void Set(string variable, IPersistIfcEntity entity)
         {
-            if (entity == null) return;
-            Set(variable, new IPersistIfcEntity[] { entity });
+            if (entity == null && IsDefined(variable))
+                Clear(variable);
+            else
+                Set(variable, new IPersistIfcEntity[] { entity });
         }
 
         public void Set(string variable, IEnumerable<IPersistIfcEntity> entities)
@@ -36,6 +49,7 @@ namespace Xbim.Script
                 _data[variable] = entities.ToList();
             else
                 _data.Add(variable, entities.ToList());
+            _lastVariable = variable;
         }
 
         public void AddEntities(string variable, IEnumerable<IPersistIfcEntity> entities)
@@ -47,6 +61,7 @@ namespace Xbim.Script
             else
                 _data.Add(variable, entities.ToList());
 
+            _lastVariable = variable;
         }
 
         public void RemoveEntities(string variable, IEnumerable<IPersistIfcEntity> entities)
@@ -58,6 +73,7 @@ namespace Xbim.Script
             else
                 throw new ArgumentException("Can't remove entities from variable which is not defined.");
 
+            _lastVariable = variable;
         }
 
         public IEnumerable<IPersistIfcEntity> this[string key]

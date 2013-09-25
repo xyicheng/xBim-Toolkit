@@ -6,6 +6,7 @@ using System.Linq.Expressions;
 using System.IO;
 using Xbim.Script;
 using Xbim.IO;
+using Xbim.XbimExtensions.Interfaces;
 
 namespace XbimInterpret
 {
@@ -16,8 +17,7 @@ namespace XbimInterpret
             var testModelPath = @"G:\CODE\xBIM\Martin\XbimQueryTest\TestModels\Standard Classroom.ifc";
             var isTestModel = File.Exists(testModelPath);
 
-            XbimModel model = XbimModel.CreateTemporaryModel();
-            XbimQueryParser parser = new XbimQueryParser(model);
+            XbimQueryParser parser = new XbimQueryParser();
 
             if (args.Count() > 0)
             {
@@ -40,32 +40,40 @@ namespace XbimInterpret
                 }
 
             }
-            
 
+
+            Console.WriteLine("XbimInterpret is command line interface which can execute BQL script as a file or interactively line by line.");
             Console.WriteLine("Enter your commands (use 'exit' command to quit):");
             Console.Write(">>> ");
             string command = Console.ReadLine();
-            
+            IEnumerable<IPersistIfcEntity> lastResults = null;
+
             while (command.ToLower() != "exit")
             {
                 if (command == "X" && isTestModel)
                 {
                     Console.WriteLine("Opening model...");
-                    model.CreateFrom(testModelPath, null, null, true);
+                    parser.Model.CreateFrom(testModelPath, null, null, true);
                     Console.WriteLine("Model ready...");
                 }
                 parser.Parse(command);
                 if (parser.Errors.Count() != 0)
                     foreach (var error in parser.Errors)
-                    {
                         Console.WriteLine(error);
-                    }
+
+                if (lastResults != parser.Results.LastEntities)
+                {
+                    lastResults = parser.Results.LastEntities;
+                    if (lastResults != null)
+                        parser.Parse("Dump " + parser.Results.LastVariable + ";");
+                }
+
 
                 Console.Write(">>> ");
                 command = Console.ReadLine();
             }
 
-            model.Close();
+            if (parser.Model != null) parser.Model.Close();
         }
     }
 }
