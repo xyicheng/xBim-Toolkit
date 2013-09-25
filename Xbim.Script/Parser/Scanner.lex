@@ -70,6 +70,21 @@
 ","		{  return (','); }
 
 
+"is north from"		{return ((int)Tokens.NORTH_OF); }
+"is south from"		{return ((int)Tokens.SOUTH_OF); }
+"is west from"		{return ((int)Tokens.WEST_OF); }
+"is east from"		{return ((int)Tokens.EAST_OF); }
+"is above from"		{return ((int)Tokens.ABOVE); }
+"is below from"		{return ((int)Tokens.BELOW); }
+"spatialy equals"	{return ((int)Tokens.SPATIALLY_EQUALS); }
+"is disjoint from"	{return ((int)Tokens.DISJOINT); }
+"intersects with"	{return ((int)Tokens.INTERSECTS); }
+"touches"			{return ((int)Tokens.TOUCHES); }
+"crosses"			{return ((int)Tokens.CROSSES); }
+"is within"			{return ((int)Tokens.WITHIN); }
+"overlaps"			{return ((int)Tokens.OVERLAPS); }
+"relates to"			{return ((int)Tokens.RELATE); }
+					 
 /* ********************** Keywords ************************** */
 "select"			{ return (int)Tokens.SELECT;}
 "set"			{ return (int)Tokens.SET;}
@@ -91,6 +106,11 @@
 "open"			{ return (int)Tokens.OPEN; }
 "close"			{ return (int)Tokens.CLOSE; }
 "save"			{ return (int)Tokens.SAVE; }
+"in"			{ return (int)Tokens.IN; }
+"it"			{ return (int)Tokens.IT; }
+"property set" |
+"property_set" |
+"propertyset"	{ return (int)Tokens.PROPERTY_SET; }
 
 "name"			{ return (int)Tokens.NAME; }									
 "predefinedtype" |

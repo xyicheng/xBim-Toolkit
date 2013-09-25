@@ -111,8 +111,10 @@
     <None Include="Classifications\NRM.csv" />
     <None Include="Classifications\Uniclass 1.4.csv" />
     <None Include="Parser\gplex.exe" />
+    <None Include="Parser\gplex.pdf" />
     <None Include="Parser\gppg.exe" />
     <Content Include="Parser\Queries.txt" />
+    <None Include="Parser\gppg.pdf" />
     <None Include="PredefinedRules\ClassifyModelToNRM.bql">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

@@ -885,8 +885,11 @@ namespace Xbim.Script
         #endregion
 
         #region Objects manipulation
-        private void EvaluateSetExpression(string identifier, IEnumerable<Expression> expressions)
+        private static string _actualPsetName = null;
+
+        private void EvaluateSetExpression(string identifier, IEnumerable<Expression> expressions, string pSetName = null)
         {
+            _actualPsetName = pSetName;
             if (identifier == null || expressions == null) return;
 
             if (_model.IsTransacting)
@@ -930,6 +933,13 @@ namespace Xbim.Script
         {
             if (input == null) return;
 
+            //if property set is specified don't even try to set attribute
+            if (_actualPsetName != null)
+            {
+                SetProperty(input, attrName, newVal);
+                return;
+            }
+
             var attr = input.GetType().GetProperty(attrName, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
             if (attr == null)
             {
@@ -945,21 +955,29 @@ namespace Xbim.Script
             List<IfcExtendedMaterialProperties> pSetsMaterial = null;
             IfcPropertySingleValue property = null;
             PropertyInfo info = null;
+            IfcPropertySet ps = null;
+            IfcExtendedMaterialProperties eps = null;
 
             IfcObject obj = entity as IfcObject;
             if (obj != null)
             {
-                pSets = obj.GetAllPropertySets();
+                if (_actualPsetName != null)
+                    ps = obj.GetPropertySet(_actualPsetName);
+                pSets =  ps == null ? obj.GetAllPropertySets() : new List<IfcPropertySet>(){ps};
             }
             IfcTypeObject typeObj = entity as IfcTypeObject;
             if (typeObj != null)
             {
-                pSets = typeObj.GetAllPropertySets();
+                if (_actualPsetName != null)
+                    ps = typeObj.GetPropertySet(_actualPsetName);
+                pSets = ps == null ? typeObj.GetAllPropertySets() : new List<IfcPropertySet>() { ps };
             }
             IfcMaterial material = entity as IfcMaterial;
             if (material != null)
             {
-                pSetsMaterial = material.GetAllPropertySets();
+                if (_actualPsetName != null)
+                    eps = material.GetExtendedProperties(_actualPsetName);
+                pSetsMaterial = eps == null ? material.GetAllPropertySets() : new List<IfcExtendedMaterialProperties>() { eps };
             }
 
             if (pSets != null)
@@ -989,7 +1007,7 @@ namespace Xbim.Script
             //create new property if no such a property exists
             else
             {
-                string pSetName = "xbim_extended_properties";
+                string pSetName = _actualPsetName ?? "xbim_extended_properties";
                 IfcValue val = null;
                 if (newVal != null)
                     val = CreateIfcValueFromBasicValue(newVal, name);
@@ -1160,6 +1178,75 @@ namespace Xbim.Script
                     }
                 }
             }
+        }
+        #endregion
+
+        #region Spatial conditions
+        private Expression GenerateSpatialCondition(Tokens condition, string identifier)
+        {
+            var identExpr = Expression.Constant(identifier, typeof(string));
+            var condExpr = Expression.Constant(condition);
+
+            var evaluateMethod = GetType().GetMethod("EvaluateSpatialCondition", BindingFlags.NonPublic);
+
+            return Expression.Call(null, evaluateMethod, _input, condExpr, identExpr);
+        }
+
+        private bool EvaluateSpatialCondition(IPersistIfcEntity input, Tokens condition, string identifier)
+        {
+            IfcProduct left = input as IfcProduct;
+            if (left == null)
+            {
+                Scanner.yyerror(input.GetType().Name + " can't have a spatial condition.");
+                return false;
+            }
+            IEnumerable<IfcProduct> right = _variables[identifier].OfType<IfcProduct>();
+            if (right.Count() != _variables[identifier].Count())
+                Scanner.yyerror("Some of the objects in "+identifier+" can't be in a spatial condition.");
+            if (right.Count() == 0)
+            {
+                Scanner.yyerror("There are no suitable objects for spatial condition in " + identifier + ".");
+                return false;
+            }
+
+
+            switch (condition)
+            {
+                case Tokens.NORTH_OF:
+                    break;
+                case Tokens.SOUTH_OF:
+                    break;
+                case Tokens.WEST_OF:
+                    break;
+                case Tokens.EAST_OF:
+                    break;
+                case Tokens.ABOVE:
+                    break;
+                case Tokens.BELOW:
+                    break;
+                case Tokens.SPATIALLY_EQUALS:
+                    break;
+                case Tokens.DISJOINT:
+                    break;
+                case Tokens.INTERSECTS:
+                    break;
+                case Tokens.TOUCHES:
+                    break;
+                case Tokens.CROSSES:
+                    break;
+                case Tokens.WITHIN:
+                    break;
+                case Tokens.SPATIALLY_CONTAINS:
+                    break;
+                case Tokens.OVERLAPS:
+                    break;
+                case Tokens.RELATE:
+                    break;
+                default:
+                    break;
+            }
+
+            throw new NotImplementedException();
         }
         #endregion
     }

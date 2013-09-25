@@ -131,6 +131,7 @@ namespace XbimQueryTest
                 {"Set name to 'New name', description to 'New description' for $wall;", true},
                 {"Set name to 'New name', description to 'New description', 'fire protection' to 12.3 for $wall;", true},
                 {"Set name to 123, description to 'New description', 'fire protection' to 12.3 for $wall;", false},
+                {"Set name to 'Some name', Description to 'Property description', fire_rating to 123.5 for $wall in property set 'PSet_Wall_Common';", true},
 
                 //element type attributes and properties
                 {"Select wall where type name is 'Some name';",true},
@@ -422,10 +423,12 @@ namespace XbimQueryTest
             Set 'Testing not defined' to 'New label value' for $wall;
             $slab is new slab 'Roof slab';
             Set predefined type to 'roof' for $slab;
+            Set name to 'Some name', Description to 'Property description', fire_rating to 123.5 for $slab in property set 'PSet_Slab_Common';
             ");
 
             //testing object
             var wall = model.Instances.OfType<IfcWall>().FirstOrDefault();
+            var slab = model.Instances.OfType<IfcSlab>().FirstOrDefault();
 
             Assert.AreEqual(0, parser.Errors.Count());
             Assert.AreEqual("Changed name", wall.Name.ToString());
@@ -437,7 +440,7 @@ namespace XbimQueryTest
             Assert.AreEqual(true, wall.GetPropertySingleNominalValue("Testing property set", "Testing logical").Value);
             Assert.AreEqual("New label value", wall.GetPropertySingleNominalValue("Testing property set", "Testing not defined").Value);
             Assert.AreEqual(IfcSlabTypeEnum.ROOF, parser.Results["$slab"].Cast<IfcSlab>().FirstOrDefault().PredefinedType);
-
+            Assert.AreEqual("Property description", slab.GetPropertySingleNominalValue("PSet_Slab_Common", "Description").Value);
         }
 
         [TestMethod]

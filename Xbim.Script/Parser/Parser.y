@@ -44,6 +44,7 @@
 %token  FILE
 %token  MODEL
 %token  CLASSIFICATION
+%token  PROPERTY_SET
 
 /*operations and keywords*/
 %token  WHERE
@@ -61,6 +62,8 @@
 %token  MATERIAL
 %token  THICKNESS
 %token  GROUP
+%token  IN
+%token  IT
 
 /* commands */
 %token  SELECT
@@ -80,13 +83,13 @@
 %token  ABOVE
 %token  BELOW
 
-%token  SPATIALY_EQUALS
+%token  SPATIALLY_EQUALS
 %token  DISJOINT
 %token  INTERSECTS
 %token  TOUCHES
 %token  CROSSES
 %token  WITHIN
-%token  SPATIALY_CONTAINS
+%token  SPATIALLY_CONTAINS
 %token  OVERLAPS
 %token  RELATE
 
@@ -107,7 +110,8 @@ expression
 	;
 
 attr_setting
-	: SET value_setting_list FOR IDENTIFIER				{EvaluateSetExpression($4.strVal, ((List<Expression>)($2.val)));}
+	: SET value_setting_list FOR IDENTIFIER								{EvaluateSetExpression($4.strVal, ((List<Expression>)($2.val)));}
+	| SET value_setting_list FOR IDENTIFIER IN PROPERTY_SET STRING		{EvaluateSetExpression($4.strVal, ((List<Expression>)($2.val)), $7.strVal);}
 	;
 
 value_setting_list
@@ -194,6 +198,7 @@ condition
 	| typeCondition							{$$.val = $1.val;}
 	| propertyCondition						{$$.val = $1.val;}
 	| groupCondition						{$$.val = $1.val;}
+	| spatialCondition						{$$.val = $1.val;}
 	;
 
 attributeCondition	
@@ -246,6 +251,28 @@ propertyCondition
     | STRING op_bool NONDEF				{$$.val = GeneratePropertyCondition($1.strVal, null, ((Tokens)($2.val)));}
     | STRING OP_NEQ DEFINED				{$$.val = GeneratePropertyCondition($1.strVal, null, Tokens.OP_EQ);}
     | STRING OP_EQ DEFINED				{$$.val = GeneratePropertyCondition($1.strVal, null, Tokens.OP_NEQ);}
+	;
+
+spatialCondition
+	: IT op_spatial IDENTIFIER			{$$.val = GenerateSpatialCondition(((Tokens)($2.val)), $3.strVal);}
+	;
+
+op_spatial
+	: NORTH_OF				{$$.val = Tokens.NORTH_OF			;}
+	| SOUTH_OF				{$$.val = Tokens.SOUTH_OF			;}
+	| WEST_OF				{$$.val = Tokens.WEST_OF			;}
+	| EAST_OF				{$$.val = Tokens.EAST_OF			;}
+	| ABOVE					{$$.val = Tokens.ABOVE				;}
+	| BELOW					{$$.val = Tokens.BELOW				;}
+	| SPATIALLY_EQUALS		{$$.val = Tokens.SPATIALLY_EQUALS	;}
+	| DISJOINT				{$$.val = Tokens.DISJOINT			;}
+	| INTERSECTS			{$$.val = Tokens.INTERSECTS			;}
+	| TOUCHES				{$$.val = Tokens.TOUCHES			;}
+	| CROSSES				{$$.val = Tokens.CROSSES			;}
+	| WITHIN				{$$.val = Tokens.WITHIN				;}
+	| OP_CONTAINS			{$$.val = Tokens.SPATIALLY_CONTAINS	;}
+	| OVERLAPS				{$$.val = Tokens.OVERLAPS			;}
+	| RELATE				{$$.val = Tokens.RELATE				;}
 	;
 
 op_bool
