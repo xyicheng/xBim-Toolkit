@@ -1,7 +1,7 @@
 #pragma once
 #include "XbimGeometryModel.h"
 #include "XbimGeometryModel.h"
-
+#include "XbimGeometryModelCollection.h"
 #include <BRepGProp.hxx>
 #include <GProp_GProps.hxx> 
 using namespace Xbim::Ifc2x3::ProductExtension;
@@ -14,23 +14,34 @@ namespace Xbim
 	{
 		namespace OCC
 		{
+			
 		public ref class XbimFeaturedShape :XbimGeometryModel
 		{
 		private:
-			static ILogger^ Logger = LoggerFactory::GetLogger();
-			bool _hasCurves;
-			bool LowLevelCut(const TopoDS_Shape & from, const TopoDS_Shape & toCut, TopoDS_Shape & result);
+			
 		protected:
 			XbimGeometryModel^ mResultShape;
 			XbimGeometryModel^ mBaseShape;
 			List<XbimGeometryModel^>^ mOpenings;
 			List<XbimGeometryModel^>^ mProjections;
-			XbimFeaturedShape(XbimFeaturedShape^ copy, IfcObjectPlacement^ location);
-			bool DoCut(const TopoDS_Shape& shape);
-			bool DoUnion(const TopoDS_Shape& shape);
+			XbimFeaturedShape(XbimFeaturedShape^ copy, IfcAxis2Placement^ location);
+			XbimGeometryModelCollection^ PrepareFeatures(XbimGeometryModelCollection^ features, double precision, double precisionMax);
+			XbimGeometryModel^ SubtractFrom(XbimGeometryModel^ base, XbimGeometryModelCollection^ openings, double deflection, double precision,double precisionMax);
+			XbimGeometryModelCollection^ ExtractNonClashing(List<XbimGeometryModel^>^ candidates, XbimGeometryModelCollection^ nonClashing, double precision,double precisionMax);
+			/*bool DoCut(const TopoDS_Shape& shape);
+			bool DoUnion(const TopoDS_Shape& shape);*/
 		public:
-			XbimFeaturedShape(IfcProduct^ product, XbimGeometryModel^ baseShape, IEnumerable<XbimGeometryModel^>^ openings, IEnumerable<XbimGeometryModel^>^ projections);
-			
+#if USE_CARVE
+			virtual XbimPolyhedron^ ToPolyHedron(double deflection, double precision, double precisionMax) override;
+#endif
+			XbimFeaturedShape(IfcProduct^ product, XbimGeometryModel^ baseShape, XbimGeometryModelCollection^ openings, IEnumerable<XbimGeometryModel^>^ projections);
+			virtual property bool IsValid
+			{
+				bool get() override
+				{
+					return mResultShape!=nullptr && mResultShape->IsValid;
+				}
+			}
 			virtual property TopoDS_Shape* Handle
 			{
 				TopoDS_Shape* get() override
@@ -64,19 +75,11 @@ namespace Xbim
 						return 0;
 				}
 			}
-			virtual property bool HasCurvedEdges
-			{
-				virtual bool get() override
-				{					
-					return _hasCurves;
-				}
-			}
 			
-
-			virtual XbimGeometryModel^ Cut(XbimGeometryModel^ shape) override;
-			virtual XbimGeometryModel^ Union(XbimGeometryModel^ shape) override;
-			virtual XbimGeometryModel^ Intersection(XbimGeometryModel^ shape) override;
-			virtual XbimGeometryModel^ CopyTo(IfcObjectPlacement^ placement) override;
+			virtual XbimGeometryModel^ Cut(XbimGeometryModel^ shape, double precision, double maxPrecision) override;
+			virtual XbimGeometryModel^ Union(XbimGeometryModel^ shape, double precision, double maxPrecision) override;
+			virtual XbimGeometryModel^ Intersection(XbimGeometryModel^ shape, double precision, double maxPrecision) override;
+			virtual XbimGeometryModel^ CopyTo(IfcAxis2Placement^ placement) override;
 			virtual void Move(TopLoc_Location location) override;
 
 			~XbimFeaturedShape()
@@ -88,7 +91,7 @@ namespace Xbim
 			{
 				InstanceCleanup();
 			}
-			void InstanceCleanup()
+			virtual void InstanceCleanup() override
 			{ 
 				mResultShape=nullptr;
 				mBaseShape=nullptr;
@@ -102,6 +105,10 @@ namespace Xbim
 					return XbimMatrix3D::Identity;
 				}
 			}
+			virtual XbimTriangulatedModelCollection^ Mesh(double deflection) override {return mResultShape->Mesh(deflection);};
+			virtual XbimRect3D GetBoundingBox() override {return mResultShape->GetBoundingBox();};
+			virtual void ToSolid(double precision, double maxPrecision) override; 
+			
 		};
 	}
 }

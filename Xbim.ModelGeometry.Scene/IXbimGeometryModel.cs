@@ -18,12 +18,14 @@ namespace Xbim.ModelGeometry.Scene
         XbimMatrix3D Transform { get; }
 
         XbimRect3D GetBoundingBox();
-
-        List<XbimTriangulatedModel> Mesh();
-
+      
         bool IsMap { get;}
-
-        List<XbimTriangulatedModel> Mesh(bool p, double deflection);
+        /// <summary>
+        /// Creates a mesh with the specified deflection on curve interpolation, use model.ModelFactors to get the default deflection for the model
+        /// </summary>
+        /// <param name="deflection"></param>
+        /// <returns></returns>
+        XbimTriangulatedModelCollection Mesh(double deflection);
 
         double Volume { get; }
     }

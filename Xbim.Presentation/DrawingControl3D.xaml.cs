@@ -217,7 +217,7 @@ namespace Xbim.Presentation
                         case MouseClickActions.Add:
                             Selection.Add(thisSelectedEntity);
                             SelectionDrivenSelectedEntityChange(thisSelectedEntity);
-                            break; 
+                            break;
                         case MouseClickActions.Remove:
                             Selection.Remove(thisSelectedEntity);
                             SelectionDrivenSelectedEntityChange(null);
@@ -1047,7 +1047,7 @@ namespace Xbim.Presentation
             double processed = 0;
 
             XbimColour colour = federationColours[docInfo.DocumentOwner.RoleName()];
-            double metre = model.GetModelFactors.OneMetre;
+            double metre = model.ModelFactors.OneMetre;
             wcsTransform = XbimMatrix3D.CreateTranslation(_modelTranslation) * XbimMatrix3D.CreateScale(1 / (float)metre);
                 
             XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial> layer = new XbimMeshLayer<WpfMeshGeometry3D, WpfMaterial>(model, colour) { Name = "All" };
@@ -1091,7 +1091,7 @@ namespace Xbim.Presentation
             IfcProject project = model.IfcProject;
             int projectId = 0;
             if (project != null) projectId = Math.Abs(project.EntityLabel);
-            double metre = model.GetModelFactors.OneMetre;
+            double metre = model.ModelFactors.OneMetre;
             wcsTransform = XbimMatrix3D.CreateTranslation(_modelTranslation) * XbimMatrix3D.CreateScale((float)(1 / metre));
 
             Parallel.ForEach<KeyValuePair<string, XbimGeometryHandleCollection>>(handles.FilterByBuildingElementTypes(), layerContent =>

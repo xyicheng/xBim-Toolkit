@@ -91,7 +91,7 @@ namespace XbimRegression
 
                     Stopwatch watch = new Stopwatch();
                     watch.Start();
-                    using (XbimModel model = ParseModelFile(ifcFile))
+                    using (XbimModel model = ParseModelFile(ifcFile,Params.Caching))
                     {
                         parseTime = watch.ElapsedMilliseconds;
                         string xbimFilename = BuildFileName(ifcFile, ".xbim");
@@ -104,7 +104,7 @@ namespace XbimRegression
                         sceneTime = watch.ElapsedMilliseconds - geomTime;
                         IIfcFileHeader header = model.Header;
                         watch.Stop();
-                        IEnumerable<string> ohs = model.Instances.OfType<IfcOwnerHistory>().Select(s => s.OwningApplication.ToString());
+                        IfcOwnerHistory ohs = model.Instances.OfType<IfcOwnerHistory>().FirstOrDefault();
                         result = new ProcessResult()
                         {
                             ParseDuration = parseTime,
@@ -122,7 +122,7 @@ namespace XbimRegression
                             IfcSolidGeometries = model.Instances.CountOf<IfcSolidModel>(),
                             IfcMappedGeometries = model.Instances.CountOf<IfcMappedItem>(),
                             BooleanGeometries = model.Instances.CountOf<IfcBooleanResult>(),
-                            Application = string.Join(";", ohs),
+                            Application = ohs == null ? "Unknown" : ohs.OwningApplication.ToString(),
                         };
                         model.Close();                       
                     }
@@ -157,7 +157,7 @@ namespace XbimRegression
             }
         }
 
-        private static XbimModel ParseModelFile(string ifcFileName)
+        private static XbimModel ParseModelFile(string ifcFileName,bool caching)
         {
             XbimModel model = new XbimModel();
             //create a callback for progress
@@ -166,7 +166,7 @@ namespace XbimRegression
                 case ".ifc":
                 case ".ifczip":
                 case ".ifcxml":
-                    model.CreateFrom(ifcFileName, BuildFileName(ifcFileName, ".xBIM"), null, true);
+                    model.CreateFrom(ifcFileName, BuildFileName(ifcFileName, ".xBIM"), null, true, caching);
                     break;
                 default:
                     throw new NotImplementedException(String.Format("XbimConvert does not support converting {0} file formats currently", Path.GetExtension(ifcFileName)));

@@ -11,8 +11,9 @@ namespace Xbim.Common.Geometry
         public float Y;
         public float Z;
 
+       
         public readonly static XbimPoint3D Zero;
-
+        
         static XbimPoint3D()
         {
             Zero = new XbimPoint3D(0, 0, 0);

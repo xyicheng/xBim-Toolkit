@@ -1,8 +1,9 @@
 #include "StdAfx.h"
 #include "XbimSolid.h"
 #include "XbimShell.h"
+#include "XbimCsg.h"
 #include "XbimGeometryModelCollection.h"
-
+#include "XbimFacetedShell.h"
 #include "XbimGeomPrim.h"
 #include <BRepAlgoAPI_Cut.hxx>
 #include <BRepAlgoAPI_Common.hxx>
@@ -12,6 +13,11 @@
 #include <ShapeUpgrade_ShellSewing.hxx>
 #include <BRepAlgoAPI_Fuse.hxx>
 #include <BRepTools.hxx>
+#include <BRepMesh_IncrementalMesh.hxx>
+#include <Poly_Triangulation.hxx>
+#include <ShapeFix_Shape.hxx> 
+#include <BRepCheck_Analyzer.hxx>
+#include <ShapeFix_ShapeTolerance.hxx>
 using namespace System::Linq;
 using namespace Xbim::Common::Exceptions;
 
@@ -21,187 +27,100 @@ namespace Xbim
 	{
 		namespace OCC
 		{
-		/*Interfaces*/
-
-		XbimGeometryModel^ XbimGeometryModelCollection::Cut(XbimGeometryModel^ shape)
-		{
-			throw gcnew XbimGeometryException("A cut operation has been applied to a collection of model object this is illegal according to schema");
-			/*try
+			void XbimGeometryModelCollection::Init()
 			{
-				*/
-			//	BRepAlgoAPI_Cut boolOp(*pCompound,*(shape->Handle));
-			//	if(boolOp.ErrorStatus() == 0) //find the solid
-			//	{ 
-			//		const TopoDS_Shape & res = boolOp.Shape();
-			//		if(res.ShapeType() == TopAbs_SOLID)
-			//			return gcnew XbimSolid(TopoDS::Solid(res), HasCurvedEdges);
-			//		else if(res.ShapeType() == TopAbs_SHELL)	
-			//			return gcnew XbimShell(TopoDS::Shell(res), HasCurvedEdges);
-			//		else if(res.ShapeType() == TopAbs_COMPOUND)
-			//			return gcnew XbimGeometryModelCollection(TopoDS::Compound(res), HasCurvedEdges);
-			//		else if(res.ShapeType() == TopAbs_COMPSOLID)
-			//		{
-			//			TopoDS_Compound cpd;
-			//			BRep_Builder b;
-			//			b.MakeCompound(cpd);
-			//			b.Add(cpd, res);
-			//			return gcnew XbimGeometryModelCollection(cpd, HasCurvedEdges);
-			//		}
-			//		else
-			//		{
-			//			System::Diagnostics::Debug::WriteLine("Failed to form difference between two shapes");
-			//			return nullptr;
-			//		}
-			//	}
-			//	else
-			//	{
+				shapes = gcnew List<XbimGeometryModel^>();
+				_hasCurvedEdges = false;
+			};
 
-			//		System::Diagnostics::Debug::WriteLine("Failed to form difference between two shapes");
-			//		return nullptr;
-
-			//	}
-
-			//}
-			//catch (...)
-			//{
-			//	System::Diagnostics::Debug::WriteLine("Failed to form difference between two shapes");
-			//	return nullptr;
-
-			//}
-		}
-		XbimGeometryModel^ XbimGeometryModelCollection::Union(XbimGeometryModel^ shape)
-		{
-			throw gcnew XbimGeometryException("A cut operation has been applied to a collection of model object this is illegal according to schema");
-			//BRepAlgoAPI_Fuse boolOp(*pCompound,*(shape->Handle));
-
-			//if(boolOp.ErrorStatus() == 0) //find the solid
-			//{ 
-			//	const TopoDS_Shape & res = boolOp.Shape();
-			//	if(res.ShapeType() == TopAbs_SOLID)
-			//		return gcnew XbimSolid(TopoDS::Solid(res), HasCurvedEdges);
-			//	else if(res.ShapeType() == TopAbs_SHELL)	
-			//		return gcnew XbimShell(TopoDS::Shell(res), HasCurvedEdges);
-			//	else if(res.ShapeType() == TopAbs_COMPOUND)
-			//		return gcnew XbimGeometryModelCollection(TopoDS::Compound(res), HasCurvedEdges);
-			//	else if(res.ShapeType() == TopAbs_COMPSOLID)
-			//	{
-			//		TopoDS_Compound cpd;
-			//		BRep_Builder b;
-			//		b.MakeCompound(cpd);
-			//		b.Add(cpd, res);
-			//		return gcnew XbimGeometryModelCollection(cpd, HasCurvedEdges);
-			//	}
-			//	else
-			//	{
-			//		System::Diagnostics::Debug::WriteLine("Failed to form union between two shapes");
-			//		return nullptr;
-			//	}
-			//}
-			//else
-			//{
-			//	System::Diagnostics::Debug::WriteLine("Failed to form union between two shapes");
-			//	return nullptr;
-			//}
-		}
-		XbimGeometryModel^ XbimGeometryModelCollection::Intersection(XbimGeometryModel^ shape)
-		{
-			throw gcnew XbimGeometryException("A cut operation has been applied to a collection of model object this is illegal according to schema");
-			//BRepAlgoAPI_Common boolOp(*pCompound,*(shape->Handle));
-
-			//if(boolOp.ErrorStatus() == 0) //find the solid
-			//{ 
-			//	const TopoDS_Shape & res = boolOp.Shape();
-			//	if(res.ShapeType() == TopAbs_SOLID)
-			//		return gcnew XbimSolid(TopoDS::Solid(res), HasCurvedEdges);
-			//	else if(res.ShapeType() == TopAbs_SHELL)	
-			//		return gcnew XbimShell(TopoDS::Shell(res), HasCurvedEdges);
-			//	else if(res.ShapeType() == TopAbs_COMPOUND)
-			//		return gcnew XbimGeometryModelCollection(TopoDS::Compound(res), HasCurvedEdges);
-			//		
-			//	else if(res.ShapeType() == TopAbs_COMPSOLID)
-			//	{
-			//		TopoDS_Compound cpd;
-			//		BRep_Builder b;
-			//		b.MakeCompound(cpd);
-			//		b.Add(cpd, res);
-			//		return gcnew XbimGeometryModelCollection(cpd, HasCurvedEdges);
-			//	}
-			//	else
-			//	{
-			//		System::Diagnostics::Debug::WriteLine("Failed to form union between two shapes");
-			//		return nullptr;
-			//	}
-			//}
-			//else
-			//{
-			//	System::Diagnostics::Debug::WriteLine("Failed to form union between two shapes");
-			//	return nullptr;
-			//}
-		}
-		
-
-		List<XbimTriangulatedModel^>^ XbimGeometryModelCollection::Mesh(bool withNormals, double deflection )
-		{ 
-			
-			if(shapes->Count > 0) //we have children that need special materials etc
+			XbimGeometryModelCollection::XbimGeometryModelCollection(const TopoDS_Shape&  shape , bool hasCurves,int representationLabel, int surfaceStyleLabel)
 			{
-				List<XbimTriangulatedModel^>^tm = gcnew List<XbimTriangulatedModel^>();
+				Init();
+				Init(shape,hasCurves,representationLabel,surfaceStyleLabel);
+			};
+
+			XbimGeometryModelCollection::XbimGeometryModelCollection()
+			{
+				Init();
+			};
+
+			XbimGeometryModelCollection::XbimGeometryModelCollection(int representationLabel, int surfaceStyleLabel )
+			{	
+				Init();
+				_representationLabel=representationLabel;
+				_surfaceStyleLabel=surfaceStyleLabel;
+			};
+
+			XbimGeometryModelCollection::XbimGeometryModelCollection(bool hasCurvedEdges, int representationLabel, int surfaceStyleLabel)
+			{
+				Init();
+				_representationLabel=representationLabel;
+				_surfaceStyleLabel=surfaceStyleLabel;
+				_hasCurvedEdges=hasCurvedEdges;
+			}
+
+			XbimGeometryModelCollection::XbimGeometryModelCollection(IfcRepresentationItem^ representationItem)
+			{
+				Init();
+				_representationLabel=Math::Abs(representationItem->EntityLabel);
+				IfcSurfaceStyle^ surfaceStyle = IfcRepresentationItemExtensions::SurfaceStyle(representationItem);
+				if(surfaceStyle!=nullptr) _surfaceStyleLabel=Math::Abs(surfaceStyle->EntityLabel);
+			};
+
+
+			XbimGeometryModelCollection::XbimGeometryModelCollection(IfcRepresentation^ representation)
+			{
+				Init();
+				_representationLabel=Math::Abs(representation->EntityLabel);
+				//IfcSurfaceStyle^ surfaceStyle = IfcRepresentationItemExtensions::SurfaceStyle(representation);
+				//if(surfaceStyle!=nullptr) _surfaceStyleLabel=Math::Abs(surfaceStyle->EntityLabel);
+			};
+
+
+			XbimTriangulatedModelCollection^ XbimGeometryModelCollection::Mesh(double deflection )
+			{ 
+
+				XbimTriangulatedModelCollection^ tm = gcnew XbimTriangulatedModelCollection();
 				for each(XbimGeometryModel^ gm in shapes)
 				{
-					
-					List<XbimTriangulatedModel^>^ mm = gm->Mesh(withNormals, deflection);
-					if(mm!=nullptr)
-						tm->AddRange(mm);
-					
-					
+					XbimTriangulatedModelCollection^ mm = gm->Mesh(deflection);
+					if(mm!=nullptr)	tm->AddRange(mm);
 				}
 				return tm;
 			}
-			else
-				return gcnew List<XbimTriangulatedModel^>();
-			
-		}
-		
-		void XbimGeometryModelCollection::Move(TopLoc_Location location)
-		{	
-			
-			for each(XbimGeometryModel^ shape in shapes)
-				shape->Move(location);
-			if (pCompound) //remove anyy cached compund data
-			{
-				delete pCompound;
-				pCompound=0;
-			}
-		}
 
-		XbimGeometryModel^ XbimGeometryModelCollection::CopyTo(IfcObjectPlacement^ placement)
-		{
-			XbimGeometryModelCollection^ newColl = gcnew XbimGeometryModelCollection(HasCurvedEdges);
-			newColl->RepresentationLabel=RepresentationLabel;
-			newColl->SurfaceStyleLabel=SurfaceStyleLabel;
-			for each(XbimGeometryModel^ shape in shapes)
-			{
-				newColl->Add(shape->CopyTo(placement));
-			}
-			return newColl;
-		}
-		///Every element should be a solid bedore this is called. returns a compound solid
-		XbimGeometryModel^ XbimGeometryModelCollection::Solidify()
-		{
-			XbimGeometryModel^ a;
-			for each(XbimGeometryModel^ b in shapes)
-			{
-				if(a==nullptr) a=b;
-				else
+
+
+			void XbimGeometryModelCollection::Move(TopLoc_Location location)
+			{	
+
+				for each(XbimGeometryModel^ shape in shapes)
+					shape->Move(location);
+				if (nativeHandle) //remove any cached compound data
 				{
-					BRepAlgoAPI_Fuse fuse(*(a->Handle),*(b->Handle));
-					if(fuse.IsDone() && !fuse.Shape().IsNull())
-						a=gcnew XbimSolid(fuse.Shape());
+					delete nativeHandle;
+					nativeHandle=0;
 				}
 			}
-			return a;
-			
+
+			XbimGeometryModel^ XbimGeometryModelCollection::CopyTo(IfcAxis2Placement^ placement)
+			{
+				XbimGeometryModelCollection^ newColl = gcnew XbimGeometryModelCollection(HasCurvedEdges,RepresentationLabel,SurfaceStyleLabel);
+				for each(XbimGeometryModel^ shape in shapes)
+				{
+					newColl->Add(shape->CopyTo(placement));
+				}
+				return newColl;
+			}
+
+			void XbimGeometryModelCollection::ToSolid(double precision, double maxPrecision) 
+			{				
+				for each (XbimGeometryModel^ shape in this)
+				{
+				    shape->ToSolid(precision,maxPrecision);
+				}
+				
+			}
 		}
 	}
-}
 }

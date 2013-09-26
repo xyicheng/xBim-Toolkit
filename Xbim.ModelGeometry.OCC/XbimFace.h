@@ -2,7 +2,7 @@
 #include <TopoDS_Face.hxx>
 #include "XbimFaceBoundEnumerator.h"
 #include <GeomLProp_SLProps.hxx>
-
+#include <BRepBuilderAPI_FaceError.hxx>
 using namespace Xbim::XbimExtensions::Interfaces;
 using namespace System;
 using namespace System::Collections::Generic;
@@ -20,6 +20,7 @@ namespace Xbim
 			{
 			private:
 				TopoDS_Face * nativeHandle;
+				static ILogger^ Logger = LoggerFactory::GetLogger();
 			public:
 				XbimFace(const TopoDS_Face & face);
 				~XbimFace()
@@ -33,8 +34,8 @@ namespace Xbim
 				}
 				void InstanceCleanup()
 				{   
-					int temp = System::Threading::Interlocked::Exchange((int)(void*)nativeHandle, 0);
-					if(temp!=0)
+					IntPtr temp = System::Threading::Interlocked::Exchange(IntPtr(nativeHandle), IntPtr(0));
+					if(temp!=IntPtr(0))
 					{
 						if (nativeHandle)
 						{
@@ -50,7 +51,7 @@ namespace Xbim
 				{
 					System::Collections::Generic::IEnumerable<XbimFaceBound^>^ get();
 				}
-
+				static String^ GetBuildFaceErrorMessage(BRepBuilderAPI_FaceError err);		
 
 				// IEnumerable<IIfcFace^> Members
 
@@ -143,6 +144,9 @@ namespace Xbim
 
 				//Builds a face from a Plane
 				static TopoDS_Face Build(IfcPlane ^ plane, bool% hasCurves);
+
+				//Raises warning if there are errors, returns true if no errors
+				static bool HasErrors(BRepBuilderAPI_FaceError er, int entityLabel, bool warn);
 			};
 		}
 	}

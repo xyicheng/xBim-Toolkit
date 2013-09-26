@@ -18,13 +18,14 @@ using System.Globalization;
 using System.Linq;
 using Xbim.Ifc2x3.MeasureResource;
 using Xbim.XbimExtensions;
+using Xbim.XbimExtensions.SelectTypes;
 
 #endregion
 
 namespace Xbim.Ifc2x3.PresentationResource
 {
     [IfcPersistedEntityAttribute]
-    public class IfcDraughtingPreDefinedColour : IfcPreDefinedColour
+    public class IfcDraughtingPreDefinedColour : IfcPreDefinedColour, IfcFillStyleSelect
     {
         #region Constructors
 

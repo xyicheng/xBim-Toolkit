@@ -3,9 +3,9 @@
 #include "XbimGeomPrim.h"
 #include "XbimSolid.h"
 #include "XbimShell.h"
-#include "XbimGeometryModelCollection.h"
+#include "XbimFacetedShell.h"
 #include "XbimBoundingBox.h"
-
+#include "XbimCsg.h"
 #include <BRepAlgoAPI_Cut.hxx>
 #include <BRepAlgo_Cut.hxx>
 #include <BRepAlgoAPI_Fuse.hxx>
@@ -35,336 +35,322 @@ namespace Xbim
 	{
 		namespace OCC
 		{
-			[HandleProcessCorruptedStateExceptionsAttribute]
-			bool XbimFeaturedShape::LowLevelCut(const TopoDS_Shape & from, const TopoDS_Shape & toCut, TopoDS_Shape & result)
-			{
-				bool ok = false;
+			
 
-				try
-				{
-					if(toCut.IsNull() || from.IsNull()) 
-						return false;
-					BRepAlgoAPI_Cut boolOp(from,toCut);
-					Standard_Integer err = boolOp.ErrorStatus();
-					ok = (err==0);
-					if(ok) result = boolOp.Shape();
 
-				}
-				catch(...)
-				{
-
-					
-				}
-				return ok;
-			}
-
-			// cuts a shape from the result shape and updates thre result shape if it was successful
-			bool XbimFeaturedShape::DoCut(const TopoDS_Shape& toCut)
-			{	
-				TopoDS_Shape res;
-				if(LowLevelCut(*(mResultShape->Handle),toCut,res))
-				{		
-					/*if( BRepCheck_Analyzer(res, Standard_False).IsValid() == Standard_True) 
-					{*/
-					*(mResultShape->Handle) = res;
-					return true;
-					//}
-				}
-				return false;
-			}
-
-			static int  CompareSize(KeyValuePair<double, XbimGeometryModel^> x,KeyValuePair<double, XbimGeometryModel^> y)
-			{
-				return x.Key.CompareTo(y.Key);
-			}
-			// unions a shape from the result shape and updates thre result shape if it was successful
-			bool XbimFeaturedShape::DoUnion(const TopoDS_Shape& toUnion)
-			{
-				BRepAlgoAPI_Fuse boolOp(*(mResultShape->Handle),toUnion);
-				const TopoDS_Shape & shape = boolOp.Shape();
-				//check if we have any shells and composites, these need to be done individually or they mess up the shape
-				if(shape.ShapeType() == TopAbs_SOLID)
-					mResultShape = gcnew XbimSolid(TopoDS::Solid(shape), HasCurvedEdges);
-				else if(shape.ShapeType() == TopAbs_SHELL)	
-					mResultShape = gcnew XbimShell(TopoDS::Shell(shape), HasCurvedEdges);
-				else if(shape.ShapeType() == TopAbs_COMPOUND)
-					mResultShape = gcnew XbimSolid(shape, HasCurvedEdges);
-				else
-					return false;
-				return true;
-			}
-
-			XbimFeaturedShape::XbimFeaturedShape(IfcProduct^ product, XbimGeometryModel^ baseShape, IEnumerable<XbimGeometryModel^>^ openings, IEnumerable<XbimGeometryModel^>^ projections)
+			XbimFeaturedShape::XbimFeaturedShape(IfcProduct^ product, XbimGeometryModel^ baseShape, XbimGeometryModelCollection^ openings, IEnumerable<XbimGeometryModel^>^ projections)
 			{
 				if(baseShape==nullptr)
 				{
 					Logger->Warn("Undefined base shape passed to XbimFeaturedShape");
 					return;
 				}
-				mBaseShape = baseShape;	
+				mResultShape = mBaseShape = baseShape;	
 				RepresentationLabel= baseShape->RepresentationLabel;
 				SurfaceStyleLabel=baseShape->SurfaceStyleLabel;
-				_hasCurves = false;
-
-				if(openings!=nullptr)	
-				{
-					//sort each opening in terms of the distance from the top left of the base bb and the bottom right of the opening
-					mOpenings = gcnew List<XbimGeometryModel^>();	
-					for each (XbimGeometryModel^ o in openings)
-					{
-						//expand collections to avoid clash
-						if(dynamic_cast<XbimGeometryModelCollection^>(o))
-						{
-							for each (XbimGeometryModel^ sub in (XbimGeometryModelCollection^)o)
-							{
-								if(sub->HasCurvedEdges) _hasCurves=true;
-								mOpenings->Add(sub);
-							}
-						}
-						else
-						{
-							if(o->HasCurvedEdges) _hasCurves=true;
-							mOpenings->Add(o);
-						}
-					}
-				}
-
-				////check to see if the result will have curved edges
-				if(projections!=nullptr)	
-				{
-					//sort each opening in terms of the distance from the top left of the base bb and the bottom right of the opening
-					mProjections = gcnew List<XbimGeometryModel^>();	
-					for each (XbimGeometryModel^ p in projections)
-					{
-						if(p->HasCurvedEdges) _hasCurves=true;
-						mProjections->Add(p);
-					}
-				}
-
-				//make sure result shape is consistent
-				mResultShape =  gcnew XbimSolid( mBaseShape, _hasCurves);
-				double tenthMM = product->ModelOf->GetModelFactors->OneMilliMetre/10; //work to an accuracy of 1/10 millimeter
-				ShapeFix_ShapeTolerance fTol;
-
-
-				if(mProjections->Count>0)
-				{
-					TopoDS_Compound c;
-					BRep_Builder b;
-					b.MakeCompound(c);
-					for each(XbimGeometryModel^ projection in mProjections) // quick joinung 
-						b.Add(c,*(projection->Handle));
-					try
-					{
-						DoUnion(c);
-
-					}
-					catch(...)
-					{
-						try
-						{
-							mResultShape =  gcnew XbimSolid( mBaseShape, _hasCurves);//go back to start
-							//try each cut separately
-							for each(XbimGeometryModel^ projection in mProjections) //one by one joinung for tricky geometries, opencascade is less likely to fail
-							{
-								DoUnion(*(projection->Handle));
-							}
-						}
-						catch(...)
-						{
-							throw gcnew XbimGeometryException("XbimFeaturedShape Boolean Add Projections failed");
-						}
-					}
-				}
-				//sort them and hit test them
-				if(mOpenings->Count>0)
-				{
-
-					BRep_Builder b;
-					List<XbimGeometryModel^>^ unprocessed = gcnew List<XbimGeometryModel^>(mOpenings);
-
-					while(unprocessed->Count>0)
-					{	
-						List<XbimGeometryModel^>^ toProcess = gcnew List<XbimGeometryModel^>(unprocessed);
-						TopoDS_Compound comp;
-						b.MakeCompound(comp); //make a compound to hold all the cuts
-						bool first = true;
-						//make a compound of all the openings that do not intersect and process in batch 
-						int total = toProcess->Count+1;
-						Handle(Bnd_HArray1OfBox) HBnd = new  Bnd_HArray1OfBox(1,total);		
-						int boxArraySize = 0;
-						for each(XbimGeometryModel^ opening in toProcess) // quick cutting 
-						{	
-							if(first)
-							{
-								Bnd_Box openingBB;
-								BRepBndLib::Add(*(opening->Handle), openingBB);
-								HBnd->SetValue(++boxArraySize,openingBB);
-								b.Add(comp,*(opening->Handle));
-								first=false;
-								unprocessed->Remove(opening);
-							}
-							else
-							{
-								Bnd_Box openingBB;
-								BRepBndLib::Add(*(opening->Handle), openingBB);
-								int hit = 0;
-								for (int i = 1; i <= boxArraySize; i++) //try and find a cut that intersects with this one
-								{
-									if(!openingBB.IsOut(HBnd->Value(i)))
-									{
-										hit=i;
-										break;
-									}
-								}
-								if(hit==0) //if no intersection process it first time
-								{
-									HBnd->SetValue(++boxArraySize,openingBB);
-									b.Add(comp,*(opening->Handle));
-									unprocessed->Remove(opening);
-								}		
-							}
-						}
-
-						try
-						{
-
-							//try with reasonably fine tolerances
-							fTol.SetTolerance(*(mResultShape->Handle), tenthMM);
-							fTol.LimitTolerance(*(mResultShape->Handle), tenthMM,tenthMM*10); //   1/10 mmm
-							fTol.SetTolerance(comp, tenthMM);					//1mm
-							fTol.LimitTolerance(comp, tenthMM,tenthMM*10);	
-							/*if(product->EntityLabel==149273)
-							{
-							BRepTools::Write(comp, "c");
-							BRepTools::Write(*(mResultShape->Handle), "b");
-							}*/
-							
-							if(!DoCut(comp) ) //try the fast option first if it is not a shell, if more than one opening try slow
-							{
-								//try more relaxed tolerances
-								fTol.LimitTolerance(*(mResultShape->Handle), tenthMM,tenthMM*50); //   1/2 mmm
-								fTol.LimitTolerance(comp, tenthMM,tenthMM*50);					//5mm
-								if(!DoCut(comp) ) //try again
-								{
-									//now try individual cutting of shells to get what we can
-									bool failed = false;
-									//getting harder, the geometry is most likley badly defined try each of the sub solids
-									for (TopExp_Explorer ex(comp,TopAbs_SOLID) ; ex.More(); ex.Next())  
-									{
-										try 
-										{	
-											if(!DoCut(ex.Current()))
-												failed=true;
-										} catch(...) {failed=true;}
-									}
-									if(failed)
-										Logger->WarnFormat("Failed cut an opening in entity #{0}={1}\nA simplified representation for the shape has been used",product->EntityLabel,product->GetType()->Name);
-								}
-							}
-
-						}
-						catch(...)
-						{
-							Logger->ErrorFormat("Failed cut all openings in entity #{0}={1}\nA simplified representation for the shape has been used",product->EntityLabel,product->GetType()->Name);
-						}
-					}
-				}
-				/*BRepTools::Write(*(mResultShape->Handle), "x");
-				product->ModelOf->Close();*/
+				_hasCurvedEdges = mBaseShape->HasCurvedEdges;	
+				mResultShape =  SubtractFrom(mResultShape, openings, product->ModelOf->ModelFactors->DeflectionTolerance, product->ModelOf->ModelFactors->OneMilliMetre/100,product->ModelOf->ModelFactors->OneMilliMetre*10); //openings work best at .1mm tolerance
+				mResultShape->RepresentationLabel= baseShape->RepresentationLabel;
+				mResultShape->SurfaceStyleLabel=baseShape->SurfaceStyleLabel;
+				
 			}
 
+			XbimPolyhedron^ XbimFeaturedShape::ToPolyHedron(double deflection, double precision, double precisionMax)
+			{
+				throw gcnew NotImplementedException();
+			}
 
-
-			XbimGeometryModel^ XbimFeaturedShape::Cut(XbimGeometryModel^ shape)
+			//divides the openings into a list of list of non-intersecting shapes
+			XbimGeometryModelCollection^ XbimFeaturedShape::PrepareFeatures(XbimGeometryModelCollection^ features, double precision, double precisionMax)
 			{
 
-				BRepAlgoAPI_Cut boolOp(*(mResultShape->Handle),*(shape->Handle));
-
-				if(boolOp.ErrorStatus() == 0) //find the solid
-				{ 
-					const TopoDS_Shape & res = boolOp.Shape();
-					if(res.ShapeType() == TopAbs_SOLID)
-						return gcnew XbimSolid(TopoDS::Solid(res), HasCurvedEdges);
-					else if(res.ShapeType() == TopAbs_SHELL)	
-						return gcnew XbimShell(TopoDS::Shell(res), HasCurvedEdges);
-					else if(res.ShapeType() == TopAbs_COMPOUND || res.ShapeType() == TopAbs_COMPSOLID)
-						for (TopExp_Explorer solidEx(res,TopAbs_SOLID) ; solidEx.More(); solidEx.Next())  
-							return gcnew XbimSolid(TopoDS::Solid(solidEx.Current()), HasCurvedEdges);
+				XbimGeometryModelCollection^ prepared = gcnew XbimGeometryModelCollection();
+				
+				for each (XbimGeometryModel^ shape in features)
+				{
+					shape->ToSolid(precision, precisionMax);
+					TopoDS_Shape * occShape = shape->Handle;
+					TopAbs_ShapeEnum sType =occShape->ShapeType();
+					switch (sType)
+					{
+					case TopAbs_COMPOUND:
+						
+						for (TopExp_Explorer sExp(*occShape, TopAbs_SOLID); sExp.More(); sExp.Next())
+						{
+							XbimSolid^ solid = gcnew XbimSolid(TopoDS::Solid(sExp.Current()),shape->HasCurvedEdges,shape->RepresentationLabel,shape->SurfaceStyleLabel);
+							
+							double vol = solid->Volume;
+							if(vol<0) 
+								solid->Handle->Reverse();
+							if(vol!=0)
+							{
+								prepared->Add(solid);
+							}
+						}
+						break;
+					case TopAbs_SOLID:
+						prepared->Add(shape); //just add it;
+						break;
+					case TopAbs_COMPSOLID:
+					case TopAbs_SHELL:
+					case TopAbs_FACE:
+					case TopAbs_WIRE:
+					case TopAbs_EDGE:
+					case TopAbs_VERTEX:
+					case TopAbs_SHAPE:
+					default:
+						Logger->WarnFormat("Unexpected shape type found in opening #{0}. Ignored",shape->RepresentationLabel);
+						break;
+					}
 				}
+				prepared->SortDescending();
+				return prepared;
+				
+				
+				/*XbimGeometryModelCollection^ nonClashing = gcnew XbimGeometryModelCollection(features->HasCurvedEdges,features->RepresentationLabel,features->SurfaceStyleLabel);
+				return ExtractNonClashing(clashing, nonClashing, precision, precisionMax);*/
+
+			}
+			///copies non clashing objects from the candidates to nonClashing and returns a list of geometries that still clash
+			XbimGeometryModelCollection^ XbimFeaturedShape::ExtractNonClashing(List<XbimGeometryModel^>^ candidates, XbimGeometryModelCollection^ nonClashing, double precision, double precisionMax)
+			{
+
+				if(!Enumerable::Any(candidates)) return nonClashing;
+				Stack<XbimGeometryModel^>^ unprocessed = gcnew Stack<XbimGeometryModel^>(candidates);
+				XbimGeometryModel^ first = unprocessed->Pop();
+				nonClashing->Add(first);
+				List<List<XbimRect3D>^>^ bounds = gcnew List<List<XbimRect3D>^>();
+				List<XbimRect3D>^ bound = gcnew List<XbimRect3D>();
+				bound->Add(first->GetBoundingBox());
+				bounds->Add(bound);
+				while(unprocessed->Count>0)
+				{
+					XbimGeometryModel^ candidate = unprocessed->Pop();
+					XbimGeometryModelCollection^ toReplace = nullptr;
+					XbimRect3D candidateBound = candidate->GetBoundingBox();
+					int foundAt;
+					List<XbimRect3D>^ shapeBound;
+					for(foundAt = 0;foundAt<nonClashing->Count;foundAt++)
+					{	
+						XbimGeometryModel^ shape = nonClashing->Shape(foundAt);
+						shapeBound = bounds[foundAt];
+						for each (XbimRect3D partBound in shapeBound)
+						{
+							if(partBound.Intersects(candidateBound)) //any part of shape intersects this one
+							{
+								//XbimGeometryModel^ join=shape->Union(candidate,precision,precisionMax); //join together and reconsider it as a clash
+
+								if(dynamic_cast<XbimGeometryModelCollection^>(shape)) toReplace = (XbimGeometryModelCollection^)shape;
+								else
+								{
+									toReplace = gcnew XbimGeometryModelCollection();
+									toReplace->Add(shape);
+								}
+								toReplace->Add(candidate);
+								shapeBound->Add(candidateBound); //increase bounds
+								//toReplace=join;
+								
+								break; //done
+							}
+						}
+						if(toReplace!=nullptr) break; //skip out
+					}
+					if(toReplace==nullptr)
+					{
+						nonClashing->Add(candidate);
+						List<XbimRect3D>^ bound = gcnew List<XbimRect3D>();
+						bound->Add(candidateBound);
+						bounds->Add(bound);
+					}
+					else
+					{
+						nonClashing->Replace(foundAt, toReplace);
+						
+					}
+
+				}	
+				for(int i=0;i<nonClashing->Count;i++)
+				{
+					XbimGeometryModel^ cluster = nonClashing->Shape(i);
+					if(dynamic_cast<XbimGeometryModelCollection^>(cluster))
+					{
+						XbimGeometryModelCollection^ group = (XbimGeometryModelCollection^)cluster;
+						XbimGeometryModel^ first = group->FirstOrDefault;
+						group->Remove(first);
+						XbimGeometryModel^ result = first->Union(group,precision,precisionMax);
+						nonClashing->Replace(i,result);
+					}
+				}
+				return nonClashing;
+			}
+
+			//Cuts an  opening collection from the base shape
+			XbimGeometryModel^ XbimFeaturedShape::SubtractFrom(XbimGeometryModel^ base, XbimGeometryModelCollection^ openings, double deflection, double precision,double precisionMax)
+			{		
+
+				if(dynamic_cast<XbimGeometryModelCollection^>(base) && ((XbimGeometryModelCollection^)base)->Count>0) //it is a collection and not a single facettedshell  
+				{
+					XbimGeometryModelCollection^ result = gcnew	XbimGeometryModelCollection(base->RepresentationLabel,base->SurfaceStyleLabel);
+					for each (XbimGeometryModel^ geom in (XbimGeometryModelCollection^)base)
+					{
+						XbimGeometryModel^ cut = this->SubtractFrom(geom, openings, deflection, precision,precisionMax);
+						cut->RepresentationLabel = geom->RepresentationLabel;
+						cut->SurfaceStyleLabel = geom->SurfaceStyleLabel;
+						result->Add(cut);
+					}
+					return result;
+				}
+				else
+				{
+					
+					XbimGeometryModelCollection^ preparedOpenings = PrepareFeatures(openings, precision,precisionMax);
+					base->ToSolid(precision,precisionMax);
+#if defined USE_CARVE
+					if(preparedOpenings->Count<1) //should be quite efficient
+					{
+
+						XbimGeometryModel^ result = base;
+						for each (XbimGeometryModel^ var in preparedOpenings)
+						{
+							result = result->Cut(var,precision, precisionMax);
+						}
+						return result;
+					}
+					else //use carve for speed
+					{
+
+						XbimPolyhedron^ polyBase = base->ToPolyHedron(deflection,precision ,precisionMax);
+						XbimPolyhedron^ polyResult = polyBase;
+						double currentPolyhedronPrecision = precision;
+						XbimCsg^ csg = gcnew XbimCsg(currentPolyhedronPrecision);
+						bool warned = false;
+						for each (XbimGeometryModel^ nonClashing in preparedOpenings) //do the least number first for performance
+						{
+							XbimPolyhedron^ polyOpenings = nonClashing->ToPolyHedron(deflection, precision,precisionMax);
+TryCutPolyhedron:						
+							try
+							{
+								XbimPolyhedron^ nextResult = csg->Subtract(polyResult,polyOpenings);
+								if(nextResult->IsValid)
+									polyResult = nextResult;
+							}
+							catch (XbimGeometryException^ ex) 
+							{
+								if(currentPolyhedronPrecision<=precisionMax)
+								{
+									currentPolyhedronPrecision*=10;
+									csg = gcnew XbimCsg(currentPolyhedronPrecision);
+									goto TryCutPolyhedron;
+								}
+								//return base->Cut(preparedOpenings,precision, precisionMax); //have one last go with open cascade
+								if(!warned) Logger->ErrorFormat("Failed to cut opening, exception: {0}.\n Body is #{1}.\nCut ignored. This should not happen.", ex->Message, base->RepresentationLabel);
+								warned=true;
+							}
+						}
+						GC::KeepAlive(csg);
+						return polyResult;
+					}
+
+#else
+					XbimGeometryModel^ result = base;
+					result = base->Cut(preparedOpenings,precision, precisionMax);
+					return result;
+#endif
+					//					
+				}
+			}
+
+			void XbimFeaturedShape::ToSolid(double precision, double maxPrecision) 
+			{
+				throw(gcnew XbimGeometryException("XbimFeaturedShape::ToSolid is not implemented"));
+			}
+
+			XbimGeometryModel^ XbimFeaturedShape::Cut(XbimGeometryModel^ shape, double precision, double maxPrecision)
+			{
+
+				//BRepAlgoAPI_Cut boolOp(*(mResultShape->Handle),*(shape->Handle));
+
+				//if(boolOp.ErrorStatus() == 0) //find the solid
+				//{ 
+				//	const TopoDS_Shape & res = boolOp.Shape();
+				//	if(res.ShapeType() == TopAbs_SOLID)
+				//		return gcnew XbimSolid(TopoDS::Solid(res), HasCurvedEdges);
+				//	else if(res.ShapeType() == TopAbs_SHELL)	
+				//		return gcnew XbimShell(TopoDS::Shell(res), HasCurvedEdges);
+				//	else if(res.ShapeType() == TopAbs_COMPOUND || res.ShapeType() == TopAbs_COMPSOLID)
+				//		for (TopExp_Explorer solidEx(res,TopAbs_SOLID) ; solidEx.More(); solidEx.Next())  
+				//			return gcnew XbimSolid(TopoDS::Solid(solidEx.Current()), HasCurvedEdges);
+				//}
 				Logger->Warn("Failed to form difference between two shapes");
 				return nullptr;
 			}
-			XbimGeometryModel^ XbimFeaturedShape::Union(XbimGeometryModel^ shape)
+			XbimGeometryModel^ XbimFeaturedShape::Union(XbimGeometryModel^ shape, double precision, double maxPrecision)
 			{
-				BRepAlgoAPI_Fuse boolOp(*(mResultShape->Handle),*(shape->Handle));
+				//BRepAlgoAPI_Fuse boolOp(*(mResultShape->Handle),*(shape->Handle));
 
-				if(boolOp.ErrorStatus() == 0) //find the solid
-				{ 
-					const TopoDS_Shape & res = boolOp.Shape();
-					if(res.ShapeType() == TopAbs_SOLID)
-						return gcnew XbimSolid(TopoDS::Solid(res), HasCurvedEdges);
-					else if(res.ShapeType() == TopAbs_SHELL)	
-						return gcnew XbimShell(TopoDS::Shell(res), HasCurvedEdges);
-					else if(res.ShapeType() == TopAbs_COMPOUND || res.ShapeType() == TopAbs_COMPSOLID)
-						for (TopExp_Explorer solidEx(res,TopAbs_SOLID) ; solidEx.More(); solidEx.Next())  
-							return gcnew XbimSolid(TopoDS::Solid(solidEx.Current()), HasCurvedEdges);
-				}
+				//if(boolOp.ErrorStatus() == 0) //find the solid
+				//{ 
+				//	const TopoDS_Shape & res = boolOp.Shape();
+				//	if(res.ShapeType() == TopAbs_SOLID)
+				//		return gcnew XbimSolid(TopoDS::Solid(res), HasCurvedEdges);
+				//	else if(res.ShapeType() == TopAbs_SHELL)	
+				//		return gcnew XbimShell(TopoDS::Shell(res), HasCurvedEdges);
+				//	else if(res.ShapeType() == TopAbs_COMPOUND || res.ShapeType() == TopAbs_COMPSOLID)
+				//		for (TopExp_Explorer solidEx(res,TopAbs_SOLID) ; solidEx.More(); solidEx.Next())  
+				//			return gcnew XbimSolid(TopoDS::Solid(solidEx.Current()), HasCurvedEdges);
+				//}
 				Logger->Warn("Failed to form union between two shapes");
 				return nullptr;
 			}
 
-			XbimGeometryModel^ XbimFeaturedShape::Intersection(XbimGeometryModel^ shape)
+			XbimGeometryModel^ XbimFeaturedShape::Intersection(XbimGeometryModel^ shape, double precision, double maxPrecision)
 			{
-				BRepAlgoAPI_Common boolOp(*(mResultShape->Handle),*(shape->Handle));
+				//BRepAlgoAPI_Common boolOp(*(mResultShape->Handle),*(shape->Handle));
 
-				if(boolOp.ErrorStatus() == 0) //find the solid
-				{ 
-					const TopoDS_Shape & res = boolOp.Shape();
-					if(res.ShapeType() == TopAbs_SOLID)
-						return gcnew XbimSolid(TopoDS::Solid(res), HasCurvedEdges);
-					else if(res.ShapeType() == TopAbs_SHELL)	
-						return gcnew XbimShell(TopoDS::Shell(res), HasCurvedEdges);
-					else if(res.ShapeType() == TopAbs_COMPOUND || res.ShapeType() == TopAbs_COMPSOLID)
-						for (TopExp_Explorer solidEx(res,TopAbs_SOLID) ; solidEx.More(); solidEx.Next())  
-							return gcnew XbimSolid(TopoDS::Solid(solidEx.Current()), HasCurvedEdges);
-				}
+				//if(boolOp.ErrorStatus() == 0) //find the solid
+				//{ 
+				//	const TopoDS_Shape & res = boolOp.Shape();
+				//	if(res.ShapeType() == TopAbs_SOLID)
+				//		return gcnew XbimSolid(TopoDS::Solid(res), HasCurvedEdges);
+				//	else if(res.ShapeType() == TopAbs_SHELL)	
+				//		return gcnew XbimShell(TopoDS::Shell(res), HasCurvedEdges);
+				//	else if(res.ShapeType() == TopAbs_COMPOUND || res.ShapeType() == TopAbs_COMPSOLID)
+				//		for (TopExp_Explorer solidEx(res,TopAbs_SOLID) ; solidEx.More(); solidEx.Next())  
+				//			return gcnew XbimSolid(TopoDS::Solid(solidEx.Current()), HasCurvedEdges);
+				//}
 				Logger->Warn("Failed to form Intersection between two shapes");
 				return nullptr;
 			}
 
-			XbimFeaturedShape::XbimFeaturedShape(XbimFeaturedShape^ copy, IfcObjectPlacement^ location)
+			XbimFeaturedShape::XbimFeaturedShape(XbimFeaturedShape^ copy, IfcAxis2Placement^ location)
 			{
 				_representationLabel = copy->RepresentationLabel;
 				_surfaceStyleLabel = copy->SurfaceStyleLabel;
-				if(dynamic_cast<IfcLocalPlacement^>(location))
-				{
-					TopoDS_Shape movedShape = *(copy->mResultShape->Handle);
-					IfcLocalPlacement^ lp = (IfcLocalPlacement^)location;
-					movedShape.Move(XbimGeomPrim::ToLocation(lp->RelativePlacement));
 
-					if(movedShape.ShapeType() == TopAbs_SOLID)
-						mResultShape = gcnew XbimSolid(TopoDS::Solid(movedShape), HasCurvedEdges);
-					else if(movedShape.ShapeType() == TopAbs_COMPOUND || movedShape.ShapeType() == TopAbs_COMPSOLID)
+				TopoDS_Shape movedShape = *(copy->mResultShape->Handle);
+				IfcLocalPlacement^ lp = (IfcLocalPlacement^)location;
+				movedShape.Move(XbimGeomPrim::ToLocation(lp->RelativePlacement));
+
+				if(movedShape.ShapeType() == TopAbs_SOLID)
+					mResultShape = gcnew XbimSolid(movedShape, HasCurvedEdges,copy->RepresentationLabel,copy->SurfaceStyleLabel);
+				else if(movedShape.ShapeType() == TopAbs_COMPOUND || movedShape.ShapeType() == TopAbs_COMPSOLID)
+				{
+					for (TopExp_Explorer solidEx(movedShape,TopAbs_SOLID) ; solidEx.More(); solidEx.Next())  
 					{
-						for (TopExp_Explorer solidEx(movedShape,TopAbs_SOLID) ; solidEx.More(); solidEx.Next())  
-						{
-							mResultShape = gcnew XbimSolid(TopoDS::Solid(solidEx.Current()), HasCurvedEdges);
-							break;
-						}
+						mResultShape = gcnew XbimSolid(TopoDS::Solid(solidEx.Current()), HasCurvedEdges,copy->RepresentationLabel,copy->SurfaceStyleLabel);
+						break;
 					}
-					mBaseShape = copy->mBaseShape;
-					mOpenings = copy->mOpenings;
-					mProjections = copy->mProjections;
-					_hasCurves = copy->HasCurvedEdges;
-					if(mResultShape == nullptr)
-						throw(gcnew XbimGeometryException("XbimFeaturedShape::CopyTo has failed to move shape"));
 				}
-				else
-					throw(gcnew NotImplementedException("XbimFeaturedShape::CopyTo only supports IfcLocalPlacement type"));
+				mBaseShape = copy->mBaseShape;
+				mOpenings = copy->mOpenings;
+				mProjections = copy->mProjections;
+				_hasCurvedEdges = copy->HasCurvedEdges;
+				if(mResultShape == nullptr)
+					throw(gcnew XbimGeometryException("XbimFeaturedShape::CopyTo has failed to move shape"));
+
 			}
 
-			XbimGeometryModel^ XbimFeaturedShape::CopyTo(IfcObjectPlacement^ placement)
+			XbimGeometryModel^ XbimFeaturedShape::CopyTo(IfcAxis2Placement^ placement)
 			{
 				return gcnew XbimFeaturedShape(this,placement);
 			}

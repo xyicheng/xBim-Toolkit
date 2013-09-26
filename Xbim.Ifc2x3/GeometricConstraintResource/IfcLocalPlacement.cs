@@ -18,6 +18,7 @@ using System.Runtime.Serialization;
 using Xbim.Ifc2x3.GeometryResource;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
+using Xbim.XbimExtensions.SelectTypes;
 
 #endregion
 
@@ -62,7 +63,7 @@ namespace Xbim.Ifc2x3.GeometricConstraintResource
         #region Fields
 
         private IfcObjectPlacement _placementRelTo;
-        private IfcPlacement _relativePlacement;
+        private IfcAxis2Placement _relativePlacement;
 
         #endregion
 
@@ -72,7 +73,7 @@ namespace Xbim.Ifc2x3.GeometricConstraintResource
         {
         }
 
-        public IfcLocalPlacement(IfcPlacement relativePlacement)
+        public IfcLocalPlacement(IfcAxis2Placement relativePlacement)
             : this()
         {
             if (relativePlacement == null)
@@ -80,7 +81,7 @@ namespace Xbim.Ifc2x3.GeometricConstraintResource
             _relativePlacement = relativePlacement;
         }
 
-        public IfcLocalPlacement(IfcPlacement relativePlacement, IfcObjectPlacement placementRelTo)
+        public IfcLocalPlacement(IfcAxis2Placement relativePlacement, IfcObjectPlacement placementRelTo)
             : this()
         {
             if (relativePlacement == null)
@@ -115,7 +116,7 @@ namespace Xbim.Ifc2x3.GeometricConstraintResource
 
        
         [IfcAttribute(2, IfcAttributeState.Mandatory)]
-        public IfcPlacement RelativePlacement
+        public IfcAxis2Placement RelativePlacement
         {
             get
             {
@@ -138,7 +139,7 @@ namespace Xbim.Ifc2x3.GeometricConstraintResource
                     _placementRelTo = (IfcObjectPlacement) value.EntityVal;
                     break;
                 case 1:
-                    _relativePlacement = (IfcPlacement) value.EntityVal;
+                    _relativePlacement = (IfcAxis2Placement)value.EntityVal;
                     break;
                 default:
                     this.HandleUnexpectedAttribute(propIndex, value); break;

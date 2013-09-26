@@ -69,16 +69,7 @@ namespace Xbim.ModelGeometry.Converter
                 path = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
             if (!string.IsNullOrWhiteSpace(path))
                 path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-#if DEBUG
-              if (IntPtr.Size == 8) // or for .NET4 use Environment.Is64BitProcess
-            {
-                path = Path.Combine(path, @"x64\Debug");
-            }
-            else
-            {
-                path = Path.Combine(path, @"x86\Debug");
-            }
-#else
+
             if (IntPtr.Size == 8) // or for .NET4 use Environment.Is64BitProcess
             {
                 path = Path.Combine(path, "x64");
@@ -87,8 +78,11 @@ namespace Xbim.ModelGeometry.Converter
             {
                 path = Path.Combine(path, "x86");
             }
-#endif
+#if DEBUG
+            path = Path.Combine(path, geomModuleName + "d.dll");
+#else
             path = Path.Combine(path, geomModuleName + ".dll");
+#endif
             if (File.Exists(path))
             {
                 Assembly assembly = Assembly.LoadFile(path);
