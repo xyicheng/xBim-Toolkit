@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>AboutBox</id>
+    <version>1.4.3.1</version>
+    <title>WPF About Box</title>
+    <authors>Christoph Gattnar</authors>
+    <owners>Christoph Gattnar</owners>
+    <licenseUrl>http://aboutbox.codeplex.com/license</licenseUrl>
+    <projectUrl>http://aboutbox.codeplex.com/</projectUrl>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <description>WPF About Box is a simple and free about box for WPF using MVVM pattern. Several properties can be set. Some properties are read from assembly, automatically.</description>
+    <releaseNotes />
+    <copyright>Copyright (c) 2012 Christoph Gattnar</copyright>
+    <language />
+    <tags>about box dialog</tags>
+    <references>
+      <reference file="Gat.Controls.About.dll" />
+    </references>
+  </metadata>
+</package>

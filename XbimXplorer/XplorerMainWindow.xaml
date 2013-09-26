@@ -147,6 +147,9 @@
             <MenuItem Header="COBie">
                 <MenuItem Header="_Export" Command="{x:Static local:XplorerMainWindow.ExportCOBieCmd}" />
             </MenuItem>
+            <MenuItem Header="About" Click="About_Click">
+                
+            </MenuItem>
 
         </Menu>
        
