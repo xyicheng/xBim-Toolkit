@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Xbim.IO;
+//using Xbim.IO;
 using System.Collections.ObjectModel;
 using Xbim.Ifc2x3.Kernel;
 using Xbim.Ifc2x3.ProductExtension;
@@ -10,7 +10,7 @@ using Xbim.XbimExtensions.Interfaces;
 using System.Collections;
 using System.ComponentModel;
 
-namespace Xbim.Presentation
+namespace Xbim.IO.ViewModels
 {
     public class SpatialViewModel : IXbimViewModel
     {

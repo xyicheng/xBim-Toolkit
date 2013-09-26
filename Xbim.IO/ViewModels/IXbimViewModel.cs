@@ -5,9 +5,9 @@ using System.Text;
 using System.Collections;
 using Xbim.XbimExtensions.Interfaces;
 using System.ComponentModel;
-using Xbim.IO;
+//using Xbim.IO;
 
-namespace Xbim.Presentation
+namespace Xbim.IO.ViewModels
 {
     // todo: bonghi: need to add Parent property to ensure efficiency in node finding for trees.
     public interface IXbimViewModel : INotifyPropertyChanged

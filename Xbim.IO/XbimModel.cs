@@ -1283,7 +1283,7 @@ namespace Xbim.IO
                 yield return item;
         }
 
-        public void Initialise(string userName = "User 1", string organisationName = "Organisation X", string applicationName = "Application 1.0", string developerName = "Developer 1", string version = "1.0")
+        public void Initialise(string userName = "User 1", string organisationName = "Organisation X", string applicationName = "Application 1.0", string developerName = "Developer 1", string version = "2.0.1")
         {
             //Begin a transaction as all changes to a model are transacted
             using (XbimReadWriteTransaction txn = BeginTransaction("Initialise Model"))
@@ -1294,7 +1294,7 @@ namespace Xbim.IO
                 DefaultOwningApplication.ApplicationIdentifier = applicationName;
                 DefaultOwningApplication.ApplicationDeveloper.Name = developerName;
                 DefaultOwningApplication.ApplicationFullName = applicationName;
-                DefaultOwningApplication.Version = "2.0.1";
+                DefaultOwningApplication.Version = version;
 
                 //set up a project and initialise the defaults
 

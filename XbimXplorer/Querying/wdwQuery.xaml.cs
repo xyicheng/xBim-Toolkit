@@ -20,6 +20,7 @@ using Xbim.Ifc2x3.SharedBldgElements;
 using Xbim.IO;
 using Xbim.ModelGeometry.Converter;
 using Xbim.ModelGeometry.Scene;
+using Xbim.Presentation;
 using Xbim.XbimExtensions.Interfaces;
 using Xbim.XbimExtensions.SelectTypes;
 
@@ -312,7 +313,7 @@ namespace XbimXplorer.Querying
                         continue;
                     }
 
-                    m = Regex.Match(cmd, @"^(select|se) (?<mode>(count|list|short) )*(?<tt>(transverse|tt) )*(?<start>([\d,-]+|[^ ]+)) *(?<props>.*)", RegexOptions.IgnoreCase);
+                    m = Regex.Match(cmd, @"^(select|se) (?<mode>(count|list|short) )*(?<tt>(transverse|tt) )*(?<hi>(highlight|hi) )*(?<start>([\d,-]+|[^ ]+)) *(?<props>.*)", RegexOptions.IgnoreCase);
                     if (m.Success)
                     {
                         string start = m.Groups["start"].Value;
@@ -323,7 +324,12 @@ namespace XbimXplorer.Querying
                         bool transverseT = false;
                         string transverse = m.Groups["tt"].Value;
                         if (transverse != "")
-                            transverseT = true;                        
+                            transverseT = true;
+                        
+                        bool Highlight = false;
+                        string HighlightT = m.Groups["hi"].Value;
+                        if (HighlightT != "")
+                            Highlight = true;                        
 
                         IEnumerable<int> labels = tointarray(start, ',');
                         IEnumerable<int> ret = null;
@@ -336,6 +342,7 @@ namespace XbimXplorer.Querying
                         }
                         ret = QueryEngine.RecursiveQuery(Model, props, labels, transverseT);
                         
+                        // textual report
                         if (mode.ToLower() == "count ")
                         {
                             ReportAdd(string.Format("Count: {0}", ret.Count()));
@@ -356,6 +363,16 @@ namespace XbimXplorer.Querying
                         {
                                 ReportAdd(ReportEntity(item, 0, Verbose: BeVerbose));
                             }
+                        }
+                        // visual selection
+                        if (Highlight)
+                        {
+                            EntitySelection s = new EntitySelection();
+                            foreach (var item in ret)
+                            {
+                                s.Add(Model.Instances[item]);
+                            }
+                            ParentWindow.DrawingControl.Selection = s;
                         }
                         continue;
                     }
@@ -604,9 +621,11 @@ namespace XbimXplorer.Querying
             TextHighliter t = new TextHighliter();
 
             t.AppendFormat("Commands:");
-            t.AppendFormat("- select [count|list|short] [transverse] <startingElement> [Property [Property...]]");
+            t.AppendFormat("- select [count|list|short] [transverse] [highlight] <startingElement> [Property [Property...]]");
             t.Append("    <startingElement>: <EntityLabel, <EntityLabel>> or <ifcTypeName>", Brushes.Gray);
             t.Append("    [Property] is a Property or Inverse name", Brushes.Gray);
+            t.Append("    [highlight] puts the returned set in the viewer selection", Brushes.Gray);
+            
 
             t.AppendFormat("- EntityLabel label [recursion]");
             t.Append("    [recursion] is an int representing the depth of children to report", Brushes.Gray);

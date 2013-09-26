@@ -15,6 +15,7 @@ using Xbim.Ifc2x3.SharedComponentElements;
 using Xbim.IO;
 using Xbim.ModelGeometry.Scene;
 using Xbim.Common.Geometry;
+using System.Diagnostics;
 
 namespace Xbim.COBie.Data
 {
@@ -53,6 +54,10 @@ namespace Xbim.COBie.Data
         /// <returns>COBieSheet<COBieComponentRow></returns>
         public override COBieSheet<COBieComponentRow> Fill()
         {
+#if DEBUG
+            Stopwatch timer = new Stopwatch();
+            timer.Start();
+#endif
             ProgressIndicator.ReportMessage("Starting Components...");
             //Create new sheet
             COBieSheet<COBieComponentRow> components = new COBieSheet<COBieComponentRow>(Constants.WORKSHEET_COMPONENT);
@@ -70,7 +75,7 @@ namespace Xbim.COBie.Data
                                                             where !Context.Exclude.ObjectType.Component.Contains(y.GetType())
                                                             select y)).OfType<IfcObject>(); //.GroupBy(el => el.Name).Select(g => g.First())//.Distinct().ToList();
             
-            COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(ifcElements); //properties helper class
+            COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(); //properties helper class
             COBieDataAttributeBuilder attributeBuilder = new COBieDataAttributeBuilder(Context, allPropertyValues);
             attributeBuilder.InitialiseAttributes(ref _attributes);
             //set up filters on COBieDataPropertySetValues for the SetAttributes only
@@ -90,16 +95,16 @@ namespace Xbim.COBie.Data
                 IfcElement el = obj as IfcElement;
                 if (el == null)
                     continue;
-                string name = el.Name;
-                if (string.IsNullOrEmpty(el.Name))
+                string name = el.Name.ToString();
+                if (string.IsNullOrEmpty(name))
                 {
                     name = "Name Unknown " + UnknownCount.ToString();
                     UnknownCount++;
                 }
                 //set allPropertyValues to this element
-                allPropertyValues.SetAllPropertySingleValues(el); //set the internal filtered IfcPropertySingleValues List in allPropertyValues
-                
+                allPropertyValues.SetAllPropertyValues(el); //set the internal filtered IfcPropertySingleValues List in allPropertyValues
                 component.Name = name;
+
                 string createBy = allPropertyValues.GetPropertySingleValueValue("COBieCreatedBy", false); //support for COBie Toolkit for Autodesk Revit
                 component.CreatedBy = ValidateString(createBy) ? createBy : GetTelecomEmailAddress(el.OwnerHistory);
                 string createdOn = allPropertyValues.GetPropertySingleValueValue("COBieCreatedOn", false);//support for COBie Toolkit for Autodesk Revit
@@ -134,9 +139,16 @@ namespace Xbim.COBie.Data
             }
 
             ProgressIndicator.Finalise();
+#if DEBUG
+            timer.Stop();
+            Console.WriteLine(String.Format("Time to generate Component data = {0} seconds", timer.Elapsed.TotalSeconds.ToString("F3")));
+#endif
+           
+            
             return components;
         }
 
+        
         
         /// <summary>
         /// Get Formatted Start Date
@@ -158,7 +170,9 @@ namespace Xbim.COBie.Data
             
             return startData;
         }
-        
+
+        //Fields for the GetComponentRelatedSpace function
+        List<IfcRelSpaceBoundary> ifcRelSpaceBoundarys = null;
         
         /// <summary>
         /// Get Space name which holds the passed in IfcElement
@@ -168,30 +182,47 @@ namespace Xbim.COBie.Data
         internal string GetComponentRelatedSpace(IfcElement el)
         {
             string value = "";
-            
-            if (el != null && el.ContainedInStructure.Count() > 0)
+            List<string> names = new List<string>();
+                    
+            if (el != null )//&& el.ContainedInStructure.Count() > 0
             {
-                IEnumerable<IfcRoot> owningObjects = el.ContainedInStructure.Select(cis => cis.RelatingStructure).OfType<IfcSpace>(); //only one or zero held in ContainedInStructure
-                if (owningObjects.Any())
+                var owningObjects = el.ContainedInStructure.Select(cis => cis.RelatingStructure).OfType<IfcSpace>(); //only one or zero held in ContainedInStructure
+                foreach (IfcSpace item in owningObjects)
                 {
-                    List<string> names = new List<string>();
-                    foreach (IfcRoot item in owningObjects)
-                    {
-                        if (item.Name != null)
-                            names.Add(item.Name);
-                    }
-                    value = string.Join(", ", names);
+                    if (item.Name != null)
+                        names.Add(item.Name);
                 }
             }
+
+            //check for the element as a containing item of a space
+            if (ifcRelSpaceBoundarys == null)
+            {
+                ifcRelSpaceBoundarys = Model.Instances.OfType<IfcRelSpaceBoundary>().Where(rsb => (rsb.RelatedBuildingElement != null)).ToList();
+            }
+            IEnumerable<IfcSpace> ifcSpaces = ifcRelSpaceBoundarys.Where(rsb => rsb.RelatedBuildingElement == el).Select(rsb => rsb.RelatingSpace);
+            foreach (IfcSpace item in ifcSpaces)
+            {
+                if ((item.Name != null) && (!names.Contains(item.Name)))
+                    names.Add(item.Name);
+            }
+
+            if (names.Count > 0) //check we have some values
+            {
+                value = string.Join(", ", names);
+            }
+            
             //if no space is saved with the element then get from the geometry 
             if (string.IsNullOrEmpty(value))
             { 
                 value = GetSpaceHoldingElement(el);
             }
-           
+            
 
             return string.IsNullOrEmpty(value) ? Constants.DEFAULT_STRING : value;
         }
+
+        //Fields for the GetComponentRelatedSpace function
+        List<IfcSpace> ifcSpaces = null;
 
         /// <summary>
         /// Get the space name holding the element
@@ -203,6 +234,11 @@ namespace Xbim.COBie.Data
             //see if we have space information, if not fill information list
             if (SpaceBoundingBoxInfo.Count == 0)
             {
+                if (ifcSpaces == null)
+                {
+                    ifcSpaces = Model.Instances.OfType<IfcSpace>().ToList();
+                }
+
                 //get Geometry for spaces 
              SpaceBoundingBoxInfo = Model.GetGeometryData(XbimGeometryType.BoundingBox)
                 .Where(bb => bb.IfcTypeId == IfcMetaData.IfcTypeId(typeof(IfcSpace)))
@@ -210,10 +246,11 @@ namespace Xbim.COBie.Data
                 {
                     Rectangle = XbimRect3D.FromArray(bb.ShapeData),
                     Matrix = bb.Transform,
-                    Name = Model.Instances.OfType<IfcSpace>().Where(sp => (Math.Abs(sp.EntityLabel) == Math.Abs(bb.IfcProductLabel))).Select(sp => sp.Name.ToString()).FirstOrDefault()
+                    Name = ifcSpaces.Where(sp => (Math.Abs(sp.EntityLabel) == Math.Abs(bb.IfcProductLabel))).Select(sp => sp.Name.ToString()).FirstOrDefault()
                 }).ToList();
             }
 
+            
             string spaceName = string.Empty;
             //only if we have any space information
             if (SpaceBoundingBoxInfo.Any())

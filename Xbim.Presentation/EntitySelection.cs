@@ -9,14 +9,29 @@ using System.Collections.Specialized;
 
 namespace Xbim.Presentation
 {
+    /// <summary>
+    /// Provides a container for entity selections capable of undo/redo operations and notification of changes.
+        /// </summary>
     public class EntitySelection : INotifyCollectionChanged, IEnumerable<IPersistIfcEntity>
     {
-        private List<SelectionEvent> _selectionLog = new List<SelectionEvent>();
+        private List<SelectionEvent> _selectionLog;
         private List<IPersistIfcEntity> _selection = new List<IPersistIfcEntity>();
         private int position = -1;
 
+        /// <summary>
+        /// Initialises an empty selection;
+        /// </summary>
+        /// <param name="KeepLogging">Set to True to enable activity logging for undo/redo operations.</param>
+        public EntitySelection(bool KeepLogging = false)
+        {
+            if (KeepLogging)
+                _selectionLog = new List<SelectionEvent>();
+        }
+
         public void Undo()
         {
+            if (_selectionLog == null)
+                return;
             if (position >= 0)
             {
                 RollBack(_selectionLog[position]);
@@ -26,6 +41,8 @@ namespace Xbim.Presentation
 
         public void Redo()
         {
+            if (_selectionLog == null)
+                return;
             if (position < _selectionLog.Count - 1)
             { 
                 position++;
@@ -108,6 +125,8 @@ namespace Xbim.Presentation
         public void Add(IEnumerable<IPersistIfcEntity> entity)
         {
             IEnumerable<IPersistIfcEntity> check = AddRange(entity);
+            if (_selectionLog == null)
+                return;
             _selectionLog.Add(new SelectionEvent() { Action = Action.ADD, Entities = check });
             ResetLog();
         }
@@ -123,6 +142,8 @@ namespace Xbim.Presentation
             if (entity == null)
                 return;
             IEnumerable<IPersistIfcEntity> check = RemoveRange(entity);
+            if (_selectionLog == null)
+                return;
             _selectionLog.Add(new SelectionEvent() { Action = Action.REMOVE, Entities = check });
             ResetLog();
         }
@@ -175,12 +196,23 @@ namespace Xbim.Presentation
             return (IEnumerator)GetEnumerator();
         }
 
-        internal void Toggle(IPersistIfcEntity item)
+        /// <summary>
+        /// Toggles the selection state of an IPersistIfcEntity
+        /// </summary>
+        /// <param name="item">the IPersistIfcEntity to add or remove from the selection</param>
+        /// <returns>true if added; false if removed</returns>
+        internal bool Toggle(IPersistIfcEntity item)
         {
             if (_selection.Contains(item))
+            {
                 this.Remove(item);
+                return false;
+            }
             else
+            {
                 this.Add(item);
+                return true;
+            }
         }
 
         internal void Clear()

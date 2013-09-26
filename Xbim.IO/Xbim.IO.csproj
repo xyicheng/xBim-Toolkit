@@ -41,12 +41,13 @@
     <BootstrapperEnabled>true</BootstrapperEnabled>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <SccAuxPath>SAK</SccAuxPath>
+    <RestorePackages>true</RestorePackages>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>..\bin\Debug\</OutputPath>
     <DefineConstants>TRACE;DEBUG;SupportActivation</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -55,7 +56,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
+    <OutputPath>..\bin\Release\</OutputPath>
     <DefineConstants>TRACE;SupportActivation</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -118,6 +119,15 @@
     <Compile Include="Tree\TreeNode.cs" />
     <Compile Include="Tree\TreeNodes.cs" />
     <Compile Include="Tree\TreeQueryStrategy.cs" />
+    <Compile Include="ViewModels\ClassificationViewModel.cs" />
+    <Compile Include="ViewModels\ContainedElementsViewModel.cs" />
+    <Compile Include="ViewModels\IfcProductModelView.cs" />
+    <Compile Include="ViewModels\IXbimViewModel.cs" />
+    <Compile Include="ViewModels\SpatialViewModel.cs" />
+    <Compile Include="ViewModels\TreeViewBuilder.cs" />
+    <Compile Include="ViewModels\TypeViewModel.cs" />
+    <Compile Include="ViewModels\XbimModelViewModel.cs" />
+    <Compile Include="ViewModels\XbimRefModelViewModel.cs" />
     <Compile Include="XbimFederatedModelInstances.cs" />
     <Compile Include="XbimGeometryHandle.cs" />
     <Compile Include="XbimGeometryHandleCollection.cs" />
@@ -239,6 +249,7 @@
     <PostBuildEvent>
     </PostBuildEvent>
   </PropertyGroup>
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

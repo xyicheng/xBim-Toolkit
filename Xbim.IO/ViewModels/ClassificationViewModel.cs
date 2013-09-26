@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Xbim.IO;
+//using Xbim.IO;
 using Xbim.Ifc2x3.ExternalReferenceResource;
 using System.Collections.ObjectModel;
 
-namespace Xbim.Presentation
+namespace Xbim.IO.ViewModels
 {
     // this class does not seem to be used by any other part of the seolution.
     public class ClassificationViewModel

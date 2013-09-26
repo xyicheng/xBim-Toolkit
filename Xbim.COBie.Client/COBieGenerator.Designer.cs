@@ -124,6 +124,7 @@
             this.txtPath.Size = new System.Drawing.Size(326, 21);
             this.txtPath.TabIndex = 0;
             this.txtPath.Text = "2012-03-23-Duplex-Design.ifc";
+            this.txtPath.TextChanged += new System.EventHandler(this.txtPath_TextChanged);
             // 
             // btnBrowse
             // 
@@ -325,6 +326,7 @@
             this.Controls.Add(this.groupBox1);
             this.Name = "COBieGenerator";
             this.Text = "Xbim COBie Test Harness";
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.COBieGenerator_FormClosed);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.statusStrip1.ResumeLayout(false);

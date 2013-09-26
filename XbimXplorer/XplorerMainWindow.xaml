@@ -3,6 +3,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:ifc="http://schemas.Xbim.com/ifc"
     xmlns:xbim="http://schemas.Xbim.com/Presentation"
+    xmlns:xbimView="clr-namespace:Xbim.IO.ViewModels;assembly=Xbim.IO"
     xmlns:xbimIO="clr-namespace:Xbim.IO;assembly=Xbim.IO"
     xmlns:local="clr-namespace:XbimXplorer"
     xmlns:pt="clr-namespace:PropertyTools.Wpf;assembly=PropertyTools.Wpf" 
@@ -11,17 +12,7 @@
         Icon="xBIM.ico">
     <Window.Resources>
         <ObjectDataProvider x:Key="ModelProvider"  IsInitialLoadEnabled="False" ></ObjectDataProvider>
-        <DataTemplate DataType="{x:Type xbim:XbimModelViewModel}">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                <!--<Image Grid.Column="0" Source="/folder.png" Margin="0 0 4 0"/>-->
-                <TextBlock Grid.Column="1" Text="{Binding Name}" FontWeight="Bold"/>
-            </Grid>
-        </DataTemplate> <DataTemplate DataType="{x:Type xbim:SpatialViewModel}">
+        <DataTemplate DataType="{x:Type xbimView:XbimModelViewModel}">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -32,7 +23,18 @@
                 <TextBlock Grid.Column="1" Text="{Binding Name}" FontWeight="Bold"/>
             </Grid>
         </DataTemplate>
-        <DataTemplate DataType="{x:Type xbim:ContainedElementsViewModel}">
+        <DataTemplate DataType="{x:Type xbimView:SpatialViewModel}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <!--<Image Grid.Column="0" Source="/folder.png" Margin="0 0 4 0"/>-->
+                <TextBlock Grid.Column="1" Text="{Binding Name}" FontWeight="Bold"/>
+            </Grid>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type xbimView:ContainedElementsViewModel}">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -43,7 +45,7 @@
                 <TextBlock Grid.Column="1" Text="{Binding Name}"/>
             </Grid>
         </DataTemplate>
-        <DataTemplate DataType="{x:Type xbim:IfcProductModelView}">
+        <DataTemplate DataType="{x:Type xbimView:IfcProductModelView}">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -144,6 +146,9 @@
             </MenuItem>
             <MenuItem Header="COBie">
                 <MenuItem Header="_Export" Command="{x:Static local:XplorerMainWindow.ExportCOBieCmd}" />
+            </MenuItem>
+            <MenuItem Header="About" Click="About_Click">
+                
             </MenuItem>
 
         </Menu>

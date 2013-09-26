@@ -1,51 +1,28 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using Xbim.Ifc2x3.Kernel;
-using Xbim.IO;
 using Xbim.Ifc2x3.Extensions;
-using Xbim.XbimExtensions.Interfaces;
-using System.ComponentModel;
-using System.Collections.ObjectModel;
+using System.Collections;
+using System.IO;
 
-namespace Xbim.Presentation
+namespace Xbim.IO.ViewModels
 {
-    /// <summary>
-    /// Model view for display top level Xbim Model contents and referenced models
-    /// </summary>
-    public class XbimModelViewModel : IXbimViewModel
+    public class XbimRefModelViewModel : IXbimViewModel
     {
-        XbimModel xbimModel;
-        IfcProject _project;
+        private IO.XbimReferencedModel refModel;
         private bool _isSelected;
         private bool _isExpanded;
-        private ObservableCollection<IXbimViewModel> children;
+        private List<IXbimViewModel> children;
         public IXbimViewModel CreatingParent { get; set; } 
 
-        public string Name
+        public XbimRefModelViewModel(IO.XbimReferencedModel refModel, IXbimViewModel parent)
         {
-            get
-            {
-                // to improve on the user interface experience the classification viewer makes up a name in case the name is empty
-                if (_project.Name != string.Empty)
-                    return _project.Name;
-                else
-                    return "Unnamed project";
-            }
-        }
-
-
-        public XbimModelViewModel(IfcProject project, IXbimViewModel parent)
-        {
-            xbimModel = project.ModelOf as XbimModel;
-            _project = project;
             this.CreatingParent = parent;
-            IEnumerable subs = this.Children; //call this once to preload first level of hierarchy   
+            this.refModel = refModel;
         }
-
-
 
         public IEnumerable<IXbimViewModel> Children
         {
@@ -53,19 +30,35 @@ namespace Xbim.Presentation
             {
                 if (children == null)
                 {
-                    children = new ObservableCollection<IXbimViewModel>();
-                    foreach (var item in _project.GetSpatialStructuralElements())
+                    children = new List<IXbimViewModel>();
+                    IfcProject project = refModel.Model.IfcProject;
+                    if (project != null)
                     {
-                        children.Add(new SpatialViewModel(item, this));
-                    }
-                    foreach (var refModel in xbimModel.RefencedModels)
-                    {
-                        children.Add(new XbimRefModelViewModel(refModel, this));
+                        foreach (var item in project.GetSpatialStructuralElements())
+                        {
+                            children.Add(new SpatialViewModel(item, this));
+                        }
                     }
                 }
                 return children;
             }
         }
+
+        public override string ToString()
+        {
+            return Name;
+        }
+        public string Name
+        {
+            get 
+            {
+                string name = this.refModel.Name;
+                name = Path.GetFileNameWithoutExtension(name);
+                name += " [" + refModel.DocumentInformation.DocumentOwner.RoleName() + "]";
+                return name;
+            }
+        }
+
         public bool HasItems
         {
             get
@@ -74,15 +67,14 @@ namespace Xbim.Presentation
                 return children.Count > 0;
             }
         }
-
         public int EntityLabel
         {
-            get { return _project.EntityLabel; }
+            get { return refModel.DocumentInformation.EntityLabel; }
         }
 
-        public IPersistIfcEntity Entity
+        public XbimExtensions.Interfaces.IPersistIfcEntity Entity
         {
-            get { return _project; }
+            get { return refModel.DocumentInformation; }
         }
 
         public bool IsSelected
@@ -132,16 +124,13 @@ namespace Xbim.Presentation
         #endregion
 
 
-        internal void AddRefModel(XbimRefModelViewModel xbimModelViewModel)
-        {
-            children.Add(xbimModelViewModel);
-            NotifyPropertyChanged("Children");
-        }
 
 
-        public XbimModel Model
+
+
+        public IO.XbimModel Model
         {
-            get { return xbimModel; }
+            get { return refModel.Model; }
         }
     }
 }

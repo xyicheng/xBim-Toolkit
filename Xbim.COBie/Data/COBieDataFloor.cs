@@ -44,7 +44,7 @@ namespace Xbim.COBie.Data
             // get all IfcBuildingStory objects from IFC file
             IEnumerable<IfcBuildingStorey> buildingStories = Model.Instances.OfType<IfcBuildingStorey>();
 
-            COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(buildingStories); //properties helper class
+            COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(); //properties helper class
             COBieDataAttributeBuilder attributeBuilder = new COBieDataAttributeBuilder(Context, allPropertyValues);
             attributeBuilder.InitialiseAttributes(ref _attributes);
             
@@ -74,7 +74,7 @@ namespace Xbim.COBie.Data
                 }
 
                 //set allPropertyValues to this element
-                allPropertyValues.SetAllPropertySingleValues(ifcBuildingStorey); //set the internal filtered IfcPropertySingleValues List in allPropertyValues
+                allPropertyValues.SetAllPropertyValues(ifcBuildingStorey); //set the internal filtered IfcPropertySingleValues List in allPropertyValues
                 
 
                 floor.Name = name;
@@ -125,7 +125,10 @@ namespace Xbim.COBie.Data
             
             //Fall back properties
             //get the property single values for this building story
-            allPropertyValues.SetAllPropertySingleValues(ifcBuildingStorey);
+            if (ifcBuildingStorey != allPropertyValues.CurrentObject)
+            {
+                allPropertyValues.SetAllPropertyValues(ifcBuildingStorey);
+            }
 
             //try and find it in the attached properties of the building story
             string value = allPropertyValues.GetPropertySingleValueValue("StoreyHeight", true);
