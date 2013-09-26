@@ -101,6 +101,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Parser\README.txt" />
+    <Content Include="Sample_files\TextFile1.txt" />
     <Content Include="x64\SQLite.Interop.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -126,7 +127,6 @@
     <None Include="Parser\Scanner.lex" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Sample_files\" />
     <Folder Include="Tests\" />
   </ItemGroup>
   <ItemGroup>
