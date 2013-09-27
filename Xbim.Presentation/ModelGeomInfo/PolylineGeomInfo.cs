@@ -12,6 +12,28 @@ namespace Xbim.Presentation.ModelGeomInfo
     {
         private List<PointGeomInfo> _points;
 
+        public EntitySelection ParticipatingEntities
+        {
+            get
+            {
+                EntitySelection ret = new EntitySelection(false);
+                foreach (var item in _points)
+                {
+                    ret.Add(item.Entity);
+                }
+                return ret;
+            }
+        }
+
+        public override string ToString()
+        {
+            double d = this.GetArea();
+            if (!double.IsNaN(d))
+                return string.Format("Lenght: {0} Area: {1}", this.GetLenght(), d);
+            else
+                return string.Format("Lenght: {0}", this.GetLenght());
+        }
+
         public PolylineGeomInfo(List<PointGeomInfo> Init)
         {
             _points = Init;

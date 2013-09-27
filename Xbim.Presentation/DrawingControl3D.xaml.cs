@@ -179,11 +179,21 @@ namespace Xbim.Presentation
         private void SelectionDrivenSelectedEntityChange(IPersistIfcEntity entity)
         {
             _SelectedEntityChangeTriggedBySelectionChange = true;
+            if (this.SelectedEntity == null && entity == null)
+            {
+                // OnSelectedEntityChanged(this, new DependencyPropertyChangedEventArgs(SelectedEntityProperty, null, null));
+                this.HighlighSelected(null);
+            }
             this.SelectedEntity = entity;
+            
             _SelectedEntityChangeTriggedBySelectionChange = false;
         }
 
 
+        public event UserModeledDimensionChanged UserModeledDimensionChangedEvent;
+        public delegate void UserModeledDimensionChanged(DrawingControl3D m, PolylineGeomInfo e);
+
+        public PolylineGeomInfo UserModeledDimension;
         private List<PointGeomInfo> PrevPoints = new List<PointGeomInfo>();
         private void Canvas_MouseDown(object sender, MouseButtonEventArgs e)
         {
@@ -202,7 +212,11 @@ namespace Xbim.Presentation
                 {
                     // drop the geometry for the measure visualization
                     FurtherGeometries.Content = null;
+                    UserModeledDimension = null;
+                    
                     PrevPoints.Clear();
+                    if (UserModeledDimensionChangedEvent != null)
+                        UserModeledDimensionChangedEvent(this, null);
                 }
 
                 if (thisSelectedEntity == null)
@@ -237,19 +251,11 @@ namespace Xbim.Presentation
                         case MouseClickActions.Measure:
                             var p = GetClosestPoint(hit);
                             PrevPoints.AddRange(p);
-                            PolylineGeomInfo g = new PolylineGeomInfo(PrevPoints);
-                            Debug.WriteLine(string.Format(
-                                "Lenght: {0} (count: {1})", g.GetLenght(), g.Count()
-                                ));
-                            double d = g.GetArea();
-                            if (!double.IsNaN(d))
-                            {
-                                Debug.WriteLine(string.Format(
-                                    "Area: {0}", d
-                                    ));
-                            }
-                            // this hides the current selection; it might not be the best choice.
-                            g.SetToVisual(FurtherGeometries); 
+                            UserModeledDimension = new PolylineGeomInfo(PrevPoints);
+                            Debug.WriteLine(UserModeledDimension.ToString());
+                            if (UserModeledDimensionChangedEvent != null)
+                                UserModeledDimensionChangedEvent(this, UserModeledDimension);
+                            UserModeledDimension.SetToVisual(FurtherGeometries); 
                             break;
                     }
                 }
@@ -260,7 +266,7 @@ namespace Xbim.Presentation
             }
         }
         
-        private IEnumerable< PointGeomInfo> GetClosestPoint(RayMeshGeometry3DHitTestResult hit)
+        private IEnumerable<PointGeomInfo> GetClosestPoint(RayMeshGeometry3DHitTestResult hit)
         {
             List<PointGeomInfo> gret = new List<PointGeomInfo>();
 
@@ -271,7 +277,7 @@ namespace Xbim.Presentation
             };
 
             PointGeomInfo pHit = new PointGeomInfo();
-            pHit.EntityLabel = GetClickedEntity(hit).EntityLabel;
+            pHit.Entity = GetClickedEntity(hit);
             pHit.Point = hit.PointHit;
 
             double minDist = double.PositiveInfinity;
@@ -282,10 +288,8 @@ namespace Xbim.Presentation
                 int iPtMesh = pts[i];
 
                 PointGeomInfo pRetI = new PointGeomInfo();
-                pRetI.EntityLabel = pHit.EntityLabel;
+                pRetI.Entity = pHit.Entity;
                 pRetI.Point = hit.MeshHit.Positions[iPtMesh];
-
-                // gret.Add(pRetI);
 
                 double dist = hit.PointHit.DistanceTo(hit.MeshHit.Positions[iPtMesh]);
                 if (dist < minDist)
@@ -296,9 +300,8 @@ namespace Xbim.Presentation
             }
 
             PointGeomInfo pRet = new PointGeomInfo();
-            pRet.EntityLabel = pHit.EntityLabel;
+            pRet.Entity = pHit.Entity;
             pRet.Point = hit.MeshHit.Positions[iClosest];
-
             gret.Add(pRet);
 
             return gret;

@@ -52,7 +52,12 @@ namespace Xbim.IO.ViewModels
 
         public string Name
         {
-            get { return product.ToString(); }
+            get { 
+                var tmp = product.ToString(); 
+                if (tmp.Trim() == string.Empty) // some applications write a single space in place of the name
+                    tmp = string.Format("{0} #{1}", product.IfcType().ToString(), product.EntityLabel);
+                return tmp;
+            }
         }
 
         public bool HasItems
