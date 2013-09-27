@@ -326,11 +326,6 @@ TryCutSolid:
 								goto TryCutSolid;
 							}
 							
-#ifdef _DEBUG
-							if( BRepCheck_Analyzer(sfs.Shape(), Standard_True).IsValid() == Standard_True) //in release builds except the geometry is not compliant
-								Logger->ErrorFormat("Unable to create valid shape when performing boolean cut operation on shape #{0} with shape #{1}.", RepresentationLabel,shape->RepresentationLabel );
-						
-#endif // _DEBUG
 							BRep_Builder builder;
 							TopoDS_Compound solids;
 							builder.MakeCompound(solids);
