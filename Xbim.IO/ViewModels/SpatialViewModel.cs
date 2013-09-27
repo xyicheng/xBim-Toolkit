@@ -37,9 +37,6 @@ namespace Xbim.IO.ViewModels
         {
             xbimModel = spatialStructure.ModelOf as XbimModel;
             this.spatialStructureLabel = Math.Abs(spatialStructure.EntityLabel);
-            System.Diagnostics.Debug.WriteLine(
-                string.Format("Creating: {0} [#{1}] - {2}", Name, spatialStructureLabel, this.GetType().ToString())
-                );
             CreatingParent = parent;
             IEnumerable subs = this.Children; //call this once to preload first level of hierarchy   
         }
@@ -48,9 +45,6 @@ namespace Xbim.IO.ViewModels
         {
             xbimModel = project.ModelOf as XbimModel;
             this.spatialStructureLabel = Math.Abs(project.EntityLabel);
-            System.Diagnostics.Debug.WriteLine(
-                string.Format("Creating: {0} [#{1}] - {2}", Name, spatialStructureLabel, this.GetType().ToString() )
-                );
             IEnumerable subs = this.Children; //call this once to preload first level of hierarchy          
         }
 

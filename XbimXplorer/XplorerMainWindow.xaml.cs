@@ -75,7 +75,6 @@ namespace XbimXplorer
             this.Loaded += XplorerMainWindow_Loaded;
             this.Closing += new CancelEventHandler(XplorerMainWindow_Closing);
             this.DrawingControl.UserModeledDimensionChangedEvent += DrawingControl_MeasureChangedEvent;
-            
         }
 
         private void DrawingControl_MeasureChangedEvent(DrawingControl3D m, Xbim.Presentation.ModelGeomInfo.PolylineGeomInfo e)

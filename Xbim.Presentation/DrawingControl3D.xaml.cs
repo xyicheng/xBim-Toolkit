@@ -69,6 +69,73 @@ namespace Xbim.Presentation
             MouseModifierKeyBehaviour.Add(ModifierKeys.Alt, MouseClickActions.Measure);
         }
 
+        // elements associated with vector polygons drafted interactively on the model by the user
+        //
+        private LinesVisual3D _UserModeledDimLines;
+        private PointsVisual3D _UserModeledDimPoints;
+        public PolylineGeomInfo UserModeledDimension = new PolylineGeomInfo();
+
+        private void FirePrevPointsChanged()
+        {
+            if (!UserModeledDimension.IsEmpty)
+            {
+                // enable the loop that updates the drawing geometry
+                CompositionTarget.Rendering += this.OnCompositionTargetRendering;
+            }
+            if (UserModeledDimensionChangedEvent != null)
+                UserModeledDimensionChangedEvent(this, UserModeledDimension);
+
+        }
+
+        void OnCompositionTargetRendering(object sender, EventArgs e)
+        {
+            bool doShow = !UserModeledDimension.IsEmpty;
+            // lines
+            double depthoff = 0.001;
+            if (doShow && _UserModeledDimLines == null)
+            {
+                _UserModeledDimLines = new LinesVisual3D { 
+                    Color = Colors.Yellow, 
+                    Thickness = 3,
+                    DepthOffset = depthoff
+                };
+                Canvas.Children.Add(_UserModeledDimLines);
+            }
+            if (!doShow && _UserModeledDimLines != null)
+            {
+                _UserModeledDimLines.IsRendering = false;
+                Canvas.Children.Remove(_UserModeledDimLines);
+                _UserModeledDimLines = null;
+            }
+            // points 
+            if (doShow && _UserModeledDimPoints == null)
+            {
+                _UserModeledDimPoints = new PointsVisual3D { 
+                    Color = Colors.Orange, 
+                    Size = 5,
+                    DepthOffset = depthoff
+                };
+                Canvas.Children.Add(_UserModeledDimPoints);
+            }
+            if (!doShow && _UserModeledDimPoints != null)
+            {
+                _UserModeledDimPoints.IsRendering = false;
+                Canvas.Children.Remove(_UserModeledDimPoints);
+                _UserModeledDimPoints = null;
+            }
+            if (!doShow)
+            {
+                // if not needed the hook can be removed until a new measure is made by the user
+                CompositionTarget.Rendering -= this.OnCompositionTargetRendering;
+            }
+
+            // geometry prep
+            if (_UserModeledDimLines != null)
+                _UserModeledDimLines.Points = UserModeledDimension.VisualPoints;
+            if (_UserModeledDimPoints != null)
+                _UserModeledDimPoints.Points = UserModeledDimension.VisualPoints;
+        }
+
         void Viewport_CameraChanged(object sender, RoutedEventArgs e)
         {
             HelixViewport3D snd = sender as HelixViewport3D;
@@ -152,8 +219,6 @@ namespace Xbim.Presentation
 
         #region Events
 
-        
-
         public new static readonly RoutedEvent LoadedEvent =
             EventManager.RegisterRoutedEvent("LoadedEvent", RoutingStrategy.Bubble, typeof(RoutedEventHandler),
                                              typeof(DrawingControl3D));
@@ -193,8 +258,7 @@ namespace Xbim.Presentation
         public event UserModeledDimensionChanged UserModeledDimensionChangedEvent;
         public delegate void UserModeledDimensionChanged(DrawingControl3D m, PolylineGeomInfo e);
 
-        public PolylineGeomInfo UserModeledDimension;
-        private List<PointGeomInfo> PrevPoints = new List<PointGeomInfo>();
+        
         private void Canvas_MouseDown(object sender, MouseButtonEventArgs e)
         {
             var pos = e.GetPosition(Canvas);
@@ -211,12 +275,9 @@ namespace Xbim.Presentation
                 if (mc != MouseClickActions.Measure)
                 {
                     // drop the geometry for the measure visualization
-                    FurtherGeometries.Content = null;
-                    UserModeledDimension = null;
-                    
-                    PrevPoints.Clear();
-                    if (UserModeledDimensionChangedEvent != null)
-                        UserModeledDimensionChangedEvent(this, null);
+                    // FurtherGeometries.Content = null;
+                    UserModeledDimension.Clear(); 
+                    FirePrevPointsChanged();
                 }
 
                 if (thisSelectedEntity == null)
@@ -250,12 +311,14 @@ namespace Xbim.Presentation
                             break;
                         case MouseClickActions.Measure:
                             var p = GetClosestPoint(hit);
-                            PrevPoints.AddRange(p);
-                            UserModeledDimension = new PolylineGeomInfo(PrevPoints);
+                            if (UserModeledDimension.Last3DPoint.HasValue && UserModeledDimension.Last3DPoint.Value == p.Point)
+                                UserModeledDimension.RemoveLast();
+                            else
+                                UserModeledDimension.Add(p); 
                             Debug.WriteLine(UserModeledDimension.ToString());
-                            if (UserModeledDimensionChangedEvent != null)
-                                UserModeledDimensionChangedEvent(this, UserModeledDimension);
-                            UserModeledDimension.SetToVisual(FurtherGeometries); 
+                            FirePrevPointsChanged();
+                            
+                            // UserModeledDimension.SetToVisual(FurtherGeometries); 
                             break;
                     }
                 }
@@ -265,10 +328,12 @@ namespace Xbim.Presentation
                 SelectedEntity = thisSelectedEntity;
             }
         }
+
         
-        private IEnumerable<PointGeomInfo> GetClosestPoint(RayMeshGeometry3DHitTestResult hit)
+        
+        private PointGeomInfo GetClosestPoint(RayMeshGeometry3DHitTestResult hit)
         {
-            List<PointGeomInfo> gret = new List<PointGeomInfo>();
+            // List<PointGeomInfo> gret = new List<PointGeomInfo>();
 
             int[] pts = new int[] {
                 hit.VertexIndex1,
@@ -302,9 +367,11 @@ namespace Xbim.Presentation
             PointGeomInfo pRet = new PointGeomInfo();
             pRet.Entity = pHit.Entity;
             pRet.Point = hit.MeshHit.Positions[iClosest];
-            gret.Add(pRet);
 
-            return gret;
+            return pRet;
+
+            //gret.Add(pRet);
+            //return gret;
         }
 
         private static IPersistIfcEntity GetClickedEntity(RayMeshGeometry3DHitTestResult hit)
@@ -883,20 +950,26 @@ namespace Xbim.Presentation
 
         private void ClearGraphics()
         {
-            _materials.Clear();
-            _opacities.Clear();
-            this.ClearCutPlane();
-
             PercentageLoaded = 0;
             Selection = new EntitySelection();
+            UserModeledDimension.Clear();
+
+            _materials.Clear();
+            _opacities.Clear();
 
             Opaques.Children.Clear();
             Transparents.Children.Clear();
+            Extras.Children.Clear();
+
+
+            
+
+            this.ClearCutPlane();
+
             modelBounds = XbimRect3D.Empty;
             viewBounds = new XbimRect3D(0, 0, 0, 10000, 10000, 5000);    
             scenes = new List<XbimScene<WpfMeshGeometry3D, WpfMaterial>>();
             Viewport.ResetCamera();
-           // PropertiesBillBoard.IsRendering = false;
             Highlighted.Mesh = null;
         }
 
