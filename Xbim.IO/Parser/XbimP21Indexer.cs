@@ -154,7 +154,7 @@ namespace Xbim.IO.Parser
                     {
                         try
                         {
-                            Tuple<int, short, List<int>, byte[], bool> h = toStore.Take();
+                            Tuple<int, short, List<int>, byte[], bool> h = toStore.Take(CancellationToken.None);
                             table.AddEntity(h.Item1, h.Item2, h.Item3, h.Item4, h.Item5, transaction);
                             if (toStore.IsCompleted)
                                 table.WriteHeader(Header);

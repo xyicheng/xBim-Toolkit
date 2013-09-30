@@ -304,7 +304,7 @@ namespace Xbim
 				double currentTolerance = precision;
 				fTol.SetTolerance(*Handle, currentTolerance);
 				fTol.SetTolerance(*(shape->Handle),currentTolerance);
-				
+				bool warnPrecision=false;
 TryCutSolid:		
 				try
 				{
@@ -314,11 +314,16 @@ TryCutSolid:
 					{
 						//make sure it is a valid geometry
 						if( BRepCheck_Analyzer(boolOp.Shape(), Standard_True).IsValid() == Standard_True) 
+						{ 
+							if(warnPrecision)
+								Logger->WarnFormat("Precision adjusted to {0}, declared {1}", currentTolerance,precision);
 							return gcnew XbimSolid(boolOp.Shape(), hasCurves,_representationLabel,_surfaceStyleLabel);
+						}
 						else //if not try and fix it
 						{
 
 							currentTolerance*=10; //try courser;
+							warnPrecision=true;
 							if(currentTolerance<=maxPrecision)
 							{
 								fTol.SetTolerance(*Handle, currentTolerance);
@@ -354,7 +359,8 @@ TryCutSolid:
 								}
 								if(!solid.IsNull()) builder.Add(solids,TopoDS::Solid(solid));
 							}
-							
+							if(warnPrecision)
+								Logger->WarnFormat("Precision adjusted to {0}, declared {1}", currentTolerance,precision);
 							return gcnew XbimSolid(solids, hasCurves,_representationLabel,_surfaceStyleLabel);
 						}
 					}
@@ -365,6 +371,7 @@ TryCutSolid:
 						if(boolOp.ErrorStatus()>8) //errors below this are just errors in the input model, precision will not help
 						{
 							currentTolerance*=10; //try courser;
+							warnPrecision=true;
 							if(currentTolerance<=maxPrecision)
 							{
 								fTol.SetTolerance(*Handle, currentTolerance);
