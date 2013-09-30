@@ -147,11 +147,12 @@ namespace Xbim.IO.Parser
             }
             storeProcessor = Task.Factory.StartNew(() =>
             {
-                try
+
+                using (var transaction = table.BeginLazyTransaction())
                 {
-                    using (var transaction = table.BeginLazyTransaction())
+                    while (!toStore.IsCompleted)
                     {
-                        while (!toStore.IsCompleted)
+                        try
                         {
                             Tuple<int, short, List<int>, byte[], bool> h = toStore.Take();
                             table.AddEntity(h.Item1, h.Item2, h.Item3, h.Item4, h.Item5, transaction);
@@ -164,14 +165,18 @@ namespace Xbim.IO.Parser
                                 transaction.Begin();
                             }
                         }
-                        transaction.Commit();
-                    }
-                }
-                catch (InvalidOperationException)
-                {
-                    // An InvalidOperationException means that Take() was called on a completed collection
+                        catch (SystemException)
+                        {
+                            
+                            // An InvalidOperationException means that Take() was called on a completed collection
+                            //OperationCanceledException can also be called
 
+                        }
+                    }
+                    transaction.Commit();
                 }
+                   
+               
             }
             );
         }
