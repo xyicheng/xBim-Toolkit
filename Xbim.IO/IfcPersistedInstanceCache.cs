@@ -439,9 +439,16 @@ namespace Xbim.IO
                     {
                         if (progressHandler != null) part21Parser.ProgressStatus += progressHandler;
                         part21Parser.Parse();
-                        _model.Header = part21Parser.Header;
+                        _model.Header = part21Parser.Header;       
                         if (progressHandler != null) part21Parser.ProgressStatus -= progressHandler;
                     }
+                }
+                // the header used to be written a few lines above just after being assigned but should be ok here too.
+                // todo: bonghi: ask SRL if it should be elsewhere
+                using (var transaction = table.BeginLazyTransaction())
+                {
+                    table.WriteHeader(_model.Header);
+                    transaction.Commit();
                 }
                 FreeTable(table);
                 if (!keepOpen) Close();
