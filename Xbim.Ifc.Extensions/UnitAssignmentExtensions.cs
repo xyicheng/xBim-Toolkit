@@ -158,24 +158,42 @@ namespace Xbim.Ifc2x3.Extensions
                 requiredUnit = IfcUnitEnum.LENGTHUNIT;
             else if (Property.NominalValue is IfcPositiveLengthMeasure)
                 requiredUnit = IfcUnitEnum.LENGTHUNIT;
-            //IfcAmountOfSubstanceMeasure
-            //IfcContextDependentMeasure
-            //IfcCountMeasure
-            //IfcDescriptiveMeasure
-            //IfcElectricCurrentMeasure
-            //IfcLuminousIntensityMeasure
-            //IfcMassMeasure
-            //IfcNormalisedRatioMeasure
-            //IfcNumericMeasure
-            //IfcParameterValue
-            //IfcPlaneAngleMeasure
-            //IfcPositiveRatioMeasure
-            //IfcPositivePlaneAngleMeasure
-            //IfcRatioMeasure
-            //IfcSolidAngleMeasure
-            //IfcThermodynamicTemperatureMeasure
-            //IfcTimeMeasure
-            //IfcComplexNumber
+            else if (Property.NominalValue is IfcAmountOfSubstanceMeasure)
+                requiredUnit = IfcUnitEnum.AMOUNTOFSUBSTANCEUNIT;
+            else if (Property.NominalValue is IfcContextDependentMeasure)
+                requiredUnit = null; // todo: not sure what to do here
+            else if (Property.NominalValue is IfcCountMeasure)
+                requiredUnit = null; // todo: not sure what to do here
+            else if (Property.NominalValue is IfcDescriptiveMeasure)
+                requiredUnit = null; // todo: not sure what to do here
+            else if (Property.NominalValue is IfcElectricCurrentMeasure)
+                requiredUnit = IfcUnitEnum.ELECTRICCURRENTUNIT; 
+            else if (Property.NominalValue is IfcLuminousIntensityMeasure)
+                requiredUnit = IfcUnitEnum.LUMINOUSINTENSITYUNIT;
+            else if (Property.NominalValue is IfcMassMeasure)
+                requiredUnit = IfcUnitEnum.MASSUNIT;
+            else if (Property.NominalValue is IfcNormalisedRatioMeasure)
+                requiredUnit = null; // todo: not sure what to do here
+            else if (Property.NominalValue is IfcNumericMeasure)
+                requiredUnit = null; // todo: not sure what to do here.
+            else if (Property.NominalValue is IfcParameterValue)
+                requiredUnit = null; // todo: not sure what to do here.
+            else if (Property.NominalValue is IfcPlaneAngleMeasure)
+                requiredUnit = IfcUnitEnum.PLANEANGLEUNIT;
+            else if (Property.NominalValue is IfcPositiveRatioMeasure)
+                requiredUnit = null; // todo: not sure what to do here.
+            else if (Property.NominalValue is IfcPositivePlaneAngleMeasure)
+                requiredUnit = IfcUnitEnum.PLANEANGLEUNIT;
+            else if (Property.NominalValue is IfcRatioMeasure)
+                requiredUnit = null; // todo: not sure what to do here.
+            else if (Property.NominalValue is IfcSolidAngleMeasure)
+                requiredUnit = IfcUnitEnum.SOLIDANGLEUNIT;
+            else if (Property.NominalValue is IfcThermodynamicTemperatureMeasure)
+                requiredUnit = IfcUnitEnum.THERMODYNAMICTEMPERATUREUNIT;
+            else if (Property.NominalValue is IfcTimeMeasure)
+                requiredUnit = IfcUnitEnum.TIMEUNIT;
+            else if (Property.NominalValue is IfcComplexNumber)
+                requiredUnit = null; // todo: not sure what to do here.
 
             // types from IfcSimpleValue
             else if (Property.NominalValue is IfcSimpleValue)
