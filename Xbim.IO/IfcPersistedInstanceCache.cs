@@ -503,7 +503,11 @@ namespace Xbim.IO
                                             if (progressHandler != null) part21Parser.ProgressStatus -= progressHandler;
                                         }
                                     }
-
+                                    using (var transaction = table.BeginLazyTransaction())
+                                    {
+                                        table.WriteHeader(_model.Header);
+                                        transaction.Commit();
+                                    }
                                     FreeTable(table);
                                     if (!keepOpen) Close();
                                     return; // we only want the first file
