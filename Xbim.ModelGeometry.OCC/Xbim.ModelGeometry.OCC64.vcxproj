@@ -67,11 +67,11 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)$(Configuration)\x64\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)bin\x64\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)obj\$(PlatformShortName)\$(Configuration)\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</LinkIncremental>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)$(Configuration)\x64\</OutDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='NugetDistribution|x64'">$(ProjectDir)$(Configuration)\x64\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)bin\x64\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='NugetDistribution|x64'">$(ProjectDir)bin\x64\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)obj\$(PlatformShortName)\$(Configuration)\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='NugetDistribution|x64'">$(ProjectDir)obj\$(PlatformShortName)\$(Configuration)\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkIncremental>
@@ -81,7 +81,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <TargetExt>$(TargetExt)</TargetExt>
-    <TargetName>Xbim.ModelGeometry.OCC</TargetName>
+    <TargetName>Xbim.ModelGeometry.OCCd</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <TargetExt>$(TargetExt)</TargetExt>
@@ -97,13 +97,14 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>.\OpenCascade\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>DEB;_DEBUG;WIN64;_WINDOWS;WNT;_OCC64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.\OpenCascade\inc;.\CarveCsg\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_LIB;NOMINMAX;USE_CARVE;_ITERATOR_DEBUG_LEVEL=0;_HAS_CPP0X=0;HAVE_STDINT_H;DOPARALLEL;DEB;_DEBUG;WIN64;_WINDOWS;WNT;_OCC64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <AdditionalUsingDirectories>$(OutDir)\</AdditionalUsingDirectories>
+      <GenerateXMLDocumentationFiles>true</GenerateXMLDocumentationFiles>
     </ClCompile>
     <Link>
       <AdditionalDependencies>TKBool.lib;TKernel.lib;TKMath.lib;TKTopAlgo.lib;TKBRep.lib;TKMesh.lib;TKPrim.lib;TKBO.lib;TKG3D.lib;TKG2D.lib;TKGeomBase.lib;TKGeomAlgo.lib;TKShHealing.lib;TKOffset.lib;OpenGL32.Lib;Glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -128,19 +129,20 @@
       <TargetEnvironment>X64</TargetEnvironment>
     </Midl>
     <ClCompile>
-      <AdditionalIncludeDirectories>.\OpenCascade\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN64;NDEBUG;WNT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.\OpenCascade\inc;.\CarveCsg\include;.\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_LIB;NOMINMAX;USE_CARVE;_ITERATOR_DEBUG_LEVEL=0;_HAS_CPP0X=0;HAVE_STDINT_H;DOPARALLEL;WIN64;NDEBUG;WNT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <AdditionalUsingDirectories>$(OutDir)\</AdditionalUsingDirectories>
+      <GenerateXMLDocumentationFiles>true</GenerateXMLDocumentationFiles>
     </ClCompile>
     <Link>
       <AdditionalDependencies>TKBool.lib;TKernel.lib;TKMath.lib;TKTopAlgo.lib;TKBRep.lib;TKMesh.lib;TKPrim.lib;TKBO.lib;TKG3D.lib;TKG2D.lib;TKGeomBase.lib;TKGeomAlgo.lib;TKShHealing.lib;TKOffset.lib;OpenGL32.Lib;Glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <AdditionalLibraryDirectories>.\OpenCascade\win64\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
       <TargetMachine>MachineX64</TargetMachine>
       <KeyFile>
       </KeyFile>
@@ -157,13 +159,14 @@
       <TargetEnvironment>X64</TargetEnvironment>
     </Midl>
     <ClCompile>
-      <AdditionalIncludeDirectories>.\OpenCascade\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN64;NDEBUG;WNT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.\OpenCascade\inc;.\CarveCsg\include;.\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_LIB;NOMINMAX;USE_CARVE;_HAS_CPP0X=0;_ITERATOR_DEBUG_LEVEL=0;HAVE_STDINT_H;DOPARALLEL;WIN64;NDEBUG;WNT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <AdditionalUsingDirectories>$(OutDir)\</AdditionalUsingDirectories>
+      <GenerateXMLDocumentationFiles>true</GenerateXMLDocumentationFiles>
     </ClCompile>
     <Link>
       <AdditionalDependencies>TKBool.lib;TKernel.lib;TKMath.lib;TKTopAlgo.lib;TKBRep.lib;TKMesh.lib;TKPrim.lib;TKBO.lib;TKG3D.lib;TKG2D.lib;TKGeomBase.lib;TKGeomAlgo.lib;TKShHealing.lib;TKOffset.lib;OpenGL32.Lib;Glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -245,6 +248,146 @@
     <ClCompile Include="..\SharedAssemblyInfo.cpp" />
     <ClCompile Include="AssemblyInfo.cpp" />
     <ClCompile Include="CartesianTransform.cpp" />
+    <ClCompile Include="CarveCsg\lib\aabb.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NugetDistribution|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="CarveCsg\lib\carve.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NugetDistribution|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="CarveCsg\lib\convex_hull.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NugetDistribution|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="CarveCsg\lib\csg.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NugetDistribution|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="CarveCsg\lib\csg_collector.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NugetDistribution|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="CarveCsg\lib\edge.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NugetDistribution|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="CarveCsg\lib\face.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NugetDistribution|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="CarveCsg\lib\geom2d.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NugetDistribution|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="CarveCsg\lib\geom3d.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NugetDistribution|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="CarveCsg\lib\intersect.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NugetDistribution|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="CarveCsg\lib\intersection.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NugetDistribution|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="CarveCsg\lib\intersect_classify_edge.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NugetDistribution|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="CarveCsg\lib\intersect_classify_group.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NugetDistribution|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="CarveCsg\lib\intersect_debug.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NugetDistribution|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="CarveCsg\lib\intersect_face_division.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NugetDistribution|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="CarveCsg\lib\intersect_group.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NugetDistribution|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="CarveCsg\lib\intersect_half_classify_group.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NugetDistribution|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="CarveCsg\lib\math.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NugetDistribution|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="CarveCsg\lib\mesh.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NugetDistribution|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="CarveCsg\lib\octree.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NugetDistribution|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="CarveCsg\lib\pointset.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NugetDistribution|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="CarveCsg\lib\polyhedron.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NugetDistribution|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="CarveCsg\lib\polyline.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NugetDistribution|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="CarveCsg\lib\shewchuk_predicates.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NugetDistribution|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="CarveCsg\lib\tag.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NugetDistribution|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="CarveCsg\lib\timing.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NugetDistribution|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="CarveCsg\lib\triangle_intersection.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NugetDistribution|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="CarveCsg\lib\triangulator.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NugetDistribution|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="Stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
@@ -252,6 +395,7 @@
     </ClCompile>
     <ClCompile Include="TessellatorReceiver.cpp" />
     <ClCompile Include="XbimBoundingBox.cpp" />
+    <ClCompile Include="XbimCsg.cpp" />
     <ClCompile Include="XbimEdge.cpp" />
     <ClCompile Include="XbimEdgeLoop.cpp" />
     <ClCompile Include="XbimEdgeLoopEnumerator.cpp" />
@@ -266,6 +410,7 @@
     <ClCompile Include="XbimGeomPrim.cpp" />
     <ClCompile Include="XbimLocation.cpp" />
     <ClCompile Include="XbimOrientedEdge.cpp" />
+    <ClCompile Include="XbimPolyhedron.cpp" />
     <ClCompile Include="XbimShell.cpp" />
     <ClCompile Include="XbimSolid.cpp" />
     <ClCompile Include="XbimTriangularMeshStreamer.cpp" />
@@ -273,6 +418,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CartesianTransform.h" />
+    <ClInclude Include="CarveCsg\lib\csg_collector.hpp" />
+    <ClInclude Include="CarveCsg\lib\csg_data.hpp" />
+    <ClInclude Include="CarveCsg\lib\csg_detail.hpp" />
+    <ClInclude Include="CarveCsg\lib\intersect_classify_common.hpp" />
+    <ClInclude Include="CarveCsg\lib\intersect_classify_common_impl.hpp" />
+    <ClInclude Include="CarveCsg\lib\intersect_common.hpp" />
+    <ClInclude Include="CarveCsg\lib\intersect_debug.hpp" />
     <ClInclude Include="ITessellatorReceiver.h" />
     <ClInclude Include="IXbimMeshGeometry.h" />
     <ClInclude Include="resource.h" />
@@ -281,6 +433,7 @@
     <ClInclude Include="Stdafx.h" />
     <ClInclude Include="TessellatorReceiver.h" />
     <ClInclude Include="XbimBoundingBox.h" />
+    <ClInclude Include="XbimCsg.h" />
     <ClInclude Include="XbimEdge.h" />
     <ClInclude Include="XbimEdgeLoop.h" />
     <ClInclude Include="XbimEdgeLoopEnumerator.h" />
@@ -298,6 +451,7 @@
     <ClInclude Include="XbimGeomPrim.h" />
     <ClInclude Include="XbimLocation.h" />
     <ClInclude Include="XbimOrientedEdge.h" />
+    <ClInclude Include="XbimPolyhedron.h" />
     <ClInclude Include="XbimShell.h" />
     <ClInclude Include="XbimShellEnumerator.h" />
     <ClInclude Include="XbimSolid.h" />
@@ -305,6 +459,7 @@
     <ClInclude Include="XbimVertexPoint.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\xbim.modelgeometry.converter\packages.config" />
     <None Include="app.ico" />
     <None Include="ModelGeoemetryClassDiagram.cd" />
     <None Include="ReadMe.txt" />

@@ -1,7 +1,8 @@
 #include "StdAfx.h"
 #include "CartesianTransform.h"
 using namespace Xbim::Common::Geometry;
-
+using namespace System::Collections::Generic;
+using namespace Xbim::Ifc2x3::Extensions;
 namespace Xbim
 {
 	namespace ModelGeometry
@@ -16,16 +17,16 @@ namespace Xbim
 			XbimVector3D U1; //Y axis direction
 			if(stepTransform->Axis3!=nullptr)
 			{
-				IfcDirection% dir = (IfcDirection%)stepTransform->Axis3;
-				U3 = XbimVector3D(dir.DirectionRatios[0],dir.DirectionRatios[1],dir.DirectionRatios[2]); 
+				IfcDirection^ dir = (IfcDirection^)stepTransform->Axis3;
+				U3 = XbimVector3D(dir->DirectionRatios[0],dir->DirectionRatios[1],dir->DirectionRatios[2]); 
 				U3.Normalize();
 			}
 			else
 				U3 = XbimVector3D(0.,0.,1.); 
 			if(stepTransform->Axis1!=nullptr)
 			{
-				IfcDirection% dir = (IfcDirection%)stepTransform->Axis1;
-				U1 = XbimVector3D(dir.DirectionRatios[0],dir.DirectionRatios[1],dir.DirectionRatios[2]); 
+				IfcDirection^ dir = (IfcDirection^)stepTransform->Axis1;
+				U1 = XbimVector3D(dir->DirectionRatios[0],dir->DirectionRatios[1],dir->DirectionRatios[2]); 
 				U1.Normalize();
 			}
 			else
@@ -42,8 +43,8 @@ namespace Xbim
 
 			if(stepTransform->Axis2!=nullptr)
 			{
-				IfcDirection% dir = (IfcDirection%)stepTransform->Axis2;
-				U2 = XbimVector3D(dir.DirectionRatios[0],dir.DirectionRatios[1],dir.DirectionRatios[2]); 
+				IfcDirection^ dir = (IfcDirection^)stepTransform->Axis2;
+				U2 = XbimVector3D(dir->DirectionRatios[0],dir->DirectionRatios[1],dir->DirectionRatios[2]); 
 				U2.Normalize();
 			}
 			else
@@ -75,23 +76,11 @@ namespace Xbim
 			{
 				IfcLocalPlacement^ locPlacement = (IfcLocalPlacement^)objPlacement;
 				if (dynamic_cast<IfcAxis2Placement3D^>(locPlacement->RelativePlacement))
-				{
-					IfcAxis2Placement3D^ axis3D = (IfcAxis2Placement3D^)locPlacement->RelativePlacement;
-					XbimVector3D ucsXAxis(axis3D->RefDirection->DirectionRatios[0], axis3D->RefDirection->DirectionRatios[1], axis3D->RefDirection->DirectionRatios[2]);
-					XbimVector3D ucsZAxis(axis3D->Axis->DirectionRatios[0], axis3D->Axis->DirectionRatios[1], axis3D->Axis->DirectionRatios[2]);
-					ucsXAxis.Normalize();
-					ucsZAxis.Normalize();
-					XbimVector3D ucsYAxis = XbimVector3D::CrossProduct(ucsZAxis, ucsXAxis);
-					ucsYAxis.Normalize();
-					XbimPoint3D ucsCentre = axis3D->Location->XbimPoint3D();
-
-					XbimMatrix3D ucsTowcs (	ucsXAxis.X, ucsXAxis.Y, ucsXAxis.Z, 0,
-						ucsYAxis.X, ucsYAxis.Y, ucsYAxis.Z, 0,
-						ucsZAxis.X, ucsZAxis.Y, ucsZAxis.Z, 0,
-						ucsCentre.X, ucsCentre.Y, ucsCentre.Z , 1);
+				{				
+					XbimMatrix3D ucsTowcs = Axis2Placement3DExtensions::ToMatrix3D((IfcAxis2Placement3D^)(locPlacement->RelativePlacement), nullptr);
 					if (locPlacement->PlacementRelTo != nullptr)
 					{
-						return XbimMatrix3D::Multiply(ucsTowcs, CartesianTransform::ConvertMatrix3D(locPlacement->PlacementRelTo));
+						return XbimMatrix3D::Multiply(CartesianTransform::ConvertMatrix3D(locPlacement->PlacementRelTo),ucsTowcs);
 					}
 					else
 						return ucsTowcs;

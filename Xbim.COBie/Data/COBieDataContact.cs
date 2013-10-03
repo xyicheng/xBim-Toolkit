@@ -44,6 +44,8 @@ namespace Xbim.COBie.Data
             IEnumerable<IfcPersonAndOrganization> ifcPersonAndOrganizations = Model.Instances.OfType<IfcPersonAndOrganization>();
             ProgressIndicator.Initialise("Creating Contacts", ifcPersonAndOrganizations.Count() + cobieContacts.Count());
 
+            List<IfcOrganizationRelationship> ifcOrganizationRelationships = null;
+
             foreach (IfcPersonAndOrganization ifcPersonAndOrganization in ifcPersonAndOrganizations)
             {
                 ProgressIndicator.IncrementAndUpdate();
@@ -91,7 +93,11 @@ namespace Xbim.COBie.Data
                 }
                 if (string.IsNullOrEmpty(department))
                 {
-                    IfcOrganization ifcRelOrganization = Model.Instances.OfType<IfcOrganizationRelationship>()
+                    if (ifcOrganizationRelationships == null)
+                    {
+                        ifcOrganizationRelationships = Model.Instances.OfType<IfcOrganizationRelationship>().ToList();
+                    }
+                    IfcOrganization ifcRelOrganization = ifcOrganizationRelationships
                                                         .Where(Or => Or.RelatingOrganization.EntityLabel == ifcOrganization.EntityLabel && Or.RelatedOrganizations.Last() != null)
                                                         .Select(Or => Or.RelatedOrganizations.Last())
                                                         .LastOrDefault();

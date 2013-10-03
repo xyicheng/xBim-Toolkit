@@ -14,7 +14,7 @@
 #include <gp_Ax2d.hxx>
 #include <gp_Ax3.hxx>
 #include <gp_Mat2d.hxx>
-
+#include "CartesianTransform.h"
 using namespace System;
 using namespace Xbim::Common::Geometry;
 namespace Xbim
@@ -26,6 +26,15 @@ namespace Xbim
 		XbimGeomPrim::XbimGeomPrim(void)
 		{
 		}
+
+		// Converts an ObjectPlacement into a TopLoc_Location
+		TopLoc_Location XbimGeomPrim::ToLocation(IfcObjectPlacement^ placement)
+		{
+			XbimMatrix3D m3D = CartesianTransform::ConvertMatrix3D(placement);
+			gp_Trsf trsf = XbimGeomPrim::ToTransform(m3D);
+			return TopLoc_Location(trsf);
+		}
+
 
 		// Converts an Axis2Placement3D into a TopLoc_Location
 		TopLoc_Location XbimGeomPrim::ToLocation(IfcPlacement^ placement)
@@ -285,6 +294,17 @@ namespace Xbim
 				Precision::Angular() ,Precision::Approximation());
 			trsf.SetTranslationPart(gp_Vec(m3D.OffsetX, m3D.OffsetY, m3D.OffsetZ));
 			return trsf;
+		}
+
+		XbimMatrix3D XbimGeomPrim::ToMatrix3D(const TopLoc_Location& location)
+		{
+			const gp_Trsf& trsf = location.Transformation();
+			gp_Mat m = trsf.VectorialPart();
+			gp_XYZ t = trsf.TranslationPart();
+			return XbimMatrix3D((double)m.Row(1).X(),(double)m.Row(1).Y(),(double)m.Row(1).Z(), 0.0,
+								(double)m.Row(2).X(),(double)m.Row(2).Y(),(double)m.Row(2).Z(), 0.0,
+								(double)m.Row(3).X(),(double)m.Row(3).Y(),(double)m.Row(3).Z(), 0.0,
+								(double)t.X(), (double)t.Y(), (double)t.Z(),1.0);
 		}
 
 		gp_Trsf XbimGeomPrim::ToTransform(IfcCartesianTransformationOperator2D^ ct)

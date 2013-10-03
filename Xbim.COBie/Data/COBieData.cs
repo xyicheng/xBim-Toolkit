@@ -44,6 +44,7 @@ namespace Xbim.COBie.Data
         private COBieProgress _progressStatus;
         protected int UnknownCount { get; set; } //use for unnamed items as an index
 
+        
         //private static Dictionary<long, string> _eMails = new Dictionary<long, string>();
 
         protected COBieData()
@@ -145,20 +146,30 @@ namespace Xbim.COBie.Data
             return GetExternalSystem(item.OwnerHistory);
         }
 
+        //fields for GetMaterialOwnerHistory function
+        List<IfcRelAssociatesMaterial> ifcRelAssociatesMaterials = null;
+        List<IfcMaterialLayerSetUsage> ifcMaterialLayerSetUsages = null;
+
         /// <summary>
-        /// Get the IfcRelAssociatesMaterial object from the passed IfcMaterialLayerSet
+        /// Get the IfcRelAssociatesMaterial object from the passed IfcMaterialLayerSet 
         /// </summary>
         /// <param name="ifcMaterialLayerSet">IfcMaterialLayerSet object</param>
         /// <returns>IfcOwnerHistory object or null if none found</returns>
         protected IfcOwnerHistory GetMaterialOwnerHistory(IfcMaterialLayerSet ifcMaterialLayerSet)
         {
-            IEnumerable<IfcRelAssociatesMaterial> ifcRelAssociatesMaterials = Model.Instances.OfType<IfcRelAssociatesMaterial>();
-            IfcMaterialLayerSetUsage ifcMaterialLayerSetUsage = Model.Instances.Where<IfcMaterialLayerSetUsage>(mlsu => mlsu.ForLayerSet == ifcMaterialLayerSet).FirstOrDefault();
 
+            if (ifcRelAssociatesMaterials == null)
+            {
+                ifcRelAssociatesMaterials = Model.Instances.OfType<IfcRelAssociatesMaterial>().ToList();
+                ifcMaterialLayerSetUsages = Model.Instances.OfType<IfcMaterialLayerSetUsage>().ToList();
+            }
+
+            IfcMaterialLayerSetUsage ifcMaterialLayerSetUsage = ifcMaterialLayerSetUsages.Where<IfcMaterialLayerSetUsage>(mlsu => mlsu.ForLayerSet == ifcMaterialLayerSet).FirstOrDefault();
+            
             IfcRelAssociatesMaterial ifcRelAssociatesMaterial = null;
             if (ifcMaterialLayerSetUsage != null)
                 ifcRelAssociatesMaterial = ifcRelAssociatesMaterials.Where(ram => (ram.RelatingMaterial is IfcMaterialLayerSetUsage) && ((ram.RelatingMaterial as IfcMaterialLayerSetUsage) == ifcMaterialLayerSetUsage)).FirstOrDefault();
-
+                
             if (ifcRelAssociatesMaterial == null)
                 ifcRelAssociatesMaterial = ifcRelAssociatesMaterials.Where(ram => (ram.RelatingMaterial is IfcMaterialLayerSet) && ((ram.RelatingMaterial as IfcMaterialLayerSet) == ifcMaterialLayerSet)).FirstOrDefault();
 
@@ -819,7 +830,8 @@ namespace Xbim.COBie.Data
         /// <returns></returns>
         protected bool ValidateString(string value)
         {
-            return ((!string.IsNullOrEmpty(value)) && (value != Constants.DEFAULT_STRING) && (value != "n\\a") && (value != "n\a")); //"n\a" cover miss types
+            return (!((value == Constants.DEFAULT_STRING) || (string.IsNullOrEmpty(value)) || (value == "n\\a") || (value == "n\a"))); //"n\a" cover miss types
+            //return ((!string.IsNullOrEmpty(value)) && (value != Constants.DEFAULT_STRING) && (value != "n\\a") && (value != "n\a")); //"n\a" cover miss types
         }
 
 

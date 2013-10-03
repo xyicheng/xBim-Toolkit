@@ -50,7 +50,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>none</DebugType>
+    <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE;SupportActivation</DefineConstants>
@@ -58,6 +58,7 @@
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>
     </DocumentationFile>
+    <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'NugetDistribution|AnyCPU' ">
     <OutputPath>..\bin\NugetDistribution\</OutputPath>
@@ -641,6 +642,7 @@
     <Compile Include="ClassificationExtensions.cs" />
     <Compile Include="ObjectReferenceSelectExtensions.cs" />
     <Compile Include="PersonExtensions.cs" />
+    <Compile Include="PhysicalSimpleQuantityExtensions.cs" />
     <Compile Include="TimeSeriesExtensions.cs" />
     <Compile Include="UnitExtensions.cs" />
     <Compile Include="LocalTimeExtensions.cs" />

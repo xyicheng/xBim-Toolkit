@@ -61,6 +61,8 @@ namespace Xbim.COBie.Client
             }
         }
 
+        public XbimModel Model { get; set; }
+
         public List<string> MergeItemsList { get; set; }
 
         private void btnGenerate_Click(object sender, EventArgs e)
@@ -176,7 +178,7 @@ namespace Xbim.COBie.Client
                 COBieContext context = new COBieContext(_worker.ReportProgress);
                 context.TemplateFileName = parameters.TemplateFile;
                 context.Model = model;
-
+                Model = model; //used to check we close file on Close event
                 //Create Scene, required for Coordinates sheet
                 if (!SkipGeoChkBox.Checked)
                 {
@@ -258,11 +260,12 @@ namespace Xbim.COBie.Client
                 
             // Validate the workbook
             progress.ReportMessage("Starting Validation...");
-            Workbook.Validate((lastProcessedSheetIndex) =>
+
+            Workbook.Validate(ErrorRowIndexBase.RowTwo, (lastProcessedSheetIndex) =>
             {
                 // When each sheet has been processed, increment the progress bar
                 progress.IncrementAndUpdate();
-            });
+            } );
             progress.ReportMessage("Finished Validation");
             progress.Finalise();
                 
@@ -581,6 +584,32 @@ namespace Xbim.COBie.Client
                     AppendLog(Path.GetFileName(item));
                 }
             }
+        }
+
+        private void COBieGenerator_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            if (Model != null)
+            {
+                Model.Close();
+            }
+            
+            
+        }
+
+        private void txtPath_TextChanged(object sender, EventArgs e)
+        {
+            if (!string.IsNullOrEmpty(txtPath.Text))
+            {
+                if (Path.GetExtension(txtPath.Text).ToLower() == ".xbim")
+                {
+                    SkipGeoChkBox.Checked = true; //if xbim file assume we have geometry
+                    SkipGeoChkBox.Enabled = false;
+                }
+                else
+                    SkipGeoChkBox.Enabled = true;
+
+            }
+            
         }
     }
 

@@ -50,6 +50,10 @@ namespace XbimConvert
                         string[] argNames = arg.ToLowerInvariant().Split(new string[] { ":" }, StringSplitOptions.RemoveEmptyEntries);
                         switch (argNames[0])
                         {
+                            case "-caching":
+                            case "-c":
+                                Caching = true;
+                                break;
                             case "-quiet":
                             case "-q":
                                 IsQuiet = true;
@@ -152,6 +156,8 @@ namespace XbimConvert
             None,
             Filter
         };
+
+        public bool Caching { get; set; }
     }
 
     public enum FilterType

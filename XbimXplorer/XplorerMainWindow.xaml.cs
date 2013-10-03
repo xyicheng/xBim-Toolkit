@@ -48,6 +48,7 @@ using Xbim.COBie;
 using Xbim.COBie.Contracts;
 using Xbim.ModelGeometry.Converter;
 using XbimXplorer.Dialogs;
+using System.Windows.Media.Imaging;
 #endregion
 
 namespace XbimXplorer
@@ -73,6 +74,15 @@ namespace XbimXplorer
             this.Closed += new EventHandler(XplorerMainWindow_Closed);
             this.Loaded += XplorerMainWindow_Loaded;
             this.Closing += new CancelEventHandler(XplorerMainWindow_Closing);
+            this.DrawingControl.UserModeledDimensionChangedEvent += DrawingControl_MeasureChangedEvent;
+        }
+
+        private void DrawingControl_MeasureChangedEvent(DrawingControl3D m, Xbim.Presentation.ModelGeomInfo.PolylineGeomInfo e)
+        {
+            if (e != null)
+            {
+                this.EntityLabel.Text = e.ToString();
+            }
         }
 
         void OpenQuery(object sender, RoutedEventArgs e)
@@ -169,9 +179,7 @@ namespace XbimXplorer
             get
             {
                 return MainFrame.DataContext as ObjectDataProvider;
-               
             }
-            
         }
 
         public XbimModel Model
@@ -192,8 +200,8 @@ namespace XbimXplorer
             {
                 _temporaryXbimFileName = Path.GetTempFileName();
                 _defaultFileName = Path.GetFileNameWithoutExtension(ifcFilename);
-                model.CreateFrom(ifcFilename, _temporaryXbimFileName, worker.ReportProgress);
-                model.Open(_temporaryXbimFileName, XbimDBAccess.ReadWrite);
+                model.CreateFrom(ifcFilename, _temporaryXbimFileName, worker.ReportProgress,true,false);
+              //  model.Open(_temporaryXbimFileName, XbimDBAccess.ReadWrite);
                 XbimMesher.GenerateGeometry(model, null, worker.ReportProgress);
                // model.Close();
                 if (worker.CancellationPending == true) //if a cancellation has been requested then don't open the resulting file
@@ -297,6 +305,13 @@ namespace XbimXplorer
             {
                 _currentModelFileName = fileName.ToLower();
                 model.Open(fileName, XbimDBAccess.Read, worker.ReportProgress); //load entities into the model
+                // sets a convenient integer to all children for model identification
+                // this is used by the federated model selection mechanisms.
+                int i = 0;
+                foreach (var item in model.AllModels)
+                {
+                    item.Tag = i++;
+                }
                 args.Result = model;
             }
             catch (Exception ex)
@@ -737,6 +752,23 @@ namespace XbimXplorer
             separate.SetBinding(ModelSeparation.DataContextProperty, b);
 
             separate.Show();
+        }
+
+        private void About_Click(object sender, RoutedEventArgs e)
+        {
+            Gat.Controls.About about = new Gat.Controls.About();
+            //
+            about.Title = "xBIM Xplorer";
+            about.Hyperlink = new Uri("http://www.codeplex.com",UriKind.Absolute);
+            about.HyperlinkText = "http://www.codeplex.com";
+            about.Publisher="xBIM Team - Steve Lockley";
+            about.Description = "This is a demonstratore application designed to show some of the potential of the xBIM toolkit";
+            about.ApplicationLogo = new BitmapImage(new Uri(@"pack://application:,,/xBIM.ico", UriKind.RelativeOrAbsolute));
+            about.Copyright = "Prof. Steve Lockley";
+            about.PublisherLogo = about.ApplicationLogo;
+            about.AdditionalNotes = "The xBIM toolkit is an Open Source software initiative to help software developers and researchers to support the next generation of BIM tools ";
+            about.Show();
+
         }
     }
 }

@@ -21,6 +21,6 @@ namespace Xbim.ModelGeometry.Scene
         /// True if the native material has been created
         /// </summary>
        bool IsCreated { get; }
-       
+       string Description { get; }
     }
 }

@@ -7,6 +7,7 @@
 #include "XbimMap.h"
 #include <BRepBuilderAPI.hxx>
 #include "XbimGeomPrim.h"
+#include "CartesianTransform.h"
 using namespace Xbim::Common::Logging;
 using namespace Xbim::ModelGeometry::OCC;
 using namespace System::Linq;
@@ -61,32 +62,42 @@ namespace Xbim
 							String::Compare(shape->RepresentationIdentifier.Value, "facetation" , true)==0)
 							//we have a 3D geometry
 						{
-							if(dynamic_cast<IfcGeometricRepresentationContext^>(shape->ContextOfItems))
-								BRepBuilderAPI::Precision((const Standard_Real)((IfcGeometricRepresentationContext^)(shape->ContextOfItems))->DefaultPrecision);
-
+							
+							
 							//srl optimisation openings and projectionss cannot have openings or projection so don't check for them
 							if(CutOpenings(product, lod) && !dynamic_cast<IfcFeatureElement^>(product ))
 							{
 								IfcElement^ element = (IfcElement^) product;
-								List<XbimGeometryModel^>^ projectionSolids = gcnew List<XbimGeometryModel^>();
-								List<XbimGeometryModel^>^ openingSolids = gcnew List<XbimGeometryModel^>();
+								XbimGeometryModelCollection^ projectionSolids = gcnew XbimGeometryModelCollection();
+								XbimGeometryModelCollection^ openingSolids = gcnew XbimGeometryModelCollection();
 								for each(IfcRelProjectsElement^ rel in element->HasProjections)
 								{
 									IfcFeatureElementAddition^ fe = rel->RelatedFeatureElement;
-									if(fe->Representation!=nullptr)
-									{
-										IfcFeatureElementAddition^ fe = rel->RelatedFeatureElement;
-										if(fe->Representation!=nullptr)
+									XbimGeometryModel^ im = CreateFrom(fe, repContext, maps, true,lod, occOut);
+									if(im!=nullptr && im->IsValid)
+									{	
+										if(!dynamic_cast<IfcLocalPlacement^>(fe->ObjectPlacement))
 										{
-											XbimGeometryModel^ im = CreateFrom(fe,repContext, maps, true, lod, occOut);
-											if(dynamic_cast<XbimGeometryModelCollection^>(im))
-												im = ((XbimGeometryModelCollection^)im)->Solidify();
-											if(!dynamic_cast<XbimSolid^>(im))
-												throw gcnew XbimGeometryException("FeatureElementAdditions must be of type solid");
-
-											im = im->CopyTo(fe->ObjectPlacement);
-											projectionSolids->Add(im);
+											Logger->ErrorFormat("unhandled opening #{0}, Only IfcObjectPlacements of type IfcLocalPlacement are supported", fe->EntityLabel);
+											continue;
 										}
+										IfcLocalPlacement^ projectionPlacement = (IfcLocalPlacement^)(fe->ObjectPlacement);
+										im = im->CopyTo(projectionPlacement->RelativePlacement);
+										//the rules say that 
+										//The PlacementRelTo relationship of IfcLocalPlacement shall point (if given) 
+										//to the local placement of the master IfcElement (its relevant subtypes), 
+										//which is associated to the IfcFeatureElement by the appropriate relationship object
+										if(product->ObjectPlacement != projectionPlacement->PlacementRelTo)
+										{
+											if(dynamic_cast<IfcLocalPlacement^>(product->ObjectPlacement))
+											{	
+												//we need to move the opening into the coordinate space of the product						
+												TopLoc_Location prodLoc = XbimGeomPrim::ToLocation(projectionPlacement->RelativePlacement);
+												prodLoc= prodLoc.Inverted();
+												im->Move(prodLoc);
+											}
+										}
+										projectionSolids->Add(im);
 									}
 								}
 								for each(IfcRelVoidsElement^ rel in element->HasOpenings)
@@ -94,28 +105,32 @@ namespace Xbim
 									IfcFeatureElementSubtraction^ fe = rel->RelatedOpeningElement;
 									if(fe->Representation!=nullptr)
 									{
+										if(!dynamic_cast<IfcLocalPlacement^>(fe->ObjectPlacement))
+										{
+											Logger->ErrorFormat("unhandled opening #{0}, Only IfcObjectPlacements of type IfcLocalPlacement are supported", fe->EntityLabel);
+											continue;
+										}
+										IfcLocalPlacement^ openingPlacement = (IfcLocalPlacement^)(fe->ObjectPlacement);
 										XbimGeometryModel^ im = CreateFrom(fe, repContext, maps, true,lod, occOut);
-										//BRepTools::Write(*(im->Handle),"f1" );
-										if(im!=nullptr && !im->Handle->IsNull())
-										{	
-											im = im->CopyTo(fe->ObjectPlacement);
-											//BRepTools::Write(*(im->Handle),"f2" );
-											//the rules say that 
-											//The PlacementRelTo relationship of IfcLocalPlacement shall point (if given) 
-											//to the local placement of the master IfcElement (its relevant subtypes), 
-											//which is associated to the IfcFeatureElement by the appropriate relationship object
-											if(product->ObjectPlacement != ((IfcLocalPlacement^)(fe->ObjectPlacement))->PlacementRelTo)
+										
+										if(im!=nullptr && im->IsValid) //we might have built nothing
+										{											
+											im = im->CopyTo(openingPlacement->RelativePlacement);
+											//
+											////the rules say that 
+											////The PlacementRelTo relationship of IfcLocalPlacement shall point (if given) 
+											////to the local placement of the master IfcElement (its relevant subtypes), 
+											////which is associated to the IfcFeatureElement by the appropriate relationship object
+											if(product->ObjectPlacement != openingPlacement->PlacementRelTo)
 											{
 												if(dynamic_cast<IfcLocalPlacement^>(product->ObjectPlacement))
 												{	
-													//we need to move the opening into the coordinate space of the product
-													IfcLocalPlacement^ lp = (IfcLocalPlacement^)product->ObjectPlacement;							
-													TopLoc_Location prodLoc = XbimGeomPrim::ToLocation(lp->RelativePlacement);
+													//we need to move the opening into the coordinate space of the product							
+													TopLoc_Location prodLoc = XbimGeomPrim::ToLocation(openingPlacement->RelativePlacement);
 													prodLoc= prodLoc.Inverted();
 													im->Move(prodLoc);
 												}
 											}
-											//BRepTools::Write(*(im->Handle),"f3" );
 											openingSolids->Add(im);
 										}
 									}
@@ -124,36 +139,17 @@ namespace Xbim
 								if(Enumerable::Any(openingSolids) || Enumerable::Any(projectionSolids))
 								{
 
-									XbimGeometryModel^ baseShape = CreateFrom(shape, maps, true,lod, occOut);	
-									//BRepTools::Write(*(baseShape->Handle),"f4" );
-
+									XbimGeometryModel^ baseShape = CreateFrom(shape, maps, false,lod, occOut);	
+									
+									
+									
 									XbimGeometryModel^ fshape = gcnew XbimFeaturedShape(product, baseShape, openingSolids, projectionSolids);
-#ifdef _DEBUG
-
-									if(occOut)
-									{
-										char fname[512];
-										sprintf(fname, "#%d",shape->EntityLabel);
-										BRepTools::Write(*(fshape->Handle),fname );
-									}
-#endif
-
 									return fshape;
 								}
 								else //we have no openings or projections
 								{
 
 									XbimGeometryModel^ fshape = CreateFrom(shape, maps, forceSolid,lod, occOut);
-#ifdef _DEBUG
-									if(occOut)
-									{
-
-										char fname[512];
-										sprintf(fname, "#%d",shape->EntityLabel);
-										BRepTools::Write(*(fshape->Handle),fname );
-
-									}
-#endif
 									return fshape;
 								}
 							}
@@ -215,47 +211,15 @@ namespace Xbim
 			{
 				IfcRepresentationItem^ repItem = rep->Items->First;
 				XbimGeometryModel^ geom = CreateFrom(repItem,maps, forceSolid,lod,occOut);
-				if(geom!=nullptr)
-				{
-					if(geom->RepresentationLabel==0) geom->RepresentationLabel = repItem->EntityLabel; //only set if we haven't further down
-					IfcSurfaceStyle^ surfaceStyle = IfcRepresentationItemExtensions::SurfaceStyle(repItem);
-					if(surfaceStyle!=nullptr) geom->SurfaceStyleLabel=Math::Abs(surfaceStyle->EntityLabel);
-				}
 				return geom;
 			}
 			else // we have a compound shape
 			{
-				XbimGeometryModelCollection^ gms = gcnew XbimGeometryModelCollection(false);
-				gms->RepresentationLabel = rep->EntityLabel;
-				bool first = true;
+				XbimGeometryModelCollection^ gms = gcnew XbimGeometryModelCollection(rep);
 				for each (IfcRepresentationItem^ repItem in rep->Items)
 				{
-
-					XbimGeometryModel^ geom = CreateFrom(repItem,maps,false,lod,occOut); // we will make a solid when we have all the bits if necessary
-					if(geom!=nullptr)
-					{
-						geom->RepresentationLabel = repItem->EntityLabel;
-						IfcSurfaceStyle^ surfaceStyle = IfcRepresentationItemExtensions::SurfaceStyle(repItem);
-						if(surfaceStyle!=nullptr) geom->SurfaceStyleLabel=Math::Abs(surfaceStyle->EntityLabel);else  geom->SurfaceStyleLabel = 0;
-						if(first)
-						{
-							first = false;
-							gms->SurfaceStyleLabel=geom->SurfaceStyleLabel; //set collection same as first one for bounding boxes
-						}
-						if(!(dynamic_cast<XbimSolid^>(geom) && (*(geom->Handle)).IsNull())) 
-						{
-							gms->Add(geom); //don't add solids that are empty
-#ifdef _DEBUG
-							if(occOut)
-							{
-								char fname[512];
-								sprintf(fname, "#%d",repItem->EntityLabel);
-								BRepTools::Write(*(geom->Handle),fname );
-							}
-#endif
-						}
-					}
-
+					XbimGeometryModel^  geom= CreateFrom(repItem,maps,false,lod,occOut); // we will make a solid when we have all the bits if necessary
+					if(geom!=nullptr) gms->Add(geom); //don't add solids that are empty
 				}
 				return gms;
 			}
@@ -273,53 +237,37 @@ namespace Xbim
 
 		XbimGeometryModel^ XbimGeometryEngine::CreateFrom(IfcRepresentationItem^ repItem, ConcurrentDictionary<int, Object^>^ maps, bool forceSolid,XbimLOD lod, bool occOut)
 		{
+			//look up if we have already created it
 			
-			if(!forceSolid && dynamic_cast<IfcFacetedBrep^>(repItem))
-			{
-				XbimGeometryModel^ geom = gcnew XbimFacetedShell(((IfcFacetedBrep^)repItem)->Outer);
-				geom->RepresentationLabel = repItem->EntityLabel;
-				IfcSurfaceStyle^ surfaceStyle = IfcRepresentationItemExtensions::SurfaceStyle(repItem);
-				if(surfaceStyle!=nullptr) geom->SurfaceStyleLabel=Math::Abs(surfaceStyle->EntityLabel);
-				return geom;
-			}
-			else if(dynamic_cast<IfcSolidModel^>(repItem))
-			{
-				//look up if we have already created it
-				//XbimGeometryModel^ solidModel;
-				//if(!_solids->TryGetValue(Math::Abs(repItem->EntityLabel),solidModel))
-				//{
-				//	solidModel = gcnew XbimSolid((IfcSolidModel^)repItem);
-				//	_solids->TryAdd(Math::Abs(repItem->EntityLabel),solidModel);
-				//}
-				//return solidModel;
-				return gcnew XbimSolid((IfcSolidModel^)repItem);
-			}
-			else if(dynamic_cast<IfcHalfSpaceSolid^>(repItem))
-				return gcnew XbimSolid((IfcHalfSpaceSolid^)repItem);
+			Object^ lookup;
+			if(maps->TryGetValue(Math::Abs(repItem->EntityLabel),lookup))
+				return (XbimGeometryModel^)lookup;
+			XbimGeometryModel^ geomModel;
+		    if(dynamic_cast<IfcHalfSpaceSolid^>(repItem))
+				geomModel =  gcnew XbimSolid((IfcHalfSpaceSolid^)repItem);
 			else if(dynamic_cast<IfcCsgPrimitive3D^>(repItem))
-				return gcnew XbimSolid((IfcCsgPrimitive3D^)repItem);
+				geomModel =  gcnew XbimSolid((IfcCsgPrimitive3D^)repItem);
 			else if(dynamic_cast<IfcFacetedBrep^>(repItem)) 
-				return gcnew XbimSolid((IfcFacetedBrep^)repItem);
+				geomModel =  gcnew XbimFacetedShell((IfcFacetedBrep^)repItem);
 			else if(dynamic_cast<IfcShellBasedSurfaceModel^>(repItem)) 
-				return Build((IfcShellBasedSurfaceModel^)repItem, forceSolid);
+				geomModel =  gcnew XbimFacetedShell((IfcShellBasedSurfaceModel^)repItem);
 			else if(dynamic_cast<IfcFaceBasedSurfaceModel^>(repItem)) 
-				return Build((IfcFaceBasedSurfaceModel^)repItem, forceSolid);
+				geomModel =  gcnew XbimFacetedShell((IfcFaceBasedSurfaceModel^)repItem);
+			else if(dynamic_cast<IfcSolidModel^>(repItem))	
+				geomModel = gcnew XbimSolid((IfcSolidModel^)repItem); 
 			else if(dynamic_cast<IfcBooleanResult^>(repItem)) 
-				return gcnew XbimSolid((IfcBooleanResult^)repItem);
+				geomModel =  Build((IfcBooleanResult^)repItem,maps);
 			else if(dynamic_cast<IfcMappedItem^>(repItem))
 			{
 				IfcMappedItem^ map = (IfcMappedItem^) repItem;
 				IfcRepresentationMap^ repMap = map->MappingSource;
 				XbimGeometryModel^ mg;
-				Object ^ lookup;
+				
 				if(!maps->TryGetValue(Math::Abs(repMap->MappedRepresentation->EntityLabel), lookup)) //look it up
 				{
 					mg =  CreateFrom(repMap->MappedRepresentation,maps, forceSolid,lod, occOut); //make the first one
 					if(mg!=nullptr)
 					{
-						mg->RepresentationLabel=repMap->MappedRepresentation->EntityLabel;
-						IfcSurfaceStyle^ surfaceStyle = IfcRepresentationItemExtensions::SurfaceStyle(repItem);
-						if(surfaceStyle!=nullptr) mg->SurfaceStyleLabel=Math::Abs(surfaceStyle->EntityLabel);
 						maps->TryAdd(Math::Abs(repMap->MappedRepresentation->EntityLabel), mg);
 					}
 				}
@@ -328,156 +276,45 @@ namespace Xbim
 
 				//need to transform all the geometries as below
 				if(mg!=nullptr)
-					return gcnew XbimMap(mg,repMap->MappingOrigin,map->MappingTarget, maps); 
+					geomModel =  gcnew XbimMap(mg,repMap->MappingOrigin,map->MappingTarget, maps); 
 				else
-					return nullptr;
+					geomModel =  nullptr;
 
 			} //the below items should build surfaces or topologies and need to be implemented
 			else if(dynamic_cast<IfcCurveBoundedPlane^>(repItem))
 			{
-				return nullptr; //surface is not implmented yet
+				geomModel =  nullptr; //surface is not implmented yet
 				//return gcnew XbimSolid((IfcVertexPoint^)repItem);
 			}
 			else if(dynamic_cast<IfcVertexPoint^>(repItem))
 			{
-				return nullptr; //topology is not implmented yet
+				geomModel =  nullptr; //topology is not implmented yet
 				//return gcnew XbimSolid((IfcVertexPoint^)repItem);
 			}
 			else if(dynamic_cast<IfcEdge^>(repItem))
 			{
-				return nullptr; //topology is not implmented yet
+				geomModel =  nullptr; //topology is not implmented yet
 				//return gcnew XbimSolid((IfcEdge^)repItem);
 			}
 			else if(dynamic_cast<IfcGeometricSet^>(repItem))
 			{
-				return nullptr; //this s not a solid object
+				geomModel =  nullptr; //this s not a solid object
 				//IfcGeometricSet^ gset = (IfcGeometricSet^) repItem;
 				//Logger->Warn(String::Format("Support for IfcGeometricSet #{0} has not been implemented", Math::Abs(gset->EntityLabel)));
 			}
 			else
 			{
+				geomModel =  nullptr;
 				Type ^ type = repItem->GetType();
 				Logger->Warn(String::Format("XbimGeometryModel. Could not Build Geometry #{0}, type {1} is not implemented",Math::Abs(repItem->EntityLabel), type->Name));
 			}
-			return nullptr;
+			
+			if(geomModel !=nullptr && !geomModel->IsMap) //no point really in mapping maps
+				maps->TryAdd(Math::Abs(repItem->EntityLabel),geomModel);
+			return geomModel;
 		}
 
-		XbimGeometryModel^ XbimGeometryEngine::Build(IfcFaceBasedSurfaceModel^ repItem, bool forceSolid)
-		{
-
-			if(repItem->FbsmFaces->Count == 0) return nullptr;
-			else if(repItem->FbsmFaces->Count == 1 && dynamic_cast<IfcClosedShell^>(repItem->FbsmFaces->First))
-			{
-				//A Closed shell must be defined by IfcPolyLoop, therefore we can assume it comples as XbimFacetedShell
-				if(forceSolid)
-					return gcnew XbimSolid((IfcClosedShell^)(repItem->FbsmFaces->First));
-				else
-				{
-					XbimGeometryModel^ geom = gcnew XbimFacetedShell((IfcClosedShell^)(repItem->FbsmFaces->First));
-					geom->RepresentationLabel = repItem->EntityLabel;
-					IfcSurfaceStyle^ surfaceStyle = IfcRepresentationItemExtensions::SurfaceStyle(repItem);
-					if(surfaceStyle!=nullptr) geom->SurfaceStyleLabel=Math::Abs(surfaceStyle->EntityLabel);
-					return geom;
-				}
-
-			}
-
-			else if(repItem->FbsmFaces->Count == 1) //its an open shell
-			{
-				if(forceSolid)
-				{
-					XbimSolid^ solid = gcnew XbimSolid(repItem->FbsmFaces->First);
-					return solid;
-				}
-				else
-				{
-					XbimGeometryModel^ geom = gcnew XbimFacetedShell(repItem->FbsmFaces->First);
-					geom->RepresentationLabel = repItem->EntityLabel;
-					IfcSurfaceStyle^ surfaceStyle = IfcRepresentationItemExtensions::SurfaceStyle(repItem);
-					if(surfaceStyle!=nullptr) geom->SurfaceStyleLabel=Math::Abs(surfaceStyle->EntityLabel);
-					return geom;
-				}
-
-			}
-
-			else
-			{
-				XbimGeometryModelCollection^ gms = gcnew XbimGeometryModelCollection(false);	
-				if(forceSolid)
-				{
-					for each(IfcConnectedFaceSet^ fbmsFaces in repItem->FbsmFaces)
-					{
-						if(dynamic_cast<IfcClosedShell^>(fbmsFaces)) 
-							gms->Add(gcnew XbimSolid((IfcClosedShell^)fbmsFaces));
-						else 
-						{
-							XbimShell^ shell = gcnew XbimShell(repItem->FbsmFaces->First);
-							return  shell;
-						}
-
-					}
-				}
-				else
-				{
-					for each(IfcConnectedFaceSet^ fbmsFaces in repItem->FbsmFaces)
-					{
-
-						if(dynamic_cast<IfcClosedShell^>(fbmsFaces)) 
-							gms->Add(gcnew XbimFacetedShell((IfcClosedShell^)fbmsFaces));
-						else 
-							gms->Add(gcnew XbimFacetedShell(fbmsFaces)); //just add the face set
-					}
-				}
-				if( Enumerable::FirstOrDefault(gms) == nullptr)
-					return nullptr;
-				else
-				{
-					return gms;
-				}
-			}
-		}
-
-
-
-		XbimGeometryModel^ XbimGeometryEngine::Build(IfcShellBasedSurfaceModel^ repItem, bool forceSolid)
-		{
-			if(repItem->SbsmBoundary->Count == 0) return nullptr;
-			else if(repItem->SbsmBoundary->Count == 1 && dynamic_cast<IfcClosedShell^>(repItem->SbsmBoundary->First) ) 
-			{
-				//A Closed shell must be defined by IfcPolyLoop, therefore we can assume it comples as XbimFacetedShell
-
-				XbimFacetedShell^ solid =  gcnew XbimFacetedShell((IfcClosedShell^)(repItem->SbsmBoundary->First));
-				return solid;
-			}
-			else if(repItem->SbsmBoundary->Count == 1 )
-			{
-				XbimFacetedShell^ shell =  gcnew XbimFacetedShell(repItem->SbsmBoundary->First);
-				return shell;
-			}
-			else
-			{
-				XbimGeometryModelCollection^ gms = gcnew XbimGeometryModelCollection(false);		
-				for each(IfcShell^ sbms in repItem->SbsmBoundary)
-				{
-					if(dynamic_cast<IfcClosedShell^>(sbms)) 
-						gms->Add(gcnew XbimFacetedShell((IfcClosedShell^)sbms));
-					else if(dynamic_cast<IfcOpenShell^>(sbms))
-						gms->Add(gcnew XbimFacetedShell((IfcOpenShell^)sbms));
-					else
-					{
-						Type ^ type = sbms->GetType();
-						throw(gcnew NotImplementedException(String::Format("XbimGeometryModel:Build(IfcShellBasedSurfaceModel). Could not BuildShape of type {0}. It is not implemented",type->Name)));
-					}
-				}
-				if( Enumerable::FirstOrDefault(gms) == nullptr)
-					return nullptr;
-				else
-				{
-					return gms;
-				}
-			}
-
-		}
+		
 
 		bool XbimGeometryEngine::CutOpenings(IfcProduct^ product, XbimLOD lod)
 		{
@@ -499,8 +336,71 @@ namespace Xbim
 				return false;
 		}
 
+		XbimGeometryModel^ XbimGeometryEngine::Build(IfcBooleanResult^ repItem, ConcurrentDictionary<int, Object^>^ maps)
+		{
+			double precision = repItem->ModelOf->ModelFactors->Precision;
+			double maxPrecision = repItem->ModelOf->ModelFactors->PrecisionMax;
+			IfcBooleanOperand^ fOp= repItem->FirstOperand;
+			IfcBooleanOperand^ sOp= repItem->SecondOperand;
+			XbimGeometryModel^ shape1;
+			XbimGeometryModel^ shape2;
 
+			if(dynamic_cast<IfcBooleanResult^>(fOp))
+				shape1 = Build((IfcBooleanResult^)fOp, maps);
+			else if(dynamic_cast<IfcSolidModel^>(fOp))
+				shape1 = CreateFrom((IfcSolidModel^)fOp,maps,false,XbimLOD::LOD_Unspecified,false);
+			else if(dynamic_cast<IfcHalfSpaceSolid^>(fOp))
+				shape1 = CreateFrom((IfcHalfSpaceSolid^)fOp,maps,false,XbimLOD::LOD_Unspecified,false);	
+			else if(dynamic_cast<IfcCsgPrimitive3D^>(fOp))
+				shape1 = CreateFrom((IfcCsgPrimitive3D^)fOp,maps,false,XbimLOD::LOD_Unspecified,false);
+			else
+				throw(gcnew XbimException("XbimGeometryModel. Build(BooleanResult) FirstOperand must be a valid IfcBooleanOperand"));
+			try
+			{
+
+				if(dynamic_cast<IfcBooleanResult^>(sOp))
+					shape2 = Build((IfcBooleanResult^)sOp,maps);
+				else if(dynamic_cast<IfcSolidModel^>(sOp))
+					shape2 = CreateFrom((IfcSolidModel^)sOp,maps,false,XbimLOD::LOD_Unspecified,false);
+				else if(dynamic_cast<IfcHalfSpaceSolid^>(sOp))
+					shape2 = CreateFrom((IfcHalfSpaceSolid^)sOp,maps,false,XbimLOD::LOD_Unspecified,false);
+				else if(dynamic_cast<IfcCsgPrimitive3D^>(sOp))
+					shape2 = CreateFrom((IfcCsgPrimitive3D^)sOp,maps,false,XbimLOD::LOD_Unspecified,false);
+				else
+					throw(gcnew XbimException("XbimGeometryModel. Build(BooleanResult) FirstOperand must be a valid IfcBooleanOperand"));
+
+				if((*(shape2->Handle)).IsNull())
+					return shape1; //nothing to subtract
+
+				switch(repItem->Operator)
+				{
+				case IfcBooleanOperator::Union:	
+					return shape1->Union(shape2,precision,maxPrecision);	
+				case IfcBooleanOperator::Intersection:	
+					return shape1->Intersection(shape2,precision,maxPrecision);
+				case IfcBooleanOperator::Difference:					
+					return shape1->Cut(shape2,precision,maxPrecision); //need to be a bit courser for this
+				default:
+					throw(gcnew InvalidOperationException("XbimGeometryModel. Build(BooleanClippingResult) Unsupported Operation"));
+				}
+			}
+			catch(XbimGeometryException^ xbimE)
+			{
+				Logger->ErrorFormat("Error performing boolean operation for entity #{0}={1}\n{2}\nA simplified version has been used",repItem->EntityLabel,repItem->GetType()->Name,xbimE->Message);
+				return shape1;
+			}
+		}
+
+
+		XbimGeometryModel^ XbimGeometryEngine::Build(IfcCsgSolid^ csgSolid, ConcurrentDictionary<int, Object^>^ maps)
+			{
+				if(dynamic_cast<IfcBooleanResult^>(csgSolid->TreeRootExpression)) 
+					return Build((IfcBooleanResult^)csgSolid->TreeRootExpression, maps);
+				else if(dynamic_cast<IfcCsgPrimitive3D^>(csgSolid->TreeRootExpression))
+					return gcnew XbimSolid((IfcCsgPrimitive3D^)csgSolid->TreeRootExpression);
+				else
+					throw gcnew NotImplementedException("Build::IfcCsgSolid is not implemented");
+		}
 
 	}
-
 }

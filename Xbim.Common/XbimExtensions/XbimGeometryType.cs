@@ -8,6 +8,9 @@ namespace Xbim.XbimExtensions
     public enum XbimGeometryType : byte
     {
         Undefined = 0x0,
+        /// <summary>
+        /// This type can be transformed to XbimRect3D via XbimRect3D.FromArray(geomdata.ShapeData)
+        /// </summary>
         BoundingBox = 0x01,
         MultipleBoundingBox = 0x02,
         TriangulatedMesh = 0x03,

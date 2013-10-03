@@ -13,23 +13,20 @@ namespace Xbim.ModelGeometry.Scene
         IEnumerable<XbimVector3D> Normals { get; set; }
         IList<Int32> TriangleIndices { get; set; }
         XbimMeshFragmentCollection Meshes { get; set; }
-      
-
+        
         bool Add(XbimGeometryData geometryMeshData);
-
-
         void MoveTo(IXbimMeshGeometry3D toMesh);
-
         void BeginUpdate();
-
         void EndUpdate();
+        void ReportGeometryTo(StringBuilder sb);
         /// <summary>
         /// Returns the part of the mesh described in the fragment
         /// </summary>
         /// <param name="frag"></param>
         /// <returns></returns>
         IXbimMeshGeometry3D GetMeshGeometry3D(XbimMeshFragment frag);
-
         XbimRect3D GetBounds();
+
+        
     }
 }

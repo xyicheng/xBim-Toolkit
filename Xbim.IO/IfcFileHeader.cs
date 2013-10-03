@@ -27,6 +27,19 @@ namespace Xbim.IO
     [Serializable]
     public class FileDescription : IIfcFileDescription
     {
+        private void MakeValid()
+        {
+            if (Description.Count == 0)
+            {
+                Description.Add("ViewDefinition [CoordinationView]");
+                if (ImplementationLevel == "")
+                {
+                    ImplementationLevel = "2;1";
+                }
+            }
+            
+        }
+
         public FileDescription()
         {
         }
@@ -38,7 +51,7 @@ namespace Xbim.IO
         }
 
         public List<string> Description = new List<string>(2);
-        public string ImplementationLevel;
+        private string ImplementationLevel;
         public int EntityCount;
 
         #region ISupportIfcParser Members
@@ -71,6 +84,7 @@ namespace Xbim.IO
 
         internal void Write(BinaryWriter binaryWriter)
         {
+            this.MakeValid();
             binaryWriter.Write(Description.Count);
             foreach (string desc in Description)
                 binaryWriter.Write(desc);
@@ -215,17 +229,17 @@ namespace Xbim.IO
 
         internal void Write(BinaryWriter binaryWriter)
         {
-            binaryWriter.Write(Name??"");
-            binaryWriter.Write(TimeStamp??"");
+            binaryWriter.Write(Name ?? "");
+            binaryWriter.Write(TimeStamp ?? "");
             binaryWriter.Write(AuthorName.Count);
             foreach (string item in AuthorName)
                 binaryWriter.Write(item);
             binaryWriter.Write(Organization.Count);
             foreach (string item in Organization)
                 binaryWriter.Write(item);
-            binaryWriter.Write(PreprocessorVersion);
-            binaryWriter.Write(OriginatingSystem);
-            binaryWriter.Write(AuthorizationName);
+            binaryWriter.Write(PreprocessorVersion ?? "");
+            binaryWriter.Write(OriginatingSystem ?? "");
+            binaryWriter.Write(AuthorizationName ?? "");
             binaryWriter.Write(AuthorizationMailingAddress.Count);
             foreach (string item in AuthorizationMailingAddress)
                 binaryWriter.Write(item);
@@ -443,20 +457,47 @@ namespace Xbim.IO
     }
 
     [Serializable]
-    public class IfcFileHeader:IIfcFileHeader
+    public class IfcFileHeader : IIfcFileHeader
     {
-        public IIfcFileDescription FileDescription = new FileDescription("2;1");
-        public IIfcFileName FileName = new FileName(DateTime.Now)
+        public enum HeaderCreationMode
         {
-            PreprocessorVersion =
-                string.Format("Xbim.Ifc File Processor version {0}",
-                              Assembly.GetExecutingAssembly().GetName().Version),
-            OriginatingSystem =
-                string.Format("Xbim version {0}",
-                              Assembly.GetExecutingAssembly().GetName().Version),
-        };
-        public IIfcFileSchema FileSchema = new FileSchema("IFC2X3");
+            LeaveEmpty,
+            InitWithXbimDefaults
+        }
 
+        public IfcFileHeader(HeaderCreationMode Mode)
+        {
+            if (Mode == HeaderCreationMode.InitWithXbimDefaults)
+            {
+                FileDescription = new FileDescription("2;1");
+                FileName = new FileName(DateTime.Now)
+                    {
+                        PreprocessorVersion =
+                            string.Format("Xbim.Ifc File Processor version {0}",
+                                          Assembly.GetExecutingAssembly().GetName().Version),
+                        OriginatingSystem =
+                            string.Format("Xbim version {0}",
+                                          Assembly.GetExecutingAssembly().GetName().Version),
+                    };
+                FileSchema = new FileSchema("IFC2X3");
+            }
+            else
+            {
+                // Please note do not put any value initialisation in here
+                // Any value initialised here is added to ALL models read from IFC
+                // 
+                // Any information required before writing a file for schema constraint needs to be checked upon writing
+                // e.g. cfr. FileDescription.MakeValid();
+                //
+                FileDescription = new FileDescription();
+                FileName = new FileName();
+                FileSchema = new FileSchema();
+            }
+        }
+
+        public IIfcFileDescription FileDescription;
+        public IIfcFileName FileName;
+        public IIfcFileSchema FileSchema;
 
         public void Write(BinaryWriter binaryWriter)
         {
@@ -482,7 +523,6 @@ namespace Xbim.IO
             {
                 FileDescription = value;
             }
-            
         }
 
         IIfcFileName IIfcFileHeader.FileName
@@ -495,7 +535,7 @@ namespace Xbim.IO
             {
                 FileName = value;
             }
-           
+
         }
 
         IIfcFileSchema IIfcFileHeader.FileSchema
@@ -508,7 +548,7 @@ namespace Xbim.IO
             {
                 FileSchema = value;
             }
-           
+
         }
     }
 }

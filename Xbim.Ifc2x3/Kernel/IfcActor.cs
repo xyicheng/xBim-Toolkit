@@ -62,15 +62,30 @@ namespace Xbim.Ifc2x3.Kernel
             }
             set
             {
-                if (value == null || value is IfcPerson || value is IfcOrganization || value is IfcPersonAndOrganization)
-                    this.SetModelValue(this, ref _theActor, value, v => TheActor = v, "TheActor");
-                else
-                    throw new ArgumentException(
-                        "Illegal Actor type, must be Organization, Person,  PersonOrganization or null", "TheActor");
+                this.SetModelValue(this, ref _theActor, value, v => TheActor = v, "TheActor");
             }
         }
 
         #endregion
+
+        public override void IfcParse(int propIndex, IPropertyValue value)
+        {
+            switch (propIndex)
+            {
+                case 0:
+                case 1:
+                case 2:
+                case 3:
+                case 4:
+                    base.IfcParse(propIndex, value); //fall through and call base
+                    break;
+                case 5:
+                    _theActor = (IfcActorSelect)(value.EntityVal);
+                    break;
+                default:
+                    this.HandleUnexpectedAttribute(propIndex, value); break;
+            }
+        }
 
         #region Ifc Inverse Relationships
 

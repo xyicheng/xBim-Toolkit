@@ -15,6 +15,10 @@ using Xbim.IO;
 
 namespace Xbim.IO.DynamicGrouping
 {
+    /// <summary>
+    /// This class provides methods to perform the grouping of elements in the model.
+    /// The resulting groups are populated in the model using IfcGroup and IFCRELASSIGNSTOGROUP;
+    /// </summary>
     public class GroupingByXml
     {
         private XmlDocument _xmlDoc;
@@ -27,6 +31,11 @@ namespace Xbim.IO.DynamicGrouping
             _model = model;
         }
 
+        /// <summary>
+        /// Performs the grouping of elements of the model according to the rules defined in the XML pointed by <paramref name="XMLfileName"/>
+        /// </summary>
+        /// <param name="XMLfileName">Name of the xml file defining the grouping rules.</param>
+        /// <returns></returns>
         public bool GroupElements(string XMLfileName, IfcGroup rootGroup = null)
         {
             if (string.IsNullOrEmpty(XMLfileName)) throw new ArgumentNullException("File name cannot be null or empty.");

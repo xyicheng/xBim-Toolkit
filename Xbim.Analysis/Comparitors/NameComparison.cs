@@ -11,12 +11,12 @@ namespace Xbim.Analysis.Comparitors
         private Dictionary<Int32, Int32> map = new Dictionary<Int32, Int32>();
         public Dictionary<Int32, Int32> GetMap() { return map; }
 
-        public Dictionary<IfcProduct, ChangeType> Compare(IEnumerable<IfcProduct> Baseline, IEnumerable<IfcProduct> Delta)
+        public Dictionary<IfcRoot, ChangeType> Compare(IEnumerable<IfcRoot> Baseline, IEnumerable<IfcRoot> Delta)
         {
             results.Clear();
 
-            var baseline = new List<IfcProduct>(Baseline);
-            var delta = new List<IfcProduct>(Delta);
+            var baseline = new List<IfcRoot>(Baseline);
+            var delta = new List<IfcRoot>(Delta);
 
             Match(baseline, delta);
             Match(delta, baseline, false);
@@ -32,10 +32,10 @@ namespace Xbim.Analysis.Comparitors
 
             return results;
         }
-        private Dictionary<IfcProduct, ChangeType> results = new Dictionary<IfcProduct, ChangeType>();
-        private void Match(List<IfcProduct> start, List<IfcProduct> delta, bool ReturnMappingFromBaseline=true)
+        private Dictionary<IfcRoot, ChangeType> results = new Dictionary<IfcRoot, ChangeType>();
+        private void Match(List<IfcRoot> start, List<IfcRoot> delta, bool ReturnMappingFromBaseline=true)
         {
-            var collection = new List<IfcProduct>(start);
+            var collection = new List<IfcRoot>(start);
             foreach (var i in collection)
             {
                 var b = delta.Where(x => x.Name == i.Name && x.GetType() == i .GetType());

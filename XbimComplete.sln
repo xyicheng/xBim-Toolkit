@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2010
+# Visual Studio 2012
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{B5EDEE8A-69B9-47E5-8455-E1A9A7ED8969}"
 	ProjectSection(SolutionItems) = preProject
 		Xbim.ModelGeometry.OCC\Version.rc = Xbim.ModelGeometry.OCC\Version.rc
@@ -26,16 +26,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Licences", "Licences", "{E9E301F2-FE7D-4410-B88D-F83D684A8E62}"
 	ProjectSection(SolutionItems) = preProject
-		Licences\CDDL Licence.txt = Licences\CDDL Licence.txt
-		Licences\MIT Licence.txt = Licences\MIT Licence.txt
-		Licences\MS Permissive Licence.txt = Licences\MS Permissive Licence.txt
-		Licences\NewBSD Licence.txt = Licences\NewBSD Licence.txt
-		Licences\OPEN CASCADE Public Licence.txt = Licences\OPEN CASCADE Public Licence.txt
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3rd Party", "3rd Party", "{10A2F674-DB37-41FF-AB71-9D54C8F0A5B6}"
-	ProjectSection(SolutionItems) = preProject
-		Licences\Apache2_0.txt = Licences\Apache2_0.txt
 		Licences\CDDL Licence.txt = Licences\CDDL Licence.txt
 		Licences\MIT Licence.txt = Licences\MIT Licence.txt
 		Licences\MS Permissive Licence.txt = Licences\MS Permissive Licence.txt
@@ -90,6 +80,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VersionComparer", "VersionC
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.Analysis", "Xbim.Analysis\Xbim.Analysis.csproj", "{25056C5D-D281-436E-B281-95F339861C5D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.Querying", "Xbim.Querying\Xbim.Querying.csproj", "{DA65C44A-A1D7-4C15-8636-75B6B9344988}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.Querying.Tests", "Xbim.Querying.Tests\Xbim.Querying.Tests.csproj", "{26E9D71E-C586-4130-B4DE-4B237A4F22FF}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.Script", "Xbim.Script\Xbim.Script.csproj", "{BAE9A827-0620-4F68-A384-336A491EDD91}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XbimInterpret", "XbimInterpret\XbimInterpret.csproj", "{97255EE6-4C71-43FC-8EB8-69604C675C0F}"
@@ -98,7 +92,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xbim.Spatial", "Xbim.Spatia
 EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 24
+		SccNumberOfProjects = 26
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://tfs.codeplex.com/tfs/tfs13
 		SccLocalPath0 = .
@@ -180,6 +174,13 @@ Global
 		SccProjectUniqueName23 = Xbim.Spatial\\Xbim.Spatial.csproj
 		SccProjectName23 = Xbim.Spatial
 		SccLocalPath23 = Xbim.Spatial
+		SccProjectUniqueName24 = Xbim.Querying\\Xbim.Querying.csproj
+		SccProjectName24 = Xbim.Querying
+		SccLocalPath24 = Xbim.Querying
+		SccProjectUniqueName25 = Xbim.Querying.Tests\\Xbim.Querying.Tests.csproj
+		SccProjectTopLevelParentUniqueName25 = XbimComplete.sln
+		SccProjectName25 = Xbim.Querying.Tests
+		SccLocalPath25 = Xbim.Querying.Tests
 	EndGlobalSection
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = XbimComplete.vsmdi
@@ -281,14 +282,14 @@ Global
 		{89F98E53-DE4E-4427-8244-D5934AD08849}.Release|Any CPU.Build.0 = Release|Any CPU
 		{BB0E1C7A-C255-41CB-814D-894193AB6424}.Debug|Any CPU.ActiveCfg = Debug|x64
 		{BB0E1C7A-C255-41CB-814D-894193AB6424}.Debug|Any CPU.Build.0 = Debug|x64
-		{BB0E1C7A-C255-41CB-814D-894193AB6424}.NugetDistribution|Any CPU.ActiveCfg = NugetDistribution|x64
-		{BB0E1C7A-C255-41CB-814D-894193AB6424}.NugetDistribution|Any CPU.Build.0 = NugetDistribution|x64
+		{BB0E1C7A-C255-41CB-814D-894193AB6424}.NugetDistribution|Any CPU.ActiveCfg = Release|x64
+		{BB0E1C7A-C255-41CB-814D-894193AB6424}.NugetDistribution|Any CPU.Build.0 = Release|x64
 		{BB0E1C7A-C255-41CB-814D-894193AB6424}.Release|Any CPU.ActiveCfg = Release|x64
 		{BB0E1C7A-C255-41CB-814D-894193AB6424}.Release|Any CPU.Build.0 = Release|x64
 		{A0544330-3B8B-45F6-BE6B-E9A5AD661384}.Debug|Any CPU.ActiveCfg = Debug|Win32
 		{A0544330-3B8B-45F6-BE6B-E9A5AD661384}.Debug|Any CPU.Build.0 = Debug|Win32
-		{A0544330-3B8B-45F6-BE6B-E9A5AD661384}.NugetDistribution|Any CPU.ActiveCfg = NugetDistribution|Win32
-		{A0544330-3B8B-45F6-BE6B-E9A5AD661384}.NugetDistribution|Any CPU.Build.0 = NugetDistribution|Win32
+		{A0544330-3B8B-45F6-BE6B-E9A5AD661384}.NugetDistribution|Any CPU.ActiveCfg = Release|Win32
+		{A0544330-3B8B-45F6-BE6B-E9A5AD661384}.NugetDistribution|Any CPU.Build.0 = Release|Win32
 		{A0544330-3B8B-45F6-BE6B-E9A5AD661384}.Release|Any CPU.ActiveCfg = Release|Win32
 		{A0544330-3B8B-45F6-BE6B-E9A5AD661384}.Release|Any CPU.Build.0 = Release|Win32
 		{12738A47-548C-4E82-8E79-AEA36C24CA2D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -320,6 +321,18 @@ Global
 		{DE488ADE-EE39-4FAE-957D-AF7200BB9E3B}.NugetDistribution|Any CPU.Build.0 = Release|Any CPU
 		{DE488ADE-EE39-4FAE-957D-AF7200BB9E3B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DE488ADE-EE39-4FAE-957D-AF7200BB9E3B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DA65C44A-A1D7-4C15-8636-75B6B9344988}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DA65C44A-A1D7-4C15-8636-75B6B9344988}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DA65C44A-A1D7-4C15-8636-75B6B9344988}.NugetDistribution|Any CPU.ActiveCfg = Release|Any CPU
+		{DA65C44A-A1D7-4C15-8636-75B6B9344988}.NugetDistribution|Any CPU.Build.0 = Release|Any CPU
+		{DA65C44A-A1D7-4C15-8636-75B6B9344988}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DA65C44A-A1D7-4C15-8636-75B6B9344988}.Release|Any CPU.Build.0 = Release|Any CPU
+		{26E9D71E-C586-4130-B4DE-4B237A4F22FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{26E9D71E-C586-4130-B4DE-4B237A4F22FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{26E9D71E-C586-4130-B4DE-4B237A4F22FF}.NugetDistribution|Any CPU.ActiveCfg = Release|Any CPU
+		{26E9D71E-C586-4130-B4DE-4B237A4F22FF}.NugetDistribution|Any CPU.Build.0 = Release|Any CPU
+		{26E9D71E-C586-4130-B4DE-4B237A4F22FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{26E9D71E-C586-4130-B4DE-4B237A4F22FF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -334,6 +347,6 @@ Global
 		{97255EE6-4C71-43FC-8EB8-69604C675C0F} = {0DA6263B-5A69-401E-99D0-391644EF4709}
 		{8729CDD1-B493-48EC-A867-61ABAF3E93D2} = {7ECDCF15-95BB-4D2B-8C0D-8615D6E3BAB1}
 		{6EF22FB8-7048-4E6A-9B2F-AC2570A998A9} = {7ECDCF15-95BB-4D2B-8C0D-8615D6E3BAB1}
-		{10A2F674-DB37-41FF-AB71-9D54C8F0A5B6} = {E9E301F2-FE7D-4410-B88D-F83D684A8E62}
+		{26E9D71E-C586-4130-B4DE-4B237A4F22FF} = {7ECDCF15-95BB-4D2B-8C0D-8615D6E3BAB1}
 	EndGlobalSection
 EndGlobal

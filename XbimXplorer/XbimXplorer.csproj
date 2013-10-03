@@ -45,8 +45,8 @@
     <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
     <WebPage>publish.htm</WebPage>
     <OpenBrowserOnPublish>false</OpenBrowserOnPublish>
-    <ApplicationRevision>27</ApplicationRevision>
-    <ApplicationVersion>2.4.0.%2a</ApplicationVersion>
+    <ApplicationRevision>28</ApplicationRevision>
+    <ApplicationVersion>2.4.1.28</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <CreateDesktopShortcut>true</CreateDesktopShortcut>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -60,7 +60,7 @@
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DebugType>full</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
     <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
@@ -69,9 +69,10 @@
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <Optimize>true</Optimize>
-    <DebugType>none</DebugType>
+    <DebugType>pdbonly</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
+    <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <PropertyGroup>
     <ManifestCertificateThumbprint>CAFDCB09EC9A33A0B250FF4513695317790A827C</ManifestCertificateThumbprint>
@@ -86,6 +87,9 @@
     <SignManifests>true</SignManifests>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Gat.Controls.About">
+      <HintPath>..\packages\AboutBox.1.4.3.1\lib\net40\Gat.Controls.About.dll</HintPath>
+    </Reference>
     <Reference Include="PropertyTools, Version=0.0.0.0, Culture=neutral, PublicKeyToken=ea0c9f2b460934d0, processorArchitecture=MSIL">
       <HintPath>..\packages\PropertyTools.Wpf.2013.1.12.1\lib\NET40\PropertyTools.dll</HintPath>
     </Reference>
@@ -138,7 +142,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="FederatedModelDlg.xaml">
+    <Page Include="Dialogs\FederatedModelDlg.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -173,12 +177,13 @@
     <Compile Include="Dialogs\CreateFederationWindow.xaml.cs">
       <DependentUpon>CreateFederationWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="FederatedModelDlg.xaml.cs">
+    <Compile Include="Dialogs\FederatedModelDlg.xaml.cs">
       <DependentUpon>FederatedModelDlg.xaml</DependentUpon>
     </Compile>
     <Compile Include="ModelSeparation.xaml.cs">
       <DependentUpon>ModelSeparation.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Querying\GeomQuerying.cs" />
     <Compile Include="Querying\SquareBracketIndexer.cs" />
     <Compile Include="Querying\TextHighliter.cs" />
     <Compile Include="Querying\TreeQuery.cs" />
@@ -237,6 +242,7 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <None Include="XbimXplorer_TemporaryKey.pfx" />
+    <Resource Include="xBimQueryLogo.png" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Xbim.COBie\Xbim.COBie.csproj">
@@ -390,4 +396,5 @@
       <Output TaskParameter="Include" ItemName="_DeploymentManifestFiles" />
     </CreateItem>
   </Target>
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
 </Project>

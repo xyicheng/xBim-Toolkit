@@ -156,10 +156,6 @@ namespace Xbim.Tests.COBie
             {
                 context.UpdateStatus("Creating Geometry", total, (total * percentProgress / 100));
             });
-
-                    }
-
-
-
+        }
     }
 }

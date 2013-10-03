@@ -26,7 +26,8 @@ namespace Xbim.ModelGeometry.Converter
         IncludeStoreys = 2,
         IncludeSpaces = 4,
         IncludeSpacesBBox = 8,
-        IncludeTransform = 16,
+        IncludeSpacesStoreyId = 16,
+        IncludeTransform = 32,
         All = IncludeTransform * 2 - 1
     }
 
@@ -57,10 +58,10 @@ namespace Xbim.ModelGeometry.Converter
         {
             if (File.Exists(sceneDbName)) 
                 File.Delete(sceneDbName);
-            XbimSqliteDB db = new XbimSqliteDB(sceneDbName);
-            
+
+
             //get a connection
-            using (SQLiteConnection connection = db.GetConnection())
+            using (var db = new XbimSqliteDB(sceneDbName))
             {
                 try
                 {
@@ -74,7 +75,7 @@ namespace Xbim.ModelGeometry.Converter
                     int projectId = 0;
                     if (project != null) projectId = Math.Abs(project.EntityLabel);
                     
-                    float mScalingReference = (float)model.GetModelFactors.OneMetre;
+                    float mScalingReference = (float)model.ModelFactors.OneMetre;
 
                     if (Logger != null)
                         Logger.DebugFormat("XbimScene: Scaling reference {0}\r\n", mScalingReference);
@@ -111,10 +112,11 @@ namespace Xbim.ModelGeometry.Converter
                                 XbimRect3D transformed = item.ToXbimRect3D().Transform(composed);
                                 db.AddMetaData(
                                         "Region",
+                                        -1,
                                         string.Format("Name:{0};Box:{1};", item.Name, transformed.ToString()), // verbose, but only a few items are expected in the model
                                         item.Name
                                         );
-                            }
+                    }
                         }
                     }
 
@@ -124,12 +126,15 @@ namespace Xbim.ModelGeometry.Converter
                             Logger.DebugFormat("XbimScene: Exporting transform.\r\n", mScalingReference);
                         db.AddMetaData(
                                 "Transform",
+                                -1,
                                 composed.ToArray(false),
                                 "World"
                                 );
+                        db.Flush();
                     }
-                    
 
+                    if (Logger != null)
+                        Logger.DebugFormat("XbimScene: Exporting layers.\r\n", mScalingReference);
                     foreach (var layerContent in handles.FilterByBuildingElementTypes())
                     {
                         string elementTypeName = layerContent.Key;
@@ -159,39 +164,68 @@ namespace Xbim.ModelGeometry.Converter
 
                     // create scene row in Scenes tables
                     //
-                    string str = 
-                        "INSERT INTO Scenes (SceneId, SceneName, BoundingBox) " +
-                        "VALUES (@SceneId, @SceneName, @BoundingBox) ";
+                    if (Logger != null)
+                        Logger.DebugFormat("XbimScene: Exporting scene.\r\n", mScalingReference);
                     byte[] boundingBoxFull = modelBounds.ToFloatArray();
-                    using (SQLiteTransaction SQLiteTrans = connection.BeginTransaction())
-                    {
-                        using (SQLiteCommand cmd = connection.CreateCommand())
-                        {
-                            cmd.CommandText = str;
-                            cmd.Parameters.Add("@SceneId", DbType.Int32).Value = 1;
-                            cmd.Parameters.Add("@SceneName", DbType.String).Value = "MainScene";
-                            cmd.Parameters.Add("@BoundingBox", DbType.Binary).Value = boundingBoxFull;
-                            cmd.ExecuteNonQuery();
-                        }
-                        SQLiteTrans.Commit();
-                    }
+                    db.AddScene(1, "MainScene", boundingBoxFull);
 
                     //now add some meta data about spaces
                     if (
                         (Options & GenerateSceneOption.IncludeSpaces) == GenerateSceneOption.IncludeSpaces
                         ||
                         (Options & GenerateSceneOption.IncludeSpacesBBox) == GenerateSceneOption.IncludeSpacesBBox
+                        ||
+                        (Options & GenerateSceneOption.IncludeSpacesStoreyId) == GenerateSceneOption.IncludeSpacesStoreyId
                         )
                     {
                         if (Logger != null)
                             Logger.DebugFormat("XbimScene: Exporting spaces.\r\n", mScalingReference);
+
+                        // string data loop
                         foreach (var space in model.Instances.OfType<IfcSpace>())
                         {
-                            int iEntLabel = Math.Abs( space.EntityLabel);
+                            int iEntLabel = Math.Abs(space.EntityLabel);
                             if ((Options & GenerateSceneOption.IncludeSpaces) == GenerateSceneOption.IncludeSpaces)
                             {
-                                db.AddMetaData(space.GetType().Name, space.Name ?? "Undefined Space", iEntLabel.ToString());
+                                db.AddMetaData(
+                                    space.GetType().Name,
+                                    iEntLabel,
+                                    space.Name ?? "Unnamed Space",
+                                    iEntLabel.ToString()
+                                    );
                             }
+                            if ((Options & GenerateSceneOption.IncludeSpacesStoreyId) == GenerateSceneOption.IncludeSpacesStoreyId)
+                            {
+                                var parent = space.GetContainingStructuralElement();
+                                if (parent == null)
+                                {
+                                    // try with different application behaviours
+                                    foreach (var item in space.Decomposes)
+                                    {
+                                        parent = item.RelatingObject as IfcSpatialStructureElement;
+                                        if (parent != null)
+                    {
+                                            break;
+                                        }
+                                    }
+                                    // parent = space.Decomposes.FirstOrDefault().RelatingObject;
+                                    // Decomposes RelatingObject
+                                }
+                                if (parent != null)
+                        {
+                                    db.AddMetaData(
+                                        "SpaceToStorey",
+                                        iEntLabel,
+                                        string.Format("StoreyName={0};StoreyLabel={1};", parent.Name, parent.EntityLabel),
+                                        iEntLabel.ToString());
+                                }
+                        }
+                    }
+
+                        // binary data loop
+                    foreach (var space in model.Instances.OfType<IfcSpace>())
+                    {
+                            int iEntLabel = Math.Abs(space.EntityLabel);
                             if ((Options & GenerateSceneOption.IncludeSpacesBBox) == GenerateSceneOption.IncludeSpacesBBox)
                             {
                                 XbimGeometryData geomdata = model.GetGeometryData(iEntLabel, XbimGeometryType.BoundingBox).FirstOrDefault();
@@ -201,7 +235,8 @@ namespace Xbim.ModelGeometry.Converter
                                     XbimRect3D transformed = r3d.Transform(composed);
                                     db.AddMetaData(
                                             "SpaceBBox",
-                                            // string.Format("Box:{1};", transformed.ToString()), // verbose, but only a few items are expected in the model
+                                            iEntLabel,
+                                        // string.Format("Box:{1};", transformed.ToString()), // verbose, but only a few items are expected in the model
                                             transformed.ToFloatArray(),
                                             iEntLabel.ToString()
                                             );
@@ -209,6 +244,7 @@ namespace Xbim.ModelGeometry.Converter
                                 // db.AddMetaData(space.GetType().Name, space.Name ?? "Undefined Space", space.EntityLabel.ToString());
                             }
                         }
+
                     }
 
                     
@@ -220,7 +256,7 @@ namespace Xbim.ModelGeometry.Converter
                         if (Logger != null)
                             Logger.DebugFormat("XbimScene: Exporting storeys.\r\n", mScalingReference);
                         double storeyHeight = 0;//all scenes are in metres
-                        int defaultStoreyName = 0;                        
+                        int defaultStoreyName = 0;
                         foreach (var storey in bld.GetBuildingStoreys(true))
                         {
                             string cleanName;
@@ -250,17 +286,17 @@ namespace Xbim.ModelGeometry.Converter
                                 // Logger.DebugFormat("StoreyName: {0}; Model Elevation: {1}; Scene Elevation: {2}", cleanName, storeyHeight, InTranslatedReferenceZ);
 
                                 db.AddMetaData(
-                                    "Storey",
+                                "Storey",
+                                    Math.Abs(storey.EntityLabel),
                                     string.Format("Name:{0};Elevation:{1};SpaceCount:{2};", cleanName, InTranslatedReferenceZ, spacesCount), // storeyHeight),
-                                    cleanName);
-                            }
+                                cleanName);
                         }
                     }
                 }
+                }
                 finally
                 {
-                    connection.Close();
-                    SQLiteConnection.ClearPool(connection);
+                    db.Flush();
                     GC.Collect();
                 }
             }

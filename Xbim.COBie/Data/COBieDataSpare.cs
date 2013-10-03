@@ -40,7 +40,7 @@ namespace Xbim.COBie.Data
                         // get all IfcBuildingStory objects from IFC file
             IEnumerable<IfcConstructionProductResource> ifcConstructionProductResources = Model.Instances.OfType<IfcConstructionProductResource>();
 
-            COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(ifcConstructionProductResources); //properties helper class
+            COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(); //properties helper class
             COBieDataAttributeBuilder attributeBuilder = new COBieDataAttributeBuilder(Context, allPropertyValues);
             attributeBuilder.InitialiseAttributes(ref _attributes);
             attributeBuilder.RowParameters["Sheet"] = "Spare";
@@ -59,7 +59,7 @@ namespace Xbim.COBie.Data
 
                 COBieSpareRow spare = new COBieSpareRow(spares);
                 //set allPropertyValues to this element
-                allPropertyValues.SetAllPropertySingleValues(ifcConstructionProductResource); //set the internal filtered IfcPropertySingleValues List in allPropertyValues
+                allPropertyValues.SetAllPropertyValues(ifcConstructionProductResource); //set the internal filtered IfcPropertySingleValues List in allPropertyValues
                 
                 spare.Name = (string.IsNullOrEmpty(ifcConstructionProductResource.Name)) ? "" : ifcConstructionProductResource.Name.ToString();
 

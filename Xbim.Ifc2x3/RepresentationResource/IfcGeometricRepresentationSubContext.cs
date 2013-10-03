@@ -125,9 +125,9 @@ namespace Xbim.Ifc2x3.RepresentationResource
                     IfcAxis2Placement2D ax2 = ParentContext.WorldCoordinateSystem as IfcAxis2Placement2D;
                     IfcAxis2Placement3D ax3 = ParentContext.WorldCoordinateSystem as IfcAxis2Placement3D;
                     if (ax2 != null)
-                        return ax2.P[1];
+                        return new IfcDirection(ax2.P[1]);
                     else if (ax3 != null)
-                        return ax3.P[1];
+                        return new IfcDirection(ax3.P[1]);
                     else return null;
                 }
             }

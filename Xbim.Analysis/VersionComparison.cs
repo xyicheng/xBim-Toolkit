@@ -16,6 +16,8 @@ namespace Xbim.Analysis
     {
         private XbimModel Baseline { get; set; }
         private XbimModel Revision { get; set; }
+        private List<IfcRoot> WorkingCopyBaseline = new List<IfcRoot>();
+        private List<IfcRoot> WorkingCopyDelta = new List<IfcRoot>();
 
         public event MessageCallback OnMessage;
         private void Message(String message)
@@ -23,29 +25,53 @@ namespace Xbim.Analysis
             if (OnMessage != null) OnMessage(message);
         }
 
-        public Dictionary<IfcProduct, ChangeType> EntityLabelChanges = new Dictionary<IfcProduct, ChangeType>();
+        public Dictionary<IfcRoot, ChangeType> EntityLabelChanges = new Dictionary<IfcRoot, ChangeType>();
         public Dictionary<Int32, Int32> EntityMapping = new Dictionary<Int32, Int32>();
-        public List<IfcProduct> Deleted = new List<IfcProduct>();
-        public List<IfcProduct> Added = new List<IfcProduct>();
+        public List<IfcRoot> Deleted = new List<IfcRoot>();
+        public List<IfcRoot> Added = new List<IfcRoot>();
 
-        public Int32 StartComparison(XbimModel baseline, XbimModel revision)
+        public Int32 StartComparison(XbimModel baseline, XbimModel revision, string filter = "")
         {
             Baseline = baseline;
             Revision = revision;
 
-            WorkingCopyBaseline = new List<IfcProduct>(Baseline.Instances.OfType<IfcProduct>());
-            WorkingCopyDelta = new List<IfcProduct>(Revision.Instances.OfType<IfcProduct>());
+            Int32 ret = 0;
+            if (filter == "")
+            {
+                // default behaviour (maintained during code review) is to test only for IfcProducts
+                //
+                WorkingCopyBaseline = new List<IfcRoot>(Baseline.Instances.OfType<IfcProduct>().Cast<IfcRoot>());
+                WorkingCopyDelta = new List<IfcRoot>(Revision.Instances.OfType<IfcProduct>().Cast<IfcRoot>());
+                ret += StartProductsComparison();
+            }
+            else
+            {
+                IfcType ot = IfcMetaData.IfcType(filter.ToUpper());
+                if (ot != null)
+                {
+                    if (ot.Type.IsSubclassOf(typeof(IfcRoot)))
+                    {
+                        WorkingCopyBaseline = new List<IfcRoot>(Baseline.Instances.OfType(filter, false).Cast<IfcRoot>());
+                        WorkingCopyDelta = new List<IfcRoot>(Revision.Instances.OfType(filter, false).Cast<IfcRoot>());
+                        ret += StartProductsComparison();
+                    }
+                }
+            }
+            return ret;
+        }
 
-            CheckGuids();
-            if (WorkingCopyDelta.Count > 0 && WorkingCopyBaseline.Count > 0)
+        public Int32 StartProductsComparison()
+        {
+            if (ItemsNeedMatching())
+                CheckGuids();
+            if (ItemsNeedMatching())
                 CheckNames();
-            if (WorkingCopyDelta.Count > 0 && WorkingCopyBaseline.Count > 0)
+            if (ItemsNeedMatching())
                 CheckRelationships();
-            if (WorkingCopyDelta.Count > 0 && WorkingCopyBaseline.Count > 0)
+            if (ItemsNeedMatching())
                 CheckProperties();
-            if (WorkingCopyDelta.Count > 0 && WorkingCopyBaseline.Count > 0)
+            if (ItemsNeedMatching())
                 CheckGeometry();
-
 
             Deleted.AddRange(WorkingCopyBaseline);
             Added.AddRange(WorkingCopyDelta);
@@ -55,14 +81,14 @@ namespace Xbim.Analysis
             {
                 Message("Cannot resolve Baseline item(s):");
                 foreach (var i in WorkingCopyBaseline)
-                    Message(String.Format("Cannot resolve Missing GUID: {0}", i.GlobalId));
+                    Message(String.Format("Cannot resolve Missing GUID: {0} (EntityLabel: {1})", i.GlobalId, Math.Abs(i.EntityLabel)));
             }
             if (WorkingCopyDelta.Count > 0)
             {
                 Message("Cannot resolve Delta item(s):");
                 foreach (var i in WorkingCopyDelta)
                 {
-                    Message(String.Format("Cannot resolve Added GUID: {0}", i.GlobalId));
+                    Message(String.Format("Cannot resolve Added GUID: {0} (EntityLabel: {1})", i.GlobalId, Math.Abs(i.EntityLabel)));
                 }
             }
             
@@ -73,6 +99,14 @@ namespace Xbim.Analysis
             }
 
             return WorkingCopyBaseline.Count + WorkingCopyDelta.Count;
+        }
+
+        private bool ItemsNeedMatching()
+        {
+            return 
+                (WorkingCopyDelta != null && WorkingCopyDelta.Count > 0)
+                &&
+                (WorkingCopyBaseline != null && WorkingCopyBaseline.Count > 0);
         }
 
         private void CheckNames()
@@ -158,9 +192,7 @@ namespace Xbim.Analysis
             }
             Message("Guid Check - Complete");
         }
-        private List<IfcProduct> WorkingCopyBaseline = new List<IfcProduct>();
-        private List<IfcProduct> WorkingCopyDelta = new List<IfcProduct>();
-       
+        
         private void CheckGeometry()
         {
             Message("Starting - Geometry Check");

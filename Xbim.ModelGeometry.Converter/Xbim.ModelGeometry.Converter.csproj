@@ -3,7 +3,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;DOPARALLEL</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
@@ -13,14 +13,15 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE;DOPARALLEL </DefineConstants>
+    <DefineConstants>TRACE;DOPARALLEL</DefineConstants>
     <Optimize>true</Optimize>
-    <DebugType>none</DebugType>
+    <DebugType>pdbonly</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
     <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
+    <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'NugetDistribution|AnyCPU' ">
     <OutputPath>..\bin\NugetDistribution\</OutputPath>
@@ -102,250 +103,204 @@
       <Name>Xbim.ModelGeometry.Scene</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(Configuration)' == 'Debug'">
-    <Content Include="..\Xbim.ModelGeometry.OCC\Debug\x64\TKBO.dll">
-      <Link>x64\Debug\TKBO.dll</Link>
+  <ItemGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
+    <None Include="..\Xbim.ModelGeometry.OCC\bin\x64\Xbim.ModelGeometry.OCC.exp">
+      <Link>x64\Xbim.ModelGeometry.OCC.exp</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\Debug\x64\TKBool.dll">
-      <Link>x64\Debug\TKBool.dll</Link>
+    </None>
+    <None Include="..\Xbim.ModelGeometry.OCC\bin\x64\Xbim.ModelGeometry.OCC.lib">
+      <Link>x64\Xbim.ModelGeometry.OCC.lib</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\Debug\x64\TKBRep.dll">
-      <Link>x64\Debug\TKBRep.dll</Link>
+    </None>
+    <None Include="..\Xbim.ModelGeometry.OCC\bin\x86\Xbim.ModelGeometry.OCC.exp">
+      <Link>x86\Xbim.ModelGeometry.OCC.exp</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\Debug\x64\TKernel.dll">
-      <Link>x64\Debug\TKernel.dll</Link>
+    </None>
+    <None Include="..\Xbim.ModelGeometry.OCC\bin\x86\Xbim.ModelGeometry.OCC.lib">
+      <Link>x86\Xbim.ModelGeometry.OCC.lib</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\Debug\x64\TKG2d.dll">
-      <Link>x64\Debug\TKG2d.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\Debug\x64\TKG3d.dll">
-      <Link>x64\Debug\TKG3d.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\Debug\x64\TKGeomAlgo.dll">
-      <Link>x64\Debug\TKGeomAlgo.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\Debug\x64\TKGeomBase.dll">
-      <Link>x64\Debug\TKGeomBase.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\Debug\x64\TKMath.dll">
-      <Link>x64\Debug\TKMath.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\Debug\x64\TKMesh.dll">
-      <Link>x64\Debug\TKMesh.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\Debug\x64\TKOffset.dll">
-      <Link>x64\Debug\TKOffset.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\Debug\x64\TKPrim.dll">
-      <Link>x64\Debug\TKPrim.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\Debug\x64\TKShHealing.dll">
-      <Link>x64\Debug\TKShHealing.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\Debug\x64\TKTopAlgo.dll">
-      <Link>x64\Debug\TKTopAlgo.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\Debug\x64\Xbim.ModelGeometry.OCC.dll">
-      <Link>x64\Debug\Xbim.ModelGeometry.OCC.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\Debug\x86\TKBO.dll">
-      <Link>x86\Debug\TKBO.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\Debug\x86\TKBool.dll">
-      <Link>x86\Debug\TKBool.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\Debug\x86\TKBRep.dll">
-      <Link>x86\Debug\TKBRep.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\Debug\x86\TKernel.dll">
-      <Link>x86\Debug\TKernel.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\Debug\x86\TKG2d.dll">
-      <Link>x86\Debug\TKG2d.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\Debug\x86\TKG3d.dll">
-      <Link>x86\Debug\TKG3d.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\Debug\x86\TKGeomAlgo.dll">
-      <Link>x86\Debug\TKGeomAlgo.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\Debug\x86\TKGeomBase.dll">
-      <Link>x86\Debug\TKGeomBase.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\Debug\x86\TKMath.dll">
-      <Link>x86\Debug\TKMath.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\Debug\x86\TKMesh.dll">
-      <Link>x86\Debug\TKMesh.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\Debug\x86\TKOffset.dll">
-      <Link>x86\Debug\TKOffset.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\Debug\x86\TKPrim.dll">
-      <Link>x86\Debug\TKPrim.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\Debug\x86\TKShHealing.dll">
-      <Link>x86\Debug\TKShHealing.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\Debug\x86\TKTopAlgo.dll">
-      <Link>x86\Debug\TKTopAlgo.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\Debug\x86\Xbim.ModelGeometry.OCC.dll">
-      <Link>x86\Debug\Xbim.ModelGeometry.OCC.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-  <ItemGroup Condition="'$(Configuration)' == 'Release'">
-    <Content Include="..\Xbim.ModelGeometry.OCC\Release\x64\TKBO.dll">
-      <Link>x64\TKBO.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\Release\x64\TKBool.dll">
-      <Link>x64\TKBool.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\Release\x64\TKBRep.dll">
-      <Link>x64\TKBRep.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\Release\x64\TKernel.dll">
-      <Link>x64\TKernel.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\Release\x64\TKG2d.dll">
-      <Link>x64\TKG2d.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\Release\x64\TKG3d.dll">
-      <Link>x64\TKG3d.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\Release\x64\TKGeomAlgo.dll">
-      <Link>x64\TKGeomAlgo.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\Release\x64\TKGeomBase.dll">
-      <Link>x64\TKGeomBase.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\Release\x64\TKMath.dll">
-      <Link>x64\TKMath.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\Release\x64\TKMesh.dll">
-      <Link>x64\TKMesh.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\Release\x64\TKOffset.dll">
-      <Link>x64\TKOffset.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\Release\x64\TKPrim.dll">
-      <Link>x64\TKPrim.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\Release\x64\TKShHealing.dll">
-      <Link>x64\TKShHealing.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\Release\x64\TKTopAlgo.dll">
-      <Link>x64\TKTopAlgo.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\Release\x64\Xbim.ModelGeometry.OCC.dll">
+    </None>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x64\Xbim.ModelGeometry.OCC.dll">
       <Link>x64\Xbim.ModelGeometry.OCC.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\Release\x86\TKBO.dll">
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x64\Xbim.ModelGeometry.OCC.pdb">
+      <Link>x64\Xbim.ModelGeometry.OCC.pdb</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x86\Xbim.ModelGeometry.OCC.dll">
+      <Link>x86\Xbim.ModelGeometry.OCC.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x86\Xbim.ModelGeometry.OCC.pdb">
+      <Link>x86\Xbim.ModelGeometry.OCC.pdb</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x86\Xbim.ModelGeometry.OCC.xml">
+      <Link>x86\Xbim.ModelGeometry.OCC.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x64\Xbim.ModelGeometry.OCC.xml">
+      <Link>x64\Xbim.ModelGeometry.OCC.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
+    <None Include="..\Xbim.ModelGeometry.OCC\bin\x64\Xbim.ModelGeometry.OCCd.exp">
+      <Link>x64\Xbim.ModelGeometry.OCCd.exp</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\Xbim.ModelGeometry.OCC\bin\x64\Xbim.ModelGeometry.OCCd.lib">
+      <Link>x64\Xbim.ModelGeometry.OCCd.lib</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\Xbim.ModelGeometry.OCC\bin\x86\Xbim.ModelGeometry.OCCd.exp">
+      <Link>x86\Xbim.ModelGeometry.OCCd.exp</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\Xbim.ModelGeometry.OCC\bin\x86\Xbim.ModelGeometry.OCCd.lib">
+      <Link>x86\Xbim.ModelGeometry.OCCd.lib</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x64\Xbim.ModelGeometry.OCCd.dll">
+      <Link>x64\Xbim.ModelGeometry.OCCd.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x64\Xbim.ModelGeometry.OCCd.pdb">
+      <Link>x64\Xbim.ModelGeometry.OCCd.pdb</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x86\Xbim.ModelGeometry.OCCd.dll">
+      <Link>x86\Xbim.ModelGeometry.OCCd.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x86\Xbim.ModelGeometry.OCCd.pdb">
+      <Link>x86\Xbim.ModelGeometry.OCCd.pdb</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x86\Xbim.ModelGeometry.OCCd.xml">
+      <Link>x86\Xbim.ModelGeometry.OCCd.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x64\Xbim.ModelGeometry.OCCd.xml">
+      <Link>x64\Xbim.ModelGeometry.OCCd.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x64\TKBO.dll">
+      <Link>x64\TKBO.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x64\TKBool.dll">
+      <Link>x64\TKBool.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x64\TKBRep.dll">
+      <Link>x64\TKBRep.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x64\TKernel.dll">
+      <Link>x64\TKernel.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x64\TKG2d.dll">
+      <Link>x64\TKG2d.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x64\TKG3d.dll">
+      <Link>x64\TKG3d.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x64\TKGeomAlgo.dll">
+      <Link>x64\TKGeomAlgo.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x64\TKGeomBase.dll">
+      <Link>x64\TKGeomBase.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x64\TKMath.dll">
+      <Link>x64\TKMath.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x64\TKMesh.dll">
+      <Link>x64\TKMesh.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x64\TKOffset.dll">
+      <Link>x64\TKOffset.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x64\TKPrim.dll">
+      <Link>x64\TKPrim.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x64\TKShHealing.dll">
+      <Link>x64\TKShHealing.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x64\TKTopAlgo.dll">
+      <Link>x64\TKTopAlgo.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x86\TKBO.dll">
       <Link>x86\TKBO.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\Release\x86\TKBool.dll">
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x86\TKBool.dll">
       <Link>x86\TKBool.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\Release\x86\TKBRep.dll">
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x86\TKBRep.dll">
       <Link>x86\TKBRep.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\Release\x86\TKernel.dll">
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x86\TKernel.dll">
       <Link>x86\TKernel.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\Release\x86\TKG2d.dll">
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x86\TKG2d.dll">
       <Link>x86\TKG2d.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\Release\x86\TKG3d.dll">
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x86\TKG3d.dll">
       <Link>x86\TKG3d.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\Release\x86\TKGeomAlgo.dll">
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x86\TKGeomAlgo.dll">
       <Link>x86\TKGeomAlgo.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\Release\x86\TKGeomBase.dll">
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x86\TKGeomBase.dll">
       <Link>x86\TKGeomBase.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\Release\x86\TKMath.dll">
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x86\TKMath.dll">
       <Link>x86\TKMath.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\Release\x86\TKMesh.dll">
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x86\TKMesh.dll">
       <Link>x86\TKMesh.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\Release\x86\TKOffset.dll">
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x86\TKOffset.dll">
       <Link>x86\TKOffset.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\Release\x86\TKPrim.dll">
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x86\TKPrim.dll">
       <Link>x86\TKPrim.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\Release\x86\TKShHealing.dll">
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x86\TKShHealing.dll">
       <Link>x86\TKShHealing.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\Release\x86\TKTopAlgo.dll">
+    <Content Include="..\Xbim.ModelGeometry.OCC\bin\x86\TKTopAlgo.dll">
       <Link>x86\TKTopAlgo.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Xbim.ModelGeometry.OCC\Release\x86\Xbim.ModelGeometry.OCC.dll">
-      <Link>x86\Xbim.ModelGeometry.OCC.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
@@ -354,6 +309,7 @@
     <PostBuildEvent>
     </PostBuildEvent>
   </PropertyGroup>
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

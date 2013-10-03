@@ -2,7 +2,7 @@
 
 The stream has an unusual doble indirection to points and normals to be able to retain unique position idenity for those
 frameworks that do not consider or require normal specifications (therefore saving streaming size and reducing video 
-memory usage
+memory usage)
 
 Structure of stream for triangular meshes:
 CountUniquePositions		// int
@@ -535,7 +535,8 @@ namespace Xbim.ModelGeometry.Scene
                     // todo: use a quaternion extracted from the matrix instead
                     //
                     uint readnormalI = NormalsReader.ReadIndex();
-                    XbimVector3D v = transform.Transform(new XbimVector3D(nrm[readnormalI, 0], nrm[readnormalI, 1], nrm[readnormalI, 2]));
+                    var origNormal = new XbimVector3D(nrm[readnormalI, 0], nrm[readnormalI, 1], nrm[readnormalI, 2]);
+                    XbimVector3D v = transform.Transform(origNormal);
                     v.Normalize();
                     builder.AddNormal(v);
                 }

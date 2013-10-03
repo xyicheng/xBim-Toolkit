@@ -57,6 +57,7 @@ namespace Xbim.COBie
         /// </summary>
         public bool DepartmentsUsedAsZones { get; set; } //indicate if we have taken departments as Zones
         public FilterValues Exclude { get; private set; } //filter values for attribute extraction in sheets
+        public ErrorRowIndexBase ErrorRowStartIndex { get; set; } //set the error reporting to be either one (first row is labelled one) or two based (first row is labelled two) on the rows of the tables/excel sheet
 
         public COBieContext()
         {
@@ -71,6 +72,9 @@ namespace Xbim.COBie
             Exclude = new FilterValues();
 
             ExcludeFromPickList = false;
+
+            //set the row index to report error rows on
+            ErrorRowStartIndex = ErrorRowIndexBase.RowTwo; //default for excel sheet
             
         }
 
@@ -132,6 +136,16 @@ namespace Xbim.COBie
                 _progress = null;
             }
         }
+    }
+
+    /// <summary>
+    /// Index for the rows the errors are reported on, either one based (first row is labelled one) (Data Table etc...) 
+    /// or two based (first row is labelled two) (Excel sheets)
+    /// </summary>
+    public enum ErrorRowIndexBase
+    {
+        RowOne,
+        RowTwo
     }
 
     /// <summary>

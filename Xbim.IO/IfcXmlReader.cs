@@ -225,6 +225,7 @@ namespace Xbim.IO
         private int _entitiesParsed = 0;
         private string _expressNamespace;
         private string _cTypeAttribute;
+        private string _posAttribute;
 
         private void StartElement(IfcPersistedInstanceCache cache, XmlReader input, XbimEntityCursor entityTable, XbimLazyDBTransaction transaction)
         {
@@ -270,13 +271,12 @@ namespace Xbim.IO
                     
 
                 }
-                
 
-                string pos = input.GetAttribute("pos");
+
+                string pos = input.GetAttribute(_posAttribute);
+                if (string.IsNullOrEmpty(pos)) pos = input.GetAttribute("pos"); //try without namespace
                 if (!string.IsNullOrEmpty(pos))
                     xmlEnt.Position = Convert.ToInt32(pos);
-
-
                 if (!input.IsEmptyElement)
                 {
                     // add the entity to its parent if its parent is a list
@@ -354,7 +354,7 @@ namespace Xbim.IO
             {
 
                 string cType = input.GetAttribute(_cTypeAttribute);
-
+                if (string.IsNullOrEmpty(cType)) cType = input.GetAttribute("cType"); //in case namespace omitted
                 if (!string.IsNullOrEmpty(cType) && IsCollection(prop)) //the property is a collection
                 {
                     XmlCollectionProperty xmlColl = new XmlCollectionProperty(_currentNode, prop.PropertyInfo, propIndex);
@@ -453,7 +453,7 @@ namespace Xbim.IO
             if (!ok)
             {
 
-                if (elementName.Contains("-wrapper") && elementName.StartsWith("ex:") == false) // we have an inline type definition
+                if (elementName.Contains("-wrapper") && elementName.StartsWith(_expressNamespace) == false) // we have an inline type definition
                 {
                     string inputName = elementName.Substring(0, elementName.LastIndexOf("-"));
                     ok = IfcMetaData.TryGetIfcType(inputName.ToUpper(), out ifcType);
@@ -796,7 +796,7 @@ namespace Xbim.IO
 
             _entitiesParsed = 0;
             bool foundHeader = false;
-            IfcFileHeader header = new IfcFileHeader();
+            IfcFileHeader header = new IfcFileHeader(IfcFileHeader.HeaderCreationMode.LeaveEmpty);
             string headerId="";
             while (_currentNode == null && input.Read()) //read through to UOS
             {
@@ -815,9 +815,14 @@ namespace Xbim.IO
                             {
                                 _expressNamespace = input.Prefix;
                                 _cTypeAttribute = _expressNamespace + ":cType";
+                                _posAttribute = _expressNamespace + ":pos";
+                                _expressNamespace += ":";
                             }
                             else
-                               _cTypeAttribute = "cType";
+                            {
+                                _cTypeAttribute = "cType";
+                                _posAttribute = "pos";
+                            }
                                 
                         }
                         else

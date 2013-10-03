@@ -12,12 +12,49 @@
 
 #region Directives
 
+using System;
+using System.Collections.Generic;
+using Xbim.Common.Geometry;
 using Xbim.Ifc2x3.GeometryResource;
 
 #endregion
 
 namespace Xbim.Ifc2x3.Extensions
 {
+
+    /// <summary>
+    /// Used to compare cartesian points for equality within  a specfied tolerance
+    /// </summary>
+    public class XbimCartesianPointComparer : IEqualityComparer<IfcCartesianPoint>
+    {
+        double toleranceSq;
+        /// <summary>
+        /// Creates a comarer
+        /// </summary>
+        /// <param name="tolerance">The distance within which the points are defined to be the same point</param>
+        public XbimCartesianPointComparer(double tolerance)
+        {
+            toleranceSq = tolerance * tolerance;
+        }
+
+        public bool Equals(IfcCartesianPoint x, IfcCartesianPoint y)
+        {
+            double vx = x.X - y.X;
+            double vy = x.Y - y.Y;
+            double vz = x.Z - y.Z;
+            double lenSq = vx * vx + vy * vy + vz * vz;
+            bool same = lenSq <= toleranceSq;
+            
+            return same;
+        }
+
+        public int GetHashCode(IfcCartesianPoint pt)
+        {
+            return 1;
+            //return (int)pt.X ^ (int)pt.Y ^ (int)pt.Z ;
+        }
+    }
+
     public static class CartesianPointExtensions
     {
         public static IfcCartesianPoint CrossProduct(this IfcCartesianPoint a, IfcCartesianPoint b)

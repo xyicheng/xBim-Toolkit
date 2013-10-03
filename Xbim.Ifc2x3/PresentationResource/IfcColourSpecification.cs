@@ -90,7 +90,7 @@ namespace Xbim.Ifc2x3.PresentationResource
 
         void IPersistIfcEntity.Activate(bool write)
         {
-            if (_model != null && _entityLabel <= 0) _entityLabel = _model.Activate(this, false);
+            lock(this) { if (_model != null && _entityLabel <= 0) _entityLabel = _model.Activate(this, false); }
             if (write) _model.Activate(this, write);
         }
 
@@ -98,7 +98,7 @@ namespace Xbim.Ifc2x3.PresentationResource
 
         #region Fields
 
-        private IfcLabel? _name;
+        protected IfcLabel? _name;
 
         #endregion
 

@@ -93,9 +93,6 @@ namespace Xbim.ModelGeometry.Scene
             return boundingBoxHidden; 
         }
 
-     
-
-
         /// <summary>
         /// The colour map for this scene
         /// </summary>
@@ -137,8 +134,6 @@ namespace Xbim.ModelGeometry.Scene
            
         }
 
-        
-
         /// <summary>
         /// Create a new layer that will display meshes in the specified colour
         /// If the mesh geometry item has a style specified in the IFC definition sub layers will be created for each style
@@ -148,10 +143,7 @@ namespace Xbim.ModelGeometry.Scene
         {
             model = m;
             Style = new XbimTexture().CreateTexture(colour);
-            
         }
-
-       
 
         public XbimMeshLayer(XbimModel m, XbimColour colour, XbimColourMap subCategoryColourMap)
             :this(m, colour)
@@ -242,8 +234,10 @@ namespace Xbim.ModelGeometry.Scene
             }
             else
             {
-                if(!Hidden.Add(geomData)) //just add it to the main layer, if the main layer is too big split it.
+                bool AddingSuccessfull = Hidden.Add(geomData); // this is where the geometry is added to the main layer.
+                if (!AddingSuccessfull) 
                 {
+                    //if the main layer is too big split it.
                     //try and find a sublayer that is a split of this, i.e. has the same texture
                     foreach (var sublayer in subLayerMap.Reverse())
                     {
@@ -277,6 +271,38 @@ namespace Xbim.ModelGeometry.Scene
             Hidden.MoveTo(Visible);
         }
 
+
+        public class MeshInfo
+        {
+            private XbimMeshFragment mf;
+            private XbimMeshLayer<TVISIBLE, TMATERIAL> xbimMeshLayer;
+            
+            public MeshInfo(XbimMeshFragment mf, XbimMeshLayer<TVISIBLE, TMATERIAL> xbimMeshLayer)
+            {
+                // TODO: Complete member initialization
+                this.mf = mf;
+                this.xbimMeshLayer = xbimMeshLayer;
+            }
+
+            public override string ToString()
+            {
+                return string.Format("Layer: {0} ({3}) fragment position: {1} lenght: {2}", xbimMeshLayer.name, mf.StartPosition, mf.PositionCount, xbimMeshLayer.Material.Description);
+            }
+        }
+
+        public IEnumerable<MeshInfo> GetMeshInfo(int entityLabel)
+        {
+            foreach (var mf in Visible.Meshes.Where(m => m.EntityLabel == entityLabel))
+                yield return new MeshInfo(mf, this);
+            foreach (var mf in Hidden.Meshes.Where(m => m.EntityLabel == entityLabel))
+                yield return new MeshInfo(mf, this);
+            foreach (var layer in SubLayers)
+                foreach (var item in layer.GetMeshInfo(entityLabel))
+                {
+                    yield return item;    
+                }
+        }
+
        /// <summary>
         ///  Returns a collection of fragments for this layer, does not traverse sub layers or hidden layers unless arguments are true
        /// </summary>
@@ -295,6 +321,17 @@ namespace Xbim.ModelGeometry.Scene
                 foreach (var layer in SubLayers)
                     foreach (var mf in layer.GetMeshFragments(entityLabel, includeHidden, includSublayers))
                         yield return mf;
+        }
+
+        
+
+        public bool HasEntity(int entityLabel, bool includeHidden = false, bool includSublayers = false)
+        {
+            foreach (var item in  this.GetMeshFragments(entityLabel, includeHidden, includSublayers))
+	        {
+                return true;
+	        }
+            return false;          
         }
 
         public IXbimMeshGeometry3D GetVisibleMeshGeometry3D(int entityLabel)

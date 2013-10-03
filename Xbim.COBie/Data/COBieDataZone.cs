@@ -41,7 +41,7 @@ namespace Xbim.COBie.Data
             // get all IfcBuildingStory objects from IFC file
             IEnumerable<IfcZone> ifcZones = Model.Instances.OfType<IfcZone>();
 
-            COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(ifcZones); //properties helper class
+            COBieDataPropertySetValues allPropertyValues = new COBieDataPropertySetValues(); //properties helper class
             COBieDataAttributeBuilder attributeBuilder = new COBieDataAttributeBuilder(Context, allPropertyValues);
             attributeBuilder.InitialiseAttributes(ref _attributes);
             
@@ -66,7 +66,7 @@ namespace Xbim.COBie.Data
                     COBieZoneRow zone = new COBieZoneRow(zones);
 
                     //set allPropertyValues to this element
-                    allPropertyValues.SetAllPropertySingleValues(zn); //set the internal filtered IfcPropertySingleValues List in allPropertyValues
+                    allPropertyValues.SetAllPropertyValues(zn); //set the internal filtered IfcPropertySingleValues List in allPropertyValues
                 
                     zone.Name = zn.Name.ToString();
 
@@ -101,14 +101,14 @@ namespace Xbim.COBie.Data
 
             }
 
-            COBieDataPropertySetValues allSpacePropertyValues = new COBieDataPropertySetValues(ifcSpaces); //get all property sets and associated properties in one go
+            COBieDataPropertySetValues allSpacePropertyValues = new COBieDataPropertySetValues(); //get all property sets and associated properties in one go
             foreach (IfcSpace sp in ifcSpaces)
             {
-                Dictionary<IfcPropertySet, List<IfcSimpleProperty>> thisSpaceProperties = allSpacePropertyValues[sp];
                 ProgressIndicator.IncrementAndUpdate();
-
+                allSpacePropertyValues.SetAllPropertyValues(sp); //set the space as the current object for the properties get glass
+                
                 IEnumerable<IfcPropertySingleValue> spProperties = Enumerable.Empty<IfcPropertySingleValue>();
-                foreach (KeyValuePair<IfcPropertySet, List<IfcSimpleProperty>> item in thisSpaceProperties)
+                foreach (KeyValuePair<IfcPropertySet, IEnumerable<IfcSimpleProperty>> item in allSpacePropertyValues.MapPsetToProps)
                 {
                     IfcPropertySet pset = item.Key;
                     spProperties = item.Value.Where(p => p.Name.ToString().Contains("ZoneName")).OfType<IfcPropertySingleValue>();

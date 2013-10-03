@@ -61,17 +61,17 @@ namespace Xbim.XbimExtensions.Interfaces
         /// </summary>
         XBIM = 16
     }
+
     public interface IModel
     {
 
 
-        XbimModelFactors GetModelFactors { get; }
+        XbimModelFactors ModelFactors { get; }
 
         IXbimInstanceCollection Instances { get; }
         int Activate(IPersistIfcEntity owningEntity, bool write);
         void Delete(IPersistIfcEntity instance);
 
-        
         IEnumerable<IPersistIfcEntity> IfcProducts { get; }
 
         IPersistIfcEntity OwnerHistoryAddObject { get; }
@@ -81,14 +81,20 @@ namespace Xbim.XbimExtensions.Interfaces
 
         IIfcFileHeader Header { get;}  
 
-        bool CreateFrom(string importFrom, string xbimDbName = null, ReportProgressDelegate progDelegate = null, bool keepOpen = false);
+        bool CreateFrom(string importFrom, string xbimDbName = null, ReportProgressDelegate progDelegate = null, bool keepOpen = false, bool cacheEntites = false);
 
         bool SaveAs(string saveFileName, XbimStorageType? storageType = null, ReportProgressDelegate progDelegate = null);
 
         bool Open(string fileName, XbimDBAccess accessMode = XbimDBAccess.Read, ReportProgressDelegate progDelegate = null);
         
         void Close();
+
         void ForEach<TSource>(IEnumerable<TSource> source, Action<TSource> body) where TSource:IPersistIfcEntity;
        
+        /// <summary>
+        /// Tag can be used to set up an arbitrary model identity management strategy 
+        /// in case of federated models or multiple model environments. 
+        /// </summary>
+        object Tag { get; set; }
     }
 }
