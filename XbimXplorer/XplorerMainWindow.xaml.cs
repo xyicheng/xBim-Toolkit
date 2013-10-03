@@ -741,6 +741,19 @@ namespace XbimXplorer
             e.CanExecute = true;
         }
 
+        private void SeparateMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            ModelSeparation separate = new ModelSeparation();
+
+            //set data binding
+            Binding b = new Binding("DataContext");
+            b.Source = this.MainFrame;
+            b.Mode = BindingMode.TwoWay;
+            separate.SetBinding(ModelSeparation.DataContextProperty, b);
+
+            separate.Show();
+        }
+
         private void About_Click(object sender, RoutedEventArgs e)
         {
             Gat.Controls.About about = new Gat.Controls.About();

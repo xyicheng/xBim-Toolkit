@@ -15,7 +15,7 @@ using Xbim.XbimExtensions.SelectTypes;
 using Xbim.XbimExtensions.Interfaces;
 using Xbim.IO;
 
-namespace Xbim.DynamicGrouping
+namespace Xbim.Dynamic
 {
     /// <summary>
     /// Class for building dynamic query to get IFC instances which satisfy specified conditions.

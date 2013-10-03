@@ -11,7 +11,7 @@ using Xbim.XbimExtensions.Transactions;
 using Xbim.XbimExtensions.Interfaces;
 using Xbim.IO;
 
-namespace Xbim.DynamicGrouping
+namespace Xbim.Dynamic
 {
     public class GroupsFromXml
     {

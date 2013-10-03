@@ -45,7 +45,7 @@ namespace Xbim.Ifc2x3.MeasureResource
                 if (_theValue.HasValue)
                     return string.Format(@".{0}.", _theValue.Value ? "T" : "F");
                 else
-                    return ".UNKNOWN.";
+                    return ".U.";
             }
         }
 

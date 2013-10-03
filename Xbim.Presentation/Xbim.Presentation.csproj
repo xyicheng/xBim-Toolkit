@@ -111,6 +111,12 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="DynamicProductSelectionControl.xaml.cs">
+      <DependentUpon>DynamicProductSelectionControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="SynchronizedView.xaml.cs">
+      <DependentUpon>SynchronizedView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="DrawincControl3DLayers.cs" />
     <Compile Include="EntitySelection.cs" />
     <Compile Include="ModelGeomInfo\PolylineGeomInfo.cs" />
@@ -151,6 +157,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="DynamicProductSelectionControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="FederatedModelProperties.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -160,6 +170,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="SynchronizedView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>

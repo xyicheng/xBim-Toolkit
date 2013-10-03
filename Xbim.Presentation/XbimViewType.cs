@@ -10,6 +10,7 @@ namespace Xbim.Presentation
         SpatialStructure,
         Classification,
         Materials,
-        IfcEntityType
+        IfcEntityType,
+        Groups
     }
 }
