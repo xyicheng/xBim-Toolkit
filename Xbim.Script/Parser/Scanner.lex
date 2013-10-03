@@ -64,7 +64,9 @@
 
 "!~" |
 "does not contain" |
-"doesn't contain"			{return ((int)Tokens.OP_NOT_CONTAINS);}
+"doesn't contain" |
+"is not like" |
+"isn't like"			{return ((int)Tokens.OP_NOT_CONTAINS);}
 
 ";"		{  return (';'); }
 ","		{  return (','); }

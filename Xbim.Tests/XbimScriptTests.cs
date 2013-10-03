@@ -88,6 +88,8 @@ namespace XbimQueryTest
                 {"Select wall where 'Heat Performance' contains 12.25;",false},
                 {"Select wall where 'Heat Performance' ~ 'substring';",true},
                 {"Select wall where 'Heat Performance' doesn't contain 'substring';",true},
+                {"Select wall where 'Heat Performance' isn't like 'substring';",true},
+                {"Select wall where 'Heat Performance' is not like 'substring';",true},
                 {"Select xyz",false},
                 {"$MyWalls is wall 'My wall';",true},
                 {"$MyWalls is wall where 'External' = true;",true},
