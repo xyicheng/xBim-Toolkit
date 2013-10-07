@@ -74,12 +74,16 @@ namespace Xbim.COBie.Data
         /// <returns>Dictionary of IfcPropertySet keyed to List of IfcPropertySingleValue</returns>
         public Dictionary<IfcPropertySet, IEnumerable<IfcSimpleProperty>> GetRelatedProperties(IfcTypeObject ifcTypeObject)
         {
-            if (ifcTypeObject != null)
+            if ((ifcTypeObject != null) && (ifcTypeObject.ObjectTypeOf.Any()))
             {
-                IfcObject IfcObj = ifcTypeObject.ObjectTypeOf.First().RelatedObjects.First();
-                return IfcObj.IsDefinedByProperties
-                                .Select(def => def.RelatingPropertyDefinition).OfType<IfcPropertySet>()
-                                .ToDictionary(ps => ps, ps => ps.HasProperties.OfType<IfcSimpleProperty>());
+                IfcObject IfcObj = ifcTypeObject.ObjectTypeOf.First().RelatedObjects.FirstOrDefault();
+                if (IfcObj != null)
+                {
+                    return IfcObj.IsDefinedByProperties
+                            .Select(def => def.RelatingPropertyDefinition).OfType<IfcPropertySet>()
+                            .ToDictionary(ps => ps, ps => ps.HasProperties.OfType<IfcSimpleProperty>());
+                }
+                
             }
             return new Dictionary<IfcPropertySet, IEnumerable<IfcSimpleProperty>>();
             
@@ -121,10 +125,17 @@ namespace Xbim.COBie.Data
                 _mapPsetToProps.Clear(); //clear as we have no properties for this object
             }
 
-            if (_mapPsetToProps.Count() == 0) //not sure we should do this, but we get values to fill from an object that is using the type object
+            if (!_mapPsetToProps.Any()) //not sure we should do this, but we get values to fill from an object that is using the type object
             {
-                IfcObject IfcObj = ifcTypeObject.ObjectTypeOf.First().RelatedObjects.First();
-                SetAllPropertyValues(IfcObj);//we do not filter on property set name here, just go for all of them
+                if (ifcTypeObject.ObjectTypeOf.Any())
+                {
+                    IfcObject IfcObj = ifcTypeObject.ObjectTypeOf.First().RelatedObjects.FirstOrDefault();
+                    if (IfcObj != null)
+                    {
+                        SetAllPropertyValues(IfcObj);//we do not filter on property set name here, just go for all of them
+                    }
+                    
+                }
             }
         }
 
@@ -152,10 +163,18 @@ namespace Xbim.COBie.Data
             }
 
             //fall back to related items to get the information from
-            if (_mapPsetToProps.Count() == 0)//not sure we should do this, but we get values to fill from an object that is using the type object
+            if (!_mapPsetToProps.Any())//not sure we should do this, but we get values to fill from an object that is using the type object
             {
-                IfcObject IfcObj = ifcTypeObject.ObjectTypeOf.First().RelatedObjects.First();
-                SetAllPropertyValues(IfcObj); //we do not filter on property set name here, just go for all of them
+                if (ifcTypeObject.ObjectTypeOf.Any())
+                {
+                    IfcObject IfcObj = ifcTypeObject.ObjectTypeOf.First().RelatedObjects.FirstOrDefault();
+                    if (IfcObj != null)
+                    {
+                        SetAllPropertyValues(IfcObj); //we do not filter on property set name here, just go for all of them
+                    }
+                    
+                }
+               
             }
         }
 

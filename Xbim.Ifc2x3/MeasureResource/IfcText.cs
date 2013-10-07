@@ -67,8 +67,9 @@ namespace Xbim.Ifc2x3.MeasureResource
                     // boundaries according to specs from http://www.buildingsmart-tech.org/downloads/accompanying-documents/guidelines/IFC2x%20Model%20Implementation%20Guide%20V2-0b.pdf
                     if (c > 126 || c < 32) 
                         sb.AppendFormat(@"\X\{0:X2}", c);
-                    else if ((char)c == '\'')
-                        sb.Append("''");
+                    //removed as this is converting SIZE: 2'x2'x3/4" to SIZE: 2''x2''x3/4" and Manufacturer's to Manufacturer''s 
+                    //else if ((char)c == '\'')
+                    //    sb.Append("''");
                     else if ((char)c == '\\')
                         sb.Append("\\\\");
                     else
