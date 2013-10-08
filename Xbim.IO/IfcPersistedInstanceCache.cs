@@ -1126,7 +1126,7 @@ namespace Xbim.IO
                 }
                 if (caching) //look in the modified cache and find the new ones only
                 {
-                    foreach (var item in createdNew.Where(e => e.Value is TIfcType).ToList()) //force the iteration to avoid concurrency clashes
+                    foreach (var item in createdNew.Where(e => e.Value is TIfcType))//.ToList()) //force the iteration to avoid concurrency clashes
                     {
                         if (entityLabels.Add(item.Key))
                         { 
@@ -1225,7 +1225,7 @@ namespace Xbim.IO
                     // 
                     if (caching) //look in the createnew cache and find the new ones only
                     {
-                        foreach (var item in createdNew.Where(e => e.Value is TIfcType).ToList())
+                        foreach (var item in createdNew.Where(e => e.Value is TIfcType))//.ToList())
                         {
                             if (indexKey == -1) //get all of the type
                             {

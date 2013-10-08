@@ -169,7 +169,7 @@ namespace Xbim.COBie.Client
                 }
                 else
                 {
-                    model.CreateFrom(parameters.ModelFile, xbimFile, _worker.ReportProgress);
+                    model.CreateFrom(parameters.ModelFile, xbimFile, _worker.ReportProgress, true);
                 }
                 model.Open(xbimFile, XbimDBAccess.ReadWrite);
 
