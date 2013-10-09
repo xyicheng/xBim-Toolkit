@@ -604,8 +604,9 @@ namespace Xbim.IO
         /// <param name="entity"></param>
         /// <param name="cache"></param>
         /// <param name="br"></param>
-        /// <param name="unCached">If true instances inside the propert are not added to the cache</param>
-        public static void ReadEntityProperties(this IPersistIfcEntity entity, IfcPersistedInstanceCache cache, BinaryReader br, bool unCached = false)
+        /// <param name="unCached">If true instances inside the properties are not added to the cache</param>
+        /// <param name="fromCache"> If true the instance is read from the cache if not present it is created, used during parsing
+        public static void ReadEntityProperties(this IPersistIfcEntity entity, IfcPersistedInstanceCache cache, BinaryReader br, bool unCached = false,bool fromCache = false)
         {
             P21ParseAction action = (P21ParseAction)br.ReadByte();
 
@@ -649,10 +650,36 @@ namespace Xbim.IO
                         parserState.SetOverrideValue();
                         break;
                     case P21ParseAction.SetObjectValueUInt16:
-                        parserState.SetObjectValue(cache.GetInstance(br.ReadUInt16(), false, unCached));
+                        if (fromCache)
+                        {
+                            int label = br.ReadUInt16();
+                            IPersistIfcEntity refEntity;
+                            if (!parserState.InList && cache.Read.TryGetValue(label, out refEntity)) //if we are in a list then make a forward reference anyway to make sure we maintain list order
+                                parserState.SetObjectValue(refEntity);
+                            else
+                            {
+                                cache.AddForwardReference(new IfcForwardReference(label, parserState.CurrentPropertyId, entity));
+                                parserState.SkipProperty();
+                            }
+                        }
+                        else
+                            parserState.SetObjectValue(cache.GetInstance(br.ReadUInt16(), false, unCached));
                         break;
                     case P21ParseAction.SetObjectValueInt32:
-                        parserState.SetObjectValue(cache.GetInstance(br.ReadInt32(), false, unCached));
+                        if (fromCache)
+                        {
+                            int label = br.ReadInt32();
+                            IPersistIfcEntity refEntity;
+                            if (!parserState.InList && cache.Read.TryGetValue(label, out refEntity)) //if we are in a list then make a forward reference anyway to make sure we maintain list order
+                                parserState.SetObjectValue(refEntity);
+                            else
+                            {
+                                cache.AddForwardReference(new IfcForwardReference(label, parserState.CurrentPropertyId, entity));
+                                parserState.SkipProperty();
+                            }
+                        }
+                        else
+                            parserState.SetObjectValue(cache.GetInstance(br.ReadInt32(), false, unCached));
                         break;
                     case P21ParseAction.SetObjectValueInt64:
                         throw new XbimException("Entity Label is int64, this is not currently supported");

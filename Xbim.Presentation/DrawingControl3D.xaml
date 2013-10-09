@@ -46,7 +46,7 @@
         <!-- You can also add elements here in the xaml -->
         <HelixToolkit:GridLinesVisual3D x:Name="GridLines" Width="10000" Length="10000" MinorDistance="1000" MajorDistance="10000" Thickness="25"/>
         <HelixToolkit:MeshVisual3D x:Name="Highlighted" EdgeDiameter="0"  VertexRadius="0"></HelixToolkit:MeshVisual3D>
-        <HelixToolkit:MeshVisual3D x:Name="FurtherGeometries" EdgeDiameter="0"  VertexRadius="0"></HelixToolkit:MeshVisual3D>
+        <HelixToolkit:MeshVisual3D x:Name="Extras" EdgeDiameter="0"  VertexRadius="0"></HelixToolkit:MeshVisual3D>
     </HelixToolkit:HelixViewport3D>
    
 </UserControl>

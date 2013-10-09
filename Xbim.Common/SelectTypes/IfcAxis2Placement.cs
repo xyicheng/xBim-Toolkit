@@ -14,5 +14,6 @@ namespace Xbim.XbimExtensions.SelectTypes
 {
     public interface IfcAxis2Placement : ExpressSelectType, IfcLayeredItem
     {
+        int Dim { get; }
     }
 }

@@ -54,7 +54,7 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>none</DebugType>
+    <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>..\bin\Release\</OutputPath>
     <DefineConstants>TRACE;SupportActivation</DefineConstants>
@@ -62,6 +62,7 @@
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>
     </DocumentationFile>
+    <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'NugetDistribution|AnyCPU' ">
     <OutputPath>..\bin\NugetDistribution\</OutputPath>
@@ -110,6 +111,7 @@
     <Compile Include="FileReferenceResolver.cs" />
     <Compile Include="IfcFileHeader.cs" />
     <Compile Include="IfcRepresentationItemExtensions.cs" />
+    <Compile Include="Parser\IfcForwardReference.cs" />
     <Compile Include="Parser\XbimP21StringDecoder.cs" />
     <Compile Include="Tree\TreeBuilder.cs" />
     <Compile Include="Tree\TreeComponentStrategy.cs" />
@@ -119,6 +121,7 @@
     <Compile Include="Tree\TreeQueryStrategy.cs" />
     <Compile Include="ViewModels\ClassificationViewModel.cs" />
     <Compile Include="ViewModels\ContainedElementsViewModel.cs" />
+    <Compile Include="ViewModels\GroupViewModel.cs" />
     <Compile Include="ViewModels\IfcProductModelView.cs" />
     <Compile Include="ViewModels\IXbimViewModel.cs" />
     <Compile Include="ViewModels\SpatialViewModel.cs" />
@@ -197,11 +200,11 @@
       <Name>Xbim.Common</Name>
     </ProjectReference>
     <ProjectReference Include="..\Xbim.Ifc.Extensions\Xbim.Ifc2x3.Extensions.csproj">
-      <Project>{09870F18-1796-4A3E-A66D-68DB3DA60B24}</Project>
+      <Project>{6DF47D23-8F4D-4069-A44B-BBDACD3F9AEA}</Project>
       <Name>Xbim.Ifc2x3.Extensions</Name>
     </ProjectReference>
     <ProjectReference Include="..\Xbim.Ifc2x3\Xbim.Ifc2x3.csproj">
-      <Project>{5D4C907D-1293-4E5F-9642-D0862AE4741C}</Project>
+      <Project>{0255E9D0-1087-49D4-B886-C882CA27DD10}</Project>
       <Name>Xbim.Ifc2x3</Name>
     </ProjectReference>
   </ItemGroup>

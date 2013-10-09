@@ -44,7 +44,7 @@ namespace XbimXplorer.Querying
                 {
                     string read = reader.ReadToEnd();
                     txtCommand.Text = read;
-                }
+        }
             }
 #endif
         }
@@ -360,7 +360,7 @@ namespace XbimXplorer.Querying
                             if (mode.ToLower() == "short ")
                                 BeVerbose = false;
                             foreach (var item in ret)
-                            {
+                        {
                                 ReportAdd(ReportEntity(item, 0, Verbose: BeVerbose));
                             }
                         }
@@ -376,7 +376,7 @@ namespace XbimXplorer.Querying
                         }
                         continue;
                     }
-
+                            
                     m = Regex.Match(cmd, @"^zoom (" +
                         @"(?<RegionName>.+$)" +
                         ")", RegexOptions.IgnoreCase);
@@ -463,14 +463,14 @@ namespace XbimXplorer.Querying
                                     msg = string.Format("Clip 1m above storey elevation {0} (height: {1})", pt.Z, transformed.Z + 1);
                                     pz = transformed.Z + 1;
                                 }
-                            }
+                        }
                             if (msg == "")
                             {
                                 ReportAdd(string.Format("Something wrong with storey name: '{0}'", storName));
                                 ReportAdd("Names that should work are: ");
                                 var strs = Model.Instances.OfType<Xbim.Ifc2x3.ProductExtension.IfcBuildingStorey>();
                                 foreach (var str in strs)
-	                            {
+                        {
                                     ReportAdd(string.Format(" - '{0}'", str.Name));
 	                            }
                                 continue;
@@ -511,14 +511,14 @@ namespace XbimXplorer.Querying
                             }
                         }
                         else 
-                        {
+                            {
                             bool bVis = false;
                             if (m.Groups["action"].Value == "on")
                                 bVis = true;
                             ParentWindow.DrawingControl.SetVisibility(Name, bVis);
-                        }
+                            }
                         continue;
-                    }
+                        }
 
 
                     m = Regex.Match(cmd, @"^SimplifyGUI$", RegexOptions.IgnoreCase);
@@ -545,7 +545,7 @@ namespace XbimXplorer.Querying
         {
             TH.DropInto(txtOut.Document);
             TH.Clear();
-        }
+                }
 
         private void ReportAdd(string Text, Brush inColor = null)
         {
@@ -586,12 +586,12 @@ namespace XbimXplorer.Querying
                 }
                 else 
                 {
-                    int j;
-                    if (int.TryParse(sa[i], out j))
-                    {
-                        ia.Add(j);
-                    }
+                int j;
+                if (int.TryParse(sa[i], out j))
+                {
+                    ia.Add(j);
                 }
+            }
             }
             return ia.ToArray();
         }
@@ -808,7 +808,7 @@ namespace XbimXplorer.Querying
                         {
                             sTopParent = " \tfrom: " + topParent.ToString();
                             topParent = topParent.IfcSuperType;
-                        }
+        }
                         sb.AppendSpans(
                             new string[] {
                                 indentationHeader + "- " + item.PropertyInfo.Name + "\t\t",
@@ -821,7 +821,7 @@ namespace XbimXplorer.Querying
                     }
                     sb.AppendFormat(indentationHeader + "Inverses: {0}", ot.IfcInverses.Count());
                     foreach (var item in ot.IfcInverses)
-                    {
+        {
                         var topParent = ot.IfcSuperType;
                         string sTopParent = "";
                         while (topParent != null && topParent.IfcInverses.Where(x => x.PropertyInfo.Name == item.PropertyInfo.Name).Count() > 0)
@@ -908,11 +908,11 @@ namespace XbimXplorer.Querying
                     }
                     sb.AppendFormat("");
                 }
-            }
+        }
 
             return sb;
         }
-
+        
         private void ChildTree(IfcType ot, TextHighliter sb, string indentationHeader, int Indent)
         {
             string sSpace = new string(' ', Indent * 2);
@@ -1042,10 +1042,10 @@ namespace XbimXplorer.Querying
 
             if (Verbose)
                 sb.AppendFormat(IndentationHeader + "- {0} ({1}): {2}",
-                    propName,  // 0
+                propName,  // 0
                     ShortTypeName,  // 1
-                    propVal // 2
-                    );
+                propVal // 2
+                );
             else
             {
                 if ((string)propVal != "<null>" && (string)propVal != "<empty>")

@@ -157,19 +157,22 @@ namespace Xbim.COBie.Client
         /// <returns>COBieBuilder</returns>
         private COBieBuilder GenerateCOBieWorkBook(Params parameters)
         {
-            string xbimFile = Path.ChangeExtension(parameters.ModelFile, "xBIM");
+            string xbimFile = string.Empty;
+            string fileExt = Path.GetExtension(parameters.ModelFile);
             COBieBuilder builder = null;
             LogBackground(String.Format("Loading model {0}...", Path.GetFileName(parameters.ModelFile)));
             using (XbimModel model = new XbimModel())
             {
-
-                if (Path.GetExtension(parameters.ModelFile).ToLower() == ".xbim")
+                if ((fileExt.Equals(".xbim", StringComparison.OrdinalIgnoreCase)) ||
+                    (fileExt.Equals(".xbimf", StringComparison.OrdinalIgnoreCase))
+                   )
                 {
                     xbimFile = parameters.ModelFile;
                 }
-                else
+                else //ifc file
                 {
-                    model.CreateFrom(parameters.ModelFile, xbimFile, _worker.ReportProgress);
+                    xbimFile = Path.ChangeExtension(parameters.ModelFile, "xBIM");
+                    model.CreateFrom(parameters.ModelFile, xbimFile, _worker.ReportProgress, true);
                 }
                 model.Open(xbimFile, XbimDBAccess.ReadWrite);
 
@@ -452,7 +455,7 @@ namespace Xbim.COBie.Client
         private void btnBrowse_Click(object sender, EventArgs e)
         {
             OpenFileDialog dlg = new OpenFileDialog();
-            dlg.Filter = "IFC Files|*.ifc;*.ifcxml;*.ifczip|Xbim Files|*.xbim|XLS Files|*.xls";
+            dlg.Filter = "All XBim Files|*.ifc;*.ifcxml;*.ifczip;*.xbim;*.xbimf|IFC Files|*.ifc;*.ifcxml;*.ifczip|Xbim Files|*.xbim|Xbim Federated Files|*.xbimf|XLS Files|*.xls";
             dlg.Title = "Choose a source model file";
             
             dlg.CheckFileExists = true;

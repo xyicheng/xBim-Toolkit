@@ -21,6 +21,7 @@ using Xbim.Common.Exceptions;
 using System.Globalization;
 using Xbim.Ifc2x3.ExternalReferenceResource;
 using Xbim.IO.DynamicGrouping;
+using Xbim.Ifc2x3.RepresentationResource;
 
 
 namespace Xbim.IO
@@ -49,11 +50,12 @@ namespace Xbim.IO
         protected IIfcFileHeader header;
         private bool disposed = false;
         private XbimModelFactors _modelFactors;
+
+       
         private XbimInstanceCollection instances;
         private XbimEntityCursor editTransactionEntityCursor;
         private bool _deleteOnClose;
         
-       
         const string refDocument = "XbimReferencedModel";
         private XbimReferencedModelCollection _referencedModels = new XbimReferencedModelCollection();
        
@@ -61,6 +63,14 @@ namespace Xbim.IO
         #endregion
 
         #endregion
+
+        /// <summary>
+        /// Model wide factors, precision etc
+        /// </summary>
+        public XbimModelFactors ModelFactors
+        {
+            get { return _modelFactors; }
+        }
 
         public XbimModel()
         {
@@ -108,15 +118,11 @@ namespace Xbim.IO
             g2.GroupElements(@"DynamicGrouping\NRM2IFC.xml");
         }
 
-        public XbimModelFactors GetModelFactors
-        {
-            get
-            {
-                if (_modelFactors == null)
-                {
-                    double angleToRadiansConversionFactor = 0.0174532925199433; //assume degrees
-                    double lengthToMetresConversionFactor = 1; //assume metres
 
+        private void GetModelFactors()
+        {
+            double angleToRadiansConversionFactor = Math.PI / 180; //assume degrees
+                    double lengthToMetresConversionFactor = 1; //assume metres
                     IfcUnitAssignment ua = Instances.OfType<IfcUnitAssignment>().FirstOrDefault();
                     if (ua != null)
                     {
@@ -145,7 +151,6 @@ namespace Xbim.IO
                                 switch (siUnit.UnitType)
                                 {
                                     case IfcUnitEnum.LENGTHUNIT:
-
                                         lengthToMetresConversionFactor = value;
                                         break;
                                     case IfcUnitEnum.PLANEANGLEUNIT:
@@ -156,11 +161,22 @@ namespace Xbim.IO
                                 }
                             }
                         }
-                    }
-                    _modelFactors = new XbimModelFactors(angleToRadiansConversionFactor, lengthToMetresConversionFactor);
-                }
-                return _modelFactors;
             }
+            IEnumerable<IfcGeometricRepresentationContext> gcs = this.Instances.OfType<IfcGeometricRepresentationContext>();
+            double? defaultPrecision = null;
+            //get the Model precision if it is correctly defined
+            foreach (var gc in gcs.Where(g=>!(g is IfcGeometricRepresentationSubContext)))
+            {
+                if (gc.ContextType.HasValue && string.Compare(gc.ContextType.Value, "model", true) == 0)
+                {
+                    if (gc.Precision.HasValue)
+                    {
+                        defaultPrecision = gc.Precision.Value;
+                        break;
+                    }
+                }
+            }
+            _modelFactors = new XbimModelFactors(angleToRadiansConversionFactor, lengthToMetresConversionFactor, defaultPrecision);
         }
         /// <summary>
         /// Starts a transaction to allow bulk updates on the geometry table, FreeGeometry Table should be called when no longer required
@@ -342,7 +358,7 @@ namespace Xbim.IO
         /// If null the contents are loaded into memory and are not persistent
         /// </param>
         /// <returns></returns>
-        public bool CreateFrom(string importFrom, string xbimDbName = null, ReportProgressDelegate progDelegate = null, bool keepOpen = false)
+        public bool CreateFrom(string importFrom, string xbimDbName = null, ReportProgressDelegate progDelegate = null, bool keepOpen = false, bool cacheEntities = false)
         {
             Close();
             string fullPath = Path.GetFullPath(importFrom);
@@ -352,18 +368,18 @@ namespace Xbim.IO
                 throw new FileNotFoundException(fullPath + " file was not found");
             if (string.IsNullOrWhiteSpace(xbimDbName))
                 xbimDbName = Path.ChangeExtension(importFrom, "xBIM");
-
+            
             XbimStorageType toImportStorageType = StorageType(importFrom);
             switch (toImportStorageType)
             {
                 case XbimStorageType.IFCXML:
-                    cache.ImportIfcXml(xbimDbName, importFrom, progDelegate, keepOpen);
+                    cache.ImportIfcXml(xbimDbName, importFrom, progDelegate, keepOpen, cacheEntities);
                     break;
                 case XbimStorageType.IFC:
-                    cache.ImportIfc(xbimDbName, importFrom, progDelegate, keepOpen);
+                    cache.ImportIfc(xbimDbName, importFrom, progDelegate, keepOpen, cacheEntities);
                     break;
                 case XbimStorageType.IFCZIP:
-                    cache.ImportIfcZip(xbimDbName, importFrom, progDelegate, keepOpen);
+                    cache.ImportIfcZip(xbimDbName, importFrom, progDelegate, keepOpen, cacheEntities);
                     break;
                 case XbimStorageType.XBIM:
                     cache.ImportXbim(importFrom, progDelegate);
@@ -372,6 +388,7 @@ namespace Xbim.IO
                 default:
                     return false;
             }
+            if (keepOpen) GetModelFactors();
             return true;
         }
 
@@ -417,7 +434,7 @@ namespace Xbim.IO
                 if (string.IsNullOrWhiteSpace(Path.GetExtension(dbFileName)))
                     dbFileName += ".xBIM";
                 XbimModel model = new XbimModel();
-                model.CreateDatabase(dbFileName);
+                model.CreateDatabase(dbFileName); 
                 model.Open(dbFileName, access,null);
                 model.header = new IfcFileHeader(IfcFileHeader.HeaderCreationMode.InitWithXbimDefaults);
                 model.header.FileName.Name = dbFileName;
@@ -616,7 +633,7 @@ namespace Xbim.IO
                 switch (className)
                 {
                     case "FILE_DESCRIPTION":
-                        return new FileDescription();
+                        return new FileDescription("");
                     case "FILE_NAME":
                         return new FileName();
                     case "FILE_SCHEMA":
@@ -683,6 +700,32 @@ namespace Xbim.IO
         }
 
         /// <summary>
+        /// Begins a cache of all data read from the model, improves performance where data is read many times
+        /// </summary>
+        public void CacheStart()
+        {
+            if (editTransactionEntityCursor == null) //if we are in a transaction caching is on anyway
+                 cache.CacheStart();
+        }
+        /// <summary>
+        /// Clears all read data in the cache
+        /// </summary>
+        public void CacheClear()
+        {
+            if (editTransactionEntityCursor == null) //if we are in a transaction do not clear
+                cache.CacheClear();
+        }
+
+        /// <summary>
+        /// Stops further caching of data and clears the current cache
+        /// </summary>
+        public void CacheStop()
+        {
+            if (editTransactionEntityCursor == null)  //if we are in a transaction do not stop
+                cache.CacheStop();
+        }
+
+        /// <summary>
         /// Opens an Xbim model only, to open Ifc, IfcZip and IfcXML files use the CreatFrom method
         /// </summary>
         /// <param name="fileName"></param>
@@ -695,6 +738,7 @@ namespace Xbim.IO
             {
                 Close();
                 cache.Open(fileName, accessMode); //opens the database
+                GetModelFactors();
                 this.LoadReferenceModels();
                 return true;
             }
@@ -1111,7 +1155,7 @@ namespace Xbim.IO
             cache.EndCaching();
             editTransactionEntityCursor = null;
         }
-
+       
         internal void Flush()
         {
             cache.Write(editTransactionEntityCursor);
@@ -1225,7 +1269,7 @@ namespace Xbim.IO
             get
             {
                 return _referencedModels;
-            }            
+            }
         }
 
         public XbimGeometryData GetGeometryData(XbimGeometryHandle handle)

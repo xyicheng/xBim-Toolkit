@@ -27,6 +27,19 @@ namespace Xbim.IO
     [Serializable]
     public class FileDescription : IIfcFileDescription
     {
+        private void MakeValid()
+        {
+            if (Description.Count == 0)
+            {
+                Description.Add("ViewDefinition [CoordinationView]");
+                if (ImplementationLevel == "")
+                {
+                    ImplementationLevel = "2;1";
+                }
+            }
+            
+        }
+
         public FileDescription()
         {
         }
@@ -38,7 +51,7 @@ namespace Xbim.IO
         }
 
         public List<string> Description = new List<string>(2);
-        public string ImplementationLevel;
+        private string ImplementationLevel;
         public int EntityCount;
 
         #region ISupportIfcParser Members
@@ -71,6 +84,7 @@ namespace Xbim.IO
 
         internal void Write(BinaryWriter binaryWriter)
         {
+            this.MakeValid();
             binaryWriter.Write(Description.Count);
             foreach (string desc in Description)
                 binaryWriter.Write(desc);
@@ -223,9 +237,9 @@ namespace Xbim.IO
             binaryWriter.Write(Organization.Count);
             foreach (string item in Organization)
                 binaryWriter.Write(item);
-            binaryWriter.Write(PreprocessorVersion);
-            binaryWriter.Write(OriginatingSystem);
-            binaryWriter.Write(AuthorizationName);
+            binaryWriter.Write(PreprocessorVersion ?? "");
+            binaryWriter.Write(OriginatingSystem ?? "");
+            binaryWriter.Write(AuthorizationName ?? "");
             binaryWriter.Write(AuthorizationMailingAddress.Count);
             foreach (string item in AuthorizationMailingAddress)
                 binaryWriter.Write(item);
@@ -453,7 +467,6 @@ namespace Xbim.IO
 
         public IfcFileHeader(HeaderCreationMode Mode)
         {
-            // todo: bonghi: here need to create the header in different forms.
             if (Mode == HeaderCreationMode.InitWithXbimDefaults)
             {
                 FileDescription = new FileDescription("2;1");
@@ -470,6 +483,12 @@ namespace Xbim.IO
             }
             else
             {
+                // Please note do not put any value initialisation in here
+                // Any value initialised here is added to ALL models read from IFC
+                // 
+                // Any information required before writing a file for schema constraint needs to be checked upon writing
+                // e.g. cfr. FileDescription.MakeValid();
+                //
                 FileDescription = new FileDescription();
                 FileName = new FileName();
                 FileSchema = new FileSchema();
@@ -504,7 +523,6 @@ namespace Xbim.IO
             {
                 FileDescription = value;
             }
-
         }
 
         IIfcFileName IIfcFileHeader.FileName

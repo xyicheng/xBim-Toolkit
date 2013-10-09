@@ -11,7 +11,7 @@ namespace Xbim.Presentation
 {
     /// <summary>
     /// Provides a container for entity selections capable of undo/redo operations and notification of changes.
-        /// </summary>
+    /// </summary>
     public class EntitySelection : INotifyCollectionChanged, IEnumerable<IPersistIfcEntity>
     {
         private List<SelectionEvent> _selectionLog;
@@ -131,7 +131,6 @@ namespace Xbim.Presentation
             ResetLog();
         }
 
-
         public void Remove(IPersistIfcEntity entity)
         {
             Remove(new IPersistIfcEntity[] { entity });
@@ -158,8 +157,6 @@ namespace Xbim.Presentation
                 position = _selectionLog.Count - 1;
             }
         }
-
-        //    _selectionLog.Add(new SelectionEvent() {Action = Action.ADD, Entities = check});
 
         private enum Action
         {

@@ -506,19 +506,19 @@ namespace Xbim.Ifc2x3.ProcessExtensions
                     _scheduleFinish = (IfcDateTimeSelect)value.EntityVal;
                     break;
                 case 13:
-                    _scheduleDuration = (IfcTimeMeasure)value.EntityVal;
+                    _scheduleDuration = (IfcTimeMeasure)value.RealVal;
                     break;
                 case 14:
-                    _actualDuration = (IfcTimeMeasure)value.EntityVal;
+                    _actualDuration = (IfcTimeMeasure)value.RealVal;
                     break;
                 case 15:
-                    _remainingTime = (IfcTimeMeasure)value.EntityVal;
+                    _remainingTime = (IfcTimeMeasure)value.RealVal;
                     break;
                 case 16:
-                    _freeFloat = (IfcTimeMeasure)value.EntityVal;
+                    _freeFloat = (IfcTimeMeasure)value.RealVal;
                     break;
                 case 17:
-                    _totalFloat = (IfcTimeMeasure)value.EntityVal;
+                    _totalFloat = (IfcTimeMeasure)value.RealVal;
                     break;
                 case 18:
                     _isCritical = (IfcBoolean)value.BooleanVal;
@@ -527,10 +527,10 @@ namespace Xbim.Ifc2x3.ProcessExtensions
                     _statusTime = (IfcDateTimeSelect)value.EntityVal;
                     break;
                 case 20:
-                    _startFloat = (IfcTimeMeasure)value.EntityVal;
+                    _startFloat = (IfcTimeMeasure)value.RealVal;
                     break;
                 case 21:
-                    _finishFloat = (IfcTimeMeasure)value.EntityVal;
+                    _finishFloat = (IfcTimeMeasure)value.RealVal;
                     break;
                 case 22:
                     _completion = (IfcPositiveRatioMeasure)value.RealVal;

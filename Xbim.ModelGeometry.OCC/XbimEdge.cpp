@@ -64,6 +64,28 @@ namespace Xbim
 					vertEx.Next();
 				return gcnew XbimVertexPoint(TopoDS::Vertex(vertEx.Current()));
 			}
+
+
+			String^ XbimEdge::GetBuildEdgeErrorMessage(BRepBuilderAPI_EdgeError edgeErr)
+			{
+				switch (edgeErr)
+				{
+				case BRepBuilderAPI_PointProjectionFailed:
+					return "Point Projection Failed";
+				case BRepBuilderAPI_ParameterOutOfRange:
+					return "Parameter Out Of Range";
+				case BRepBuilderAPI_DifferentPointsOnClosedCurve:
+					return "Different Points On Closed Curve";
+				case BRepBuilderAPI_PointWithInfiniteParameter:
+					return "Point With Infinite Parameter";
+				case BRepBuilderAPI_DifferentsPointAndParameter:
+					return "Differents Point And Parameter";
+				case BRepBuilderAPI_LineThroughIdenticPoints:
+					return "Line Through Identical Points";
+				default:
+					return "Unknown Error";
+				}
+			}
 		}
 	}
 }

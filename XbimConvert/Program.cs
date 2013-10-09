@@ -37,12 +37,12 @@ namespace XbimConvert
             // We need to use the logger early to initialise before we use EventTrace
             Logger.Debug("XbimConvert starting...");
 
-            arguments = Params.ParseParams(args);
+                arguments = Params.ParseParams(args);
 
-            if (!arguments.IsValid)
-            {
-                return -1;
-            }
+                if (!arguments.IsValid)
+                {
+                    return -1;
+                }
 
 
             var files = Directory.GetFiles(arguments.specdir, arguments.specpart);
@@ -51,82 +51,88 @@ namespace XbimConvert
                 Console.WriteLine("Invalid IFC filename or filter: {0}, current directory is: {1}", args[0], Directory.GetCurrentDirectory());
                 return -1;
             }
+
+            long parseTime = 0;
+            long geomTime = 0;
             foreach (var origFileName in files)
             {
                 using (EventTrace eventTrace = LoggerFactory.CreateEventTrace())
                 {
-                    try
-                    {
+                try
+                {
                         Logger.InfoFormat("Starting conversion of {0}", origFileName);
                         string xbimFileName = BuildFileName(origFileName, ".xbim");
-                        //string xbimGeometryFileName = BuildFileName(arguments.IfcFileName, ".xbimGC");
-                        System.Diagnostics.Stopwatch watch = new System.Diagnostics.Stopwatch();
-                        ReportProgressDelegate progDelegate = delegate(int percentProgress, object userState)
+                    //string xbimGeometryFileName = BuildFileName(arguments.IfcFileName, ".xbimGC");
+                    System.Diagnostics.Stopwatch watch = new System.Diagnostics.Stopwatch();
+                    ReportProgressDelegate progDelegate = delegate(int percentProgress, object userState)
+                    {
+                        if (!arguments.IsQuiet)
                         {
-                            if (!arguments.IsQuiet)
-                            {
-                                Console.Write(string.Format("{0:D5} Converted", percentProgress));
-                                ResetCursor(Console.CursorTop);
-                            }
-                        };
-                        watch.Start();
-                        using (XbimModel model = ParseModelFile(origFileName, xbimFileName))
+                            Console.Write(string.Format("{0:D5} Converted", percentProgress));
+                            ResetCursor(Console.CursorTop);
+                        }
+                    };
+                    watch.Start();
+                    using (XbimModel model = ParseModelFile(origFileName, xbimFileName, arguments.Caching))
+                    {
+                        //model.Open(xbimFileName, XbimDBAccess.ReadWrite);
+                        parseTime = watch.ElapsedMilliseconds;
+                        if (!arguments.NoGeometry)
                         {
-                            model.Open(xbimFileName, XbimDBAccess.ReadWrite);
-                            if (!arguments.NoGeometry)
+                           
+                            XbimMesher.GenerateGeometry(model, Logger, progDelegate);
+                            geomTime = watch.ElapsedMilliseconds - parseTime;
+                            if (arguments.GenerateScene)
                             {
-                                XbimMesher.GenerateGeometry(model, Logger, progDelegate);
-                                if (arguments.GenerateScene)
-                                {
-                                    Stopwatch sceneTimer = new Stopwatch();
-                                    if (!arguments.IsQuiet)
-                                        Console.Write("Scene generation started...");
-                                    sceneTimer.Start();
-                                    XbimSceneBuilder sb = new XbimSceneBuilder();
+                                Stopwatch sceneTimer = new Stopwatch();
+                                if (!arguments.IsQuiet)
+                                    Console.Write("Scene generation started...");
+                                sceneTimer.Start();
+                                XbimSceneBuilder sb = new XbimSceneBuilder();
                                     sb.Options = arguments.GenerateSceneOptions;
-                                    string xbimSceneName = BuildFileName(xbimFileName, ".xbimScene");
+                                string xbimSceneName = BuildFileName(xbimFileName, ".xbimScene");
                                     sb.BuildGlobalScene(model, xbimSceneName,
                                         !arguments.IsQuiet ? Logger : null
                                         );
-                                    sceneTimer.Stop();
-                                    if (!arguments.IsQuiet)
-                                        Console.WriteLine(string.Format(" Completed in {0} ms", sceneTimer.ElapsedMilliseconds));
+                                sceneTimer.Stop();
+                                if (!arguments.IsQuiet)
+                                    Console.WriteLine(string.Format(" Completed in {0} ms", sceneTimer.ElapsedMilliseconds));
 
-                                }
                             }
-                            model.Close();
-                            watch.Stop();
                         }
-
-                        // XbimModel.Terminate();
-                        GC.Collect();
-                        ResetCursor(Console.CursorTop + 1);
-                        Console.WriteLine("Success. Processed in " + watch.ElapsedMilliseconds + " ms");
+                        model.Close();
+                        watch.Stop();
                     }
-                    catch (Exception e)
-                    {
+                   
+                   // XbimModel.Terminate();
+                    GC.Collect();
+                    ResetCursor(Console.CursorTop + 1);
+                    Console.WriteLine("Success. Parsed in  " + parseTime + " ms, geometry meshed in " + geomTime + " ms, total time " + (parseTime+geomTime) + " ms.");
+                }
+                catch (Exception e)
+                {
                         if (e is XbimException || e is NotImplementedException)
-                        {
-                            // Errors we have already handled or know about. Keep details brief in the log
+                    {
+                         // Errors we have already handled or know about. Keep details brief in the log
                             Logger.ErrorFormat("One or more errors converting {0}. Exiting...", origFileName);
                             CreateLogFile(origFileName, eventTrace.Events);
 
                             DisplayError(string.Format("One or more errors converting {0}, {1}", origFileName, e.Message));
-                        }
-                        else
-                        {
-                            // Unexpected failures. Log exception details
+                    }
+                    else
+                    {
+                        // Unexpected failures. Log exception details
                             Logger.Fatal(String.Format("Fatal Error converting {0}. Exiting...", origFileName), e);
                             CreateLogFile(origFileName, eventTrace.Events);
 
                             DisplayError(string.Format("Fatal Error converting {0}, {1}", origFileName, e.Message));
-                        }
                     }
-                    int errors = (from e in eventTrace.Events
-                                  where (e.EventLevel > EventLevel.INFO)
-                                  select e).Count();
-                    if (errors > 0)
-                    {
+                }
+                int errors = (from e in eventTrace.Events
+                             where (e.EventLevel > EventLevel.INFO)
+                             select e).Count();
+                if (errors > 0)
+                {
                         CreateLogFile(origFileName, eventTrace.Events);
                     }
                     totErrors += errors;
@@ -142,7 +148,7 @@ namespace XbimConvert
             ResetCursor(Console.CursorTop + 1);
             Console.WriteLine(message);
         }
-
+               
         private static IEnumerable<IfcProduct> GetProducts(XbimModel model)
         {
             IEnumerable<IfcProduct> result = null;
@@ -173,9 +179,10 @@ namespace XbimConvert
             return result;
         }
 
-        private static XbimModel ParseModelFile(string inFileName, string xbimFileName)
+        private static XbimModel ParseModelFile(string inFileName, string xbimFileName, bool caching)
         {
             XbimModel model = new XbimModel();
+           
             //create a callback for progress
             switch (Path.GetExtension(inFileName).ToLowerInvariant())
             {
@@ -192,17 +199,17 @@ namespace XbimConvert
                                 Console.Write(string.Format("{0:D2}% Parsed", percentProgress));
                                 ResetCursor(Console.CursorTop);
                             }
-                        }
+                        },true, caching
                         );
                     break;
                 case ".xbim":
-
+                    
                     model = new XbimModel();
                     break;
                 default:
                     throw new NotImplementedException(String.Format("XbimConvert does not support {0} file formats currently", Path.GetExtension(inFileName)));
             }
-
+            
             return model;
         }
 
@@ -287,5 +294,5 @@ namespace XbimConvert
 
     }
 
-
+     
 }

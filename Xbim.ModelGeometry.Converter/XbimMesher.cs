@@ -14,6 +14,11 @@ using Xbim.ModelGeometry.Scene.Clustering;
 using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 using System.Reflection;
+using Xbim.Ifc2x3.GeometricModelResource;
+using System.Runtime.InteropServices;
+using Xbim.Ifc2x3.RepresentationResource;
+using Xbim.Ifc2x3.GeometryResource;
+using Xbim.Ifc2x3.SharedBldgElements;
 
 namespace Xbim.ModelGeometry.Converter
 {
@@ -80,7 +85,11 @@ namespace Xbim.ModelGeometry.Converter
             {
                 if (Logger != null)
                 {
+#if DEBUG
+                    Logger.Error("Failed to load Xbim.ModelGeometry.OCCd.dll Please ensure it is installed correctly");
+#else
                     Logger.Error("Failed to load Xbim.ModelGeometry.OCC.dll Please ensure it is installed correctly");
+#endif
                 }
                 return;
             }
@@ -89,15 +98,21 @@ namespace Xbim.ModelGeometry.Converter
             if (engine == null)
             {
                 if (Logger != null)
-                {
+                {                   
+#if DEBUG
+                    Logger.Error("Failed to create Xbim Geometry engine. Please ensure Xbim.ModelGeometry.OCCd.dll is installed correctly");
+#else
                     Logger.Error("Failed to create Xbim Geometry engine. Please ensure Xbim.ModelGeometry.OCC.dll is installed correctly");
+#endif
                 }
                 return;
             }
            
             //now convert the geometry
             IEnumerable<IfcProduct> toDraw = model.InstancesLocal.OfType<IfcProduct>().Where(t => !(t is IfcFeatureElement));
-            if (!toDraw.Any()) return; //nothing to do
+            //List<IfcProduct> toDraw = new List<IfcProduct>();
+            //  toDraw.Add(model.Instances[513489] as IfcProduct);
+            if (!toDraw.Any()) return; //othing to do
             TransformGraph graph = new TransformGraph(model);
             //create a new dictionary to hold maps
             ConcurrentDictionary<int, Object> maps = new ConcurrentDictionary<int, Object>();
@@ -114,18 +129,11 @@ namespace Xbim.ModelGeometry.Converter
 
             try
             {
-                //Dictionary<int, IXbimGeometryModel> solids = new Dictionary<int, IXbimGeometryModel>();
-                //foreach (var item in model.Instances.OfType<IfcSolidModel>())
-                //{
-                //    IXbimGeometryModel geomModel = engine.GetGeometry3D(item, maps);
-                //    solids.Add(item.EntityLabel, geomModel);
-                //}
-
                 //use parallel as this improves the OCC geometry generation greatly
                 ParallelOptions opts = new ParallelOptions();
                 opts.MaxDegreeOfParallelism = 16;
                 XbimRect3D bounds = XbimRect3D.Empty;
-                double deflection = 4;// model.GetModelFactors.DeflectionTolerance;
+                double deflection =  model.ModelFactors.DeflectionTolerance;
 #if DOPARALLEL
                 Parallel.ForEach<TransformNode>(graph.ProductNodes.Values, opts, node => //go over every node that represents a product
 #else
@@ -133,12 +141,14 @@ namespace Xbim.ModelGeometry.Converter
 #endif
                 {
                     IfcProduct product = node.Product(model);
+
                     try
                     {
                         IXbimGeometryModel geomModel = engine.GetGeometry3D(product, maps);
                         if (geomModel != null)  //it has geometry
                         {
                             XbimMatrix3D m3d = node.WorldMatrix();
+                            
                             if (geomModel.IsMap) //do not process maps now
                             {
                                 MapData toAdd = new MapData(geomModel, m3d, product);
@@ -162,8 +172,8 @@ namespace Xbim.ModelGeometry.Converter
                                 }
                                 else
                                 {
-                                    List<XbimTriangulatedModel> tm = geomModel.Mesh();
-                                    XbimRect3D bb = geomModel.GetBoundingBox();
+                                    XbimTriangulatedModelCollection tm = geomModel.Mesh(deflection);
+                                    XbimRect3D bb = tm.Bounds;
 
                                     byte[] matrix = m3d.ToArray(true);
                                     short? typeId = IfcMetaData.IfcTypeId(product);
@@ -219,16 +229,17 @@ namespace Xbim.ModelGeometry.Converter
                                 {
                                     percentageParsed = newPercentage;
                                     progDelegate(percentageParsed, "Meshing");
-                                }
-                            }
+                        }
+                    }
                         }
                     }
                     catch (Exception e1)
                     {
-                        String message = String.Format("Error Triangulating product geometry of entity {0} - {1}",
+                        String message = String.Format("Error Triangulating product geometry of entity #{0} - {1}",
                             product.EntityLabel,
-                            product.ToString());
-                        if (Logger != null) Logger.Warn(message, e1);
+                            product.GetType().Name
+                            );
+                        if (Logger != null) Logger.Error(message, e1);
                     }
                 }
 #if DOPARALLEL
@@ -353,7 +364,7 @@ namespace Xbim.ModelGeometry.Converter
 
         private static XbimRegionCollection PartitionWorld(XbimModel model, XbimRect3D bounds)
         {
-            float metre = (float)model.GetModelFactors.OneMetre;
+            float metre = (float)model.ModelFactors.OneMetre;
             XbimRegionCollection regions = new XbimRegionCollection();
             if (bounds.Length() / metre <= MaxWorldSize)
             {
@@ -384,8 +395,8 @@ namespace Xbim.ModelGeometry.Converter
 
         private static void WriteGeometry(XbimModel model, ConcurrentDictionary<int, int[]> written, IXbimGeometryModel geomModel, ref XbimRect3D bounds, XbimMatrix3D m3d, IfcProduct product, double deflection)
         {
-            List<XbimTriangulatedModel> tm = geomModel.Mesh(true, deflection);
-            XbimRect3D bb = geomModel.GetBoundingBox();
+            XbimTriangulatedModelCollection tm = geomModel.Mesh(deflection);
+            XbimRect3D bb = tm.Bounds;
             byte[] matrix = m3d.ToArray(true);
             short? typeId = IfcMetaData.IfcTypeId(product);
             XbimGeometryCursor geomTable = model.GetGeometryTable();

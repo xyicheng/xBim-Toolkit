@@ -62,6 +62,7 @@ namespace Xbim.XbimExtensions
         public void TransformBy(XbimMatrix3D matrix)
         {
             transform = XbimMatrix3D.Multiply(transform, matrix);
+           
         }
 
         public byte[] TransformData()

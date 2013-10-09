@@ -124,5 +124,10 @@ namespace Xbim.Ifc2x3.GeometryResource
         }
 
         #endregion
+
+        public new int Dim
+        {
+            get { return base.Dim; }
+        }
     }
 }

@@ -85,6 +85,7 @@
                 <MenuItem Header="_SaveAs" Command="SaveAs"/>
                 <MenuItem Header="_Query" Click="OpenQuery" />
                 <MenuItem Header="_Close" Command="Close" />
+                <MenuItem Header="S_eparate" Click="SeparateMenuItem_Click" />
             </MenuItem>
             <MenuItem Header="Federate">
                 <MenuItem Header="_Create" Command="{x:Static local:XplorerMainWindow.CreateFederationCmd}" />
@@ -146,6 +147,9 @@
             </MenuItem>
             <MenuItem Header="COBie">
                 <MenuItem Header="_Export" Command="{x:Static local:XplorerMainWindow.ExportCOBieCmd}" />
+            </MenuItem>
+            <MenuItem Header="About" Click="About_Click">
+                
             </MenuItem>
 
         </Menu>

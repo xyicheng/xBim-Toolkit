@@ -23,6 +23,9 @@ using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.Interfaces;
 using Microsoft.Isam.Esent.Interop;
 using System.Globalization;
+using System.Threading.Tasks;
+using System.Collections.Concurrent;
+using System.Threading;
 #endregion
 
 namespace Xbim.IO.Parser
@@ -57,7 +60,10 @@ namespace Xbim.IO.Parser
         public event ReportProgressDelegate ProgressStatus;
         private int _percentageParsed;
         private long _streamSize = -1;
-        
+        private BlockingCollection<Tuple<int,Type,byte[]>> toProcess;
+        private BlockingCollection<Tuple<int, short, List<int>, byte[], bool>> toStore;
+        Task cacheProcessor;
+        Task storeProcessor;
         private BinaryWriter _binaryWriter;
         
         private int _currentLabel;
@@ -78,7 +84,8 @@ namespace Xbim.IO.Parser
    
        
         private XbimEntityCursor table;
-        private XbimLazyDBTransaction transaction;
+       
+        private IfcPersistedInstanceCache modelCache;
         const int _transactionBatchSize = 100;
         private int _entityCount = 0;
 
@@ -86,13 +93,16 @@ namespace Xbim.IO.Parser
         {
             get { return _entityCount; }
         }
+
         
-        internal P21toIndexParser(Stream inputP21,  XbimEntityCursor table, XbimLazyDBTransaction transaction)
+        
+        internal P21toIndexParser(Stream inputP21,  XbimEntityCursor table,  IfcPersistedInstanceCache cache)
             : base(inputP21)
         {
            
             this.table = table;
-            this.transaction = transaction;
+          //  this.transaction = transaction;
+            this.modelCache = cache;
             _entityCount = 0;
             if (inputP21.CanSeek)
                 _streamSize = inputP21.Length;
@@ -111,11 +121,84 @@ namespace Xbim.IO.Parser
         internal override void BeginParse()
         {
             _binaryWriter = new BinaryWriter(new MemoryStream(0x7FFF));
+            toStore = new BlockingCollection<Tuple<int, short, List<int>, byte[], bool>>(512);
+            if (this.modelCache.IsCaching)
+            {
+                toProcess = new BlockingCollection<Tuple<int, Type, byte[]>>();
+                cacheProcessor = Task.Factory.StartNew(() =>
+                    {
+                        try
+                        {
+                            // Consume the BlockingCollection 
+                            while (!toProcess.IsCompleted)
+                            {
+                                Tuple<int, Type, byte[]> h = toProcess.Take();
+                                this.modelCache.GetOrCreateInstanceFromCache(h.Item1, h.Item2, h.Item3);
+                            }
+
+                        }
+                        catch (InvalidOperationException)
+                        {
+
+                        }
+                    }
+                    );
+
+            }
+            storeProcessor = Task.Factory.StartNew(() =>
+            {
+
+                using (var transaction = table.BeginLazyTransaction())
+                {
+                    while (!toStore.IsCompleted)
+                    {
+                        try
+                        {
+                            Tuple<int, short, List<int>, byte[], bool> h = toStore.Take(CancellationToken.None);
+                            table.AddEntity(h.Item1, h.Item2, h.Item3, h.Item4, h.Item5, transaction);
+                            if (toStore.IsCompleted)
+                                table.WriteHeader(Header);
+                            long remainder = _entityCount % _transactionBatchSize;
+                            if (remainder == _transactionBatchSize - 1)
+                            {
+                                transaction.Commit();
+                                transaction.Begin();
+                            }
+                        }
+                        catch (SystemException)
+                        {
+                            
+                            // An InvalidOperationException means that Take() was called on a completed collection
+                            //OperationCanceledException can also be called
+
+                        }
+                    }
+                    transaction.Commit();
+                }
+                   
+               
+            }
+            );
         }
 
         internal override void EndParse()
         {
-           
+            toStore.CompleteAdding();
+            storeProcessor.Wait();
+            if (this.modelCache.IsCaching)
+            {
+                toProcess.CompleteAdding();
+                cacheProcessor.Wait();
+                cacheProcessor.Dispose();
+                cacheProcessor = null;
+                while (this.modelCache.ForwardReferences.Count > 0)
+                {
+                    IfcForwardReference forwardRef = this.modelCache.ForwardReferences.Take();
+                    forwardRef.Resolve(this.modelCache.Read);
+                }
+            }
+            storeProcessor.Dispose();
+            storeProcessor = null;
             Dispose();
         }
 
@@ -184,7 +267,7 @@ namespace Xbim.IO.Parser
             MemoryStream data = _binaryWriter.BaseStream as MemoryStream;
             data.SetLength(0);
 
-           // _binaryWriter.Write((byte)P21ParseAction.NewEntity);
+          
             if (_streamSize != -1 && ProgressStatus != null)
             {
                 Scanner sc = (Scanner)this.Scanner;
@@ -239,18 +322,10 @@ namespace Xbim.IO.Parser
                 _binaryWriter.Write((byte)P21ParseAction.EndEntity);
                 IfcType ifcType = IfcMetaData.IfcType(_currentType);
                 MemoryStream data = _binaryWriter.BaseStream as MemoryStream;
-                if (_indexKeyValues.Count > 20) //clear the cache if we have a lot of index keys
-                {
-                    transaction.Commit();
-                    transaction.Begin();
-                }
-                table.AddEntity(_currentLabel, ifcType.TypeId, _indexKeyValues, data.ToArray(), ifcType.IndexedClass, transaction);
-                long remainder =  _entityCount % _transactionBatchSize ;
-                if (remainder == _transactionBatchSize - 1)
-                {
-                    transaction.Commit();
-                    transaction.Begin();
-                }
+                byte[] bytes =  data.ToArray();
+                List<int> keys = new List<int>(_indexKeyValues);
+                toStore.Add(new Tuple<int, short, List<int>, byte[], bool>(_currentLabel, ifcType.TypeId, keys, bytes, ifcType.IndexedClass));
+                if (this.modelCache.IsCaching) toProcess.Add(new Tuple<int, Type, byte[]>(_currentLabel, ifcType.Type, bytes)); 
             }
 
         }

@@ -22,6 +22,7 @@ using System.Globalization;
 using ICSharpCode.SharpZipLib.Zip;
 using Xbim.Ifc2x3.PresentationAppearanceResource;
 using System.Collections.Concurrent;
+using System.Threading;
 
 
 namespace Xbim.IO
@@ -73,9 +74,21 @@ namespace Xbim.IO
        
         #endregion
         #region Cached data
-        protected Dictionary<int, IPersistIfcEntity> read = new Dictionary<int, IPersistIfcEntity>();
-        protected Dictionary<int, IPersistIfcEntity> modified = new Dictionary<int, IPersistIfcEntity>();
-        protected Dictionary<int, IPersistIfcEntity> createdNew = new Dictionary<int, IPersistIfcEntity>();
+        private ConcurrentDictionary<int, IPersistIfcEntity> read = new ConcurrentDictionary<int, IPersistIfcEntity>();
+
+        internal ConcurrentDictionary<int, IPersistIfcEntity> Read
+        {
+            get { return read; }
+           
+        }
+        protected ConcurrentDictionary<int, IPersistIfcEntity> modified = new ConcurrentDictionary<int, IPersistIfcEntity>();
+        protected ConcurrentDictionary<int, IPersistIfcEntity> createdNew = new ConcurrentDictionary<int, IPersistIfcEntity>();
+        private BlockingCollection<IfcForwardReference> forwardReferences = new BlockingCollection<IfcForwardReference>();
+
+        internal BlockingCollection<IfcForwardReference> ForwardReferences
+        {
+            get { return forwardReferences; }
+        }
         #endregion
 
         private string _databaseName;
@@ -83,6 +96,7 @@ namespace Xbim.IO
         private bool disposed = false;
         static private ComparePropertyInfo comparePropInfo = new ComparePropertyInfo();
         private bool caching = false;
+        private bool previousCaching;
         private class ComparePropertyInfo : IEqualityComparer<PropertyInfo>
         {
             public bool Equals(PropertyInfo x, PropertyInfo y)
@@ -304,7 +318,8 @@ namespace Xbim.IO
         }
         #endregion
 
-
+       
+       
         /// <summary>
         ///  Opens an xbim model server file, exception is thrown if errors are encountered
         /// </summary>
@@ -408,30 +423,35 @@ namespace Xbim.IO
         /// </summary>
         /// <param name="progressHandler"></param>
         /// <returns></returns>
-        public void ImportIfc(string xbimDbName, string toImportIfcFilename, ReportProgressDelegate progressHandler = null, bool keepOpen = false)
+        public void ImportIfc(string xbimDbName, string toImportIfcFilename, ReportProgressDelegate progressHandler = null, bool keepOpen = false, bool cacheEntities = false)
         {
+            
             CreateDatabase(xbimDbName);
             Open(xbimDbName, XbimDBAccess.Exclusive);
             var table = GetEntityTable();
+            if (cacheEntities) this.CacheStart();
             try
             {
+                using (FileStream reader = new FileStream(toImportIfcFilename, FileMode.Open, FileAccess.Read))
+                {
+                    forwardReferences = new BlockingCollection<IfcForwardReference>();
+                    using (P21toIndexParser part21Parser = new P21toIndexParser(reader, table, this))
+                    {
+                        if (progressHandler != null) part21Parser.ProgressStatus += progressHandler;
+                        part21Parser.Parse();
+                        _model.Header = part21Parser.Header;       
+                        if (progressHandler != null) part21Parser.ProgressStatus -= progressHandler;
+                    }
+                }
+                // the header used to be written a few lines above just after being assigned but should be ok here too.
+                // todo: bonghi: ask SRL if it should be elsewhere
                 using (var transaction = table.BeginLazyTransaction())
                 {
-                    using (FileStream reader = new FileStream(toImportIfcFilename, FileMode.Open, FileAccess.Read))
-                    {
-                        using (P21toIndexParser part21Parser = new P21toIndexParser(reader, table, transaction))
-                        {
-                            if (progressHandler != null) part21Parser.ProgressStatus += progressHandler;
-                            part21Parser.Parse();
-                            _model.Header = part21Parser.Header;
-                            table.WriteHeader(part21Parser.Header);
-                            if (progressHandler != null) part21Parser.ProgressStatus -= progressHandler;
-                        }
-                    }
+                    table.WriteHeader(_model.Header);
                     transaction.Commit();
                 }
                 FreeTable(table);
-                if(!keepOpen) Close();
+                if (!keepOpen) Close();
             }
             catch (Exception e)
             {
@@ -446,11 +466,12 @@ namespace Xbim.IO
         /// </summary>
         /// <param name="toImportFilename"></param>
         /// <param name="progressHandler"></param>
-        public void ImportIfcZip(string xbimDbName, string toImportFilename, ReportProgressDelegate progressHandler = null, bool keepOpen = false)
+        public void ImportIfcZip(string xbimDbName, string toImportFilename, ReportProgressDelegate progressHandler = null, bool keepOpen = false, bool cacheEntities = false)
         {
             CreateDatabase(xbimDbName);
             Open(xbimDbName, XbimDBAccess.Exclusive);
             var table = GetEntityTable();
+            if (cacheEntities) this.CacheStart();
             try 
             {
                 using (FileStream fileStream = File.OpenRead(toImportFilename))
@@ -470,23 +491,25 @@ namespace Xbim.IO
                             {
                                 using (ZipFile zipFile = new ZipFile(toImportFilename))
                                 {
+
+                                    using (Stream reader = zipFile.GetInputStream(entry))
+                                    {
+                                        forwardReferences = new BlockingCollection<IfcForwardReference>();
+                                        using (P21toIndexParser part21Parser = new P21toIndexParser(reader, table, this))
+                                        {
+                                            if (progressHandler != null) part21Parser.ProgressStatus += progressHandler;
+                                            part21Parser.Parse();
+                                            _model.Header = part21Parser.Header;
+                                            if (progressHandler != null) part21Parser.ProgressStatus -= progressHandler;
+                                        }
+                                    }
                                     using (var transaction = table.BeginLazyTransaction())
                                     {
-                                        using (Stream reader = zipFile.GetInputStream(entry))
-                                        {
-                                            using (P21toIndexParser part21Parser = new P21toIndexParser(reader, table, transaction))
-                                            {
-                                                if (progressHandler != null) part21Parser.ProgressStatus += progressHandler;
-                                                part21Parser.Parse();
-                                                _model.Header = part21Parser.Header;
-                                                table.WriteHeader(part21Parser.Header);
-                                                if (progressHandler != null) part21Parser.ProgressStatus -= progressHandler;
-                                            }
-                                        }
+                                        table.WriteHeader(_model.Header);
                                         transaction.Commit();
                                     }
                                     FreeTable(table);
-                                    if(!keepOpen) Close();
+                                    if (!keepOpen) Close();
                                     return; // we only want the first file
                                 }
                             }
@@ -631,11 +654,12 @@ namespace Xbim.IO
         /// <summary>
         ///   Imports an Xml file memory model into the model server, only call when the database instances table is empty
         /// </summary>
-        public void ImportIfcXml(string xbimDbName, string xmlFilename, ReportProgressDelegate progressHandler = null, bool keepOpen = false)
+        public void ImportIfcXml(string xbimDbName, string xmlFilename, ReportProgressDelegate progressHandler = null, bool keepOpen = false, bool cacheEntities = false)
         {
             CreateDatabase(xbimDbName);
             Open(xbimDbName, XbimDBAccess.Exclusive);
             var table = GetEntityTable();
+            if (cacheEntities) this.CacheStart();
             try
             {
                 using (var transaction = table.BeginLazyTransaction())
@@ -647,7 +671,7 @@ namespace Xbim.IO
                         {
                             XmlReaderSettings settings = new XmlReaderSettings();
                             settings.CheckCharacters = false; //has no impact
-                       
+                            forwardReferences = new BlockingCollection<IfcForwardReference>();
                             XmlReader xmlReader = XmlReader.Create(xmlTextReader, settings);
                             settings.CheckCharacters = false;
                             IfcXmlReader reader = new IfcXmlReader();
@@ -834,9 +858,10 @@ namespace Xbim.IO
             XbimInstanceHandle h = cursor.AddEntity(t);
             IPersistIfcEntity entity = (IPersistIfcEntity)Activator.CreateInstance(t);
             entity.Bind(_model, h.EntityLabel); //bind it, the object is new and empty so the label is positive
-            this.read.Add(h.EntityLabel, entity);
-            modified.Add(h.EntityLabel, entity);
-            createdNew.Add(h.EntityLabel, entity);
+            entity= this.read.GetOrAdd(h.EntityLabel, entity);
+            modified.TryAdd(h.EntityLabel, entity);
+            createdNew.TryAdd(h.EntityLabel, entity);
+           
             return entity;
         }
 
@@ -855,6 +880,13 @@ namespace Xbim.IO
             //ToCreate.Add(entity);
             return entity;
         }
+     
+
+        internal void AddForwardReference(IfcForwardReference forwardReference)
+        {
+            forwardReferences.Add(forwardReference);
+        }
+
 
         /// <summary>
         /// Deprecated. Use CountOf, returns the number of instances of the specified type
@@ -939,6 +971,44 @@ namespace Xbim.IO
                 return GetInstanceFromStore(posLabel, loadProperties, unCached);
         }
 
+
+        /// <summary>
+        /// Looks for this instance in the cache and returns it, if not found it creates a new instance and adds it to the cache
+        /// </summary>
+        /// <param name="label">Entity label to create</param>
+        /// <param name="type">If not null creates an instance of this type, else creates an unknown Ifc Type</param>
+        /// <param name="properties">if not null populates all properties of the instance</param>
+        /// <returns></returns>
+        public IPersistIfcEntity GetOrCreateInstanceFromCache(int label, Type type, byte[] properties)
+        {
+            Debug.Assert(caching); //must be caching to call this
+            int posLabel = Math.Abs(label);
+            IPersistIfcEntity entity;
+            if (!this.read.TryGetValue(posLabel, out entity))
+            {
+                if (type.IsAbstract)
+                {
+                    XbimModel.Logger.ErrorFormat("Illegal Entity in the model #{0}, Type {1} is defined as Abstract and cannot be created", posLabel, type.Name);
+                    return null;
+                }
+                entity = (IPersistIfcEntity)Activator.CreateInstance(type);
+                entity.Bind(_model, posLabel * -1); //bind it, the object is new and empty so the label is negative
+                entity = read.GetOrAdd(posLabel, entity); //might have been done by another
+                lock (entity)
+                {
+                    if (!entity.Activated)
+                    {
+                        entity.Bind(_model, posLabel); //stop recursive activation
+                        entity.ReadEntityProperties(this, new BinaryReader(new MemoryStream(properties)), false, true);
+                    }
+                }
+
+            }
+            return entity;
+        }
+
+       
+
         /// <summary>
         /// Loads a blank instance from the database, do not call this before checking that the instance is in the instances cache
         /// If the entity has already been cached it will throw an exception
@@ -969,7 +1039,7 @@ namespace Xbim.IO
                         else
                             entity.Bind(_model, -posLabel); //a negative handle determines that the attributes of this entity have not been loaded yet
                         if (caching && !unCached)
-                            this.read.Add(posLabel, entity);
+                            entity = this.read.GetOrAdd(posLabel, entity);
                         return entity;
                     }
                 }
@@ -1046,7 +1116,7 @@ namespace Xbim.IO
                                 else
                                     entity.Bind(_model, -ih.EntityLabel); //a negative handle determines that the attributes of this entity have not been loaded yet
 
-                                if (caching) this.read.Add(ih.EntityLabel, entity);
+                                if (caching) entity = this.read.GetOrAdd(ih.EntityLabel, entity);
                                 entityLabels.Add(entity.EntityLabel);
                                 yield return (TIfcType)entity;
                             }
@@ -1056,7 +1126,7 @@ namespace Xbim.IO
                 }
                 if (caching) //look in the modified cache and find the new ones only
                 {
-                    foreach (var item in createdNew.Where(e => e.Value is TIfcType).ToList()) //force the iteration to avoid concurrency clashes
+                    foreach (var item in createdNew.Where(e => e.Value is TIfcType))//.ToList()) //force the iteration to avoid concurrency clashes
                     {
                         if (entityLabels.Add(item.Key))
                         { 
@@ -1143,7 +1213,7 @@ namespace Xbim.IO
                                         else
                                             entity.Bind(_model, -ih.EntityLabel); //a negative handle determines that the attributes of this entity have not been loaded yet
 
-                                        if (caching) this.read.Add(ih.EntityLabel, entity);
+                                        if (caching) entity = this.read.GetOrAdd(ih.EntityLabel, entity);
                                         entityLabels.Add(entity.EntityLabel);
                                         yield return (TIfcType)entity;
                                     }
@@ -1155,7 +1225,7 @@ namespace Xbim.IO
                     // 
                     if (caching) //look in the createnew cache and find the new ones only
                     {
-                        foreach (var item in createdNew.Where(e => e.Value is TIfcType).ToList())
+                        foreach (var item in createdNew.Where(e => e.Value is TIfcType))//.ToList())
                         {
                             if (indexKey == -1) //get all of the type
                             {
@@ -1715,14 +1785,14 @@ namespace Xbim.IO
         /// <param name="entity"></param>
         internal void AddModified(IPersistIfcEntity entity)
         {
-            IPersistIfcEntity editing;
-            if (modified.TryGetValue(entity.EntityLabel, out editing)) //it  already exists as edited
-            {
-                if (!System.Object.ReferenceEquals(editing, entity)) //it is not the same object reference
-                    throw new XbimException("An attempt to edit a duplicate reference for #" + entity.EntityLabel + " error has occurred");
-            }
-            else
-                modified.Add(entity.EntityLabel, entity);
+            //IPersistIfcEntity editing;
+            //if (modified.TryGetValue(entity.EntityLabel, out editing)) //it  already exists as edited
+            //{
+            //    if (!System.Object.ReferenceEquals(editing, entity)) //it is not the same object reference
+            //        throw new XbimException("An attempt to edit a duplicate reference for #" + entity.EntityLabel + " error has occurred");
+            //}
+            //else
+            modified.TryAdd(entity.EntityLabel, entity);
         }
 
         public string DatabaseName 
@@ -1767,9 +1837,10 @@ namespace Xbim.IO
         /// </summary>
         internal void  BeginCaching()
         {
-            read.Clear();
+            if(!caching) read.Clear();
             modified.Clear();
             createdNew.Clear();
+            previousCaching = caching;
             caching = true;
         }
         /// <summary>
@@ -1777,10 +1848,10 @@ namespace Xbim.IO
         /// </summary>
         internal void  EndCaching()
         {
-            read.Clear();
+            if(!previousCaching) read.Clear();
             modified.Clear();
             createdNew.Clear();
-            caching = false;
+            caching = previousCaching;
         }
 
         /// <summary>
@@ -1887,6 +1958,47 @@ namespace Xbim.IO
                 foreach (var item in OfType<IPersistIfcEntity>(activate: activate, overrideType: ot))
                     yield return item;
 
+            }
+        }
+        /// <summary>
+        /// Starts a read cache
+        /// </summary>
+        internal void CacheStart()
+        {
+            caching = true;
+        }
+        /// <summary>
+        /// Clears a read cache, do not call when a transaction is active
+        /// </summary>
+        internal void CacheClear()
+        {
+            Debug.Assert(modified.Count == 0 && createdNew.Count==0);
+            read.Clear();
+        }
+        /// <summary>
+        /// Clears a read cache, and ends further caching, do not call when a transaction is active
+        /// </summary>
+        internal void CacheStop()
+        {
+            Debug.Assert(modified.Count == 0 && createdNew.Count == 0);
+            read.Clear();
+            caching = false;
+        }
+
+        internal bool IsCaching
+        {
+            get
+            {
+                return caching;
+            }
+                
+        }
+
+        public XbimModel Model 
+        {
+            get
+            {
+                return _model;
             }
         }
     }

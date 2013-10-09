@@ -43,11 +43,6 @@ namespace Xbim.IO.ViewModels
             this.type = type;
             this.xbimModel = (XbimModel) spatialElem.ModelOf;
             this.CreatingParent = parent;
-
-            System.Diagnostics.Debug.WriteLine(
-                string.Format("Creating: {0} for #{1} - {2}", Name, spatialContainerLabel, this.GetType().ToString())
-                );
-
         }
 
 

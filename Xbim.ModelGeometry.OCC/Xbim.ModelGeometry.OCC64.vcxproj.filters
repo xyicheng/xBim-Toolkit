@@ -1,0 +1,187 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\SharedAssemblyInfo.cpp" />
+    <ClCompile Include="AssemblyInfo.cpp" />
+    <ClCompile Include="CartesianTransform.cpp" />
+    <ClCompile Include="Stdafx.cpp" />
+    <ClCompile Include="TessellatorReceiver.cpp" />
+    <ClCompile Include="XbimBoundingBox.cpp" />
+    <ClCompile Include="XbimEdge.cpp" />
+    <ClCompile Include="XbimEdgeLoop.cpp" />
+    <ClCompile Include="XbimEdgeLoopEnumerator.cpp" />
+    <ClCompile Include="XbimFace.cpp" />
+    <ClCompile Include="XbimFaceBound.cpp" />
+    <ClCompile Include="XbimFacetedShell.cpp" />
+    <ClCompile Include="XbimFeaturedShape.cpp" />
+    <ClCompile Include="XbimGeometryEngine.cpp" />
+    <ClCompile Include="XbimMap.cpp" />
+    <ClCompile Include="XbimGeometryModel.cpp" />
+    <ClCompile Include="XbimGeometryModelCollection.cpp" />
+    <ClCompile Include="XbimGeomPrim.cpp" />
+    <ClCompile Include="XbimLocation.cpp" />
+    <ClCompile Include="XbimOrientedEdge.cpp" />
+    <ClCompile Include="XbimPolyhedron.cpp" />
+    <ClCompile Include="XbimShell.cpp" />
+    <ClCompile Include="XbimSolid.cpp" />
+    <ClCompile Include="XbimTriangularMeshStreamer.cpp" />
+    <ClCompile Include="XbimVertexPoint.cpp" />
+    <ClCompile Include="CarveCsg\lib\aabb.cpp">
+      <Filter>CarveCSG</Filter>
+    </ClCompile>
+    <ClCompile Include="CarveCsg\lib\carve.cpp">
+      <Filter>CarveCSG</Filter>
+    </ClCompile>
+    <ClCompile Include="CarveCsg\lib\convex_hull.cpp">
+      <Filter>CarveCSG</Filter>
+    </ClCompile>
+    <ClCompile Include="CarveCsg\lib\csg.cpp">
+      <Filter>CarveCSG</Filter>
+    </ClCompile>
+    <ClCompile Include="CarveCsg\lib\csg_collector.cpp">
+      <Filter>CarveCSG</Filter>
+    </ClCompile>
+    <ClCompile Include="CarveCsg\lib\edge.cpp">
+      <Filter>CarveCSG</Filter>
+    </ClCompile>
+    <ClCompile Include="CarveCsg\lib\face.cpp">
+      <Filter>CarveCSG</Filter>
+    </ClCompile>
+    <ClCompile Include="CarveCsg\lib\geom2d.cpp">
+      <Filter>CarveCSG</Filter>
+    </ClCompile>
+    <ClCompile Include="CarveCsg\lib\geom3d.cpp">
+      <Filter>CarveCSG</Filter>
+    </ClCompile>
+    <ClCompile Include="CarveCsg\lib\intersect.cpp">
+      <Filter>CarveCSG</Filter>
+    </ClCompile>
+    <ClCompile Include="CarveCsg\lib\intersect_classify_edge.cpp">
+      <Filter>CarveCSG</Filter>
+    </ClCompile>
+    <ClCompile Include="CarveCsg\lib\intersect_classify_group.cpp">
+      <Filter>CarveCSG</Filter>
+    </ClCompile>
+    <ClCompile Include="CarveCsg\lib\intersect_debug.cpp">
+      <Filter>CarveCSG</Filter>
+    </ClCompile>
+    <ClCompile Include="CarveCsg\lib\intersect_face_division.cpp">
+      <Filter>CarveCSG</Filter>
+    </ClCompile>
+    <ClCompile Include="CarveCsg\lib\intersect_group.cpp">
+      <Filter>CarveCSG</Filter>
+    </ClCompile>
+    <ClCompile Include="CarveCsg\lib\intersect_half_classify_group.cpp">
+      <Filter>CarveCSG</Filter>
+    </ClCompile>
+    <ClCompile Include="CarveCsg\lib\intersection.cpp">
+      <Filter>CarveCSG</Filter>
+    </ClCompile>
+    <ClCompile Include="CarveCsg\lib\math.cpp">
+      <Filter>CarveCSG</Filter>
+    </ClCompile>
+    <ClCompile Include="CarveCsg\lib\mesh.cpp">
+      <Filter>CarveCSG</Filter>
+    </ClCompile>
+    <ClCompile Include="CarveCsg\lib\octree.cpp">
+      <Filter>CarveCSG</Filter>
+    </ClCompile>
+    <ClCompile Include="CarveCsg\lib\pointset.cpp">
+      <Filter>CarveCSG</Filter>
+    </ClCompile>
+    <ClCompile Include="CarveCsg\lib\polyhedron.cpp">
+      <Filter>CarveCSG</Filter>
+    </ClCompile>
+    <ClCompile Include="CarveCsg\lib\polyline.cpp">
+      <Filter>CarveCSG</Filter>
+    </ClCompile>
+    <ClCompile Include="CarveCsg\lib\tag.cpp">
+      <Filter>CarveCSG</Filter>
+    </ClCompile>
+    <ClCompile Include="CarveCsg\lib\timing.cpp">
+      <Filter>CarveCSG</Filter>
+    </ClCompile>
+    <ClCompile Include="CarveCsg\lib\triangulator.cpp">
+      <Filter>CarveCSG</Filter>
+    </ClCompile>
+    <ClCompile Include="CarveCsg\lib\triangle_intersection.cpp">
+      <Filter>CarveCSG</Filter>
+    </ClCompile>
+    <ClCompile Include="CarveCsg\lib\shewchuk_predicates.cpp">
+      <Filter>CarveCSG</Filter>
+    </ClCompile>
+    <ClCompile Include="XbimCsg.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="CartesianTransform.h" />
+    <ClInclude Include="ITessellatorReceiver.h" />
+    <ClInclude Include="IXbimMeshGeometry.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="resource1.h" />
+    <ClInclude Include="Version.h" />
+    <ClInclude Include="Stdafx.h" />
+    <ClInclude Include="TessellatorReceiver.h" />
+    <ClInclude Include="XbimBoundingBox.h" />
+    <ClInclude Include="XbimEdge.h" />
+    <ClInclude Include="XbimEdgeLoop.h" />
+    <ClInclude Include="XbimEdgeLoopEnumerator.h" />
+    <ClInclude Include="XbimFace.h" />
+    <ClInclude Include="XbimFaceBound.h" />
+    <ClInclude Include="XbimFaceBoundEnumerator.h" />
+    <ClInclude Include="XbimFaceEnumerator.h" />
+    <ClInclude Include="XbimFaceOuterBound.h" />
+    <ClInclude Include="XbimFacetedShell.h" />
+    <ClInclude Include="XbimFeaturedShape.h" />
+    <ClInclude Include="XbimGeometryEngine.h" />
+    <ClInclude Include="XbimMap.h" />
+    <ClInclude Include="XbimGeometryModel.h" />
+    <ClInclude Include="XbimGeometryModelCollection.h" />
+    <ClInclude Include="XbimGeomPrim.h" />
+    <ClInclude Include="XbimLocation.h" />
+    <ClInclude Include="XbimOrientedEdge.h" />
+    <ClInclude Include="XbimPolyhedron.h" />
+    <ClInclude Include="XbimShell.h" />
+    <ClInclude Include="XbimShellEnumerator.h" />
+    <ClInclude Include="XbimSolid.h" />
+    <ClInclude Include="XbimTriangularMeshStreamer.h" />
+    <ClInclude Include="XbimVertexPoint.h" />
+    <ClInclude Include="CarveCsg\lib\csg_collector.hpp">
+      <Filter>CarveCSG</Filter>
+    </ClInclude>
+    <ClInclude Include="CarveCsg\lib\csg_data.hpp">
+      <Filter>CarveCSG</Filter>
+    </ClInclude>
+    <ClInclude Include="CarveCsg\lib\csg_detail.hpp">
+      <Filter>CarveCSG</Filter>
+    </ClInclude>
+    <ClInclude Include="CarveCsg\lib\intersect_classify_common.hpp">
+      <Filter>CarveCSG</Filter>
+    </ClInclude>
+    <ClInclude Include="CarveCsg\lib\intersect_classify_common_impl.hpp">
+      <Filter>CarveCSG</Filter>
+    </ClInclude>
+    <ClInclude Include="CarveCsg\lib\intersect_common.hpp">
+      <Filter>CarveCSG</Filter>
+    </ClInclude>
+    <ClInclude Include="CarveCsg\lib\intersect_debug.hpp">
+      <Filter>CarveCSG</Filter>
+    </ClInclude>
+    <ClInclude Include="XbimCsg.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="app.rc" />
+    <ResourceCompile Include="Version.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.ico" />
+    <None Include="ModelGeoemetryClassDiagram.cd" />
+    <None Include="ReadMe.txt" />
+    <None Include="XbimGeomKey.snk" />
+    <None Include="..\xbim.modelgeometry.converter\packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CarveCSG">
+      <UniqueIdentifier>{55d570b6-670a-4161-a3f5-3c2727c8de15}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

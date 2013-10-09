@@ -6,6 +6,7 @@
 
 
 using namespace Xbim::Ifc2x3::GeometryResource;
+using namespace Xbim::Ifc2x3::GeometricConstraintResource;
 using namespace Xbim::XbimExtensions::SelectTypes;
 using namespace Xbim::Common::Exceptions;
 using namespace Xbim::Common::Geometry;
@@ -21,6 +22,8 @@ namespace Xbim
 			
 		public:
 			XbimGeomPrim(void);
+			// Converts a Local Placement into a TopLoc_Location
+			static TopLoc_Location ToLocation(IfcObjectPlacement^ placement);
 			// Converts a Placement into a TopLoc_Location
 			static TopLoc_Location ToLocation(IfcPlacement^ placement);
 			// Converts a IfcAxis2Placement into a TopLoc_Location
@@ -45,6 +48,7 @@ namespace Xbim
 			static gp_Pln ToPlane(IfcAxis2Placement3D^ axis3D);
 			//converts an Axis2Placement2D into a Transform matrix
 			static gp_Trsf ToTransform(IfcAxis2Placement3D^ axis3D);
+			static XbimMatrix3D ToMatrix3D(const TopLoc_Location& location);
 		};
 	}
 }

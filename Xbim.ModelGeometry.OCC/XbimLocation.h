@@ -2,7 +2,7 @@
 
 #include <TopLoc_Location.hxx>
 #include <gp_Trsf.hxx>
-
+using namespace System;
 
 namespace Xbim
 {
@@ -31,8 +31,8 @@ namespace Xbim
 				}
 				void InstanceCleanup()
 				{   
-					int temp = System::Threading::Interlocked::Exchange((int)(void*)pLocation, 0);
-					if(temp!=0)
+					IntPtr temp = System::Threading::Interlocked::Exchange(IntPtr(pLocation), IntPtr(0));
+					if(temp!=IntPtr(0))
 					{
 						if (pLocation)
 						{
