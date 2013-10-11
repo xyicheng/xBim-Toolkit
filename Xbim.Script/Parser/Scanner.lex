@@ -70,6 +70,9 @@
 
 ";"		{  return (';'); }
 ","		{  return (','); }
+":"		{  return (':'); }
+"("		{  return ('('); }
+")"		{  return (')'); }
 
 
 "is north from"		{return ((int)Tokens.NORTH_OF); }
@@ -104,12 +107,14 @@
 "from"			{ return (int)Tokens.FROM; }
 "export" |
 "dump"			{ return (int)Tokens.DUMP; }
+"count"			{ return (int)Tokens.COUNT; }
 "clear"			{ return (int)Tokens.CLEAR; }
 "open"			{ return (int)Tokens.OPEN; }
 "close"			{ return (int)Tokens.CLOSE; }
 "save"			{ return (int)Tokens.SAVE; }
 "in"			{ return (int)Tokens.IN; }
 "it"			{ return (int)Tokens.IT; }
+"validate"		{ return (int)Tokens.VALIDATE; }
 "property set" |
 "property_set" |
 "propertyset"	{ return (int)Tokens.PROPERTY_SET; }
@@ -125,6 +130,9 @@
 "model"			{ return (int)Tokens.MODEL; }
 "classification"	{ return (int)Tokens.CLASSIFICATION; }
 "group"			{ return (int)SetValue(Tokens.GROUP); }
+"layer set" |
+"layer_set"	|
+"layerset"		{ return (int)Tokens.LAYER_SET; }
 
 "null" |
 "undefined" |

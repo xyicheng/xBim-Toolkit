@@ -119,12 +119,14 @@ namespace XbimQueryTest
                 {"Export $wallType;",true},
                 {"Dump 'name', 'description', 'fire rating' from $wallType;",true},
                 {"Dump 'name', 'description', 'fire rating' from $wallType to file 'report.txt';",true},
+                {"Count $wallType;",true},
                 {"Clear $wallType;",true},
 
                 //model manipulation syntax
                 {"Save model to file 'output.ifc';", true},
                 {"Close model;", true},
                 {"Open model from file 'output.ifc';", true},
+                {"Validate model;", true},
 
                 //setting of attributes and properties
                 {"$wall is new wall with name 'New wall is here' and description 'New description for the wall';",true},
@@ -696,6 +698,111 @@ namespace XbimQueryTest
             Assert.IsNotNull(gr);
             Assert.AreEqual("External walls above ground floor", gr.Description.ToString());
             Assert.AreEqual(4, gr.GetGroupedObjects().Count());
+        }
+
+        [TestMethod]
+        public void ConditionsChainingTest()
+        {
+            //new parser with default empty model
+            XbimQueryParser parser = new XbimQueryParser();
+            
+            //create data using queries
+            parser.Parse(@"
+            Create new wall with name 'My wall No. 1' and description 'First description contains dog.';
+            Create new wall with name 'My wall No. 2' and description 'First description contains cat.';
+            Create new wall with name 'My wall No. 3' and description 'First description contains dog and cat.';
+            Create new wall with name 'My wall No. 4' and description 'First description contains dog and cow.';
+            $walls is wall;
+            $group is new group with name '02.05.01' and description 'External walls';
+            $building = new building with name 'Default building';
+            Add $walls to $group;
+            Add $walls to $building;
+            Set 'Fire protection' to 'Great', 'Warranty date' to '12/05/2016' for $walls in property set 'Testing property set';
+            
+            $test1 is wall where (description contains cat OR description contains cow) AND description contains dog;
+            ");
+
+            Assert.AreEqual(0, parser.Errors.Count());
+            Assert.AreEqual(2, parser.Results["$test1"].Count());
+        }
+
+        [TestMethod]
+        public void MaterialLayerCreationTest()
+        {
+            XbimQueryParser parser = new XbimQueryParser();
+
+            parser.Parse(@"
+                Create new material layer set 'My new material layer set' : Plaster 20.2, 'Brick block' 350, Insulation 300.0, 'Plaster board' 20;
+            ");
+
+            Assert.AreEqual(0, parser.Errors.Count);
+            Assert.IsInstanceOfType(parser.Results["$$"].FirstOrDefault(), typeof(IfcMaterialLayerSet));
+        }
+
+        [TestMethod]
+        public void MaterialSettingTest()
+        {
+            XbimQueryParser parser = new XbimQueryParser();
+            parser.Parse(@"
+                $materialLayerSet is new material layer set 'My new material layer set' : Plaster 20.2, 'Brick block' 350, Insulation 300.0, 'Plaster board' 20;
+                $material is new material 'Gold';
+                $wall is new wall 'My wall';
+                $wallType is new walltype 'My wall type';
+                $proxy is new buildingelementproxy 'Golden egg';
+                Set material to $materialLayerSet for $wall;
+                Set material to $materialLayerSet for $wallType;
+                Set material to $material for $proxy;
+            ");
+
+            Assert.AreEqual(0, parser.Errors.Count);
+            var wall = parser.Results["$wall"].FirstOrDefault() as IfcWall;
+            var wallType = parser.Results["$wallType"].FirstOrDefault() as IfcWallType;
+            var proxy = parser.Results["$proxy"].FirstOrDefault() as IfcBuildingElementProxy;
+            var test1 = wall.GetMaterial();
+            var test2 = wallType.GetMaterial();
+            var test3 = proxy.GetMaterial();
+
+            Assert.IsInstanceOfType(test1, typeof(IfcMaterialLayerSetUsage));
+            Assert.IsInstanceOfType(test2, typeof(IfcMaterialLayerSet));
+            Assert.IsInstanceOfType(test3, typeof(IfcMaterial));
+        }
+
+        [TestMethod]
+        public void AddingAndRemovingToTypeTest()
+        {
+            XbimQueryParser parser = new XbimQueryParser();
+            parser.Parse(@"
+                Create new wall '1';
+                Create new wall '1';
+                Create new wall '1';
+                Create new wall '2';
+                Create new wall '2';
+                $walls1 is wall where name is '1';
+                $walls2 is wall where name is '2';
+                
+                $wallType is new walltype 'W type';
+                $mSet = new material layer set 'Set of the dreams': Plaster 10, Bricks 300, Insulation 300, Plaster 10;
+                Set material to $mSet for $wallType;
+                
+                Add $walls1 to $wallType;
+                Add $walls2 to $wallType;
+                
+                Remove $walls1 from $wallType;
+            ");
+
+            Assert.AreEqual(0, parser.Errors.Count);
+
+            var wall1 = parser.Results["$walls1"].FirstOrDefault() as IfcWall;
+            var wall2 = parser.Results["$walls2"].FirstOrDefault() as IfcWall;
+            var material1 = wall1.GetMaterial();
+            var material2 = wall2.GetMaterial();
+            var type1 = wall1.GetDefiningType();
+            var type2 = wall2.GetDefiningType();
+
+            Assert.IsNull(material1);
+            Assert.IsNull(type1);
+            Assert.IsNotNull(material2);
+            Assert.IsNotNull(type2);
         }
     }
 }

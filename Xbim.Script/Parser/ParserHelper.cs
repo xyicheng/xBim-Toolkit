@@ -28,6 +28,7 @@ namespace Xbim.Script
         //public properties of the parser
         public XbimVariables Variables { get { return _variables; } }
         public XbimModel Model { get { return _model; } }
+        public TextWriter Output { get; set; }
 
         internal Parser(Scanner lex, XbimModel model): base(lex)
         {
@@ -81,6 +82,38 @@ namespace Xbim.Script
             return entity;
         }
 
+        private IfcMaterialLayerSet CreateLayerSet(string name, List<Layer> layers)
+        {
+            Func<IfcMaterialLayerSet> create = () => {
+                return _model.Instances.New<IfcMaterialLayerSet>(ms =>
+                {
+                    ms.LayerSetName = name;
+                    foreach (var layer in layers)
+                    {
+                        ms.MaterialLayers.Add_Reversible(_model.Instances.New<IfcMaterialLayer>(ml =>
+                        {
+                            ml.LayerThickness = layer.thickness;
+                            //get material if it already exists
+                            var material = _model.Instances.Where<IfcMaterial>(m => m.Name.ToString().ToLower() == layer.material).FirstOrDefault();
+                            if (material == null)
+                                material = _model.Instances.New<IfcMaterial>(m => m.Name = layer.material);
+                            ml.Material = material;
+                        }));
+                    }
+                });
+            };
+
+            IfcMaterialLayerSet result = null;
+            if (_model.IsTransacting)
+                result = create();
+            else
+                using (var txn = _model.BeginTransaction())
+                {
+                    result = create();
+                    txn.Commit();
+                }
+            return result;
+        }
         #endregion
 
         #region Attribute and property conditions
@@ -612,8 +645,7 @@ namespace Xbim.Script
 
             if (output != null)
                 output.Write(str.ToString());
-            else
-                Console.Write(str.ToString());
+            Write(str.ToString());
 
             if (output != null) output.Close();
         }
@@ -662,7 +694,7 @@ namespace Xbim.Script
                 if (output != null)
                     output.Write(str.ToString());
                 else
-                    Console.Write(str.ToString());
+                    Write(str.ToString());
 
             }
             catch (Exception e)
@@ -682,6 +714,14 @@ namespace Xbim.Script
             if (Variables.IsDefined(identifier))
             {
                 Variables.Clear(identifier);
+            }
+        }
+
+        private void CountIdentifier(string identifier)
+        {
+            if (Variables.IsDefined(identifier))
+            {
+                WriteLine(Variables[identifier].Count().ToString());
             }
         }
         #endregion
@@ -760,10 +800,34 @@ namespace Xbim.Script
                         {
                             case Tokens.ADD:
                                 obj.SetDefiningType(typeObject, _model);
+                                //if there is material layer set defined for the type material layer set usage should be defined for the elements
+                                var lSet = typeObject.GetMaterial() as IfcMaterialLayerSet;
+                                if (lSet != null)
+                                {
+                                    var usage = _model.Instances.New<IfcMaterialLayerSetUsage>(u => {
+                                        u.ForLayerSet = lSet;
+                                        u.DirectionSense = IfcDirectionSenseEnum.POSITIVE;
+                                        u.LayerSetDirection = IfcLayerSetDirectionEnum.AXIS1;
+                                        u.OffsetFromReferenceLine = 0;
+                                    });
+                                    obj.SetMaterial(usage);
+                                }
                                 break;
                             case Tokens.REMOVE:
                                 IfcRelDefinesByType rel = _model.Instances.Where<IfcRelDefinesByType>(r => r.RelatingType == typeObject && r.RelatedObjects.Contains(obj)).FirstOrDefault();
                                 if (rel != null) rel.RelatedObjects.Remove_Reversible(obj);
+                                //remove material layer set usage if any exist. It is kind of indirect relation.
+                                var lSet2 = typeObject.GetMaterial() as IfcMaterialLayerSet;
+                                var usage2 = obj.GetMaterial() as IfcMaterialLayerSetUsage;
+                                if (lSet2 != null && usage2 != null && usage2.ForLayerSet == lSet2)
+                                {
+                                    //the best would be to delete usage2 from the model but that is not supported bz the XbimModel at the moment
+                                    var rel2 = _model.Instances.Where<IfcRelAssociatesMaterial>(r => 
+                                            r.RelatingMaterial as IfcMaterialLayerSetUsage == usage2 && 
+                                            r.RelatedObjects.Contains(obj)
+                                        ).FirstOrDefault();
+                                    if (rel2 != null) rel2.RelatedObjects.Remove_Reversible(obj);
+                                }
                                 break;
                             default:
                                 throw new ArgumentOutOfRangeException("Unexpected action. Only ADD or REMOVE can be used in this context.");
@@ -812,26 +876,6 @@ namespace Xbim.Script
             else
                 perform();
         }
-
-
-        private void AddOrRemoveToType(Tokens action, IEnumerable<IPersistIfcEntity> objects, IfcTypeObject type)
-        {
-            foreach (var obj in objects)
-            {
-                switch (action)
-                {
-                    case Tokens.ADD:
-                        (obj as IfcObject).SetDefiningType(type, _model);
-                        break;
-                    case Tokens.REMOVE:
-                        IfcRelDefinesByType rel = _model.Instances.Where<IfcRelDefinesByType>(r => r.RelatingType == type&& r.RelatedObjects.Contains(obj as IfcObject)).FirstOrDefault();
-                        if (rel != null) rel.RelatedObjects.Remove_Reversible(obj as IfcObject);
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException("Unexpected action. Only ADD or REMOVE can be used in this context.");
-                }
-            }
-        }
         #endregion
 
         #region Model manipulation
@@ -871,6 +915,27 @@ namespace Xbim.Script
             
         }
 
+        public void ValidateModel()
+        {
+            try
+            {
+                TextWriter errOutput = new StringWriter();
+                var errCount = _model.Validate(errOutput, XbimExtensions.ValidationFlags.All);
+
+                if (errCount != 0)
+                {
+                    WriteLine("Number of errors: " + errCount.ToString());
+                    WriteLine(errOutput.ToString());
+                }
+                else
+                    WriteLine("No errors in the model.");
+            }
+            catch (Exception e)
+            {
+                Scanner.yyerror("Model could not be validated: " + e.Message);
+            }
+        }
+
         public void SaveModel(string path)
         {
             try
@@ -892,32 +957,31 @@ namespace Xbim.Script
             _actualPsetName = pSetName;
             if (identifier == null || expressions == null) return;
 
+            Action<string, IEnumerable<Expression>> perform = (ident, exprs) => {
+                var entities = _variables.GetEntities(ident);
+                if (entities == null) return;
+                foreach (var expression in exprs)
+                {
+                    try
+                    {
+                        var action = Expression.Lambda<Action<IPersistIfcEntity>>(expression, _input).Compile();
+                        entities.ToList().ForEach(action);
+                    }
+                    catch (Exception e)
+                    {
+                        Scanner.yyerror(e.Message);
+                    }
+                }    
+            };
+
             if (_model.IsTransacting)
-                PerformEvaluateSetExpression(identifier, expressions);
+                perform(identifier, expressions);
             else
                 using (var txn = _model.BeginTransaction("Setting properties and attribues"))
                 {
-                    PerformEvaluateSetExpression(identifier, expressions);
+                    perform(identifier, expressions);
                     txn.Commit();
                 }
-        }
-
-        private void PerformEvaluateSetExpression(string identifier, IEnumerable<Expression> expressions)
-        {
-            var entities = _variables.GetEntities(identifier);
-            if (entities == null) return;
-            foreach (var expression in expressions)
-            {
-                try
-                {
-                    var action = Expression.Lambda<Action<IPersistIfcEntity>>(expression, _input).Compile();
-                    entities.ToList().ForEach(action);
-                }
-                catch (Exception e)
-                {
-                    Scanner.yyerror(e.Message);
-                }
-            }
         }
 
         private Expression GenerateSetExpression(string attrName, object newVal)
@@ -1076,6 +1140,94 @@ namespace Xbim.Script
             throw new Exception("Unexpected type of the new value " + type.Name + " for property " + propName);
         }
 
+        private Expression GenerateSetMaterialExpression(string materialIdentifier)
+        {
+            var entities = _variables.GetEntities(materialIdentifier);
+
+            if (entities == null)
+            {
+                Scanner.yyerror("There should be exactly one material in the variable " + materialIdentifier);
+                return Expression.Empty();
+            }
+            var count = entities.Count();
+            if (count != 1)
+            {
+                Scanner.yyerror("There should be only one object in the variable " + materialIdentifier);
+                return Expression.Empty();
+            }
+            var material = entities.FirstOrDefault() as IfcMaterialSelect;
+            if (material == null)
+            {
+                Scanner.yyerror("There should be exactly one material in the variable " + materialIdentifier);
+                return Expression.Empty();
+            }
+
+            var materialExpr = Expression.Constant(material);
+            var scanExpr = Expression.Constant(Scanner);
+
+            var evaluateMethod = GetType().GetMethod("SetMaterial", BindingFlags.NonPublic|BindingFlags.Static);
+            return Expression.Call(null, evaluateMethod, _input, materialExpr, scanExpr);
+        }
+
+        private static void SetMaterial(IPersistIfcEntity entity, IfcMaterialSelect material, AbstractScanner<ValueType, LexLocation> scanner)
+        {
+            if (entity == null || material == null) return;
+
+            var materialSelect = material as IfcMaterialSelect;
+            if (materialSelect == null)
+            {
+                scanner.yyerror(material.GetType() + " can't be used as a material");
+                return;
+            }
+            var root = entity as IfcRoot;
+            if (root == null)
+            {
+                scanner.yyerror(root.GetType() + " can't have a material assigned.");
+                return;
+            }
+
+
+            IModel model = material.ModelOf;
+            var matSet = material as IfcMaterialLayerSet;
+            if (matSet != null)
+            {
+                var element = root as IfcElement;
+                if (element != null)
+                {
+                    var usage = model.Instances.New<IfcMaterialLayerSetUsage>(mlsu => {
+                        mlsu.DirectionSense = IfcDirectionSenseEnum.POSITIVE;
+                        mlsu.ForLayerSet = matSet;
+                        mlsu.LayerSetDirection = IfcLayerSetDirectionEnum.AXIS1;
+                        mlsu.OffsetFromReferenceLine = 0;
+                    });
+                    var rel = model.Instances.New<IfcRelAssociatesMaterial>(r => {
+                        r.RelatedObjects.Add_Reversible(root);
+                        r.RelatingMaterial = usage;
+                    });
+                    return;
+                }
+            }
+
+            var matUsage = material as IfcMaterialLayerSetUsage;
+            if (matUsage != null)
+            {
+                var typeElement = root as IfcElementType;
+                if (typeElement != null)
+                {
+                    //change scope to the layer set for the element type. It will be processed in a standard way than
+                    materialSelect = matUsage.ForLayerSet;
+                }
+            }
+
+            //find existing relation
+            var matRel = model.Instances.Where<IfcRelAssociatesMaterial>(r => r.RelatingMaterial == materialSelect).FirstOrDefault();
+            if (matRel == null)
+                //create new if none exists
+                matRel = model.Instances.New<IfcRelAssociatesMaterial>(r => r.RelatingMaterial = materialSelect);
+            //insert only if it is not already there
+            if (!matRel.RelatedObjects.Contains(root)) matRel.RelatedObjects.Add_Reversible(root);
+
+        }
         #endregion
 
         #region Thickness conditions
@@ -1249,6 +1401,37 @@ namespace Xbim.Script
             throw new NotImplementedException();
         }
         #endregion
+
+        /// <summary>
+        /// Unified function so that the same output can be send 
+        /// to the Console and to the optional text writer as well.
+        /// </summary>
+        /// <param name="message">Message for the output</param>
+        private void WriteLine(string message)
+        {
+            Console.WriteLine(message);
+            if (Output != null)
+                Output.WriteLine(message);
+        }
+
+        /// <summary>
+        /// Unified function so that the same output can be send 
+        /// to the Console and to the optional text writer as well.
+        /// </summary>
+        /// <param name="message">Message for the output</param>
+        private void Write(string message)
+        {
+            Console.Write(message);
+            if (Output != null)
+                Output.Write(message);
+        }
+
+    }
+
+    internal struct Layer
+    {
+        public string material;
+        public double thickness;
     }
 
     public static class TypeExtensions
