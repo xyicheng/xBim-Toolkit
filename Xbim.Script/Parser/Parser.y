@@ -65,6 +65,7 @@
 %token  GROUP
 %token  IN
 %token  IT
+%token  EVERY
 
 /* commands */
 %token  SELECT
@@ -169,9 +170,9 @@ selection
 	;
 
 selection_statement
-	: object														{$$.val = Select($1.typeVal);}
-	| object STRING													{$$.val = Select($1.typeVal, $2.strVal);}
-	| object WHERE conditions_set									{$$.val = Select($1.typeVal, ((Expression)($3.val)));}
+	: EVERY object														{$$.val = Select($2.typeVal);}
+	| EVERY object STRING												{$$.val = Select($2.typeVal, $3.strVal);}
+	| EVERY object WHERE conditions_set									{$$.val = Select($2.typeVal, ((Expression)($4.val)));}
 	;
 	
 creation

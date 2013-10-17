@@ -114,6 +114,7 @@
 "save"			{ return (int)Tokens.SAVE; }
 "in"			{ return (int)Tokens.IN; }
 "it"			{ return (int)Tokens.IT; }
+"every"			{ return (int)Tokens.EVERY; }
 "validate"		{ return (int)Tokens.VALIDATE; }
 "property set" |
 "property_set" |
@@ -123,7 +124,8 @@
 "predefinedtype" |
 "predefined_type" |
 "predefined type"			{ return (int)Tokens.PREDEFINED_TYPE; }
-"type"			{ return (int)Tokens.TYPE; }
+"type" |
+"family"		{ return (int)Tokens.TYPE; }
 "material"		{ return (int)SetValue(Tokens.MATERIAL); }
 "thickness"		{ return (int)Tokens.THICKNESS; }  
 "file"			{ return (int)Tokens.FILE; }

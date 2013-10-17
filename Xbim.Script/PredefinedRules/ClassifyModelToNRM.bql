@@ -2,12 +2,12 @@
 Create classification NRM;
 
 //**********************************  External Walls  ***************************************
-$extWallsGroup = system where description = 'External Walls';
+$extWallsGroup = every system where description = 'External Walls';
 
 //select elements
-$extWalls is IfcCurtainWall;
+$extWalls is every IfcCurtainWall;
 
-$extWalls is wall where 
+$extWalls is every wall where 
 	name contains 'Ext' or 
 	Function is 1 or 
 	IsExternal is true or 
@@ -16,17 +16,17 @@ $extWalls is wall where
 	type 'IsExternal' is true
 	;
 
-$extWalls is covering where
+$extWalls is every covering where
 	predefined type is cladding or
 	predefined type is insulation or
 	type predefined type is cladding
 	;
 
-$extWalls is member where 
+$extWalls is every member where 
 	type predefined type is 'STUD'
 	;
 
-$extWalls is plate where 
+$extWalls is every plate where 
 	type predefined type is 'CURTAIN_PANEL'
 	;
 
@@ -34,9 +34,9 @@ Add $extWalls to $extWallsGroup;
 
 
 //*********************************  Basement Retaining Walls  ************************************
-$basementWallsGroup is system where description is 'Basement Retaining Walls';
+$basementWallsGroup is every system where description is 'Basement Retaining Walls';
 
-$basementWalls is wall where 
+$basementWalls is every wall where 
 	name contains 'Retaining' or
 	type name contains 'Retaining'
 	;
@@ -44,9 +44,9 @@ $basementWalls is wall where
 Add $basementWalls to $basementWallsGroup;
 
 //*************************************  Foundations  *****************************************
-$foundationsGroup = system where description is 'Foundations';
+$foundationsGroup = every system where description is 'Foundations';
 
-$foundations is IfcWall where 
+$foundations is every IfcWall where 
 	name contains 'Footing' or
 	name contains 'Foundation' or
 	type name contains 'Footing' or
@@ -56,16 +56,16 @@ $foundations is IfcWall where
 Add $foundations to $foundationsGroup;
 
 //****************************  Internal Walls and Partitions  ***********************************
-$intWallsGroup is system where description contains 'Internal Walls and Partitions';
+$intWallsGroup is every system where description contains 'Internal Walls and Partitions';
 
-$intWalls is wall where group description is not 'External Walls';
+$intWalls is every wall where group description is not 'External Walls';
 
 Add $intWalls to $intWallsGroup;
 
 //**********************************  Ground Floor Construction  *********************************
-$groundGroup = group where description is 'Ground Floor Construction';
+$groundGroup = every group where description is 'Ground Floor Construction';
 
-$ground is slab where
+$ground is every slab where
 	predefined type is 'SLAB' or
 	name contains 'GS' or
 	name contains 'GND' or
@@ -79,9 +79,9 @@ $ground is slab where
 Add $ground to $groundGroup;
 
 //**************************************  Upper Floors  *******************************************
-$upperFloorGroup is system where description is 'Upper Floors';
+$upperFloorGroup is every system where description is 'Upper Floors';
 
-$upperFloor is slab where
+$upperFloor is every slab where
 	predefined type is 'FLOOR' or
 	name contains 'Susp' or
 	function is 0 or
@@ -93,16 +93,16 @@ $upperFloor is slab where
 Add $upperFloor to $upperFloorGroup;
 
 //*********************************  Roof  *******************************************
-$roofGroup is group where description is 'Roof';
+$roofGroup is every group where description is 'Roof';
 
-$roof is slab where
+$roof is every slab where
 	predefined type is 'ROOF' or
 	name contains 'Roof' or
 	'Name' is 'Roof' or
 	type predefined type is 'ROOF'
 	;
 
-$roof is FlowSegment where
+$roof is every FlowSegment where
 	type predefined type is 'GUTTER' or
 	name contains 'gutter'
 	;
@@ -110,11 +110,11 @@ $roof is FlowSegment where
 Add $roof to $roofGroup;
 
 //*********************************  Windows and External Doors  *********************************
-$winDoorGroup is group where description is 'Windows and External Doors';
+$winDoorGroup is every group where description is 'Windows and External Doors';
 
-$windows is window;
+$windows is every window;
 
-$doors is door where
+$doors is every door where
 	name contains 'Ext' or
 	description contains 'Ext' or
 	IsExternal is true or
@@ -130,20 +130,20 @@ Add $windows to $winDoorGroup;
 Add $doors to $winDoorGroup;
 
 //*********************************  Internal Doors  *********************************
-$intDoorGroup is group where description is 'Internal Doors';
+$intDoorGroup is every group where description is 'Internal Doors';
 
-$intDoors is door where
+$intDoors is every door where
 	group description is not 'Internal Walls and Partitions'
 	;
 
 Add $intDoors to $intDoorGroup;
 
 //*********************************  Stairs and Ramps  *********************************
-$stairsGroup is group where description is 'Stairs and Ramps';
+$stairsGroup is every group where description is 'Stairs and Ramps';
 
-$stair is stair;
-$stair is stair_flight;
-$stair is railing where
+$stair is every stair;
+$stair is every stair_flight;
+$stair is every railing where
 	predefined type is 'HANDRAIL' or
 	predefined type is 'GUARDRAIL' or
 	predefined type is 'NOTDEFINED' or
@@ -154,7 +154,7 @@ $stair is railing where
 	type name contains 'Handrail'
 	;
 
-$stair is member where
+$stair is every member where
 	name contains 'stringer' or
 	description contains 'stringer' or
 	type name contains 'stringer' or
@@ -162,28 +162,28 @@ $stair is member where
 	type predefined_type is 'STRINGER'
 	;
 
-$stair is building_element_proxy where
+$stair is every building_element_proxy where
 	name contains 'riser' or
 	name contains 'tread' or
 	type name contains 'riser' or
 	type name contains 'tread'
 	;
 
-$stair is ramp_flight where function is 0;
+$stair is every ramp_flight where function is 0;
 
 Add $stair to $stairsGroup;
 
 //*******************************  Frame  **********************************
-$framingGroup is group where description is 'Frame';
+$framingGroup is every group where description is 'Frame';
 
-$framing is column;
+$framing is every column;
 
 Add $framing to $framingGroup;
 
 //****************************  Ceiling finishes  ***************************
-$ceilingFinishGroup is group where description is 'Ceiling finishes';
+$ceilingFinishGroup is every group where description is 'Ceiling finishes';
 
-$ceilingFinish is covering where 
+$ceilingFinish is every covering where 
 	predefined type is 'CEILING' or
 	type predefined type is 'CEILING'
 	;
@@ -191,16 +191,16 @@ $ceilingFinish is covering where
 Add $ceilingFinish to $ceilingFinishGroup;
 
 //****************************  Roads, Paths, Pavings and Surfacings  ***************************
-$roadsGroup is group where description is 'Roads, Paths, Pavings and Surfacings';
+$roadsGroup is every group where description is 'Roads, Paths, Pavings and Surfacings';
 
-$roads is ramp_flight where function is not 0;
+$roads is every ramp_flight where function is not 0;
 
 Add $roads to $roadsGroup;
 
 //****************************  General fittings, furnishings and equipment  ***************************
-$furnishingGroup is group where description is 'General fittings, furnishings and equipment';
+$furnishingGroup is every group where description is 'General fittings, furnishings and equipment';
 
-$furniture is IfcFurnishingElement;
+$furniture is every IfcFurnishingElement;
 
 Add $furniture to $furnishingGroup;
 
