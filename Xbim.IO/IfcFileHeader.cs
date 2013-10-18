@@ -32,7 +32,7 @@ namespace Xbim.IO
             if (Description.Count == 0)
             {
                 Description.Add("ViewDefinition [CoordinationView]");
-                if (ImplementationLevel == "")
+                if (string.IsNullOrWhiteSpace(ImplementationLevel))
                 {
                     ImplementationLevel = "2;1";
                 }
@@ -88,7 +88,7 @@ namespace Xbim.IO
             binaryWriter.Write(Description.Count);
             foreach (string desc in Description)
                 binaryWriter.Write(desc);
-            binaryWriter.Write(ImplementationLevel ?? "");
+            binaryWriter.Write(ImplementationLevel);
         }
 
         internal void Read(BinaryReader binaryReader)
@@ -418,6 +418,8 @@ namespace Xbim.IO
 
         internal void Write(BinaryWriter binaryWriter)
         {
+            if (Schemas.Count == 0) //if no schema is defined the use IFC2x3 for now
+                Schemas.Add("IFC2X3");
             binaryWriter.Write(Schemas.Count);
             foreach (string item in Schemas)
                 binaryWriter.Write(item);
