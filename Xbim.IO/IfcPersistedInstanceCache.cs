@@ -483,7 +483,7 @@ namespace Xbim.IO
                         ZipEntry entry = zipStream.GetNextEntry();
                         while (entry != null)
                         {
-                            string ext = Path.GetExtension(entry.Name);
+                            string ext = Path.GetExtension(entry.Name).ToLowerInvariant();
                             //look for a valid ifc supported file
                             if (entry.IsFile &&
                                 (string.Compare(ext, ".ifc", true) == 0)
