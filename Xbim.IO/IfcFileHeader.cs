@@ -88,7 +88,7 @@ namespace Xbim.IO
             binaryWriter.Write(Description.Count);
             foreach (string desc in Description)
                 binaryWriter.Write(desc);
-            binaryWriter.Write(ImplementationLevel);
+            binaryWriter.Write(ImplementationLevel ?? "");
         }
 
         internal void Read(BinaryReader binaryReader)
