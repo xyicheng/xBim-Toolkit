@@ -326,7 +326,7 @@ namespace Xbim.IO.Parser
             {
                 _binaryWriter.Write((byte)P21ParseAction.SetStringValue);
                 string ret = value.Substring(1, value.Length - 2); //remove the quotes
-                if (ret.Contains("\\"))
+                if (ret.Contains("\\") || ret.Contains("''"))
                 {
                     XbimP21StringDecoder d = new XbimP21StringDecoder();
                     ret = d.Unescape(ret);

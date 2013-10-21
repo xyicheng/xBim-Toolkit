@@ -136,7 +136,7 @@ namespace Xbim.COBie.Data
             if (relatingTasks.Count > 0)
                 return string.Join(":", relatingTasks);
             else
-                return ifcTask.TaskId.ToString().Trim(); //if no priors, refrence itself
+                return ifcTask.TaskId.ToString().Trim(); //if no priors, reference itself
            
         }
 
@@ -157,7 +157,7 @@ namespace Xbim.COBie.Data
                         strList.Add(ifcConstructionEquipmentResource.Name.ToString());
                 }
             }
-            return (strList.Count > 0) ? string.Join(", ", strList) : DEFAULT_STRING;
+            return (strList.Count > 0) ? (string.Join(", ", strList) + ".") : DEFAULT_STRING;
         }
         /// <summary>
         /// Get the object IfcTypeObject name from the IfcTask object

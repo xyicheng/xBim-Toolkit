@@ -402,9 +402,9 @@ namespace Xbim.COBie.Data
 
             if (ifcCR != null)
             {
-                // TODO: Needs a refactor. We should handle whitespace before/after the separator (and map to the picklist values)
-                // i.e. this whole routine should just map an IfcClassificationReference to the best row in the picklist.
                 string conCatChar = " : "; 
+                if (Context.TemplateFileName.Contains("COBie-US")) //change for US format
+                    conCatChar = ": "; 
 
                 //holders for first and last part of category
                 string itemReference = ifcCR.ItemReference;

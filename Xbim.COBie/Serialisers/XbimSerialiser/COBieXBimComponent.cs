@@ -83,8 +83,8 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 return;//we have it so no need to create
             }
             //we need the ExtObject to exist to create the object
-            if (ValidateString(row.ExtObject))
-            {
+            //if (ValidateString(row.ExtObject))
+            //{
                 //Create object using reflection
                 IfcElement ifcElement = GetElementInstance(row.ExtObject, Model);
                     
@@ -146,7 +146,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
 #endif
                 }
             
-            }
+            //}
         }
 
         /// <summary>
@@ -221,7 +221,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
 
 
             if (ifcElement == null)
-                ifcElement = model.Instances.New<IfcVirtualElement>();
+                ifcElement = model.Instances.New<IfcFurnishingElement>(); //was IfcVirtualElement, but this is excluded in the import filters, so just using 
             return ifcElement;
         }
         #endregion

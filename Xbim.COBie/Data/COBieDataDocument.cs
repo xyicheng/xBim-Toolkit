@@ -97,7 +97,7 @@ namespace Xbim.COBie.Data
 
                 
                 doc.Description = (string.IsNullOrEmpty(di.Description)) ? DEFAULT_STRING : di.Description.ToString();
-                doc.Reference = (di.DocumentId.Value != null) ? di.DocumentId.Value.ToString() : DEFAULT_STRING;
+                doc.Reference = (string.IsNullOrEmpty(di.DocumentId.Value.ToString())) ? DEFAULT_STRING : di.DocumentId.Value.ToString();
 
                 documents.AddRow(doc);
             }

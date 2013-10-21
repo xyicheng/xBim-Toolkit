@@ -211,6 +211,19 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 {
                     stamp = IfcTimeStamp.ToTimeStamp(dateTime);
                 }
+                else
+                {
+                    //try and get just the date part of the date time, as a conversion above failed, so assume time might be corrupt
+                    int idx = createdOn.IndexOf("T");
+                    if (idx > -1)
+                    {
+                        string date = createdOn.Substring(0, idx);
+                        if (DateTime.TryParse(date, out dateTime))
+                        {
+                            stamp = IfcTimeStamp.ToTimeStamp(dateTime);
+                        } 
+                    }
+                }
             }
             //if (createdBy == null)
             //{
@@ -702,7 +715,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
             ifcValues = new IfcValue[strValues.Length];
             for (int i = 0; i < strValues.Length; i++)
             {
-                string str = strValues[i].Trim().Replace(" ", ""); //enumeration so remove spaces
+                string str = strValues[i].Trim();//.Replace(" ", ""); //enumeration so remove spaces
                 if (double.TryParse(str, out number))
                     ifcValues[i] = new IfcReal((double)number);
                 else
@@ -854,17 +867,26 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
 
             if (GetUnitEnumerations(value, out returnUnit, out returnPrefix))
             {
-                IEnumerable<IfcSIUnit> ifcSIUnits = Model.Instances.Where<IfcSIUnit>(siu => siu.Name == (IfcSIUnitName)returnUnit);
+                IEnumerable<IfcSIUnit> ifcSIUnits;
+                if (returnPrefix != null)
+                {
+                    ifcSIUnits = Model.Instances.Where<IfcSIUnit>(siu => (siu.Name == (IfcSIUnitName)returnUnit) && (siu.Prefix == (IfcSIPrefix)returnPrefix));
+                }
+                else
+                {
+                    ifcSIUnits = Model.Instances.Where<IfcSIUnit>(siu => siu.Name == (IfcSIUnitName)returnUnit && siu.Prefix == null);
+                }
+                
                 if (ifcSIUnits.Any())
                 {
-                    if (returnPrefix != null)
-                    {
-                        ifcSIUnit = ifcSIUnits.Where(siu => siu.Prefix == (IfcSIPrefix)returnPrefix).FirstOrDefault();
-                    }
-                    else
-                    {
+                    //if (returnPrefix != null)
+                    //{
+                    //    ifcSIUnit = ifcSIUnits.Where(siu => siu.Prefix == (IfcSIPrefix)returnPrefix).FirstOrDefault();
+                    //}
+                    //else
+                    //{
                         ifcSIUnit = ifcSIUnits.FirstOrDefault();
-                    }
+                    //}
                 }
                 else
                 {

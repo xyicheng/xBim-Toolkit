@@ -68,8 +68,8 @@ namespace Xbim.Ifc2x3.MeasureResource
                     if (c > 126 || c < 32) 
                         sb.AppendFormat(@"\X\{0:X2}", c);
                     //removed as this is converting SIZE: 2'x2'x3/4" to SIZE: 2''x2''x3/4" and Manufacturer's to Manufacturer''s 
-                    //else if ((char)c == '\'')
-                    //    sb.Append("''");
+                    else if ((char)c == '\'')
+                        sb.Append("''");
                     else if ((char)c == '\\')
                         sb.Append("\\\\");
                     else
