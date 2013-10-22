@@ -600,6 +600,18 @@ namespace Xbim.Script
         }
         #endregion
 
+        #region Model conditions
+        private Expression GenerateModelCondition(Tokens condition, string value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool EvaluateModelCondition(IPersistIfcEntity input, string value, Tokens condition)
+        {
+            throw new NotImplementedException();
+        }
+        #endregion
+
         #region Variables manipulation
         private void AddOrRemoveFromSelection(string variableName, Tokens operation, object entities)
         {
@@ -946,6 +958,16 @@ namespace Xbim.Script
             {
                 Scanner.yyerror("Model was not saved: " + e.Message);   
             }
+        }
+
+        public void AddReferenceModel(string refModel, string name, string organization, string owner)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void CopyToModel(string variable, string model)
+        {
+            throw new NotImplementedException();
         }
         #endregion
 

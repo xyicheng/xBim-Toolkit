@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Xbim.Ifc2x3.Kernel;
 using System.Globalization;
+using Xbim.Ifc2x3.ActorResource;
 
 namespace Xbim.Script
 {
@@ -92,6 +93,9 @@ namespace Xbim.Script
                     return type;
                 case Tokens.GROUP:
                     yylval.typeVal = typeof(IfcGroup);
+                    return type;
+                case Tokens.ORGANIZATION:
+                    yylval.typeVal = typeof(IfcOrganization);
                     return type;
                 case Tokens.IDENTIFIER:
                     return type;

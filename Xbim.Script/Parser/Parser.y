@@ -46,6 +46,9 @@
 %token  CLASSIFICATION
 %token  PROPERTY_SET
 %token  LAYER_SET
+%token  REFERENCE
+%token  ORGANIZATION
+%token  OWNER
 
 /*operations and keywords*/
 %token  WHERE
@@ -66,6 +69,7 @@
 %token  IN
 %token  IT
 %token  EVERY
+%token  COPY
 
 /* commands */
 %token  SELECT
@@ -143,10 +147,12 @@ num_value
 	;
 
 model_actions
-	: OPEN MODEL FROM FILE STRING									{OpenModel($5.strVal);}
-	| CLOSE MODEL													{CloseModel();}
-	| VALIDATE MODEL												{ValidateModel();}
-	| SAVE MODEL TO FILE STRING										{SaveModel($5.strVal);}
+	: OPEN MODEL FROM FILE STRING																{OpenModel($5.strVal);}
+	| CLOSE MODEL																				{CloseModel();}
+	| VALIDATE MODEL																			{ValidateModel();}
+	| SAVE MODEL TO FILE STRING																	{SaveModel($5.strVal);}
+	| ADD REFERENCE MODEL STRING WITH_NAME STRING ',' ORGANIZATION STRING OP_AND OWNER STRING	{AddReferenceModel($4.strVal, $6.strVal, $9.strVal, $12.strVal);}
+	| COPY IDENTIFIER TO MODEL STRING															{CopyToModel($2.strVal, $5.strVal);}
 	;
 
 variables_actions
@@ -225,6 +231,7 @@ condition
 	| propertyCondition						{$$.val = $1.val;}
 	| groupCondition						{$$.val = $1.val;}
 	| spatialCondition						{$$.val = $1.val;}
+	| modelCondition						{$$.val = $1.val;}
 	;
 
 attributeCondition	
@@ -283,6 +290,12 @@ spatialCondition
 	: IT op_spatial IDENTIFIER			{$$.val = GenerateSpatialCondition(((Tokens)($2.val)), $3.strVal);}
 	;
 
+modelCondition
+	: MODEL op_bool							{GenerateModelCondition(Tokens.MODEL, $1.strVal);}
+	| MODEL OWNER op_bool STRING			{GenerateModelCondition(Tokens.OWNER, $4.strVal);}
+	| MODEL ORGANIZATION op_bool STRING		{GenerateModelCondition(Tokens.ORGANIZATION, $4.strVal);}
+	;
+
 op_spatial
 	: NORTH_OF				{$$.val = Tokens.NORTH_OF			;}
 	| SOUTH_OF				{$$.val = Tokens.SOUTH_OF			;}
@@ -323,6 +336,7 @@ object
 	| PRODUCT_TYPE			{$$.typeVal = $1.typeVal;}
 	| MATERIAL				{$$.typeVal = $1.typeVal;}
 	| GROUP					{$$.typeVal = $1.typeVal;}
+	| ORGANIZATION			{$$.typeVal = $1.typeVal;}
 	;
 	
 %%

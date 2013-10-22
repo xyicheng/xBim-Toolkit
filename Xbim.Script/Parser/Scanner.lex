@@ -116,6 +116,7 @@
 "it"			{ return (int)Tokens.IT; }
 "every"			{ return (int)Tokens.EVERY; }
 "validate"		{ return (int)Tokens.VALIDATE; }
+"copy"			{ return (int)Tokens.COPY; }
 "property set" |
 "property_set" |
 "propertyset"	{ return (int)Tokens.PROPERTY_SET; }
@@ -130,8 +131,11 @@
 "thickness"		{ return (int)Tokens.THICKNESS; }  
 "file"			{ return (int)Tokens.FILE; }
 "model"			{ return (int)Tokens.MODEL; }
+"reference"			{ return (int)Tokens.REFERENCE; }
 "classification"	{ return (int)Tokens.CLASSIFICATION; }
 "group"			{ return (int)SetValue(Tokens.GROUP); }
+"organization"			{ return (int)SetValue(Tokens.ORGANIZATION); }
+"owner"			{ return (int)Tokens.OWNER; }
 "layer set" |
 "layer_set"	|
 "layerset"		{ return (int)Tokens.LAYER_SET; }
