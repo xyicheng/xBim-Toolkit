@@ -2001,6 +2001,20 @@ namespace Xbim.IO
                 return _model;
             }
         }
+
+        internal XbimGeometryData GetGeometryData(int geomLabel)
+        {
+            //Get a cached or open a new Table
+            XbimGeometryCursor geometryTable = GetGeometryTable();
+            try
+            {
+                return geometryTable.GetGeometryData(geomLabel);
+            }
+            finally
+            {
+                FreeTable(geometryTable);
+            }
+        }
     }
 }
 
