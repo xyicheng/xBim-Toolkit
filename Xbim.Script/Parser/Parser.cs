@@ -4,9 +4,9 @@
 
 // GPPG version 1.5.0
 // Machine:  CENTAURUS
-// DateTime: 22.10.2013 17:26:16
+// DateTime: 25.10.2013 12:41:16
 // UserName: Martin
-// Input file <Parser.y - 22.10.2013 17:25:47>
+// Input file <Parser.y - 25.10.2013 12:39:02>
 
 // options: conflicts lines gplex conflicts listing
 
@@ -70,10 +70,10 @@ internal class ScanObj {
 
 internal partial class Parser: ShiftReduceParser<ValueType, LexLocation>
 {
-  // Verbatim content from Parser.y - 22.10.2013 17:25:47
+  // Verbatim content from Parser.y - 25.10.2013 12:39:02
 #line 2 "Parser.y"
 	
-  // End verbatim content from Parser.y - 22.10.2013 17:25:47
+  // End verbatim content from Parser.y - 25.10.2013 12:39:02
 
 #pragma warning disable 649
   private static Dictionary<int, string> aliasses;
@@ -258,13 +258,13 @@ internal partial class Parser: ShiftReduceParser<ValueType, LexLocation>
     states[165] = new State(-55);
     states[166] = new State(new int[]{82,167});
     states[167] = new State(new int[]{64,168});
-    states[168] = new State(new int[]{90,169});
-    states[169] = new State(new int[]{64,170});
-    states[170] = new State(new int[]{44,171});
-    states[171] = new State(new int[]{87,172});
-    states[172] = new State(new int[]{64,173});
-    states[173] = new State(new int[]{77,174});
-    states[174] = new State(new int[]{88,175});
+    states[168] = new State(new int[]{89,169});
+    states[169] = new State(new int[]{87,170});
+    states[170] = new State(new int[]{69,171});
+    states[171] = new State(new int[]{64,172});
+    states[172] = new State(new int[]{77,173});
+    states[173] = new State(new int[]{88,174});
+    states[174] = new State(new int[]{69,175});
     states[175] = new State(new int[]{64,176});
     states[176] = new State(-29);
     states[177] = new State(new int[]{68,178});
@@ -370,7 +370,7 @@ internal partial class Parser: ShiftReduceParser<ValueType, LexLocation>
     rules[26] = new Rule(-9, new int[]{114,82});
     rules[27] = new Rule(-9, new int[]{117,82});
     rules[28] = new Rule(-9, new int[]{115,82,94,81,64});
-    rules[29] = new Rule(-9, new int[]{93,86,82,64,90,64,44,87,64,77,88,64});
+    rules[29] = new Rule(-9, new int[]{93,86,82,64,89,87,69,64,77,88,69,64});
     rules[30] = new Rule(-9, new int[]{107,68,94,82,64});
     rules[31] = new Rule(-8, new int[]{111,68});
     rules[32] = new Rule(-8, new int[]{112,68});
@@ -564,10 +564,10 @@ internal partial class Parser: ShiftReduceParser<ValueType, LexLocation>
 #line 153 "Parser.y"
 {SaveModel(ValueStack[ValueStack.Depth-1].strVal);}
         break;
-      case 29: // model_actions -> ADD, REFERENCE, MODEL, STRING, WITH_NAME, STRING, ',', 
-               //                  ORGANIZATION, STRING, OP_AND, OWNER, STRING
+      case 29: // model_actions -> ADD, REFERENCE, MODEL, STRING, WHERE, ORGANIZATION, OP_EQ, 
+               //                  STRING, OP_AND, OWNER, OP_EQ, STRING
 #line 154 "Parser.y"
-{AddReferenceModel(ValueStack[ValueStack.Depth-9].strVal, ValueStack[ValueStack.Depth-7].strVal, ValueStack[ValueStack.Depth-4].strVal, ValueStack[ValueStack.Depth-1].strVal);}
+{AddReferenceModel(ValueStack[ValueStack.Depth-9].strVal, ValueStack[ValueStack.Depth-5].strVal, ValueStack[ValueStack.Depth-1].strVal);}
         break;
       case 30: // model_actions -> COPY, IDENTIFIER, TO, MODEL, STRING
 #line 155 "Parser.y"
