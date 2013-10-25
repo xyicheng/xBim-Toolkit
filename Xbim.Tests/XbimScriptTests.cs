@@ -61,38 +61,38 @@ namespace XbimQueryTest
                 //Empty command
                 //{"",true},
                 //Selection of elements and assignment to the variable
-                {"Select wall;",true},
-                {"Select wall 'Some wall';",true},
-                {"Select wall where name is 'Some name';",true},
-                {"Select wall where name is 'Some name' and description contains 'My description';",true},
-                {"Select wall where description doesn't contain 'bad description';",true},
-                {"Select wall where type is not slab_type;",true},
-                {"Select wall where thickness is less than 25.32;",true},
-                {"Select wall where type != slab_type;",true},
-                {"Select wall where type is IfcSlabType;",true},
-                {"Select wall where type is 'wall type No.1';",true},
-                {"Select wall where type = IfcSlabType;",true},
-                {"Select wall where type contains 'part name';",true},
-                {"Select wall where 'fire protection' is true;",true},
-                {"Select wall where 'fire protection' is .F.;",true},
-                {"Select wall where 'Heat Performance' is 12.25;",true},
-                {"Select wall where 'Heat Performance' is greater than 12.25;",true},
-                {"Select wall where 'Heat Performance' is greater than or equal to 12.25;",true},
-                {"Select wall where 'Heat Performance' equals 12.25;",true},
-                {"Select wall where 'Heat Performance' = 12.25;",true},
-                {"Select wall where 'Heat Performance' != 12.25;",true},
-                {"Select wall where 'Heat Performance' is less than 12.25;",true},
-                {"Select wall where 'Heat Performance' < 12.25;",true},
-                {"Select wall where 'Heat Performance' <= 12.25;",true},
-                {"Select wall where 'Heat Performance' ~ 12.25;",false},
-                {"Select wall where 'Heat Performance' contains 12.25;",false},
-                {"Select wall where 'Heat Performance' ~ 'substring';",true},
-                {"Select wall where 'Heat Performance' doesn't contain 'substring';",true},
-                {"Select wall where 'Heat Performance' isn't like 'substring';",true},
-                {"Select wall where 'Heat Performance' is not like 'substring';",true},
-                {"Select xyz",false},
-                {"$MyWalls is wall 'My wall';",true},
-                {"$MyWalls is wall where 'External' = true;",true},
+                {"Select every wall;",true},
+                {"Select every wall 'Some wall';",true},
+                {"Select every wall where name is 'Some name';",true},
+                {"Select every wall where name is 'Some name' and description contains 'My description';",true},
+                {"Select every wall where description doesn't contain 'bad description';",true},
+                {"Select every wall where type is not slab_type;",true},
+                {"Select every wall where thickness is less than 25.32;",true},
+                {"Select every wall where type != slab_type;",true},
+                {"Select every wall where type is IfcSlabType;",true},
+                {"Select every wall where type is 'wall type No.1';",true},
+                {"Select every wall where type = IfcSlabType;",true},
+                {"Select every wall where type contains 'part name';",true},
+                {"Select every wall where 'fire protection' is true;",true},
+                {"Select every wall where 'fire protection' is .F.;",true},
+                {"Select every wall where 'Heat Performance' is 12.25;",true},
+                {"Select every wall where 'Heat Performance' is greater than 12.25;",true},
+                {"Select every wall where 'Heat Performance' is greater than or equal to 12.25;",true},
+                {"Select every wall where 'Heat Performance' equals 12.25;",true},
+                {"Select every wall where 'Heat Performance' = 12.25;",true},
+                {"Select every wall where 'Heat Performance' != 12.25;",true},
+                {"Select every wall where 'Heat Performance' is less than 12.25;",true},
+                {"Select every wall where 'Heat Performance' < 12.25;",true},
+                {"Select every wall where 'Heat Performance' <= 12.25;",true},
+                {"Select every wall where 'Heat Performance' ~ 12.25;",false},
+                {"Select every wall where 'Heat Performance' contains 12.25;",false},
+                {"Select every wall where 'Heat Performance' ~ 'substring';",true},
+                {"Select every wall where 'Heat Performance' doesn't contain 'substring';",true},
+                {"Select every wall where 'Heat Performance' isn't like 'substring';",true},
+                {"Select every wall where 'Heat Performance' is not like 'substring';",true},
+                {"Select every xyz",false},
+                {"$MyWalls is every wall 'My wall';",true},
+                {"$MyWalls is every wall where 'External' = true;",true},
                 
                 //Creation of the new elements
                 {"Create new wall 'Totally new wall';",true},
@@ -110,7 +110,7 @@ namespace XbimQueryTest
                 {"Add $wall to $wallType;",true},
 
                  //Add or remove elements from spatial element (site, building, storey, space)
-                {"$allWalls = wall;",true},
+                {"$allWalls = every wall;",true},
                 {"$building is new building 'Default building';",true},
                 {"Add $allWalls to $building;",true},
 
@@ -119,12 +119,14 @@ namespace XbimQueryTest
                 {"Export $wallType;",true},
                 {"Dump 'name', 'description', 'fire rating' from $wallType;",true},
                 {"Dump 'name', 'description', 'fire rating' from $wallType to file 'report.txt';",true},
+                {"Count $wallType;",true},
                 {"Clear $wallType;",true},
 
                 //model manipulation syntax
                 {"Save model to file 'output.ifc';", true},
                 {"Close model;", true},
                 {"Open model from file 'output.ifc';", true},
+                {"Validate model;", true},
 
                 //setting of attributes and properties
                 {"$wall is new wall with name 'New wall is here' and description 'New description for the wall';",true},
@@ -136,16 +138,16 @@ namespace XbimQueryTest
                 {"Set name to 'Some name', Description to 'Property description', fire_rating to 123.5 for $wall in property set 'PSet_Wall_Common';", true},
 
                 //element type attributes and properties
-                {"Select wall where type name is 'Some name';",true},
-                {"Select wall where type description is 'Some description';",true},
-                {"Select slab where type predefined type is 'ROOF';",true},
-                {"Select slab where type 'Fire rating' is 'Great';",true},
+                {"Select every wall where type name is 'Some name';",true},
+                {"Select every wall where type description is 'Some description';",true},
+                {"Select every slab where type predefined type is 'ROOF';",true},
+                {"Select every slab where type 'Fire rating' is 'Great';",true},
 
                 //contained in group attributes and properties
-                {"Select wall where group name is 'Some name';",true},
-                {"Select wall where group description is 'Some description';",true},
-                {"Select slab where group predefined type is 'ROOF';",true},
-                {"Select slab where group 'Fire rating' is 'Great';",true},
+                {"Select every wall where group name is 'Some name';",true},
+                {"Select every wall where group description is 'Some description';",true},
+                {"Select every slab where group predefined type is 'ROOF';",true},
+                {"Select every slab where group 'Fire rating' is 'Great';",true},
             };
 
             Xbim.IO.XbimModel model = Xbim.IO.XbimModel.CreateTemporaryModel();
@@ -231,27 +233,27 @@ namespace XbimQueryTest
 
                 txn.Commit();
 
-                parser.Parse("Select wall;");
+                parser.Parse("Select every wall;");
                 var count = parser.Results["$$"].Count();
                 Assert.AreEqual(count, 3, "There should be one wall now selected in '$$'");
 
-                parser.Parse("Select wall 'Wall No. 1';");
+                parser.Parse("Select every wall 'Wall No. 1';");
                 var wall = parser.Results["$$"].FirstOrDefault();
                 Assert.IsNotNull(wall, "There should be one wall selected now in '$$'");
 
-                parser.Parse("Select wall where name is'Wall No. 1';");
+                parser.Parse("Select every wall where name is'Wall No. 1';");
                 wall = parser.Results["$$"].FirstOrDefault();
                 Assert.IsNotNull(wall, "There should be one wall now selected in '$$'");
 
-                parser.Parse("Select wall where name contains'wall';");
+                parser.Parse("Select every wall where name contains'wall';");
                 count = parser.Results["$$"].Count();
                 Assert.AreEqual(count, 3 , "There should be three wall now selected in '$$'");
 
-                parser.Parse("Select wall where name contains'WaLL';");
+                parser.Parse("Select every wall where name contains'WaLL';");
                 count = parser.Results["$$"].Count();
                 Assert.AreEqual(count, 3, "There should be three wall now selected in '$$'");
 
-                parser.Parse("$slabs is slab where predefined type is 'ROOF';");
+                parser.Parse("$slabs is every slab where predefined type is 'ROOF';");
                 var roof = parser.Results["$slabs"].FirstOrDefault();
                 Assert.IsNotNull(roof, "There should be one slab now selected in '$slab'");
 
@@ -306,19 +308,19 @@ namespace XbimQueryTest
 
             //Queries and expected number of results
             Dictionary<string, int> tests = new Dictionary<string, int>() { 
-            {"Select wall where 'string Value' contains 'some string';",3},
-            {"Select wall where 'string Value' contains '1';",1},
-            {"Select wall where 'string value' = 'some string for wall 3';",1},
-            {"Select wall where 'double value' < 5;",0},
-            {"Select wall where 'double value' > 5 and 'double value' < 200;",2},
-            {"Select wall where 'integer value' is 291;",1},
-            {"Select wall where 'integer value' is 291.25;",1},
-            {"Select wall where 'integer value' is 330.25;",0},
-            {"Select wall where 'bool value' = true;",2},
-            {"Select wall where 'null value' is not defined;",3},
-            {"Select wall where 'null value' is undefined;",3},
-            {"Select wall where 'null value' = null;",3},
-            {"Select wall where 'null value' doesn't equal null;",0},
+            {"Select every wall where 'string Value' contains 'some string';",3},
+            {"Select every wall where 'string Value' contains '1';",1},
+            {"Select every wall where 'string value' = 'some string for wall 3';",1},
+            {"Select every wall where 'double value' < 5;",0},
+            {"Select every wall where 'double value' > 5 and 'double value' < 200;",2},
+            {"Select every wall where 'integer value' is 291;",1},
+            {"Select every wall where 'integer value' is 291.25;",1},
+            {"Select every wall where 'integer value' is 330.25;",0},
+            {"Select every wall where 'bool value' = true;",2},
+            {"Select every wall where 'null value' is not defined;",3},
+            {"Select every wall where 'null value' is undefined;",3},
+            {"Select every wall where 'null value' = null;",3},
+            {"Select every wall where 'null value' doesn't equal null;",0},
             };
 
             //create parser and perform the test
@@ -348,28 +350,28 @@ namespace XbimQueryTest
             Create new system with name 'System No. 2';");
 
             //check data are created
-            parser.Parse("Select wall;");
+            parser.Parse("Select every wall;");
             Assert.AreEqual(parser.Results["$$"].Count(), 4);
             Assert.AreEqual(parser.Errors.Count(), 0);
 
-            parser.Parse("Select group;");
+            parser.Parse("Select every group;");
             Assert.AreEqual(parser.Results["$$"].Count(), 2);
             Assert.AreEqual(parser.Errors.Count(), 0);
 
             //variable tests
-            parser.Parse("$a is wall where description contains 'cat';");
+            parser.Parse("$a is every wall where description contains 'cat';");
             Assert.AreEqual(parser.Results["$a"].Count(), 2);
-            parser.Parse("$a is wall where description contains 'cow';");
+            parser.Parse("$a is every wall where description contains 'cow';");
             Assert.AreEqual(parser.Results["$a"].Count(), 3);
             Assert.AreEqual(parser.Errors.Count(), 0);
 
-            parser.Parse("$a is not wall where description contains 'dog';");
+            parser.Parse("$a is not every wall where description contains 'dog';");
             Assert.AreEqual(parser.Results["$a"].Count(), 1);
             Assert.AreEqual(parser.Errors.Count(), 0);
 
-            parser.Parse("$g is group 'System No. 1';");
+            parser.Parse("$g is every group 'System No. 1';");
             Assert.AreEqual(parser.Errors.Count(), 0);
-            parser.Parse("$t is IfcWallType;");
+            parser.Parse("$t is every IfcWallType;");
             parser.Parse("Add $a to $g;");
             parser.Parse("Add $a to $t;");
             Assert.AreEqual(parser.Errors.Count(), 0);
@@ -383,7 +385,7 @@ namespace XbimQueryTest
 
             parser.Parse(@"
             $space is new space 'Original space';
-            $walls is wall;
+            $walls is every wall;
             Add $walls to $space;
             ");
             IfcSpace space = parser.Results["$space"].FirstOrDefault() as IfcSpace;
@@ -414,7 +416,7 @@ namespace XbimQueryTest
             //test cases
             XbimQueryParser parser = new XbimQueryParser(model);
             parser.Parse(@"
-            $wall = wall 'Wall No.1';
+            $wall = every wall 'Wall No.1';
             Set name to 'Changed name' for $wall;
             Set description to null for $wall;
             Set 'Testing label' to 'New label' for $wall;
@@ -455,15 +457,15 @@ namespace XbimQueryTest
             Create new wall 'Second wall';
             Create new wall 'Third wall';
             Create new wall_type 'My wall type';
-            $wall = wall;
-            $wallType = wall_type;
+            $wall = every wall;
+            $wallType = every wall_type;
             Add $wall to $wallType;
-            $test1 is wall where type is 'My wall type';
-            $test2 is wall where type is IfcWallType;
+            $test1 is every wall where type is 'My wall type';
+            $test2 is every wall where type is IfcWallType;
             Create new slab 'New slab';
-            $test3 is slab where type is not defined;
-            $test4 is wall where type is defined;
-            $test5 is wall where type contains 'my wall';
+            $test3 is every slab where type is not defined;
+            $test4 is every wall where type is defined;
+            $test5 is every wall where type contains 'my wall';
             ");
 
             Assert.AreEqual(0, parser.Errors.Count());
@@ -525,11 +527,11 @@ namespace XbimQueryTest
             //tests
             XbimQueryParser parser = new XbimQueryParser(model);
             parser.Parse(@"
-            $test1 = wall where material contains plaster;
-            $test2 = wall where material is plaster;
-            $test3 = wall where material contains pl;
-            $test4 = wall where thickness > 300;
-            $test5 = wall where thickness = 256;
+            $test1 = every wall where material contains plaster;
+            $test2 = every wall where material is plaster;
+            $test3 = every wall where material contains pl;
+            $test4 = every wall where thickness > 300;
+            $test5 = every wall where thickness = 256;
             ");
 
             Assert.AreEqual(0, parser.Errors.Count());
@@ -556,8 +558,8 @@ namespace XbimQueryTest
                 Create new wall 'Wall No.2';
                 Create new wall 'Wall No.2';
 
-                $walls1 is wall 'Wall No.1';
-                $walls2 is wall 'Wall No.2';
+                $walls1 is every wall 'Wall No.1';
+                $walls2 is every wall 'Wall No.2';
                 
                 $type1 is new IfcWallType 'Wall type 1';
                 $type2 is new IfcWallType 'Wall type 2';
@@ -567,15 +569,15 @@ namespace XbimQueryTest
                 Add $walls1 to $type1;
                 Add $walls2 to $type2;
                 
-                $test1 is wall where type name is 'Wall type 1';
-                $test2 is wall where type IsExternal is false;
+                $test1 is every wall where type name is 'Wall type 1';
+                $test2 is every wall where type IsExternal is false;
 
                 $slab is new slab 'My slab slab';
                 $slabType is new slab_type 'My slab type';
                 Set predefined type to 'BASESLAB' for $slabType;
                 Add $slab to $slabType;
 
-                $test3 is slab where type predefined type is 'BASESLAB';
+                $test3 is every slab where type predefined type is 'BASESLAB';
             ");
 
             Assert.AreEqual(0, parser.Errors.Count());
@@ -602,12 +604,12 @@ namespace XbimQueryTest
                 Create new wall 'Wall No.X';
                 Create new wall 'Wall No.X';
 
-                $walls is wall;
-                $group = group where name is '02.05.01';
+                $walls is every wall;
+                $group = every group where name is '02.05.01';
                 Add $walls to $group;
                 
-                $test1 is wall where group description is 'External Walls'; //this is a group in ancestor hierarchy
-                $test2 is wall where group description contains 'external'; 
+                $test1 is every wall where group description is 'External Walls'; //this is a group in ancestor hierarchy
+                $test2 is every wall where group description contains 'external'; 
             ");
 
             Assert.AreEqual(0, parser.Errors.Count());
@@ -635,7 +637,7 @@ namespace XbimQueryTest
             parser.Parse("Open model from file 'output2.ifc';");
             Assert.AreEqual(0, parser.Errors.Count());
 
-            parser.Parse("Select wall;");
+            parser.Parse("Select every wall;");
             Assert.AreEqual(0, parser.Errors.Count());
             Assert.AreEqual(3, parser.Results["$$"].Count());
         }
@@ -654,8 +656,8 @@ namespace XbimQueryTest
                 Create new wall 'Wall No.2';
                 Create new wall 'Wall No.2';
 
-                $walls1 is wall 'Wall No.1';
-                $walls2 is wall 'Wall No.2'       //next error
+                $walls1 is every wall 'Wall No.1';
+                $walls2 is every wall 'Wall No.2'       //next error
                 
                 $type1 is new IfcWallType 'Wall type 1';
                 $type2 is new IfcWallType 'Wall type 2';
@@ -686,8 +688,8 @@ namespace XbimQueryTest
             Create new wall with name 'My wall No. 2' and description 'First description contains cat.';
             Create new wall with name 'My wall No. 3' and description 'First description contains dog and cat.';
             Create new wall with name 'My wall No. 4' and description 'First description contains dog and cow.';
-            $walls is wall;
-            $extWall is group '02.05.01';
+            $walls is every wall;
+            $extWall is every group '02.05.01';
             Add $walls to $extWall;
             ");
 
@@ -696,6 +698,111 @@ namespace XbimQueryTest
             Assert.IsNotNull(gr);
             Assert.AreEqual("External walls above ground floor", gr.Description.ToString());
             Assert.AreEqual(4, gr.GetGroupedObjects().Count());
+        }
+
+        [TestMethod]
+        public void ConditionsChainingTest()
+        {
+            //new parser with default empty model
+            XbimQueryParser parser = new XbimQueryParser();
+            
+            //create data using queries
+            parser.Parse(@"
+            Create new wall with name 'My wall No. 1' and description 'First description contains dog.';
+            Create new wall with name 'My wall No. 2' and description 'First description contains cat.';
+            Create new wall with name 'My wall No. 3' and description 'First description contains dog and cat.';
+            Create new wall with name 'My wall No. 4' and description 'First description contains dog and cow.';
+            $walls is every wall;
+            $group is new group with name '02.05.01' and description 'External walls';
+            $building = new building with name 'Default building';
+            Add $walls to $group;
+            Add $walls to $building;
+            Set 'Fire protection' to 'Great', 'Warranty date' to '12/05/2016' for $walls in property set 'Testing property set';
+            
+            $test1 is every wall where (description contains cat OR description contains cow) AND description contains dog;
+            ");
+
+            Assert.AreEqual(0, parser.Errors.Count());
+            Assert.AreEqual(2, parser.Results["$test1"].Count());
+        }
+
+        [TestMethod]
+        public void MaterialLayerCreationTest()
+        {
+            XbimQueryParser parser = new XbimQueryParser();
+
+            parser.Parse(@"
+                Create new material layer set 'My new material layer set' : Plaster 20.2, 'Brick block' 350, Insulation 300.0, 'Plaster board' 20;
+            ");
+
+            Assert.AreEqual(0, parser.Errors.Count);
+            Assert.IsInstanceOfType(parser.Results["$$"].FirstOrDefault(), typeof(IfcMaterialLayerSet));
+        }
+
+        [TestMethod]
+        public void MaterialSettingTest()
+        {
+            XbimQueryParser parser = new XbimQueryParser();
+            parser.Parse(@"
+                $materialLayerSet is new material layer set 'My new material layer set' : Plaster 20.2, 'Brick block' 350, Insulation 300.0, 'Plaster board' 20;
+                $material is new material 'Gold';
+                $wall is new wall 'My wall';
+                $wallType is new walltype 'My wall type';
+                $proxy is new buildingelementproxy 'Golden egg';
+                Set material to $materialLayerSet for $wall;
+                Set material to $materialLayerSet for $wallType;
+                Set material to $material for $proxy;
+            ");
+
+            Assert.AreEqual(0, parser.Errors.Count);
+            var wall = parser.Results["$wall"].FirstOrDefault() as IfcWall;
+            var wallType = parser.Results["$wallType"].FirstOrDefault() as IfcWallType;
+            var proxy = parser.Results["$proxy"].FirstOrDefault() as IfcBuildingElementProxy;
+            var test1 = wall.GetMaterial();
+            var test2 = wallType.GetMaterial();
+            var test3 = proxy.GetMaterial();
+
+            Assert.IsInstanceOfType(test1, typeof(IfcMaterialLayerSetUsage));
+            Assert.IsInstanceOfType(test2, typeof(IfcMaterialLayerSet));
+            Assert.IsInstanceOfType(test3, typeof(IfcMaterial));
+        }
+
+        [TestMethod]
+        public void AddingAndRemovingToTypeTest()
+        {
+            XbimQueryParser parser = new XbimQueryParser();
+            parser.Parse(@"
+                Create new wall '1';
+                Create new wall '1';
+                Create new wall '1';
+                Create new wall '2';
+                Create new wall '2';
+                $walls1 is every wall where name is '1';
+                $walls2 is every wall where name is '2';
+                
+                $wallType is new walltype 'W type';
+                $mSet = new material layer set 'Set of the dreams': Plaster 10, Bricks 300, Insulation 300, Plaster 10;
+                Set material to $mSet for $wallType;
+                
+                Add $walls1 to $wallType;
+                Add $walls2 to $wallType;
+                
+                Remove $walls1 from $wallType;
+            ");
+
+            Assert.AreEqual(0, parser.Errors.Count);
+
+            var wall1 = parser.Results["$walls1"].FirstOrDefault() as IfcWall;
+            var wall2 = parser.Results["$walls2"].FirstOrDefault() as IfcWall;
+            var material1 = wall1.GetMaterial();
+            var material2 = wall2.GetMaterial();
+            var type1 = wall1.GetDefiningType();
+            var type2 = wall2.GetDefiningType();
+
+            Assert.IsNull(material1);
+            Assert.IsNull(type1);
+            Assert.IsNotNull(material2);
+            Assert.IsNotNull(type2);
         }
     }
 }

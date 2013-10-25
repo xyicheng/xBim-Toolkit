@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Xbim.Ifc2x3.Kernel;
 using System.Globalization;
+using Xbim.Ifc2x3.ActorResource;
 
 namespace Xbim.Script
 {
@@ -92,6 +93,9 @@ namespace Xbim.Script
                     return type;
                 case Tokens.GROUP:
                     yylval.typeVal = typeof(IfcGroup);
+                    return type;
+                case Tokens.ORGANIZATION:
+                    yylval.typeVal = typeof(IfcOrganization);
                     return type;
                 case Tokens.IDENTIFIER:
                     return type;
@@ -200,6 +204,11 @@ namespace Xbim.Script
         public List<string> Errors = new List<string>();
 
         /// <summary>
+        /// List of error locations
+        /// </summary>
+        public List<Location> ErrorLocations = new List<Location>();
+
+        /// <summary>
         /// Overriden yyerror function for error reporting
         /// </summary>
         /// <param name="format">Formated error message</param>
@@ -207,9 +216,24 @@ namespace Xbim.Script
         public override void yyerror(string format, params object[] args)
         {
             Errors.Add(format + String.Format(" Line: {0}, column: {1}", yylloc.EndLine, yylloc.EndColumn));
+            ErrorLocations.Add(new Location() { 
+                StartLine = yylloc.StartLine, 
+                EndLine = yylloc.EndLine, 
+                StartColumn = yylloc.StartColumn, 
+                EndColumn = yylloc.EndColumn
+            });
+
             base.yyerror(format, args);
         }
 
 
     }
+
+    public struct Location
+	{
+		public int StartLine;
+        public int EndLine;
+        public int StartColumn;
+        public int EndColumn;
+	}
 }
