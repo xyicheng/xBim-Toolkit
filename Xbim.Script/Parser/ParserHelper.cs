@@ -960,7 +960,7 @@ namespace Xbim.Script
             }
         }
 
-        public void AddReferenceModel(string refModel, string name, string organization, string owner)
+        public void AddReferenceModel(string refModel, string organization, string owner)
         {
             throw new NotImplementedException();
         }

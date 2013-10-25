@@ -151,7 +151,7 @@ model_actions
 	| CLOSE MODEL																				{CloseModel();}
 	| VALIDATE MODEL																			{ValidateModel();}
 	| SAVE MODEL TO FILE STRING																	{SaveModel($5.strVal);}
-	| ADD REFERENCE MODEL STRING WITH_NAME STRING ',' ORGANIZATION STRING OP_AND OWNER STRING	{AddReferenceModel($4.strVal, $6.strVal, $9.strVal, $12.strVal);}
+	| ADD REFERENCE MODEL STRING WHERE ORGANIZATION OP_EQ STRING OP_AND OWNER OP_EQ STRING		{AddReferenceModel($4.strVal, $8.strVal, $12.strVal);}
 	| COPY IDENTIFIER TO MODEL STRING															{CopyToModel($2.strVal, $5.strVal);}
 	;
 
