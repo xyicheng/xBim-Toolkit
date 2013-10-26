@@ -32,10 +32,11 @@ namespace Xbim.IO
             if (Description.Count == 0)
             {
                 Description.Add("ViewDefinition [CoordinationView]");
-                if (string.IsNullOrWhiteSpace(ImplementationLevel))
-                {
-                    ImplementationLevel = "2;1";
-                }
+                
+            }
+            if (string.IsNullOrWhiteSpace(ImplementationLevel))
+            {
+                ImplementationLevel = "2;1";
             }
             
         }
