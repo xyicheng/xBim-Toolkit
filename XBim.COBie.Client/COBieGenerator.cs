@@ -61,13 +61,43 @@ namespace Xbim.COBie.Client
             }
         }
 
+        public COBieMergeRoles Roles { get; private set; }
+
         public XbimModel Model { get; set; }
 
         public List<string> MergeItemsList { get; set; }
+        private bool IsGenerating { get; set; } // stop button clicks when already clicked
 
         private void btnGenerate_Click(object sender, EventArgs e)
         {
-            Generate();
+            if (!IsGenerating)
+            {
+                IsGenerating = true;
+                Roles = COBieMergeRoles.Unknown; //set to unknown, reset below if any, if not will stay as unknown
+                var checkedRoles = checkedListRoles.CheckedItems;
+                int index = 0;
+                foreach (var item in checkedRoles)
+                {
+                    string rolestr = (string)item;
+                    COBieMergeRoles role = (COBieMergeRoles)Enum.Parse(typeof(COBieMergeRoles), rolestr);
+                    if (index == 0)
+                    {
+                        Roles = role;
+                    }
+                    else
+                    {
+                        Roles |= role;
+                    }
+
+                    index++;
+                }
+                Generate();
+            }
+            else
+            {
+                MessageBox.Show("Currently in an action");
+            }
+            
         }
 
         private void Generate()
@@ -96,7 +126,7 @@ namespace Xbim.COBie.Client
             try
             {
                 Params parameters = args.Argument as Params;
-                
+
                 if ((parameters.ModelFile == null) || (!File.Exists(parameters.ModelFile)))
                 {
                     LogBackground(String.Format("That file doesn't exist in {0}.", Directory.GetCurrentDirectory()));
@@ -122,7 +152,9 @@ namespace Xbim.COBie.Client
             {
                 args.Result = ex;
                 return;
-            } 
+            }
+            finally { IsGenerating = false; }
+            
         }
 
         /// <summary>
@@ -181,6 +213,7 @@ namespace Xbim.COBie.Client
                 COBieContext context = new COBieContext(_worker.ReportProgress);
                 context.TemplateFileName = parameters.TemplateFile;
                 context.Model = model;
+                context.MapMergeRoles[model] = Roles;
                 Model = model; //used to check we close file on Close event
                 //Create Scene, required for Coordinates sheet
                 if (!SkipGeoChkBox.Checked)
@@ -409,21 +442,7 @@ namespace Xbim.COBie.Client
         }
 
 
-        /// <summary>
-        /// Create the xbimGC file
-        /// </summary>
-        /// <param name="context">Context object</param>
-        //private void GenerateGeometry(COBieContext context)
-        //{
-            //need to resolve generate geometry
-            //now convert the geometry
-            //IEnumerable<IfcProduct> toDraw = .IfcProducts.Cast<IfcProduct>(); //get all products for this model to place in return graph
-            //int total = toDraw.Count();
-            //XbimScene.ConvertGeometry(toDraw, delegate(int percentProgress, object userState)
-            //{
-            //    context.UpdateStatus("Creating Geometry File", total, (total * percentProgress / 100));
-            //}, false);
-        //}
+        
 
         //Needed Geometry to test, but Steve's comment on "need to resolve generate geometry" may see GenerateGeometry change
         private  void GenerateGeometry(COBieContext context)
@@ -613,6 +632,11 @@ namespace Xbim.COBie.Client
 
             }
             
+        }
+
+        private void COBieGenerator_Load(object sender, EventArgs e)
+        {
+            checkedListRoles.Items.AddRange(Enum.GetNames(typeof(COBieMergeRoles)));
         }
     }
 

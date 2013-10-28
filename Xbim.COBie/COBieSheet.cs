@@ -5,6 +5,10 @@ using System.Reflection;
 using System.Resources;
 using Xbim.COBie.Resources;
 using System.Diagnostics;
+using Xbim.IO;
+using Xbim.Ifc2x3.SharedBldgElements;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.Ifc2x3.Kernel;
 
 namespace Xbim.COBie
 {
@@ -24,6 +28,7 @@ namespace Xbim.COBie
         #region Properties
         public string SheetName { get; private set; }
         public List<T> Rows { get; private set; }
+        public List<T> RowsRemoved { get; private set; } //rows removed by merge rules
         public Dictionary<int, COBieColumn> Columns { get { return _columns; } }
         public Dictionary<string, HashSet<string>> Indices 
         {  
@@ -56,6 +61,13 @@ namespace Xbim.COBie
             }
         } 
 
+        public IEnumerable<T> RemovedRows
+        {
+            get
+            {
+                return RowsRemoved.AsEnumerable();
+            }
+        }
         public T this[int index] { get { return Rows[index]; } }
 
         public int RowCount { get { return Rows.Count; } }
@@ -69,6 +81,7 @@ namespace Xbim.COBie
         public COBieSheet(string sheetName)
         {
             Rows = new List<T>();
+            RowsRemoved = new List<T>();
             _indices = new Dictionary<string, HashSet<string>>();
 			SheetName = sheetName;
             PropertyInfo[]  properties = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(prop => prop.GetSetMethod() != null).ToArray();
@@ -179,6 +192,113 @@ namespace Xbim.COBie
             ValidatePrimaryKeysUnique();
             ValidateFields();
             ValidateForeignKeys(workbook);
+        }
+
+        /// <summary>
+        /// Validate component sheet for merge types depending on the role of the model this worksheet was built from
+        /// </summary>
+        /// <param name="model">model the cobie file was generated from</param>
+        /// <param name="fileRoles">the file roles</param>
+        public List<string> ValidateComponentMerge(XbimModel model, COBieMergeRoles fileRoles) 
+        {
+            List<string> typeObjectGlobalId = new List<string>();
+            List<string> typeObjectGlobalIdKeep = new List<string>();
+            //RowsRemoved.Clear();
+            if (fileRoles != COBieMergeRoles.Unknown) //if role is a single value of unknown then do no merging
+            {
+                COBieColumn colExtObj = Columns.Where(c => c.Value.ColumnName == "ExtObject").Select(c => c.Value).FirstOrDefault();
+                COBieColumn colExtId = Columns.Where(c => c.Value.ColumnName == "ExtIdentifier").Select(c => c.Value).FirstOrDefault();
+                
+                List<IfcElement> elements = model.InstancesLocal.OfType<IfcElement>().ToList(); //get all IfcElements, 
+                
+                List<T> RemainRows = new List<T>();
+                if (colExtObj != null)
+                {
+                    FilterValuesOnMerge mergeHelper = new FilterValuesOnMerge();
+
+                    for (int i = 0; i < Rows.Count; i++)
+                    {
+                        COBieRow row = Rows[i];//.ElementAt(i);
+                        COBieCell cell = row[colExtObj.ColumnOrder];
+                        string extObject = cell.CellValue;
+                        if (mergeHelper.Merge(extObject)) //object can be tested on
+                        {
+                            COBieCell cellExtId = row[colExtId.ColumnOrder];
+                            string extId = cellExtId.CellValue;
+
+                            IfcElement IfcElement = elements.Where(ie => ie.GlobalId.ToString() == extId).FirstOrDefault();
+                            if (IfcElement != null)
+                            {
+                                //we need to remove the ObjectType from the type sheet
+                                IfcRelDefinesByType elementDefinesByType = IfcElement.IsDefinedBy.OfType<IfcRelDefinesByType>().FirstOrDefault(); //should be only one
+                                IfcTypeObject elementType = null;
+                                if (elementDefinesByType != null)
+                                    elementType = elementDefinesByType.RelatingType;
+
+                                if (mergeHelper.Merge(IfcElement, fileRoles))
+                                {
+                                    RemainRows.Add((T)row);
+                                    if ((elementType != null) && (!typeObjectGlobalIdKeep.Contains(elementType.GlobalId)))
+                                        typeObjectGlobalIdKeep.Add(elementType.GlobalId);
+                                }
+                                else
+                                {
+                                    RowsRemoved.Add((T)row);
+                                    if ((elementType != null) && (!typeObjectGlobalId.Contains(elementType.GlobalId)))
+                                        typeObjectGlobalId.Add(elementType.GlobalId);
+                                }
+                            }
+                            else
+                                RemainRows.Add((T)row); //cannot evaluate IfcType so keep
+                        }
+                    }
+                    Rows = RemainRows;
+                } 
+            }
+            
+            typeObjectGlobalId.RemoveAll(Id => typeObjectGlobalIdKeep.Contains(Id)); //ensure we remove any type we have kept from the type object GlobalId list (ones to remove)
+            return typeObjectGlobalId;
+        }
+
+        /// <summary>
+        /// Validate type sheet for merge types depending on the role of the model this worksheet was built from
+        /// </summary>
+        ///<param name="GlobalIds">List of GlobalId's</param>
+        ///<returns>Number of rows removed</returns>
+        public int ValidateTypeMerge(List<string> GlobalIds)
+        {
+            COBieColumn colExtId = Columns.Where(c => c.Value.ColumnName == "ExtIdentifier").Select(c => c.Value).FirstOrDefault();
+            RowsRemoved = Rows.FindAll(r => GlobalIds.Contains(r[colExtId.ColumnOrder].CellValue));
+            return Rows.RemoveAll(r => GlobalIds.Contains(r[colExtId.ColumnOrder].CellValue));
+        }
+
+        /// <summary>
+        ///  Validate attribute sheet for merge types depending on the role of the model this worksheet was built from
+        /// </summary>
+        /// <param name="keys">string list holding the sheetname and name property concatenated together</param>
+        /// <returns>Number removed</returns>
+        public int ValidateAttributeMerge(List<string> keys)
+        {
+            COBieColumn colSheet = Columns.Where(c => c.Value.ColumnName == "SheetName").Select(c => c.Value).FirstOrDefault();
+            COBieColumn colName = Columns.Where(c => c.Value.ColumnName == "RowName").Select(c => c.Value).FirstOrDefault();
+
+            RowsRemoved = Rows.FindAll(r => keys.Contains(r[colSheet.ColumnOrder].CellValue + r[colName.ColumnOrder].CellValue));
+            return Rows.RemoveAll(r => keys.Contains(r[colSheet.ColumnOrder].CellValue + r[colName.ColumnOrder].CellValue));
+
+        }
+
+        /// <summary>
+        ///  Validate system sheet for merge types in ComponentName, depending on the role of the model this worksheet was built from
+        /// </summary>
+        /// <param name="names">string list holding the name properties removed from the component sheet</param>
+        /// <returns>Number removed</returns>
+        public int ValidateSystemMerge(List<string> names)
+        {
+            COBieColumn compName = Columns.Where(c => c.Value.ColumnName == "ComponentNames").Select(c => c.Value).FirstOrDefault();
+
+            RowsRemoved = Rows.FindAll(r => names.Contains(r[compName.ColumnOrder].CellValue));
+            return Rows.RemoveAll(r => names.Contains(r[compName.ColumnOrder].CellValue));
+
         }
 
         /// <summary>

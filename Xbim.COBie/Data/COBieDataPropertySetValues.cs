@@ -178,6 +178,44 @@ namespace Xbim.COBie.Data
             }
         }
 
+        /// <summary>
+        /// Set the property sets mapped to list of simple property values held for the IfcTypeObject
+        /// filtered by a IfcPropertySet name
+        /// </summary>
+        /// <param name="ifcTypeObject">IfcTypeObject holding the property values</param>
+        /// <param name="propertySetNames">List of IfcPropertySetName</param>
+        public void SetAllPropertyValues(IfcTypeObject ifcTypeObject, List<string> propertySetNames)
+        {
+            _currentObject = ifcTypeObject;
+            PSetFilterOn = true;
+
+            if (ifcTypeObject.HasPropertySets != null) //we have properties to get
+            {
+                _mapPsetToProps = ifcTypeObject.HasPropertySets.OfType<IfcPropertySet>()
+                                .Where(ps => (propertySetNames.Contains(ps.Name)))
+                                .ToDictionary(ps => ps, ps => ps.HasProperties.OfType<IfcSimpleProperty>());
+            }
+            else
+            {
+                _mapPsetToProps.Clear(); //clear as we have no properties for this object
+            }
+
+            //fall back to related items to get the information from
+            if (!_mapPsetToProps.Any())//not sure we should do this, but we get values to fill from an object that is using the type object
+            {
+                if (ifcTypeObject.ObjectTypeOf.Any())
+                {
+                    IfcObject IfcObj = ifcTypeObject.ObjectTypeOf.First().RelatedObjects.FirstOrDefault();
+                    if (IfcObj != null)
+                    {
+                        SetAllPropertyValues(IfcObj); //we do not filter on property set name here, just go for all of them
+                    }
+
+                }
+
+            }
+        }
+
                
         /// <summary>
         /// Get the property value where the property name equals the passed in value. 

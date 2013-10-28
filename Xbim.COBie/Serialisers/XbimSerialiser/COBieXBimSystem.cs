@@ -156,9 +156,18 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 
                 List<IfcProduct> ifcProductList = new List<IfcProduct>();
 
-                foreach (string componentName in SplitTheString(componentNames))
+                //check to see is the component name is a single component
+                List<string> compNames = new List<string>();
+                string testCompName = componentNames.ToLower().Trim();
+                IfcProduct ifcProduct = Model.Instances.OfType<IfcProduct>().Where(p => p.Name.ToString().ToLower().Trim() == testCompName).FirstOrDefault();
+                if (ifcProduct != null)
+                    compNames.Add(componentNames);
+                else
+                    compNames = SplitTheString(componentNames); //multiple components in string
+
+                foreach (string componentName in compNames)
                 {
-                    IfcProduct ifcProduct = null;
+                    ifcProduct = null;
                     if (ValidateString(componentName))
                     {
                         string compName = componentName.ToLower().Trim();
@@ -191,7 +200,7 @@ namespace Xbim.COBie.Serialisers.XbimSerialiser
                 }
                 if (ifcProductList.Count == 0) //no products created so create an IfcDistributionElement as place holder
                 {
-                    IfcProduct ifcProduct = COBieXBimComponent.GetElementInstance("IfcDistributionElement", Model);
+                    ifcProduct = COBieXBimComponent.GetElementInstance("IfcDistributionElement", Model);
                     if (ifcProduct != null)
                     {
                         ifcProduct.Name = ""; // row.Name + " " + SystemProdutIndex.ToString(); ;
