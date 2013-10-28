@@ -74,6 +74,7 @@
     <Compile Include="IBimSingleProperties.cs" />
     <Compile Include="IBimPropertySingleValue.cs" />
     <Compile Include="INRMQuantities.cs" />
+    <Compile Include="Optimization\MaterialsOptimization.cs" />
     <Compile Include="PropertiesQuantities\NRMQuantities.cs" />
     <Compile Include="PropertiesQuantities\XbimBuildingCommonProperties.cs" />
     <Compile Include="PropertiesQuantities\XbimBuildingQuantities.cs" />

@@ -70,6 +70,9 @@
 
 ";"		{  return (';'); }
 ","		{  return (','); }
+":"		{  return (':'); }
+"("		{  return ('('); }
+")"		{  return (')'); }
 
 
 "is north from"		{return ((int)Tokens.NORTH_OF); }
@@ -104,12 +107,16 @@
 "from"			{ return (int)Tokens.FROM; }
 "export" |
 "dump"			{ return (int)Tokens.DUMP; }
+"count"			{ return (int)Tokens.COUNT; }
 "clear"			{ return (int)Tokens.CLEAR; }
 "open"			{ return (int)Tokens.OPEN; }
 "close"			{ return (int)Tokens.CLOSE; }
 "save"			{ return (int)Tokens.SAVE; }
 "in"			{ return (int)Tokens.IN; }
 "it"			{ return (int)Tokens.IT; }
+"every"			{ return (int)Tokens.EVERY; }
+"validate"		{ return (int)Tokens.VALIDATE; }
+"copy"			{ return (int)Tokens.COPY; }
 "property set" |
 "property_set" |
 "propertyset"	{ return (int)Tokens.PROPERTY_SET; }
@@ -118,13 +125,20 @@
 "predefinedtype" |
 "predefined_type" |
 "predefined type"			{ return (int)Tokens.PREDEFINED_TYPE; }
-"type"			{ return (int)Tokens.TYPE; }
+"type" |
+"family"		{ return (int)Tokens.TYPE; }
 "material"		{ return (int)SetValue(Tokens.MATERIAL); }
 "thickness"		{ return (int)Tokens.THICKNESS; }  
 "file"			{ return (int)Tokens.FILE; }
 "model"			{ return (int)Tokens.MODEL; }
+"reference"			{ return (int)Tokens.REFERENCE; }
 "classification"	{ return (int)Tokens.CLASSIFICATION; }
 "group"			{ return (int)SetValue(Tokens.GROUP); }
+"organization"			{ return (int)SetValue(Tokens.ORGANIZATION); }
+"owner"			{ return (int)Tokens.OWNER; }
+"layer set" |
+"layer_set"	|
+"layerset"		{ return (int)Tokens.LAYER_SET; }
 
 "null" |
 "undefined" |

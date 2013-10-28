@@ -19,7 +19,21 @@ namespace Xbim.Script
         /// <summary>
         /// Errors encountered during parsing.
         /// </summary>
-        public IEnumerable<string> Errors { get { return _scanner.Errors; } }
+        public List<string> Errors { get { return _scanner.Errors; } }
+
+        /// <summary>
+        /// Locations of the errors. Use index of the error to get according location.
+        /// It is already part of the error message but information contained in this property
+        /// can be used to show the position interactively for example.
+        /// </summary>
+        public List<Location> ErrorLocations { get { return _scanner.ErrorLocations; } }
+
+        /// <summary>
+        /// Messages go to the Console command line normally but 
+        /// you can use this property to define optional output 
+        /// where messages should go. 
+        /// </summary>
+        public System.IO.TextWriter Output { get { return _parser.Output; } set { _parser.Output = value; } }
 
         /// <summary>
         /// Model on which the parser operates
@@ -32,6 +46,11 @@ namespace Xbim.Script
         /// </summary>
         public XbimVariables Results { get { return _parser.Variables; } }
 
+        /// <summary>
+        /// Constructor which takes a existing model as an argument. 
+        /// You can also close and open any model from the script.
+        /// </summary>
+        /// <param name="model">Model which shuldbe used for the script execution</param>
         public XbimQueryParser(XbimModel model)
         {
             _model = model;
@@ -39,6 +58,11 @@ namespace Xbim.Script
             _parser = new Parser(_scanner, _model);
         }
 
+        /// <summary>
+        /// Parameterless constructor of the class. 
+        /// Default empty model is created which can be used 
+        /// or you can open other model from the script.
+        /// </summary>
         public XbimQueryParser()
         {
             //create new empty model

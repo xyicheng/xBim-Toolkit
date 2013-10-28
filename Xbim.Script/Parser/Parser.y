@@ -45,6 +45,10 @@
 %token  MODEL
 %token  CLASSIFICATION
 %token  PROPERTY_SET
+%token  LAYER_SET
+%token  REFERENCE
+%token  ORGANIZATION
+%token  OWNER
 
 /*operations and keywords*/
 %token  WHERE
@@ -64,6 +68,8 @@
 %token  GROUP
 %token  IN
 %token  IT
+%token  EVERY
+%token  COPY
 
 /* commands */
 %token  SELECT
@@ -74,6 +80,8 @@
 %token  OPEN
 %token  CLOSE
 %token  SAVE
+%token  COUNT
+%token  VALIDATE
 
 /* spatial keywords */
 %token  NORTH_OF
@@ -122,6 +130,7 @@ value_setting_list
 value_setting
 	: attribute TO value					{$$.val = GenerateSetExpression($1.strVal, $3.val);}
 	| STRING TO value						{$$.val = GenerateSetExpression($1.strVal, $3.val);}
+	| MATERIAL TO IDENTIFIER				{$$.val = GenerateSetMaterialExpression($3.strVal);}
 	;	
 
 value
@@ -138,14 +147,18 @@ num_value
 	;
 
 model_actions
-	: OPEN MODEL FROM FILE STRING									{OpenModel($5.strVal);}
-	| CLOSE MODEL													{CloseModel();}
-	| SAVE MODEL TO FILE STRING										{SaveModel($5.strVal);}
+	: OPEN MODEL FROM FILE STRING																{OpenModel($5.strVal);}
+	| CLOSE MODEL																				{CloseModel();}
+	| VALIDATE MODEL																			{ValidateModel();}
+	| SAVE MODEL TO FILE STRING																	{SaveModel($5.strVal);}
+	| ADD REFERENCE MODEL STRING WHERE ORGANIZATION OP_EQ STRING OP_AND OWNER OP_EQ STRING		{AddReferenceModel($4.strVal, $8.strVal, $12.strVal);}
+	| COPY IDENTIFIER TO MODEL STRING															{CopyToModel($2.strVal, $5.strVal);}
 	;
 
 variables_actions
 	: DUMP IDENTIFIER												{DumpIdentifier($2.strVal);}
 	| CLEAR IDENTIFIER												{ClearIdentifier($2.strVal);}
+	| COUNT IDENTIFIER												{CountIdentifier($2.strVal);}
 	| DUMP string_list FROM IDENTIFIER								{DumpAttributes($4.strVal, ((List<string>)($2.val)));}
 	| DUMP string_list FROM IDENTIFIER TO FILE STRING				{DumpAttributes($4.strVal, ((List<string>)($2.val)), $7.strVal);}
 	;
@@ -163,9 +176,9 @@ selection
 	;
 
 selection_statement
-	: object														{$$.val = Select($1.typeVal);}
-	| object STRING													{$$.val = Select($1.typeVal, $2.strVal);}
-	| object WHERE conditions										{$$.val = Select($1.typeVal, ((Expression)($3.val)));}
+	: EVERY object														{$$.val = Select($2.typeVal);}
+	| EVERY object STRING												{$$.val = Select($2.typeVal, $3.strVal);}
+	| EVERY object WHERE conditions_set									{$$.val = Select($2.typeVal, ((Expression)($4.val)));}
 	;
 	
 creation
@@ -178,6 +191,16 @@ creation_statement
 	: NEW object STRING												{$$.val = CreateObject($2.typeVal, $3.strVal);}			
 	| NEW object WITH_NAME STRING 									{$$.val = CreateObject($2.typeVal, $4.strVal);}			
 	| NEW object WITH_NAME STRING OP_AND DESCRIPTION STRING			{$$.val = CreateObject($2.typeVal, $4.strVal, $7.strVal);}			
+	| NEW MATERIAL LAYER_SET STRING ':' layers						{$$.val = CreateLayerSet($4.strVal, (List<Layer>)($6.val));}			
+	;
+
+layers
+	: layers ',' layer				{((List<Layer>)($1.val)).Add((Layer)($3.val)); $$.val = $1.val;}
+	| layer							{$$.val = new List<Layer>(){(Layer)($1.val)};}
+	;
+
+layer
+	: STRING num_value				{$$.val = new Layer(){material = $1.strVal, thickness = Convert.ToDouble($2.val)};}
 	;
 
 addition
@@ -185,10 +208,19 @@ addition
 	| REMOVE IDENTIFIER FROM IDENTIFIER								{AddOrRemove(Tokens.REMOVE, $2.strVal, $4.strVal);}
 	;
 
+conditions_set
+	: '(' conditions ')' OP_AND '(' conditions ')'	{$$.val = Expression.AndAlso(((Expression)($2.val)), ((Expression)($6.val)));}
+	| '(' conditions ')' OP_AND  condition			{$$.val = Expression.AndAlso(((Expression)($2.val)), ((Expression)($5.val)));}
+	| '(' conditions ')' OP_OR '(' conditions ')'	{$$.val = Expression.OrElse(((Expression)($2.val)), ((Expression)($6.val)));}
+	| '(' conditions ')' OP_OR condition			{$$.val = Expression.OrElse(((Expression)($2.val)), ((Expression)($5.val)));}
+	| '(' conditions ')'							{$$.val = $2.val;}
+	|  conditions									{$$.val = $1.val;}
+	;
+
 conditions
-	: conditions OP_AND condition			{$$.val = Expression.AndAlso(((Expression)($1.val)), ((Expression)($3.val)));}
-	| conditions OP_OR condition			{$$.val = Expression.OrElse(((Expression)($1.val)), ((Expression)($3.val)));}
-	| condition								{$$.val = $1.val;}
+	: conditions OP_AND condition					{$$.val = Expression.AndAlso(((Expression)($1.val)), ((Expression)($3.val)));}
+	| conditions OP_OR condition					{$$.val = Expression.OrElse(((Expression)($1.val)), ((Expression)($3.val)));}
+	| condition										{$$.val = $1.val;}
 	;
 	
 condition
@@ -199,6 +231,7 @@ condition
 	| propertyCondition						{$$.val = $1.val;}
 	| groupCondition						{$$.val = $1.val;}
 	| spatialCondition						{$$.val = $1.val;}
+	| modelCondition						{$$.val = $1.val;}
 	;
 
 attributeCondition	
@@ -257,6 +290,12 @@ spatialCondition
 	: IT op_spatial IDENTIFIER			{$$.val = GenerateSpatialCondition(((Tokens)($2.val)), $3.strVal);}
 	;
 
+modelCondition
+	: MODEL op_bool							{GenerateModelCondition(Tokens.MODEL, $1.strVal);}
+	| MODEL OWNER op_bool STRING			{GenerateModelCondition(Tokens.OWNER, $4.strVal);}
+	| MODEL ORGANIZATION op_bool STRING		{GenerateModelCondition(Tokens.ORGANIZATION, $4.strVal);}
+	;
+
 op_spatial
 	: NORTH_OF				{$$.val = Tokens.NORTH_OF			;}
 	| SOUTH_OF				{$$.val = Tokens.SOUTH_OF			;}
@@ -297,6 +336,7 @@ object
 	| PRODUCT_TYPE			{$$.typeVal = $1.typeVal;}
 	| MATERIAL				{$$.typeVal = $1.typeVal;}
 	| GROUP					{$$.typeVal = $1.typeVal;}
+	| ORGANIZATION			{$$.typeVal = $1.typeVal;}
 	;
 	
 %%

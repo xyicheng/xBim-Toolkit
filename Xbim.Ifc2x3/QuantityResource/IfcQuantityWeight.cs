@@ -62,7 +62,7 @@ namespace Xbim.Ifc2x3.QuantityResource
                     base.IfcParse(propIndex, value);
                     break;
                 case 3:
-                    WeightValue = value.RealVal;
+                    _weightValue = value.RealVal;
                     break;
                 default:
                     this.HandleUnexpectedAttribute(propIndex, value); break;
@@ -74,7 +74,7 @@ namespace Xbim.Ifc2x3.QuantityResource
             string baseErr = base.WhereRule();
             if (Unit != null && Unit.UnitType != IfcUnitEnum.MASSUNIT)
                 baseErr += "WR21 QuantityWeight : If a unit is given, the unit type shall be mass unit.\n";
-            if (_weightValue < 0)
+            if (WeightValue < 0)
                 baseErr += "WR22 QuantityWeight : A valid mass quantity shall be greater than or equal to zero.\n";
             return baseErr;
         }

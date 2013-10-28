@@ -476,5 +476,20 @@ namespace Xbim.IO
 
 
 
+
+        internal XbimGeometryData GetGeometryData(int geomLabel)
+        {
+            Api.JetSetCurrentIndex(sesid, table, geometryTablePrimaryIndex);
+            Api.MakeKey(sesid, table, geomLabel, MakeKeyGrbit.NewKey);
+            if (Api.TrySeek(sesid, table, SeekGrbit.SeekEQ))
+            {
+                Api.RetrieveColumns(sesid, table, _colValues);
+                _colValGeometryLabel.Value = Api.RetrieveColumnAsInt32(sesid, table, _colIdGeometryLabel);
+                return new XbimGeometryData(_colValGeometryLabel.Value.Value, _colValProductLabel.Value.Value, (XbimGeometryType)_colValGeomType.Value, _colValProductIfcTypeId.Value.Value, _colValShapeData.Value, _colValTransformMatrix.Value, _colValGeometryHash.Value.Value, _colValStyleLabel.Value.HasValue ? _colValStyleLabel.Value.Value : 0);
+
+            }
+            else
+                return null;
+        }
     }
 }

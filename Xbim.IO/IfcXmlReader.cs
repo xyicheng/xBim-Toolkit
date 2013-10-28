@@ -40,6 +40,8 @@ namespace Xbim.IO
     {
         private static readonly Dictionary<string, IfcParserType> primitives;
         private readonly int _transactionBatchSize = 100;
+        private Dictionary<string, int> idMap;
+        private int lastId;
         static IfcXmlReader()
         {
             primitives = new Dictionary<string, IfcParserType>();
@@ -355,7 +357,7 @@ namespace Xbim.IO
 
                 string cType = input.GetAttribute(_cTypeAttribute);
                 if (string.IsNullOrEmpty(cType)) cType = input.GetAttribute("cType"); //in case namespace omitted
-                if (!string.IsNullOrEmpty(cType) && IsCollection(prop)) //the property is a collection
+                if (IsCollection(prop)) //the property is a collection
                 {
                     XmlCollectionProperty xmlColl = new XmlCollectionProperty(_currentNode, prop.PropertyInfo, propIndex);
                     switch (cType)
@@ -370,6 +372,7 @@ namespace Xbim.IO
                             xmlColl.CType = CollectionType.Set;
                             break;
                         default:
+                            xmlColl.CType = CollectionType.List;
                             break;
                     }
 
@@ -465,6 +468,8 @@ namespace Xbim.IO
         private int GetId(XmlReader input, out bool isRefType)
         {
             isRefType = false;
+            int nextId = -1;
+            IfcType ifcType;
             string strId = input.GetAttribute("id");
             if (string.IsNullOrEmpty(strId))
             {
@@ -473,16 +478,27 @@ namespace Xbim.IO
             }
             if (!string.IsNullOrEmpty(strId)) //must be a new instance or a reference to an existing one  
             {
+                if (!idMap.TryGetValue(strId, out nextId))
+                {
+                    ++lastId;
+                    nextId = lastId;
+                    idMap.Add(strId, nextId);
+                }
                 // if we have id or refid then remove letters and get the number part
-                Match match = Regex.Match(strId, @"\d+");
+                //Match match = Regex.Match(strId, @"\d+");
 
-                if (!match.Success)
-                    throw new Exception(String.Format("Illegal entity id: {0}", strId));
-                return Convert.ToInt32(match.Value);
+                //if (!match.Success)
+                //    throw new Exception(String.Format("Illegal entity id: {0}", strId));
+                //return Convert.ToInt32(match.Value);
+                
             }
-            else
-                return -1;
-
+            else if (IsIfcEntity(input.LocalName, out ifcType) && !typeof(ExpressType).IsAssignableFrom(ifcType.Type)) //its a type with no identity, make one
+            {
+                ++lastId;
+                nextId = lastId;
+            }
+            
+            return nextId;
         }
 
         private bool IsIfcEntity(string elementName, out IfcType ifcType)
@@ -793,7 +809,8 @@ namespace Xbim.IO
         {
            
             // Read until end of file
-
+            idMap = new Dictionary<string, int>();
+            lastId = 0;
             _entitiesParsed = 0;
             bool foundHeader = false;
             IfcFileHeader header = new IfcFileHeader(IfcFileHeader.HeaderCreationMode.LeaveEmpty);

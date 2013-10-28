@@ -483,7 +483,7 @@ namespace Xbim.IO
                         ZipEntry entry = zipStream.GetNextEntry();
                         while (entry != null)
                         {
-                            string ext = Path.GetExtension(entry.Name);
+                            string ext = Path.GetExtension(entry.Name).ToLowerInvariant();
                             //look for a valid ifc supported file
                             if (entry.IsFile &&
                                 (string.Compare(ext, ".ifc", true) == 0)
@@ -1999,6 +1999,20 @@ namespace Xbim.IO
             get
             {
                 return _model;
+            }
+        }
+
+        internal XbimGeometryData GetGeometryData(int geomLabel)
+        {
+            //Get a cached or open a new Table
+            XbimGeometryCursor geometryTable = GetGeometryTable();
+            try
+            {
+                return geometryTable.GetGeometryData(geomLabel);
+            }
+            finally
+            {
+                FreeTable(geometryTable);
             }
         }
     }

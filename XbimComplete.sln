@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 2010
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{B5EDEE8A-69B9-47E5-8455-E1A9A7ED8969}"
 	ProjectSection(SolutionItems) = preProject
 		Xbim.ModelGeometry.OCC\Version.rc = Xbim.ModelGeometry.OCC\Version.rc
@@ -304,6 +304,18 @@ Global
 		{25056C5D-D281-436E-B281-95F339861C5D}.NugetDistribution|Any CPU.Build.0 = Release|Any CPU
 		{25056C5D-D281-436E-B281-95F339861C5D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{25056C5D-D281-436E-B281-95F339861C5D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DA65C44A-A1D7-4C15-8636-75B6B9344988}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DA65C44A-A1D7-4C15-8636-75B6B9344988}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DA65C44A-A1D7-4C15-8636-75B6B9344988}.NugetDistribution|Any CPU.ActiveCfg = Release|Any CPU
+		{DA65C44A-A1D7-4C15-8636-75B6B9344988}.NugetDistribution|Any CPU.Build.0 = Release|Any CPU
+		{DA65C44A-A1D7-4C15-8636-75B6B9344988}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DA65C44A-A1D7-4C15-8636-75B6B9344988}.Release|Any CPU.Build.0 = Release|Any CPU
+		{26E9D71E-C586-4130-B4DE-4B237A4F22FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{26E9D71E-C586-4130-B4DE-4B237A4F22FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{26E9D71E-C586-4130-B4DE-4B237A4F22FF}.NugetDistribution|Any CPU.ActiveCfg = Release|Any CPU
+		{26E9D71E-C586-4130-B4DE-4B237A4F22FF}.NugetDistribution|Any CPU.Build.0 = Release|Any CPU
+		{26E9D71E-C586-4130-B4DE-4B237A4F22FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{26E9D71E-C586-4130-B4DE-4B237A4F22FF}.Release|Any CPU.Build.0 = Release|Any CPU
 		{BAE9A827-0620-4F68-A384-336A491EDD91}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{BAE9A827-0620-4F68-A384-336A491EDD91}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BAE9A827-0620-4F68-A384-336A491EDD91}.NugetDistribution|Any CPU.ActiveCfg = Release|Any CPU
@@ -321,18 +333,6 @@ Global
 		{DE488ADE-EE39-4FAE-957D-AF7200BB9E3B}.NugetDistribution|Any CPU.Build.0 = Release|Any CPU
 		{DE488ADE-EE39-4FAE-957D-AF7200BB9E3B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DE488ADE-EE39-4FAE-957D-AF7200BB9E3B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{DA65C44A-A1D7-4C15-8636-75B6B9344988}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DA65C44A-A1D7-4C15-8636-75B6B9344988}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DA65C44A-A1D7-4C15-8636-75B6B9344988}.NugetDistribution|Any CPU.ActiveCfg = Release|Any CPU
-		{DA65C44A-A1D7-4C15-8636-75B6B9344988}.NugetDistribution|Any CPU.Build.0 = Release|Any CPU
-		{DA65C44A-A1D7-4C15-8636-75B6B9344988}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DA65C44A-A1D7-4C15-8636-75B6B9344988}.Release|Any CPU.Build.0 = Release|Any CPU
-		{26E9D71E-C586-4130-B4DE-4B237A4F22FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{26E9D71E-C586-4130-B4DE-4B237A4F22FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{26E9D71E-C586-4130-B4DE-4B237A4F22FF}.NugetDistribution|Any CPU.ActiveCfg = Release|Any CPU
-		{26E9D71E-C586-4130-B4DE-4B237A4F22FF}.NugetDistribution|Any CPU.Build.0 = Release|Any CPU
-		{26E9D71E-C586-4130-B4DE-4B237A4F22FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{26E9D71E-C586-4130-B4DE-4B237A4F22FF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
