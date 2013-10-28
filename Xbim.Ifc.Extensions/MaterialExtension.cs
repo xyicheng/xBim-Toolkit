@@ -28,6 +28,7 @@ namespace Xbim.Ifc2x3.Extensions
 {
     public static class MaterialExtension
     {
+        
         public static void SetExtendedSingleValue(this IfcMaterial material, IModel model, string pSetName,
                                                   string propertyName, IfcValue value)
         {
@@ -72,22 +73,6 @@ namespace Xbim.Ifc2x3.Extensions
             return result;
         }
 
-        /// <summary>
-        /// CM 23/09/2013 - Created this overload to allow an Extended Materials set to be passed directly. 
-        /// THis Saves on processing time which can be very slow when looping.
-        /// </summary>
-        /// <returns></returns>
-        public static IfcPropertySingleValue GetExtendedSingleValue(this IfcMaterial material, IModel model,
-                                                                    IfcExtendedMaterialProperties pSet, string propertyName)
-        {
-            if (pSet == null) return null;
-
-            IfcPropertySingleValue result =
-                pSet.ExtendedProperties.OfType<IfcPropertySingleValue>().Where(sv => sv.Name == propertyName).FirstOrDefault();
-
-            return result;
-        }
-
 
         public static IfcPropertySingleValue GetExtendedSingleValue(this IfcMaterial material, string pSetName,
                                                                     string propertyName)
@@ -114,6 +99,24 @@ namespace Xbim.Ifc2x3.Extensions
         {
             IModel model = material.ModelOf;
             return GetExtendedSingleValueValue(material, model, pSetName, propertyName);
+        }
+
+        /// <summary>
+        /// CM 23/09/2013 - Created this to allow an Extended Materials set to be passed directly. 
+        /// THis Saves on processing time which can be very slow when looping.
+        /// </summary>
+        /// <returns></returns>
+        public static IfcValue GetExtendedPropertyNominalValue(this IfcMaterial material, IModel model,
+                                                                    IfcExtendedMaterialProperties pSet, string propertyName)
+        {
+            if (pSet == null) return null;
+
+            IfcPropertySingleValue result =
+                pSet.ExtendedProperties.OfType<IfcPropertySingleValue>().Where(sv => sv.Name == propertyName).FirstOrDefault();
+
+            if (result == null) return null;
+
+            return result.NominalValue;
         }
 
         public static void DeleteExtendedSingleValue(this IfcMaterial material, IModel model, string pSetName,
