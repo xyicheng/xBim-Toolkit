@@ -199,6 +199,7 @@ namespace Xbim.COBie
                 progress.ReportMessage("Finished Validation");
 
                 progress.Finalise();
+
             }
             catch (Exception)
             {
@@ -223,7 +224,15 @@ namespace Xbim.COBie
             Initialise();
             Workbook.SetInitialHashCode();//set the initial row hash value to compare against for row changes
            
-            PopulateErrors();			
+            PopulateErrors();
+
+            //Role validation
+            COBieProgress progress = new COBieProgress(Context);
+            progress.ReportMessage("Starting Merge Validation...");
+            Workbook.ValidateMerge(Context.Model, Context.MapMergeRoles[Context.Model]);
+            progress.ReportMessage("Finished Merge Validation...");
+            
+                
         }
 
 		/// <summary>

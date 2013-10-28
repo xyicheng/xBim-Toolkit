@@ -47,6 +47,7 @@
     <Reference Include="PresentationCore" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -58,6 +59,7 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="BoundingBox\BoundingBoxExample.cs" />
+    <Compile Include="Geometry\GeometryExample.cs" />
     <Compile Include="HelloWall\HelloWallExample.cs" />
     <Compile Include="ISample.cs" />
     <Compile Include="Program.cs" />
@@ -65,7 +67,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="BoundingBox\Clinic_Example.ifc">
+    <None Include="IfcFiles\Clinic_Example.ifc">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
@@ -86,11 +88,20 @@
       <Project>{85856df2-c8ab-4120-8a8d-ae05d2696b51}</Project>
       <Name>Xbim.IO</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Xbim.ModelGeometry.Converter\Xbim.ModelGeometry.Converter.csproj">
+      <Project>{97DFF14E-ADD7-4ED3-B8C3-0D3D3E6CDEE8}</Project>
+      <Name>Xbim.ModelGeometry.Converter</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Xbim.ModelGeometry.Scene\Xbim.ModelGeometry.Scene.csproj">
       <Project>{3d9d37de-a254-4433-b172-7590cbd84c69}</Project>
       <Name>Xbim.ModelGeometry.Scene</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Xbim.Presentation\Xbim.Presentation.csproj">
+      <Project>{89F98E53-DE4E-4427-8244-D5934AD08849}</Project>
+      <Name>Xbim.Presentation</Name>
+    </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>
