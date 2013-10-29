@@ -228,11 +228,15 @@ namespace Xbim.COBie
 
             //Role validation
             COBieProgress progress = new COBieProgress(Context);
-            progress.ReportMessage("Starting Merge Validation...");
-            Workbook.ValidateMerge(Context.Model, Context.MapMergeRoles[Context.Model]);
-            progress.ReportMessage("Finished Merge Validation...");
-            
-                
+            //check we have values in MapMergeRoles, only on federated or via test harness
+            if ((Context.MapMergeRoles.Count > 0) &&
+                (Context.MapMergeRoles.ContainsKey(Context.Model))
+                )
+            {
+                progress.ReportMessage("Starting Merge Validation...");
+                Workbook.ValidateMerge(Context.Model, Context.MapMergeRoles[Context.Model]);
+                progress.ReportMessage("Finished Merge Validation...");
+            }
         }
 
 		/// <summary>
