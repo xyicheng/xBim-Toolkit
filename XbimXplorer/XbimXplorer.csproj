@@ -27,7 +27,7 @@
     <SccAuxPath>SAK</SccAuxPath>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
-    <PublishUrl>publish\</PublishUrl>
+    <PublishUrl>ClickOnce\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Web</InstallFrom>
     <UpdateEnabled>true</UpdateEnabled>
@@ -45,8 +45,8 @@
     <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
     <WebPage>publish.htm</WebPage>
     <OpenBrowserOnPublish>false</OpenBrowserOnPublish>
-    <ApplicationRevision>28</ApplicationRevision>
-    <ApplicationVersion>2.4.1.28</ApplicationVersion>
+    <ApplicationRevision>29</ApplicationRevision>
+    <ApplicationVersion>2.4.1.29</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <CreateDesktopShortcut>true</CreateDesktopShortcut>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -367,7 +367,7 @@
       <Visible>False</Visible>
     </x64PublishFile>
   </ItemGroup>
-  <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
+  <!--<ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
     <x86PublishFile Include="bin\Debug\x86\*.dll">
       <Visible>False</Visible>
     </x86PublishFile>
@@ -380,8 +380,8 @@
     <x64DebugPublishFile Include="bin\Debug\x64\Debug\*.dll">
       <Visible>False</Visible>
     </x64DebugPublishFile>
-  </ItemGroup>
-  <Target Name="BeforePublish">
+  </ItemGroup>-->
+  <Target Name="BeforeBuild">
     <Touch Files="@(IntermediateAssembly)" />
     <CreateItem Include="@(x86PublishFile)" AdditionalMetadata="TargetPath=x86\%(FileName)%(Extension);IsDataFile=false;">
       <Output TaskParameter="Include" ItemName="_DeploymentManifestFiles" />
@@ -389,10 +389,13 @@
     <CreateItem Include="@(x64PublishFile)" AdditionalMetadata="TargetPath=x64\%(FileName)%(Extension);IsDataFile=false;">
       <Output TaskParameter="Include" ItemName="_DeploymentManifestFiles" />
     </CreateItem>
-    <CreateItem Include="@(x86DebugPublishFile)" AdditionalMetadata="TargetPath=x86\Debug\%(FileName)%(Extension);IsDataFile=false">
+  </Target>
+  <Target Name="BeforePublish">
+    <Touch Files="@(IntermediateAssembly)" />
+    <CreateItem Include="@(x86PublishFile)" AdditionalMetadata="TargetPath=x86\%(FileName)%(Extension);IsDataFile=false;">
       <Output TaskParameter="Include" ItemName="_DeploymentManifestFiles" />
     </CreateItem>
-    <CreateItem Include="@(x64DebugPublishFile)" AdditionalMetadata="TargetPath=x64\Debug\%(FileName)%(Extension);IsDataFile=false">
+    <CreateItem Include="@(x64PublishFile)" AdditionalMetadata="TargetPath=x64\%(FileName)%(Extension);IsDataFile=false;">
       <Output TaskParameter="Include" ItemName="_DeploymentManifestFiles" />
     </CreateItem>
   </Target>
