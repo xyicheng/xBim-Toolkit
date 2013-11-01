@@ -64,24 +64,14 @@
     </DocumentationFile>
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'NugetDistribution|AnyCPU' ">
-    <OutputPath>..\bin\NugetDistribution\</OutputPath>
-    <DefineConstants>TRACE;SupportActivation</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
-    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
-    <DebugSymbols>true</DebugSymbols>
-  </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Esent.Collections">
-      <HintPath>..\packages\ManagedEsent.1.6\lib\net20\Esent.Collections.dll</HintPath>
-    </Reference>
-    <Reference Include="Esent.Interop, Version=1.6.0.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="Esent.Collections, Version=1.8.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\ManagedEsent.1.6\lib\net20\Esent.Interop.dll</HintPath>
+      <HintPath>..\packages\ManagedEsent.1.8.3.2\lib\net40\Esent.Collections.dll</HintPath>
+    </Reference>
+    <Reference Include="Esent.Interop, Version=1.8.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\ManagedEsent.1.8.3.2\lib\net40\Esent.Interop.dll</HintPath>
     </Reference>
     <Reference Include="ICSharpCode.SharpZipLib">
       <HintPath>..\packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
@@ -121,6 +111,7 @@
     <Compile Include="Tree\TreeQueryStrategy.cs" />
     <Compile Include="ViewModels\ClassificationViewModel.cs" />
     <Compile Include="ViewModels\ContainedElementsViewModel.cs" />
+    <Compile Include="ViewModels\GroupViewModel.cs" />
     <Compile Include="ViewModels\IfcProductModelView.cs" />
     <Compile Include="ViewModels\IXbimViewModel.cs" />
     <Compile Include="ViewModels\SpatialViewModel.cs" />
@@ -199,11 +190,11 @@
       <Name>Xbim.Common</Name>
     </ProjectReference>
     <ProjectReference Include="..\Xbim.Ifc.Extensions\Xbim.Ifc2x3.Extensions.csproj">
-      <Project>{09870F18-1796-4A3E-A66D-68DB3DA60B24}</Project>
+      <Project>{6DF47D23-8F4D-4069-A44B-BBDACD3F9AEA}</Project>
       <Name>Xbim.Ifc2x3.Extensions</Name>
     </ProjectReference>
     <ProjectReference Include="..\Xbim.Ifc2x3\Xbim.Ifc2x3.csproj">
-      <Project>{5D4C907D-1293-4E5F-9642-D0862AE4741C}</Project>
+      <Project>{0255E9D0-1087-49D4-B886-C882CA27DD10}</Project>
       <Name>Xbim.Ifc2x3</Name>
     </ProjectReference>
   </ItemGroup>
@@ -215,7 +206,6 @@
     <None Include="Parser\StepP21Lex.lex" />
     <None Include="Parser\StepP21Parser.y" />
     <None Include="Parser\XbimViewerKey.pfx" />
-    <None Include="README.rtf" />
     <None Include="XbimIfcKey.pfx" />
   </ItemGroup>
   <ItemGroup>

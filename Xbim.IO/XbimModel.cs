@@ -1277,6 +1277,11 @@ namespace Xbim.IO
             return cache.GetGeometryData(handle);
         }
 
+        public XbimGeometryData GetGeometryData(int geomLabel)
+        {
+            return cache.GetGeometryData(geomLabel);
+        }
+
         public IEnumerable<XbimGeometryData> GetGeometryData(IEnumerable<XbimGeometryHandle> handles)
         {
             foreach (var item in cache.GetGeometryData(handles))

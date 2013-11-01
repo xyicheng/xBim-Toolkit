@@ -147,13 +147,14 @@ namespace Xbim.IO.Parser
             }
             storeProcessor = Task.Factory.StartNew(() =>
             {
-                try
+
+                using (var transaction = table.BeginLazyTransaction())
                 {
-                    using (var transaction = table.BeginLazyTransaction())
+                    while (!toStore.IsCompleted)
                     {
-                        while (!toStore.IsCompleted)
+                        try
                         {
-                            Tuple<int, short, List<int>, byte[], bool> h = toStore.Take();
+                            Tuple<int, short, List<int>, byte[], bool> h = toStore.Take(CancellationToken.None);
                             table.AddEntity(h.Item1, h.Item2, h.Item3, h.Item4, h.Item5, transaction);
                             if (toStore.IsCompleted)
                                 table.WriteHeader(Header);
@@ -164,14 +165,18 @@ namespace Xbim.IO.Parser
                                 transaction.Begin();
                             }
                         }
-                        transaction.Commit();
-                    }
-                }
-                catch (InvalidOperationException)
-                {
-                    // An InvalidOperationException means that Take() was called on a completed collection
+                        catch (SystemException)
+                        {
+                            
+                            // An InvalidOperationException means that Take() was called on a completed collection
+                            //OperationCanceledException can also be called
 
+                        }
+                    }
+                    transaction.Commit();
                 }
+                   
+               
             }
             );
         }
@@ -396,7 +401,7 @@ namespace Xbim.IO.Parser
             {
                 _binaryWriter.Write((byte)P21ParseAction.SetStringValue);
                 string ret = value.Substring(1, value.Length - 2); //remove the quotes
-                if (ret.Contains("\\"))
+                if (ret.Contains("\\") || ret.Contains("'")) //"''" added to remove extra ' added in IfcText Escape() method
                 {
                     XbimP21StringDecoder d = new XbimP21StringDecoder();
                     ret = d.Unescape(ret);

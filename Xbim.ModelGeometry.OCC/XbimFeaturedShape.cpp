@@ -49,7 +49,7 @@ namespace Xbim
 				RepresentationLabel= baseShape->RepresentationLabel;
 				SurfaceStyleLabel=baseShape->SurfaceStyleLabel;
 				_hasCurvedEdges = mBaseShape->HasCurvedEdges;	
-				mResultShape =  SubtractFrom(mResultShape, openings, product->ModelOf->ModelFactors->DeflectionTolerance, product->ModelOf->ModelFactors->OneMilliMetre/100,product->ModelOf->ModelFactors->OneMilliMetre*10); //openings work best at .1mm tolerance
+				mResultShape =  SubtractFrom(mResultShape, openings, product->ModelOf->ModelFactors->DeflectionTolerance, product->ModelOf->ModelFactors->PrecisionBoolean,product->ModelOf->ModelFactors->PrecisionBooleanMax); //openings work best at .1mm tolerance
 				mResultShape->RepresentationLabel= baseShape->RepresentationLabel;
 				mResultShape->SurfaceStyleLabel=baseShape->SurfaceStyleLabel;
 				
@@ -239,6 +239,7 @@ TryCutPolyhedron:
 								if(currentPolyhedronPrecision<=precisionMax)
 								{
 									currentPolyhedronPrecision*=10;
+									Logger->WarnFormat("Precision adjusted to {0}, declared {1}", currentPolyhedronPrecision,precision);
 									csg = gcnew XbimCsg(currentPolyhedronPrecision);
 									goto TryCutPolyhedron;
 								}

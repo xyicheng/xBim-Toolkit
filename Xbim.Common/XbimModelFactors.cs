@@ -8,6 +8,14 @@ namespace Xbim.Common
     public class XbimModelFactors
     {
         /// <summary>
+        /// Precision used for Boolean solid geometry operations, default 0.001mm
+        /// </summary>
+        readonly public double PrecisionBoolean;
+        /// <summary>
+        /// The maximum Precision used for Boolean solid geometry operations, default 10mm
+        /// </summary>
+        readonly public double PrecisionBooleanMax;
+        /// <summary>
         /// The defection on a curve when triangulating the model
         /// </summary>
         public double DeflectionTolerance;    
@@ -58,6 +66,8 @@ namespace Xbim.Common
                 Precision = OneMilliMetre / 1000;
             PrecisionMax = OneMilliMetre / 10;
             MaxBRepSewFaceCount = 1024;
+            PrecisionBoolean = OneMilliMetre / 100;
+            PrecisionBooleanMax = OneMilliMetre *10;
         }
     }
 }

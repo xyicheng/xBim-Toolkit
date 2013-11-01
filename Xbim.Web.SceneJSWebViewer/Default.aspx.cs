@@ -5,6 +5,25 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.IO;
+using Xbim.XbimExtensions;
+using Xbim.IO;
+using Xbim.Dynamic;
+using Xbim.Ifc2x3.Kernel;
+using Xbim.Ifc2x3.Extensions;
+using System.Xml;
+using Xbim.XbimExtensions.Transactions;
+using System.ComponentModel;
+using System.Collections.Specialized;
+using Xbim.SceneJSWebViewer.ObjectDataProviders;
+using Xbim.Ifc2x3.MaterialResource;
+using System.Diagnostics;
+using Xbim.Ifc2x3.ProductExtension;
+using Xbim.Ifc2x3.SharedBldgElements;
+using Xbim.XbimExtensions.SelectTypes;
+using Xbim.Ifc2x3.MeasureResource;
+using Xbim.ModelGeometry;
+using System.Text;
+using Xbim.XbimExtensions.Interfaces;
 
 namespace Xbim.SceneJSWebViewer
 {
@@ -25,11 +44,12 @@ namespace Xbim.SceneJSWebViewer
                 foreach (FileInfo fi in fis)
                 {
                     //fi.Name;
-                    litcon.Text += "<li><a href=\"#\" OnClick=DynamicLoad('"+fi.Name+"');>"+fi.Name+"</a></li>";
+                    litcon.Text += "<li><a href=\"#\" OnClick=DynamicLoad('" + fi.Name + "');>" + fi.Name + "</a></li>";
                 }
-                litcon.Text+= "</ul>";
+                litcon.Text += "</ul>";
                 this.menu.Controls.Add(litcon);
             }
         }
     }
+   
 }

@@ -74,6 +74,15 @@ namespace XbimXplorer
             this.Closed += new EventHandler(XplorerMainWindow_Closed);
             this.Loaded += XplorerMainWindow_Loaded;
             this.Closing += new CancelEventHandler(XplorerMainWindow_Closing);
+            this.DrawingControl.UserModeledDimensionChangedEvent += DrawingControl_MeasureChangedEvent;
+        }
+
+        private void DrawingControl_MeasureChangedEvent(DrawingControl3D m, Xbim.Presentation.ModelGeomInfo.PolylineGeomInfo e)
+        {
+            if (e != null)
+            {
+                this.EntityLabel.Text = e.ToString();
+            }
         }
 
         void OpenQuery(object sender, RoutedEventArgs e)
@@ -730,6 +739,19 @@ namespace XbimXplorer
         private void CreateFederationCmdCanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
             e.CanExecute = true;
+        }
+
+        private void SeparateMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            ModelSeparation separate = new ModelSeparation();
+
+            //set data binding
+            Binding b = new Binding("DataContext");
+            b.Source = this.MainFrame;
+            b.Mode = BindingMode.TwoWay;
+            separate.SetBinding(ModelSeparation.DataContextProperty, b);
+
+            separate.Show();
         }
 
         private void About_Click(object sender, RoutedEventArgs e)

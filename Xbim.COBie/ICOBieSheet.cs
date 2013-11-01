@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Reflection;
+using Xbim.IO;
+using System.Collections;
 
 
 namespace Xbim.COBie
@@ -12,6 +14,7 @@ namespace Xbim.COBie
 
         T this[int i] { get; }
         int RowCount { get; }
+        IEnumerable<T> RemovedRows { get; }
         string SheetName { get; }
         Dictionary<int, COBieColumn> Columns { get; }
         IEnumerable<COBieColumn> KeyColumns { get; }
@@ -21,6 +24,10 @@ namespace Xbim.COBie
 
 
         void Validate(COBieWorkbook workbook, ErrorRowIndexBase errorRowIdx);
+        List<string> ValidateComponentMerge(XbimModel model, COBieMergeRoles fileRoles);
+        int ValidateAttributeMerge(List<string> Keys);
+        int ValidateTypeMerge(List<string> GlobalIds);
+        int ValidateSystemMerge(List<string> names);
         void BuildIndices();
         void SetRowsHashCode();
         T AddNewRow();

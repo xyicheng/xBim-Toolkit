@@ -439,9 +439,16 @@ namespace Xbim.IO
                     {
                         if (progressHandler != null) part21Parser.ProgressStatus += progressHandler;
                         part21Parser.Parse();
-                        _model.Header = part21Parser.Header;
+                        _model.Header = part21Parser.Header;       
                         if (progressHandler != null) part21Parser.ProgressStatus -= progressHandler;
                     }
+                }
+                // the header used to be written a few lines above just after being assigned but should be ok here too.
+                // todo: bonghi: ask SRL if it should be elsewhere
+                using (var transaction = table.BeginLazyTransaction())
+                {
+                    table.WriteHeader(_model.Header);
+                    transaction.Commit();
                 }
                 FreeTable(table);
                 if (!keepOpen) Close();
@@ -476,7 +483,7 @@ namespace Xbim.IO
                         ZipEntry entry = zipStream.GetNextEntry();
                         while (entry != null)
                         {
-                            string ext = Path.GetExtension(entry.Name);
+                            string ext = Path.GetExtension(entry.Name).ToLowerInvariant();
                             //look for a valid ifc supported file
                             if (entry.IsFile &&
                                 (string.Compare(ext, ".ifc", true) == 0)
@@ -496,7 +503,11 @@ namespace Xbim.IO
                                             if (progressHandler != null) part21Parser.ProgressStatus -= progressHandler;
                                         }
                                     }
-
+                                    using (var transaction = table.BeginLazyTransaction())
+                                    {
+                                        table.WriteHeader(_model.Header);
+                                        transaction.Commit();
+                                    }
                                     FreeTable(table);
                                     if (!keepOpen) Close();
                                     return; // we only want the first file
@@ -1115,7 +1126,7 @@ namespace Xbim.IO
                 }
                 if (caching) //look in the modified cache and find the new ones only
                 {
-                    foreach (var item in createdNew.Where(e => e.Value is TIfcType).ToList()) //force the iteration to avoid concurrency clashes
+                    foreach (var item in createdNew.Where(e => e.Value is TIfcType))//.ToList()) //force the iteration to avoid concurrency clashes
                     {
                         if (entityLabels.Add(item.Key))
                         { 
@@ -1214,7 +1225,7 @@ namespace Xbim.IO
                     // 
                     if (caching) //look in the createnew cache and find the new ones only
                     {
-                        foreach (var item in createdNew.Where(e => e.Value is TIfcType).ToList())
+                        foreach (var item in createdNew.Where(e => e.Value is TIfcType))//.ToList())
                         {
                             if (indexKey == -1) //get all of the type
                             {
@@ -1988,6 +1999,20 @@ namespace Xbim.IO
             get
             {
                 return _model;
+            }
+        }
+
+        internal XbimGeometryData GetGeometryData(int geomLabel)
+        {
+            //Get a cached or open a new Table
+            XbimGeometryCursor geometryTable = GetGeometryTable();
+            try
+            {
+                return geometryTable.GetGeometryData(geomLabel);
+            }
+            finally
+            {
+                FreeTable(geometryTable);
             }
         }
     }

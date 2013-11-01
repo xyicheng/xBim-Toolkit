@@ -27,7 +27,7 @@
     <SccAuxPath>SAK</SccAuxPath>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
-    <PublishUrl>publish\</PublishUrl>
+    <PublishUrl>ClickOnce\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Web</InstallFrom>
     <UpdateEnabled>true</UpdateEnabled>
@@ -45,8 +45,8 @@
     <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
     <WebPage>publish.htm</WebPage>
     <OpenBrowserOnPublish>false</OpenBrowserOnPublish>
-    <ApplicationRevision>27</ApplicationRevision>
-    <ApplicationVersion>2.4.1.27</ApplicationVersion>
+    <ApplicationRevision>29</ApplicationRevision>
+    <ApplicationVersion>2.4.1.29</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <CreateDesktopShortcut>true</CreateDesktopShortcut>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -97,11 +97,13 @@
       <HintPath>..\packages\PropertyTools.Wpf.2013.1.12.1\lib\NET40\PropertyTools.Wpf.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xaml" />
     <Reference Include="System.Xml.Linq">
@@ -144,6 +146,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="ModelSeparation.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Querying\wdwQuery.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -173,6 +179,9 @@
     </Compile>
     <Compile Include="Dialogs\FederatedModelDlg.xaml.cs">
       <DependentUpon>FederatedModelDlg.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ModelSeparation.xaml.cs">
+      <DependentUpon>ModelSeparation.xaml</DependentUpon>
     </Compile>
     <Compile Include="Querying\GeomQuerying.cs" />
     <Compile Include="Querying\SquareBracketIndexer.cs" />
@@ -358,7 +367,7 @@
       <Visible>False</Visible>
     </x64PublishFile>
   </ItemGroup>
-  <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
+  <!--<ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
     <x86PublishFile Include="bin\Debug\x86\*.dll">
       <Visible>False</Visible>
     </x86PublishFile>
@@ -371,19 +380,21 @@
     <x64DebugPublishFile Include="bin\Debug\x64\Debug\*.dll">
       <Visible>False</Visible>
     </x64DebugPublishFile>
-  </ItemGroup>
-  <Target Name="BeforePublish">
-    <Touch Files="@(IntermediateAssembly)" />
+  </ItemGroup>-->
+  <Target Name="BeforeBuild">
     <CreateItem Include="@(x86PublishFile)" AdditionalMetadata="TargetPath=x86\%(FileName)%(Extension);IsDataFile=false;">
       <Output TaskParameter="Include" ItemName="_DeploymentManifestFiles" />
     </CreateItem>
     <CreateItem Include="@(x64PublishFile)" AdditionalMetadata="TargetPath=x64\%(FileName)%(Extension);IsDataFile=false;">
       <Output TaskParameter="Include" ItemName="_DeploymentManifestFiles" />
     </CreateItem>
-    <CreateItem Include="@(x86DebugPublishFile)" AdditionalMetadata="TargetPath=x86\Debug\%(FileName)%(Extension);IsDataFile=false">
+  </Target>
+  <Target Name="BeforePublish">
+    <Touch Files="@(IntermediateAssembly)" />
+    <CreateItem Include="@(x86PublishFile)" AdditionalMetadata="TargetPath=x86\%(FileName)%(Extension);IsDataFile=false;">
       <Output TaskParameter="Include" ItemName="_DeploymentManifestFiles" />
     </CreateItem>
-    <CreateItem Include="@(x64DebugPublishFile)" AdditionalMetadata="TargetPath=x64\Debug\%(FileName)%(Extension);IsDataFile=false">
+    <CreateItem Include="@(x64PublishFile)" AdditionalMetadata="TargetPath=x64\%(FileName)%(Extension);IsDataFile=false;">
       <Output TaskParameter="Include" ItemName="_DeploymentManifestFiles" />
     </CreateItem>
   </Target>

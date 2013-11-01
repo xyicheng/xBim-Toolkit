@@ -1,0 +1,342 @@
+﻿%{
+	
+%}
+%namespace Xbim.Script
+%partial   
+%parsertype Parser
+%output=Parser.cs
+%visibility internal
+%using Xbim.XbimExtensions.Interfaces
+%using System.Linq.Expressions
+
+
+%start expressions
+
+%union{
+		public string strVal;
+		public int intVal;
+		public double doubleVal;
+		public bool boolVal;
+		public Type typeVal;
+		public object val;
+	  }
+
+
+%token	INTEGER	
+%token	DOUBLE	
+%token	STRING	
+%token	BOOLEAN		
+%token	NONDEF			/*not defined, null*/
+%token	DEFINED			/*not null*/
+%token	IDENTIFIER	
+%token  OP_EQ			/*is equal, equals, is, =*/
+%token  OP_NEQ			/*is not equal, is not, !=*/
+%token  OP_GT			/*is greater than, >*/
+%token  OP_LT			/*is lower than, <*/
+%token  OP_GTE			/*is greater than or equal, >=*/
+%token  OP_LTQ			/*is lower than or equal, <=*/
+%token  OP_CONTAINS		/*contains, is like, */
+%token  OP_NOT_CONTAINS	/*doesn't contain*/
+%token  OP_AND
+%token  OP_OR
+%token  PRODUCT
+%token  PRODUCT_TYPE
+%token  FILE
+%token  MODEL
+%token  CLASSIFICATION
+%token  PROPERTY_SET
+%token  LAYER_SET
+%token  REFERENCE
+%token  ORGANIZATION
+%token  OWNER
+
+/*operations and keywords*/
+%token  WHERE
+%token  WITH_NAME /*with name, called*/
+%token  DESCRIPTION /*and description, described as*/
+%token  NEW /*is new*/
+%token  ADD
+%token  TO
+%token  REMOVE
+%token  FROM
+%token  FOR
+%token  NAME /*name*/
+%token  PREDEFINED_TYPE
+%token  TYPE
+%token  MATERIAL
+%token  THICKNESS
+%token  GROUP
+%token  IN
+%token  IT
+%token  EVERY
+%token  COPY
+
+/* commands */
+%token  SELECT
+%token  SET
+%token  CREATE
+%token  DUMP
+%token  CLEAR
+%token  OPEN
+%token  CLOSE
+%token  SAVE
+%token  COUNT
+%token  VALIDATE
+
+/* spatial keywords */
+%token  NORTH_OF
+%token  SOUTH_OF
+%token  WEST_OF
+%token  EAST_OF
+%token  ABOVE
+%token  BELOW
+
+%token  SPATIALLY_EQUALS
+%token  DISJOINT
+%token  INTERSECTS
+%token  TOUCHES
+%token  CROSSES
+%token  WITHIN
+%token  SPATIALLY_CONTAINS
+%token  OVERLAPS
+%token  RELATE
+
+%%
+expressions
+	: expressions expression
+	| expression
+	;
+
+expression
+	: selection ';'
+	| creation ';'
+	| addition ';'
+	| attr_setting ';'
+	| variables_actions ';'
+	| model_actions ';'
+	| error
+	;
+
+attr_setting
+	: SET value_setting_list FOR IDENTIFIER								{EvaluateSetExpression($4.strVal, ((List<Expression>)($2.val)));}
+	| SET value_setting_list FOR IDENTIFIER IN PROPERTY_SET STRING		{EvaluateSetExpression($4.strVal, ((List<Expression>)($2.val)), $7.strVal);}
+	;
+
+value_setting_list
+	: value_setting_list ',' value_setting				{((List<Expression>)($1.val)).Add((Expression)($3.val)); $$.val = $1.val;}
+	| value_setting										{$$.val = new List<Expression>(){((Expression)($1.val))};}
+	;
+
+value_setting
+	: attribute TO value					{$$.val = GenerateSetExpression($1.strVal, $3.val);}
+	| STRING TO value						{$$.val = GenerateSetExpression($1.strVal, $3.val);}
+	| MATERIAL TO IDENTIFIER				{$$.val = GenerateSetMaterialExpression($3.strVal);}
+	;	
+
+value
+	: STRING								{$$.val = $1.strVal;}
+	| BOOLEAN								{$$.val = $1.boolVal;}
+	| INTEGER								{$$.val = $1.intVal;}
+	| DOUBLE								{$$.val = $1.doubleVal;}
+	| NONDEF								{$$.val = null;}
+	;
+
+num_value
+	: DOUBLE								{$$.val = $1.doubleVal;}
+	| INTEGER								{$$.val = $1.intVal;}
+	;
+
+model_actions
+	: OPEN MODEL FROM FILE STRING																{OpenModel($5.strVal);}
+	| CLOSE MODEL																				{CloseModel();}
+	| VALIDATE MODEL																			{ValidateModel();}
+	| SAVE MODEL TO FILE STRING																	{SaveModel($5.strVal);}
+	| ADD REFERENCE MODEL STRING WHERE ORGANIZATION OP_EQ STRING OP_AND OWNER OP_EQ STRING		{AddReferenceModel($4.strVal, $8.strVal, $12.strVal);}
+	| COPY IDENTIFIER TO MODEL STRING															{CopyToModel($2.strVal, $5.strVal);}
+	;
+
+variables_actions
+	: DUMP IDENTIFIER												{DumpIdentifier($2.strVal);}
+	| CLEAR IDENTIFIER												{ClearIdentifier($2.strVal);}
+	| COUNT IDENTIFIER												{CountIdentifier($2.strVal);}
+	| DUMP string_list FROM IDENTIFIER								{DumpAttributes($4.strVal, ((List<string>)($2.val)));}
+	| DUMP string_list FROM IDENTIFIER TO FILE STRING				{DumpAttributes($4.strVal, ((List<string>)($2.val)), $7.strVal);}
+	;
+
+string_list
+	: string_list ',' STRING										{((List<string>)($1.val)).Add($3.strVal); $$.val = $1.val;}
+	| string_list ',' attribute										{((List<string>)($1.val)).Add($3.strVal); $$.val = $1.val;}
+	| STRING														{$$.val = new List<string>(){$1.strVal};}
+	| attribute														{$$.val = new List<string>(){$1.strVal};}
+	;
+
+selection
+	: SELECT selection_statement									{Variables.Set("$$", ((IEnumerable<IPersistIfcEntity>)($2.val)));}
+	| IDENTIFIER op_bool selection_statement						{AddOrRemoveFromSelection($1.strVal, ((Tokens)($2.val)), $3.val);}
+	;
+
+selection_statement
+	: EVERY object														{$$.val = Select($2.typeVal);}
+	| EVERY object STRING												{$$.val = Select($2.typeVal, $3.strVal);}
+	| EVERY object WHERE conditions_set									{$$.val = Select($2.typeVal, ((Expression)($4.val)));}
+	;
+	
+creation
+	: CREATE creation_statement										{Variables.Set("$$", ((IPersistIfcEntity)($2.val)));}
+	| CREATE CLASSIFICATION STRING									{CreateClassification($3.strVal);}
+	| IDENTIFIER OP_EQ creation_statement							{Variables.Set($1.strVal, ((IPersistIfcEntity)($3.val)));}
+	;
+
+creation_statement
+	: NEW object STRING												{$$.val = CreateObject($2.typeVal, $3.strVal);}			
+	| NEW object WITH_NAME STRING 									{$$.val = CreateObject($2.typeVal, $4.strVal);}			
+	| NEW object WITH_NAME STRING OP_AND DESCRIPTION STRING			{$$.val = CreateObject($2.typeVal, $4.strVal, $7.strVal);}			
+	| NEW MATERIAL LAYER_SET STRING ':' layers						{$$.val = CreateLayerSet($4.strVal, (List<Layer>)($6.val));}			
+	;
+
+layers
+	: layers ',' layer				{((List<Layer>)($1.val)).Add((Layer)($3.val)); $$.val = $1.val;}
+	| layer							{$$.val = new List<Layer>(){(Layer)($1.val)};}
+	;
+
+layer
+	: STRING num_value				{$$.val = new Layer(){material = $1.strVal, thickness = Convert.ToDouble($2.val)};}
+	;
+
+addition
+	: ADD IDENTIFIER TO IDENTIFIER									{AddOrRemove(Tokens.ADD, $2.strVal, $4.strVal);}
+	| REMOVE IDENTIFIER FROM IDENTIFIER								{AddOrRemove(Tokens.REMOVE, $2.strVal, $4.strVal);}
+	;
+
+conditions_set
+	: '(' conditions ')' OP_AND '(' conditions ')'	{$$.val = Expression.AndAlso(((Expression)($2.val)), ((Expression)($6.val)));}
+	| '(' conditions ')' OP_AND  condition			{$$.val = Expression.AndAlso(((Expression)($2.val)), ((Expression)($5.val)));}
+	| '(' conditions ')' OP_OR '(' conditions ')'	{$$.val = Expression.OrElse(((Expression)($2.val)), ((Expression)($6.val)));}
+	| '(' conditions ')' OP_OR condition			{$$.val = Expression.OrElse(((Expression)($2.val)), ((Expression)($5.val)));}
+	| '(' conditions ')'							{$$.val = $2.val;}
+	|  conditions									{$$.val = $1.val;}
+	;
+
+conditions
+	: conditions OP_AND condition					{$$.val = Expression.AndAlso(((Expression)($1.val)), ((Expression)($3.val)));}
+	| conditions OP_OR condition					{$$.val = Expression.OrElse(((Expression)($1.val)), ((Expression)($3.val)));}
+	| condition										{$$.val = $1.val;}
+	;
+	
+condition
+	: 
+	| attributeCondition					{$$.val = $1.val;}
+	| materialCondition						{$$.val = $1.val;}
+	| typeCondition							{$$.val = $1.val;}
+	| propertyCondition						{$$.val = $1.val;}
+	| groupCondition						{$$.val = $1.val;}
+	| spatialCondition						{$$.val = $1.val;}
+	| modelCondition						{$$.val = $1.val;}
+	;
+
+attributeCondition	
+	: attribute op_bool STRING				{$$.val = GenerateAttributeCondition($1.strVal, $3.strVal, ((Tokens)($2.val)));}
+	| attribute op_bool NONDEF				{$$.val = GenerateAttributeCondition($1.strVal, null, ((Tokens)($2.val)));}
+	| attribute op_cont STRING				{$$.val = GenerateAttributeCondition($1.strVal, $3.strVal, ((Tokens)($2.val)));}
+	;
+
+attribute
+	: NAME						{$$.strVal = "Name";}
+	| DESCRIPTION				{$$.strVal = "Description";}
+	| PREDEFINED_TYPE			{$$.strVal = "PredefinedType";}
+	;	
+	
+materialCondition	
+	: MATERIAL op_bool STRING			{$$.val = GenerateMaterialCondition($3.strVal, ((Tokens)($2.val)));}
+	| MATERIAL op_cont STRING			{$$.val = GenerateMaterialCondition($3.strVal, ((Tokens)($2.val)));}
+	
+	| THICKNESS op_bool num_value		{$$.val = GenerateThicknessCondition(Convert.ToDouble($3.val), ((Tokens)($2.val)));}
+	| THICKNESS op_num_rel num_value	{$$.val = GenerateThicknessCondition(Convert.ToDouble($3.val), ((Tokens)($2.val)));}
+	;
+	
+typeCondition	
+	: TYPE op_bool PRODUCT_TYPE			{$$.val = GenerateTypeObjectTypeCondition($3.typeVal, ((Tokens)($2.val)));}
+	| TYPE op_bool STRING				{$$.val = GenerateTypeObjectNameCondition($3.strVal, ((Tokens)($2.val)));}
+	| TYPE op_cont STRING				{$$.val = GenerateTypeObjectNameCondition($3.strVal, ((Tokens)($2.val)));}
+	| TYPE op_bool NONDEF				{$$.val = GenerateTypeObjectTypeCondition(null, ((Tokens)($2.val)));}
+	| TYPE OP_NEQ DEFINED				{$$.val = GenerateTypeObjectTypeCondition(null, Tokens.OP_EQ);}
+	| TYPE OP_EQ DEFINED				{$$.val = GenerateTypeObjectTypeCondition(null, Tokens.OP_NEQ);}
+	| TYPE propertyCondition			{$$.val = GenerateTypeCondition((Expression)($2.val));}
+	| TYPE attributeCondition			{$$.val = GenerateTypeCondition((Expression)($2.val));}
+	;
+
+groupCondition
+	: GROUP propertyCondition			{$$.val = GenerateGroupCondition((Expression)($2.val));}
+	| GROUP attributeCondition			{$$.val = GenerateGroupCondition((Expression)($2.val));}
+	;
+
+propertyCondition	
+	: STRING op_bool    INTEGER			{$$.val = GeneratePropertyCondition($1.strVal, $3.intVal, ((Tokens)($2.val)));}
+	| STRING op_num_rel INTEGER			{$$.val = GeneratePropertyCondition($1.strVal, $3.intVal, ((Tokens)($2.val)));}
+	
+	| STRING  op_bool    DOUBLE			{$$.val = GeneratePropertyCondition($1.strVal, $3.doubleVal, ((Tokens)($2.val)));}
+	| STRING op_num_rel DOUBLE			{$$.val = GeneratePropertyCondition($1.strVal, $3.doubleVal, ((Tokens)($2.val)));}
+	
+	| STRING op_bool STRING				{$$.val = GeneratePropertyCondition($1.strVal, $3.strVal, ((Tokens)($2.val)));}
+	| STRING op_cont STRING				{$$.val = GeneratePropertyCondition($1.strVal, $3.strVal, ((Tokens)($2.val)));}
+	
+	| STRING op_bool BOOLEAN			{$$.val = GeneratePropertyCondition($1.strVal, $3.boolVal, ((Tokens)($2.val)));}
+    | STRING op_bool NONDEF				{$$.val = GeneratePropertyCondition($1.strVal, null, ((Tokens)($2.val)));}
+    | STRING OP_NEQ DEFINED				{$$.val = GeneratePropertyCondition($1.strVal, null, Tokens.OP_EQ);}
+    | STRING OP_EQ DEFINED				{$$.val = GeneratePropertyCondition($1.strVal, null, Tokens.OP_NEQ);}
+	;
+
+spatialCondition
+	: IT op_spatial IDENTIFIER			{$$.val = GenerateSpatialCondition(((Tokens)($2.val)), $3.strVal);}
+	;
+
+modelCondition
+	: MODEL op_bool							{GenerateModelCondition(Tokens.MODEL, $1.strVal);}
+	| MODEL OWNER op_bool STRING			{GenerateModelCondition(Tokens.OWNER, $4.strVal);}
+	| MODEL ORGANIZATION op_bool STRING		{GenerateModelCondition(Tokens.ORGANIZATION, $4.strVal);}
+	;
+
+op_spatial
+	: NORTH_OF				{$$.val = Tokens.NORTH_OF			;}
+	| SOUTH_OF				{$$.val = Tokens.SOUTH_OF			;}
+	| WEST_OF				{$$.val = Tokens.WEST_OF			;}
+	| EAST_OF				{$$.val = Tokens.EAST_OF			;}
+	| ABOVE					{$$.val = Tokens.ABOVE				;}
+	| BELOW					{$$.val = Tokens.BELOW				;}
+	| SPATIALLY_EQUALS		{$$.val = Tokens.SPATIALLY_EQUALS	;}
+	| DISJOINT				{$$.val = Tokens.DISJOINT			;}
+	| INTERSECTS			{$$.val = Tokens.INTERSECTS			;}
+	| TOUCHES				{$$.val = Tokens.TOUCHES			;}
+	| CROSSES				{$$.val = Tokens.CROSSES			;}
+	| WITHIN				{$$.val = Tokens.WITHIN				;}
+	| OP_CONTAINS			{$$.val = Tokens.SPATIALLY_CONTAINS	;}
+	| OVERLAPS				{$$.val = Tokens.OVERLAPS			;}
+	| RELATE				{$$.val = Tokens.RELATE				;}
+	;
+
+op_bool
+	: OP_EQ			{$$.val = Tokens.OP_EQ;}
+	| OP_NEQ		{$$.val = Tokens.OP_NEQ;}
+	;
+	
+op_num_rel
+	: OP_GT			{$$.val = Tokens.OP_GT;}
+    | OP_LT			{$$.val = Tokens.OP_LT;}
+    | OP_GTE		{$$.val = Tokens.OP_GTE;}
+    | OP_LTQ		{$$.val = Tokens.OP_LTQ;}
+	;
+	
+op_cont
+	: OP_CONTAINS		{$$.val = Tokens.OP_CONTAINS;}
+	| OP_NOT_CONTAINS	{$$.val = Tokens.OP_NOT_CONTAINS;}
+	;
+
+object
+	: PRODUCT				{$$.typeVal = $1.typeVal;}
+	| PRODUCT_TYPE			{$$.typeVal = $1.typeVal;}
+	| MATERIAL				{$$.typeVal = $1.typeVal;}
+	| GROUP					{$$.typeVal = $1.typeVal;}
+	| ORGANIZATION			{$$.typeVal = $1.typeVal;}
+	;
+	
+%%

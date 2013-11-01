@@ -66,13 +66,11 @@ namespace Xbim.Tests.COBie
                     Console.Write("\rReading File {1} {0}", percentProgress, DuplexFile);
                 });
                 context.Model = model;
-
-
+                
                 builder = new COBieBuilder(context);
                 workBook = builder.Workbook;
                 COBieBinarySerialiser serialiser = new COBieBinarySerialiser(DuplexBinaryFile);
                 serialiser.Serialise(workBook);
-
             }
             double bytes = 0;
             if (File.Exists(DuplexBinaryFile))
@@ -85,6 +83,39 @@ namespace Xbim.Tests.COBie
 
         }
 
+        [TestMethod]
+        public void Should_BinarySerialiser_with_roles()
+        {
+            COBieWorkbook workBook, workBook2;
+            COBieContext context;
+            COBieBuilder builder;
+
+
+            context = new COBieContext(null);
+            context.TemplateFileName = ExcelTemplateFile;
+
+            using (XbimModel model = new XbimModel())
+            {
+                model.Open(DuplexFile, XbimDBAccess.ReadWrite, delegate(int percentProgress, object userState)
+                {
+                    Console.Write("\rReading File {1} {0}", percentProgress, DuplexFile);
+                });
+                context.Model = model;
+                context.MapMergeRoles[model] = COBieMergeRoles.Mechanical;
+
+                builder = new COBieBuilder(context);
+                workBook = builder.Workbook;
+                COBieBinarySerialiser serialiser = new COBieBinarySerialiser(DuplexBinaryFile);
+                serialiser.Serialise(workBook);
+
+                COBieBinaryDeserialiser deserialiser = new COBieBinaryDeserialiser(DuplexBinaryFile);
+                workBook2 = deserialiser.Deserialise();
+
+            }
+
+            Assert.IsTrue(workBook2[Constants.WORKSHEET_COMPONENT].RemovedRows.Count() > 0);
+
+        }
         /// <summary>
         /// Test to create Ifc File from Workbook
         /// </summary>
@@ -156,10 +187,6 @@ namespace Xbim.Tests.COBie
             {
                 context.UpdateStatus("Creating Geometry", total, (total * percentProgress / 100));
             });
-
-                    }
-
-
-
+        }
     }
 }

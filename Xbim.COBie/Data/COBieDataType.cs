@@ -28,7 +28,11 @@ namespace Xbim.COBie.Data
         /// </summary>
         /// <param name="model">The context of the model being generated</param>
         public COBieDataType(COBieContext context) : base(context)
-        { }
+        {
+            RowHashs = new Dictionary<string, bool>();
+        }
+
+        private Dictionary<string, bool> RowHashs { get; set; }
 
         #region Methods
 
@@ -104,7 +108,17 @@ namespace Xbim.COBie.Data
                 //not duplicate so add to sheet
                 //if (CheckForDuplicateRow(lastRow, typeRow)) 
                 //{
+                string rowhash = typeRow.RowHashValue;
+                if (RowHashs.ContainsKey(rowhash))
+                {
+                    continue;
+                }
+                else
+                {
                     types.AddRow(typeRow);
+                    RowHashs.Add(rowhash, true);
+                }
+                    
                     //lastRow = typeRow; //save this row to test on next loop
                 //}
                 // Provide Attribute sheet with our context
@@ -263,7 +277,8 @@ namespace Xbim.COBie.Data
             typeRow.ModelNumber =   GetModelNumber(type, allPropertyValues);
 
 
-            allPropertyValues.SetAllPropertyValues(type, "COBie_Warranty"); //reset property set name from "Pset_Warranty" to "COBie_Warranty"
+            allPropertyValues.SetAllPropertyValues(type, new List<string>(new string[] { "COBie_Warranty", "Pset_Warranty" })); //reset property set name from "Pset_Warranty" to "COBie_Warranty"
+            
             string warrantyDurationPart =       allPropertyValues.GetPropertySingleValueValue("WarrantyDurationParts", false);
             typeRow.WarrantyDurationParts =     ((warrantyDurationPart == DEFAULT_STRING) || (!IsNumeric(warrantyDurationPart)) ) ? DEFAULT_NUMERIC : warrantyDurationPart;
             Interval warrantyDuration =         GetDurationUnitAndValue(allPropertyValues.GetPropertySingleValue("WarrantyDurationLabor")); 
@@ -277,12 +292,14 @@ namespace Xbim.COBie.Data
             
 
             allPropertyValues.SetAllPropertyValues(type, "Pset_ServiceLife");
+            
             Interval serviceDuration =  GetDurationUnitAndValue(allPropertyValues.GetPropertySingleValue("ServiceLifeDuration"));
             typeRow.ExpectedLife =      GetExpectedLife(type, serviceDuration, allPropertyValues);
             typeRow.DurationUnit =      serviceDuration.Unit;
 
-            allPropertyValues.SetAllPropertyValues(type, "COBie_Specification");//changed from "Pset_Specification" via v16 matrix sheet
-            typeRow.Shape =                         allPropertyValues.GetPropertySingleValueValue("Shape", false);
+            allPropertyValues.SetAllPropertyValues(type, new List<string>(new string[] { "COBie_Specification", "Pset_Specification" }));//changed from "Pset_Specification" via v16 matrix sheet
+            
+            typeRow.Shape = allPropertyValues.GetPropertySingleValueValue("Shape", false);
             typeRow.Size =                          allPropertyValues.GetPropertySingleValueValue("Size", false);
             typeRow.Finish =                        allPropertyValues.GetPropertySingleValueValue("Finish", false);
             typeRow.Grade =                         allPropertyValues.GetPropertySingleValueValue("Grade", false);
@@ -688,37 +705,35 @@ namespace Xbim.COBie.Data
             {
                 if (!string.IsNullOrEmpty(type.Description)) return type.Description;
                 else if (!string.IsNullOrEmpty(type.Name)) return type.Name;
-                else
+                
+                //if supports PredefinedType and no description or name then use the predefined type or ElementType if they exist
+                IEnumerable<PropertyInfo> pInfo = type.GetType().GetProperties(); //get properties
+                var predefinedType =  pInfo.Where(p => p.Name == "PredefinedType").FirstOrDefault();
+                if (predefinedType != null)
                 {
-                    //if supports PredefinedType and no description or name then use the predefined type or ElementType if they exist
-                    IEnumerable<PropertyInfo> pInfo = type.GetType().GetProperties(); //get properties
+                    string temp = predefinedType.GetValue(type, null).ToString(); //get predefindtype as description
 
-                    if (pInfo.Where(p => p.Name == "PredefinedType").Count() == 1)
+                    if (!string.IsNullOrEmpty(temp))
                     {
-                        // TODO: Looks Wrong
-                        string temp = pInfo.First().GetValue(type, null).ToString(); //get predefindtype as description
-
-                        if (!string.IsNullOrEmpty(temp))
+                        if (temp == "USERDEFINED")
                         {
-                            if (temp == "USERDEFINED")
+                            //if used defined then the type description should be in ElementType, so see if property exists
+                            var elementType = pInfo.Where(p => p.Name == "ElementType").FirstOrDefault();
+                            if (elementType != null)
                             {
-                                //if used defined then the type description should be in ElementType, so see if property exists
-                                if (pInfo.Where(p => p.Name == "ElementType").Count() == 1)
-                                {
-                                    temp = pInfo.First().GetValue(type, null).ToString(); //get ElementType
-                                    if (!string.IsNullOrEmpty(temp)) return temp;
-                                }
+                                temp = elementType.GetValue(type, null).ToString(); //get ElementType
+                                if (!string.IsNullOrEmpty(temp)) return temp;
                             }
-                            if (temp == "NOTDEFINED") //if not defined then give up and return default
-                            {
-                                return DEFAULT_STRING;
-                            }
-
-                            return temp;
+                        }
+                        if (temp == "NOTDEFINED") //if not defined then give up and return default
+                        {
+                            return DEFAULT_STRING;
                         }
 
+                        return temp;
                     }
                 }
+                
             }
             return DEFAULT_STRING;
         }

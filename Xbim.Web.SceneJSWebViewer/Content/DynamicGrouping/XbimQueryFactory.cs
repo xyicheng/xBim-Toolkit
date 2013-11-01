@@ -8,7 +8,7 @@ using System.Reflection;
 using Xbim.XbimExtensions.SelectTypes;
 using System.Collections;
 
-namespace Xbim.DynamicGrouping
+namespace Xbim.Dynamic
 {
     class XbimQueryFactory
     {

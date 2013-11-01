@@ -18,6 +18,7 @@ using Xbim.XbimExtensions;
 using Xbim.XbimExtensions.SelectTypes;
 using Xbim.XbimExtensions.Interfaces;
 using Xbim.Ifc2x3.QuantityResource;
+using Xbim.Ifc2x3.PropertyResource;
 
 #endregion
 
@@ -136,6 +137,79 @@ namespace Xbim.Ifc2x3.Extensions
             }
         }
 
+        public static IfcNamedUnit GetUnitFor(this IfcUnitAssignment ua, IfcPropertySingleValue Property)
+        {
+
+            if (Property.Unit != null)
+                return (IfcNamedUnit)Property.Unit;
+
+
+            
+            // nominal value can be of types with subtypes:
+            //	IfcMeasureValue, IfcSimpleValue, IfcDerivedMeasureValue
+
+            IfcUnitEnum? requiredUnit = null;
+            // types from http://www.buildingsmart-tech.org/ifc/IFC2x3/TC1/html/ifcmeasureresource/lexical/ifcmeasurevalue.htm
+            if (Property.NominalValue is IfcVolumeMeasure)
+                requiredUnit = IfcUnitEnum.VOLUMEUNIT;
+            else if (Property.NominalValue is IfcAreaMeasure)
+                requiredUnit = IfcUnitEnum.AREAUNIT;
+            else if (Property.NominalValue is IfcLengthMeasure)
+                requiredUnit = IfcUnitEnum.LENGTHUNIT;
+            else if (Property.NominalValue is IfcPositiveLengthMeasure)
+                requiredUnit = IfcUnitEnum.LENGTHUNIT;
+            else if (Property.NominalValue is IfcAmountOfSubstanceMeasure)
+                requiredUnit = IfcUnitEnum.AMOUNTOFSUBSTANCEUNIT;
+            else if (Property.NominalValue is IfcContextDependentMeasure)
+                requiredUnit = null; // todo: not sure what to do here
+            else if (Property.NominalValue is IfcCountMeasure)
+                requiredUnit = null; // todo: not sure what to do here
+            else if (Property.NominalValue is IfcDescriptiveMeasure)
+                requiredUnit = null; // todo: not sure what to do here
+            else if (Property.NominalValue is IfcElectricCurrentMeasure)
+                requiredUnit = IfcUnitEnum.ELECTRICCURRENTUNIT; 
+            else if (Property.NominalValue is IfcLuminousIntensityMeasure)
+                requiredUnit = IfcUnitEnum.LUMINOUSINTENSITYUNIT;
+            else if (Property.NominalValue is IfcMassMeasure)
+                requiredUnit = IfcUnitEnum.MASSUNIT;
+            else if (Property.NominalValue is IfcNormalisedRatioMeasure)
+                requiredUnit = null; // todo: not sure what to do here
+            else if (Property.NominalValue is IfcNumericMeasure)
+                requiredUnit = null; // todo: not sure what to do here.
+            else if (Property.NominalValue is IfcParameterValue)
+                requiredUnit = null; // todo: not sure what to do here.
+            else if (Property.NominalValue is IfcPlaneAngleMeasure)
+                requiredUnit = IfcUnitEnum.PLANEANGLEUNIT;
+            else if (Property.NominalValue is IfcPositiveRatioMeasure)
+                requiredUnit = null; // todo: not sure what to do here.
+            else if (Property.NominalValue is IfcPositivePlaneAngleMeasure)
+                requiredUnit = IfcUnitEnum.PLANEANGLEUNIT;
+            else if (Property.NominalValue is IfcRatioMeasure)
+                requiredUnit = null; // todo: not sure what to do here.
+            else if (Property.NominalValue is IfcSolidAngleMeasure)
+                requiredUnit = IfcUnitEnum.SOLIDANGLEUNIT;
+            else if (Property.NominalValue is IfcThermodynamicTemperatureMeasure)
+                requiredUnit = IfcUnitEnum.THERMODYNAMICTEMPERATUREUNIT;
+            else if (Property.NominalValue is IfcTimeMeasure)
+                requiredUnit = IfcUnitEnum.TIMEUNIT;
+            else if (Property.NominalValue is IfcComplexNumber)
+                requiredUnit = null; // todo: not sure what to do here.
+
+            // types from IfcSimpleValue
+            else if (Property.NominalValue is IfcSimpleValue)
+                requiredUnit = null;
+
+            // more measures types to be taken from http://www.buildingsmart-tech.org/ifc/IFC2x3/TC1/html/ifcmeasureresource/lexical/ifcderivedmeasurevalue.htm
+            
+            if (requiredUnit == null)
+                return null;
+
+            IfcNamedUnit nu = ua.Units.OfType<IfcSIUnit>().FirstOrDefault(u => u.UnitType == (IfcUnitEnum)requiredUnit);
+            if (nu == null)
+                nu = ua.Units.OfType<IfcConversionBasedUnit>().FirstOrDefault(u => u.UnitType == (IfcUnitEnum)requiredUnit);
+            return nu;
+        }
+
         public static IfcNamedUnit GetUnitFor(this IfcUnitAssignment ua, IfcPhysicalSimpleQuantity Quantity)
         {
             if (Quantity.Unit != null)
@@ -148,15 +222,15 @@ namespace Xbim.Ifc2x3.Extensions
             //
             if (Quantity is IfcQuantityLength)
                 requiredUnit = IfcUnitEnum.LENGTHUNIT;
-            if (Quantity is IfcQuantityArea)
+            else if (Quantity is IfcQuantityArea)
                 requiredUnit = IfcUnitEnum.AREAUNIT;
-            if (Quantity is IfcQuantityVolume)
+            else if (Quantity is IfcQuantityVolume)
                 requiredUnit = IfcUnitEnum.VOLUMEUNIT;
-            if (Quantity is IfcQuantityCount) // really not sure what to do here.
-                return null; 
-            if (Quantity is IfcQuantityWeight)
+            else if (Quantity is IfcQuantityCount) // really not sure what to do here.
+                return null;
+            else if (Quantity is IfcQuantityWeight)
                 requiredUnit = IfcUnitEnum.MASSUNIT;
-            if (Quantity is IfcQuantityTime)
+            else if (Quantity is IfcQuantityTime)
                 requiredUnit = IfcUnitEnum.TIMEUNIT;
 
             if (requiredUnit == null)
