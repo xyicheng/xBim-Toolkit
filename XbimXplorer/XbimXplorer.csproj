@@ -382,7 +382,6 @@
     </x64DebugPublishFile>
   </ItemGroup>-->
   <Target Name="BeforeBuild">
-    <Touch Files="@(IntermediateAssembly)" />
     <CreateItem Include="@(x86PublishFile)" AdditionalMetadata="TargetPath=x86\%(FileName)%(Extension);IsDataFile=false;">
       <Output TaskParameter="Include" ItemName="_DeploymentManifestFiles" />
     </CreateItem>
