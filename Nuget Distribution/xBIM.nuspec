@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
     <metadata>
         <id>xBIM</id>
-        <version>2.4.12</version>
+        <version>2.4.13</version>
         <title>xBIM Essentials</title>
         <authors>xBIM team</authors>
         <owners>Steve Lockley</owners>
@@ -17,8 +17,7 @@ xBIM reads and writes Ifc, IfcXMl and IfcZip formats and will convert models to 
 A range of 3D viewing controls are provided for use with Windows forms, WPF, WEBGL and OpenGL platforms.
 IOS and Android versions are under development.</description>
         <summary>The .Net toolkit for developing BIM applications based on the IFC standard. Essential support for the Ifc data model</summary>
-        <releaseNotes>General improvements to IfcXML and IFC handling.
-This version builds for Any CPU.</releaseNotes>
+        <releaseNotes>Changed to use the latest version of Managed Esent now its dependency on .NET4.5 has been resolved</releaseNotes>
         <language>en-GB</language>
         <tags>BIM, IFC, IfcXml, IfcZip, COBie, .Net, C#, BuildingSmart</tags>
         <dependencies>
@@ -30,12 +29,12 @@ This version builds for Any CPU.</releaseNotes>
     </metadata>
     <files>
         <file src="bin\Release\Xbim.Common.dll" target="lib\net40\Xbim.Common.dll" />
+        <file src="bin\Release\Xbim.Common.pdb" target="lib\net40\Xbim.Common.pdb" />
         <file src="bin\Release\Xbim.Ifc.Extensions.dll" target="lib\net40\Xbim.Ifc.Extensions.dll" />
-        <file src="bin\Release\Xbim.Ifc2x3.dll" target="lib\net40\Xbim.Ifc2x3.dll" />
-        <file src="bin\Release\Xbim.IO.dll" target="lib\net40\Xbim.IO.dll" />
-		<file src="bin\Release\Xbim.Common.pdb" target="lib\net40\Xbim.Common.pdb" />
         <file src="bin\Release\Xbim.Ifc.Extensions.pdb" target="lib\net40\Xbim.Ifc.Extensions.pdb" />
+        <file src="bin\Release\Xbim.Ifc2x3.dll" target="lib\net40\Xbim.Ifc2x3.dll" />
         <file src="bin\Release\Xbim.Ifc2x3.pdb" target="lib\net40\Xbim.Ifc2x3.pdb" />
+        <file src="bin\Release\Xbim.IO.dll" target="lib\net40\Xbim.IO.dll" />
         <file src="bin\Release\Xbim.IO.pdb" target="lib\net40\Xbim.IO.pdb" />
     </files>
 </package>
