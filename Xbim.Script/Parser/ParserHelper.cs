@@ -601,14 +601,68 @@ namespace Xbim.Script
         #endregion
 
         #region Model conditions
-        private Expression GenerateModelCondition(Tokens condition, string value)
+        private Expression GenerateModelCondition(Tokens type, Tokens condition, string value)
         {
-            throw new NotImplementedException();
+            var valExpr = Expression.Constant(value);
+            var typeExpr = Expression.Constant(type);
+            var condExpr = Expression.Constant(condition);
+            var thisExpr = Expression.Constant(this);
+            var modelExpr = Expression.Constant(_model);
+
+            var evaluateMethod = GetType().GetMethod("EvaluateModelCondition");
+            return Expression.Call(thisExpr, evaluateMethod, _input, valExpr, typeExpr, condExpr);
         }
 
-        public bool EvaluateModelCondition(IPersistIfcEntity input, string value, Tokens condition)
+        public bool EvaluateModelCondition(IPersistIfcEntity input, string value, Tokens type, Tokens condition)
         {
-            throw new NotImplementedException();
+            IModel model = input.ModelOf;
+            IModel testModel = null;
+
+            foreach (var refMod in _model.RefencedModels)
+            {
+                switch (type)
+                {
+                    case Tokens.MODEL:
+                        if (IsNameOfModel(refMod.Name, value))
+                            testModel = refMod.Model;
+                        break;
+                    case Tokens.OWNER:
+                        if (refMod.OwnerName.ToLower() == value.ToLower())
+                            testModel = refMod.Model;
+                        break;
+                    case Tokens.ORGANIZATION:
+                        if (refMod.OrganisationName.ToLower() == value.ToLower())
+                            testModel = refMod.Model;
+                        break;
+
+                    default:
+                        throw new ArgumentException("Unexpected condition. Only MODEL, OWNER or ORGANIZATION expected.");
+                }
+                if (testModel != null) 
+                    break;
+            }
+
+            switch (condition)
+            {
+                case Tokens.OP_EQ:
+                    return model == testModel;
+                case Tokens.OP_NEQ:
+                    return model != testModel;
+                default:
+                    throw new ArgumentException("Unexpected condition. Only OP_EQ or OP_NEQ expected.");
+            }
+        }
+
+        private static bool IsNameOfModel(string modelName, string name)
+        {
+            var mName = modelName.ToLower();
+            var sName = name.ToLower();
+
+            if (mName == sName) return true;
+            if (Path.GetFileName(mName) == sName) return true;
+            if (Path.GetFileNameWithoutExtension(mName) == sName) return true;
+
+            return false;
         }
         #endregion
 
@@ -758,6 +812,20 @@ namespace Xbim.Script
                 return;
             }
 
+            //check if all of the objects are from the actual model and not just referenced ones
+            foreach (var item in Variables[productsIdentifier])
+            {
+                if (item.ModelOf != _model)
+                {
+                    Scanner.yyerror("There is an object which is from referenced model so it cannot be used in this expression. Operation canceled.");
+                    return;
+                }
+            }
+            if (Variables[aggregation].FirstOrDefault().ModelOf != _model)
+            {
+                Scanner.yyerror("There is an object which is from referenced model so it cannot be used in this expression. Operation canceled.");
+                return;
+            }
 
             IfcGroup group = Variables[aggregation].FirstOrDefault() as IfcGroup;
             IfcTypeObject typeObject = Variables[aggregation].FirstOrDefault() as IfcTypeObject;
@@ -900,7 +968,8 @@ namespace Xbim.Script
             }
             try
             {
-                if (Path.GetExtension(path).ToLower() != ".xbim")
+                string ext = Path.GetExtension(path).ToLower();
+                if (ext != ".xbim" || ext != ".xbimf")
                     _model.CreateFrom(path, null, null, true);
                 else
                     _model.Open(path, XbimExtensions.XbimDBAccess.ReadWrite);
@@ -962,7 +1031,7 @@ namespace Xbim.Script
 
         public void AddReferenceModel(string refModel, string organization, string owner)
         {
-            throw new NotImplementedException();
+            _model.AddModelReference(refModel, organization, owner);
         }
 
         public void CopyToModel(string variable, string model)
@@ -977,7 +1046,8 @@ namespace Xbim.Script
         private void EvaluateSetExpression(string identifier, IEnumerable<Expression> expressions, string pSetName = null)
         {
             _actualPsetName = pSetName;
-            if (identifier == null || expressions == null) return;
+            if (identifier == null || expressions == null) throw new ArgumentNullException();
+            
 
             Action<string, IEnumerable<Expression>> perform = (ident, exprs) => {
                 var entities = _variables.GetEntities(ident);
@@ -1093,7 +1163,7 @@ namespace Xbim.Script
             //create new property if no such a property exists
             else
             {
-                string pSetName = _actualPsetName ?? "xbim_extended_properties";
+                string pSetName = _actualPsetName ?? Defaults.DefaultPSet;
                 IfcValue val = null;
                 if (newVal != null)
                     val = CreateIfcValueFromBasicValue(newVal, name);
@@ -1153,7 +1223,7 @@ namespace Xbim.Script
             if (type == typeof(int))
                 return new IfcInteger((int)value);
             if (type == typeof(string))
-                return new IfcLabel((string)value);
+                return new IfcText((string)value);
             if (type == typeof(double))
                 return new IfcNumericMeasure((double)value);
             if (type == typeof(bool))
