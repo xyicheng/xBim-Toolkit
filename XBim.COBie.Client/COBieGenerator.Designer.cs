@@ -50,6 +50,8 @@
             this.rbDefault = new System.Windows.Forms.RadioButton();
             this.ValidateChkBox = new System.Windows.Forms.CheckBox();
             this.SkipGeoChkBox = new System.Windows.Forms.CheckBox();
+            this.checkedListRoles = new System.Windows.Forms.CheckedListBox();
+            this.label3 = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             this.gbFilter.SuspendLayout();
@@ -65,9 +67,9 @@
             this.groupBox1.Controls.Add(this.txtPath);
             this.groupBox1.Controls.Add(this.btnBrowse);
             this.groupBox1.Controls.Add(this.label1);
-            this.groupBox1.Location = new System.Drawing.Point(13, 13);
+            this.groupBox1.Location = new System.Drawing.Point(139, 13);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(498, 81);
+            this.groupBox1.Size = new System.Drawing.Size(372, 83);
             this.groupBox1.TabIndex = 0;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "IFC File Location";
@@ -75,7 +77,7 @@
             // btnBrowseTemplate
             // 
             this.btnBrowseTemplate.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnBrowseTemplate.Location = new System.Drawing.Point(417, 44);
+            this.btnBrowseTemplate.Location = new System.Drawing.Point(291, 44);
             this.btnBrowseTemplate.Name = "btnBrowseTemplate";
             this.btnBrowseTemplate.Size = new System.Drawing.Size(75, 23);
             this.btnBrowseTemplate.TabIndex = 4;
@@ -91,16 +93,16 @@
             this.txtTemplate.Items.AddRange(new object[] {
             "COBie-UK-2012-template.xls",
             "COBie-US-2_4-template.xls"});
-            this.txtTemplate.Location = new System.Drawing.Point(79, 46);
+            this.txtTemplate.Location = new System.Drawing.Point(74, 46);
             this.txtTemplate.Name = "txtTemplate";
-            this.txtTemplate.Size = new System.Drawing.Size(326, 21);
+            this.txtTemplate.Size = new System.Drawing.Size(200, 21);
             this.txtTemplate.TabIndex = 3;
             this.txtTemplate.Text = "COBie-UK-2012-template.xls";
             // 
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(6, 49);
+            this.label2.Location = new System.Drawing.Point(12, 49);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(54, 13);
             this.label2.TabIndex = 2;
@@ -119,9 +121,9 @@
             "2012-09-03-Clinic-Handover.ifc",
             "2012-09-03-Clinic-Handover.xbim",
             "BCU-XX-XX-A-VCUK-M3-00-0001.Xbim"});
-            this.txtPath.Location = new System.Drawing.Point(79, 20);
+            this.txtPath.Location = new System.Drawing.Point(74, 20);
             this.txtPath.Name = "txtPath";
-            this.txtPath.Size = new System.Drawing.Size(326, 21);
+            this.txtPath.Size = new System.Drawing.Size(200, 21);
             this.txtPath.TabIndex = 0;
             this.txtPath.Text = "2012-03-23-Duplex-Design.ifc";
             this.txtPath.TextChanged += new System.EventHandler(this.txtPath_TextChanged);
@@ -129,7 +131,7 @@
             // btnBrowse
             // 
             this.btnBrowse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnBrowse.Location = new System.Drawing.Point(417, 18);
+            this.btnBrowse.Location = new System.Drawing.Point(291, 18);
             this.btnBrowse.Name = "btnBrowse";
             this.btnBrowse.Size = new System.Drawing.Size(75, 23);
             this.btnBrowse.TabIndex = 1;
@@ -140,7 +142,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(6, 23);
+            this.label1.Location = new System.Drawing.Point(12, 23);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(56, 13);
             this.label1.TabIndex = 0;
@@ -149,7 +151,7 @@
             // mergeBtn
             // 
             this.mergeBtn.Enabled = false;
-            this.mergeBtn.Location = new System.Drawing.Point(229, 96);
+            this.mergeBtn.Location = new System.Drawing.Point(229, 114);
             this.mergeBtn.Name = "mergeBtn";
             this.mergeBtn.Size = new System.Drawing.Size(130, 23);
             this.mergeBtn.TabIndex = 7;
@@ -163,7 +165,7 @@
             this.GeoOnlyChkBox.Checked = true;
             this.GeoOnlyChkBox.CheckState = System.Windows.Forms.CheckState.Checked;
             this.GeoOnlyChkBox.Enabled = false;
-            this.GeoOnlyChkBox.Location = new System.Drawing.Point(13, 119);
+            this.GeoOnlyChkBox.Location = new System.Drawing.Point(13, 137);
             this.GeoOnlyChkBox.Name = "GeoOnlyChkBox";
             this.GeoOnlyChkBox.Size = new System.Drawing.Size(148, 17);
             this.GeoOnlyChkBox.TabIndex = 6;
@@ -173,7 +175,7 @@
             // MergeChkBox
             // 
             this.MergeChkBox.AutoSize = true;
-            this.MergeChkBox.Location = new System.Drawing.Point(13, 100);
+            this.MergeChkBox.Location = new System.Drawing.Point(13, 118);
             this.MergeChkBox.Name = "MergeChkBox";
             this.MergeChkBox.Size = new System.Drawing.Size(210, 17);
             this.MergeChkBox.TabIndex = 5;
@@ -184,7 +186,7 @@
             // btnGenerate
             // 
             this.btnGenerate.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnGenerate.Location = new System.Drawing.Point(430, 383);
+            this.btnGenerate.Location = new System.Drawing.Point(430, 418);
             this.btnGenerate.Name = "btnGenerate";
             this.btnGenerate.Size = new System.Drawing.Size(75, 23);
             this.btnGenerate.TabIndex = 2;
@@ -195,7 +197,7 @@
             // btnClear
             // 
             this.btnClear.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnClear.Location = new System.Drawing.Point(430, 353);
+            this.btnClear.Location = new System.Drawing.Point(430, 388);
             this.btnClear.Name = "btnClear";
             this.btnClear.Size = new System.Drawing.Size(75, 23);
             this.btnClear.TabIndex = 4;
@@ -208,10 +210,10 @@
             this.txtOutput.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtOutput.Location = new System.Drawing.Point(13, 142);
+            this.txtOutput.Location = new System.Drawing.Point(13, 161);
             this.txtOutput.Name = "txtOutput";
             this.txtOutput.ReadOnly = true;
-            this.txtOutput.Size = new System.Drawing.Size(400, 264);
+            this.txtOutput.Size = new System.Drawing.Size(400, 280);
             this.txtOutput.TabIndex = 5;
             this.txtOutput.Text = "";
             // 
@@ -220,7 +222,7 @@
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.ProgressBar,
             this.StatusMsg});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 415);
+            this.statusStrip1.Location = new System.Drawing.Point(0, 450);
             this.statusStrip1.Name = "statusStrip1";
             this.statusStrip1.Size = new System.Drawing.Size(523, 22);
             this.statusStrip1.TabIndex = 7;
@@ -245,7 +247,7 @@
             this.gbFilter.Controls.Add(this.rbNoFilters);
             this.gbFilter.Controls.Add(this.rbPickList);
             this.gbFilter.Controls.Add(this.rbDefault);
-            this.gbFilter.Location = new System.Drawing.Point(419, 142);
+            this.gbFilter.Location = new System.Drawing.Point(419, 165);
             this.gbFilter.Name = "gbFilter";
             this.gbFilter.Size = new System.Drawing.Size(87, 98);
             this.gbFilter.TabIndex = 9;
@@ -290,7 +292,7 @@
             this.ValidateChkBox.AutoSize = true;
             this.ValidateChkBox.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.ValidateChkBox.Enabled = false;
-            this.ValidateChkBox.Location = new System.Drawing.Point(410, 102);
+            this.ValidateChkBox.Location = new System.Drawing.Point(410, 120);
             this.ValidateChkBox.Name = "ValidateChkBox";
             this.ValidateChkBox.Size = new System.Drawing.Size(95, 17);
             this.ValidateChkBox.TabIndex = 10;
@@ -301,18 +303,38 @@
             // 
             this.SkipGeoChkBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.SkipGeoChkBox.AutoSize = true;
-            this.SkipGeoChkBox.Location = new System.Drawing.Point(419, 248);
+            this.SkipGeoChkBox.Location = new System.Drawing.Point(419, 271);
             this.SkipGeoChkBox.Name = "SkipGeoChkBox";
             this.SkipGeoChkBox.Size = new System.Drawing.Size(93, 17);
             this.SkipGeoChkBox.TabIndex = 11;
             this.SkipGeoChkBox.Text = "Skip geometry";
             this.SkipGeoChkBox.UseVisualStyleBackColor = true;
             // 
+            // checkedListRoles
+            // 
+            this.checkedListRoles.CheckOnClick = true;
+            this.checkedListRoles.FormattingEnabled = true;
+            this.checkedListRoles.Location = new System.Drawing.Point(13, 31);
+            this.checkedListRoles.Name = "checkedListRoles";
+            this.checkedListRoles.Size = new System.Drawing.Size(120, 64);
+            this.checkedListRoles.TabIndex = 6;
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(10, 13);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(34, 13);
+            this.label3.TabIndex = 12;
+            this.label3.Text = "Roles";
+            // 
             // COBieGenerator
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(523, 437);
+            this.ClientSize = new System.Drawing.Size(523, 472);
+            this.Controls.Add(this.label3);
+            this.Controls.Add(this.checkedListRoles);
             this.Controls.Add(this.SkipGeoChkBox);
             this.Controls.Add(this.ValidateChkBox);
             this.Controls.Add(this.mergeBtn);
@@ -327,6 +349,7 @@
             this.Name = "COBieGenerator";
             this.Text = "Xbim COBie Test Harness";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.COBieGenerator_FormClosed);
+            this.Load += new System.EventHandler(this.COBieGenerator_Load);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.statusStrip1.ResumeLayout(false);
@@ -362,6 +385,8 @@
         private System.Windows.Forms.Button mergeBtn;
         private System.Windows.Forms.CheckBox ValidateChkBox;
         private System.Windows.Forms.CheckBox SkipGeoChkBox;
+        private System.Windows.Forms.CheckedListBox checkedListRoles;
+        private System.Windows.Forms.Label label3;
     }
 }
 

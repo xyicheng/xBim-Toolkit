@@ -117,7 +117,6 @@ namespace Xbim.COBie.Data
                     GetContactAddress(contact, ifcOrganization.Addresses);
 
                 contacts.AddRow(contact);
-                contact.Category = DEFAULT_STRING;
             }
 
             foreach (string email in cobieContacts)

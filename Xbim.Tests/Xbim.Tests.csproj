@@ -61,6 +61,7 @@
     <Compile Include="COBie\COBieSerialisationTests.cs" />
     <Compile Include="COBie\COBieTimeTests.cs" />
     <Compile Include="COBie\COBieXbimSerialisationTests.cs" />
+    <Compile Include="COBie\MergePrecedenceRulesTests.cs" />
     <Compile Include="Federation Tests.cs" />
     <Compile Include="InternationalisationTests.cs" />
     <Compile Include="XmlDynamicGroupingTests.cs" />

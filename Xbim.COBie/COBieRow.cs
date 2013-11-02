@@ -155,10 +155,25 @@ namespace Xbim.COBie
         private string GenerateRowHash()
         {
             string value = "";
-            string rowvalues = ConcatRowValues();
+            string rowValue = ConcatRowValues(); //get the row cell values concatenated together
             using (MD5 md5hash = MD5.Create())
             {
-                value = GetRowHash(md5hash);
+                value = GetRowHash(md5hash, rowValue);
+            }
+            return value;
+        }
+
+        /// <summary>
+        /// Generate the Hash code for the row values
+        /// </summary>
+        /// <returns></returns>
+        private string GeneratePrimaryKeyHash()
+        {
+            string value = "";
+            string keyValue = GetPrimaryKeyValue; //get the row cell values concatenated together
+            using (MD5 md5hash = MD5.Create())
+            {
+                value = GetRowHash(md5hash, keyValue);
             }
             return value;
         }
@@ -167,10 +182,11 @@ namespace Xbim.COBie
         /// Get the MD5 Hash value
         /// </summary>
         /// <param name="md5"></param>
+        /// <param name="rowValue">string to hash</param>
         /// <returns> hexadecimal string</returns>
-        private string GetRowHash(MD5 md5)
+        public string GetRowHash(MD5 md5, string rowValue)
         {
-            string rowValue = ConcatRowValues(); //get the row cell values concatenated together
+            //string rowValue = ConcatRowValues(); //get the row cell values concatenated together
             byte[] rowData = md5.ComputeHash(Encoding.UTF8.GetBytes(rowValue));
             StringBuilder stringBld = new StringBuilder();
             // Loop through each byte of the hashed rowData  
