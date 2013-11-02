@@ -10,7 +10,6 @@ namespace Xbim.Script
     {
         private Parser _parser;
         private Scanner _scanner;
-        private XbimModel _model;
 
         private string _strSource;
         private IList<string> _strListSource;
@@ -38,7 +37,7 @@ namespace Xbim.Script
         /// <summary>
         /// Model on which the parser operates
         /// </summary>
-        public XbimModel Model { get { return _model; } }
+        public XbimModel Model { get { return _parser.Model; } }
 
         /// <summary>
         /// Variables which are result of the parsing process. 
@@ -53,9 +52,8 @@ namespace Xbim.Script
         /// <param name="model">Model which shuldbe used for the script execution</param>
         public XbimQueryParser(XbimModel model)
         {
-            _model = model;
             _scanner = new Scanner();
-            _parser = new Parser(_scanner, _model);
+            _parser = new Parser(_scanner, model);
         }
 
         /// <summary>
@@ -66,9 +64,9 @@ namespace Xbim.Script
         public XbimQueryParser()
         {
             //create new empty model
-            _model = XbimModel.CreateTemporaryModel();
+            var model = XbimModel.CreateTemporaryModel();
             _scanner = new Scanner();
-            _parser = new Parser(_scanner, _model);
+            _parser = new Parser(_scanner, model);
         }
 
         /// <summary>

@@ -87,6 +87,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Defaults.cs" />
+    <Compile Include="Extensions\ScriptGroupExtension.cs" />
     <Compile Include="Parser\ShiftReduceParserCode.cs" />
     <Compile Include="Parser\Parser.cs" />
     <Compile Include="Parser\ParserHelper.cs" />

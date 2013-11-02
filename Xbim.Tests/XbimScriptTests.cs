@@ -804,5 +804,127 @@ namespace XbimQueryTest
             Assert.IsNotNull(material2);
             Assert.IsNotNull(type2);
         }
+
+        [TestMethod]
+        public void ReferencedModelsTest()
+        {
+            XbimQueryParser parser = new XbimQueryParser();
+            parser.Parse(@"
+                Create new wall 'Wall 1, model 1';
+                Create new wall 'Wall 2, model 1';
+                Create new wall 'Wall 3, model 1';
+                Create new wall 'Wall 4, model 1';
+                Create new wall 'Wall 5, model 1';
+                
+                Save model to file 'TestModel1.xBIM';
+                Close model;
+                
+                Create new wall 'Wall 1, model 2';
+                Create new wall 'Wall 2, model 2';
+                Create new wall 'Wall 3, model 2';
+                Create new wall 'Wall 4, model 2';
+                Create new wall 'Wall 5, model 2';
+                
+                Save model to file 'TestModel2.xBIM';
+                Close model;
+                
+                Create new wall 'Wall 1, model 3';
+                Create new wall 'Wall 2, model 3';
+                Create new wall 'Wall 3, model 3';
+                Create new wall 'Wall 4, model 3';
+                Create new wall 'Wall 5, model 3';
+                
+                Save model to file 'TestModel3.xBIM';
+                Close model;
+                
+                Add reference model 'TestModel1.xBIM' where organization is 'Organization A' and owner is 'Antoineta';
+                Add reference model 'TestModel2.xBIM' where organization is 'Organization B' and owner is 'Bugatti';
+                Add reference model 'TestModel3.xBIM' where organization is 'Organization C' and owner is 'Cecilia';
+
+                $walls is every wall;
+
+                $test1 is every wall where model is 'TestModel1';
+                $test2 is every wall where model is 'TestModel1.xBIM';
+                $test3 is every wall where model is 'testmodel1';
+                $test4 is every wall where model owner is 'Cecilia';
+                $test5 is every wall where model organization is 'Organization B';
+            ");
+
+            //test if everything was all right
+            Assert.AreEqual(0, parser.Errors.Count);
+
+            //test model conditions for referenced models
+            Assert.AreEqual(0, parser.Errors.Count);
+            Assert.AreEqual(5, parser.Results["$test1"].Count());
+            Assert.AreEqual(5, parser.Results["$test2"].Count());
+            Assert.AreEqual(5, parser.Results["$test3"].Count());
+            Assert.AreEqual(5, parser.Results["$test4"].Count());
+            Assert.AreEqual(5, parser.Results["$test5"].Count());
+
+            //test existing referenced models
+            Assert.AreEqual(15, parser.Results["$walls"].Count());
+
+            //test number of federated models
+            Assert.AreEqual(3, parser.Model.RefencedModels.Count);
+
+            //test opening from IFC file
+            parser.Parse(@"
+                Save model to file 'Federation.ifc';
+                Close model;
+                Open model from file 'Federation.ifc';
+                $walls is every wall;
+            ");
+            Assert.AreEqual(15, parser.Results["$walls"].Count());
+
+            //test number of federated models
+            Assert.AreEqual(3, parser.Model.RefencedModels.Count);
+
+            //test opening from xBIM file
+//            parser.Parse(@"
+//                 Save model to file 'Federation.xBIM';
+//                 Close model;
+//                 Open model from file 'Federation.xBIM';
+//                 $walls is every wall;
+//            ");
+//            Assert.AreEqual(15, parser.Results["$walls"].Count());
+        }
+
+        [TestMethod]
+        public void EmbededScriptTest()
+        {
+            var parser = new XbimQueryParser();
+            parser.Parse(@"
+                $g1 is new group 'Group A';
+                $g2 is new group 'Group B';
+                $g3 is new group 'Group C';
+                
+                Add $g2 to $g1;
+                Add $g3 to $g1;
+                
+                Set script to '$group is every wall;' for $g2;
+                Set script to '$group is every slab;' for $g3;
+                
+                Create new wall 'My wall No.1';
+                Create new wall 'My wall No.2';
+                Create new wall 'My wall No.3';
+                
+                Create new slab 'My slab No.1';
+                Create new slab 'My slab No.2';
+                
+                Save model to file 'EmbededScript.ifc';
+            ");
+            Assert.AreEqual(0, parser.Errors.Count());
+            var g2 = parser.Model.Instances.Where<IfcGroup>(g => g.Name == "Group B").FirstOrDefault();
+            var g3 = parser.Model.Instances.Where<IfcGroup>(g => g.Name == "Group C").FirstOrDefault();
+
+            Assert.IsNotNull(g2);
+            Assert.IsNotNull(g3);
+
+            var walls = g2.ExecuteScript();
+            var slabs = g3.ExecuteScript();
+
+            Assert.AreEqual(3, walls.Count());
+            Assert.AreEqual(2, slabs.Count());
+        }
     }
 }
