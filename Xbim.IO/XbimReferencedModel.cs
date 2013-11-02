@@ -44,6 +44,32 @@ namespace Xbim.IO
             }
         }
 
+        public string OrganisationName
+        {
+            get 
+            {
+                var organization = DocumentInformation.DocumentOwner as Xbim.Ifc2x3.ActorResource.IfcOrganization;
+                if (organization != null)
+                    return organization.Name;
+                return null;
+            }
+        }
+
+        public string OwnerName
+        {
+            get
+            {
+                var organization = DocumentInformation.DocumentOwner as Xbim.Ifc2x3.ActorResource.IfcOrganization;
+                if (organization != null)
+                {
+                    var role = organization.Roles.FirstOrDefault();
+                    if (role != null)
+                        return role.UserDefinedRole;
+                }
+                return null;
+            }
+        }
+
         internal void Dispose()
         {
             Model.Dispose();
