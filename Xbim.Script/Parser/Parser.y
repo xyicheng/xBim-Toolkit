@@ -287,7 +287,7 @@ propertyCondition
 	;
 
 spatialCondition
-	: IT op_spatial IDENTIFIER			{$$.val = GenerateSpatialCondition(((Tokens)($2.val)), $3.strVal);}
+	: IT op_bool op_spatial IDENTIFIER			{$$.val = GenerateSpatialCondition((Tokens)($2.val), (Tokens)($3.val), $4.strVal);}
 	;
 
 modelCondition

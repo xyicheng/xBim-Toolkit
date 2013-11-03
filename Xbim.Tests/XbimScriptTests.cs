@@ -501,7 +501,7 @@ namespace XbimQueryTest
 
         private bool AlmostEqual(double a, double b)
         {
-            return Math.Abs(Math.Abs(a) - Math.Abs(b)) < 0.0001;
+            return Math.Abs(a - b) < 0.0001;
         }
 
         private XbimModel CreateQuantityModel()

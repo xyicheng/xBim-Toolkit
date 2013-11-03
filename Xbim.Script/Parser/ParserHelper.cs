@@ -123,11 +123,11 @@ namespace Xbim.Script
             var attrNameExpr = Expression.Constant(attribute);
             var valExpr = Expression.Constant(value, typeof(object));
             var condExpr = Expression.Constant(condition);
-            var scannExpr = Expression.Constant(Scanner);
+            var thisExpr = Expression.Constant(this);
 
-            var evaluateMethod = GetType().GetMethod("EvaluateAttributeCondition", BindingFlags.Static | BindingFlags.NonPublic);
+            var evaluateMethod = GetType().GetMethod("EvaluateAttributeCondition", BindingFlags.Instance | BindingFlags.NonPublic);
 
-            return Expression.Call(null, evaluateMethod, _input, attrNameExpr, valExpr, condExpr, scannExpr);
+            return Expression.Call(thisExpr, evaluateMethod, _input, attrNameExpr, valExpr, condExpr);
         }
 
         private Expression GeneratePropertyCondition(string property, object value, Tokens condition)
@@ -135,14 +135,14 @@ namespace Xbim.Script
             var propNameExpr = Expression.Constant(property);
             var valExpr = Expression.Constant(value, typeof(object));
             var condExpr = Expression.Constant(condition);
-            var scannExpr = Expression.Constant(Scanner);
+            var thisExpr = Expression.Constant(this);
 
-            var evaluateMethod = GetType().GetMethod("EvaluatePropertyCondition", BindingFlags.Static | BindingFlags.NonPublic);
+            var evaluateMethod = GetType().GetMethod("EvaluatePropertyCondition", BindingFlags.Instance | BindingFlags.NonPublic);
 
-            return Expression.Call(null, evaluateMethod, _input, propNameExpr, valExpr, condExpr, scannExpr);
+            return Expression.Call(thisExpr, evaluateMethod, _input, propNameExpr, valExpr, condExpr);
         }
 
-        private static bool EvaluatePropertyCondition(IPersistIfcEntity input, string propertyName, object value, Tokens condition, AbstractScanner<ValueType, LexLocation> scanner)
+        private bool EvaluatePropertyCondition(IPersistIfcEntity input, string propertyName, object value, Tokens condition)
         {
             var prop = GetProperty(propertyName, input);
             //try to get attribute if any exist with this name
@@ -151,13 +151,13 @@ namespace Xbim.Script
                 var attr = GetAttributeValue(propertyName, input);
                 prop = attr as IfcValue;
             }
-            return EvaluateValueCondition(prop, value, condition, scanner);
+            return EvaluateValueCondition(prop, value, condition);
         }
 
-        private static bool EvaluateAttributeCondition(IPersistIfcEntity input, string attribute, object value, Tokens condition, AbstractScanner<ValueType, LexLocation> scanner)
+        private bool EvaluateAttributeCondition(IPersistIfcEntity input, string attribute, object value, Tokens condition)
         {
             var attr = GetAttributeValue(attribute, input);
-            return EvaluateValueCondition(attr, value, condition, scanner);
+            return EvaluateValueCondition(attr, value, condition);
         }
         #endregion
 
@@ -179,7 +179,7 @@ namespace Xbim.Script
             }
         }
 
-        private static bool EvaluateValueCondition(object ifcVal, object val, Tokens condition, AbstractScanner<ValueType, LexLocation> scanner)
+        private bool EvaluateValueCondition(object ifcVal, object val, Tokens condition)
         {
             //special handling for null value comparison
             if (val == null || ifcVal == null)
@@ -190,7 +190,7 @@ namespace Xbim.Script
                 }
                 catch (Exception e)
                 {
-                    scanner.yyerror(e.Message);
+                    Scanner.yyerror(e.Message);
                     return false;
                 }
             }
@@ -206,7 +206,7 @@ namespace Xbim.Script
             catch (Exception)
             {
 
-                scanner.yyerror(val.ToString() + " is not compatible type with type of " + ifcVal.GetType());
+                Scanner.yyerror(val.ToString() + " is not compatible type with type of " + ifcVal.GetType());
                 return false;
             }
             
@@ -242,7 +242,7 @@ namespace Xbim.Script
                 default:
                     throw new ArgumentOutOfRangeException("Unexpected token used as a condition");
             }
-            scanner.yyerror("Can't compare " + left + " and " + right + ".");
+            Scanner.yyerror("Can't compare " + left + " and " + right + ".");
             return false;
         }
 
@@ -438,23 +438,23 @@ namespace Xbim.Script
         {
             var typeNameExpr = Expression.Constant(typeName);
             var condExpr = Expression.Constant(condition);
-            var scanExpr = Expression.Constant(Scanner);
+            var thisExpr = Expression.Constant(this);
 
-            var evaluateMethod = GetType().GetMethod("EvaluateTypeObjectName", BindingFlags.Static | BindingFlags.NonPublic);
-            return Expression.Call(null, evaluateMethod, _input, typeNameExpr, condExpr, scanExpr);
+            var evaluateMethod = GetType().GetMethod("EvaluateTypeObjectName", BindingFlags.Instance | BindingFlags.NonPublic);
+            return Expression.Call(thisExpr, evaluateMethod, _input, typeNameExpr, condExpr);
         }
 
         private Expression GenerateTypeObjectTypeCondition(Type type, Tokens condition)
         {
             var typeExpr = Expression.Constant(type, typeof(Type));
             var condExpr = Expression.Constant(condition);
-            var scanExpr = Expression.Constant(Scanner);
+            var thisExpr = Expression.Constant(this);
 
-            var evaluateMethod = GetType().GetMethod("EvaluateTypeObjectType", BindingFlags.Static | BindingFlags.NonPublic);
-            return Expression.Call(null, evaluateMethod, _input, typeExpr, condExpr, scanExpr);
+            var evaluateMethod = GetType().GetMethod("EvaluateTypeObjectType", BindingFlags.Instance | BindingFlags.NonPublic);
+            return Expression.Call(thisExpr, evaluateMethod, _input, typeExpr, condExpr);
         }
 
-        private static bool EvaluateTypeObjectName(IPersistIfcEntity input, string typeName, Tokens condition, AbstractScanner<ValueType, LexLocation> scanner)
+        private bool EvaluateTypeObjectName(IPersistIfcEntity input, string typeName, Tokens condition)
         {
             IfcObject obj = input as IfcObject;
             if (obj == null) return false;
@@ -478,12 +478,12 @@ namespace Xbim.Script
                 case Tokens.OP_NOT_CONTAINS:
                     return !type.Name.ToString().ToLower().Contains(typeName.ToLower());
                 default:
-                    scanner.yyerror("Unexpected Token in this function. Only equality or containment expected.");
+                    Scanner.yyerror("Unexpected Token in this function. Only equality or containment expected.");
                     return false;
             }
         }
 
-        private static bool EvaluateTypeObjectType(IPersistIfcEntity input, Type type, Tokens condition, AbstractScanner<ValueType, LexLocation> scanner)
+        private bool EvaluateTypeObjectType(IPersistIfcEntity input, Type type, Tokens condition)
         {
             IfcObject obj = input as IfcObject;
             if (obj == null) return false;
@@ -499,7 +499,7 @@ namespace Xbim.Script
                 }
                 catch (Exception e)
                 {
-                    scanner.yyerror(e.Message);
+                    Scanner.yyerror(e.Message);
                     return false;
                 }
             }
@@ -511,7 +511,7 @@ namespace Xbim.Script
                 case Tokens.OP_NEQ:
                     return typeObj.GetType() != type;
                 default:
-                    scanner.yyerror("Unexpected Token in this function. Only OP_EQ or OP_NEQ expected.");
+                    Scanner.yyerror("Unexpected Token in this function. Only OP_EQ or OP_NEQ expected.");
                     return false;
             }
         }
@@ -639,11 +639,11 @@ namespace Xbim.Script
             var thisExpr = Expression.Constant(this);
             var modelExpr = Expression.Constant(_model);
 
-            var evaluateMethod = GetType().GetMethod("EvaluateModelCondition");
+            var evaluateMethod = GetType().GetMethod("EvaluateModelCondition", BindingFlags.Instance | BindingFlags.NonPublic);
             return Expression.Call(thisExpr, evaluateMethod, _input, valExpr, typeExpr, condExpr);
         }
 
-        public bool EvaluateModelCondition(IPersistIfcEntity input, string value, Tokens type, Tokens condition)
+        private bool EvaluateModelCondition(IPersistIfcEntity input, string value, Tokens type, Tokens condition)
         {
             IModel model = input.ModelOf;
             IModel testModel = null;
@@ -1293,7 +1293,7 @@ namespace Xbim.Script
                     //this can throw error if the property can't be null (like structure)
                     info.SetValue(instance, null, null);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 throw new Exception("Value "+ (value != null ? value.ToString() : "NULL") +" could not be set to "+ info.Name+" of type"+ instance.GetType().Name + ". Type should be compatible with " + info.MemberType);
             }
@@ -1509,17 +1509,29 @@ namespace Xbim.Script
         #endregion
 
         #region Spatial conditions
-        private Expression GenerateSpatialCondition(Tokens condition, string identifier)
+        private Expression GenerateSpatialCondition(Tokens op, Tokens condition, string identifier)
         {
-            var identExpr = Expression.Constant(identifier, typeof(string));
+            IEnumerable<IfcProduct> right = _variables[identifier].OfType<IfcProduct>();
+            if (right.Count() == 0)
+            {
+                Scanner.yyerror("There are no suitable objects for spatial condition in " + identifier + ".");
+                return Expression.Empty();
+            }
+            if (right.Count() != _variables[identifier].Count())
+                Scanner.yyerror("Some of the objects in " + identifier + " can't be in a spatial condition.");
+
+            var rightExpr = Expression.Constant(right);
             var condExpr = Expression.Constant(condition);
+            var opExpr = Expression.Constant(op);
+            var scanExpr = Expression.Constant(Scanner);
+            var thisExpr = Expression.Constant(this);
 
-            var evaluateMethod = GetType().GetMethod("EvaluateSpatialCondition", BindingFlags.NonPublic);
+            var evaluateMethod = GetType().GetMethod("EvaluateSpatialCondition", BindingFlags.NonPublic | BindingFlags.Instance);
 
-            return Expression.Call(null, evaluateMethod, _input, condExpr, identExpr);
+            return Expression.Call(thisExpr, evaluateMethod, _input, opExpr, condExpr, rightExpr, scanExpr);
         }
 
-        private bool EvaluateSpatialCondition(IPersistIfcEntity input, Tokens condition, string identifier)
+        private bool EvaluateSpatialCondition(IPersistIfcEntity input, Tokens op, Tokens condition, IEnumerable<IfcProduct> right)
         {
             IfcProduct left = input as IfcProduct;
             if (left == null)
@@ -1527,15 +1539,6 @@ namespace Xbim.Script
                 Scanner.yyerror(input.GetType().Name + " can't have a spatial condition.");
                 return false;
             }
-            IEnumerable<IfcProduct> right = _variables[identifier].OfType<IfcProduct>();
-            if (right.Count() != _variables[identifier].Count())
-                Scanner.yyerror("Some of the objects in "+identifier+" can't be in a spatial condition.");
-            if (right.Count() == 0)
-            {
-                Scanner.yyerror("There are no suitable objects for spatial condition in " + identifier + ".");
-                return false;
-            }
-
 
             switch (condition)
             {
