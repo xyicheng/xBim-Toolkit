@@ -16,6 +16,7 @@ using Xbim.Ifc2x3.ProductExtension;
 using System.IO;
 using Xbim.Ifc2x3.PropertyResource;
 using Xbim.Ifc2x3.MaterialPropertyResource;
+using Xbim.Ifc2x3.QuantityResource;
 
 namespace Xbim.Script
 {
@@ -290,16 +291,20 @@ namespace Xbim.Script
 
         private static IfcValue GetProperty(string name, IPersistIfcEntity entity)
         {
-            IfcObject obj = entity as IfcObject;
             Dictionary<IfcLabel, Dictionary<IfcIdentifier, IfcValue>> pSets = null;
+            IEnumerable<IfcPhysicalSimpleQuantity> quants = null;
+
+            IfcObject obj = entity as IfcObject;
             if (obj != null)
             {
+                quants = obj.GetAllPhysicalSimpleQuantities();
                 pSets = obj.GetAllPropertySingleValues();
             }
             IfcTypeObject typeObj = entity as IfcTypeObject;
             if (typeObj != null)
             {
                 pSets = typeObj.GetAllPropertySingleValues();
+                quants = typeObj.GetAllPhysicalSimpleQuantities();
             }
             IfcMaterial material = entity as IfcMaterial;
             if (material != null)
@@ -315,8 +320,33 @@ namespace Xbim.Script
                         if (prop.Key.ToString().ToLower() == name.ToLower()) return prop.Value;
                     }
                 }
+            if (quants != null)
+            {
+                var quant = quants.Where(q => q.Name.ToString().ToLower() == name.ToLower()).FirstOrDefault();
+                if (quant != null)
+                {
+                    var a = quant as IfcQuantityArea;
+                    if (a != null) return a.AreaValue;
+
+                    var c = quant as IfcQuantityCount;
+                    if (c != null) return c.CountValue;
+
+                    var l = quant as IfcQuantityLength;
+                    if (l != null) return l.LengthValue;
+
+                    var t = quant as IfcQuantityTime;
+                    if (t != null) return t.TimeValue;
+
+                    var v = quant as IfcQuantityVolume;
+                    if (v != null) return v.VolumeValue;
+
+                    var w = quant as IfcQuantityWeight;
+                    if (w != null) return w.WeightValue;
+                }
+            }
             return null;
         }
+
 
         private static object PromoteType(Type targetType, object value)
         {
@@ -1108,25 +1138,35 @@ namespace Xbim.Script
         private static void SetProperty(IPersistIfcEntity entity, string name, object newVal)
         {
             List<IfcPropertySet> pSets = null;
-            List<IfcExtendedMaterialProperties> pSetsMaterial = null;
+            IEnumerable<IfcExtendedMaterialProperties> pSetsMaterial = null;
+            IEnumerable<IfcElementQuantity> elQuants = null;
             IfcPropertySingleValue property = null;
-            PropertyInfo info = null;
+            IfcPhysicalSimpleQuantity quantity = null;
             IfcPropertySet ps = null;
+            IfcElementQuantity eq = null;
             IfcExtendedMaterialProperties eps = null;
 
             IfcObject obj = entity as IfcObject;
             if (obj != null)
             {
                 if (_actualPsetName != null)
+                {
                     ps = obj.GetPropertySet(_actualPsetName);
+                    eq = obj.GetElementQuantity(_actualPsetName);
+                }
                 pSets =  ps == null ? obj.GetAllPropertySets() : new List<IfcPropertySet>(){ps};
+                elQuants = eq == null ? obj.GetAllElementQuantities() : new List<IfcElementQuantity>() { eq };
             }
             IfcTypeObject typeObj = entity as IfcTypeObject;
             if (typeObj != null)
             {
                 if (_actualPsetName != null)
+                {
                     ps = typeObj.GetPropertySet(_actualPsetName);
+                    eq = typeObj.GetElementQuantity(_actualPsetName);
+                }
                 pSets = ps == null ? typeObj.GetAllPropertySets() : new List<IfcPropertySet>() { ps };
+                elQuants = eq == null ? typeObj.GetAllElementQuantities() : new List<IfcElementQuantity>() { eq};
             }
             IfcMaterial material = entity as IfcMaterial;
             if (material != null)
@@ -1152,6 +1192,16 @@ namespace Xbim.Script
                         if (prop.Name.ToString().ToLower() == name.ToLower()) property = prop as IfcPropertySingleValue;
                     }
                 }
+            if (elQuants != null)
+                foreach (var quant in elQuants)
+                {
+                    foreach (var item in quant.Quantities)
+                    {
+                        if (item.Name.ToString().ToLower() == name.ToLower()) quantity = item as IfcPhysicalSimpleQuantity;
+                    }
+                }
+
+            PropertyInfo info = null;
 
             //set property
             if (property != null)
@@ -1160,7 +1210,40 @@ namespace Xbim.Script
                 SetValue(info, property, newVal);
             }
 
-            //create new property if no such a property exists
+            //set simple quantity
+            else if (quantity != null)
+            {
+                var qType = quantity.GetType();
+                switch (qType.Name)
+                {
+                    case "IfcQuantityLength":
+                        info = qType.GetProperty("LengthValue");
+                        break;
+                    case "IfcQuantityArea":
+                        info = qType.GetProperty("AreaValue");
+                        break;
+                    case "IfcQuantityVolume":
+                        info = qType.GetProperty("VolumeValue");
+                        break;
+                    case "IfcQuantityCount":
+                        info = qType.GetProperty("CountValue");
+                        break;
+                    case "IfcQuantityWeight":
+                        info = qType.GetProperty("WeightValue");
+                        break;
+                    case "IfcQuantityTime":
+                        info = qType.GetProperty("TimeValue");
+                        break;
+                    default:
+                        throw new NotImplementedException();
+                }
+                if (info != null)
+                    SetValue(info, quantity, newVal);
+                else
+                    throw new Exception("Failed to find the PropertyInfo of the simple element quantity.");
+            }
+
+            //create new property if no such a property or quantity exists
             else
             {
                 string pSetName = _actualPsetName ?? Defaults.DefaultPSet;

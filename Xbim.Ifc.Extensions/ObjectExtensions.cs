@@ -326,6 +326,36 @@ namespace Xbim.Ifc2x3.Extensions
             if (rel != null) return rel.RelatingPropertyDefinition as IfcElementQuantity;
             else return null;
         }
+
+        /// <summary>
+        /// Use this method to get all element quantities related to this object
+        /// </summary>
+        /// <returns>All related element quantities</returns>
+        public static IEnumerable<IfcElementQuantity> GetAllElementQuantities(this IfcObject elem)
+        {
+            var rels = elem.IsDefinedByProperties.Where(r => r.RelatingPropertyDefinition is IfcElementQuantity);
+            foreach (var rel in rels)
+            {
+                yield return rel.RelatingPropertyDefinition as IfcElementQuantity;
+            }
+        }
+
+        /// <summary>
+        /// Use this to get all physical simple quantities (like length, area, volume, count, etc.)
+        /// </summary>
+        /// <returns>All physical simple quantities (like length, area, volume, count, etc.)</returns>
+        public static IEnumerable<IfcPhysicalSimpleQuantity> GetAllPhysicalSimpleQuantities(this IfcObject elem)
+        {
+            foreach (var eq in elem.GetAllElementQuantities())
+            {
+                foreach (var q in eq.Quantities)
+                {
+                    var psq = q as IfcPhysicalSimpleQuantity;
+                    if (psq != null) yield return psq;
+                }
+            }
+        }
+
         /// <summary>
         /// Returns the first quantity in the property set pSetName of name qName
         /// </summary>
