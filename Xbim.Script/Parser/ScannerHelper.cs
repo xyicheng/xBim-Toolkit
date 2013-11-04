@@ -206,7 +206,7 @@ namespace Xbim.Script
         /// <summary>
         /// List of error locations
         /// </summary>
-        public List<Location> ErrorLocations = new List<Location>();
+        public List<ErrorLocation> ErrorLocations = new List<ErrorLocation>();
 
         /// <summary>
         /// Overriden yyerror function for error reporting
@@ -215,12 +215,13 @@ namespace Xbim.Script
         /// <param name="args">Error arguments</param>
         public override void yyerror(string format, params object[] args)
         {
-            Errors.Add(format + String.Format(" Line: {0}, column: {1}", yylloc.EndLine, yylloc.EndColumn));
-            ErrorLocations.Add(new Location() { 
+            Errors.Add(String.Format(format, args) + String.Format(" Line: {0}, column: {1}", yylloc.EndLine, yylloc.EndColumn));
+            ErrorLocations.Add(new ErrorLocation() { 
                 StartLine = yylloc.StartLine, 
                 EndLine = yylloc.EndLine, 
                 StartColumn = yylloc.StartColumn, 
-                EndColumn = yylloc.EndColumn
+                EndColumn = yylloc.EndColumn,
+                Message = String.Format(format, args)
             });
 
             base.yyerror(format, args);
@@ -229,11 +230,12 @@ namespace Xbim.Script
 
     }
 
-    public struct Location
+    public struct ErrorLocation
 	{
 		public int StartLine;
         public int EndLine;
         public int StartColumn;
         public int EndColumn;
+        public string Message;
 	}
 }

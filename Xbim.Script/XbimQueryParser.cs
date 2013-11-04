@@ -21,11 +21,10 @@ namespace Xbim.Script
         public List<string> Errors { get { return _scanner.Errors; } }
 
         /// <summary>
-        /// Locations of the errors. Use index of the error to get according location.
-        /// It is already part of the error message but information contained in this property
-        /// can be used to show the position interactively for example.
+        /// Locations of the errors. ErrorLocation contains error message and
+        /// location in a structure usable for text selection and other reporting.
         /// </summary>
-        public List<Location> ErrorLocations { get { return _scanner.ErrorLocations; } }
+        public List<ErrorLocation> ErrorLocations { get { return _scanner.ErrorLocations; } }
 
         /// <summary>
         /// Messages go to the Console command line normally but 
@@ -120,7 +119,7 @@ namespace Xbim.Script
 
         /// <summary>
         /// The main function used to perform parsing of the query. 
-        /// Rerurns false only if something serious happen during
+        /// Returns false only if something serious happen during
         /// parsing process. However it is quite possible that some errors occured. 
         /// So, make sure to check Errors if there are any.
         /// </summary>
@@ -134,7 +133,7 @@ namespace Xbim.Script
 
         /// <summary>
         /// The main function used to perform parsing of the query. 
-        /// Rerurns false only if something serious happen during
+        /// Returns false only if something serious happen during
         /// parsing process. However it is quite possible that some errors occured. 
         /// So, make sure to check Errors if there are any.
         /// </summary>
@@ -147,7 +146,7 @@ namespace Xbim.Script
 
         /// <summary>
         /// The main function used to perform parsing of the query. 
-        /// Rerurns false only if something serious happen during
+        /// Returns false only if something serious happen during
         /// parsing process. However it is quite possible that some errors occured. 
         /// So, make sure to check Errors if there are any.
         /// </summary>
@@ -160,7 +159,7 @@ namespace Xbim.Script
 
         /// <summary>
         /// The main function used to perform parsing of the query. 
-        /// Rerurns false only if something serious happen during
+        /// Returns false only if something serious happen during
         /// parsing process. However it is quite possible that some errors occured. 
         /// So, make sure to check Errors if there are any.
         /// </summary>
