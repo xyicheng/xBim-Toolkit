@@ -123,6 +123,9 @@
     <None Include="PredefinedRules\ClassifyModelToNRM.bql">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="PredefinedRules\EmbeddedNRM.bql">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="README.rtf" />
   </ItemGroup>
   <ItemGroup>
