@@ -1210,7 +1210,7 @@ namespace Xbim.Script
                     //this can throw error if the property can't be null (like structure)
                     info.SetValue(instance, null, null);
             }
-            catch (Exception e)
+            catch (Exception )
             {
                 throw new Exception("Value "+ (value != null ? value.ToString() : "NULL") +" could not be set to "+ info.Name+" of type"+ instance.GetType().Name + ". Type should be compatible with " + info.MemberType);
             }
