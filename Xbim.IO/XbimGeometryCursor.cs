@@ -56,12 +56,6 @@ namespace Xbim.IO
         Int32ColumnValue _colValStyleLabel;
         ColumnValue[] _colValues;
 
-#if CREATEGEOMHASH
-        //Create a hash provider
-        private static SHA1 Sha = new SHA1CryptoServiceProvider();
-#endif
-
-
         internal static void CreateTable(JET_SESID sesid, JET_DBID dbid)
         {
             JET_TABLEID tableid;
@@ -198,13 +192,15 @@ namespace Xbim.IO
                 mainId = geomId.Value;
             }
 #if CREATEGEOMHASH
-            if (type == XbimGeometryType.TriangulatedMesh)
+            if (type == XbimGeometryType.TriangulatedMesh && shapeData.Length > 0)
             {
                 int hashId;
                 Api.JetSetCurrentIndex(sesid, table, geometryTablePrimaryIndex);
                 Api.MakeKey(sesid, table, mainId, MakeKeyGrbit.NewKey);
                 Api.TrySeek(sesid, table, SeekGrbit.SeekEQ);
 
+                //Create a hash provider
+                var Sha = new SHA1CryptoServiceProvider();
                 Byte[] hashdata = Sha.ComputeHash(shapeData);
                 using (var update = new Update(sesid, table, JET_prep.InsertCopy))
                 {
