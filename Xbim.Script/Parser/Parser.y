@@ -101,6 +101,12 @@
 %token  OVERLAPS
 %token  RELATE
 
+/* existance keywords */
+%token THE_SAME	
+%token DELETED	
+%token INSERTED	
+%token EDITED	
+
 %%
 expressions
 	: expressions expression
@@ -232,6 +238,7 @@ condition
 	| groupCondition						{$$.val = $1.val;}
 	| spatialCondition						{$$.val = $1.val;}
 	| modelCondition						{$$.val = $1.val;}
+	| existanceCondition					{$$.val = $1.val;}
 	;
 
 attributeCondition	
@@ -291,9 +298,21 @@ spatialCondition
 	;
 
 modelCondition
-	: MODEL op_bool	STRING					{$$.val = GenerateModelCondition(Tokens.MODEL, (Tokens)($2.val), $3.strVal);}
-	| MODEL OWNER op_bool STRING			{$$.val = GenerateModelCondition(Tokens.OWNER, (Tokens)($3.val), $4.strVal);}
-	| MODEL ORGANIZATION op_bool STRING		{$$.val = GenerateModelCondition(Tokens.ORGANIZATION, (Tokens)($3.val), $4.strVal);}
+	: MODEL op_bool	STRING						{$$.val = GenerateModelCondition(Tokens.MODEL, (Tokens)($2.val), $3.strVal);}
+	| MODEL OWNER op_bool STRING				{$$.val = GenerateModelCondition(Tokens.OWNER, (Tokens)($3.val), $4.strVal);}
+	| MODEL ORGANIZATION op_bool STRING			{$$.val = GenerateModelCondition(Tokens.ORGANIZATION, (Tokens)($3.val), $4.strVal);}
+	;
+
+existanceCondition
+	: IT OP_EQ op_existance IN MODEL STRING								{$$.val = GenerateExistanceCondition((Tokens)($3.val), $6.strVal); }
+	| IT op_bool IN MODEL STRING OP_AND IT op_bool IN MODEL STRING		{$$.val = GenerateExistanceCondition((Tokens)($2.val), $5.strVal, (Tokens)($8.val), $11.strVal); }
+	;
+
+op_existance
+	: THE_SAME				{ $$.val = Tokens.THE_SAME; }
+	| DELETED				{ $$.val = Tokens.DELETED; }
+	| INSERTED				{ $$.val = Tokens.INSERTED;}
+	| EDITED				{ $$.val = Tokens.EDITED;}
 	;
 
 op_spatial

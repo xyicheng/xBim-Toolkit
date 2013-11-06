@@ -1580,6 +1580,19 @@ namespace Xbim.Script
         }
         #endregion
 
+
+        #region Existance conditions
+        private Expression GenerateExistanceCondition(Tokens existanceCondition, string modelName)
+        {
+            throw new NotImplementedException();
+        }
+
+        private Expression GenerateExistanceCondition(Tokens conditionA, string modelA, Tokens conditionB, string modelB)
+        {
+            throw new NotImplementedException();
+        }
+        #endregion
+
         /// <summary>
         /// Unified function so that the same output can be send 
         /// to the Console and to the optional text writer as well.

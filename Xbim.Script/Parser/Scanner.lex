@@ -95,6 +95,11 @@
 "overlap"			{return ((int)Tokens.OVERLAPS); }
 "relates to" |
 "relate to"		{return ((int)Tokens.RELATE); }
+
+"the same"		{return (int)Tokens.THE_SAME; }
+"deleted"		{return (int)Tokens.DELETED; }
+"inserted"		{return (int)Tokens.INSERTED; }
+"edited"		{return (int)Tokens.EDITED; }
 					 
 /* ********************** Keywords ************************** */
 "select"			{ return (int)Tokens.SELECT;}
