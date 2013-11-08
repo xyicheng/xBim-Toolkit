@@ -770,5 +770,23 @@ namespace XbimXplorer
             about.Show();
 
         }
+
+        private void OpenScriptingWindow(object sender, RoutedEventArgs e)
+        {
+            var win = new Scripting.ScriptingWindow();
+            win.Owner = this;
+            
+            win.DataContext = ModelProvider;
+
+            var binding = new Binding();
+            win.SetBinding(Scripting.ScriptingWindow.ModelProperty, binding);
+
+            ScriptResults.Visibility = System.Windows.Visibility.Visible;
+            win.Closing += new CancelEventHandler(delegate(object s, CancelEventArgs arg) {
+                ScriptResults.Visibility = System.Windows.Visibility.Collapsed; 
+            });
+            
+            win.Show();
+        }
     }
 }

@@ -53,6 +53,9 @@ namespace Xbim.Script
         {
             _scanner = new Scanner();
             _parser = new Parser(_scanner, model);
+            _parser.OnModelChanged += new ModelChangedHandler(delegate(object sender, ModelChangedEventArgs e) {
+                ModelChanged();
+            });
         }
 
         /// <summary>
@@ -66,6 +69,10 @@ namespace Xbim.Script
             var model = XbimModel.CreateTemporaryModel();
             _scanner = new Scanner();
             _parser = new Parser(_scanner, model);
+            _parser.OnModelChanged += new ModelChangedHandler(delegate(object sender, ModelChangedEventArgs e)
+            {
+                ModelChanged();
+            });
         }
 
         /// <summary>
@@ -127,8 +134,9 @@ namespace Xbim.Script
         public bool Parse()
         {
             ResetSource();
-            //_parser = new Parser(_scanner, _model);
-            return _parser.Parse();
+            var res = _parser.Parse();
+            ScriptParsed();
+            return res;
         }
 
         /// <summary>
@@ -199,7 +207,28 @@ namespace Xbim.Script
             //_scanner = new Scanner();
         }
 
+        /// <summary>
+        /// Event to be used in the event driven environment. Fired when model changes (closed or open)
+        /// </summary>
+        public event ModelChangedHandler OnModelChanged;
+        private void ModelChanged()
+        {
+            if (OnModelChanged != null)
+                OnModelChanged(this, new ModelChangedEventArgs());
+        }
 
+        public event ScriptParsedHandler OnScriptParsed;
+        private void ScriptParsed()
+        {
+            if (OnScriptParsed != null)
+                OnScriptParsed(this, new ScriptParsedEventArgs());
+        }
 
+    }
+
+    public delegate void ScriptParsedHandler(object sender, ScriptParsedEventArgs e);
+
+    public class ScriptParsedEventArgs : EventArgs
+    {
     }
 }

@@ -1003,6 +1003,7 @@ namespace Xbim.Script
                     _model.CreateFrom(path, null, null, true);
                 else
                     _model.Open(path, XbimExtensions.XbimDBAccess.ReadWrite);
+                ModelChanged();
             }
             catch (Exception e)
             {
@@ -1017,6 +1018,7 @@ namespace Xbim.Script
                 _model.Close();
                 _variables.Clear();
                 _model = XbimModel.CreateTemporaryModel();
+                ModelChanged();
             }
             catch (Exception e)
             {
@@ -1062,6 +1064,7 @@ namespace Xbim.Script
         public void AddReferenceModel(string refModel, string organization, string owner)
         {
             _model.AddModelReference(refModel, organization, owner);
+            ModelChanged();
         }
 
         public void CopyToModel(string variable, string model)
@@ -1617,6 +1620,13 @@ namespace Xbim.Script
                 Output.Write(message);
         }
 
+        //event to be used in the event driven environment
+        public event ModelChangedHandler OnModelChanged;
+        private void ModelChanged()
+        {
+            if (OnModelChanged != null)
+                OnModelChanged(this, new ModelChangedEventArgs());
+        }
     }
 
     internal struct Layer
@@ -1637,5 +1647,11 @@ namespace Xbim.Script
         {
             return Math.Abs(number - value) < 0.000000001;
         }
+    }
+
+    public delegate void ModelChangedHandler(object sender, ModelChangedEventArgs e);
+
+    public class ModelChangedEventArgs : EventArgs
+    {
     }
 }

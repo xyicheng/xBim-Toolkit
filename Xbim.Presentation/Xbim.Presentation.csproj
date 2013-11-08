@@ -119,8 +119,8 @@
     <Compile Include="IfcMetaDataControl.xaml.cs">
       <DependentUpon>IfcMetaDataControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ScriptingWindow.xaml.cs">
-      <DependentUpon>ScriptingWindow.xaml</DependentUpon>
+    <Compile Include="ScriptingControl.xaml.cs">
+      <DependentUpon>ScriptingControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="ModelDataProvider.cs" />
     <Compile Include="ModelVisual3DExtensions.cs" />
@@ -156,7 +156,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="ScriptingWindow.xaml">
+    <Page Include="ScriptingControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

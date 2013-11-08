@@ -93,6 +93,11 @@ namespace Xbim.IO.ViewModels
             }
         }
 
+        public override string ToString()
+        {
+            return Name;
+        }
+
         #region INotifyPropertyChanged Members
 
         [field: NonSerialized] //don't serialize events
